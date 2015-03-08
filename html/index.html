@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Twitter Scraper">
+    <meta name="author" content="Michael Peter Christen">
+    <link rel="icon" href="favicon.ico">
+
+    <title>loklak: Distributed Tweet Search Server</title>
+
+    <link href="css/bootstrap.min.css" rel="stylesheet">
+    <link href="css/loklak.css" rel="stylesheet">
+
+    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+      <script src="js/html5shiv.min.js"></script>
+      <script src="js/respond.min.js"></script>
+    <![endif]-->
+  </head>
+
+  <body>
+
+    <nav class="navbar navbar-inverse navbar-fixed-top">
+      <div class="container-fluid">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand" href="#"></a>
+        </div>
+        <div id="navbar" class="navbar-collapse collapse">
+          <ul class="nav navbar-nav navbar-right">
+            <li class="active"><a href="index.html">Home</a></li>
+            <li><a href="about.html">About</a></li>
+            <li><a href="architecture.html">Architecture</a></li>
+            <li><a href="download.html">Download</a></li>
+            <li><a href="api.html">API</a></li>
+            <li><a href="dump.html">Dumps</a></li>
+          </ul>
+        </div>
+      </div>
+    </nav>
+    
+    <div class="jumbotron">
+      <div class="container">
+        <h1><code>loklak</code></h1>
+        <h2>Distributed Tweet Search Server</h2>
+          
+      <div class="row">
+        <div class="col-md-4" style="text-align:center;">
+            <img src="images/loklak_collect.png" width="320">
+            <h4>Collect, dump and index tweet search results.</h4>
+        </div>
+        <div class="col-md-4" style="text-align:center;">
+            <img src="images/loklak_anonymous.png" width="320">
+            <h4>Anonymous search API. No user accounts, no authorization.</h4>
+        </div>
+        <div class="col-md-4" style="text-align:center;">
+            <img src="images/loklak_share.png" width="320">
+            <h4>Peer-to-peer message routing and tweet dump sharing.</h4>
+        </div>
+      </div>
+        <br>
+        <br>
+          <form class="col-lg-12">
+            <div class="input-group input-group-lg col-sm-8" style="float:left">
+              <input name="q" id="query" type="text" class="center-block form-control input-lg" title="Search Twitter and the loklak network" placeholder="Search Twitter and the loklak network">
+              <span class="input-group-btn"><button class="btn btn-lg btn-primary" type="submit" onclick="form.action='/api/search.json?q=' + document.getElementById('query').value;">Get JSON Data</button></span>
+            </div>
+            <input type="submit" value="Get RSS Feed" class="btn btn-success btn-lg" onclick="form.action='/api/search.rss?q=' + document.getElementById('query').value;"/>
+          </form>
+      </div>
+    </div>
+
+    <div class="container">
+      <!-- Example row of columns -->
+      <div class="row">
+        <div class="col-md-5">
+          <h2>A Search Portal?</h2>
+          <p>No, this is a backend search- and storage-infrastructure for microblog-messages. Make your own search portal!
+          <code>loklak</code> scrapes tweets from twitter html pages (more message sources to come).
+          We+You collect and share tweets with a peer-to-peer network.</p>
+          <p><a class="btn btn-default" href="about.html#whyuse" role="button">why is this better &raquo;</a>
+          <a class="btn btn-default" href="about.html#distributed" role="button">p2p architecture &raquo;</a></p>
+        </div>
+        <div class="col-md-4">
+          <h2>API Example?</h2>
+          <p>Easy, call <code>/api/search.json?q=&lt;search-term&gt;</code> for <a href="https://dev.twitter.com/rest/reference/get/search/tweets">official Twitter API</a>-like results
+          or <code>/api/search.rss?q=&lt;search-term&gt;</code> for <a href="http://www.opensearch.org/Specifications/OpenSearch/1.1#OpenSearch_description_document">opensearch/rss</a> results.
+          You don't need a twitter account or an <a href="https://dev.twitter.com/oauth">OAuth key</a>.</p>
+          <p><a class="btn btn-default" href="/api/search.json?q=fossasia&callback=p" role="button">show an example &raquo;</a>
+          <a class="btn btn-default" href="api.html" role="button">show apidoc &raquo;</a></p>
+        </div>
+        <div class="col-md-3">
+          <h2>Open Source</h2>
+          <p>This is <a href="https://www.gnu.org/licenses/old-licenses/lgpl-2.1">LGPL</a>ed, <a href="http://fsfe.org/about/basics/freesoftware.html">free software</a> using <a href="http://eclipse.org/jetty/">Jetty</a> and <a href="http://www.elasticsearch.org/">Elasticsearch</a>.
+          <a href="http://www.elasticsearch.org/overview/kibana/">Kibana</a> can easily be added.<br/><br/>Clone the Git Repo:</p>
+          <p><a class="btn btn-default" href="download.html" role="button">download, install and extend &raquo;</a></p>
+          
+        </div>
+      </div>
+
+      
+      <footer style="position:fixed; bottom:0;">
+        <p>Nice? To get latest news about <code>loklak</code>, follow <a href="https://twitter.com/0rb1t3r"><code>@0rb1t3r</code></a>.  Help to spread the news: <a class="btn btn-default" href="https://twitter.com/intent/tweet?hashtags=loklak&original_referer=http%3A%2F%2Floklak.org&text=%23anonymous%20%23twitter%20%23json%20%23rss%20%23search%20by%20@0rb1t3r&tw_p=tweetbutton&url=http%3A%2F%2Floklak.org" role="button">tweet about this &raquo;</a></p>
+      </footer>
+    </div> <!-- /container -->
+
+    <script src="js/jquery.min.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+    <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
+    <script src="js/ie10-viewport-bug-workaround.js"></script>
+  </body>
+</html>

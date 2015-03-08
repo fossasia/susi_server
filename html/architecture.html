@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="loklak.org - Architecture">
+    <meta name="Content-Language" content="en, english"/>
+    <meta name="keywords" lang="en-us" content="search,search engine,twitter,messages,microblogging,elasticsearch,json,api,kibana,loklak"/>
+    <meta name="author" content="@0rb1t3r">
+    <link rel="icon" href="favicon.ico">
+    <title>loklak.org - Architecture</title>
+      
+    <link href="css/bootstrap.min.css" rel="stylesheet">
+    <link href="css/dashboard.css" rel="stylesheet">
+    <link href="css/loklak.css" rel="stylesheet">
+
+    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+      <script src="js/html5shiv.min.js"></script>
+      <script src="js/respond.min.js"></script>
+    <![endif]-->
+  </head>
+
+  <body>
+
+    <nav class="navbar navbar-inverse navbar-fixed-top">
+      <div class="container-fluid">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand" href="http://loklak.org"><img src="images/loklak_org.png" height="24" style="float:left;">: Architecture</a>
+        </div>
+        <div id="navbar" class="navbar-collapse collapse">
+          <ul class="nav navbar-nav navbar-right">
+            <li><a href="index.html">Home</a></li>
+            <li><a href="about.html">About</a></li>
+            <li class="active"><a href="architecture.html">Architecture</a></li>
+            <li><a href="download.html">Download</a></li>
+            <li><a href="api.html">API</a></li>
+            <li><a href="dump.html">Dumps</a></li>
+          </ul>
+          <!-- <form action="/api/search.json" class="navbar-form navbar-right">
+            <input name="q" id="query" type="text" class="form-control" placeholder="Search Tweets...">
+          </form> -->
+        </div>
+      </div>
+    </nav>
+
+    <div class="container-fluid">
+      <div class="row">
+        <div class="col-sm-3 col-md-2 sidebar">
+          <ul class="nav nav-sidebar">
+            <li><a href="#filesystem">File System Structure</span></a></li>
+            <li><a href="#socketsandports">Application Sockets and Ports</span></a></li>
+            <li><a href="#searchprocess">Search Process and Communication to the Backend</span></a></li>
+            <li><a href="#messagedumpformat">Data Format Of Message Dumps</span></a></li>
+            <li><a href="#useraccounts">User Accounts and Access Restrictions</span></a></li>
+          </ul>
+        </div>
+        <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
+          <h1 class="page-header">The <code>loklak</code> Architecture</h1>
+          <p><code>loklak</code> is a java application which runs a jetty web server for the html interface and an elasticsearch search server. The application contains a self-documentation which consists of the web pages you are looking at right now. There is also a <a href="javadoc.html">javadoc</a>.</p>
+            
+		  
+		  <br id="filesystem"/><br/>
+          <h2 class="sub-header">The File System Structure</h2>
+          <p>The file structure follows a default java application folder naming:</p>
+          <ul class="request">
+			<li><i>loklak</i></li>
+			<li><div class="tabcol2">&nbsp;&nbsp;&nbsp;&nbsp;&lfloor;<i>bin</i></div>// directory: start and stop scripts</li>
+            <li><div class="tabcol2">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lfloor;start.sh</div>// file&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: run this script to start loklak</li>
+            <li><div class="tabcol2">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lfloor;stop.sh</div>// file&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: run this script to stop loklak</li>
+			<li><div class="tabcol2">&nbsp;&nbsp;&nbsp;&nbsp;&lfloor;build.xml</div>// file&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: ant build file</li>
+			<li><div class="tabcol2">&nbsp;&nbsp;&nbsp;&nbsp;&lfloor;<i>classes</i></div>// directory: java binary class files</li>
+            <li><div class="tabcol2">&nbsp;&nbsp;&nbsp;&nbsp;&lfloor;<i>conf</i></div>// directory: initial configuration data</li>
+            <li><div class="tabcol2">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lfloor;config.properties</div>// file&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: the initial configuration properties (don't change that)</li>
+            <li><div class="tabcol2">&nbsp;&nbsp;&nbsp;&nbsp;&lfloor;<i>data</i></div>// directory: all data produced by the application</li>
+            <li><div class="tabcol2">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lfloor;<i>dump</i></div>// directory: place for message dump file folders</li>
+            <li><div class="tabcol2">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lfloor;<i>import</i></div>// directory: to import a dump, throw the dump in here, it will got to...</li>
+            <li><div class="tabcol2">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lfloor;<i>imported</i></div>// directory: processed dump files from the import folder are moved here</li>
+            <li><div class="tabcol2">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lfloor;<i>own</i></div>// directory: dump files which this application creates, accessible at <a href="dump/">/dump/</a></li>
+            <li><div class="tabcol2">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lfloor;<i>index</i></div>// directory: the elasticsearch shard folder </li>
+            <li><div class="tabcol2">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lfloor;<i>settings</i></div>// directory: application settings storage</li>
+            <li><div class="tabcol2">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lfloor;customized_config.properties</div>// file&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: app settings, overwrites conf/config.properties.</li>
+            <li><div class="tabcol2">&nbsp;&nbsp;&nbsp;&nbsp;&lfloor;<i>html</i></div>// directory: the loklak web pages including this page you are looking at</li>
+            <li><div class="tabcol2">&nbsp;&nbsp;&nbsp;&nbsp;&lfloor;<i>lib</i></div>// directory: linked libraries for loklak</li>
+            <li><div class="tabcol2">&nbsp;&nbsp;&nbsp;&nbsp;&lfloor;LICENSE.txt</div>// file&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: the LGPL license</li>
+            <li><div class="tabcol2">&nbsp;&nbsp;&nbsp;&nbsp;&lfloor;messages.log</div>// file&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: application output is streamed in here</li>
+            <li><div class="tabcol2">&nbsp;&nbsp;&nbsp;&nbsp;&lfloor;README.txt</div>// file&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: you should read this if you are using loklak the first time</li>
+            <li><div class="tabcol2">&nbsp;&nbsp;&nbsp;&nbsp;&lfloor;<i>src</i></div>// directory: java sources</li>
+          </ul>
+
+            
+          <br id="socketsandports"/><br/>
+          <h2 class="sub-header">Application Sockets and Ports</h2>
+          <p>There is only one public port available, port 9100. <code>loklak</code> opens two more ports for elasticsearch, port 9200 (elasticsearch html api) and 9300 (elasticsearch transport api) but they are configured to be unavailable for clients from non-localhost sockets. You can change the port numbers and access rules in conf/config.properties. If you want to run several <code>loklak</code> instances on the same host, you must change three port number (i.e. by increasing all by one).</p>
+            
+            
+          <br id="searchprocess"/><br/>
+          <h2 class="sub-header">Search Process and Communication to the Backend</h2>
+          <p>Search results are combined from the internal elasticsearch index and external sources such as twitter.
+            To retrieve the twitter search results, a web page scraper is used to circumvent the forced OAuth identification of the search users. The search process has three phases:</p>
+            <h3>Dispatching the Search Request</h3>
+            <p>This happens when the <a href="api.html#search">search.json</a> api is called: the api servlet concurrently queries a twitter scraper and the internal elasticsearch index:</p>
+            <img src="images/architecture_phase1.png" width="720">
+            <p>As a part of this process, the twitter scraper also <a href="about.html#deshortener">de-shortens</a> all links embedded in all tweets from the search result.</p>
+            <h3>Merging the Search Results </h3>
+            <p>The search result is merged into one message list. Merging is easily done because all messages have an identifier and the messages are simply ordered by their date:</p>
+            <img src="images/architecture_phase2.png" width="720">
+            <p>As part of the merge process, all new, previously unknown messages can be identified. These are pushed on a storage list for future processing.</p>
+            <h3>Distribution of Messages</h3>
+            <p>An independent caretaker-process runs every three seconds and looks how many new messages had been placed on the storage queue; if the number exceedes a given limit (i.e. 100) then all messages are stored to the own file system and pushed over the backend-API to the backend-peer.</p>
+            <img src="images/architecture_phase3.png" width="720">
+            <p>Files pushed on the <a href="dump/">latest message file stack</a> can be downloaded immediately. The same happens at the back-end peer: new messages appear immediately there as well.</p>
+    
+          <br id="messagedumpformat"/><br/>
+          <h2 class="sub-header">What's The Data Format Of Message Dumps?</h2>
+          <p>The message dumps mentioned above are lists of JSON terms. loklak creates a new dump file for every
+            month, but only if loklak is (re-)started. The dump file gets appended with a JSON term whenever a new
+            message appears and is indexed. That means that the dump file itself is not JSON because there is missing
+            a list bracket at the start and the end and commas in between. Every line in the file is an individual JSON
+            term which makes it possible to grep over the file. Whenever a new file is opened, the old one is
+            gzipped automatically.</p>
+            <p>A dump file looks like (these are four lines):
+            <pre>{"created_at":"2015-03-06T19:47:05.000Z","screen_name":"KohlerSolutions","text":"There will be a very interesting #Mozilla track at #FOSSASIA in Singapore: http://fossasia.org/track/FOSSASIA-Mozilla.pdf","link":"https://twitter.com/KohlerSolutions/status/573932833573568512","id_str":"573932833573568512","source_type":"TWITTER","provider_type":"SCRAPED","retweet_count":3,"favourites_count":2,"user":{"name":"Michael Kohler","screen_name":"KohlerSolutions","profile_image_url_https":"https://pbs.twimg.com/profile_images/554282692489924608/wPVGA62a_bigger.jpeg","appearance_first":"2015-03-07T11:00:45.798Z","appearance_latest":"2015-03-07T11:00:45.798Z"}}
+{"created_at":"2015-03-07T05:51:10.000Z","screen_name":"bytebot","text":"Will you be @fossasia ? I9m excited to give a keynote about @mariadb there! http://fossasia.org/","link":"https://twitter.com/bytebot/status/574084855664783361","id_str":"574084855664783361","source_type":"TWITTER","provider_type":"SCRAPED","retweet_count":1,"favourites_count":1,"user":{"name":"Colin Charles","screen_name":"bytebot","profile_image_url_https":"https://pbs.twimg.com/profile_images/490878058648178688/TtpjnwOx_bigger.jpeg","appearance_first":"2015-03-07T11:02:07.754Z","appearance_latest":"2015-03-07T11:02:07.754Z"}}
+{"created_at":"2015-03-07T05:49:11.000Z","screen_name":"utianayuba","text":"di @fossasia akan bicara @tuanpembual dari @GLiBogor, @syaimif dari @BlankOnLinux, @emily_chen dari @gnome_asia.","link":"https://twitter.com/utianayuba/status/574084356295159808","id_str":"574084356295159808","source_type":"TWITTER","provider_type":"SCRAPED","retweet_count":3,"favourites_count":1,"user":{"name":"Utian Ayuba","screen_name":"utianayuba","profile_image_url_https":"https://pbs.twimg.com/profile_images/538635188478029825/RtgStA6W_bigger.jpeg","appearance_first":"2015-03-07T11:02:07.758Z","appearance_latest":"2015-03-07T11:02:07.758Z"}}
+{"created_at":"2015-03-07T03:31:47.000Z","screen_name":"comprock","text":"I9ve been presenting and working with http://fossasia.org/","link":"https://twitter.com/comprock/status/574049779975655424","id_str":"574049779975655424","source_type":"TWITTER","provider_type":"SCRAPED","retweet_count":1,"favourites_count":0,"user":{"name":"Michael Cannon","screen_name":"comprock","profile_image_url_https":"https://pbs.twimg.com/profile_images/574054683079090176/3-XSsyEh_bigger.jpeg","appearance_first":"2015-03-07T11:02:07.842Z","appearance_latest":"2015-03-07T11:02:07.842Z"}}
+</pre></p>
+            <p>These dump files can easily filtered with standard shell script tools - like grep - to produce new input dump files to be imported in new/different loklak instances.</p>
+          <br id="useraccounts"/><br/>
+          <h2 class="sub-header">User Accounts and Access Restrictions</h2>
+          <p>There are no user accounts in <code>loklak</code> and you cannot configure some. There is an exception with the embedded elasticsearch instance, please refer to the documentation of that library.</p>
+          <p>Access restrictions are done by distinguishing accesses frow localhost and from other hosts. While requests to servlets from localhost clients do not have any restrictions, external client accesses may have restrictions. Restricted are i.e. a large depth number for the crawl start and excessive requests to the html interface.</p>
+
+      
+          <br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Bootstrap core JavaScript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+    <script src="js/jquery.min.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+    <script src="js/docs.min.js"></script>
+    <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
+    <script src="js/ie10-viewport-bug-workaround.js"></script>
+  </body>
+</html>

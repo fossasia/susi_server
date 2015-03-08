@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="loklak.org - Architecture">
+    <meta name="Content-Language" content="en, english"/>
+    <meta name="keywords" lang="en-us" content="search,search engine,twitter,messages,microblogging,elasticsearch,json,api,kibana,loklak"/>
+    <meta name="author" content="@0rb1t3r">
+    <link rel="icon" href="favicon.ico">
+    <title>loklak.org - API</title>
+
+    <title>Dashboard Template for Bootstrap</title>
+
+    <link href="css/bootstrap.min.css" rel="stylesheet">
+    <link href="css/dashboard.css" rel="stylesheet">
+    <link href="css/loklak.css" rel="stylesheet">
+
+    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+      <script src="js/html5shiv.min.js"></script>
+      <script src="js/respond.min.js"></script>
+    <![endif]-->
+  </head>
+
+  <body>
+
+    <nav class="navbar navbar-inverse navbar-fixed-top">
+      <div class="container-fluid">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand" href="http://loklak.org"><img src="images/loklak_org.png" height="24" style="float:left;">: API</a>
+        </div>
+        <div id="navbar" class="navbar-collapse collapse">
+          <ul class="nav navbar-nav navbar-right">
+            <li><a href="index.html">Home</a></li>
+            <li><a href="about.html">About</a></li>
+            <li><a href="architecture.html">Architecture</a></li>
+            <li><a href="download.html">Download</a></li>
+            <li class="active"><a href="api.html">API</a></li>
+            <li><a href="dump.html">Dumps</a></li>
+          </ul>
+          <!-- <form action="/api/search.json" class="navbar-form navbar-right">
+            <input name="q" id="query" type="text" class="form-control" placeholder="Search Tweets...">
+          </form> -->
+        </div>
+      </div>
+    </nav>
+
+    <div class="container-fluid">
+      <div class="row">
+        <div class="col-sm-3 col-md-2 sidebar">
+          <ul class="nav nav-sidebar">
+            <li><a href="#search">/api/search.json</span></a></li>
+            <li><a href="#crawler">/api/crawler.json</a></li>
+            <li><a href="#status">/api/status.json</a></li>
+            <li><a href="#peers">/api/peers.json</a></li>
+            <li><a href="#push">/api/push.json</a></li>
+          </ul>
+        </div>
+        <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
+          <h1 class="page-header">APIs</h1>
+          <p>This is the loklak API running on a HTTP protocol. Every servlet can be called with a POST request, all but <code>push.json</code> can be called with a PUT request.
+            <p>You can access the API <b>without any authentication</b>. This service has <b>no user management on purpose</b>. Excessive usage of APIs is restricted with DoS protection.</p>
+		  
+		  <br id="search"/><br/><br/>
+          <h2 class="sub-header"><code>/api/search.json</code></h2>
+          <p>
+          Get a search result. There are two formats available: json and rss. To get rss data (which is opensearch-compliant) use the path <code>/api/search.rss</code>.
+          The json return format is a subset of the Twitter API search result but has also some additional attributes. Request properties are:</p>
+          <ul class="request">
+			<li><div class="tabcol0">q</div><div class="tabcol1">&nbsp;=&nbsp;&lt;query term&gt;</div>// space replaced by '+', i.e. q=doctor+who</li>
+			<li><div class="tabcol0">maximumRecords</div><div class="tabcol1">&nbsp;=&nbsp;&lt;count&gt;</div>// default 100, i.e. maximumRecords=100, the wanted number of results</li>
+			<li><div class="tabcol0">source</div><div class="tabcol1">&nbsp;=&nbsp;&lt;cache|twitter|all&gt;</div>// the source for the search, default all, i.e. source=cache</li>
+          </ul>
+          </p>
+          <p>A search result in JSON format looks like:</p>
+          <pre>
+{
+  "search_metadata" : {
+    "startIndex" : "0",
+    "itemsPerPage" : "100",
+    "count" : "120",
+    "query" : "doctor who"
+  },
+  "statuses" : [ {
+    "created_at" : "2015-03-03T19:30:43.000Z",
+    "screen_name" : "exanonym77s",
+    "text" : "check #DoctorWho forums #TheDayOfTheDoctor #TheMaster @0rb1t3r http://www.thedoctorwhoforum.com/ https://pic.twitter.com/FvW6J9WMCw",
+    "link" : "https://twitter.com/ronakpw/status/572841550834737152",
+    "id_str" : "572841550834737152",
+    "source_type" : "TWITTER",
+    "provider_type" : "SCRAPED",
+    "retweet_count" : 0,
+    "favourites_count" : 0,
+    "hosts" : [ "www.thedoctorwhoforum.com", "pic.twitter.com" ],
+    "hosts_count" : 2,
+    "links" : [ "http://www.thedoctorwhoforum.com/", "https://pic.twitter.com/FvW6J9WMCw" ],
+    "links_count" : 2,
+    "mentions" : [ "@0rb1t3r" ],
+    "mentions_count" : 1,
+    "hashtags" : [ "DoctorWho", "TheDayOfTheDoctor", "TheMaster" ],
+    "hashtags_count" : 3,
+    "without_l_len" : 62,
+    "without_lu_len" : 62,
+    "without_luh_len" : 21,
+    "user" : {
+      "name" : "Example User Anyone",
+      "screen_name" : "exanonym77s",
+      "profile_image_url_https" : "https://pbs.twimg.com/profile_images/567071565473267713/4hiyjKkF_bigger.jpeg",
+      "appearance_first" : "2015-03-03T19:31:30.269Z",
+      "appearance_latest" : "2015-03-03T19:31:30.269Z"
+    }
+  }, ...
+  ]
+}
+</pre>
+          <p>The text field is evaluated and all shortened links are extracted. Furthermore all hashtags and user screen names are extracted as well and written into special index fields, which can be used for statistical evaluation:</p>
+          <ul class="request">
+			<li><div class="tabcol0">links</div>&nbsp;:&nbsp;all links in the message. <b>(almost) all shortlinks are expanded!</b></li>
+			<li><div class="tabcol0">hosts</div>&nbsp;:&nbsp;the host names from the extracted links</li>
+			<li><div class="tabcol0">mentions</div>&nbsp;:&nbsp;all user names denoted by a '@'-prefix from the message; listed without the leading '@'</li>
+			<li><div class="tabcol0">hashtags</div>&nbsp;:&nbsp;all hashtags appearing in the message, without the leading '#'</li>
+          </ul>
+          <p>To identify the source of the tweet, the tweet system and the harvesting source is mentioned:</p>
+          <ul class="request">
+			<li><div class="tabcol0">source_type</div>&nbsp;:&nbsp;The source of the message, currently only 'TWITTER' is possible</li>
+			<li><div class="tabcol0">provider_type</div>&nbsp;:&nbsp;The type of the content provider, possible values are SCRAPED and  REMOTE (for pushed content)</li>
+          </ul>
+      
+		  <br id="crawler"/><br/>
+          <h2 class="sub-header">/api/crawler.json</h2>
+          <p>With the crawler servlet it is possible to retrieve mass-data from the search backend, including the twitter scraper. The crawler loads search results with a given set of query terms, extracts all the hashtags and user names from the result list and searches with those words again. Request properties are:</p>
+          <ul class="request">
+			<li><div class="tabcol0">start</div><div class="tabcol1">&nbsp;=&nbsp;&lt;terms, comma-separated&gt;</div>// i.e. start=fossasia,software</li>
+			<li><div class="tabcol0">depth</div><div class="tabcol1">&nbsp;=&nbsp;&lt;crawl depth&gt;</div>// default 0, non-localhost clients may only set a maximum of 1</li>
+			<li><div class="tabcol0">hashtags</div><div class="tabcol1">&nbsp;=&nbsp;&lt;true|false&gt;</div>// if true then hashtags from the results are used for the next search requests</li>
+			<li><div class="tabcol0">users</div><div class="tabcol1">&nbsp;=&nbsp;&lt;true|false&gt;</div>// if true then user names from the results are used for the next search requests</li>
+          </ul>
+          <p>The crawler returns immediately with an object describing the index size (exactly the same as with the status servlets) and an object describing the crawler status:</p>
+
+<pre>{
+  "index_sizes" : {
+    "messages" : 127154,
+    "users" : 56347
+  },
+  "crawler_status" : {
+    "pending_size" : 68,
+    "stacked_size" : 72,
+    "processed_size" : 4,
+    "pending" : [ "oVirt", "repeatedly", "FOSSAsia", "FOSSASIA", "RedHatJobs", "shwetank", "umnovnik", "12geeks", "TheTechScribe", "HerwonoWr", "ovirt", "opensource", "redhatopen", "Virtualization", "mishari", "doron_f", "penhleakchan", "dionyziz", "lilithlela", "CLT2015", "google", "sparhopper", "smokingwheels", "JetLeak", "ARQUEIRO_BR", "Emil_Blume", "catering", "appropedia", "connimark", "hanshafner", "free", "bugfix", "LordBexar", "coloofrm", "Technovelgy", "erikandgo", "onboard", "SpaceX", "TexasSpaceport", "lukealization", "space", "Tako3ka", "Mars", "UrHRGuru", "SpaceXNews", "defense", "_techstories", "defense_dp", "Scott_Allen", "rtgstrf", "canaldenoticias", "GileJudy", "NASA", "Soyuz", "justinrigodn", "ISS", "letsnurture", "BlerdTurd", "econdev", "PSBJ", "TheRealBuzz", "canalnews", "PappalardoJoe", "kdurhamevntse", "Patrick_S101", "Tesla", "EntreGulss", "US4USA" ],
+    "processed" : [ "spacex", "yacy_search", "singapore", "fossasia" ]
+  }
+}
+</pre>
+      
+		  <br id="status"/><br/>
+          <h2 class="sub-header">/api/status.json</h2>
+          <p>The status servlet shows the size of the internal elasticsearch search index for messages and users.
+              Furthermore the servlet reflects the current browser clients settings in the client_info.</p>
+          
+<pre>{
+  "index_sizes" : {
+    "messages" : 127111,
+    "users" : 56341
+  },
+  "client_info" : {
+    "RemoteHost" : "109.91.39.64",
+    "Accept-Language" : "de-DE,de;q=0.8,en-US;q=0.6,en;q=0.4",
+    "Host" : "loklak.org",
+    "Accept-Encoding" : "gzip, deflate, sdch",
+    "X-Forwarded-For" : "109.91.39.64",
+    "X-Real-IP" : "109.91.39.64",
+    "User-Agent" : "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2272.76 Safari/537.36",
+    "Accept" : "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
+    "Connection" : "close"
+  }
+}</pre>
+          
+		  <br id="peers"/><br/>
+          <h2 class="sub-header">/api/peers.json</h2>
+          <p>This servlet combined the result of the hello calls from all peers and provides a list of addresses where the remote peers can be accessed.</p>
+          
+<pre>{
+  "count" : "4",
+  "peers" : [ {
+    "host" : "109.91.39.64",
+    "port.http" : 9100,
+    "port.https" : 9443,
+    "lastSeen" : 1425477018081,
+    "lastPath" : "/api/search.rss"
+  }, {
+    "host" : "108.33.206.84",
+    "port.http" : -1,
+    "port.https" : -1,
+    "lastSeen" : 1425472118475,
+    "lastPath" : "/api/search.rss"
+  }, {
+    "host" : "162.210.197.234",
+    "port.http" : 9100,
+    "port.https" : 9443,
+    "lastSeen" : 1425374236537,
+    "lastPath" : "/api/hello.json"
+  }, {
+    "host" : "176.9.120.5",
+    "port.http" : 9100,
+    "port.https" : 9443,
+    "lastSeen" : 1425464687783,
+    "lastPath" : "/api/push.json"
+  } ]
+}
+</pre>
+      
+		  <br id="push"/><br/>
+          <h2 class="sub-header">/api/push.json</h2>
+          <p>Whenever a peer aquires new tweets, it reports these to the backend for storage. Messages are first collected and bundled into http POST requests to the backend push api. This servlet can only be requested with a POST request. The post must have only one attribute:</p>
+<ul class="request">
+			<li><div class="tabcol0">data</div><div class="tabcol1">&nbsp;=&nbsp;&lt;a search result object&gt;</div>// push the same data as it is returned with search.json</li>
+          </ul>
+        <p>The servlet returns with</p>
+<pre>{
+  "status" : "ok",
+  "records" : "100",
+  "new" : "7",
+  "known" : "93",
+  "message" : "pushed"
+}</pre>
+      <p>When messages arrive the backend peer, the value "source_type" of every message is replaced with "REMOTE"</p>
+      
+          <br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Bootstrap core JavaScript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+    <script src="js/jquery.min.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+    <script src="js/docs.min.js"></script>
+    <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
+    <script src="js/ie10-viewport-bug-workaround.js"></script>
+  </body>
+</html>
