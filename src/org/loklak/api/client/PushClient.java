@@ -34,10 +34,12 @@ public class PushClient {
      * transmit the timeline to several hosts
      * @param timeline
      * @param hoststubs a list of host stubs, i.e. ["http://remoteserver.eu"]
+     * @return true if the data was transmitted to at least one target peer
      */
-    public static void push(String[] hoststubs, Timeline timeline) {
+    public static boolean push(String[] hoststubs, Timeline timeline) {
         // transmit the timeline
         String data = timeline.toJSON(false);
+        boolean transmittedToAtLeastOnePeer = false;
         for (String hoststub: hoststubs) {
             if (hoststub.endsWith("/")) hoststub = hoststub.substring(0, hoststub.length() - 1);
             Map<String, byte[]> post = new HashMap<String, byte[]>();
@@ -45,9 +47,11 @@ public class PushClient {
             try {
                 BufferedReader br = ClientHelper.postConnection(hoststub + "/api/push.json", post);
                 br.close();
+                transmittedToAtLeastOnePeer = true;
             } catch (IOException e) {
                 e.printStackTrace();
             }
         }
+        return transmittedToAtLeastOnePeer;
     }
 }
