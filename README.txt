@@ -8,7 +8,7 @@ a elasticsearch index.
 
 'Lok Lak' is also a very tasty Cambodian stir-fry meat dish (usually
 beef) with a LOT of fresh black pepper. If you ever have the chance to
-eat Beaf Lok Lak, please try it. I hope not to scare vegetarians with
+eat Beef Lok Lak, please try it. I hope not to scare vegetarians with
 this name, currently I am one as well.
 
 
@@ -21,7 +21,7 @@ loklak. With loklak you can do:
 
 - collect and store a very, very large amount of tweets
 - create your own search engine for tweets
-- omit authentication enforcment for API requests on twitter
+- omit authentication enforcement for API requests on twitter
 - share tweets and tweet archives with other loklak users
 - search anonymously on your own search portal
 - create your own tweet search portal or statistical evaluations
@@ -43,8 +43,8 @@ loklak. With loklak you can do:
 
 *** Where can I find more information and documentation
 
-The application has built-in documentation webpages, you will see them
-when you opened the application web pages or you can simply open
+The application has built-in documentation web pages, you will see
+them when you opened the application web pages or you can simply open
 html/index.html or just use http://loklak.org as reference.
 
 

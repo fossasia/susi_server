@@ -49,12 +49,28 @@ public class Caretaker extends Thread {
         HelloClient.propagate(remote, (int) DAO.getConfig("port.http", 9100), (int) DAO.getConfig("port.https", 9443));
         
         while (this.shallRun) {
+            // sleep a bit to prevent that the DoS limit fires at backend server
+            try {Thread.sleep(3000);} catch (InterruptedException e) {}
+            
             // peer-to-peer operation
-            Timeline tl = DAO.takeTimeline(100, 3000);
+            Timeline tl = DAO.takeTimeline(500, 3000);
             if (!this.shallRun) break;
-            if (tl != null && tl.size() > 0) {
+            if (tl != null && tl.size() > 0 && remote.length > 0) {
                 // transmit the timeline
-                PushClient.push(remote, tl);
+                boolean success = PushClient.push(remote, tl);
+                if (!success) {
+                    // we should try again.. but not an infinite number because then
+                    // our timeline in RAM would fill up our RAM creating a memory leak
+                    retrylook: for (int retry = 0; retry < 3; retry++) {
+                        // give back-end time to recover
+                        try {Thread.sleep(3000 + retry * 3);} catch (InterruptedException e) {}
+                        if (PushClient.push(remote, tl)) {
+                            DAO.log("success pushing to backend in " + retry + " attempt");
+                            break retrylook;
+                        }
+                    }
+                    DAO.log("failed pushing " + tl.size() + " messages to backend");
+                }
             }
             
             // scan dump input directory to import files
@@ -62,6 +78,7 @@ public class Caretaker extends Thread {
             for (File importFile: importList) {
                 String name = importFile.getName();
                 if (name.startsWith(DAO.MESSAGE_DUMP_FILE_PREFIX)) {
+                    DAO.log("importing file " + name);
                     int imported = DAO.importDump(importFile);
                     DAO.shiftProcessedDump(name);
                     DAO.log("imported file " + name + ", " + imported + " new messages");
