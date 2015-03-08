@@ -55,6 +55,11 @@ public class PeersServlet extends HttpServlet {
         if (time_since_last_access < DAO.getConfig("DoS.blackout", 1000)) {response.sendError(503, "your request frequency is too high"); return;}
         
         Map<String, String> qm = ServletHelper.getQueryMap(request.getQueryString());
+        String httpports = qm == null ? request.getParameter("port.http") : qm.get("port.http");
+        Integer httpport = httpports == null ? null : Integer.parseInt(httpports);
+        String httpsports = qm == null ? request.getParameter("port.https") : qm.get("port.https");
+        Integer httpsport = httpsports == null ? null : Integer.parseInt(httpsports);
+        RemoteAccess.log(clientHost, path, httpport, httpsport);
         String callback = qm == null ? request.getParameter("callback") : qm.get("callback");
         boolean jsonp = callback != null && callback.length() > 0;
         // String pingback = qm == null ? request.getParameter("pingback") : qm.get("pingback");
