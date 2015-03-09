@@ -91,9 +91,14 @@ public class SearchServlet extends HttpServlet {
         // create tweet timeline
         Timeline tl = null;
         if (grantRemoteSearch && ("twitter".equals(source) || "all".equals(source))) {
-            tl = DAO.searchRemote(query)[0];
+            tl = DAO.scrapeTwitter(query)[0];
         } else {
             tl = new Timeline();
+        }
+
+        // replace the timeline with one from the own index which now includes the remote result
+        if ("backend".equals(source) || "all".equals(source)) {
+            tl.putAll(DAO.searchBackend(query, count));
         }
 
         // replace the timeline with one from the own index which now includes the remote result

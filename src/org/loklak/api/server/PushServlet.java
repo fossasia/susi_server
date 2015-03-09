@@ -69,7 +69,7 @@ public class PushServlet extends HttpServlet {
         // manage DoS
         String clientHost = request.getRemoteHost();
         String XRealIP = request.getHeader("X-Real-IP"); if (XRealIP != null && XRealIP.length() > 0) clientHost = XRealIP; // get IP through nginx config "proxy_set_header X-Real-IP $remote_addr;"
-        String remoteHash = Integer.toHexString(clientHost.hashCode());
+        String remoteHash = Integer.toHexString(Math.abs(clientHost.hashCode()));
         long now = System.currentTimeMillis();
         long time_since_last_access = now - RemoteAccess.latestVisit(clientHost);
         String path = request.getServletPath();

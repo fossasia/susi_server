@@ -67,6 +67,7 @@ import org.elasticsearch.node.Node;
 import org.elasticsearch.node.NodeBuilder;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.sort.SortOrder;
+import org.loklak.api.client.SearchClient;
 import org.loklak.scraper.TwitterScraper;
 import org.loklak.tools.Cache;
 import org.loklak.tools.UTF8;
@@ -463,7 +464,7 @@ public class DAO {
         return tl;
     }
     
-    public static Timeline[] searchRemote(String q) {
+    public static Timeline[] scrapeTwitter(String q) {
         Timeline allTweets = TwitterScraper.search(q);
         Timeline newTweets = new Timeline(); // we store new tweets here to be able to transmit them to peers
         if (allTweets == null) {// can be caused by time-out
@@ -482,6 +483,22 @@ public class DAO {
             DAO.transmitTimeline(newTweets);
         }
         return new Timeline[]{allTweets, newTweets};
+    }
+    
+    public static Timeline searchBackend(String q, int count) {
+        String[] remote = DAO.getConfig("backend", "").split(",");
+        Timeline tl = new Timeline();
+        for (String protocolhostportstub: remote) {
+            Timeline tt = SearchClient.search(protocolhostportstub, q, "cache", count);
+            tl.putAll(tt);
+            // record the result; this may be moved to a concurrent process
+            for (Tweet t: tt) {
+                User u = tt.getUser(t);
+                assert u != null;
+                record(t, u, true);
+            }
+        }
+        return tl;
     }
     
     public static void log(String line) {

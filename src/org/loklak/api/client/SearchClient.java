@@ -23,16 +23,53 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
+import java.util.List;
+import java.util.Map;
 
 import org.elasticsearch.common.xcontent.XContentParser;
 import org.elasticsearch.common.xcontent.json.JsonXContent;
+import org.loklak.ProviderType;
+import org.loklak.Timeline;
+import org.loklak.Tweet;
+import org.loklak.User;
 import org.loklak.api.ClientHelper;
 
 public class SearchClient {
     
-    public static String search(String protocolhostportstub, String query, int count) {
+    private final static String backend_hash = Integer.toHexString(Integer.MAX_VALUE);
+
+    // possible values: cache, twitter, all
+    public static Timeline search(String protocolhostportstub, String query, String source, int count) {
+        Timeline tl = new Timeline();
+        String json = searchJSON(protocolhostportstub, query, source, count);
+        if (json == null || json.length() == 0) return tl;
+        try {
+            XContentParser parser = JsonXContent.jsonXContent.createParser(json);
+            Map<String, Object> map = parser == null ? null : parser.map();
+            Object statuses_obj = map.get("statuses");
+            @SuppressWarnings("unchecked") List<Map<String, Object>> statuses = statuses_obj instanceof List<?> ? (List<Map<String, Object>>) statuses_obj : null;
+            if (statuses != null) {
+                for (Map<String, Object> tweet: statuses) {
+                    @SuppressWarnings("unchecked") Map<String, Object> user = (Map<String, Object>) tweet.remove("user");
+                    if (user == null) continue;
+                    tweet.put("provider_type", (Object) ProviderType.REMOTE.name());
+                    tweet.put("provider_hash", backend_hash);
+                    User u = new User(user);
+                    Tweet t = new Tweet(tweet);
+                    tl.addUser(u);
+                    tl.addTweet(t);
+                }
+            }
+            //System.out.println(parser.text());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return tl;
+    }
+    
+    private static String searchJSON(String protocolhostportstub, String query, String source, int count) {
         String urlstring = "";
-        try {urlstring = protocolhostportstub + "/api/search.json?q=" + URLEncoder.encode(query, "UTF-8") + "&maximumRecords=" + count;} catch (UnsupportedEncodingException e) {}
+        try {urlstring = protocolhostportstub + "/api/search.json?q=" + URLEncoder.encode(query.replace(' ', '+'), "UTF-8") + "&maximumRecords=" + count + "&source=" + (source == null ? "all" : source);} catch (UnsupportedEncodingException e) {}
         try {
             BufferedReader br = ClientHelper.getConnection(urlstring);
             if (br == null) return "";
@@ -57,14 +94,8 @@ public class SearchClient {
     }
     
     public static void main(String[] args) {
-        String json = search("http://loklak.org", "beer", 20);
-        //System.out.println(json);
-        try {
-            XContentParser parser = JsonXContent.jsonXContent.createParser(json);
-            System.out.println(parser.text());
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        Timeline tl = search("http://loklak.org", "beer", "cache", 20);
+        System.out.println(tl.toJSON(false));
     }
     
 }

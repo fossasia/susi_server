@@ -59,7 +59,7 @@ public class Crawler {
         }
         
         // execute the query
-        Timeline tl = DAO.searchRemote(term.query)[1]; // we use only the new tweets, not old/known
+        Timeline tl = DAO.scrapeTwitter(term.query)[1]; // we use only the new tweets, not old/known
         
         // if depth of query was 0, terminate
         if (term.depth == 0) return 0;
