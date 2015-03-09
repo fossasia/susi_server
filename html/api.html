@@ -137,7 +137,7 @@
       
 		  <br id="crawler"/><br/>
           <h2 class="sub-header">/api/crawler.json</h2>
-          <p>With the crawler servlet it is possible to retrieve mass-data from the search backend, including the twitter scraper. The crawler loads search results with a given set of query terms, extracts all the hashtags and user names from the result list and searches with those words again. Request properties are:</p>
+          <p>With the crawler servlet it is possible to retrieve mass-data from the search back-end, including the twitter scraper. The crawler loads search results with a given set of query terms, extracts all the hashtags and user names from the result list and searches with those words again. Request properties are:</p>
           <ul class="request">
 			<li><div class="tabcol0">start</div><div class="tabcol1">&nbsp;=&nbsp;&lt;terms, comma-separated&gt;</div>// i.e. start=fossasia,software</li>
 			<li><div class="tabcol0">depth</div><div class="tabcol1">&nbsp;=&nbsp;&lt;crawl depth&gt;</div>// default 0, non-localhost clients may only set a maximum of 1</li>
@@ -220,7 +220,7 @@
       
 		  <br id="push"/><br/>
           <h2 class="sub-header">/api/push.json</h2>
-          <p>Whenever a peer aquires new tweets, it reports these to the backend for storage. Messages are first collected and bundled into http POST requests to the backend push api. This servlet can only be requested with a POST request. The post must have only one attribute:</p>
+          <p>Whenever a peer aquires new tweets, it reports these to the back-end for storage. Messages are first collected and bundled into http POST requests to the back-end push api. This servlet can only be requested with a POST request. The post must have only one attribute:</p>
 <ul class="request">
 			<li><div class="tabcol0">data</div><div class="tabcol1">&nbsp;=&nbsp;&lt;a search result object&gt;</div>// push the same data as it is returned with search.json</li>
           </ul>
@@ -232,7 +232,7 @@
   "known" : "93",
   "message" : "pushed"
 }</pre>
-      <p>When messages arrive the backend peer, the value "source_type" of every message is replaced with "REMOTE"</p>
+      <p>When messages arrive the back-end peer, the value "source_type" of every message is replaced with "REMOTE"</p>
       
           <br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/>
         </div>

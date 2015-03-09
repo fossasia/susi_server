@@ -58,7 +58,7 @@
           <ul class="nav nav-sidebar">
             <li><a href="#filesystem">File System Structure</span></a></li>
             <li><a href="#socketsandports">Application Sockets and Ports</span></a></li>
-            <li><a href="#searchprocess">Search Process and Communication to the Backend</span></a></li>
+            <li><a href="#searchprocess">Search Process and Communication to the Back-End</span></a></li>
             <li><a href="#messagedumpformat">Data Format Of Message Dumps</span></a></li>
             <li><a href="#useraccounts">User Accounts and Access Restrictions</span></a></li>
           </ul>
@@ -103,7 +103,7 @@
             
             
           <br id="searchprocess"/><br/>
-          <h2 class="sub-header">Search Process and Communication to the Backend</h2>
+          <h2 class="sub-header">Search Process and Communication to the Back-End</h2>
           <p>Search results are combined from the internal elasticsearch index and external sources such as twitter.
             To retrieve the twitter search results, a web page scraper is used to circumvent the forced OAuth identification of the search users. The search process has three phases:</p>
             <h3>Dispatching the Search Request</h3>
@@ -115,7 +115,7 @@
             <img src="images/architecture_phase2.png" width="720">
             <p>As part of the merge process, all new, previously unknown messages can be identified. These are pushed on a storage list for future processing.</p>
             <h3>Distribution of Messages</h3>
-            <p>An independent caretaker-process runs every three seconds and looks how many new messages had been placed on the storage queue; if the number exceedes a given limit (i.e. 100) then all messages are stored to the own file system and pushed over the backend-API to the backend-peer.</p>
+            <p>An independent caretaker-process runs every three seconds and looks how many new messages had been placed on the storage queue; if the number exceedes a given limit (i.e. 100) then all messages are stored to the own file system and pushed over the back-end API to the back-end peer.</p>
             <img src="images/architecture_phase3.png" width="720">
             <p>Files pushed on the <a href="dump/">latest message file stack</a> can be downloaded immediately. The same happens at the back-end peer: new messages appear immediately there as well.</p>
     

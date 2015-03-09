@@ -91,7 +91,7 @@
           <h2 class="sub-header">Not A Search Portal</h2>
           <p>Search portals consist of many components, the most prominent parts are content harvesters to aquire searchable content, a search index which provides fast and efficient access to the data and a search front-end containing the user webpages and result display servlets:</p>
 <img src="images/concept_searchengine.png" width="553">
-            <p>Most search portals differ in the way how they display search results but have the almost same backend to create the search index. We want to support the creation of message/twitter search portals but the neccessary and most generic part needs to be coded only once, even if we want several or even many differnt search front-ends:</p>
+            <p>Most search portals differ in the way how they display search results but have the almost same back-end to create the search index. We want to support the creation of message/twitter search portals but the neccessary and most generic part needs to be coded only once, even if we want several or even many differnt search front-ends:</p>
 <img src="images/concept_messagesearch.png" width="553">
             <p>So it's on you to create a message search portal, but the very hard part for this was already done by us. However, the front-end may also instantly be there (i.e. you can just use <a href="download.html#kibana">Kibana</a>).</p>
             
@@ -124,12 +124,12 @@
             
 		  <br id="distributed"/><br/>
           <h2 class="sub-header">Distributed, Peer-to-Peer</h2>
-          <p><code>loklak</code> instances can be connected to each other. If you download <code>loklak</code> and run it unchanged, it connects to loklak.org by default as a backend-peer. You can change this if you want to. Thats what connected peers do:</p>
+          <p><code>loklak</code> instances can be connected to each other. If you download <code>loklak</code> and run it unchanged, it connects to loklak.org by default as a back-end peer. You can change this if you want to. Thats what connected peers do:</p>
           <ul>
-              <li>Whenever a peer aquires new tweets, it reports these to the backend for storage. This means that fresh tweets are stored at four locations: your own elasticsearch index, your own message dump file and in the remote backend-peer in the elasticsearch index and dump file. This causes that all messages that you find are available for download for other users at the backend which is by default loklak.org.</li>
+              <li>Whenever a peer aquires new tweets, it reports these to the back-end for storage. This means that fresh tweets are stored at four locations: your own elasticsearch index, your own message dump file and in the remote back-end-peer in the elasticsearch index and dump file. This causes that all messages that you find are available for download for other users at the back-end which is by default loklak.org.</li>
               <img src="images/component_jsonlistp2p.png" height="96">
-              <li>Whenever a peer starts up, it calls the backend to announce it's existence. This fills a peer-table in the backend which everyone can use to retrieve the list of active peers. Therefore everyone can identify peers which may provide message-lists for download.</li>
-              <li>Any topology can be achieved when the user changes the host name of the backend. You can create your own message-sharing network easily.</li>
+              <li>Whenever a peer starts up, it calls the back-end to announce it's existence. This fills a peer-table in the back-end which everyone can use to retrieve the list of active peers. Therefore everyone can identify peers which may provide message-lists for download.</li>
+              <li>Any topology can be achieved when the user changes the host name of the back-end. You can create your own message-sharing network easily.</li>
           </ul>
         
 
