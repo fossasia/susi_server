@@ -89,21 +89,39 @@ public class SearchServlet extends HttpServlet {
         //String op = qm.get("op");
 
         // create tweet timeline
-        Timeline tl = null;
-        if (grantRemoteSearch && ("twitter".equals(source) || "all".equals(source))) {
-            tl = DAO.scrapeTwitter(query)[0];
-        } else {
-            tl = new Timeline();
-        }
-
-        // replace the timeline with one from the own index which now includes the remote result
-        if ("backend".equals(source) || "all".equals(source)) {
-            tl.putAll(DAO.searchBackend(query, count));
-        }
-
-        // replace the timeline with one from the own index which now includes the remote result
-        if ("cache".equals(source) || "all".equals(source)) {
+        final Timeline tl = new Timeline();
+        if ("all".equals(source) && grantRemoteSearch) {
+            // start all targets for search concurrently
+            final String queryf = query;
+            Thread scraperThread = new Thread() {
+                public void run() {
+                    tl.putAll(DAO.scrapeTwitter(queryf)[0]);
+                }
+            };
+            scraperThread.start();
+            Thread backendThread = new Thread() {
+                public void run() {
+                    tl.putAll(DAO.searchBackend(queryf, 100));
+                }
+            };
+            backendThread.start();
             tl.putAll(DAO.searchLocal(query, count));
+            try {backendThread.join(5000);} catch (InterruptedException e) {}
+            try {scraperThread.join(8000);} catch (InterruptedException e) {}
+        } else {
+            if (grantRemoteSearch && "twitter".equals(source)) {
+                tl.putAll(DAO.scrapeTwitter(query)[0]);
+            }
+
+            // replace the timeline with one from the own index which now includes the remote result
+            if (grantRemoteSearch && "backend".equals(source)) {
+                tl.putAll(DAO.searchBackend(query, count));
+            }
+
+            // replace the timeline with one from the own index which now includes the remote result
+            if ("cache".equals(source)) {
+                tl.putAll(DAO.searchLocal(query, count));
+            }
         }
 
         response.setDateHeader("Last-Modified", now);
