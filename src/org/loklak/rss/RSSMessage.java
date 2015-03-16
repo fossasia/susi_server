@@ -299,9 +299,9 @@ public class RSSMessage {
     public String toString(boolean withItemTag) {
         StringBuilder sb = new StringBuilder();
         if (withItemTag) sb.append("<item>\n");
-        if (this.map.containsKey(Token.title.name())) sb.append("<title>").append(CharacterCoding.unicode2xml(this.map.get(Token.title.name()), false)).append("</title>\n");
-        if (this.map.containsKey(Token.link.name())) sb.append("<link>").append(CharacterCoding.unicode2xml(this.map.get(Token.link.name()), false)).append("</link>\n");
-        if (this.map.containsKey(Token.description.name())) sb.append("<description>").append(CharacterCoding.unicode2xml(this.map.get(Token.description.name()), false)).append("</description>\n");
+        if (this.map.containsKey(Token.title.name())) sb.append("<title>").append(CharacterCoding.unicode2xml(this.map.get(Token.title.name()), true)).append("</title>\n");
+        if (this.map.containsKey(Token.link.name())) sb.append("<link>").append(CharacterCoding.unicode2xml(this.map.get(Token.link.name()), true)).append("</link>\n");
+        if (this.map.containsKey(Token.description.name())) sb.append("<description>").append(CharacterCoding.unicode2xml(this.map.get(Token.description.name()), true)).append("</description>\n");
         if (this.map.containsKey(Token.pubDate.name())) sb.append("<pubDate>").append(this.map.get(Token.pubDate.name())).append("</pubDate>\n");
         if (this.map.containsKey(Token.guid.name())) sb.append("<guid isPermaLink=\"false\">").append(this.map.get(Token.guid.name())).append("</guid>\n");
         if (withItemTag) sb.append("</item>\n");
