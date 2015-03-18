@@ -507,6 +507,6 @@ public class DAO {
 
     public static String noNULL(String s) {return s == null ? "" : s;}
     public static long noNULL(Number n) {return n == null ? 0 : n.longValue();}
-    public static List<String> noNULL(List<String> l) {return l == null ? new ArrayList<String>(0) : l;}
-
+    public static ArrayList<String> noNULL(ArrayList<String> l) {return l == null ? new ArrayList<String>(0) : l;}
+    
 }

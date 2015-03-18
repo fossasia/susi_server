@@ -25,8 +25,10 @@ import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLEncoder;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -85,6 +87,7 @@ public class TwitterScraper {
         Timeline timeline = new Timeline();
         String input;
         Map<String, prop> props = new HashMap<String, prop>();
+        List<prop> images = new ArrayList<prop>();
         boolean parsing_favourite = false, parsing_retweet = false;
         while ((input = br.readLine()) != null){
             input = input.trim();
@@ -134,6 +137,11 @@ public class TwitterScraper {
                 }
                 continue;
             }
+            if ((p = input.indexOf("class=\"media media-thumbnail twitter-timeline-link media-forward is-preview")) > 0 ||
+                (p = input.indexOf("class=\"multi-photo")) > 0) {
+                images.add(new prop("preview", input, p, "data-resolved-url-large"));
+                continue;
+            }
             if (props.size() == 9) {
                 // the tweet is complete, evaluate the result
                 User user = new User(
@@ -141,6 +149,8 @@ public class TwitterScraper {
                         props.get("useravatarurl").value,
                         props.get("userfullname").value
                         );
+                ArrayList<String> imgs = new ArrayList<String>(images.size());
+                for (prop ai: images) imgs.add(ai.value);
                 Tweet tweet = new TwitterTweet(
                         user.getScreenName(),
                         Long.parseLong(props.get("tweettimems").value),
@@ -148,10 +158,12 @@ public class TwitterScraper {
                         props.get("tweetstatusurl").value,
                         props.get("tweettext").value,
                         Long.parseLong(props.get("tweetretweetcount").value),
-                        Long.parseLong(props.get("tweetfavouritecount").value)
+                        Long.parseLong(props.get("tweetfavouritecount").value),
+                        imgs
                         );
                 timeline.addUser(user);
                 timeline.addTweet(tweet);
+                images.clear();
                 props.clear();
                 continue;
             }
@@ -218,7 +230,8 @@ public class TwitterScraper {
                 final String status_id_url_raw,
                 final String text_raw,
                 final long retweets,
-                final long favourites) throws MalformedURLException {
+                final long favourites,
+                final ArrayList<String> images) throws MalformedURLException {
             super();
             this.source_type = SourceType.TWITTER;
             this.provider_type = ProviderType.SCRAPED;
@@ -226,6 +239,7 @@ public class TwitterScraper {
             this.created_at = new Date(created_at_raw);
             this.retweet_count = retweets;
             this.favourites_count = favourites;
+            this.images = images;
             
             //Date d = new Date(timemsraw);
             //System.out.println(d);

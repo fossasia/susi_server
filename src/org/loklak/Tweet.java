@@ -43,10 +43,10 @@ public class Tweet {
     protected String provider_hash, user_screen_name, id_str, text;
     protected URL status_id_url;
     protected long retweet_count, favourites_count;
+    protected ArrayList<String> images;
 
     // the following can be computed from the tweet data but is stored in the search index to provide statistical data and ranking attributes
     private int without_l_len, without_lu_len, without_luh_len; // the length of tweets without links, users, hashtags
-    private int hosts_count, links_count, mentions_count, hashtags_count; // the number of links, users, hashtags
     private String[] hosts, links, mentions, hashtags; // the arrays of links, users, hashtags
 
     public Tweet() throws MalformedURLException {
@@ -56,6 +56,7 @@ public class Tweet {
         this.id_str = "";
         this.text = "";
         this.status_id_url = null;
+        this.images = new ArrayList<String>();
     }
     
     public Tweet(Map<String, Object> map) throws MalformedURLException {
@@ -84,6 +85,7 @@ public class Tweet {
         this.status_id_url = new URL((String) map.get("link"));
         this.retweet_count = DAO.noNULL((Number) map.get("retweet_count"));
         this.favourites_count = DAO.noNULL((Number) map.get("favourites_count"));
+        this.images = DAO.noNULL((ArrayList<String>) map.get("images"));
         
         // load enriched data
         enrich();
@@ -105,19 +107,16 @@ public class Tweet {
 
         // extract the links
         List<String> urls = extract(t, URL_PATTERN, 1);
-        this.links_count = urls.size();
         t = new StringBuilder(SPACEX_PATTERN.matcher(t).replaceAll(" ").trim());
         this.without_l_len = t.length(); // len_no_l
         
         // extract the users
         List<String> users = extract(t, USER_PATTERN, 1);
-        this.mentions_count = users.size();
         t = new StringBuilder(SPACEX_PATTERN.matcher(t).replaceAll(" ").trim());
         this.without_lu_len = t.length(); // len_no_l_and_users
         
         // extract the hashtags
         List<String> hashtags = extract(t, HASHTAG_PATTERN, 1);
-        this.hashtags_count = hashtags.size();
         t = new StringBuilder(SPACEX_PATTERN.matcher(t).replaceAll(" ").trim());
         this.without_luh_len = t.length(); // len_no_l_and_users_and_hashtags
 
@@ -129,19 +128,18 @@ public class Tweet {
                 hosts.add(url.getHost());
             } catch (MalformedURLException e) {}
         }
-        this.hosts_count = hosts.size();
 
-        this.hosts = new String[this.hosts_count];
+        this.hosts = new String[hosts.size()];
         int j = 0; for (String host: hosts) this.hosts[j++] = host;
 
-        this.links = new String[this.links_count];
-        for (int i = 0; i < this.links_count; i++) this.links[i] = urls.get(i);
+        this.links = new String[urls.size()];
+        for (int i = 0; i < urls.size(); i++) this.links[i] = urls.get(i);
         
-        this.mentions = new String[this.mentions_count];
-        for (int i = 0; i < this.mentions_count; i++) this.mentions[i] = users.get(i).substring(1);
+        this.mentions = new String[users.size()];
+        for (int i = 0; i < users.size(); i++) this.mentions[i] = users.get(i).substring(1);
         
-        this.hashtags = new String[this.hashtags_count];
-        for (int i = 0; i < this.hashtags_count; i++) this.hashtags[i] = hashtags.get(i).substring(1);
+        this.hashtags = new String[hashtags.size()];
+        for (int i = 0; i < hashtags.size(); i++) this.hashtags[i] = hashtags.get(i).substring(1);
     }
     
     private static List<String> extract(StringBuilder s, Pattern p, int g) {
@@ -194,6 +192,7 @@ public class Tweet {
               .startObject()
                 .startObject("properties")
                   .startObject("created_at").field("type","date").field("format","dateOptionalTime").field("include_in_all","false").field("doc_values", true).endObject()
+                  .startObject("on").field("type","date").field("format","dateOptionalTime").field("include_in_all","false").field("doc_values", true).endObject()
                   .startObject("screen_name").field("type","string").field("index","not_analyzed").field("doc_values", true).endObject()
                   .startObject("text").field("type","string").endObject()
                   .startObject("link").field("type","string").field("index","not_analyzed").field("include_in_all","false").field("doc_values", true).endObject() // not to be indexed because it is not part of the content
@@ -203,12 +202,14 @@ public class Tweet {
                   .startObject("provider_hash").field("type","string").field("index","not_analyzed").field("include_in_all","false").field("doc_values", true).endObject()
                   .startObject("retweet_count").field("type","long").field("include_in_all","false").field("doc_values", true).endObject()
                   .startObject("favourites_count").field("type","long").field("include_in_all","false").field("doc_values", true).endObject()
-                    
+                  .startObject("images").field("type","string").field("index","not_analyzed").field("include_in_all","false").field("doc_values", true).endObject()
+                  .startObject("images_count").field("type","long").field("include_in_all","false").field("doc_values", true).endObject()
+                  
                   // The following fields are extracted from field 'text' and shall not be in _all since 'text' is already in _all.
                   // TwitterRiver has a different structure here as well as the official twitter api, but that is a complex thing and not so good usable.
                   // We prefer a simple, flat structure for this metainfo.
                   // The Twitter API info about original and extracted links is also not usable here since we throw away the short links and replace them with extracted.
-                  // Naming does not interfer with TwitterRiver, as far as visible.
+                  // Naming does not interfere with TwitterRiver, as far as visible.
                   .startObject("hosts").field("type","string").field("index","not_analyzed").field("include_in_all","false").field("doc_values", true).endObject()
                   .startObject("hosts_count").field("type","long").field("include_in_all","false").field("doc_values", true).endObject()
                   .startObject("links").field("type","string").field("index","not_analyzed").field("include_in_all","false").field("doc_values", true).endObject()
@@ -243,17 +244,19 @@ public class Tweet {
             if (this.provider_hash != null && this.provider_hash.length() > 0) m.field("provider_hash", this.provider_hash);
             m.field("retweet_count", this.retweet_count);
             m.field("favourites_count", this.favourites_count); // there is a slight inconsistency here in the plural naming but thats how it is noted in the twitter api
+            m.field("images", this.images);
+            m.field("images_count", this.images.size());
             
             // add statistic/calculated data
             if (calculatedData) {
                 m.field("hosts", this.hosts);
-                m.field("hosts_count", this.hosts_count);
+                m.field("hosts_count", this.hosts.length);
                 m.field("links", this.links);
-                m.field("links_count", this.links_count);
+                m.field("links_count", this.links.length);
                 m.field("mentions", this.mentions);
-                m.field("mentions_count", this.mentions_count);
+                m.field("mentions_count", this.mentions.length);
                 m.field("hashtags", this.hashtags);
-                m.field("hashtags_count", this.hashtags_count);
+                m.field("hashtags_count", this.hashtags.length);
                 // experimental, for ranking
                 m.field("without_l_len", this.without_l_len);
                 m.field("without_lu_len", this.without_lu_len);
@@ -314,6 +317,10 @@ public class Tweet {
 
     public String[] getHashtags() {
         return hashtags;
+    }
+
+    public ArrayList<String> getImages() {
+        return images;
     }
     
 }
