@@ -246,25 +246,40 @@ public class TwitterScraper {
             for (int i = 0; i < text_raw.length(); i++) if (text_raw.charAt(i) < ' ') text_raw.replace(text_raw.charAt(i), ' '); // remove funny chars
             this.text = text_raw.replaceAll("</?(s|b|strong)>", "").replaceAll("<a href=\"/hashtag.*?>", "").replaceAll("<a.*?class=\"twitter-atreply.*?>", "").replaceAll("<span.*?span>", "").replaceAll("  ", " ");
             while (true) {
-                Matcher m = timeline_pattern.matcher(this.text);
-                if (m.find()) {
-                    //String href = m.group(1);
-                    String expanded = RedirectUnshortener.unShorten(m.group(2));
-                    //String title = m.group(3);
-                    this.text = m.replaceFirst(expanded);
+                try {
+                    Matcher m = timeline_pattern.matcher(this.text);
+                    if (m.find()) {
+                        //String href = m.group(1);
+                        String expanded = RedirectUnshortener.unShorten(m.group(2));
+                        //String title = m.group(3);
+                        this.text = m.replaceFirst(expanded);
+                        continue;
+                    }
+                } catch (Throwable e) {
+                    e.printStackTrace();
                     continue;
                 }
-                m = timeline_embed_pattern.matcher(this.text);
-                if (m.find()) {
-                    //String href = resolveShortURL(m.group(1));
-                    String shorturl = RedirectUnshortener.unShorten(m.group(2));
-                    this.text = m.replaceFirst("https://pic.twitter.com/" + shorturl + " ");
+                try {
+                    Matcher m = timeline_embed_pattern.matcher(this.text);
+                    if (m.find()) {
+                        //String href = resolveShortURL(m.group(1));
+                        String shorturl = RedirectUnshortener.unShorten(m.group(2));
+                        this.text = m.replaceFirst("https://pic.twitter.com/" + shorturl + " ");
+                        continue;
+                    }
+                } catch (Throwable e) {
+                    e.printStackTrace();
                     continue;
                 }
-                m = emoji_pattern.matcher(this.text);
-                if (m.find()) {
-                    String emoji = m.group(1);
-                    this.text = m.replaceFirst(emoji);
+                try {
+                    Matcher m = emoji_pattern.matcher(this.text);
+                    if (m.find()) {
+                        String emoji = m.group(1);
+                        this.text = m.replaceFirst(emoji);
+                        continue;
+                    }
+                } catch (Throwable e) {
+                    e.printStackTrace();
                     continue;
                 }
                 break;
