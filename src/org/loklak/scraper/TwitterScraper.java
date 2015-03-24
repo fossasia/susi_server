@@ -48,7 +48,7 @@ public class TwitterScraper {
         // https://support.twitter.com/articles/71577-how-to-use-advanced-twitter-search#
         String https_url = "";
         try {
-            query = query.replace('+', ' ').replace('.', ' ');
+            query = query.replace('+', ' ');
             StringBuilder t = new StringBuilder(query.length());
             for (String s: query.split(" ")) {
                 t.append(' ');

@@ -75,6 +75,8 @@ public class SearchServlet extends HttpServlet {
         Map<String, String> qm = ServletHelper.getQueryMap(request.getQueryString());
         String callback = qm == null ? request.getParameter("callback") : qm.get("callback");
         boolean jsonp = callback != null && callback.length() > 0;
+        String minifieds = qm == null ? request.getParameter("minified") : qm.get("minified");
+        boolean minified = minifieds != null && "true".equals(minifieds);
         String query = qm == null ? request.getParameter("q") : qm.get("q");
         if (query == null || query.length() == 0) query = qm == null ? request.getParameter("query") : qm.get("query");
         query = CharacterCoding.html2unicode(query).replaceAll("\\+", " ");
@@ -136,12 +138,16 @@ public class SearchServlet extends HttpServlet {
         // create json or xml according to path extension
         if (jsonExt) {
             // generate json
-            XContentBuilder json = XContentFactory.jsonBuilder().prettyPrint().lfAtEnd();
+            XContentBuilder json = XContentFactory.jsonBuilder();
+            if (!minified) json = json.prettyPrint();
+            json = json.lfAtEnd();
             json.startObject();
-            json.field("readme_0", "THIS JSON IS THE RESULT OF YOUR SEARCH QUERY - THERE IS NO WEB PAGE WHICH SHOWS THE RESULT!");
-            json.field("readme_1", "loklak.org is the framework for a message search system, not the portal, read: http://loklak.org/about.html#notasearchportal");
-            json.field("readme_2", "This is supposed to be the back-end of a search portal. For the api, see http://loklak.org/api.html");
-            json.field("readme_3", "Parameters q=(query), source=(cache|twitter|all), callback=p for jsonp, maximumRecords=(message count)");
+            if (!minified) {
+                json.field("readme_0", "THIS JSON IS THE RESULT OF YOUR SEARCH QUERY - THERE IS NO WEB PAGE WHICH SHOWS THE RESULT!");
+                json.field("readme_1", "loklak.org is the framework for a message search system, not the portal, read: http://loklak.org/about.html#notasearchportal");
+                json.field("readme_2", "This is supposed to be the back-end of a search portal. For the api, see http://loklak.org/api.html");
+                json.field("readme_3", "Parameters q=(query), source=(cache|twitter|all), callback=p for jsonp, maximumRecords=(message count), minified=(true|false)");
+            }
             json.field("search_metadata").startObject();
             json.field("startIndex", "0");
             json.field("itemsPerPage", Integer.toString(count));
