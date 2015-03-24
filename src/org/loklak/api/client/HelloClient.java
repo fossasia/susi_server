@@ -26,11 +26,11 @@ import org.loklak.api.ClientHelper;
 
 public class HelloClient {
 
-    public static void propagate(String[] hoststubs, int httpport, int httpsport) {
+    public static void propagate(final String[] hoststubs, final int httpport, final int httpsport, final String peername) {
         for (String hoststub: hoststubs) {
             if (hoststub.endsWith("/")) hoststub = hoststub.substring(0, hoststub.length() - 1);
             try {
-                BufferedReader br = ClientHelper.getConnection(hoststub + "/api/hello.json?port.http=" + httpport + "&port.https=" + httpsport);
+                BufferedReader br = ClientHelper.getConnection(hoststub + "/api/hello.json?port.http=" + httpport + "&port.https=" + httpsport + "&peername=" + peername);
                 br.close();
             } catch (IOException e) {
             }

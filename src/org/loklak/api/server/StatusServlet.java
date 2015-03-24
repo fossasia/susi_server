@@ -21,7 +21,6 @@ package org.loklak.api.server;
 
 import java.io.IOException;
 import java.util.Enumeration;
-import java.util.Map;
 
 import javax.servlet.ServletException;
 import javax.servlet.ServletOutputStream;
@@ -32,7 +31,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.elasticsearch.common.xcontent.XContentFactory;
 import org.loklak.DAO;
-import org.loklak.api.ServletHelper;
+import org.loklak.api.RemoteAccess;
 
 public class StatusServlet extends HttpServlet {
    
@@ -45,21 +44,12 @@ public class StatusServlet extends HttpServlet {
     
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        RemoteAccess.Post post = RemoteAccess.evaluate(request);
         
-        String clientHost = request.getRemoteHost();
-        String XRealIP = request.getHeader("X-Real-IP"); if (XRealIP != null && XRealIP.length() > 0) clientHost = XRealIP; // get IP through nginx config "proxy_set_header X-Real-IP $remote_addr;"
-        
-        Map<String, String> qm = ServletHelper.getQueryMap(request.getQueryString());
-        String callback = qm == null ? request.getParameter("callback") : qm.get("callback");
+        String callback = post.get("callback", "");
         boolean jsonp = callback != null && callback.length() > 0;
 
-        long now = System.currentTimeMillis();
-        response.setDateHeader("Last-Modified", now);
-        response.setDateHeader("Expires", now);
-        response.setContentType("application/javascript");
-        response.setHeader("X-Robots-Tag",  "noindex,noarchive,nofollow,nosnippet");
-        response.setCharacterEncoding("UTF-8");
-        response.setStatus(HttpServletResponse.SC_OK);
+        post.setResponse(response, "application/javascript");
         
         // generate json
         XContentBuilder json = XContentFactory.jsonBuilder().prettyPrint().lfAtEnd();
@@ -71,7 +61,7 @@ public class StatusServlet extends HttpServlet {
         json.endObject();
         json.field("client_info");
         json.startObject();
-        json.field("RemoteHost", clientHost);
+        json.field("RemoteHost", post.getClientHost());
         Enumeration<String> he = request.getHeaderNames();
         while (he.hasMoreElements()) {
             String h = he.nextElement();

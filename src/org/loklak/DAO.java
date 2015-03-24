@@ -34,7 +34,6 @@ import java.net.MalformedURLException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Properties;
@@ -278,6 +277,11 @@ public class DAO {
         return value == null ? default_val : value;
     }
     
+    public static String[] getConfig(String key, String[] default_val, String delim) {
+        String value = config.getProperty(key);
+        return value == null || value.length() == 0 ? default_val : value.split(delim);
+    }
+    
     public static long getConfig(String key, long default_val) {
         String value = config.getProperty(key);
         try {
@@ -465,7 +469,8 @@ public class DAO {
     }
     
     public static Timeline[] scrapeTwitter(String q) {
-        Timeline allTweets = TwitterScraper.search(q);
+        String[] remote = DAO.getConfig("frontpeers", new String[0], ",");        
+        Timeline allTweets = remote.length > 0 ? searchOnOtherPeers(remote, q, 100, "twitter") : TwitterScraper.search(q);
         Timeline newTweets = new Timeline(); // we store new tweets here to be able to transmit them to peers
         if (allTweets == null) {// can be caused by time-out
             allTweets = new Timeline();
@@ -485,11 +490,15 @@ public class DAO {
         return new Timeline[]{allTweets, newTweets};
     }
     
-    public static Timeline searchBackend(String q, int count) {
-        String[] remote = DAO.getConfig("backend", "").split(",");
+    public static Timeline searchBackend(String q, int count, String where) {
+        String[] remote = DAO.getConfig("backend", new String[0], ",");
+        return searchOnOtherPeers(remote, q, count, where);
+    }
+    
+    public static Timeline searchOnOtherPeers(String[] remote, String q, int count, String where) {
         Timeline tl = new Timeline();
         for (String protocolhostportstub: remote) {
-            Timeline tt = SearchClient.search(protocolhostportstub, q, "cache", count);
+            Timeline tt = SearchClient.search(protocolhostportstub, q, where, count);
             tl.putAll(tt);
             // record the result; this may be moved to a concurrent process
             for (Tweet t: tt) {

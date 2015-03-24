@@ -38,7 +38,6 @@ import org.loklak.ProviderType;
 import org.loklak.Tweet;
 import org.loklak.User;
 import org.loklak.api.RemoteAccess;
-import org.loklak.api.ServletHelper;
 
 
 public class PushServlet extends HttpServlet {
@@ -65,19 +64,13 @@ public class PushServlet extends HttpServlet {
     
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-
+        RemoteAccess.Post post = RemoteAccess.evaluate(request);
+        String remoteHash = Integer.toHexString(Math.abs(post.getClientHost().hashCode()));
+                
         // manage DoS
-        String clientHost = request.getRemoteHost();
-        String XRealIP = request.getHeader("X-Real-IP"); if (XRealIP != null && XRealIP.length() > 0) clientHost = XRealIP; // get IP through nginx config "proxy_set_header X-Real-IP $remote_addr;"
-        String remoteHash = Integer.toHexString(Math.abs(clientHost.hashCode()));
-        long now = System.currentTimeMillis();
-        long time_since_last_access = now - RemoteAccess.latestVisit(clientHost);
-        String path = request.getServletPath();
-        RemoteAccess.log(clientHost, path, null, null);
-        long blackout_time = DAO.getConfig("DoS.blackout", 1000);
-        if (time_since_last_access < blackout_time) {response.sendError(503, "your request frequency is too high"); return;}
+        if (post.isDoS_blackout()) {response.sendError(503, "your request frequency is too high"); return;}
 
-        Map<String, String> m = ServletHelper.getPostMap(request);
+        Map<String, String> m = RemoteAccess.getPostMap(request);
         String data = m.get("data");
         String callback = m.get("callback");
         boolean jsonp = callback != null && callback.length() > 0;
@@ -107,12 +100,7 @@ public class PushServlet extends HttpServlet {
             e.printStackTrace();
         }
 
-        response.setDateHeader("Last-Modified", now);
-        response.setDateHeader("Expires", now);
-        response.setContentType("application/javascript");
-        response.setHeader("X-Robots-Tag",  "noindex,noarchive,nofollow,nosnippet");
-        response.setCharacterEncoding("UTF-8");
-        response.setStatus(HttpServletResponse.SC_OK);
+        post.setResponse(response, "application/javascript");
         
         // generate json
         XContentBuilder json = XContentFactory.jsonBuilder().prettyPrint().lfAtEnd();
@@ -131,6 +119,6 @@ public class PushServlet extends HttpServlet {
         if (jsonp) sos.println(");");
         sos.println();
             
-        DAO.log(path + " -> records = " + recordCount + ", new = " + newCount + ", known = " + knownCount + ", from host hash " + remoteHash);
+        DAO.log(request.getServletPath() + " -> records = " + recordCount + ", new = " + newCount + ", known = " + knownCount + ", from host hash " + remoteHash);
     }
 }

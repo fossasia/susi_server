@@ -69,7 +69,7 @@ public class SearchClient {
     
     private static String searchJSON(String protocolhostportstub, String query, String source, int count) {
         String urlstring = "";
-        try {urlstring = protocolhostportstub + "/api/search.json?q=" + URLEncoder.encode(query.replace(' ', '+'), "UTF-8") + "&maximumRecords=" + count + "&source=" + (source == null ? "all" : source);} catch (UnsupportedEncodingException e) {}
+        try {urlstring = protocolhostportstub + "/api/search.json?q=" + URLEncoder.encode(query.replace(' ', '+'), "UTF-8") + "&maximumRecords=" + count + "&source=" + (source == null ? "all" : source) + "&minified=true";} catch (UnsupportedEncodingException e) {}
         try {
             BufferedReader br = ClientHelper.getConnection(urlstring);
             if (br == null) return "";
