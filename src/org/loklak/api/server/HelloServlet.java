@@ -20,7 +20,6 @@
 package org.loklak.api.server;
 
 import java.io.IOException;
-import java.util.Map;
 
 import javax.servlet.ServletException;
 import javax.servlet.ServletOutputStream;
@@ -32,7 +31,6 @@ import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.elasticsearch.common.xcontent.XContentFactory;
 import org.loklak.DAO;
 import org.loklak.api.RemoteAccess;
-import org.loklak.api.ServletHelper;
 
 /**
  * Servlet to span the message peer-to-peer network.
@@ -49,32 +47,17 @@ public class HelloServlet extends HttpServlet {
     
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        RemoteAccess.Post post = RemoteAccess.evaluate(request);
         
         // manage DoS
-        String clientHost = request.getRemoteHost();
-        String XRealIP = request.getHeader("X-Real-IP"); if (XRealIP != null && XRealIP.length() > 0) clientHost = XRealIP; // get IP through nginx config "proxy_set_header X-Real-IP $remote_addr;"
-        long now = System.currentTimeMillis();
-        long time_since_last_access = now - RemoteAccess.latestVisit(clientHost);
-        String path = request.getServletPath();
-        Map<String, String> qm = ServletHelper.getQueryMap(request.getQueryString());
-        String httpports = qm == null ? request.getParameter("port.http") : qm.get("port.http");
-        Integer httpport = httpports == null ? null : Integer.parseInt(httpports);
-        String httpsports = qm == null ? request.getParameter("port.https") : qm.get("port.https");
-        Integer httpsport = httpsports == null ? null : Integer.parseInt(httpsports);
-        RemoteAccess.log(clientHost, path, httpport, httpsport);
-        if (time_since_last_access < DAO.getConfig("DoS.blackout", 1000)) {response.sendError(503, "your request frequency is too high"); return;}
+        if (post.isDoS_blackout()) {response.sendError(503, "your request frequency is too high"); return;}
         
-        String callback = qm == null ? request.getParameter("callback") : qm.get("callback");
+        String callback = post.get("callback", "");
         boolean jsonp = callback != null && callback.length() > 0;
         // String pingback = qm == null ? request.getParameter("pingback") : qm.get("pingback");
         // pingback may be either filled with nothing, the term 'now' or the term 'later'
 
-        response.setDateHeader("Last-Modified", now);
-        response.setDateHeader("Expires", now);
-        response.setContentType("application/javascript");
-        response.setHeader("X-Robots-Tag",  "noindex,noarchive,nofollow,nosnippet");
-        response.setCharacterEncoding("UTF-8");
-        response.setStatus(HttpServletResponse.SC_OK);
+        post.setResponse(response, "application/javascript");
         
         // generate json
         XContentBuilder json = XContentFactory.jsonBuilder().prettyPrint().lfAtEnd();
@@ -89,7 +72,7 @@ public class HelloServlet extends HttpServlet {
         if (jsonp) sos.println(");");
         sos.println();
 
-        DAO.log(path + "?" + request.getQueryString());
+        DAO.log(request.getServletPath() + "?" + request.getQueryString());
     }
     
 }

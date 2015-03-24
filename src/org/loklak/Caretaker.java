@@ -46,7 +46,7 @@ public class Caretaker extends Thread {
     public void run() {
         // send a message to other peers that I am alive
         String[] remote = DAO.getConfig("backend", "").split(",");
-        HelloClient.propagate(remote, (int) DAO.getConfig("port.http", 9100), (int) DAO.getConfig("port.https", 9443));
+        HelloClient.propagate(remote, (int) DAO.getConfig("port.http", 9100), (int) DAO.getConfig("port.https", 9443), (String) DAO.getConfig("peername", "anonymous"));
         
         while (this.shallRun) {
             // sleep a bit to prevent that the DoS limit fires at backend server

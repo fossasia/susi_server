@@ -20,7 +20,6 @@
 package org.loklak.api.server;
 
 import java.io.IOException;
-import java.util.Map;
 
 import javax.servlet.ServletException;
 import javax.servlet.ServletOutputStream;
@@ -33,7 +32,6 @@ import org.elasticsearch.common.xcontent.XContentFactory;
 import org.loklak.Crawler;
 import org.loklak.DAO;
 import org.loklak.api.RemoteAccess;
-import org.loklak.api.ServletHelper;
 
 public class CrawlerServlet extends HttpServlet {
    
@@ -46,40 +44,27 @@ public class CrawlerServlet extends HttpServlet {
     
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        RemoteAccess.Post post = RemoteAccess.evaluate(request);
         
-        String clientHost = request.getRemoteHost();
-        String XRealIP = request.getHeader("X-Real-IP"); if (XRealIP != null && XRealIP.length() > 0) clientHost = XRealIP; // get IP through nginx config "proxy_set_header X-Real-IP $remote_addr;"
-        boolean localhost = RemoteAccess.isLocalhost(clientHost);
-        
-        Map<String, String> qm = ServletHelper.getQueryMap(request.getQueryString());
-        String callback = qm == null ? request.getParameter("callback") : qm.get("callback");
+        boolean localhost = post.isLocalhostAccess();
+        String callback = post.get("callback", "");
         boolean jsonp = callback != null && callback.length() > 0;
 
-        String incubationParam =  qm == null ? request.getParameter("start") : qm.get("start");
-        String depthParam =  qm == null ? request.getParameter("depth") : qm.get("depth");
-        String hashtagsParam =  qm == null ? request.getParameter("hashtags") : qm.get("hashtags");
-        String usersParam =  qm == null ? request.getParameter("users") : qm.get("users");
-        
-        String[] incubation = incubationParam == null ? new String[0] : incubationParam.split(",");
-        int depth = depthParam == null ? 0 : Math.min(localhost ? 8 : 1, Integer.parseInt(depthParam));
-        boolean hashtags = hashtagsParam == null ? true : hashtagsParam.equals("true");
-        boolean users = usersParam == null ? true : usersParam.equals("true");
+        String incubationParam =  post.get("start", "");
+        String[] incubation = incubationParam == null || incubationParam.length() == 0 ? new String[0] : incubationParam.split(",");
+        int depth = Math.min(localhost ? 8 : 1, post.get("depth", 0));
+        boolean hashtags = post.get("hashtags", true);
+        boolean users = post.get("users", true);
         
         for (String query: incubation) Crawler.stack(query, depth, hashtags, users, true);
         
-        long now = System.currentTimeMillis();
-        response.setDateHeader("Last-Modified", now);
-        response.setDateHeader("Expires", now);
-        response.setContentType("application/javascript");
-        response.setHeader("X-Robots-Tag",  "noindex,noarchive,nofollow,nosnippet");
-        response.setCharacterEncoding("UTF-8");
-        response.setStatus(HttpServletResponse.SC_OK);
+        post.setResponse(response, "application/javascript");
         
         // generate json
         XContentBuilder json = XContentFactory.jsonBuilder().prettyPrint().lfAtEnd();
         json.startObject();
         if (incubation == null || incubation.length == 0) json.field("_hint", "start a crawl: start=<terms, comma-separated>, depth=<crawl depth> (dflt: 0), hashtags=<true|false> (dflt: true), users=<true|false> (dflt: true)");
-        if (!localhost) json.field("_hint", "you are connecting from a non-localhost client " + clientHost + " , depth is limited to 1");
+        if (!localhost) json.field("_hint", "you are connecting from a non-localhost client " + post.getClientHost() + " , depth is limited to 1");
         json.field("index_sizes");
         json.startObject();
         json.field("messages", DAO.countLocalMessages());

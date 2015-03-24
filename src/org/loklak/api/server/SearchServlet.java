@@ -21,7 +21,6 @@ package org.loklak.api.server;
 
 import java.io.IOException;
 import java.util.Date;
-import java.util.Map;
 
 import javax.servlet.ServletException;
 import javax.servlet.ServletOutputStream;
@@ -36,7 +35,6 @@ import org.loklak.Timeline;
 import org.loklak.Tweet;
 import org.loklak.User;
 import org.loklak.api.RemoteAccess;
-import org.loklak.api.ServletHelper;
 import org.loklak.rss.RSSFeed;
 import org.loklak.rss.RSSMessage;
 import org.loklak.tools.CharacterCoding;
@@ -55,35 +53,23 @@ public class SearchServlet extends HttpServlet {
     
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-
+        RemoteAccess.Post post = RemoteAccess.evaluate(request);
+        
         // manage DoS
-        String clientHost = request.getRemoteHost();
-        String XRealIP = request.getHeader("X-Real-IP"); if (XRealIP != null && XRealIP.length() > 0) clientHost = XRealIP; // get IP through nginx config "proxy_set_header X-Real-IP $remote_addr;"
-        long now = System.currentTimeMillis();
-        long time_since_last_access = now - RemoteAccess.latestVisit(clientHost);
-        String path = request.getServletPath();
-        RemoteAccess.log(clientHost, path, null, null);
-        if (time_since_last_access < DAO.getConfig("DoS.blackout", 1000)) {response.sendError(503, "your request frequency is too high"); return;}
-        long servicereduction_time = DAO.getConfig("DoS.servicereduction", 10000);
-        boolean grantRemoteSearch = time_since_last_access > servicereduction_time; // pause a bit please
-
+        if (post.isDoS_blackout()) {response.sendError(503, "your request frequency is too high"); return;}
+        
         // check call type
-        boolean jsonExt = path.endsWith(".json");
-        //boolean xmlExt = path.endsWith(".xml");
+        boolean jsonExt = request.getServletPath().endsWith(".json");
 
         // evaluate get parameter
-        Map<String, String> qm = ServletHelper.getQueryMap(request.getQueryString());
-        String callback = qm == null ? request.getParameter("callback") : qm.get("callback");
+        String callback = post.get("callback", "");
         boolean jsonp = callback != null && callback.length() > 0;
-        String minifieds = qm == null ? request.getParameter("minified") : qm.get("minified");
-        boolean minified = minifieds != null && "true".equals(minifieds);
-        String query = qm == null ? request.getParameter("q") : qm.get("q");
-        if (query == null || query.length() == 0) query = qm == null ? request.getParameter("query") : qm.get("query");
+        boolean minified = post.get("minified", false);
+        String query = post.get("q", "");
+        if (query == null || query.length() == 0) query = post.get("query", "");
         query = CharacterCoding.html2unicode(query).replaceAll("\\+", " ");
-        String maximumRecords = qm == null ? request.getParameter("maximumRecords") : qm.get("maximumRecords");
-        int count = maximumRecords == null || maximumRecords.length() == 0 ? 100 : Integer.parseInt(maximumRecords);
-        String source = qm == null ? request.getParameter("source") : qm.get("source"); // possible values: cache, twitter, all
-        if (source == null) source = "all";
+        int count = post.get("maximumRecords", 100);
+        String source = post.get("source", "all"); // possible values: cache, twitter, all
         //String collection = qm.get("collection");
         //String order = qm.get("order");
         //String filter = qm.get("filter");
@@ -93,7 +79,7 @@ public class SearchServlet extends HttpServlet {
         // create tweet timeline
         final Timeline tl = new Timeline();
         if (query.length() > 0) {
-            if ("all".equals(source) && grantRemoteSearch) {
+            if ("all".equals(source) && !post.isDoS_servicereduction()) {
                 // start all targets for search concurrently
                 final String queryf = query;
                 Thread scraperThread = new Thread() {
@@ -112,12 +98,12 @@ public class SearchServlet extends HttpServlet {
                 try {backendThread.join(5000);} catch (InterruptedException e) {}
                 try {scraperThread.join(8000);} catch (InterruptedException e) {}
             } else {
-                if (grantRemoteSearch && "twitter".equals(source)) {
+                if (!post.isDoS_servicereduction() && "twitter".equals(source)) {
                     tl.putAll(DAO.scrapeTwitter(query)[0]);
                 }
     
                 // replace the timeline with one from the own index which now includes the remote result
-                if (grantRemoteSearch && "backend".equals(source)) {
+                if (!post.isDoS_servicereduction() && "backend".equals(source)) {
                     tl.putAll(DAO.searchBackend(query, count));
                 }
     
@@ -128,12 +114,7 @@ public class SearchServlet extends HttpServlet {
             }
         }
 
-        response.setDateHeader("Last-Modified", now);
-        response.setDateHeader("Expires", now + servicereduction_time * 2);
-        response.setContentType(jsonExt ? (jsonp ? "application/javascript": "application/json") : "application/rss+xml;charset=utf-8");
-        response.setHeader("X-Robots-Tag",  "noindex,noarchive,nofollow,nosnippet");
-        response.setCharacterEncoding("UTF-8");
-        response.setStatus(HttpServletResponse.SC_OK);
+        post.setResponse(response, jsonExt ? (jsonp ? "application/javascript": "application/json") : "application/rss+xml;charset=utf-8");
         
         // create json or xml according to path extension
         if (jsonExt) {
@@ -194,6 +175,6 @@ public class SearchServlet extends HttpServlet {
             // write xml
             response.getOutputStream().write(rss.getBytes("UTF-8"));
         }
-        DAO.log(path + "?" + request.getQueryString());
+        DAO.log(request.getServletPath() + "?" + request.getQueryString());
     }
 }
