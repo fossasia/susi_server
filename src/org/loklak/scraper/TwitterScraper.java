@@ -150,7 +150,7 @@ public class TwitterScraper {
                         props.get("userfullname").value
                         );
                 ArrayList<String> imgs = new ArrayList<String>(images.size());
-                for (prop ai: images) imgs.add(ai.value);
+                for (prop ai: images) if (ai.value != null) imgs.add(ai.value);
                 Tweet tweet = new TwitterTweet(
                         user.getScreenName(),
                         Long.parseLong(props.get("tweettimems").value),

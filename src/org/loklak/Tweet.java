@@ -59,6 +59,7 @@ public class Tweet {
         this.images = new ArrayList<String>();
     }
     
+    @SuppressWarnings("unchecked")
     public Tweet(Map<String, Object> map) throws MalformedURLException {
         String created_at_string = (String) map.get("created_at");
         if (created_at_string != null && created_at_string.length() > 0) {
