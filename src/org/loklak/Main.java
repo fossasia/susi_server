@@ -20,7 +20,9 @@
 package org.loklak;
 
 import java.io.File;
+import java.util.EnumSet;
 
+import javax.servlet.DispatcherType;
 import javax.servlet.MultipartConfigElement;
 
 import org.eclipse.jetty.rewrite.handler.RewriteHandler;
@@ -31,8 +33,10 @@ import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.server.handler.DefaultHandler;
 import org.eclipse.jetty.server.handler.HandlerList;
 import org.eclipse.jetty.server.handler.ResourceHandler;
+import org.eclipse.jetty.servlet.FilterHolder;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
+import org.eclipse.jetty.servlets.GzipFilter;
 import org.eclipse.jetty.util.log.Log;
 import org.eclipse.jetty.webapp.WebAppContext;
 import org.loklak.api.server.CrawlerServlet;
@@ -97,8 +101,10 @@ public class Main {
 
         WebAppContext htrootContext = new WebAppContext();
         htrootContext.setContextPath("/");
-
+        
         ServletContextHandler servletHandler = new ServletContextHandler();
+        FilterHolder filter = servletHandler.addFilter(GzipFilter.class, "/*", EnumSet.of(DispatcherType.REQUEST));
+        filter.setInitParameter("mimeTypes", "text/plain");
         servletHandler.addServlet(DumpDownloadServlet.class, "/dump/*");
         servletHandler.addServlet(HelloServlet.class, "/api/hello.json");
         servletHandler.addServlet(PeersServlet.class, "/api/peers.json");
