@@ -484,11 +484,11 @@ public class DAO {
         return new Timeline[]{allTweets, newTweets};
     }
     
-    public static Timeline searchBackend(String q, int count) {
+    public static Timeline searchBackend(String q, int count, String where) {
         String[] remote = DAO.getConfig("backend", "").split(",");
         Timeline tl = new Timeline();
         for (String protocolhostportstub: remote) {
-            Timeline tt = SearchClient.search(protocolhostportstub, q, "cache", count);
+            Timeline tt = SearchClient.search(protocolhostportstub, q, where, count);
             tl.putAll(tt);
             // record the result; this may be moved to a concurrent process
             for (Tweet t: tt) {

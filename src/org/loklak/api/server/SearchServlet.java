@@ -69,7 +69,7 @@ public class SearchServlet extends HttpServlet {
         if (query == null || query.length() == 0) query = post.get("query", "");
         query = CharacterCoding.html2unicode(query).replaceAll("\\+", " ");
         int count = post.get("maximumRecords", 100);
-        String source = post.get("source", "all"); // possible values: cache, twitter, all
+        String source = post.get("source", "all"); // possible values: cache, backend, twitter, all
         //String collection = qm.get("collection");
         //String order = qm.get("order");
         //String filter = qm.get("filter");
@@ -90,7 +90,7 @@ public class SearchServlet extends HttpServlet {
                 scraperThread.start();
                 Thread backendThread = new Thread() {
                     public void run() {
-                        tl.putAll(DAO.searchBackend(queryf, 100));
+                        tl.putAll(DAO.searchBackend(queryf, 100, "cache"));
                     }
                 };
                 backendThread.start();
@@ -104,7 +104,7 @@ public class SearchServlet extends HttpServlet {
     
                 // replace the timeline with one from the own index which now includes the remote result
                 if (!post.isDoS_servicereduction() && "backend".equals(source)) {
-                    tl.putAll(DAO.searchBackend(query, count));
+                    tl.putAll(DAO.searchBackend(query, count, "cache"));
                 }
     
                 // replace the timeline with one from the own index which now includes the remote result
@@ -127,7 +127,7 @@ public class SearchServlet extends HttpServlet {
                 json.field("readme_0", "THIS JSON IS THE RESULT OF YOUR SEARCH QUERY - THERE IS NO WEB PAGE WHICH SHOWS THE RESULT!");
                 json.field("readme_1", "loklak.org is the framework for a message search system, not the portal, read: http://loklak.org/about.html#notasearchportal");
                 json.field("readme_2", "This is supposed to be the back-end of a search portal. For the api, see http://loklak.org/api.html");
-                json.field("readme_3", "Parameters q=(query), source=(cache|twitter|all), callback=p for jsonp, maximumRecords=(message count), minified=(true|false)");
+                json.field("readme_3", "Parameters q=(query), source=(cache|backend|twitter|all), callback=p for jsonp, maximumRecords=(message count), minified=(true|false)");
             }
             json.field("search_metadata").startObject();
             json.field("startIndex", "0");
