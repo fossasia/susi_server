@@ -50,8 +50,7 @@ public class CrawlerServlet extends HttpServlet {
         String callback = post.get("callback", "");
         boolean jsonp = callback != null && callback.length() > 0;
 
-        String incubationParam =  post.get("start", "");
-        String[] incubation = incubationParam == null || incubationParam.length() == 0 ? new String[0] : incubationParam.split(",");
+        String[] incubation =  post.get("start", new String[0], ",");
         int depth = Math.min(localhost ? 8 : 1, post.get("depth", 0));
         boolean hashtags = post.get("hashtags", true);
         boolean users = post.get("users", true);

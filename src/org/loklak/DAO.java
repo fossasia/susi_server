@@ -277,6 +277,11 @@ public class DAO {
         return value == null ? default_val : value;
     }
     
+    public static String[] getConfig(String key, String[] default_val, String delim) {
+        String value = config.getProperty(key);
+        return value == null || value.length() == 0 ? default_val : value.split(delim);
+    }
+    
     public static long getConfig(String key, long default_val) {
         String value = config.getProperty(key);
         try {
@@ -464,7 +469,7 @@ public class DAO {
     }
     
     public static Timeline[] scrapeTwitter(String q) {
-        String[] remote = DAO.getConfig("frontpeers", "").split(",");        
+        String[] remote = DAO.getConfig("frontpeers", new String[0], ",");        
         Timeline allTweets = remote.length > 0 ? searchOnOtherPeers(remote, q, 100, "twitter") : TwitterScraper.search(q);
         Timeline newTweets = new Timeline(); // we store new tweets here to be able to transmit them to peers
         if (allTweets == null) {// can be caused by time-out
@@ -486,7 +491,7 @@ public class DAO {
     }
     
     public static Timeline searchBackend(String q, int count, String where) {
-        String[] remote = DAO.getConfig("backend", "").split(",");
+        String[] remote = DAO.getConfig("backend", new String[0], ",");
         return searchOnOtherPeers(remote, q, count, where);
     }
     

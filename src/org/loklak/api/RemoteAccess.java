@@ -131,6 +131,10 @@ public class RemoteAccess {
             String val = qm == null ? request.getParameter(key) : qm.get(key);
             return val == null ? dflt : val;
         }
+        public String[] get(String key, String[] dflt, String delim) {
+            String val = qm == null ? request.getParameter(key) : qm.get(key);
+            return val == null || val.length() == 0 ? dflt : val.split(delim);
+        }
         public int get(String key, int dflt) {
             String val = qm == null ? request.getParameter(key) : qm.get(key);
             return val == null ? dflt : Integer.parseInt(val);
