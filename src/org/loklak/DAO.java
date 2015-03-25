@@ -464,7 +464,8 @@ public class DAO {
     }
     
     public static Timeline[] scrapeTwitter(String q) {
-        Timeline allTweets = TwitterScraper.search(q);
+        String[] remote = DAO.getConfig("frontpeers", "").split(",");        
+        Timeline allTweets = remote.length > 0 ? searchOnOtherPeers(remote, q, 100, "twitter") : TwitterScraper.search(q);
         Timeline newTweets = new Timeline(); // we store new tweets here to be able to transmit them to peers
         if (allTweets == null) {// can be caused by time-out
             allTweets = new Timeline();
@@ -486,6 +487,10 @@ public class DAO {
     
     public static Timeline searchBackend(String q, int count, String where) {
         String[] remote = DAO.getConfig("backend", "").split(",");
+        return searchOnOtherPeers(remote, q, count, where);
+    }
+    
+    public static Timeline searchOnOtherPeers(String[] remote, String q, int count, String where) {
         Timeline tl = new Timeline();
         for (String protocolhostportstub: remote) {
             Timeline tt = SearchClient.search(protocolhostportstub, q, where, count);
