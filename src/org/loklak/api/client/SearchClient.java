@@ -35,11 +35,12 @@ import org.loklak.User;
 import org.loklak.api.ClientHelper;
 
 public class SearchClient {
-    
-    private final static String backend_hash = Integer.toHexString(Integer.MAX_VALUE);
+
+    public final static String backend_hash = Integer.toHexString(Integer.MAX_VALUE);
+    public final static String frontpeer_hash = Integer.toHexString(Integer.MAX_VALUE - 1);
 
     // possible values: cache, twitter, all
-    public static Timeline search(String protocolhostportstub, String query, String source, int count) {
+    public static Timeline search(final String protocolhostportstub, final String query, final String source, final int count, final String provider_hash) {
         Timeline tl = new Timeline();
         String json = searchJSON(protocolhostportstub, query, source, count);
         if (json == null || json.length() == 0) return tl;
@@ -53,7 +54,7 @@ public class SearchClient {
                     @SuppressWarnings("unchecked") Map<String, Object> user = (Map<String, Object>) tweet.remove("user");
                     if (user == null) continue;
                     tweet.put("provider_type", (Object) ProviderType.REMOTE.name());
-                    tweet.put("provider_hash", backend_hash);
+                    tweet.put("provider_hash", provider_hash);
                     User u = new User(user);
                     Tweet t = new Tweet(tweet);
                     tl.addUser(u);
@@ -67,7 +68,7 @@ public class SearchClient {
         return tl;
     }
     
-    private static String searchJSON(String protocolhostportstub, String query, String source, int count) {
+    private static String searchJSON(final String protocolhostportstub, final String query, final String source, final int count) {
         String urlstring = "";
         try {urlstring = protocolhostportstub + "/api/search.json?q=" + URLEncoder.encode(query.replace(' ', '+'), "UTF-8") + "&maximumRecords=" + count + "&source=" + (source == null ? "all" : source) + "&minified=true";} catch (UnsupportedEncodingException e) {}
         try {
@@ -94,7 +95,7 @@ public class SearchClient {
     }
     
     public static void main(String[] args) {
-        Timeline tl = search("http://loklak.org", "beer", "cache", 20);
+        Timeline tl = search("http://loklak.org", "beer", "cache", 20, backend_hash);
         System.out.println(tl.toJSON(false));
     }
     
