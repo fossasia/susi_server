@@ -28,6 +28,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.eclipse.jetty.util.log.Log;
 import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.elasticsearch.common.xcontent.XContentFactory;
 import org.loklak.DAO;
@@ -53,6 +54,7 @@ public class SearchServlet extends HttpServlet {
     
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        try {
         RemoteAccess.Post post = RemoteAccess.evaluate(request);
         
         // manage DoS
@@ -176,5 +178,9 @@ public class SearchServlet extends HttpServlet {
             response.getOutputStream().write(rss.getBytes("UTF-8"));
         }
         DAO.log(request.getServletPath() + "?" + request.getQueryString());
+        } catch (Throwable e) {
+            Log.getLog().warn(e.getMessage(), e);
+            e.printStackTrace();
+        }
     }
 }

@@ -73,7 +73,7 @@ Please see above.
 
 Nowhere, you must clone the git repository of loklak and built it
 yourself. Thats easy, just do
-- git clone https://github.com/Orbiter/loklak.git
+- git clone https://github.com/loklak/loklak_server.git
 - cd loklak
 - then see above ("How do I run loklak")
 
