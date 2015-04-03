@@ -44,6 +44,7 @@ public class Tweet {
     protected URL status_id_url;
     protected long retweet_count, favourites_count;
     protected ArrayList<String> images;
+    protected String place_name, place_id;
 
     // the following can be computed from the tweet data but is stored in the search index to provide statistical data and ranking attributes
     private int without_l_len, without_lu_len, without_luh_len; // the length of tweets without links, users, hashtags
@@ -57,6 +58,8 @@ public class Tweet {
         this.text = "";
         this.status_id_url = null;
         this.images = new ArrayList<String>();
+        this.place_id = "";
+        this.place_name = "";
     }
     
     @SuppressWarnings("unchecked")
@@ -87,6 +90,8 @@ public class Tweet {
         this.retweet_count = DAO.noNULL((Number) map.get("retweet_count"));
         this.favourites_count = DAO.noNULL((Number) map.get("favourites_count"));
         this.images = DAO.noNULL((ArrayList<String>) map.get("images"));
+        this.place_id = DAO.noNULL((String) map.get("place_id"));
+        this.place_name = DAO.noNULL((String) map.get("place_name"));
         
         // load enriched data
         enrich();
@@ -205,7 +210,9 @@ public class Tweet {
                   .startObject("favourites_count").field("type","long").field("include_in_all","false").field("doc_values", true).endObject()
                   .startObject("images").field("type","string").field("index","not_analyzed").field("include_in_all","false").field("doc_values", true).endObject()
                   .startObject("images_count").field("type","long").field("include_in_all","false").field("doc_values", true).endObject()
-                  
+                  .startObject("place_name").field("type","string").endObject()
+                  .startObject("place_id").field("type","string").field("index","not_analyzed").field("include_in_all","false").field("doc_values", true).endObject()
+        
                   // The following fields are extracted from field 'text' and shall not be in _all since 'text' is already in _all.
                   // TwitterRiver has a different structure here as well as the official twitter api, but that is a complex thing and not so good usable.
                   // We prefer a simple, flat structure for this metainfo.
@@ -247,6 +254,9 @@ public class Tweet {
             m.field("favourites_count", this.favourites_count); // there is a slight inconsistency here in the plural naming but thats how it is noted in the twitter api
             m.field("images", this.images);
             m.field("images_count", this.images.size());
+            m.field("place_name", this.place_name);
+            m.field("place_id", this.place_id);
+  
             
             // add statistic/calculated data
             if (calculatedData) {
@@ -313,15 +323,22 @@ public class Tweet {
     }
 
     public String[] getMentions() {
-        return mentions;
+        return this.mentions;
     }
 
     public String[] getHashtags() {
-        return hashtags;
+        return this.hashtags;
     }
 
     public ArrayList<String> getImages() {
-        return images;
+        return this.images;
     }
     
+    public String getPlaceName() {
+        return this.place_name;
+    }
+    
+    public String getPlaceId() {
+        return this.place_id;
+    }
 }

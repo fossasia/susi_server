@@ -88,6 +88,7 @@ public class TwitterScraper {
         String input;
         Map<String, prop> props = new HashMap<String, prop>();
         List<prop> images = new ArrayList<prop>();
+        String place_id = "", place_name = "";
         boolean parsing_favourite = false, parsing_retweet = false;
         while ((input = br.readLine()) != null){
             input = input.trim();
@@ -142,6 +143,16 @@ public class TwitterScraper {
                 images.add(new prop("preview", input, p, "data-resolved-url-large"));
                 continue;
             }
+            if ((p = input.indexOf("class=\"ProfileTweet-geo")) > 0) {
+                prop place_name_prop = new prop("place_name", input, p, "title");
+                place_name = place_name_prop.value;
+                continue;
+            }
+            if ((p = input.indexOf("class=\"ProfileTweet-actionButton u-linkClean js-nav js-geo-pivot-link")) > 0) {
+                prop place_id_prop = new prop("place_id", input, p, "data-place-id");
+                place_id = place_id_prop.value;
+                continue;
+            }
             if (props.size() == 9) {
                 // the tweet is complete, evaluate the result
                 User user = new User(
@@ -159,7 +170,7 @@ public class TwitterScraper {
                         props.get("tweettext").value,
                         Long.parseLong(props.get("tweetretweetcount").value),
                         Long.parseLong(props.get("tweetfavouritecount").value),
-                        imgs
+                        imgs, place_name, place_id
                         );
                 timeline.addUser(user);
                 timeline.addTweet(tweet);
@@ -231,7 +242,9 @@ public class TwitterScraper {
                 final String text_raw,
                 final long retweets,
                 final long favourites,
-                final ArrayList<String> images) throws MalformedURLException {
+                final ArrayList<String> images,
+                final String place_name,
+                final String place_id) throws MalformedURLException {
             super();
             this.source_type = SourceType.TWITTER;
             this.provider_type = ProviderType.SCRAPED;
@@ -240,6 +253,20 @@ public class TwitterScraper {
             this.retweet_count = retweets;
             this.favourites_count = favourites;
             this.images = images;
+            this.place_name = place_name;
+            this.place_id = place_id;
+            
+            /* failed to reverse-engineering the place_id :(
+            if (place_id.length() == 16) {
+                String a = place_id.substring(0, 8);
+                String b = place_id.substring(8, 16);
+                long an = Long.parseLong(a, 16);
+                long bn = Long.parseLong(b, 16);
+                System.out.println("place = " + place_name + ", a = " + an + ", b = " + bn);
+                // Frankfurt a = 3314145750, b = 3979907708, http://www.openstreetmap.org/#map=15/50.1128/8.6835
+                // Singapore a = 1487192992, b = 3578663936
+            }
+            */
             
             //Date d = new Date(timemsraw);
             //System.out.println(d);
