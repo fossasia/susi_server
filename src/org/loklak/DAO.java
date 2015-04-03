@@ -34,6 +34,7 @@ import java.net.MalformedURLException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Properties;
@@ -59,6 +60,7 @@ import org.elasticsearch.common.xcontent.XContentFactory;
 import org.elasticsearch.common.xcontent.XContentParser;
 import org.elasticsearch.common.xcontent.json.JsonXContent;
 import org.elasticsearch.index.VersionType;
+import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.indices.IndexAlreadyExistsException;
 import org.elasticsearch.indices.IndexMissingException;
@@ -439,11 +441,55 @@ public class DAO {
     }
     
     public static Timeline searchLocal(String q, int count) {
+        
+        // parse the query
+        String[] qe = q.split(" ");
+        // twitter search syntax:
+        //   term1 term2 term3 - all three terms shall appear
+        //   "term1 term2 term3" - exact match of all terms
+        //   term1 OR term2 OR term3 - any of the three terms shall appear
+        //   from:user - tweets posted from that user
+        //   to:user - tweets posted to that user
+        //   @user - tweets which mention that user
+        //   near:"location" within:xmi - tweets that are near that location
+        //   #hashtag - tweets containing the given hashtag
+        String text = "";
+        ArrayList<String> users = new ArrayList<>();
+        ArrayList<String> hashtags = new ArrayList<>();
+        HashMap<String, String> modifier = new HashMap<>();
+        for (String t: qe) {
+            if (t.length() == 0) continue;
+            if (t.startsWith("@")) {
+                users.add(t.substring(1));
+            } else if (t.startsWith("#")) {
+                hashtags.add(t.substring(1));
+            } else if (t.indexOf(':') > 0) {
+                int p = t.indexOf(':');
+                modifier.put(t.substring(0, p).toLowerCase(), t.substring(p + 1));
+            } else {
+                text += t + " ";
+            }
+        }
+        if (modifier.containsKey("to")) users.add(modifier.get("to"));
+        text = text.trim();
+        // compose query
+        BoolQueryBuilder query = QueryBuilders.boolQuery();
+        if (text.length() > 0) query.must(QueryBuilders.matchQuery("text", text));
+        for (String user: users) query.must(QueryBuilders.termQuery("mentions", user));
+        for (String hashtag: hashtags) query.must(QueryBuilders.termQuery("hashtags", hashtag));
+        if (modifier.containsKey("from")) query.must(QueryBuilders.termQuery("screen_name", modifier.get("from")));
+        if (modifier.containsKey("near")) {
+            BoolQueryBuilder nearquery = QueryBuilders.boolQuery()
+                    .should(QueryBuilders.matchQuery("place_name", modifier.get("near")))
+                    .should(QueryBuilders.matchQuery("text", modifier.get("near")));
+            query.must(nearquery);
+        }
+        
         Timeline tl = new Timeline();
         try {
             SearchResponse response = elasticsearch_client.prepareSearch(MESSAGES_INDEX_NAME)/*.setTypes(MESSAGE_TWEETS_TYPE_NAME)*/
                     .setSearchType(SearchType.QUERY_THEN_FETCH)
-                    .setQuery(QueryBuilders.matchQuery("text", q))
+                    .setQuery(query)
                     .addSort("created_at", SortOrder.DESC)
                     .setFrom(0)
                     .setSize(count)
