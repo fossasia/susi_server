@@ -75,6 +75,9 @@
               <span class="input-group-btn"><button class="btn btn-lg btn-primary" type="submit" target="_blank" onclick="form.target='_blank'; form.action='/api/search.json?q=' + document.getElementById('query').value;">Get JSON Data</button></span>
             </div>
             <input type="submit" value="Get RSS Feed" class="btn btn-success btn-lg" onclick="form.target='_blank'; form.action='/api/search.rss?q=' + document.getElementById('query').value;"/>
+            <br/><span style="font-size:7pt;">
+              <span class="label label-info">Info</span>
+              Input a search text or "search text" for exact matches; @user finds user mentions, from:user find messages from a user, #hashtag finds a hashtag, near:location finds messages near a location.</span>
           </form>
       </div>
     </div>
