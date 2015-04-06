@@ -14,27 +14,27 @@
 	<classpathentry kind="lib" path="lib/antlr-runtime-3.5.jar"/>
 	<classpathentry kind="lib" path="lib/asm-4.1.jar"/>
 	<classpathentry kind="lib" path="lib/asm-commons-4.1.jar"/>
-	<classpathentry kind="lib" path="lib/groovy-all-2.3.2.jar"/>
 	<classpathentry kind="lib" path="lib/jetty-servlets-9.2.6.v20141205.jar"/>
 	<classpathentry kind="lib" path="lib/jna-4.1.0.jar"/>
 	<classpathentry kind="lib" path="lib/jts-1.13.jar"/>
 	<classpathentry kind="lib" path="lib/log4j-1.2.17.jar"/>
-	<classpathentry kind="lib" path="lib/lucene-analyzers-common-4.10.3.jar"/>
-	<classpathentry kind="lib" path="lib/lucene-core-4.10.3.jar"/>
-	<classpathentry kind="lib" path="lib/lucene-expressions-4.10.3.jar"/>
-	<classpathentry kind="lib" path="lib/lucene-grouping-4.10.3.jar"/>
-	<classpathentry kind="lib" path="lib/lucene-highlighter-4.10.3.jar"/>
-	<classpathentry kind="lib" path="lib/lucene-join-4.10.3.jar"/>
-	<classpathentry kind="lib" path="lib/lucene-memory-4.10.3.jar"/>
-	<classpathentry kind="lib" path="lib/lucene-misc-4.10.3.jar"/>
-	<classpathentry kind="lib" path="lib/lucene-queries-4.10.3.jar"/>
-	<classpathentry kind="lib" path="lib/lucene-queryparser-4.10.3.jar"/>
-	<classpathentry kind="lib" path="lib/lucene-sandbox-4.10.3.jar"/>
-	<classpathentry kind="lib" path="lib/lucene-spatial-4.10.3.jar"/>
-	<classpathentry kind="lib" path="lib/lucene-suggest-4.10.3.jar"/>
 	<classpathentry kind="lib" path="lib/spatial4j-0.4.1.jar"/>
-	<classpathentry kind="lib" path="lib/elasticsearch-1.4.4.jar"/>
 	<classpathentry kind="lib" path="lib/twitter4j-core-4.0.2.jar"/>
 	<classpathentry kind="lib" path="lib/twitter4j-stream-4.0.2.jar"/>
+	<classpathentry kind="lib" path="lib/elasticsearch-1.5.0.jar"/>
+	<classpathentry kind="lib" path="lib/groovy-all-2.4.0.jar"/>
+	<classpathentry kind="lib" path="lib/lucene-analyzers-common-4.10.4.jar"/>
+	<classpathentry kind="lib" path="lib/lucene-core-4.10.4.jar"/>
+	<classpathentry kind="lib" path="lib/lucene-expressions-4.10.4.jar"/>
+	<classpathentry kind="lib" path="lib/lucene-grouping-4.10.4.jar"/>
+	<classpathentry kind="lib" path="lib/lucene-highlighter-4.10.4.jar"/>
+	<classpathentry kind="lib" path="lib/lucene-join-4.10.4.jar"/>
+	<classpathentry kind="lib" path="lib/lucene-memory-4.10.4.jar"/>
+	<classpathentry kind="lib" path="lib/lucene-misc-4.10.4.jar"/>
+	<classpathentry kind="lib" path="lib/lucene-queries-4.10.4.jar"/>
+	<classpathentry kind="lib" path="lib/lucene-queryparser-4.10.4.jar"/>
+	<classpathentry kind="lib" path="lib/lucene-sandbox-4.10.4.jar"/>
+	<classpathentry kind="lib" path="lib/lucene-spatial-4.10.4.jar"/>
+	<classpathentry kind="lib" path="lib/lucene-suggest-4.10.4.jar"/>
 	<classpathentry kind="output" path="classes"/>
 </classpath>

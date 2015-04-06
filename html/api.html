@@ -76,10 +76,26 @@
           Get a search result. There are two formats available: json and rss. To get rss data (which is opensearch-compliant) use the path <code>/api/search.rss</code>.
           The json return format is a subset of the Twitter API search result but has also some additional attributes. Request properties are:</p>
           <ul class="request">
-			<li><div class="tabcol0">q</div><div class="tabcol1">&nbsp;=&nbsp;&lt;query term&gt;</div>// space replaced by '+', i.e. q=doctor+who</li>
-			<li><div class="tabcol0">maximumRecords</div><div class="tabcol1">&nbsp;=&nbsp;&lt;count&gt;</div>// default 100, i.e. maximumRecords=100, the wanted number of results</li>
-			<li><div class="tabcol0">source</div><div class="tabcol1">&nbsp;=&nbsp;&lt;cache|backend|twitter|all&gt;</div>// the source for the search, default all, i.e. source=cache</li>
-			<li><div class="tabcol0">minified</div><div class="tabcol1">&nbsp;=&nbsp;&lt;true|false&gt;</div>// minify the result, default false, i.e. minified=true</li>
+			<li><div class="tabcol0">q</div><div class="tabcol2">&nbsp;=&nbsp;&lt;query term&gt;</div>// space replaced by '+', i.e. q=doctor+who</li>
+		  </ul>
+		  <p>The query term has a special syntax and may contain the following term tokens:</p>
+		  <ul class="request">
+			<li><div class="tabcol0">term1 term2</div>:&nbsp;term1 and term2 shall appear in the tweet text</li>
+			<li><div class="tabcol0">@user</div>:&nbsp;the user must be mentioned in the message</li>
+			<li><div class="tabcol0">from:user</div>:&nbsp;only messages published by the user</li>
+			<li><div class="tabcol0">#hashtag</div>:&nbsp;the message must contain the given hashtag</li>
+			<li><div class="tabcol0">near:&lt;location&gt;</div>:&nbsp;messages shall be created near the given location</li>
+			<li><div class="tabcol0">since:&lt;date&gt;</div>:&nbsp;only messages after the date (including the date), &lt;date&gt;=yyyy-MM-dd or yyyy-MM-dd_HH:mm</li>
+			<li><div class="tabcol0">until:&lt;date&gt;</div>:&nbsp;only messages before the date (excluding the date), &lt;date&gt;=yyyy-MM-dd or yyyy-MM-dd_HH:mm</li>
+		  </ul>
+		  <p>Furthermore the following GET-attributes can be used:</p>
+		  <ul class="request">
+			<li><div class="tabcol0">count</div><div class="tabcol2">&nbsp;=&nbsp;&lt;result count&gt;</div>// default 100, i.e. count=100, the wanted number of results</li>
+			<li><div class="tabcol0">source</div><div class="tabcol2">&nbsp;=&nbsp;&lt;cache|backend|twitter|all&gt;</div>// the source for the search, default all, i.e. source=cache</li>
+			<li><div class="tabcol0">fields</div><div class="tabcol2">&nbsp;=&nbsp;&lt;field name list, separated by ','&gt;</div>// aggregation fields for search facets, like "created_at,mentions"</li>
+			<li><div class="tabcol0">limit</div><div class="tabcol2">&nbsp;=&nbsp;&lt;maximum number of facets for each field&gt;</div>// a limitation of number of facets for each aggregation</li>
+			<li><div class="tabcol0">timezoneOffset</div><div class="tabcol2">&nbsp;=&nbsp;&lt;offset in minutes&gt;</div>// offset applied on since:, until: and the date histogram</li>
+			<li><div class="tabcol0">minified</div><div class="tabcol2">&nbsp;=&nbsp;&lt;true|false&gt;</div>// minify the result, default false, i.e. minified=true</li>
           </ul>
           </p>
           <p>A search result in JSON format looks like:</p>
@@ -135,7 +151,75 @@
 			<li><div class="tabcol0">source_type</div>&nbsp;:&nbsp;The source of the message, currently only 'TWITTER' is possible</li>
 			<li><div class="tabcol0">provider_type</div>&nbsp;:&nbsp;The type of the content provider, possible values are SCRAPED and  REMOTE (for pushed content)</li>
           </ul>
-      
+          <p>These extracted fields are especially useful for search aggregations, see below.</p>
+
+     	  <h3>Search Result Aggregations</h3>
+     	  <p>A search result may also have field aggregations (aka 'facets') if they are requested in the search request.
+       	  To get aggregations, the attribute 'source' MUST be set to 'cache' and the fields to be aggregated must be listed in the attribute 'fields'.
+       	  Aggregations are only useful if the search query contains also since- and until-modifiers to define a time frame.
+       	  A typical aggregation search request sets the count of search results to zero. Example:</p>
+       	  <ul class="request">
+			<li>url&nbsp;:&nbsp;http://localhost:9100/api/search.json?q=spacex%20since:2015-04-01%20until:2015-04-06&source=cache&count=0&fields=mentions,hashtags&limit=6</li>
+          </ul>
+<pre>{
+  "search_metadata" : {
+    "startIndex" : "0",
+    "itemsPerPage" : "0",
+    "count" : "0",
+    "query" : "spacex since:2015-04-01 until:2015-04-06"
+  },
+  "statuses" : [ ],
+  "aggregations" : {
+    "hashtags" : {
+      "SpaceX" : 5,
+      "elonmusk" : 3,
+      "Marketplace" : 2,
+      "solar" : 2,
+      "solarcity" : 2,
+      "solarenergy" : 2
+    },
+    "mentions" : {
+      "SpaceX" : 11,
+      "elonmusk" : 6,
+      "Space_Station" : 4,
+      "AmericaSpace" : 2,
+      "Stratocumulus" : 2,
+      "VentureBeat" : 2
+    }
+  }
+}</pre>
+       	  <p>A special field is the "created_at" field which
+     	  will create a date histogram if listed in the GET-attribute 'fields'. The date histogram resolution depends on the time frame as given in the
+     	  query modifer with the 'since' and 'until' time limits: minutes if the time frame is below three hours, hours if the time frame is below seven days
+     	  and days otherwise. Example:
+     	  <ul class="request">
+			<li>url&nbsp;:&nbsp;http://localhost:9100/api/search.json?q=spacex%20since:2015-04-05_23:10%20until:2015-04-05_23:20&source=cache&count=0&fields=created_at&timezoneOffset=-120</li>
+          </ul>
+<pre>{
+  "search_metadata" : {
+    "startIndex" : "0",
+    "itemsPerPage" : "0",
+    "count" : "0",
+    "query" : "spacex since:2015-04-05_23:10 until:2015-04-05_23:20"
+  },
+  "statuses" : [ ],
+  "aggregations" : {
+    "created_at" : {
+      "2015-04-05 23:10" : 1,
+      "2015-04-05 23:11" : 0,
+      "2015-04-05 23:12" : 1,
+      "2015-04-05 23:13" : 0,
+      "2015-04-05 23:14" : 0,
+      "2015-04-05 23:15" : 1,
+      "2015-04-05 23:16" : 1
+    }
+  }
+}
+</pre>
+     	  <p>Please note that the times given here as since- und until modifiers as well as the histogram dates are shifted by -120 minutes as
+     	  given in the timezoneOffset attribute. This makes it possible to pass that attribute from a browser which knows the actual time zone of
+     	  the web front-end user and modify search attributes and result times according to the localized time of the user.</p>
+     	   
 		  <br id="crawler"/><br/>
           <h2 class="sub-header">/api/crawler.json</h2>
           <p>With the crawler servlet it is possible to retrieve mass-data from the search back-end, including the twitter scraper. The crawler loads search results with a given set of query terms, extracts all the hashtags and user names from the result list and searches with those words again. Request properties are:</p>

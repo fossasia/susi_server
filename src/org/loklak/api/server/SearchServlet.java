@@ -21,6 +21,8 @@ package org.loklak.api.server;
 
 import java.io.IOException;
 import java.util.Date;
+import java.util.List;
+import java.util.Map;
 
 import javax.servlet.ServletException;
 import javax.servlet.ServletOutputStream;
@@ -70,16 +72,15 @@ public class SearchServlet extends HttpServlet {
         String query = post.get("q", "");
         if (query == null || query.length() == 0) query = post.get("query", "");
         query = CharacterCoding.html2unicode(query).replaceAll("\\+", " ");
-        int count = post.get("maximumRecords", 100);
+        int count = post.get("count", post.get("maximumRecords", 100));
         String source = post.get("source", "all"); // possible values: cache, backend, twitter, all
-        //String collection = qm.get("collection");
-        //String order = qm.get("order");
-        //String filter = qm.get("filter");
-        //String near = qm.get("near");
-        //String op = qm.get("op");
+        int limit = post.get("limit", 100);
+        String[] fields = post.get("fields", new String[0], ",");
+        int timezoneOffset = post.get("timezoneOffset", 0);
 
         // create tweet timeline
         final Timeline tl = new Timeline();
+        Map<String, List<Map.Entry<String, Long>>> aggregations = null;
         if (query.length() > 0) {
             if ("all".equals(source) && !post.isDoS_servicereduction()) {
                 // start all targets for search concurrently
@@ -96,7 +97,8 @@ public class SearchServlet extends HttpServlet {
                     }
                 };
                 backendThread.start();
-                tl.putAll(DAO.searchLocal(query, count));
+                DAO.searchLocal localSearchResult = new DAO.searchLocal(query, timezoneOffset, count, 0);
+                tl.putAll(localSearchResult.timeline);
                 try {backendThread.join(5000);} catch (InterruptedException e) {}
                 try {scraperThread.join(8000);} catch (InterruptedException e) {}
             } else {
@@ -111,7 +113,9 @@ public class SearchServlet extends HttpServlet {
     
                 // replace the timeline with one from the own index which now includes the remote result
                 if ("cache".equals(source)) {
-                    tl.putAll(DAO.searchLocal(query, count));
+                    DAO.searchLocal localSearchResult = new DAO.searchLocal(query, timezoneOffset, count, limit, fields);
+                    tl.putAll(localSearchResult.timeline);
+                    aggregations = localSearchResult.aggregations;
                 }
             }
         }
@@ -143,6 +147,21 @@ public class SearchServlet extends HttpServlet {
                 t.toJSON(json, u, true);
             }
             json.endArray();
+            
+            // aggregations
+            json.field("aggregations");
+            json.startObject();
+            if (aggregations != null) {
+                for (Map.Entry<String, List<Map.Entry<String, Long>>> aggregation: aggregations.entrySet()) {
+                    json.field(aggregation.getKey());
+                    json.startObject();
+                    for (Map.Entry<String, Long> a: aggregation.getValue()) {
+                        json.field(a.getKey(), a.getValue());
+                    }
+                    json.endObject(); // of aggregation field
+                }
+            }
+            json.endObject(); // of aggregations
             json.endObject(); // of root
 
             // write json

@@ -31,10 +31,15 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.RandomAccessFile;
 import java.net.MalformedURLException;
+import java.text.DateFormat;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.AbstractMap;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Properties;
@@ -44,12 +49,15 @@ import java.util.TreeSet;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
 import org.eclipse.jetty.util.log.Log;
 import org.elasticsearch.action.count.CountResponse;
 import org.elasticsearch.action.get.GetResponse;
+import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.action.search.SearchType;
 import org.elasticsearch.client.Client;
@@ -61,12 +69,18 @@ import org.elasticsearch.common.xcontent.XContentParser;
 import org.elasticsearch.common.xcontent.json.JsonXContent;
 import org.elasticsearch.index.VersionType;
 import org.elasticsearch.index.query.BoolQueryBuilder;
+import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
+import org.elasticsearch.index.query.RangeQueryBuilder;
 import org.elasticsearch.indices.IndexAlreadyExistsException;
 import org.elasticsearch.indices.IndexMissingException;
 import org.elasticsearch.node.Node;
 import org.elasticsearch.node.NodeBuilder;
 import org.elasticsearch.search.SearchHit;
+import org.elasticsearch.search.aggregations.AggregationBuilders;
+import org.elasticsearch.search.aggregations.bucket.histogram.DateHistogram;
+import org.elasticsearch.search.aggregations.bucket.terms.Terms;
+import org.elasticsearch.search.aggregations.bucket.terms.Terms.Bucket;
 import org.elasticsearch.search.sort.SortOrder;
 import org.loklak.api.client.SearchClient;
 import org.loklak.scraper.TwitterScraper;
@@ -440,78 +454,187 @@ public class DAO {
         return response.getCount();
     }
     
-    public static Timeline searchLocal(String q, int count) {
-        
-        // parse the query
-        String[] qe = q.split(" ");
-        // twitter search syntax:
-        //   term1 term2 term3 - all three terms shall appear
-        //   "term1 term2 term3" - exact match of all terms
-        //   term1 OR term2 OR term3 - any of the three terms shall appear
-        //   from:user - tweets posted from that user
-        //   to:user - tweets posted to that user
-        //   @user - tweets which mention that user
-        //   near:"location" within:xmi - tweets that are near that location
-        //   #hashtag - tweets containing the given hashtag
-        String text = "";
-        ArrayList<String> users = new ArrayList<>();
-        ArrayList<String> hashtags = new ArrayList<>();
-        HashMap<String, String> modifier = new HashMap<>();
-        for (String t: qe) {
-            if (t.length() == 0) continue;
-            if (t.startsWith("@")) {
-                users.add(t.substring(1));
-            } else if (t.startsWith("#")) {
-                hashtags.add(t.substring(1));
-            } else if (t.indexOf(':') > 0) {
-                int p = t.indexOf(':');
-                modifier.put(t.substring(0, p).toLowerCase(), t.substring(p + 1));
-            } else {
-                text += t + " ";
-            }
-        }
-        if (modifier.containsKey("to")) users.add(modifier.get("to"));
-        text = text.trim();
-        // compose query
-        BoolQueryBuilder query = QueryBuilders.boolQuery();
-        if (text.length() > 0) query.must(QueryBuilders.matchQuery("text", text));
-        for (String user: users) query.must(QueryBuilders.termQuery("mentions", user));
-        for (String hashtag: hashtags) query.must(QueryBuilders.termQuery("hashtags", hashtag));
-        if (modifier.containsKey("from")) query.must(QueryBuilders.termQuery("screen_name", modifier.get("from")));
-        if (modifier.containsKey("near")) {
-            BoolQueryBuilder nearquery = QueryBuilders.boolQuery()
-                    .should(QueryBuilders.matchQuery("place_name", modifier.get("near")))
-                    .should(QueryBuilders.matchQuery("text", modifier.get("near")));
-            query.must(nearquery);
-        }
-        
-        Timeline tl = new Timeline();
-        try {
-            SearchResponse response = elasticsearch_client.prepareSearch(MESSAGES_INDEX_NAME)/*.setTypes(MESSAGE_TWEETS_TYPE_NAME)*/
-                    .setSearchType(SearchType.QUERY_THEN_FETCH)
-                    .setQuery(query)
-                    .addSort("created_at", SortOrder.DESC)
-                    .setFrom(0)
-                    .setSize(count)
-                    .execute().actionGet();
-            //long totalHitCount = response.getHits().getTotalHits();
-            SearchHit[] hits = response.getHits().getHits();
-            for (SearchHit hit: hits) {
-                Map<String, Object> map = hit.getSource();
-                try {
-                    Tweet tweet = new Tweet(map);
-                    User user = getUser(tweet.getUserScreenName());
-                    assert user != null;
-                    if (user != null) {
-                        tl.addTweet(tweet);
-                        tl.addUser(user);
+    public static class searchLocal {
+        public Timeline timeline;
+        public Map<String, List<Map.Entry<String, Long>>> aggregations;
+
+        /**
+         * Search the local message cache using a elasticsearch query.
+         * @param q - the query, for aggregation this which should include a time frame in the form since:yyyy-MM-dd until:yyyy-MM-dd
+         * @param timezoneOffset - an offset in minutes that is applied on dates given in the query of the form since:date until:date
+         * @param resultCount - the number of messages in the result; can be zero if only aggregations are wanted
+         * @param dateHistogrammInterval - the date aggregation interval or null, if no aggregation wanted
+         * @param aggregationLimit - the maximum count of facet entities, not search results
+         * @param aggregationFields - names of the aggregation fields. If no aggregation is wanted, pass no (zero) field(s)
+         */
+        public searchLocal(String q, int timezoneOffset, int resultCount, int aggregationLimit, String... aggregationFields) {
+            this.timeline = new Timeline();
+            try {
+                // prepare request
+                searchQuery sq = new searchQuery(q, timezoneOffset);
+                SearchRequestBuilder request = elasticsearch_client.prepareSearch(MESSAGES_INDEX_NAME)
+                        .setSearchType(SearchType.QUERY_THEN_FETCH)
+                        .setQuery(sq.queryBuilder)
+                        .setFrom(0)
+                        .setSize(resultCount);
+                if (resultCount > 0) request.addSort("created_at", SortOrder.DESC);
+                boolean addTimeHistogram = false;
+                for (String field: aggregationFields) {
+                    if (field.equals("created_at")) {
+                        addTimeHistogram = true;
+                        long interval = sq.until.getTime() - sq.since.getTime();
+                        DateHistogram.Interval dateHistogrammInterval = interval > 1000 * 60 * 60 * 24 * 7 ? DateHistogram.Interval.DAY : interval > 1000 * 60 * 60 * 3 ? DateHistogram.Interval.HOUR : DateHistogram.Interval.MINUTE;
+                        request.addAggregation(AggregationBuilders.dateHistogram("created_at").field("created_at").timeZone("UTC").minDocCount(0).interval(dateHistogrammInterval));
+                    } else {
+                        request.addAggregation(AggregationBuilders.terms(field).field(field).minDocCount(1).size(aggregationLimit));
                     }
-                } catch (MalformedURLException e) {
-                    continue;
+                }
+                
+                // get response
+                SearchResponse response = request.execute().actionGet();
+
+                // evaluate search result
+                //long totalHitCount = response.getHits().getTotalHits();
+                SearchHit[] hits = response.getHits().getHits();
+                for (SearchHit hit: hits) {
+                    Map<String, Object> map = hit.getSource();
+                    try {
+                        Tweet tweet = new Tweet(map);
+                        User user = getUser(tweet.getUserScreenName());
+                        assert user != null;
+                        if (user != null) {
+                            timeline.addTweet(tweet);
+                            timeline.addUser(user);
+                        }
+                    } catch (MalformedURLException e) {
+                        continue;
+                    }
+                }
+                
+                // evaluate aggregation
+                // collect results: fields
+                this.aggregations = new HashMap<>();
+                for (String field: aggregationFields) {
+                    if (field.equals("created_at")) continue; // this has special handling below
+                    Terms fieldCounts = response.getAggregations().get(field);
+                    List<Bucket> buckets = fieldCounts.getBuckets();
+                    ArrayList<Map.Entry<String, Long>> list = new ArrayList<>(buckets.size());
+                    for (Bucket bucket: buckets) {
+                        Map.Entry<String,Long> entry = new AbstractMap.SimpleEntry<String, Long>(bucket.getKey(), bucket.getDocCount());
+                        list.add(entry);
+                    }
+                    aggregations.put(field, list);
+                }
+                // date histogram:
+                if (addTimeHistogram) {
+                    DateHistogram dateCounts = response.getAggregations().get("created_at");
+                    ArrayList<Map.Entry<String, Long>> list = new ArrayList<>();
+                    for (DateHistogram.Bucket bucket : dateCounts.getBuckets()) {
+                        Calendar cal = Calendar.getInstance(UTCtimeZone);
+                        cal.setTime(bucket.getKeyAsDate().toDate());
+                        cal.add(Calendar.MINUTE, -timezoneOffset);
+                        long docCount = bucket.getDocCount();
+                        Map.Entry<String,Long> entry = new AbstractMap.SimpleEntry<String, Long>(responseDateFormat.format(cal.getTime()), docCount);
+                        list.add(entry);
+                    }
+                    aggregations.put("created_at", list);
+                }
+            } catch (IndexMissingException e) {}
+        }
+    }
+    
+    private final static DateFormat queryDateFormat = new SimpleDateFormat("yyyy-MM-dd"); // this is the twitter search modifier format
+    private final static DateFormat responseDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm"); // this is the format which morris.js understands for date-histogram graphs
+    private final static Pattern tokenizerPattern = Pattern.compile("([^\"]\\S*|\".+?\")\\s*"); // tokenizes Strings into terms respecting quoted parts
+    private final static Calendar UTCCalendar = Calendar.getInstance();
+    private final static TimeZone UTCtimeZone = TimeZone.getTimeZone("UTC");
+    static {
+        UTCCalendar.setTimeZone(UTCtimeZone);
+        queryDateFormat.setCalendar(UTCCalendar);
+        responseDateFormat.setCalendar(UTCCalendar);
+    }
+    
+    public static class searchQuery {
+        QueryBuilder queryBuilder;
+        Date since, until;
+        public searchQuery(String q, int timezoneOffset) {
+            // tokenize the query
+            List<String> qe = new ArrayList<String>();
+            Matcher m = tokenizerPattern.matcher(q);
+            while (m.find()) qe.add(m.group(1));
+            
+            // twitter search syntax:
+            //   term1 term2 term3 - all three terms shall appear
+            //   "term1 term2 term3" - exact match of all terms
+            //   term1 OR term2 OR term3 - any of the three terms shall appear
+            //   from:user - tweets posted from that user
+            //   to:user - tweets posted to that user
+            //   @user - tweets which mention that user
+            //   near:"location" within:xmi - tweets that are near that location
+            //   #hashtag - tweets containing the given hashtag
+            //   since:2015-04-01 until:2015-04-03 - tweets within given time range
+            String text = "";
+            ArrayList<String> users = new ArrayList<>();
+            ArrayList<String> hashtags = new ArrayList<>();
+            HashMap<String, String> modifier = new HashMap<>();
+            for (String t: qe) {
+                if (t.length() == 0) continue;
+                if (t.startsWith("@")) {
+                    users.add(t.substring(1));
+                } else if (t.startsWith("#")) {
+                    hashtags.add(t.substring(1));
+                } else if (t.indexOf(':') > 0) {
+                    int p = t.indexOf(':');
+                    modifier.put(t.substring(0, p).toLowerCase(), t.substring(p + 1));
+                } else {
+                    text += t + " ";
                 }
             }
-        } catch (IndexMissingException e) {}
-        return tl;
+            if (modifier.containsKey("to")) users.add(modifier.get("to"));
+            text = text.trim();
+            // compose query
+            BoolQueryBuilder query = QueryBuilders.boolQuery();
+            if (text.length() > 0) query.must(QueryBuilders.matchQuery("text", text));
+            for (String user: users) query.must(QueryBuilders.termQuery("mentions", user));
+            for (String hashtag: hashtags) query.must(QueryBuilders.termQuery("hashtags", hashtag));
+            if (modifier.containsKey("from")) query.must(QueryBuilders.termQuery("screen_name", modifier.get("from")));
+            if (modifier.containsKey("near")) {
+                BoolQueryBuilder nearquery = QueryBuilders.boolQuery()
+                        .should(QueryBuilders.matchQuery("place_name", modifier.get("near")))
+                        .should(QueryBuilders.matchQuery("text", modifier.get("near")));
+                query.must(nearquery);
+            }
+            if (modifier.containsKey("since")) try {
+                Calendar since = parseDateModifier(modifier.get("since"), timezoneOffset);
+                this.since = since.getTime();
+                RangeQueryBuilder rangeQuery = QueryBuilders.rangeQuery("created_at").from(this.since);
+                if (modifier.containsKey("until")) {
+                    Calendar until = parseDateModifier(modifier.get("until"), timezoneOffset);
+                    if (until.get(Calendar.HOUR) == 0 && until.get(Calendar.MINUTE) == 0) {
+                        // until must be the day which is included in results.
+                        // To get the result within the same day, we must add one day.
+                        until.add(Calendar.DATE, 1);
+                    }
+                    this.until = until.getTime();
+                    rangeQuery.to(this.until);
+                } else {
+                    this.until = new Date();
+                }
+                query.must(rangeQuery);
+            } catch (ParseException e) {} else {
+                this.since = new Date(0);
+                this.until = new Date();
+            }
+            this.queryBuilder = query;
+        }
+    }
+    
+    private static Calendar parseDateModifier(String modifier, int timezoneOffset) throws ParseException {
+        modifier = modifier.replaceAll("_", " ");
+        Calendar cal = Calendar.getInstance(UTCtimeZone);
+        cal.setTime(modifier.indexOf(':') > 0 ? responseDateFormat.parse(modifier) : queryDateFormat.parse(modifier));
+        cal.add(Calendar.MINUTE, timezoneOffset); // add a correction; i.e. for UTC+1 -60 minutes is added to patch a time given in UTC+1 to the actual time at UTC
+        return cal;
     }
     
     public static Timeline[] scrapeTwitter(String q) {
