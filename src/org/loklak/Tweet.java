@@ -136,7 +136,7 @@ public class Tweet {
         }
 
         this.hosts = new String[hosts.size()];
-        int j = 0; for (String host: hosts) this.hosts[j++] = host;
+        int j = 0; for (String host: hosts) this.hosts[j++] = host.toLowerCase();
 
         this.links = new String[urls.size()];
         for (int i = 0; i < urls.size(); i++) this.links[i] = urls.get(i);
@@ -145,7 +145,7 @@ public class Tweet {
         for (int i = 0; i < users.size(); i++) this.mentions[i] = users.get(i).substring(1);
         
         this.hashtags = new String[hashtags.size()];
-        for (int i = 0; i < hashtags.size(); i++) this.hashtags[i] = hashtags.get(i).substring(1);
+        for (int i = 0; i < hashtags.size(); i++) this.hashtags[i] = hashtags.get(i).substring(1).toLowerCase();
     }
     
     private static List<String> extract(StringBuilder s, Pattern p, int g) {

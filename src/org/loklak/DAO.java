@@ -596,7 +596,7 @@ public class DAO {
             BoolQueryBuilder query = QueryBuilders.boolQuery();
             if (text.length() > 0) query.must(QueryBuilders.matchQuery("text", text));
             for (String user: users) query.must(QueryBuilders.termQuery("mentions", user));
-            for (String hashtag: hashtags) query.must(QueryBuilders.termQuery("hashtags", hashtag));
+            for (String hashtag: hashtags) query.must(QueryBuilders.termQuery("hashtags", hashtag.toLowerCase()));
             if (modifier.containsKey("from")) query.must(QueryBuilders.termQuery("screen_name", modifier.get("from")));
             if (modifier.containsKey("near")) {
                 BoolQueryBuilder nearquery = QueryBuilders.boolQuery()
