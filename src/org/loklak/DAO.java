@@ -543,8 +543,8 @@ public class DAO {
         }
     }
     
-    private final static DateFormat queryDateFormat = new SimpleDateFormat("yyyy-MM-dd"); // this is the twitter search modifier format
-    private final static DateFormat responseDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm"); // this is the format which morris.js understands for date-histogram graphs
+    public final static DateFormat queryDateFormat = new SimpleDateFormat("yyyy-MM-dd"); // this is the twitter search modifier format
+    public final static DateFormat responseDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm"); // this is the format which morris.js understands for date-histogram graphs
     private final static Pattern tokenizerPattern = Pattern.compile("([^\"]\\S*|\".+?\")\\s*"); // tokenizes Strings into terms respecting quoted parts
     private final static Calendar UTCCalendar = Calendar.getInstance();
     private final static TimeZone UTCtimeZone = TimeZone.getTimeZone("UTC");
