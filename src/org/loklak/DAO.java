@@ -629,7 +629,7 @@ public class DAO {
         }
     }
     
-    private static Calendar parseDateModifier(String modifier, int timezoneOffset) throws ParseException {
+    public static Calendar parseDateModifier(String modifier, int timezoneOffset) throws ParseException {
         modifier = modifier.replaceAll("_", " ");
         Calendar cal = Calendar.getInstance(UTCtimeZone);
         cal.setTime(modifier.indexOf(':') > 0 ? responseDateFormat.parse(modifier) : queryDateFormat.parse(modifier));
