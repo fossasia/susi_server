@@ -26,6 +26,7 @@ import java.io.Reader;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -106,7 +107,7 @@ public class RemoteAccess {
             if (XRealIP != null && XRealIP.length() > 0) this.clientHost = XRealIP; // get IP through nginx config "proxy_set_header X-Real-IP $remote_addr;"
             this.access_time = System.currentTimeMillis();
             this.time_since_last_access = this.access_time - RemoteAccess.latestVisit(this.clientHost);
-            this.DoS_blackout = this.time_since_last_access < DAO.getConfig("DoS.blackout", 100);
+            this.DoS_blackout = this.time_since_last_access < DAO.getConfig("DoS.blackout", 100) || sleeping4clients.contains(this.clientHost);
             this.DoS_servicereduction = this.time_since_last_access < DAO.getConfig("DoS.servicereduction", 1000);
         }
         public String getClientHost() {
@@ -159,6 +160,21 @@ public class RemoteAccess {
         }
     }
     
+    private static HashSet<String> sleeping4clients = new HashSet<>();
+    
+    public static void sleep(String host, long time) {
+        try {
+            sleeping4clients.add(host);
+            Thread.sleep(time);
+        } catch (InterruptedException e) {
+        } finally {
+            sleeping4clients.remove(host);
+        }
+    }
+    
+    public static boolean isSleepingForClient(String host) {
+        return sleeping4clients.contains(host);
+    }
     
     private String remoteHost, localPath, peername;
     private int localHTTPPort, localHTTPSPort;

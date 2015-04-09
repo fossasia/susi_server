@@ -73,7 +73,7 @@ public class SearchServlet extends HttpServlet {
         if (query == null || query.length() == 0) query = post.get("query", "");
         query = CharacterCoding.html2unicode(query).replaceAll("\\+", " ");
         int count = post.get("count", post.get("maximumRecords", 100));
-        String source = post.get("source", "all"); // possible values: cache, backend, twitter, all
+        String source = post.isDoS_servicereduction() ? "cache" : post.get("source", "all"); // possible values: cache, backend, twitter, all
         int limit = post.get("limit", 100);
         String[] fields = post.get("fields", new String[0], ",");
         int timezoneOffset = post.get("timezoneOffset", 0);
@@ -82,7 +82,7 @@ public class SearchServlet extends HttpServlet {
         final Timeline tl = new Timeline();
         Map<String, List<Map.Entry<String, Long>>> aggregations = null;
         if (query.length() > 0) {
-            if ("all".equals(source) && !post.isDoS_servicereduction()) {
+            if ("all".equals(source)) {
                 // start all targets for search concurrently
                 final String queryf = query;
                 Thread scraperThread = new Thread() {
@@ -102,12 +102,12 @@ public class SearchServlet extends HttpServlet {
                 try {backendThread.join(5000);} catch (InterruptedException e) {}
                 try {scraperThread.join(8000);} catch (InterruptedException e) {}
             } else {
-                if (!post.isDoS_servicereduction() && "twitter".equals(source)) {
+                if ("twitter".equals(source)) {
                     tl.putAll(DAO.scrapeTwitter(query)[0]);
                 }
     
                 // replace the timeline with one from the own index which now includes the remote result
-                if (!post.isDoS_servicereduction() && "backend".equals(source)) {
+                if ("backend".equals(source)) {
                     tl.putAll(DAO.searchBackend(query, count, "cache"));
                 }
     
@@ -120,6 +120,9 @@ public class SearchServlet extends HttpServlet {
             }
         }
 
+        if (post.isDoS_servicereduction() && !RemoteAccess.isSleepingForClient(post.getClientHost())) {
+            RemoteAccess.sleep(post.getClientHost(), 2000);
+        }
         post.setResponse(response, jsonExt ? (jsonp ? "application/javascript": "application/json") : "application/rss+xml;charset=utf-8");
         
         // create json or xml according to path extension
@@ -140,6 +143,8 @@ public class SearchServlet extends HttpServlet {
             json.field("itemsPerPage", Integer.toString(count));
             json.field("count", Integer.toString(tl.size()));
             json.field("query", query);
+            json.field("client", post.getClientHost());
+            json.field("servicereduction", post.isDoS_servicereduction() ? "true" : "false");
             json.endObject(); // of search_metadata
             json.field("statuses").startArray();
             for (Tweet t: tl) {
@@ -199,7 +204,7 @@ public class SearchServlet extends HttpServlet {
         DAO.log(request.getServletPath() + "?" + request.getQueryString());
         } catch (Throwable e) {
             Log.getLog().warn(e.getMessage(), e);
-            e.printStackTrace();
+            //e.printStackTrace();
         }
     }
 }
