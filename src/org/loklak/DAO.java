@@ -629,7 +629,7 @@ public class DAO {
         }
     }
     
-    public static Calendar parseDateModifier(String modifier, int timezoneOffset) throws ParseException {
+    public static Calendar parseDateModifier(String modifier, final int timezoneOffset) throws ParseException {
         modifier = modifier.replaceAll("_", " ");
         Calendar cal = Calendar.getInstance(UTCtimeZone);
         cal.setTime(modifier.indexOf(':') > 0 ? responseDateFormat.parse(modifier) : queryDateFormat.parse(modifier));
@@ -637,9 +637,9 @@ public class DAO {
         return cal;
     }
     
-    public static Timeline[] scrapeTwitter(String q) {
+    public static Timeline[] scrapeTwitter(final String q, final int timezoneOffset) {
         String[] remote = DAO.getConfig("frontpeers", new String[0], ",");        
-        Timeline allTweets = remote.length > 0 ? searchOnOtherPeers(remote, q, 100, "twitter", SearchClient.frontpeer_hash) : TwitterScraper.search(q);
+        Timeline allTweets = remote.length > 0 ? searchOnOtherPeers(remote, q, 100, timezoneOffset, "twitter", SearchClient.frontpeer_hash) : TwitterScraper.search(q);
         Timeline newTweets = new Timeline(); // we store new tweets here to be able to transmit them to peers
         if (allTweets == null) {// can be caused by time-out
             allTweets = new Timeline();
@@ -659,15 +659,15 @@ public class DAO {
         return new Timeline[]{allTweets, newTweets};
     }
     
-    public static Timeline searchBackend(String q, int count, String where) {
+    public static Timeline searchBackend(final String q, final int count, final int timezoneOffset, final String where) {
         String[] remote = DAO.getConfig("backend", new String[0], ",");
-        return searchOnOtherPeers(remote, q, count, where, SearchClient.backend_hash);
+        return searchOnOtherPeers(remote, q, count, timezoneOffset, where, SearchClient.backend_hash);
     }
     
-    public static Timeline searchOnOtherPeers(final String[] remote, final String q, final int count, final String where, final String provider_hash) {
+    public static Timeline searchOnOtherPeers(final String[] remote, final String q, final int count, final int timezoneOffset, final String where, final String provider_hash) {
         Timeline tl = new Timeline();
         for (String protocolhostportstub: remote) {
-            Timeline tt = SearchClient.search(protocolhostportstub, q, where, count, provider_hash);
+            Timeline tt = SearchClient.search(protocolhostportstub, q, where, count, timezoneOffset, provider_hash);
             tl.putAll(tt);
             // record the result; this may be moved to a concurrent process
             for (Tweet t: tt) {

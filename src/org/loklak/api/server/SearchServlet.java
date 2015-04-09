@@ -85,15 +85,16 @@ public class SearchServlet extends HttpServlet {
             if ("all".equals(source)) {
                 // start all targets for search concurrently
                 final String queryf = query;
+                final int timezoneOffsetf = timezoneOffset;
                 Thread scraperThread = new Thread() {
                     public void run() {
-                        tl.putAll(DAO.scrapeTwitter(queryf)[0]);
+                        tl.putAll(DAO.scrapeTwitter(queryf, timezoneOffsetf)[0]);
                     }
                 };
                 scraperThread.start();
                 Thread backendThread = new Thread() {
                     public void run() {
-                        tl.putAll(DAO.searchBackend(queryf, 100, "cache"));
+                        tl.putAll(DAO.searchBackend(queryf, 100, timezoneOffsetf, "cache"));
                     }
                 };
                 backendThread.start();
@@ -103,12 +104,12 @@ public class SearchServlet extends HttpServlet {
                 try {scraperThread.join(8000);} catch (InterruptedException e) {}
             } else {
                 if ("twitter".equals(source)) {
-                    tl.putAll(DAO.scrapeTwitter(query)[0]);
+                    tl.putAll(DAO.scrapeTwitter(query, timezoneOffset)[0]);
                 }
     
                 // replace the timeline with one from the own index which now includes the remote result
                 if ("backend".equals(source)) {
-                    tl.putAll(DAO.searchBackend(query, count, "cache"));
+                    tl.putAll(DAO.searchBackend(query, count, timezoneOffset, "cache"));
                 }
     
                 // replace the timeline with one from the own index which now includes the remote result
