@@ -40,9 +40,9 @@ public class SearchClient {
     public final static String frontpeer_hash = Integer.toHexString(Integer.MAX_VALUE - 1);
 
     // possible values: cache, twitter, all
-    public static Timeline search(final String protocolhostportstub, final String query, final String source, final int count, final String provider_hash) {
+    public static Timeline search(final String protocolhostportstub, final String query, final String source, final int count, final int timezoneOffset, final String provider_hash) {
         Timeline tl = new Timeline();
-        String json = searchJSON(protocolhostportstub, query, source, count);
+        String json = searchJSON(protocolhostportstub, query, source, count, timezoneOffset);
         if (json == null || json.length() == 0) return tl;
         try {
             XContentParser parser = JsonXContent.jsonXContent.createParser(json);
@@ -68,9 +68,9 @@ public class SearchClient {
         return tl;
     }
     
-    private static String searchJSON(final String protocolhostportstub, final String query, final String source, final int count) {
+    private static String searchJSON(final String protocolhostportstub, final String query, final String source, final int count, final int timezoneOffset) {
         String urlstring = "";
-        try {urlstring = protocolhostportstub + "/api/search.json?q=" + URLEncoder.encode(query.replace(' ', '+'), "UTF-8") + "&maximumRecords=" + count + "&source=" + (source == null ? "all" : source) + "&minified=true";} catch (UnsupportedEncodingException e) {}
+        try {urlstring = protocolhostportstub + "/api/search.json?q=" + URLEncoder.encode(query.replace(' ', '+'), "UTF-8") + "&timezoneOffset=" + timezoneOffset + "&maximumRecords=" + count + "&source=" + (source == null ? "all" : source) + "&minified=true";} catch (UnsupportedEncodingException e) {}
         try {
             BufferedReader br = ClientHelper.getConnection(urlstring);
             if (br == null) return "";
@@ -95,7 +95,7 @@ public class SearchClient {
     }
     
     public static void main(String[] args) {
-        Timeline tl = search("http://loklak.org", "beer", "cache", 20, backend_hash);
+        Timeline tl = search("http://loklak.org", "beer", "cache", 20, -120, backend_hash);
         System.out.println(tl.toJSON(false));
     }
     
