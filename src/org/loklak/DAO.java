@@ -31,7 +31,6 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.RandomAccessFile;
 import java.net.MalformedURLException;
-import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.AbstractMap;
@@ -85,6 +84,7 @@ import org.elasticsearch.search.sort.SortOrder;
 import org.loklak.api.client.SearchClient;
 import org.loklak.scraper.TwitterScraper;
 import org.loklak.tools.Cache;
+import org.loklak.tools.DateParser;
 import org.loklak.tools.UTF8;
 
 /**
@@ -530,11 +530,11 @@ public class DAO {
                     DateHistogram dateCounts = response.getAggregations().get("created_at");
                     ArrayList<Map.Entry<String, Long>> list = new ArrayList<>();
                     for (DateHistogram.Bucket bucket : dateCounts.getBuckets()) {
-                        Calendar cal = Calendar.getInstance(UTCtimeZone);
+                        Calendar cal = Calendar.getInstance(DateParser.UTCtimeZone);
                         cal.setTime(bucket.getKeyAsDate().toDate());
                         cal.add(Calendar.MINUTE, -timezoneOffset);
                         long docCount = bucket.getDocCount();
-                        Map.Entry<String,Long> entry = new AbstractMap.SimpleEntry<String, Long>(responseDateFormat.format(cal.getTime()), docCount);
+                        Map.Entry<String,Long> entry = new AbstractMap.SimpleEntry<String, Long>(DateParser.minuteDateFormat.format(cal.getTime()), docCount);
                         list.add(entry);
                     }
                     aggregations.put("created_at", list);
@@ -543,17 +543,8 @@ public class DAO {
         }
     }
     
-    public final static DateFormat queryDateFormat = new SimpleDateFormat("yyyy-MM-dd"); // this is the twitter search modifier format
-    public final static DateFormat responseDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm"); // this is the format which morris.js understands for date-histogram graphs
     private final static Pattern tokenizerPattern = Pattern.compile("([^\"]\\S*|\".+?\")\\s*"); // tokenizes Strings into terms respecting quoted parts
-    private final static Calendar UTCCalendar = Calendar.getInstance();
-    private final static TimeZone UTCtimeZone = TimeZone.getTimeZone("UTC");
-    static {
-        UTCCalendar.setTimeZone(UTCtimeZone);
-        queryDateFormat.setCalendar(UTCCalendar);
-        responseDateFormat.setCalendar(UTCCalendar);
-    }
-    
+
     public static class searchQuery {
         QueryBuilder queryBuilder;
         Date since, until;
@@ -605,11 +596,11 @@ public class DAO {
                 query.must(nearquery);
             }
             if (modifier.containsKey("since")) try {
-                Calendar since = parseDateModifier(modifier.get("since"), timezoneOffset);
+                Calendar since = DateParser.parse(modifier.get("since"), timezoneOffset);
                 this.since = since.getTime();
                 RangeQueryBuilder rangeQuery = QueryBuilders.rangeQuery("created_at").from(this.since);
                 if (modifier.containsKey("until")) {
-                    Calendar until = parseDateModifier(modifier.get("until"), timezoneOffset);
+                    Calendar until = DateParser.parse(modifier.get("until"), timezoneOffset);
                     if (until.get(Calendar.HOUR) == 0 && until.get(Calendar.MINUTE) == 0) {
                         // until must be the day which is included in results.
                         // To get the result within the same day, we must add one day.
@@ -627,14 +618,6 @@ public class DAO {
             }
             this.queryBuilder = query;
         }
-    }
-    
-    public static Calendar parseDateModifier(String modifier, final int timezoneOffset) throws ParseException {
-        modifier = modifier.replaceAll("_", " ");
-        Calendar cal = Calendar.getInstance(UTCtimeZone);
-        cal.setTime(modifier.indexOf(':') > 0 ? responseDateFormat.parse(modifier) : queryDateFormat.parse(modifier));
-        cal.add(Calendar.MINUTE, timezoneOffset); // add a correction; i.e. for UTC+1 -60 minutes is added to patch a time given in UTC+1 to the actual time at UTC
-        return cal;
     }
     
     public static Timeline[] scrapeTwitter(final String q, final int timezoneOffset) {

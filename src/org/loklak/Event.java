@@ -27,6 +27,7 @@ import java.util.LinkedHashMap;
 
 import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.elasticsearch.common.xcontent.XContentFactory;
+import org.loklak.tools.DateParser;
 
 public class Event implements Comparator<Event>, Comparable<Event> {
     
@@ -72,7 +73,7 @@ public class Event implements Comparator<Event>, Comparable<Event> {
         this.end_time = end_date.getTime();
         this.prep_time = prep_date.getTime();
         this.trail_time = trail_date.getTime();
-        this.id = DAO.responseDateFormat.format(start_date).replace(' ', '_') + "-" + DAO.responseDateFormat.format(end_date).replace(' ', '_') + "-" + Math.abs(query.hashCode()) + "-" + Math.abs(name.hashCode());
+        this.id = DateParser.minuteDateFormat.format(start_date).replace(' ', '_') + "-" + DateParser.minuteDateFormat.format(end_date).replace(' ', '_') + "-" + Math.abs(query.hashCode()) + "-" + Math.abs(name.hashCode());
     }
 
     /**
@@ -95,10 +96,10 @@ public class Event implements Comparator<Event>, Comparable<Event> {
             name,
             query,
             new Date(),
-            DAO.parseDateModifier(prep_date, timezoneOffset).getTime(),
-            DAO.parseDateModifier(start_date, timezoneOffset).getTime(),
-            DAO.parseDateModifier(end_date, timezoneOffset).getTime(),
-            DAO.parseDateModifier(trail_date, timezoneOffset).getTime(),
+            DateParser.parse(prep_date, timezoneOffset).getTime(),
+            DateParser.parse(start_date, timezoneOffset).getTime(),
+            DateParser.parse(end_date, timezoneOffset).getTime(),
+            DateParser.parse(trail_date, timezoneOffset).getTime(),
             timezoneOffset
         );
     }
