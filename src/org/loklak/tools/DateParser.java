@@ -49,7 +49,11 @@ public class DateParser {
     public static Calendar parse(String dateString, final int timezoneOffset) throws ParseException {
         dateString = dateString.replaceAll("_", " ");
         Calendar cal = Calendar.getInstance(UTCtimeZone);
-        cal.setTime(dateString.indexOf(':') > 0 ? minuteDateFormat.parse(dateString) : dayDateFormat.parse(dateString));
+        if (dateString.indexOf(':') > 0) synchronized (minuteDateFormat) {
+            cal.setTime(minuteDateFormat.parse(dateString));
+        } else synchronized (dayDateFormat) {
+            cal.setTime(dayDateFormat.parse(dateString));
+        }
         cal.add(Calendar.MINUTE, timezoneOffset); // add a correction; i.e. for UTC+1 -60 minutes is added to patch a time given in UTC+1 to the actual time at UTC
         return cal;
     }
