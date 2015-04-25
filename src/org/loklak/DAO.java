@@ -479,11 +479,11 @@ public class DAO {
                         .setSize(resultCount);
                 if (resultCount > 0) request.addSort("created_at", SortOrder.DESC);
                 boolean addTimeHistogram = false;
+                long interval = sq.until.getTime() - sq.since.getTime();
+                DateHistogram.Interval dateHistogrammInterval = interval > 1000 * 60 * 60 * 24 * 7 ? DateHistogram.Interval.DAY : interval > 1000 * 60 * 60 * 3 ? DateHistogram.Interval.HOUR : DateHistogram.Interval.MINUTE;
                 for (String field: aggregationFields) {
                     if (field.equals("created_at")) {
                         addTimeHistogram = true;
-                        long interval = sq.until.getTime() - sq.since.getTime();
-                        DateHistogram.Interval dateHistogrammInterval = interval > 1000 * 60 * 60 * 24 * 7 ? DateHistogram.Interval.DAY : interval > 1000 * 60 * 60 * 3 ? DateHistogram.Interval.HOUR : DateHistogram.Interval.MINUTE;
                         request.addAggregation(AggregationBuilders.dateHistogram("created_at").field("created_at").timeZone("UTC").minDocCount(0).interval(dateHistogrammInterval));
                     } else {
                         request.addAggregation(AggregationBuilders.terms(field).field(field).minDocCount(1).size(aggregationLimit));
@@ -534,7 +534,10 @@ public class DAO {
                         cal.setTime(bucket.getKeyAsDate().toDate());
                         cal.add(Calendar.MINUTE, -timezoneOffset);
                         long docCount = bucket.getDocCount();
-                        Map.Entry<String,Long> entry = new AbstractMap.SimpleEntry<String, Long>(DateParser.minuteDateFormat.format(cal.getTime()), docCount);
+                        Map.Entry<String,Long> entry = new AbstractMap.SimpleEntry<String, Long>(
+                            (dateHistogrammInterval == DateHistogram.Interval.DAY ?
+                                DateParser.dayDateFormat : DateParser.minuteDateFormat)
+                            .format(cal.getTime()), docCount);
                         list.add(entry);
                     }
                     aggregations.put("created_at", list);
