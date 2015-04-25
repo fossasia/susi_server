@@ -39,6 +39,7 @@ import org.eclipse.jetty.servlet.ServletHolder;
 import org.eclipse.jetty.servlets.GzipFilter;
 import org.eclipse.jetty.util.log.Log;
 import org.eclipse.jetty.webapp.WebAppContext;
+import org.loklak.api.server.CampaignServlet;
 import org.loklak.api.server.CrawlerServlet;
 import org.loklak.api.server.DumpDownloadServlet;
 import org.loklak.api.server.HelloServlet;
@@ -112,6 +113,7 @@ public class Main {
         servletHandler.addServlet(StatusServlet.class, "/api/status.json");
         servletHandler.addServlet(SearchServlet.class, "/api/search.rss");  // both have same servlet class
         servletHandler.addServlet(SearchServlet.class, "/api/search.json"); // both have same servlet class
+        servletHandler.addServlet(CampaignServlet.class, "/api/campaign.json"); 
         ServletHolder pushServletHolder = new ServletHolder(PushServlet.class);
         pushServletHolder.getRegistration().setMultipartConfig(new MultipartConfigElement(tmp.getAbsolutePath()));
         servletHandler.addServlet(pushServletHolder, "/api/push.json");

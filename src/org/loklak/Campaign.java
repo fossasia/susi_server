@@ -1,5 +1,5 @@
 /**
- *  Event
+ *  Campaign
  *  Copyright 09.04.2015 by Michael Peter Christen, @0rb1t3r
  *
  *  This library is free software; you can redistribute it and/or
@@ -24,82 +24,80 @@ import java.text.ParseException;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.LinkedHashMap;
+import java.util.Map;
 
 import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.elasticsearch.common.xcontent.XContentFactory;
 import org.loklak.tools.DateParser;
 
-public class Event implements Comparator<Event>, Comparable<Event> {
+public class Campaign implements Comparator<Campaign>, Comparable<Campaign> {
     
     private LinkedHashMap<String, Object> map; // we use a linked hashmap to preserve the order of the entries for better representation in saved lists
-    private long last_harvested_time, next_harvesting_time;
-    private long start_time, end_time, prep_time, trail_time;
+    private long start_time, end_time;
     private String id;
     
-    public Event() {
+    public Campaign() {
         this.map = new LinkedHashMap<>();
-        this.last_harvested_time = 0;
-        this.next_harvesting_time = System.currentTimeMillis();
     }
 
     /**
-     * create an event
-     * @param query the query which can be used to harvest the event
-     * @param name the name of the event
-     * @param creation_date the creation time of the event
-     * @param prep_date  a date when preparations for the event started, first time when harvesting shall start
-     * @param start_date the start of the event
-     * @param end_date   the end of the event
-     * @param trail_date the final date when harvesting shall stop
+     * create an campaign with a dumped map
+     * @param campaignMap
+     */
+    public Campaign(Map<String, Object> campaignMap) {
+        this();
+        this.map.putAll(campaignMap);
+        this.start_time = ((Date) this.map.get("start_date")).getTime();
+        this.end_time = ((Date) this.map.get("end_date")).getTime();
+        this.id = DateParser.minuteDateFormat.format((Date) this.map.get("start_date")).replace(' ', '_') + "-" + DateParser.minuteDateFormat.format((Date) this.map.get("end_date")).replace(' ', '_') + "-" + Math.abs(((String) this.map.get("query")).hashCode()) + "-" + Math.abs(((String) this.map.get("name")).hashCode());
+    }
+    
+    /**
+     * create an campaign
+     * @param query the query which can be used to harvest the campaign
+     * @param name the name of the campaign
+     * @param creation_date the creation time of the campaign
+     * @param start_date the start of the campaign
+     * @param end_date   the end of the campaign
      * @param timezoneOffset the offset of the time zone of the creating client
      */
-    public Event(
+    public Campaign(
             final String query, final String name, 
             final Date creation_date,
-            final Date prep_date, final Date start_date,
-            final Date end_date, final Date trail_date,
+            final Date start_date, final Date end_date,
             final int timezoneOffset
             ) {
         this();
         this.map.put("start_date", start_date); // this must be first to make lists sortable in dump lists
         this.map.put("end_date", end_date);
-        this.map.put("prep_date", prep_date);
-        this.map.put("trail_date", trail_date);
         this.map.put("timezoneOffset", timezoneOffset);
         this.map.put("creation_date", creation_date);
         this.map.put("query", query);
         this.map.put("name", name);
         this.start_time = start_date.getTime();
         this.end_time = end_date.getTime();
-        this.prep_time = prep_date.getTime();
-        this.trail_time = trail_date.getTime();
         this.id = DateParser.minuteDateFormat.format(start_date).replace(' ', '_') + "-" + DateParser.minuteDateFormat.format(end_date).replace(' ', '_') + "-" + Math.abs(query.hashCode()) + "-" + Math.abs(name.hashCode());
     }
 
     /**
-     * create an event
-     * @param query the query which can be used to harvest the event
-     * @param name the name of the event
-     * @param prep_date  "YYYY-MM-dd HH:mm" a date when preparations for the event started, first time when harvesting shall start
-     * @param start_date "YYYY-MM-dd HH:mm" the start of the event
-     * @param end_date   "YYYY-MM-dd HH:mm" the end of the event
-     * @param trail_date "YYYY-MM-dd HH:mm" the final date when harvesting shall stop
+     * create an campaign
+     * @param query the query which can be used to harvest the campaign
+     * @param name the name of the campaign
+     * @param start_date "YYYY-MM-dd HH:mm" the start of the campaign
+     * @param end_date   "YYYY-MM-dd HH:mm" the end of the campaign
      * @param timezoneOffset the offset of the time zone of the creating client, used to parse the date
      */
-    public Event(
+    public Campaign(
             final String query, final String name,
-            final String prep_date, String start_date,
-            final String end_date, final String trail_date,
+            final String start_date, final String end_date,
             final int timezoneOffset
             ) throws ParseException {
         this(
             name,
             query,
             new Date(),
-            DateParser.parse(prep_date, timezoneOffset).getTime(),
             DateParser.parse(start_date, timezoneOffset).getTime(),
             DateParser.parse(end_date, timezoneOffset).getTime(),
-            DateParser.parse(trail_date, timezoneOffset).getTime(),
             timezoneOffset
         );
     }
@@ -115,10 +113,6 @@ public class Event implements Comparator<Event>, Comparable<Event> {
     public Date getCreationDate() {
         return (Date) this.map.get("creation_date");
     }
-    
-    public long getPrepTime() {
-        return this.prep_time;
-    }
 
     public long getStartTime() {
         return this.start_time;
@@ -127,29 +121,9 @@ public class Event implements Comparator<Event>, Comparable<Event> {
     public long getEndTime() {
         return this.end_time;
     }
-
-    public long getTrailTime() {
-        return this.trail_time;
-    }
     
     public int getTimezoneOffset() {
         return (Integer) this.map.get("timezoneOffset");
-    }
-
-    public long getLastHarvested() {
-        return this.last_harvested_time;
-    }
-
-    public void setLastHarvested(long d) {
-        this.last_harvested_time = d;
-    }
-
-    public long getNextHarvesting() {
-        return this.next_harvesting_time;
-    }
-
-    public void setNextHarvesting(long d) {
-        this.next_harvesting_time = d;
     }
     
     public String getID() {
@@ -161,12 +135,12 @@ public class Event implements Comparator<Event>, Comparable<Event> {
     }
 
     @Override
-    public int compareTo(Event o) {
+    public int compareTo(Campaign o) {
         return compare(this, o);
     }
 
     @Override
-    public int compare(Event o1, Event o2) {
+    public int compare(Campaign o1, Campaign o2) {
         int c = o1.getStartTime() < o2.getStartTime() ? -1 : o1.getStartTime() > o2.getStartTime() ? 1 : 0;
         if (c == 0) c = o1.getEndTime() < o2.getEndTime() ? -1 : o1.getEndTime() > o2.getEndTime() ? 1 : 0;
         if (c == 0) c = o1.hashCode() < o2.hashCode() ? -1 : o1.hashCode() > o2.hashCode() ? 1 : 0;
@@ -196,8 +170,8 @@ public class Event implements Comparator<Event>, Comparable<Event> {
     
     public static void main(String args[]) {
         try {
-            Event event = new Event("FOSSASIA", "#fossasia", "2015-01-01", "2015-03-13 09:00", "2015-03-15 18:00", "2015-03-17", -420);
-            System.out.println(event.toString());
+            Campaign campaign = new Campaign("FOSSASIA", "#fossasia", "2015-03-13 09:00", "2015-03-15 18:00", -420);
+            System.out.println(campaign.toString());
         } catch (ParseException e1) {
         }
     }
