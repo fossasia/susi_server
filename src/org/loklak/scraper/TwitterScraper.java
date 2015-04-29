@@ -35,6 +35,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.loklak.api.ClientHelper;
+import org.loklak.data.DAO;
 import org.loklak.data.ProviderType;
 import org.loklak.data.SourceType;
 import org.loklak.data.Timeline;
@@ -246,6 +247,7 @@ public class TwitterScraper {
     public static class TwitterTweet extends MessageEntry implements Runnable {
 
         private Semaphore ready = new Semaphore(0);
+        private Boolean exists = null;
         
         public TwitterTweet(
                 final String user_screen_name_raw,
@@ -338,8 +340,12 @@ public class TwitterScraper {
         
         @Override
         public void run() {
-            this.analyse();
-            this.enrich();
+            this.exists = new Boolean(DAO.existMessage(this.getIdStr()));
+            // only analyse and enrich the message if it does not actually exist in the search index because it will be abandoned otherwise anyway
+            if (!this.exists) {
+                this.analyse();
+                this.enrich();
+            }
             this.ready.release(1000);
         }
 
@@ -352,6 +358,14 @@ public class TwitterScraper {
                 this.ready.acquire();
             } catch (InterruptedException e) {
             }
+        }
+        
+        /**
+         * the exist method has a 3-value boolean logic: false, true and NULL for: don't know
+         * @return
+         */
+        public Boolean exist() {
+            return this.exists;
         }
         
     }

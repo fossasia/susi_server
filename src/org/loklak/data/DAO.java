@@ -342,7 +342,10 @@ public class DAO {
         try {
 
             // check if tweet exists in index
-            if (messages.exists(t.getIdStr())) return false; // we omit writing this again
+            if ((t instanceof TwitterScraper.TwitterTweet &&
+                ((TwitterScraper.TwitterTweet) t).exist() != null &&
+                ((TwitterScraper.TwitterTweet) t).exist().booleanValue()) ||
+                messages.exists(t.getIdStr())) return false; // we omit writing this again
 
             // check if user exists in index
             if (!users.exists(u.getScreenName())) {
@@ -385,6 +388,18 @@ public class DAO {
                 .execute()
                 .actionGet();
         return response.getCount();
+    }
+    
+    public static boolean existMessage(String id) {
+        return messages.exists(id);
+    }
+    
+    public static boolean existUser(String id) {
+        return users.exists(id);
+    }
+    
+    public static boolean existQuery(String id) {
+        return queries.exists(id);
     }
     
     public static class SearchLocalMessages {
