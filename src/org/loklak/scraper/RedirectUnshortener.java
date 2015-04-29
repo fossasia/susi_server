@@ -45,21 +45,6 @@ public class RedirectUnshortener {
         "twiza.ru"
     };
     
-    //see also: http://archiveteam.org/index.php?title=URLTeam
-
-    public static boolean isApplicable(String urlstring) {
-        String s = urlstring.toLowerCase();
-        if (!s.startsWith("http://") && !s.startsWith("https://")) return false;
-        s = s.substring(s.startsWith("https://") ? 8 : 7);
-        for (String t: workingHosts) {
-            if (s.startsWith(t + "/")) return true;
-        }
-        for (String t: untestedHosts) { // we just suspect that they work
-            if (s.startsWith(t + "/")) return true;
-        }
-        return false;
-    }
-    
     public static String unShorten(String urlstring) {
         try {
             int termination = 10;
@@ -72,6 +57,19 @@ public class RedirectUnshortener {
         } catch (IOException e) {
             return urlstring;
         }
+    }
+    
+    private static boolean isApplicable(String urlstring) {
+        String s = urlstring.toLowerCase();
+        if (!s.startsWith("http://") && !s.startsWith("https://")) return false;
+        s = s.substring(s.startsWith("https://") ? 8 : 7);
+        for (String t: workingHosts) {
+            if (s.startsWith(t + "/")) return true;
+        }
+        for (String t: untestedHosts) { // we just suspect that they work
+            if (s.startsWith(t + "/")) return true;
+        }
+        return false;
     }
     
     private static String getRedirect(String urlstring) throws IOException {

@@ -64,6 +64,7 @@ import org.elasticsearch.common.xcontent.XContentParser;
 import org.elasticsearch.common.xcontent.json.JsonXContent;
 import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
+import org.elasticsearch.index.query.RangeQueryBuilder;
 import org.elasticsearch.indices.IndexAlreadyExistsException;
 import org.elasticsearch.indices.IndexMissingException;
 import org.elasticsearch.node.Node;
@@ -499,20 +500,34 @@ public class DAO {
      * @param sort_field - the field name to sort the result list, i.e. "query_first"
      * @param sort_order - the sort order (you want to use SortOrder.DESC here)
      */
-    public static List<QueryEntry> SearchLocalQueries(String q, int resultCount, String sort_field, SortOrder sort_order) {
+    public static List<QueryEntry> SearchLocalQueries(final String q, final int resultCount, final String sort_field, final SortOrder sort_order, final Date since, final Date until, final String range_field) {
         List<QueryEntry> queries = new ArrayList<>();
         try {
             // prepare request
-            BoolQueryBuilder queryBuilder = QueryBuilders.boolQuery();
+            BoolQueryBuilder suggest = QueryBuilders.boolQuery();
             if (q != null && q.length() > 0) {
-                queryBuilder.should(QueryBuilders.fuzzyLikeThisQuery("query").likeText(q).fuzziness(Fuzziness.fromEdits(2)));
-                queryBuilder.should(QueryBuilders.moreLikeThisQuery("query").likeText(q));
-                queryBuilder.should(QueryBuilders.matchPhrasePrefixQuery("query", q));
-                if (q.indexOf('*') >= 0 || q.indexOf('?') >= 0) queryBuilder.should(QueryBuilders.wildcardQuery("query", q));
+                suggest.should(QueryBuilders.fuzzyLikeThisQuery("query").likeText(q).fuzziness(Fuzziness.fromEdits(2)));
+                suggest.should(QueryBuilders.moreLikeThisQuery("query").likeText(q));
+                suggest.should(QueryBuilders.matchPhrasePrefixQuery("query", q));
+                if (q.indexOf('*') >= 0 || q.indexOf('?') >= 0) suggest.should(QueryBuilders.wildcardQuery("query", q));
             }
+
+            BoolQueryBuilder query;
+            
+            if (range_field != null && range_field.length() > 0 && (since != null || until != null)) {
+                query = QueryBuilders.boolQuery();
+                if (q.length() > 0) query.must(suggest);
+                RangeQueryBuilder rangeQuery = QueryBuilders.rangeQuery(range_field);
+                rangeQuery.from(since == null ? 0 : since.getTime());
+                rangeQuery.to(until == null ? Long.MAX_VALUE : until.getTime());
+                query.must(rangeQuery);
+            } else {
+                query = suggest;
+            }
+            
             SearchRequestBuilder request = elasticsearch_client.prepareSearch(QUERIES_INDEX_NAME)
                     .setSearchType(SearchType.QUERY_THEN_FETCH)
-                    .setQuery(queryBuilder)
+                    .setQuery(query)
                     .setFrom(0)
                     .setSize(resultCount)
                     .addSort(sort_field, sort_order);
@@ -525,8 +540,7 @@ public class DAO {
             SearchHit[] hits = response.getHits().getHits();
             for (SearchHit hit: hits) {
                 Map<String, Object> map = hit.getSource();
-                QueryEntry query = new QueryEntry(map);
-                queries.add(query);
+                queries.add(new QueryEntry(map));
             }
             
         } catch (IndexMissingException e) {}

@@ -20,6 +20,7 @@
 package org.loklak.api.server;
 
 import java.io.IOException;
+import java.util.Date;
 import java.util.List;
 
 import javax.servlet.ServletException;
@@ -60,7 +61,11 @@ public class SuggestServlet extends HttpServlet {
         String orders = post.get("order", "DESC").toUpperCase();
         SortOrder order = SortOrder.valueOf(orders);        
         String orderby = post.get("orderby", query.length() == 0 ? "query_first" : "query_count");
-        List<QueryEntry> queryList = query.length() == 0 && !local ? null : DAO.SearchLocalQueries(query, count, orderby, order);
+        int timezoneOffset = post.get("timezoneOffset", 0);
+        Date since = post.get("since", (Date) null, timezoneOffset);
+        Date until = post.get("until", (Date) null, timezoneOffset);
+        String selectby = post.get("selectby", "retrieval_next");
+        List<QueryEntry> queryList = query.length() == 0 && !local ? null : DAO.SearchLocalQueries(query, count, orderby, order, since, until, selectby);
         
         post.setResponse(response, "application/javascript");
         
@@ -73,6 +78,9 @@ public class SuggestServlet extends HttpServlet {
         json.field("count", queryList == null ? "0" : Integer.toString(queryList.size()));
         json.field("query", query);
         json.field("orderby", orderby);
+        if (since != null) json.field("since", since);
+        if (until != null) json.field("until", until);
+        if (since != null || until != null) json.field("selectby", selectby);
         json.field("client", post.getClientHost());
         json.endObject(); // of search_metadata
         

@@ -47,8 +47,9 @@ public class DateParser {
      * @throws ParseException if the format of the date string is not well-formed
      */
     public static Calendar parse(String dateString, final int timezoneOffset) throws ParseException {
-        dateString = dateString.replaceAll("_", " ");
         Calendar cal = Calendar.getInstance(UTCtimeZone);
+        if ("now".equals(dateString)) return cal; 
+        dateString = dateString.replaceAll("_", " ");
         if (dateString.indexOf(':') > 0) synchronized (minuteDateFormat) {
             cal.setTime(minuteDateFormat.parse(dateString));
         } else synchronized (dayDateFormat) {

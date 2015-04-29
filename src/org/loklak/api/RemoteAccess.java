@@ -25,6 +25,8 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
+import java.text.ParseException;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -36,6 +38,7 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.Part;
 
 import org.loklak.data.DAO;
+import org.loklak.tools.DateParser;
 
 /**
  * Storage of a peer list which can be used for peer-to-peer communication.
@@ -143,6 +146,14 @@ public class RemoteAccess {
         public boolean get(String key, boolean dflt) {
             String val = qm == null ? request.getParameter(key) : qm.get(key);
             return val == null ? dflt : "true".equals(val) || "1".equals(val);
+        }
+        public Date get(String key, Date dflt, int timezoneOffset) {
+            String val = qm == null ? request.getParameter(key) : qm.get(key);
+            try {
+                return val == null ? dflt : DateParser.parse(val, timezoneOffset).getTime();
+            } catch (ParseException e) {
+                return dflt;
+            }
         }
         public void setRemoteAccess(final RemoteAccess ra) {
             this.ra = ra;
