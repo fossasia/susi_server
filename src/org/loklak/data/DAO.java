@@ -504,7 +504,12 @@ public class DAO {
         try {
             // prepare request
             BoolQueryBuilder queryBuilder = QueryBuilders.boolQuery();
-            if (q != null && q.length() > 0) queryBuilder.must(QueryBuilders.fuzzyLikeThisQuery("query").likeText(q).fuzziness(Fuzziness.fromEdits(2)));
+            if (q != null && q.length() > 0) {
+                queryBuilder.should(QueryBuilders.fuzzyLikeThisQuery("query").likeText(q).fuzziness(Fuzziness.fromEdits(2)));
+                queryBuilder.should(QueryBuilders.moreLikeThisQuery("query").likeText(q));
+                queryBuilder.should(QueryBuilders.matchPhrasePrefixQuery("query", q));
+                if (q.indexOf('*') >= 0 || q.indexOf('?') >= 0) queryBuilder.should(QueryBuilders.wildcardQuery("query", q));
+            }
             SearchRequestBuilder request = elasticsearch_client.prepareSearch(QUERIES_INDEX_NAME)
                     .setSearchType(SearchType.QUERY_THEN_FETCH)
                     .setQuery(queryBuilder)
