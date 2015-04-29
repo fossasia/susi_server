@@ -53,6 +53,16 @@ public abstract class AbstractIndexFactory<Entry extends IndexEntry> implements 
         cache.put(id, entry);
         return entry;
     }
+    
+    @Override
+    public boolean exists(String id) {
+        try {
+            return elasticsearch_client.prepareGet(index_name, null, id).execute().actionGet().isExists();
+        } catch (IndexMissingException e) {
+            // may happen for first query
+            return false;
+        }
+    }
 
     @Override
     public Map<String, Object> readMap(String id) {

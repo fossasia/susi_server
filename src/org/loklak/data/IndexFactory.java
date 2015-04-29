@@ -34,6 +34,8 @@ public interface IndexFactory<Entry extends IndexEntry> {
     
     public Entry init(Map<String, Object> map);
 
+    public boolean exists(String id);
+    
     public Map<String, Object> readMap(String id);
 
     public void writeEntry(String id, String type, Entry entry) throws IOException;

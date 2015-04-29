@@ -342,10 +342,10 @@ public class DAO {
         try {
 
             // check if tweet exists in index
-            if (messages.readMap(t.getIdStr()) != null) return false; // we omit writing this again
+            if (messages.exists(t.getIdStr())) return false; // we omit writing this again
 
             // check if user exists in index
-            if (users.readMap(u.getScreenName()) == null) {
+            if (!users.exists(u.getScreenName())) {
                 users.writeEntry(u.getScreenName(), t.getSourceType().name(), u);
             }
 
