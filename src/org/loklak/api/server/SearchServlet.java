@@ -40,6 +40,7 @@ import org.loklak.data.MessageEntry;
 import org.loklak.data.UserEntry;
 import org.loklak.rss.RSSFeed;
 import org.loklak.rss.RSSMessage;
+import org.loklak.scraper.TwitterScraper;
 import org.loklak.tools.CharacterCoding;
 
 /**
@@ -89,7 +90,7 @@ public class SearchServlet extends HttpServlet {
                 final int timezoneOffsetf = timezoneOffset;
                 Thread scraperThread = new Thread() {
                     public void run() {
-                        tl.putAll(DAO.scrapeTwitter(queryf, timezoneOffsetf, true)[0]);
+                        tl.putAll(DAO.scrapeTwitter(queryf, timezoneOffsetf, true)[1]);
                     }
                 };
                 scraperThread.start();
@@ -106,7 +107,7 @@ public class SearchServlet extends HttpServlet {
                 try {scraperThread.join(8000);} catch (InterruptedException e) {}
             } else {
                 if ("twitter".equals(source)) {
-                    tl.putAll(DAO.scrapeTwitter(query, timezoneOffset, true)[0]);
+                    tl.putAll(DAO.scrapeTwitter(query, timezoneOffset, true)[1]);
                 }
     
                 // replace the timeline with one from the own index which now includes the remote result
@@ -148,6 +149,7 @@ public class SearchServlet extends HttpServlet {
             json.field("itemsPerPage", Integer.toString(count));
             json.field("count", Integer.toString(tl.size()));
             json.field("hits", hits);
+            json.field("period", tl.period());
             json.field("query", query);
             json.field("client", post.getClientHost());
             json.field("servicereduction", post.isDoS_servicereduction() ? "true" : "false");

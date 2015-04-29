@@ -108,4 +108,9 @@ public class Timeline implements Iterable<MessageEntry> {
         return this.tweets.descendingMap().values().iterator();
     }
 
+    public long period() {
+        long timeInterval = this.size() < 2 ? 0 : this.getLatestTweet().created_at.getTime() - this.getOldestTweet().created_at.getTime();
+        return this.size() < 2 ? Long.MAX_VALUE : 1 + timeInterval / (this.size() - 1);
+    }    
+    
 }

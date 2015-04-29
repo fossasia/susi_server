@@ -70,7 +70,7 @@ public class QueryEntry extends AbstractIndexEntry implements IndexEntry {
     protected Date expected_next;     // the estimated next time when one single message will appear
     protected int query_count;        // the number of queries by the user of that query done so far
     protected int retrieval_count;    // the number of retrievals of that query done so far to the external system
-    protected int message_period;     // the estimated period length between two messages
+    protected long message_period;     // the estimated period length between two messages
     protected int messages_per_day;   // a message frequency based on the last query
 
     /**
@@ -108,7 +108,7 @@ public class QueryEntry extends AbstractIndexEntry implements IndexEntry {
         this.expected_next = ISODateTimeFormat.dateOptionalTimeParser().parseDateTime((String) map.get("expected_next")).toDate();
         this.query_count = (int) DAO.noNULL((Number) map.get("query_count"));
         this.retrieval_count = (int) DAO.noNULL((Number) map.get("retrieval_count"));
-        this.message_period = (int) DAO.noNULL((Number) map.get("message_period"));
+        this.message_period = DAO.noNULL((Number) map.get("message_period"));
         this.messages_per_day = (int) DAO.noNULL((Number) map.get("messages_per_day"));
     }
     
@@ -124,8 +124,7 @@ public class QueryEntry extends AbstractIndexEntry implements IndexEntry {
             this.query_count++;
             this.query_last = this.retrieval_last;
         }
-        long timeInterval = timeline.size() < 2 ? 0 : timeline.getLatestTweet().created_at.getTime() - timeline.getOldestTweet().created_at.getTime();
-        this.message_period = timeline.size() < 2 ? Integer.MAX_VALUE : (int) (1 + timeInterval / (timeline.size() - 1));
+        this.message_period = timeline.period();
         this.messages_per_day = (int) (DAY_MILLIS / this.message_period); // this is an interpolation based on the last tweet list, can be 0!
         this.expected_next = new Date(this.retrieval_last.getTime() + ((long) (ttl_factor *  this.message_period)));
         this.retrieval_next = new Date(this.retrieval_last.getTime() + ((long) (ttl_factor * timeline.size() * Math.max(MINIMUM_PERIOD, this.message_period))));
