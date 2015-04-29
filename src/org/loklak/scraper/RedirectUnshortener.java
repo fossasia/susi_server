@@ -23,7 +23,10 @@ public class RedirectUnshortener {
         "ow.ly",
         "tiny.cc",
         "bit.do",
-        "amzn.to"
+        "amzn.to",
+        "tmblr.co",
+        "tumblr.com",
+        "www.tumblr.com"
     };
     
     private final static String[] untestedHosts = new String[] {
@@ -46,8 +49,8 @@ public class RedirectUnshortener {
 
     public static boolean isApplicable(String urlstring) {
         String s = urlstring.toLowerCase();
-        if (!s.startsWith("http://")) return false;
-        s = s.substring(7);
+        if (!s.startsWith("http://") && !s.startsWith("https://")) return false;
+        s = s.substring(s.startsWith("https://") ? 8 : 7);
         for (String t: workingHosts) {
             if (s.startsWith(t + "/")) return true;
         }
@@ -111,6 +114,7 @@ public class RedirectUnshortener {
     
     public static void main(String[] args) {
         String[] test = new String[] {
+                "http://tmblr.co/Z6YPNx1jL1hHK",
                 "http://dlvr.it/8kTDbJ",
                 "http://fb.me/4lcXZsyyO",
                 "http://wp.me/p4yQu6-za0",
