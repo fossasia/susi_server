@@ -55,6 +55,7 @@ import org.loklak.tools.DateParser;
 public class QueryEntry extends AbstractIndexEntry implements IndexEntry {
     
     private final static long DAY_MILLIS = 1000L * 60L * 60L * 24L;
+    private final static int MINIMUM_PERIOD = 1000; // for single messages; used to calculate retrieval_next times
 
     public static double ttl_factor = 0.5d;
     
@@ -127,7 +128,7 @@ public class QueryEntry extends AbstractIndexEntry implements IndexEntry {
         this.message_period = timeline.size() < 1 ? Integer.MAX_VALUE : (int) (1 + timeInterval / (timeline.size() - 1));
         this.messages_per_day = (int) (DAY_MILLIS / this.message_period); // this is an interpolation based on the last tweet list, can be 0!
         this.expected_next = new Date(this.retrieval_last.getTime() + ((long) (ttl_factor *  this.message_period)));
-        this.retrieval_next = new Date(this.retrieval_last.getTime() + ((long) (ttl_factor * timeline.size() * this.message_period)));
+        this.retrieval_next = new Date(this.retrieval_last.getTime() + ((long) (ttl_factor * timeline.size() * Math.max(MINIMUM_PERIOD, this.message_period))));
     }
     
     /**
