@@ -40,32 +40,32 @@ public class MessageFactory extends AbstractIndexFactory<MessageEntry> implement
                 .startObject("properties")
                   .startObject("created_at").field("type","date").field("format","dateOptionalTime").field("include_in_all","false").field("doc_values", true).endObject()
                   .startObject("on").field("type","date").field("format","dateOptionalTime").field("include_in_all","false").field("doc_values", true).endObject()
-                  .startObject("screen_name").field("type","string").field("index","not_analyzed").field("doc_values", true).endObject()
-                  .startObject("text").field("type","string").endObject()
-                  .startObject("link").field("type","string").field("index","not_analyzed").field("include_in_all","false").field("doc_values", true).endObject() // not to be indexed because it is not part of the content
-                  .startObject("id_str").field("type","string").field("index","not_analyzed").field("include_in_all","false").field("doc_values", true).endObject()
-                  .startObject("source_type").field("type","string").field("index","not_analyzed").field("include_in_all","false").field("doc_values", true).endObject()
-                  .startObject("provider_type").field("type","string").field("index","not_analyzed").field("include_in_all","false").field("doc_values", true).endObject()
-                  .startObject("provider_hash").field("type","string").field("index","not_analyzed").field("include_in_all","false").field("doc_values", true).endObject()
+                  .startObject("screen_name").field("type","string").field("include_in_all","false").field("doc_values", true).field("index","not_analyzed").endObject()
+                  .startObject("text").field("type","string").field("include_in_all","false").endObject()
+                  .startObject("link").field("type","string").field("include_in_all","false").field("index","not_analyzed").field("doc_values", true).endObject() // not to be indexed because it is not part of the content
+                  .startObject("id_str").field("type","string").field("include_in_all","false").field("index","not_analyzed").field("doc_values", true).endObject()
+                  .startObject("source_type").field("type","string").field("include_in_all","false").field("index","not_analyzed").field("doc_values", true).endObject()
+                  .startObject("provider_type").field("type","string").field("include_in_all","false").field("index","not_analyzed").field("doc_values", true).endObject()
+                  .startObject("provider_hash").field("type","string").field("include_in_all","false").field("index","not_analyzed").field("doc_values", true).endObject()
                   .startObject("retweet_count").field("type","long").field("include_in_all","false").field("doc_values", true).endObject()
                   .startObject("favourites_count").field("type","long").field("include_in_all","false").field("doc_values", true).endObject()
-                  .startObject("images").field("type","string").field("index","not_analyzed").field("include_in_all","false").field("doc_values", true).endObject()
+                  .startObject("images").field("type","string").field("include_in_all","false").field("doc_values", true).field("index","not_analyzed").endObject()
                   .startObject("images_count").field("type","long").field("include_in_all","false").field("doc_values", true).endObject()
-                  .startObject("place_name").field("type","string").endObject()
-                  .startObject("place_id").field("type","string").field("index","not_analyzed").field("include_in_all","false").field("doc_values", true).endObject()
+                  .startObject("place_name").field("type","string").field("include_in_all","false").endObject()
+                  .startObject("place_id").field("type","string").field("include_in_all","false").field("doc_values", true).field("index","not_analyzed").endObject()
         
                   // The following fields are extracted from field 'text' and shall not be in _all since 'text' is already in _all.
                   // TwitterRiver has a different structure here as well as the official twitter api, but that is a complex thing and not so good usable.
                   // We prefer a simple, flat structure for this metainfo.
                   // The Twitter API info about original and extracted links is also not usable here since we throw away the short links and replace them with extracted.
                   // Naming does not interfere with TwitterRiver, as far as visible.
-                  .startObject("hosts").field("type","string").field("index","not_analyzed").field("include_in_all","false").field("doc_values", true).endObject()
+                  .startObject("hosts").field("type","string").field("include_in_all","false").field("doc_values", true).field("index","not_analyzed").endObject()
                   .startObject("hosts_count").field("type","long").field("include_in_all","false").field("doc_values", true).endObject()
-                  .startObject("links").field("type","string").field("index","not_analyzed").field("include_in_all","false").field("doc_values", true).endObject()
+                  .startObject("links").field("type","string").field("include_in_all","false").field("doc_values", true).field("index","not_analyzed").endObject()
                   .startObject("links_count").field("type","long").field("include_in_all","false").field("doc_values", true).endObject()
-                  .startObject("mentions").field("type","string").field("index","not_analyzed").field("include_in_all","false").field("doc_values", true).endObject()
+                  .startObject("mentions").field("type","string").field("include_in_all","false").field("doc_values", true).field("index","not_analyzed").endObject()
                   .startObject("mentions_count").field("type","long").field("include_in_all","false").field("doc_values", true).endObject()
-                  .startObject("hashtags").field("type","string").field("index","not_analyzed").field("include_in_all","false").field("doc_values", true).endObject()
+                  .startObject("hashtags").field("type","string").field("include_in_all","false").field("doc_values", true).field("index","not_analyzed").endObject()
                   .startObject("hashtags_count").field("type","long").field("include_in_all","false").field("doc_values", true).endObject()
                   // experimental, for ranking
                   .startObject("without_l_len").field("type","long").field("include_in_all","false").field("doc_values", true).endObject()

@@ -38,7 +38,7 @@ public class QueryFactory extends AbstractIndexFactory<QueryEntry> implements In
             XContentBuilder mapping = XContentFactory.jsonBuilder()
                 .startObject()
                 .startObject("properties")
-                  .startObject("query").field("type","string").endObject()
+                  .startObject("query").field("type","string").field("include_in_all","false").endObject()
                   .startObject("since").field("type","date").field("format","dateOptionalTime").field("include_in_all","false").field("doc_values", true).endObject()
                   .startObject("until").field("type","date").field("format","dateOptionalTime").field("include_in_all","false").field("doc_values", true).endObject()
                   .startObject("source_type").field("type","string").field("index","not_analyzed").field("include_in_all","false").field("doc_values", true).endObject()
