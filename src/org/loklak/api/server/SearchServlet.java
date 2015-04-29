@@ -81,6 +81,7 @@ public class SearchServlet extends HttpServlet {
         // create tweet timeline
         final Timeline tl = new Timeline();
         Map<String, List<Map.Entry<String, Long>>> aggregations = null;
+        long hits = 0;
         if (query.length() > 0) {
             if ("all".equals(source)) {
                 // start all targets for search concurrently
@@ -99,6 +100,7 @@ public class SearchServlet extends HttpServlet {
                 };
                 backendThread.start();
                 DAO.SearchLocalMessages localSearchResult = new DAO.SearchLocalMessages(query, timezoneOffset, count, 0);
+                hits = localSearchResult.hits;
                 tl.putAll(localSearchResult.timeline);
                 try {backendThread.join(5000);} catch (InterruptedException e) {}
                 try {scraperThread.join(8000);} catch (InterruptedException e) {}
@@ -115,11 +117,13 @@ public class SearchServlet extends HttpServlet {
                 // replace the timeline with one from the own index which now includes the remote result
                 if ("cache".equals(source)) {
                     DAO.SearchLocalMessages localSearchResult = new DAO.SearchLocalMessages(query, timezoneOffset, count, limit, fields);
+                    hits = localSearchResult.hits;
                     tl.putAll(localSearchResult.timeline);
                     aggregations = localSearchResult.aggregations;
                 }
             }
         }
+        hits = Math.max(hits, tl.size());
 
         if (post.isDoS_servicereduction() && !RemoteAccess.isSleepingForClient(post.getClientHost())) {
             RemoteAccess.sleep(post.getClientHost(), 2000);
@@ -143,6 +147,7 @@ public class SearchServlet extends HttpServlet {
             json.field("startIndex", "0");
             json.field("itemsPerPage", Integer.toString(count));
             json.field("count", Integer.toString(tl.size()));
+            json.field("hits", hits);
             json.field("query", query);
             json.field("client", post.getClientHost());
             json.field("servicereduction", post.isDoS_servicereduction() ? "true" : "false");

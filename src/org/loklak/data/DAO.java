@@ -403,6 +403,7 @@ public class DAO {
     }
     
     public static class SearchLocalMessages {
+        public long hits;
         public Timeline timeline;
         public Map<String, List<Map.Entry<String, Long>>> aggregations;
 
@@ -440,7 +441,8 @@ public class DAO {
                 
                 // get response
                 SearchResponse response = request.execute().actionGet();
-
+                this.hits = response.getHits().getTotalHits();
+                        
                 // evaluate search result
                 //long totalHitCount = response.getHits().getTotalHits();
                 SearchHit[] hits = response.getHits().getHits();
