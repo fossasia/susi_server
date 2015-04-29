@@ -124,8 +124,8 @@ public class QueryEntry extends AbstractIndexEntry implements IndexEntry {
             this.query_count++;
             this.query_last = this.retrieval_last;
         }
-        long timeInterval = timeline.getLatestTweet().created_at.getTime() - timeline.getOldestTweet().created_at.getTime();
-        this.message_period = timeline.size() < 1 ? Integer.MAX_VALUE : (int) (1 + timeInterval / (timeline.size() - 1));
+        long timeInterval = timeline.size() < 2 ? 0 : timeline.getLatestTweet().created_at.getTime() - timeline.getOldestTweet().created_at.getTime();
+        this.message_period = timeline.size() < 2 ? Integer.MAX_VALUE : (int) (1 + timeInterval / (timeline.size() - 1));
         this.messages_per_day = (int) (DAY_MILLIS / this.message_period); // this is an interpolation based on the last tweet list, can be 0!
         this.expected_next = new Date(this.retrieval_last.getTime() + ((long) (ttl_factor *  this.message_period)));
         this.retrieval_next = new Date(this.retrieval_last.getTime() + ((long) (ttl_factor * timeline.size() * Math.max(MINIMUM_PERIOD, this.message_period))));
