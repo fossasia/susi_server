@@ -59,6 +59,7 @@ public class QueryEntry extends AbstractIndexEntry implements IndexEntry {
     public static double ttl_factor = 0.5d;
     
     protected String query;           // the query in the exact way as the user typed it in
+    protected int query_length;       // the length in the query, number of characters
     protected SourceType source_type; // the (external) retrieval system where that query was submitted
     protected int timezoneOffset;     // the timezone offset of the user
     protected Date query_first;       // the date when this query was submitted by the user the first time
@@ -68,6 +69,7 @@ public class QueryEntry extends AbstractIndexEntry implements IndexEntry {
     protected Date expected_next;     // the estimated next time when one single message will appear
     protected int query_count;        // the number of queries by the user of that query done so far
     protected int retrieval_count;    // the number of retrievals of that query done so far to the external system
+    protected int message_period;     // the estimated period length between two messages
     protected int messages_per_day;   // a message frequency based on the last query
 
     /**
@@ -80,6 +82,7 @@ public class QueryEntry extends AbstractIndexEntry implements IndexEntry {
      */
     public QueryEntry(final String query, final int timezoneOffset, final Timeline timeline, final SourceType source_type, final boolean byUserQuery) {
         this.query = query;
+        this.query_length = query.length();
         this.timezoneOffset = timezoneOffset;
         this.source_type = source_type;
         this.retrieval_count = 0; // will be set to 1 with first update
@@ -93,6 +96,7 @@ public class QueryEntry extends AbstractIndexEntry implements IndexEntry {
     
     public void init(Map<String, Object> map) throws IllegalArgumentException {
         this.query = (String) map.get("query");
+        this.query_length = (int) DAO.noNULL((Number) map.get("query_length"));
         String source_type_string = (String) map.get("source_type"); if (source_type_string == null) source_type_string = SourceType.USER.name();
         this.source_type = SourceType.valueOf(source_type_string);
         this.timezoneOffset = (int) DAO.noNULL((Number) map.get("timezoneOffset"));
@@ -103,6 +107,7 @@ public class QueryEntry extends AbstractIndexEntry implements IndexEntry {
         this.expected_next = ISODateTimeFormat.dateOptionalTimeParser().parseDateTime((String) map.get("expected_next")).toDate();
         this.query_count = (int) DAO.noNULL((Number) map.get("query_count"));
         this.retrieval_count = (int) DAO.noNULL((Number) map.get("retrieval_count"));
+        this.message_period = (int) DAO.noNULL((Number) map.get("message_period"));
         this.messages_per_day = (int) DAO.noNULL((Number) map.get("messages_per_day"));
     }
     
@@ -119,10 +124,10 @@ public class QueryEntry extends AbstractIndexEntry implements IndexEntry {
             this.query_last = this.retrieval_last;
         }
         long timeInterval = timeline.getLatestTweet().created_at.getTime() - timeline.getOldestTweet().created_at.getTime();
-        double mpd = ((double) (DAY_MILLIS * (timeline.size() - 1))) / ((double) timeInterval); // this is an interpolation based on the last tweet list
-        this.messages_per_day = (int) mpd; // messages_per_day can be 0!
-        this.expected_next = new Date(this.retrieval_last.getTime() + ((long) (ttl_factor * DAY_MILLIS / mpd)));
-        this.retrieval_next = new Date(this.retrieval_last.getTime() + ((long) (ttl_factor * timeline.size() * DAY_MILLIS / mpd)));
+        this.message_period = timeline.size() < 1 ? Integer.MAX_VALUE : (int) (1 + timeInterval / (timeline.size() - 1));
+        this.messages_per_day = (int) (DAY_MILLIS / this.message_period); // this is an interpolation based on the last tweet list, can be 0!
+        this.expected_next = new Date(this.retrieval_last.getTime() + ((long) (ttl_factor *  this.message_period)));
+        this.retrieval_next = new Date(this.retrieval_last.getTime() + ((long) (ttl_factor * timeline.size() * this.message_period)));
     }
     
     /**
@@ -137,6 +142,10 @@ public class QueryEntry extends AbstractIndexEntry implements IndexEntry {
     
     public String getQuery() {
         return this.query;
+    }
+
+    public int getQueryLength() {
+        return this.query_length;
     }
 
     public SourceType getSourceType() {
@@ -183,6 +192,7 @@ public class QueryEntry extends AbstractIndexEntry implements IndexEntry {
         try {
             m.startObject();
             m.field("query", this.query);
+            m.field("query_length", this.query_length);
             m.field("source_type", this.source_type);
             m.field("timezoneOffset", this.timezoneOffset);
             m.field("query_first", this.query_first);
@@ -192,6 +202,7 @@ public class QueryEntry extends AbstractIndexEntry implements IndexEntry {
             m.field("expected_next", this.expected_next);
             m.field("query_count", this.query_count);
             m.field("retrieval_count", this.retrieval_count);
+            m.field("message_period", this.message_period);
             m.field("messages_per_day", this.messages_per_day);
             m.endObject();
         } catch (IOException e) {

@@ -39,6 +39,7 @@ public class QueryFactory extends AbstractIndexFactory<QueryEntry> implements In
                 .startObject()
                 .startObject("properties")
                   .startObject("query").field("type","string").field("include_in_all","false").endObject()
+                  .startObject("query_length").field("type","long").field("include_in_all","false").field("doc_values", true).endObject()
                   .startObject("since").field("type","date").field("format","dateOptionalTime").field("include_in_all","false").field("doc_values", true).endObject()
                   .startObject("until").field("type","date").field("format","dateOptionalTime").field("include_in_all","false").field("doc_values", true).endObject()
                   .startObject("source_type").field("type","string").field("index","not_analyzed").field("include_in_all","false").field("doc_values", true).endObject()
@@ -50,6 +51,7 @@ public class QueryFactory extends AbstractIndexFactory<QueryEntry> implements In
                   .startObject("expected_next").field("type","date").field("format","dateOptionalTime").field("include_in_all","false").field("doc_values", true).endObject()
                   .startObject("query_count").field("type","long").field("include_in_all","false").field("doc_values", true).endObject()
                   .startObject("retrieval_count").field("type","long").field("include_in_all","false").field("doc_values", true).endObject()
+                  .startObject("message_period").field("type","long").field("include_in_all","false").field("doc_values", true).endObject()
                   .startObject("messages_per_day").field("type","long").field("include_in_all","false").field("doc_values", true).endObject()
                 .endObject()
               .endObject();
