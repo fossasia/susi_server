@@ -30,6 +30,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Semaphore;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -80,6 +81,15 @@ public class TwitterScraper {
         } catch (IOException e) {
             e.printStackTrace();
         };
+        
+        // wait until all messages in the timeline are ready
+        for (MessageEntry m: timeline) {
+            if (m instanceof TwitterTweet) {
+                ((TwitterTweet) m).waitReady();
+            }
+        }
+        
+        
         return timeline;
     }
     
@@ -162,7 +172,7 @@ public class TwitterScraper {
                         );
                 ArrayList<String> imgs = new ArrayList<String>(images.size());
                 for (prop ai: images) if (ai.value != null) imgs.add(ai.value);
-                MessageEntry tweet = new TwitterTweet(
+                TwitterTweet tweet = new TwitterTweet(
                         user.getScreenName(),
                         Long.parseLong(props.get("tweettimems").value),
                         props.get("tweettimename").value,
@@ -172,6 +182,7 @@ public class TwitterScraper {
                         Long.parseLong(props.get("tweetfavouritecount").value),
                         imgs, place_name, place_id
                         );
+                new Thread(tweet).start(); // todo: use thread pools
                 timeline.addUser(user);
                 timeline.addTweet(tweet);
                 images.clear();
@@ -227,17 +238,19 @@ public class TwitterScraper {
     }
     
 
-    final static Pattern timeline_pattern = Pattern.compile("<a .*?href=\"(.*?)\".*?data-expanded-url=\"(.*?)\".*?twitter-timeline-link.*title=\"(.*?)\".*?>.*?</a>");
+    final static Pattern timeline_link_pattern = Pattern.compile("<a .*?href=\"(.*?)\".*?data-expanded-url=\"(.*?)\".*?twitter-timeline-link.*title=\"(.*?)\".*?>.*?</a>");
     final static Pattern timeline_embed_pattern = Pattern.compile("<a .*?href=\"(.*?)\".*?twitter-timeline-link.*?>pic.twitter.com/(.*?)</a>");
     final static Pattern emoji_pattern = Pattern.compile("<img .*?class=\"twitter-emoji\".*?alt=\"(.*?)\".*?>");
     
     
-    public static class TwitterTweet extends MessageEntry {
+    public static class TwitterTweet extends MessageEntry implements Runnable {
 
+        private Semaphore ready = new Semaphore(0);
+        
         public TwitterTweet(
                 final String user_screen_name_raw,
                 final long created_at_raw,
-                final String created_at_name_raw,
+                final String created_at_name_raw, // not used here but should be compared to created_at_raw
                 final String status_id_url_raw,
                 final String text_raw,
                 final long retweets,
@@ -250,11 +263,17 @@ public class TwitterScraper {
             this.provider_type = ProviderType.SCRAPED;
             this.user_screen_name = user_screen_name_raw;
             this.created_at = new Date(created_at_raw);
+            this.status_id_url = new URL("https://twitter.com" + status_id_url_raw);
+            int p = status_id_url_raw.lastIndexOf('/');
+            this.id_str = p >= 0 ? status_id_url_raw.substring(p + 1) : "-1";
             this.retweet_count = retweets;
             this.favourites_count = favourites;
             this.images = images;
             this.place_name = place_name;
             this.place_id = place_id;
+
+            //Date d = new Date(timemsraw);
+            //System.out.println(d);
             
             /* failed to reverse-engineering the place_id :(
             if (place_id.length() == 16) {
@@ -268,13 +287,16 @@ public class TwitterScraper {
             }
             */
             
-            //Date d = new Date(timemsraw);
-            //System.out.println(d);
+            this.text = text_raw; // this MUST be analysed with analyse(); this is not done here because it should be started concurrently; run run();
+        }
+
+        private void analyse() {
+            String text_raw = this.text;
             for (int i = 0; i < text_raw.length(); i++) if (text_raw.charAt(i) < ' ') text_raw.replace(text_raw.charAt(i), ' '); // remove funny chars
             this.text = text_raw.replaceAll("</?(s|b|strong)>", "").replaceAll("<a href=\"/hashtag.*?>", "").replaceAll("<a.*?class=\"twitter-atreply.*?>", "").replaceAll("<span.*?span>", "").replaceAll("  ", " ");
             while (true) {
                 try {
-                    Matcher m = timeline_pattern.matcher(this.text);
+                    Matcher m = timeline_link_pattern.matcher(this.text);
                     if (m.find()) {
                         //String href = m.group(1);
                         String expanded = RedirectUnshortener.unShorten(m.group(2));
@@ -312,10 +334,24 @@ public class TwitterScraper {
                 break;
             }
             this.text = html2utf8(this.text).replaceAll("  ", " ").trim();
-            this.status_id_url = new URL("https://twitter.com" + status_id_url_raw);
-            int p = status_id_url_raw.lastIndexOf('/');
-            this.id_str = p >= 0 ? status_id_url_raw.substring(p + 1) : "-1";
+        }
+        
+        @Override
+        public void run() {
+            this.analyse();
             this.enrich();
+            this.ready.release(1000);
+        }
+
+        public boolean isReady() {
+            return this.ready.availablePermits() > 0;
+        }
+        
+        public void waitReady() {
+            try {
+                this.ready.acquire();
+            } catch (InterruptedException e) {
+            }
         }
         
     }
