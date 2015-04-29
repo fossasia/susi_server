@@ -33,11 +33,11 @@ import javax.servlet.http.HttpServletResponse;
 import org.eclipse.jetty.util.log.Log;
 import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.elasticsearch.common.xcontent.XContentFactory;
-import org.loklak.DAO;
-import org.loklak.Timeline;
-import org.loklak.Tweet;
-import org.loklak.User;
 import org.loklak.api.RemoteAccess;
+import org.loklak.data.DAO;
+import org.loklak.data.Timeline;
+import org.loklak.data.MessageEntry;
+import org.loklak.data.UserEntry;
 import org.loklak.rss.RSSFeed;
 import org.loklak.rss.RSSMessage;
 import org.loklak.tools.CharacterCoding;
@@ -88,7 +88,7 @@ public class SearchServlet extends HttpServlet {
                 final int timezoneOffsetf = timezoneOffset;
                 Thread scraperThread = new Thread() {
                     public void run() {
-                        tl.putAll(DAO.scrapeTwitter(queryf, timezoneOffsetf)[0]);
+                        tl.putAll(DAO.scrapeTwitter(queryf, timezoneOffsetf, true)[0]);
                     }
                 };
                 scraperThread.start();
@@ -98,13 +98,13 @@ public class SearchServlet extends HttpServlet {
                     }
                 };
                 backendThread.start();
-                DAO.searchLocal localSearchResult = new DAO.searchLocal(query, timezoneOffset, count, 0);
+                DAO.SearchLocalMessages localSearchResult = new DAO.SearchLocalMessages(query, timezoneOffset, count, 0);
                 tl.putAll(localSearchResult.timeline);
                 try {backendThread.join(5000);} catch (InterruptedException e) {}
                 try {scraperThread.join(8000);} catch (InterruptedException e) {}
             } else {
                 if ("twitter".equals(source)) {
-                    tl.putAll(DAO.scrapeTwitter(query, timezoneOffset)[0]);
+                    tl.putAll(DAO.scrapeTwitter(query, timezoneOffset, true)[0]);
                 }
     
                 // replace the timeline with one from the own index which now includes the remote result
@@ -114,7 +114,7 @@ public class SearchServlet extends HttpServlet {
     
                 // replace the timeline with one from the own index which now includes the remote result
                 if ("cache".equals(source)) {
-                    DAO.searchLocal localSearchResult = new DAO.searchLocal(query, timezoneOffset, count, limit, fields);
+                    DAO.SearchLocalMessages localSearchResult = new DAO.SearchLocalMessages(query, timezoneOffset, count, limit, fields);
                     tl.putAll(localSearchResult.timeline);
                     aggregations = localSearchResult.aggregations;
                 }
@@ -148,8 +148,8 @@ public class SearchServlet extends HttpServlet {
             json.field("servicereduction", post.isDoS_servicereduction() ? "true" : "false");
             json.endObject(); // of search_metadata
             json.field("statuses").startArray();
-            for (Tweet t: tl) {
-                User u = tl.getUser(t);
+            for (MessageEntry t: tl) {
+                UserEntry u = tl.getUser(t);
                 t.toJSON(json, u, true);
             }
             json.endArray();
@@ -185,8 +185,8 @@ public class SearchServlet extends HttpServlet {
             channel.setLink("");
             RSSFeed feed = new RSSFeed(tl.size());
             feed.setChannel(channel);
-            for (Tweet t: tl) {
-                User u = tl.getUser(t);
+            for (MessageEntry t: tl) {
+                UserEntry u = tl.getUser(t);
                 RSSMessage m = new RSSMessage();
                 m.setLink(t.getStatusIdUrl().toExternalForm());
                 m.setAuthor(u.getName() + " @" + u.getScreenName());

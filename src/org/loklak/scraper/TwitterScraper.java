@@ -33,12 +33,12 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.loklak.ProviderType;
-import org.loklak.SourceType;
-import org.loklak.Timeline;
-import org.loklak.Tweet;
-import org.loklak.User;
 import org.loklak.api.ClientHelper;
+import org.loklak.data.ProviderType;
+import org.loklak.data.SourceType;
+import org.loklak.data.Timeline;
+import org.loklak.data.MessageEntry;
+import org.loklak.data.UserEntry;
 
 public class TwitterScraper {
 
@@ -155,14 +155,14 @@ public class TwitterScraper {
             }
             if (props.size() == 9) {
                 // the tweet is complete, evaluate the result
-                User user = new User(
+                UserEntry user = new UserEntry(
                         props.get("usernickname").value,
                         props.get("useravatarurl").value,
                         props.get("userfullname").value
                         );
                 ArrayList<String> imgs = new ArrayList<String>(images.size());
                 for (prop ai: images) if (ai.value != null) imgs.add(ai.value);
-                Tweet tweet = new TwitterTweet(
+                MessageEntry tweet = new TwitterTweet(
                         user.getScreenName(),
                         Long.parseLong(props.get("tweettimems").value),
                         props.get("tweettimename").value,
@@ -232,7 +232,7 @@ public class TwitterScraper {
     final static Pattern emoji_pattern = Pattern.compile("<img .*?class=\"twitter-emoji\".*?alt=\"(.*?)\".*?>");
     
     
-    public static class TwitterTweet extends Tweet {
+    public static class TwitterTweet extends MessageEntry {
 
         public TwitterTweet(
                 final String user_screen_name_raw,
@@ -328,7 +328,7 @@ public class TwitterScraper {
     public static void main(String[] args) {
         //wget --no-check-certificate "https://twitter.com/search?q=eifel&src=typd&f=realtime"
         Timeline result = TwitterScraper.search(args[0]);
-        for (Tweet tweet : result) {
+        for (MessageEntry tweet : result) {
             System.out.println("@" + tweet.getUserScreenName() + " - " + tweet.getText());
         }
         System.exit(0);

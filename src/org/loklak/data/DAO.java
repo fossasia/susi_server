@@ -17,7 +17,7 @@
  *  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.loklak;
+package org.loklak.data;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -30,8 +30,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.RandomAccessFile;
-import java.net.MalformedURLException;
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.AbstractMap;
 import java.util.ArrayList;
@@ -48,29 +46,24 @@ import java.util.TreeSet;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
 import org.eclipse.jetty.util.log.Log;
 import org.elasticsearch.action.count.CountResponse;
-import org.elasticsearch.action.get.GetResponse;
 import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.action.search.SearchType;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.common.settings.ImmutableSettings;
 import org.elasticsearch.common.settings.ImmutableSettings.Builder;
+import org.elasticsearch.common.unit.Fuzziness;
 import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.elasticsearch.common.xcontent.XContentFactory;
 import org.elasticsearch.common.xcontent.XContentParser;
 import org.elasticsearch.common.xcontent.json.JsonXContent;
-import org.elasticsearch.index.VersionType;
 import org.elasticsearch.index.query.BoolQueryBuilder;
-import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
-import org.elasticsearch.index.query.RangeQueryBuilder;
 import org.elasticsearch.indices.IndexAlreadyExistsException;
 import org.elasticsearch.indices.IndexMissingException;
 import org.elasticsearch.node.Node;
@@ -83,7 +76,6 @@ import org.elasticsearch.search.aggregations.bucket.terms.Terms.Bucket;
 import org.elasticsearch.search.sort.SortOrder;
 import org.loklak.api.client.SearchClient;
 import org.loklak.scraper.TwitterScraper;
-import org.loklak.tools.Cache;
 import org.loklak.tools.DateParser;
 import org.loklak.tools.UTF8;
 
@@ -95,6 +87,7 @@ import org.loklak.tools.UTF8;
 public class DAO {
 
     public final static String MESSAGE_DUMP_FILE_PREFIX = "messages_";
+    public final static String QUERIES_INDEX_NAME = "queries";
     public final static String MESSAGES_INDEX_NAME = "messages";
     public final static String USERS_INDEX_NAME = "users";
     public final static int CACHE_MAXSIZE = 10000;
@@ -105,9 +98,10 @@ public class DAO {
     private static RandomAccessFile messagelog;
     private static Node elasticsearch_node;
     private static Client elasticsearch_client;
-    private static Cache<String, Tweet> tweetCache = new Cache<String, Tweet>(CACHE_MAXSIZE);
-    private static Cache<String, User> userCache = new Cache<String, User>(CACHE_MAXSIZE);
-    private static BlockingQueue<Timeline> newTweetTimelines = new LinkedBlockingQueue<Timeline>();
+    private static UserFactory users;
+    private static MessageFactory messages;
+    private static QueryFactory queries;
+    private static BlockingQueue<Timeline> newMessageTimelines = new LinkedBlockingQueue<Timeline>();
     private static Properties config = new Properties();
     
     /**
@@ -165,13 +159,20 @@ public class DAO {
             elasticsearch_node = NodeBuilder.nodeBuilder().settings(builder).node();
             elasticsearch_client = elasticsearch_node.client();
             
+            // define the index factories
+            users = new UserFactory(elasticsearch_client, USERS_INDEX_NAME, CACHE_MAXSIZE);
+            messages = new MessageFactory(elasticsearch_client, MESSAGES_INDEX_NAME, CACHE_MAXSIZE);
+            queries = new QueryFactory(elasticsearch_client, QUERIES_INDEX_NAME, CACHE_MAXSIZE);
+            
             // set mapping (that shows how 'elastic' elasticsearch is: it's always good to define data types)
             try {
+                elasticsearch_client.admin().indices().prepareCreate(QUERIES_INDEX_NAME).execute().actionGet();
                 elasticsearch_client.admin().indices().prepareCreate(MESSAGES_INDEX_NAME).execute().actionGet();
                 elasticsearch_client.admin().indices().prepareCreate(USERS_INDEX_NAME).execute().actionGet();
             } catch (IndexAlreadyExistsException ee) {}; // existing indexes are simply ignored, not re-created
-            elasticsearch_client.admin().indices().preparePutMapping(MESSAGES_INDEX_NAME).setSource(Tweet.MAPPING).setType("_default_").execute().actionGet();
-            elasticsearch_client.admin().indices().preparePutMapping(USERS_INDEX_NAME).setSource(User.MAPPING).setType("_default_").execute().actionGet();
+            elasticsearch_client.admin().indices().preparePutMapping(QUERIES_INDEX_NAME).setSource(queries.getMapping()).setType("_default_").execute().actionGet();
+            elasticsearch_client.admin().indices().preparePutMapping(MESSAGES_INDEX_NAME).setSource(messages.getMapping()).setType("_default_").execute().actionGet();
+            elasticsearch_client.admin().indices().preparePutMapping(USERS_INDEX_NAME).setSource(users.getMapping()).setType("_default_").execute().actionGet();
         } catch (Throwable e) {
             e.printStackTrace();
         }
@@ -249,9 +250,9 @@ public class DAO {
                     if (tweet == null) continue;
                     @SuppressWarnings("unchecked") Map<String, Object> user = (Map<String, Object>) tweet.remove("user");
                     if (user == null) continue;
-                    User u = new User(user);
-                    Tweet t = new Tweet(tweet);
-                    boolean newtweet = DAO.record(t, u, false);
+                    UserEntry u = new UserEntry(user);
+                    MessageEntry t = new MessageEntry(tweet);
+                    boolean newtweet = DAO.writeMessage(t, u, false);
                     if (newtweet) newTweet++;
                 }
             } catch (IOException e) {
@@ -308,17 +309,17 @@ public class DAO {
     }
     
     public static void transmitTimeline(Timeline tl) {
-        newTweetTimelines.add(tl);
+        newMessageTimelines.add(tl);
     }
 
     public static Timeline takeTimeline(int maxsize, long maxwait) {
         Timeline tl = new Timeline();
         try {
-            Timeline tl0 = newTweetTimelines.poll(maxwait, TimeUnit.MILLISECONDS);
+            Timeline tl0 = newMessageTimelines.poll(maxwait, TimeUnit.MILLISECONDS);
             if (tl0 == null) return tl;
             tl.putAll(tl0);
-            while (tl0.size() < maxsize && newTweetTimelines.size() > 0 && newTweetTimelines.peek().size() + tl0.size() <= maxsize) {
-                tl0 = newTweetTimelines.take();
+            while (tl0.size() < maxsize && newMessageTimelines.size() > 0 && newMessageTimelines.peek().size() + tl0.size() <= maxsize) {
+                tl0 = newMessageTimelines.take();
                 if (tl0 == null) return tl;
                 tl.putAll(tl0);
             }
@@ -328,91 +329,26 @@ public class DAO {
         }
     }
     
-    private static Map<String, Object> getUserMap(String screen_name) {
-        try {
-            GetResponse userresponse = elasticsearch_client.prepareGet(USERS_INDEX_NAME, null, screen_name).execute().actionGet();
-            Map<String, Object> usermap;
-            if (userresponse.isExists() && (usermap = userresponse.getSourceAsMap()) != null) {
-                return usermap;
-            }
-            return null;
-        } catch (IndexMissingException e) {
-            // may happen for first query
-            return null;
-        }
-    }
-    
-    private static Map<String, Object> getTweetMap(String id_str) {
-        try {
-            GetResponse tweetresponse = elasticsearch_client.prepareGet(MESSAGES_INDEX_NAME, null, id_str).execute().actionGet();
-            Map<String, Object> twittermap;
-            if (tweetresponse.isExists() && (twittermap = tweetresponse.getSourceAsMap()) != null) {
-                return twittermap;
-            }
-            return null;
-        } catch (IndexMissingException e) {
-            // may happen for first query
-            return null;
-        }
-    }
-    
-    public static Tweet getTweet(String id_str) {
-        Tweet tweet = tweetCache.get(id_str);
-        if (tweet != null) return tweet;
-        if (id_str == null) return null;
-        Map<String, Object> tweetmap = getTweetMap(id_str);
-        if (tweetmap == null) return null;
-        String screen_name = (String) tweetmap.get("screen_name");
-        if (screen_name == null) return null;
-        try {
-            tweet = new Tweet(tweetmap);
-        } catch (MalformedURLException e) {
-            return null;
-        }
-        tweetCache.put(id_str, tweet);
-        return tweet;
-    }
-
-    public static User getUser(String screen_name) {
-        User user = userCache.get(screen_name);
-        if (user != null) return user;
-        if (screen_name == null) return null;
-        Map<String, Object> usermap = getUserMap(screen_name);
-        if (usermap == null) return null;
-        user = new User(usermap);
-        userCache.put(screen_name, user);
-        return user;
-    }
-    
     /**
-     * Store a tweet together with a user into the search index
+     * Store a message together with a user into the search index
      * This method is synchronized to prevent concurrent IO caused by this call.
      * @param t a tweet
      * @param u a user
      * @return true if the record was stored because it did not exist, false if it was not stored because the record existed already
      */
-    public synchronized static boolean record(Tweet t, User u, boolean dump) {
+    public synchronized static boolean writeMessage(MessageEntry t, UserEntry u, boolean dump) {
         //assert t != null;
         //assert u != null;
         try {
 
             // check if tweet exists in index
-            //Tweet fromCache = tweetCache.get(t.getIdStr());
-            //Map<String, Object> fromIndex = getTweetMap(t.getIdStr());
-            if (tweetCache.get(t.getIdStr()) != null || getTweetMap(t.getIdStr()) != null) return false; // we omit writing this again
+            if (messages.readMap(t.getIdStr()) != null) return false; // we omit writing this again
 
             // check if user exists in index
-            if (userCache.get(u.getScreenName()) == null && getUserMap(u.getScreenName()) == null) {
-                userCache.put(u.getScreenName(), u);
-                // record user into search index
-                XContentBuilder userj = XContentFactory.jsonBuilder();
-                u.toJSON(userj);
-                elasticsearch_client.prepareIndex(USERS_INDEX_NAME, t.getSourceType().name(), u.getScreenName())
-                        .setSource(userj).setVersion(1).setVersionType(VersionType.FORCE).execute().actionGet();
-                //Log.getLog().info("loklak", "create userindex for " + userj.string());
-                userj.close();
+            if (users.readMap(u.getScreenName()) == null) {
+                users.writeEntry(u.getScreenName(), t.getSourceType().name(), u);
             }
-            
+
             // record tweet into text file
             if (dump) {
                 XContentBuilder logline = XContentFactory.jsonBuilder();
@@ -422,16 +358,9 @@ public class DAO {
                 messagelog.writeByte('\n');
                 logline.close();
             }
-            
-            // record tweet into search index
-            tweetCache.put(t.getIdStr(), t);
-            XContentBuilder tweetj = XContentFactory.jsonBuilder();
-            t.toJSON(tweetj, null, true);
-            elasticsearch_client.prepareIndex(MESSAGES_INDEX_NAME, t.getSourceType().name(), t.getIdStr())
-                    .setSource(tweetj).setVersion(1).setVersionType(VersionType.FORCE).execute().actionGet();
-            //Log.getLog().info("loklak", "create tweetindex for " + tweetj.string());
-            tweetj.close();
 
+            // record tweet into search index
+            messages.writeEntry(t.getIdStr(), t.getSourceType().name(), t);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -439,22 +368,26 @@ public class DAO {
     }
 
     public static long countLocalMessages() {
-        CountResponse response = elasticsearch_client.prepareCount(MESSAGES_INDEX_NAME)
-                .setQuery(QueryBuilders.matchAllQuery())
-                .execute()
-                .actionGet();
-        return response.getCount();
+        return countLocal(MESSAGES_INDEX_NAME);
     }
     
     public static long countLocalUsers() {
-        CountResponse response = elasticsearch_client.prepareCount(USERS_INDEX_NAME)
+        return countLocal(USERS_INDEX_NAME);
+    }
+
+    public static long countLocalQueries() {
+        return countLocal(QUERIES_INDEX_NAME);
+    }
+    
+    private static long countLocal(String index) {
+        CountResponse response = elasticsearch_client.prepareCount(index)
                 .setQuery(QueryBuilders.matchAllQuery())
                 .execute()
                 .actionGet();
         return response.getCount();
     }
     
-    public static class searchLocal {
+    public static class SearchLocalMessages {
         public Timeline timeline;
         public Map<String, List<Map.Entry<String, Long>>> aggregations;
 
@@ -467,11 +400,11 @@ public class DAO {
          * @param aggregationLimit - the maximum count of facet entities, not search results
          * @param aggregationFields - names of the aggregation fields. If no aggregation is wanted, pass no (zero) field(s)
          */
-        public searchLocal(String q, int timezoneOffset, int resultCount, int aggregationLimit, String... aggregationFields) {
+        public SearchLocalMessages(String q, int timezoneOffset, int resultCount, int aggregationLimit, String... aggregationFields) {
             this.timeline = new Timeline();
             try {
                 // prepare request
-                searchQuery sq = new searchQuery(q, timezoneOffset);
+                QueryEntry.ElasticsearchQuery sq = new QueryEntry.ElasticsearchQuery(q, timezoneOffset);
                 SearchRequestBuilder request = elasticsearch_client.prepareSearch(MESSAGES_INDEX_NAME)
                         .setSearchType(SearchType.QUERY_THEN_FETCH)
                         .setQuery(sq.queryBuilder)
@@ -498,16 +431,12 @@ public class DAO {
                 SearchHit[] hits = response.getHits().getHits();
                 for (SearchHit hit: hits) {
                     Map<String, Object> map = hit.getSource();
-                    try {
-                        Tweet tweet = new Tweet(map);
-                        User user = getUser(tweet.getUserScreenName());
-                        assert user != null;
-                        if (user != null) {
-                            timeline.addTweet(tweet);
-                            timeline.addUser(user);
-                        }
-                    } catch (MalformedURLException e) {
-                        continue;
+                    MessageEntry tweet = new MessageEntry(map);
+                    UserEntry user = users.read(tweet.getUserScreenName());
+                    assert user != null;
+                    if (user != null) {
+                        timeline.addTweet(tweet);
+                        timeline.addUser(user);
                     }
                 }
                 
@@ -545,104 +474,79 @@ public class DAO {
             } catch (IndexMissingException e) {}
         }
     }
-    
-    private final static Pattern tokenizerPattern = Pattern.compile("([^\"]\\S*|\".+?\")\\s*"); // tokenizes Strings into terms respecting quoted parts
 
-    public static class searchQuery {
-        QueryBuilder queryBuilder;
-        Date since, until;
-        public searchQuery(String q, int timezoneOffset) {
-            // tokenize the query
-            List<String> qe = new ArrayList<String>();
-            Matcher m = tokenizerPattern.matcher(q);
-            while (m.find()) qe.add(m.group(1));
+    /**
+     * Search the local message cache using a elasticsearch query.
+     * @param q - the query, can be empty for a matchall-query
+     * @param resultCount - the number of messages in the result
+     * @param sort_field - the field name to sort the result list, i.e. "query_first"
+     * @param sort_order - the sort order (you want to use SortOrder.DESC here)
+     */
+    public static List<QueryEntry> SearchLocalQueries(String q, int resultCount, String sort_field, SortOrder sort_order) {
+        List<QueryEntry> queries = new ArrayList<>();
+        try {
+            // prepare request
+            BoolQueryBuilder queryBuilder = QueryBuilders.boolQuery();
+            if (q != null && q.length() > 0) queryBuilder.must(QueryBuilders.fuzzyLikeThisQuery("query").likeText(q).fuzziness(Fuzziness.fromEdits(2)));
+            SearchRequestBuilder request = elasticsearch_client.prepareSearch(QUERIES_INDEX_NAME)
+                    .setSearchType(SearchType.QUERY_THEN_FETCH)
+                    .setQuery(queryBuilder)
+                    .setFrom(0)
+                    .setSize(resultCount)
+                    .addSort(sort_field, sort_order);
+
+            // get response
+            SearchResponse response = request.execute().actionGet();
+
+            // evaluate search result
+            //long totalHitCount = response.getHits().getTotalHits();
+            SearchHit[] hits = response.getHits().getHits();
+            for (SearchHit hit: hits) {
+                Map<String, Object> map = hit.getSource();
+                QueryEntry query = new QueryEntry(map);
+                queries.add(query);
+            }
             
-            // twitter search syntax:
-            //   term1 term2 term3 - all three terms shall appear
-            //   "term1 term2 term3" - exact match of all terms
-            //   term1 OR term2 OR term3 - any of the three terms shall appear
-            //   from:user - tweets posted from that user
-            //   to:user - tweets posted to that user
-            //   @user - tweets which mention that user
-            //   near:"location" within:xmi - tweets that are near that location
-            //   #hashtag - tweets containing the given hashtag
-            //   since:2015-04-01 until:2015-04-03 - tweets within given time range
-            String text = "";
-            ArrayList<String> users = new ArrayList<>();
-            ArrayList<String> hashtags = new ArrayList<>();
-            HashMap<String, String> modifier = new HashMap<>();
-            for (String t: qe) {
-                if (t.length() == 0) continue;
-                if (t.startsWith("@")) {
-                    users.add(t.substring(1));
-                } else if (t.startsWith("#")) {
-                    hashtags.add(t.substring(1));
-                } else if (t.indexOf(':') > 0) {
-                    int p = t.indexOf(':');
-                    modifier.put(t.substring(0, p).toLowerCase(), t.substring(p + 1));
-                } else {
-                    text += t + " ";
-                }
-            }
-            if (modifier.containsKey("to")) users.add(modifier.get("to"));
-            text = text.trim();
-            // compose query
-            BoolQueryBuilder query = QueryBuilders.boolQuery();
-            if (text.length() > 0) query.must(QueryBuilders.matchQuery("text", text));
-            for (String user: users) query.must(QueryBuilders.termQuery("mentions", user));
-            for (String hashtag: hashtags) query.must(QueryBuilders.termQuery("hashtags", hashtag.toLowerCase()));
-            if (modifier.containsKey("from")) query.must(QueryBuilders.termQuery("screen_name", modifier.get("from")));
-            if (modifier.containsKey("near")) {
-                BoolQueryBuilder nearquery = QueryBuilders.boolQuery()
-                        .should(QueryBuilders.matchQuery("place_name", modifier.get("near")))
-                        .should(QueryBuilders.matchQuery("text", modifier.get("near")));
-                query.must(nearquery);
-            }
-            if (modifier.containsKey("since")) try {
-                Calendar since = DateParser.parse(modifier.get("since"), timezoneOffset);
-                this.since = since.getTime();
-                RangeQueryBuilder rangeQuery = QueryBuilders.rangeQuery("created_at").from(this.since);
-                if (modifier.containsKey("until")) {
-                    Calendar until = DateParser.parse(modifier.get("until"), timezoneOffset);
-                    if (until.get(Calendar.HOUR) == 0 && until.get(Calendar.MINUTE) == 0) {
-                        // until must be the day which is included in results.
-                        // To get the result within the same day, we must add one day.
-                        until.add(Calendar.DATE, 1);
-                    }
-                    this.until = until.getTime();
-                    rangeQuery.to(this.until);
-                } else {
-                    this.until = new Date();
-                }
-                query.must(rangeQuery);
-            } catch (ParseException e) {} else {
-                this.since = new Date(0);
-                this.until = new Date();
-            }
-            this.queryBuilder = query;
-        }
+        } catch (IndexMissingException e) {}
+        return queries;
     }
     
-    public static Timeline[] scrapeTwitter(final String q, final int timezoneOffset) {
+    public static Timeline[] scrapeTwitter(final String q, final int timezoneOffset, boolean byUserQuery) {
+        // retrieve messages from remote server
         String[] remote = DAO.getConfig("frontpeers", new String[0], ",");        
-        Timeline allTweets = remote.length > 0 ? searchOnOtherPeers(remote, q, 100, timezoneOffset, "twitter", SearchClient.frontpeer_hash) : TwitterScraper.search(q);
-        Timeline newTweets = new Timeline(); // we store new tweets here to be able to transmit them to peers
-        if (allTweets == null) {// can be caused by time-out
-            allTweets = new Timeline();
+        Timeline remoteMessages = remote.length > 0 ? searchOnOtherPeers(remote, q, 100, timezoneOffset, "twitter", SearchClient.frontpeer_hash) : TwitterScraper.search(q);
+        
+        // record the query
+        QueryEntry qe = queries.read(q);
+        if (qe == null) {
+            qe = new QueryEntry(q, timezoneOffset, remoteMessages, SourceType.TWITTER, byUserQuery);
+        } else {
+            qe.update(remoteMessages, byUserQuery);
+        }
+        try {
+            queries.writeEntry(q, SourceType.TWITTER.name(), qe);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        
+        // identify new tweets
+        Timeline newMessages = new Timeline(); // we store new tweets here to be able to transmit them to peers
+        if (remoteMessages == null) {// can be caused by time-out
+            remoteMessages = new Timeline();
         } else {
             // record the result; this may be moved to a concurrent process
-            for (Tweet t: allTweets) {
-                User u = allTweets.getUser(t);
+            for (MessageEntry t: remoteMessages) {
+                UserEntry u = remoteMessages.getUser(t);
                 assert u != null;
-                boolean newTweet = record(t, u, true);
+                boolean newTweet = writeMessage(t, u, true);
                 if (newTweet) {
-                    newTweets.addTweet(t);
-                    newTweets.addUser(u);
+                    newMessages.addTweet(t);
+                    newMessages.addUser(u);
                 }
             }
-            DAO.transmitTimeline(newTweets);
+            DAO.transmitTimeline(newMessages);
         }
-        return new Timeline[]{allTweets, newTweets};
+        return new Timeline[]{remoteMessages, newMessages};
     }
     
     public static Timeline searchBackend(final String q, final int count, final int timezoneOffset, final String where) {
@@ -656,10 +560,10 @@ public class DAO {
             Timeline tt = SearchClient.search(protocolhostportstub, q, where, count, timezoneOffset, provider_hash);
             tl.putAll(tt);
             // record the result; this may be moved to a concurrent process
-            for (Tweet t: tt) {
-                User u = tt.getUser(t);
+            for (MessageEntry t: tt) {
+                UserEntry u = tt.getUser(t);
                 assert u != null;
-                record(t, u, true);
+                writeMessage(t, u, true);
             }
         }
         return tl;

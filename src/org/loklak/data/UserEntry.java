@@ -1,5 +1,5 @@
 /**
- *  User
+ *  UserEntry
  *  Copyright 22.02.2015 by Michael Peter Christen, @0rb1t3r
  *
  *  This library is free software; you can redistribute it and/or
@@ -17,7 +17,7 @@
  *  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.loklak;
+package org.loklak.data;
 
 import java.io.IOException;
 import java.nio.charset.Charset;
@@ -30,12 +30,12 @@ import org.elasticsearch.common.xcontent.XContentFactory;
 import org.elasticsearch.common.xcontent.XContentParser;
 import org.elasticsearch.common.xcontent.XContentType;
 
-public class User {
+public class UserEntry extends AbstractIndexEntry implements IndexEntry {
     
     private String profile_image_url, name, screen_name;
     private Date appearance_first, appearance_latest;
 
-    public User(String screen_name_raw, String profile_image_url, String name_raw) {
+    public UserEntry(String screen_name_raw, String profile_image_url, String name_raw) {
         this.screen_name = screen_name_raw.replaceAll("</?s>", "").replaceAll("</?b>", "").replaceAll("@", "");
         this.profile_image_url = profile_image_url;
         this.name = name_raw;
@@ -44,7 +44,11 @@ public class User {
         this.appearance_latest = new Date(now);
     }
     
-    public User(Map<String, Object> map) {
+    public UserEntry(final Map<String, Object> map) {
+        this.init(map);
+    }
+    
+    public void init(Map<String, Object> map) {
         this.screen_name = (String) map.get("screen_name");
         this.name = (String) map.get("name");
         this.profile_image_url = (String) map.get("profile_image_url_https");
@@ -84,28 +88,6 @@ public class User {
     public Date getAppearanceLatest() {
         return appearance_latest;
     }
-
-    /*
-     * define the mapping for the json data type
-     */
-    public static XContentBuilder MAPPING;
-    static {
-        try {
-            MAPPING = XContentFactory.jsonBuilder()
-                .startObject()
-                  .startObject("properties") // the id has been omitted on purpose, we identify the user by its screen_name (even if that is changeable..)
-                    .startObject("name").field("type","string").endObject()
-                    .startObject("screen_name").field("type","string").field("index","not_analyzed").field("doc_values", true).endObject()
-                    .startObject("appearance_first").field("type","date").field("format","dateOptionalTime").field("include_in_all","false").field("doc_values", true).endObject()
-                    .startObject("appearance_latest").field("type","date").field("format","dateOptionalTime").field("include_in_all","false").field("doc_values", true).endObject()
-                    .startObject("profile_image_url_http").field("type","string").field("index","not_analyzed").field("include_in_all","false").field("doc_values", true).endObject()
-                    .startObject("profile_image_url_https").field("type","string").field("index","not_analyzed").field("include_in_all","false").field("doc_values", true).endObject()
-                  .endObject()
-                .endObject();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
     
     public void toJSON(XContentBuilder m) {
         try {
@@ -122,22 +104,8 @@ public class User {
         }
     }
     
-    public XContentBuilder toJSON() {
-        try {
-            XContentBuilder m = XContentFactory.jsonBuilder();
-            toJSON(m);
-            return m;
-        } catch (IOException e) {
-            return null;
-        }
-    }
-    
-    public String toString() {
-        return toJSON().bytes().toUtf8();
-    }
-    
     public static void main(String args[]) {
-        System.out.println(new User("test", "http://test.com", "Mr. Test").toString());
+        System.out.println(new UserEntry("test", "http://test.com", "Mr. Test").toString());
         
         String j = "{\"name\":\"Mr. Test\",\"screen_name\":\"test\",\"profile_image_url\":\"http://test.com\"}";
                 

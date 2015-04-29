@@ -35,7 +35,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.Part;
 
-import org.loklak.DAO;
+import org.loklak.data.DAO;
 
 /**
  * Storage of a peer list which can be used for peer-to-peer communication.

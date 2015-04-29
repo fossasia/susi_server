@@ -17,7 +17,7 @@
  *  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.loklak;
+package org.loklak.data;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;

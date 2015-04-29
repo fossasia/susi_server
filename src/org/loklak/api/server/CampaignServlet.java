@@ -32,8 +32,8 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.elasticsearch.common.xcontent.XContentFactory;
-import org.loklak.Campaign;
 import org.loklak.api.RemoteAccess;
+import org.loklak.data.Campaign;
 import org.loklak.tools.DateParser;
 
 public class CampaignServlet extends HttpServlet {

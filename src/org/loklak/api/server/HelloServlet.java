@@ -29,8 +29,8 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.elasticsearch.common.xcontent.XContentFactory;
-import org.loklak.DAO;
 import org.loklak.api.RemoteAccess;
+import org.loklak.data.DAO;
 
 /**
  * Servlet to span the message peer-to-peer network.

@@ -1,6 +1,6 @@
 /**
- *  StatusServlet
- *  Copyright 27.02.2015 by Michael Peter Christen, @0rb1t3r
+ *  SuggestServlet
+ *  Copyright 29.04.2015 by Michael Peter Christen, @0rb1t3r
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -20,7 +20,7 @@
 package org.loklak.api.server;
 
 import java.io.IOException;
-import java.util.Enumeration;
+import java.util.List;
 
 import javax.servlet.ServletException;
 import javax.servlet.ServletOutputStream;
@@ -30,10 +30,12 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.elasticsearch.common.xcontent.XContentFactory;
+import org.elasticsearch.search.sort.SortOrder;
 import org.loklak.api.RemoteAccess;
 import org.loklak.data.DAO;
+import org.loklak.data.QueryEntry;
 
-public class StatusServlet extends HttpServlet {
+public class SuggestServlet extends HttpServlet {
    
     private static final long serialVersionUID = 8578478303032749879L;
 
@@ -45,34 +47,44 @@ public class StatusServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         RemoteAccess.Post post = RemoteAccess.evaluate(request);
+     
+        // manage DoS
+        if (post.isDoS_blackout()) {response.sendError(503, "your request frequency is too high"); return;}
         
         String callback = post.get("callback", "");
         boolean jsonp = callback != null && callback.length() > 0;
+        boolean local = post.isLocalhostAccess();
+        boolean minified = post.get("minified", false);
+        int count = post.get("count", 100); // number of queries
+        String query = post.get("q", ""); // to get a list of queries which match; to get all latest: leave q empty
+        String orders = post.get("order", "DESC").toUpperCase();
+        SortOrder order = SortOrder.valueOf(orders);        
+        String orderby = post.get("orderby", query.length() == 0 ? "query_first" : "query_count");
+        List<QueryEntry> queryList = query.length() == 0 && !local ? null : DAO.SearchLocalQueries(query, count, orderby, order);
         
         post.setResponse(response, "application/javascript");
         
         // generate json
-        XContentBuilder json = XContentFactory.jsonBuilder().prettyPrint().lfAtEnd();
+        XContentBuilder json = XContentFactory.jsonBuilder();
+        if (!minified) json = json.prettyPrint();
         json.startObject();
         
-        json.field("index_sizes");
-        json.startObject();
-        json.field("messages", DAO.countLocalMessages());
-        json.field("users", DAO.countLocalUsers());
-        json.field("queries", DAO.countLocalQueries());
-        json.endObject(); // of index_sizes
+        json.field("search_metadata").startObject();
+        json.field("count", queryList == null ? "0" : Integer.toString(queryList.size()));
+        json.field("query", query);
+        json.field("orderby", orderby);
+        json.field("client", post.getClientHost());
+        json.endObject(); // of search_metadata
         
-        json.field("client_info");
-        json.startObject();
-        json.field("RemoteHost", post.getClientHost());
-        Enumeration<String> he = request.getHeaderNames();
-        while (he.hasMoreElements()) {
-            String h = he.nextElement();
-            json.field(h, request.getHeader(h));
+        json.field("queries").startArray();
+        if (queryList != null) {
+            for (QueryEntry t: queryList) {
+                t.toJSON(json);
+            }
         }
-        json.endObject(); // of client_info
+        json.endArray(); // of queries
         
-        json.endObject(); // of root object
+        json.endObject(); // of root
 
         // write json
         ServletOutputStream sos = response.getOutputStream();

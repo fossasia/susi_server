@@ -1,6 +1,6 @@
 /**
- *  ProviderType
- *  Copyright 22.02.2015 by Michael Peter Christen, @0rb1t3r
+ *  IndexFactory
+ *  Copyright 26.04.2015 by Michael Peter Christen, @0rb1t3r
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -17,12 +17,25 @@
  *  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.loklak;
+package org.loklak.data;
 
-public enum ProviderType {
+import java.io.IOException;
+import java.util.Map;
 
-    SCRAPED, // scraped with this peer from a remote service
-    GENERIC, // pushed as single message at this peer
-    REMOTE;  // pushed as message bulk from a remote peer
+import org.elasticsearch.common.xcontent.XContentBuilder;
+
+public interface IndexFactory<Entry extends IndexEntry> {
+
+    /**
+     * get a mapping for the index definition
+     * @return a json which can be used to define an index in elasticsearch
+     */
+    public XContentBuilder getMapping();
+    
+    public Entry init(Map<String, Object> map);
+
+    public Map<String, Object> readMap(String id);
+
+    public void writeEntry(String id, String type, Entry entry) throws IOException;
     
 }

@@ -11,6 +11,9 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.LinkedBlockingDeque;
 
 import org.elasticsearch.common.xcontent.XContentBuilder;
+import org.loklak.data.DAO;
+import org.loklak.data.Timeline;
+import org.loklak.data.MessageEntry;
 
 public class Crawler {
 
@@ -59,14 +62,14 @@ public class Crawler {
         }
         
         // execute the query
-        Timeline tl = DAO.scrapeTwitter(term.query, 0)[1]; // we use only the new tweets, not old/known
+        Timeline tl = DAO.scrapeTwitter(term.query, 0, false)[1]; // we use only the new tweets, not old/known
         
         // if depth of query was 0, terminate
         if (term.depth == 0) return 0;
         
         // take hashtags and users from result
         Set<String> newqueries = new HashSet<String>();
-        for (Tweet t: tl) {
+        for (MessageEntry t: tl) {
             // follow users and hashtags which appear in the tweet
             if (term.followUsers) for (String user: t.getMentions()) if (user.length() >= 2) newqueries.add(user);
             if (term.followHashtags) for (String hashtag: t.getHashtags()) if (hashtag.length() >= 2) newqueries.add(hashtag);

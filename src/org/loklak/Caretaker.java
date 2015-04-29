@@ -24,6 +24,8 @@ import java.io.File;
 import org.eclipse.jetty.util.log.Log;
 import org.loklak.api.client.HelloClient;
 import org.loklak.api.client.PushClient;
+import org.loklak.data.DAO;
+import org.loklak.data.Timeline;
 
 /**
  * The caretaker class is a concurrent thread which does peer-to-peer operations

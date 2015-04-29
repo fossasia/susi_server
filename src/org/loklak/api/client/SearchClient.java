@@ -28,11 +28,11 @@ import java.util.Map;
 
 import org.elasticsearch.common.xcontent.XContentParser;
 import org.elasticsearch.common.xcontent.json.JsonXContent;
-import org.loklak.ProviderType;
-import org.loklak.Timeline;
-import org.loklak.Tweet;
-import org.loklak.User;
 import org.loklak.api.ClientHelper;
+import org.loklak.data.ProviderType;
+import org.loklak.data.Timeline;
+import org.loklak.data.MessageEntry;
+import org.loklak.data.UserEntry;
 
 public class SearchClient {
 
@@ -55,8 +55,8 @@ public class SearchClient {
                     if (user == null) continue;
                     tweet.put("provider_type", (Object) ProviderType.REMOTE.name());
                     tweet.put("provider_hash", provider_hash);
-                    User u = new User(user);
-                    Tweet t = new Tweet(tweet);
+                    UserEntry u = new UserEntry(user);
+                    MessageEntry t = new MessageEntry(tweet);
                     tl.addUser(u);
                     tl.addTweet(t);
                 }

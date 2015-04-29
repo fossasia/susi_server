@@ -33,11 +33,11 @@ import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.elasticsearch.common.xcontent.XContentFactory;
 import org.elasticsearch.common.xcontent.XContentParser;
 import org.elasticsearch.common.xcontent.json.JsonXContent;
-import org.loklak.DAO;
-import org.loklak.ProviderType;
-import org.loklak.Tweet;
-import org.loklak.User;
 import org.loklak.api.RemoteAccess;
+import org.loklak.data.DAO;
+import org.loklak.data.ProviderType;
+import org.loklak.data.MessageEntry;
+import org.loklak.data.UserEntry;
 
 
 public class PushServlet extends HttpServlet {
@@ -90,9 +90,9 @@ public class PushServlet extends HttpServlet {
                     if (user == null) continue;
                     tweet.put("provider_type", (Object) ProviderType.REMOTE.name());
                     tweet.put("provider_hash", remoteHash);
-                    User u = new User(user);
-                    Tweet t = new Tweet(tweet);
-                    boolean newtweet = DAO.record(t, u, true);
+                    UserEntry u = new UserEntry(user);
+                    MessageEntry t = new MessageEntry(tweet);
+                    boolean newtweet = DAO.writeMessage(t, u, true);
                     if (newtweet) newCount++; else knownCount++;
                 }
             }

@@ -1,5 +1,5 @@
 /**
- *  Tweet
+ *  MessageEntry
  *  Copyright 22.02.2015 by Michael Peter Christen, @0rb1t3r
  *
  *  This library is free software; you can redistribute it and/or
@@ -17,7 +17,7 @@
  *  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.loklak;
+package org.loklak.data;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -33,9 +33,8 @@ import java.util.regex.Pattern;
 
 import org.elasticsearch.common.joda.time.format.ISODateTimeFormat;
 import org.elasticsearch.common.xcontent.XContentBuilder;
-import org.elasticsearch.common.xcontent.XContentFactory;
 
-public class Tweet {
+public class MessageEntry extends AbstractIndexEntry implements IndexEntry {
     
     protected Date created_at;
     protected SourceType source_type; // where did the message come from
@@ -50,7 +49,7 @@ public class Tweet {
     private int without_l_len, without_lu_len, without_luh_len; // the length of tweets without links, users, hashtags
     private String[] hosts, links, mentions, hashtags; // the arrays of links, users, hashtags
 
-    public Tweet() throws MalformedURLException {
+    public MessageEntry() throws MalformedURLException {
         this.created_at = new Date();
         this.source_type = SourceType.USER;
         this.user_screen_name = "";
@@ -61,9 +60,13 @@ public class Tweet {
         this.place_id = "";
         this.place_name = "";
     }
+
+    public MessageEntry(Map<String, Object> map) {
+        init(map);
+    }
     
     @SuppressWarnings("unchecked")
-    public Tweet(Map<String, Object> map) throws MalformedURLException {
+    public void init(Map<String, Object> map) {
         String created_at_string = (String) map.get("created_at");
         if (created_at_string != null && created_at_string.length() > 0) {
             this.created_at = ISODateTimeFormat.dateOptionalTimeParser().parseDateTime(created_at_string).toDate();
@@ -86,7 +89,11 @@ public class Tweet {
         this.user_screen_name = (String) map.get("screen_name");
         this.id_str = (String) map.get("id_str");
         this.text = (String) map.get("text");
-        this.status_id_url = new URL((String) map.get("link"));
+        try {
+            this.status_id_url = new URL((String) map.get("link"));
+        } catch (MalformedURLException e) {
+            this.status_id_url = null;
+        }
         this.retweet_count = DAO.noNULL((Number) map.get("retweet_count"));
         this.favourites_count = DAO.noNULL((Number) map.get("favourites_count"));
         this.images = DAO.noNULL((ArrayList<String>) map.get("images"));
@@ -175,69 +182,13 @@ public class Tweet {
     public SourceType getSourceType() {
         return this.source_type;
     }
-    
-    public String toString() {
-        try {
-            XContentBuilder tweetj = XContentFactory.jsonBuilder(); // don't apply line-feed formatting here since this shall be usable for one-line log outputs
-            this.toJSON(tweetj, null, false);
-            String s = tweetj.bytes().toUtf8();
-            tweetj.close();
-            return s;
-        } catch (IOException e) {
-            return null;
-        }
+
+    @Override
+    public void toJSON(XContentBuilder m) {
+        toJSON(m, null, true); // very important to include calculated data here because that is written into the index using the abstract index factory
     }
     
-    /*
-     * define the mapping for the json data type
-     */
-    public static XContentBuilder MAPPING;
-    static {
-        try {
-            MAPPING = XContentFactory.jsonBuilder()
-              .startObject()
-                .startObject("properties")
-                  .startObject("created_at").field("type","date").field("format","dateOptionalTime").field("include_in_all","false").field("doc_values", true).endObject()
-                  .startObject("on").field("type","date").field("format","dateOptionalTime").field("include_in_all","false").field("doc_values", true).endObject()
-                  .startObject("screen_name").field("type","string").field("index","not_analyzed").field("doc_values", true).endObject()
-                  .startObject("text").field("type","string").endObject()
-                  .startObject("link").field("type","string").field("index","not_analyzed").field("include_in_all","false").field("doc_values", true).endObject() // not to be indexed because it is not part of the content
-                  .startObject("id_str").field("type","string").field("index","not_analyzed").field("include_in_all","false").field("doc_values", true).endObject()
-                  .startObject("source_type").field("type","string").field("index","not_analyzed").field("include_in_all","false").field("doc_values", true).endObject()
-                  .startObject("provider_type").field("type","string").field("index","not_analyzed").field("include_in_all","false").field("doc_values", true).endObject()
-                  .startObject("provider_hash").field("type","string").field("index","not_analyzed").field("include_in_all","false").field("doc_values", true).endObject()
-                  .startObject("retweet_count").field("type","long").field("include_in_all","false").field("doc_values", true).endObject()
-                  .startObject("favourites_count").field("type","long").field("include_in_all","false").field("doc_values", true).endObject()
-                  .startObject("images").field("type","string").field("index","not_analyzed").field("include_in_all","false").field("doc_values", true).endObject()
-                  .startObject("images_count").field("type","long").field("include_in_all","false").field("doc_values", true).endObject()
-                  .startObject("place_name").field("type","string").endObject()
-                  .startObject("place_id").field("type","string").field("index","not_analyzed").field("include_in_all","false").field("doc_values", true).endObject()
-        
-                  // The following fields are extracted from field 'text' and shall not be in _all since 'text' is already in _all.
-                  // TwitterRiver has a different structure here as well as the official twitter api, but that is a complex thing and not so good usable.
-                  // We prefer a simple, flat structure for this metainfo.
-                  // The Twitter API info about original and extracted links is also not usable here since we throw away the short links and replace them with extracted.
-                  // Naming does not interfere with TwitterRiver, as far as visible.
-                  .startObject("hosts").field("type","string").field("index","not_analyzed").field("include_in_all","false").field("doc_values", true).endObject()
-                  .startObject("hosts_count").field("type","long").field("include_in_all","false").field("doc_values", true).endObject()
-                  .startObject("links").field("type","string").field("index","not_analyzed").field("include_in_all","false").field("doc_values", true).endObject()
-                  .startObject("links_count").field("type","long").field("include_in_all","false").field("doc_values", true).endObject()
-                  .startObject("mentions").field("type","string").field("index","not_analyzed").field("include_in_all","false").field("doc_values", true).endObject()
-                  .startObject("mentions_count").field("type","long").field("include_in_all","false").field("doc_values", true).endObject()
-                  .startObject("hashtags").field("type","string").field("index","not_analyzed").field("include_in_all","false").field("doc_values", true).endObject()
-                  .startObject("hashtags_count").field("type","long").field("include_in_all","false").field("doc_values", true).endObject()
-                  // experimental, for ranking
-                  .startObject("without_l_len").field("type","long").field("include_in_all","false").field("doc_values", true).endObject()
-                  .startObject("without_lu_len").field("type","long").field("include_in_all","false").field("doc_values", true).endObject()
-                  .startObject("without_luh_len").field("type","long").field("include_in_all","false").field("doc_values", true).endObject()
-                .endObject()
-              .endObject();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-    
-    public void toJSON(XContentBuilder m, User user, boolean calculatedData) {
+    public void toJSON(XContentBuilder m, UserEntry user, boolean calculatedData) {
         try {
             m.startObject();
 
@@ -341,4 +292,5 @@ public class Tweet {
     public String getPlaceId() {
         return this.place_id;
     }
+
 }

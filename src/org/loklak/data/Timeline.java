@@ -17,7 +17,7 @@
  *  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.loklak;
+package org.loklak.data;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -32,40 +32,48 @@ import org.elasticsearch.common.xcontent.XContentFactory;
  * A timeline is a structure which holds tweet for the purpose of presentation
  * There is no tweet retrieval method here, just an iterator which returns the tweets in reverse appearing order
  */
-public class Timeline implements Iterable<Tweet> {
+public class Timeline implements Iterable<MessageEntry> {
 
-    private TreeMap<String, Tweet> tweets; // the key is the date plus id of the tweet
-    private Map<String, User> users;
+    private TreeMap<String, MessageEntry> tweets; // the key is the date plus id of the tweet
+    private Map<String, UserEntry> users;
     
     public Timeline() {
-        this.tweets = new TreeMap<String, Tweet>();
-        this.users = new HashMap<String, User>();
+        this.tweets = new TreeMap<String, MessageEntry>();
+        this.users = new HashMap<String, UserEntry>();
     }
     
     public int size() {
         return this.tweets.size();
     }
     
-    public void addUser(User user) {
+    public void addUser(UserEntry user) {
         assert user != null;
         if (user != null) this.users.put(user.getScreenName(), user);
     }
     
-    public void addTweet(Tweet tweet) {
+    public void addTweet(MessageEntry tweet) {
         this.tweets.put(Long.toHexString(tweet.getCreatedAtDate().getTime()) + "_" + tweet.getIdStr(), tweet);
     }
 
-    protected User getUser(String user_screen_name) {
+    protected UserEntry getUser(String user_screen_name) {
         return this.users.get(user_screen_name);
     }
     
-    public User getUser(Tweet fromTweet) {
+    public UserEntry getUser(MessageEntry fromTweet) {
         return this.users.get(fromTweet.getUserScreenName());
     }
     
     public void putAll(Timeline other) {
-        for (Tweet t: other) this.addTweet(t);
+        for (MessageEntry t: other) this.addTweet(t);
         this.users.putAll(other.users);
+    }
+    
+    public MessageEntry getOldestTweet() {
+        return this.tweets.firstEntry().getValue();
+    }
+    
+    public MessageEntry getLatestTweet() {
+        return this.tweets.lastEntry().getValue();
     }
     
     public String toJSON(boolean withEnrichedData) {
@@ -78,8 +86,8 @@ public class Timeline implements Iterable<Tweet> {
             json.field("count", Integer.toString(this.tweets.size()));
             json.endObject(); // of search_metadata
             json.field("statuses").startArray();
-            for (Tweet t: this) {
-                User u = this.users.get(t.getUserScreenName());
+            for (MessageEntry t: this) {
+                UserEntry u = this.users.get(t.getUserScreenName());
                 t.toJSON(json, u, withEnrichedData);
             }
             json.endArray();
@@ -96,7 +104,7 @@ public class Timeline implements Iterable<Tweet> {
      * the tweet iterator returns tweets in descending appearance order
      */
     @Override
-    public Iterator<Tweet> iterator() {
+    public Iterator<MessageEntry> iterator() {
         return this.tweets.descendingMap().values().iterator();
     }
 
