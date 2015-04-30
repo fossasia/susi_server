@@ -316,7 +316,7 @@ public class DAO {
     }
     
     public static void transmitTimeline(Timeline tl) {
-        newMessageTimelines.add(tl);
+        if (getConfig("backend", new String[0], ",").length > 0) newMessageTimelines.add(tl);
     }
 
     public static Timeline takeTimeline(int maxsize, long maxwait) {
