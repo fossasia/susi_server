@@ -552,19 +552,6 @@ public class DAO {
         String[] remote = DAO.getConfig("frontpeers", new String[0], ",");        
         Timeline remoteMessages = remote.length > 0 ? searchOnOtherPeers(remote, q, 100, timezoneOffset, "twitter", SearchClient.frontpeer_hash) : TwitterScraper.search(q);
         
-        // record the query
-        QueryEntry qe = queries.read(q);
-        if (qe == null) {
-            qe = new QueryEntry(q, timezoneOffset, remoteMessages, SourceType.TWITTER, byUserQuery);
-        } else {
-            qe.update(remoteMessages, byUserQuery);
-        }
-        try {
-            queries.writeEntry(q, SourceType.TWITTER.name(), qe);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        
         // identify new tweets
         Timeline newMessages = new Timeline(); // we store new tweets here to be able to transmit them to peers
         if (remoteMessages == null) {// can be caused by time-out
@@ -582,6 +569,22 @@ public class DAO {
             }
             DAO.transmitTimeline(newMessages);
         }
+
+        // record the query
+        QueryEntry qe = queries.read(q);
+        if (qe == null) {
+            // a new query occurred
+            qe = new QueryEntry(q, timezoneOffset, remoteMessages, SourceType.TWITTER, byUserQuery);
+        } else {
+            // existing queries are updated
+            qe.update(newMessages, byUserQuery);
+        }
+        try {
+            queries.writeEntry(q, SourceType.TWITTER.name(), qe);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        
         return new Timeline[]{remoteMessages, newMessages};
     }
     

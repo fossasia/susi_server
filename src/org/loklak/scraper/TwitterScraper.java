@@ -80,7 +80,9 @@ public class TwitterScraper {
                 }
             }
         } catch (IOException e) {
+            // this could mean that twitter rejected the connection (DoS protection?)
             e.printStackTrace();
+            if (timeline == null) timeline = new Timeline();
         };
         
         // wait until all messages in the timeline are ready
@@ -89,7 +91,6 @@ public class TwitterScraper {
                 ((TwitterTweet) m).waitReady();
             }
         }
-        
         
         return timeline;
     }
@@ -340,13 +341,18 @@ public class TwitterScraper {
         
         @Override
         public void run() {
-            this.exists = new Boolean(DAO.existMessage(this.getIdStr()));
-            // only analyse and enrich the message if it does not actually exist in the search index because it will be abandoned otherwise anyway
-            if (!this.exists) {
-                this.analyse();
-                this.enrich();
+            try {
+                this.exists = new Boolean(DAO.existMessage(this.getIdStr()));
+                // only analyse and enrich the message if it does not actually exist in the search index because it will be abandoned otherwise anyway
+                if (!this.exists) {
+                    this.analyse();
+                    this.enrich();
+                }
+            } catch (Throwable e) {
+                e.printStackTrace();
+            } finally {
+                this.ready.release(1000);
             }
-            this.ready.release(1000);
         }
 
         public boolean isReady() {
