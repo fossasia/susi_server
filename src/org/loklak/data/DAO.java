@@ -576,18 +576,21 @@ public class DAO {
         }
 
         // record the query
-        QueryEntry qe = queries.read(q);
-        if (qe == null) {
-            // a new query occurred
-            qe = new QueryEntry(q, timezoneOffset, remoteMessages, SourceType.TWITTER, byUserQuery);
-        } else {
-            // existing queries are updated
-            qe.update(newMessages, byUserQuery);
-        }
-        try {
-            queries.writeEntry(q, SourceType.TWITTER.name(), qe);
-        } catch (IOException e) {
-            e.printStackTrace();
+        boolean recording =  q.indexOf("id:") < 0;
+        if (recording) {
+            QueryEntry qe = queries.read(q);
+            if (qe == null) {
+                // a new query occurred
+                qe = new QueryEntry(q, timezoneOffset, remoteMessages, SourceType.TWITTER, byUserQuery);
+            } else {
+                // existing queries are updated
+                qe.update(newMessages, byUserQuery);
+            }
+            try {
+                queries.writeEntry(q, SourceType.TWITTER.name(), qe);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
         
         return new Timeline[]{remoteMessages, newMessages};

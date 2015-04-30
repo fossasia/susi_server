@@ -40,7 +40,6 @@ import org.loklak.data.MessageEntry;
 import org.loklak.data.UserEntry;
 import org.loklak.rss.RSSFeed;
 import org.loklak.rss.RSSMessage;
-import org.loklak.scraper.TwitterScraper;
 import org.loklak.tools.CharacterCoding;
 
 /**
