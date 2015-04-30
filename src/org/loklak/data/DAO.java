@@ -309,6 +309,11 @@ public class DAO {
         }
     }
     
+    public static boolean getConfig(String key, boolean default_val) {
+        String value = config.getProperty(key);
+        return value == null ? default_val : value.equals("true") || value.equals("on") || value.equals("1");
+    }
+    
     public static void transmitTimeline(Timeline tl) {
         newMessageTimelines.add(tl);
     }

@@ -97,12 +97,14 @@ public class Caretaker extends Thread {
                 if (Crawler.process() == 0) break; // this may produce tweets for the timeline push
             }
             
-            // execute some queries again: look out in the suggest database for queries with outdated due-time in field retrieval_next
-            List<QueryEntry> queryList = DAO.SearchLocalQueries("", 10, "retrieval_next", SortOrder.ASC, null, new Date(), "retrieval_next");
-            for (QueryEntry qe: queryList) {
-                Timeline[] t = DAO.scrapeTwitter(qe.getQuery(), qe.getTimezoneOffset(), false);
-                DAO.log("retrieval of " + t[1].size() + " messages for q = \"" + qe.getQuery() + "\"");
-                try {Thread.sleep(1000);} catch (InterruptedException e) {} // prevent remote DoS protection handling
+            if (DAO.getConfig("retrieval.enabled", false)) {
+                // execute some queries again: look out in the suggest database for queries with outdated due-time in field retrieval_next
+                List<QueryEntry> queryList = DAO.SearchLocalQueries("", 10, "retrieval_next", SortOrder.ASC, null, new Date(), "retrieval_next");
+                for (QueryEntry qe: queryList) {
+                    Timeline[] t = DAO.scrapeTwitter(qe.getQuery(), qe.getTimezoneOffset(), false);
+                    DAO.log("retrieval of " + t[1].size() + " messages for q = \"" + qe.getQuery() + "\"");
+                    try {Thread.sleep(1000);} catch (InterruptedException e) {} // prevent remote DoS protection handling
+                }
             }
         }
 
