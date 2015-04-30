@@ -63,6 +63,16 @@ public abstract class AbstractIndexFactory<Entry extends IndexEntry> implements 
             return false;
         }
     }
+    
+    @Override
+    public boolean delete(String id) {
+        try {
+            return elasticsearch_client.prepareDelete(index_name, null, id).execute().actionGet().isFound();
+        } catch (IndexMissingException e) {
+            // may happen for first query
+            return false;
+        }
+    }
 
     @Override
     public Map<String, Object> readMap(String id) {

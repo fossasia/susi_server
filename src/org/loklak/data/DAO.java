@@ -75,6 +75,7 @@ import org.elasticsearch.search.aggregations.bucket.histogram.DateHistogram;
 import org.elasticsearch.search.aggregations.bucket.terms.Terms;
 import org.elasticsearch.search.aggregations.bucket.terms.Terms.Bucket;
 import org.elasticsearch.search.sort.SortOrder;
+import org.loklak.Caretaker;
 import org.loklak.api.client.SearchClient;
 import org.loklak.scraper.TwitterScraper;
 import org.loklak.tools.DateParser;
@@ -408,6 +409,10 @@ public class DAO {
         return queries.exists(id);
     }
     
+    public static boolean deleteQuery(String id) {
+        return queries.delete(id);
+    }
+    
     public static class SearchLocalMessages {
         public long hits;
         public Timeline timeline;
@@ -576,8 +581,7 @@ public class DAO {
         }
 
         // record the query
-        boolean recording =  q.indexOf("id:") < 0;
-        if (recording) {
+        if (Caretaker.acceptQuery4Retrieval(q)) {
             QueryEntry qe = queries.read(q);
             if (qe == null) {
                 // a new query occurred

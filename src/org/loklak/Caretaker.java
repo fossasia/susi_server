@@ -101,6 +101,10 @@ public class Caretaker extends Thread {
                 // execute some queries again: look out in the suggest database for queries with outdated due-time in field retrieval_next
                 List<QueryEntry> queryList = DAO.SearchLocalQueries("", 10, "retrieval_next", SortOrder.ASC, null, new Date(), "retrieval_next");
                 for (QueryEntry qe: queryList) {
+                    if (!acceptQuery4Retrieval(qe.getQuery())) {
+                        DAO.deleteQuery(qe.getQuery());
+                        continue;
+                    }
                     Timeline[] t = DAO.scrapeTwitter(qe.getQuery(), qe.getTimezoneOffset(), false);
                     DAO.log("retrieval of " + t[1].size() + " messages for q = \"" + qe.getQuery() + "\"");
                     try {Thread.sleep(1000);} catch (InterruptedException e) {} // prevent remote DoS protection handling
@@ -111,4 +115,8 @@ public class Caretaker extends Thread {
         Log.getLog().info("caretaker terminated");
     }
 
+    public static boolean acceptQuery4Retrieval(String q) {
+        return q.length() > 1 && q.length() <=16 && q.indexOf(':') < 0;
+    }
+    
 }
