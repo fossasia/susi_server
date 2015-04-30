@@ -71,8 +71,10 @@ public class QueryEntry extends AbstractIndexEntry implements IndexEntry {
     protected Date expected_next;     // the estimated next time when one single message will appear
     protected int query_count;        // the number of queries by the user of that query done so far
     protected int retrieval_count;    // the number of retrievals of that query done so far to the external system
-    protected long message_period;     // the estimated period length between two messages
+    protected long message_period;    // the estimated period length between two messages
     protected int messages_per_day;   // a message frequency based on the last query
+    protected long score_retrieval;   // score for the retrieval order
+    protected long score_suggest;     // score for the suggest order
 
     /**
      * This initializer can only be used for first-time creation of a query track.
@@ -90,6 +92,8 @@ public class QueryEntry extends AbstractIndexEntry implements IndexEntry {
         this.retrieval_count = 0; // will be set to 1 with first update
         this.message_period = 0; // means: unknown
         this.messages_per_day = 0; // means: unknown
+        this.score_retrieval = 0;
+        this.score_suggest = 0;
         update(timeline, byUserQuery);
         this.query_first = retrieval_last;
     }
@@ -113,6 +117,8 @@ public class QueryEntry extends AbstractIndexEntry implements IndexEntry {
         this.retrieval_count = (int) DAO.noNULL((Number) map.get("retrieval_count"));
         this.message_period = DAO.noNULL((Number) map.get("message_period"));
         this.messages_per_day = (int) DAO.noNULL((Number) map.get("messages_per_day"));
+        this.score_retrieval = (int) DAO.noNULL((Number) map.get("score_retrieval"));
+        this.score_suggest = (int) DAO.noNULL((Number) map.get("score_suggest"));
     }
     
     /**
@@ -220,6 +226,8 @@ public class QueryEntry extends AbstractIndexEntry implements IndexEntry {
             m.field("retrieval_count", this.retrieval_count);
             m.field("message_period", this.message_period);
             m.field("messages_per_day", this.messages_per_day);
+            m.field("score_retrieval", this.score_retrieval);
+            m.field("score_suggest", this.score_suggest);
             m.endObject();
         } catch (IOException e) {
         }

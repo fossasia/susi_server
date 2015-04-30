@@ -53,6 +53,8 @@ public class QueryFactory extends AbstractIndexFactory<QueryEntry> implements In
                   .startObject("retrieval_count").field("type","long").field("include_in_all","false").field("doc_values", true).endObject()
                   .startObject("message_period").field("type","long").field("include_in_all","false").field("doc_values", true).endObject()
                   .startObject("messages_per_day").field("type","long").field("include_in_all","false").field("doc_values", true).endObject()
+                  .startObject("score_retrieval").field("type","long").field("include_in_all","false").field("doc_values", true).endObject()
+                  .startObject("score_suggest").field("type","long").field("include_in_all","false").field("doc_values", true).endObject()
                 .endObject()
               .endObject();
             return mapping;
