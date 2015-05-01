@@ -409,8 +409,8 @@ public class DAO {
         return queries.exists(id);
     }
     
-    public static boolean deleteQuery(String id) {
-        return queries.delete(id);
+    public static boolean deleteQuery(String id, SourceType sourceType) {
+        return queries.delete(id, sourceType);
     }
     
     public static class SearchLocalMessages {
@@ -581,8 +581,8 @@ public class DAO {
         }
 
         // record the query
+        QueryEntry qe = queries.read(q);
         if (Caretaker.acceptQuery4Retrieval(q)) {
-            QueryEntry qe = queries.read(q);
             if (qe == null) {
                 // a new query occurred
                 qe = new QueryEntry(q, timezoneOffset, remoteMessages, SourceType.TWITTER, byUserQuery);
@@ -595,6 +595,9 @@ public class DAO {
             } catch (IOException e) {
                 e.printStackTrace();
             }
+        } else {
+            // accept rules may change, we want to delete the query then in the index
+            if (qe != null) queries.delete(q, qe.source_type);
         }
         
         return new Timeline[]{remoteMessages, newMessages};

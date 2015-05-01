@@ -65,9 +65,9 @@ public abstract class AbstractIndexFactory<Entry extends IndexEntry> implements 
     }
     
     @Override
-    public boolean delete(String id) {
+    public boolean delete(String id, SourceType sourceType) {
         try {
-            return elasticsearch_client.prepareDelete(index_name, null, id).execute().actionGet().isFound();
+            return elasticsearch_client.prepareDelete(index_name, sourceType.name(), id).execute().actionGet().isFound();
         } catch (IndexMissingException e) {
             // may happen for first query
             return false;

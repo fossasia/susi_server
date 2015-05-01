@@ -102,7 +102,7 @@ public class Caretaker extends Thread {
                 List<QueryEntry> queryList = DAO.SearchLocalQueries("", 10, "retrieval_next", SortOrder.ASC, null, new Date(), "retrieval_next");
                 for (QueryEntry qe: queryList) {
                     if (!acceptQuery4Retrieval(qe.getQuery())) {
-                        DAO.deleteQuery(qe.getQuery());
+                        DAO.deleteQuery(qe.getQuery(), qe.getSourceType());
                         continue;
                     }
                     Timeline[] t = DAO.scrapeTwitter(qe.getQuery(), qe.getTimezoneOffset(), false);
