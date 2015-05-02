@@ -56,16 +56,22 @@ public class SuggestServlet extends HttpServlet {
         boolean jsonp = callback != null && callback.length() > 0;
         boolean local = post.isLocalhostAccess();
         boolean minified = post.get("minified", false);
+        boolean delete = post.get("delete", false);
         int count = post.get("count", 100); // number of queries
         String query = post.get("q", ""); // to get a list of queries which match; to get all latest: leave q empty
         String orders = post.get("order", "asc").toUpperCase();
         SortOrder order = SortOrder.valueOf(orders);        
-        String orderby = post.get("orderby", query.length() == 0 ? "query_first" : "query_count");
+        String orderby = post.get("orderby", query.length() == 0 ? "retrieval_next" : "query_count");
         int timezoneOffset = post.get("timezoneOffset", 0);
         Date since = post.get("since", (Date) null, timezoneOffset);
         Date until = post.get("until", (Date) null, timezoneOffset);
         String selectby = post.get("selectby", "retrieval_next");
         List<QueryEntry> queryList = query.length() == 0 && !local ? null : DAO.SearchLocalQueries(query, count, orderby, order, since, until, selectby);
+        
+        if (delete && queryList != null) {
+            for (QueryEntry qe: queryList) DAO.deleteQuery(qe.getQuery(), qe.getSourceType());
+            queryList = query.length() == 0 && !local ? null : DAO.SearchLocalQueries(query, count, orderby, order, since, until, selectby);
+        }
         
         post.setResponse(response, "application/javascript");
         
