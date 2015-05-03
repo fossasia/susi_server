@@ -102,4 +102,9 @@ public abstract class AbstractIndexFactory<Entry extends IndexEntry> implements 
                 .setSource(json).setVersion(1).setVersionType(VersionType.FORCE).execute().actionGet();
         json.close();
     }
+
+    @Override
+    public void refresh() {
+        elasticsearch_client.admin().indices().prepareRefresh().execute().actionGet();
+    }
 }
