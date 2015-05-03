@@ -21,6 +21,7 @@ package org.loklak.data;
 
 public enum ProviderType {
 
+    NOONE,   // value assigned during instantiation phase
     SCRAPED, // scraped with this peer from a remote service
     GENERIC, // pushed as single message at this peer
     REMOTE;  // pushed as message bulk from a remote peer

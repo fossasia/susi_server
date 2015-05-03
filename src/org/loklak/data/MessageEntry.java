@@ -52,13 +52,24 @@ public class MessageEntry extends AbstractIndexEntry implements IndexEntry {
     public MessageEntry() throws MalformedURLException {
         this.created_at = new Date();
         this.source_type = SourceType.USER;
+        this.provider_type = ProviderType.NOONE;
+        this.provider_hash = "";
         this.user_screen_name = "";
         this.id_str = "";
         this.text = "";
         this.status_id_url = null;
+        this.retweet_count = 0;
+        this.favourites_count = 0;
         this.images = new ArrayList<String>();
         this.place_id = "";
         this.place_name = "";
+        this.without_l_len = 0;
+        this.without_lu_len = 0;
+        this.without_luh_len = 0;
+        this.hosts = new String[0];
+        this.links = new String[0]; 
+        this.mentions = new String[0];
+        this.hashtags = new String[0];
     }
 
     public MessageEntry(Map<String, Object> map) {

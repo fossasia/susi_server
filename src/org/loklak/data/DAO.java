@@ -564,7 +564,16 @@ public class DAO {
     public static Timeline[] scrapeTwitter(final String q, final int timezoneOffset, boolean byUserQuery) {
         // retrieve messages from remote server
         String[] remote = DAO.getConfig("frontpeers", new String[0], ",");        
-        Timeline remoteMessages = remote.length > 0 ? searchOnOtherPeers(remote, q, 100, timezoneOffset, "twitter", SearchClient.frontpeer_hash) : TwitterScraper.search(q);
+        Timeline remoteMessages;
+        if (remote.length > 0) {
+            remoteMessages = searchOnOtherPeers(remote, q, 100, timezoneOffset, "twitter", SearchClient.frontpeer_hash);
+            if (remoteMessages.size() == 0) {
+                // maybe the remote server died, we try then ourself
+                remoteMessages = TwitterScraper.search(q);
+            }
+        } else {
+            remoteMessages = TwitterScraper.search(q);
+        }
         
         // identify new tweets
         Timeline newMessages = new Timeline(); // we store new tweets here to be able to transmit them to peers
@@ -592,7 +601,7 @@ public class DAO {
                 qe = new QueryEntry(q, timezoneOffset, remoteMessages, SourceType.TWITTER, byUserQuery);
             } else {
                 // existing queries are updated
-                qe.update(newMessages, byUserQuery);
+                qe.update(remoteMessages, byUserQuery);
             }
             try {
                 queries.writeEntry(q, SourceType.TWITTER.name(), qe);
