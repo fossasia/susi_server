@@ -60,7 +60,7 @@ public class PeersServlet extends HttpServlet {
         // generate json
         XContentBuilder json = XContentFactory.jsonBuilder().prettyPrint().lfAtEnd();
         json.startObject();
-        json.field("count", "0");
+        json.field("count", Integer.toString(RemoteAccess.history.size()));
         json.field("peers").startArray();
         for (Map.Entry<String, RemoteAccess> peer: RemoteAccess.history.entrySet()) {
             json.startObject();
