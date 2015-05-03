@@ -57,6 +57,7 @@ public abstract class AbstractIndexFactory<Entry extends IndexEntry> implements 
     @Override
     public boolean exists(String id) {
         try {
+            if (this.cache.exist(id)) return true;
             return elasticsearch_client.prepareGet(index_name, null, id).execute().actionGet().isExists();
         } catch (IndexMissingException e) {
             // may happen for first query
@@ -67,6 +68,7 @@ public abstract class AbstractIndexFactory<Entry extends IndexEntry> implements 
     @Override
     public boolean delete(String id, SourceType sourceType) {
         try {
+            this.cache.remove(id);
             return elasticsearch_client.prepareDelete(index_name, sourceType.name(), id).execute().actionGet().isFound();
         } catch (IndexMissingException e) {
             // may happen for first query
@@ -103,8 +105,4 @@ public abstract class AbstractIndexFactory<Entry extends IndexEntry> implements 
         json.close();
     }
 
-    @Override
-    public void refresh() {
-        elasticsearch_client.admin().indices().prepareRefresh().execute().actionGet();
-    }
 }

@@ -32,6 +32,10 @@ public class Cache<K,V> {
         this.map = new LinkedHashMap<K, V>();
     }
 
+    public void clear() {
+        this.map.clear();
+    }
+    
     private void checkSize() {
         if (this.map.size() >= this.maxSize) {
             Iterator<K> i = this.map.keySet().iterator();
@@ -67,6 +71,18 @@ public class Cache<K,V> {
             this.map.put(key, value);
         }
         return value;
+    }
+    
+    public V remove(K key) {
+        synchronized (this.map) {
+            return this.map.remove(key);
+        }
+    }
+    
+    public boolean exist(K key) {
+        synchronized (this.map) {
+            return this.map.containsKey(key);
+        }
     }
     
 }

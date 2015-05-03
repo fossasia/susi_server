@@ -413,10 +413,6 @@ public class DAO {
         return queries.delete(id, sourceType);
     }
     
-    public static void refreshQuery() {
-        queries.refresh();
-    }
-    
     public static class SearchLocalMessages {
         public long hits;
         public Timeline timeline;

@@ -70,7 +70,6 @@ public class SuggestServlet extends HttpServlet {
         
         if (delete && queryList != null) {
             for (QueryEntry qe: queryList) DAO.deleteQuery(qe.getQuery(), qe.getSourceType());
-            DAO.refreshQuery();
             queryList = query.length() == 0 && !local ? null : DAO.SearchLocalQueries(query, count, orderby, order, since, until, selectby);
         }
         

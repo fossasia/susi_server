@@ -42,5 +42,4 @@ public interface IndexFactory<Entry extends IndexEntry> {
 
     public void writeEntry(String id, String type, Entry entry) throws IOException;
     
-    public void refresh();
 }
