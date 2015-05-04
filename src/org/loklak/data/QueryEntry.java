@@ -55,7 +55,6 @@ import org.loklak.tools.DateParser;
 public class QueryEntry extends AbstractIndexEntry implements IndexEntry {
     
     private final static long DAY_MILLIS = 1000L * 60L * 60L * 24L;
-    private final static int MINIMUM_PERIOD = 10000; // for single messages; used to calculate retrieval_next times
     private final static int RETRIEVAL_CONSTANT = 20; // the number of messages that we get with each retrieval at maximum
     
     public static double ttl_factor = 0.5d;
@@ -142,9 +141,10 @@ public class QueryEntry extends AbstractIndexEntry implements IndexEntry {
         }
         this.messages_per_day = (int) (DAY_MILLIS / this.message_period);
         this.expected_next = new Date(this.retrieval_last.getTime() + ((long) (ttl_factor *  this.message_period)));
+        long pivot_period = DAO.getConfig("retrieval.pivotfrequency", 10000);
         long strategic_period =   // if the period is far below the minimum, we apply a penalty
-                 (this.message_period < MINIMUM_PERIOD ?
-                MINIMUM_PERIOD + 1000 * (long) Math.pow((MINIMUM_PERIOD - this.message_period) / 1000, 3) :
+                 (this.message_period < pivot_period ?
+                     pivot_period + 1000 * (long) Math.pow((pivot_period - this.message_period) / 1000, 3) :
                 this.message_period);
         long waitingtime = Math.min(DAY_MILLIS, (long) (ttl_factor * RETRIEVAL_CONSTANT * strategic_period));
         this.retrieval_next = new Date(this.retrieval_last.getTime() + waitingtime);
