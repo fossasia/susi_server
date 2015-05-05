@@ -478,7 +478,7 @@ public class DAO {
                     // aggregate double-tokens (matching lowercase)
                     Map<String, Long> checkMap = new HashMap<>();
                     for (Bucket bucket: buckets) {
-                        if (bucket.getKey().length() > 0) {
+                        if (bucket.getKey().trim().length() > 0) {
                             String k = bucket.getKey().toLowerCase();
                             Long v = checkMap.get(k);
                             checkMap.put(k, v == null ? bucket.getDocCount() : v + bucket.getDocCount());
@@ -486,7 +486,7 @@ public class DAO {
                     }
                     ArrayList<Map.Entry<String, Long>> list = new ArrayList<>(buckets.size());
                     for (Bucket bucket: buckets) {
-                        if (bucket.getKey().length() > 0) {
+                        if (bucket.getKey().trim().length() > 0) {
                             Long v = checkMap.remove(bucket.getKey().toLowerCase());
                             if (v == null) continue;
                             list.add(new AbstractMap.SimpleEntry<String, Long>(bucket.getKey(), v));
