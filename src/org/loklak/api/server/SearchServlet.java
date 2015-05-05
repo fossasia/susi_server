@@ -168,6 +168,7 @@ public class SearchServlet extends HttpServlet {
                     json.field(aggregation.getKey());
                     json.startObject();
                     for (Map.Entry<String, Long> a: aggregation.getValue()) {
+                        if (a.getValue().equals(query)) continue; // we omit obvious terms that cannot be used for faceting, like search for "#abc" -> most hashtag is "#abc"
                         json.field(a.getKey(), a.getValue());
                     }
                     json.endObject(); // of aggregation field
