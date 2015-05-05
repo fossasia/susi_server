@@ -475,10 +475,22 @@ public class DAO {
                     if (field.equals("created_at")) continue; // this has special handling below
                     Terms fieldCounts = response.getAggregations().get(field);
                     List<Bucket> buckets = fieldCounts.getBuckets();
+                    // aggregate double-tokens (matching lowercase)
+                    Map<String, Long> checkMap = new HashMap<>();
+                    for (Bucket bucket: buckets) {
+                        if (bucket.getKey().length() > 0) {
+                            String k = bucket.getKey().toLowerCase();
+                            Long v = checkMap.get(k);
+                            checkMap.put(k, v == null ? bucket.getDocCount() : v + bucket.getDocCount());
+                        }
+                    }
                     ArrayList<Map.Entry<String, Long>> list = new ArrayList<>(buckets.size());
                     for (Bucket bucket: buckets) {
-                        Map.Entry<String,Long> entry = new AbstractMap.SimpleEntry<String, Long>(bucket.getKey(), bucket.getDocCount());
-                        list.add(entry);
+                        if (bucket.getKey().length() > 0) {
+                            Long v = checkMap.remove(bucket.getKey().toLowerCase());
+                            if (v == null) continue;
+                            list.add(new AbstractMap.SimpleEntry<String, Long>(bucket.getKey(), v));
+                        }
                     }
                     aggregations.put(field, list);
                 }
