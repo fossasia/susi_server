@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.util.Map;
 
 import org.elasticsearch.common.xcontent.XContentBuilder;
+import org.loklak.harvester.SourceType;
 
 public interface IndexFactory<Entry extends IndexEntry> {
 

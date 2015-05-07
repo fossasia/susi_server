@@ -37,6 +37,7 @@ import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.index.query.RangeQueryBuilder;
+import org.loklak.harvester.SourceType;
 import org.loklak.tools.DateParser;
 
 /**

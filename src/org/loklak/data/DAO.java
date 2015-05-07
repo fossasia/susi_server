@@ -77,7 +77,8 @@ import org.elasticsearch.search.aggregations.bucket.terms.Terms.Bucket;
 import org.elasticsearch.search.sort.SortOrder;
 import org.loklak.Caretaker;
 import org.loklak.api.client.SearchClient;
-import org.loklak.scraper.TwitterScraper;
+import org.loklak.harvester.SourceType;
+import org.loklak.harvester.TwitterScraper;
 import org.loklak.tools.DateParser;
 import org.loklak.tools.UTF8;
 

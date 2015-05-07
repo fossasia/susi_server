@@ -17,7 +17,7 @@
  * under the License.
  */
 
-package org.loklak.scraper;
+package org.loklak.harvester;
 
 /**
  * THIS CLASS WAS TAKEN FROM AN ELASTICSEARCH PLUGIN AND IS NOT (YET) USED IN THIS APPLIACTION

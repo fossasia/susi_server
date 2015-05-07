@@ -28,6 +28,7 @@ import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.elasticsearch.common.xcontent.XContentFactory;
 import org.elasticsearch.index.VersionType;
 import org.elasticsearch.indices.IndexMissingException;
+import org.loklak.harvester.SourceType;
 import org.loklak.tools.Cache;
 
 public abstract class AbstractIndexFactory<Entry extends IndexEntry> implements IndexFactory<Entry> {

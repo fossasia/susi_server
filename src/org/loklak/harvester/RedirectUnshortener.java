@@ -1,4 +1,4 @@
-package org.loklak.scraper;
+package org.loklak.harvester;
 
 import java.io.BufferedReader;
 import java.io.IOException;
