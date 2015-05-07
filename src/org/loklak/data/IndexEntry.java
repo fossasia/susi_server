@@ -31,6 +31,6 @@ public interface IndexEntry {
 
     public void toJSON(XContentBuilder m);
     
-    public XContentBuilder toJSON();
+    public byte[] toJSON();
     
 }

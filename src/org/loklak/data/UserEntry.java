@@ -88,7 +88,8 @@ public class UserEntry extends AbstractIndexEntry implements IndexEntry {
     public Date getAppearanceLatest() {
         return appearance_latest;
     }
-    
+
+    @Override
     public void toJSON(XContentBuilder m) {
         try {
             m.startObject(); // object name for this should be 'user'

@@ -210,7 +210,8 @@ public class QueryEntry extends AbstractIndexEntry implements IndexEntry {
     public int getMessagesPerDay() {
         return this.messages_per_day;
     }
-    
+
+    @Override
     public void toJSON(XContentBuilder m) {
         try {
             m.startObject();

@@ -24,8 +24,6 @@ import java.util.Map;
 
 import org.elasticsearch.action.get.GetResponse;
 import org.elasticsearch.client.Client;
-import org.elasticsearch.common.xcontent.XContentBuilder;
-import org.elasticsearch.common.xcontent.XContentFactory;
 import org.elasticsearch.index.VersionType;
 import org.elasticsearch.indices.IndexMissingException;
 import org.loklak.harvester.SourceType;
@@ -99,11 +97,11 @@ public abstract class AbstractIndexFactory<Entry extends IndexEntry> implements 
     public void writeEntry(String id, String type, Entry entry) throws IOException {
         this.cache.put(id, entry);
         // record user into search index
-        XContentBuilder json = XContentFactory.jsonBuilder();
-        entry.toJSON(json);
-        elasticsearch_client.prepareIndex(this.index_name, type, id)
+        byte[] json = entry.toJSON();
+        if (json != null) {
+            elasticsearch_client.prepareIndex(this.index_name, type, id)
                 .setSource(json).setVersion(1).setVersionType(VersionType.FORCE).execute().actionGet();
-        json.close();
+        }
     }
 
 }

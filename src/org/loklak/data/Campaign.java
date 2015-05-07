@@ -146,7 +146,7 @@ public class Campaign implements Comparator<Campaign>, Comparable<Campaign> {
         if (c == 0) c = o1.hashCode() < o2.hashCode() ? -1 : o1.hashCode() > o2.hashCode() ? 1 : 0;
         return c;
     }
-    
+
     public void toJSON(XContentBuilder m) {
         try {
             m.map(this.map);

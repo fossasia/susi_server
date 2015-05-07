@@ -24,6 +24,7 @@ import java.util.Map;
 
 import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.elasticsearch.common.xcontent.XContentFactory;
+import org.loklak.tools.UTF8;
 
 public abstract class AbstractIndexEntry implements IndexEntry {
 
@@ -38,21 +39,17 @@ public abstract class AbstractIndexEntry implements IndexEntry {
         try {
             XContentBuilder m = XContentFactory.jsonBuilder();
             this.toJSON(m);
-            String s = m.bytes().toUtf8();
+            String s = m.string();
             m.close();
             return s;
         } catch (IOException e) {
+            e.printStackTrace();
             return null;
         }
     }
     
-    public XContentBuilder toJSON() {
-        try {
-            XContentBuilder m = XContentFactory.jsonBuilder();
-            this.toJSON(m);
-            return m;
-        } catch (IOException e) {
-            return null;
-        }
+    public byte[] toJSON() {
+        String s = toString();
+        return s == null ? null : UTF8.getBytes(s);
     }
 }
