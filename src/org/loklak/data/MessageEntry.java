@@ -31,7 +31,7 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.elasticsearch.common.joda.time.format.ISODateTimeFormat;
+import org.joda.time.format.ISODateTimeFormat;
 import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.loklak.harvester.SourceType;
 
