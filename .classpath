@@ -36,5 +36,8 @@
 	<classpathentry kind="lib" path="lib/lucene-sandbox-4.10.4.jar"/>
 	<classpathentry kind="lib" path="lib/lucene-spatial-4.10.4.jar"/>
 	<classpathentry kind="lib" path="lib/lucene-suggest-4.10.4.jar"/>
+	<classpathentry kind="lib" path="lib/jackson-core-2.6.0.jar"/>
+	<classpathentry kind="lib" path="lib/jackson-databind-2.6.0.jar"/>
+	<classpathentry kind="lib" path="lib/jackson-annotations-2.6.0.jar"/>
 	<classpathentry kind="output" path="classes"/>
 </classpath>

@@ -23,15 +23,18 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.elasticsearch.common.xcontent.XContentParser;
-import org.elasticsearch.common.xcontent.json.JsonXContent;
 import org.loklak.data.ProviderType;
 import org.loklak.data.Timeline;
 import org.loklak.data.MessageEntry;
 import org.loklak.data.UserEntry;
+
+import com.fasterxml.jackson.core.JsonFactory;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class SearchClient {
 
@@ -44,8 +47,10 @@ public class SearchClient {
         String json = searchJSON(protocolhostportstub, query, source, count, timezoneOffset);
         if (json == null || json.length() == 0) return tl;
         try {
-            XContentParser parser = JsonXContent.jsonXContent.createParser(json);
-            Map<String, Object> map = parser == null ? null : parser.map();
+            JsonFactory factory = new JsonFactory();
+            ObjectMapper mapper = new ObjectMapper(factory);
+            TypeReference<HashMap<String,Object>> typeRef = new TypeReference<HashMap<String,Object>>() {};
+            Map<String, Object> map = mapper.readValue(json, typeRef);
             Object statuses_obj = map.get("statuses");
             @SuppressWarnings("unchecked") List<Map<String, Object>> statuses = statuses_obj instanceof List<?> ? (List<Map<String, Object>>) statuses_obj : null;
             if (statuses != null) {
