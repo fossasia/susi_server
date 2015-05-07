@@ -22,8 +22,6 @@ package org.loklak.api.client;
 import java.io.BufferedReader;
 import java.io.IOException;
 
-import org.loklak.api.ClientHelper;
-
 public class HelloClient {
 
     public static void propagate(final String[] hoststubs, final int httpport, final int httpsport, final String peername) {

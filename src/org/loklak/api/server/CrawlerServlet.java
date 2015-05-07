@@ -30,7 +30,6 @@ import javax.servlet.http.HttpServletResponse;
 import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.elasticsearch.common.xcontent.XContentFactory;
 import org.loklak.Crawler;
-import org.loklak.api.RemoteAccess;
 import org.loklak.data.DAO;
 
 public class CrawlerServlet extends HttpServlet {

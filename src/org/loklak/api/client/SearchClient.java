@@ -28,7 +28,6 @@ import java.util.Map;
 
 import org.elasticsearch.common.xcontent.XContentParser;
 import org.elasticsearch.common.xcontent.json.JsonXContent;
-import org.loklak.api.ClientHelper;
 import org.loklak.data.ProviderType;
 import org.loklak.data.Timeline;
 import org.loklak.data.MessageEntry;

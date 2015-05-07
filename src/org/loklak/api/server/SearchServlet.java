@@ -33,7 +33,6 @@ import javax.servlet.http.HttpServletResponse;
 import org.eclipse.jetty.util.log.Log;
 import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.elasticsearch.common.xcontent.XContentFactory;
-import org.loklak.api.RemoteAccess;
 import org.loklak.data.DAO;
 import org.loklak.data.Timeline;
 import org.loklak.data.MessageEntry;

@@ -32,7 +32,6 @@ import javax.servlet.http.HttpServletResponse;
 import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.elasticsearch.common.xcontent.XContentFactory;
 import org.elasticsearch.search.sort.SortOrder;
-import org.loklak.api.RemoteAccess;
 import org.loklak.data.DAO;
 import org.loklak.data.QueryEntry;
 

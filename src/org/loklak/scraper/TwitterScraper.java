@@ -34,7 +34,7 @@ import java.util.concurrent.Semaphore;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.loklak.api.ClientHelper;
+import org.loklak.api.client.ClientHelper;
 import org.loklak.data.DAO;
 import org.loklak.data.ProviderType;
 import org.loklak.data.SourceType;

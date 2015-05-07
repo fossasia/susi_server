@@ -33,7 +33,6 @@ import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.elasticsearch.common.xcontent.XContentFactory;
 import org.elasticsearch.common.xcontent.XContentParser;
 import org.elasticsearch.common.xcontent.json.JsonXContent;
-import org.loklak.api.RemoteAccess;
 import org.loklak.data.DAO;
 import org.loklak.data.ProviderType;
 import org.loklak.data.MessageEntry;

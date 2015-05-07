@@ -24,7 +24,6 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.loklak.api.ClientHelper;
 import org.loklak.data.Timeline;
 import org.loklak.tools.UTF8;
 
