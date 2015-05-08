@@ -5,21 +5,26 @@
     <property name="source" value="1.7"/>
     <path id="loklak.classpath">
         <pathelement location="classes"/>
-        <pathelement location="lib/jetty-server-9.2.6.v20141205.jar"/>
-        <pathelement location="lib/jetty-rewrite-9.2.6.v20141205.jar"/>
-        <pathelement location="lib/jetty-servlet-9.2.6.v20141205.jar"/>
-        <pathelement location="lib/jetty-util-9.2.6.v20141205.jar"/>
-        <pathelement location="lib/javax.servlet-api-3.1.0.jar"/>
-        <pathelement location="lib/jetty-http-9.2.6.v20141205.jar"/>
-        <pathelement location="lib/jetty-io-9.2.6.v20141205.jar"/>
-        <pathelement location="lib/jetty-webapp-9.2.6.v20141205.jar"/>
-        <pathelement location="lib/jetty-security-9.2.6.v20141205.jar"/>
         <pathelement location="lib/antlr-runtime-3.5.jar"/>
         <pathelement location="lib/asm-4.1.jar"/>
         <pathelement location="lib/asm-commons-4.1.jar"/>
+        <pathelement location="lib/elasticsearch-1.5.0.jar"/>
         <pathelement location="lib/groovy-all-2.4.0.jar"/>
+        <pathelement location="lib/jackson-annotations-2.6.0.jar"/>
+        <pathelement location="lib/jackson-core-2.6.0.jar"/>
+        <pathelement location="lib/jackson-databind-2.6.0.jar"/>
+        <pathelement location="lib/javax.servlet-api-3.1.0.jar"/>
+        <pathelement location="lib/jetty-http-9.2.6.v20141205.jar"/>
+        <pathelement location="lib/jetty-io-9.2.6.v20141205.jar"/>
+        <pathelement location="lib/jetty-rewrite-9.2.6.v20141205.jar"/>
+        <pathelement location="lib/jetty-security-9.2.6.v20141205.jar"/>
+        <pathelement location="lib/jetty-server-9.2.6.v20141205.jar"/>
+        <pathelement location="lib/jetty-servlet-9.2.6.v20141205.jar"/>
         <pathelement location="lib/jetty-servlets-9.2.6.v20141205.jar"/>
+        <pathelement location="lib/jetty-util-9.2.6.v20141205.jar"/>
+        <pathelement location="lib/jetty-webapp-9.2.6.v20141205.jar"/>
         <pathelement location="lib/jna-4.1.0.jar"/>
+        <pathelement location="lib/joda-time-2.4.jar"/>
         <pathelement location="lib/jts-1.13.jar"/>
         <pathelement location="lib/log4j-1.2.17.jar"/>
         <pathelement location="lib/lucene-analyzers-common-4.10.4.jar"/>
@@ -36,7 +41,6 @@
         <pathelement location="lib/lucene-spatial-4.10.4.jar"/>
         <pathelement location="lib/lucene-suggest-4.10.4.jar"/>
         <pathelement location="lib/spatial4j-0.4.1.jar"/>
-        <pathelement location="lib/elasticsearch-1.5.0.jar"/>
         <pathelement location="lib/twitter4j-core-4.0.2.jar"/>
         <pathelement location="lib/twitter4j-stream-4.0.2.jar"/>
     </path>
