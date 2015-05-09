@@ -82,6 +82,8 @@ import org.loklak.harvester.TwitterScraper;
 import org.loklak.tools.DateParser;
 import org.loklak.tools.UTF8;
 
+import com.fasterxml.jackson.core.JsonFactory;
+
 /**
  * The Data Access Object for the message project.
  * This provides only static methods because the class methods shall be available for
@@ -94,6 +96,8 @@ public class DAO {
     public final static String MESSAGES_INDEX_NAME = "messages";
     public final static String USERS_INDEX_NAME = "users";
     public final static int CACHE_MAXSIZE = 10000;
+
+    public final static JsonFactory jsonFactory = new JsonFactory();
     
     public  static File conf_dir;
     private static File message_dump_dir, message_dump_dir_own, message_dump_dir_import, message_dump_dir_imported;
