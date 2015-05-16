@@ -88,13 +88,15 @@ public class SearchServlet extends HttpServlet {
                 final int timezoneOffsetf = timezoneOffset;
                 Thread scraperThread = new Thread() {
                     public void run() {
-                        tl.putAll(DAO.scrapeTwitter(queryf, timezoneOffsetf, true)[1]);
+                        Timeline[] twitterTl = DAO.scrapeTwitter(queryf, timezoneOffsetf, true);
+                        tl.putAll(twitterTl[1]);
                     }
                 };
                 scraperThread.start();
                 Thread backendThread = new Thread() {
                     public void run() {
-                        tl.putAll(DAO.searchBackend(queryf, 100, timezoneOffsetf, "cache"));
+                        Timeline backendTl = DAO.searchBackend(queryf, 100, timezoneOffsetf, "cache");
+                        tl.putAll(backendTl);
                     }
                 };
                 backendThread.start();
@@ -105,7 +107,8 @@ public class SearchServlet extends HttpServlet {
                 try {scraperThread.join(8000);} catch (InterruptedException e) {}
             } else {
                 if ("twitter".equals(source)) {
-                    tl.putAll(DAO.scrapeTwitter(query, timezoneOffset, true)[1]);
+                    Timeline[] twitterTl = DAO.scrapeTwitter(query, timezoneOffset, true);
+                    tl.putAll(twitterTl[0]); // in this case we use all tweets, not only the latest one because it may happen that there are no new and that is not what the user expects
                 }
     
                 // replace the timeline with one from the own index which now includes the remote result
