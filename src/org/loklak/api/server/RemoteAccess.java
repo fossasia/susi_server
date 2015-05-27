@@ -109,9 +109,10 @@ public class RemoteAccess {
             String XRealIP = request.getHeader("X-Real-IP");
             if (XRealIP != null && XRealIP.length() > 0) this.clientHost = XRealIP; // get IP through nginx config "proxy_set_header X-Real-IP $remote_addr;"
             this.access_time = System.currentTimeMillis();
+            boolean localhost = isLocalhostAccess();
             this.time_since_last_access = this.access_time - RemoteAccess.latestVisit(this.clientHost);
-            this.DoS_blackout = this.time_since_last_access < DAO.getConfig("DoS.blackout", 100) || sleeping4clients.contains(this.clientHost);
-            this.DoS_servicereduction = this.time_since_last_access < DAO.getConfig("DoS.servicereduction", 1000);
+            this.DoS_blackout = !localhost && this.time_since_last_access < DAO.getConfig("DoS.blackout", 100) || sleeping4clients.contains(this.clientHost);
+            this.DoS_servicereduction = !localhost && this.time_since_last_access < DAO.getConfig("DoS.servicereduction", 1000);
         }
         public String getClientHost() {
             return this.clientHost;
