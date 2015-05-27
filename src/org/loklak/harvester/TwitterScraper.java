@@ -85,12 +85,17 @@ public class TwitterScraper {
         };
         
         // wait until all messages in the timeline are ready
-        for (MessageEntry m: timeline) {
-            if (m instanceof TwitterTweet) {
-                ((TwitterTweet) m).waitReady();
+        if (timeline == null) {
+            // timeout occurred
+            timeline = new Timeline();
+        } else {
+            // wait until messages are ready (i.e. unshortening of shortlinks)
+            for (MessageEntry m: timeline) {
+                if (m instanceof TwitterTweet) {
+                    ((TwitterTweet) m).waitReady();
+                }
             }
         }
-        
         return timeline;
     }
     
