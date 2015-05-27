@@ -48,6 +48,7 @@ import org.loklak.api.server.PushServlet;
 import org.loklak.api.server.SearchServlet;
 import org.loklak.api.server.StatusServlet;
 import org.loklak.api.server.SuggestServlet;
+import org.loklak.api.server.UserServlet;
 import org.loklak.data.DAO;
 import org.loklak.tools.Browser;
 
@@ -116,6 +117,7 @@ public class Main {
         servletHandler.addServlet(SearchServlet.class, "/api/search.rss");  // both have same servlet class
         servletHandler.addServlet(SearchServlet.class, "/api/search.json"); // both have same servlet class
         servletHandler.addServlet(SuggestServlet.class, "/api/suggest.json"); 
+        servletHandler.addServlet(UserServlet.class, "/api/user.json"); 
         servletHandler.addServlet(CampaignServlet.class, "/api/campaign.json"); 
         ServletHolder pushServletHolder = new ServletHolder(PushServlet.class);
         pushServletHolder.getRegistration().setMultipartConfig(new MultipartConfigElement(tmp.getAbsolutePath()));

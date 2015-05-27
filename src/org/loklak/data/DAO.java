@@ -517,6 +517,40 @@ public class DAO {
     }
 
     /**
+     * Search the local user cache using a elasticsearch query.
+     * @param screen_name - the user id
+     */
+    public static UserEntry SearchLocalUser(final String screen_name) {
+        return users.read(screen_name);
+        /*
+        if (screen_name == null || screen_name.length() == 0) return null;
+        try {
+            // prepare request
+            BoolQueryBuilder query = QueryBuilders.boolQuery();
+            query.must(QueryBuilders.termQuery("screen_name", screen_name));
+
+            SearchRequestBuilder request = elasticsearch_client.prepareSearch(QUERIES_INDEX_NAME)
+                    .setSearchType(SearchType.QUERY_THEN_FETCH)
+                    .setQuery(query)
+                    .setFrom(0)
+                    .setSize(1);
+
+            // get response
+            SearchResponse response = request.execute().actionGet();
+
+            // evaluate search result
+            //long totalHitCount = response.getHits().getTotalHits();
+            SearchHit[] hits = response.getHits().getHits();
+            if (hits.length == 0) return null;
+            assert hits.length == 1;
+            Map<String, Object> map = hits[1].getSource();
+            return new UserEntry(map);            
+        } catch (IndexMissingException e) {}
+        return null;
+        */
+    }
+    
+    /**
      * Search the local message cache using a elasticsearch query.
      * @param q - the query, can be empty for a matchall-query
      * @param resultCount - the number of messages in the result
