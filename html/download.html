@@ -74,7 +74,7 @@
           <p>The source code is hosted at <a href="https://github.com/loklak/loklak_server">https://github.com/loklak/loklak_server</a>, you can download it and run <code>loklak</code> with:</p>
           <ul class="request">
 			<li>&gt; git clone https://github.com/loklak/loklak_server.git</li>
-			<li>&gt; cd loklak</li>
+			<li>&gt; cd loklak_server</li>
 			<li>&gt; ant</li>
             <li>&gt; bin/start.sh</li>
           </ul>
@@ -85,7 +85,52 @@
           <ul class="request">
             <li>&gt; ./stop.sh</li>
           </ul>
-            
+           
+ <br>
+<span style="font-weight: bold;"></span>
+<h2 class="sub-header">&nbsp;Setup, Build, Run on a
+Virtual Machine in
+Debian</h2>
+<span style="color: white;">You will need to configure a
+SWAP file then have it load at startup, I
+have used a 4 &nbsp;Gb Swap see &nbsp;dd if=/dev/zero
+of=/var/swap.img bs=4096k count=1000 you can try reducing it if you
+want. &nbsp;You will also need Java.</span><br>
+<br>
+<ul class="request">
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;
+  <li>&gt; cd /var</li>
+  <li>&gt; touch swap.img</li>
+  <li>&gt; chmod 600 swap.img</li>
+  <li>&gt; dd if=/dev/zero of=/var/swap.img bs=4096k
+count=1000<br>
+  </li>
+  <li>&gt; mkswap /var/swap.img</li>
+  <li>&gt; swapon /var/swap.img</li>
+  <li>&gt; echo "/var/swap.img none swap sw 0 0" /etc/fstab</li>
+  <li>&gt; apt-get install buffer</li>
+  <li>&gt; echo "deb
+http://ppa.launchpad.net/webupd8team/java/ubuntu precise main" | tee
+/etc/apt/sources.list.d/webupd8team-java.list&nbsp; </li>
+  <li>&gt; echo "deb-src
+http://ppa.launchpad.net/webupd8team/java/ubuntu precise main" | tee -a
+/etc/apt/sources.list.d/webupd8team-java.list&nbsp;
+  </li>
+  <li>&gt; apt-key adv --keyserver
+hkp://keyserver.ubuntu.com:80 --recv-keys EEA14886
+  </li>
+  <li>&gt; apt-get update
+  </li>
+  <li>&gt; apt-get install oracle-java7-installer
+  </li>
+  <li>&gt; apt-get install git</li>
+  <li>&gt; apt-get install ant</li>
+  <li>&gt; git clone
+https://github.com/loklak/loklak_server.git&nbsp;</li>
+  <li>&gt;&nbsp;cd loklak_server</li>
+  <li>&gt; ant</li>
+  <li>&gt; bin/start.sh</li>
+</ul>
           <br id="importdump"/><br/>
           <h2 class="sub-header">Import A Message Dump</h2>
           <p>To import a message dump (which you get from the <a href="dump/">dump directory</a> of every <code>loklak</code> peer), just move it to the <code>data/dump/import/</code> directory:</p>
