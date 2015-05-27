@@ -26,12 +26,14 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.elasticsearch.index.query.BoolQueryBuilder;
+import org.elasticsearch.index.query.FilterBuilders;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.index.query.RangeQueryBuilder;
@@ -237,7 +239,48 @@ public class QueryEntry extends AbstractIndexEntry implements IndexEntry {
     }
 
     private final static Pattern tokenizerPattern = Pattern.compile("([^\"]\\S*|\".+?\")\\s*"); // tokenizes Strings into terms respecting quoted parts
-
+    static final Map<String, String> constraintFields = new HashMap<>(); // a constraint-name to field-name map
+    static {
+        constraintFields.put("image","images");
+        constraintFields.put("audio","audio");
+        constraintFields.put("video","videos");
+        constraintFields.put("place","place_name");
+        constraintFields.put("link","links");
+        constraintFields.put("mention","mentions");
+        constraintFields.put("hashtag","hashtags");
+    }
+    
+    public static String removeConstraints(String q) {
+        for (String c: constraintFields.keySet()) {
+            q = q.replaceAll(" /" + c, "");
+        }
+        return q;
+    }
+    
+    public static Timeline applyConstraint(Timeline tl0, String query) {
+        // tokenize the query
+        List<String> qe = new ArrayList<String>();
+        Matcher m = tokenizerPattern.matcher(query);
+        while (m.find()) qe.add(m.group(1));
+        
+        HashSet<String> constraints = new HashSet<>();
+        for (String t: qe) {
+            if (t.startsWith("/")) {
+                constraints.add(t.substring(1));
+            } 
+        }
+        Timeline tl1 = new Timeline();
+        for (MessageEntry message: tl0) {
+            if (constraints.contains("image") && message.getImages().size() == 0) continue;
+            if (constraints.contains("place") && message.getPlaceName().length() == 0) continue;
+            if (constraints.contains("link") && message.getLinks().length == 0) continue;
+            if (constraints.contains("mention") && message.getMentions().length == 0) continue;
+            if (constraints.contains("hashtag") && message.getHashtags().length == 0) continue;
+            tl1.addTweet(message);
+        }
+        return tl1;
+    }
+    
     public static class ElasticsearchQuery {
         
         QueryBuilder queryBuilder;
@@ -259,16 +302,21 @@ public class QueryEntry extends AbstractIndexEntry implements IndexEntry {
             //   near:"location" within:xmi - tweets that are near that location
             //   #hashtag - tweets containing the given hashtag
             //   since:2015-04-01 until:2015-04-03 - tweets within given time range
+            // additional constraints:
+            //   /image /audio /video /place - restrict to tweets which have attached images, audio, video or place
             String text = "";
             ArrayList<String> users = new ArrayList<>();
             ArrayList<String> hashtags = new ArrayList<>();
             HashMap<String, String> modifier = new HashMap<>();
+            HashSet<String> constraints = new HashSet<>();
             for (String t: qe) {
                 if (t.length() == 0) continue;
                 if (t.startsWith("@")) {
                     users.add(t.substring(1));
                 } else if (t.startsWith("#")) {
                     hashtags.add(t.substring(1));
+                }  else if (t.startsWith("/")) {
+                    constraints.add(t.substring(1));
                 } else if (t.indexOf(':') > 0) {
                     int p = t.indexOf(':');
                     modifier.put(t.substring(0, p).toLowerCase(), t.substring(p + 1));
@@ -280,17 +328,17 @@ public class QueryEntry extends AbstractIndexEntry implements IndexEntry {
             text = text.trim();
             
             // compose query
-            BoolQueryBuilder query = QueryBuilders.boolQuery();
-            if (text.length() > 0) query.must(QueryBuilders.matchQuery("text", text));
-            for (String user: users) query.must(QueryBuilders.termQuery("mentions", user));
-            for (String hashtag: hashtags) query.must(QueryBuilders.termQuery("hashtags", hashtag.toLowerCase()));
-            if (modifier.containsKey("id")) query.must(QueryBuilders.termQuery("id_str", modifier.get("id")));
-            if (modifier.containsKey("from")) query.must(QueryBuilders.termQuery("screen_name", modifier.get("from")));
+            QueryBuilder query = QueryBuilders.boolQuery();
+            if (text.length() > 0) ((BoolQueryBuilder) query).must(QueryBuilders.matchQuery("text", text));
+            for (String user: users) ((BoolQueryBuilder) query).must(QueryBuilders.termQuery("mentions", user));
+            for (String hashtag: hashtags) ((BoolQueryBuilder) query).must(QueryBuilders.termQuery("hashtags", hashtag.toLowerCase()));
+            if (modifier.containsKey("id")) ((BoolQueryBuilder) query).must(QueryBuilders.termQuery("id_str", modifier.get("id")));
+            if (modifier.containsKey("from")) ((BoolQueryBuilder) query).must(QueryBuilders.termQuery("screen_name", modifier.get("from")));
             if (modifier.containsKey("near")) {
                 BoolQueryBuilder nearquery = QueryBuilders.boolQuery()
                         .should(QueryBuilders.matchQuery("place_name", modifier.get("near")))
                         .should(QueryBuilders.matchQuery("text", modifier.get("near")));
-                query.must(nearquery);
+                ((BoolQueryBuilder) query).must(nearquery);
             }
             if (modifier.containsKey("since")) try {
                 Calendar since = DateParser.parse(modifier.get("since"), timezoneOffset);
@@ -308,10 +356,15 @@ public class QueryEntry extends AbstractIndexEntry implements IndexEntry {
                 } else {
                     this.until = new Date(Long.MAX_VALUE);
                 }
-                query.must(rangeQuery);
+                ((BoolQueryBuilder) query).must(rangeQuery);
             } catch (ParseException e) {} else {
                 this.since = new Date(0);
                 this.until = new Date(Long.MAX_VALUE);
+            }
+            for (Map.Entry<String, String> c: constraintFields.entrySet()) {
+                if (constraints.contains(c.getKey())) {
+                    query = QueryBuilders.filteredQuery(query, FilterBuilders.existsFilter(c.getValue()));
+                }
             }
             this.queryBuilder = query;
         }

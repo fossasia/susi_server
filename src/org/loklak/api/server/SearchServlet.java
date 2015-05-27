@@ -33,6 +33,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.eclipse.jetty.util.log.Log;
 import org.loklak.data.DAO;
+import org.loklak.data.QueryEntry;
 import org.loklak.data.Timeline;
 import org.loklak.data.MessageEntry;
 import org.loklak.data.UserEntry;
@@ -85,19 +86,22 @@ public class SearchServlet extends HttpServlet {
         Map<String, List<Map.Entry<String, Long>>> aggregations = null;
         long hits = 0;
         if (query.length() > 0) {
+            final String noConstraintsQuery = QueryEntry.removeConstraints(query);
             if ("all".equals(source)) {
                 // start all targets for search concurrently
                 final String queryf = query;
                 final int timezoneOffsetf = timezoneOffset;
                 Thread scraperThread = new Thread() {
                     public void run() {
-                        tl.putAll(DAO.scrapeTwitter(queryf, timezoneOffsetf, true)[1]);
+                        Timeline[] twitterTl = DAO.scrapeTwitter(noConstraintsQuery, timezoneOffsetf, true);
+                        tl.putAll(noConstraintsQuery.equals(queryf) ? twitterTl[1] : QueryEntry.applyConstraint(twitterTl[1], queryf));
                     }
                 };
                 scraperThread.start();
                 Thread backendThread = new Thread() {
                     public void run() {
-                        tl.putAll(DAO.searchBackend(queryf, 100, timezoneOffsetf, "cache"));
+                        Timeline backendTl = DAO.searchBackend(queryf, 100, timezoneOffsetf, "cache");
+                        tl.putAll(backendTl);
                     }
                 };
                 backendThread.start();
@@ -108,7 +112,9 @@ public class SearchServlet extends HttpServlet {
                 try {scraperThread.join(8000);} catch (InterruptedException e) {}
             } else {
                 if ("twitter".equals(source)) {
-                    tl.putAll(DAO.scrapeTwitter(query, timezoneOffset, true)[1]);
+                    Timeline[] twitterTl = DAO.scrapeTwitter(noConstraintsQuery, timezoneOffset, true);
+                    tl.putAll(noConstraintsQuery.equals(query) ? twitterTl[0] : QueryEntry.applyConstraint(twitterTl[0], query));
+                    // in this case we use all tweets, not only the latest one because it may happen that there are no new and that is not what the user expects
                 }
     
                 // replace the timeline with one from the own index which now includes the remote result

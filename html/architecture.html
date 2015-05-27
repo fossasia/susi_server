@@ -56,11 +56,12 @@
       <div class="row">
         <div class="col-sm-3 col-md-2 sidebar">
           <ul class="nav nav-sidebar">
-            <li><a href="#filesystem">File System Structure</span></a></li>
-            <li><a href="#socketsandports">Application Sockets and Ports</span></a></li>
-            <li><a href="#searchprocess">Search Process and Communication to the Back-End</span></a></li>
-            <li><a href="#messagedumpformat">Data Format Of Message Dumps</span></a></li>
-            <li><a href="#useraccounts">User Accounts and Access Restrictions</span></a></li>
+            <li><a href="#filesystem">File System Structure</a></li>
+            <li><a href="#socketsandports">Application Sockets and Ports</a></li>
+            <li><a href="#searchprocess">Search Process and Communication to the Back-End</a></li>
+            <li><a href="#topology">Network Topology</a></li>
+            <li><a href="#messagedumpformat">Data Format Of Message Dumps</a></li>
+            <li><a href="#useraccounts">User Accounts and Access Restrictions</a></li>
           </ul>
         </div>
         <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
@@ -118,6 +119,20 @@
             <p>An independent caretaker-process runs every three seconds and looks how many new messages had been placed on the storage queue; if the number exceedes a given limit (i.e. 100) then all messages are stored to the own file system and pushed over the back-end API to the back-end peer.</p>
             <img src="images/architecture_phase3.png" width="720">
             <p>Files pushed on the <a href="dump/">latest message file stack</a> can be downloaded immediately. The same happens at the back-end peer: new messages appear immediately there as well.</p>
+    
+          <br id="topology"/><br/>
+          <h2 class="sub-header">Network Topology</h2>
+          <p>The topology of the <code>loklak</code> depends only on you: using the back-end configuration, you can chain
+            peers and data from scraped content flows along the network chain until it reaches a back-end, which has no other back-end.</p>
+            <img src="images/architecture_topology.png" width="720">
+            <h3>Organic Growth</h3>
+            <p>If you install loklak, you may keep the assigned back-end peer (see config.properties: backend property),
+            or assign another one. If you tell people about <code>loklak</code>, tell them to assign your peer as backend.
+            Your peer will get all tweets from those new peers, and it will dispatch them also to your back-end.</p>
+            <h3>Delegate Scraping</h3>
+            <p>If your peer cannot access twitter.com or you don't want to load tweets yourself, you can assign a 'front-peer'
+            to do that for your (see config.properties: frontpeers). You can also assign several peers (which will be used round-robin)
+            and even peers which have no back-end themself (maybe your own swarm of scrapers).</p>
     
           <br id="messagedumpformat"/><br/>
           <h2 class="sub-header">What's The Data Format Of Message Dumps?</h2>

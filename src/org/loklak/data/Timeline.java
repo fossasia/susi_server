@@ -79,6 +79,10 @@ public class Timeline implements Iterable<MessageEntry> {
         return this.tweets.lastEntry().getValue();
     }
     
+    public String toString() {
+        return toJSON(true);
+    }
+    
     public String toJSON(boolean withEnrichedData) {
         // generate json
         try {

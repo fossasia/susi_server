@@ -288,6 +288,10 @@ public class MessageEntry extends AbstractIndexEntry implements IndexEntry {
         return this.hashtags;
     }
 
+    public String[] getLinks() {
+        return this.links;
+    }
+
     public ArrayList<String> getImages() {
         return this.images;
     }
