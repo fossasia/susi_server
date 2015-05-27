@@ -284,8 +284,16 @@ public class QueryEntry extends AbstractIndexEntry implements IndexEntry {
         
         QueryBuilder queryBuilder;
         Date since, until;
-        
+
         public ElasticsearchQuery(String q, int timezoneOffset) {
+            // default values for since and util
+            this.since = new Date(0);
+            this.until = new Date(Long.MAX_VALUE);
+            // parse the query
+            this.queryBuilder = parse(q, timezoneOffset);
+        }
+        
+        private QueryBuilder parse(String q, int timezoneOffset) {
             // tokenize the query
             List<String> qe = new ArrayList<String>();
             Matcher m = tokenizerPattern.matcher(q);
@@ -356,16 +364,13 @@ public class QueryEntry extends AbstractIndexEntry implements IndexEntry {
                     this.until = new Date(Long.MAX_VALUE);
                 }
                 ((BoolQueryBuilder) query).must(rangeQuery);
-            } catch (ParseException e) {} else {
-                this.since = new Date(0);
-                this.until = new Date(Long.MAX_VALUE);
-            }
+            } catch (ParseException e) {}
             for (Map.Entry<String, String> c: constraintFields.entrySet()) {
                 if (constraints.contains(c.getKey())) {
                     query = QueryBuilders.filteredQuery(query, FilterBuilders.existsFilter(c.getValue()));
                 }
             }
-            this.queryBuilder = query;
+            return query;
         }
     }
 }
