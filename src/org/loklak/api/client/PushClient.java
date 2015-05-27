@@ -37,7 +37,10 @@ public class PushClient {
      */
     public static boolean push(String[] hoststubs, Timeline timeline) {
         // transmit the timeline
+        assert timeline.size() != 0;
+        if (timeline.size() == 0) return true;
         String data = timeline.toJSON(false);
+        assert data != null;
         boolean transmittedToAtLeastOnePeer = false;
         for (String hoststub: hoststubs) {
             if (hoststub.endsWith("/")) hoststub = hoststub.substring(0, hoststub.length() - 1);

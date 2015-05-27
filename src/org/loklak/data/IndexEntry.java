@@ -19,17 +19,13 @@
 
 package org.loklak.data;
 
-import java.util.Map;
-
-import org.elasticsearch.common.xcontent.XContentBuilder;
+import com.fasterxml.jackson.core.JsonGenerator;
 
 public interface IndexEntry {
 
-    public void init(Map<String, Object> map);
-
     public String toString();
 
-    public void toJSON(XContentBuilder m);
+    public void toJSON(JsonGenerator m);
     
     public byte[] toJSON();
     

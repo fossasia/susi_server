@@ -52,7 +52,7 @@ import org.loklak.api.server.UserServlet;
 import org.loklak.data.DAO;
 import org.loklak.tools.Browser;
 
-public class Main {
+public class LoklakServer {
 
     public static String USER_AGENT = "Mozilla/5.0 (Macintosh; U; Intel Mac OS X 10.4; en-US; rv:1.9.2.2) Gecko/20100316 Firefox/3.6.2";
     
@@ -94,14 +94,14 @@ public class Main {
         /// https
         
         // init the http server
-        Main.server = new Server();
-        Main.server.setStopAtShutdown(true);
-        ServerConnector connector = new ServerConnector(Main.server);
+        LoklakServer.server = new Server();
+        LoklakServer.server.setStopAtShutdown(true);
+        ServerConnector connector = new ServerConnector(LoklakServer.server);
         int httpPort = (int) DAO.getConfig("port.http", 9100);
         connector.setPort(httpPort);
         connector.setName("httpd:" + httpPort);
         connector.setIdleTimeout(20000); // timout in ms when no bytes send / received
-        Main.server.addConnector(connector);
+        LoklakServer.server.addConnector(connector);
 
         WebAppContext htrootContext = new WebAppContext();
         htrootContext.setContextPath("/");
@@ -140,11 +140,11 @@ public class Main {
         
         HandlerList handlerlist2 = new HandlerList();
         handlerlist2.setHandlers(new Handler[]{fileHandler, rewriteHandler, new DefaultHandler()});
-        Main.server.setHandler(handlerlist2);
+        LoklakServer.server.setHandler(handlerlist2);
  
-        Main.server.start();
-        Main.caretaker = new Caretaker();
-        Main.caretaker.start();
+        LoklakServer.server.start();
+        LoklakServer.caretaker = new Caretaker();
+        LoklakServer.caretaker.start();
         Browser.openBrowser("http://localhost:" + httpPort + "/");
         
         // ** services are now running **
@@ -154,8 +154,8 @@ public class Main {
             public void run() {
                 try {
                     Log.getLog().info("catched main termination signal");
-                    Main.server.stop();
-                    Main.caretaker.shutdown();
+                    LoklakServer.server.stop();
+                    LoklakServer.caretaker.shutdown();
                     DAO.close();
                     Log.getLog().info("main terminated, goodby.");
                 } catch (Exception e) {
@@ -165,7 +165,7 @@ public class Main {
 
         // ** wait for shutdown signal, do this with a kill HUP (default level 1, 'kill -1') signal **
         
-        Main.server.join();
+        LoklakServer.server.join();
         Log.getLog().info("server terminated");
         
         // After this, the jvm processes all shutdown hooks and terminates then.

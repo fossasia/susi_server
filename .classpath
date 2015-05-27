@@ -21,7 +21,7 @@
 	<classpathentry kind="lib" path="lib/spatial4j-0.4.1.jar"/>
 	<classpathentry kind="lib" path="lib/twitter4j-core-4.0.2.jar"/>
 	<classpathentry kind="lib" path="lib/twitter4j-stream-4.0.2.jar"/>
-	<classpathentry kind="lib" path="lib/elasticsearch-1.5.0.jar"/>
+	<classpathentry kind="lib" path="lib/elasticsearch-1.5.0.jar" sourcepath="/Users/admin/git/elasticsearch/src/main/java"/>
 	<classpathentry kind="lib" path="lib/groovy-all-2.4.0.jar"/>
 	<classpathentry kind="lib" path="lib/lucene-analyzers-common-4.10.4.jar"/>
 	<classpathentry kind="lib" path="lib/lucene-core-4.10.4.jar"/>
@@ -36,8 +36,8 @@
 	<classpathentry kind="lib" path="lib/lucene-sandbox-4.10.4.jar"/>
 	<classpathentry kind="lib" path="lib/lucene-spatial-4.10.4.jar"/>
 	<classpathentry kind="lib" path="lib/lucene-suggest-4.10.4.jar"/>
-	<classpathentry kind="lib" path="lib/jackson-core-2.6.0.jar"/>
-	<classpathentry kind="lib" path="lib/jackson-databind-2.6.0.jar"/>
+	<classpathentry kind="lib" path="lib/jackson-core-2.6.0.jar" sourcepath="/Users/admin/git/jackson-core/src/main/java"/>
+	<classpathentry kind="lib" path="lib/jackson-databind-2.6.0.jar" sourcepath="/Users/admin/git/jackson-databind/src/main/java"/>
 	<classpathentry kind="lib" path="lib/jackson-annotations-2.6.0.jar"/>
 	<classpathentry kind="lib" path="lib/joda-time-2.4.jar"/>
 	<classpathentry kind="output" path="classes"/>

@@ -20,6 +20,7 @@
 package org.loklak.api.server;
 
 import java.io.IOException;
+import java.io.StringWriter;
 import java.util.Date;
 import java.util.List;
 
@@ -29,11 +30,14 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.elasticsearch.common.xcontent.XContentBuilder;
-import org.elasticsearch.common.xcontent.XContentFactory;
 import org.elasticsearch.search.sort.SortOrder;
+import org.loklak.data.AbstractIndexEntry;
 import org.loklak.data.DAO;
 import org.loklak.data.QueryEntry;
+
+import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.core.util.DefaultPrettyPrinter;
+import com.fasterxml.jackson.core.util.MinimalPrettyPrinter;
 
 public class SuggestServlet extends HttpServlet {
    
@@ -75,35 +79,39 @@ public class SuggestServlet extends HttpServlet {
         post.setResponse(response, "application/javascript");
         
         // generate json
-        XContentBuilder json = XContentFactory.jsonBuilder();
-        if (!minified) json = json.prettyPrint();
-        json.startObject();
+
+        final StringWriter s = new StringWriter();
+        JsonGenerator json = DAO.jsonFactory.createGenerator(s);
+        json.setPrettyPrinter(minified ? new MinimalPrettyPrinter() : new DefaultPrettyPrinter());
+
+        json.writeStartObject();
         
-        json.field("search_metadata").startObject();
-        json.field("count", queryList == null ? "0" : Integer.toString(queryList.size()));
-        json.field("query", query);
-        json.field("order", orders);
-        json.field("orderby", orderby);
-        if (since != null) json.field("since", since);
-        if (until != null) json.field("until", until);
-        if (since != null || until != null) json.field("selectby", selectby);
-        json.field("client", post.getClientHost());
-        json.endObject(); // of search_metadata
+        json.writeObjectFieldStart("search_metadata");
+        json.writeObjectField("count", queryList == null ? "0" : Integer.toString(queryList.size()));
+        json.writeObjectField("query", query);
+        json.writeObjectField("order", orders);
+        json.writeObjectField("orderby", orderby);
+        if (since != null) AbstractIndexEntry.writeDate(json, "since", since.getTime());
+        if (until != null) AbstractIndexEntry.writeDate(json, "until", until.getTime());
+        if (since != null || until != null) json.writeObjectField("selectby", selectby);
+        json.writeObjectField("client", post.getClientHost());
+        json.writeEndObject(); // of search_metadata
         
-        json.field("queries").startArray();
+        json.writeArrayFieldStart("queries");
         if (queryList != null) {
             for (QueryEntry t: queryList) {
                 t.toJSON(json);
             }
         }
-        json.endArray(); // of queries
+        json.writeEndArray(); // of queries
         
-        json.endObject(); // of root
+        json.writeEndObject(); // of root
+        json.close();
 
         // write json
         ServletOutputStream sos = response.getOutputStream();
         if (jsonp) sos.print(callback + "(");
-        sos.print(json.string());
+        sos.print(s.toString());
         if (jsonp) sos.println(");");
         sos.println();
     }

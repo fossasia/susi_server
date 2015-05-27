@@ -54,7 +54,7 @@ public class Caretaker extends Thread {
         String[] remote = DAO.getConfig("backend", new String[0], ",");
         HelloClient.propagate(remote, (int) DAO.getConfig("port.http", 9100), (int) DAO.getConfig("port.https", 9443), (String) DAO.getConfig("peername", "anonymous"));
 
-        try {Thread.sleep(5000);} catch (InterruptedException e) {} // wait a bit to give elasticsearch a start-up time
+        try {Thread.sleep(10000);} catch (InterruptedException e) {} // wait a bit to give elasticsearch a start-up time
         while (this.shallRun) {
             // sleep a bit to prevent that the DoS limit fires at backend server
             try {Thread.sleep(3000);} catch (InterruptedException e) {}

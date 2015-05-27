@@ -27,17 +27,20 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.loklak.data.DAO;
 import org.loklak.data.ProviderType;
 import org.loklak.data.Timeline;
 import org.loklak.data.MessageEntry;
 import org.loklak.data.UserEntry;
 
-import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class SearchClient {
 
+    private final static ObjectMapper jsonMapper = new ObjectMapper(DAO.jsonFactory);
+    private final static TypeReference<HashMap<String,Object>> jsonTypeRef = new TypeReference<HashMap<String,Object>>() {};
+    
     public final static String backend_hash = Integer.toHexString(Integer.MAX_VALUE);
     public final static String frontpeer_hash = Integer.toHexString(Integer.MAX_VALUE - 1);
 
@@ -47,10 +50,7 @@ public class SearchClient {
         String json = searchJSON(protocolhostportstub, query, source, count, timezoneOffset);
         if (json == null || json.length() == 0) return tl;
         try {
-            JsonFactory factory = new JsonFactory();
-            ObjectMapper mapper = new ObjectMapper(factory);
-            TypeReference<HashMap<String,Object>> typeRef = new TypeReference<HashMap<String,Object>>() {};
-            Map<String, Object> map = mapper.readValue(json, typeRef);
+            Map<String, Object> map = jsonMapper.readValue(json, jsonTypeRef);
             Object statuses_obj = map.get("statuses");
             @SuppressWarnings("unchecked") List<Map<String, Object>> statuses = statuses_obj instanceof List<?> ? (List<Map<String, Object>>) statuses_obj : null;
             if (statuses != null) {

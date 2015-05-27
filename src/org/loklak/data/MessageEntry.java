@@ -31,9 +31,9 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.joda.time.format.ISODateTimeFormat;
-import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.loklak.harvester.SourceType;
+
+import com.fasterxml.jackson.core.JsonGenerator;
 
 public class MessageEntry extends AbstractIndexEntry implements IndexEntry {
     
@@ -79,12 +79,7 @@ public class MessageEntry extends AbstractIndexEntry implements IndexEntry {
     
     @SuppressWarnings("unchecked")
     public void init(Map<String, Object> map) {
-        String created_at_string = (String) map.get("created_at");
-        if (created_at_string != null && created_at_string.length() > 0) {
-            this.created_at = ISODateTimeFormat.dateOptionalTimeParser().parseDateTime(created_at_string).toDate();
-        } else {
-            this.created_at = new Date(System.currentTimeMillis());
-        }
+        this.created_at = parseDate(map.get("created_at"));
         String source_type_string = (String) map.get("source_type"); if (source_type_string == null) source_type_string = SourceType.USER.name();
         try {
             this.source_type = SourceType.valueOf(source_type_string);
@@ -106,11 +101,11 @@ public class MessageEntry extends AbstractIndexEntry implements IndexEntry {
         } catch (MalformedURLException e) {
             this.status_id_url = null;
         }
-        this.retweet_count = DAO.noNULL((Number) map.get("retweet_count"));
-        this.favourites_count = DAO.noNULL((Number) map.get("favourites_count"));
-        this.images = DAO.noNULL((ArrayList<String>) map.get("images"));
-        this.place_id = DAO.noNULL((String) map.get("place_id"));
-        this.place_name = DAO.noNULL((String) map.get("place_name"));
+        this.retweet_count = parseLong((Number) map.get("retweet_count"));
+        this.favourites_count = parseLong((Number) map.get("favourites_count"));
+        this.images = parseArrayList((ArrayList<String>) map.get("images"));
+        this.place_id = parseString((String) map.get("place_id"));
+        this.place_name = parseString((String) map.get("place_name"));
         
         // load enriched data
         enrich();
@@ -188,7 +183,7 @@ public class MessageEntry extends AbstractIndexEntry implements IndexEntry {
     }
 
     public Date getCreatedAtDate() {
-        return this.created_at;
+        return this.created_at == null ? new Date() : this.created_at;
     }
 
     public SourceType getSourceType() {
@@ -196,62 +191,62 @@ public class MessageEntry extends AbstractIndexEntry implements IndexEntry {
     }
 
     @Override
-    public void toJSON(XContentBuilder m) {
+    public void toJSON(JsonGenerator m) {
         toJSON(m, null, true); // very important to include calculated data here because that is written into the index using the abstract index factory
     }
     
-    public void toJSON(XContentBuilder m, UserEntry user, boolean calculatedData) {
+    public void toJSON(JsonGenerator json, UserEntry user, boolean calculatedData) {
         try {
-            m.startObject();
+            json.writeStartObject();
 
             // tweet data
-            m.field("created_at", this.created_at);
-            m.field("screen_name", this.user_screen_name);
-            m.field("text", this.text); // the tweet
-            m.field("link", this.status_id_url.toExternalForm());
-            m.field("id_str", this.id_str);
-            m.field("source_type", this.source_type.name());
-            m.field("provider_type", this.provider_type.name());
-            if (this.provider_hash != null && this.provider_hash.length() > 0) m.field("provider_hash", this.provider_hash);
-            m.field("retweet_count", this.retweet_count);
-            m.field("favourites_count", this.favourites_count); // there is a slight inconsistency here in the plural naming but thats how it is noted in the twitter api
-            m.field("images", this.images);
-            m.field("images_count", this.images.size());
-            m.field("place_name", this.place_name);
-            m.field("place_id", this.place_id);
+            writeDate(json, "created_at", getCreatedAtDate().getTime());
+            json.writeObjectField("screen_name", this.user_screen_name);
+            json.writeObjectField("text", this.text); // the tweet
+            json.writeObjectField("link", this.status_id_url.toExternalForm());
+            json.writeObjectField("id_str", this.id_str);
+            json.writeObjectField("source_type", this.source_type.name());
+            json.writeObjectField("provider_type", this.provider_type.name());
+            if (this.provider_hash != null && this.provider_hash.length() > 0) json.writeObjectField("provider_hash", this.provider_hash);
+            json.writeObjectField("retweet_count", this.retweet_count);
+            json.writeObjectField("favourites_count", this.favourites_count); // there is a slight inconsistency here in the plural naming but thats how it is noted in the twitter api
+            writeArray(json, "images", this.images);
+            json.writeObjectField("images_count", this.images.size());
+            json.writeObjectField("place_name", this.place_name);
+            json.writeObjectField("place_id", this.place_id);
   
             
             // add statistic/calculated data
             if (calculatedData) {
-                m.field("hosts", this.hosts);
-                m.field("hosts_count", this.hosts.length);
-                m.field("links", this.links);
-                m.field("links_count", this.links.length);
-                m.field("mentions", this.mentions);
-                m.field("mentions_count", this.mentions.length);
-                m.field("hashtags", this.hashtags);
-                m.field("hashtags_count", this.hashtags.length);
+                writeArray(json, "hosts", this.hosts);
+                json.writeObjectField("hosts_count", this.hosts.length);
+                writeArray(json, "links", this.links);
+                json.writeObjectField("links_count", this.links.length);
+                writeArray(json, "mentions", this.mentions);
+                json.writeObjectField("mentions_count", this.mentions.length);
+                writeArray(json, "hashtags", this.hashtags);
+                json.writeObjectField("hashtags_count", this.hashtags.length);
                 // experimental, for ranking
-                m.field("without_l_len", this.without_l_len);
-                m.field("without_lu_len", this.without_lu_len);
-                m.field("without_luh_len", this.without_luh_len);
+                json.writeObjectField("without_l_len", this.without_l_len);
+                json.writeObjectField("without_lu_len", this.without_lu_len);
+                json.writeObjectField("without_luh_len", this.without_luh_len);
             }
             
             // add user
             if (user != null) {
-                m.field("user");
-                user.toJSON(m);
+                json.writeFieldName("user");
+                user.toJSON(json);
             }
             
             //m.field("coordinates", ""); // like {"coordinates":[-75.14310264,40.05701649],"type":"Point"}
             //m.field("entities", ""); // like {"hashtags":[],"urls":[],"user_mentions":[]}
             //m.field("filter_level", "");
             //m.field("user", user.toJSON()); // {"profile_image_url":"...", "name":"Twitter API", "description":"blabla", "location":"San Francisco, CA", "followers_count":665829, "url":"http:\/\/dev.twitter.com", "screen_name":"twitterapi", "id_str":"6253282", "lang":"en", "id":6253282}
-            m.endObject();
+            json.writeEndObject();
         } catch (IOException e) {
         }
     }
-
+    
     public static String html2utf8(String s) {
         int p, q;
         // hex coding &#

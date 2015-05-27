@@ -5,6 +5,6 @@ CLASSPATH=""
 for N in lib/*.jar; do CLASSPATH="$CLASSPATH$N:"; done
 CLASSPATH=".:./classes/:$CLASSPATH"
 
-java -Xmx2G -Xms2G -server -XX:+AggressiveOpts -XX:NewSize=512M -classpath $CLASSPATH org.loklak.Main >> data/loklak.log 2>&1 & echo $! > data/loklak.pid &
+java -Xmx2G -Xms2G -server -XX:+AggressiveOpts -XX:NewSize=512M -classpath $CLASSPATH org.loklak.LoklakServer >> data/loklak.log 2>&1 & echo $! > data/loklak.pid &
 
 echo "loklak server started at port 9100, open your browser at http://localhost:9100"

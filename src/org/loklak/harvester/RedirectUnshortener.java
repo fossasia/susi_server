@@ -7,7 +7,7 @@ import java.io.PrintWriter;
 import java.net.Socket;
 import java.net.URL;
 
-import org.loklak.Main;
+import org.loklak.LoklakServer;
 
 public class RedirectUnshortener {
 
@@ -81,7 +81,7 @@ public class RedirectUnshortener {
         out.println("GET " + url.getPath() + " HTTP/1.1");
         out.println("Host: " + url.getHost());
         // fake a bit that we are real
-        out.println("User-Agent: " + Main.USER_AGENT);
+        out.println("User-Agent: " + LoklakServer.USER_AGENT);
         out.println("Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8");
         out.println("Accept-Language: en-us,en;q=0.5");
         out.println("Accept-Encoding: gzip,deflate");

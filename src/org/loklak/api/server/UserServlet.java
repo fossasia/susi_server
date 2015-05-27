@@ -20,6 +20,7 @@
 package org.loklak.api.server;
 
 import java.io.IOException;
+import java.io.StringWriter;
 
 import javax.servlet.ServletException;
 import javax.servlet.ServletOutputStream;
@@ -31,6 +32,10 @@ import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.elasticsearch.common.xcontent.XContentFactory;
 import org.loklak.data.DAO;
 import org.loklak.data.UserEntry;
+
+import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.core.util.DefaultPrettyPrinter;
+import com.fasterxml.jackson.core.util.MinimalPrettyPrinter;
 
 public class UserServlet extends HttpServlet {
    
@@ -64,26 +69,29 @@ public class UserServlet extends HttpServlet {
         post.setResponse(response, "application/javascript");
         
         // generate json
-        XContentBuilder json = XContentFactory.jsonBuilder();
-        if (!minified) json = json.prettyPrint();
-        json.startObject();
-        
-        json.field("search_metadata").startObject();
-        json.field("count", userEntry == null ? "0" : "1");
-        json.field("client", post.getClientHost());
-        json.endObject(); // of search_metadata
+        final StringWriter s = new StringWriter();
+        JsonGenerator json = DAO.jsonFactory.createGenerator(s);
+        json.setPrettyPrinter(minified ? new MinimalPrettyPrinter() : new DefaultPrettyPrinter());
 
-        json.field("users").startArray();
+        json.writeStartObject();
+
+        json.writeObjectFieldStart("search_metadata");
+        json.writeObjectField("count", userEntry == null ? "0" : "1");
+        json.writeObjectField("client", post.getClientHost());
+        json.writeEndObject(); // of search_metadata
+
+        json.writeArrayFieldStart("users");
         if (userEntry != null) {
             userEntry.toJSON(json);
         }
-        json.endArray(); // of users
-        json.endObject(); // of root
-
+        json.writeEndArray(); // of users
+        json.writeEndObject(); // of root
+        json.close();
+        
         // write json
         ServletOutputStream sos = response.getOutputStream();
         if (jsonp) sos.print(callback + "(");
-        sos.print(json.string());
+        sos.print(s.toString());
         if (jsonp) sos.println(");");
         sos.println();
     }
