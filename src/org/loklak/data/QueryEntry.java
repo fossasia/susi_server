@@ -31,14 +31,14 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.joda.time.format.ISODateTimeFormat;
-import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.index.query.RangeQueryBuilder;
 import org.loklak.harvester.SourceType;
 import org.loklak.tools.DateParser;
+
+import com.fasterxml.jackson.core.JsonGenerator;
 
 /**
  * A Query is a recording of a search result based on the query.
@@ -104,21 +104,22 @@ public class QueryEntry extends AbstractIndexEntry implements IndexEntry {
     
     public void init(Map<String, Object> map) throws IllegalArgumentException {
         this.query = (String) map.get("query");
-        this.query_length = (int) DAO.noNULL((Number) map.get("query_length"));
+        this.query_length = (int) parseLong((Number) map.get("query_length"));
         String source_type_string = (String) map.get("source_type"); if (source_type_string == null) source_type_string = SourceType.USER.name();
         this.source_type = SourceType.valueOf(source_type_string);
-        this.timezoneOffset = (int) DAO.noNULL((Number) map.get("timezoneOffset"));
-        this.query_first = ISODateTimeFormat.dateOptionalTimeParser().parseDateTime((String) map.get("query_first")).toDate();
-        this.query_last = ISODateTimeFormat.dateOptionalTimeParser().parseDateTime((String) map.get("query_last")).toDate();
-        this.retrieval_last = ISODateTimeFormat.dateOptionalTimeParser().parseDateTime((String) map.get("retrieval_last")).toDate();
-        this.retrieval_next = ISODateTimeFormat.dateOptionalTimeParser().parseDateTime((String) map.get("retrieval_next")).toDate();
-        this.expected_next = ISODateTimeFormat.dateOptionalTimeParser().parseDateTime((String) map.get("expected_next")).toDate();
-        this.query_count = (int) DAO.noNULL((Number) map.get("query_count"));
-        this.retrieval_count = (int) DAO.noNULL((Number) map.get("retrieval_count"));
-        this.message_period = DAO.noNULL((Number) map.get("message_period"));
-        this.messages_per_day = (int) DAO.noNULL((Number) map.get("messages_per_day"));
-        this.score_retrieval = (int) DAO.noNULL((Number) map.get("score_retrieval"));
-        this.score_suggest = (int) DAO.noNULL((Number) map.get("score_suggest"));
+        this.timezoneOffset = (int) parseLong((Number) map.get("timezoneOffset"));
+        Date now = new Date();
+        this.query_first = parseDate(map.get("query_first"), now);
+        this.query_last = parseDate(map.get("query_last"), now);
+        this.retrieval_last = parseDate(map.get("retrieval_last"), now);
+        this.retrieval_next = parseDate(map.get("retrieval_next"), now);
+        this.expected_next = parseDate(map.get("expected_next"), now);
+        this.query_count = (int) parseLong((Number) map.get("query_count"));
+        this.retrieval_count = (int) parseLong((Number) map.get("retrieval_count"));
+        this.message_period = parseLong((Number) map.get("message_period"));
+        this.messages_per_day = (int) parseLong((Number) map.get("messages_per_day"));
+        this.score_retrieval = (int) parseLong((Number) map.get("score_retrieval"));
+        this.score_suggest = (int) parseLong((Number) map.get("score_suggest"));
     }
     
     /**
@@ -212,25 +213,25 @@ public class QueryEntry extends AbstractIndexEntry implements IndexEntry {
     }
 
     @Override
-    public void toJSON(XContentBuilder m) {
+    public void toJSON(JsonGenerator json) {
         try {
-            m.startObject();
-            m.field("query", this.query);
-            m.field("query_length", this.query_length);
-            m.field("source_type", this.source_type);
-            m.field("timezoneOffset", this.timezoneOffset);
-            m.field("query_first", this.query_first);
-            m.field("query_last", this.query_last);
-            m.field("retrieval_last", this.retrieval_last);
-            m.field("retrieval_next", this.retrieval_next);
-            m.field("expected_next", this.expected_next);
-            m.field("query_count", this.query_count);
-            m.field("retrieval_count", this.retrieval_count);
-            m.field("message_period", this.message_period);
-            m.field("messages_per_day", this.messages_per_day);
-            m.field("score_retrieval", this.score_retrieval);
-            m.field("score_suggest", this.score_suggest);
-            m.endObject();
+            json.writeStartObject();
+            json.writeObjectField("query", this.query);
+            json.writeObjectField("query_length", this.query_length);
+            json.writeObjectField("source_type", this.source_type);
+            json.writeObjectField("timezoneOffset", this.timezoneOffset);
+            writeDate(json, "query_first", this.query_first.getTime());
+            writeDate(json, "query_last", this.query_last.getTime());
+            writeDate(json, "retrieval_last", this.retrieval_last.getTime());
+            writeDate(json, "retrieval_next", this.retrieval_next.getTime());
+            writeDate(json, "expected_next", this.expected_next.getTime());
+            json.writeObjectField("query_count", this.query_count);
+            json.writeObjectField("retrieval_count", this.retrieval_count);
+            json.writeObjectField("message_period", this.message_period);
+            json.writeObjectField("messages_per_day", this.messages_per_day);
+            json.writeObjectField("score_retrieval", this.score_retrieval);
+            json.writeObjectField("score_suggest", this.score_suggest);
+            json.writeEndObject();
         } catch (IOException e) {
         }
     }

@@ -20,13 +20,16 @@
 package org.loklak.data;
 
 import java.io.IOException;
+import java.io.StringWriter;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.TreeMap;
 
-import org.elasticsearch.common.xcontent.XContentBuilder;
-import org.elasticsearch.common.xcontent.XContentFactory;
+import org.eclipse.jetty.util.log.Log;
+
+import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.core.util.DefaultPrettyPrinter;
 
 /**
  * A timeline is a structure which holds tweet for the purpose of presentation
@@ -78,28 +81,31 @@ public class Timeline implements Iterable<MessageEntry> {
     
     public String toJSON(boolean withEnrichedData) {
         // generate json
-        XContentBuilder json;
         try {
-            json = XContentFactory.jsonBuilder();
-            json.startObject();
-            json.field("search_metadata").startObject();
-            json.field("count", Integer.toString(this.tweets.size()));
-            json.endObject(); // of search_metadata
-            json.field("statuses").startArray();
+            final StringWriter s = new StringWriter();
+            JsonGenerator json = DAO.jsonFactory.createGenerator(s);
+            json.setPrettyPrinter(new DefaultPrettyPrinter());
+            json.writeStartObject(); // start root object
+            json.writeObjectFieldStart("search_metadata");
+            json.writeObjectField("count", Integer.toString(this.tweets.size()));
+            json.writeEndObject(); // of search_metadata
+            json.writeArrayFieldStart("statuses");
             for (MessageEntry t: this) {
                 UserEntry u = this.users.get(t.getUserScreenName());
                 t.toJSON(json, u, withEnrichedData);
             }
-            json.endArray();
-            json.endObject(); // of root
-
+            json.writeEndArray();
+            json.writeEndObject(); // of root
+            json.close(); // finish writing and close StringWriter
+            
             // write json
-            return json.string();
+            return s.toString();
         } catch (IOException e) {
+            Log.getLog().warn(e);
             return null;
         }
     }
-
+    
     /**
      * the tweet iterator returns tweets in descending appearance order
      */

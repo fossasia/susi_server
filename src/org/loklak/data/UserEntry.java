@@ -20,111 +20,79 @@
 package org.loklak.data;
 
 import java.io.IOException;
-import java.nio.charset.Charset;
 import java.util.Date;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
-import org.elasticsearch.common.xcontent.XContentBuilder;
-import org.elasticsearch.common.xcontent.XContentFactory;
-import org.elasticsearch.common.xcontent.XContentParser;
-import org.elasticsearch.common.xcontent.XContentType;
-import org.joda.time.format.ISODateTimeFormat;
+import com.fasterxml.jackson.core.JsonGenerator;
 
 public class UserEntry extends AbstractIndexEntry implements IndexEntry {
     
-    private String profile_image_url, name, screen_name;
-    private Date appearance_first, appearance_latest;
+    private final static String field_screen_name = "screen_name";
+    private final static String field_name = "name";
+    private final static String field_profile_image_url_http = "profile_image_url_http";
+    private final static String field_profile_image_url_https = "profile_image_url_https";
+    private final static String field_appearance_first = "appearance_first";
+    private final static String field_appearance_latest = "appearance_latest";
+    
+    private final Map<String, Object> map;
 
     public UserEntry(String screen_name_raw, String profile_image_url, String name_raw) {
-        this.screen_name = screen_name_raw.replaceAll("</?s>", "").replaceAll("</?b>", "").replaceAll("@", "");
-        this.profile_image_url = profile_image_url;
-        this.name = name_raw;
+        this.map =  new LinkedHashMap<>();
+        this.map.put(field_screen_name, screen_name_raw.replaceAll("</?s>", "").replaceAll("</?b>", "").replaceAll("@", ""));
+        this.map.put(field_name, name_raw);
+        this.map.put(profile_image_url.startsWith("https:") ? field_profile_image_url_https : field_profile_image_url_http, profile_image_url);
         long now = System.currentTimeMillis();
-        this.appearance_first = new Date(now);
-        this.appearance_latest = new Date(now);
-    }
-    
-    public UserEntry(final Map<String, Object> map) {
-        this.init(map);
-    }
-    
-    public void init(Map<String, Object> map) {
-        this.screen_name = (String) map.get("screen_name");
-        this.name = (String) map.get("name");
-        this.profile_image_url = (String) map.get("profile_image_url_https");
-        if (this.profile_image_url == null) {
-            this.profile_image_url = (String) map.get("profile_image_url");
-        }
-        String appearance_first_string = (String) map.get("appearance_first");
-        if (appearance_first_string != null && appearance_first_string.length() > 0) {
-            this.appearance_first = ISODateTimeFormat.dateOptionalTimeParser().parseDateTime(appearance_first_string).toDate();
-        } else {
-            this.appearance_first = new Date(System.currentTimeMillis());
-        }
-        String appearance_latest_string = (String) map.get("appearance_latest");
-        if (appearance_latest_string != null && appearance_latest_string.length() > 0) {
-            this.appearance_latest = ISODateTimeFormat.dateOptionalTimeParser().parseDateTime(appearance_latest_string).toDate();
-        } else {
-            this.appearance_latest = new Date(System.currentTimeMillis());
-        }
+        this.map.put(field_appearance_first, new Date(now));
+        this.map.put(field_appearance_latest, new Date(now));
     }
 
-    public String getProfileImageUrl() {
-        return profile_image_url;
+    public UserEntry(final Map<String, Object> map) {
+        this.map = map;
+        Date now = new Date();
+        map.put(field_appearance_first, parseDate(map.get(field_appearance_first), now));
+        map.put(field_appearance_latest, parseDate(map.get(field_appearance_latest), now));
+    }
+    
+    public String getScreenName() {
+        return parseString((String) this.map.get(field_screen_name));
     }
 
     public String getName() {
-        return name;
+        return parseString((String) this.map.get(field_name));
     }
 
-    public String getScreenName() {
-        return screen_name;
+    public String getProfileImageUrl() {
+        Object url = this.map.get(field_profile_image_url_https);
+        if (url != null) return (String) url;
+        return parseString((String) this.map.get(field_profile_image_url_http));
     }
 
     public Date getAppearanceFirst() {
-        return appearance_first;
+        return parseDate(this.map.get(field_appearance_first));
     }
 
     public Date getAppearanceLatest() {
-        return appearance_latest;
+        return parseDate(this.map.get(field_appearance_latest));
     }
-
+    
     @Override
-    public void toJSON(XContentBuilder m) {
+    public void toJSON(JsonGenerator json) {
         try {
-            m.startObject(); // object name for this should be 'user'
-            m.field("name", this.name);
-            m.field("screen_name", this.screen_name);
-            //m.field("location", );
-            //m.field("description", );
-            m.field(this.profile_image_url.startsWith("https:") ? "profile_image_url_https" : "profile_image_url", this.profile_image_url);
-            m.field("appearance_first", this.appearance_first);
-            m.field("appearance_latest", this.appearance_latest);
-            m.endObject();
+            json.writeStartObject(); // object name for this should be 'user'
+            json.writeObjectField(field_name, getName());
+            json.writeObjectField(field_screen_name, getScreenName());
+            if (this.map.containsKey(field_profile_image_url_http)) json.writeObjectField(field_profile_image_url_http, this.map.get(field_profile_image_url_http));
+            if (this.map.containsKey(field_profile_image_url_https)) json.writeObjectField(field_profile_image_url_https, this.map.get(field_profile_image_url_https));
+            writeDate(json, field_appearance_first, getAppearanceFirst().getTime());
+            writeDate(json, field_appearance_latest, getAppearanceLatest().getTime());
+            json.writeEndObject();
         } catch (IOException e) {
         }
     }
     
     public static void main(String args[]) {
         System.out.println(new UserEntry("test", "http://test.com", "Mr. Test").toString());
-        
-        String j = "{\"name\":\"Mr. Test\",\"screen_name\":\"test\",\"profile_image_url\":\"http://test.com\"}";
-                
-        XContentParser parser = null;
-        try {
-          XContentBuilder json = XContentFactory.jsonBuilder().prettyPrint().lfAtEnd();
-          json.startObject();
-          parser=XContentFactory.xContent(XContentType.JSON).createParser(j.getBytes(Charset.forName("UTF-8")));
-          parser.nextToken();
-          json.field("parsed").copyCurrentStructure(parser);
-          json.endObject();
-          System.out.println(json.string());
-        } catch (IOException e) {
-            e.printStackTrace();
-        } finally {
-          if (parser != null) {
-            parser.close();
-          }
-        }
+        //String j = "{\"name\":\"Mr. Test\",\"screen_name\":\"test\",\"profile_image_url\":\"http://test.com\"}";
     }
 }

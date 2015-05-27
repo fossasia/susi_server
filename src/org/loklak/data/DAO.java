@@ -30,6 +30,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.RandomAccessFile;
+import java.io.StringWriter;
 import java.text.SimpleDateFormat;
 import java.util.AbstractMap;
 import java.util.ArrayList;
@@ -58,8 +59,6 @@ import org.elasticsearch.client.Client;
 import org.elasticsearch.common.settings.ImmutableSettings;
 import org.elasticsearch.common.settings.ImmutableSettings.Builder;
 import org.elasticsearch.common.unit.Fuzziness;
-import org.elasticsearch.common.xcontent.XContentBuilder;
-import org.elasticsearch.common.xcontent.XContentFactory;
 import org.elasticsearch.common.xcontent.XContentParser;
 import org.elasticsearch.common.xcontent.json.JsonXContent;
 import org.elasticsearch.index.query.BoolQueryBuilder;
@@ -83,6 +82,8 @@ import org.loklak.tools.DateParser;
 import org.loklak.tools.UTF8;
 
 import com.fasterxml.jackson.core.JsonFactory;
+import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.core.util.MinimalPrettyPrinter;
 
 /**
  * The Data Access Object for the message project.
@@ -91,13 +92,12 @@ import com.fasterxml.jackson.core.JsonFactory;
  */
 public class DAO {
 
+    public final static JsonFactory jsonFactory = new JsonFactory();
     public final static String MESSAGE_DUMP_FILE_PREFIX = "messages_";
     public final static String QUERIES_INDEX_NAME = "queries";
     public final static String MESSAGES_INDEX_NAME = "messages";
     public final static String USERS_INDEX_NAME = "users";
     public final static int CACHE_MAXSIZE = 10000;
-
-    public final static JsonFactory jsonFactory = new JsonFactory();
     
     public  static File conf_dir;
     private static File message_dump_dir, message_dump_dir_own, message_dump_dir_import, message_dump_dir_imported;
@@ -252,15 +252,19 @@ public class DAO {
                 if (dumpFile.getName().endsWith(".gz")) is = new GZIPInputStream(is);
                 br = new BufferedReader(new InputStreamReader(is, "UTF-8"));
                 while((line = br.readLine()) != null) {
-                    XContentParser parser = JsonXContent.jsonXContent.createParser(line);
-                    Map<String, Object> tweet = parser == null ? null : parser.map();
-                    if (tweet == null) continue;
-                    @SuppressWarnings("unchecked") Map<String, Object> user = (Map<String, Object>) tweet.remove("user");
-                    if (user == null) continue;
-                    UserEntry u = new UserEntry(user);
-                    MessageEntry t = new MessageEntry(tweet);
-                    boolean newtweet = DAO.writeMessage(t, u, false);
-                    if (newtweet) newTweet++;
+                    try {
+                        XContentParser parser = JsonXContent.jsonXContent.createParser(line);
+                        Map<String, Object> tweet = parser == null ? null : parser.map();
+                        if (tweet == null) continue;
+                        @SuppressWarnings("unchecked") Map<String, Object> user = (Map<String, Object>) tweet.remove("user");
+                        if (user == null) continue;
+                        UserEntry u = new UserEntry(user);
+                        MessageEntry t = new MessageEntry(tweet);
+                        boolean newtweet = DAO.writeMessage(t, u, false);
+                        if (newtweet) newTweet++;
+                    } catch (Throwable e) {
+                        Log.getLog().warn("cannot parse line \"" + line + "\"", e);
+                    }
                 }
             } catch (IOException e) {
                 e.printStackTrace();
@@ -366,10 +370,13 @@ public class DAO {
 
             // record tweet into text file
             if (dump) {
-                XContentBuilder logline = XContentFactory.jsonBuilder();
+                final StringWriter s = new StringWriter();
+                JsonGenerator logline = DAO.jsonFactory.createGenerator(s);
+                logline.setPrettyPrinter(new MinimalPrettyPrinter());
                 t.toJSON(logline, u, false);
+                logline.close();
                 messagelog.seek(messagelog.length()); // go to end of file
-                messagelog.write(UTF8.getBytes(logline.string()));
+                messagelog.write(UTF8.getBytes(s.toString()));
                 messagelog.writeByte('\n');
                 logline.close();
             }
@@ -653,8 +660,4 @@ public class DAO {
         Log.getLog().info(line);
     }
 
-    public static String noNULL(String s) {return s == null ? "" : s;}
-    public static long noNULL(Number n) {return n == null ? 0 : n.longValue();}
-    public static ArrayList<String> noNULL(ArrayList<String> l) {return l == null ? new ArrayList<String>(0) : l;}
-    
 }

@@ -20,36 +20,93 @@
 package org.loklak.data;
 
 import java.io.IOException;
-import java.util.Map;
+import java.io.StringWriter;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Date;
 
-import org.elasticsearch.common.xcontent.XContentBuilder;
-import org.elasticsearch.common.xcontent.XContentFactory;
+import org.joda.time.format.DateTimeFormatter;
+import org.joda.time.format.ISODateTimeFormat;
 import org.loklak.tools.UTF8;
+
+import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.core.util.DefaultPrettyPrinter;
 
 public abstract class AbstractIndexEntry implements IndexEntry {
 
     public AbstractIndexEntry() {
     }
     
-    public AbstractIndexEntry(Map<String, Object> map) {
-        this.init(map);
-    }
-    
     public String toString() {
         try {
-            XContentBuilder m = XContentFactory.jsonBuilder();
-            this.toJSON(m);
-            String s = m.string();
-            m.close();
-            return s;
+            final StringWriter s = new StringWriter();
+            final JsonGenerator g = DAO.jsonFactory.createGenerator(s);
+            g.setPrettyPrinter(new DefaultPrettyPrinter());
+            this.toJSON(g);
+            g.close();
+            return s.toString();
         } catch (IOException e) {
             e.printStackTrace();
             return null;
         }
     }
-    
+
     public byte[] toJSON() {
         String s = toString();
         return s == null ? null : UTF8.getBytes(s);
+    }
+    
+    // helper methods to write json
+    
+    final static DateTimeFormatter utcFormatter = ISODateTimeFormat.dateTime().withZoneUTC();
+    
+    public static void writeDate(JsonGenerator json, String fieldName, long time) throws IOException {
+        json.writeObjectField(fieldName, utcFormatter.print(time));
+    }
+    
+    public static void writeArray(JsonGenerator json, String fieldName, Collection<String> array) throws IOException {
+        json.writeArrayFieldStart(fieldName);
+        for (String image: array) json.writeObject(image);
+        json.writeEndArray();
+    }
+    
+    public static void writeArray(JsonGenerator json, String fieldName, String[] array) throws IOException {
+        json.writeArrayFieldStart(fieldName);
+        for (String image: array) json.writeObject(image);
+        json.writeEndArray();
+    }
+    
+    // helper methods to read json
+
+    public static Date parseDate(Object d) {
+        if (d == null) return new Date();
+        if (d instanceof Long) return new Date(((Long) d).longValue());
+        if (d instanceof String) return ISODateTimeFormat.dateOptionalTimeParser().parseDateTime((String) d).toDate();
+        assert false;
+        return new Date();
+    }
+    
+    public static Date parseDate(Object d, Date dflt) {
+        if (d == null) return dflt;
+        if (d instanceof Long) return new Date(((Long) d).longValue());
+        if (d instanceof String) return ISODateTimeFormat.dateOptionalTimeParser().parseDateTime((String) d).toDate();
+        assert false;
+        return dflt;
+    }
+
+    public static String parseString(Object s) {
+        assert s instanceof String;
+        return s == null ? "" : (String) s;
+    }
+    
+    public static long parseLong(Object n) {
+        assert n instanceof Number;
+        return n == null ? 0 : ((Number) n).longValue();
+    }
+    
+    @SuppressWarnings("unchecked")
+    public static ArrayList<String> parseArrayList(Object l) {
+        assert l instanceof ArrayList<?>;
+        return l == null ? new ArrayList<String>(0) : (ArrayList<String>) l;
     }
 }
