@@ -41,7 +41,7 @@ public abstract class AbstractIndexFactory<Entry extends IndexEntry> implements 
         this.cache = new Cache<>(cacheSize);
     }
     
-    public Entry read(String id) {
+    public Entry read(String id) throws IOException {
         assert id != null;
         if (id == null) return null;
         Entry entry = cache.get(id);

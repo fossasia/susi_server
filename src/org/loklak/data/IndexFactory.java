@@ -29,11 +29,11 @@ public interface IndexFactory<Entry extends IndexEntry> {
 
     /**
      * get a mapping for the index definition
-     * @return a json which can be used to define an index in elasticsearch
+     * @return a json string which can be used to define an index in elasticsearch
      */
     public XContentBuilder getMapping();
     
-    public Entry init(Map<String, Object> map);
+    public Entry init(Map<String, Object> map) throws IOException;
 
     public boolean exists(String id);
     
