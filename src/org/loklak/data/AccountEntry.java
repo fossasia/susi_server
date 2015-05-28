@@ -30,14 +30,6 @@ import com.fasterxml.jackson.core.JsonGenerator;
 
 public class AccountEntry extends AbstractIndexEntry implements IndexEntry {
     
-    private final static String field_screen_name = "screen_name";
-    private final static String field_source_type = "source_type";
-    private final static String field_consumerKey = "consumerKey";
-    private final static String field_consumerSecret = "consumerSecret";
-    private final static String field_authentication_first = "authentication_first";
-    private final static String field_authentication_latest = "authentication_latest";
-    private final static String field_apps = "apps";
-    
     private final Map<String, Object> map;
 
     private AccountEntry() {
@@ -52,55 +44,55 @@ public class AccountEntry extends AbstractIndexEntry implements IndexEntry {
     public void init(final Map<String, Object> extmap) throws IOException {
         this.map.putAll(extmap);
         Date now = new Date();
-        this.map.put(field_authentication_first, parseDate(this.map.get(field_authentication_first), now));
-        this.map.put(field_authentication_latest, parseDate(this.map.get(field_authentication_latest), now));
-        boolean containsAuth = this.map.containsKey(field_consumerKey) && this.map.containsKey(field_consumerSecret);
-        if (this.map.containsKey(field_source_type)) {
+        this.map.put(AccountFactory.Field.authentication_first.name(), parseDate(this.map.get(AccountFactory.Field.authentication_first.name()), now));
+        this.map.put(AccountFactory.Field.authentication_latest.name(), parseDate(this.map.get(AccountFactory.Field.authentication_latest.name()), now));
+        boolean containsAuth = this.map.containsKey(AccountFactory.Field.oauth_token.name()) && this.map.containsKey(AccountFactory.Field.oauth_token_secret.name());
+        if (this.map.containsKey(AccountFactory.Field.source_type.name())) {
             // verify the type
             try {
-                SourceType st = SourceType.valueOf((String) this.map.get(field_source_type));
-                this.map.put(field_source_type, st.toString());
+                SourceType st = SourceType.valueOf((String) this.map.get(AccountFactory.Field.source_type.name()));
+                this.map.put(AccountFactory.Field.source_type.name(), st.toString());
             } catch (IllegalArgumentException e) {
-                throw new IOException(field_source_type + " contains unknown type " + (String) this.map.get(field_source_type));
+                throw new IOException(AccountFactory.Field.source_type.name() + " contains unknown type " + (String) this.map.get(AccountFactory.Field.source_type.name()));
             }
         } else {
-            this.map.put(field_source_type, SourceType.TWITTER);
+            this.map.put(AccountFactory.Field.source_type.name(), SourceType.TWITTER);
         }
-        if (!this.map.containsKey(field_apps) && !containsAuth) {
+        if (!this.map.containsKey(AccountFactory.Field.apps.name()) && !containsAuth) {
             throw new IOException("account data must either contain authentication details or an apps setting");
         }
     }
     
     public String getScreenName() {
-        return parseString((String) this.map.get(field_screen_name));
+        return parseString((String) this.map.get(AccountFactory.Field.screen_name.name()));
     }
 
     public Date getAuthenticationFirst() {
-        return parseDate(this.map.get(field_authentication_first));
+        return parseDate(this.map.get(AccountFactory.Field.authentication_first.name()));
     }
 
     public Date getAuthenticationLatest() {
-        return parseDate(this.map.get(field_authentication_latest));
+        return parseDate(this.map.get(AccountFactory.Field.authentication_latest.name()));
     }
 
     public SourceType getSourceType() {
-        Object st = this.map.get(field_source_type);
+        Object st = this.map.get(AccountFactory.Field.source_type.name());
         if (st == null) return SourceType.TWITTER;
         if (st instanceof SourceType) return (SourceType) st;
         if (st instanceof String) return SourceType.valueOf((String) st);
         return SourceType.TWITTER;
     }
 
-    public String getConsumerKey() {
-        return (String) this.map.get(field_consumerKey);
+    public String getOauthToken () {
+        return (String) this.map.get(AccountFactory.Field.oauth_token.name());
     }
 
-    public String getConsumerSecret() {
-        return (String) this.map.get(field_consumerSecret);
+    public String getOauthTokenSecret () {
+        return (String) this.map.get(AccountFactory.Field.oauth_token_secret.name());
     }
 
     public String getApps() {
-        return (String) this.map.get(field_apps);
+        return (String) this.map.get(AccountFactory.Field.apps.name());
     }
     
     @Override
@@ -111,13 +103,13 @@ public class AccountEntry extends AbstractIndexEntry implements IndexEntry {
     public void toJSON(JsonGenerator json, UserEntry user) {
         try {
             json.writeStartObject(); // object name for this should be 'user'
-            writeDate(json, field_authentication_latest, getAuthenticationLatest().getTime());
-            writeDate(json, field_authentication_first, getAuthenticationFirst().getTime());
-            json.writeObjectField(field_source_type, getSourceType().toString());
-            json.writeObjectField(field_screen_name, getScreenName());
-            if (this.map.containsKey(field_consumerKey)) json.writeObjectField(field_consumerKey, this.map.get(field_consumerKey));
-            if (this.map.containsKey(field_consumerSecret)) json.writeObjectField(field_consumerSecret, this.map.get(field_consumerSecret));
-            if (this.map.containsKey(field_apps)) json.writeObjectField(field_apps, this.map.get(field_apps));
+            writeDate(json, AccountFactory.Field.authentication_latest.name(), getAuthenticationLatest().getTime());
+            writeDate(json, AccountFactory.Field.authentication_first.name(), getAuthenticationFirst().getTime());
+            json.writeObjectField(AccountFactory.Field.source_type.name(), getSourceType().toString());
+            json.writeObjectField(AccountFactory.Field.screen_name.name(), getScreenName());
+            if (this.map.containsKey(AccountFactory.Field.oauth_token.name())) json.writeObjectField(AccountFactory.Field.oauth_token.name(), this.map.get(AccountFactory.Field.oauth_token.name()));
+            if (this.map.containsKey(AccountFactory.Field.oauth_token_secret.name())) json.writeObjectField(AccountFactory.Field.oauth_token_secret.name(), this.map.get(AccountFactory.Field.oauth_token_secret.name()));
+            if (this.map.containsKey(AccountFactory.Field.apps.name())) json.writeObjectField(AccountFactory.Field.apps.name(), this.map.get(AccountFactory.Field.apps.name()));
             
             // add user
             if (user != null) {
