@@ -61,7 +61,7 @@ public class TwitterScraper {
             }
             String q = t.length() == 0 ? "*" : t.substring(1);
             //https://twitter.com/search?q=from:yacy_search&src=typd
-            https_url = "https://twitter.com/search?q=" + URLEncoder.encode(q, "UTF-8") + "&src=typd&f=realtime";
+            https_url = "https://twitter.com/search?q=" + URLEncoder.encode(q, "UTF-8") + "&src=typd&vertical=default&f=tweets";
         } catch (UnsupportedEncodingException e) {}
         Timeline timeline = null;
         try {
