@@ -28,6 +28,16 @@ import org.elasticsearch.common.xcontent.XContentFactory;
 
 public class AccountFactory extends AbstractIndexFactory<AccountEntry> implements IndexFactory<AccountEntry> {
 
+    public enum Field {
+        screen_name,
+        source_type,
+        oauth_token,
+        oauth_token_secret,
+        authentication_first,
+        authentication_latest,
+        apps;
+    }
+    
     public AccountFactory(final Client elasticsearch_client, final String index_name, final int cacheSize) {
         super(elasticsearch_client, index_name, cacheSize);
     }
@@ -38,13 +48,13 @@ public class AccountFactory extends AbstractIndexFactory<AccountEntry> implement
             XContentBuilder mapping = XContentFactory.jsonBuilder()
                 .startObject()
                   .startObject("properties") // the id has been omitted on purpose, we identify the user by its screen_name (even if that is changeable..)
-                    .startObject("screen_name").field("type","string").field("include_in_all","false").field("index","not_analyzed").field("doc_values", true).endObject()
-                    .startObject("source_type").field("type","string").field("include_in_all","false").field("index","not_analyzed").field("doc_values", true).endObject()
-                    .startObject("authentication_first").field("type","date").field("format","dateOptionalTime").field("include_in_all","false").field("doc_values", true).endObject()
-                    .startObject("authentication_latest").field("type","date").field("format","dateOptionalTime").field("include_in_all","false").field("doc_values", true).endObject()
-                    .startObject("consumerKey").field("type","string").field("index","not_analyzed").field("include_in_all","false").field("doc_values", true).endObject()
-                    .startObject("consumerSecret").field("type","string").field("index","not_analyzed").field("include_in_all","false").field("doc_values", true).endObject()
-                    .startObject("apps").field("type","string").field("index","not_analyzed").field("include_in_all","false").field("doc_values", true).endObject()
+                    .startObject(Field.screen_name.name()).field("type","string").field("include_in_all","false").field("index","not_analyzed").field("doc_values", true).endObject()
+                    .startObject(Field.source_type.name()).field("type","string").field("include_in_all","false").field("index","not_analyzed").field("doc_values", true).endObject()
+                    .startObject(Field.authentication_first.name()).field("type","date").field("format","dateOptionalTime").field("include_in_all","false").field("doc_values", true).endObject()
+                    .startObject(Field.authentication_latest.name()).field("type","date").field("format","dateOptionalTime").field("include_in_all","false").field("doc_values", true).endObject()
+                    .startObject(Field.oauth_token.name()).field("type","string").field("index","not_analyzed").field("include_in_all","false").field("doc_values", true).endObject()
+                    .startObject(Field.oauth_token_secret.name()).field("type","string").field("index","not_analyzed").field("include_in_all","false").field("doc_values", true).endObject()
+                    .startObject(Field.apps.name()).field("type","string").field("index","not_analyzed").field("include_in_all","false").field("doc_values", true).endObject()
                   .endObject()
                 .endObject();
             return mapping;
