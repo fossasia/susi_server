@@ -47,6 +47,7 @@ import java.util.TreeSet;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
+import java.util.zip.Deflater;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
@@ -214,7 +215,7 @@ public class DAO {
                     public void run() {
                         byte[] buffer = new byte[2^20];
                         try {
-                            GZIPOutputStream out = new GZIPOutputStream(new FileOutputStream(dest), 2^20);
+                            GZIPOutputStream out = new GZIPOutputStream(new FileOutputStream(dest), 65536){{def.setLevel(Deflater.BEST_COMPRESSION);}};
                             FileInputStream in = new FileInputStream(source);
                             int l; while ((l = in.read(buffer)) > 0) out.write(buffer, 0, l);
                             in.close(); out.finish(); out.close();
