@@ -81,6 +81,7 @@ public class SearchServlet extends HttpServlet {
         int limit = post.get("limit", 100);
         String[] fields = post.get("fields", new String[0], ",");
         int timezoneOffset = post.get("timezoneOffset", 0);
+        if (query.indexOf("id:") >= 0 && ("all".equals(source) || "twitter".equals(source))) source = "cache"; // id's cannot be retrieved from twitter with the scrape-api (yet), only from the cache
 
         // create tweet timeline
         final Timeline tl = new Timeline();
