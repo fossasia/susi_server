@@ -19,10 +19,9 @@
 
 package org.loklak.api.server;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.Reader;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.text.ParseException;
@@ -239,22 +238,21 @@ public class RemoteAccess {
                 try {map.put(param.substring(0, p), URLDecoder.decode(param.substring(p + 1), "UTF-8"));} catch (UnsupportedEncodingException e) {}
         }  
         return map;  
-    }  
+    }
     
-    public static Map<String, String> getPostMap(HttpServletRequest request) {
-        Map<String, String> map = new HashMap<String, String>();
+    public static Map<String, byte[]> getPostMap(HttpServletRequest request) {
+        Map<String, byte[]> map = new HashMap<>();
         try {
-            final char[] buffer = new char[1024];
+            final byte[] b = new byte[1024];
             for (Part part: request.getParts()) {
                 String name = part.getName();
                 InputStream is = part.getInputStream();
-                final StringBuilder out = new StringBuilder();
-                final Reader in = new InputStreamReader(is, "UTF-8");
+                final ByteArrayOutputStream baos = new ByteArrayOutputStream();
                 int c;
-                try {while ((c = in.read(buffer, 0, buffer.length)) > 0) {
-                    out.append(buffer, 0, c);
+                try {while ((c = is.read(b, 0, b.length)) > 0) {
+                    baos.write(b, 0, c);
                 }} finally {is.close();}
-                map.put(name, out.toString());
+                map.put(name, baos.toByteArray());
             }
         } catch (IOException e) {
         } catch (ServletException e) {

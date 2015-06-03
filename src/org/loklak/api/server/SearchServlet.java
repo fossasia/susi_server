@@ -40,6 +40,7 @@ import org.loklak.data.UserEntry;
 import org.loklak.rss.RSSFeed;
 import org.loklak.rss.RSSMessage;
 import org.loklak.tools.CharacterCoding;
+import org.loklak.tools.UTF8;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.util.DefaultPrettyPrinter;
@@ -216,7 +217,7 @@ public class SearchServlet extends HttpServlet {
             //System.out.println("feed has " + feed.size() + " entries");
             
             // write xml
-            response.getOutputStream().write(rss.getBytes("UTF-8"));
+            response.getOutputStream().write(UTF8.getBytes(rss));
         }
         DAO.log(request.getServletPath() + "?" + request.getQueryString());
         } catch (Throwable e) {

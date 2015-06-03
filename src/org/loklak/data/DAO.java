@@ -260,7 +260,7 @@ public class DAO {
             BufferedReader br = null;
             try {
                 if (dumpFile.getName().endsWith(".gz")) is = new GZIPInputStream(is);
-                br = new BufferedReader(new InputStreamReader(is, "UTF-8"));
+                br = new BufferedReader(new InputStreamReader(is, UTF8.charset));
                 while((line = br.readLine()) != null) {
                     try {
                         XContentParser parser = JsonXContent.jsonXContent.createParser(line);

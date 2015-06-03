@@ -41,6 +41,7 @@ import java.util.zip.GZIPInputStream;
 
 import org.elasticsearch.common.xcontent.XContentParser;
 import org.elasticsearch.common.xcontent.json.JsonXContent;
+import org.loklak.tools.UTF8;
 
 public class Campaigns {
     
@@ -131,7 +132,7 @@ public class Campaigns {
             BufferedReader br = null;
             try {
                 if (dumpFile.getName().endsWith(".gz")) is = new GZIPInputStream(is);
-                br = new BufferedReader(new InputStreamReader(is, "UTF-8"));
+                br = new BufferedReader(new InputStreamReader(is, UTF8.charset));
                 while ((line = br.readLine()) != null) {
                     XContentParser parser = JsonXContent.jsonXContent.createParser(line);
                     Map<String, Object> campaign = parser == null ? null : parser.map();
@@ -159,7 +160,7 @@ public class Campaigns {
             OutputStream os = new FileOutputStream(dumpFile);
             BufferedWriter bw = null;
             try {
-                bw = new BufferedWriter(new OutputStreamWriter(os, "UTF-8"));
+                bw = new BufferedWriter(new OutputStreamWriter(os, UTF8.charset));
                 for (Campaign campaign: campaigns) {
                     bw.write(campaign.toString());
                     bw.write('\n');

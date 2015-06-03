@@ -29,6 +29,7 @@ import java.net.URL;
 import java.util.Map;
 
 import org.loklak.LoklakServer;
+import org.loklak.tools.UTF8;
 
 /**
  * Helper class to provide BufferedReader Objects for get and post connections
@@ -51,7 +52,7 @@ public class ClientHelper {
         con.connect();
         int status = con.getResponseCode();
         if (status == HttpURLConnection.HTTP_OK) {
-            return new BufferedReaderConnection(new InputStreamReader(con.getInputStream(), CHARSET), con);
+            return new BufferedReaderConnection(new InputStreamReader(con.getInputStream(), UTF8.charset), con);
         } else {
             throw new IOException("server fail: " + status + ": " + con.getResponseMessage());
         }

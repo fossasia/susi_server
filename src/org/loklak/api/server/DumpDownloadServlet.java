@@ -28,12 +28,14 @@ import java.util.Date;
 
 
 
+
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.loklak.data.DAO;
+import org.loklak.tools.UTF8;
 
 public class DumpDownloadServlet extends HttpServlet {
 
@@ -58,7 +60,7 @@ public class DumpDownloadServlet extends HttpServlet {
             response.setCharacterEncoding("UTF-8");
             response.setStatus(HttpServletResponse.SC_OK);
             
-            OutputStreamWriter osw = new OutputStreamWriter(response.getOutputStream(), "UTF-8");
+            OutputStreamWriter osw = new OutputStreamWriter(response.getOutputStream(), UTF8.charset);
             BufferedWriter writer = new BufferedWriter(osw);
             writer.write("<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 3.2 Final//EN\">\n");
             writer.write("<html>\n");

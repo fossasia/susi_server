@@ -37,6 +37,7 @@ import org.loklak.data.DAO;
 import org.loklak.data.ProviderType;
 import org.loklak.data.MessageEntry;
 import org.loklak.data.UserEntry;
+import org.loklak.tools.UTF8;
 
 
 public class PushServlet extends HttpServlet {
@@ -69,16 +70,16 @@ public class PushServlet extends HttpServlet {
         // manage DoS
         if (post.isDoS_blackout()) {response.sendError(503, "your request frequency is too high"); return;}
 
-        Map<String, String> m = RemoteAccess.getPostMap(request);
-        String data = m.get("data");
-        String callback = m.get("callback");
+        Map<String, byte[]> m = RemoteAccess.getPostMap(request);
+        byte[] data = m.get("data");
+        String callback = UTF8.String(m.get("callback"));
         boolean jsonp = callback != null && callback.length() > 0;
-        if (data == null || data.length() == 0) {response.sendError(400, "your request does not contain a data object. The data object should contain data to be pushed. The format of the data object is JSON; it is exactly the same as the JSON search result"); return;}
+        if (data == null || data.length == 0) {response.sendError(400, "your request does not contain a data object. The data object should contain data to be pushed. The format of the data object is JSON; it is exactly the same as the JSON search result"); return;}
         
         // parse the json data
         int recordCount = 0, newCount = 0, knownCount = 0;
         try {
-            XContentParser parser = JsonXContent.jsonXContent.createParser(data);
+            XContentParser parser = JsonXContent.jsonXContent.createParser(UTF8.String(data));
             Map<String, Object> map = parser == null ? null : parser.map();
             Object statuses_obj = map.get("statuses");
             @SuppressWarnings("unchecked") List<Map<String, Object>> statuses = statuses_obj instanceof List<?> ? (List<Map<String, Object>>) statuses_obj : null;

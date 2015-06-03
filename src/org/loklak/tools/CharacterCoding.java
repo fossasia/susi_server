@@ -21,7 +21,6 @@ package org.loklak.tools;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.regex.Pattern;
 
 /**
  * Contains methods to convert between Unicode and XML/HTML encoding.
@@ -29,7 +28,6 @@ import java.util.regex.Pattern;
 public final class CharacterCoding {
 
     /** Ampersand pattern */
-    public final static Pattern ampPattern = Pattern.compile(Pattern.quote("&amp;"));
     /** Ampersand character in unicode encoding. */
     private static final char AMP_UNICODE = "\u0026".charAt(0);
     /** Ampersand character in HTML encoding. */
@@ -284,7 +282,7 @@ public final class CharacterCoding {
      */
     public static String html2unicode(String text) {
         if (text == null) return "";
-        text = ampPattern.matcher(text).replaceAll("&"); // sometimes a double-replacement is necessary.
+        text = CommonPattern.AMP_HTML.matcher(text).replaceAll("&"); // sometimes a double-replacement is necessary.
         int p = 0, p1, q;
         final StringBuilder sb = new StringBuilder(text.length());
         String s;

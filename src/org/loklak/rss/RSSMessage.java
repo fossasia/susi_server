@@ -33,15 +33,11 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.TimeZone;
-import java.util.regex.Pattern;
 
 import org.loklak.tools.CharacterCoding;
+import org.loklak.tools.CommonPattern;
 
 public class RSSMessage {
-    
-    public final static Pattern SPACE       = Pattern.compile(" ");
-    public final static Pattern COMMA       = Pattern.compile(",");
-    public final static Pattern SEMICOLON   = Pattern.compile(";");
     
     /** pattern for a W3C datetime variant of a non-localized ISO8601 date */
     //private static final String PATTERN_ISO8601 = "yyyy-MM-dd'T'HH:mm:ss'Z'";
@@ -219,9 +215,9 @@ public class RSSMessage {
 
     public String[] getSubject() {
         final String subject = Token.subject.valueFrom(this.map, "");
-        if (subject.indexOf(',') >= 0) return COMMA.split(subject);
-        if (subject.indexOf(';') >= 0) return SEMICOLON.split(subject);
-        return SPACE.split(subject);
+        if (subject.indexOf(',') >= 0) return CommonPattern.COMMA.split(subject);
+        if (subject.indexOf(';') >= 0) return CommonPattern.SEMICOLON.split(subject);
+        return CommonPattern.SPACE.split(subject);
     }
 
     public String getReferrer() {
