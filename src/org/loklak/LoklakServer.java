@@ -51,6 +51,7 @@ import org.loklak.api.server.SuggestServlet;
 import org.loklak.api.server.AccountServlet;
 import org.loklak.data.DAO;
 import org.loklak.tools.Browser;
+import org.loklak.vis.server.MarkdownServlet;
 
 public class LoklakServer {
 
@@ -116,9 +117,12 @@ public class LoklakServer {
         servletHandler.addServlet(StatusServlet.class, "/api/status.json");
         servletHandler.addServlet(SearchServlet.class, "/api/search.rss");  // both have same servlet class
         servletHandler.addServlet(SearchServlet.class, "/api/search.json"); // both have same servlet class
-        servletHandler.addServlet(SuggestServlet.class, "/api/suggest.json"); 
-        servletHandler.addServlet(AccountServlet.class, "/api/account.json"); 
-        servletHandler.addServlet(CampaignServlet.class, "/api/campaign.json"); 
+        servletHandler.addServlet(SuggestServlet.class, "/api/suggest.json");
+        servletHandler.addServlet(AccountServlet.class, "/api/account.json");
+        servletHandler.addServlet(CampaignServlet.class, "/api/campaign.json");
+        servletHandler.addServlet(MarkdownServlet.class, "/vis/markdown.gif");
+        servletHandler.addServlet(MarkdownServlet.class, "/vis/markdown.png");
+        servletHandler.addServlet(MarkdownServlet.class, "/vis/markdown.jpg");
         ServletHolder pushServletHolder = new ServletHolder(PushServlet.class);
         pushServletHolder.getRegistration().setMultipartConfig(new MultipartConfigElement(tmp.getAbsolutePath()));
         servletHandler.addServlet(pushServletHolder, "/api/push.json");
