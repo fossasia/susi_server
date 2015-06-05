@@ -106,7 +106,7 @@ public class Caretaker extends Thread {
                         continue;
                     }
                     Timeline[] t = DAO.scrapeTwitter(qe.getQuery(), qe.getTimezoneOffset(), false);
-                    DAO.log("retrieval of " + t[1].size() + " messages for q = \"" + qe.getQuery() + "\"");
+                    DAO.log("automatic retrieval of " + t[0].size() + " messages, " + t[1].size() + " new for q = \"" + qe.getQuery() + "\"");
                     try {Thread.sleep(1000);} catch (InterruptedException e) {} // prevent remote DoS protection handling
                 }
             }
