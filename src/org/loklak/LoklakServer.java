@@ -61,7 +61,8 @@ public class LoklakServer {
     private static Caretaker caretaker = null;
     
     public static void main(String[] args) throws Exception {
-
+        System.setProperty("java.awt.headless", "true"); // no awt used here so we can switch off that stuff
+        
         // init config, log and elasticsearch
         File data = new File(new File("."), "data");
         if (!data.exists()) data.mkdirs();
