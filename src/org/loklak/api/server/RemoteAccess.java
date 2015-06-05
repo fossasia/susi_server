@@ -152,6 +152,10 @@ public class RemoteAccess {
             String val = qm == null ? request.getParameter(key) : qm.get(key);
             return val == null ? dflt : Integer.parseInt(val);
         }
+        public double get(String key, double dflt) {
+            String val = qm == null ? request.getParameter(key) : qm.get(key);
+            return val == null ? dflt : Double.parseDouble(val);
+        }
         public boolean get(String key, boolean dflt) {
             String val = qm == null ? request.getParameter(key) : qm.get(key);
             return val == null ? dflt : "true".equals(val) || "1".equals(val);

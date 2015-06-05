@@ -51,6 +51,7 @@ import org.loklak.api.server.SuggestServlet;
 import org.loklak.api.server.AccountServlet;
 import org.loklak.data.DAO;
 import org.loklak.tools.Browser;
+import org.loklak.vis.server.MapServlet;
 import org.loklak.vis.server.MarkdownServlet;
 
 public class LoklakServer {
@@ -124,6 +125,9 @@ public class LoklakServer {
         servletHandler.addServlet(MarkdownServlet.class, "/vis/markdown.gif");
         servletHandler.addServlet(MarkdownServlet.class, "/vis/markdown.png");
         servletHandler.addServlet(MarkdownServlet.class, "/vis/markdown.jpg");
+        servletHandler.addServlet(MapServlet.class, "/vis/map.gif");
+        servletHandler.addServlet(MapServlet.class, "/vis/map.png");
+        servletHandler.addServlet(MapServlet.class, "/vis/map.jpg");
         ServletHolder pushServletHolder = new ServletHolder(PushServlet.class);
         pushServletHolder.getRegistration().setMultipartConfig(new MultipartConfigElement(tmp.getAbsolutePath()));
         servletHandler.addServlet(pushServletHolder, "/api/push.json");
