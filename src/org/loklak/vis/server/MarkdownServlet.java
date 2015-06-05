@@ -39,7 +39,7 @@ import org.loklak.visualization.graphics.RasterPlotter.DrawMode;
 
 public class MarkdownServlet extends HttpServlet {
 
-    private static final long serialVersionUID = -9112326721290824443L;
+    private static final long serialVersionUID = -9112326727290824443L;
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
@@ -57,6 +57,7 @@ public class MarkdownServlet extends HttpServlet {
     }
     
     // http://localhost:9100/vis/markdown.png?text=hello%20world%0Dhello%20universe&color_text=000000&color_background=ffffff&padding=3
+    // http://localhost:9100/vis/markdown.png?text=loklak%20has%20now%20an%20amazing%20new%20feature!%0D%0Dthe%20server%20is%20able%20to%20render%20large%20amounts%20of%20text%20lines%0Dinto%20a%20single%20image!!!%0D%0Dsuch%20an%20image%20can%20then%20be%20attached%20to%20a%20tweet%20as%20image%0Dand%20therefore%20is%20able%20to%20transport%20much%20more%0Dthan%20the%20limit%20of%20140%20characters!%0D%0Dif%20you%20want%20to%20see%20what%20loklak%20is,%20check%20out:%0D%0Dloklak.org&color_text=000000&color_background=ffffff&padding=3
 
     protected void process(HttpServletRequest request, HttpServletResponse response, RemoteAccess.Post post) throws ServletException, IOException {
         // parse arguments
@@ -77,16 +78,33 @@ public class MarkdownServlet extends HttpServlet {
         List<String> lines = new ArrayList<String>();
         for (String line = rdr.readLine(); line != null; line = rdr.readLine()) lines.add(line);
         rdr.close();
+        int charwidth = 6;
         int width = 0; for (String line: lines) width = Math.max(width, line.length());
-        width = 6 * width + 2 * padding - 1;
-        int height = lines.size() * 6 + 2 * padding - 1;
+        width = charwidth * width + 2 * padding - 1;
+        
+        int lineheight = 7;
+        int yoffset = 0;
+        int height = width / 2;
+        while (lineheight <= 12) {
+            height = lines.size() * lineheight + 2 * padding - 1;
+            // a perfect size has the format 2:1, that fits into the preview window.
+            // We should not allow that the left or right border is cut away; resize if necessary
+            if (width <= 2 * height) break;
+            // add height, the full height is width / 2
+            yoffset = (width / 2 - height) / 2;
+            height = width / 2; 
+            lineheight++;
+        }        
         
         RasterPlotter matrix = new RasterPlotter(width, height, drawmode, color_background);
         matrix.setColor(color_text);
         for (int line = 0; line < lines.size(); line++) {
             String l = lines.get(line);
-            PrintTool.print(matrix, padding - 1, padding + 4 + line * 6, 0, uppercase ? l.toUpperCase() : l, -1, 100);
+            PrintTool.print(matrix, padding - 1, yoffset + padding + 4 + line * lineheight, 0, uppercase ? l.toUpperCase() : l, -1, 100);
         }
+        
+        // write branding
+        PrintTool.print(matrix, matrix.getWidth() - 6, matrix.getHeight() - 6, 0, "MADE WITH HTTP://LOKLAK.ORG", 1, 20);
         
         // write image
         ServletOutputStream sos = response.getOutputStream();
