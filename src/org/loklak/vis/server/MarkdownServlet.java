@@ -56,8 +56,8 @@ public class MarkdownServlet extends HttpServlet {
         process(request, response, post);
     }
     
-    // http://localhost:9100/vis/markdown.png?text=hello%20world%0Dhello%20universe&color_text=000000&color_background=ffffff&padding=3
-    // http://localhost:9100/vis/markdown.png?text=loklak%20has%20now%20an%20amazing%20new%20feature!%0D%0Dthe%20server%20is%20able%20to%20render%20large%20amounts%20of%20text%20lines%0Dinto%20a%20single%20image!!!%0D%0Dsuch%20an%20image%20can%20then%20be%20attached%20to%20a%20tweet%20as%20image%0Dand%20therefore%20is%20able%20to%20transport%20much%20more%0Dthan%20the%20limit%20of%20140%20characters!%0D%0Dif%20you%20want%20to%20see%20what%20loklak%20is,%20check%20out:%0D%0Dloklak.org&color_text=000000&color_background=ffffff&padding=3
+    // http://localhost:9000/vis/markdown.png?text=hello%20world%0Dhello%20universe&color_text=000000&color_background=ffffff&padding=3
+    // http://localhost:9000/vis/markdown.png?text=loklak%20has%20now%20an%20amazing%20new%20feature!%0D%0Dthe%20server%20is%20able%20to%20render%20large%20amounts%20of%20text%20lines%0Dinto%20a%20single%20image!!!%0D%0Dsuch%20an%20image%20can%20then%20be%20attached%20to%20a%20tweet%20as%20image%0Dand%20therefore%20is%20able%20to%20transport%20much%20more%0Dthan%20the%20limit%20of%20140%20characters!%0D%0Dif%20you%20want%20to%20see%20what%20loklak%20is,%20check%20out:%0D%0Dloklak.org&color_text=000000&color_background=ffffff&padding=3
 
     protected void process(HttpServletRequest request, HttpServletResponse response, RemoteAccess.Post post) throws ServletException, IOException {
         // parse arguments
