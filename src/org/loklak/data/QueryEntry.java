@@ -154,7 +154,7 @@ public class QueryEntry extends AbstractIndexEntry implements IndexEntry {
         this.retrieval_next = new Date(this.retrieval_last.getTime() + waitingtime);
     }
     // to check the retrieval order created by the update method, call
-    // http://localhost:9100/api/suggest.json?orderby=retrieval_next&order=asc
+    // http://localhost:9000/api/suggest.json?orderby=retrieval_next&order=asc
     
     /**
      * A 'blind' update can be done if the user submits a query but there are rules which prevent that the target system is queried
