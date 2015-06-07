@@ -81,6 +81,7 @@ public class SearchServlet extends HttpServlet {
         int limit = post.get("limit", 100);
         String[] fields = post.get("fields", new String[0], ",");
         int timezoneOffset = post.get("timezoneOffset", 0);
+        if (query.indexOf("id:") >= 0 && ("all".equals(source) || "twitter".equals(source))) source = "cache"; // id's cannot be retrieved from twitter with the scrape-api (yet), only from the cache
 
         // create tweet timeline
         final Timeline tl = new Timeline();
@@ -155,7 +156,6 @@ public class SearchServlet extends HttpServlet {
                 json.writeObjectField("readme_3", "Parameters q=(query), source=(cache|backend|twitter|all), callback=p for jsonp, maximumRecords=(message count), minified=(true|false)");
             }
             json.writeObjectFieldStart("search_metadata");
-            json.writeObjectField("startIndex", "0");
             json.writeObjectField("itemsPerPage", Integer.toString(count));
             json.writeObjectField("count", Integer.toString(tl.size()));
             json.writeObjectField("hits", hits);
@@ -219,7 +219,7 @@ public class SearchServlet extends HttpServlet {
             // write xml
             response.getOutputStream().write(UTF8.getBytes(rss));
         }
-        DAO.log(request.getServletPath() + "?" + request.getQueryString());
+        DAO.log(request.getServletPath() + "?" + request.getQueryString() + " -> " + tl.size() + " records returned");
         } catch (Throwable e) {
             Log.getLog().warn(e.getMessage(), e);
             //e.printStackTrace();

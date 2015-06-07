@@ -37,10 +37,11 @@ public class UTF8 {
      * @return
      */
     public final static String String(final byte[] bytes) {
-        return new String(bytes, 0, bytes.length, charset);
+        return bytes == null ? "" : new String(bytes, 0, bytes.length, charset);
     }
 
     public final static String String(final byte[] bytes, final int offset, final int length) {
+        assert bytes != null;
         return new String(bytes, offset, length, charset);
     }
 

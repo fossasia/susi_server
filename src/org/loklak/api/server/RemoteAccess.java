@@ -38,6 +38,7 @@ import javax.servlet.http.Part;
 
 import org.loklak.data.DAO;
 import org.loklak.tools.DateParser;
+import org.loklak.tools.UTF8;
 
 /**
  * Storage of a peer list which can be used for peer-to-peer communication.
@@ -53,7 +54,8 @@ public class RemoteAccess {
         String XRealIP = request.getHeader("X-Real-IP"); if (XRealIP != null && XRealIP.length() > 0) clientHost = XRealIP; // get IP through nginx config "proxy_set_header X-Real-IP $remote_addr;"
         String path = request.getServletPath();
         Map<String, String> qm = getQueryMap(request.getQueryString());
-        Post post = new Post(request, qm);
+        Post post = new Post(request);
+        post.initGET(qm);
         String httpports = qm == null ? request.getParameter("port.http") : qm.get("port.http");
         Integer httpport = httpports == null ? null : Integer.parseInt(httpports);
         String httpsports = qm == null ? request.getParameter("port.https") : qm.get("port.https");
@@ -100,8 +102,8 @@ public class RemoteAccess {
         private String clientHost;
         private long access_time, time_since_last_access;
         private boolean DoS_blackout, DoS_servicereduction;
-        public Post(final HttpServletRequest request, final Map<String, String> qm) {
-            this.qm = qm;
+        public Post(final HttpServletRequest request) {
+            this.qm = null;
             this.request = request;
             this.ra = null;
             this.clientHost = request.getRemoteHost();
@@ -112,6 +114,13 @@ public class RemoteAccess {
             this.time_since_last_access = this.access_time - RemoteAccess.latestVisit(this.clientHost);
             this.DoS_blackout = !localhost && this.time_since_last_access < DAO.getConfig("DoS.blackout", 100) || sleeping4clients.contains(this.clientHost);
             this.DoS_servicereduction = !localhost && this.time_since_last_access < DAO.getConfig("DoS.servicereduction", 1000);
+        }
+        public void initGET(final Map<String, String> qm) {
+            this.qm = qm;
+        }
+        public void initPOST(final Map<String, byte[]> map) {
+            this.qm = new HashMap<>();
+            for (Map.Entry<String, byte[]> entry: map.entrySet()) this.qm.put(entry.getKey(), UTF8.String(entry.getValue()));
         }
         public String getClientHost() {
             return this.clientHost;
@@ -142,6 +151,10 @@ public class RemoteAccess {
         public int get(String key, int dflt) {
             String val = qm == null ? request.getParameter(key) : qm.get(key);
             return val == null ? dflt : Integer.parseInt(val);
+        }
+        public double get(String key, double dflt) {
+            String val = qm == null ? request.getParameter(key) : qm.get(key);
+            return val == null ? dflt : Double.parseDouble(val);
         }
         public boolean get(String key, boolean dflt) {
             String val = qm == null ? request.getParameter(key) : qm.get(key);

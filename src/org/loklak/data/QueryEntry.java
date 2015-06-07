@@ -365,6 +365,16 @@ public class QueryEntry extends AbstractIndexEntry implements IndexEntry {
                     this.until = new Date(Long.MAX_VALUE);
                 }
                 ((BoolQueryBuilder) query).must(rangeQuery);
+            } catch (ParseException e) {} else if (modifier.containsKey("until")) try {
+                Calendar until = DateParser.parse(modifier.get("until"), timezoneOffset);
+                if (until.get(Calendar.HOUR) == 0 && until.get(Calendar.MINUTE) == 0) {
+                    // until must be the day which is included in results.
+                    // To get the result within the same day, we must add one day.
+                    until.add(Calendar.DATE, 1);
+                }
+                this.until = until.getTime();
+                RangeQueryBuilder rangeQuery = QueryBuilders.rangeQuery("created_at").to(this.until);
+                ((BoolQueryBuilder) query).must(rangeQuery);
             } catch (ParseException e) {}
             for (Map.Entry<String, String> c: constraintFields.entrySet()) {
                 if (constraints.contains(c.getKey())) {

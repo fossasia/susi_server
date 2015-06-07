@@ -99,7 +99,7 @@ public class DumpDownloadServlet extends HttpServlet {
 
         response.setDateHeader("Last-Modified", dump.lastModified());
         response.setDateHeader("Expires", now + 600000);
-        response.setContentType("text/plain");
+        response.setContentType("application/octet-stream");
         response.setCharacterEncoding("UTF-8");
         response.setStatus(HttpServletResponse.SC_OK);
         

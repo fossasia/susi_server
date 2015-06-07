@@ -51,6 +51,8 @@ import org.loklak.api.server.SuggestServlet;
 import org.loklak.api.server.AccountServlet;
 import org.loklak.data.DAO;
 import org.loklak.tools.Browser;
+import org.loklak.vis.server.MapServlet;
+import org.loklak.vis.server.MarkdownServlet;
 
 public class LoklakServer {
 
@@ -60,7 +62,8 @@ public class LoklakServer {
     private static Caretaker caretaker = null;
     
     public static void main(String[] args) throws Exception {
-
+        System.setProperty("java.awt.headless", "true"); // no awt used here so we can switch off that stuff
+        
         // init config, log and elasticsearch
         File data = new File(new File("."), "data");
         if (!data.exists()) data.mkdirs();
@@ -116,9 +119,15 @@ public class LoklakServer {
         servletHandler.addServlet(StatusServlet.class, "/api/status.json");
         servletHandler.addServlet(SearchServlet.class, "/api/search.rss");  // both have same servlet class
         servletHandler.addServlet(SearchServlet.class, "/api/search.json"); // both have same servlet class
-        servletHandler.addServlet(SuggestServlet.class, "/api/suggest.json"); 
-        servletHandler.addServlet(AccountServlet.class, "/api/account.json"); 
-        servletHandler.addServlet(CampaignServlet.class, "/api/campaign.json"); 
+        servletHandler.addServlet(SuggestServlet.class, "/api/suggest.json");
+        servletHandler.addServlet(AccountServlet.class, "/api/account.json");
+        servletHandler.addServlet(CampaignServlet.class, "/api/campaign.json");
+        servletHandler.addServlet(MarkdownServlet.class, "/vis/markdown.gif");
+        servletHandler.addServlet(MarkdownServlet.class, "/vis/markdown.png");
+        servletHandler.addServlet(MarkdownServlet.class, "/vis/markdown.jpg");
+        servletHandler.addServlet(MapServlet.class, "/vis/map.gif");
+        servletHandler.addServlet(MapServlet.class, "/vis/map.png");
+        servletHandler.addServlet(MapServlet.class, "/vis/map.jpg");
         ServletHolder pushServletHolder = new ServletHolder(PushServlet.class);
         pushServletHolder.getRegistration().setMultipartConfig(new MultipartConfigElement(tmp.getAbsolutePath()));
         servletHandler.addServlet(pushServletHolder, "/api/push.json");

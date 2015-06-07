@@ -156,6 +156,13 @@ public class RasterPlotter {
         }
     }
 
+    public static long invertColor(long color) {
+        long c = 0xff - ((color & 0xff0000) >> 16);
+        long m = 0xff - ((color & 0xff00) >> 8);
+        long y = 0xff - (color & 0xff);
+        return ((m * y / 255) << 16) + ((c * y / 255) << 8) + (c * m / 255);
+    }
+    
     public void setDrawMode(final DrawMode drawMode) {
         this.defaultMode = drawMode;
     }
