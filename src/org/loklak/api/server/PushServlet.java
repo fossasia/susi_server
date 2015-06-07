@@ -59,7 +59,7 @@ public class PushServlet extends HttpServlet {
     
     /*
      * call this i.e. with
-     * curl -i -F callback=p -F data=@tweets.json http://localhost:9100/api/push.json
+     * curl -i -F callback=p -F data=@tweets.json http://localhost:9000/api/push.json
      */
     
     @Override

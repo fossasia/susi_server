@@ -97,7 +97,7 @@ public class LoklakServer {
         LoklakServer.server = new Server();
         LoklakServer.server.setStopAtShutdown(true);
         ServerConnector connector = new ServerConnector(LoklakServer.server);
-        int httpPort = (int) DAO.getConfig("port.http", 9100);
+        int httpPort = (int) DAO.getConfig("port.http", 9000);
         connector.setPort(httpPort);
         connector.setName("httpd:" + httpPort);
         connector.setIdleTimeout(20000); // timout in ms when no bytes send / received

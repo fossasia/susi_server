@@ -37,9 +37,22 @@ loklak. With loklak you can do:
 
 - build loklak (you need to do this only once, see above)
 - run bin/start.sh
-- open http://localhost:9100 in your browser
+- open http://localhost:9000 in your browser
 - to shut down loklak, run bin/stop.sh
 
+*** How do I analyze data aquired by loklak
+
+loklak stores data into an elasticsearch index. There is a front-end
+for the index available in elasticsearch-head. To install this, do:
+- sudo npm install -g grunt-cli
+- cd into the parent directly of loklak_server
+- git clone git://github.com/mobz/elasticsearch-head.git
+- cd elasticsearch-head
+- npm install
+
+Run elasticsearch-head with:
+- grunt server
+..which opens the administration page at http://localhost:9100
 
 *** Where can I find more information and documentation
 
