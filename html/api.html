@@ -61,6 +61,7 @@
             <li><a href="#status">/api/status.json</a></li>
             <li><a href="#peers">/api/peers.json</a></li>
             <li><a href="#push">/api/push.json</a></li>
+            <li><a href="#account">/api/account.json</a></li>
           </ul>
         </div>
         <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
@@ -317,6 +318,50 @@
 }</pre>
       <p>When messages arrive the back-end peer, the value "source_type" of every message is replaced with "REMOTE"</p>
       
+          
+		  <br id="account"/><br/>
+          <h2 class="sub-header">/api/account.json</h2>
+          <p>This servlet provides the storage and retrieval of twitter accounts. This servlet can only be called from localhost.</p>
+          <ul class="request">
+			<li><div class="tabcol0">screen_name</div><div class="tabcol1">&nbsp;=&nbsp;&lt;user nickname&gt;</div>// the identifier of the account record</li>
+			<li><div class="tabcol0">action</div><div class="tabcol1">&nbsp;=&nbsp;&lt;an action&gt;</div>// proper values are either &lt;empty&gt; or 'update'</li>
+			<li><div class="tabcol0">minified</div><div class="tabcol1">&nbsp;=&nbsp;&lt;true|false&gt;</div>// minify the result, default false, i.e. minified=true</li>
+			<li><div class="tabcol0">callback</div><div class="tabcol1">&nbsp;=&nbsp;&lt;a jsonp function name&gt;</div>// use this to call the servlet with jsonp result</li>
+			<li><div class="tabcol0">data</div><div class="tabcol1">&nbsp;=&nbsp;&lt;an object to store&gt;</div>// if you set action=update, you must submit this data object</li>
+          </ul>
+          
+          <p>If you want to retrieve data from the API, just submit the <code>screen_name</code> and you get the stored data object returned.
+             If you want to store one or more account objects, submit that object (these objects) inside the <code>data</code> value.
+             Hint: the <code>screen_name</code> is not used for storage of the objects, the <code>screen_name</code> must be inside the data object!</p>
+          <p>The data object must have the following form:</p>
+          <pre>{
+  "screen_name"           : "test",                            // primary key for the user
+  "source_type"           : "TWITTER",                         // the application which created the token, by default "TWITTER"
+  "oauth_token"           : "abc",                             // the oauth token
+  "oauth_token_secret"    : "def",                             // the oauth token_secret
+  "authentication_first"  : "2015-06-07T09:39:22.341Z",        // optional
+  "authentication_latest" : "2015-06-07T09:39:22.341Z",        // optional
+  "apps"                  : {"wall" : {"type" : "horizontal"}} // any json
+}
+</pre>
+<p>You can set such a record i.e. with the call
+<ul class="request">
+<li><a href="http://localhost:9000/api/account.json?action=update&data={%22screen_name%22:%22test%22,%22oauth_token%22:%22abc%22,%22oauth_token_secret%22:%22def%22}">http://localhost:9000/api/account.json?action=update&data={"screen_name":"test","oauth_token":"abc","oauth_token_secret":"def"}</a></li>
+</ul></p>
+
+<p>It can then be retrieved again with
+<ul class="request">
+<li><a href="http://localhost:9000/api/account.json?screen_name=test">http://localhost:9000/api/account.json?screen_name=test</a></li>
+</ul>
+</p>
+
+<p>To add or update a record with <code>apps</code> settings, simply omit the oauth details and just set apps
+<ul class="request">
+<li><a href="http://localhost:9000/api/account.json?action=update&data={%22screen_name%22:%22test%22,%22apps%22:{%22wall%22:{%22type%22:%22horizontal%22}}}">http://localhost:9000/api/account.json?action=update&data={"screen_name":"test","apps":{"wall":{"type":"horizontal"}}}</a></li>
+</ul>
+</p>
+
+
           <br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/>
         </div>
       </div>
