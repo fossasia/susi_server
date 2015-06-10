@@ -304,6 +304,7 @@ public class QueryEntry extends AbstractIndexEntry implements IndexEntry {
         
         private QueryBuilder parse(String q, int timezoneOffset) {
             // tokenize the query
+            for (int i = 1; i < q.length(); i++) if (q.charAt(i) == '-' && q.charAt(i - 1) != ' ') q = q.substring(0, i) + " " + q.substring(i + 1); 
             List<String> qe = new ArrayList<String>();
             Matcher m = tokenizerPattern.matcher(q);
             while (m.find()) qe.add(m.group(1));
@@ -320,18 +321,27 @@ public class QueryEntry extends AbstractIndexEntry implements IndexEntry {
             //   since:2015-04-01 until:2015-04-03 - tweets within given time range
             // additional constraints:
             //   /image /audio /video /place - restrict to tweets which have attached images, audio, video or place
-            String text = "";
-            ArrayList<String> users = new ArrayList<>();
-            ArrayList<String> hashtags = new ArrayList<>();
+            ArrayList<String> text_positive_match = new ArrayList<>();
+            ArrayList<String> text_negative_match = new ArrayList<>();
+            ArrayList<String> text_positive_filter = new ArrayList<>();
+            ArrayList<String> text_negative_filter = new ArrayList<>();
+            ArrayList<String> users_positive = new ArrayList<>();
+            ArrayList<String> users_negative = new ArrayList<>();
+            ArrayList<String> hashtags_positive = new ArrayList<>();
+            ArrayList<String> hashtags_negative = new ArrayList<>();
             HashMap<String, String> modifier = new HashMap<>();
             HashSet<String> constraints_positive = new HashSet<>();
             HashSet<String> constraints_negative = new HashSet<>();
             for (String t: qe) {
                 if (t.length() == 0) continue;
                 if (t.startsWith("@")) {
-                    users.add(t.substring(1));
+                    users_positive.add(t.substring(1));
+                } else if (t.startsWith("-@")) {
+                    users_negative.add(t.substring(2));
                 } else if (t.startsWith("#")) {
-                    hashtags.add(t.substring(1));
+                    hashtags_positive.add(t.substring(1));
+                } else if (t.startsWith("-#")) {
+                    hashtags_negative.add(t.substring(2));
                 } else if (t.startsWith("/")) {
                     constraints_positive.add(t.substring(1));
                 } else if (t.startsWith("-/")) {
@@ -340,19 +350,33 @@ public class QueryEntry extends AbstractIndexEntry implements IndexEntry {
                     int p = t.indexOf(':');
                     modifier.put(t.substring(0, p).toLowerCase(), t.substring(p + 1));
                 } else {
-                    text += t + " ";
+                    // patch characters that will confuse elasticsearch or have a different meaning
+                    boolean negative = t.startsWith("-");
+                    if (negative) t = t.substring(1);
+                    if ((t.charAt(0) == '"' && t.charAt(t.length() - 1) == '"') || (t.charAt(0) == '\'' && t.charAt(t.length() - 1) == '\'')) {
+                        t = t.substring(1, t.length() - 1);
+                        if (negative) text_negative_filter.add(t); else text_positive_filter.add(t);
+                    } else {
+                        if (negative) text_negative_match.add(t); else text_positive_match.add(t);
+                    }
                 }
             }
-            if (modifier.containsKey("to")) users.add(modifier.get("to"));
-            text = text.trim();
+            if (modifier.containsKey("to")) users_positive.add(modifier.get("to"));
             
             // compose query
             QueryBuilder query = QueryBuilders.boolQuery();
-            if (text.length() > 0) ((BoolQueryBuilder) query).must(QueryBuilders.matchQuery("text", text));
-            for (String user: users) ((BoolQueryBuilder) query).must(QueryBuilders.termQuery("mentions", user));
-            for (String hashtag: hashtags) ((BoolQueryBuilder) query).must(QueryBuilders.termQuery("hashtags", hashtag.toLowerCase()));
+            for (String text: text_positive_match)  ((BoolQueryBuilder) query).must(QueryBuilders.matchQuery("text", text));
+            for (String text: text_negative_match) ((BoolQueryBuilder) query).mustNot(QueryBuilders.matchQuery("text", text));
+            for (String text: text_positive_filter) query = QueryBuilders.filteredQuery(query, FilterBuilders.termsFilter("text", text));
+            for (String text: text_negative_filter) query = QueryBuilders.filteredQuery(query, FilterBuilders.notFilter(FilterBuilders.termsFilter("text", text)));
+            for (String user: users_positive) query = QueryBuilders.filteredQuery(query, FilterBuilders.inFilter("mentions", user));
+            for (String user: users_negative) query = QueryBuilders.filteredQuery(query, FilterBuilders.notFilter(FilterBuilders.inFilter("mentions", user)));
+            for (String hashtag: hashtags_positive) QueryBuilders.filteredQuery(query, FilterBuilders.inFilter("hashtags", hashtag.toLowerCase()));
+            for (String hashtag: hashtags_negative) QueryBuilders.filteredQuery(query, FilterBuilders.notFilter(FilterBuilders.inFilter("hashtags", hashtag.toLowerCase())));
             if (modifier.containsKey("id")) ((BoolQueryBuilder) query).must(QueryBuilders.termQuery("id_str", modifier.get("id")));
+            if (modifier.containsKey("-id")) ((BoolQueryBuilder) query).mustNot(QueryBuilders.termQuery("id_str", modifier.get("-id")));
             if (modifier.containsKey("from")) ((BoolQueryBuilder) query).must(QueryBuilders.termQuery("screen_name", modifier.get("from")));
+            if (modifier.containsKey("-from")) ((BoolQueryBuilder) query).mustNot(QueryBuilders.termQuery("screen_name", modifier.get("-from")));
             if (modifier.containsKey("near")) {
                 BoolQueryBuilder nearquery = QueryBuilders.boolQuery()
                         .should(QueryBuilders.matchQuery("place_name", modifier.get("near")))
