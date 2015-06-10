@@ -253,7 +253,7 @@ public class QueryEntry extends AbstractIndexEntry implements IndexEntry {
     
     public static String removeConstraints(String q) {
         for (String c: constraintFields.keySet()) {
-            q = q.replaceAll(" /" + c, "");
+            q = q.replaceAll(" /" + c, "").replaceAll(" -/" + c, "");
         }
         return q;
     }
@@ -263,21 +263,27 @@ public class QueryEntry extends AbstractIndexEntry implements IndexEntry {
         List<String> qe = new ArrayList<String>();
         Matcher m = tokenizerPattern.matcher(query);
         while (m.find()) qe.add(m.group(1));
-        
-        HashSet<String> constraints = new HashSet<>();
+
+        HashSet<String> constraints_positive = new HashSet<>();
+        HashSet<String> constraints_negative = new HashSet<>();
         for (String t: qe) {
-            if (t.startsWith("/")) {
-                constraints.add(t.substring(1));
-            } 
+            if (t.startsWith("/")) constraints_positive.add(t.substring(1));
+            if (t.startsWith("-/")) constraints_negative.add(t.substring(2));
         }
         Timeline tl1 = new Timeline();
         for (MessageEntry message: tl0) {
-            if (constraints.contains("image") && message.getImages().size() == 0) continue;
-            if (constraints.contains("place") && message.getPlaceName().length() == 0) continue;
-            if (constraints.contains("location") && message.getPlaceName().length() == 0) continue;
-            if (constraints.contains("link") && message.getLinks().length == 0) continue;
-            if (constraints.contains("mention") && message.getMentions().length == 0) continue;
-            if (constraints.contains("hashtag") && message.getHashtags().length == 0) continue;
+            if (constraints_positive.contains("image") && message.getImages().size() == 0) continue;
+            if (constraints_negative.contains("image") && message.getImages().size() != 0) continue;
+            if (constraints_positive.contains("place") && message.getPlaceName().length() == 0) continue;
+            if (constraints_negative.contains("place") && message.getPlaceName().length() != 0) continue;
+            if (constraints_positive.contains("location") && message.getPlaceName().length() == 0) continue;
+            if (constraints_negative.contains("location") && message.getPlaceName().length() != 0) continue;
+            if (constraints_positive.contains("link") && message.getLinks().length == 0) continue;
+            if (constraints_negative.contains("link") && message.getLinks().length != 0) continue;
+            if (constraints_positive.contains("mention") && message.getMentions().length == 0) continue;
+            if (constraints_negative.contains("mention") && message.getMentions().length != 0) continue;
+            if (constraints_positive.contains("hashtag") && message.getHashtags().length == 0) continue;
+            if (constraints_negative.contains("hashtag") && message.getHashtags().length != 0) continue;
             tl1.addTweet(message);
         }
         return tl1;
@@ -318,15 +324,18 @@ public class QueryEntry extends AbstractIndexEntry implements IndexEntry {
             ArrayList<String> users = new ArrayList<>();
             ArrayList<String> hashtags = new ArrayList<>();
             HashMap<String, String> modifier = new HashMap<>();
-            HashSet<String> constraints = new HashSet<>();
+            HashSet<String> constraints_positive = new HashSet<>();
+            HashSet<String> constraints_negative = new HashSet<>();
             for (String t: qe) {
                 if (t.length() == 0) continue;
                 if (t.startsWith("@")) {
                     users.add(t.substring(1));
                 } else if (t.startsWith("#")) {
                     hashtags.add(t.substring(1));
-                }  else if (t.startsWith("/")) {
-                    constraints.add(t.substring(1));
+                } else if (t.startsWith("/")) {
+                    constraints_positive.add(t.substring(1));
+                } else if (t.startsWith("-/")) {
+                    constraints_negative.add(t.substring(2));
                 } else if (t.indexOf(':') > 0) {
                     int p = t.indexOf(':');
                     modifier.put(t.substring(0, p).toLowerCase(), t.substring(p + 1));
@@ -379,8 +388,11 @@ public class QueryEntry extends AbstractIndexEntry implements IndexEntry {
                 ((BoolQueryBuilder) query).must(rangeQuery);
             } catch (ParseException e) {}
             for (Map.Entry<String, String> c: constraintFields.entrySet()) {
-                if (constraints.contains(c.getKey())) {
+                if (constraints_positive.contains(c.getKey())) {
                     query = QueryBuilders.filteredQuery(query, FilterBuilders.existsFilter(c.getValue()));
+                }
+                if (constraints_negative.contains(c.getKey())) {
+                    query = QueryBuilders.filteredQuery(query, FilterBuilders.notFilter(FilterBuilders.existsFilter(c.getValue())));
                 }
             }
             return query;
