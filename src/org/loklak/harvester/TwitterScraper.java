@@ -268,7 +268,7 @@ public class TwitterScraper {
             super();
             this.source_type = SourceType.TWITTER;
             this.provider_type = ProviderType.SCRAPED;
-            this.user_screen_name = user_screen_name_raw;
+            this.screen_name = user_screen_name_raw;
             this.created_at = new Date(created_at_raw);
             this.status_id_url = new URL("https://twitter.com" + status_id_url_raw);
             int p = status_id_url_raw.lastIndexOf('/');
@@ -389,7 +389,7 @@ public class TwitterScraper {
         //wget --no-check-certificate "https://twitter.com/search?q=eifel&src=typd&f=realtime"
         Timeline result = TwitterScraper.search(args[0]);
         for (MessageEntry tweet : result) {
-            System.out.println("@" + tweet.getUserScreenName() + " - " + tweet.getText());
+            System.out.println("@" + tweet.getScreenName() + " - " + tweet.getText());
         }
         System.exit(0);
     }

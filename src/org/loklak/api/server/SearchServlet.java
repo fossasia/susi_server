@@ -209,7 +209,7 @@ public class SearchServlet extends HttpServlet {
                 m.setAuthor(u.getName() + " @" + u.getScreenName());
                 m.setTitle(u.getName() + " @" + u.getScreenName());
                 m.setDescription(t.getText());
-                m.setPubDate(t.getCreatedAtDate());
+                m.setPubDate(t.getCreatedAt());
                 m.setGuid(t.getIdStr());
                 feed.addMessage(m);
             }

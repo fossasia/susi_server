@@ -75,7 +75,7 @@ public class Crawler {
             if (term.followHashtags) for (String hashtag: t.getHashtags()) if (hashtag.length() >= 2) newqueries.add(hashtag);
             
             // we always follow the users which are the authors of the tweets
-            newqueries.add(t.getUserScreenName());
+            newqueries.add(t.getScreenName());
         }
         
         // put the hashtags and users on the stack with reduced depth

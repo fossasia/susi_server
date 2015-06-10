@@ -245,6 +245,7 @@ public class QueryEntry extends AbstractIndexEntry implements IndexEntry {
         constraintFields.put("audio","audio");
         constraintFields.put("video","videos");
         constraintFields.put("place","place_name");
+        constraintFields.put("location","location_point");
         constraintFields.put("link","links");
         constraintFields.put("mention","mentions");
         constraintFields.put("hashtag","hashtags");
@@ -273,6 +274,7 @@ public class QueryEntry extends AbstractIndexEntry implements IndexEntry {
         for (MessageEntry message: tl0) {
             if (constraints.contains("image") && message.getImages().size() == 0) continue;
             if (constraints.contains("place") && message.getPlaceName().length() == 0) continue;
+            if (constraints.contains("location") && message.getPlaceName().length() == 0) continue;
             if (constraints.contains("link") && message.getLinks().length == 0) continue;
             if (constraints.contains("mention") && message.getMentions().length == 0) continue;
             if (constraints.contains("hashtag") && message.getHashtags().length == 0) continue;

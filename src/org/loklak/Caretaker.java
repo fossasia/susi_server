@@ -81,15 +81,23 @@ public class Caretaker extends Thread {
             }
             
             // scan dump input directory to import files
-            File[] importList = DAO.getImportDumps();
+            File[] importList = DAO.getTweetImportDumps();
             for (File importFile: importList) {
                 String name = importFile.getName();
-                if (name.startsWith(DAO.MESSAGE_DUMP_FILE_PREFIX)) {
-                    DAO.log("importing file " + name);
-                    int imported = DAO.importDump(importFile);
-                    DAO.shiftProcessedDump(name);
-                    DAO.log("imported file " + name + ", " + imported + " new messages");
-                }
+                DAO.log("importing tweet dump " + name);
+                int imported = DAO.importDump(importFile);
+                DAO.shiftProcessedTweetDump(name);
+                DAO.log("imported tweet dump " + name + ", " + imported + " new messages");
+            }
+            
+            // scan spacial data import directory
+            importList = DAO.getGeoJsonImportDumps();
+            for (File importFile: importList) {
+                String name = importFile.getName();
+                DAO.log("importing geoJson " + name);
+                int imported = DAO.importGeoJson(importFile);
+                DAO.shiftProcessedGeoJsonDump(name);
+                DAO.log("imported geoJson " + name + ", " + imported + " new messages");
             }
             
             // run some crawl steps

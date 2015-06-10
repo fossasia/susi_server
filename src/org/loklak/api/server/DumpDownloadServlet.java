@@ -70,7 +70,7 @@ public class DumpDownloadServlet extends HttpServlet {
             writer.write(" <body>\n");
             writer.write("<h1>Index of /dump</h1>\n");
             writer.write("<pre>      Name \n");
-            for (File dump: DAO.getOwnDumps()) {
+            for (File dump: DAO.getTweetOwnDumps()) {
                 String name = dump.getName();
                 String space = "";
                 for (int i = name.length(); i < 36; i++) space += " ";
@@ -91,7 +91,7 @@ public class DumpDownloadServlet extends HttpServlet {
 
         // download a dump file
         if (path.startsWith("/")) path = path.substring(1);
-        File[] ownDumps = DAO.getOwnDumps();
+        File[] ownDumps = DAO.getTweetOwnDumps();
         File dump = ownDumps.length == 0 ? null : new File(ownDumps[0].getParentFile(), path);
         if (dump == null || !dump.exists()) {
             response.sendError(404, request.getContextPath() + " not available");

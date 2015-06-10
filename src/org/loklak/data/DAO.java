@@ -19,6 +19,7 @@
 
 package org.loklak.data;
 
+import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -31,6 +32,8 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.RandomAccessFile;
 import java.io.StringWriter;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.AbstractMap;
 import java.util.ArrayList;
@@ -77,6 +80,9 @@ import org.elasticsearch.search.aggregations.bucket.terms.Terms.Bucket;
 import org.elasticsearch.search.sort.SortOrder;
 import org.loklak.Caretaker;
 import org.loklak.api.client.SearchClient;
+import org.loklak.geo.GeoJsonReader;
+import org.loklak.geo.LocationSource;
+import org.loklak.geo.GeoJsonReader.Feature;
 import org.loklak.harvester.SourceType;
 import org.loklak.harvester.TwitterScraper;
 import org.loklak.tools.DateParser;
@@ -103,6 +109,7 @@ public class DAO {
     public final static int CACHE_MAXSIZE = 10000;
     
     public  static File conf_dir;
+    private static File external_data, geoJson_import, geoJson_imported;
     private static File message_dump_dir, message_dump_dir_own, message_dump_dir_import, message_dump_dir_imported;
     private static File settings_dir, customized_config;
     private static RandomAccessFile messagelog, accountlog;
@@ -122,6 +129,11 @@ public class DAO {
     public static void init(File datadir) {
         try {
             // create and document the data dump dir
+            external_data = new File(datadir, "external");
+            geoJson_import = new File(new File(external_data, "geojson"), "import");
+            geoJson_imported = new File(new File(external_data, "geojson"), "imported");
+            geoJson_import.mkdirs();
+            geoJson_imported.mkdirs();
             message_dump_dir = new File(datadir, "dump");
             message_dump_dir_own = new File(message_dump_dir, "own");
             message_dump_dir_import = new File(message_dump_dir, "import");
@@ -230,25 +242,40 @@ public class DAO {
         return new File(path, prefix + currentDatePart + "_" + random + ".txt");
     }
 
-    public static File[] getOwnDumps() {
-        return getDumps(message_dump_dir_own);
+    public static File[] getTweetOwnDumps() {
+        return getDumps(message_dump_dir_own, MESSAGE_DUMP_FILE_PREFIX, null);
     }
-    public static File[] getImportDumps() {
-        return getDumps(message_dump_dir_import);
+    public static File[] getTweetImportDumps() {
+        return getDumps(message_dump_dir_import, MESSAGE_DUMP_FILE_PREFIX, null);
     }
-    public static File[] getImportedDumps() {
-        return getDumps(message_dump_dir_imported);
+    public static File[] getTweetImportedDumps() {
+        return getDumps(message_dump_dir_imported, MESSAGE_DUMP_FILE_PREFIX, null);
     }
-    private static File[] getDumps(File path) {
+    public static File[] getGeoJsonImportDumps() {
+        return getDumps(geoJson_import, null, ".json");
+    }
+    public static File[] getGeoJsonImportedDumps() {
+        return getDumps(geoJson_imported, null, ".json");
+    }
+    private static File[] getDumps(final File path, final String prefix, final String suffix) {
         String[] list = path.list();
         TreeSet<File> dumps = new TreeSet<File>(); // sort the names with a tree set
-        for (String s: list) if (s.startsWith(MESSAGE_DUMP_FILE_PREFIX)) dumps.add(new File(path, s));
+        for (String s: list) {
+            if ((prefix == null || s.startsWith(prefix)) &&
+                (suffix == null || s.endsWith(suffix))) dumps.add(new File(path, s));
+        }
         return dumps.toArray(new File[dumps.size()]);
     }
-    public static boolean shiftProcessedDump(String dumpName) {
-        File f = new File(message_dump_dir_import, dumpName);
+    public static boolean shiftProcessedTweetDump(String dumpName) {
+        return shiftProcessedDump(dumpName, message_dump_dir_import, message_dump_dir_imported);
+    }
+    public static boolean shiftProcessedGeoJsonDump(String dumpName) {
+        return shiftProcessedDump(dumpName, geoJson_import, geoJson_imported);
+    }
+    public static boolean shiftProcessedDump(String dumpName, File from, File to) {
+        File f = new File(from, dumpName);
         if (!f.exists()) return false;
-        File g = new File(message_dump_dir_imported, dumpName);
+        File g = new File(to, dumpName);
         if (g.exists()) g.delete();
         return f.renameTo(g);
     }
@@ -284,6 +311,58 @@ public class DAO {
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
+            }
+            return newTweet;
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+        return 0;
+    }
+    
+    public static int importGeoJson(File dumpFile) {
+        try {
+            int newTweet = 0;
+            InputStream is = new BufferedInputStream(new FileInputStream(dumpFile));
+            try {
+                GeoJsonReader reader = new GeoJsonReader(is, Runtime.getRuntime().availableProcessors() * 2 + 1);
+                new Thread(reader).start();
+                Feature feature;
+                while ((feature = reader.take()) != GeoJsonReader.POISON_FEATURE) {
+                    String screen_name = "*geojson*";
+                    String provider_hash = Integer.toHexString(dumpFile.hashCode());
+                    String id = feature.id.length() == 0 ? feature.properties.get("id") : feature.id;
+                    URL url = null;
+                    try {url = new URL(feature.properties.get("url"));} catch (MalformedURLException e) {}
+                    
+                    MessageEntry t = new MessageEntry();
+                    t.setCreatedAt(new Date());
+                    t.setSourceType(SourceType.IMPORT);
+                    t.setProviderType(ProviderType.GENERIC);
+                    t.setProviderHash(provider_hash);
+                    t.setScreenName(screen_name);
+                    t.setIdStr(provider_hash + "_" + id);
+                    t.setText(feature.properties.get("description"));
+                    if (url != null) t.setStatusIdUrl(url);
+                    t.setRetweetCount(0);
+                    t.setFavouritesCount(0);
+                    t.setImages(feature.properties.get("thumbs"));
+                    t.setPlaceId("");
+                    t.setPlaceName(feature.properties.get("title"));
+                    double lon = Double.parseDouble(feature.properties.get("geo_longitude"));
+                    double lat = Double.parseDouble(feature.properties.get("geo_latitude"));
+                    t.setLocationPoint(new double[]{lon, lat}); // coordinate order is longitude, latitude
+                    t.setLocationMark(new double[]{lon, lat}); // coordinate order is longitude, latitude
+                    t.setLocationRadius(0);
+                    t.setLocationSource(LocationSource.REPORT);
+                    t.enrich();
+                    
+                    UserEntry u = new UserEntry(screen_name, "", "");
+                    boolean newtweet = DAO.writeMessage(t, u, false);
+                    if (newtweet) newTweet++;
+                    
+                }
+            } catch (IOException | InterruptedException e) {
+                e.printStackTrace();
             }
             return newTweet;
         } catch (FileNotFoundException e) {
@@ -517,7 +596,7 @@ public class DAO {
                     Map<String, Object> map = hit.getSource();
                     MessageEntry tweet = new MessageEntry(map);
                     try {
-                        UserEntry user = users.read(tweet.getUserScreenName());
+                        UserEntry user = users.read(tweet.getScreenName());
                         assert user != null;
                         if (user != null) {
                             timeline.addTweet(tweet);

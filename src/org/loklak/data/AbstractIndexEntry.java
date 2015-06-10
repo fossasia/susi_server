@@ -58,7 +58,7 @@ public abstract class AbstractIndexEntry implements IndexEntry {
     
     // helper methods to write json
     
-    final static DateTimeFormatter utcFormatter = ISODateTimeFormat.dateTime().withZoneUTC();
+    public final static DateTimeFormatter utcFormatter = ISODateTimeFormat.dateTime().withZoneUTC();
     
     public static void writeDate(JsonGenerator json, String fieldName, long time) throws IOException {
         json.writeObjectField(fieldName, utcFormatter.print(time));
@@ -66,13 +66,19 @@ public abstract class AbstractIndexEntry implements IndexEntry {
     
     public static void writeArray(JsonGenerator json, String fieldName, Collection<String> array) throws IOException {
         json.writeArrayFieldStart(fieldName);
-        for (String image: array) json.writeObject(image);
+        for (String o: array) json.writeObject(o);
         json.writeEndArray();
     }
     
     public static void writeArray(JsonGenerator json, String fieldName, String[] array) throws IOException {
         json.writeArrayFieldStart(fieldName);
-        for (String image: array) json.writeObject(image);
+        for (String o: array) json.writeObject(o);
+        json.writeEndArray();
+    }
+    
+    public static void writeArray(JsonGenerator json, String fieldName, double[] array) throws IOException {
+        json.writeArrayFieldStart(fieldName);
+        for (double o: array) json.writeObject(o);
         json.writeEndArray();
     }
     
@@ -106,7 +112,18 @@ public abstract class AbstractIndexEntry implements IndexEntry {
     
     @SuppressWarnings("unchecked")
     public static ArrayList<String> parseArrayList(Object l) {
-        assert l instanceof ArrayList<?>;
-        return l == null ? new ArrayList<String>(0) : (ArrayList<String>) l;
+        assert l == null || l instanceof String  || l instanceof String[] || l instanceof ArrayList<?>;
+        if (l == null) return new ArrayList<String>(0);
+        if (l instanceof String) {
+            ArrayList<String> a = new ArrayList<>();
+            a.add((String) l);
+            return a;
+        }
+        if (l instanceof String[]) {
+            ArrayList<String> a = new ArrayList<>();
+            for (String s: ((String[]) l)) a.add(s);
+            return a;
+        }
+        return (ArrayList<String>) l;
     }
 }

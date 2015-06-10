@@ -55,7 +55,7 @@ public class Timeline implements Iterable<MessageEntry> {
     }
     
     public void addTweet(MessageEntry tweet) {
-        this.tweets.put(Long.toHexString(tweet.getCreatedAtDate().getTime()) + "_" + tweet.getIdStr(), tweet);
+        this.tweets.put(Long.toHexString(tweet.getCreatedAt().getTime()) + "_" + tweet.getIdStr(), tweet);
     }
 
     protected UserEntry getUser(String user_screen_name) {
@@ -63,7 +63,7 @@ public class Timeline implements Iterable<MessageEntry> {
     }
     
     public UserEntry getUser(MessageEntry fromTweet) {
-        return this.users.get(fromTweet.getUserScreenName());
+        return this.users.get(fromTweet.getScreenName());
     }
     
     public void putAll(Timeline other) {
@@ -95,7 +95,7 @@ public class Timeline implements Iterable<MessageEntry> {
             json.writeEndObject(); // of search_metadata
             json.writeArrayFieldStart("statuses");
             for (MessageEntry t: this) {
-                UserEntry u = this.users.get(t.getUserScreenName());
+                UserEntry u = this.users.get(t.getScreenName());
                 t.toJSON(json, u, withEnrichedData);
             }
             json.writeEndArray();
