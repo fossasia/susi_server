@@ -62,6 +62,7 @@
             <li><a href="#peers">/api/peers.json</a></li>
             <li><a href="#push">/api/push.json</a></li>
             <li><a href="#account">/api/account.json</a></li>
+            <li><a href="#markdown">/vis/markdown.png</a></li>
           </ul>
         </div>
         <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
@@ -360,6 +361,25 @@
 <li><a href="http://localhost:9000/api/account.json?action=update&data={%22screen_name%22:%22test%22,%22apps%22:{%22wall%22:{%22type%22:%22horizontal%22}}}">http://localhost:9000/api/account.json?action=update&data={"screen_name":"test","apps":{"wall":{"type":"horizontal"}}}</a></li>
 </ul>
 </p>
+
+
+		  <br id="markdown"/><br/>
+          <h2 class="sub-header">/vis/markdown.png</h2>
+          <p>This servlet provides an image with text on it. It shall be used to attach large texts to tweets. The servlet can be called with POST and GET html requests, however it is recommended to call this using POST to be able to attach large texts. The request properties are:</p>
+          <ul class="request">
+			<li><div class="tabcol1">text</div><div class="tabcol2">&nbsp;=&nbsp;&lt;text to be printed, markdown possible&gt;</div>// the image size adopts automatically</li>
+			<li><div class="tabcol1">color_text</div><div class="tabcol2">&nbsp;=&nbsp;&lt;text color&gt;</div>// 6-character hex code for the color</li>
+			<li><div class="tabcol1">color_background</div><div class="tabcol2">&nbsp;=&nbsp;&lt;background color&gt;</div>// 6-character hex code for the color</li>
+			<li><div class="tabcol1">padding</div><div class="tabcol2">&nbsp;=&nbsp;&lt;space around text&gt;</div>// this is an integer number of the pixels</li>
+			<li><div class="tabcol1">uppercase</div><div class="tabcol2">&nbsp;=&nbsp;&lt;true|false&gt; by default true</div>// if true the text is printed UPPERCASE</li>
+          </ul>
+          
+          <p>The servlet can produce also gif and jpg images, just change the extension of the servlet path.</p>
+
+<p>Here is an example:
+<ul class="request">
+<li><a href="http://localhost:9000/vis/markdown.png?text=hello%20world%0Dhello%20universe&color_text=000000&color_background=ffffff&padding=3">http://localhost:9000/vis/markdown.png?text=hello%20world%0Dhello%20universe&color_text=000000&color_background=ffffff&padding=3</a></li>
+</ul></p>
 
 
           <br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/>
