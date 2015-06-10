@@ -323,6 +323,7 @@ public class DAO {
         try {
             int newTweet = 0;
             InputStream is = new BufferedInputStream(new FileInputStream(dumpFile));
+            Date commonCreationDate = new Date();
             try {
                 GeoJsonReader reader = new GeoJsonReader(is, Runtime.getRuntime().availableProcessors() * 2 + 1);
                 new Thread(reader).start();
@@ -335,7 +336,7 @@ public class DAO {
                     try {url = new URL(feature.properties.get("url"));} catch (MalformedURLException e) {}
                     
                     MessageEntry t = new MessageEntry();
-                    t.setCreatedAt(new Date());
+                    t.setCreatedAt(commonCreationDate);
                     t.setSourceType(SourceType.IMPORT);
                     t.setProviderType(ProviderType.GENERIC);
                     t.setProviderHash(provider_hash);
