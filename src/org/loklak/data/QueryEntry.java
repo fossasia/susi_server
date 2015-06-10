@@ -222,11 +222,11 @@ public class QueryEntry extends AbstractIndexEntry implements IndexEntry {
             json.writeObjectField("query_length", this.query_length);
             json.writeObjectField("source_type", this.source_type);
             json.writeObjectField("timezoneOffset", this.timezoneOffset);
-            writeDate(json, "query_first", this.query_first.getTime());
-            writeDate(json, "query_last", this.query_last.getTime());
-            writeDate(json, "retrieval_last", this.retrieval_last.getTime());
-            writeDate(json, "retrieval_next", this.retrieval_next.getTime());
-            writeDate(json, "expected_next", this.expected_next.getTime());
+            if (this.query_first != null) writeDate(json, "query_first", this.query_first.getTime());
+            if (this.query_last != null) writeDate(json, "query_last", this.query_last.getTime());
+            if (this.retrieval_last != null) writeDate(json, "retrieval_last", this.retrieval_last.getTime());
+            if (this.retrieval_next != null) writeDate(json, "retrieval_next", this.retrieval_next.getTime());
+            if (this.expected_next != null) writeDate(json, "expected_next", this.expected_next.getTime());
             json.writeObjectField("query_count", this.query_count);
             json.writeObjectField("retrieval_count", this.retrieval_count);
             json.writeObjectField("message_period", this.message_period);
