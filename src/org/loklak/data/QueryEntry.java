@@ -336,19 +336,26 @@ public class QueryEntry extends AbstractIndexEntry implements IndexEntry {
                 if (t.length() == 0) continue;
                 if (t.startsWith("@")) {
                     users_positive.add(t.substring(1));
+                    continue;
                 } else if (t.startsWith("-@")) {
                     users_negative.add(t.substring(2));
+                    continue;
                 } else if (t.startsWith("#")) {
                     hashtags_positive.add(t.substring(1));
+                    continue;
                 } else if (t.startsWith("-#")) {
                     hashtags_negative.add(t.substring(2));
+                    continue;
                 } else if (t.startsWith("/")) {
                     constraints_positive.add(t.substring(1));
+                    continue;
                 } else if (t.startsWith("-/")) {
                     constraints_negative.add(t.substring(2));
+                    continue;
                 } else if (t.indexOf(':') > 0) {
                     int p = t.indexOf(':');
                     modifier.put(t.substring(0, p).toLowerCase(), t.substring(p + 1));
+                    continue;
                 } else {
                     // patch characters that will confuse elasticsearch or have a different meaning
                     boolean negative = t.startsWith("-");
@@ -359,6 +366,7 @@ public class QueryEntry extends AbstractIndexEntry implements IndexEntry {
                     } else {
                         if (negative) text_negative_match.add(t); else text_positive_match.add(t);
                     }
+                    continue;
                 }
             }
             if (modifier.containsKey("to")) users_positive.add(modifier.get("to"));
@@ -371,8 +379,8 @@ public class QueryEntry extends AbstractIndexEntry implements IndexEntry {
             for (String text: text_negative_filter) query = QueryBuilders.filteredQuery(query, FilterBuilders.notFilter(FilterBuilders.termsFilter("text", text)));
             for (String user: users_positive) query = QueryBuilders.filteredQuery(query, FilterBuilders.inFilter("mentions", user));
             for (String user: users_negative) query = QueryBuilders.filteredQuery(query, FilterBuilders.notFilter(FilterBuilders.inFilter("mentions", user)));
-            for (String hashtag: hashtags_positive) QueryBuilders.filteredQuery(query, FilterBuilders.inFilter("hashtags", hashtag.toLowerCase()));
-            for (String hashtag: hashtags_negative) QueryBuilders.filteredQuery(query, FilterBuilders.notFilter(FilterBuilders.inFilter("hashtags", hashtag.toLowerCase())));
+            for (String hashtag: hashtags_positive) query = QueryBuilders.filteredQuery(query, FilterBuilders.inFilter("hashtags", hashtag.toLowerCase()));
+            for (String hashtag: hashtags_negative) query = QueryBuilders.filteredQuery(query, FilterBuilders.notFilter(FilterBuilders.inFilter("hashtags", hashtag.toLowerCase())));
             if (modifier.containsKey("id")) ((BoolQueryBuilder) query).must(QueryBuilders.termQuery("id_str", modifier.get("id")));
             if (modifier.containsKey("-id")) ((BoolQueryBuilder) query).mustNot(QueryBuilders.termQuery("id_str", modifier.get("-id")));
             if (modifier.containsKey("from")) ((BoolQueryBuilder) query).must(QueryBuilders.termQuery("screen_name", modifier.get("from")));
