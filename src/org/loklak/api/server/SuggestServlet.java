@@ -39,6 +39,8 @@ import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.util.DefaultPrettyPrinter;
 import com.fasterxml.jackson.core.util.MinimalPrettyPrinter;
 
+// test suggestions with http://localhost:9000/api/suggest.json?q=beer&orderby=query_count&order=desc
+
 public class SuggestServlet extends HttpServlet {
    
     private static final long serialVersionUID = 8578478303032749879L;
