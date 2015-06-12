@@ -455,7 +455,7 @@ public class DAO {
 
             // check if user exists in index
             if (!users.exists(u.getScreenName())) {
-                users.writeEntry(u.getScreenName(), t.getSourceType().name(), u);
+                writeUser(u, t.getSourceType().name());
             }
 
             // record tweet into text file
@@ -473,6 +473,23 @@ public class DAO {
 
             // record tweet into search index
             messages.writeEntry(t.getIdStr(), t.getSourceType().name(), t);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return true;
+    }
+    
+    /**
+     * Store an user into the search index
+     * This method is synchronized to prevent concurrent IO caused by this call.
+     * @param a an account 
+     * @param u a user
+     * @return true if the record was stored because it did not exist, false if it was not stored because the record existed already
+     */
+    public synchronized static boolean writeUser(UserEntry u, String source_type) {
+        try {
+            // record user into search index
+            users.writeEntry(u.getScreenName(), source_type, u);
         } catch (IOException e) {
             e.printStackTrace();
         }

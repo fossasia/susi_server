@@ -44,6 +44,7 @@ public class UserFactory extends AbstractIndexFactory<UserEntry> implements Inde
                     .startObject("appearance_latest").field("type","date").field("format","dateOptionalTime").field("include_in_all","false").field("doc_values", true).endObject()
                     .startObject("profile_image_url_http").field("type","string").field("index","not_analyzed").field("include_in_all","false").field("doc_values", true).endObject()
                     .startObject("profile_image_url_https").field("type","string").field("index","not_analyzed").field("include_in_all","false").field("doc_values", true).endObject()
+                    .startObject("profile_image").field("type","binary").field("index","no").field("include_in_all","false").endObject() // base64 of the image if available
                   .endObject()
                 .endObject();
             return mapping;

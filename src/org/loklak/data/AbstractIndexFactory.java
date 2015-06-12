@@ -86,11 +86,11 @@ public abstract class AbstractIndexFactory<Entry extends IndexEntry> implements 
     }
     
     protected static Map<String, Object> getMap(GetResponse response) {
-        Map<String, Object> map;
+        Map<String, Object> map = null;
         if (response.isExists() && (map = response.getSourceAsMap()) != null) {
-            return map;
+            map.put("$type", response.getType());
         }
-        return null;
+        return map;
     }
     
 

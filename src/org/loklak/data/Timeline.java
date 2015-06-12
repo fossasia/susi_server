@@ -68,7 +68,11 @@ public class Timeline implements Iterable<MessageEntry> {
     
     public void putAll(Timeline other) {
         for (MessageEntry t: other) this.addTweet(t);
-        this.users.putAll(other.users);
+        for (Map.Entry<String, UserEntry> u: other.users.entrySet()) {
+            if (!this.users.containsKey(u.getKey()) || u.getValue().containsProfileImage()) {
+                this.users.put(u.getKey(), u.getValue());
+            }
+        }
     }
     
     public MessageEntry getOldestTweet() {

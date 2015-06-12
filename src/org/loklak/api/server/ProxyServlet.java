@@ -30,6 +30,8 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.loklak.api.client.ClientConnection;
 import org.loklak.api.server.RemoteAccess;
+import org.loklak.data.DAO;
+import org.loklak.data.UserEntry;
 import org.loklak.tools.Cache;
 
 public class ProxyServlet extends HttpServlet {
@@ -66,7 +68,17 @@ public class ProxyServlet extends HttpServlet {
         
         if (url.length() == 0 || screen_name.length() == 0) {response.sendError(503, "attributes url and screen_name must be submitted"); return;}
 
+        // read the buffer
+        UserEntry user = null;
         byte[] buffer = cache.get(url);
+        if (buffer == null && isProfileImage(url)) {
+            // try to read it from the user profiles
+            user = DAO.searchLocalUser(screen_name);
+            if (user != null) {
+                buffer = user.getProfileImage();
+            }
+        }
+        
         if (buffer == null) {            
             try {
                 ClientConnection connection = new ClientConnection(url);
@@ -78,7 +90,14 @@ public class ProxyServlet extends HttpServlet {
                 } catch (IOException e) {}
                 connection.close();
                 buffer = baos.toByteArray();
-                cache.put(url, buffer);
+                
+                // write the buffer
+                if (user != null && user.getType().length() > 0) {
+                    user.setProfileImage(buffer);
+                    DAO.writeUser(user, user.getType());
+                } else {
+                    cache.put(url, buffer);
+                }
             } catch (IOException e) {
                 response.sendError(503, "resource not available"); return;
             }
@@ -91,5 +110,9 @@ public class ProxyServlet extends HttpServlet {
 
         ServletOutputStream sos = response.getOutputStream();
         sos.write(buffer);
+    }
+    
+    private boolean isProfileImage(String url) {
+        return url.indexOf("pbs.twimg.com/profile_images") > 0 && url.endsWith("_bigger.png");
     }
 }
