@@ -43,6 +43,10 @@ public class Cache<K,V> {
         }
     }
     
+    public boolean full() {
+        return this.map.size() >= this.maxSize;
+    }
+    
     public V put(K key, V value) {
         V oldval;
         synchronized (this.map) {

@@ -58,14 +58,11 @@ public class ProxyServlet extends HttpServlet {
     // http://localhost:9000/api/proxy.png?screen_name=loklak_app&url=https://pbs.twimg.com/profile_images/577512240640733184/fizL4YIn_bigger.png
     
     protected void process(HttpServletRequest request, HttpServletResponse response, RemoteAccess.Post post) throws ServletException, IOException {
-        // manage DoS
-        if (post.isDoS_blackout()) {response.sendError(503, "your request frequency is too high"); return;}
-        if (!post.isLocalhostAccess()) {response.sendError(503, "access only allowed from localhost"); return;}
         
         // parse arguments
         String url = post.get("url", "");
         String screen_name = post.get("screen_name", "");
-        if (screen_name.length() == 0 && url.length() == 0) {
+        if (screen_name.length() == 0 && (url.length() == 0 || screen_name.indexOf("twimg.com") < 0)) {
             response.sendError(503, "either attributes url or screen_name or both must be submitted"); return;
         }
         
@@ -79,11 +76,13 @@ public class ProxyServlet extends HttpServlet {
                 user = DAO.searchLocalUser(screen_name);
                 if (user != null) {
                     buffer = user.getProfileImage();
+                    if (url.length() == 0) url = user.getProfileImageUrl();
+                    cache.put(user.getProfileImageUrl(), buffer);
                 }
             }
         }
         
-        if (buffer == null && url.length() > 0) {            
+        if (buffer == null && url.length() > 0) {
             try {
                 ClientConnection connection = new ClientConnection(url);
                 ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -96,9 +95,10 @@ public class ProxyServlet extends HttpServlet {
                 buffer = baos.toByteArray();
                 
                 // write the buffer
-                if (user != null && user.getType().length() > 0) {
+                if (user != null && user.getType().length() > 0 && url.equals(user.getProfileImageUrl())) {
                     user.setProfileImage(buffer);
                     DAO.writeUser(user, user.getType());
+                    if (!cache.full()) cache.put(url, buffer);
                 } else {
                     cache.put(url, buffer);
                 }
@@ -119,7 +119,7 @@ public class ProxyServlet extends HttpServlet {
 
         if (url.endsWith(".png") || (url.length() == 0 && request.getServletPath().endsWith(".png"))) post.setResponse(response, "image/png");
         else if (url.endsWith(".gif") || (url.length() == 0 && request.getServletPath().endsWith(".gif"))) post.setResponse(response, "image/gif");
-        else if (url.endsWith(".jpg") || (url.length() == 0 && request.getServletPath().endsWith(".jpg"))) post.setResponse(response, "image/jpeg");
+        else if (url.endsWith(".jpg") || url.endsWith(".jpeg") || (url.length() == 0 && request.getServletPath().endsWith(".jpg"))) post.setResponse(response, "image/jpeg");
         else post.setResponse(response, "application/octet-stream");
 
         ServletOutputStream sos = response.getOutputStream();
