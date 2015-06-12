@@ -34,7 +34,7 @@ import java.util.concurrent.Semaphore;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.loklak.api.client.ClientHelper;
+import org.loklak.api.client.ClientConnection;
 import org.loklak.data.DAO;
 import org.loklak.data.ProviderType;
 import org.loklak.data.Timeline;
@@ -65,15 +65,15 @@ public class TwitterScraper {
         } catch (UnsupportedEncodingException e) {}
         Timeline timeline = null;
         try {
-            BufferedReader br = ClientHelper.getConnection(https_url);
-            if (br == null) return null;
+            ClientConnection connection = new ClientConnection(https_url);
+            if (connection.reader == null) return null;
             try {
-                timeline = search(br);
+                timeline = search(connection.reader);
             } catch (IOException e) {
                e.printStackTrace();
             } finally {
                 try {
-                    br.close();
+                    connection.reader.close();
                 } catch (IOException e) {
                     e.printStackTrace();
                 }

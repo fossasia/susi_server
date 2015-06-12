@@ -19,7 +19,6 @@
 
 package org.loklak.api.client;
 
-import java.io.BufferedReader;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
@@ -47,8 +46,8 @@ public class PushClient {
             Map<String, byte[]> post = new HashMap<String, byte[]>();
             post.put("data", UTF8.getBytes(data)); // optionally implement a gzipped form here
             try {
-                BufferedReader br = ClientHelper.postConnection(hoststub + "/api/push.json", post);
-                br.close();
+                ClientConnection connection = new ClientConnection(hoststub + "/api/push.json", post);
+                connection.reader.close();
                 transmittedToAtLeastOnePeer = true;
             } catch (IOException e) {
                 e.printStackTrace();

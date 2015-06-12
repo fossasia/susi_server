@@ -26,6 +26,7 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.List;
 import java.util.Map;
 
 import org.loklak.LoklakServer;
@@ -34,31 +35,40 @@ import org.loklak.tools.UTF8;
 /**
  * Helper class to provide BufferedReader Objects for get and post connections
  */
-public class ClientHelper {
+public class ClientConnection {
 
     private static final String CRLF = "\r\n";
     private static final String HYPHENS = "--";
     private static final String CHARSET = "UTF-8";
     private static final String BOUNDARY =  "*****" + Long.toString(System.currentTimeMillis()); // pseudo-random boundary string
+
+    public int status;
+    public BufferedReader reader;
+    public Map<String, List<String>> header;
     
-    public static BufferedReader getConnection(String urlstring) throws IOException {
+    public ClientConnection(String urlstring) throws IOException {
         URL url = new URL(urlstring);
         HttpURLConnection con = (HttpURLConnection) url.openConnection();
         con.setReadTimeout(10000 /* milliseconds */);
         con.setConnectTimeout(15000 /* milliseconds */);
         con.setRequestMethod("GET");
+        con.setUseCaches(false);
+        con.setDoOutput(true);
         con.setDoInput(true);
         con.setRequestProperty("User-Agent", LoklakServer.USER_AGENT);
+        con.setRequestProperty("Connection", "Keep-Alive");
+        con.setRequestProperty("Cache-Control", "no-cache");
         con.connect();
-        int status = con.getResponseCode();
+        this.status = con.getResponseCode();
         if (status == HttpURLConnection.HTTP_OK) {
-            return new BufferedReaderConnection(new InputStreamReader(con.getInputStream(), UTF8.charset), con);
+            this.reader = new BufferedReaderConnection(new InputStreamReader(con.getInputStream(), UTF8.charset), con);
+            this.header = con.getHeaderFields();
         } else {
             throw new IOException("server fail: " + status + ": " + con.getResponseMessage());
         }
     }
     
-    public static BufferedReader postConnection(String urlstring, Map<String, byte[]> map) throws IOException {
+    public ClientConnection(String urlstring, Map<String, byte[]> map) throws IOException {
         // This may be done actually more elegant using the apache hc library.
         // However, this is sufficient and not too bloated to send http POST 'manually'
         // (there is no other way when using only core java classes)
@@ -80,7 +90,21 @@ public class ClientHelper {
             formEntry(os, entry.getKey(), entry.getValue());
         }
         // finish and return response
-        return finish(os, con);
+        this.status = con.getResponseCode();
+        if (status == HttpURLConnection.HTTP_OK) {
+            this.header = con.getHeaderFields();
+            this.reader = finish(os, con);
+        } else {
+            throw new IOException("server fail: " + status + ": " + con.getResponseMessage());
+        }
+    }
+    
+    public void close() {
+        try {
+            this.reader.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
     
     private static void formEntry(DataOutputStream os, String key, byte[] value) throws IOException {

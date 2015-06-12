@@ -19,7 +19,6 @@
 
 package org.loklak.api.client;
 
-import java.io.BufferedReader;
 import java.io.IOException;
 
 public class HelloClient {
@@ -28,8 +27,8 @@ public class HelloClient {
         for (String hoststub: hoststubs) {
             if (hoststub.endsWith("/")) hoststub = hoststub.substring(0, hoststub.length() - 1);
             try {
-                BufferedReader br = ClientHelper.getConnection(hoststub + "/api/hello.json?port.http=" + httpport + "&port.https=" + httpsport + "&peername=" + peername);
-                br.close();
+                ClientConnection connection = new ClientConnection(hoststub + "/api/hello.json?port.http=" + httpport + "&port.https=" + httpsport + "&peername=" + peername);
+                connection.reader.close();
             } catch (IOException e) {
             }
         }
