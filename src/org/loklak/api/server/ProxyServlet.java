@@ -65,21 +65,25 @@ public class ProxyServlet extends HttpServlet {
         // parse arguments
         String url = post.get("url", "");
         String screen_name = post.get("screen_name", "");
+        if (screen_name.length() == 0 && url.length() == 0) {
+            response.sendError(503, "either attributes url or screen_name or both must be submitted"); return;
+        }
         
-        if (url.length() == 0 || screen_name.length() == 0) {response.sendError(503, "attributes url and screen_name must be submitted"); return;}
-
-        // read the buffer
+        byte[] buffer = null;
         UserEntry user = null;
-        byte[] buffer = cache.get(url);
-        if (buffer == null && isProfileImage(url)) {
-            // try to read it from the user profiles
-            user = DAO.searchLocalUser(screen_name);
-            if (user != null) {
-                buffer = user.getProfileImage();
+        
+        if (screen_name.length() > 0) {
+            buffer = cache.get(url);
+            if (buffer == null && (url.length() == 0 || isProfileImage(url))) {
+                // try to read it from the user profiles
+                user = DAO.searchLocalUser(screen_name);
+                if (user != null) {
+                    buffer = user.getProfileImage();
+                }
             }
         }
         
-        if (buffer == null) {            
+        if (buffer == null && url.length() > 0) {            
             try {
                 ClientConnection connection = new ClientConnection(url);
                 ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -102,10 +106,20 @@ public class ProxyServlet extends HttpServlet {
                 response.sendError(503, "resource not available"); return;
             }
         }
+        
+        if (buffer == null) {
+            if (screen_name.length() == 0) {
+                response.sendError(503, "url cannot be loaded"); return;
+            }
+            if (url.length() == 0) {
+                response.sendError(503, "user cannot be found"); return;
+            }
+            response.sendError(503, "url cannot be loaded and user cannot be found"); return;
+        }
 
-        if (url.endsWith(".png")) post.setResponse(response, "image/png");
-        else if (url.endsWith(".gif")) post.setResponse(response, "image/gif");
-        else if (url.endsWith(".jpg")) post.setResponse(response, "image/jpeg");
+        if (url.endsWith(".png") || (url.length() == 0 && request.getServletPath().endsWith(".png"))) post.setResponse(response, "image/png");
+        else if (url.endsWith(".gif") || (url.length() == 0 && request.getServletPath().endsWith(".gif"))) post.setResponse(response, "image/gif");
+        else if (url.endsWith(".jpg") || (url.length() == 0 && request.getServletPath().endsWith(".jpg"))) post.setResponse(response, "image/jpeg");
         else post.setResponse(response, "application/octet-stream");
 
         ServletOutputStream sos = response.getOutputStream();
