@@ -47,7 +47,7 @@ public class PushClient {
             post.put("data", UTF8.getBytes(data)); // optionally implement a gzipped form here
             try {
                 ClientConnection connection = new ClientConnection(hoststub + "/api/push.json", post);
-                connection.reader.close();
+                connection.close();
                 transmittedToAtLeastOnePeer = true;
             } catch (IOException e) {
                 e.printStackTrace();

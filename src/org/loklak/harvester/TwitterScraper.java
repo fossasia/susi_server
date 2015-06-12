@@ -21,6 +21,7 @@ package org.loklak.harvester;
 
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -40,6 +41,7 @@ import org.loklak.data.ProviderType;
 import org.loklak.data.Timeline;
 import org.loklak.data.MessageEntry;
 import org.loklak.data.UserEntry;
+import org.loklak.tools.UTF8;
 
 public class TwitterScraper {
 
@@ -66,17 +68,14 @@ public class TwitterScraper {
         Timeline timeline = null;
         try {
             ClientConnection connection = new ClientConnection(https_url);
-            if (connection.reader == null) return null;
+            if (connection.inputStream == null) return null;
             try {
-                timeline = search(connection.reader);
+                BufferedReader br = new BufferedReader(new InputStreamReader(connection.inputStream, UTF8.charset));
+                timeline = search(br);
             } catch (IOException e) {
                e.printStackTrace();
             } finally {
-                try {
-                    connection.reader.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
+                connection.close();
             }
         } catch (IOException e) {
             // this could mean that twitter rejected the connection (DoS protection?)
