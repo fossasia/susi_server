@@ -19,8 +19,9 @@
 
 package org.loklak.data;
 
+import org.elasticsearch.common.Base64;
+
 import java.io.IOException;
-import java.util.Base64;
 import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -82,11 +83,15 @@ public class UserEntry extends AbstractIndexEntry implements IndexEntry {
     public byte[] getProfileImage() {
         Object image = this.map.get(field_profile_image);
         if (image == null) return null;
-        return Base64.getDecoder().decode((String) image);
+        try {
+            return Base64.decode((String) image);
+        } catch (IOException e) {
+            return null;
+        }
     }
 
     public void setProfileImage(byte[] image) {
-        this.map.put(field_profile_image, Base64.getEncoder().encodeToString(image));
+        this.map.put(field_profile_image, Base64.encodeBytes(image));
     }
 
     public Date getAppearanceFirst() {
