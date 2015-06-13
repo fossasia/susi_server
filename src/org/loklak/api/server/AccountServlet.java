@@ -1,6 +1,6 @@
 /**
- *  SuggestServlet
- *  Copyright 29.04.2015 by Michael Peter Christen, @0rb1t3r
+ *  AccountServlet
+ *  Copyright 27.05.2015 by Michael Peter Christen, @0rb1t3r
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -57,6 +57,7 @@ public class AccountServlet extends HttpServlet {
      
         // manage DoS
         if (post.isDoS_blackout()) {response.sendError(503, "your request frequency is too high"); return;}
+        if (!post.isLocalhostAccess()) {response.sendError(503, "access only allowed from localhost"); return;}
         
         // security
         boolean local = post.isLocalhostAccess();
