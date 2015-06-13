@@ -45,6 +45,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Random;
+import java.util.Set;
 import java.util.TimeZone;
 import java.util.TreeSet;
 import java.util.concurrent.BlockingQueue;
@@ -120,7 +121,7 @@ public class DAO {
     private static MessageFactory messages;
     private static QueryFactory queries;
     private static BlockingQueue<Timeline> newMessageTimelines = new LinkedBlockingQueue<Timeline>();
-    private static Properties config = new Properties();
+    private static Map<String, String> config = new HashMap<>();
     
     /**
      * initialize the DAO
@@ -161,7 +162,9 @@ public class DAO {
             
             // load the config file(s);
             conf_dir = new File("conf");
-            config.load(new FileInputStream(new File(conf_dir, "config.properties")));
+            Properties prop = new Properties();
+            prop.load(new FileInputStream(new File(conf_dir, "config.properties")));
+            for (Map.Entry<Object, Object> entry: prop.entrySet()) config.put((String) entry.getKey(), (String) entry.getValue());
             settings_dir = new File(datadir, "settings");
             settings_dir.mkdirs();
             customized_config = new File(settings_dir, "customized_config.properties");
@@ -172,13 +175,13 @@ public class DAO {
             }
             Properties customized_config_props = new Properties();
             customized_config_props.load(new FileInputStream(customized_config));
-            config.putAll(customized_config_props);
+            for (Map.Entry<Object, Object> entry: customized_config_props.entrySet()) config.put((String) entry.getKey(), (String) entry.getValue());
             
             // use all config attributes with a key starting with "elasticsearch." to set elasticsearch settings
             Builder builder = ImmutableSettings.settingsBuilder();
-            for (Map.Entry<Object, Object> entry: config.entrySet()) {
-                String key = (String) entry.getKey();
-                if (key.startsWith("elasticsearch.")) builder.put(key.substring(14), (String) entry.getValue());
+            for (Map.Entry<String, String> entry: config.entrySet()) {
+                String key = entry.getKey();
+                if (key.startsWith("elasticsearch.")) builder.put(key.substring(14), entry.getValue());
             }
 
             // start elasticsearch
@@ -391,17 +394,17 @@ public class DAO {
      * @return
      */
     public static String getConfig(String key, String default_val) {
-        String value = config.getProperty(key);
+        String value = config.get(key);
         return value == null ? default_val : value;
     }
     
     public static String[] getConfig(String key, String[] default_val, String delim) {
-        String value = config.getProperty(key);
+        String value = config.get(key);
         return value == null || value.length() == 0 ? default_val : value.split(delim);
     }
     
     public static long getConfig(String key, long default_val) {
-        String value = config.getProperty(key);
+        String value = config.get(key);
         try {
             return value == null ? default_val : Long.parseLong(value);
         } catch (NumberFormatException e) {
@@ -410,8 +413,12 @@ public class DAO {
     }
     
     public static boolean getConfig(String key, boolean default_val) {
-        String value = config.getProperty(key);
+        String value = config.get(key);
         return value == null ? default_val : value.equals("true") || value.equals("on") || value.equals("1");
+    }
+    
+    public static Set<String> getConfigKeys() {
+        return config.keySet();
     }
     
     public static void transmitTimeline(Timeline tl) {

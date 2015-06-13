@@ -47,6 +47,7 @@ import org.loklak.api.server.PeersServlet;
 import org.loklak.api.server.ProxyServlet;
 import org.loklak.api.server.PushServlet;
 import org.loklak.api.server.SearchServlet;
+import org.loklak.api.server.SettingsServlet;
 import org.loklak.api.server.StatusServlet;
 import org.loklak.api.server.SuggestServlet;
 import org.loklak.api.server.AccountServlet;
@@ -123,6 +124,7 @@ public class LoklakServer {
         servletHandler.addServlet(SuggestServlet.class, "/api/suggest.json");
         servletHandler.addServlet(AccountServlet.class, "/api/account.json");
         servletHandler.addServlet(CampaignServlet.class, "/api/campaign.json");
+        servletHandler.addServlet(SettingsServlet.class, "/api/settings.json");
         servletHandler.addServlet(ProxyServlet.class, "/api/proxy.gif");
         servletHandler.addServlet(ProxyServlet.class, "/api/proxy.png");
         servletHandler.addServlet(ProxyServlet.class, "/api/proxy.jpg");
