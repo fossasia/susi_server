@@ -110,7 +110,7 @@ public class DAO {
     public final static int CACHE_MAXSIZE = 10000;
     
     public  static File conf_dir;
-    private static File external_data, geoJson_import, geoJson_imported;
+    private static File external_data, geoJson_import, geoJson_imported, assets;
     private static File message_dump_dir, message_dump_dir_own, message_dump_dir_import, message_dump_dir_imported;
     private static File settings_dir, customized_config;
     private static RandomAccessFile messagelog, accountlog;
@@ -130,6 +130,7 @@ public class DAO {
     public static void init(File datadir) {
         try {
             // create and document the data dump dir
+            assets = new File(datadir, "assets");
             external_data = new File(datadir, "external");
             geoJson_import = new File(new File(external_data, "geojson"), "import");
             geoJson_imported = new File(new File(external_data, "geojson"), "imported");
@@ -208,6 +209,13 @@ public class DAO {
         } catch (Throwable e) {
             e.printStackTrace();
         }
+    }
+    
+    public static File getAssetFile(String screen_name, String id_str, String file) {
+        String letter0 = ("" + screen_name.charAt(0)).toLowerCase();
+        String letter1 = ("" + screen_name.charAt(1)).toLowerCase();
+        File storage_path = new File(new File(new File(assets, letter0), letter1), screen_name);
+        return new File(storage_path, id_str + "_" + file); // all assets for one user in one file
     }
     
     private static File getCurrentDump(File path, String prefix) {
