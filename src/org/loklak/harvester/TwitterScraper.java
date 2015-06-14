@@ -109,7 +109,7 @@ public class TwitterScraper {
         boolean parsing_favourite = false, parsing_retweet = false;
         while ((input = br.readLine()) != null){
             input = input.trim();
-            System.out.println(input); // uncomment temporary to debug or add new fields
+            //System.out.println(input); // uncomment temporary to debug or add new fields
             int p;
             if ((p = input.indexOf("class=\"avatar")) > 0) {
                 props.put("useravatarurl", new prop(input, p, "src"));

@@ -117,7 +117,10 @@ public class MessageEntry extends AbstractIndexEntry implements IndexEntry {
         }
         this.retweet_count = parseLong((Number) map.get("retweet_count"));
         this.favourites_count = parseLong((Number) map.get("favourites_count"));
+        this.texts = parseArrayList(map.get("texts"));
         this.images = parseArrayList(map.get("images"));
+        this.audio = parseArrayList(map.get("audio"));
+        this.videos = parseArrayList(map.get("videos"));
         this.place_id = parseString((String) map.get("place_id"));
         this.place_name = parseString((String) map.get("place_name"));
         
@@ -375,6 +378,13 @@ public class MessageEntry extends AbstractIndexEntry implements IndexEntry {
 
         this.links = new String[links.size()];
         for (int i = 0; i < links.size(); i++) this.links[i] = links.get(i);
+        
+        // more media data, analyse the links
+        for (String link: this.links) {
+            if (link.indexOf("vimeo.com") > 0) {this.videos.add(link); continue;}
+            if (link.indexOf("youtube.com") > 0) {this.videos.add(link); continue;}
+            if (link.indexOf("soundcloud.com") > 0) {this.audio.add(link); continue;}
+        }
     }
     
     private static List<String> extract(StringBuilder s, Pattern p, int g) {
