@@ -254,6 +254,10 @@ public class QueryEntry extends AbstractIndexEntry implements IndexEntry {
     public static String removeConstraints(String q) {
         for (String c: constraintFields.keySet()) {
             q = q.replaceAll(" /" + c, "").replaceAll(" -/" + c, "");
+            if (q.startsWith("/" + c) || q.startsWith("-/" + c)) {
+                int r = q.indexOf(' ');
+                if (r < 0) q = ""; else q = q.substring(0, r + 1);
+            }
         }
         return q;
     }

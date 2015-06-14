@@ -93,13 +93,13 @@ public class SearchServlet extends HttpServlet {
                 // start all targets for search concurrently
                 final String queryf = query;
                 final int timezoneOffsetf = timezoneOffset;
-                Thread scraperThread = new Thread() {
+                Thread scraperThread = noConstraintsQuery.length() == 0 ? null : new Thread() {
                     public void run() {
                         Timeline[] twitterTl = DAO.scrapeTwitter(noConstraintsQuery, timezoneOffsetf, true);
                         tl.putAll(noConstraintsQuery.equals(queryf) ? twitterTl[1] : QueryEntry.applyConstraint(twitterTl[1], queryf));
                     }
                 };
-                scraperThread.start();
+                if (scraperThread != null) scraperThread.start();
                 Thread backendThread = new Thread() {
                     public void run() {
                         Timeline backendTl = DAO.searchBackend(queryf, 100, timezoneOffsetf, "cache");
@@ -111,9 +111,9 @@ public class SearchServlet extends HttpServlet {
                 hits = localSearchResult.hits;
                 tl.putAll(localSearchResult.timeline);
                 try {backendThread.join(5000);} catch (InterruptedException e) {}
-                try {scraperThread.join(8000);} catch (InterruptedException e) {}
+                if (scraperThread != null) try {scraperThread.join(8000);} catch (InterruptedException e) {}
             } else {
-                if ("twitter".equals(source)) {
+                if ("twitter".equals(source) && noConstraintsQuery.length() > 0) {
                     Timeline[] twitterTl = DAO.scrapeTwitter(noConstraintsQuery, timezoneOffset, true);
                     tl.putAll(noConstraintsQuery.equals(query) ? twitterTl[0] : QueryEntry.applyConstraint(twitterTl[0], query));
                     // in this case we use all tweets, not only the latest one because it may happen that there are no new and that is not what the user expects
