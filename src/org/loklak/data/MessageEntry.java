@@ -381,8 +381,10 @@ public class MessageEntry extends AbstractIndexEntry implements IndexEntry {
         
         // more media data, analyse the links
         for (String link: this.links) {
+            if (link.endsWith(".mp4") || link.endsWith(".m4v")) {this.videos.add(link); continue;}
             if (link.indexOf("vimeo.com") > 0) {this.videos.add(link); continue;}
             if (link.indexOf("youtube.com") > 0 || link.indexOf("youtu.be") > 0) {this.videos.add(link); continue;}
+            if (link.endsWith(".mp3")) {this.audio.add(link); continue;}
             if (link.indexOf("soundcloud.com") > 0) {this.audio.add(link); continue;}
         }
     }
