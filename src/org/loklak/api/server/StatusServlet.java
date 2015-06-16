@@ -64,6 +64,7 @@ public class StatusServlet extends HttpServlet {
         json.field("client_info");
         json.startObject();
         json.field("RemoteHost", post.getClientHost());
+        json.field("IsLocalhost", post.isLocalhostAccess() ? "true" : "false");
         Enumeration<String> he = request.getHeaderNames();
         while (he.hasMoreElements()) {
             String h = he.nextElement();
