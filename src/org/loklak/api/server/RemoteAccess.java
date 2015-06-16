@@ -251,7 +251,7 @@ public class RemoteAccess {
         try {localhostNames.add(InetAddress.getLocalHost().getCanonicalHostName());} catch (UnknownHostException e) {}
         try {for (InetAddress a: InetAddress.getAllByName(null)) {localhostNames.add(a.getHostAddress()); localhostNames.add(a.getHostName()); localhostNames.add(a.getCanonicalHostName());}} catch (UnknownHostException e) {}
         try {for (InetAddress a: InetAddress.getAllByName("localhost")) {localhostNames.add(a.getHostAddress()); localhostNames.add(a.getHostName()); localhostNames.add(a.getCanonicalHostName());}} catch (UnknownHostException e) {}
-        System.out.println(localhostNames);
+        //System.out.println(localhostNames);
     }
     
     public static boolean isLocalhost(String host) {

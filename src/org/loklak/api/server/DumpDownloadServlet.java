@@ -55,7 +55,7 @@ public class DumpDownloadServlet extends HttpServlet {
             // send directory as html
 
             response.setDateHeader("Last-Modified", now);
-            response.setDateHeader("Expires", now + 600000);
+            response.setDateHeader("Expires", now + 10000);
             response.setContentType("text/html");
             response.setCharacterEncoding("UTF-8");
             response.setStatus(HttpServletResponse.SC_OK);
@@ -77,7 +77,16 @@ public class DumpDownloadServlet extends HttpServlet {
                 long length = dump.length();
                 String size = length < 1024 ? Long.toString(length) : length < 1024 * 1024 ? Long.toString(length / 1024) + "K" : Long.toString(length / 1024 / 1024) + "M";
                 while (size.length() < 5) size = " " + size;
-                writer.write("[txt] <a href=\"" + name + "\">"+ name +"</a>" + space + new Date(dump.lastModified()).toString() + "  " + size + "\n");
+                int d = name.lastIndexOf('.');
+                if (d < 0) writer.write("[   ]"); else {
+                    String ext = name.substring(d + 1);
+                    if (ext.length() > 3) ext = ext.substring(0, 3);
+                    writer.write('[');
+                    writer.write(ext);
+                    for (int i = 0; i < 3 - ext.length(); i++) writer.write(' ');
+                    writer.write(']');
+                }
+                writer.write(" <a href=\"" + name + "\">"+ name +"</a>" + space + new Date(dump.lastModified()).toString() + "  " + size + "\n");
             }
             writer.write("<hr></pre>\n");
             writer.write("<address>this is the message dump download directory</address>\n");
