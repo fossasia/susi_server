@@ -23,12 +23,15 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
+import java.net.InetAddress;
 import java.net.URLDecoder;
+import java.net.UnknownHostException;
 import java.text.ParseException;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import javax.servlet.ServletException;
@@ -237,8 +240,22 @@ public class RemoteAccess {
         return this.peername;
     }
     
+    private static Set<String> localhostNames = new HashSet<>();
+    static {
+        localhostNames.add("0:0:0:0:0:0:0:1");
+        localhostNames.add("fe80:0:0:0:0:0:0:1%1");
+        localhostNames.add("127.0.0.1");
+        localhostNames.add("localhost");
+        try {localhostNames.add(InetAddress.getLocalHost().getHostAddress());} catch (UnknownHostException e) {}
+        try {localhostNames.add(InetAddress.getLocalHost().getHostName());} catch (UnknownHostException e) {}
+        try {localhostNames.add(InetAddress.getLocalHost().getCanonicalHostName());} catch (UnknownHostException e) {}
+        try {for (InetAddress a: InetAddress.getAllByName(null)) {localhostNames.add(a.getHostAddress()); localhostNames.add(a.getHostName()); localhostNames.add(a.getCanonicalHostName());}} catch (UnknownHostException e) {}
+        try {for (InetAddress a: InetAddress.getAllByName("localhost")) {localhostNames.add(a.getHostAddress()); localhostNames.add(a.getHostName()); localhostNames.add(a.getCanonicalHostName());}} catch (UnknownHostException e) {}
+        System.out.println(localhostNames);
+    }
+    
     public static boolean isLocalhost(String host) {
-        return "0:0:0:0:0:0:0:1".equals(host) || "fe80:0:0:0:0:0:0:1%1".equals(host) || "127.0.0.1".equals(host) || "localhost".equals(host);
+        return localhostNames.contains(host);
     }
 
     public static Map<String, String> getQueryMap(String query)   {  
