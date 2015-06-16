@@ -308,7 +308,7 @@ public class DAO {
                         if (user == null) continue;
                         UserEntry u = new UserEntry(user);
                         MessageEntry t = new MessageEntry(tweet);
-                        boolean newtweet = DAO.writeMessage(t, u, false);
+                        boolean newtweet = DAO.writeMessage(t, u, false, true);
                         if (newtweet) newTweet++;
                     } catch (Throwable e) {
                         Log.getLog().warn("cannot parse line \"" + line + "\"", e);
@@ -369,7 +369,7 @@ public class DAO {
                     t.enrich();
                     
                     UserEntry u = new UserEntry(screen_name, "", "");
-                    boolean newtweet = DAO.writeMessage(t, u, false);
+                    boolean newtweet = DAO.writeMessage(t, u, false, false);
                     if (newtweet) newTweet++;
                     
                 }
@@ -457,9 +457,7 @@ public class DAO {
      * @param u a user
      * @return true if the record was stored because it did not exist, false if it was not stored because the record existed already
      */
-    public synchronized static boolean writeMessage(MessageEntry t, UserEntry u, boolean dump) {
-        //assert t != null;
-        //assert u != null;
+    public synchronized static boolean writeMessage(MessageEntry t, UserEntry u, boolean dump, boolean overwriteUser) {
         try {
 
             // check if tweet exists in index
@@ -469,8 +467,15 @@ public class DAO {
                 messages.exists(t.getIdStr())) return false; // we omit writing this again
 
             // check if user exists in index
-            if (!users.exists(u.getScreenName())) {
-                writeUser(u, t.getSourceType().name());
+            if (overwriteUser) {
+                UserEntry oldUser = users.read(u.getScreenName());
+                if (oldUser == null || !oldUser.equals(u)) {
+                    writeUser(u, t.getSourceType().name());
+                }
+            } else {
+                if (!users.exists(u.getScreenName())) {
+                    writeUser(u, t.getSourceType().name());
+                } 
             }
 
             // record tweet into text file
@@ -817,7 +822,7 @@ public class DAO {
             for (MessageEntry t: remoteMessages) {
                 UserEntry u = remoteMessages.getUser(t);
                 assert u != null;
-                boolean newTweet = writeMessage(t, u, true);
+                boolean newTweet = writeMessage(t, u, true, true);
                 if (newTweet) {
                     newMessages.addTweet(t);
                     newMessages.addUser(u);
@@ -868,7 +873,7 @@ public class DAO {
             for (MessageEntry t: tt) {
                 UserEntry u = tt.getUser(t);
                 assert u != null;
-                writeMessage(t, u, true);
+                writeMessage(t, u, true, false);
             }
         }
         return tl;

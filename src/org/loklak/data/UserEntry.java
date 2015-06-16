@@ -117,6 +117,13 @@ public class UserEntry extends AbstractIndexEntry implements IndexEntry {
         } catch (IOException e) {
         }
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (!(o instanceof UserEntry)) return false;
+        UserEntry u = (UserEntry) o;
+        return this.map.equals(u.map);
+    }
     
     public static void main(String args[]) {
         System.out.println(new UserEntry("test", "http://test.com", "Mr. Test").toString());
