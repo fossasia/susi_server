@@ -70,7 +70,7 @@ public class ProxyServlet extends HttpServlet {
         UserEntry user = null;
         
         if (screen_name.length() > 0) {
-            buffer = cache.get(url);
+            buffer = url.length() == 0 ? null : cache.get(url);
             if (buffer == null && (url.length() == 0 || isProfileImage(url))) {
                 // try to read it from the user profiles
                 user = DAO.searchLocalUser(screen_name);
@@ -83,27 +83,25 @@ public class ProxyServlet extends HttpServlet {
         }
         
         if (buffer == null && url.length() > 0) {
-            try {
-                ClientConnection connection = new ClientConnection(url);
-                ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                buffer = new byte[2048];
-                int count;
-                try {
-                    while ((count = connection.inputStream.read(buffer)) > 0) baos.write(buffer, 0, count);
-                } catch (IOException e) {}
-                connection.close();
-                buffer = baos.toByteArray();
-                
-                // write the buffer
-                if (user != null && user.getType().length() > 0 && url.equals(user.getProfileImageUrl())) {
-                    user.setProfileImage(buffer);
-                    DAO.writeUser(user, user.getType());
-                    if (!cache.full()) cache.put(url, buffer);
-                } else {
-                    cache.put(url, buffer);
-                }
-            } catch (IOException e) {
+            
+            buffer = ClientConnection.download(url);
+            // if this fails, then check if the stored url is different.
+            // That may happen because new user avatar images get new urls
+            String newUrl = user == null ? null : user.getProfileImageUrl();
+            if (newUrl != null && !newUrl.equals(url)) buffer = ClientConnection.download(newUrl);
+            
+            // if we still don't have an image, fail.
+            if (buffer == null) {
                 response.sendError(503, "resource not available"); return;
+            }
+                
+            // write the buffer
+            if (user != null && user.getType().length() > 0 && url.equals(user.getProfileImageUrl())) {
+                user.setProfileImage(buffer);
+                DAO.writeUser(user, user.getType());
+                if (!cache.full()) cache.put(url, buffer);
+            } else {
+                cache.put(url, buffer);
             }
         }
         

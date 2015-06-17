@@ -20,6 +20,7 @@
 package org.loklak.api.client;
 
 import java.io.BufferedOutputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -142,6 +143,22 @@ public class ClientConnection {
             connection.close();
             os.close();
         } catch (IOException e) {
+        }
+    }
+    
+    public static byte[] download(String source_url) {
+        byte[] buffer = new byte[2048];
+        try {
+            ClientConnection connection = new ClientConnection(source_url);
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            int count;
+            try {
+                while ((count = connection.inputStream.read(buffer)) > 0) baos.write(buffer, 0, count);
+            } catch (IOException e) {}
+            connection.close();
+            return baos.toByteArray();
+        } catch (IOException e) {
+            return null;
         }
     }
 }
