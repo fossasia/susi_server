@@ -364,6 +364,7 @@ public class QueryEntry extends AbstractIndexEntry implements IndexEntry {
                     // patch characters that will confuse elasticsearch or have a different meaning
                     boolean negative = t.startsWith("-");
                     if (negative) t = t.substring(1);
+                    if (t.length() == 0) continue;
                     if ((t.charAt(0) == '"' && t.charAt(t.length() - 1) == '"') || (t.charAt(0) == '\'' && t.charAt(t.length() - 1) == '\'')) {
                         t = t.substring(1, t.length() - 1);
                         if (negative) text_negative_filter.add(t); else text_positive_filter.add(t);
