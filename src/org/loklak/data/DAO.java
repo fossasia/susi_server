@@ -80,8 +80,10 @@ import org.elasticsearch.search.aggregations.bucket.terms.Terms;
 import org.elasticsearch.search.aggregations.bucket.terms.Terms.Bucket;
 import org.elasticsearch.search.sort.SortOrder;
 import org.loklak.Caretaker;
+import org.loklak.api.client.ClientConnection;
 import org.loklak.api.client.SearchClient;
 import org.loklak.geo.GeoJsonReader;
+import org.loklak.geo.GeoNames;
 import org.loklak.geo.LocationSource;
 import org.loklak.geo.GeoJsonReader.Feature;
 import org.loklak.harvester.SourceType;
@@ -110,7 +112,7 @@ public class DAO {
     public final static int CACHE_MAXSIZE = 10000;
     
     public  static File conf_dir;
-    private static File external_data, geoJson_import, geoJson_imported, assets;
+    private static File external_data, geoJson_import, geoJson_imported, assets, dictionaries;
     private static File message_dump_dir, message_dump_dir_own, message_dump_dir_import, message_dump_dir_imported;
     private static File settings_dir, customized_config;
     private static RandomAccessFile messagelog, accountlog;
@@ -122,6 +124,7 @@ public class DAO {
     private static QueryFactory queries;
     private static BlockingQueue<Timeline> newMessageTimelines = new LinkedBlockingQueue<Timeline>();
     private static Map<String, String> config = new HashMap<>();
+    public  static GeoNames geoNames;
     
     /**
      * initialize the DAO
@@ -136,6 +139,24 @@ public class DAO {
             geoJson_imported = new File(new File(external_data, "geojson"), "imported");
             geoJson_import.mkdirs();
             geoJson_imported.mkdirs();
+            dictionaries = new File(external_data, "dictionaries");
+            dictionaries.mkdirs();
+            
+            // load dictionaries if they are embedded here
+            // read the file allCountries.zip from http://download.geonames.org/export/dump/allCountries.zip
+            //File allCountries = new File(dictionaries, "allCountries.zip");
+            File cities1000 = new File(dictionaries, "cities1000.zip");
+            if (!cities1000.exists()) {
+                // download this file
+                ClientConnection.download("http://download.geonames.org/export/dump/cities1000.zip", cities1000);
+            }
+            if (cities1000.exists()) {
+                geoNames = new GeoNames(cities1000, -1);
+            } else {
+                geoNames = null;
+            }
+            
+            // create message dump dir
             message_dump_dir = new File(datadir, "dump");
             message_dump_dir_own = new File(message_dump_dir, "own");
             message_dump_dir_import = new File(message_dump_dir, "import");

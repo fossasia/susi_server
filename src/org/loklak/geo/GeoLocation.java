@@ -24,11 +24,9 @@ package org.loklak.geo;
 
 import java.util.Comparator;
 
-import org.loklak.tools.UTF8;
-
 public class GeoLocation extends IntegerGeoPoint implements Comparable<GeoLocation>, Comparator<GeoLocation> {
 
-    private byte[] name;
+    private String name;
     private int population;
 
     public GeoLocation(double lat, double lon) {
@@ -39,15 +37,15 @@ public class GeoLocation extends IntegerGeoPoint implements Comparable<GeoLocati
 
     public GeoLocation(double lat, double lon, String name) {
         super(lat, lon);
-        this.name = UTF8.getBytes(name);
+        this.name = name;
     }
 
     public void setName(String name) {
-        this.name = UTF8.getBytes(name);
+        this.name = name;
     }
 
     public String getName() {
-        return UTF8.String(this.name);
+        return this.name;
     }
 
     public void setPopulation(int population) {
@@ -61,8 +59,7 @@ public class GeoLocation extends IntegerGeoPoint implements Comparable<GeoLocati
     @Override
     public boolean equals(Object loc) {
         if (!(loc instanceof GeoLocation)) return false;
-        if (this.name == null || ((GeoLocation) loc).name == null) return super.equals(loc);
-        return super.equals(loc) && this.getName().toLowerCase().equals(((GeoLocation) loc).getName().toLowerCase());
+        return super.equals(loc);
     }
 
     /**

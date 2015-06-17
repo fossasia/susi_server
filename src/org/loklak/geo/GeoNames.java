@@ -27,23 +27,22 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.SortedMap;
 import java.util.TreeMap;
-import java.util.TreeSet;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
 import org.loklak.tools.CommonPattern;
-import org.loklak.tools.StringBuilderComparator;
 import org.loklak.tools.UTF8;
 
-public class GeoNames implements Locations {
+public class GeoNames {
 
     /*
         The main 'geoname' table has the following fields :
@@ -70,22 +69,20 @@ public class GeoNames implements Locations {
      */
     
     private final Map<Integer, GeoLocation> id2loc;
-    private final TreeMap<StringBuilder, List<Integer>> name2ids;
-    private final File file;
+    private final HashMap<Integer, List<Integer>> hash2ids;
     public GeoNames(final File file, long minPopulation) {
         // this is a processing of the cities1000.zip file from http://download.geonames.org/export/dump/
 
-        this.file = file;
-        this.id2loc = new HashMap<Integer, GeoLocation>();
-        this.name2ids =
-            new TreeMap<StringBuilder, List<Integer>>(StringBuilderComparator.CASE_INSENSITIVE_ORDER);
+        this.id2loc = new HashMap<>();
+        this.hash2ids = new HashMap<>();
 
         if ( file == null || !file.exists() ) {
             return;
         }
-        BufferedReader reader;
+        ZipFile zf = null;
+        BufferedReader reader = null;
         try {
-            final ZipFile zf = new ZipFile(file);
+            zf = new ZipFile(file);
             String entryName = file.getName();
             entryName = entryName.substring(0, entryName.length() - 3) + "txt";
             final ZipEntry ze = zf.getEntry(entryName);
@@ -121,7 +118,7 @@ public class GeoNames implements Locations {
         try {
             String line;
             String[] fields;
-            Set<StringBuilder> locnames;
+            Set<String> locnames;
             while ( (line = reader.readLine()) != null ) {
                 if ( line.isEmpty() ) {
                     continue;
@@ -130,134 +127,93 @@ public class GeoNames implements Locations {
                 final long population = Long.parseLong(fields[14]);
                 if (minPopulation > 0 && population < minPopulation) continue;
                 final int geonameid = Integer.parseInt(fields[0]);
-                locnames = new HashSet<StringBuilder>();
-                locnames.add(new StringBuilder(fields[1]));
-                locnames.add(new StringBuilder(fields[2]));
-                for ( final String s : CommonPattern.COMMA.split(fields[3]) ) {
-                    locnames.add(new StringBuilder(s));
-                }
-                final GeoLocation c =
-                    new GeoLocation(Float.parseFloat(fields[4]), Float.parseFloat(fields[5]), fields[1]);
-                c.setPopulation((int) Long.parseLong(fields[14]));
-                this.id2loc.put(geonameid, c);
-                for ( final StringBuilder name : locnames ) {
+                locnames = new HashSet<>();
+                locnames.add(fields[1]);
+                locnames.add(fields[2]);
+                for (final String s : CommonPattern.COMMA.split(fields[3])) locnames.add(s);
+                
+                final GeoLocation geoLocation = new GeoLocation(Float.parseFloat(fields[4]), Float.parseFloat(fields[5]), fields[1]);
+                geoLocation.setPopulation((int) Long.parseLong(fields[14]));
+                this.id2loc.put(geonameid, geoLocation);
+                for (final String name : locnames) {
                     if (name.length() < 4) continue;
-                    List<Integer> locs = this.name2ids.get(name);
-                    if ( locs == null ) {
-                        locs = new ArrayList<Integer>(1);
-                    }
+                    int lochash = name.toLowerCase().hashCode();
+                    List<Integer> locs = this.hash2ids.get(lochash);
+                    if (locs == null) {locs = new ArrayList<Integer>(1); this.hash2ids.put(lochash, locs);}
                     locs.add(geonameid);
-                    this.name2ids.put(name, locs);
                 }
             }
+            if (reader != null) reader.close();
+            if (zf != null) zf.close();
         } catch (final IOException e ) {
         }
     }
-
-    @Override
-    public int size() {
-        return this.id2loc.size();
-    }
-
-    @Override
-    public boolean isEmpty() {
-        return this.id2loc.isEmpty();
-    }
-
-    @Override
-    public TreeSet<GeoLocation> find(final String anyname, final boolean locationexact) {
-        final Set<Integer> r = new HashSet<Integer>();
-        List<Integer> c;
-        final StringBuilder an = new StringBuilder(anyname);
-        if ( locationexact ) {
-            c = this.name2ids.get(an);
-            if ( c != null ) {
-                r.addAll(c);
+    
+    public GeoLocation analyse(String text, int maxlength) {
+        LinkedHashMap<Integer, String> mix = mix(split(text), maxlength);
+        for (Map.Entry<Integer, String> entry: mix.entrySet()) {
+            List<Integer> locs = this.hash2ids.get(entry.getKey());
+            if (locs == null || locs.size() == 0) continue;
+            for (Integer i: locs) {
+                GeoLocation loc = this.id2loc.get(i);
+                if (loc != null && entry.getValue().toLowerCase().equals(loc.getName().toLowerCase())) return loc;
             }
-        } else {
-            final SortedMap<StringBuilder, List<Integer>> cities = this.name2ids.tailMap(an);
-            for ( final Map.Entry<StringBuilder, List<Integer>> e : cities.entrySet() ) {
-                if ( StringBuilderComparator.CASE_INSENSITIVE_ORDER.startsWith(e.getKey(), an) ) {
-                    r.addAll(e.getValue());
-                } else {
-                    break;
+        }
+        return null;
+    }
+    
+    public static LinkedHashMap<Integer, String> mix(final ArrayList<Map.Entry<String, String>> text, final int maxlength) {
+        Map<Integer, Map<Integer, String>> a = new TreeMap<>(); // must be a TreeMap provide order on reverse word count
+        for (int i = 0; i < text.size(); i++) {
+            for (int x = 1; x <= Math.min(text.size() - i, maxlength); x++) {
+                StringBuilder o = new StringBuilder(10 * x);
+                StringBuilder l = new StringBuilder(10 * x);
+                for (int j = 0; j < x; j++) {
+                    Map.Entry<String, String> word = text.get(i + j);
+                    if (j != 0) {
+                        l.append(' ');
+                        o.append(' ');
+                    }
+                    l.append(word.getKey());
+                    o.append(word.getValue());
                 }
+                Map<Integer, String> m = a.get(-x);
+                if (m == null) {m = new HashMap<>(); a.put(-x, m);}
+                m.put(l.toString().hashCode(), o.toString());
             }
         }
-        final TreeSet<GeoLocation> a = new TreeSet<GeoLocation>();
-        for ( final Integer e : r ) {
-            final GeoLocation w = this.id2loc.get(e);
-            if ( w != null ) {
-                a.add(w);
+        
+        // now order the maps by the number of words
+        LinkedHashMap<Integer, String> r = new LinkedHashMap<>();
+        for (Map<Integer,String> m: a.values())r.putAll(m);
+        return r;
+    }
+
+    public static ArrayList<Map.Entry<String, String>> split(final String text) {
+        ArrayList<Map.Entry<String, String>> a = new ArrayList<>(1 + text.length() / 6);
+        final StringBuilder o = new StringBuilder();
+        final StringBuilder l = new StringBuilder();
+        for (int i = 0; i < text.length(); i++) {
+            final char c = text.charAt(i);
+            if (c == ' ') {
+                if (o.length() > 0) {a.add(new AbstractMap.SimpleEntry<String, String>(l.toString(), o.toString())); o.setLength(0); l.setLength(0);}
+                continue;
+            }
+            if (Character.isLetterOrDigit(c)) {
+                o.append(c);
+                l.append(Character.toLowerCase(c));
             }
         }
+        if (o.length() > 0) {a.add(new AbstractMap.SimpleEntry<String, String>(l.toString(), o.toString())); o.setLength(0); l.setLength(0);}
         return a;
     }
-
-    /**
-     * produce a set of location names
-     * @return a set of names
-     */
-    @Override
-    public Set<String> locationNames() {
-        Set<String> locations = new HashSet<String>();
-        Set<StringBuilder> l = this.name2ids.keySet();
-        for (StringBuilder s: l) {
-            locations.add(s.toString());
+    
+    public static void main(String[] args) {
+        ArrayList<Map.Entry<String, String>> split = split("Hoc est Corpus meus");
+        LinkedHashMap<Integer, String> mix = mix(split, 3);
+        for (Map.Entry<Integer, String> entry: mix.entrySet()) {
+            System.out.println("code:" + entry.getKey() + "; string:" + entry.getValue());
         }
-        return locations;
     }
-
-    @Override
-    public Set<String> recommend(final String s) {
-        final Set<String> a = new HashSet<String>();
-        final StringBuilder an = new StringBuilder(s);
-        if ( s.isEmpty() ) {
-            return a;
-        }
-        final SortedMap<StringBuilder, List<Integer>> t = this.name2ids.tailMap(an);
-        for ( final StringBuilder r : t.keySet() ) {
-            if ( StringBuilderComparator.CASE_INSENSITIVE_ORDER.startsWith(r, an) ) {
-                a.add(r.toString());
-            } else {
-                break;
-            }
-        }
-        return a;
-    }
-
-    @Override
-    public Set<StringBuilder> recommend(final StringBuilder s) {
-        final Set<StringBuilder> a = new HashSet<StringBuilder>();
-        if ( s.length() == 0 ) {
-            return a;
-        }
-        final SortedMap<StringBuilder, List<Integer>> t = this.name2ids.tailMap(s);
-        for ( final StringBuilder r : t.keySet() ) {
-            if ( StringBuilderComparator.CASE_INSENSITIVE_ORDER.startsWith(r, s) ) {
-                a.add(r);
-            } else {
-                break;
-            }
-        }
-        return a;
-    }
-
-    @Override
-    public String nickname() {
-        return this.file.getName();
-    }
-
-    @Override
-    public int hashCode() {
-        return nickname().hashCode();
-    }
-
-    @Override
-    public boolean equals(final Object other) {
-        if ( !(other instanceof Locations) ) {
-            return false;
-        }
-        return nickname().equals(((Locations) other).nickname());
-    }
+    
 }
