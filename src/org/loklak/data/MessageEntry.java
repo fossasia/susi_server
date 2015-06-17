@@ -252,22 +252,40 @@ public class MessageEntry extends AbstractIndexEntry implements IndexEntry {
         this.place_id = place_id;
     }
 
+    /**
+     * @return [longitude, latitude]
+     */
     public double[] getLocationPoint() {
         return location_point;
     }
 
+    /**
+     * set the location
+     * @param location_point in the form [longitude, latitude]
+     */
     public void setLocationPoint(double[] location_point) {
         this.location_point = location_point;
     }
 
+    /**
+     * @return [longitude, latitude] which is inside of getLocationRadius() from getLocationPoint()
+     */
     public double[] getLocationMark() {
         return location_mark;
     }
 
+    /**
+     * set the location
+     * @param location_point in the form [longitude, latitude]
+     */
     public void setLocationMark(double[] location_mark) {
         this.location_mark = location_mark;
     }
 
+    /**
+     * get the radius in meter
+     * @return radius in meter around getLocationPoint() (NOT getLocationMark())
+     */
     public int getLocationRadius() {
         return location_radius;
     }
@@ -452,6 +470,7 @@ public class MessageEntry extends AbstractIndexEntry implements IndexEntry {
   
             // add optional location data. This is written even if calculatedData == false if the source is from REPORT to prevent that it is lost
             if (this.location_point != null && this.location_point.length == 2 && this.location_mark != null && this.location_mark.length == 2) {
+                // reference for this format: https://www.elastic.co/guide/en/elasticsearch/reference/current/mapping-geo-point-type.html#_lat_lon_as_array_5
                 writeArray(json, "location_point", this.location_point); // [longitude, latitude]
                 json.writeObjectField("location_radius", this.location_radius);
                 writeArray(json, "location_mark", this.location_mark);

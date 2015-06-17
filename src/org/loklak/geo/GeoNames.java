@@ -36,6 +36,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.TreeSet;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
@@ -43,33 +44,11 @@ import org.loklak.tools.CommonPattern;
 import org.loklak.tools.UTF8;
 
 public class GeoNames {
-
-    /*
-        The main 'geoname' table has the following fields :
-        ---------------------------------------------------
-        geonameid         : integer id of record in geonames database
-        name              : name of geographical point (utf8) varchar(200)
-        asciiname         : name of geographical point in plain ascii characters, varchar(200)
-        alternatenames    : alternatenames, comma separated varchar(5000)
-        latitude          : latitude in decimal degrees (wgs84)
-        longitude         : longitude in decimal degrees (wgs84)
-        feature class     : see http://www.geonames.org/export/codes.html, char(1)
-        feature code      : see http://www.geonames.org/export/codes.html, varchar(10)
-        country code      : ISO-3166 2-letter country code, 2 characters
-        cc2               : alternate country codes, comma separated, ISO-3166 2-letter country code, 60 characters
-        admin1 code       : fipscode (subject to change to iso code), see exceptions below, see file admin1Codes.txt for display names of this code; varchar(20)
-        admin2 code       : code for the second administrative division, a county in the US, see file admin2Codes.txt; varchar(80)
-        admin3 code       : code for third level administrative division, varchar(20)
-        admin4 code       : code for fourth level administrative division, varchar(20)
-        population        : bigint (8 byte int)
-        elevation         : in meters, integer
-        gtopo30           : average elevation of 30'x30' (ca 900mx900m) area in meters, integer
-        timezone          : the timezone id (see file timeZone.txt)
-        modification date : date of last modification in yyyy-MM-dd format
-     */
     
     private final Map<Integer, GeoLocation> id2loc;
     private final HashMap<Integer, List<Integer>> hash2ids;
+    
+    
     public GeoNames(final File file, long minPopulation) {
         // this is a processing of the cities1000.zip file from http://download.geonames.org/export/dump/
 
@@ -92,7 +71,6 @@ public class GeoNames {
             return;
         }
 
-        // when an error occurs after this line, just accept it and work on
 /* parse this fields:
 ---------------------------------------------------
 00 geonameid         : integer id of record in geonames database
@@ -133,7 +111,7 @@ public class GeoNames {
                 for (final String s : CommonPattern.COMMA.split(fields[3])) locnames.add(s);
                 
                 final GeoLocation geoLocation = new GeoLocation(Float.parseFloat(fields[4]), Float.parseFloat(fields[5]), fields[1]);
-                geoLocation.setPopulation((int) Long.parseLong(fields[14]));
+                geoLocation.setPopulation(population);
                 this.id2loc.put(geonameid, geoLocation);
                 for (final String name : locnames) {
                     if (name.length() < 4) continue;
@@ -154,10 +132,12 @@ public class GeoNames {
         for (Map.Entry<Integer, String> entry: mix.entrySet()) {
             List<Integer> locs = this.hash2ids.get(entry.getKey());
             if (locs == null || locs.size() == 0) continue;
+            TreeMap<Long, GeoLocation> cand = new TreeMap<>();
             for (Integer i: locs) {
                 GeoLocation loc = this.id2loc.get(i);
-                if (loc != null && entry.getValue().toLowerCase().equals(loc.getName().toLowerCase())) return loc;
+                if (loc != null && entry.getValue().toLowerCase().equals(loc.getName().toLowerCase())) cand.put(-loc.getPopulation(), loc);
             }
+            if (cand.size() > 0) return cand.values().iterator().next(); // the first entry is the location with largest population
         }
         return null;
     }

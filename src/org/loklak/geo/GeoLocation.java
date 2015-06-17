@@ -27,7 +27,7 @@ import java.util.Comparator;
 public class GeoLocation extends IntegerGeoPoint implements Comparable<GeoLocation>, Comparator<GeoLocation> {
 
     private String name;
-    private int population;
+    private long population;
 
     public GeoLocation(double lat, double lon) {
         super(lat, lon);
@@ -48,11 +48,11 @@ public class GeoLocation extends IntegerGeoPoint implements Comparable<GeoLocati
         return this.name;
     }
 
-    public void setPopulation(int population) {
-        this.population = population;
+    public void setPopulation(long population2) {
+        this.population = population2;
     }
 
-    public int getPopulation() {
+    public long getPopulation() {
         return this.population;
     }
 
@@ -78,7 +78,7 @@ public class GeoLocation extends IntegerGeoPoint implements Comparable<GeoLocati
         return 0;
     }
 
-    private static long ph(int population) {
+    private static long ph(long population) {
         if (population > 10000) population -= 10000;
         return population;
     }
