@@ -451,7 +451,7 @@ public class MessageEntry extends AbstractIndexEntry implements IndexEntry {
             json.writeObjectField("place_id", this.place_id);
   
             // add optional location data. This is written even if calculatedData == false if the source is from REPORT to prevent that it is lost
-            if (calculatedData || (this.location_point != null && this.location_point.length == 2 && this.location_mark != null && this.location_mark.length == 2)) {
+            if (this.location_point != null && this.location_point.length == 2 && this.location_mark != null && this.location_mark.length == 2) {
                 writeArray(json, "location_point", this.location_point); // [longitude, latitude]
                 json.writeObjectField("location_radius", this.location_radius);
                 writeArray(json, "location_mark", this.location_mark);
