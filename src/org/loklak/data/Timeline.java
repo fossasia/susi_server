@@ -125,16 +125,29 @@ public class Timeline implements Iterable<MessageEntry> {
 
     public long period() {
         if (this.size() < 1) return Long.MAX_VALUE;
+        if (this.size() < 2) {
+            // try to calculate the period time based on the current time.
+            // That may fail if the current time is not set correctly!
+            long timeInterval = System.currentTimeMillis() - this.getOldestTweet().created_at.getTime();
+            long p = 1 + timeInterval / this.size();
+            if (p >= 10000) return p; else return 60000;
+        }
         
-        // first we try to calculate the period time based on the current time.
-        // That may fail if the current time is not set correctly!
-        long timeInterval = System.currentTimeMillis() - this.getOldestTweet().created_at.getTime();
-        long p = 1 + timeInterval / this.size();
-        if (p >= 10000) return p;
+        // calculate the time based on the latest 20 tweets (or less)
+        long first = 0;
+        long last = 0;
+        int count = 0;
+        for (MessageEntry messageEntry: this) {
+            if (first == 0) {first = messageEntry.created_at.getTime(); continue;}
+            last = messageEntry.created_at.getTime();
+            count++;
+            if (count >= 20) break;
+        }
 
-        if (this.size() < 2) return Long.MAX_VALUE;
-        timeInterval = this.getLatestTweet().created_at.getTime() - this.getOldestTweet().created_at.getTime();
-        return 1 + timeInterval / (this.size() - 1);
+        if (count == 0) return 60000;
+        long timeInterval = first - last;
+        long p = 1 + timeInterval / count;
+        if (p >= 10000) return p; else return 60000;
     }    
     
 }
