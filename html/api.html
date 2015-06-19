@@ -63,6 +63,7 @@
             <li><a href="#push">/api/push.json</a></li>
             <li><a href="#account">/api/account.json</a></li>
             <li><a href="#markdown">/vis/markdown.png</a></li>
+            <li><a href="#settings">/api/settings.json</a></li>
           </ul>
         </div>
         <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
@@ -221,7 +222,7 @@
      	  the web front-end user and modify search attributes and result times according to the localized time of the user.</p>
      	   
 		  <br id="crawler"/><br/>
-          <h2 class="sub-header">/api/crawler.json</h2>
+          <h2 class="sub-header"><code>/api/crawler.json</code></h2>
           <p>With the crawler servlet it is possible to retrieve mass-data from the search back-end, including the twitter scraper. The crawler loads search results with a given set of query terms, extracts all the hashtags and user names from the result list and searches with those words again. Request properties are:</p>
           <ul class="request">
 			<li><div class="tabcol0">start</div><div class="tabcol1">&nbsp;=&nbsp;&lt;terms, comma-separated&gt;</div>// i.e. start=fossasia,software</li>
@@ -247,7 +248,7 @@
 </pre>
       
 		  <br id="status"/><br/>
-          <h2 class="sub-header">/api/status.json</h2>
+          <h2 class="sub-header"><code>/api/status.json</code></h2>
           <p>The status servlet shows the size of the internal elasticsearch search index for messages and users.
               Furthermore the servlet reflects the current browser clients settings in the client_info.</p>
           
@@ -270,7 +271,7 @@
 }</pre>
           
 		  <br id="peers"/><br/>
-          <h2 class="sub-header">/api/peers.json</h2>
+          <h2 class="sub-header"><code>/api/peers.json</code></h2>
           <p>This servlet combined the result of the hello calls from all peers and provides a list of addresses where the remote peers can be accessed.</p>
           
 <pre>{
@@ -304,7 +305,7 @@
 </pre>
       
 		  <br id="push"/><br/>
-          <h2 class="sub-header">/api/push.json</h2>
+          <h2 class="sub-header"><code>/api/push.json</code></h2>
           <p>Whenever a peer aquires new tweets, it reports these to the back-end for storage. Messages are first collected and bundled into http POST requests to the back-end push api. This servlet can only be requested with a POST request. The post must have only one attribute:</p>
 <ul class="request">
 			<li><div class="tabcol0">data</div><div class="tabcol1">&nbsp;=&nbsp;&lt;a search result object&gt;</div>// push the same data as it is returned with search.json</li>
@@ -321,7 +322,7 @@
       
           
 		  <br id="account"/><br/>
-          <h2 class="sub-header">/api/account.json</h2>
+          <h2 class="sub-header"><code>/api/account.json</code></h2>
           <p>This servlet provides the storage and retrieval of twitter accounts. This servlet can only be called from localhost.</p>
           <ul class="request">
 			<li><div class="tabcol0">screen_name</div><div class="tabcol1">&nbsp;=&nbsp;&lt;user nickname&gt;</div>// the identifier of the account record</li>
@@ -364,7 +365,7 @@
 
 
 		  <br id="markdown"/><br/>
-          <h2 class="sub-header">/vis/markdown.png</h2>
+          <h2 class="sub-header"><code>/vis/markdown.png</code></h2>
           <p>This servlet provides an image with text on it. It shall be used to attach large texts to tweets. The servlet can be called with POST and GET html requests, however it is recommended to call this using POST to be able to attach large texts. The request properties are:</p>
           <ul class="request">
 			<li><div class="tabcol1">text</div><div class="tabcol2">&nbsp;=&nbsp;&lt;text to be printed, markdown possible&gt;</div>// the image size adopts automatically</li>
@@ -380,6 +381,33 @@
 <ul class="request">
 <li><a href="http://localhost:9000/vis/markdown.png?text=hello%20world%0Dhello%20universe&color_text=000000&color_background=ffffff&padding=3">http://localhost:9000/vis/markdown.png?text=hello%20world%0Dhello%20universe&color_text=000000&color_background=ffffff&padding=3</a></li>
 </ul></p>
+
+
+        <br id="settings"/></br>
+        <h2 class="sub-header"><code>/api/settings.json</code></h2>
+        <p>This servlet provides a method to provide the settings API for the loklak front end connections. This servlet works for requests that are running the application from the localhost.</p>
+        <ul class="request">
+          <li>
+            <div class="tabcol1">File to edit</div> <div class="tabcol2">&nbsp;=&nbsp;/data/settings/customized_config.properties</div>
+          </li>
+        </ul>
+        <br>
+        <p>To serve the configuration the config file should read the parameters as follows with a <code>client.</code> prefix</p>
+        <ul class="request">
+          <li>
+            <div class="tabcol1">client.test</div> <div class="tabcol2">&nbsp;=&nbsp;abc</div>
+          </li>
+        </ul>
+        <br>
+        <p>Which renders the output as </p>
+        <pre>{
+  "test"           : "abc"
+}
+</pre>
+<p>Here is an example</p>
+<ul class="request">
+  <li><a href="http://localhost:9000/api/settings.json">http://localhost:9000/api/settings.json</a></li>
+</ul>
 
 
           <br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/>
