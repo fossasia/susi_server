@@ -308,7 +308,6 @@ public class QueryEntry extends AbstractIndexEntry implements IndexEntry {
         
         private QueryBuilder parse(String q, int timezoneOffset) {
             // tokenize the query
-            for (int i = 1; i < q.length(); i++) if (q.charAt(i) == '-' && q.charAt(i - 1) != ' ') q = q.substring(0, i) + " " + q.substring(i + 1); 
             List<String> qe = new ArrayList<String>();
             Matcher m = tokenizerPattern.matcher(q);
             while (m.find()) qe.add(m.group(1));
@@ -367,6 +366,10 @@ public class QueryEntry extends AbstractIndexEntry implements IndexEntry {
                     if (t.length() == 0) continue;
                     if ((t.charAt(0) == '"' && t.charAt(t.length() - 1) == '"') || (t.charAt(0) == '\'' && t.charAt(t.length() - 1) == '\'')) {
                         t = t.substring(1, t.length() - 1);
+                        if (negative) text_negative_filter.add(t); else text_positive_filter.add(t);
+                    } else if (t.indexOf('-') > 0) {
+                        // this must be handled like a quoted string without the minus
+                        t = t.replaceAll("-", " ");
                         if (negative) text_negative_filter.add(t); else text_positive_filter.add(t);
                     } else {
                         if (negative) text_negative_match.add(t); else text_positive_match.add(t);
