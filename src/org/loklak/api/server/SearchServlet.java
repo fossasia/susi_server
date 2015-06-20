@@ -76,7 +76,7 @@ public class SearchServlet extends HttpServlet {
         String query = post.get("q", "");
         if (query == null || query.length() == 0) query = post.get("query", "");
         query = CharacterCoding.html2unicode(query).replaceAll("\\+", " ");
-        int count = post.get("count", post.get("maximumRecords", 100));
+        final int count = post.get("count", post.get("maximumRecords", 100));
         String source = post.isDoS_servicereduction() ? "cache" : post.get("source", "all"); // possible values: cache, backend, twitter, all
         int limit = post.get("limit", 100);
         String[] fields = post.get("fields", new String[0], ",");
@@ -102,7 +102,7 @@ public class SearchServlet extends HttpServlet {
                 if (scraperThread != null) scraperThread.start();
                 Thread backendThread = new Thread() {
                     public void run() {
-                        Timeline backendTl = DAO.searchBackend(queryf, 100, timezoneOffsetf, "cache");
+                        Timeline backendTl = DAO.searchBackend(queryf, count, timezoneOffsetf, "cache");
                         tl.putAll(backendTl);
                     }
                 };
