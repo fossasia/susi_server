@@ -134,6 +134,9 @@ public class SearchServlet extends HttpServlet {
             }
         }
         hits = Math.max(hits, tl.size());
+        // reduce the list to the wanted number of results if we have more
+        tl.reduceToMaxsize(count);
+        
 
         if (post.isDoS_servicereduction() && !RemoteAccess.isSleepingForClient(post.getClientHost())) {
             RemoteAccess.sleep(post.getClientHost(), 2000);

@@ -49,6 +49,11 @@ public class Timeline implements Iterable<MessageEntry> {
         return this.tweets.size();
     }
     
+    public void reduceToMaxsize(final int maxsize) {
+        if (maxsize < 0) return;
+        while (this.tweets.size() > maxsize) this.tweets.remove(this.tweets.firstEntry().getKey());
+    }
+    
     public void addUser(UserEntry user) {
         assert user != null;
         if (user != null) this.users.put(user.getScreenName(), user);
@@ -116,7 +121,7 @@ public class Timeline implements Iterable<MessageEntry> {
     }
     
     /**
-     * the tweet iterator returns tweets in descending appearance order
+     * the tweet iterator returns tweets in descending appearance order (latest first)
      */
     @Override
     public Iterator<MessageEntry> iterator() {
