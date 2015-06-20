@@ -377,24 +377,18 @@ public class QueryEntry extends AbstractIndexEntry implements IndexEntry {
             if (modifier.containsKey("to")) users_positive.add(modifier.get("to"));
             
             // compose query
-            QueryBuilder query = QueryBuilders.boolQuery();
-            for (String text: text_positive_match)  ((BoolQueryBuilder) query).must(QueryBuilders.matchQuery("text", text));
-            for (String text: text_negative_match) ((BoolQueryBuilder) query).mustNot(QueryBuilders.matchQuery("text", text));
-            for (String text: text_positive_filter) query = QueryBuilders.filteredQuery(query, FilterBuilders.termsFilter("text", text));
-            for (String text: text_negative_filter) query = QueryBuilders.filteredQuery(query, FilterBuilders.notFilter(FilterBuilders.termsFilter("text", text)));
-            for (String user: users_positive) query = QueryBuilders.filteredQuery(query, FilterBuilders.inFilter("mentions", user));
-            for (String user: users_negative) query = QueryBuilders.filteredQuery(query, FilterBuilders.notFilter(FilterBuilders.inFilter("mentions", user)));
-            for (String hashtag: hashtags_positive) query = QueryBuilders.filteredQuery(query, FilterBuilders.inFilter("hashtags", hashtag.toLowerCase()));
-            for (String hashtag: hashtags_negative) query = QueryBuilders.filteredQuery(query, FilterBuilders.notFilter(FilterBuilders.inFilter("hashtags", hashtag.toLowerCase())));
-            if (modifier.containsKey("id")) ((BoolQueryBuilder) query).must(QueryBuilders.termQuery("id_str", modifier.get("id")));
-            if (modifier.containsKey("-id")) ((BoolQueryBuilder) query).mustNot(QueryBuilders.termQuery("id_str", modifier.get("-id")));
-            if (modifier.containsKey("from")) ((BoolQueryBuilder) query).must(QueryBuilders.termQuery("screen_name", modifier.get("from")));
-            if (modifier.containsKey("-from")) ((BoolQueryBuilder) query).mustNot(QueryBuilders.termQuery("screen_name", modifier.get("-from")));
+            BoolQueryBuilder bquery = QueryBuilders.boolQuery();
+            for (String text: text_positive_match)  bquery.must(QueryBuilders.matchQuery("text", text));
+            for (String text: text_negative_match) bquery.mustNot(QueryBuilders.matchQuery("text", text));
+            if (modifier.containsKey("id")) bquery.must(QueryBuilders.termQuery("id_str", modifier.get("id")));
+            if (modifier.containsKey("-id")) bquery.mustNot(QueryBuilders.termQuery("id_str", modifier.get("-id")));
+            if (modifier.containsKey("from")) bquery.must(QueryBuilders.termQuery("screen_name", modifier.get("from")));
+            if (modifier.containsKey("-from")) bquery.mustNot(QueryBuilders.termQuery("screen_name", modifier.get("-from")));
             if (modifier.containsKey("near")) {
                 BoolQueryBuilder nearquery = QueryBuilders.boolQuery()
                         .should(QueryBuilders.matchQuery("place_name", modifier.get("near")))
                         .should(QueryBuilders.matchQuery("text", modifier.get("near")));
-                ((BoolQueryBuilder) query).must(nearquery);
+                bquery.must(nearquery);
             }
             if (modifier.containsKey("since")) try {
                 Calendar since = DateParser.parse(modifier.get("since"), timezoneOffset);
@@ -412,7 +406,7 @@ public class QueryEntry extends AbstractIndexEntry implements IndexEntry {
                 } else {
                     this.until = new Date(Long.MAX_VALUE);
                 }
-                ((BoolQueryBuilder) query).must(rangeQuery);
+                bquery.must(rangeQuery);
             } catch (ParseException e) {} else if (modifier.containsKey("until")) try {
                 Calendar until = DateParser.parse(modifier.get("until"), timezoneOffset);
                 if (until.get(Calendar.HOUR) == 0 && until.get(Calendar.MINUTE) == 0) {
@@ -422,17 +416,26 @@ public class QueryEntry extends AbstractIndexEntry implements IndexEntry {
                 }
                 this.until = until.getTime();
                 RangeQueryBuilder rangeQuery = QueryBuilders.rangeQuery("created_at").to(this.until);
-                ((BoolQueryBuilder) query).must(rangeQuery);
+                bquery.must(rangeQuery);
             } catch (ParseException e) {}
+            
+            // apply constraints as filters
+            QueryBuilder cquery = bquery;
+            for (String text: text_positive_filter) cquery = QueryBuilders.filteredQuery(cquery, FilterBuilders.termsFilter("text", text));
+            for (String text: text_negative_filter) cquery = QueryBuilders.filteredQuery(cquery, FilterBuilders.notFilter(FilterBuilders.termsFilter("text", text)));
+            for (String user: users_positive) cquery = QueryBuilders.filteredQuery(cquery, FilterBuilders.inFilter("mentions", user));
+            for (String user: users_negative) cquery = QueryBuilders.filteredQuery(cquery, FilterBuilders.notFilter(FilterBuilders.inFilter("mentions", user)));
+            for (String hashtag: hashtags_positive) cquery = QueryBuilders.filteredQuery(cquery, FilterBuilders.inFilter("hashtags", hashtag.toLowerCase()));
+            for (String hashtag: hashtags_negative) cquery = QueryBuilders.filteredQuery(cquery, FilterBuilders.notFilter(FilterBuilders.inFilter("hashtags", hashtag.toLowerCase())));
             for (Map.Entry<String, String> c: constraintFields.entrySet()) {
                 if (constraints_positive.contains(c.getKey())) {
-                    query = QueryBuilders.filteredQuery(query, FilterBuilders.existsFilter(c.getValue()));
+                    cquery = QueryBuilders.filteredQuery(cquery, FilterBuilders.existsFilter(c.getValue()));
                 }
                 if (constraints_negative.contains(c.getKey())) {
-                    query = QueryBuilders.filteredQuery(query, FilterBuilders.notFilter(FilterBuilders.existsFilter(c.getValue())));
+                    cquery = QueryBuilders.filteredQuery(cquery, FilterBuilders.notFilter(FilterBuilders.existsFilter(c.getValue())));
                 }
             }
-            return query;
+            return cquery;
         }
     }
 }
