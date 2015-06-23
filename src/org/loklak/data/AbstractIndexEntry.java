@@ -21,9 +21,9 @@ package org.loklak.data;
 
 import java.io.IOException;
 import java.io.StringWriter;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
+import java.util.LinkedHashSet;
 
 import org.joda.time.format.DateTimeFormatter;
 import org.joda.time.format.ISODateTimeFormat;
@@ -111,19 +111,24 @@ public abstract class AbstractIndexEntry implements IndexEntry {
     }
     
     @SuppressWarnings("unchecked")
-    public static ArrayList<String> parseArrayList(Object l) {
-        assert l == null || l instanceof String  || l instanceof String[] || l instanceof ArrayList<?>;
-        if (l == null) return new ArrayList<String>(0);
+    public static LinkedHashSet<String> parseArrayList(Object l) {
+        assert l == null || l instanceof String  || l instanceof String[] || l instanceof Collection<?>;
+        if (l == null) return new LinkedHashSet<String>();
         if (l instanceof String) {
-            ArrayList<String> a = new ArrayList<>();
+            LinkedHashSet<String> a = new LinkedHashSet<>();
             a.add((String) l);
             return a;
         }
         if (l instanceof String[]) {
-            ArrayList<String> a = new ArrayList<>();
+            LinkedHashSet<String> a = new LinkedHashSet<>();
             for (String s: ((String[]) l)) a.add(s);
             return a;
         }
-        return (ArrayList<String>) l;
+        if (l instanceof LinkedHashSet<?>) {
+            return (LinkedHashSet<String>) l;
+        }
+        LinkedHashSet<String> a = new LinkedHashSet<>();
+        for (Object s: ((Collection<?>) l)) a.add((String) s);
+        return a;
     }
 }

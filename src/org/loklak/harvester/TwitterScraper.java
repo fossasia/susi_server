@@ -27,6 +27,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
@@ -276,8 +277,8 @@ public class TwitterScraper {
                 final String text_raw,
                 final long retweets,
                 final long favourites,
-                final ArrayList<String> images,
-                final ArrayList<String> videos,
+                final Collection<String> images,
+                final Collection<String> videos,
                 final String place_name,
                 final String place_id) throws MalformedURLException {
             super();
@@ -290,10 +291,10 @@ public class TwitterScraper {
             this.id_str = p >= 0 ? status_id_url_raw.substring(p + 1) : "-1";
             this.retweet_count = retweets;
             this.favourites_count = favourites;
-            this.images = images;
-            this.videos = videos;
             this.place_name = place_name;
             this.place_id = place_id;
+            this.images = new LinkedHashSet<>(); for (String image: images) this.images.add(image);
+            this.videos = new LinkedHashSet<>(); for (String video: videos) this.videos.add(video);
 
             //Date d = new Date(timemsraw);
             //System.out.println(d);
