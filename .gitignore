@@ -6,3 +6,5 @@
 *.iml
 /hs_err_*.log
 /data.bkp/
+
+*.xml~

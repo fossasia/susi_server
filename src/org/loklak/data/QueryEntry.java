@@ -239,25 +239,27 @@ public class QueryEntry extends AbstractIndexEntry implements IndexEntry {
     }
 
     private final static Pattern tokenizerPattern = Pattern.compile("([^\"]\\S*|\".+?\")\\s*"); // tokenizes Strings into terms respecting quoted parts
-    static final Map<String, String> constraintFields = new HashMap<>(); // a constraint-name to field-name map
-    static {
-        constraintFields.put("image","images");
-        constraintFields.put("audio","audio");
-        constraintFields.put("video","videos");
-        constraintFields.put("place","place_name");
-        constraintFields.put("location","location_point");
-        constraintFields.put("link","links");
-        constraintFields.put("mention","mentions");
-        constraintFields.put("hashtag","hashtags");
+    private static enum Constraint {
+        image("images"),
+        audio("audio"),
+        video("videos"),
+        place("place_name"),
+        location("location_point"),
+        link("links"),
+        mention("mentions"),
+        hashtag("hashtags");
+        protected String field_name;
+        protected Pattern pattern;
+        private Constraint(String field_name) {
+            this.field_name = field_name;
+            this.pattern = Pattern.compile("\\s?\\-?/" + this.name() + "\\S*");
+        }
     }
     
+    
     public static String removeConstraints(String q) {
-        for (String c: constraintFields.keySet()) {
-            q = q.replaceAll(" /" + c, "").replaceAll(" -/" + c, "");
-            if (q.startsWith("/" + c) || q.startsWith("-/" + c)) {
-                int r = q.indexOf(' ');
-                if (r < 0) q = ""; else q = q.substring(0, r + 1);
-            }
+        for (Constraint c: Constraint.values()) {
+            q = c.pattern.matcher(q).replaceAll("");
         }
         return q;
     }
@@ -280,14 +282,34 @@ public class QueryEntry extends AbstractIndexEntry implements IndexEntry {
             if (constraints_negative.contains("image") && message.getImages().size() != 0) continue;
             if (constraints_positive.contains("place") && message.getPlaceName().length() == 0) continue;
             if (constraints_negative.contains("place") && message.getPlaceName().length() != 0) continue;
-            if (constraints_positive.contains("location") && message.getPlaceName().length() == 0) continue;
-            if (constraints_negative.contains("location") && message.getPlaceName().length() != 0) continue;
+            if (constraints_positive.contains("location") && message.getLocationPoint() == null) continue;
+            if (constraints_negative.contains("location") && message.getLocationPoint() != null) continue;
             if (constraints_positive.contains("link") && message.getLinks().length == 0) continue;
             if (constraints_negative.contains("link") && message.getLinks().length != 0) continue;
             if (constraints_positive.contains("mention") && message.getMentions().length == 0) continue;
             if (constraints_negative.contains("mention") && message.getMentions().length != 0) continue;
             if (constraints_positive.contains("hashtag") && message.getHashtags().length == 0) continue;
             if (constraints_negative.contains("hashtag") && message.getHashtags().length != 0) continue;
+
+            // special treatment of location constraint
+            for (String cs: constraints_positive) {
+                if (cs.startsWith(Constraint.location.name() + "=")) {
+                    if (message.getLocationPoint() == null) continue;
+                    String params = cs.substring(Constraint.location.name().length() + 1);
+                    String[] coord = params.split(",");
+                    if (coord.length == 4) {
+                        double lon = message.getLocationPoint()[0];
+                        double lon_west  = Double.parseDouble(coord[0]);
+                        double lon_east  = Double.parseDouble(coord[2]);
+                        if (lon < lon_west || lon > lon_east) continue;
+                        double lat = message.getLocationPoint()[1];
+                        double lat_south = Double.parseDouble(coord[1]);
+                        double lat_north = Double.parseDouble(coord[3]);
+                        if (lat < lat_south || lat > lat_north) continue;
+                    }
+                }
+            }
+            
             tl1.addTweet(message);
         }
         return tl1;
@@ -430,14 +452,32 @@ public class QueryEntry extends AbstractIndexEntry implements IndexEntry {
             for (String user: users_negative) cquery = QueryBuilders.filteredQuery(cquery, FilterBuilders.notFilter(FilterBuilders.inFilter("mentions", user)));
             for (String hashtag: hashtags_positive) cquery = QueryBuilders.filteredQuery(cquery, FilterBuilders.inFilter("hashtags", hashtag.toLowerCase()));
             for (String hashtag: hashtags_negative) cquery = QueryBuilders.filteredQuery(cquery, FilterBuilders.notFilter(FilterBuilders.inFilter("hashtags", hashtag.toLowerCase())));
-            for (Map.Entry<String, String> c: constraintFields.entrySet()) {
-                if (constraints_positive.contains(c.getKey())) {
-                    cquery = QueryBuilders.filteredQuery(cquery, FilterBuilders.existsFilter(c.getValue()));
+            for (Constraint c: Constraint.values()) {
+                if (constraints_positive.contains(c.name())) {
+                    cquery = QueryBuilders.filteredQuery(cquery, FilterBuilders.existsFilter(c.field_name));
                 }
-                if (constraints_negative.contains(c.getKey())) {
-                    cquery = QueryBuilders.filteredQuery(cquery, FilterBuilders.notFilter(FilterBuilders.existsFilter(c.getValue())));
+                if (constraints_negative.contains(c.name())) {
+                    cquery = QueryBuilders.filteredQuery(cquery, FilterBuilders.notFilter(FilterBuilders.existsFilter(c.field_name)));
                 }
             }
+            // special treatment of location constraints of the form /location=lon-west,lat-south,lon-east,lat-north i.e. /location=8.58,50.178,8.59,50.181
+            for (String cs: constraints_positive) {
+                if (cs.startsWith(Constraint.location.name() + "=")) {
+                    String params = cs.substring(Constraint.location.name().length() + 1);
+                    String[] coord = params.split(",");
+                    if (coord.length == 4) {
+                        double lon_west  = Double.parseDouble(coord[0]);
+                        double lat_south = Double.parseDouble(coord[1]);
+                        double lon_east  = Double.parseDouble(coord[2]);
+                        double lat_north = Double.parseDouble(coord[3]);
+                        cquery = QueryBuilders.filteredQuery(cquery, FilterBuilders.existsFilter(Constraint.location.field_name));
+                        cquery = QueryBuilders.filteredQuery(cquery, FilterBuilders.geoBoundingBoxFilter("location_point")
+                                .topLeft(lat_north, lon_west)
+                                .bottomRight(lat_south, lon_east));
+                    }
+                }
+            }
+            
             return cquery;
         }
     }

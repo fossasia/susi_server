@@ -153,11 +153,11 @@ public class RemoteAccess {
         }
         public int get(String key, int dflt) {
             String val = qm == null ? request.getParameter(key) : qm.get(key);
-            return val == null ? dflt : Integer.parseInt(val);
+            return val == null || val.length() == 0 ? dflt : Integer.parseInt(val);
         }
         public double get(String key, double dflt) {
             String val = qm == null ? request.getParameter(key) : qm.get(key);
-            return val == null ? dflt : Double.parseDouble(val);
+            return val == null || val.length() == 0 ? dflt : Double.parseDouble(val);
         }
         public boolean get(String key, boolean dflt) {
             String val = qm == null ? request.getParameter(key) : qm.get(key);
@@ -166,7 +166,7 @@ public class RemoteAccess {
         public Date get(String key, Date dflt, int timezoneOffset) {
             String val = qm == null ? request.getParameter(key) : qm.get(key);
             try {
-                return val == null ? dflt : DateParser.parse(val, timezoneOffset).getTime();
+                return val == null || val.length() == 0 ? dflt : DateParser.parse(val, timezoneOffset).getTime();
             } catch (ParseException e) {
                 return dflt;
             }
