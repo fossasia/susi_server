@@ -277,7 +277,7 @@ public class QueryEntry extends AbstractIndexEntry implements IndexEntry {
             if (t.startsWith("-/")) constraints_negative.add(t.substring(2));
         }
         Timeline tl1 = new Timeline();
-        for (MessageEntry message: tl0) {
+        messageloop: for (MessageEntry message: tl0) {
             if (constraints_positive.contains("image") && message.getImages().size() == 0) continue;
             if (constraints_negative.contains("image") && message.getImages().size() != 0) continue;
             if (constraints_positive.contains("place") && message.getPlaceName().length() == 0) continue;
@@ -294,18 +294,18 @@ public class QueryEntry extends AbstractIndexEntry implements IndexEntry {
             // special treatment of location constraint
             for (String cs: constraints_positive) {
                 if (cs.startsWith(Constraint.location.name() + "=")) {
-                    if (message.getLocationPoint() == null) continue;
+                    if (message.getLocationPoint() == null) continue messageloop;
                     String params = cs.substring(Constraint.location.name().length() + 1);
                     String[] coord = params.split(",");
                     if (coord.length == 4) {
                         double lon = message.getLocationPoint()[0];
                         double lon_west  = Double.parseDouble(coord[0]);
                         double lon_east  = Double.parseDouble(coord[2]);
-                        if (lon < lon_west || lon > lon_east) continue;
+                        if (lon < lon_west || lon > lon_east) continue messageloop;
                         double lat = message.getLocationPoint()[1];
                         double lat_south = Double.parseDouble(coord[1]);
                         double lat_north = Double.parseDouble(coord[3]);
-                        if (lat < lat_south || lat > lat_north) continue;
+                        if (lat < lat_south || lat > lat_north) continue messageloop;
                     }
                 }
             }
