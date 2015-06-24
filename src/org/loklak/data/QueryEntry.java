@@ -291,8 +291,8 @@ public class QueryEntry extends AbstractIndexEntry implements IndexEntry {
             if (constraints_positive.contains("hashtag") && message.getHashtags().length == 0) continue;
             if (constraints_negative.contains("hashtag") && message.getHashtags().length != 0) continue;
 
-            // special treatment of location constraint
-            for (String cs: constraints_positive) {
+            // special treatment of location and link constraint
+            constraintCheck: for (String cs: constraints_positive) {
                 if (cs.startsWith(Constraint.location.name() + "=")) {
                     if (message.getLocationPoint() == null) continue messageloop;
                     String params = cs.substring(Constraint.location.name().length() + 1);
@@ -307,6 +307,15 @@ public class QueryEntry extends AbstractIndexEntry implements IndexEntry {
                         double lat_north = Double.parseDouble(coord[3]);
                         if (lat < lat_south || lat > lat_north) continue messageloop;
                     }
+                }
+                if (cs.startsWith(Constraint.link.name() + "=")) {
+                    if (message.getLinks().length == 0) continue messageloop;
+                    Pattern regex = Pattern.compile(cs.substring(Constraint.link.name().length() + 1));
+                    for (String link: message.getLinks()) {
+                        if (regex.matcher(link).matches()) continue constraintCheck;
+                    }
+                    // no match
+                    continue messageloop;
                 }
             }
             
@@ -489,6 +498,11 @@ public class QueryEntry extends AbstractIndexEntry implements IndexEntry {
                                 .topLeft(lat_north, lon_west)
                                 .bottomRight(lat_south, lon_east));
                     }
+                }
+                if (cs.startsWith(Constraint.link.name() + "=")) {
+                    String regexp = cs.substring(Constraint.link.name().length() + 1);
+                    cquery = QueryBuilders.filteredQuery(cquery, FilterBuilders.existsFilter(Constraint.link.field_name));
+                    cquery = QueryBuilders.filteredQuery(cquery, FilterBuilders.regexpFilter(Constraint.link.field_name, regexp));
                 }
             }
             
