@@ -329,6 +329,11 @@ public class QueryEntry extends AbstractIndexEntry implements IndexEntry {
         }
         
         private QueryBuilder parse(String q, int timezoneOffset) {
+            // detect usage of OR junctor usage. Right now we cannot have mixed AND and OR usage. Thats a hack right now
+            q = q.replaceAll(" AND ", " "); // AND is default
+            boolean ORjunctor = q.indexOf(" OR ") >= 0;
+            q = q.replaceAll(" OR ", " "); // if we know that all terms are OR, we remove that and apply it later
+            
             // tokenize the query
             List<String> qe = new ArrayList<String>();
             Matcher m = tokenizerPattern.matcher(q);
@@ -403,8 +408,17 @@ public class QueryEntry extends AbstractIndexEntry implements IndexEntry {
             
             // compose query
             BoolQueryBuilder bquery = QueryBuilders.boolQuery();
-            for (String text: text_positive_match)  bquery.must(QueryBuilders.matchQuery("text", text));
-            for (String text: text_negative_match) bquery.mustNot(QueryBuilders.matchQuery("text", text));
+            for (String text: text_positive_match)  {
+                if (ORjunctor)
+                    bquery.should(QueryBuilders.matchQuery("text", text));
+                else
+                    bquery.must(QueryBuilders.matchQuery("text", text));
+            }
+            for (String text: text_negative_match) {
+                // negation of terms in disjunctions would cause to retrieve almost all documents
+                // this cannot be the requirement of the user. It may be valid in conjunctions, but not in disjunctions
+                bquery.mustNot(QueryBuilders.matchQuery("text", text));
+            }
             if (modifier.containsKey("id")) bquery.must(QueryBuilders.termQuery("id_str", modifier.get("id")));
             if (modifier.containsKey("-id")) bquery.mustNot(QueryBuilders.termQuery("id_str", modifier.get("-id")));
             if (modifier.containsKey("from")) bquery.must(QueryBuilders.termQuery("screen_name", modifier.get("from")));
