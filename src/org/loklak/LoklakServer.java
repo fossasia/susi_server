@@ -132,6 +132,9 @@ public class LoklakServer {
         ServletHolder pushServletHolder = new ServletHolder(PushServlet.class);
         pushServletHolder.getRegistration().setMultipartConfig(new MultipartConfigElement(tmp.getAbsolutePath()));
         servletHandler.addServlet(pushServletHolder, "/api/push.json");
+        ServletHolder geojsonPushServletHolder = new ServletHolder(GeoJsonPushServlet.class);
+        geojsonPushServletHolder.getRegistration().setMultipartConfig(new MultipartConfigElement(tmp.getAbsolutePath()));
+        servletHandler.addServlet(geojsonPushServletHolder, "/api/geojsonpush.json");
         ServletHolder assetServletHolder = new ServletHolder(AssetServlet.class);
         assetServletHolder.getRegistration().setMultipartConfig(new MultipartConfigElement(tmp.getAbsolutePath()));
         servletHandler.addServlet(assetServletHolder, "/api/asset");
