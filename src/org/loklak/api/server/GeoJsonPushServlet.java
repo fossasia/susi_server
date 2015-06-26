@@ -124,7 +124,13 @@ public class GeoJsonPushServlet extends HttpServlet {
         DateTime mtime = new DateTime((String) mtime_obj);
 
         List<?> coords = (List<?>) geometry.get("coordinates");
-        Long id = coords.get(0).hashCode() + coords.get(1).hashCode() + mtime.getMillis();
+
+        Double longitude = coords.get(0) instanceof Integer ? ((Integer) coords.get(0)).doubleValue() : (Double) coords.get(0);
+        Double latitude = coords.get(1) instanceof Integer ? ((Integer) coords.get(1)).doubleValue() : (Double) coords.get(1);
+
+        // longitude and latitude are added to id to a precision of 3 digits after comma
+        Long id = (long) Math.floor(1000*longitude) + (long) Math.floor(1000*latitude) + mtime.getMillis();
+        System.out.println((long) Math.floor(1000*longitude) + ", " + Math.floor(1000 * latitude) + ", " + mtime.getMillis() + ", " + id);
         return id.toString();
     }
 
