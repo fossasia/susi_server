@@ -6,6 +6,7 @@ import org.elasticsearch.common.xcontent.json.JsonXContent;
 import org.loklak.data.DAO;
 import org.loklak.data.MessageEntry;
 import org.loklak.data.ProviderType;
+import org.loklak.data.UserEntry;
 import org.loklak.harvester.SourceType;
 import org.loklak.tools.UTF8;
 import twitter4j.JSONException;
@@ -104,6 +105,7 @@ public class GeoJsonPushServlet extends HttpServlet {
                     return;
                 }
                 MessageEntry msg = new MessageEntry(properties);
+                boolean successful = DAO.writeMessage(msg, new UserEntry(new HashMap<String, Object>()), true, true);
             }
         }
     }

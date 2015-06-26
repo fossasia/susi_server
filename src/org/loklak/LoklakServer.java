@@ -47,6 +47,7 @@ import org.loklak.api.server.HelloServlet;
 import org.loklak.api.server.PeersServlet;
 import org.loklak.api.server.ProxyServlet;
 import org.loklak.api.server.PushServlet;
+import org.loklak.api.server.GeoJsonPushServlet;
 import org.loklak.api.server.SearchServlet;
 import org.loklak.api.server.SettingsServlet;
 import org.loklak.api.server.StatusServlet;
