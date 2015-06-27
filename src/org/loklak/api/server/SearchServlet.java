@@ -64,7 +64,7 @@ public class SearchServlet extends HttpServlet {
         RemoteAccess.Post post = RemoteAccess.evaluate(request);
         
         // manage DoS
-        if (post.isDoS_blackout()) {response.sendError(503, "your request frequency is too high"); return;}
+        if (post.isDoS_blackout()) {response.sendError(503, "your (" + request.getRemoteHost() + ") request frequency is too high"); return;}
         
         // check call type
         boolean jsonExt = request.getServletPath().endsWith(".json");
