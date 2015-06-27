@@ -136,11 +136,17 @@ public class LoklakServer {
         assetServletHolder.getRegistration().setMultipartConfig(new MultipartConfigElement(tmp.getAbsolutePath()));
         servletHandler.addServlet(assetServletHolder, "/api/asset");
         servletHandler.addServlet(MarkdownServlet.class, "/vis/markdown.gif");
+        servletHandler.addServlet(MarkdownServlet.class, "/vis/markdown.gif.base64");
         servletHandler.addServlet(MarkdownServlet.class, "/vis/markdown.png");
+        servletHandler.addServlet(MarkdownServlet.class, "/vis/markdown.png.base64");
         servletHandler.addServlet(MarkdownServlet.class, "/vis/markdown.jpg");
+        servletHandler.addServlet(MarkdownServlet.class, "/vis/markdown.jpg.base64");
         servletHandler.addServlet(MapServlet.class, "/vis/map.gif");
+        servletHandler.addServlet(MapServlet.class, "/vis/map.gif.base64");
         servletHandler.addServlet(MapServlet.class, "/vis/map.png");
+        servletHandler.addServlet(MapServlet.class, "/vis/map.png.base64");
         servletHandler.addServlet(MapServlet.class, "/vis/map.jpg");
+        servletHandler.addServlet(MapServlet.class, "/vis/map.jpg.base64");
         
         ResourceHandler fileHandler = new ResourceHandler();
         fileHandler.setDirectoriesListed(true);

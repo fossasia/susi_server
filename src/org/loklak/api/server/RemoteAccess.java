@@ -34,14 +34,18 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
+import javax.imageio.ImageIO;
 import javax.servlet.ServletException;
+import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.Part;
 
+import org.elasticsearch.common.Base64;
 import org.loklak.data.DAO;
 import org.loklak.tools.DateParser;
 import org.loklak.tools.UTF8;
+import org.loklak.visualization.graphics.RasterPlotter;
 
 /**
  * Storage of a peer list which can be used for peer-to-peer communication.
@@ -288,5 +292,64 @@ public class RemoteAccess {
         } catch (ServletException e) {
         }
         return map;
+    }
+
+    public static enum FileType {
+        UNKNOWN, PNG, JPG, GIF, JSON, RSS;
+    }
+    
+    public static class FileTypeEncoding {
+        public final FileType fileType;
+        public final boolean base64;
+        private FileTypeEncoding(final FileType fileType, final boolean base64) {
+            this.fileType = fileType;
+            this.base64 = base64;
+        }
+        private FileTypeEncoding(final FileType fileType) {
+            this.fileType = fileType;
+            this.base64 = false;
+        }
+    }
+    
+    public static FileTypeEncoding getFileType(HttpServletRequest request) {
+        String servletPath = request.getServletPath();
+        if (servletPath.endsWith(".gif")) return new FileTypeEncoding(FileType.GIF);
+        if (servletPath.endsWith(".gif.base64")) return new FileTypeEncoding(FileType.GIF, true);
+        if (servletPath.endsWith(".png")) return new FileTypeEncoding(FileType.PNG);
+        if (servletPath.endsWith(".png.base64")) return new FileTypeEncoding(FileType.PNG, true);
+        if (servletPath.endsWith(".jpg")) return new FileTypeEncoding(FileType.JPG);
+        if (servletPath.endsWith(".jpg.base64")) return new FileTypeEncoding(FileType.JPG, true);
+        return new FileTypeEncoding(FileType.UNKNOWN);
+    }
+    
+    public static void writeImage(final FileTypeEncoding fileType, final HttpServletResponse response, Post post, final RasterPlotter matrix) throws IOException {
+        // write image
+        ServletOutputStream sos = response.getOutputStream();
+        if (fileType.fileType == FileType.PNG) {
+            post.setResponse(response, fileType.base64 ? "application/octet-stream" : "image/png");
+            sos.write(fileType.base64 ? Base64.encodeBytes(matrix.pngEncode(1)).getBytes() : matrix.pngEncode(1));
+        }
+        if (fileType.fileType == FileType.GIF) {
+            post.setResponse(response, fileType.base64 ? "application/octet-stream" : "image/gif");
+            if (fileType.base64) {
+                ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                ImageIO.write(matrix.getImage(), "gif", baos);
+                baos.close();
+                sos.write(Base64.encodeBytes(baos.toByteArray()).getBytes());
+            } else {
+                ImageIO.write(matrix.getImage(), "gif", sos);
+            }
+        }
+        if (fileType.fileType == FileType.JPG) {
+            post.setResponse(response, fileType.base64 ? "application/octet-stream" : "image/jpeg");
+            if (fileType.base64) {
+                ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                ImageIO.write(matrix.getImage(), "jpg", baos);
+                baos.close();
+                sos.write(Base64.encodeBytes(baos.toByteArray()).getBytes());
+            } else {
+                ImageIO.write(matrix.getImage(), "jpg", sos);
+            }
+        }
     }
 }

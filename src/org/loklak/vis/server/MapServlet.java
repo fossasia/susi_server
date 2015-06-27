@@ -22,14 +22,13 @@ package org.loklak.vis.server;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 
-import javax.imageio.ImageIO;
 import javax.servlet.ServletException;
-import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.loklak.api.server.RemoteAccess;
+import org.loklak.api.server.RemoteAccess.FileTypeEncoding;
 import org.loklak.geo.OSMTile;
 import org.loklak.visualization.graphics.PrintTool;
 import org.loklak.visualization.graphics.RasterPlotter;
@@ -60,10 +59,8 @@ public class MapServlet extends HttpServlet {
         // parse arguments
         String text = post.get("text", "");
         boolean uppercase = post.get("uppercase", true);
-        boolean gifExt = request.getServletPath().endsWith(".gif");
-        boolean pngExt = request.getServletPath().endsWith(".png");
-        boolean jpgExt = request.getServletPath().endsWith(".jpg");
-
+        FileTypeEncoding fileType = RemoteAccess.getFileType(request);
+        
         int zoom = post.get("zoom", 19);
         double lat = post.get("mlat", 50.11362d);
         double lon = post.get("mlon", 8.67919d);
@@ -102,18 +99,6 @@ public class MapServlet extends HttpServlet {
         PrintTool.print(map, 6, map.getHeight() - 6, 0, "(C) OPENSTREETMAP CONTRIBUTORS", -1, 100);
         
         // write image
-        ServletOutputStream sos = response.getOutputStream();
-        if (pngExt) {
-            post.setResponse(response, "image/png");
-            sos.write(map.pngEncode(1));
-        }
-        if (gifExt) {
-            post.setResponse(response, "image/gif");
-            ImageIO.write(map.getImage(), "gif", sos);
-        }
-        if (jpgExt) {
-            post.setResponse(response, "image/jpeg");
-            ImageIO.write(map.getImage(), "jpg", sos);
-        }
+        RemoteAccess.writeImage(fileType, response, post, map);
     }
 }

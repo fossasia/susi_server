@@ -25,14 +25,13 @@ import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.imageio.ImageIO;
 import javax.servlet.ServletException;
-import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.loklak.api.server.RemoteAccess;
+import org.loklak.api.server.RemoteAccess.FileTypeEncoding;
 import org.loklak.visualization.graphics.PrintTool;
 import org.loklak.visualization.graphics.RasterPlotter;
 import org.loklak.visualization.graphics.RasterPlotter.DrawMode;
@@ -69,9 +68,7 @@ public class MarkdownServlet extends HttpServlet {
         String drawmodes = post.get("drawmode", color_background > 0x888888 ? DrawMode.MODE_SUB.name() : DrawMode.MODE_ADD.name());
         DrawMode drawmode = DrawMode.valueOf(drawmodes);
         if (drawmode == DrawMode.MODE_SUB) color_text = RasterPlotter.invertColor(color_text);
-        boolean gifExt = request.getServletPath().endsWith(".gif");
-        boolean pngExt = request.getServletPath().endsWith(".png");
-        boolean jpgExt = request.getServletPath().endsWith(".jpg");
+        FileTypeEncoding fileType = RemoteAccess.getFileType(request);
         
         // compute image
         BufferedReader rdr = new BufferedReader(new StringReader(text));
@@ -107,18 +104,6 @@ public class MarkdownServlet extends HttpServlet {
         PrintTool.print(matrix, matrix.getWidth() - 6, matrix.getHeight() - 6, 0, "MADE WITH HTTP://LOKLAK.ORG", 1, 20);
         
         // write image
-        ServletOutputStream sos = response.getOutputStream();
-        if (pngExt) {
-            post.setResponse(response, "image/png");
-            sos.write(matrix.pngEncode(1));
-        }
-        if (gifExt) {
-            post.setResponse(response, "image/gif");
-            ImageIO.write(matrix.getImage(), "gif", sos);
-        }
-        if (jpgExt) {
-            post.setResponse(response, "image/jpeg");
-            ImageIO.write(matrix.getImage(), "jpg", sos);
-        }
+        RemoteAccess.writeImage(fileType, response, post, matrix);
     }
 }
