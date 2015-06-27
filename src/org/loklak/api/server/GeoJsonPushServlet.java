@@ -97,9 +97,14 @@ public class GeoJsonPushServlet extends HttpServlet {
         for (Map<String, Object> feature : features) {
             Object properties_obj = feature.get("properties");
             Map<String, Object> properties = properties_obj instanceof Map<?, ?> ? (Map<String, Object>) properties_obj : null;
+            Object geometry_obj = feature.get("geometry");
+            Map<String, Object> geometry = geometry_obj instanceof Map<?, ?> ? (Map<String, Object>) geometry_obj : null;
 
             if (properties == null) {
                 properties = new HashMap<>();
+            }
+            if (geometry == null) {
+                geometry = new HashMap<>();
             }
 
             // add mapped properties
@@ -108,6 +113,8 @@ public class GeoJsonPushServlet extends HttpServlet {
 
             properties.put("source_type", SourceType.IMPORT.name());
             properties.put("provider_type", ProviderType.GEOJSON.name());
+            properties.put("provider_hash", remoteHash);
+            properties.put("location_point", geometry.get("coordinates"));
 
             // avoid error text not found. TODO: a better strategy, e.g. require text as a mandatory field
             if (properties.get("text") == null) {
