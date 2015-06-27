@@ -518,7 +518,9 @@ public class MessageEntry extends AbstractIndexEntry implements IndexEntry {
         while ((p = s.indexOf("&#")) >= 0) {
             q = s.indexOf(';', p + 2);
             if (q < p) break;
-            s = s.substring(0, p) + ((char) Integer.parseInt(s.substring(p + 2, q), 16)) + s.substring(q + 1);
+            String charcode = s.substring(p + 2, q);
+            int unicode = s.charAt(0) == 'x' ? Integer.parseInt(charcode.substring(1), 16) : Integer.parseInt(charcode);
+            s = s.substring(0, p) + ((char) unicode) + s.substring(q + 1);
         }
         // octal coding \\u
         while ((p = s.indexOf("\\u")) >= 0) {
