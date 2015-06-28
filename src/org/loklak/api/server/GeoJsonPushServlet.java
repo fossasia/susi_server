@@ -9,12 +9,14 @@ import org.loklak.data.ProviderType;
 import org.loklak.data.UserEntry;
 import org.loklak.harvester.SourceType;
 import org.loklak.tools.UTF8;
+
 import twitter4j.JSONException;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -26,6 +28,8 @@ import java.util.Map;
 import java.util.HashMap;
 
 public class GeoJsonPushServlet extends HttpServlet {
+
+    private static final long serialVersionUID = -6348695722639858781L;
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
@@ -48,7 +52,7 @@ public class GeoJsonPushServlet extends HttpServlet {
         if (url == null || url.length() == 0) {response.sendError(400, "your request does not contain an url to your data object"); return;}
 
         // parse json retrieved from url
-        List<Map<String, Object>> features;
+        final List<Map<String, Object>> features;
         try {
             String jsonText = readJsonFromUrl(url);
             XContentParser parser = JsonXContent.jsonXContent.createParser(jsonText);
@@ -59,6 +63,7 @@ public class GeoJsonPushServlet extends HttpServlet {
             response.sendError(400, "error reading json file from url");
             return;
         }
+        
         // parse maptype
         Map<String, String> mapRules = new HashMap<>();
         if (!"".equals(mapType)) {
@@ -81,6 +86,7 @@ public class GeoJsonPushServlet extends HttpServlet {
         if (features != null) {
             for (Map<String, Object> feature : features) {
                 Object properties_obj = feature.get("properties");
+                @SuppressWarnings("unchecked")
                 Map<String, Object> properties = properties_obj instanceof Map<?, ?> ? (Map<String, Object>) properties_obj : null;
                 for (String propertyKey : properties.keySet()) {
                     if (mapRules.containsKey(propertyKey)) {
@@ -105,15 +111,17 @@ public class GeoJsonPushServlet extends HttpServlet {
                     return;
                 }
                 MessageEntry msg = new MessageEntry(properties);
-                boolean successful = DAO.writeMessage(msg, new UserEntry(new HashMap<String, Object>()), true, true);
+                DAO.writeMessage(msg, new UserEntry(new HashMap<String, Object>()), true, true);
             }
         }
     }
 
     private static String computeGeoJsonId(Map<String, Object> feature) throws Exception {
         Object properties_obj = feature.get("properties");
+        @SuppressWarnings("unchecked")
         Map<String, Object> properties = properties_obj instanceof Map<?, ?> ? (Map<String, Object>) properties_obj : null;
         Object geometry_obj = feature.get("geometry");
+        @SuppressWarnings("unchecked")
         Map<String, Object> geometry = geometry_obj instanceof Map<?, ?> ? (Map<String, Object>) geometry_obj : null;
         String geometryType = (String) geometry.get("type");
         if (!"Point".equals(geometryType)) {
