@@ -27,6 +27,12 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.regex.Pattern;
 
+/*
+ * Test URLs:
+ * http://localhost:9000/api/push/geojson.json?url=http://www.paris-streetart.com/test/map.geojson
+ * http://localhost:9000/api/push/geojson.json?url=http://api.fossasia.net/map/ffGeoJsonp.php
+ */
+
 public class GeoJsonPushServlet extends HttpServlet {
 
     private static final long serialVersionUID = -6348695722639858781L;
@@ -121,7 +127,7 @@ public class GeoJsonPushServlet extends HttpServlet {
 
             // compute unique message id among geojson messages
             try {
-                properties.put("id_str", computeGeoJsonId(feature));
+                properties.put("id_str", computeGeoJsonId(properties, geometry));
                 // response.getWriter().println(properties.get("shortname") + ", " + properties.get("screen_name") + ", " + properties.get("name") + " : " + computeGeoJsonId((feature)));
             } catch (Exception e) {
                 response.sendError(400, "Error computing id : " + e.getMessage());
@@ -200,13 +206,7 @@ public class GeoJsonPushServlet extends HttpServlet {
         return root;
     }
 
-    private static String computeGeoJsonId(Map<String, Object> feature) throws Exception {
-        Object properties_obj = feature.get("properties");
-        @SuppressWarnings("unchecked")
-        Map<String, Object> properties = properties_obj instanceof Map<?, ?> ? (Map<String, Object>) properties_obj : null;
-        Object geometry_obj = feature.get("geometry");
-        @SuppressWarnings("unchecked")
-        Map<String, Object> geometry = geometry_obj instanceof Map<?, ?> ? (Map<String, Object>) geometry_obj : null;
+    private static String computeGeoJsonId(Map<String, Object> properties, Map<String, Object> geometry) throws Exception {
         String geometryType = (String) geometry.get("type");
         if (!"Point".equals(geometryType)) {
             throw new Exception("Geometry object unsupported : " + geometryType);
