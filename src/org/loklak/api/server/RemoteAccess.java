@@ -57,8 +57,6 @@ public class RemoteAccess {
     public static Map<String, RemoteAccess> history = new ConcurrentHashMap<String, RemoteAccess>();
     
     public static Post evaluate(final HttpServletRequest request) {
-        String clientHost = request.getRemoteHost();
-        String XRealIP = request.getHeader("X-Real-IP"); if (XRealIP != null && XRealIP.length() > 0) clientHost = XRealIP; // get IP through nginx config "proxy_set_header X-Real-IP $remote_addr;"
         String path = request.getServletPath();
         Map<String, String> qm = getQueryMap(request.getQueryString());
         Post post = new Post(request);
@@ -69,28 +67,23 @@ public class RemoteAccess {
         Integer httpsport = httpsports == null ? null : Integer.parseInt(httpsports);
         String peername = qm == null ? request.getParameter("peername") : qm.get("peername");
         if (peername == null || peername.length() > 132) peername = "anonymous";
-        post.setRemoteAccess(init(clientHost, path, httpport, httpsport, peername));
-        return post;
-    }
-    
-    private static RemoteAccess init(final String remoteHost, final String localPath, final Integer localHTTPPort, final Integer localHTTPSPort, final String peername) {
-        RemoteAccess ra;
-        if (localHTTPPort == null || localHTTPSPort == null) {
+        final String remoteHost = post.getClientHost();
+        if (httpport == null || httpsport == null) {
             // if port configuration is omitted, just update the value if it exist
-            ra = history.get(remoteHost);
+            RemoteAccess ra = history.get(remoteHost);
             if (ra == null) {
-                history.put(remoteHost, new RemoteAccess(remoteHost, localPath, localHTTPPort, localHTTPSPort, peername));
+                history.put(remoteHost, new RemoteAccess(remoteHost, path, httpport, httpsport, peername));
             } else {
                 assert ra.remoteHost.equals(remoteHost);
-                ra.localPath = localPath;
+                ra.localPath = path;
                 ra.accessTime = System.currentTimeMillis();
             }
         } else {
             // overwrite if new port configuration is submitted
-            ra = new RemoteAccess(remoteHost, localPath, localHTTPPort, localHTTPSPort, peername);
+            RemoteAccess ra = new RemoteAccess(remoteHost, path, httpport, httpsport, peername);
             history.put(remoteHost, ra);
         }
-        return ra;
+        return post;
     }
     
     public static long latestVisit(String remoteHost) {
@@ -105,14 +98,12 @@ public class RemoteAccess {
     public static class Post {
         private HttpServletRequest request;
         private Map<String, String> qm;
-        private RemoteAccess ra;
         private String clientHost;
         private long access_time, time_since_last_access;
         private boolean DoS_blackout, DoS_servicereduction;
         public Post(final HttpServletRequest request) {
             this.qm = null;
             this.request = request;
-            this.ra = null;
             this.clientHost = request.getRemoteHost();
             String XRealIP = request.getHeader("X-Real-IP");
             if (XRealIP != null && XRealIP.length() > 0) this.clientHost = XRealIP; // get IP through nginx config "proxy_set_header X-Real-IP $remote_addr;"
@@ -174,12 +165,6 @@ public class RemoteAccess {
             } catch (ParseException e) {
                 return dflt;
             }
-        }
-        public void setRemoteAccess(final RemoteAccess ra) {
-            this.ra = ra;
-        }
-        public RemoteAccess getRemoteAccess() {
-            return this.ra;
         }
         public void setResponse(final HttpServletResponse response, final String mime) {
             response.setDateHeader("Last-Modified", this.access_time);

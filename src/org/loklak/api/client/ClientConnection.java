@@ -72,7 +72,7 @@ public class ClientConnection {
             this.inputStream = con.getInputStream();
             this.header = con.getHeaderFields();
         } else {
-            throw new IOException("server fail: " + status + ": " + con.getResponseMessage());
+            throw new IOException("client connection to " + urlstring + " fail: " + status + ": " + con.getResponseMessage());
         }
     }
     
@@ -121,7 +121,7 @@ public class ClientConnection {
         if (this.status == HttpURLConnection.HTTP_OK) {
             this.inputStream = con.getInputStream();
         } else {
-            throw new IOException("server fail: " + status + ": " + con.getResponseMessage());
+            throw new IOException("client connection to " + urlstring + " fail: " + status + ": " + con.getResponseMessage());
         }
             
     }
