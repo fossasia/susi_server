@@ -3,6 +3,7 @@ package org.loklak.api.server;
 import org.elasticsearch.common.joda.time.DateTime;
 import org.elasticsearch.common.xcontent.XContentParser;
 import org.elasticsearch.common.xcontent.json.JsonXContent;
+import org.loklak.api.client.ClientConnection;
 import org.loklak.data.DAO;
 import org.loklak.data.MessageEntry;
 import org.loklak.data.ProviderType;
@@ -10,19 +11,12 @@ import org.loklak.data.UserEntry;
 import org.loklak.harvester.SourceType;
 import org.loklak.tools.UTF8;
 
-import twitter4j.JSONException;
-
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.net.URL;
-import java.nio.charset.Charset;
 import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
@@ -32,29 +26,29 @@ public class GeoJsonPushServlet extends HttpServlet {
     private static final long serialVersionUID = -6348695722639858781L;
 
     @Override
-    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        response.sendError(400, "your must call this with HTTP POST");
-    }
-
-    @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        doGet(request, response);
+    }
+    
+    @Override
+    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         RemoteAccess.Post post = RemoteAccess.evaluate(request);
 
         // manage DoS
         if (post.isDoS_blackout()) {response.sendError(503, "your request frequency is too high"); return;}
 
         Map<String, byte[]> m = RemoteAccess.getPostMap(request);
-        String url = UTF8.String(m.get("url"));
-        String mapType = UTF8.String(m.get("mapType"));
-        String callback = UTF8.String(m.get("callback"));
-        String sourceType = UTF8.String(m.get("sourceType"));
+        String url = post.get("url", "");
+        String mapType = post.get("mapType", "");
+        String sourceType = post.get("sourceType", "");
+        String callback = post.get("callback", "");
         boolean jsonp = callback != null && callback.length() > 0;
         if (url == null || url.length() == 0) {response.sendError(400, "your request does not contain an url to your data object"); return;}
 
         // parse json retrieved from url
         final List<Map<String, Object>> features;
         try {
-            String jsonText = readJsonFromUrl(url);
+            byte[] jsonText = ClientConnection.download(url);
             XContentParser parser = JsonXContent.jsonXContent.createParser(jsonText);
             Map<String, Object> map = parser == null ? null : parser.map();
             Object features_obj = map.get("features");
@@ -142,21 +136,5 @@ public class GeoJsonPushServlet extends HttpServlet {
         Long id = (long) Math.floor(1000*longitude) + (long) Math.floor(1000*latitude) + mtime.getMillis();
         System.out.println((long) Math.floor(1000*longitude) + ", " + Math.floor(1000 * latitude) + ", " + mtime.getMillis() + ", " + id);
         return id.toString();
-    }
-
-    private static String readJsonFromUrl(String url) throws IOException, JSONException {
-        InputStream is = new URL(url).openStream();
-        try {
-            BufferedReader rd = new BufferedReader(new InputStreamReader(is, Charset.forName("UTF-8")));
-            StringBuilder sb = new StringBuilder();
-            int cp;
-            while ((cp = rd.read()) != -1) {
-                sb.append((char) cp);
-            }
-            String jsonText = sb.toString();
-            return jsonText;
-        } finally {
-            is.close();
-        }
     }
 }
