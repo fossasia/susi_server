@@ -86,7 +86,7 @@ public class GeoJsonPushServlet extends HttpServlet {
                     }
                     List<String> valuesList = mapRules.get(splitted[0]);
                     if (valuesList == null) {
-                        valuesList = new ArrayList();
+                        valuesList = new ArrayList<String>();
                         mapRules.put(splitted[0], valuesList);
                     }
                     valuesList.add(splitted[1]);
@@ -100,8 +100,10 @@ public class GeoJsonPushServlet extends HttpServlet {
         int recordCount = 0, newCount = 0, knownCount = 0;
         for (Map<String, Object> feature : features) {
             Object properties_obj = feature.get("properties");
+            @SuppressWarnings("unchecked")
             Map<String, Object> properties = properties_obj instanceof Map<?, ?> ? (Map<String, Object>) properties_obj : null;
             Object geometry_obj = feature.get("geometry");
+            @SuppressWarnings("unchecked")
             Map<String, Object> geometry = geometry_obj instanceof Map<?, ?> ? (Map<String, Object>) geometry_obj : null;
 
             if (properties == null) {
@@ -176,9 +178,9 @@ public class GeoJsonPushServlet extends HttpServlet {
      */
     private Map<String, Object> convertMapRulesProperties(Map<String, List<String>> mapRules, Map<String, Object> properties) {
         Map<String, Object> root = new HashMap<>();
-        Iterator it = properties.entrySet().iterator();
+        Iterator<Map.Entry<String, Object>> it = properties.entrySet().iterator();
         while (it.hasNext()) {
-            Map.Entry pair = (Map.Entry) it.next();
+            Map.Entry<String, Object> pair = (Map.Entry<String, Object>) it.next();
             String key = (String) pair.getKey();
             if (mapRules.containsKey(key)) {
                 for (String newField : mapRules.get(key)) {
