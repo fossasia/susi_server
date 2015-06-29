@@ -190,7 +190,7 @@ public class TwitterScraper {
                 UserEntry user = new UserEntry(
                         props.get("usernickname").value,
                         props.get("useravatarurl").value,
-                        props.get("userfullname").value
+                        MessageEntry.html2utf8(props.get("userfullname").value)
                         );
                 ArrayList<String> imgs = new ArrayList<String>(images.size()); imgs.addAll(images);
                 ArrayList<String> vids = new ArrayList<String>(videos.size()); vids.addAll(videos);
