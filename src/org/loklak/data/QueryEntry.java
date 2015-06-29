@@ -247,6 +247,7 @@ public class QueryEntry extends AbstractIndexEntry implements IndexEntry {
         location("location_point"),
         link("links"),
         mention("mentions"),
+        source_type("source_type"),
         hashtag("hashtags");
         protected String field_name;
         protected Pattern pattern;
