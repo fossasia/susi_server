@@ -415,7 +415,7 @@ public class QueryEntry extends AbstractIndexEntry implements IndexEntry {
             }
             if (modifier.containsKey("to")) users_positive.add(modifier.get("to"));
             
-            // compose query
+            // compose query for text
             BoolQueryBuilder bquery = QueryBuilders.boolQuery();
             for (String text: text_positive_match)  {
                 if (ORjunctor)
@@ -428,9 +428,21 @@ public class QueryEntry extends AbstractIndexEntry implements IndexEntry {
                 // this cannot be the requirement of the user. It may be valid in conjunctions, but not in disjunctions
                 bquery.mustNot(QueryBuilders.matchQuery("text", text));
             }
+            
+            // apply modifiers
             if (modifier.containsKey("id")) bquery.must(QueryBuilders.termQuery("id_str", modifier.get("id")));
             if (modifier.containsKey("-id")) bquery.mustNot(QueryBuilders.termQuery("id_str", modifier.get("-id")));
-            if (modifier.containsKey("from")) bquery.must(QueryBuilders.termQuery("screen_name", modifier.get("from")));
+            if (modifier.containsKey("from")) {
+                String screen_name = modifier.get("from");
+                if (screen_name.indexOf(',') < 0) {
+                    bquery.must(QueryBuilders.termQuery("screen_name", screen_name));
+                } else {
+                    String[] screen_names = screen_name.split(",");
+                    BoolQueryBuilder disjunction = QueryBuilders.boolQuery();
+                    for (String name: screen_names) disjunction.should(QueryBuilders.termQuery("screen_name", name));
+                    bquery.must(disjunction);
+                }
+            }
             if (modifier.containsKey("-from")) bquery.mustNot(QueryBuilders.termQuery("screen_name", modifier.get("-from")));
             if (modifier.containsKey("near")) {
                 BoolQueryBuilder nearquery = QueryBuilders.boolQuery()
