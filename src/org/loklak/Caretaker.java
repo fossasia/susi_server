@@ -57,7 +57,7 @@ public class Caretaker extends Thread {
         try {Thread.sleep(10000);} catch (InterruptedException e) {} // wait a bit to give elasticsearch a start-up time
         while (this.shallRun) {
             // sleep a bit to prevent that the DoS limit fires at backend server
-            try {Thread.sleep(3000);} catch (InterruptedException e) {}
+            try {Thread.sleep(5000);} catch (InterruptedException e) {}
             
             // peer-to-peer operation
             Timeline tl = DAO.takeTimeline(500, 3000);
@@ -70,11 +70,11 @@ public class Caretaker extends Thread {
                     // our timeline in RAM would fill up our RAM creating a memory leak
                     retrylook: for (int retry = 0; retry < 3; retry++) {
                         // give back-end time to recover
-                        try {Thread.sleep(3000 + retry * 3);} catch (InterruptedException e) {}
                         if (PushClient.push(remote, tl)) {
                             DAO.log("success pushing to backend in " + retry + " attempt");
                             break retrylook;
                         }
+                        try {Thread.sleep(3000 + retry * 3000);} catch (InterruptedException e) {}
                     }
                     DAO.log("failed pushing " + tl.size() + " messages to backend");
                 }
