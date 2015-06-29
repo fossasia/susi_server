@@ -1,5 +1,5 @@
 /**
- *  Messages
+ *  LoklakServer
  *  Copyright 22.02.2015 by Michael Peter Christen, @0rb1t3r
  *
  *  This library is free software; you can redistribute it and/or
@@ -60,8 +60,6 @@ import org.loklak.vis.server.MarkdownServlet;
 
 public class LoklakServer {
 
-    public static String USER_AGENT = "Mozilla/5.0 (Macintosh; U; Intel Mac OS X 10.4; en-US; rv:1.9.2.2) Gecko/20100316 Firefox/3.6.2";
-    
     private static Server server = null;
     private static Caretaker caretaker = null;
     
@@ -70,7 +68,11 @@ public class LoklakServer {
         
         // init config, log and elasticsearch
         File data = new File(new File("."), "data");
-        if (!data.exists()) data.mkdirs();
+        if (!data.exists()) data.mkdirs(); // should already be there since the start.sh script creates it
+
+        File pid = new File(data, "loklak.pid");
+        if (pid.exists()) pid.deleteOnExit(); // thats a signal for the stop.sh script that loklak has terminated
+        
         File tmp = new File(data, "tmp");
         if (!tmp.exists()) data.mkdirs();
         DAO.init(data);

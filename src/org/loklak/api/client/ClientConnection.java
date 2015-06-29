@@ -32,13 +32,13 @@ import java.net.URL;
 import java.util.List;
 import java.util.Map;
 
-import org.loklak.LoklakServer;
-
 /**
  * Helper class to provide BufferedReader Objects for get and post connections
  */
 public class ClientConnection {
 
+    public static String USER_AGENT = "Mozilla/5.0 (Macintosh; U; Intel Mac OS X 10.4; en-US; rv:1.9.2.2) Gecko/20100316 Firefox/3.6.2";
+    
     public  static final String CHARSET = "UTF-8";
     private static final String CRLF = "\r\n";
     private static final String HYPHENS = "--";
@@ -63,7 +63,7 @@ public class ClientConnection {
         con.setUseCaches(false);
         con.setDoOutput(true);
         con.setDoInput(true);
-        con.setRequestProperty("User-Agent", LoklakServer.USER_AGENT);
+        con.setRequestProperty("User-Agent", USER_AGENT);
         con.setRequestProperty("Connection", "Keep-Alive");
         con.setRequestProperty("Cache-Control", "no-cache");
         con.connect();
@@ -94,7 +94,7 @@ public class ClientConnection {
         con.setUseCaches(false);
         con.setDoOutput(true);
         con.setDoInput(true);
-        con.setRequestProperty("User-Agent", LoklakServer.USER_AGENT);
+        con.setRequestProperty("User-Agent", USER_AGENT);
         con.setRequestProperty("Connection", "Keep-Alive");
         con.setRequestProperty("Cache-Control", "no-cache");
         con.setRequestProperty("Content-Type", "multipart/form-data;boundary=" + BOUNDARY);
