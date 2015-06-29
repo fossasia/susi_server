@@ -8,7 +8,7 @@
         <pathelement location="lib/antlr-runtime-3.5.jar"/>
         <pathelement location="lib/asm-4.1.jar"/>
         <pathelement location="lib/asm-commons-4.1.jar"/>
-        <pathelement location="lib/elasticsearch-1.5.0.jar"/>
+        <pathelement location="lib/elasticsearch-1.6.0.jar"/>
         <pathelement location="lib/groovy-all-2.4.0.jar"/>
         <pathelement location="lib/jackson-annotations-2.6.0.jar"/>
         <pathelement location="lib/jackson-core-2.6.0.jar"/>
