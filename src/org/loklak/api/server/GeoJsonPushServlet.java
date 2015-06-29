@@ -50,6 +50,7 @@ import java.util.regex.Pattern;
  * Test URLs:
  * http://localhost:9000/api/push/geojson.json?url=http://www.paris-streetart.com/test/map.geojson
  * http://localhost:9000/api/push/geojson.json?url=http://api.fossasia.net/map/ffGeoJsonp.php
+ * http://localhost:9000/api/push/geojson.json?url=http://cmap-fossasia-api.herokuapp.com/ffGeoJsonp.php&map_type=shortname:screen_name,shortname:user.screen_name&source_type=FOSSASIA_API
  */
 
 public class GeoJsonPushServlet extends HttpServlet {
@@ -61,10 +62,6 @@ public class GeoJsonPushServlet extends HttpServlet {
         doGet(request, response);
     }
 
-    /*
-     * Example :
-     * curl -i -F callback=p -F url=http://cmap-fossasia-api.herokuapp.com/ffGeoJsonp.php -F map_type=shortname:screen_name,shortname:user.screen_name,name:user.name,url:link http://localhost:9000/api/push/geojson.json
-     */
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         RemoteAccess.Post post = RemoteAccess.evaluate(request);
