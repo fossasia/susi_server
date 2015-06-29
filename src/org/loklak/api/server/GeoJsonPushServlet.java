@@ -1,3 +1,22 @@
+/**
+ *  Campaigns
+ *  Copyright 09.04.2015 by Dang Hai An, @zyzo
+ *
+ *  This library is free software; you can redistribute it and/or
+ *  modify it under the terms of the GNU Lesser General Public
+ *  License as published by the Free Software Foundation; either
+ *  version 2.1 of the License, or (at your option) any later version.
+ *
+ *  This library is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ *  Lesser General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Lesser General Public License
+ *  along with this program in the file lgpl21.txt
+ *  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 package org.loklak.api.server;
 
 import org.elasticsearch.common.joda.time.DateTime;
@@ -41,7 +60,11 @@ public class GeoJsonPushServlet extends HttpServlet {
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         doGet(request, response);
     }
-    
+
+    /*
+     * Example :
+     * curl -i -F callback=p -F url=http://cmap-fossasia-api.herokuapp.com/ffGeoJsonp.php -F map_type=shortname:screen_name,shortname:user.screen_name,name:user.name,url:link http://localhost:9000/api/push/geojson.json
+     */
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         RemoteAccess.Post post = RemoteAccess.evaluate(request);
@@ -51,7 +74,7 @@ public class GeoJsonPushServlet extends HttpServlet {
         if (post.isDoS_blackout()) {response.sendError(503, "your request frequency is too high"); return;}
 
         String url = post.get("url", "");
-        String mapType = post.get("mapType", "");
+        String mapType = post.get("map_type", "");
         String callback = post.get("callback", "");
         boolean jsonp = callback != null && callback.length() > 0;
 
@@ -139,7 +162,7 @@ public class GeoJsonPushServlet extends HttpServlet {
             Map<String, Object> user = (Map<String, Object>) properties.remove("user");
             MessageEntry messageEntry = new MessageEntry(properties);
             // uncomment this causes NoShardAvailableException
-            UserEntry userEntry = new UserEntry(/*(user != null && user.get("screen_name") != null) ? user :*/ new HashMap<String, Object>());
+            UserEntry userEntry = new UserEntry((user != null && user.get("screen_name") != null) ? user : new HashMap<String, Object>());
             boolean successful = DAO.writeMessage(messageEntry, userEntry, true, false);
             if (successful) newCount++; else knownCount++;
             recordCount++;
