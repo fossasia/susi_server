@@ -75,6 +75,7 @@ public class GeoJsonPushServlet extends HttpServlet {
 
         String url = post.get("url", "");
         String mapType = post.get("map_type", "");
+        String sourceType = post.get("source_type", "");
         String callback = post.get("callback", "");
         boolean jsonp = callback != null && callback.length() > 0;
 
@@ -140,7 +141,11 @@ public class GeoJsonPushServlet extends HttpServlet {
             Map<String, Object> mappedProperties = convertMapRulesProperties(mapRules, properties);
             properties.putAll(mappedProperties);
 
-            properties.put("source_type", SourceType.IMPORT.name());
+            if (!"".equals(sourceType)) {
+                properties.put("source_type", sourceType);
+            } else {
+                properties.put("source_type", SourceType.IMPORT);
+            }
             properties.put("provider_type", ProviderType.GEOJSON.name());
             properties.put("provider_hash", remoteHash);
             properties.put("location_point", geometry.get("coordinates"));
@@ -209,7 +214,6 @@ public class GeoJsonPushServlet extends HttpServlet {
                 for (String newField : mapRules.get(key)) {
                     if (newField.contains(".")) {
                         String[] deepFields = newField.split(Pattern.quote("."));
-                        System.out.println(Arrays.toString(deepFields));
                         Map<String, Object> currentLevel = root;
                         for (int lvl = 0; lvl < deepFields.length; lvl++) {
                             if (lvl == deepFields.length - 1) {
