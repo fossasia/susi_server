@@ -63,7 +63,7 @@ public class GeoJsonPushServlet extends HttpServlet {
 
     /*
      * Example :
-     * curl -i -F callback=p -F url=http://cmap-fossasia-api.herokuapp.com/ffGeoJsonp.php -F map_type=shortname:screen_name,shortname:user.screen_name,name:user.name,url:link http://localhost:9000/api/geojsonpush.json
+     * curl -i -F callback=p -F url=http://cmap-fossasia-api.herokuapp.com/ffGeoJsonp.php -F map_type=shortname:screen_name,shortname:user.screen_name,name:user.name,url:link http://localhost:9000/api/push/geojson.json
      */
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
@@ -74,7 +74,7 @@ public class GeoJsonPushServlet extends HttpServlet {
         if (post.isDoS_blackout()) {response.sendError(503, "your request frequency is too high"); return;}
 
         String url = post.get("url", "");
-        String mapType = post.get("mapType", "");
+        String mapType = post.get("map_type", "");
         String callback = post.get("callback", "");
         boolean jsonp = callback != null && callback.length() > 0;
 
@@ -162,7 +162,7 @@ public class GeoJsonPushServlet extends HttpServlet {
             Map<String, Object> user = (Map<String, Object>) properties.remove("user");
             MessageEntry messageEntry = new MessageEntry(properties);
             // uncomment this causes NoShardAvailableException
-            UserEntry userEntry = new UserEntry(/*(user != null && user.get("screen_name") != null) ? user :*/ new HashMap<String, Object>());
+            UserEntry userEntry = new UserEntry((user != null && user.get("screen_name") != null) ? user : new HashMap<String, Object>());
             boolean successful = DAO.writeMessage(messageEntry, userEntry, true, false);
             if (successful) newCount++; else knownCount++;
             recordCount++;
