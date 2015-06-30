@@ -443,7 +443,15 @@ public class QueryEntry extends AbstractIndexEntry implements IndexEntry {
                     bquery.must(disjunction);
                 }
             }
-            if (modifier.containsKey("-from")) bquery.mustNot(QueryBuilders.termQuery("screen_name", modifier.get("-from")));
+            if (modifier.containsKey("-from")) {
+                String screen_name = modifier.get("-from");
+                if (screen_name.indexOf(',') < 0) {
+                    bquery.mustNot(QueryBuilders.termQuery("screen_name", screen_name));
+                } else {
+                    String[] screen_names = screen_name.split(",");
+                    for (String name: screen_names) bquery.mustNot(QueryBuilders.termQuery("screen_name", name));
+                }
+            }
             if (modifier.containsKey("near")) {
                 BoolQueryBuilder nearquery = QueryBuilders.boolQuery()
                         .should(QueryBuilders.matchQuery("place_name", modifier.get("near")))
