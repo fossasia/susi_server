@@ -414,6 +414,7 @@ public class QueryEntry extends AbstractIndexEntry implements IndexEntry {
                 }
             }
             if (modifier.containsKey("to")) users_positive.add(modifier.get("to"));
+            if (modifier.containsKey("-to")) users_negative.add(modifier.get("-to"));
             
             // compose query for text
             BoolQueryBuilder bquery = QueryBuilders.boolQuery();
