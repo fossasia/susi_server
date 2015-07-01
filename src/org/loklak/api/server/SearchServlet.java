@@ -20,8 +20,9 @@
 package org.loklak.api.server;
 
 import java.io.IOException;
-import java.io.StringWriter;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -42,9 +43,7 @@ import org.loklak.rss.RSSMessage;
 import org.loklak.tools.CharacterCoding;
 import org.loklak.tools.UTF8;
 
-import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.core.util.DefaultPrettyPrinter;
-import com.fasterxml.jackson.core.util.MinimalPrettyPrinter;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
  * The search servlet. we provide opensearch/rss and twitter-like JSON as result.
@@ -147,54 +146,47 @@ public class SearchServlet extends HttpServlet {
         // create json or xml according to path extension
         if (jsonExt) {
             // generate json
-
-            final StringWriter s = new StringWriter();
-            JsonGenerator json = DAO.jsonFactory.createGenerator(s);
-            json.setPrettyPrinter(minified ? new MinimalPrettyPrinter() : new DefaultPrettyPrinter());
-
-            json.writeStartObject();
+            Map<String, Object> m = new LinkedHashMap<String, Object>();
+            Map<String, Object> metadata = new LinkedHashMap<String, Object>();
             if (!minified) {
-                json.writeObjectField("readme_0", "THIS JSON IS THE RESULT OF YOUR SEARCH QUERY - THERE IS NO WEB PAGE WHICH SHOWS THE RESULT!");
-                json.writeObjectField("readme_1", "loklak.org is the framework for a message search system, not the portal, read: http://loklak.org/about.html#notasearchportal");
-                json.writeObjectField("readme_2", "This is supposed to be the back-end of a search portal. For the api, see http://loklak.org/api.html");
-                json.writeObjectField("readme_3", "Parameters q=(query), source=(cache|backend|twitter|all), callback=p for jsonp, maximumRecords=(message count), minified=(true|false)");
+                m.put("readme_0", "THIS JSON IS THE RESULT OF YOUR SEARCH QUERY - THERE IS NO WEB PAGE WHICH SHOWS THE RESULT!");
+                m.put("readme_1", "loklak.org is the framework for a message search system, not the portal, read: http://loklak.org/about.html#notasearchportal");
+                m.put("readme_2", "This is supposed to be the back-end of a search portal. For the api, see http://loklak.org/api.html");
+                m.put("readme_3", "Parameters q=(query), source=(cache|backend|twitter|all), callback=p for jsonp, maximumRecords=(message count), minified=(true|false)");
             }
-            json.writeObjectFieldStart("search_metadata");
-            json.writeObjectField("itemsPerPage", Integer.toString(count));
-            json.writeObjectField("count", Integer.toString(tl.size()));
-            json.writeObjectField("hits", hits);
-            json.writeObjectField("period", tl.period());
-            json.writeObjectField("query", query);
-            json.writeObjectField("client", post.getClientHost());
-            json.writeObjectField("servicereduction", post.isDoS_servicereduction() ? "true" : "false");
-            json.writeEndObject(); // of search_metadata
-            json.writeArrayFieldStart("statuses");
+            metadata.put("itemsPerPage", Integer.toString(count));
+            metadata.put("count", Integer.toString(tl.size()));
+            metadata.put("hits", hits);
+            metadata.put("period", tl.period());
+            metadata.put("query", query);
+            metadata.put("client", post.getClientHost());
+            metadata.put("servicereduction", post.isDoS_servicereduction() ? "true" : "false");
+            m.put("search_metadata", metadata);
+            List<Object> statuses = new ArrayList<>();
             for (MessageEntry t: tl) {
                 UserEntry u = tl.getUser(t);
-                t.toJSON(json, u, true);
+                statuses.add(t.toMap(u, true));
             }
-            json.writeEndArray();
+            m.put("statuses", statuses);
             
             // aggregations
-            json.writeObjectFieldStart("aggregations");
+            Map<String, Object> agg = new LinkedHashMap<String, Object>();
             if (aggregations != null) {
                 for (Map.Entry<String, List<Map.Entry<String, Long>>> aggregation: aggregations.entrySet()) {
-                    json.writeObjectFieldStart(aggregation.getKey());
+                    Map<String, Object> facet = new LinkedHashMap<>();
                     for (Map.Entry<String, Long> a: aggregation.getValue()) {
                         if (a.getValue().equals(query)) continue; // we omit obvious terms that cannot be used for faceting, like search for "#abc" -> most hashtag is "#abc"
-                        json.writeObjectField(a.getKey(), a.getValue());
+                        facet.put(a.getKey(), a.getValue());
                     }
-                    json.writeEndObject(); // of aggregation field
+                    agg.put(aggregation.getKey(), facet);
                 }
             }
-            json.writeEndObject(); // of aggregations
-            json.writeEndObject(); // of root
-            json.close();
+            m.put("aggregations", agg);
             
             // write json
             ServletOutputStream sos = response.getOutputStream();
             if (jsonp) sos.print(callback + "(");
-            sos.print(s.toString());
+            sos.print(minified ? new ObjectMapper().writer().writeValueAsString(m) : new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(m));
             if (jsonp) sos.println(");");
             sos.println();
         } else {

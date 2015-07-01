@@ -19,17 +19,16 @@
 
 package org.loklak.data;
 
-import java.io.IOException;
-import java.io.StringWriter;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
-import org.eclipse.jetty.util.log.Log;
-
-import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.core.util.DefaultPrettyPrinter;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
  * A timeline is a structure which holds tweet for the purpose of presentation
@@ -90,34 +89,26 @@ public class Timeline implements Iterable<MessageEntry> {
     }
     
     public String toString() {
-        return toJSON(true);
+        try {
+            return new ObjectMapper().writer().writeValueAsString(toMap(true));
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+            return "";
+        }
     }
     
-    public String toJSON(boolean withEnrichedData) {
-        // generate json
-        try {
-            final StringWriter s = new StringWriter();
-            JsonGenerator json = DAO.jsonFactory.createGenerator(s);
-            json.setPrettyPrinter(new DefaultPrettyPrinter());
-            json.writeStartObject(); // start root object
-            json.writeObjectFieldStart("search_metadata");
-            json.writeObjectField("count", Integer.toString(this.tweets.size()));
-            json.writeEndObject(); // of search_metadata
-            json.writeArrayFieldStart("statuses");
-            for (MessageEntry t: this) {
-                UserEntry u = this.users.get(t.getScreenName());
-                t.toJSON(json, u, withEnrichedData);
-            }
-            json.writeEndArray();
-            json.writeEndObject(); // of root
-            json.close(); // finish writing and close StringWriter
-            
-            // write json
-            return s.toString();
-        } catch (IOException e) {
-            Log.getLog().warn(e);
-            return null;
+    public Map<String, Object> toMap(boolean withEnrichedData) {
+        Map<String, Object> m = new LinkedHashMap<>();
+        Map<String, Object> metadata = new LinkedHashMap<>();
+        metadata.put("count", Integer.toString(this.tweets.size()));
+        m.put("search_metadata", metadata);
+        List<Object> statuses = new ArrayList<>();
+        for (MessageEntry t: this) {
+            UserEntry u = this.users.get(t.getScreenName());
+            statuses.add(t.toMap(u, withEnrichedData));
         }
+        m.put("statuses", statuses);
+        return m;
     }
     
     /**

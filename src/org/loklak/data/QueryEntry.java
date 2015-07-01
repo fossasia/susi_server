@@ -19,7 +19,6 @@
 
 package org.loklak.data;
 
-import java.io.IOException;
 import java.net.MalformedURLException;
 import java.text.ParseException;
 import java.util.ArrayList;
@@ -27,6 +26,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
@@ -39,8 +39,6 @@ import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.index.query.RangeQueryBuilder;
 import org.loklak.harvester.SourceType;
 import org.loklak.tools.DateParser;
-
-import com.fasterxml.jackson.core.JsonGenerator;
 
 /**
  * A Query is a recording of a search result based on the query.
@@ -215,27 +213,24 @@ public class QueryEntry extends AbstractIndexEntry implements IndexEntry {
     }
 
     @Override
-    public void toJSON(JsonGenerator json) {
-        try {
-            json.writeStartObject();
-            json.writeObjectField("query", this.query);
-            json.writeObjectField("query_length", this.query_length);
-            json.writeObjectField("source_type", this.source_type.name());
-            json.writeObjectField("timezoneOffset", this.timezoneOffset);
-            if (this.query_first != null) writeDate(json, "query_first", this.query_first.getTime());
-            if (this.query_last != null) writeDate(json, "query_last", this.query_last.getTime());
-            if (this.retrieval_last != null) writeDate(json, "retrieval_last", this.retrieval_last.getTime());
-            if (this.retrieval_next != null) writeDate(json, "retrieval_next", this.retrieval_next.getTime());
-            if (this.expected_next != null) writeDate(json, "expected_next", this.expected_next.getTime());
-            json.writeObjectField("query_count", this.query_count);
-            json.writeObjectField("retrieval_count", this.retrieval_count);
-            json.writeObjectField("message_period", this.message_period);
-            json.writeObjectField("messages_per_day", this.messages_per_day);
-            json.writeObjectField("score_retrieval", this.score_retrieval);
-            json.writeObjectField("score_suggest", this.score_suggest);
-            json.writeEndObject();
-        } catch (IOException e) {
-        }
+    public Map<String, Object> toMap() {
+        Map<String, Object> m = new LinkedHashMap<>();
+        m.put("query", this.query);
+        m.put("query_length", this.query_length);
+        m.put("source_type", this.source_type.name());
+        m.put("timezoneOffset", this.timezoneOffset);
+        if (this.query_first != null) m.put("query_first", utcFormatter.print(this.query_first.getTime()));
+        if (this.query_last != null) m.put("query_last", utcFormatter.print(this.query_last.getTime()));
+        if (this.retrieval_last != null) m.put("retrieval_last", utcFormatter.print(this.retrieval_last.getTime()));
+        if (this.retrieval_next != null) m.put("retrieval_next", utcFormatter.print(this.retrieval_next.getTime()));
+        if (this.expected_next != null) m.put("expected_next", utcFormatter.print(this.expected_next.getTime()));
+        m.put("query_count", this.query_count);
+        m.put("retrieval_count", this.retrieval_count);
+        m.put("message_period", this.message_period);
+        m.put("messages_per_day", this.messages_per_day);
+        m.put("score_retrieval", this.score_retrieval);
+        m.put("score_suggest", this.score_suggest);
+        return m;
     }
 
     private final static Pattern tokenizerPattern = Pattern.compile("([^\"]\\S*|\".+?\")\\s*"); // tokenizes Strings into terms respecting quoted parts

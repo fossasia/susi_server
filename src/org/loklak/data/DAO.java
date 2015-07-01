@@ -31,7 +31,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.RandomAccessFile;
-import java.io.StringWriter;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.text.SimpleDateFormat;
@@ -92,8 +91,7 @@ import org.loklak.tools.DateParser;
 import org.loklak.tools.UTF8;
 
 import com.fasterxml.jackson.core.JsonFactory;
-import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.core.util.MinimalPrettyPrinter;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
  * The Data Access Object for the message project.
@@ -501,15 +499,9 @@ public class DAO {
 
             // record tweet into text file
             if (dump) {
-                final StringWriter s = new StringWriter();
-                JsonGenerator logline = DAO.jsonFactory.createGenerator(s);
-                logline.setPrettyPrinter(new MinimalPrettyPrinter());
-                t.toJSON(logline, u, false);
-                logline.close();
                 messagelog.seek(messagelog.length()); // go to end of file
-                messagelog.write(UTF8.getBytes(s.toString()));
+                messagelog.write(UTF8.getBytes(new ObjectMapper().writer().writeValueAsString(t.toMap(u, false))));
                 messagelog.writeByte('\n');
-                logline.close();
             }
 
             // record tweet into search index
@@ -548,15 +540,9 @@ public class DAO {
         try {
             // record account into text file
             if (dump) {
-                final StringWriter s = new StringWriter();
-                JsonGenerator logline = DAO.jsonFactory.createGenerator(s);
-                logline.setPrettyPrinter(new MinimalPrettyPrinter());
-                a.toJSON(logline);
-                logline.close();
                 accountlog.seek(accountlog.length()); // go to end of file
-                accountlog.write(UTF8.getBytes(s.toString()));
+                accountlog.write(UTF8.getBytes(new ObjectMapper().writer().writeValueAsString(a.toMap(null))));
                 accountlog.writeByte('\n');
-                logline.close();
             }
 
             // record tweet into search index

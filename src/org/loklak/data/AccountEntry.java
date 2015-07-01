@@ -26,8 +26,6 @@ import java.util.Map;
 
 import org.loklak.harvester.SourceType;
 
-import com.fasterxml.jackson.core.JsonGenerator;
-
 public class AccountEntry extends AbstractIndexEntry implements IndexEntry {
     
     private final Map<String, Object> map;
@@ -94,46 +92,33 @@ public class AccountEntry extends AbstractIndexEntry implements IndexEntry {
     public String getApps() {
         return (String) this.map.get(AccountFactory.Field.apps.name());
     }
-    
-    @Override
-    public void toJSON(JsonGenerator json) {
-        toJSON(json, null);
-    }
 
-    public void toJSON(JsonGenerator json, UserEntry user) {
-        try {
-            json.writeStartObject(); // object name for this should be 'user'
-            writeDate(json, AccountFactory.Field.authentication_latest.name(), getAuthenticationLatest().getTime());
-            writeDate(json, AccountFactory.Field.authentication_first.name(), getAuthenticationFirst().getTime());
-            json.writeObjectField(AccountFactory.Field.source_type.name(), getSourceType().toString());
-            json.writeObjectField(AccountFactory.Field.screen_name.name(), getScreenName());
-            if (this.map.containsKey(AccountFactory.Field.oauth_token.name())) json.writeObjectField(AccountFactory.Field.oauth_token.name(), this.map.get(AccountFactory.Field.oauth_token.name()));
-            if (this.map.containsKey(AccountFactory.Field.oauth_token_secret.name())) json.writeObjectField(AccountFactory.Field.oauth_token_secret.name(), this.map.get(AccountFactory.Field.oauth_token_secret.name()));
-            if (this.map.containsKey(AccountFactory.Field.apps.name())) json.writeObjectField(AccountFactory.Field.apps.name(), this.map.get(AccountFactory.Field.apps.name()));
-            
-            // add user
-            if (user != null) {
-                json.writeFieldName("user");
-                user.toJSON(json);
-            }
-            
-            json.writeEndObject();
-        } catch (IOException e) {
-        }
+    @Override
+    public Map<String, Object> toMap() {
+        return toMap(null);
     }
     
-    public static void toEmptyAccountJSON(JsonGenerator json, UserEntry user) {
-        assert user != null;
-        try {
-            json.writeStartObject(); // object name for this should be 'user'
-            // add user
-            if (user != null) {
-                json.writeFieldName("user");
-                user.toJSON(json);
-            }
-            json.writeEndObject();
-        } catch (IOException e) {
+    public Map<String, Object> toMap(UserEntry user) {
+        Map<String, Object> m = new LinkedHashMap<>();
+        m.put(AccountFactory.Field.authentication_latest.name(), utcFormatter.print(getAuthenticationLatest().getTime()));
+        m.put(AccountFactory.Field.authentication_first.name(), utcFormatter.print(getAuthenticationFirst().getTime()));
+        m.put(AccountFactory.Field.source_type.name(), getSourceType().toString());
+        m.put(AccountFactory.Field.screen_name.name(), getScreenName());
+        if (this.map.containsKey(AccountFactory.Field.oauth_token.name())) m.put(AccountFactory.Field.oauth_token.name(), this.map.get(AccountFactory.Field.oauth_token.name()));
+        if (this.map.containsKey(AccountFactory.Field.oauth_token_secret.name())) m.put(AccountFactory.Field.oauth_token_secret.name(), this.map.get(AccountFactory.Field.oauth_token_secret.name()));
+        if (this.map.containsKey(AccountFactory.Field.apps.name())) {
+            m.put(AccountFactory.Field.apps.name(), this.map.get(AccountFactory.Field.apps.name()));
         }
+        // add user
+        if (user != null) m.put("user", user.toMap());
+        return m;
+    }
+    
+    public static Map<String, Object> toEmptyAccount(UserEntry user) {
+        assert user != null;
+        Map<String, Object> m = new LinkedHashMap<>();
+        if (user != null) m.put("user", user.toMap());
+        return m;
     }
     
 }

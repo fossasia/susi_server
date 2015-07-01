@@ -26,6 +26,9 @@ import java.util.Map;
 import org.loklak.data.Timeline;
 import org.loklak.tools.UTF8;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 public class PushClient {
     
     /**
@@ -38,21 +41,27 @@ public class PushClient {
         // transmit the timeline
         assert timeline.size() != 0;
         if (timeline.size() == 0) return true;
-        String data = timeline.toJSON(false);
-        assert data != null;
-        boolean transmittedToAtLeastOnePeer = false;
-        for (String hoststub: hoststubs) {
-            if (hoststub.endsWith("/")) hoststub = hoststub.substring(0, hoststub.length() - 1);
-            Map<String, byte[]> post = new HashMap<String, byte[]>();
-            post.put("data", UTF8.getBytes(data)); // optionally implement a gzipped form here
-            try {
-                ClientConnection connection = new ClientConnection(hoststub + "/api/push.json", post);
-                connection.close();
-                transmittedToAtLeastOnePeer = true;
-            } catch (IOException e) {
-                e.printStackTrace();
+        
+        try {
+            String data = new ObjectMapper().writer().writeValueAsString(timeline.toMap(false));
+            assert data != null;
+            boolean transmittedToAtLeastOnePeer = false;
+            for (String hoststub: hoststubs) {
+                if (hoststub.endsWith("/")) hoststub = hoststub.substring(0, hoststub.length() - 1);
+                Map<String, byte[]> post = new HashMap<String, byte[]>();
+                post.put("data", UTF8.getBytes(data)); // optionally implement a gzipped form here
+                try {
+                    ClientConnection connection = new ClientConnection(hoststub + "/api/push.json", post);
+                    connection.close();
+                    transmittedToAtLeastOnePeer = true;
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             }
+            return transmittedToAtLeastOnePeer;
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+            return false;
         }
-        return transmittedToAtLeastOnePeer;
     }
 }

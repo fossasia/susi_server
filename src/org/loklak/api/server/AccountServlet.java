@@ -20,8 +20,8 @@
 package org.loklak.api.server;
 
 import java.io.IOException;
-import java.io.StringWriter;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -37,9 +37,8 @@ import org.loklak.data.AccountEntry;
 import org.loklak.data.DAO;
 import org.loklak.data.UserEntry;
 
-import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.core.util.DefaultPrettyPrinter;
-import com.fasterxml.jackson.core.util.MinimalPrettyPrinter;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectWriter;
 
 public class AccountServlet extends HttpServlet {
    
@@ -114,31 +113,28 @@ public class AccountServlet extends HttpServlet {
         post.setResponse(response, "application/javascript");
         
         // generate json
-        final StringWriter s = new StringWriter();
-        JsonGenerator json = DAO.jsonFactory.createGenerator(s);
-        json.setPrettyPrinter(minified ? new MinimalPrettyPrinter() : new DefaultPrettyPrinter());
+        ObjectWriter ow = minified ? new ObjectMapper().writer() : new ObjectMapper().writerWithDefaultPrettyPrinter();
 
-        json.writeStartObject();
+        Map<String, Object> m = new LinkedHashMap<>();
+        Map<String, Object> metadata = new LinkedHashMap<>();
+        metadata.put("count", userEntry == null ? "0" : "1");
+        metadata.put("client", post.getClientHost());
+        m.put("search_metadata", metadata);
 
-        json.writeObjectFieldStart("search_metadata");
-        json.writeObjectField("count", userEntry == null ? "0" : "1");
-        json.writeObjectField("client", post.getClientHost());
-        json.writeEndObject(); // of search_metadata
-
-        json.writeArrayFieldStart("accounts");
+        // create a list of accounts. Why a list? Because the same user may have accounts for several services.
+        List<Object> accounts = new ArrayList<>();
         if (accountEntry == null) {
-            if (userEntry != null) AccountEntry.toEmptyAccountJSON(json, userEntry);
+            if (userEntry != null) 
+                accounts.add(AccountEntry.toEmptyAccount(userEntry));
         } else {
-            accountEntry.toJSON(json, userEntry);
+            accounts.add(accountEntry.toMap(userEntry));
         }
-        json.writeEndArray(); // of users
-        json.writeEndObject(); // of root
-        json.close();
+        m.put("accounts", accounts);
         
         // write json
         ServletOutputStream sos = response.getOutputStream();
         if (jsonp) sos.print(callback + "(");
-        sos.print(s.toString());
+        sos.print(ow.writeValueAsString(m));
         if (jsonp) sos.println(");");
         sos.println();
     }

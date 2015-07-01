@@ -102,7 +102,6 @@ public class UserEntry extends AbstractIndexEntry implements IndexEntry {
         return parseDate(this.map.get(field_appearance_latest));
     }
     
-    @Override
     public void toJSON(JsonGenerator json) {
         try {
             json.writeStartObject(); // object name for this should be 'user'
@@ -116,6 +115,18 @@ public class UserEntry extends AbstractIndexEntry implements IndexEntry {
             json.writeEndObject();
         } catch (IOException e) {
         }
+    }
+    
+    public Map<String, Object> toMap() {
+        Map<String, Object> m = new LinkedHashMap<>();
+        m.put(field_name, getName());
+        m.put(field_screen_name, getScreenName());
+        if (this.map.containsKey(field_profile_image_url_http)) m.put(field_profile_image_url_http, this.map.get(field_profile_image_url_http));
+        if (this.map.containsKey(field_profile_image_url_https)) m.put(field_profile_image_url_https, this.map.get(field_profile_image_url_https));
+        m.put(field_appearance_first, utcFormatter.print(getAppearanceFirst().getTime()));
+        m.put(field_appearance_latest, utcFormatter.print(getAppearanceLatest().getTime()));
+        if (this.map.containsKey(field_profile_image)) m.put(field_profile_image, this.map.get(field_profile_image));
+        return m;
     }
 
     @Override
