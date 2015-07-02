@@ -38,7 +38,6 @@ import org.loklak.data.DAO;
 import org.loklak.data.UserEntry;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.ObjectWriter;
 
 public class AccountServlet extends HttpServlet {
    
@@ -56,17 +55,13 @@ public class AccountServlet extends HttpServlet {
      
         // manage DoS
         if (post.isDoS_blackout()) {response.sendError(503, "your request frequency is too high"); return;}
-        if (!post.isLocalhostAccess()) {response.sendError(503, "access only allowed from localhost"); return;}
-        
-        // security
-        boolean local = post.isLocalhostAccess();
-        if (!local) {response.sendError(503, "access from localhost only"); return;}
+        if (!post.isLocalhostAccess()) {response.sendError(503, "access only allowed from localhost"); return;} // danger! do not remove this!
         
         // parameters
         String callback = post.get("callback", "");
         boolean jsonp = callback != null && callback.length() > 0;
         boolean minified = post.get("minified", false);
-        boolean update = local && "update".equals(post.get("action", ""));
+        boolean update = "update".equals(post.get("action", ""));
         String screen_name = post.get("screen_name", "");
         
         String data = post.get("data", "");
@@ -108,13 +103,11 @@ public class AccountServlet extends HttpServlet {
         }
 
         UserEntry userEntry = DAO.searchLocalUser(screen_name);
-        AccountEntry accountEntry = local ? DAO.searchLocalAccount(screen_name) : null; // DANGER! without the local we do not protet the account data
+        AccountEntry accountEntry = DAO.searchLocalAccount(screen_name);
         
         post.setResponse(response, "application/javascript");
         
         // generate json
-        ObjectWriter ow = minified ? new ObjectMapper().writer() : new ObjectMapper().writerWithDefaultPrettyPrinter();
-
         Map<String, Object> m = new LinkedHashMap<>();
         Map<String, Object> metadata = new LinkedHashMap<>();
         metadata.put("count", userEntry == null ? "0" : "1");
@@ -134,7 +127,7 @@ public class AccountServlet extends HttpServlet {
         // write json
         ServletOutputStream sos = response.getOutputStream();
         if (jsonp) sos.print(callback + "(");
-        sos.print(ow.writeValueAsString(m));
+        sos.print((minified ? new ObjectMapper().writer() : new ObjectMapper().writerWithDefaultPrettyPrinter()).writeValueAsString(m));
         if (jsonp) sos.println(");");
         sos.println();
     }
