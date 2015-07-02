@@ -47,12 +47,12 @@ public class ThreaddumpServlet extends HttpServlet {
 
 
     @Override
-    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+    protected void doPost(final HttpServletRequest request, final HttpServletResponse response) throws ServletException, IOException {
         doGet(request, response);
     }
 
     @Override
-    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+    protected void doGet(final HttpServletRequest request, final HttpServletResponse response) throws ServletException, IOException {
 
         RemoteAccess.Post post = RemoteAccess.evaluate(request);
 
@@ -107,17 +107,14 @@ public class ThreaddumpServlet extends HttpServlet {
         response.getOutputStream().write(UTF8.getBytes(buffer.toString()));
     }
 
-    public static class StackTrace {
-        public String text;
-        public StackTrace(final String text) {
+    private static class StackTrace {
+        private String text;
+        private StackTrace(final String text) {
             this.text = text;
         }
         @Override
         public boolean equals(final Object a) {
             return (a != null && a instanceof StackTrace && this.text.equals(((StackTrace) a).text));
-        }
-        public boolean equals(final StackTrace a) {
-            return (a != null && this.text.equals(a.text));
         }
         @Override
         public int hashCode() {
@@ -129,7 +126,7 @@ public class ThreaddumpServlet extends HttpServlet {
         }
     }
     
-    public static void appendStackTraceStats(
+    private static void appendStackTraceStats(
             final StringBuilder buffer,
             final List<Map<Thread, StackTraceElement[]>> stackTraces) {
 
@@ -170,20 +167,20 @@ public class ThreaddumpServlet extends HttpServlet {
         return max;
     }
 
-    public static void bufferappend(final StringBuilder buffer, final String a) {
+    private static void bufferappend(final StringBuilder buffer, final String a) {
         buffer.append(a);
         buffer.append("\n");
     }
     
-    public static class ThreadDump extends HashMap<StackTrace, List<String>> implements Map<StackTrace, List<String>> {
+    private static class ThreadDump extends HashMap<StackTrace, List<String>> implements Map<StackTrace, List<String>> {
 
         private static final long serialVersionUID = -5587850671040354397L;
 
-        public static Map<Thread, StackTraceElement[]> getAllStackTraces() {
+        private static Map<Thread, StackTraceElement[]> getAllStackTraces() {
             return Thread.getAllStackTraces();
         }
 
-        public ThreadDump(
+        private ThreadDump(
                 final Map<Thread, StackTraceElement[]> stackTraces,
                 final Thread.State stateIn) {
             super();
@@ -220,7 +217,7 @@ public class ThreaddumpServlet extends HttpServlet {
             }
         }
 
-        public void appendStackTraces(
+        private void appendStackTraces(
                 final StringBuilder buffer,
                 final Thread.State stateIn) {
             bufferappend(buffer, "THREADS WITH STATES: " + stateIn.toString());
