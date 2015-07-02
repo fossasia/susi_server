@@ -149,7 +149,7 @@ public class DAO {
                 ClientConnection.download("http://download.geonames.org/export/dump/cities1000.zip", cities1000);
             }
             if (cities1000.exists()) {
-                geoNames = new GeoNames(cities1000, -1);
+                geoNames = new GeoNames(cities1000, 1);
             } else {
                 geoNames = null;
             }

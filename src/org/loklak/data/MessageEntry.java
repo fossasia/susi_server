@@ -413,11 +413,11 @@ public class MessageEntry extends AbstractIndexEntry implements IndexEntry {
         // find location
         if ((this.location_point == null || this.location_point.length == 0) && DAO.geoNames != null) {
             GeoLocation loc = null;
-            if (this.place_name != null && this.place_name.length() > 0) {
-                loc = DAO.geoNames.analyse(this.place_name, 5);
+            if (this.place_name != null && this.place_name.length() > 0 && (this.location_source == null || this.location_source != LocationSource.ANNOTATION)) {
+                loc = DAO.geoNames.analyse(this.place_name, null, 5);
             }
             if (loc == null) {
-                loc = DAO.geoNames.analyse(this.text, 5);
+                loc = DAO.geoNames.analyse(this.text, this.hashtags, 5);
             }
             if (loc != null) {
                 this.place_name = loc.getName();
