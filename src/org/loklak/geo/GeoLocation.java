@@ -57,9 +57,14 @@ public class GeoLocation extends IntegerGeoPoint implements Comparable<GeoLocati
     }
 
     @Override
+    public String toString() {
+        return this.name + "@" + super.toString();
+    }
+
+    @Override
     public boolean equals(Object loc) {
         if (!(loc instanceof GeoLocation)) return false;
-        return super.equals(loc);
+        return super.equals(loc) && this.name.equals(((GeoLocation) loc).name);
     }
 
     /**

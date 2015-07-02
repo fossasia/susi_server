@@ -20,7 +20,6 @@
 package org.loklak.data;
 
 import java.io.IOException;
-import java.io.StringWriter;
 import java.util.Collection;
 import java.util.Date;
 import java.util.LinkedHashSet;
@@ -30,7 +29,9 @@ import org.joda.time.format.ISODateTimeFormat;
 import org.loklak.tools.UTF8;
 
 import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.core.util.DefaultPrettyPrinter;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectWriter;
 
 public abstract class AbstractIndexEntry implements IndexEntry {
 
@@ -39,15 +40,11 @@ public abstract class AbstractIndexEntry implements IndexEntry {
     
     public String toString() {
         try {
-            final StringWriter s = new StringWriter();
-            final JsonGenerator g = DAO.jsonFactory.createGenerator(s);
-            g.setPrettyPrinter(new DefaultPrettyPrinter());
-            this.toJSON(g);
-            g.close();
-            return s.toString();
-        } catch (IOException e) {
+            ObjectWriter ow = new ObjectMapper().writerWithDefaultPrettyPrinter();
+            return ow.writeValueAsString(this.toMap());
+        } catch (JsonProcessingException e) {
             e.printStackTrace();
-            return null;
+            return "";
         }
     }
 
@@ -86,6 +83,7 @@ public abstract class AbstractIndexEntry implements IndexEntry {
 
     public static Date parseDate(Object d) {
         if (d == null) return new Date();
+        if (d instanceof Date) return (Date) d;
         if (d instanceof Long) return new Date(((Long) d).longValue());
         if (d instanceof String) return ISODateTimeFormat.dateOptionalTimeParser().parseDateTime((String) d).toDate();
         assert false;

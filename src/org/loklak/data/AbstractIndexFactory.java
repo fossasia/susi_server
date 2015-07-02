@@ -97,10 +97,10 @@ public abstract class AbstractIndexFactory<Entry extends IndexEntry> implements 
     public void writeEntry(String id, String type, Entry entry) throws IOException {
         this.cache.put(id, entry);
         // record user into search index
-        byte[] json = entry.toJSON();
-        if (json != null) {
-            elasticsearch_client.prepareIndex(this.index_name, type, id)
-                .setSource(json).setVersion(1).setVersionType(VersionType.FORCE).execute().actionGet();
+        Map<String, Object> jsonMap = entry.toMap();
+        if (jsonMap != null) {
+            elasticsearch_client.prepareIndex(this.index_name, type, id).setSource(jsonMap)
+                .setVersion(1).setVersionType(VersionType.FORCE).execute().actionGet();
         }
     }
 

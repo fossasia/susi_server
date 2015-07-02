@@ -54,7 +54,7 @@ public class AccountFactory extends AbstractIndexFactory<AccountEntry> implement
                     .startObject(Field.authentication_latest.name()).field("type","date").field("format","dateOptionalTime").field("include_in_all","false").field("doc_values", true).endObject()
                     .startObject(Field.oauth_token.name()).field("type","string").field("index","not_analyzed").field("include_in_all","false").field("doc_values", true).endObject()
                     .startObject(Field.oauth_token_secret.name()).field("type","string").field("index","not_analyzed").field("include_in_all","false").field("doc_values", true).endObject()
-                    .startObject(Field.apps.name()).field("type","string").field("index","not_analyzed").field("include_in_all","false").field("doc_values", true).endObject()
+                    .startObject(Field.apps.name()).field("type","object").field("index","not_analyzed").field("include_in_all","false").field("doc_values", true).endObject()
                   .endObject()
                 .endObject();
             return mapping;

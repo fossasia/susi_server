@@ -35,6 +35,7 @@ import org.loklak.data.MessageEntry;
 import org.loklak.data.UserEntry;
 import org.loklak.tools.UTF8;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -104,7 +105,11 @@ public class SearchClient {
     
     public static void main(String[] args) {
         Timeline tl = search("http://loklak.org", "beer", "cache", 20, -120, backend_hash);
-        System.out.println(tl.toJSON(false));
+        try {
+            System.out.println(new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(tl.toMap(false)));
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+        }
     }
     
 }

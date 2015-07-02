@@ -19,12 +19,12 @@
 
 package org.loklak.data;
 
-import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -35,8 +35,6 @@ import java.util.regex.Pattern;
 import org.loklak.geo.GeoLocation;
 import org.loklak.geo.LocationSource;
 import org.loklak.harvester.SourceType;
-
-import com.fasterxml.jackson.core.JsonGenerator;
 
 public class MessageEntry extends AbstractIndexEntry implements IndexEntry {
     
@@ -415,11 +413,11 @@ public class MessageEntry extends AbstractIndexEntry implements IndexEntry {
         // find location
         if ((this.location_point == null || this.location_point.length == 0) && DAO.geoNames != null) {
             GeoLocation loc = null;
-            if (this.place_name != null && this.place_name.length() > 0) {
-                loc = DAO.geoNames.analyse(this.place_name, 5);
+            if (this.place_name != null && this.place_name.length() > 0 && (this.location_source == null || this.location_source != LocationSource.ANNOTATION)) {
+                loc = DAO.geoNames.analyse(this.place_name, null, 5);
             }
             if (loc == null) {
-                loc = DAO.geoNames.analyse(this.text, 5);
+                loc = DAO.geoNames.analyse(this.text, this.hashtags, 5);
             }
             if (loc != null) {
                 this.place_name = loc.getName();
@@ -440,76 +438,65 @@ public class MessageEntry extends AbstractIndexEntry implements IndexEntry {
     }
     
     @Override
-    public void toJSON(JsonGenerator m) {
-        toJSON(m, null, true); // very important to include calculated data here because that is written into the index using the abstract index factory
+    public Map<String, Object> toMap() {
+        return toMap(null, true); // very important to include calculated data here because that is written into the index using the abstract index factory
     }
     
-    public void toJSON(JsonGenerator json, UserEntry user, boolean calculatedData) {
-        try {
-            json.writeStartObject();
+    public Map<String, Object> toMap(UserEntry user, boolean calculatedData) {
+        Map<String, Object> m = new LinkedHashMap<>();
 
-            // tweet data
-            writeDate(json, "created_at", getCreatedAt().getTime());
-            if (this.on != null) writeDate(json, "on", this.on.getTime());
-            if (this.to != null) writeDate(json, "to", this.to.getTime());
-            json.writeObjectField("screen_name", this.screen_name);
-            json.writeObjectField("text", this.text); // the tweet
-            if (this.status_id_url != null) json.writeObjectField("link", this.status_id_url.toExternalForm());
-            json.writeObjectField("id_str", this.id_str);
-            json.writeObjectField("source_type", this.source_type.name());
-            json.writeObjectField("provider_type", this.provider_type.name());
-            if (this.provider_hash != null && this.provider_hash.length() > 0) json.writeObjectField("provider_hash", this.provider_hash);
-            json.writeObjectField("retweet_count", this.retweet_count);
-            json.writeObjectField("favourites_count", this.favourites_count); // there is a slight inconsistency here in the plural naming but thats how it is noted in the twitter api
-            writeArray(json, "texts", this.texts);
-            json.writeObjectField("texts_count", this.texts.size());
-            writeArray(json, "images", this.images);
-            json.writeObjectField("images_count", this.images.size());
-            writeArray(json, "audio", this.audio);
-            json.writeObjectField("audio_count", this.audio.size());
-            writeArray(json, "videos", this.videos);
-            json.writeObjectField("videos_count", this.videos.size());
-            json.writeObjectField("place_name", this.place_name);
-            json.writeObjectField("place_id", this.place_id);
+        // tweet data
+        m.put("created_at", utcFormatter.print(getCreatedAt().getTime()));
+        if (this.on != null) m.put("on", utcFormatter.print(this.on.getTime()));
+        if (this.to != null) m.put("to", utcFormatter.print(this.to.getTime()));
+        m.put("screen_name", this.screen_name);
+        m.put("text", this.text); // the tweet
+        if (this.status_id_url != null) m.put("link", this.status_id_url.toExternalForm());
+        m.put("id_str", this.id_str);
+        m.put("source_type", this.source_type.name());
+        m.put("provider_type", this.provider_type.name());
+        if (this.provider_hash != null && this.provider_hash.length() > 0) m.put("provider_hash", this.provider_hash);
+        m.put("retweet_count", this.retweet_count);
+        m.put("favourites_count", this.favourites_count); // there is a slight inconsistency here in the plural naming but thats how it is noted in the twitter api
+        m.put("texts", this.texts);
+        m.put("texts_count", this.texts.size());
+        m.put("images", this.images);
+        m.put("images_count", this.images.size());
+        m.put("audio", this.audio);
+        m.put("audio_count", this.audio.size());
+        m.put("videos", this.videos);
+        m.put("videos_count", this.videos.size());
+        m.put("place_name", this.place_name);
+        m.put("place_id", this.place_id);
   
-            // add optional location data. This is written even if calculatedData == false if the source is from REPORT to prevent that it is lost
-            if (this.location_point != null && this.location_point.length == 2 && this.location_mark != null && this.location_mark.length == 2) {
-                // reference for this format: https://www.elastic.co/guide/en/elasticsearch/reference/current/mapping-geo-point-type.html#_lat_lon_as_array_5
-                writeArray(json, "location_point", this.location_point); // [longitude, latitude]
-                json.writeObjectField("location_radius", this.location_radius);
-                writeArray(json, "location_mark", this.location_mark);
-                json.writeObjectField("location_source", this.location_source.name());
-            }
-            
-            // add statistic/calculated data
-            if (calculatedData) {
-                writeArray(json, "hosts", this.hosts);
-                json.writeObjectField("hosts_count", this.hosts.length);
-                writeArray(json, "links", this.links);
-                json.writeObjectField("links_count", this.links.length);
-                writeArray(json, "mentions", this.mentions);
-                json.writeObjectField("mentions_count", this.mentions.length);
-                writeArray(json, "hashtags", this.hashtags);
-                json.writeObjectField("hashtags_count", this.hashtags.length);
-                // experimental, for ranking
-                json.writeObjectField("without_l_len", this.without_l_len);
-                json.writeObjectField("without_lu_len", this.without_lu_len);
-                json.writeObjectField("without_luh_len", this.without_luh_len);
-            }
-            
-            // add user
-            if (user != null) {
-                json.writeFieldName("user");
-                user.toJSON(json);
-            }
-            
-            //m.field("coordinates", ""); // like {"coordinates":[-75.14310264,40.05701649],"type":"Point"}
-            //m.field("entities", ""); // like {"hashtags":[],"urls":[],"user_mentions":[]}
-            //m.field("filter_level", "");
-            //m.field("user", user.toJSON()); // {"profile_image_url":"...", "name":"Twitter API", "description":"blabla", "location":"San Francisco, CA", "followers_count":665829, "url":"http:\/\/dev.twitter.com", "screen_name":"twitterapi", "id_str":"6253282", "lang":"en", "id":6253282}
-            json.writeEndObject();
-        } catch (IOException e) {
+        // add optional location data. This is written even if calculatedData == false if the source is from REPORT to prevent that it is lost
+        if (this.location_point != null && this.location_point.length == 2 && this.location_mark != null && this.location_mark.length == 2) {
+            // reference for this format: https://www.elastic.co/guide/en/elasticsearch/reference/current/mapping-geo-point-type.html#_lat_lon_as_array_5
+            m.put("location_point", this.location_point); // [longitude, latitude]
+            m.put("location_radius", this.location_radius);
+            m.put("location_mark", this.location_mark);
+            m.put("location_source", this.location_source.name());
         }
+        
+        // add statistic/calculated data
+        if (calculatedData) {
+            m.put("hosts", this.hosts);
+            m.put("hosts_count", this.hosts.length);
+            m.put("links", this.links);
+            m.put("links_count", this.links.length);
+            m.put("mentions", this.mentions);
+            m.put("mentions_count", this.mentions.length);
+            m.put("hashtags", this.hashtags);
+            m.put("hashtags_count", this.hashtags.length);
+            // experimental, for ranking
+            m.put("without_l_len", this.without_l_len);
+            m.put("without_lu_len", this.without_lu_len);
+            m.put("without_luh_len", this.without_luh_len);
+        }
+        
+        // add user
+        if (user != null) m.put("user", user.toMap());
+        return m;
     }
     
     public static String html2utf8(String s) {

@@ -29,14 +29,15 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.AbstractMap;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
-import java.util.TreeSet;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
@@ -47,6 +48,7 @@ public class GeoNames {
     
     private final Map<Integer, GeoLocation> id2loc;
     private final HashMap<Integer, List<Integer>> hash2ids;
+    private final Set<Integer> stopwordHashes;
     
     
     public GeoNames(final File file, long minPopulation) {
@@ -54,6 +56,7 @@ public class GeoNames {
 
         this.id2loc = new HashMap<>();
         this.hash2ids = new HashMap<>();
+        this.stopwordHashes = new HashSet<>();
 
         if ( file == null || !file.exists() ) {
             return;
@@ -115,7 +118,7 @@ public class GeoNames {
                 this.id2loc.put(geonameid, geoLocation);
                 for (final String name : locnames) {
                     if (name.length() < 4) continue;
-                    int lochash = name.toLowerCase().hashCode();
+                    int lochash = normalize(name).hashCode();
                     List<Integer> locs = this.hash2ids.get(lochash);
                     if (locs == null) {locs = new ArrayList<Integer>(1); this.hash2ids.put(lochash, locs);}
                     locs.add(geonameid);
@@ -125,23 +128,139 @@ public class GeoNames {
             if (zf != null) zf.close();
         } catch (final IOException e ) {
         }
+        
+        // finally create a statistic which names appear very often to have fill-word heuristic
+        TreeMap<Integer, Set<Integer>> stat = new TreeMap<>(); // a mapping from number of occurrences of location name hashes to a set of location name hashes
+        for (Map.Entry<Integer, List<Integer>> entry: this.hash2ids.entrySet()) {
+            int occurrences = entry.getValue().size();
+            Set<Integer> hashes = stat.get(occurrences);
+            if (hashes == null) {hashes = new HashSet<Integer>(); stat.put(occurrences, hashes);}
+            hashes.add(entry.getKey());
+        }
+        // we consider 5/6 of this list as fill-word (approx 1000): those with the most occurrences
+        int good = stat.size() / 6;
+        Iterator<Map.Entry<Integer, Set<Integer>>> i = stat.entrySet().iterator();
+        for (int j = 0; j < good; j++) i.next(); // 'eat away' the good entries.
+        while (i.hasNext()) {
+            Set<Integer> morehashes = i.next().getValue();
+            this.stopwordHashes.addAll(morehashes);
+        }
+        //System.out.println("stopwords:" + this.stopwordHashes.size());
     }
     
-    public GeoLocation analyse(String text, int maxlength) {
-        LinkedHashMap<Integer, String> mix = mix(split(text), maxlength);
+    public GeoLocation analyse(String text, String[] tags, int maxlength) {
+        // first attempt: use the tags to get a location. We prefer small population because it is more specific
+        LinkedHashMap<Integer, String> mix = nomix(tags);
+        GeoLocation geolocTag = geomatch(mix, false);
+
+        // second attempt: use a mix of words from the input text. We prefer large population because that produces better hits
+        mix = mix(split(text), maxlength);
+        GeoLocation geolocText = geomatch(mix, true);
+        
+        // full fail case:
+        if (geolocTag == null && geolocText == null) return null;
+        
+        // evaluate the result
+        if (geolocText == null) return geolocTag;
+        Integer geolocTextHash = geolocText == null ? null : normalize(geolocText.getName()).hashCode();
+        boolean geolocTextIsStopword = geolocTextHash == null ? true : geolocText.getPopulation() < 100000 || this.stopwordHashes.contains(geolocTextHash);
+        if (geolocTag == null) return geolocTextIsStopword ? null : geolocText; // if we have only a match in the text but that is a stopword, we omit the result completely (too bad)
+        
+        // simple case: both are equal
+        if (geolocText.equals(geolocTag)) return geolocTag;
+        // special case: names are equal, but not location. This is a glitch in the prefer-population difference, in this case we prefer the largest place
+        if (geolocText.getName().equals(geolocTag.getName())) return geolocText;
+        
+        // in case that both location types are detected, evaluate the nature of the location names, consider:
+        // (1) number of words of the name, (2) stop word characteristics, (3) population of location, (4) length of name string
+
+        // (1) number of words
+        if (geolocText.getName().indexOf(' ') > 0) {
+            return geolocText; // this one is more specific
+        }
+
+        // (2) stop word characteristic
+        Integer geolocTagHash = geolocTag == null ? null : normalize(geolocTag.getName()).hashCode();
+        boolean geolocTagIsStopword = geolocTagHash == null ? true : this.stopwordHashes.contains(geolocTagHash);
+        if ( geolocTagIsStopword && !geolocTextIsStopword) return geolocText;
+        if (!geolocTagIsStopword &&  geolocTextIsStopword) return geolocTag;
+
+        int pivotpopulation = 100000;
+        // (3) in case that the places have too less population we give up. Danger would be high to make a mistake.
+        if (geolocTag.getPopulation() < pivotpopulation && geolocText.getPopulation() < pivotpopulation) return null;
+        
+        // (4) length of name string
+        int pivotlength = 6; // one name must be larger then the pivot, has larger population than the other place and the other place name must be smaller than the pivot
+        if (geolocTag.getName().length() > pivotlength && // we prefer tag names over text names by omitting the population constraint here
+            geolocText.getName().length() < pivotlength) return geolocTag;
+        if (geolocText.getName().length() > pivotlength &&
+                geolocText.getPopulation() > geolocTag.getPopulation() &&
+                geolocTag.getName().length() < pivotlength) return geolocText;
+        
+        // finally decide on population
+        return geolocTag.getPopulation() >= geolocText.getPopulation() || geolocTextIsStopword ? geolocTag : geolocText;
+    }
+    
+    /**
+     * Match a given sequence mix with geolocations. First all locations matching with sequences larger than one
+     * word are collected. If the result of this collection is not empty, the largest plase (measured by population)
+     * is returned. If no such location can be found, matching with single-word locations is attempted and then also
+     * the largest place is returned.
+     * @param mix the sequence mix
+     * @return the largest place, matching with the mix, several-word matchings preferred
+     */
+    private GeoLocation geomatch(LinkedHashMap<Integer, String> mix, final boolean preferLargePopulation) {
+        TreeMap<Long, GeoLocation> cand = new TreeMap<>();
+        int hitcount = 0;
         for (Map.Entry<Integer, String> entry: mix.entrySet()) {
+            if (cand.size() > 0 && entry.getValue().indexOf(' ') < 0) return preferNonStopwordLocation(cand.values(), preferLargePopulation); // if we have location matches for place names with more than one word, return the largest place (measured by the population)
             List<Integer> locs = this.hash2ids.get(entry.getKey());
             if (locs == null || locs.size() == 0) continue;
-            TreeMap<Long, GeoLocation> cand = new TreeMap<>();
             for (Integer i: locs) {
                 GeoLocation loc = this.id2loc.get(i);
-                if (loc != null && entry.getValue().toLowerCase().equals(loc.getName().toLowerCase())) cand.put(-loc.getPopulation(), loc);
+                if (loc != null && normalize(entry.getValue()).equals(normalize(loc.getName()))) cand.put(hitcount++ -loc.getPopulation(), loc);
             }
-            if (cand.size() > 0) return cand.values().iterator().next(); // the first entry is the location with largest population
         }
-        return null;
+        // finally return the largest place (if any found)
+        return cand.size() > 0 ? preferNonStopwordLocation(cand.values(), preferLargePopulation) : null;
     }
     
+    private GeoLocation preferNonStopwordLocation(Collection<GeoLocation> geolocs, final boolean preferLargePopulation) {
+        if (!preferLargePopulation) {
+            // reverse the list
+            List<GeoLocation> a = new ArrayList<>(geolocs.size());
+            for (GeoLocation g: geolocs) a.add(0, g);
+            geolocs = a;
+        }
+        if (geolocs == null || geolocs.size() == 0) return null;
+        for (GeoLocation loc: geolocs) {
+            if (!this.stopwordHashes.contains(normalize(loc.getName()).hashCode())) return loc;
+        }
+        return geolocs.iterator().next();
+    }
+    
+    /**
+     * Helper function which generates the same result as the mix method using a list of single-word tags.
+     * Because these words are not sorted in any way the creation of the mix result is much easier.
+     * @param tags
+     * @return a hastable where the key is the hash code of the lowercase of the tags and the value is the original tag
+     */
+    public static LinkedHashMap<Integer, String> nomix(final String[] tags) {
+        LinkedHashMap<Integer, String> r = new LinkedHashMap<>();
+        if (tags != null) for (String t: tags) r.put(normalize(t).hashCode(), t);
+        return r;
+    }
+    
+    /**
+     * Create sequences of words from a word token list. The sequence has also normalized (lowercased) names and original Text.
+     * The creates sequences is a full set of all sequence combinations which are possible from the given tokens.
+     * The text sequences are then reverse-sorted by the length of the combines text sequence. The result is a hashtable
+     * where the key is the hash of the lowercase text sequence and the value is the original text without lowercase.
+     * This allows a rapid matching with stored word sequences using the hash of the sequence
+     * @param text
+     * @param maxlength the maximum sequence length, counts number of words
+     * @return an ordered hashtable where the order is the reverse length of the sequence, the key is the hash of the lowercase string sequence and the value is the original word sequence
+     */
     public static LinkedHashMap<Integer, String> mix(final ArrayList<Map.Entry<String, String>> text, final int maxlength) {
         Map<Integer, Map<Integer, String>> a = new TreeMap<>(); // must be a TreeMap provide order on reverse word count
         for (int i = 0; i < text.size(); i++) {
@@ -165,31 +284,54 @@ public class GeoNames {
         
         // now order the maps by the number of words
         LinkedHashMap<Integer, String> r = new LinkedHashMap<>();
-        for (Map<Integer,String> m: a.values())r.putAll(m);
+        for (Map<Integer, String> m: a.values()) r.putAll(m);
         return r;
     }
 
+    /**
+     * Split the text into word tokens. The tokens are lower-cased. To maintain the original spelling
+     * of the word without lowercasing them, the original word is attached too.
+     * @param text
+     * @return a List of Map.Entry objects where the key is the lower-cased word token and the value is the original word
+     */
     public static ArrayList<Map.Entry<String, String>> split(final String text) {
-        ArrayList<Map.Entry<String, String>> a = new ArrayList<>(1 + text.length() / 6);
+        ArrayList<Map.Entry<String, String>> a = new ArrayList<>(1 + text.length() / 4);
         final StringBuilder o = new StringBuilder();
         final StringBuilder l = new StringBuilder();
         for (int i = 0; i < text.length(); i++) {
             final char c = text.charAt(i);
-            if (c == ' ') {
-                if (o.length() > 0) {a.add(new AbstractMap.SimpleEntry<String, String>(l.toString(), o.toString())); o.setLength(0); l.setLength(0);}
-                continue;
-            }
             if (Character.isLetterOrDigit(c)) {
                 o.append(c);
                 l.append(Character.toLowerCase(c));
+                continue;
+            }
+            // if it is not letter or digit, we split it.
+            if (o.length() > 0) {
+                a.add(new AbstractMap.SimpleEntry<String, String>(l.toString(), o.toString()));
+                o.setLength(0);
+                l.setLength(0);
             }
         }
         if (o.length() > 0) {a.add(new AbstractMap.SimpleEntry<String, String>(l.toString(), o.toString())); o.setLength(0); l.setLength(0);}
         return a;
     }
+
+    public static String normalize(final String text) {
+        final StringBuilder l = new StringBuilder();
+        for (int i = 0; i < text.length(); i++) {
+            final char c = text.charAt(i);
+            if (Character.isLetterOrDigit(c)) {
+                l.append(Character.toLowerCase(c));
+            } else {
+                if (l.length() > 0 && l.charAt(l.length() - 1) != ' ') l.append(' ');
+            }
+        }
+        if (l.length() > 0 && l.charAt(l.length() - 1) == ' ') l.setLength(l.length() - 1);
+        return l.toString();
+    }
     
     public static void main(String[] args) {
-        ArrayList<Map.Entry<String, String>> split = split("Hoc est Corpus meus");
+        ArrayList<Map.Entry<String, String>> split = split("Hoc est Corpus-meus");
         LinkedHashMap<Integer, String> mix = mix(split, 3);
         for (Map.Entry<Integer, String> entry: mix.entrySet()) {
             System.out.println("code:" + entry.getKey() + "; string:" + entry.getValue());

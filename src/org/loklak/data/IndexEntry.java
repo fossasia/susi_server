@@ -19,14 +19,12 @@
 
 package org.loklak.data;
 
-import com.fasterxml.jackson.core.JsonGenerator;
+import java.util.Map;
 
 public interface IndexEntry {
 
     public String toString();
-
-    public void toJSON(JsonGenerator m);
     
-    public byte[] toJSON();
+    public Map<String, Object> toMap();
     
 }
