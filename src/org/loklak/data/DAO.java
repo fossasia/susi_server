@@ -47,9 +47,11 @@ import java.util.Random;
 import java.util.Set;
 import java.util.TimeZone;
 import java.util.TreeSet;
+import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.zip.Deflater;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
@@ -310,43 +312,87 @@ public class DAO {
         return f.renameTo(g);
     }
     public static int importDump(File dumpFile) {
-        try {
-            InputStream is = new FileInputStream(dumpFile);
-            String line;
-            int newTweet = 0;
-            BufferedReader br = null;
-            try {
-                if (dumpFile.getName().endsWith(".gz")) is = new GZIPInputStream(is);
-                br = new BufferedReader(new InputStreamReader(is, UTF8.charset));
-                while((line = br.readLine()) != null) {
+        int concurrency = Runtime.getRuntime().availableProcessors();
+        final DumpReader dumpReader = new DumpReader(dumpFile, concurrency);
+        dumpReader.start();
+        final AtomicInteger newTweet = new AtomicInteger(0);
+        Thread[] indexerThreads = new Thread[concurrency];
+        for (int i = 0; i < concurrency; i++) {
+            indexerThreads[i] = new Thread() {
+                public void run() {
+                    Map<String, Object> tweet;
                     try {
-                        XContentParser parser = JsonXContent.jsonXContent.createParser(line);
-                        Map<String, Object> tweet = parser == null ? null : parser.map();
-                        if (tweet == null) continue;
-                        @SuppressWarnings("unchecked") Map<String, Object> user = (Map<String, Object>) tweet.remove("user");
-                        if (user == null) continue;
-                        UserEntry u = new UserEntry(user);
-                        MessageEntry t = new MessageEntry(tweet);
-                        boolean newtweet = DAO.writeMessage(t, u, false, true);
-                        if (newtweet) newTweet++;
-                    } catch (Throwable e) {
-                        Log.getLog().warn("cannot parse line \"" + line + "\"", e);
+                        while ((tweet = dumpReader.take()) != POISON_TWEET_MAP) {
+                            @SuppressWarnings("unchecked") Map<String, Object> user = (Map<String, Object>) tweet.remove("user");
+                            if (user == null) continue;
+                            UserEntry u = new UserEntry(user);
+                            MessageEntry t = new MessageEntry(tweet);
+                            boolean newtweet = DAO.writeMessage(t, u, false, true);
+                            if (newtweet) newTweet.incrementAndGet();
+                        }
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
                     }
                 }
-            } catch (IOException e) {
-                e.printStackTrace();
-            } finally {
+            };
+            indexerThreads[i].start();
+        }
+        for (int i = 0; i < concurrency; i++) {
+            try {indexerThreads[i].join();} catch (InterruptedException e) {}
+        }
+        return newTweet.get();
+    }
+    private final static Map<String, Object> POISON_TWEET_MAP = new HashMap<>();
+    public static class DumpReader extends Thread {
+
+        private ArrayBlockingQueue<Map<String, Object>> tweets;
+        private File dumpFile;
+        private int concurrency;
+        
+        public DumpReader(File dumpFile, int concurrency) {
+            this.tweets = new ArrayBlockingQueue<>(1000);
+            this.dumpFile = dumpFile;
+            this.concurrency = concurrency;
+        }
+        
+        public Map<String, Object> take() throws InterruptedException {
+            return this.tweets.take();
+        }
+        
+        public void run() {
+            try {
+                InputStream is = new FileInputStream(this.dumpFile);
+                String line;
+                BufferedReader br = null;
                 try {
-                    if (br != null) br.close();
+                    if (dumpFile.getName().endsWith(".gz")) is = new GZIPInputStream(is);
+                    br = new BufferedReader(new InputStreamReader(is, UTF8.charset));
+                    while((line = br.readLine()) != null) {
+                        try {
+                            XContentParser parser = JsonXContent.jsonXContent.createParser(line);
+                            Map<String, Object> tweet = parser == null ? null : parser.map();
+                            if (tweet == null) continue;
+                            this.tweets.put(tweet);
+                        } catch (Throwable e) {
+                            Log.getLog().warn("cannot parse line \"" + line + "\"", e);
+                        }
+                    }
                 } catch (IOException e) {
                     e.printStackTrace();
+                } finally {
+                    try {
+                        if (br != null) br.close();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                    for (int i = 0; i < this.concurrency; i++) {
+                        try {this.tweets.put(POISON_TWEET_MAP);} catch (InterruptedException e) {}
+                    }
                 }
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
             }
-            return newTweet;
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
         }
-        return 0;
     }
     
     public static int importGeoJson(File dumpFile) {
