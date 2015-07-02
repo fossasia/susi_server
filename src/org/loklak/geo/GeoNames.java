@@ -172,7 +172,7 @@ public class GeoNames {
         if (geolocText.getName().equals(geolocTag.getName())) return geolocText;
         
         // in case that both location types are detected, evaluate the nature of the location names, consider:
-        // (1) number of words of the name, (2) stop word characteristics, (3) length of name string, (4) size of location
+        // (1) number of words of the name, (2) stop word characteristics, (3) population of location, (4) length of name string
 
         // (1) number of words
         if (geolocText.getName().indexOf(' ') > 0) {
@@ -184,15 +184,18 @@ public class GeoNames {
         boolean geolocTagIsStopword = geolocTagHash == null ? true : this.stopwordHashes.contains(geolocTagHash);
         if ( geolocTagIsStopword && !geolocTextIsStopword) return geolocText;
         if (!geolocTagIsStopword &&  geolocTextIsStopword) return geolocTag;
+
+        int pivotpopulation = 100000;
+        // (3) in case that the places have too less population we give up. Danger would be high to make a mistake.
+        if (geolocTag.getPopulation() < pivotpopulation && geolocText.getPopulation() < pivotpopulation) return null;
         
-        // (3) length of name string
+        // (4) length of name string
         int pivotlength = 6; // one name must be larger then the pivot, has larger population than the other place and the other place name must be smaller than the pivot
         if (geolocTag.getName().length() > pivotlength && // we prefer tag names over text names by omitting the population constraint here
             geolocText.getName().length() < pivotlength) return geolocTag;
         if (geolocText.getName().length() > pivotlength &&
                 geolocText.getPopulation() > geolocTag.getPopulation() &&
                 geolocTag.getName().length() < pivotlength) return geolocText;
-        
         
         // finally decide on population
         return geolocTag.getPopulation() >= geolocText.getPopulation() || geolocTextIsStopword ? geolocTag : geolocText;
