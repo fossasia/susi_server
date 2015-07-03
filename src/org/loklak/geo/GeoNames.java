@@ -149,8 +149,52 @@ public class GeoNames {
             this.stopwordHashes.addAll(morehashes);
         }
     }
+
+    public GeoLocation analyse(final String text, final String[] tags, final int maxlength) {
+        GeoLocation loc = geocode(text, tags, maxlength);
+        if (loc != null) return loc;
+        return reverse_geocode(text);
+    }
+
+    /**
+     * find the geolocation for coordinates in a text
+     * @param text
+     * @return the location if one was found or null;
+     */
+    private GeoLocation reverse_geocode(final String text) {
+        for (String t: text.split(" ")) {
+            // test if t is possibly a coordinate
+            if (t.length() < 9) continue;
+            String[] c = t.split(",");
+            if (c.length != 2) continue;
+            try {
+                // expected: lat,lon
+                double lat = Double.parseDouble(c[0]);
+                double lon = Double.parseDouble(c[1]);
+                if (lat < -90.0d || lat > 90.0d) continue;
+                if (lon < -180.0d || lon > 180.0d) continue;
+                // allright, that should be a coordinate. Make an anonymous GeoLocation out of it
+                ArrayList<String> names = new ArrayList<>(1); names.add("");
+                GeoLocation loc = new GeoLocation(lat, lon,  names);
+                loc.setPopulation(1); // there is at least someone who tweetet from there
+                return loc;
+            } catch (NumberFormatException e) {
+                continue;
+            }
+           // iPhone: 37.313690,-122.022911 as well
+           // ÜT: 19.109458,72.825842. 
+        }
+        return null;
+    }
     
-    public GeoLocation analyse(String text, String[] tags, int maxlength) {
+    /**
+     * find the geolocation for place names given in a text and/or hashtags
+     * @param text
+     * @param tags
+     * @param maxlength
+     * @return the location if one was found or null;
+     */
+    private GeoLocation geocode(final String text, final String[] tags, final int maxlength) {
         // first attempt: use the tags to get a location. We prefer small population because it is more specific
         LinkedHashMap<Integer, String> mix = nomix(tags);
         GeoMatch geolocTag = geomatch(mix, false);
