@@ -34,6 +34,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -99,7 +100,6 @@ public class GeoNames {
         try {
             String line;
             String[] fields;
-            Set<String> locnames;
             while ( (line = reader.readLine()) != null ) {
                 if ( line.isEmpty() ) {
                     continue;
@@ -108,20 +108,23 @@ public class GeoNames {
                 final long population = Long.parseLong(fields[14]);
                 if (minPopulation > 0 && population < minPopulation) continue;
                 final int geonameid = Integer.parseInt(fields[0]);
-                locnames = new HashSet<>();
+                Set<String> locnames = new LinkedHashSet<>();
                 locnames.add(fields[1]);
                 locnames.add(fields[2]);
                 for (final String s : CommonPattern.COMMA.split(fields[3])) locnames.add(s);
+                ArrayList<String> locnamess = new ArrayList<>(locnames.size());
+                locnamess.addAll(locnames);
                 
-                final GeoLocation geoLocation = new GeoLocation(Float.parseFloat(fields[4]), Float.parseFloat(fields[5]), fields[1]);
+                final GeoLocation geoLocation = new GeoLocation(Float.parseFloat(fields[4]), Float.parseFloat(fields[5]), locnamess);
                 geoLocation.setPopulation(population);
                 this.id2loc.put(geonameid, geoLocation);
                 for (final String name : locnames) {
-                    if (name.length() < 4) continue;
-                    int lochash = normalize(name).hashCode();
+                    if (name.length() < 4) continue; //1843908184=圣胡利娅 德洛里亚
+                    String normalized = normalize(name);
+                    int lochash = normalized.hashCode();
                     List<Integer> locs = this.hash2ids.get(lochash);
                     if (locs == null) {locs = new ArrayList<Integer>(1); this.hash2ids.put(lochash, locs);}
-                    locs.add(geonameid);
+                    if (!locs.contains(geonameid)) locs.add(geonameid);
                 }
             }
             if (reader != null) reader.close();
@@ -137,68 +140,76 @@ public class GeoNames {
             if (hashes == null) {hashes = new HashSet<Integer>(); stat.put(occurrences, hashes);}
             hashes.add(entry.getKey());
         }
-        // we consider 5/6 of this list as fill-word (approx 1000): those with the most occurrences
-        int good = stat.size() / 6;
+        // we consider 3/4 of this list as fill-word (approx 300): those with the most occurrences
+        int good = stat.size() / 4;
         Iterator<Map.Entry<Integer, Set<Integer>>> i = stat.entrySet().iterator();
         for (int j = 0; j < good; j++) i.next(); // 'eat away' the good entries.
         while (i.hasNext()) {
             Set<Integer> morehashes = i.next().getValue();
             this.stopwordHashes.addAll(morehashes);
         }
-        //System.out.println("stopwords:" + this.stopwordHashes.size());
     }
     
     public GeoLocation analyse(String text, String[] tags, int maxlength) {
         // first attempt: use the tags to get a location. We prefer small population because it is more specific
         LinkedHashMap<Integer, String> mix = nomix(tags);
-        GeoLocation geolocTag = geomatch(mix, false);
+        GeoMatch geolocTag = geomatch(mix, false);
 
         // second attempt: use a mix of words from the input text. We prefer large population because that produces better hits
         mix = mix(split(text), maxlength);
-        GeoLocation geolocText = geomatch(mix, true);
+        GeoMatch geolocText = geomatch(mix, true);
         
         // full fail case:
         if (geolocTag == null && geolocText == null) return null;
         
         // evaluate the result
-        if (geolocText == null) return geolocTag;
-        Integer geolocTextHash = geolocText == null ? null : normalize(geolocText.getName()).hashCode();
-        boolean geolocTextIsStopword = geolocTextHash == null ? true : geolocText.getPopulation() < 100000 || this.stopwordHashes.contains(geolocTextHash);
-        if (geolocTag == null) return geolocTextIsStopword ? null : geolocText; // if we have only a match in the text but that is a stopword, we omit the result completely (too bad)
+        if (geolocText == null) return geolocTag.loc;
+        Integer geolocTextHash = geolocText == null ? null : normalize(geolocText.name).hashCode();
+        boolean geolocTextIsStopword = geolocTextHash == null ? true : this.stopwordHashes.contains(geolocTextHash);
+        if (geolocTag == null) return geolocTextIsStopword ? null : geolocText.loc; // if we have only a match in the text but that is a stopword, we omit the result completely (too bad)
         
         // simple case: both are equal
-        if (geolocText.equals(geolocTag)) return geolocTag;
+        if (geolocText.equals(geolocTag)) return geolocTag.loc;
         // special case: names are equal, but not location. This is a glitch in the prefer-population difference, in this case we prefer the largest place
-        if (geolocText.getName().equals(geolocTag.getName())) return geolocText;
+        if (geolocText.name.equals(geolocTag.name)) return geolocText.loc;
         
         // in case that both location types are detected, evaluate the nature of the location names, consider:
         // (1) number of words of the name, (2) stop word characteristics, (3) population of location, (4) length of name string
 
         // (1) number of words
-        if (geolocText.getName().indexOf(' ') > 0) {
-            return geolocText; // this one is more specific
+        if (normalize(geolocText.name).indexOf(' ') > 0) {
+            return geolocText.loc; // this one is more specific
         }
 
         // (2) stop word characteristic
-        Integer geolocTagHash = geolocTag == null ? null : normalize(geolocTag.getName()).hashCode();
+        Integer geolocTagHash = geolocTag == null ? null : normalize(geolocTag.name).hashCode();
         boolean geolocTagIsStopword = geolocTagHash == null ? true : this.stopwordHashes.contains(geolocTagHash);
-        if ( geolocTagIsStopword && !geolocTextIsStopword) return geolocText;
-        if (!geolocTagIsStopword &&  geolocTextIsStopword) return geolocTag;
+        if ( geolocTagIsStopword && !geolocTextIsStopword) return geolocText.loc;
+        if (!geolocTagIsStopword &&  geolocTextIsStopword) return geolocTag.loc;
 
         int pivotpopulation = 100000;
         // (3) in case that the places have too less population we give up. Danger would be high to make a mistake.
-        if (geolocTag.getPopulation() < pivotpopulation && geolocText.getPopulation() < pivotpopulation) return null;
+        if (geolocTag.loc.getPopulation() < pivotpopulation && geolocText.loc.getPopulation() < pivotpopulation) return null;
         
         // (4) length of name string
         int pivotlength = 6; // one name must be larger then the pivot, has larger population than the other place and the other place name must be smaller than the pivot
-        if (geolocTag.getName().length() > pivotlength && // we prefer tag names over text names by omitting the population constraint here
-            geolocText.getName().length() < pivotlength) return geolocTag;
-        if (geolocText.getName().length() > pivotlength &&
-                geolocText.getPopulation() > geolocTag.getPopulation() &&
-                geolocTag.getName().length() < pivotlength) return geolocText;
+        if (geolocTag.name.length() > pivotlength && // we prefer tag names over text names by omitting the population constraint here
+            geolocText.name.length() < pivotlength) return geolocTag.loc;
+        if (geolocText.name.length() > pivotlength &&
+                geolocText.loc.getPopulation() > geolocTag.loc.getPopulation() &&
+                geolocTag.name.length() < pivotlength) return geolocText.loc;
         
         // finally decide on population
-        return geolocTag.getPopulation() >= geolocText.getPopulation() || geolocTextIsStopword ? geolocTag : geolocText;
+        return geolocTag.loc.getPopulation() >= geolocText.loc.getPopulation() || geolocTextIsStopword ? geolocTag.loc : geolocText.loc;
+    }
+    
+    private static class GeoMatch {
+        public final String name;
+        public final GeoLocation loc;
+        public GeoMatch(final String name, final GeoLocation loc) {
+            this.name = name;
+            this.loc = loc;
+        }
     }
     
     /**
@@ -209,8 +220,8 @@ public class GeoNames {
      * @param mix the sequence mix
      * @return the largest place, matching with the mix, several-word matchings preferred
      */
-    private GeoLocation geomatch(LinkedHashMap<Integer, String> mix, final boolean preferLargePopulation) {
-        TreeMap<Long, GeoLocation> cand = new TreeMap<>();
+    private GeoMatch geomatch(LinkedHashMap<Integer, String> mix, final boolean preferLargePopulation) {
+        TreeMap<Long, GeoMatch> cand = new TreeMap<>();
         int hitcount = 0;
         for (Map.Entry<Integer, String> entry: mix.entrySet()) {
             if (cand.size() > 0 && entry.getValue().indexOf(' ') < 0) return preferNonStopwordLocation(cand.values(), preferLargePopulation); // if we have location matches for place names with more than one word, return the largest place (measured by the population)
@@ -218,23 +229,32 @@ public class GeoNames {
             if (locs == null || locs.size() == 0) continue;
             for (Integer i: locs) {
                 GeoLocation loc = this.id2loc.get(i);
-                if (loc != null && normalize(entry.getValue()).equals(normalize(loc.getName()))) cand.put(hitcount++ -loc.getPopulation(), loc);
+                if (loc != null) {
+                    for (String name: loc.getNames()) {
+                        if (normalize(entry.getValue()).equals(normalize(name))) {
+                            cand.put(hitcount++ -loc.getPopulation(), new GeoMatch(entry.getValue(), loc));
+                            break;
+                        }
+                    }
+                }
             }
         }
         // finally return the largest place (if any found)
         return cand.size() > 0 ? preferNonStopwordLocation(cand.values(), preferLargePopulation) : null;
     }
     
-    private GeoLocation preferNonStopwordLocation(Collection<GeoLocation> geolocs, final boolean preferLargePopulation) {
+    private GeoMatch preferNonStopwordLocation(Collection<GeoMatch> geolocs, final boolean preferLargePopulation) {
         if (!preferLargePopulation) {
             // reverse the list
-            List<GeoLocation> a = new ArrayList<>(geolocs.size());
-            for (GeoLocation g: geolocs) a.add(0, g);
+            List<GeoMatch> a = new ArrayList<>(geolocs.size());
+            for (GeoMatch g: geolocs) a.add(0, g);
             geolocs = a;
         }
         if (geolocs == null || geolocs.size() == 0) return null;
-        for (GeoLocation loc: geolocs) {
-            if (!this.stopwordHashes.contains(normalize(loc.getName()).hashCode())) return loc;
+        for (GeoMatch loc: geolocs) {
+            for (String name: loc.loc.getNames()) {
+                if (!this.stopwordHashes.contains(normalize(name).hashCode())) return loc;
+            }
         }
         return geolocs.iterator().next();
     }

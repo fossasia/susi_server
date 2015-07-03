@@ -22,30 +22,21 @@
 
 package org.loklak.geo;
 
+import java.util.Collection;
 import java.util.Comparator;
 
 public class GeoLocation extends IntegerGeoPoint implements Comparable<GeoLocation>, Comparator<GeoLocation> {
 
-    private String name;
+    private Collection<String> names;
     private long population;
 
-    public GeoLocation(double lat, double lon) {
+    public GeoLocation(final double lat, final double lon, final Collection<String> names) {
         super(lat, lon);
-        this.name = null;
-        this.population = 0;
+        this.names = names;
     }
 
-    public GeoLocation(double lat, double lon, String name) {
-        super(lat, lon);
-        this.name = name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getName() {
-        return this.name;
+    public Collection<String> getNames() {
+        return this.names;
     }
 
     public void setPopulation(long population2) {
@@ -58,13 +49,17 @@ public class GeoLocation extends IntegerGeoPoint implements Comparable<GeoLocati
 
     @Override
     public String toString() {
-        return this.name + "@" + super.toString();
+        return this.names.iterator().next() + "@" + super.toString();
     }
 
     @Override
     public boolean equals(Object loc) {
         if (!(loc instanceof GeoLocation)) return false;
-        return super.equals(loc) && this.name.equals(((GeoLocation) loc).name);
+        if (!super.equals(loc)) return false;
+        for (String name: this.names) {
+            if (((GeoLocation) loc).names.contains(name)) return true;
+        }
+        return false;
     }
 
     /**

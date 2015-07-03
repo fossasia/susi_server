@@ -95,7 +95,7 @@ public class GeocodeServlet extends HttpServlet {
             GeoLocation loc = DAO.geoNames.analyse(p, null, 5);
             Map<String, Object> location = new LinkedHashMap<>();
             if (loc != null) {
-                location.put("place", loc.getName());
+                location.put("place", minified ? new String[]{loc.getNames().iterator().next()} : loc.getNames());
                 location.put("population", loc.getPopulation());
                 location.put("location", new double[]{loc.lon(), loc.lat()});
                 location.put("mark", new double[]{loc.lon(), loc.lat()});

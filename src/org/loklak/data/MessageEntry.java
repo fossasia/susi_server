@@ -420,7 +420,7 @@ public class MessageEntry extends AbstractIndexEntry implements IndexEntry {
                 loc = DAO.geoNames.analyse(this.text, this.hashtags, 5);
             }
             if (loc != null) {
-                this.place_name = loc.getName();
+                this.place_name = loc.getNames().iterator().next();
                 this.location_radius = 0;
                 this.location_point = new double[]{loc.lon(), loc.lat()}; //[longitude, latitude]
                 this.location_mark = new double[]{loc.lon(), loc.lat()}; //[longitude, latitude]
