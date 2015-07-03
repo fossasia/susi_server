@@ -19,19 +19,19 @@
  *  along with this program in the file lgpl21.txt
  *  If not, see <http://www.gnu.org/licenses/>.
  */
+
 package org.loklak.geo;
 
 /**
  * GeoPoint implementation with Integer accuracy
  */
-public class IntegerGeoPoint implements GeoPoint {
+public class IntegerGeoPoint extends AbstractGeoPoint implements GeoPoint {
 
     private final long latlon; // using one variable for the coordinate pair saves some space
 
     public IntegerGeoPoint(double lat, double lon) {
         this.latlon = (((long) coord2int(lat)) << 32) | (coord2int(lon));
     }
-
 
     public IntegerGeoPoint(int lat, int lon) {
         this.latlon = (((long) coord2int(lat / 1e6d)) << 32) | (coord2int(lon / 1e6d));
@@ -94,27 +94,6 @@ public class IntegerGeoPoint implements GeoPoint {
         IntegerGeoPoint oo = (IntegerGeoPoint) o;
         return (this.latlon == oo.latlon);
     }
-
-    /**
-     * compute the distance between two points using the Haversine Algorithm
-     * https://en.wikipedia.org/wiki/Haversine_formula
-     * @param othr the other point
-     * @return the distance of this point and the other point in meter
-     */
-    public double distance(final GeoPoint othr) {
-        return distance(this.lat(), this.lon(), othr.lat(), othr.lon());
-    }
-    
-    public static double distance(final double lat1, final double lon1, final double lat2, final double lon2) {        
-        double dlat = (lat2 - lat1) * D2R; double dlon = (lon2 - lon1) * D2R;
-        double a = Math.pow(Math.sin(dlat / 2.0d), 2.0d) +
-                   Math.cos(lat1 * D2R) * Math.cos(lat2 * D2R) * Math.pow(Math.sin(dlon / 2.0d), 2.0d);
-        double c = 2.0d * Math.atan2(Math.sqrt(a), Math.sqrt(1.0d - a));
-        return EQUATOR_EARTH_RADIUS * c;
-    }
-    
-    static final double EQUATOR_EARTH_RADIUS = 63781370.0d;
-    static final double D2R = (Math.PI / 180.0d);
 
     @Override
     public String toString() {

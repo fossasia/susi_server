@@ -150,9 +150,9 @@ public class GeoNames {
         }
     }
 
-    public GeoLocation analyse(final String text, final String[] tags, final int maxlength) {
+    public GeoMark analyse(final String text, final String[] tags, final int maxlength) {
         GeoLocation loc = geocode(text, tags, maxlength);
-        if (loc != null) return loc;
+        if (loc != null) return new GeoMark(loc);
         return reverse_geocode(text);
     }
 
@@ -161,7 +161,7 @@ public class GeoNames {
      * @param text
      * @return the location if one was found or null;
      */
-    private GeoLocation reverse_geocode(final String text) {
+    private GeoMark reverse_geocode(final String text) {
         for (String t: text.split(" ")) {
             // test if t is possibly a coordinate
             if (t.length() < 9) continue;
@@ -183,7 +183,7 @@ public class GeoNames {
                         ming = g;
                     }
                 }
-                return ming;
+                return new GeoMark(ming, lat, lon);
                 /*
                 // Make an anonymous GeoLocation out of it
                 ArrayList<String> names = new ArrayList<>(1); names.add("");

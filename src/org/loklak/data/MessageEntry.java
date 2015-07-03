@@ -32,7 +32,7 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.loklak.geo.GeoLocation;
+import org.loklak.geo.GeoMark;
 import org.loklak.geo.LocationSource;
 import org.loklak.harvester.SourceType;
 
@@ -412,7 +412,7 @@ public class MessageEntry extends AbstractIndexEntry implements IndexEntry {
         
         // find location
         if ((this.location_point == null || this.location_point.length == 0) && DAO.geoNames != null) {
-            GeoLocation loc = null;
+            GeoMark loc = null;
             if (this.place_name != null && this.place_name.length() > 0 && (this.location_source == null || this.location_source != LocationSource.ANNOTATION)) {
                 loc = DAO.geoNames.analyse(this.place_name, null, 5);
             }
@@ -423,7 +423,7 @@ public class MessageEntry extends AbstractIndexEntry implements IndexEntry {
                 this.place_name = loc.getNames().iterator().next();
                 this.location_radius = 0;
                 this.location_point = new double[]{loc.lon(), loc.lat()}; //[longitude, latitude]
-                this.location_mark = new double[]{loc.lon(), loc.lat()}; //[longitude, latitude]
+                this.location_mark = new double[]{loc.mlon(), loc.mlat()}; //[longitude, latitude]
                 this.location_source = LocationSource.ANNOTATION;
             }
         }

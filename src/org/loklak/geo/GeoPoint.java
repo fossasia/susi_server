@@ -70,6 +70,14 @@ public interface GeoPoint {
     public boolean equals(final Object o);
 
     /**
+     * compute the distance between two points using the Haversine Algorithm
+     * https://en.wikipedia.org/wiki/Haversine_formula
+     * @param othr the other point
+     * @return the distance of this point and the other point in meter
+     */
+    public double distance(final GeoPoint othr);
+    
+    /**
      * printout format of the point
      * @return
      */

@@ -33,7 +33,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.elasticsearch.common.xcontent.XContentParser;
 import org.elasticsearch.common.xcontent.json.JsonXContent;
 import org.loklak.data.DAO;
-import org.loklak.geo.GeoLocation;
+import org.loklak.geo.GeoMark;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -94,13 +94,13 @@ public class GeocodeServlet extends HttpServlet {
         // find locations for places
         Map<String, Object> locations = new LinkedHashMap<>();
         for (String p: place) {
-            GeoLocation loc = DAO.geoNames.analyse(p, null, 5);
+            GeoMark loc = DAO.geoNames.analyse(p, null, 5);
             Map<String, Object> location = new LinkedHashMap<>();
             if (loc != null) {
                 location.put("place", minified ? new String[]{loc.getNames().iterator().next()} : loc.getNames());
                 location.put("population", loc.getPopulation());
                 location.put("location", new double[]{loc.lon(), loc.lat()});
-                location.put("mark", new double[]{loc.lon(), loc.lat()});
+                location.put("mark", new double[]{loc.mlon(), loc.mlat()});
             }
             locations.put(p, location);
         }
