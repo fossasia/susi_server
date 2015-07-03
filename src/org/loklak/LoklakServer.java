@@ -54,6 +54,7 @@ import org.loklak.api.server.SettingsServlet;
 import org.loklak.api.server.StatusServlet;
 import org.loklak.api.server.SuggestServlet;
 import org.loklak.api.server.AccountServlet;
+import org.loklak.api.server.ThreaddumpServlet;
 import org.loklak.data.DAO;
 import org.loklak.tools.Browser;
 import org.loklak.vis.server.MapServlet;
@@ -143,6 +144,7 @@ public class LoklakServer {
         ServletHolder assetServletHolder = new ServletHolder(AssetServlet.class);
         assetServletHolder.getRegistration().setMultipartConfig(new MultipartConfigElement(tmp.getAbsolutePath()));
         servletHandler.addServlet(assetServletHolder, "/api/asset");
+        servletHandler.addServlet(ThreaddumpServlet.class, "/api/threaddump.txt");
         servletHandler.addServlet(MarkdownServlet.class, "/vis/markdown.gif");
         servletHandler.addServlet(MarkdownServlet.class, "/vis/markdown.gif.base64");
         servletHandler.addServlet(MarkdownServlet.class, "/vis/markdown.png");

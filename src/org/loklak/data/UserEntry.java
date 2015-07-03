@@ -66,7 +66,7 @@ public class UserEntry extends AbstractIndexEntry implements IndexEntry {
     }
 
     public String getName() {
-        return parseString((String) this.map.get(field_name));
+        return MessageEntry.html2utf8(parseString((String) this.map.get(field_name))); // html2utf8 should not be necessary here since it is already applied in the scraper; however there are old data lines which had not been converted
     }
 
     public String getProfileImageUrl() {
