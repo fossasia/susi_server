@@ -41,6 +41,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  * geocoding of places into locations
  * test:
  * http://localhost:9000/api/geocode.json?data={%22places%22:[%22Frankfurt%20am%20Main%22,%22New%20York%22,%22Singapore%22]}
+ * for reverse geocoding, try
+ * http://localhost:9000/api/geocode.json?data={%22places%22:[%22iPhone:%2037.313690,-122.022911%22,%22%C3%9CT:%2019.109458,72.825842%22]}
  */
 public class GeocodeServlet extends HttpServlet {
    

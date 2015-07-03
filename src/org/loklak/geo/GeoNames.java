@@ -173,11 +173,24 @@ public class GeoNames {
                 double lon = Double.parseDouble(c[1]);
                 if (lat < -90.0d || lat > 90.0d) continue;
                 if (lon < -180.0d || lon > 180.0d) continue;
-                // allright, that should be a coordinate. Make an anonymous GeoLocation out of it
+                // allright, that should be a coordinate. Try to find the place
+                double mind = 40000000.0d;
+                GeoLocation ming = null;
+                for (GeoLocation g: id2loc.values()) {
+                    double d = IntegerGeoPoint.distance(lat, lon, g.lat(), g.lon());
+                    if (d < mind) {
+                        mind = d;
+                        ming = g;
+                    }
+                }
+                return ming;
+                /*
+                // Make an anonymous GeoLocation out of it
                 ArrayList<String> names = new ArrayList<>(1); names.add("");
                 GeoLocation loc = new GeoLocation(lat, lon,  names);
                 loc.setPopulation(1); // there is at least someone who tweetet from there
                 return loc;
+                */
             } catch (NumberFormatException e) {
                 continue;
             }
