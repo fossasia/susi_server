@@ -43,6 +43,7 @@ import org.loklak.api.server.AssetServlet;
 import org.loklak.api.server.CampaignServlet;
 import org.loklak.api.server.CrawlerServlet;
 import org.loklak.api.server.DumpDownloadServlet;
+import org.loklak.api.server.GeocodeServlet;
 import org.loklak.api.server.HelloServlet;
 import org.loklak.api.server.PeersServlet;
 import org.loklak.api.server.ProxyServlet;
@@ -129,6 +130,7 @@ public class LoklakServer {
         servletHandler.addServlet(AccountServlet.class, "/api/account.json");
         servletHandler.addServlet(CampaignServlet.class, "/api/campaign.json");
         servletHandler.addServlet(SettingsServlet.class, "/api/settings.json");
+        servletHandler.addServlet(GeocodeServlet.class, "/api/geocode.json");
         servletHandler.addServlet(ProxyServlet.class, "/api/proxy.gif");
         servletHandler.addServlet(ProxyServlet.class, "/api/proxy.png");
         servletHandler.addServlet(ProxyServlet.class, "/api/proxy.jpg");
