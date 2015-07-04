@@ -63,7 +63,7 @@ public class SuggestServlet extends HttpServlet {
         boolean local = post.isLocalhostAccess();
         boolean minified = post.get("minified", false);
         boolean delete = post.get("delete", false);
-        int count = post.get("count", 100); // number of queries
+        int count = post.get("count", 10); // number of queries
         String query = post.get("q", ""); // to get a list of queries which match; to get all latest: leave q empty
         String source = post.get("source", "all"); // values: all,query,geo
         String orders = post.get("order", query.length() == 0 ? "desc" : "asc").toUpperCase();
@@ -86,8 +86,8 @@ public class SuggestServlet extends HttpServlet {
         }
         
         if (source.equals("all") || source.equals("geo")) {
-            String[] suggestions = DAO.geoNames.suggest(query, 10, 1);
-            if (suggestions.length < 4) suggestions = DAO.geoNames.suggest(query, 10, 2);
+            String[] suggestions = DAO.geoNames.suggest(query, count, 1);
+            if (suggestions.length < 4) suggestions = DAO.geoNames.suggest(query, count, 2);
             for (String s: suggestions) {
                 QueryEntry qe = new QueryEntry(s, 0, Long.MAX_VALUE, SourceType.IMPORT, false);
                 queryList.add(qe);
