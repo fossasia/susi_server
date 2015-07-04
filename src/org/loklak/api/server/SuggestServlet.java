@@ -64,7 +64,7 @@ public class SuggestServlet extends HttpServlet {
         boolean delete = post.get("delete", false);
         int count = post.get("count", 100); // number of queries
         String query = post.get("q", ""); // to get a list of queries which match; to get all latest: leave q empty
-        String orders = post.get("order", "asc").toUpperCase();
+        String orders = post.get("order", query.length() == 0 ? "desc" : "asc").toUpperCase();
         SortOrder order = SortOrder.valueOf(orders);        
         String orderby = post.get("orderby", query.length() == 0 ? "retrieval_next" : "query_count");
         int timezoneOffset = post.get("timezoneOffset", 0);
