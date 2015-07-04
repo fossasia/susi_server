@@ -36,6 +36,7 @@ import org.elasticsearch.search.sort.SortOrder;
 import org.loklak.data.AbstractIndexEntry;
 import org.loklak.data.DAO;
 import org.loklak.data.QueryEntry;
+import org.loklak.harvester.SourceType;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -64,6 +65,7 @@ public class SuggestServlet extends HttpServlet {
         boolean delete = post.get("delete", false);
         int count = post.get("count", 100); // number of queries
         String query = post.get("q", ""); // to get a list of queries which match; to get all latest: leave q empty
+        String source = post.get("source", "all"); // values: all,query,geo
         String orders = post.get("order", query.length() == 0 ? "desc" : "asc").toUpperCase();
         SortOrder order = SortOrder.valueOf(orders);        
         String orderby = post.get("orderby", query.length() == 0 ? "retrieval_next" : "query_count");
@@ -71,11 +73,25 @@ public class SuggestServlet extends HttpServlet {
         Date since = post.get("since", (Date) null, timezoneOffset);
         Date until = post.get("until", (Date) null, timezoneOffset);
         String selectby = post.get("selectby", "retrieval_next");
-        List<QueryEntry> queryList = query.length() == 0 && !local ? null : DAO.SearchLocalQueries(query, count, orderby, order, since, until, selectby);
+        List<QueryEntry> queryList = new ArrayList<>();
+
+        if ((source.equals("all") || source.equals("query")) && query.length() >= 0) {
+            queryList.addAll(DAO.SearchLocalQueries(query, count, orderby, order, since, until, selectby));
+        }
         
-        if (delete && queryList != null) {
+        if (delete && local && queryList.size() > 0) {
             for (QueryEntry qe: queryList) DAO.deleteQuery(qe.getQuery(), qe.getSourceType());
-            queryList = query.length() == 0 && !local ? null : DAO.SearchLocalQueries(query, count, orderby, order, since, until, selectby);
+            queryList.clear();
+            queryList.addAll(DAO.SearchLocalQueries(query, count, orderby, order, since, until, selectby));
+        }
+        
+        if (source.equals("all") || source.equals("geo")) {
+            String[] suggestions = DAO.geoNames.suggest(query, 10, 1);
+            if (suggestions.length < 4) suggestions = DAO.geoNames.suggest(query, 10, 2);
+            for (String s: suggestions) {
+                QueryEntry qe = new QueryEntry(s, 0, Long.MAX_VALUE, SourceType.IMPORT, false);
+                queryList.add(qe);
+            }
         }
         
         post.setResponse(response, "application/javascript");

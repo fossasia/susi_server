@@ -39,6 +39,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.TreeSet;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
@@ -393,6 +394,54 @@ public class GeoNames {
         return a;
     }
 
+    public String[] suggest(String q, int count, int distance) {
+        TreeMap<Long, String> a = new TreeMap<>();
+        String ql = normalize(q);
+        boolean exact = false;
+        String exactTerm = null;
+        seekloop: for (GeoLocation g: id2loc.values()) {
+            termloop: for (String n: g.getNames()) {
+                if (n.length() > 3 && n.length() < ql.length() * 4) {
+                    String nn = normalize(n);
+                    if (!exact && nn.equals(ql)) {
+                        exact = true;
+                        exactTerm = n;
+                        continue seekloop;
+                    }
+                    // starts-with:
+                    if (nn.startsWith(ql)) {
+                        a.put(g.getPopulation() + a.size(), n);
+                        if (a.size() > count * 2) break seekloop;
+                    }
+                    // distance
+                    
+                    if (nn.length() == ql.length()) {
+                        int errorcount = 0;
+                        for (int i = 0; i < nn.length(); i++) {
+                            if (nn.charAt(i) != ql.charAt(i)) {
+                                errorcount ++;
+                                if (errorcount > distance) continue termloop;
+                            }
+                        }
+                        a.put(g.getPopulation() + a.size(), n);
+                        if (a.size() > count * 2) break seekloop;
+                    }
+                }
+            }
+        }
+        // order by population
+        String[] list = new String[Math.min(a.size(), count)];
+        int i = 0;
+        if (exact) {
+            list[i++] = exactTerm;
+        }
+        for (Long p: a.descendingKeySet()) {
+            list[i++] = a.get(p);
+            if (i >= count) break;
+        }
+        return list;
+    }
+    
     public static String normalize(final String text) {
         final StringBuilder l = new StringBuilder();
         for (int i = 0; i < text.length(); i++) {

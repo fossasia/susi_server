@@ -84,7 +84,7 @@ public class QueryEntry extends AbstractIndexEntry implements IndexEntry {
      * @param source_type
      * @throws MalformedURLException
      */
-    public QueryEntry(final String query, final int timezoneOffset, final Timeline timeline, final SourceType source_type, final boolean byUserQuery) {
+    public QueryEntry(final String query, final int timezoneOffset, final long message_period, final SourceType source_type, final boolean byUserQuery) {
         this.query = query;
         this.query_length = query.length();
         this.timezoneOffset = timezoneOffset;
@@ -94,7 +94,7 @@ public class QueryEntry extends AbstractIndexEntry implements IndexEntry {
         this.messages_per_day = 0; // means: unknown
         this.score_retrieval = 0;
         this.score_suggest = 0;
-        update(timeline, byUserQuery);
+        update(message_period, byUserQuery);
         this.query_first = retrieval_last;
     }
 
@@ -127,14 +127,14 @@ public class QueryEntry extends AbstractIndexEntry implements IndexEntry {
      * @param timeline the latest timeline retrieved from the target system
      * @param byUserQuery is true, if the query was submitted by the user; false if the query was submitted by an automatic system
      */
-    public void update(final Timeline timeline, final boolean byUserQuery) {
+    public void update(final long message_period, final boolean byUserQuery) {
         this.retrieval_last = new Date();
         this.retrieval_count++;
         if (byUserQuery) {
             this.query_count++;
             this.query_last = this.retrieval_last;
         }
-        long new_message_period = timeline.period(); // can be Long.MAX_VALUE if less than 2 messages are in timeline!
+        long new_message_period = message_period; // can be Long.MAX_VALUE if less than 2 messages are in timeline!
         int new_messages_per_day = (int) (DAY_MILLIS / new_message_period); // this is an interpolation based on the last tweet list, can be 0!
         if (new_message_period == Long.MAX_VALUE || new_messages_per_day == 0) {
             this.message_period = this.message_period == 0 ? DAY_MILLIS : Math.min(DAY_MILLIS, this.message_period * 2);

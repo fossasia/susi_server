@@ -894,10 +894,10 @@ public class DAO {
         if (Caretaker.acceptQuery4Retrieval(q)) {
             if (qe == null) {
                 // a new query occurred
-                qe = new QueryEntry(q, timezoneOffset, remoteMessages, SourceType.TWITTER, byUserQuery);
+                qe = new QueryEntry(q, timezoneOffset, remoteMessages.period(), SourceType.TWITTER, byUserQuery);
             } else {
                 // existing queries are updated
-                qe.update(remoteMessages, byUserQuery);
+                qe.update(remoteMessages.period(), byUserQuery);
             }
             try {
                 queries.writeEntry(q, SourceType.TWITTER.name(), qe);
