@@ -39,7 +39,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
-import java.util.TreeSet;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
@@ -437,7 +436,7 @@ public class GeoNames {
         }
         for (Long p: a.descendingKeySet()) {
             list[i++] = a.get(p);
-            if (i >= count) break;
+            if (i >= list.length) break;
         }
         return list;
     }
