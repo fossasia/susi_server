@@ -126,7 +126,7 @@ public class Timeline implements Iterable<MessageEntry> {
             // That may fail if the current time is not set correctly!
             long timeInterval = System.currentTimeMillis() - this.getOldestTweet().created_at.getTime();
             long p = 1 + timeInterval / this.size();
-            if (p >= 10000) return p; else return 60000;
+            return p < 4000 ? p / 4 + 3000 : p;
         }
         
         // calculate the time based on the latest 20 tweets (or less)
@@ -137,13 +137,13 @@ public class Timeline implements Iterable<MessageEntry> {
             if (first == 0) {first = messageEntry.created_at.getTime(); continue;}
             last = messageEntry.created_at.getTime();
             count++;
-            if (count >= 20) break;
+            if (count >= 19) break;
         }
 
         if (count == 0) return 60000;
         long timeInterval = first - last;
         long p = 1 + timeInterval / count;
-        if (p >= 10000) return p; else return 60000;
+        return p < 4000 ? p / 4 + 3000 : p;
     }    
     
 }
