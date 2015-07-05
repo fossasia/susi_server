@@ -25,6 +25,7 @@ import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.servlet.ServletException;
 import javax.servlet.ServletOutputStream;
@@ -86,6 +87,7 @@ public class SearchServlet extends HttpServlet {
         final Timeline tl = new Timeline();
         Map<String, List<Map.Entry<String, Long>>> aggregations = null;
         long hits = 0;
+        final AtomicInteger newrecords = new AtomicInteger(0);
         if (query.length() > 0) {
             final String noConstraintsQuery = QueryEntry.removeConstraints(query);
             if ("all".equals(source)) {
@@ -95,6 +97,7 @@ public class SearchServlet extends HttpServlet {
                 Thread scraperThread = noConstraintsQuery.length() == 0 ? null : new Thread() {
                     public void run() {
                         Timeline[] twitterTl = DAO.scrapeTwitter(noConstraintsQuery, timezoneOffsetf, true);
+                        newrecords.set(twitterTl[1].size());
                         tl.putAll(noConstraintsQuery.equals(queryf) ? twitterTl[1] : QueryEntry.applyConstraint(twitterTl[1], queryf));
                     }
                 };
@@ -114,6 +117,7 @@ public class SearchServlet extends HttpServlet {
             } else {
                 if ("twitter".equals(source) && noConstraintsQuery.length() > 0) {
                     Timeline[] twitterTl = DAO.scrapeTwitter(noConstraintsQuery, timezoneOffset, true);
+                    newrecords.set(twitterTl[1].size());
                     tl.putAll(noConstraintsQuery.equals(query) ? twitterTl[0] : QueryEntry.applyConstraint(twitterTl[0], query));
                     // in this case we use all tweets, not only the latest one because it may happen that there are no new and that is not what the user expects
                 }
@@ -215,7 +219,7 @@ public class SearchServlet extends HttpServlet {
             // write xml
             response.getOutputStream().write(UTF8.getBytes(rss));
         }
-        DAO.log(request.getServletPath() + "?" + request.getQueryString() + " -> " + tl.size() + " records returned");
+        DAO.log(request.getServletPath() + "?" + request.getQueryString() + " -> " + tl.size() + " records returned, " +  newrecords.get() + " new");
         } catch (Throwable e) {
             Log.getLog().warn(e.getMessage(), e);
             //e.printStackTrace();
