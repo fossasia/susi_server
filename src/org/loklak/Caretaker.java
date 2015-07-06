@@ -60,7 +60,7 @@ public class Caretaker extends Thread {
             try {Thread.sleep(5000);} catch (InterruptedException e) {}
             
             // peer-to-peer operation
-            Timeline tl = DAO.takeTimeline(500, 3000);
+            Timeline tl = DAO.takeTimeline(Timeline.Order.CREATED_AT, 500, 3000);
             if (!this.shallRun) break;
             if (tl != null && tl.size() > 0 && remote.length > 0) {
                 // transmit the timeline
@@ -113,7 +113,7 @@ public class Caretaker extends Thread {
                         DAO.deleteQuery(qe.getQuery(), qe.getSourceType());
                         continue;
                     }
-                    Timeline[] t = DAO.scrapeTwitter(qe.getQuery(), qe.getTimezoneOffset(), false);
+                    Timeline[] t = DAO.scrapeTwitter(qe.getQuery(), Timeline.Order.CREATED_AT, qe.getTimezoneOffset(), false);
                     DAO.log("automatic retrieval of " + t[0].size() + " messages, " + t[1].size() + " new for q = \"" + qe.getQuery() + "\"");
                     try {Thread.sleep(1000);} catch (InterruptedException e) {} // prevent remote DoS protection handling
                 }

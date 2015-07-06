@@ -82,9 +82,11 @@ public class SearchServlet extends HttpServlet {
         String[] fields = post.get("fields", new String[0], ",");
         int timezoneOffset = post.get("timezoneOffset", 0);
         if ((query.indexOf("id:") >= 0 || query.indexOf("since:") >= 0 || query.indexOf("until:") >= 0) && ("all".equals(source) || "twitter".equals(source))) source = "cache"; // id's cannot be retrieved from twitter with the scrape-api (yet), only from the cache
-
+        final String ordername = post.get("order", Timeline.Order.CREATED_AT.getMessageFieldName());
+        final Timeline.Order order = Timeline.parseOrder(ordername);
+        
         // create tweet timeline
-        final Timeline tl = new Timeline();
+        final Timeline tl = new Timeline(order);
         Map<String, List<Map.Entry<String, Long>>> aggregations = null;
         long hits = 0;
         final AtomicInteger newrecords = new AtomicInteger(0);
@@ -96,7 +98,7 @@ public class SearchServlet extends HttpServlet {
                 final int timezoneOffsetf = timezoneOffset;
                 Thread scraperThread = noConstraintsQuery.length() == 0 ? null : new Thread() {
                     public void run() {
-                        Timeline[] twitterTl = DAO.scrapeTwitter(noConstraintsQuery, timezoneOffsetf, true);
+                        Timeline[] twitterTl = DAO.scrapeTwitter(noConstraintsQuery, order, timezoneOffsetf, true);
                         newrecords.set(twitterTl[1].size());
                         tl.putAll(noConstraintsQuery.equals(queryf) ? twitterTl[1] : QueryEntry.applyConstraint(twitterTl[1], queryf));
                     }
@@ -104,19 +106,19 @@ public class SearchServlet extends HttpServlet {
                 if (scraperThread != null) scraperThread.start();
                 Thread backendThread = new Thread() {
                     public void run() {
-                        Timeline backendTl = DAO.searchBackend(queryf, count, timezoneOffsetf, "cache");
+                        Timeline backendTl = DAO.searchBackend(queryf, order, count, timezoneOffsetf, "cache");
                         tl.putAll(noConstraintsQuery.equals(queryf) ? backendTl : QueryEntry.applyConstraint(backendTl, queryf));
                     }
                 };
                 backendThread.start();
-                DAO.SearchLocalMessages localSearchResult = new DAO.SearchLocalMessages(query, timezoneOffset, count, 0);
+                DAO.SearchLocalMessages localSearchResult = new DAO.SearchLocalMessages(query, order, timezoneOffset, count, 0);
                 hits = localSearchResult.hits;
                 tl.putAll(localSearchResult.timeline);
                 try {backendThread.join(5000);} catch (InterruptedException e) {}
                 if (scraperThread != null) try {scraperThread.join(8000);} catch (InterruptedException e) {}
             } else {
                 if ("twitter".equals(source) && noConstraintsQuery.length() > 0) {
-                    Timeline[] twitterTl = DAO.scrapeTwitter(noConstraintsQuery, timezoneOffset, true);
+                    Timeline[] twitterTl = DAO.scrapeTwitter(noConstraintsQuery, order, timezoneOffset, true);
                     newrecords.set(twitterTl[1].size());
                     tl.putAll(noConstraintsQuery.equals(query) ? twitterTl[0] : QueryEntry.applyConstraint(twitterTl[0], query));
                     // in this case we use all tweets, not only the latest one because it may happen that there are no new and that is not what the user expects
@@ -124,13 +126,13 @@ public class SearchServlet extends HttpServlet {
     
                 // replace the timeline with one from the own index which now includes the remote result
                 if ("backend".equals(source)) {
-                    Timeline backendTl = DAO.searchBackend(query, count, timezoneOffset, "cache");
+                    Timeline backendTl = DAO.searchBackend(query, order, count, timezoneOffset, "cache");
                     tl.putAll(noConstraintsQuery.equals(query) ? backendTl : QueryEntry.applyConstraint(backendTl, query));
                 }
     
                 // replace the timeline with one from the own index which now includes the remote result
                 if ("cache".equals(source)) {
-                    DAO.SearchLocalMessages localSearchResult = new DAO.SearchLocalMessages(query, timezoneOffset, count, limit, fields);
+                    DAO.SearchLocalMessages localSearchResult = new DAO.SearchLocalMessages(query, order, timezoneOffset, count, limit, fields);
                     hits = localSearchResult.hits;
                     tl.putAll(localSearchResult.timeline);
                     aggregations = localSearchResult.aggregations;
@@ -161,7 +163,7 @@ public class SearchServlet extends HttpServlet {
             metadata.put("itemsPerPage", Integer.toString(count));
             metadata.put("count", Integer.toString(tl.size()));
             metadata.put("hits", hits);
-            metadata.put("period", tl.period());
+            if (order == Timeline.Order.CREATED_AT) metadata.put("period", tl.period());
             metadata.put("query", query);
             metadata.put("client", post.getClientHost());
             metadata.put("servicereduction", post.isDoS_servicereduction() ? "true" : "false");

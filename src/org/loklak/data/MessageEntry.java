@@ -219,7 +219,7 @@ public class MessageEntry extends AbstractIndexEntry implements IndexEntry {
         this.status_id_url = status_id_url;
     }
 
-    public long getRetweetVount() {
+    public long getRetweetCount() {
         return retweet_count;
     }
 

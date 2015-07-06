@@ -498,8 +498,8 @@ public class DAO {
         if (getConfig("backend", new String[0], ",").length > 0) newMessageTimelines.add(tl);
     }
 
-    public static Timeline takeTimeline(int maxsize, long maxwait) {
-        Timeline tl = new Timeline();
+    public static Timeline takeTimeline(Timeline.Order order, int maxsize, long maxwait) {
+        Timeline tl = new Timeline(order);
         try {
             Timeline tl0 = newMessageTimelines.poll(maxwait, TimeUnit.MILLISECONDS);
             if (tl0 == null) return tl;
@@ -647,14 +647,15 @@ public class DAO {
         /**
          * Search the local message cache using a elasticsearch query.
          * @param q - the query, for aggregation this which should include a time frame in the form since:yyyy-MM-dd until:yyyy-MM-dd
+         * @param order_field - the field to order the results, i.e. Timeline.Order.CREATED_AT
          * @param timezoneOffset - an offset in minutes that is applied on dates given in the query of the form since:date until:date
          * @param resultCount - the number of messages in the result; can be zero if only aggregations are wanted
          * @param dateHistogrammInterval - the date aggregation interval or null, if no aggregation wanted
          * @param aggregationLimit - the maximum count of facet entities, not search results
          * @param aggregationFields - names of the aggregation fields. If no aggregation is wanted, pass no (zero) field(s)
          */
-        public SearchLocalMessages(String q, int timezoneOffset, int resultCount, int aggregationLimit, String... aggregationFields) {
-            this.timeline = new Timeline();
+        public SearchLocalMessages(final String q, Timeline.Order order_field, int timezoneOffset, int resultCount, int aggregationLimit, String... aggregationFields) {
+            this.timeline = new Timeline(order_field);
             try {
                 // prepare request
                 QueryEntry.ElasticsearchQuery sq = new QueryEntry.ElasticsearchQuery(q, timezoneOffset);
@@ -663,7 +664,7 @@ public class DAO {
                         .setQuery(sq.queryBuilder)
                         .setFrom(0)
                         .setSize(resultCount);
-                if (resultCount > 0) request.addSort("created_at", SortOrder.DESC);
+                if (resultCount > 0) request.addSort(order_field.getMessageFieldName(), SortOrder.DESC);
                 boolean addTimeHistogram = false;
                 long interval = sq.until.getTime() - sq.since.getTime();
                 DateHistogram.Interval dateHistogrammInterval = interval > 1000 * 60 * 60 * 24 * 7 ? DateHistogram.Interval.DAY : interval > 1000 * 60 * 60 * 3 ? DateHistogram.Interval.HOUR : DateHistogram.Interval.MINUTE;
@@ -852,24 +853,24 @@ public class DAO {
         return queries;
     }
     
-    public static Timeline[] scrapeTwitter(final String q, final int timezoneOffset, boolean byUserQuery) {
+    public static Timeline[] scrapeTwitter(final String q, final Timeline.Order order, final int timezoneOffset, boolean byUserQuery) {
         // retrieve messages from remote server
         String[] remote = DAO.getConfig("frontpeers", new String[0], ",");        
         Timeline remoteMessages;
         if (remote.length > 0) {
-            remoteMessages = searchOnOtherPeers(remote, q, 100, timezoneOffset, "twitter", SearchClient.frontpeer_hash);
+            remoteMessages = searchOnOtherPeers(remote, q, order, 100, timezoneOffset, "twitter", SearchClient.frontpeer_hash);
             if (remoteMessages.size() == 0) {
                 // maybe the remote server died, we try then ourself
-                remoteMessages = TwitterScraper.search(q);
+                remoteMessages = TwitterScraper.search(q, order);
             }
         } else {
-            remoteMessages = TwitterScraper.search(q);
+            remoteMessages = TwitterScraper.search(q, order);
         }
         
         // identify new tweets
-        Timeline newMessages = new Timeline(); // we store new tweets here to be able to transmit them to peers
+        Timeline newMessages = new Timeline(order); // we store new tweets here to be able to transmit them to peers
         if (remoteMessages == null) {// can be caused by time-out
-            remoteMessages = new Timeline();
+            remoteMessages = new Timeline(order);
         } else {
             // record the result; this may be moved to a concurrent process
             for (MessageEntry t: remoteMessages) {
@@ -912,15 +913,15 @@ public class DAO {
         return new Timeline[]{remoteMessages, newMessages};
     }
     
-    public static Timeline searchBackend(final String q, final int count, final int timezoneOffset, final String where) {
+    public static Timeline searchBackend(final String q, final Timeline.Order order, final int count, final int timezoneOffset, final String where) {
         String[] remote = DAO.getConfig("backend", new String[0], ",");
-        return searchOnOtherPeers(remote, q, count, timezoneOffset, where, SearchClient.backend_hash);
+        return searchOnOtherPeers(remote, q, order, count, timezoneOffset, where, SearchClient.backend_hash);
     }
     
-    public static Timeline searchOnOtherPeers(final String[] remote, final String q, final int count, final int timezoneOffset, final String where, final String provider_hash) {
-        Timeline tl = new Timeline();
+    public static Timeline searchOnOtherPeers(final String[] remote, final String q, final Timeline.Order order, final int count, final int timezoneOffset, final String where, final String provider_hash) {
+        Timeline tl = new Timeline(order);
         for (String protocolhostportstub: remote) {
-            Timeline tt = SearchClient.search(protocolhostportstub, q, where, count, timezoneOffset, provider_hash);
+            Timeline tt = SearchClient.search(protocolhostportstub, q, order, where, count, timezoneOffset, provider_hash);
             tl.putAll(tt);
             // record the result; this may be moved to a concurrent process
             for (MessageEntry t: tt) {

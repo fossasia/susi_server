@@ -47,7 +47,7 @@ import org.loklak.tools.UTF8;
 
 public class TwitterScraper {
 
-    public static Timeline search(String query) {
+    public static Timeline search(String query, Timeline.Order order) {
         // check
         // https://twitter.com/search-advanced for a better syntax
         // https://support.twitter.com/articles/71577-how-to-use-advanced-twitter-search#
@@ -73,7 +73,7 @@ public class TwitterScraper {
             if (connection.inputStream == null) return null;
             try {
                 BufferedReader br = new BufferedReader(new InputStreamReader(connection.inputStream, UTF8.charset));
-                timeline = search(br);
+                timeline = search(br, order);
             } catch (IOException e) {
                e.printStackTrace();
             } finally {
@@ -82,13 +82,13 @@ public class TwitterScraper {
         } catch (IOException e) {
             // this could mean that twitter rejected the connection (DoS protection?)
             e.printStackTrace();
-            if (timeline == null) timeline = new Timeline();
+            if (timeline == null) timeline = new Timeline(order);
         };
         
         // wait until all messages in the timeline are ready
         if (timeline == null) {
             // timeout occurred
-            timeline = new Timeline();
+            timeline = new Timeline(order);
         } else {
             // wait until messages are ready (i.e. unshortening of shortlinks)
             for (MessageEntry m: timeline) {
@@ -100,8 +100,8 @@ public class TwitterScraper {
         return timeline;
     }
     
-    public static Timeline search(BufferedReader br) throws IOException {
-        Timeline timeline = new Timeline();
+    public static Timeline search(BufferedReader br, Timeline.Order order) throws IOException {
+        Timeline timeline = new Timeline(order);
         String input;
         Map<String, prop> props = new HashMap<String, prop>();
         Set<String> images = new LinkedHashSet<>();
@@ -404,7 +404,7 @@ public class TwitterScraper {
      */
     public static void main(String[] args) {
         //wget --no-check-certificate "https://twitter.com/search?q=eifel&src=typd&f=realtime"
-        Timeline result = TwitterScraper.search(args[0]);
+        Timeline result = TwitterScraper.search(args[0], Timeline.Order.CREATED_AT);
         for (MessageEntry tweet : result) {
             System.out.println("@" + tweet.getScreenName() + " - " + tweet.getText());
         }

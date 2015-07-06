@@ -36,12 +36,36 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  */
 public class Timeline implements Iterable<MessageEntry> {
 
+    public static enum Order {
+        CREATED_AT,
+        RETWEET_COUNT,
+        FAVOURITES_COUNT;
+            
+        public String getMessageFieldName() {
+            return this.name().toLowerCase();
+        }
+    }
+    
     private TreeMap<String, MessageEntry> tweets; // the key is the date plus id of the tweet
     private Map<String, UserEntry> users;
+    final private Order order;
     
-    public Timeline() {
+    public Timeline(Order order) {
         this.tweets = new TreeMap<String, MessageEntry>();
         this.users = new HashMap<String, UserEntry>();
+        this.order = order;
+    }
+    
+    public static Order parseOrder(String order) {
+        try {
+            return Order.valueOf(order.toUpperCase());
+        } catch (Throwable e) {
+            return Order.CREATED_AT;
+        }
+    }
+    
+    public Order getOrder() {
+        return this.order;
     }
     
     public int size() {
@@ -59,7 +83,19 @@ public class Timeline implements Iterable<MessageEntry> {
     }
     
     public void addTweet(MessageEntry tweet) {
-        this.tweets.put(Long.toHexString(tweet.getCreatedAt().getTime()) + "_" + tweet.getIdStr(), tweet);
+        String key = "";
+        if (this.order == Order.RETWEET_COUNT) {
+            key = Long.toHexString(tweet.getRetweetCount());
+            while (key.length() < 16) key = "0" + key;
+            key = key + "_" + tweet.getIdStr();
+        } else if (this.order == Order.FAVOURITES_COUNT) {
+            key = Long.toHexString(tweet.getFavouritesCount());
+            while (key.length() < 16) key = "0" + key;
+            key = key + "_" + tweet.getIdStr();
+        } else {
+            key = Long.toHexString(tweet.getCreatedAt().getTime()) + "_" + tweet.getIdStr();
+        }
+        this.tweets.put(key, tweet);
     }
 
     protected UserEntry getUser(String user_screen_name) {
@@ -71,6 +107,7 @@ public class Timeline implements Iterable<MessageEntry> {
     }
     
     public void putAll(Timeline other) {
+        assert this.order.equals(other.order);
         for (MessageEntry t: other) this.addTweet(t);
         for (Map.Entry<String, UserEntry> u: other.users.entrySet()) {
             UserEntry t = this.users.get(u.getKey());
@@ -80,11 +117,11 @@ public class Timeline implements Iterable<MessageEntry> {
         }
     }
     
-    public MessageEntry getOldestTweet() {
+    public MessageEntry getBottomTweet() {
         return this.tweets.firstEntry().getValue();
     }
     
-    public MessageEntry getLatestTweet() {
+    public MessageEntry getTopTweet() {
         return this.tweets.lastEntry().getValue();
     }
     
@@ -112,7 +149,7 @@ public class Timeline implements Iterable<MessageEntry> {
     }
     
     /**
-     * the tweet iterator returns tweets in descending appearance order (latest first)
+     * the tweet iterator returns tweets in descending appearance order (top first)
      */
     @Override
     public Iterator<MessageEntry> iterator() {
@@ -124,7 +161,7 @@ public class Timeline implements Iterable<MessageEntry> {
         if (this.size() < 2) {
             // try to calculate the period time based on the current time.
             // That may fail if the current time is not set correctly!
-            long timeInterval = System.currentTimeMillis() - this.getOldestTweet().created_at.getTime();
+            long timeInterval = System.currentTimeMillis() - this.getBottomTweet().created_at.getTime();
             long p = 1 + timeInterval / this.size();
             return p < 4000 ? p / 4 + 3000 : p;
         }

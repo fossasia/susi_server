@@ -271,7 +271,7 @@ public class QueryEntry extends AbstractIndexEntry implements IndexEntry {
             if (t.startsWith("/")) constraints_positive.add(t.substring(1));
             if (t.startsWith("-/")) constraints_negative.add(t.substring(2));
         }
-        Timeline tl1 = new Timeline();
+        Timeline tl1 = new Timeline(tl0.getOrder());
         messageloop: for (MessageEntry message: tl0) {
             if (constraints_positive.contains("image") && message.getImages().size() == 0) continue;
             if (constraints_negative.contains("image") && message.getImages().size() != 0) continue;

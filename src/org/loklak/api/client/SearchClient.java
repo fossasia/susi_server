@@ -48,8 +48,8 @@ public class SearchClient {
     public final static String frontpeer_hash = Integer.toHexString(Integer.MAX_VALUE - 1);
 
     // possible values: cache, twitter, all
-    public static Timeline search(final String protocolhostportstub, final String query, final String source, final int count, final int timezoneOffset, final String provider_hash) {
-        Timeline tl = new Timeline();
+    public static Timeline search(final String protocolhostportstub, final String query, final Timeline.Order order, final String source, final int count, final int timezoneOffset, final String provider_hash) {
+        Timeline tl = new Timeline(order);
         String json = searchJSON(protocolhostportstub, query, source, count, timezoneOffset);
         if (json == null || json.length() == 0) return tl;
         try {
@@ -104,7 +104,7 @@ public class SearchClient {
     }
     
     public static void main(String[] args) {
-        Timeline tl = search("http://loklak.org", "beer", "cache", 20, -120, backend_hash);
+        Timeline tl = search("http://loklak.org", "beer", Timeline.Order.CREATED_AT, "cache", 20, -120, backend_hash);
         try {
             System.out.println(new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(tl.toMap(false)));
         } catch (JsonProcessingException e) {
