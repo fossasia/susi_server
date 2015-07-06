@@ -393,7 +393,7 @@ public class GeoNames {
         return a;
     }
 
-    public String[] suggest(String q, int count, int distance) {
+    public LinkedHashSet<String> suggest(String q, int count, int distance) {
         TreeMap<Long, String> a = new TreeMap<>();
         String ql = normalize(q);
         boolean exact = false;
@@ -429,14 +429,14 @@ public class GeoNames {
             }
         }
         // order by population
-        String[] list = new String[Math.min(a.size(), count)];
+        LinkedHashSet<String> list = new LinkedHashSet<>();
         int i = 0;
         if (exact) {
-            list[i++] = exactTerm;
+            list.add(exactTerm);
         }
         for (Long p: a.descendingKeySet()) {
-            list[i++] = a.get(p);
-            if (i >= list.length) break;
+            list.add(a.get(p));
+            if (i >= list.size()) break;
         }
         return list;
     }

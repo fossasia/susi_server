@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 
@@ -86,8 +87,9 @@ public class SuggestServlet extends HttpServlet {
         }
         
         if (source.equals("all") || source.equals("geo")) {
-            String[] suggestions = DAO.geoNames.suggest(query, count, 1);
-            if (suggestions.length < 4) suggestions = DAO.geoNames.suggest(query, count, 2);
+            LinkedHashSet<String> suggestions = DAO.geoNames.suggest(query, count, 0);
+            if (suggestions.size() < count && query.length() > 2) suggestions.addAll(DAO.geoNames.suggest(query, count, 1));
+            if (suggestions.size() < count && query.length() > 5) suggestions.addAll(DAO.geoNames.suggest(query, count, 2));
             for (String s: suggestions) {
                 QueryEntry qe = new QueryEntry(s, 0, Long.MAX_VALUE, SourceType.IMPORT, false);
                 queryList.add(qe);
