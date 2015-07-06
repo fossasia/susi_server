@@ -61,6 +61,7 @@
             <li><a href="#status">/api/status.json</a></li>
             <li><a href="#peers">/api/peers.json</a></li>
             <li><a href="#push">/api/push.json</a></li>
+            <li><a href="#geojsonpush">/api/push/geojson.json</a></li>
             <li><a href="#account">/api/account.json</a></li>
             <li><a href="#markdown">/vis/markdown.png</a></li>
             <li><a href="#settings">/api/settings.json</a></li>
@@ -320,7 +321,55 @@
 }</pre>
       <p>When messages arrive the back-end peer, the value "source_type" of every message is replaced with "REMOTE"</p>
       
-          
+      <br id="geojsonpush"/><br/>
+          <h2 class="sub-header"><code>/api/push/geojson.json</code></h2>
+          <p>An alternative solution to push tweets data to back-end, using geojson format. Messages are collected from provided url, which contains a <a href="http://geojson.org/geojson-spec.html#introduction">GeoJSON Feature Collection</a>. Each message is a GeoJSON Feature. Example :
+<pre>{
+  {
+    "type": "FeatureCollection",
+    "features" : [
+    {
+      "type": "Feature",
+      "geometry": {"type": "Point", "coordinates": [20.86, 106.68]},
+      "properties" :
+      {
+        "screen_name": "Message 1",
+        "user" : {
+          "screen_name" : "exanonym77s",
+          "name" : "Example User"
+        }
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {"type": "Point", "coordinates": [43.56, 1.46]},
+      "properties" :
+      {
+        "screen_name": "Message 2",
+        "user" : {
+          "screen_name" : "exanonym77s",
+          "name" : "Example User"
+        }
+      }
+    }
+    ]}
+}</pre>
+      <p>In the back-end, "geometry" fields are transformed into tweet "location_point". "properties" fields are pasted as tweet fields.</p>
+      <p>This servlet allows users to specify some rules to map "properties" fields differently, with <code>map_type</code> parameter.The HTTP GET or POST request has three attributes :</p>
+          <ul class="request">
+            <li><div class="tabcol0">url</div><div class="tabcol1">&nbsp;=&nbsp;&lt;an url to geojson&gt;</div>// public url to retrieve geojson data. This url will be used to update the source periodically</li>
+            <li><div class="tabcol0">source_type</div><div class="tabcol1">&nbsp;=&nbsp;&lt;source type&gt;</div>// "source_type" value of each message.</li>
+            <li><div class="tabcol0">map_type</div><div class="tabcol1">&nbsp;=&nbsp;&lt;mapping rule(s)&gt;</div>// field mapping rules, separated by commas</li>
+          </ul>
+      <p>The servlet returns with the same information as <code>/api/push.json</code>.
+      <p>Here is an example : </p>
+      <ul class="request">
+        <li><a href="http://localhost:9000/api/push/geojson.json?url=mysite.com/mygeojson.json&source_type=IMPORT">http://localhost:9000/api/push/geojson.json?url=mysite.com/mygeojson.json&source_type=IMPORT</a></li>
+      </ul>
+      <p>Another example, with 3 field mapping rules :</p>
+      <ul class="request">
+        <li><a href="http://localhost:9000/api/push/geojson.json?url=mysite.com/mygeojson.json&source_type=IMPORT">http://localhost:9000/api/push/geojson.json?url=mysite.com/mygeojson.json&source_type=IMPORT&map_type=message_name:screen_name,username:user.name,user_shortname:user.screen_name</a></li>
+      </ul>
 		  <br id="account"/><br/>
           <h2 class="sub-header"><code>/api/account.json</code></h2>
           <p>This servlet provides the storage and retrieval of twitter accounts. This servlet can only be called from localhost.</p>
@@ -377,7 +426,7 @@
           
           <p>The servlet can produce also gif and jpg images, just change the extension of the servlet path.</p>
 
-<p>Here is an example:
+<p>Here is an example :
 <ul class="request">
 <li><a href="http://localhost:9000/vis/markdown.png?text=hello%20world%0Dhello%20universe&color_text=000000&color_background=ffffff&padding=3">http://localhost:9000/vis/markdown.png?text=hello%20world%0Dhello%20universe&color_text=000000&color_background=ffffff&padding=3</a></li>
 </ul></p>
@@ -404,7 +453,7 @@
   "test"           : "abc"
 }
 </pre>
-<p>Here is an example</p>
+<p>Here is an example :</p>
 <ul class="request">
   <li><a href="http://localhost:9000/api/settings.json">http://localhost:9000/api/settings.json</a></li>
 </ul>
