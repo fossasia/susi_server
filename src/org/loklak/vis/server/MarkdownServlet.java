@@ -104,6 +104,7 @@ public class MarkdownServlet extends HttpServlet {
         PrintTool.print(matrix, matrix.getWidth() - 6, matrix.getHeight() - 6, 0, "MADE WITH HTTP://LOKLAK.ORG", 1, 20);
         
         // write image
+        response.addHeader("Access-Control-Allow-Origin", "*");
         RemoteAccess.writeImage(fileType, response, post, matrix);
     }
 }
