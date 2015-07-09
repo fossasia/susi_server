@@ -19,9 +19,7 @@
 
 package org.loklak.api.client;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.HashMap;
@@ -33,7 +31,6 @@ import org.loklak.data.ProviderType;
 import org.loklak.data.Timeline;
 import org.loklak.data.MessageEntry;
 import org.loklak.data.UserEntry;
-import org.loklak.tools.UTF8;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -50,8 +47,15 @@ public class SearchClient {
     // possible values: cache, twitter, all
     public static Timeline search(final String protocolhostportstub, final String query, final Timeline.Order order, final String source, final int count, final int timezoneOffset, final String provider_hash) {
         Timeline tl = new Timeline(order);
-        String json = searchJSON(protocolhostportstub, query, source, count, timezoneOffset);
-        if (json == null || json.length() == 0) return tl;
+        String urlstring = "";
+        try {
+            urlstring = protocolhostportstub + "/api/search.json?q=" + URLEncoder.encode(query.replace(' ', '+'), "UTF-8") + "&timezoneOffset=" + timezoneOffset + "&maximumRecords=" + count + "&source=" + (source == null ? "all" : source) + "&minified=true";
+        } catch (UnsupportedEncodingException e1) {
+            return tl;
+        }
+        byte[] response = ClientConnection.download(urlstring);
+        byte[] json = response;
+        if (json == null || json.length == 0) return tl;
         try {
             Map<String, Object> map = jsonMapper.readValue(json, jsonTypeRef);
             Object statuses_obj = map.get("statuses");
@@ -73,34 +77,6 @@ public class SearchClient {
             e.printStackTrace();
         }
         return tl;
-    }
-    
-    private static String searchJSON(final String protocolhostportstub, final String query, final String source, final int count, final int timezoneOffset) {
-        String urlstring = "";
-        try {urlstring = protocolhostportstub + "/api/search.json?q=" + URLEncoder.encode(query.replace(' ', '+'), "UTF-8") + "&timezoneOffset=" + timezoneOffset + "&maximumRecords=" + count + "&source=" + (source == null ? "all" : source) + "&minified=true";} catch (UnsupportedEncodingException e) {}
-        try {
-            ClientConnection connection = new ClientConnection(urlstring);
-            if (connection.inputStream == null) return "";
-            StringBuilder sb = new StringBuilder();
-            BufferedReader br = new BufferedReader(new InputStreamReader(connection.inputStream, UTF8.charset));
-            try {
-                String line;
-                while ((line = br.readLine()) != null) sb.append(line).append('\n');
-            } catch (IOException e) {
-               e.printStackTrace();
-            } finally {
-                try {
-                    br.close();
-                    connection.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-            return sb.toString();
-        } catch (IOException e) {
-            e.printStackTrace();
-        };
-        return "";
     }
     
     public static void main(String[] args) {
