@@ -664,6 +664,7 @@ public class DAO {
                         .setQuery(sq.queryBuilder)
                         .setFrom(0)
                         .setSize(resultCount);
+                request.clearRescorers();
                 if (resultCount > 0) request.addSort(order_field.getMessageFieldName(), SortOrder.DESC);
                 boolean addTimeHistogram = false;
                 long interval = sq.until.getTime() - sq.since.getTime();

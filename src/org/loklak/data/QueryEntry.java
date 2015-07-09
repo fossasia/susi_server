@@ -33,6 +33,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.elasticsearch.index.query.BoolQueryBuilder;
+import org.elasticsearch.index.query.FilterBuilder;
 import org.elasticsearch.index.query.FilterBuilders;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
@@ -259,10 +260,10 @@ public class QueryEntry extends AbstractIndexEntry implements IndexEntry {
         return q;
     }
     
-    public static Timeline applyConstraint(Timeline tl0, String query) {
+    public static Timeline applyConstraint(Timeline tl0, String q) { 
         // tokenize the query
         List<String> qe = new ArrayList<String>();
-        Matcher m = tokenizerPattern.matcher(query);
+        Matcher m = tokenizerPattern.matcher(q);
         while (m.find()) qe.add(m.group(1));
 
         HashSet<String> constraints_positive = new HashSet<>();
@@ -426,17 +427,42 @@ public class QueryEntry extends AbstractIndexEntry implements IndexEntry {
             }
             
             // apply modifiers
-            if (modifier.containsKey("id")) bquery.must(QueryBuilders.termQuery("id_str", modifier.get("id")));
+            if (modifier.containsKey("id")) {
+                if (ORjunctor)
+                    bquery.should(QueryBuilders.termQuery("id_str", modifier.get("id")));
+                else
+                    bquery.must(QueryBuilders.termQuery("id_str", modifier.get("id")));
+            }
             if (modifier.containsKey("-id")) bquery.mustNot(QueryBuilders.termQuery("id_str", modifier.get("-id")));
+
+            for (String user: users_positive) {
+                if (ORjunctor)
+                    bquery.should(QueryBuilders.termQuery("mentions", user));
+                else
+                    bquery.must(QueryBuilders.termQuery("mentions", user));
+            }
+            for (String user: users_negative) bquery.mustNot(QueryBuilders.termQuery("mentions", user));
+            
+            for (String hashtag: hashtags_positive) {
+                if (ORjunctor)
+                    bquery.should(QueryBuilders.termQuery("hashtags", hashtag.toLowerCase()));
+                else
+                    bquery.must(QueryBuilders.termQuery("hashtags", hashtag.toLowerCase()));
+            }
+            for (String hashtag: hashtags_negative) bquery.mustNot(QueryBuilders.termQuery("hashtags", hashtag.toLowerCase()));
+            
             if (modifier.containsKey("from")) {
                 String screen_name = modifier.get("from");
                 if (screen_name.indexOf(',') < 0) {
-                    bquery.must(QueryBuilders.termQuery("screen_name", screen_name));
+                    if (ORjunctor)
+                        bquery.should(QueryBuilders.termQuery("screen_name", screen_name));
+                    else
+                        bquery.must(QueryBuilders.termQuery("screen_name", screen_name));
                 } else {
                     String[] screen_names = screen_name.split(",");
                     BoolQueryBuilder disjunction = QueryBuilders.boolQuery();
                     for (String name: screen_names) disjunction.should(QueryBuilders.termQuery("screen_name", name));
-                    bquery.must(disjunction);
+                    if (ORjunctor) bquery.should(disjunction); else bquery.must(disjunction);
                 }
             }
             if (modifier.containsKey("-from")) {
@@ -452,7 +478,7 @@ public class QueryEntry extends AbstractIndexEntry implements IndexEntry {
                 BoolQueryBuilder nearquery = QueryBuilders.boolQuery()
                         .should(QueryBuilders.matchQuery("place_name", modifier.get("near")))
                         .should(QueryBuilders.matchQuery("text", modifier.get("near")));
-                bquery.must(nearquery);
+                if (ORjunctor) bquery.should(nearquery); else bquery.must(nearquery);
             }
             if (modifier.containsKey("since")) try {
                 Calendar since = DateParser.parse(modifier.get("since"), timezoneOffset);
@@ -483,20 +509,19 @@ public class QueryEntry extends AbstractIndexEntry implements IndexEntry {
                 bquery.must(rangeQuery);
             } catch (ParseException e) {}
             
+            
             // apply constraints as filters
-            QueryBuilder cquery = bquery;
-            for (String text: text_positive_filter) cquery = QueryBuilders.filteredQuery(cquery, FilterBuilders.termsFilter("text", text));
-            for (String text: text_negative_filter) cquery = QueryBuilders.filteredQuery(cquery, FilterBuilders.notFilter(FilterBuilders.termsFilter("text", text)));
-            for (String user: users_positive) cquery = QueryBuilders.filteredQuery(cquery, FilterBuilders.inFilter("mentions", user));
-            for (String user: users_negative) cquery = QueryBuilders.filteredQuery(cquery, FilterBuilders.notFilter(FilterBuilders.inFilter("mentions", user)));
-            for (String hashtag: hashtags_positive) cquery = QueryBuilders.filteredQuery(cquery, FilterBuilders.inFilter("hashtags", hashtag.toLowerCase()));
-            for (String hashtag: hashtags_negative) cquery = QueryBuilders.filteredQuery(cquery, FilterBuilders.notFilter(FilterBuilders.inFilter("hashtags", hashtag.toLowerCase())));
+            List<FilterBuilder> filters = new ArrayList<>();
+            for (String text: text_positive_filter) {
+                filters.add(FilterBuilders.termsFilter("text", text));
+            }
+            for (String text: text_negative_filter) filters.add(FilterBuilders.notFilter(FilterBuilders.termsFilter("text", text)));
             for (Constraint c: Constraint.values()) {
                 if (constraints_positive.contains(c.name())) {
-                    cquery = QueryBuilders.filteredQuery(cquery, FilterBuilders.existsFilter(c.field_name));
+                    filters.add(FilterBuilders.existsFilter(c.field_name));
                 }
                 if (constraints_negative.contains(c.name())) {
-                    cquery = QueryBuilders.filteredQuery(cquery, FilterBuilders.notFilter(FilterBuilders.existsFilter(c.field_name)));
+                    filters.add(FilterBuilders.notFilter(FilterBuilders.existsFilter(c.field_name)));
                 }
             }
             // special treatment of location constraints of the form /location=lon-west,lat-south,lon-east,lat-north i.e. /location=8.58,50.178,8.59,50.181
@@ -509,19 +534,20 @@ public class QueryEntry extends AbstractIndexEntry implements IndexEntry {
                         double lat_south = Double.parseDouble(coord[1]);
                         double lon_east  = Double.parseDouble(coord[2]);
                         double lat_north = Double.parseDouble(coord[3]);
-                        cquery = QueryBuilders.filteredQuery(cquery, FilterBuilders.existsFilter(Constraint.location.field_name));
-                        cquery = QueryBuilders.filteredQuery(cquery, FilterBuilders.geoBoundingBoxFilter("location_point")
+                        filters.add(FilterBuilders.existsFilter(Constraint.location.field_name));
+                        filters.add(FilterBuilders.geoBoundingBoxFilter("location_point")
                                 .topLeft(lat_north, lon_west)
                                 .bottomRight(lat_south, lon_east));
                     }
                 }
                 if (cs.startsWith(Constraint.link.name() + "=")) {
                     String regexp = cs.substring(Constraint.link.name().length() + 1);
-                    cquery = QueryBuilders.filteredQuery(cquery, FilterBuilders.existsFilter(Constraint.link.field_name));
-                    cquery = QueryBuilders.filteredQuery(cquery, FilterBuilders.regexpFilter(Constraint.link.field_name, regexp));
+                    filters.add(FilterBuilders.existsFilter(Constraint.link.field_name));
+                    filters.add(FilterBuilders.regexpFilter(Constraint.link.field_name, regexp));
                 }
             }
-            
+
+            QueryBuilder cquery = QueryBuilders.filteredQuery(bquery, FilterBuilders.andFilter(filters.toArray(new FilterBuilder[filters.size()])));
             return cquery;
         }
     }
