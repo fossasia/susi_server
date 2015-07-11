@@ -142,23 +142,23 @@ public class RemoteAccess {
             return this.DoS_servicereduction;
         }
         public String get(String key, String dflt) {
-            String val = qm.get(key);
+            String val = qm == null ? request.getParameter(key) : qm.get(key);
             return val == null ? dflt : val;
         }
         public String[] get(String key, String[] dflt, String delim) {
-            String val = qm.get(key);
+            String val = qm == null ? request.getParameter(key) : qm.get(key);
             return val == null || val.length() == 0 ? dflt : val.split(delim);
         }
         public int get(String key, int dflt) {
-            String val = qm.get(key);
+            String val = qm == null ? request.getParameter(key) : qm.get(key);
             return val == null || val.length() == 0 ? dflt : Integer.parseInt(val);
         }
         public double get(String key, double dflt) {
-            String val = qm.get(key);
+            String val = qm == null ? request.getParameter(key) : qm.get(key);
             return val == null || val.length() == 0 ? dflt : Double.parseDouble(val);
         }
         public boolean get(String key, boolean dflt) {
-            String val = qm.get(key);
+            String val = qm == null ? request.getParameter(key) : qm.get(key);
             return val == null ? dflt : "true".equals(val) || "1".equals(val);
         }
         public Date get(String key, Date dflt, int timezoneOffset) {
