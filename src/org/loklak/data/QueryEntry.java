@@ -38,6 +38,7 @@ import org.elasticsearch.index.query.FilterBuilders;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.index.query.RangeQueryBuilder;
+import org.loklak.geo.PlaceContext;
 import org.loklak.harvester.SourceType;
 import org.loklak.tools.DateParser;
 
@@ -272,13 +273,16 @@ public class QueryEntry extends AbstractIndexEntry implements IndexEntry {
             if (t.startsWith("/")) constraints_positive.add(t.substring(1));
             if (t.startsWith("-/")) constraints_negative.add(t.substring(2));
         }
+        PlaceContext place_context = constraints_positive.remove("about") ? PlaceContext.ABOUT : PlaceContext.FROM;
+        if (constraints_negative.remove("about")) place_context = PlaceContext.FROM;
+        
         Timeline tl1 = new Timeline(tl0.getOrder());
         messageloop: for (MessageEntry message: tl0) {
             if (constraints_positive.contains("image") && message.getImages().size() == 0) continue;
             if (constraints_negative.contains("image") && message.getImages().size() != 0) continue;
             if (constraints_positive.contains("place") && message.getPlaceName().length() == 0) continue;
             if (constraints_negative.contains("place") && message.getPlaceName().length() != 0) continue;
-            if (constraints_positive.contains("location") && message.getLocationPoint() == null) continue;
+            if (constraints_positive.contains("location") && (message.getLocationPoint() == null || message.getPlaceContext() != place_context)) continue;
             if (constraints_negative.contains("location") && message.getLocationPoint() != null) continue;
             if (constraints_positive.contains("link") && message.getLinks().length == 0) continue;
             if (constraints_negative.contains("link") && message.getLinks().length != 0) continue;
@@ -291,6 +295,7 @@ public class QueryEntry extends AbstractIndexEntry implements IndexEntry {
             constraintCheck: for (String cs: constraints_positive) {
                 if (cs.startsWith(Constraint.location.name() + "=")) {
                     if (message.getLocationPoint() == null) continue messageloop;
+                    if (message.getPlaceContext() != place_context) continue messageloop;
                     String params = cs.substring(Constraint.location.name().length() + 1);
                     String[] coord = params.split(",");
                     if (coord.length == 4) {
@@ -411,6 +416,10 @@ public class QueryEntry extends AbstractIndexEntry implements IndexEntry {
             }
             if (modifier.containsKey("to")) users_positive.add(modifier.get("to"));
             if (modifier.containsKey("-to")) users_negative.add(modifier.get("-to"));
+
+            // special constraints
+            boolean constraint_about = constraints_positive.remove("about");
+            if (constraints_negative.remove("about")) constraint_about = false;
             
             // compose query for text
             BoolQueryBuilder bquery = QueryBuilders.boolQuery();
@@ -476,6 +485,7 @@ public class QueryEntry extends AbstractIndexEntry implements IndexEntry {
             }
             if (modifier.containsKey("near")) {
                 BoolQueryBuilder nearquery = QueryBuilders.boolQuery()
+                        .must(QueryBuilders.matchQuery("place_context", PlaceContext.FROM.name()))
                         .should(QueryBuilders.matchQuery("place_name", modifier.get("near")))
                         .should(QueryBuilders.matchQuery("text", modifier.get("near")));
                 if (ORjunctor) bquery.should(nearquery); else bquery.must(nearquery);
@@ -524,6 +534,10 @@ public class QueryEntry extends AbstractIndexEntry implements IndexEntry {
                     filters.add(FilterBuilders.notFilter(FilterBuilders.existsFilter(c.field_name)));
                 }
             }
+            if (constraints_positive.contains("location")) {
+                filters.add(FilterBuilders.termsFilter("place_context", (constraint_about ? PlaceContext.ABOUT : PlaceContext.FROM).name()));
+            }
+            
             // special treatment of location constraints of the form /location=lon-west,lat-south,lon-east,lat-north i.e. /location=8.58,50.178,8.59,50.181
             for (String cs: constraints_positive) {
                 if (cs.startsWith(Constraint.location.name() + "=")) {
@@ -534,7 +548,9 @@ public class QueryEntry extends AbstractIndexEntry implements IndexEntry {
                         double lat_south = Double.parseDouble(coord[1]);
                         double lon_east  = Double.parseDouble(coord[2]);
                         double lat_north = Double.parseDouble(coord[3]);
+                        PlaceContext context = constraint_about ? PlaceContext.ABOUT : PlaceContext.FROM;
                         filters.add(FilterBuilders.existsFilter(Constraint.location.field_name));
+                        filters.add(FilterBuilders.termsFilter("place_context", context.name()));
                         filters.add(FilterBuilders.geoBoundingBoxFilter("location_point")
                                 .topLeft(lat_north, lon_west)
                                 .bottomRight(lat_south, lon_east));

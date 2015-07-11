@@ -174,8 +174,8 @@ public class TwitterScraper {
             if ((p = input.indexOf("<source video-src")) >= 0 && input.indexOf("type=\"video/") > p) {
                 videos.add(new prop(input, p, "video-src").value);
                 continue;
-            }            
-            if ((p = input.indexOf("class=\"ProfileTweet-geo")) > 0) {
+            }
+            if ((p = input.indexOf("class=\"Tweet-geo")) > 0) {
                 prop place_name_prop = new prop(input, p, "title");
                 place_name = place_name_prop.value;
                 continue;

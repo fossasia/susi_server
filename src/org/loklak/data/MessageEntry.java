@@ -34,6 +34,7 @@ import java.util.regex.Pattern;
 
 import org.loklak.geo.GeoMark;
 import org.loklak.geo.LocationSource;
+import org.loklak.geo.PlaceContext;
 import org.loklak.harvester.SourceType;
 
 public class MessageEntry extends AbstractIndexEntry implements IndexEntry {
@@ -41,7 +42,7 @@ public class MessageEntry extends AbstractIndexEntry implements IndexEntry {
     protected Date created_at, on, to; // created_at will allways be set, on means 'valid from' and 'to' means 'valid_until' and may not be set
     protected SourceType source_type; // where did the message come from
     protected ProviderType provider_type;  // who created the message
-    protected String provider_hash, screen_name, id_str, text;
+    protected String provider_hash, screen_name, id_str, canonical_id, parent, text;
     protected URL status_id_url;
     protected long retweet_count, favourites_count;
     protected LinkedHashSet<String> texts, images, audio, videos;
@@ -51,6 +52,7 @@ public class MessageEntry extends AbstractIndexEntry implements IndexEntry {
     protected double[] location_point, location_mark; // coordinate order is [longitude, latitude]
     protected int location_radius; // meter
     protected LocationSource location_source;
+    protected PlaceContext place_context;
 
     // the following can be computed from the tweet data but is stored in the search index to provide statistical data and ranking attributes
     private int without_l_len, without_lu_len, without_luh_len; // the length of tweets without links, users, hashtags
@@ -65,6 +67,8 @@ public class MessageEntry extends AbstractIndexEntry implements IndexEntry {
         this.provider_hash = "";
         this.screen_name = "";
         this.id_str = "";
+        this.canonical_id = "";
+        this.parent = "";
         this.text = "";
         this.status_id_url = null;
         this.retweet_count = 0;
@@ -75,6 +79,7 @@ public class MessageEntry extends AbstractIndexEntry implements IndexEntry {
         this.videos = new LinkedHashSet<String>();
         this.place_id = "";
         this.place_name = "";
+        this.place_context = null;
         this.location_point = null;
         this.location_radius = 0;
         this.location_mark = null;
@@ -123,6 +128,8 @@ public class MessageEntry extends AbstractIndexEntry implements IndexEntry {
         this.videos = parseArrayList(map.get("videos"));
         this.place_id = parseString((String) map.get("place_id"));
         this.place_name = parseString((String) map.get("place_name"));
+        Object place_context_obj = map.get("place_context");
+        this.place_context = place_context_obj == null ? null : PlaceContext.valueOf((String) place_context_obj);
         
         // optional location
         Object location_point_obj = map.get("location_point");
@@ -238,9 +245,14 @@ public class MessageEntry extends AbstractIndexEntry implements IndexEntry {
     public String getPlaceName() {
         return place_name;
     }
+    
+    public PlaceContext getPlaceContext () {
+        return place_context;
+    }
 
-    public void setPlaceName(String place_name) {
+    public void setPlaceName(String place_name, PlaceContext place_context) {
         this.place_name = place_name;
+        this.place_context = place_context;
     }
 
     public String getPlaceId() {
@@ -395,7 +407,7 @@ public class MessageEntry extends AbstractIndexEntry implements IndexEntry {
         this.links = new String[links.size()];
         for (int i = 0; i < links.size(); i++) this.links[i] = links.get(i);
         
-        // more media data, analyse the links
+        // more media data, analyze the links
         for (String link: this.links) {
             if (link.endsWith(".mp4") || link.endsWith(".m4v") ||
                 link.indexOf("vimeo.com") > 0 ||
@@ -415,9 +427,11 @@ public class MessageEntry extends AbstractIndexEntry implements IndexEntry {
             GeoMark loc = null;
             if (this.place_name != null && this.place_name.length() > 0 && (this.location_source == null || this.location_source != LocationSource.ANNOTATION)) {
                 loc = DAO.geoNames.analyse(this.place_name, null, 5);
+                this.place_context = PlaceContext.FROM;
             }
             if (loc == null) {
                 loc = DAO.geoNames.analyse(this.text, this.hashtags, 5);
+                this.place_context = PlaceContext.ABOUT;
             }
             if (loc != null) {
                 this.place_name = loc.getNames().iterator().next();
@@ -468,6 +482,7 @@ public class MessageEntry extends AbstractIndexEntry implements IndexEntry {
         m.put("videos_count", this.videos.size());
         m.put("place_name", this.place_name);
         m.put("place_id", this.place_id);
+        if (this.place_context != null) m.put("place_context", this.place_context.name());
   
         // add optional location data. This is written even if calculatedData == false if the source is from REPORT to prevent that it is lost
         if (this.location_point != null && this.location_point.length == 2 && this.location_mark != null && this.location_mark.length == 2) {

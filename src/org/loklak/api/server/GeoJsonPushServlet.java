@@ -29,6 +29,8 @@ import org.loklak.data.DAO;
 import org.loklak.data.MessageEntry;
 import org.loklak.data.ProviderType;
 import org.loklak.data.UserEntry;
+import org.loklak.geo.LocationSource;
+import org.loklak.geo.PlaceContext;
 import org.loklak.harvester.SourceType;
 
 import javax.servlet.ServletException;
@@ -144,6 +146,8 @@ public class GeoJsonPushServlet extends HttpServlet {
             properties.put("provider_type", ProviderType.GEOJSON.name());
             properties.put("provider_hash", remoteHash);
             properties.put("location_point", geometry.get("coordinates"));
+            properties.put("location_source", LocationSource.REPORT.name());
+            properties.put("place_context", PlaceContext.FROM.name());
 
             // avoid error text not found. TODO: a better strategy, e.g. require text as a mandatory field
             if (properties.get("text") == null) {

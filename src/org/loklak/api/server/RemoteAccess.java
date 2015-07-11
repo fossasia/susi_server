@@ -102,7 +102,10 @@ public class RemoteAccess {
         private long access_time, time_since_last_access;
         private boolean DoS_blackout, DoS_servicereduction;
         public Post(final HttpServletRequest request) {
-            this.qm = null;
+            this.qm = new HashMap<>();
+            for (Map.Entry<String, String[]> entry: request.getParameterMap().entrySet()) {
+                this.qm.put(entry.getKey(), entry.getValue()[0]);
+            }
             this.request = request;
             this.clientHost = request.getRemoteHost();
             String XRealIP = request.getHeader("X-Real-IP");
@@ -139,23 +142,23 @@ public class RemoteAccess {
             return this.DoS_servicereduction;
         }
         public String get(String key, String dflt) {
-            String val = qm == null ? request.getParameter(key) : qm.get(key);
+            String val = qm.get(key);
             return val == null ? dflt : val;
         }
         public String[] get(String key, String[] dflt, String delim) {
-            String val = qm == null ? request.getParameter(key) : qm.get(key);
+            String val = qm.get(key);
             return val == null || val.length() == 0 ? dflt : val.split(delim);
         }
         public int get(String key, int dflt) {
-            String val = qm == null ? request.getParameter(key) : qm.get(key);
+            String val = qm.get(key);
             return val == null || val.length() == 0 ? dflt : Integer.parseInt(val);
         }
         public double get(String key, double dflt) {
-            String val = qm == null ? request.getParameter(key) : qm.get(key);
+            String val = qm.get(key);
             return val == null || val.length() == 0 ? dflt : Double.parseDouble(val);
         }
         public boolean get(String key, boolean dflt) {
-            String val = qm == null ? request.getParameter(key) : qm.get(key);
+            String val = qm.get(key);
             return val == null ? dflt : "true".equals(val) || "1".equals(val);
         }
         public Date get(String key, Date dflt, int timezoneOffset) {

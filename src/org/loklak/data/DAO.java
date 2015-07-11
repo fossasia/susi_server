@@ -87,6 +87,7 @@ import org.loklak.geo.GeoJsonReader;
 import org.loklak.geo.GeoNames;
 import org.loklak.geo.LocationSource;
 import org.loklak.geo.GeoJsonReader.Feature;
+import org.loklak.geo.PlaceContext;
 import org.loklak.harvester.SourceType;
 import org.loklak.harvester.TwitterScraper;
 import org.loklak.tools.DateParser;
@@ -424,7 +425,7 @@ public class DAO {
                     t.setFavouritesCount(0);
                     t.setImages(feature.properties.get("thumbs"));
                     t.setPlaceId("");
-                    t.setPlaceName(feature.properties.get("title"));
+                    t.setPlaceName(feature.properties.get("title"), PlaceContext.FROM);
                     double lon = Double.parseDouble(feature.properties.get("geo_longitude"));
                     double lat = Double.parseDouble(feature.properties.get("geo_latitude"));
                     t.setLocationPoint(new double[]{lon, lat}); // coordinate order is longitude, latitude
