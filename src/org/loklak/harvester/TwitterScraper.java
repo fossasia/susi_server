@@ -59,6 +59,9 @@ public class TwitterScraper {
                 t.append(' ');
                 if (s.startsWith("@")) {
                     t.append('(').append("from:").append(s.substring(1)).append(" OR ").append("to:").append(s.substring(1)).append(" OR ").append(s).append(')');
+                } if (s.startsWith("since:") || s.startsWith("until:")) {
+                    int u = s.indexOf('_');
+                    t.append(u < 0 ? s : s.substring(0, u));
                 } else {
                     t.append(s);
                 }

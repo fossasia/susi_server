@@ -81,7 +81,7 @@ public class SearchServlet extends HttpServlet {
         int limit = post.get("limit", 100);
         String[] fields = post.get("fields", new String[0], ",");
         int timezoneOffset = post.get("timezoneOffset", 0);
-        if ((query.indexOf("id:") >= 0 || query.indexOf("since:") >= 0 || query.indexOf("until:") >= 0) && ("all".equals(source) || "twitter".equals(source))) source = "cache"; // id's cannot be retrieved from twitter with the scrape-api (yet), only from the cache
+        if (query.indexOf("id:") >= 0 && ("all".equals(source) || "twitter".equals(source))) source = "cache"; // id's cannot be retrieved from twitter with the scrape-api (yet), only from the cache
         final String ordername = post.get("order", Timeline.Order.CREATED_AT.getMessageFieldName());
         final Timeline.Order order = Timeline.parseOrder(ordername);
         
