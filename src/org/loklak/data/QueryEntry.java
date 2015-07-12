@@ -27,8 +27,10 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -345,7 +347,7 @@ public class QueryEntry extends AbstractIndexEntry implements IndexEntry {
             q = q.replaceAll(" OR ", " "); // if we know that all terms are OR, we remove that and apply it later
             
             // tokenize the query
-            List<String> qe = new ArrayList<String>();
+            Set<String> qe = new LinkedHashSet<String>();
             Matcher m = tokenizerPattern.matcher(q);
             while (m.find()) qe.add(m.group(1));
             
@@ -420,6 +422,18 @@ public class QueryEntry extends AbstractIndexEntry implements IndexEntry {
             // special constraints
             boolean constraint_about = constraints_positive.remove("about");
             if (constraints_negative.remove("about")) constraint_about = false;
+            
+            // if the number of query terms is just 1 (because of double-mention of same terms), then the term MUST occur
+            // together with modifiers and constraints, otherwise the constraints count only.
+            if (ORjunctor && (
+                    text_positive_match.size() + 
+                    text_negative_match.size() + 
+                    text_positive_filter.size() + 
+                    text_negative_filter.size() + 
+                    users_positive.size() + 
+                    users_negative.size() + 
+                    hashtags_positive.size() + 
+                    hashtags_negative.size()) == 1) ORjunctor = false;
             
             // compose query for text
             BoolQueryBuilder bquery = QueryBuilders.boolQuery();
@@ -563,7 +577,7 @@ public class QueryEntry extends AbstractIndexEntry implements IndexEntry {
                 }
             }
 
-            QueryBuilder cquery = QueryBuilders.filteredQuery(bquery, FilterBuilders.andFilter(filters.toArray(new FilterBuilder[filters.size()])));
+            QueryBuilder cquery = filters.size() == 0 ? bquery : QueryBuilders.filteredQuery(bquery, FilterBuilders.andFilter(filters.toArray(new FilterBuilder[filters.size()])));
             return cquery;
         }
     }
