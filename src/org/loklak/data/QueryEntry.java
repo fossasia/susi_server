@@ -34,7 +34,6 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.lucene.queryparser.xml.builders.BooleanQueryBuilder;
 import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.FilterBuilder;
 import org.elasticsearch.index.query.FilterBuilders;
@@ -586,7 +585,10 @@ public class QueryEntry extends AbstractIndexEntry implements IndexEntry {
                 if (cs.startsWith(Constraint.location.name() + "=")) {
                     String params = cs.substring(Constraint.location.name().length() + 1);
                     String[] coord = params.split(",");
-                    if (coord.length == 4) {
+                    if (coord.length == 1) {
+                        filters.add(FilterBuilders.termsFilter("location_source", coord[0]));
+                    }
+                    else if (coord.length == 4 || coord.length == 5) {
                         double lon_west  = Double.parseDouble(coord[0]);
                         double lat_south = Double.parseDouble(coord[1]);
                         double lon_east  = Double.parseDouble(coord[2]);
@@ -597,6 +599,7 @@ public class QueryEntry extends AbstractIndexEntry implements IndexEntry {
                         filters.add(FilterBuilders.geoBoundingBoxFilter("location_point")
                                 .topLeft(lat_north, lon_west)
                                 .bottomRight(lat_south, lon_east));
+                        if (coord.length == 5) filters.add(FilterBuilders.termsFilter("location_source", coord[4]));
                     }
                 }
                 if (cs.startsWith(Constraint.link.name() + "=")) {
