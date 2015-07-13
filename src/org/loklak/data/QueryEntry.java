@@ -34,6 +34,7 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.lucene.queryparser.xml.builders.BooleanQueryBuilder;
 import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.FilterBuilder;
 import org.elasticsearch.index.query.FilterBuilders;
@@ -238,6 +239,7 @@ public class QueryEntry extends AbstractIndexEntry implements IndexEntry {
     }
 
     private final static Pattern tokenizerPattern = Pattern.compile("([^\"]\\S*|\".+?\")\\s*"); // tokenizes Strings into terms respecting quoted parts
+    
     private static enum Constraint {
         image("images"),
         audio("audio"),
@@ -327,6 +329,30 @@ public class QueryEntry extends AbstractIndexEntry implements IndexEntry {
         return tl1;
     }
     
+    private final static Pattern term4ORPattern = Pattern.compile("(?:^| )(\\S* OR \\S*)(?: |$)"); // Pattern.compile("(^\\s*(?: OR ^\\s*+)+)");
+    
+    private static List<String> splitIntoORGroups(String q) {
+        // detect usage of OR junctor usage. Right now we cannot have mixed AND and OR usage. Thats a hack right now
+        q = q.replaceAll(" AND ", " "); // AND is default
+        
+        // tokenize the query
+        ArrayList<String> list = new ArrayList<>();
+        Matcher m = term4ORPattern.matcher(q);
+        while (m.find()) {
+            String d = m.group(1);
+            q = q.replace(d, "").replace("  ", " ");
+            list.add(d);
+            m = term4ORPattern.matcher(q);
+        }
+        q = q.trim();
+        if (q.length() > 0) list.add(0, q);
+        return list;
+    }
+    
+    public static void main(String[] args) {
+        splitIntoORGroups("Alpha OR Beta AND Gamma /constraint sand OR kies skilanglauf");
+    }
+    
     public static class ElasticsearchQuery {
         
         QueryBuilder queryBuilder;
@@ -337,13 +363,27 @@ public class QueryEntry extends AbstractIndexEntry implements IndexEntry {
             this.since = new Date(0);
             this.until = new Date(Long.MAX_VALUE);
             // parse the query
-            this.queryBuilder = parse(q, timezoneOffset);
+            this.queryBuilder = preparse(q, timezoneOffset);
+        }
+
+        private QueryBuilder preparse(String q, int timezoneOffset) {
+            // detect usage of OR connector usage.
+            q = q.replaceAll(" AND ", " "); // AND is default
+            List<String> terms = splitIntoORGroups(q);
+            if (terms.size() == 0) return QueryBuilders.matchAllQuery();
+            if (terms.size() == 1) return parse(terms.get(0), timezoneOffset);
+
+            BoolQueryBuilder aquery = QueryBuilders.boolQuery();
+            for (String t: terms) {
+                aquery.must(parse(t, timezoneOffset));
+            }
+            return aquery;
         }
         
         private QueryBuilder parse(String q, int timezoneOffset) {
-            // detect usage of OR junctor usage. Right now we cannot have mixed AND and OR usage. Thats a hack right now
+            // detect usage of OR ORconnective usage. Because of the preparse step we will have only OR or only AND here.
             q = q.replaceAll(" AND ", " "); // AND is default
-            boolean ORjunctor = q.indexOf(" OR ") >= 0;
+            boolean ORconnective = q.indexOf(" OR ") >= 0;
             q = q.replaceAll(" OR ", " "); // if we know that all terms are OR, we remove that and apply it later
             
             // tokenize the query
@@ -423,78 +463,52 @@ public class QueryEntry extends AbstractIndexEntry implements IndexEntry {
             boolean constraint_about = constraints_positive.remove("about");
             if (constraints_negative.remove("about")) constraint_about = false;
             
-            // if the number of query terms is just 1 (because of double-mention of same terms), then the term MUST occur
-            // together with modifiers and constraints, otherwise the constraints count only.
-            if (ORjunctor && (
-                    text_positive_match.size() + 
-                    text_negative_match.size() + 
-                    text_positive_filter.size() + 
-                    text_negative_filter.size() + 
-                    users_positive.size() + 
-                    users_negative.size() + 
-                    hashtags_positive.size() + 
-                    hashtags_negative.size()) == 1) ORjunctor = false;
-            
             // compose query for text
-            BoolQueryBuilder bquery = QueryBuilders.boolQuery();
+            List<QueryBuilder> ops = new ArrayList<>();
+            List<QueryBuilder> nops = new ArrayList<>();
             for (String text: text_positive_match)  {
-                if (ORjunctor)
-                    bquery.should(QueryBuilders.matchQuery("text", text));
-                else
-                    bquery.must(QueryBuilders.matchQuery("text", text));
+                ops.add(QueryBuilders.matchQuery("text", text));
             }
             for (String text: text_negative_match) {
                 // negation of terms in disjunctions would cause to retrieve almost all documents
                 // this cannot be the requirement of the user. It may be valid in conjunctions, but not in disjunctions
-                bquery.mustNot(QueryBuilders.matchQuery("text", text));
+                nops.add(QueryBuilders.matchQuery("text", text));
             }
             
             // apply modifiers
             if (modifier.containsKey("id")) {
-                if (ORjunctor)
-                    bquery.should(QueryBuilders.termQuery("id_str", modifier.get("id")));
-                else
-                    bquery.must(QueryBuilders.termQuery("id_str", modifier.get("id")));
+                ops.add(QueryBuilders.termQuery("id_str", modifier.get("id")));
             }
-            if (modifier.containsKey("-id")) bquery.mustNot(QueryBuilders.termQuery("id_str", modifier.get("-id")));
+            if (modifier.containsKey("-id")) nops.add(QueryBuilders.termQuery("id_str", modifier.get("-id")));
 
             for (String user: users_positive) {
-                if (ORjunctor)
-                    bquery.should(QueryBuilders.termQuery("mentions", user));
-                else
-                    bquery.must(QueryBuilders.termQuery("mentions", user));
+                ops.add(QueryBuilders.termQuery("mentions", user));
             }
-            for (String user: users_negative) bquery.mustNot(QueryBuilders.termQuery("mentions", user));
+            for (String user: users_negative) nops.add(QueryBuilders.termQuery("mentions", user));
             
             for (String hashtag: hashtags_positive) {
-                if (ORjunctor)
-                    bquery.should(QueryBuilders.termQuery("hashtags", hashtag.toLowerCase()));
-                else
-                    bquery.must(QueryBuilders.termQuery("hashtags", hashtag.toLowerCase()));
+                ops.add(QueryBuilders.termQuery("hashtags", hashtag.toLowerCase()));
             }
-            for (String hashtag: hashtags_negative) bquery.mustNot(QueryBuilders.termQuery("hashtags", hashtag.toLowerCase()));
+            for (String hashtag: hashtags_negative) nops.add(QueryBuilders.termQuery("hashtags", hashtag.toLowerCase()));
             
             if (modifier.containsKey("from")) {
                 String screen_name = modifier.get("from");
                 if (screen_name.indexOf(',') < 0) {
-                    if (ORjunctor)
-                        bquery.should(QueryBuilders.termQuery("screen_name", screen_name));
-                    else
-                        bquery.must(QueryBuilders.termQuery("screen_name", screen_name));
+                    ops.add(QueryBuilders.termQuery("screen_name", screen_name));
                 } else {
                     String[] screen_names = screen_name.split(",");
                     BoolQueryBuilder disjunction = QueryBuilders.boolQuery();
                     for (String name: screen_names) disjunction.should(QueryBuilders.termQuery("screen_name", name));
-                    if (ORjunctor) bquery.should(disjunction); else bquery.must(disjunction);
+                    ops.add(disjunction);
                 }
             }
             if (modifier.containsKey("-from")) {
                 String screen_name = modifier.get("-from");
                 if (screen_name.indexOf(',') < 0) {
-                    bquery.mustNot(QueryBuilders.termQuery("screen_name", screen_name));
+                    nops.add(QueryBuilders.termQuery("screen_name", screen_name));
                 } else {
                     String[] screen_names = screen_name.split(",");
-                    for (String name: screen_names) bquery.mustNot(QueryBuilders.termQuery("screen_name", name));
+                    for (String name: screen_names) nops.add(QueryBuilders.termQuery("screen_name", name));
                 }
             }
             if (modifier.containsKey("near")) {
@@ -502,7 +516,7 @@ public class QueryEntry extends AbstractIndexEntry implements IndexEntry {
                         .must(QueryBuilders.matchQuery("place_context", PlaceContext.FROM.name()))
                         .should(QueryBuilders.matchQuery("place_name", modifier.get("near")))
                         .should(QueryBuilders.matchQuery("text", modifier.get("near")));
-                if (ORjunctor) bquery.should(nearquery); else bquery.must(nearquery);
+                if (ORconnective) ops.add(nearquery);
             }
             if (modifier.containsKey("since")) try {
                 Calendar since = DateParser.parse(modifier.get("since"), timezoneOffset);
@@ -520,7 +534,7 @@ public class QueryEntry extends AbstractIndexEntry implements IndexEntry {
                 } else {
                     this.until = new Date(Long.MAX_VALUE);
                 }
-                bquery.must(rangeQuery);
+                ops.add(rangeQuery);
             } catch (ParseException e) {} else if (modifier.containsKey("until")) try {
                 Calendar until = DateParser.parse(modifier.get("until"), timezoneOffset);
                 if (until.get(Calendar.HOUR) == 0 && until.get(Calendar.MINUTE) == 0) {
@@ -530,9 +544,24 @@ public class QueryEntry extends AbstractIndexEntry implements IndexEntry {
                 }
                 this.until = until.getTime();
                 RangeQueryBuilder rangeQuery = QueryBuilders.rangeQuery("created_at").to(this.until);
-                bquery.must(rangeQuery);
+                ops.add(rangeQuery);
             } catch (ParseException e) {}
-            
+
+            // apply the ops and nops
+            QueryBuilder bquery = QueryBuilders.boolQuery();
+            if (ops.size() == 1 && nops.size() == 0)
+                bquery = ops.iterator().next();
+            else if (ops.size() == 0 && nops.size() == 1)
+                bquery = QueryBuilders.boolQuery().mustNot(ops.iterator().next());
+            else {
+                for (QueryBuilder qb: ops) {
+                    if (ORconnective) ((BoolQueryBuilder) bquery).should(qb); else ((BoolQueryBuilder) bquery).must(qb);
+                }
+                for (QueryBuilder nqb: nops) {
+                    ((BoolQueryBuilder) bquery).mustNot(nqb);
+                }
+                
+            }
             
             // apply constraints as filters
             List<FilterBuilder> filters = new ArrayList<>();
