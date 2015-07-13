@@ -21,6 +21,7 @@ package org.loklak.geo;
 
 public enum LocationSource {
     
+    USER,       // the (loklak) user has set the location, this is a hint that this is a rich tweet.
     REPORT,     // location came from another source in identical way
     ANNOTATION; // location was detected from annotation text
     
