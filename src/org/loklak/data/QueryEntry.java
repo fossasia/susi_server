@@ -329,7 +329,7 @@ public class QueryEntry extends AbstractIndexEntry implements IndexEntry {
         return tl1;
     }
     
-    private final static Pattern term4ORPattern = Pattern.compile("(?:^| )(\\S* OR \\S*)(?: |$)"); // Pattern.compile("(^\\s*(?: OR ^\\s*+)+)");
+    private final static Pattern term4ORPattern = Pattern.compile("(?:^| )(\\S*(?: OR \\S*)+)(?: |$)"); // Pattern.compile("(^\\s*(?: OR ^\\s*+)+)");
     
     private static List<String> splitIntoORGroups(String q) {
         // detect usage of OR junctor usage. Right now we cannot have mixed AND and OR usage. Thats a hack right now
@@ -350,7 +350,7 @@ public class QueryEntry extends AbstractIndexEntry implements IndexEntry {
     }
     
     public static void main(String[] args) {
-        splitIntoORGroups("Alpha OR Beta AND Gamma /constraint sand OR kies skilanglauf");
+        splitIntoORGroups("Alpha OR Beta AND Gamma /constraint sand OR kies OR wasser skilanglauf");
     }
     
     public static class ElasticsearchQuery {
