@@ -1,0 +1,8 @@
+{
+  "rules" :
+  [
+    ["shortname", ["screen_name", "user.screen_name"]],
+    ["name", "user.name"],
+    ["url", "link"]
+  ]
+}
