@@ -212,7 +212,6 @@ public class GeoJsonPushServlet extends HttpServlet {
                 for (String newField : mapRules.get(key)) {
                     if (newField.contains(".")) {
                         String[] deepFields = newField.split(Pattern.quote("."));
-                        System.out.println(Arrays.toString(deepFields));
                         Map<String, Object> currentLevel = root;
                         for (int lvl = 0; lvl < deepFields.length; lvl++) {
                             if (lvl == deepFields.length - 1) {

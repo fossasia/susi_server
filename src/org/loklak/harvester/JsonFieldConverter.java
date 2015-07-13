@@ -24,6 +24,7 @@ import org.loklak.data.DAO;
 
 import java.io.IOException;
 import java.util.*;
+import java.util.regex.Pattern;
 
 public class JsonFieldConverter {
 
@@ -47,9 +48,12 @@ public class JsonFieldConverter {
         for (List rule : convRules) {
             List<String> toInsert = new ArrayList<>();
             convRulesMap.put((String) rule.get(0), toInsert);
+
+            // the 2nd rule can be either a string
             if (rule.get(1) instanceof String) {
                 toInsert.add((String) rule.get(1));
             } else {
+            // or an array
                 for (String afterField : (List<String>) rule.get(1)) {
                     toInsert.add(afterField);
                 }
@@ -61,11 +65,30 @@ public class JsonFieldConverter {
         while (it.hasNext()) {
             Map.Entry<String, List<String>> entry = (Map.Entry) it.next();
             String key = entry.getKey();
-            if (result.containsKey(key)) {
-                Object value = result.get(key);
-                for (String newKey : entry.getValue()) {
+            if (!result.containsKey(key)) {
+                continue;
+            }
+
+            Object value = result.remove(key);
+            for (String newKey : entry.getValue()) {
+                // deep-mapping
+                if (newKey.contains(".")) {
+                    String[] deepFields = newKey.split(Pattern.quote("."));
+                    Map<String, Object> currentLevel = result;
+                    for (int lvl = 0; lvl < deepFields.length; lvl++) {
+                        if (lvl == deepFields.length - 1) {
+                            currentLevel.put(deepFields[lvl], value);
+                        } else {
+                            if (currentLevel.get(deepFields[lvl]) == null) {
+                                currentLevel.put(deepFields[lvl], new HashMap<>());
+                            }
+                            currentLevel = (Map<String, Object>) currentLevel.get(deepFields[lvl]);
+                        }
+                    }
+                // simple mapping, a.k.a put the value at the root level
+                } else {
                     result.put(newKey, value);
-                }
+                };
             }
         }
         return result;
