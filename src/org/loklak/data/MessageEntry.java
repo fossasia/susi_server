@@ -133,6 +133,7 @@ public class MessageEntry extends AbstractIndexEntry implements IndexEntry {
         Object place_context_obj = map.get("place_context");
         this.place_context = place_context_obj == null ? null : PlaceContext.valueOf((String) place_context_obj);
         this.place_country = parseString((String) map.get("place_country"));
+        if (this.place_country != null && this.place_country.length() != 2) this.place_country = null;
         
         // optional location
         Object location_point_obj = map.get("location_point");
@@ -487,7 +488,7 @@ public class MessageEntry extends AbstractIndexEntry implements IndexEntry {
         m.put("place_name", this.place_name);
         m.put("place_id", this.place_id);
         if (this.place_context != null) m.put("place_context", this.place_context.name());
-        if (this.place_country != null) {
+        if (this.place_country != null && this.place_country.length() == 2) {
             m.put("place_country", this.place_country);
             m.put("place_country_center", DAO.geoNames.getCountryCenter(this.place_country));
         }
