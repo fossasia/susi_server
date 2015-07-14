@@ -31,6 +31,7 @@ import org.loklak.data.MessageEntry;
 import org.loklak.data.UserEntry;
 import org.loklak.harvester.JsonFieldConverter;
 import org.loklak.harvester.JsonValidator;
+import org.loklak.harvester.SourceType;
 
 import javax.servlet.ServletException;
 import javax.servlet.ServletOutputStream;
@@ -98,6 +99,7 @@ public class FossasiaPushServlet extends HttpServlet {
         int recordCount = 0, newCount = 0, knownCount = 0;
         map.put("id_str", id);
         map.put("text", "");
+        map.put("source_type", SourceType.FOSSASIA_API.name());
         MessageEntry messageEntry = new MessageEntry(map);
         Map<String, Object> user = (Map<String, Object>) map.remove("user");
         UserEntry userEntry = new UserEntry((user != null && user.get("screen_name") != null) ? user : new HashMap<String, Object>());
