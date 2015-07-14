@@ -53,6 +53,7 @@ public class MessageEntry extends AbstractIndexEntry implements IndexEntry {
     protected int location_radius; // meter
     protected LocationSource location_source;
     protected PlaceContext place_context;
+    protected String place_country;
 
     // the following can be computed from the tweet data but is stored in the search index to provide statistical data and ranking attributes
     private int without_l_len, without_lu_len, without_luh_len; // the length of tweets without links, users, hashtags
@@ -80,6 +81,7 @@ public class MessageEntry extends AbstractIndexEntry implements IndexEntry {
         this.place_id = "";
         this.place_name = "";
         this.place_context = null;
+        this.place_country = null;
         this.location_point = null;
         this.location_radius = 0;
         this.location_mark = null;
@@ -130,6 +132,7 @@ public class MessageEntry extends AbstractIndexEntry implements IndexEntry {
         this.place_name = parseString((String) map.get("place_name"));
         Object place_context_obj = map.get("place_context");
         this.place_context = place_context_obj == null ? null : PlaceContext.valueOf((String) place_context_obj);
+        this.place_country = parseString((String) map.get("place_country"));
         
         // optional location
         Object location_point_obj = map.get("location_point");
@@ -439,6 +442,7 @@ public class MessageEntry extends AbstractIndexEntry implements IndexEntry {
                 this.location_point = new double[]{loc.lon(), loc.lat()}; //[longitude, latitude]
                 this.location_mark = new double[]{loc.mlon(), loc.mlat()}; //[longitude, latitude]
                 this.location_source = LocationSource.ANNOTATION;
+                this.place_country = loc.getIO3166cc();
             }
         }
     }
@@ -483,6 +487,10 @@ public class MessageEntry extends AbstractIndexEntry implements IndexEntry {
         m.put("place_name", this.place_name);
         m.put("place_id", this.place_id);
         if (this.place_context != null) m.put("place_context", this.place_context.name());
+        if (this.place_country != null) {
+            m.put("place_country", this.place_country);
+            m.put("place_country_center", DAO.geoNames.getCountryCenter(this.place_country));
+        }
   
         // add optional location data. This is written even if calculatedData == false if the source is from REPORT to prevent that it is lost
         if (this.location_point != null && this.location_point.length == 2 && this.location_mark != null && this.location_mark.length == 2) {

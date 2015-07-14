@@ -50,23 +50,35 @@ public class GeoNames {
     private final Map<Integer, GeoLocation> id2loc;
     private final HashMap<Integer, List<Integer>> hash2ids;
     private final Set<Integer> stopwordHashes;
+    private final Map<String, double[]> countryCenter; // mapping from the  ISO-3166 country code to [longitude, latitude], the country central
     
+    public static class CountryBounds {
+        public double lon_west = 0.0, lon_east = 0.0, lat_north = 0.0, lat_south = 0.0;
+        public void extend(GeoLocation loc) {
+            if (loc.lon() < lon_west) lon_west = loc.lon();
+            if (loc.lon() > lon_east) lon_east = loc.lon();
+            if (loc.lat() > lat_north) lat_north = loc.lat();
+            if (loc.lat() < lat_south) lat_south = loc.lat();
+        }
+    }
     
-    public GeoNames(final File file, long minPopulation) {
+    public GeoNames(final File cities1000_zip, long minPopulation) {
         // this is a processing of the cities1000.zip file from http://download.geonames.org/export/dump/
 
         this.id2loc = new HashMap<>();
         this.hash2ids = new HashMap<>();
         this.stopwordHashes = new HashSet<>();
+        this.countryCenter = new HashMap<>();
+        Map<String, CountryBounds> countryBounds = new HashMap<>();
 
-        if ( file == null || !file.exists() ) {
+        if ( cities1000_zip == null || !cities1000_zip.exists() ) {
             return;
         }
         ZipFile zf = null;
         BufferedReader reader = null;
         try {
-            zf = new ZipFile(file);
-            String entryName = file.getName();
+            zf = new ZipFile(cities1000_zip);
+            String entryName = cities1000_zip.getName();
             entryName = entryName.substring(0, entryName.length() - 3) + "txt";
             final ZipEntry ze = zf.getEntry(entryName);
             final InputStream is = zf.getInputStream(ze);
@@ -114,8 +126,9 @@ public class GeoNames {
                 for (final String s : CommonPattern.COMMA.split(fields[3])) locnames.add(s);
                 ArrayList<String> locnamess = new ArrayList<>(locnames.size());
                 locnamess.addAll(locnames);
+                String cc = fields[8]; //ISO-3166
                 
-                final GeoLocation geoLocation = new GeoLocation(Float.parseFloat(fields[4]), Float.parseFloat(fields[5]), locnamess);
+                final GeoLocation geoLocation = new GeoLocation(Float.parseFloat(fields[4]), Float.parseFloat(fields[5]), locnamess, cc);
                 geoLocation.setPopulation(population);
                 this.id2loc.put(geonameid, geoLocation);
                 for (final String name : locnames) {
@@ -126,10 +139,20 @@ public class GeoNames {
                     if (locs == null) {locs = new ArrayList<Integer>(1); this.hash2ids.put(lochash, locs);}
                     if (!locs.contains(geonameid)) locs.add(geonameid);
                 }
+                
+                // update the country bounds
+                CountryBounds bounds = countryBounds.get(cc);
+                if (bounds == null) { bounds = new CountryBounds(); countryBounds.put(cc, bounds); }
+                bounds.extend(geoLocation);
             }
             if (reader != null) reader.close();
             if (zf != null) zf.close();
         } catch (final IOException e ) {
+        }
+        
+        // calculate the center of the countries
+        for (Map.Entry<String, CountryBounds> country: countryBounds.entrySet()) {
+            this.countryCenter.put(country.getKey(), new double[]{(country.getValue().lon_west - country.getValue().lon_east) / 2.0, (country.getValue().lat_north - country.getValue().lat_south) / 2.0}); // [longitude, latitude]
         }
         
         // finally create a statistic which names appear very often to have fill-word heuristic
@@ -453,6 +476,10 @@ public class GeoNames {
         }
         if (l.length() > 0 && l.charAt(l.length() - 1) == ' ') l.setLength(l.length() - 1);
         return l.toString();
+    }
+
+    public double[] getCountryCenter(String cc) {
+        return countryCenter.get(cc);
     }
     
     public static void main(String[] args) {
