@@ -531,7 +531,7 @@ public class MessageEntry extends AbstractIndexEntry implements IndexEntry {
             if (q < p) break;
             String charcode = s.substring(p + 2, q);
             int unicode = s.charAt(0) == 'x' ? Integer.parseInt(charcode.substring(1), 16) : Integer.parseInt(charcode);
-            s = s.substring(0, p) + ((char) unicode) + s.substring(q + 1);
+            s = s.substring(0, p) + ((unicode == 10 || unicode == 13) ? "\n" : ((char) unicode)) + s.substring(q + 1);
         }
         // octal coding \\u
         while ((p = s.indexOf("\\u")) >= 0) {
@@ -542,11 +542,14 @@ public class MessageEntry extends AbstractIndexEntry implements IndexEntry {
         // remove tags
         s = s.replaceAll("</a>", "").replaceAll("&quot;", "\"").replaceAll("&amp;", "&");
         // remove funny symbols
+        StringBuilder clean = new StringBuilder(s.length() + 5);
         for (int i = 0; i < s.length(); i++) {
-            if (s.charAt(i) < ' ') s = s.substring(0, i) + ' ' + s.substring(i + 1);
+            char c = s.charAt(i);
+            if (((int) c) == 8232 || c == '\n' || c == '\r') clean.append("\n");
+            else if (c < ' ') clean.append(' ');
+            else clean.append(c);
         }
         // remove double spaces
-        s = s.replaceAll("  ", " ");
-        return s;
+        return clean.toString().replaceAll("  ", " ");
     }
 }

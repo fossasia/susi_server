@@ -207,7 +207,8 @@ public class TwitterScraper {
                         Long.parseLong(props.get("tweetfavouritecount").value),
                         imgs, vids, place_name, place_id
                         );
-                new Thread(tweet).start(); // todo: use thread pools
+                //new Thread(tweet).start(); // todo: use thread pools
+                tweet.run(); // for debugging
                 timeline.addUser(user);
                 timeline.addTweet(tweet);
                 images.clear();
@@ -318,9 +319,7 @@ public class TwitterScraper {
         }
 
         private void analyse() {
-            String text_raw = this.text;
-            for (int i = 0; i < text_raw.length(); i++) if (text_raw.charAt(i) < ' ') text_raw.replace(text_raw.charAt(i), ' '); // remove funny chars
-            this.text = text_raw.replaceAll("</?(s|b|strong)>", "").replaceAll("<a href=\"/hashtag.*?>", "").replaceAll("<a.*?class=\"twitter-atreply.*?>", "").replaceAll("<span.*?span>", "").replaceAll("  ", " ");
+            this.text = this.text.replaceAll("</?(s|b|strong)>", "").replaceAll("<a href=\"/hashtag.*?>", "").replaceAll("<a.*?class=\"twitter-atreply.*?>", "").replaceAll("<span.*?span>", "").replaceAll("  ", " ");
             while (true) {
                 try {
                     Matcher m = timeline_link_pattern.matcher(this.text);
@@ -368,10 +367,10 @@ public class TwitterScraper {
             try {
                 this.exists = new Boolean(DAO.existMessage(this.getIdStr()));
                 // only analyse and enrich the message if it does not actually exist in the search index because it will be abandoned otherwise anyway
-                if (!this.exists) {
+                //if (!this.exists) {
                     this.analyse();
                     this.enrich();
-                }
+                //}
             } catch (Throwable e) {
                 e.printStackTrace();
             } finally {
