@@ -52,6 +52,7 @@ import java.util.regex.Pattern;
  * Test URLs:
  * http://localhost:9000/api/push/geojson.json?url=http://www.paris-streetart.com/test/map.geojson
  * http://localhost:9000/api/push/geojson.json?url=http://api.fossasia.net/map/ffGeoJsonp.php
+ * http://localhost:9000/api/push/geojson.json?url=http://cmap-fossasia-api.herokuapp.com/ffGeoJsonp.php&map_type=shortname:screen_name,shortname:user.screen_name&source_type=FOSSASIA_API
  */
 
 public class GeoJsonPushServlet extends HttpServlet {
@@ -63,10 +64,6 @@ public class GeoJsonPushServlet extends HttpServlet {
         doGet(request, response);
     }
 
-    /*
-     * Example :
-     * curl -i -F callback=p -F url=http://cmap-fossasia-api.herokuapp.com/ffGeoJsonp.php -F map_type=shortname:screen_name,shortname:user.screen_name,name:user.name,url:link http://localhost:9000/api/push/geojson.json
-     */
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         RemoteAccess.Post post = RemoteAccess.evaluate(request);
@@ -77,6 +74,7 @@ public class GeoJsonPushServlet extends HttpServlet {
 
         String url = post.get("url", "");
         String mapType = post.get("map_type", "");
+        String sourceType = post.get("source_type", "");
         String callback = post.get("callback", "");
         boolean jsonp = callback != null && callback.length() > 0;
 
@@ -142,7 +140,11 @@ public class GeoJsonPushServlet extends HttpServlet {
             Map<String, Object> mappedProperties = convertMapRulesProperties(mapRules, properties);
             properties.putAll(mappedProperties);
 
-            properties.put("source_type", SourceType.IMPORT.name());
+            if (!"".equals(sourceType)) {
+                properties.put("source_type", sourceType);
+            } else {
+                properties.put("source_type", SourceType.IMPORT);
+            }
             properties.put("provider_type", ProviderType.GEOJSON.name());
             properties.put("provider_hash", remoteHash);
             properties.put("location_point", geometry.get("coordinates"));
