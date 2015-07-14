@@ -79,7 +79,7 @@ public class FossasiaPushServlet extends HttpServlet {
         JsonValidator validator = new JsonValidator();
         ProcessingReport report = validator.validate(new String(jsonText), JsonValidator.JsonSchemaEnum.FOSSASIA);
         if (report.getLogLevel() == LogLevel.ERROR || report.getLogLevel() == LogLevel.FATAL) {
-            response.sendError(400, "json does not conform to FOSSIA API schema https://github.com/fossasia/api.fossasia.net/blob/master/specs/1.0.1.json");
+            response.sendError(400, "json does not conform to FOSSIA API schema https://github.com/fossasia/api.fossasia.net/blob/master/specs/1.0.1.json" + report);
             return;
         }
 
@@ -88,6 +88,7 @@ public class FossasiaPushServlet extends HttpServlet {
             id = computeId(map);
         } catch (Exception e) {
             response.sendError(400, "Error computing id : " + e.getMessage());
+            e.printStackTrace();
             return;
         }
 
@@ -133,20 +134,14 @@ public class FossasiaPushServlet extends HttpServlet {
     }
 
     private static String computeId(Map<String, Object> object) throws Exception {
-        /*
-        Object mtime_obj = object.get("mtime");
-        if (mtime_obj == null) {
-            throw new Exception("fossasia api format error : member 'mtime' required");
-        }
-        DateTime mtime = new DateTime((String) mtime_obj);
-        */
         Map<String, Object> location = (Map) object.get("location");
+        Object rawLon = location.get("lon");
+        String longitude = rawLon instanceof Integer ? Integer.toString((Integer) rawLon) : Double.toString((Double) rawLon);
+        Object rawLat = location.get("lat");
+        String latitude = rawLat instanceof Integer ? Integer.toString((Integer) rawLat) : Double.toString((Double) rawLat);
 
-        Double longitude = location.get("lat") instanceof Integer ? ((Integer) location.get("lat")).doubleValue() : (Double) location.get("lat");
-        Double latitude = location.get("lon") instanceof Integer ? ((Integer) location.get("lon")).doubleValue() : (Double) location.get("lon");
-
-        // longitude and latitude are added to id to a precision of 3 digits after comma
-        Long id = (long) Math.floor(1000 * longitude) + (long) Math.floor(1000 * latitude) /*+ mtime.getMillis()*/;
-        return id.toString();
+        // current UTC epoch time
+        String currentTime = Long.toString(System.currentTimeMillis());
+        return "fossasia_api_" + longitude + "_" + latitude + "_" + currentTime;
     }
 }
