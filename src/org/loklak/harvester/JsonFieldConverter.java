@@ -38,6 +38,14 @@ public class JsonFieldConverter {
         public String getFilename() { return filename; }
     }
 
+    public List<Map<String, Object>> convert(List<Map<String, Object>> initialJson, JsonConversionSchemaEnum schema)
+    throws IOException {
+        List<Map<String, Object>> result = new ArrayList();
+        for (Map<String, Object> o : initialJson) {
+            result.add(this.convert(o, schema));
+        }
+        return result;
+    }
     @SuppressWarnings("unchecked")
     public Map<String, Object> convert(Map<String, Object> initialJson, JsonConversionSchemaEnum schema) throws IOException {
         final Map<String, Object> convSchema = DAO.getConversionSchema(schema.getFilename());
