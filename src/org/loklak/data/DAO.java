@@ -727,6 +727,9 @@ public class DAO {
                         }
                     }
                     aggregations.put(field, list);
+                    //if (field.equals("place_country")) {
+                        // special handling of country aggregation: add the country center as well
+                    //}
                 }
                 // date histogram:
                 if (addTimeHistogram) {

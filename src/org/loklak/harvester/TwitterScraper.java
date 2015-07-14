@@ -33,6 +33,8 @@ import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.Semaphore;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -47,6 +49,8 @@ import org.loklak.tools.UTF8;
 
 public class TwitterScraper {
 
+    public static ExecutorService executor = Executors.newFixedThreadPool(20);
+    
     public static Timeline search(String query, Timeline.Order order) {
         // check
         // https://twitter.com/search-advanced for a better syntax
@@ -208,7 +212,8 @@ public class TwitterScraper {
                         imgs, vids, place_name, place_id
                         );
                 //new Thread(tweet).start(); // todo: use thread pools
-                tweet.run(); // for debugging
+                //tweet.run(); // for debugging
+                executor.execute(tweet);
                 timeline.addUser(user);
                 timeline.addTweet(tweet);
                 images.clear();
