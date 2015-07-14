@@ -36,7 +36,8 @@ import java.io.IOException;
 public class JsonValidator {
 
     public enum JsonSchemaEnum {
-        FOSSASIA("fossasia.json")
+        FOSSASIA("fossasia.json"),
+        OPENWIFIMAP("openwifimap.json"),
         ;
         private String filename;
         JsonSchemaEnum(String filename) {

@@ -29,7 +29,8 @@ import java.util.regex.Pattern;
 public class JsonFieldConverter {
 
     public enum JsonConversionSchemaEnum {
-        FOSSASIA("fossasia.json")
+        FOSSASIA("fossasia.json"),
+        OPENWIFIMAP("openwifimap.json"),
         ;
         private String filename;
         JsonConversionSchemaEnum(String filename) {

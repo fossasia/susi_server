@@ -56,6 +56,7 @@ import org.loklak.api.server.SuggestServlet;
 import org.loklak.api.server.AccountServlet;
 import org.loklak.api.server.ThreaddumpServlet;
 import org.loklak.api.server.FossasiaPushServlet;
+import org.loklak.api.server.OpenWifiMapPushServlet;
 import org.loklak.data.DAO;
 import org.loklak.tools.Browser;
 import org.loklak.vis.server.MapServlet;
@@ -120,7 +121,7 @@ public class LoklakServer {
         
         ServletContextHandler servletHandler = new ServletContextHandler();
         FilterHolder filter = servletHandler.addFilter(GzipFilter.class, "/*", EnumSet.of(DispatcherType.REQUEST));
-        filter.setInitParameter("mimeTypes", "text/plain");
+            filter.setInitParameter("mimeTypes", "text/plain");
         servletHandler.addServlet(DumpDownloadServlet.class, "/dump/*");
         servletHandler.addServlet(HelloServlet.class, "/api/hello.json");
         servletHandler.addServlet(PeersServlet.class, "/api/peers.json");
@@ -134,15 +135,16 @@ public class LoklakServer {
         servletHandler.addServlet(SettingsServlet.class, "/api/settings.json");
         servletHandler.addServlet(GeocodeServlet.class, "/api/geocode.json");
         servletHandler.addServlet(ProxyServlet.class, "/api/proxy.gif");
-        servletHandler.addServlet(ProxyServlet.class, "/api/proxy.png");
+            servletHandler.addServlet(ProxyServlet.class, "/api/proxy.png");
         servletHandler.addServlet(ProxyServlet.class, "/api/proxy.jpg");
         ServletHolder pushServletHolder = new ServletHolder(PushServlet.class);
         pushServletHolder.getRegistration().setMultipartConfig(new MultipartConfigElement(tmp.getAbsolutePath()));
-        servletHandler.addServlet(pushServletHolder, "/api/push.json");
+            servletHandler.addServlet(pushServletHolder, "/api/push.json");
         ServletHolder geojsonPushServletHolder = new ServletHolder(GeoJsonPushServlet.class);
         geojsonPushServletHolder.getRegistration().setMultipartConfig(new MultipartConfigElement(tmp.getAbsolutePath()));
-        servletHandler.addServlet(geojsonPushServletHolder, "/api/push/geojson.json");
+            servletHandler.addServlet(geojsonPushServletHolder, "/api/push/geojson.json");
         servletHandler.addServlet(FossasiaPushServlet.class, "/api/push/fossasia.json");
+        servletHandler.addServlet(OpenWifiMapPushServlet.class, "/api/push/openwifimap.json");
         ServletHolder assetServletHolder = new ServletHolder(AssetServlet.class);
         assetServletHolder.getRegistration().setMultipartConfig(new MultipartConfigElement(tmp.getAbsolutePath()));
         servletHandler.addServlet(assetServletHolder, "/api/asset");
