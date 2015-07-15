@@ -54,7 +54,7 @@ public class NodelistPushServlet extends HttpServlet {
         }
 
         JsonValidator validator = new JsonValidator();
-        ProcessingReport report = validator.validate(new String(jsonText), JsonValidator.JsonSchemaEnum.FREIFUNK_NODELIST);
+        ProcessingReport report = validator.validate(new String(jsonText), JsonValidator.JsonSchemaEnum.NODELIST);
         if (report.getLogLevel() == LogLevel.ERROR || report.getLogLevel() == LogLevel.FATAL) {
             response.sendError(400, "json does not conform to Freifunk nodelist schema");
             return;
@@ -63,14 +63,14 @@ public class NodelistPushServlet extends HttpServlet {
         // push nodes
         JsonFieldConverter converter = new JsonFieldConverter();
         List<Map<String, Object>> nodes = (List<Map<String, Object>>) map.get("nodes");
-        nodes = converter.convert(nodes, JsonFieldConverter.JsonConversionSchemaEnum.FREIFUNK_NODELIST_NODE);
+        nodes = converter.convert(nodes, JsonFieldConverter.JsonConversionSchemaEnum.NODELIST_NODE);
 
         Map<String, Object> community = (Map<String, Object>) map.get("community");
 
         // prepare fields that need more complex manips than simple field mapping
         for (Map<String, Object> node : nodes) {
             node.put("id_str", computeNodeId(node));
-            node.put("source_type", SourceType.FREIFUNK_NODELIST.name());
+            node.put("source_type", SourceType.NODELIST.name());
             Map<String, Object> location = (Map) node.get("position");
             final Double longitude = Double.parseDouble((String) location.get("long"));
             final Double latitude = Double.parseDouble((String) location.get("lat"));
@@ -102,6 +102,6 @@ public class NodelistPushServlet extends HttpServlet {
 
         // Modification time = current time
         String mtime = Long.toString(System.currentTimeMillis());
-        return SourceType.FREIFUNK_NODELIST.name() + "_node_" + (hasId ? "_" + id : "") + "_" + longitude + "_" + latitude + "_" + mtime;
+        return SourceType.NODELIST.name() + "_node_" + (hasId ? "_" + id : "") + "_" + longitude + "_" + latitude + "_" + mtime;
     }
 }
