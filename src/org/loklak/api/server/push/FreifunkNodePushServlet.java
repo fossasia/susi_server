@@ -1,10 +1,11 @@
-package org.loklak.api.server;
+package org.loklak.api.server.push;
 
 import com.github.fge.jsonschema.core.report.LogLevel;
 import com.github.fge.jsonschema.core.report.ProcessingReport;
 import org.elasticsearch.common.xcontent.XContentParser;
 import org.elasticsearch.common.xcontent.json.JsonXContent;
 import org.loklak.api.client.ClientConnection;
+import org.loklak.api.server.RemoteAccess;
 import org.loklak.api.server.helper.PushReport;
 import org.loklak.api.server.helper.PushServletHelper;
 import org.loklak.data.DAO;
@@ -17,12 +18,10 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class NodelistPushServlet extends HttpServlet {
+public class FreifunkNodePushServlet extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
@@ -54,34 +53,25 @@ public class NodelistPushServlet extends HttpServlet {
         }
 
         JsonValidator validator = new JsonValidator();
-        ProcessingReport report = validator.validate(new String(jsonText), JsonValidator.JsonSchemaEnum.NODELIST);
+        ProcessingReport report = validator.validate(new String(jsonText), JsonValidator.JsonSchemaEnum.FREIFUNK_NODE);
         if (report.getLogLevel() == LogLevel.ERROR || report.getLogLevel() == LogLevel.FATAL) {
-            response.sendError(400, "json does not conform to Freifunk nodelist schema" + report);
+            response.sendError(400, "json does not conform to Freifunk node schema " + report);
             return;
         }
 
         // push nodes
         JsonFieldConverter converter = new JsonFieldConverter();
         List<Map<String, Object>> nodes = (List<Map<String, Object>>) map.get("nodes");
-        nodes = converter.convert(nodes, JsonFieldConverter.JsonConversionSchemaEnum.NODELIST_NODE);
+        nodes = converter.convert(nodes, JsonFieldConverter.JsonConversionSchemaEnum.FREIFUNK_NODE);
 
-        Map<String, Object> community = (Map<String, Object>) map.get("community");
-
-        // prepare fields that need more complex manips than simple field mapping
         for (Map<String, Object> node : nodes) {
-            node.put("id_str", computeNodeId(node));
-            node.put("source_type", SourceType.NODELIST.name());
-            Map<String, Object> location = (Map) node.get("position");
-            final Double longitude = Double.parseDouble((String) location.get("long"));
-            final Double latitude = Double.parseDouble((String) location.get("lat"));
-            List<Double> location_point = new ArrayList<>();
-            location_point.add(longitude);
-            location_point.add(latitude);
-            node.put("location_point", location_point);
-            Map<String, Object> user = new HashMap<>();
-            user.put("screen_name", "freifunk_" + community.get("name"));
-            user.put("name", community.get("name"));
-            node.put("user", user);
+            try {
+                node.put("id_str", computeNodeId(node));
+            } catch (Exception e) {
+                DAO.log("Problem computing id" + node);
+                continue;
+            }
+            node.put("source_type", SourceType.FREIFUNK_NODE.name());
         }
         PushReport nodePushReport = PushServletHelper.saveMessages(nodes);
 
@@ -89,21 +79,20 @@ public class NodelistPushServlet extends HttpServlet {
         response.getOutputStream().println(res);
         DAO.log(request.getServletPath()
                 + " -> records = " + nodePushReport.getRecordCount()
-                + ", new = " + nodePushReport.getNewCount()
-                + ", known = " + nodePushReport.getKnownCount()
-                + ", from host hash " + remoteHash);
+                + ", new = " + nodePushReport.getNewCount() + ", known = " + nodePushReport.getKnownCount() + ", from host hash " + remoteHash);
     }
 
-    private static String computeNodeId(Map<String, Object> node) {
+    private static String computeNodeId(Map<String, Object> node) throws Exception {
         String id = (String) node.get("id");
         boolean hasId = id != null && id.equals("");
 
-        Map<String, Object> location = (Map) node.get("position");
-        String longitude = (String) location.get("long");
-        String latitude = (String) location.get("lat");
-
+        List<Object> location = (List<Object>) node.get("location_point");
+        Object rawLon = location.get(1);
+        String longitude = rawLon instanceof Integer ? Integer.toString((Integer) rawLon) : Double.toString((Double) rawLon);
+        Object rawLat = location.get(0);
+        String latitude = rawLat instanceof Integer ? Integer.toString((Integer) rawLat) : Double.toString((Double) rawLat);
         // Modification time = current time
         String mtime = Long.toString(System.currentTimeMillis());
-        return SourceType.NODELIST.name() + (hasId ? "_" + id : "") + "_" + longitude + "_" + latitude + "_" + mtime;
+        return SourceType.FREIFUNK_NODE.name() + (hasId ? "_" + id : "") + "_" + longitude + "_" + latitude + "_" + mtime;
     }
 }
