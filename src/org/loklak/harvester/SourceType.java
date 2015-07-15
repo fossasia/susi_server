@@ -28,6 +28,7 @@ public enum SourceType {
     OPENWIFIMAP,  // imported from OpenWifiMap API data
     NODELIST,     // imported from Freifunk Nodelist
     FREIFUNK_NODE,// imported from Freifunk wifi router node (custom schema)
+    NINUX,        // imported from Ninux http://map.ninux.org
     ;
 
 }
