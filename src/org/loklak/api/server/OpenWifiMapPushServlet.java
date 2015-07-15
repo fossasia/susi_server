@@ -80,7 +80,7 @@ public class OpenWifiMapPushServlet extends HttpServlet {
         JsonValidator validator = new JsonValidator();
         ProcessingReport report = validator.validate(new String(jsonText), JsonValidator.JsonSchemaEnum.OPENWIFIMAP);
         if (report.getLogLevel() == LogLevel.ERROR || report.getLogLevel() == LogLevel.FATAL) {
-            response.sendError(400, "json does not conform to OpenWifiMap API schema https://github.com/freifunk/openwifimap-api#api");
+            response.sendError(400, "json does not conform to OpenWifiMap API schema https://github.com/freifunk/openwifimap-api#api" + report);
             return;
         }
 

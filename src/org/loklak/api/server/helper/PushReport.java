@@ -1,11 +1,10 @@
 package org.loklak.api.server.helper;
 
 public class PushReport {
-    private int newCount, knownCount;
+    private int recordCount, newCount, knownCount, errorCount;
 
     public PushReport() {
-        newCount = 0;
-        knownCount = 0;
+        recordCount = newCount = knownCount = errorCount = 0;
     }
 
     public int getNewCount() {
@@ -24,10 +23,27 @@ public class PushReport {
         this.knownCount++;
     }
 
+    public void incrementErrorCount() {
+        this.errorCount++;
+    }
+
+    public int getErrorCount() {
+        return this.errorCount;
+    }
+
     public PushReport combine(PushReport that) {
         PushReport newReport = new PushReport();
         newReport.newCount = this.getNewCount() + that.getNewCount();
         newReport.knownCount = this.getKnownCount() + that.getKnownCount();
+        newReport.errorCount = this.getErrorCount() + that.getErrorCount();
         return newReport;
+    }
+
+    public int getRecordCount() {
+        return recordCount;
+    }
+
+    public void incrementRecordCount() {
+        this.recordCount++;
     }
 }

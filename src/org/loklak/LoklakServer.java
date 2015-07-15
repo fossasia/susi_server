@@ -58,6 +58,7 @@ import org.loklak.api.server.ThreaddumpServlet;
 import org.loklak.api.server.FossasiaPushServlet;
 import org.loklak.api.server.OpenWifiMapPushServlet;
 import org.loklak.api.server.NodelistPushServlet;
+import org.loklak.api.server.FreifunkNodePushServlet;
 import org.loklak.data.DAO;
 import org.loklak.tools.Browser;
 import org.loklak.vis.server.MapServlet;
@@ -147,6 +148,7 @@ public class LoklakServer {
         servletHandler.addServlet(FossasiaPushServlet.class, "/api/push/fossasia.json");
         servletHandler.addServlet(OpenWifiMapPushServlet.class, "/api/push/openwifimap.json");
         servletHandler.addServlet(NodelistPushServlet.class, "/api/push/nodelist.json");
+        servletHandler.addServlet(FreifunkNodePushServlet.class, "/api/push/freifunknode.json");
         ServletHolder assetServletHolder = new ServletHolder(AssetServlet.class);
         assetServletHolder.getRegistration().setMultipartConfig(new MultipartConfigElement(tmp.getAbsolutePath()));
         servletHandler.addServlet(assetServletHolder, "/api/asset");

@@ -19,7 +19,14 @@ public class PushServletHelper {
             Map<String, Object> user = (Map<String, Object>) message.remove("user");
             MessageEntry messageEntry = new MessageEntry(message);
             UserEntry userEntry = new UserEntry((user != null && user.get("screen_name") != null) ? user : new HashMap<String, Object>());
-            boolean successful = DAO.writeMessage(messageEntry, userEntry, true, false);
+            boolean successful;
+            report.incrementRecordCount();
+            try {
+                successful = DAO.writeMessage(messageEntry, userEntry, true, false);
+            } catch (Exception e) {
+                report.incrementErrorCount();
+                continue;
+            }
             if (successful) report.incrementNewCount();
             else report.incrementKnownCount();
         }
@@ -28,16 +35,15 @@ public class PushServletHelper {
     }
 
     public static String printResponse(String callback, PushReport pushReport) throws IOException {
-        int newCount = pushReport.getNewCount();
-        int knownCount = pushReport.getKnownCount();
 
         // generate json
         XContentBuilder json = XContentFactory.jsonBuilder().prettyPrint().lfAtEnd();
         json.startObject();
         json.field("status", "ok");
-        json.field("records", newCount + knownCount);
-        json.field("new", newCount);
-        json.field("known", knownCount);
+        json.field("records", pushReport.getRecordCount());
+        json.field("new", pushReport.getNewCount());
+        json.field("known", pushReport.getKnownCount());
+        json.field("error", pushReport.getErrorCount());
         json.field("message", "pushed");
         json.endObject();
 

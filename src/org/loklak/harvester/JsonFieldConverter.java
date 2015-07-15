@@ -32,6 +32,7 @@ public class JsonFieldConverter {
         FOSSASIA("fossasia.json"),
         OPENWIFIMAP("openwifimap.json"),
         NODELIST_NODE("nodelist-node.json"),
+        FREIFUNK_NODE("freifunk-node.json"),
         ;
         private String filename;
         JsonConversionSchemaEnum(String filename) {
