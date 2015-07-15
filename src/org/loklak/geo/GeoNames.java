@@ -194,26 +194,9 @@ public class GeoNames {
                 // expected: lat,lon
                 double lat = Double.parseDouble(c[0]);
                 double lon = Double.parseDouble(c[1]);
-                if (lat < -90.0d || lat > 90.0d) continue;
-                if (lon < -180.0d || lon > 180.0d) continue;
-                // allright, that should be a coordinate. Try to find the place
-                double mind = 40000000.0d;
-                GeoLocation ming = null;
-                for (GeoLocation g: id2loc.values()) {
-                    double d = IntegerGeoPoint.distance(lat, lon, g.lat(), g.lon());
-                    if (d < mind) {
-                        mind = d;
-                        ming = g;
-                    }
-                }
-                return new GeoMark(ming, lat, lon);
-                /*
-                // Make an anonymous GeoLocation out of it
-                ArrayList<String> names = new ArrayList<>(1); names.add("");
-                GeoLocation loc = new GeoLocation(lat, lon,  names);
-                loc.setPopulation(1); // there is at least someone who tweetet from there
-                return loc;
-                */
+                GeoMark mark = cityNear(lat, lon);
+                if (mark == null) continue;
+                return mark;
             } catch (NumberFormatException e) {
                 continue;
             }
@@ -221,6 +204,55 @@ public class GeoNames {
            // ÜT: 19.109458,72.825842. 
         }
         return null;
+    }
+    
+    /**
+     * try to find a place close to the given location
+     * @param lat
+     * @param lon
+     * @return
+     */
+    public GeoMark cityNear(final double lat, final double lon) {
+        if (lat < -90.0d || lat > 90.0d) return null;
+        if (lon < -180.0d || lon > 180.0d) return null;
+        double mind = 40000000.0d;
+        GeoLocation ming = null;
+        for (GeoLocation g: id2loc.values()) {
+            double d = IntegerGeoPoint.distance(lat, lon, g.lat(), g.lon());
+            if (d < mind) {
+                mind = d;
+                ming = g;
+            }
+        }
+        return new GeoMark(ming, lat, lon);
+    }
+    
+    public List<GeoLocation> citiesInBB(double lon_west, double lat_south, double lon_east, double lat_north) {
+        if (lat_south < -90.0d || lat_south > 90.0d) return null;
+        if (lat_north < -90.0d || lat_north > 90.0d) return null;
+        if (lon_west < -180.0d || lon_west > 180.0d) return null;
+        if (lon_east < -180.0d || lon_east > 180.0d) return null;
+        List<GeoLocation> l = new ArrayList<>();
+        for (GeoLocation g: id2loc.values()) {
+            if (g.lat() < lat_south) continue;
+            if (g.lat() > lat_north) continue;
+            if (g.lon() < lon_west) continue;
+            if (g.lon() > lon_east) continue;
+            l.add(g);
+        }
+        return l;
+    }
+    
+    public GeoLocation getLargestCity(double lon_west, double lat_south, double lon_east, double lat_north) {
+        assert lon_west < lon_east;
+        assert lat_north > lat_south;
+        // find largest city around to compute a 'near:' operator for twitter
+        List<GeoLocation> cities = citiesInBB(lon_west, lat_south, lon_east, lat_north);
+        GeoLocation largestCity = null;
+        for (GeoLocation city: cities) {
+            if (largestCity == null || city.getPopulation() > largestCity.getPopulation()) largestCity = city;
+        }
+        return largestCity;
     }
     
     /**
