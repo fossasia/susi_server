@@ -26,6 +26,7 @@ public enum SourceType {
     TWITTER,  // generated at twitter and scraped from there
     FOSSASIA_API, // imported from FOSSASIA API data,
     OPENWIFIMAP,  // imported from OpenWifiMap API data
+    FREIFUNK_NODELIST, // imported from Freifunk Nodelist
     ;
 
 }

@@ -31,6 +31,7 @@ public class JsonFieldConverter {
     public enum JsonConversionSchemaEnum {
         FOSSASIA("fossasia.json"),
         OPENWIFIMAP("openwifimap.json"),
+        FREIFUNK_NODELIST_NODE("nodelist-node.json"),
         ;
         private String filename;
         JsonConversionSchemaEnum(String filename) {

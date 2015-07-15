@@ -38,6 +38,7 @@ public class JsonValidator {
     public enum JsonSchemaEnum {
         FOSSASIA("fossasia.json"),
         OPENWIFIMAP("openwifimap.json"),
+        FREIFUNK_NODELIST("nodelist-1.0.1.json"),
         ;
         private String filename;
         JsonSchemaEnum(String filename) {

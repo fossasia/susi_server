@@ -1,0 +1,7 @@
+{
+  "rules" :
+  [
+    ["name", ["screen_name", "text"]],
+    ["href", "link"]
+  ]
+}
