@@ -134,9 +134,15 @@ public class OpenWifiMapPushServlet extends HttpServlet {
 
     private static String computeId(Map<String, Object> object) throws Exception {
         String id = (String) object.get("id");
-        if (id == null || id.equals("")) {
-            throw new Exception("No id found (" + id + ")");
-        }
-        return id;
+        boolean hasId = id != null && id.equals("");
+
+        List<Object> location = (List<Object>) object.get("latlng");
+        String mtime = (String) object.get("mtime");
+        Object rawLon = location.get(1);
+        String longitude = rawLon instanceof Integer ? Integer.toString((Integer) rawLon) : Double.toString((Double) rawLon);
+        Object rawLat = location.get(0);
+        String latitude = rawLat instanceof Integer ? Integer.toString((Integer) rawLat) : Double.toString((Double) rawLat);
+
+        return SourceType.OPENWIFIMAP.name() + (hasId ? "_" + id : "") + "_" + longitude + "_" + latitude + "_" + mtime;
     }
 }
