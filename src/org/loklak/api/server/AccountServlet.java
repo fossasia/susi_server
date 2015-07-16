@@ -36,7 +36,9 @@ import org.elasticsearch.common.xcontent.json.JsonXContent;
 import org.loklak.data.AccountEntry;
 import org.loklak.data.DAO;
 import org.loklak.data.UserEntry;
+import org.loklak.harvester.TwitterAPI;
 
+import twitter4j.TwitterException;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -105,6 +107,8 @@ public class AccountServlet extends HttpServlet {
 
         UserEntry userEntry = DAO.searchLocalUser(screen_name);
         AccountEntry accountEntry = DAO.searchLocalAccount(screen_name);
+        Map<String, Object> twitterEntry = null;
+        try {twitterEntry = TwitterAPI.getUser(screen_name);} catch (TwitterException e) {}
         
         post.setResponse(response, "application/javascript");
         
@@ -118,12 +122,12 @@ public class AccountServlet extends HttpServlet {
         // create a list of accounts. Why a list? Because the same user may have accounts for several services.
         List<Object> accounts = new ArrayList<>();
         if (accountEntry == null) {
-            if (userEntry != null) 
-                accounts.add(AccountEntry.toEmptyAccount(userEntry));
+            if (userEntry != null) accounts.add(AccountEntry.toEmptyAccount(userEntry));
         } else {
             accounts.add(accountEntry.toMap(userEntry));
         }
         m.put("accounts", accounts);
+        if (twitterEntry != null) m.put("user", twitterEntry);
         
         // write json
         ServletOutputStream sos = response.getOutputStream();
