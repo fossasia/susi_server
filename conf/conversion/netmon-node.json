@@ -1,0 +1,8 @@
+{
+  "rules" :
+  [
+    ["hostname", "screen_name"],
+    ["description", "text"],
+    ["update_date", "mtime"]
+  ]
+}

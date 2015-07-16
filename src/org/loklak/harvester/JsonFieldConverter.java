@@ -33,6 +33,7 @@ public class JsonFieldConverter {
         OPENWIFIMAP("openwifimap.json"),
         NODELIST_NODE("nodelist-node.json"),
         FREIFUNK_NODE("freifunk-node.json"),
+        NETMON_NODE("netmon-node.json"),
         ;
         private String filename;
         JsonConversionSchemaEnum(String filename) {

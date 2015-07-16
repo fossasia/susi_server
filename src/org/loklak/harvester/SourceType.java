@@ -27,6 +27,7 @@ public enum SourceType {
     FOSSASIA_API, // imported from FOSSASIA API data,
     OPENWIFIMAP,  // imported from OpenWifiMap API data
     NODELIST,     // imported from Freifunk Nodelist
+    NETMON,       // imported from Freifunk Netmon
     FREIFUNK_NODE,// imported from Freifunk wifi router node (custom schema)
     NINUX,        // imported from Ninux http://map.ninux.org
     ;
