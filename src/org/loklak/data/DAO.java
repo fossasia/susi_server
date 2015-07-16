@@ -434,7 +434,7 @@ public class DAO {
                     t.setLocationSource(LocationSource.REPORT);
                     t.enrich();
                     
-                    UserEntry u = new UserEntry(screen_name, "", "");
+                    UserEntry u = new UserEntry("", screen_name, "", "");
                     boolean newtweet = DAO.writeMessage(t, u, false, false);
                     if (newtweet) newTweet++;
                     

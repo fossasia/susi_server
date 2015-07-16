@@ -117,8 +117,12 @@ public class TwitterScraper {
         boolean parsing_favourite = false, parsing_retweet = false;
         while ((input = br.readLine()) != null){
             input = input.trim();
-            //System.out.println(input); // uncomment temporary to debug or add new fields
+            System.out.println(input); // uncomment temporary to debug or add new fields
             int p;
+            if ((p = input.indexOf("class=\"account-group")) > 0) {
+                props.put("userid", new prop(input, p, "data-user-id"));
+                continue;
+            }
             if ((p = input.indexOf("class=\"avatar")) > 0) {
                 props.put("useravatarurl", new prop(input, p, "src"));
                 continue;
@@ -192,9 +196,10 @@ public class TwitterScraper {
                 place_id = place_id_prop.value;
                 continue;
             }
-            if (props.size() == 9) {
+            if (props.size() == 10) {
                 // the tweet is complete, evaluate the result
                 UserEntry user = new UserEntry(
+                        props.get("userid").value,
                         props.get("usernickname").value,
                         props.get("useravatarurl").value,
                         MessageEntry.html2utf8(props.get("userfullname").value)

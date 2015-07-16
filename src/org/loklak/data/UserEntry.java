@@ -30,7 +30,8 @@ import com.fasterxml.jackson.core.JsonGenerator;
 
 public class UserEntry extends AbstractIndexEntry implements IndexEntry {
     
-    private final static String field_screen_name = "screen_name";
+    private final static String field_screen_name = "screen_name"; // used as id of the record
+    private final static String field_user_id = "user_id"; // to reference the id of the providing service (here: twitter)
     private final static String field_name = "name";
     private final static String field_profile_image_url_http = "profile_image_url_http";
     private final static String field_profile_image_url_https = "profile_image_url_https";
@@ -40,8 +41,9 @@ public class UserEntry extends AbstractIndexEntry implements IndexEntry {
     
     private final Map<String, Object> map;
 
-    public UserEntry(String screen_name_raw, String profile_image_url, String name_raw) {
+    public UserEntry(String user_id, String screen_name_raw, String profile_image_url, String name_raw) {
         this.map =  new LinkedHashMap<>();
+        this.map.put(field_user_id, user_id);
         this.map.put(field_screen_name, screen_name_raw.replaceAll("</?s>", "").replaceAll("</?b>", "").replaceAll("@", ""));
         this.map.put(field_name, name_raw);
         this.map.put(profile_image_url.startsWith("https:") ? field_profile_image_url_https : field_profile_image_url_http, profile_image_url);
@@ -105,8 +107,8 @@ public class UserEntry extends AbstractIndexEntry implements IndexEntry {
     public void toJSON(JsonGenerator json) {
         try {
             json.writeStartObject(); // object name for this should be 'user'
-            json.writeObjectField(field_name, getName());
             json.writeObjectField(field_screen_name, getScreenName());
+            json.writeObjectField(field_name, getName());
             if (this.map.containsKey(field_profile_image_url_http)) json.writeObjectField(field_profile_image_url_http, this.map.get(field_profile_image_url_http));
             if (this.map.containsKey(field_profile_image_url_https)) json.writeObjectField(field_profile_image_url_https, this.map.get(field_profile_image_url_https));
             writeDate(json, field_appearance_first, getAppearanceFirst().getTime());
@@ -119,8 +121,8 @@ public class UserEntry extends AbstractIndexEntry implements IndexEntry {
     
     public Map<String, Object> toMap() {
         Map<String, Object> m = new LinkedHashMap<>();
-        m.put(field_name, getName());
         m.put(field_screen_name, getScreenName());
+        m.put(field_name, getName());
         if (this.map.containsKey(field_profile_image_url_http)) m.put(field_profile_image_url_http, this.map.get(field_profile_image_url_http));
         if (this.map.containsKey(field_profile_image_url_https)) m.put(field_profile_image_url_https, this.map.get(field_profile_image_url_https));
         m.put(field_appearance_first, utcFormatter.print(getAppearanceFirst().getTime()));
@@ -137,7 +139,7 @@ public class UserEntry extends AbstractIndexEntry implements IndexEntry {
     }
     
     public static void main(String args[]) {
-        System.out.println(new UserEntry("test", "http://test.com", "Mr. Test").toString());
+        System.out.println(new UserEntry("", "test", "http://test.com", "Mr. Test").toString());
         //String j = "{\"name\":\"Mr. Test\",\"screen_name\":\"test\",\"profile_image_url\":\"http://test.com\"}";
     }
 }
