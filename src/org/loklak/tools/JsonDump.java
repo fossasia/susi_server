@@ -53,7 +53,13 @@ import org.loklak.data.DAO;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class JsonDump {
+
+    // special keys which can be added to the data set to track changes
+    public final static byte[] OPERATION_KEY = "$P".getBytes();
+    public final static byte[] MOD_DATE_KEY  = "$D".getBytes();
+    public final static byte[] REFERRER_KEY  = "$U".getBytes();
     
+   
     final File dump_dir, dump_dir_own, dump_dir_import, dump_dir_imported;
     final String dump_file_prefix;
     final RandomAccessFile json_log;
@@ -113,12 +119,23 @@ public class JsonDump {
         String random = (Long.toString(Math.abs(new Random(System.currentTimeMillis()).nextLong())) + "00000000").substring(0, 8);
         return new File(path, prefix + currentDatePart + "_" + random + ".txt");
     }
-    
+
     public void write(Map<String, Object> map) throws IOException {
-        byte[] line = UTF8.getBytes(new ObjectMapper().writer().writeValueAsString(map));
+        String line = new ObjectMapper().writer().writeValueAsString(map);
         synchronized (this.json_log) {
             this.json_log.seek(this.json_log.length()); // go to end of file
-            this.json_log.write(line);
+            this.json_log.write(UTF8.getBytes(line));
+            this.json_log.writeByte('\n');
+        }
+    }
+    public void write(Map<String, Object> map, char opkey) throws IOException {
+        String line = new ObjectMapper().writer().writeValueAsString(map);
+        byte[] lineb = UTF8.getBytes(line);
+        synchronized (this.json_log) {
+            this.json_log.seek(this.json_log.length()); // go to end of file
+            this.json_log.write('{');
+            this.json_log.write('\"'); this.json_log.write(OPERATION_KEY); this.json_log.write('\"'); this.json_log.write(':'); this.json_log.write('\"'); this.json_log.write(opkey); this.json_log.write('\"'); this.json_log.write(',');
+            this.json_log.write(lineb, 1, lineb.length - 1);
             this.json_log.writeByte('\n');
         }
     }
