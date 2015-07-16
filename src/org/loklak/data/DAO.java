@@ -19,42 +19,25 @@
 
 package org.loklak.data;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.RandomAccessFile;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.text.SimpleDateFormat;
 import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Properties;
-import java.util.Random;
 import java.util.Set;
-import java.util.TimeZone;
-import java.util.TreeSet;
-import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.zip.Deflater;
-import java.util.zip.GZIPInputStream;
-import java.util.zip.GZIPOutputStream;
 
 import org.eclipse.jetty.util.log.Log;
 import org.elasticsearch.action.count.CountResponse;
@@ -65,8 +48,6 @@ import org.elasticsearch.client.Client;
 import org.elasticsearch.common.settings.ImmutableSettings;
 import org.elasticsearch.common.settings.ImmutableSettings.Builder;
 import org.elasticsearch.common.unit.Fuzziness;
-import org.elasticsearch.common.xcontent.XContentParser;
-import org.elasticsearch.common.xcontent.json.JsonXContent;
 import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.index.query.RangeQueryBuilder;
@@ -83,18 +64,13 @@ import org.elasticsearch.search.sort.SortOrder;
 import org.loklak.Caretaker;
 import org.loklak.api.client.ClientConnection;
 import org.loklak.api.client.SearchClient;
-import org.loklak.geo.GeoJsonReader;
 import org.loklak.geo.GeoNames;
-import org.loklak.geo.LocationSource;
-import org.loklak.geo.GeoJsonReader.Feature;
-import org.loklak.geo.PlaceContext;
 import org.loklak.harvester.SourceType;
 import org.loklak.harvester.TwitterScraper;
 import org.loklak.tools.DateParser;
-import org.loklak.tools.UTF8;
+import org.loklak.tools.JsonDump;
 
 import com.fasterxml.jackson.core.JsonFactory;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
  * The Data Access Object for the message project.
@@ -113,10 +89,10 @@ public class DAO {
     public final static int CACHE_MAXSIZE = 10000;
     
     public  static File conf_dir;
-    private static File external_data, geoJson_import, geoJson_imported, assets, dictionaries;
-    private static File message_dump_dir, message_dump_dir_own, message_dump_dir_import, message_dump_dir_imported;
+    private static File external_data, assets, dictionaries;
+    private static File message_dump_dir;
+    private static JsonDump message_dump, account_dump;
     private static File settings_dir, customized_config;
-    private static RandomAccessFile messagelog, accountlog;
     private static Node elasticsearch_node;
     private static Client elasticsearch_client;
     private static UserFactory users;
@@ -136,10 +112,6 @@ public class DAO {
             // create and document the data dump dir
             assets = new File(datadir, "assets");
             external_data = new File(datadir, "external");
-            geoJson_import = new File(new File(external_data, "geojson"), "import");
-            geoJson_imported = new File(new File(external_data, "geojson"), "imported");
-            geoJson_import.mkdirs();
-            geoJson_imported.mkdirs();
             dictionaries = new File(external_data, "dictionaries");
             dictionaries.mkdirs();
             
@@ -158,30 +130,20 @@ public class DAO {
             }
             
             // create message dump dir
+            String message_dump_readme =
+                "This directory contains dump files for messages which arrived the platform.\n" +
+                "There are three subdirectories for dump files:\n" +
+                "- own:      for messages received with this peer. There is one file for each month.\n" +
+                "- import:   hand-over directory for message dumps to be imported. Drop dumps here and they are imported.\n" +
+                "- imported: dump files which had been processed from the import directory are moved here.\n" +
+                "You can import dump files from other peers by dropping them into the import directory.\n" +
+                "Each dump file must start with the prefix '" + MESSAGE_DUMP_FILE_PREFIX + "' to be recognized.\n";
             message_dump_dir = new File(datadir, "dump");
-            message_dump_dir_own = new File(message_dump_dir, "own");
-            message_dump_dir_import = new File(message_dump_dir, "import");
-            message_dump_dir_imported = new File(message_dump_dir, "imported");
-            message_dump_dir.mkdirs();
-            message_dump_dir_own.mkdirs();
-            message_dump_dir_import.mkdirs();
-            message_dump_dir_imported.mkdirs();
-            File message_dump_dir_readme = new File(message_dump_dir, "readme.txt");
-            if (!message_dump_dir_readme.exists()) {
-                BufferedWriter w = new BufferedWriter(new FileWriter(message_dump_dir_readme));
-                w.write("This directory contains dump files for messages which arrived the platform.\n");
-                w.write("There are three subdirectories for dump files:\n");
-                w.write("- own:      for messages received with this peer. There is one file for each month.\n");
-                w.write("- import:   hand-over directory for message dumps to be imported. Drop dumps here and they are imported.\n");
-                w.write("- imported: dump files which had been processed from the import directory are moved here.\n");
-                w.write("You can import dump files from other peers by dropping them into the import directory.\n");
-                w.write("Each dump file must start with the prefix '" + MESSAGE_DUMP_FILE_PREFIX + "' to be recognized.\n");
-                w.close();
-            }
-            messagelog = new RandomAccessFile(getCurrentDump(message_dump_dir_own, MESSAGE_DUMP_FILE_PREFIX), "rw");
+            message_dump = new JsonDump(message_dump_dir, MESSAGE_DUMP_FILE_PREFIX, message_dump_readme);
+            
             File account_dump_dir = new File(datadir, "accounts");
             account_dump_dir.mkdirs();
-            accountlog = new RandomAccessFile(getCurrentDump(account_dump_dir, ACCOUNT_DUMP_FILE_PREFIX), "rw");
+            account_dump = new JsonDump(account_dump_dir, ACCOUNT_DUMP_FILE_PREFIX, null);
             
             // load the config file(s);
             conf_dir = new File("conf");
@@ -240,81 +202,21 @@ public class DAO {
         return new File(storage_path, id_str + "_" + file); // all assets for one user in one file
     }
     
-    private static File getCurrentDump(File path, String prefix) {
-        SimpleDateFormat formatYearMonth = new SimpleDateFormat("yyyyMM", Locale.US);
-        formatYearMonth.setTimeZone(TimeZone.getTimeZone("GMT"));
-        String currentDatePart = formatYearMonth.format(new Date());
-        
-        // if there is already a dump, use it
-        String[] existingDumps = path.list();
-        if (existingDumps != null) for (String d: existingDumps) {
-            if (d.startsWith(prefix + currentDatePart) && d.endsWith(".txt")) {
-                return new File(path, d);
-            }
-            
-            // in case the file is a dump file but ends with '.txt', we compress it here on-the-fly
-            if (d.startsWith(prefix) && d.endsWith(".txt")) {
-                final File source = new File(path, d);
-                final File dest = new File(path, d + ".gz");
-                new Thread() {
-                    public void run() {
-                        byte[] buffer = new byte[2^20];
-                        try {
-                            GZIPOutputStream out = new GZIPOutputStream(new FileOutputStream(dest), 65536){{def.setLevel(Deflater.BEST_COMPRESSION);}};
-                            FileInputStream in = new FileInputStream(source);
-                            int l; while ((l = in.read(buffer)) > 0) out.write(buffer, 0, l);
-                            in.close(); out.finish(); out.close();
-                            if (dest.exists()) source.delete();
-                       } catch (IOException e) {}
-                    }
-                }.start();
-            }
-        }
-        // create a new one, use a random number. The random is used to make it possible to join many different dumps from different locations without renaming them
-        String random = (Long.toString(Math.abs(new Random(System.currentTimeMillis()).nextLong())) + "00000000").substring(0, 8);
-        return new File(path, prefix + currentDatePart + "_" + random + ".txt");
+    public static Collection<File> getTweetOwnDumps() {
+        return message_dump.getOwnDumps();
     }
-
-    public static File[] getTweetOwnDumps() {
-        return getDumps(message_dump_dir_own, MESSAGE_DUMP_FILE_PREFIX, null);
-    }
-    public static File[] getTweetImportDumps() {
-        return getDumps(message_dump_dir_import, MESSAGE_DUMP_FILE_PREFIX, null);
-    }
-    public static File[] getTweetImportedDumps() {
-        return getDumps(message_dump_dir_imported, MESSAGE_DUMP_FILE_PREFIX, null);
-    }
-    public static File[] getGeoJsonImportDumps() {
-        return getDumps(geoJson_import, null, ".json");
-    }
-    public static File[] getGeoJsonImportedDumps() {
-        return getDumps(geoJson_imported, null, ".json");
-    }
-    private static File[] getDumps(final File path, final String prefix, final String suffix) {
-        String[] list = path.list();
-        TreeSet<File> dumps = new TreeSet<File>(); // sort the names with a tree set
-        for (String s: list) {
-            if ((prefix == null || s.startsWith(prefix)) &&
-                (suffix == null || s.endsWith(suffix))) dumps.add(new File(path, s));
-        }
-        return dumps.toArray(new File[dumps.size()]);
-    }
-    public static boolean shiftProcessedTweetDump(String dumpName) {
-        return shiftProcessedDump(dumpName, message_dump_dir_import, message_dump_dir_imported);
-    }
-    public static boolean shiftProcessedGeoJsonDump(String dumpName) {
-        return shiftProcessedDump(dumpName, geoJson_import, geoJson_imported);
-    }
-    public static boolean shiftProcessedDump(String dumpName, File from, File to) {
-        File f = new File(from, dumpName);
-        if (!f.exists()) return false;
-        File g = new File(to, dumpName);
-        if (g.exists()) g.delete();
-        return f.renameTo(g);
-    }
-    public static int importDump(File dumpFile) {
+    
+    public static int importMessageDumps() {
+        int imported = 0;
         int concurrency = Runtime.getRuntime().availableProcessors();
-        final DumpReader dumpReader = new DumpReader(dumpFile, concurrency);
+        JsonDump.ConcurrentReader message_reader = message_dump.getImportDumpReader(concurrency);
+        if (message_reader == null) return 0;
+        imported = importMessageDump(message_reader, concurrency);
+        message_dump.shiftProcessedDumps();
+        return imported;
+    }
+    
+    public static int importMessageDump(final JsonDump.ConcurrentReader dumpReader, int concurrency) {
         dumpReader.start();
         final AtomicInteger newTweet = new AtomicInteger(0);
         Thread[] indexerThreads = new Thread[concurrency];
@@ -323,7 +225,7 @@ public class DAO {
                 public void run() {
                     Map<String, Object> tweet;
                     try {
-                        while ((tweet = dumpReader.take()) != POISON_TWEET_MAP) {
+                        while ((tweet = dumpReader.take()) != JsonDump.POISON_JSON_MAP) {
                             @SuppressWarnings("unchecked") Map<String, Object> user = (Map<String, Object>) tweet.remove("user");
                             if (user == null) continue;
                             UserEntry u = new UserEntry(user);
@@ -343,119 +245,14 @@ public class DAO {
         }
         return newTweet.get();
     }
-    private final static Map<String, Object> POISON_TWEET_MAP = new HashMap<>();
-    public static class DumpReader extends Thread {
-
-        private ArrayBlockingQueue<Map<String, Object>> tweets;
-        private File dumpFile;
-        private int concurrency;
-        
-        public DumpReader(File dumpFile, int concurrency) {
-            this.tweets = new ArrayBlockingQueue<>(1000);
-            this.dumpFile = dumpFile;
-            this.concurrency = concurrency;
-        }
-        
-        public Map<String, Object> take() throws InterruptedException {
-            return this.tweets.take();
-        }
-        
-        public void run() {
-            try {
-                InputStream is = new FileInputStream(this.dumpFile);
-                String line;
-                BufferedReader br = null;
-                try {
-                    if (dumpFile.getName().endsWith(".gz")) is = new GZIPInputStream(is);
-                    br = new BufferedReader(new InputStreamReader(is, UTF8.charset));
-                    while((line = br.readLine()) != null) {
-                        try {
-                            XContentParser parser = JsonXContent.jsonXContent.createParser(line);
-                            Map<String, Object> tweet = parser == null ? null : parser.map();
-                            if (tweet == null) continue;
-                            this.tweets.put(tweet);
-                        } catch (Throwable e) {
-                            Log.getLog().warn("cannot parse line \"" + line + "\"", e);
-                        }
-                    }
-                } catch (IOException e) {
-                    e.printStackTrace();
-                } finally {
-                    try {
-                        if (br != null) br.close();
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                    for (int i = 0; i < this.concurrency; i++) {
-                        try {this.tweets.put(POISON_TWEET_MAP);} catch (InterruptedException e) {}
-                    }
-                }
-            } catch (FileNotFoundException e) {
-                e.printStackTrace();
-            }
-        }
-    }
-    
-    public static int importGeoJson(File dumpFile) {
-        try {
-            int newTweet = 0;
-            InputStream is = new BufferedInputStream(new FileInputStream(dumpFile));
-            Date commonCreationDate = new Date();
-            try {
-                GeoJsonReader reader = new GeoJsonReader(is, Runtime.getRuntime().availableProcessors() * 2 + 1);
-                new Thread(reader).start();
-                Feature feature;
-                while ((feature = reader.take()) != GeoJsonReader.POISON_FEATURE) {
-                    String screen_name = "*geojson*";
-                    String provider_hash = Integer.toHexString(dumpFile.hashCode());
-                    String id = feature.id.length() == 0 ? feature.properties.get("id") : feature.id;
-                    URL url = null;
-                    try {url = new URL(feature.properties.get("url"));} catch (MalformedURLException e) {}
-                    
-                    MessageEntry t = new MessageEntry();
-                    t.setCreatedAt(commonCreationDate);
-                    t.setSourceType(SourceType.IMPORT);
-                    t.setProviderType(ProviderType.GENERIC);
-                    t.setProviderHash(provider_hash);
-                    t.setScreenName(screen_name);
-                    t.setIdStr(provider_hash + "_" + id);
-                    t.setText(feature.properties.get("description"));
-                    if (url != null) t.setStatusIdUrl(url);
-                    t.setRetweetCount(0);
-                    t.setFavouritesCount(0);
-                    t.setImages(feature.properties.get("thumbs"));
-                    t.setPlaceId("");
-                    t.setPlaceName(feature.properties.get("title"), PlaceContext.FROM);
-                    double lon = Double.parseDouble(feature.properties.get("geo_longitude"));
-                    double lat = Double.parseDouble(feature.properties.get("geo_latitude"));
-                    t.setLocationPoint(new double[]{lon, lat}); // coordinate order is longitude, latitude
-                    t.setLocationMark(new double[]{lon, lat}); // coordinate order is longitude, latitude
-                    t.setLocationRadius(0);
-                    t.setLocationSource(LocationSource.REPORT);
-                    t.enrich();
-                    
-                    UserEntry u = new UserEntry("", screen_name, "", "");
-                    boolean newtweet = DAO.writeMessage(t, u, false, false);
-                    if (newtweet) newTweet++;
-                    
-                }
-            } catch (IOException | InterruptedException e) {
-                e.printStackTrace();
-            }
-            return newTweet;
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        }
-        return 0;
-    }
-    
     
     /**
      * close all objects in this class
      */
     public static void close() {
         Log.getLog().info("closing DAO");
-        try {messagelog.close();} catch (IOException e) {e.printStackTrace();}
+        message_dump.close();
+        account_dump.close();
         elasticsearch_node.close();
         while (!elasticsearch_node.isClosed()) try {Thread.sleep(100);} catch (InterruptedException e) {break;}
         Log.getLog().info("closed DAO");
@@ -545,11 +342,7 @@ public class DAO {
             }
 
             // record tweet into text file
-            if (dump) {
-                messagelog.seek(messagelog.length()); // go to end of file
-                messagelog.write(UTF8.getBytes(new ObjectMapper().writer().writeValueAsString(t.toMap(u, false))));
-                messagelog.writeByte('\n');
-            }
+            if (dump) message_dump.write(t.toMap(u, false));
 
             // record tweet into search index
             messages.writeEntry(t.getIdStr(), t.getSourceType().name(), t);
@@ -586,11 +379,7 @@ public class DAO {
     public synchronized static boolean writeAccount(AccountEntry a, boolean dump) {
         try {
             // record account into text file
-            if (dump) {
-                accountlog.seek(accountlog.length()); // go to end of file
-                accountlog.write(UTF8.getBytes(new ObjectMapper().writer().writeValueAsString(a.toMap(null))));
-                accountlog.writeByte('\n');
-            }
+            if (dump) account_dump.write(a.toMap(null));
 
             // record tweet into search index
             accounts.writeEntry(a.getScreenName(), a.getSourceType().name(), a);
