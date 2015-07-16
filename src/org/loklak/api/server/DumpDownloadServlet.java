@@ -5,6 +5,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
+import java.util.Collection;
 import java.util.Date;
 
 /**
@@ -25,6 +26,7 @@ import java.util.Date;
  *  along with this program in the file lgpl21.txt
  *  If not, see <http://www.gnu.org/licenses/>.
  */
+
 
 
 
@@ -100,8 +102,8 @@ public class DumpDownloadServlet extends HttpServlet {
 
         // download a dump file
         if (path.startsWith("/")) path = path.substring(1);
-        File[] ownDumps = DAO.getTweetOwnDumps();
-        File dump = ownDumps.length == 0 ? null : new File(ownDumps[0].getParentFile(), path);
+        Collection<File> ownDumps = DAO.getTweetOwnDumps();
+        File dump = ownDumps.size() == 0 ? null : new File(ownDumps.iterator().next().getParentFile(), path);
         if (dump == null || !dump.exists()) {
             response.sendError(404, request.getContextPath() + " not available");
         }
