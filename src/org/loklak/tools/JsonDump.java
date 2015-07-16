@@ -17,7 +17,7 @@
  *  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.loklak.data;
+package org.loklak.tools;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -48,7 +48,7 @@ import java.util.zip.GZIPOutputStream;
 import org.eclipse.jetty.util.log.Log;
 import org.elasticsearch.common.xcontent.XContentParser;
 import org.elasticsearch.common.xcontent.json.JsonXContent;
-import org.loklak.tools.UTF8;
+import org.loklak.data.DAO;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -115,9 +115,12 @@ public class JsonDump {
     }
     
     public void write(Map<String, Object> map) throws IOException {
-        this.json_log.seek(this.json_log.length()); // go to end of file
-        this.json_log.write(UTF8.getBytes(new ObjectMapper().writer().writeValueAsString(map)));
-        this.json_log.writeByte('\n');
+        byte[] line = UTF8.getBytes(new ObjectMapper().writer().writeValueAsString(map));
+        synchronized (this.json_log) {
+            this.json_log.seek(this.json_log.length()); // go to end of file
+            this.json_log.write(line);
+            this.json_log.writeByte('\n');
+        }
     }
     
     public void close() {
@@ -156,6 +159,11 @@ public class JsonDump {
 
     public void shiftProcessedDumps() {
         for (File f: this.getImportDumps()) shiftProcessedDump(f.getName());
+    }
+
+    public ConcurrentReader getOwnDumpReader(int concurrency) {
+        Collection<File> dumps = this.getOwnDumps();
+        return dumps == null || dumps.size() == 0 ? null : new ConcurrentReader(dumps, concurrency);
     }
     
     public ConcurrentReader getImportDumpReader(int concurrency) {
