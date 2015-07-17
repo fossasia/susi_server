@@ -428,11 +428,11 @@ public class MessageEntry extends AbstractIndexEntry implements IndexEntry {
         if ((this.location_point == null || this.location_point.length == 0) && DAO.geoNames != null) {
             GeoMark loc = null;
             if (this.place_name != null && this.place_name.length() > 0 && (this.location_source == null || this.location_source != LocationSource.ANNOTATION)) {
-                loc = DAO.geoNames.analyse(this.place_name, null, 5);
+                loc = DAO.geoNames.analyse(this.place_name, null, 5, this.text.hashCode());
                 this.place_context = PlaceContext.FROM;
             }
             if (loc == null) {
-                loc = DAO.geoNames.analyse(this.text, this.hashtags, 5);
+                loc = DAO.geoNames.analyse(this.text, this.hashtags, 5, this.text.hashCode());
                 this.place_context = PlaceContext.ABOUT;
             }
             if (loc != null) {
