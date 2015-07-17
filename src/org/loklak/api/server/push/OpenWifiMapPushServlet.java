@@ -87,8 +87,7 @@ public class OpenWifiMapPushServlet extends HttpServlet {
             try {
                 row.put("id_str", PushServletHelper.computeMessageId(row, row.get("id"), SourceType.OPENWIFIMAP));
             } catch (Exception e) {
-                DAO.log("Problem computing id" + row);
-                continue;
+                DAO.log("Problem computing id : " + e.getMessage());
             }
         }
 

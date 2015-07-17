@@ -104,7 +104,7 @@ public class NodelistPushServlet extends HttpServlet {
             try {
                 node.put("id_str", PushServletHelper.computeMessageId(node, node.get("id"), SourceType.NODELIST));
             } catch (Exception e) {
-                DAO.log("Problem computing id" + node);
+                DAO.log("Problem computing id : " + e.getMessage());
             }
         }
         PushReport nodePushReport = PushServletHelper.saveMessages(nodes);

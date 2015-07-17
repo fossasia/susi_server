@@ -85,18 +85,6 @@ public class NetmonPushServlet extends HttpServlet {
         List<Map<String, Object>> nodes = converter.convert(nodesList, JsonFieldConverter.JsonConversionSchemaEnum.NETMON_NODE);
 
         for (Map<String, Object> node : nodes) {
-            List<Object> location_point = new ArrayList<>();
-            location_point.add(node.get("longitude"));
-            location_point.add(node.get("latitude"));
-            node.put("location_point", location_point);
-            try {
-                node.put("id_str", PushServletHelper.computeMessageId(node, node.get("router_id"), SourceType.NETMON));
-            } catch (Exception e) {
-                DAO.log("Problem computing id" + node);
-                e.printStackTrace();
-                continue;
-            }
-
             if (node.get("text") == null) {
                 node.put("text", "");
             }
@@ -104,8 +92,24 @@ public class NetmonPushServlet extends HttpServlet {
             if (node.get("user") == null) {
                 node.put("user", new HashMap<String, Object>());
             }
-            Map<String, Object> user = (Map<String, Object>) node.get("user");
-            user.put("screen_name", computeUserId(user.get("update_date"), user.get("id"), SourceType.NETMON));
+
+            List<Object> location_point = new ArrayList<>();
+            location_point.add(node.get("longitude"));
+            location_point.add(node.get("latitude"));
+            node.put("location_point", location_point);
+
+            try {
+                node.put("id_str", PushServletHelper.computeMessageId(node, node.get("router_id"), SourceType.NETMON));
+            } catch (Exception e) {
+                DAO.log("Problem computing id" + e.getMessage());
+                continue;
+            }
+            try {
+                Map<String, Object> user = (Map<String, Object>) node.get("user");
+                user.put("screen_name", computeUserId(user.get("update_date"), user.get("id"), SourceType.NETMON));
+            } catch (Exception e) {
+                DAO.log("Problem computing user id : " + e.getMessage());
+            }
         }
 
         PushReport pushReport = PushServletHelper.saveMessages(nodes);
@@ -136,7 +140,10 @@ public class NetmonPushServlet extends HttpServlet {
         return result;
     }
 
-    private static String computeUserId(Object mtime, Object initialId, SourceType sourceType) {
+    private static String computeUserId(Object mtime, Object initialId, SourceType sourceType) throws Exception {
+        if (mtime == null) {
+            throw new Exception("mtime field is missing");
+        }
         boolean hasId = initialId != null && !initialId.equals("");
         return sourceType.name() + "_" + (hasId ? initialId + "_" : "") + mtime;
     }

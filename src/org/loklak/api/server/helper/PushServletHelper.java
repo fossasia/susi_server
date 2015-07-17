@@ -61,15 +61,21 @@ public class PushServletHelper {
 
     public static String computeMessageId(Map<String, Object> message, Object initialId, SourceType sourceType) throws Exception {
         List<Object> location = (List<Object>) message.get("location_point");
-        Object rawLon = location.get(1);
-        String longitude =
-                rawLon instanceof Integer ? Integer.toString((Integer) rawLon)
-                : (rawLon instanceof Double ? Double.toString((Double) rawLon) : (String) rawLon);
-        Object rawLat = location.get(0);
-        String latitude =
-                rawLat instanceof Integer ? Integer.toString((Integer) rawLat)
-                : (rawLat instanceof  Double ? Double.toString((Double) rawLat) :(String) rawLat);
+        if (location == null) {
+            throw new Exception("location_point not found");
+        }
 
+        String longitude, latitude;
+        try {
+            Object rawLon = location.get(1);
+            longitude = rawLon instanceof Integer ? Integer.toString((Integer) rawLon)
+                    : (rawLon instanceof Double ? Double.toString((Double) rawLon) : (String) rawLon);
+            Object rawLat = location.get(0);
+            latitude = rawLat instanceof Integer ? Integer.toString((Integer) rawLat)
+                    : (rawLat instanceof Double ? Double.toString((Double) rawLat) : (String) rawLat);
+        } catch (ClassCastException e) {
+            throw new ClassCastException("Unable to extract lat, lon from location_point " + e.getMessage());
+        }
         // Modification time = 'mtime' value. If not found, take current time
         Object mtime = message.get("mtime");
         if (mtime == null) {

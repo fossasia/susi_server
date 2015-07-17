@@ -90,7 +90,7 @@ public class FreifunkNodePushServlet extends HttpServlet {
             try {
                 node.put("id_str", PushServletHelper.computeMessageId(node, node.get("id"), SourceType.FREIFUNK_NODE));
             } catch (Exception e) {
-                DAO.log("Problem computing id" + node);
+                DAO.log("Problem computing id : " + e.getMessage());
             }
         }
         PushReport nodePushReport = PushServletHelper.saveMessages(nodes);
