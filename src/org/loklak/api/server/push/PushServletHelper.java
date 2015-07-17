@@ -1,7 +1,8 @@
-package org.loklak.api.server.helper;
+package org.loklak.api.server.push;
 
 import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.elasticsearch.common.xcontent.XContentFactory;
+import org.loklak.api.server.push.PushReport;
 import org.loklak.data.DAO;
 import org.loklak.data.MessageEntry;
 import org.loklak.data.UserEntry;

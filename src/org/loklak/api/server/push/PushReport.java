@@ -1,4 +1,4 @@
-package org.loklak.api.server.helper;
+package org.loklak.api.server.push;
 
 public class PushReport {
     private int recordCount, newCount, knownCount, errorCount;
