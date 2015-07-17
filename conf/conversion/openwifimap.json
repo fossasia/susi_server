@@ -1,7 +1,7 @@
 {
   "rules" :
   [
-    ["hostname", ["screen_name", "user.screen_name", "user.name"]],
-    ["latlng", "location_point"]
+    ["value.hostname", ["screen_name", "user.screen_name", "user.name"]],
+    ["value.latlng", "location_point"]
   ]
 }

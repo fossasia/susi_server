@@ -44,12 +44,13 @@ public class JsonFieldConverter {
 
     public List<Map<String, Object>> convert(List<Map<String, Object>> initialJson, JsonConversionSchemaEnum schema)
     throws IOException {
-        List<Map<String, Object>> result = new ArrayList();
+        List<Map<String, Object>> result = new ArrayList<>();
         for (Map<String, Object> o : initialJson) {
             result.add(this.convert(o, schema));
         }
         return result;
     }
+
     @SuppressWarnings("unchecked")
     public Map<String, Object> convert(Map<String, Object> initialJson, JsonConversionSchemaEnum schema) throws IOException {
         final Map<String, Object> convSchema = DAO.getConversionSchema(schema.getFilename());
@@ -72,37 +73,58 @@ public class JsonFieldConverter {
             }
         }
 
-        Map<String, Object> result = initialJson;
         Iterator it = convRulesMap.entrySet().iterator();
         while (it.hasNext()) {
             Map.Entry<String, List<String>> entry = (Map.Entry) it.next();
             String key = entry.getKey();
-            if (!result.containsKey(key)) {
-                continue;
-            }
+            Object value = removeFieldValue(initialJson, key);
 
-            Object value = result.remove(key);
+            if (value == null) { continue; }  // field not found
+
             for (String newKey : entry.getValue()) {
-                // deep-mapping
-                if (newKey.contains(".")) {
-                    String[] deepFields = newKey.split(Pattern.quote("."));
-                    Map<String, Object> currentLevel = result;
-                    for (int lvl = 0; lvl < deepFields.length; lvl++) {
-                        if (lvl == deepFields.length - 1) {
-                            currentLevel.put(deepFields[lvl], value);
-                        } else {
-                            if (currentLevel.get(deepFields[lvl]) == null) {
-                                currentLevel.put(deepFields[lvl], new HashMap<>());
-                            }
-                            currentLevel = (Map<String, Object>) currentLevel.get(deepFields[lvl]);
-                        }
-                    }
-                // simple mapping, a.k.a put the value at the root level
-                } else {
-                    result.put(newKey, value);
-                };
+                putToField(initialJson, newKey, value);
             }
         }
-        return result;
+        return initialJson;
+    }
+
+    private static Object removeFieldValue(Map<String, Object> object, String key) {
+        if (key.contains(".")) {
+            String[] deepFields = key.split(Pattern.quote("."));
+            Map<String, Object> currentLevel = object;
+            for (int lvl = 0; lvl < deepFields.length; lvl++) {
+                if (lvl == deepFields.length - 1) {
+                    return currentLevel.remove(deepFields[lvl]);
+                } else {
+                    if (currentLevel.get(deepFields[lvl]) == null) {
+                        return null;
+                    }
+                    currentLevel = (Map<String, Object>) currentLevel.get(deepFields[lvl]);
+                }
+            }
+        } else {
+            return object.remove("key");
+        }
+        // unreachable code
+        return null;
+    }
+
+    private static void putToField(Map<String, Object> object, String key, Object value) {
+        if (key.contains(".")) {
+            String[] deepFields = key.split(Pattern.quote("."));
+            Map<String, Object> currentLevel = object;
+            for (int lvl = 0; lvl < deepFields.length; lvl++) {
+                if (lvl == deepFields.length - 1) {
+                    currentLevel.put(deepFields[lvl], value);
+                } else {
+                    if (currentLevel.get(deepFields[lvl]) == null) {
+                        currentLevel.put(deepFields[lvl], new HashMap<>());
+                    }
+                    currentLevel = (Map<String, Object>) currentLevel.get(deepFields[lvl]);
+                }
+            }
+        } else {
+            object.put(key, value);
+        }
     }
 }
