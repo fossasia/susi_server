@@ -1,3 +1,21 @@
+/**
+ * NodelistPushServlet
+ * Copyright 16.07.2015 by Dang Hai An, @zyzo
+ * <p/>
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ * <p/>
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ * <p/>
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program in the file lgpl21.txt
+ * If not, see <http://www.gnu.org/licenses/>.
+ */
 package org.loklak.api.server.push;
 
 import com.github.fge.jsonschema.core.report.LogLevel;
@@ -5,6 +23,7 @@ import com.github.fge.jsonschema.core.report.ProcessingReport;
 import org.elasticsearch.common.xcontent.XContentParser;
 import org.elasticsearch.common.xcontent.json.JsonXContent;
 import org.loklak.api.client.ClientConnection;
+import org.loklak.api.server.PushServlet;
 import org.loklak.api.server.RemoteAccess;
 import org.loklak.api.server.helper.PushReport;
 import org.loklak.api.server.helper.PushServletHelper;
@@ -70,7 +89,6 @@ public class NodelistPushServlet extends HttpServlet {
 
         // prepare fields that need more complex manips than simple field mapping
         for (Map<String, Object> node : nodes) {
-            node.put("id_str", computeNodeId(node));
             node.put("source_type", SourceType.NODELIST.name());
             Map<String, Object> location = (Map) node.get("position");
             final Double longitude = Double.parseDouble((String) location.get("long"));
@@ -83,6 +101,11 @@ public class NodelistPushServlet extends HttpServlet {
             user.put("screen_name", "freifunk_" + community.get("name"));
             user.put("name", community.get("name"));
             node.put("user", user);
+            try {
+                node.put("id_str", PushServletHelper.computeMessageId(node, node.get("id"), SourceType.NODELIST));
+            } catch (Exception e) {
+                DAO.log("Problem computing id" + node);
+            }
         }
         PushReport nodePushReport = PushServletHelper.saveMessages(nodes);
 
@@ -93,18 +116,5 @@ public class NodelistPushServlet extends HttpServlet {
                 + ", new = " + nodePushReport.getNewCount()
                 + ", known = " + nodePushReport.getKnownCount()
                 + ", from host hash " + remoteHash);
-    }
-
-    private static String computeNodeId(Map<String, Object> node) {
-        String id = (String) node.get("id");
-        boolean hasId = id != null && id.equals("");
-
-        Map<String, Object> location = (Map) node.get("position");
-        String longitude = (String) location.get("long");
-        String latitude = (String) location.get("lat");
-
-        // Modification time = current time
-        String mtime = Long.toString(System.currentTimeMillis());
-        return SourceType.NODELIST.name() + (hasId ? "_" + id : "") + "_" + longitude + "_" + latitude + "_" + mtime;
     }
 }

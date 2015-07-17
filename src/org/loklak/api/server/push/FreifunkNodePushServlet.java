@@ -1,3 +1,21 @@
+/**
+ * FreifunkNodePushServlet
+ * Copyright 16.07.2015 by Dang Hai An, @zyzo
+ * <p/>
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ * <p/>
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ * <p/>
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program in the file lgpl21.txt
+ * If not, see <http://www.gnu.org/licenses/>.
+ */
 package org.loklak.api.server.push;
 
 import com.github.fge.jsonschema.core.report.LogLevel;
@@ -65,13 +83,15 @@ public class FreifunkNodePushServlet extends HttpServlet {
         nodes = converter.convert(nodes, JsonFieldConverter.JsonConversionSchemaEnum.FREIFUNK_NODE);
 
         for (Map<String, Object> node : nodes) {
-            try {
-                node.put("id_str", computeNodeId(node));
-            } catch (Exception e) {
-                DAO.log("Problem computing id" + node);
-                continue;
+            if (node.get("text") == null) {
+                node.put("text", "");
             }
             node.put("source_type", SourceType.FREIFUNK_NODE.name());
+            try {
+                node.put("id_str", PushServletHelper.computeMessageId(node, node.get("id"), SourceType.FREIFUNK_NODE));
+            } catch (Exception e) {
+                DAO.log("Problem computing id" + node);
+            }
         }
         PushReport nodePushReport = PushServletHelper.saveMessages(nodes);
 
@@ -80,19 +100,5 @@ public class FreifunkNodePushServlet extends HttpServlet {
         DAO.log(request.getServletPath()
                 + " -> records = " + nodePushReport.getRecordCount()
                 + ", new = " + nodePushReport.getNewCount() + ", known = " + nodePushReport.getKnownCount() + ", from host hash " + remoteHash);
-    }
-
-    private static String computeNodeId(Map<String, Object> node) throws Exception {
-        String id = (String) node.get("id");
-        boolean hasId = id != null && id.equals("");
-
-        List<Object> location = (List<Object>) node.get("location_point");
-        Object rawLon = location.get(1);
-        String longitude = rawLon instanceof Integer ? Integer.toString((Integer) rawLon) : Double.toString((Double) rawLon);
-        Object rawLat = location.get(0);
-        String latitude = rawLat instanceof Integer ? Integer.toString((Integer) rawLat) : Double.toString((Double) rawLat);
-        // Modification time = current time
-        String mtime = Long.toString(System.currentTimeMillis());
-        return SourceType.FREIFUNK_NODE.name() + (hasId ? "_" + id : "") + "_" + longitude + "_" + latitude + "_" + mtime;
     }
 }

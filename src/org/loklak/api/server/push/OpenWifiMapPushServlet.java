@@ -1,6 +1,6 @@
 /**
  * OpenWifiMapPushServlet
- * Copyright 09.04.2015 by Dang Hai An, @zyzo
+ * Copyright 16.07.2015 by Dang Hai An, @zyzo
  * <p/>
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -21,26 +21,22 @@ package org.loklak.api.server.push;
 
 import com.github.fge.jsonschema.core.report.LogLevel;
 import com.github.fge.jsonschema.core.report.ProcessingReport;
-import org.elasticsearch.common.xcontent.XContentBuilder;
-import org.elasticsearch.common.xcontent.XContentFactory;
 import org.elasticsearch.common.xcontent.XContentParser;
 import org.elasticsearch.common.xcontent.json.JsonXContent;
 import org.loklak.api.client.ClientConnection;
 import org.loklak.api.server.RemoteAccess;
+import org.loklak.api.server.helper.PushReport;
+import org.loklak.api.server.helper.PushServletHelper;
 import org.loklak.data.DAO;
-import org.loklak.data.MessageEntry;
-import org.loklak.data.UserEntry;
 import org.loklak.harvester.JsonFieldConverter;
 import org.loklak.harvester.JsonValidator;
 import org.loklak.harvester.SourceType;
 
 import javax.servlet.ServletException;
-import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -59,12 +55,6 @@ public class OpenWifiMapPushServlet extends HttpServlet {
         }
 
         String url = post.get("url", "");
-        String callback = post.get("callback", "");
-        boolean jsonp = callback != null && callback.length() > 0;
-        if (url == null || url.length() == 0) {
-            response.sendError(400, "your request does not contain an url to your data object");
-            return;
-        }
 
         Map<String, Object> map;
         byte[] jsonText;
@@ -91,59 +81,25 @@ public class OpenWifiMapPushServlet extends HttpServlet {
         rows = converter.convert(rows, JsonFieldConverter.JsonConversionSchemaEnum.OPENWIFIMAP);
 
         // save to elastic
-        int recordCount = 0, newCount = 0, knownCount = 0;
         for (Map<String, Object> row : rows) {
-            String id;
-            try {
-                id = computeId(row);
-            } catch (Exception e) {
-                response.sendError(400, "Error computing id : " + e.getMessage());
-                return;
-            }
-            row.put("id_str", id);
             row.put("text", "");
             row.put("source_type", SourceType.OPENWIFIMAP.name());
-            Map<String, Object> user = (Map<String, Object>) row.remove("user");
-            MessageEntry messageEntry = new MessageEntry(row);
-            UserEntry userEntry = new UserEntry((user != null && user.get("screen_name") != null) ? user : new HashMap<String, Object>());
-            boolean successful = DAO.writeMessage(messageEntry, userEntry, true, false);
-            if (successful) newCount++;
-            else knownCount++;
-            recordCount++;
+            try {
+                row.put("id_str", PushServletHelper.computeMessageId(row, row.get("id"), SourceType.OPENWIFIMAP));
+            } catch (Exception e) {
+                DAO.log("Problem computing id" + row);
+                continue;
+            }
         }
 
-        post.setResponse(response, "application/javascript");
+        PushReport nodePushReport = PushServletHelper.saveMessages(rows);
 
-        // generate json
-        XContentBuilder json = XContentFactory.jsonBuilder().prettyPrint().lfAtEnd();
-        json.startObject();
-        json.field("status", "ok");
-        json.field("records", recordCount);
-        json.field("new", newCount);
-        json.field("known", knownCount);
-        json.field("message", "pushed");
-        json.endObject();
-
-        // write json
-        ServletOutputStream sos = response.getOutputStream();
-        if (jsonp) sos.print(callback + "(");
-        sos.print(json.string());
-        if (jsonp) sos.println(");");
-        sos.println();
-        DAO.log(request.getServletPath() + " -> records = " + recordCount + ", new = " + newCount + ", known = " + knownCount + ", from host hash " + remoteHash);
-    }
-
-    private static String computeId(Map<String, Object> object) throws Exception {
-        String id = (String) object.get("id");
-        boolean hasId = id != null && id.equals("");
-
-        List<Object> location = (List<Object>) object.get("latlng");
-        String mtime = (String) object.get("mtime");
-        Object rawLon = location.get(1);
-        String longitude = rawLon instanceof Integer ? Integer.toString((Integer) rawLon) : Double.toString((Double) rawLon);
-        Object rawLat = location.get(0);
-        String latitude = rawLat instanceof Integer ? Integer.toString((Integer) rawLat) : Double.toString((Double) rawLat);
-
-        return SourceType.OPENWIFIMAP.name() + (hasId ? "_" + id : "") + "_" + longitude + "_" + latitude + "_" + mtime;
+        String res = PushServletHelper.printResponse(post.get("callback", ""), nodePushReport);
+        response.getOutputStream().println(res);
+        DAO.log(request.getServletPath()
+                + " -> records = " + nodePushReport.getRecordCount()
+                + ", new = " + nodePushReport.getNewCount()
+                + ", known = " + nodePushReport.getKnownCount()
+                + ", from host hash " + remoteHash);
     }
 }
