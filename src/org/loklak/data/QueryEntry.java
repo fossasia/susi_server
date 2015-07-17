@@ -263,6 +263,7 @@ public class QueryEntry extends AbstractIndexEntry implements IndexEntry {
         public final String original, raw;
         public final HashSet<String> constraints_positive, constraints_negative;
         public PlaceContext place_context;
+        public double[] bbox;
         
         public Tokens(final String q) {
             this.original = q;
@@ -282,36 +283,43 @@ public class QueryEntry extends AbstractIndexEntry implements IndexEntry {
             if (this.constraints_negative.remove("about")) this.place_context = PlaceContext.FROM;
             if (rawb.length() > 0 && rawb.charAt(rawb.length() - 1) == ' ') rawb.setLength(rawb.length() - 1);
             this.raw = rawb.toString();
-        }
-        
-        public String translate4scraper() {
-            // check if a location constraint was given
-            for (String cs: this.constraints_positive) {
+            
+            // find bbox
+            this.bbox = null;
+            bboxsearch: for (String cs: this.constraints_positive) {
                 if (cs.startsWith(Constraint.location.name() + "=")) {
                     String params = cs.substring(Constraint.location.name().length() + 1);
                     String[] coord = params.split(",");
                     if (coord.length == 4) {
-                        double lon_west  = Double.parseDouble(coord[0]);
-                        double lat_south = Double.parseDouble(coord[1]);
-                        double lon_east  = Double.parseDouble(coord[2]);
-                        double lat_north = Double.parseDouble(coord[3]);
-                        assert lon_west < lon_east;
-                        assert lat_north > lat_south;
-                        // find largest city around to compute a 'near:' operator for twitter
-                        double lon_km = 40000 / 360 * (lon_east - lon_west);
-                        double lat_km = 40000 / 360 * (lat_north- lat_south);
-                        double within_km = Math.max(25.0, Math.max(lon_km, lat_km) / 2);
-                        double lon_border = (lon_east - lon_west) / 3;
-                        double lat_border = (lat_north - lat_south) / 3;
-                        GeoLocation largestCity = DAO.geoNames.getLargestCity(lon_west + lon_border, lat_south + lat_border, lon_east - lon_border, lat_north - lat_border);
-                        if (largestCity == null) largestCity = DAO.geoNames.getLargestCity(lon_west, lat_south, lon_east, lat_north);
-                        if (largestCity == null) largestCity = DAO.geoNames.cityNear((lat_north + lat_south) / 2.0, (lon_east + lon_west) / 2.0);
-                        String q = this.raw + " near:\"" + largestCity.getNames().iterator().next() + "\" within:" + ((int) (within_km / 1.609344)) + "mi"; // stupid imperial units are stupid
-                        return q;
+                        this.bbox = new double[4];
+                        for (int i = 0; i < 4; i++) this.bbox[i] = Double.parseDouble(coord[i]);
+                        break bboxsearch;
                     }
                 }
             }
-            return this.raw;
+        }
+        
+        public String translate4scraper() {
+            // check if a location constraint was given
+            if (this.bbox == null) return this.raw;
+            // find place within the bbox
+            double lon_west  = this.bbox[0];
+            double lat_south = this.bbox[1];
+            double lon_east  = this.bbox[2];
+            double lat_north = this.bbox[3];
+            assert lon_west < lon_east;
+            assert lat_north > lat_south;
+            // find largest city around to compute a 'near:' operator for twitter
+            double lon_km = 40000 / 360 * (lon_east - lon_west);
+            double lat_km = 40000 / 360 * (lat_north- lat_south);
+            double within_km = Math.max(2.0, Math.max(lon_km, lat_km) / 2);
+            double lon_border = (lon_east - lon_west) / 3;
+            double lat_border = (lat_north - lat_south) / 3;
+            GeoLocation largestCity = DAO.geoNames.getLargestCity(lon_west + lon_border, lat_south + lat_border, lon_east - lon_border, lat_north - lat_border);
+            if (largestCity == null) largestCity = DAO.geoNames.getLargestCity(lon_west, lat_south, lon_east, lat_north);
+            if (largestCity == null) largestCity = DAO.geoNames.cityNear((lat_north + lat_south) / 2.0, (lon_east + lon_west) / 2.0);
+            String q = this.raw + " near:\"" + largestCity.getNames().iterator().next() + "\" within:" + ((int) (within_km / 1.609344)) + "mi"; // stupid imperial units are stupid
+            return q;
         }
     }
     
