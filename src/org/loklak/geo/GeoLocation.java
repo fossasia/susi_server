@@ -28,15 +28,21 @@ import java.util.Comparator;
 public class GeoLocation extends IntegerGeoPoint implements Comparable<GeoLocation>, Comparator<GeoLocation> {
 
     private Collection<String> names;
+    private String iso3166cc; 
     private long population;
 
-    public GeoLocation(final double lat, final double lon, final Collection<String> names) {
+    public GeoLocation(final double lat, final double lon, final Collection<String> names, final String iso3166cc) {
         super(lat, lon);
         this.names = names;
+        this.iso3166cc = iso3166cc;
     }
 
     public Collection<String> getNames() {
         return this.names;
+    }
+    
+    public String getIO3166cc() {
+        return this.iso3166cc;
     }
 
     public void setPopulation(long population2) {

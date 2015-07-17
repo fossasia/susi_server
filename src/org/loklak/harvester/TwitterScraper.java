@@ -33,6 +33,8 @@ import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.Semaphore;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -47,6 +49,8 @@ import org.loklak.tools.UTF8;
 
 public class TwitterScraper {
 
+    public static ExecutorService executor = Executors.newFixedThreadPool(20);
+    
     public static Timeline search(String query, Timeline.Order order) {
         // check
         // https://twitter.com/search-advanced for a better syntax
@@ -113,8 +117,12 @@ public class TwitterScraper {
         boolean parsing_favourite = false, parsing_retweet = false;
         while ((input = br.readLine()) != null){
             input = input.trim();
-            //System.out.println(input); // uncomment temporary to debug or add new fields
+            System.out.println(input); // uncomment temporary to debug or add new fields
             int p;
+            if ((p = input.indexOf("class=\"account-group")) > 0) {
+                props.put("userid", new prop(input, p, "data-user-id"));
+                continue;
+            }
             if ((p = input.indexOf("class=\"avatar")) > 0) {
                 props.put("useravatarurl", new prop(input, p, "src"));
                 continue;
@@ -188,9 +196,10 @@ public class TwitterScraper {
                 place_id = place_id_prop.value;
                 continue;
             }
-            if (props.size() == 9) {
+            if (props.size() == 10) {
                 // the tweet is complete, evaluate the result
                 UserEntry user = new UserEntry(
+                        props.get("userid").value,
                         props.get("usernickname").value,
                         props.get("useravatarurl").value,
                         MessageEntry.html2utf8(props.get("userfullname").value)
@@ -207,7 +216,9 @@ public class TwitterScraper {
                         Long.parseLong(props.get("tweetfavouritecount").value),
                         imgs, vids, place_name, place_id
                         );
-                new Thread(tweet).start(); // todo: use thread pools
+                //new Thread(tweet).start(); // todo: use thread pools
+                //tweet.run(); // for debugging
+                executor.execute(tweet);
                 timeline.addUser(user);
                 timeline.addTweet(tweet);
                 images.clear();
@@ -318,9 +329,7 @@ public class TwitterScraper {
         }
 
         private void analyse() {
-            String text_raw = this.text;
-            for (int i = 0; i < text_raw.length(); i++) if (text_raw.charAt(i) < ' ') text_raw.replace(text_raw.charAt(i), ' '); // remove funny chars
-            this.text = text_raw.replaceAll("</?(s|b|strong)>", "").replaceAll("<a href=\"/hashtag.*?>", "").replaceAll("<a.*?class=\"twitter-atreply.*?>", "").replaceAll("<span.*?span>", "").replaceAll("  ", " ");
+            this.text = this.text.replaceAll("</?(s|b|strong)>", "").replaceAll("<a href=\"/hashtag.*?>", "").replaceAll("<a.*?class=\"twitter-atreply.*?>", "").replaceAll("<span.*?span>", "").replaceAll("  ", " ");
             while (true) {
                 try {
                     Matcher m = timeline_link_pattern.matcher(this.text);
@@ -368,10 +377,10 @@ public class TwitterScraper {
             try {
                 this.exists = new Boolean(DAO.existMessage(this.getIdStr()));
                 // only analyse and enrich the message if it does not actually exist in the search index because it will be abandoned otherwise anyway
-                if (!this.exists) {
+                //if (!this.exists) {
                     this.analyse();
                     this.enrich();
-                }
+                //}
             } catch (Throwable e) {
                 e.printStackTrace();
             } finally {

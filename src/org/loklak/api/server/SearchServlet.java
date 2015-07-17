@@ -90,24 +90,23 @@ public class SearchServlet extends HttpServlet {
         Map<String, List<Map.Entry<String, Long>>> aggregations = null;
         long hits = 0;
         final AtomicInteger newrecords = new AtomicInteger(0);
+        final QueryEntry.Tokens tokens = new QueryEntry.Tokens(query);
         if (query.length() > 0) {
-            final String noConstraintsQuery = QueryEntry.removeConstraints(query);
             if ("all".equals(source)) {
                 // start all targets for search concurrently
-                final String queryf = query;
                 final int timezoneOffsetf = timezoneOffset;
-                Thread scraperThread = noConstraintsQuery.length() == 0 ? null : new Thread() {
+                Thread scraperThread = tokens.raw.length() == 0 ? null : new Thread() {
                     public void run() {
-                        Timeline[] twitterTl = DAO.scrapeTwitter(noConstraintsQuery, order, timezoneOffsetf, true);
+                        Timeline[] twitterTl = DAO.scrapeTwitter(tokens.translate4scraper(), order, timezoneOffsetf, true);
                         newrecords.set(twitterTl[1].size());
-                        tl.putAll(noConstraintsQuery.equals(queryf) ? twitterTl[1] : QueryEntry.applyConstraint(twitterTl[1], queryf));
+                        tl.putAll(QueryEntry.applyConstraint(twitterTl[1], tokens));
                     }
                 };
                 if (scraperThread != null) scraperThread.start();
                 Thread backendThread = new Thread() {
                     public void run() {
-                        Timeline backendTl = DAO.searchBackend(queryf, order, count, timezoneOffsetf, "cache");
-                        tl.putAll(noConstraintsQuery.equals(queryf) ? backendTl : QueryEntry.applyConstraint(backendTl, queryf));
+                        Timeline backendTl = DAO.searchBackend(tokens.original, order, count, timezoneOffsetf, "cache");
+                        tl.putAll(QueryEntry.applyConstraint(backendTl, tokens));
                     }
                 };
                 backendThread.start();
@@ -117,17 +116,17 @@ public class SearchServlet extends HttpServlet {
                 try {backendThread.join(5000);} catch (InterruptedException e) {}
                 if (scraperThread != null) try {scraperThread.join(8000);} catch (InterruptedException e) {}
             } else {
-                if ("twitter".equals(source) && noConstraintsQuery.length() > 0) {
-                    Timeline[] twitterTl = DAO.scrapeTwitter(noConstraintsQuery, order, timezoneOffset, true);
+                if ("twitter".equals(source) && tokens.raw.length() > 0) {
+                    Timeline[] twitterTl = DAO.scrapeTwitter(tokens.translate4scraper(), order, timezoneOffset, true);
                     newrecords.set(twitterTl[1].size());
-                    tl.putAll(noConstraintsQuery.equals(query) ? twitterTl[0] : QueryEntry.applyConstraint(twitterTl[0], query));
+                    tl.putAll(QueryEntry.applyConstraint(twitterTl[0], tokens));
                     // in this case we use all tweets, not only the latest one because it may happen that there are no new and that is not what the user expects
                 }
     
                 // replace the timeline with one from the own index which now includes the remote result
                 if ("backend".equals(source)) {
                     Timeline backendTl = DAO.searchBackend(query, order, count, timezoneOffset, "cache");
-                    tl.putAll(noConstraintsQuery.equals(query) ? backendTl : QueryEntry.applyConstraint(backendTl, query));
+                    tl.putAll(QueryEntry.applyConstraint(backendTl, tokens));
                 }
     
                 // replace the timeline with one from the own index which now includes the remote result

@@ -40,6 +40,7 @@ import org.elasticsearch.index.query.FilterBuilders;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.index.query.RangeQueryBuilder;
+import org.loklak.geo.GeoLocation;
 import org.loklak.geo.PlaceContext;
 import org.loklak.harvester.SourceType;
 import org.loklak.tools.DateParser;
@@ -257,59 +258,97 @@ public class QueryEntry extends AbstractIndexEntry implements IndexEntry {
         }
     }
     
-    
-    public static String removeConstraints(String q) {
-        for (Constraint c: Constraint.values()) {
-            q = c.pattern.matcher(q).replaceAll("");
+    public static class Tokens {
+        
+        public final String original, raw;
+        public final HashSet<String> constraints_positive, constraints_negative;
+        public PlaceContext place_context;
+        
+        public Tokens(final String q) {
+            this.original = q;
+            List<String> tokens = new ArrayList<String>();
+            Matcher m = tokenizerPattern.matcher(q);
+            while (m.find()) tokens.add(m.group(1));
+
+            this.constraints_positive = new HashSet<>();
+            this.constraints_negative = new HashSet<>();
+            StringBuilder rawb = new StringBuilder(q.length() + 1);
+            for (String t: tokens) {
+                if (t.startsWith("/")) this.constraints_positive.add(t.substring(1));
+                else if (t.startsWith("-/")) this.constraints_negative.add(t.substring(2));
+                else rawb.append(t).append(' ');
+            }
+            this.place_context = this.constraints_positive.remove("about") ? PlaceContext.ABOUT : PlaceContext.FROM;
+            if (this.constraints_negative.remove("about")) this.place_context = PlaceContext.FROM;
+            if (rawb.length() > 0 && rawb.charAt(rawb.length() - 1) == ' ') rawb.setLength(rawb.length() - 1);
+            this.raw = rawb.toString();
         }
-        return q;
+        
+        public String translate4scraper() {
+            // check if a location constraint was given
+            for (String cs: this.constraints_positive) {
+                if (cs.startsWith(Constraint.location.name() + "=")) {
+                    String params = cs.substring(Constraint.location.name().length() + 1);
+                    String[] coord = params.split(",");
+                    if (coord.length == 4) {
+                        double lon_west  = Double.parseDouble(coord[0]);
+                        double lat_south = Double.parseDouble(coord[1]);
+                        double lon_east  = Double.parseDouble(coord[2]);
+                        double lat_north = Double.parseDouble(coord[3]);
+                        assert lon_west < lon_east;
+                        assert lat_north > lat_south;
+                        // find largest city around to compute a 'near:' operator for twitter
+                        double lon_km = 40000 / 360 * (lon_east - lon_west);
+                        double lat_km = 40000 / 360 * (lat_north- lat_south);
+                        double within_km = Math.max(25.0, Math.max(lon_km, lat_km) / 2);
+                        double lon_border = (lon_east - lon_west) / 3;
+                        double lat_border = (lat_north - lat_south) / 3;
+                        GeoLocation largestCity = DAO.geoNames.getLargestCity(lon_west + lon_border, lat_south + lat_border, lon_east - lon_border, lat_north - lat_border);
+                        if (largestCity == null) largestCity = DAO.geoNames.getLargestCity(lon_west, lat_south, lon_east, lat_north);
+                        if (largestCity == null) largestCity = DAO.geoNames.cityNear((lat_north + lat_south) / 2.0, (lon_east + lon_west) / 2.0);
+                        String q = this.raw + " near:\"" + largestCity.getNames().iterator().next() + "\" within:" + ((int) (within_km / 1.609344)) + "mi"; // stupid imperial units are stupid
+                        return q;
+                    }
+                }
+            }
+            return this.raw;
+        }
     }
     
-    public static Timeline applyConstraint(Timeline tl0, String q) { 
-        // tokenize the query
-        List<String> qe = new ArrayList<String>();
-        Matcher m = tokenizerPattern.matcher(q);
-        while (m.find()) qe.add(m.group(1));
-
-        HashSet<String> constraints_positive = new HashSet<>();
-        HashSet<String> constraints_negative = new HashSet<>();
-        for (String t: qe) {
-            if (t.startsWith("/")) constraints_positive.add(t.substring(1));
-            if (t.startsWith("-/")) constraints_negative.add(t.substring(2));
-        }
-        PlaceContext place_context = constraints_positive.remove("about") ? PlaceContext.ABOUT : PlaceContext.FROM;
-        if (constraints_negative.remove("about")) place_context = PlaceContext.FROM;
-        
+    public static Timeline applyConstraint(Timeline tl0, Tokens tokens) {
+        if (tokens.constraints_positive.size() == 0 && tokens.constraints_negative.size() == 0) return tl0;
         Timeline tl1 = new Timeline(tl0.getOrder());
         messageloop: for (MessageEntry message: tl0) {
-            if (constraints_positive.contains("image") && message.getImages().size() == 0) continue;
-            if (constraints_negative.contains("image") && message.getImages().size() != 0) continue;
-            if (constraints_positive.contains("place") && message.getPlaceName().length() == 0) continue;
-            if (constraints_negative.contains("place") && message.getPlaceName().length() != 0) continue;
-            if (constraints_positive.contains("location") && (message.getLocationPoint() == null || message.getPlaceContext() != place_context)) continue;
-            if (constraints_negative.contains("location") && message.getLocationPoint() != null) continue;
-            if (constraints_positive.contains("link") && message.getLinks().length == 0) continue;
-            if (constraints_negative.contains("link") && message.getLinks().length != 0) continue;
-            if (constraints_positive.contains("mention") && message.getMentions().length == 0) continue;
-            if (constraints_negative.contains("mention") && message.getMentions().length != 0) continue;
-            if (constraints_positive.contains("hashtag") && message.getHashtags().length == 0) continue;
-            if (constraints_negative.contains("hashtag") && message.getHashtags().length != 0) continue;
+            if (tokens.constraints_positive.contains("image") && message.getImages().size() == 0) continue;
+            if (tokens.constraints_negative.contains("image") && message.getImages().size() != 0) continue;
+            if (tokens.constraints_positive.contains("place") && message.getPlaceName().length() == 0) continue;
+            if (tokens.constraints_negative.contains("place") && message.getPlaceName().length() != 0) continue;
+            if (tokens.constraints_positive.contains("location") && (message.getLocationPoint() == null || message.getPlaceContext() != tokens.place_context)) continue;
+            if (tokens.constraints_negative.contains("location") && message.getLocationPoint() != null) continue;
+            if (tokens.constraints_positive.contains("link") && message.getLinks().length == 0) continue;
+            if (tokens.constraints_negative.contains("link") && message.getLinks().length != 0) continue;
+            if (tokens.constraints_positive.contains("mention") && message.getMentions().length == 0) continue;
+            if (tokens.constraints_negative.contains("mention") && message.getMentions().length != 0) continue;
+            if (tokens.constraints_positive.contains("hashtag") && message.getHashtags().length == 0) continue;
+            if (tokens.constraints_negative.contains("hashtag") && message.getHashtags().length != 0) continue;
 
             // special treatment of location and link constraint
-            constraintCheck: for (String cs: constraints_positive) {
+            constraintCheck: for (String cs: tokens.constraints_positive) {
                 if (cs.startsWith(Constraint.location.name() + "=")) {
                     if (message.getLocationPoint() == null) continue messageloop;
-                    if (message.getPlaceContext() != place_context) continue messageloop;
+                    if (message.getPlaceContext() != tokens.place_context) continue messageloop;
                     String params = cs.substring(Constraint.location.name().length() + 1);
                     String[] coord = params.split(",");
                     if (coord.length == 4) {
                         double lon = message.getLocationPoint()[0];
                         double lon_west  = Double.parseDouble(coord[0]);
                         double lon_east  = Double.parseDouble(coord[2]);
+                        assert lon_west < lon_east;
                         if (lon < lon_west || lon > lon_east) continue messageloop;
                         double lat = message.getLocationPoint()[1];
                         double lat_south = Double.parseDouble(coord[1]);
                         double lat_north = Double.parseDouble(coord[3]);
+                        assert lat_north > lat_south;
                         if (lat < lat_south || lat > lat_north) continue messageloop;
                     }
                 }

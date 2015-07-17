@@ -61,6 +61,7 @@ import org.loklak.api.server.push.NodelistPushServlet;
 import org.loklak.api.server.push.FreifunkNodePushServlet;
 import org.loklak.api.server.push.NetmonPushServlet;
 import org.loklak.data.DAO;
+import org.loklak.harvester.TwitterScraper;
 import org.loklak.tools.Browser;
 import org.loklak.vis.server.MapServlet;
 import org.loklak.vis.server.MarkdownServlet;
@@ -202,6 +203,7 @@ public class LoklakServer {
                     LoklakServer.server.stop();
                     LoklakServer.caretaker.shutdown();
                     DAO.close();
+                    TwitterScraper.executor.shutdown();
                     Log.getLog().info("main terminated, goodby.");
                 } catch (Exception e) {
                 }

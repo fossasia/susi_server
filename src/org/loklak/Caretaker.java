@@ -19,7 +19,6 @@
 
 package org.loklak;
 
-import java.io.File;
 import java.util.Date;
 import java.util.List;
 
@@ -81,24 +80,7 @@ public class Caretaker extends Thread {
             }
             
             // scan dump input directory to import files
-            File[] importList = DAO.getTweetImportDumps();
-            for (File importFile: importList) {
-                String name = importFile.getName();
-                DAO.log("importing tweet dump " + name);
-                int imported = DAO.importDump(importFile);
-                DAO.shiftProcessedTweetDump(name);
-                DAO.log("imported tweet dump " + name + ", " + imported + " new messages");
-            }
-            
-            // scan spacial data import directory
-            importList = DAO.getGeoJsonImportDumps();
-            for (File importFile: importList) {
-                String name = importFile.getName();
-                DAO.log("importing geoJson " + name);
-                int imported = DAO.importGeoJson(importFile);
-                DAO.shiftProcessedGeoJsonDump(name);
-                DAO.log("imported geoJson " + name + ", " + imported + " new messages");
-            }
+            DAO.importMessageDumps();
             
             // run some crawl steps
             for (int i = 0; i < 10; i++) {

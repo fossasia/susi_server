@@ -38,8 +38,9 @@ public class UserFactory extends AbstractIndexFactory<UserEntry> implements Inde
             XContentBuilder mapping = XContentFactory.jsonBuilder()
                 .startObject()
                   .startObject("properties") // the id has been omitted on purpose, we identify the user by its screen_name (even if that is changeable..)
+                    .startObject("screen_name").field("type","string").field("include_in_all","false").field("index","not_analyzed").field("doc_values", true).endObject() // our identification of the object
                     .startObject("name").field("type","string").field("include_in_all","false").endObject()
-                    .startObject("screen_name").field("type","string").field("include_in_all","false").field("index","not_analyzed").field("doc_values", true).endObject()
+                    .startObject("user_id").field("type","string").field("include_in_all","false").field("index","not_analyzed").field("doc_values", true).endObject() // stored as reference to twitter, not as identification in loklak
                     .startObject("appearance_first").field("type","date").field("format","dateOptionalTime").field("include_in_all","false").field("doc_values", true).endObject()
                     .startObject("appearance_latest").field("type","date").field("format","dateOptionalTime").field("include_in_all","false").field("doc_values", true).endObject()
                     .startObject("profile_image_url_http").field("type","string").field("index","not_analyzed").field("include_in_all","false").field("doc_values", true).endObject()
