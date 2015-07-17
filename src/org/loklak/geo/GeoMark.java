@@ -24,14 +24,14 @@ public class GeoMark extends GeoLocation implements GeoPoint {
     private double mlon, mlat; // coordinates for the marker
     
     public GeoMark(final GeoLocation loc, final double mlat, final double mlon) {
-        super(loc.lat(), loc.lon(), loc.getNames());
+        super(loc.lat(), loc.lon(), loc.getNames(), loc.getIO3166cc());
         super.setPopulation(loc.getPopulation());
         this.mlat = mlat;
         this.mlon = mlon;
     }
     
     public GeoMark(final GeoLocation loc) {
-        super(loc.lat(), loc.lon(), loc.getNames());
+        super(loc.lat(), loc.lon(), loc.getNames(), loc.getIO3166cc());
         super.setPopulation(loc.getPopulation());
         
         // using the population, we compute a location radius

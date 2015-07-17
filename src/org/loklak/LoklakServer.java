@@ -57,6 +57,7 @@ import org.loklak.api.server.AccountServlet;
 import org.loklak.api.server.ThreaddumpServlet;
 import org.loklak.api.server.FossasiaPushServlet;
 import org.loklak.data.DAO;
+import org.loklak.harvester.TwitterScraper;
 import org.loklak.tools.Browser;
 import org.loklak.vis.server.MapServlet;
 import org.loklak.vis.server.MarkdownServlet;
@@ -194,6 +195,7 @@ public class LoklakServer {
                     LoklakServer.server.stop();
                     LoklakServer.caretaker.shutdown();
                     DAO.close();
+                    TwitterScraper.executor.shutdown();
                     Log.getLog().info("main terminated, goodby.");
                 } catch (Exception e) {
                 }

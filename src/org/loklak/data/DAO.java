@@ -33,11 +33,11 @@ import java.io.InputStreamReader;
 import java.io.RandomAccessFile;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.nio.charset.Charset;
 import java.text.SimpleDateFormat;
 import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -57,10 +57,6 @@ import java.util.zip.Deflater;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.github.fge.jackson.JsonLoader;
-import com.google.common.base.Charsets;
-import com.google.common.io.Files;
 import org.eclipse.jetty.util.log.Log;
 import org.elasticsearch.action.count.CountResponse;
 import org.elasticsearch.action.search.SearchRequestBuilder;
@@ -96,7 +92,8 @@ import org.loklak.geo.PlaceContext;
 import org.loklak.harvester.SourceType;
 import org.loklak.harvester.TwitterScraper;
 import org.loklak.tools.DateParser;
-import org.loklak.tools.UTF8;
+import org.loklak.tools.JsonDataset;
+import org.loklak.tools.JsonDump;
 
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -118,9 +115,11 @@ public class DAO {
     public final static int CACHE_MAXSIZE = 10000;
     
     public  static File conf_dir;
-    private static File external_data, geoJson_import, geoJson_imported, assets, dictionaries;
-    private static File message_dump_dir, message_dump_dir_own, message_dump_dir_import, message_dump_dir_imported;
-    private static File settings_dir, customized_config, schema_dir, conv_schema_dir;
+    private static File external_data, assets, dictionaries;
+    private static File message_dump_dir;
+    private static JsonDump message_dump, account_dump;
+    public  static JsonDataset twitter_user_dump;
+    private static File settings_dir, customized_config;
     private static RandomAccessFile messagelog, accountlog;
     private static Node elasticsearch_node;
     private static Client elasticsearch_client;
@@ -131,7 +130,7 @@ public class DAO {
     private static BlockingQueue<Timeline> newMessageTimelines = new LinkedBlockingQueue<Timeline>();
     private static Map<String, String> config = new HashMap<>();
     public  static GeoNames geoNames;
-
+    
     /**
      * initialize the DAO
      * @param datadir the path to the data directory
@@ -187,10 +186,7 @@ public class DAO {
             File account_dump_dir = new File(datadir, "accounts");
             account_dump_dir.mkdirs();
             accountlog = new RandomAccessFile(getCurrentDump(account_dump_dir, ACCOUNT_DUMP_FILE_PREFIX), "rw");
-
-            // load schema folder
-            conv_schema_dir = new File("conf/conversion");
-            schema_dir = new File("conf/schema");
+            
             // load the config file(s);
             conf_dir = new File("conf");
             Properties prop = new Properties();
@@ -492,23 +488,6 @@ public class DAO {
         } catch (NumberFormatException e) {
             return default_val;
         }
-    }
-
-    public static JsonNode getSchema(String key) throws IOException {
-        File schema = new File(schema_dir, key);
-        if (!schema.exists()) {
-            throw new FileNotFoundException("No schema file with name " + key + " found");
-        }
-        return JsonLoader.fromFile(schema);
-    }
-
-    public static Map<String, Object> getConversionSchema(String key) throws IOException {
-        File schema = new File(conv_schema_dir, key);
-        if (!schema.exists()) {
-            throw new FileNotFoundException("No schema file with name " + key + " found");
-        }
-        XContentParser parser = JsonXContent.jsonXContent.createParser(Files.toString(schema, Charsets.UTF_8));
-        return parser.map();
     }
     
     public static boolean getConfig(String key, boolean default_val) {
