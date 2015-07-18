@@ -48,7 +48,7 @@ public class TwitterAPI {
     private static Map<String, TwitterFactory> userFactory = new HashMap<>();
     
     public static TwitterFactory getAppTwitterFactory() {
-        if (appFactory == null) appFactory = getUserTwitterFactory(DAO.getConfig("client.twitterAccessToken", ""), DAO.getConfig("client.twitterAccessTokenSecret", ""));
+        if (appFactory == null) appFactory = getUserTwitterFactory(DAO.getConfig("twitterAccessToken", ""), DAO.getConfig("twitterAccessTokenSecret", ""));
         return appFactory;
     }
 
