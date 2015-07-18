@@ -45,18 +45,14 @@ public class GeoMark extends GeoLocation implements GeoPoint {
         // to make this reproducible, we use a hash of the name and location
         int h = Math.abs((loc.getNames().iterator().next() + loc.lat() + loc.lon() + Integer.toString(salt)).hashCode());
         if (h == Integer.MIN_VALUE) h = 0; // correction of the case that Math.abs is not possible
-        initMark(r, h);
-    }
-    
-    private void initMark(double radius, int hash) {
         // with that hash we compute an actual distance and an angle
-        double dist = (hash & 0xff) * radius / 255.0d / 40000000 * 360; // 40 million meter (the earth) has an angle of 360 degree
-        double angle = 2 * Math.PI * ((double) ((hash & 0xfff00) >> 16)) / ((double) 0xfff);        
+        double dist = (h & 0xff) * r / 255.0d / 40000000 * 360; // 40 million meter (the earth) has an angle of 360 degree
+        double angle = 2 * Math.PI * ((double) ((h & 0xfff00) >> 8)) / ((double) 0xfff);        
         // now compute a point around the location on a circle for the mark
         this.mlat = this.lat() + Math.sin(angle) * dist;
         this.mlon = this.lon() + Math.cos(angle) * dist;
     }
-
+    
     public double mlon() {
         return this.mlon;
     }
