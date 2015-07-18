@@ -84,6 +84,8 @@ public class TwitterAPI {
         XContentParser parser = JsonXContent.jsonXContent.createParser(json);
         map = parser == null ? null : parser.map();
         map.put("retrieval_date", AbstractIndexEntry.utcFormatter.print(System.currentTimeMillis()));
+        Object status = map.remove("status"); // we don't need to store the latest status update in the user dump
+        // TODO: store the latest status in our message database
         DAO.twitter_user_dump.putUnique(map);
         return map;
     }
