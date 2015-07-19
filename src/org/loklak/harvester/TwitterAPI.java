@@ -21,7 +21,6 @@
 package org.loklak.harvester;
 
 import java.io.IOException;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -32,6 +31,7 @@ import org.elasticsearch.common.xcontent.json.JsonXContent;
 import org.loklak.data.AbstractIndexEntry;
 import org.loklak.data.AccountEntry;
 import org.loklak.data.DAO;
+import org.loklak.geo.GeoMark;
 
 import twitter4j.IDs;
 import twitter4j.RateLimitStatus;
@@ -86,6 +86,17 @@ public class TwitterAPI {
         map.put("retrieval_date", AbstractIndexEntry.utcFormatter.print(System.currentTimeMillis()));
         Object status = map.remove("status"); // we don't need to store the latest status update in the user dump
         // TODO: store the latest status in our message database
+        
+        // enrich the user data with geocoding information
+        String created_at = (String) map.get("created_at");
+        String location = (String) map.get("location");
+        if (created_at != null && location != null) {
+            GeoMark loc = DAO.geoNames.analyse(location, null, 5, created_at.hashCode());
+            if (loc != null) {
+                map.put("location_point", new double[]{loc.lon(), loc.lat()}); //[longitude, latitude]
+                map.put("location_mark", new double[]{loc.mlon(), loc.mlat()}); //[longitude, latitude]
+            }
+        }
         DAO.twitter_user_dump.putUnique(map);
         return map;
     }
