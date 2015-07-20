@@ -530,10 +530,14 @@ public class MessageEntry extends AbstractIndexEntry implements IndexEntry {
             s = s.substring(0, p) + ((unicode == 10 || unicode == 13) ? "\n" : ((char) unicode)) + s.substring(q + 1);
         }
         // octal coding \\u
-        while ((p = s.indexOf("\\u")) >= 0) {
-            char r = ((char) Integer.parseInt(s.substring(p + 2, p + 6), 8));
-            if (r < ' ') r = ' ';
-            s = s.substring(0, p) + r + s.substring(p + 6);
+        try {
+            while ((p = s.indexOf("\\u")) >= 0 && s.length() >= p + 6) {
+                char r = ((char) Integer.parseInt(s.substring(p + 2, p + 6), 8));
+                if (r < ' ') r = ' ';
+                s = s.substring(0, p) + r + s.substring(p + 6);
+            }
+        } catch (Throwable e) {
+            e.printStackTrace();
         }
         // remove tags
         s = s.replaceAll("</a>", "").replaceAll("&quot;", "\"").replaceAll("&amp;", "&");
