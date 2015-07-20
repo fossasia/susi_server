@@ -83,7 +83,8 @@ public class DAO {
     public final static JsonFactory jsonFactory = new JsonFactory();
     public final static String MESSAGE_DUMP_FILE_PREFIX = "messages_";
     public final static String ACCOUNT_DUMP_FILE_PREFIX = "accounts_";
-    public final static String TWITTER_USER_DUMP_FILE_PREFIX = "twitter_users_";
+    public final static String USER_DUMP_FILE_PREFIX = "users_";
+    public final static String FOLLOWER_DUMP_FILE_PREFIX = "follower_";
     public final static String QUERIES_INDEX_NAME = "queries";
     public final static String MESSAGES_INDEX_NAME = "messages";
     public final static String USERS_INDEX_NAME = "users";
@@ -94,7 +95,7 @@ public class DAO {
     private static File external_data, assets, dictionaries;
     private static File message_dump_dir;
     private static JsonDump message_dump, account_dump;
-    public  static JsonDataset twitter_user_dump;
+    public  static JsonDataset user_dump, follower_dump;
     private static File settings_dir, customized_config;
     private static Node elasticsearch_node;
     private static Client elasticsearch_client;
@@ -148,9 +149,10 @@ public class DAO {
             account_dump_dir.mkdirs();
             account_dump = new JsonDump(account_dump_dir, ACCOUNT_DUMP_FILE_PREFIX, null);
 
-            File twitter_user_dump_dir = new File(datadir, "accounts");
-            twitter_user_dump_dir.mkdirs();
-            twitter_user_dump = new JsonDataset(twitter_user_dump_dir, TWITTER_USER_DUMP_FILE_PREFIX, new String[]{"id_str","screen_name"});
+            File user_dump_dir = new File(datadir, "accounts");
+            user_dump_dir.mkdirs();
+            user_dump = new JsonDataset(user_dump_dir,USER_DUMP_FILE_PREFIX, new String[]{"id_str","screen_name"});
+            follower_dump = new JsonDataset(user_dump_dir, FOLLOWER_DUMP_FILE_PREFIX, new String[]{"id_str","screen_name"});
             
             // load the config file(s);
             conf_dir = new File("conf");
@@ -552,21 +554,23 @@ public class DAO {
      * Search the local user cache using a elasticsearch query.
      * @param screen_name - the user id
      */
-    public static UserEntry searchLocalUser(final String screen_name) {
+    public static UserEntry searchLocalUserByScreenName(final String screen_name) {
         try {
             return users.read(screen_name);
         } catch (IOException e) {
             e.printStackTrace();
             return null;
         }
-        /*
-        if (screen_name == null || screen_name.length() == 0) return null;
+    }
+
+    public static UserEntry searchLocalUserByUserId(final String user_id) {
+        if (user_id == null || user_id.length() == 0) return null;
         try {
             // prepare request
             BoolQueryBuilder query = QueryBuilders.boolQuery();
-            query.must(QueryBuilders.termQuery("screen_name", screen_name));
+            query.must(QueryBuilders.termQuery(UserFactory.field_user_id, user_id));
 
-            SearchRequestBuilder request = elasticsearch_client.prepareSearch(QUERIES_INDEX_NAME)
+            SearchRequestBuilder request = elasticsearch_client.prepareSearch(USERS_INDEX_NAME)
                     .setSearchType(SearchType.QUERY_THEN_FETCH)
                     .setQuery(query)
                     .setFrom(0)
@@ -584,9 +588,8 @@ public class DAO {
             return new UserEntry(map);            
         } catch (IndexMissingException e) {}
         return null;
-        */
     }
-
+    
     /**
      * Search the local account cache using a elasticsearch query.
      * @param screen_name - the user id

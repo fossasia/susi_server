@@ -20,21 +20,30 @@
 
 package org.loklak.harvester;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeSet;
 
 import org.elasticsearch.common.xcontent.XContentParser;
 import org.elasticsearch.common.xcontent.json.JsonXContent;
 import org.loklak.data.AbstractIndexEntry;
 import org.loklak.data.AccountEntry;
 import org.loklak.data.DAO;
+import org.loklak.data.UserEntry;
 import org.loklak.geo.GeoMark;
+import org.loklak.tools.JsonDataset.Index;
 
 import twitter4j.IDs;
 import twitter4j.RateLimitStatus;
+import twitter4j.ResponseList;
 import twitter4j.Twitter;
 import twitter4j.TwitterException;
 import twitter4j.TwitterFactory;
@@ -42,7 +51,89 @@ import twitter4j.TwitterObjectFactory;
 import twitter4j.User;
 import twitter4j.conf.ConfigurationBuilder;
 
+@SuppressWarnings("unused")
 public class TwitterAPI {
+    
+    private final static String RATE_ACCOUNT_LOGIN_VERIFICATION_ENROLLMENT = "/account/login_verification_enrollment"; // limit = 15
+    private final static String RATE_ACCOUNT_SETTINGS = "/account/settings"; // limit = 15
+    private final static String RATE_ACCOUNT_UPDATE_PROFILE = "/account/update_profile"; // limit = 15
+    private final static String RATE_ACCOUNT_VERIFY_CREDENTIALS = "/account/verify_credentials"; // limit = 15
+    private final static String RATE_APPLICATION_RATE_LIMIT_STATUS = "/application/rate_limit_status"; // limit = 180
+    private final static String RATE_BLOCKS_IDS = "/blocks/ids"; // limit = 15
+    private final static String RATE_BLOCKS_LIST = "/blocks/list"; // limit = 15
+    private final static String RATE_COLLECTIONS_ENTRIES = "/collections/entries"; // limit = 1000
+    private final static String RATE_COLLECTIONS_LIST = "/collections/list"; // limit = 1000
+    private final static String RATE_COLLECTIONS_SHOW = "/collections/show"; // limit = 1000
+    private final static String RATE_CONTACTS_ADDRESSBOOK = "/contacts/addressbook"; // limit = 300
+    private final static String RATE_CONTACTS_DELETE_STATUS = "/contacts/delete/status"; // limit = 300
+    private final static String RATE_CONTACTS_UPLOADED_BY = "/contacts/uploaded_by"; // limit = 300
+    private final static String RATE_CONTACTS_USERS = "/contacts/users"; // limit = 300
+    private final static String RATE_CONTACTS_USERS_AND_UPLOADED_BY = "/contacts/users_and_uploaded_by"; // limit = 300
+    private final static String RATE_DEVICE_TOKEN = "/device/token"; // limit = 15
+    private final static String RATE_DIRECT_MESSAGES = "/direct_messages"; // limit = 15
+    private final static String RATE_DIRECT_MESSAGES_SENT = "/direct_messages/sent"; // limit = 15
+    private final static String RATE_DIRECT_MESSAGES_SENT_AND_RECEIVED = "/direct_messages/sent_and_received"; // limit = 15
+    private final static String RATE_DIRECT_MESSAGES_SHOW = "/direct_messages/show"; // limit = 15
+    private final static String RATE_FAVORITES_LIST = "/favorites/list"; // limit = 15
+    private final static String RATE_FOLLOWERS_IDS = "/followers/ids"; // limit = 15
+    private final static String RATE_FOLLOWERS_LIST = "/followers/list"; // limit = 15
+    private final static String RATE_FRIENDS_FOLLOWING_IDS = "/friends/following/ids"; // limit = 15
+    private final static String RATE_FRIENDS_FOLLOWING_LIST = "/friends/following/list"; // limit = 15
+    private final static String RATE_FRIENDS_IDS = "/friends/ids"; // limit = 15
+    private final static String RATE_FRIENDS_LIST = "/friends/list"; // limit = 15
+    private final static String RATE_FRIENDSHIPS_INCOMING = "/friendships/incoming"; // limit = 15
+    private final static String RATE_FRIENDSHIPS_LOOKUP = "/friendships/lookup"; // limit = 15
+    private final static String RATE_FRIENDSHIPS_NO_RETWEETS_IDS = "/friendships/no_retweets/ids"; // limit = 15
+    private final static String RATE_FRIENDSHIPS_OUTGOING = "/friendships/outgoing"; // limit = 15
+    private final static String RATE_FRIENDSHIPS_SHOW = "/friendships/show"; // limit = 180
+    private final static String RATE_GEO_ID_PLACE_ID = "/geo/id/:place_id"; // limit = 15
+    private final static String RATE_GEO_REVERSE_GEOCODE = "/geo/reverse_geocode"; // limit = 15
+    private final static String RATE_GEO_SEARCH = "/geo/search"; // limit = 15
+    private final static String RATE_GEO_SIMILAR_PLACES = "/geo/similar_places"; // limit = 15
+    private final static String RATE_HELP_CONFIGURATION = "/help/configuration"; // limit = 15
+    private final static String RATE_HELP_LANGUAGES = "/help/languages"; // limit = 15
+    private final static String RATE_HELP_PRIVACY = "/help/privacy"; // limit = 15
+    private final static String RATE_HELP_SETTINGS = "/help/settings"; // limit = 15
+    private final static String RATE_HELP_TOS = "/help/tos"; // limit = 15
+    private final static String RATE_LISTS_LIST = "/lists/list"; // limit = 15
+    private final static String RATE_LISTS_MEMBERS = "/lists/members"; // limit = 180
+    private final static String RATE_LISTS_MEMBERS_SHOW = "/lists/members/show"; // limit = 15
+    private final static String RATE_LISTS_MEMBERSHIPS = "/lists/memberships"; // limit = 15
+    private final static String RATE_LISTS_OWNERSHIPS = "/lists/ownerships"; // limit = 15
+    private final static String RATE_LISTS_SHOW = "/lists/show"; // limit = 15
+    private final static String RATE_LISTS_STATUSES = "/lists/statuses"; // limit = 180
+    private final static String RATE_LISTS_SUBSCRIBERS = "/lists/subscribers"; // limit = 180
+    private final static String RATE_LISTS_SUBSCRIBERS_SHOW = "/lists/subscribers/show"; // limit = 15
+    private final static String RATE_LISTS_SUBSCRIPTIONS = "/lists/subscriptions"; // limit = 15
+    private final static String RATE_MUTES_USERS_IDS = "/mutes/users/ids"; // limit = 15
+    private final static String RATE_MUTES_USERS_LIST = "/mutes/users/list"; // limit = 15
+    private final static String RATE_SAVED_SEARCHES_DESTROY_ID = "/saved_searches/destroy/:id"; // limit = 15
+    private final static String RATE_SAVED_SEARCHES_LIST = "/saved_searches/list"; // limit = 15
+    private final static String RATE_SAVED_SEARCHES_SHOW_ID = "/saved_searches/show/:id"; // limit = 15
+    private final static String RATE_SEARCH_TWEETS = "/search/tweets"; // limit = 180
+    private final static String RATE_STATUSES_FRIENDS = "/statuses/friends"; // limit = 15
+    private final static String RATE_STATUSES_HOME_TIMELINE = "/statuses/home_timeline"; // limit = 15
+    private final static String RATE_STATUSES_LOOKUP = "/statuses/lookup"; // limit = 180
+    private final static String RATE_STATUSES_MENTIONS_TIMELINE = "/statuses/mentions_timeline"; // limit = 15
+    private final static String RATE_STATUSES_OEMBED = "/statuses/oembed"; // limit = 180
+    private final static String RATE_STATUSES_RETWEETERS_IDS = "/statuses/retweeters/ids"; // limit = 15
+    private final static String RATE_STATUSES_RETWEETS_ID = "/statuses/retweets/:id"; // limit = 60
+    private final static String RATE_STATUSES_RETWEETS_OF_ME = "/statuses/retweets_of_me"; // limit = 15
+    private final static String RATE_STATUSES_SHOW_ID = "/statuses/show/:id"; // limit = 180
+    private final static String RATE_STATUSES_USER_TIMELINE = "/statuses/user_timeline"; // limit = 180
+    private final static String RATE_TRENDS_AVAILABLE = "/trends/available"; // limit = 15
+    private final static String RATE_TRENDS_CLOSEST = "/trends/closest"; // limit = 15
+    private final static String RATE_TRENDS_PLACE = "/trends/place"; // limit = 15
+    private final static String RATE_USERS_DERIVED_INFO = "/users/derived_info"; // limit = 15
+    private final static String RATE_USERS_LOOKUP = "/users/lookup"; // limit = 180
+    private final static String RATE_USERS_PROFILE_BANNER = "/users/profile_banner"; // limit = 180
+    private final static String RATE_USERS_REPORT_SPAM = "/users/report_spam"; // limit = 15
+    private final static String RATE_USERS_SEARCH = "/users/search"; // limit = 180
+    private final static String RATE_USERS_SHOW_ID = "/users/show/:id"; // limit = 180
+    private final static String RATE_USERS_SUGGESTIONS = "/users/suggestions"; // limit = 15
+    private final static String RATE_USERS_SUGGESTIONS_SLUG = "/users/suggestions/:slug"; // limit = 15
+    private final static String RATE_USERS_SUGGESTIONS_SLUG_MEMBERS = "/users/suggestions/:slug/members"; // limit = 15
+
 
     private static TwitterFactory appFactory = null;
     private static Map<String, TwitterFactory> userFactory = new HashMap<>();
@@ -73,16 +164,34 @@ public class TwitterAPI {
         return new TwitterFactory(cb.build());
     }
 
+    public static RateLimitStatus getRateLimitStatus(final String rate_type) throws TwitterException {
+        return getAppTwitterFactory().getInstance().getRateLimitStatus().get(rate_type);
+    }
+
+    private static final int getUserLimit = 180;
+    private static int getUserRemaining = getUserLimit;
+    private static long getUserResetTime = 0;
+    public static int getUserRemaining() {return System.currentTimeMillis() > getUserResetTime ? getUserLimit : getUserRemaining;}
     public static Map<String, Object> getUser(String screen_name) throws TwitterException, IOException {
-        Map<String, Object> map = DAO.twitter_user_dump.getIndex("screen_name").get(screen_name);
+        Map<String, Object> map = DAO.user_dump.getIndex("screen_name").get(screen_name);
+        if (map == null) map = DAO.user_dump.getIndex("id_str").get(screen_name);
         if (map != null) return map;
         TwitterFactory tf = getUserTwitterFactory(screen_name);
         if (tf == null) tf = getAppTwitterFactory();
         if (tf == null) return null;
-        User user = tf.getInstance().showUser(screen_name);
+        Twitter twitter = tf.getInstance();
+        User user = twitter.showUser(screen_name);
+        RateLimitStatus rateLimitStatus = user.getRateLimitStatus();
+        getUserResetTime = System.currentTimeMillis() + rateLimitStatus.getSecondsUntilReset() * 1000;
+        getUserRemaining = rateLimitStatus.getRemaining();
+        map = enrich(user);
+        return map;
+    }
+    
+    public static Map<String, Object> enrich(User user) throws IOException {
         String json = TwitterObjectFactory.getRawJSON(user);
         XContentParser parser = JsonXContent.jsonXContent.createParser(json);
-        map = parser == null ? null : parser.map();
+        Map<String, Object> map = parser == null ? null : parser.map();
         map.put("retrieval_date", AbstractIndexEntry.utcFormatter.print(System.currentTimeMillis()));
         Object status = map.remove("status"); // we don't need to store the latest status update in the user dump
         // TODO: store the latest status in our message database
@@ -97,38 +206,143 @@ public class TwitterAPI {
                 map.put("location_mark", new double[]{loc.mlon(), loc.mlat()}); //[longitude, latitude]
             }
         }
-        DAO.twitter_user_dump.putUnique(map);
+        DAO.user_dump.putUnique(map);
         return map;
     }
     
-    public static Set<Long> getFollowerIDs(Twitter twitter, String user_name) {
+    
+    private static final int getFollowerIdLimit = 180;
+    private static int getFollowerIdRemaining = getFollowerIdLimit;
+    private static long getFollowerIdResetTime = 0;
+    public static int getFollowerIdRemaining() {return System.currentTimeMillis() > getFollowerIdResetTime ? getFollowerIdLimit : getFollowerIdRemaining;}
+    public static Map<String, Object> getFollower(String screen_name) throws IOException {
+        boolean complete;
+        Set<Number> followerIDs = new LinkedHashSet<>();
+        Set<Number> unfollowerIDs = new LinkedHashSet<>();
+        Map<String, Object> map = DAO.follower_dump.getIndex("screen_name").get(screen_name);
+        if (map == null) map = DAO.follower_dump.getIndex("id_str").get(screen_name);
+        if (map != null) {
+            // check if the map is complete
+            complete = (Boolean) map.get("complete");
+            if (complete) return map; // TODO: check date
+            List<Object> fol = (List<Object>) map.get("follower");
+            for (Object f: fol) {
+                followerIDs.add((Number) f);
+            }
+        }
+        TwitterFactory tf = getUserTwitterFactory(screen_name);
+        if (tf == null) tf = getAppTwitterFactory();
+        if (tf == null) return null;
+        Twitter twitter = tf.getInstance();
         long cursor = -1;
-        Set<Long> allIDs = new HashSet<>();
-        boolean complete = true;
-        while (cursor != 0) {
-            System.out.println("cursor:" + cursor);
+        complete = true;
+        collect: while (cursor != 0) {
             try {
-                IDs ids = twitter.getFollowersIDs(user_name, cursor);
+                IDs ids = twitter.getFollowersIDs(screen_name, cursor);
                 RateLimitStatus rateStatus = ids.getRateLimitStatus();
-                System.out.println("got: " + ids.getIDs().length + " ids");
-                System.out.println("Rate Status: " + rateStatus.toString() + "; time=" + System.currentTimeMillis());
-                for (long id: ids.getIDs()) allIDs.add(id);
-                /*
-                PagableResponseList<User> followers = twitter.getFollowersList(user_name, cursor);
-                for (User follower: followers) {
-                    System.out.println(follower.getName());
+                //System.out.println("got: " + ids.getIDs().length + " ids");
+                //System.out.println("Rate Status: " + rateStatus.toString() + "; time=" + System.currentTimeMillis());
+                boolean dd = false;
+                for (long id: ids.getIDs()) {
+                    if (followerIDs.contains(id)) dd = true; // don't break loop here
+                    followerIDs.add(id);
                 }
-                */
-                if (rateStatus.getRemaining() == 5) {
+                if (dd) break collect; // this is complete!
+                if (rateStatus.getRemaining() == 0) {
                     complete = false;
-                    break;
+                    break collect;
                 }
                 cursor = ids.getNextCursor();
             } catch (TwitterException e) {
                 complete = false;
+                break collect;
             }
         }
-        return allIDs;
+        // create result
+        map = new LinkedHashMap<>();
+        map.put("screen_name", screen_name);
+        map.put("retrieval_date", AbstractIndexEntry.utcFormatter.print(System.currentTimeMillis()));
+        map.put("complete", complete);
+        Map<Number, String> follower = getScreenName(followerIDs);
+        Map<Number, String> unfollower = getScreenName(unfollowerIDs);
+        map.put("follower_count", follower.size());
+        map.put("unfollower_count", unfollower.size());
+        map.put("follower", follower);
+        map.put("unfollower", unfollower);
+        if (complete) DAO.follower_dump.putUnique(map); // currently we write only complete data sets. In the future the update of datasets shall be supported
+        return map;
+    }
+    
+    public static Map<Number, String> getScreenName(Set<Number> id_strs) throws IOException {
+        // we have several sources to get this mapping:
+        // - 1st / fastest: mapping from DAO.twitter_user_dump
+        // - 2nd / fast   : mapping from DAO.searchLocalUserByUserId(user_id)
+        // - 3rd / slow   : from twitter API with twitter.lookupUsers(String[] user_id)
+        // first we check all fast solutions until trying the twitter api
+        Map<Number, String> r = new HashMap<>();
+        Set<Number> id4api = new HashSet<>();
+        Index idIndex = DAO.user_dump.getIndex("id_str");
+        for (Number id_str: id_strs) {
+            Map<String, Object> map = idIndex.get(id_str.toString());
+            if (map != null) {
+                String screen_name = (String) map.get("screen_name");
+                if (screen_name != null) {
+                    r.put(id_str, screen_name);
+                    continue;
+                }
+            }
+            UserEntry ue = DAO.searchLocalUserByUserId(id_str.toString());
+            if (ue != null) {
+                String screen_name = ue.getScreenName();
+                if (screen_name != null) {
+                    r.put(id_str, screen_name);
+                    continue;
+                }
+            }
+            id4api.add(id_str);
+        }
+        // resolve the remaining user_ids from the twitter api
+        if (id4api.size() > 0) {
+            TwitterFactory tf = getAppTwitterFactory();
+            if (tf == null) return null;
+            Twitter twitter = tf.getInstance();
+            collect: while (id4api.size() > 0) {
+                // construct a query term with at most 100 id's
+                int chunksize = Math.min(100, id4api.size());
+                long[] u = new long[chunksize];
+                Iterator<Number> ni = id4api.iterator();
+                for (int i = 0; i < chunksize; i++) {
+                    u[i] = ni.next().longValue();
+                }
+                try {
+                    ResponseList<User> users = twitter.lookupUsers(u);
+                    for (User usr: users) {
+                        enrich(usr);
+                        r.put(usr.getId(), usr.getScreenName());
+                        id4api.remove(usr.getId());
+                    }
+                } catch (TwitterException e) {
+                    break collect;
+                }
+            }
+        }
+        return r;
     }
 
+    public static void main(String[] args) {
+        DAO.init(new File(new File("."), "data"));
+        try {
+            System.out.println(getRateLimitStatus(RATE_FOLLOWERS_IDS));
+        } catch (TwitterException e) {
+            e.printStackTrace();
+        }
+        try {
+            System.out.println(getFollower("mariobehling"));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        DAO.close();
+        System.exit(0);
+    }
+    
 }
