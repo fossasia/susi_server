@@ -584,7 +584,7 @@ public class DAO {
             SearchHit[] hits = response.getHits().getHits();
             if (hits.length == 0) return null;
             assert hits.length == 1;
-            Map<String, Object> map = hits[1].getSource();
+            Map<String, Object> map = hits[0].getSource();
             return new UserEntry(map);            
         } catch (IndexMissingException e) {}
         return null;
