@@ -54,12 +54,12 @@ public class SearchServlet extends HttpServlet {
     private static final long serialVersionUID = 563533152152063908L;
 
     @Override
-    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+    protected void doPost(final HttpServletRequest request, final HttpServletResponse response) throws ServletException, IOException {
         doGet(request, response);
     }
     
     @Override
-    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+    protected void doGet(final HttpServletRequest request, final HttpServletResponse response) throws ServletException, IOException {
         try {
         RemoteAccess.Post post = RemoteAccess.evaluate(request);
         
@@ -97,7 +97,9 @@ public class SearchServlet extends HttpServlet {
                 final int timezoneOffsetf = timezoneOffset;
                 Thread scraperThread = tokens.raw.length() == 0 ? null : new Thread() {
                     public void run() {
-                        Timeline[] twitterTl = DAO.scrapeTwitter(tokens.translate4scraper(), order, timezoneOffsetf, true);
+                        final String scraper_query = tokens.translate4scraper();
+                        DAO.log(request.getServletPath() + " scraping with query: " + scraper_query);
+                        Timeline[] twitterTl = DAO.scrapeTwitter(scraper_query, order, timezoneOffsetf, true);
                         newrecords.set(twitterTl[1].size());
                         tl.putAll(QueryEntry.applyConstraint(twitterTl[1], tokens));
                     }
@@ -117,7 +119,9 @@ public class SearchServlet extends HttpServlet {
                 if (scraperThread != null) try {scraperThread.join(8000);} catch (InterruptedException e) {}
             } else {
                 if ("twitter".equals(source) && tokens.raw.length() > 0) {
-                    Timeline[] twitterTl = DAO.scrapeTwitter(tokens.translate4scraper(), order, timezoneOffset, true);
+                    final String scraper_query = tokens.translate4scraper();
+                    DAO.log(request.getServletPath() + " scraping with query: " + scraper_query);
+                    Timeline[] twitterTl = DAO.scrapeTwitter(scraper_query, order, timezoneOffset, true);
                     newrecords.set(twitterTl[1].size());
                     tl.putAll(QueryEntry.applyConstraint(twitterTl[0], tokens));
                     // in this case we use all tweets, not only the latest one because it may happen that there are no new and that is not what the user expects

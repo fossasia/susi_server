@@ -211,10 +211,10 @@ public class TwitterAPI {
     }
     
     
-    private static final int getFollowerIdLimit = 180;
-    private static int getFollowerIdRemaining = getFollowerIdLimit;
-    private static long getFollowerIdResetTime = 0;
-    public static int getFollowerIdRemaining() {return System.currentTimeMillis() > getFollowerIdResetTime ? getFollowerIdLimit : getFollowerIdRemaining;}
+    private static final int getFollowerLimit = 180;
+    private static int getFollowerRemaining = getFollowerLimit;
+    private static long getFollowerResetTime = 0;
+    public static int getFollowerRemaining() {return System.currentTimeMillis() > getFollowerResetTime ? getFollowerLimit : getFollowerRemaining;}
     public static Map<String, Object> getFollower(String screen_name) throws IOException {
         boolean complete;
         Set<Number> followerIDs = new LinkedHashSet<>();
