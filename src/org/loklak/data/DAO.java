@@ -24,12 +24,16 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.attribute.PosixFilePermission;
 import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -62,6 +66,7 @@ import org.elasticsearch.search.aggregations.bucket.terms.Terms;
 import org.elasticsearch.search.aggregations.bucket.terms.Terms.Bucket;
 import org.elasticsearch.search.sort.SortOrder;
 import org.loklak.Caretaker;
+import org.loklak.LoklakServer;
 import org.loklak.api.client.ClientConnection;
 import org.loklak.api.client.SearchClient;
 import org.loklak.geo.GeoNames;
@@ -84,7 +89,7 @@ public class DAO {
     public final static String MESSAGE_DUMP_FILE_PREFIX = "messages_";
     public final static String ACCOUNT_DUMP_FILE_PREFIX = "accounts_";
     public final static String USER_DUMP_FILE_PREFIX = "users_";
-    public final static String FOLLOWER_DUMP_FILE_PREFIX = "follower_";
+    public final static String FOLLOWERS_DUMP_FILE_PREFIX = "followers_";
     public final static String QUERIES_INDEX_NAME = "queries";
     public final static String MESSAGES_INDEX_NAME = "messages";
     public final static String USERS_INDEX_NAME = "users";
@@ -93,9 +98,9 @@ public class DAO {
     
     public  static File conf_dir;
     private static File external_data, assets, dictionaries;
-    private static File message_dump_dir;
+    private static Path message_dump_dir, account_dump_dir;
     private static JsonDump message_dump, account_dump;
-    public  static JsonDataset user_dump, follower_dump;
+    public  static JsonDataset user_dump, followers_dump;
     private static File settings_dir, customized_config;
     private static Node elasticsearch_node;
     private static Client elasticsearch_client;
@@ -111,7 +116,8 @@ public class DAO {
      * initialize the DAO
      * @param datadir the path to the data directory
      */
-    public static void init(File datadir) {
+    public static void init(Path dataPath) {
+        File datadir = dataPath.toFile();
         try {
             // create and document the data dump dir
             assets = new File(datadir, "assets");
@@ -142,17 +148,18 @@ public class DAO {
                 "- imported: dump files which had been processed from the import directory are moved here.\n" +
                 "You can import dump files from other peers by dropping them into the import directory.\n" +
                 "Each dump file must start with the prefix '" + MESSAGE_DUMP_FILE_PREFIX + "' to be recognized.\n";
-            message_dump_dir = new File(datadir, "dump");
-            message_dump = new JsonDump(message_dump_dir, MESSAGE_DUMP_FILE_PREFIX, message_dump_readme);
+            message_dump_dir = dataPath.resolve("dump");
+            message_dump = new JsonDump(message_dump_dir.toFile(), MESSAGE_DUMP_FILE_PREFIX, message_dump_readme);
             
-            File account_dump_dir = new File(datadir, "accounts");
-            account_dump_dir.mkdirs();
-            account_dump = new JsonDump(account_dump_dir, ACCOUNT_DUMP_FILE_PREFIX, null);
+            account_dump_dir = dataPath.resolve("accounts");
+            account_dump_dir.toFile().mkdirs();
+            Files.setPosixFilePermissions(account_dump_dir, LoklakServer.securePerm); // no other permissions to this path
+            account_dump = new JsonDump(account_dump_dir.toFile(), ACCOUNT_DUMP_FILE_PREFIX, null);
 
             File user_dump_dir = new File(datadir, "accounts");
             user_dump_dir.mkdirs();
             user_dump = new JsonDataset(user_dump_dir,USER_DUMP_FILE_PREFIX, new String[]{"id_str","screen_name"});
-            follower_dump = new JsonDataset(user_dump_dir, FOLLOWER_DUMP_FILE_PREFIX, new String[]{"id_str","screen_name"});
+            followers_dump = new JsonDataset(user_dump_dir, FOLLOWERS_DUMP_FILE_PREFIX, new String[]{"id_str","screen_name"});
             
             // load the config file(s);
             conf_dir = new File("conf");
@@ -181,6 +188,9 @@ public class DAO {
             // start elasticsearch
             elasticsearch_node = NodeBuilder.nodeBuilder().settings(builder).node();
             elasticsearch_client = elasticsearch_node.client();
+            Path index_dir = dataPath.resolve("index");
+            if (index_dir.toFile().exists()) Files.setPosixFilePermissions(index_dir, LoklakServer.securePerm); // no other permissions to this path
+            
             
             // define the index factories
             messages = new MessageFactory(elasticsearch_client, MESSAGES_INDEX_NAME, CACHE_MAXSIZE);
