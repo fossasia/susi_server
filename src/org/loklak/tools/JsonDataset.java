@@ -107,7 +107,7 @@ public class JsonDataset {
     }
     
     
-    public static class Index extends HashMap<Object, Map<String, Object>> implements Map<Object, Map<String, Object>> {
+    public static class Index extends ConcurrentHashMap<Object, Map<String, Object>> implements Map<Object, Map<String, Object>> {
         private static final long serialVersionUID = 4596787150066539880L;
     }
     
