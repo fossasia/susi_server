@@ -22,6 +22,8 @@ package org.loklak.harvester;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.FileSystems;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -134,7 +136,6 @@ public class TwitterAPI {
     private final static String RATE_USERS_SUGGESTIONS_SLUG = "/users/suggestions/:slug"; // limit = 15
     private final static String RATE_USERS_SUGGESTIONS_SLUG_MEMBERS = "/users/suggestions/:slug/members"; // limit = 15
 
-
     private static TwitterFactory appFactory = null;
     private static Map<String, TwitterFactory> userFactory = new HashMap<>();
     
@@ -210,32 +211,55 @@ public class TwitterAPI {
         return map;
     }
     
+    public static Map<String, Object> getFollowers(String screen_name, int maxFollowers) throws IOException {
+        Index userIndex = DAO.user_dump.getIndex("screen_name");
+        Map<String, Object> map = new HashMap<>();
+        map.putAll(getFollowersNames(screen_name, maxFollowers)); // we clone the map because we modify it
+        map.remove("screen_name");
+
+        // followers
+        List<Map<String, Object>> followers = new ArrayList<>(); 
+        Map<String, Number> followers_names = (Map<String, Number>) map.remove("followers_names");
+        if (followers_names != null) for (String sn: followers_names.keySet()) {
+            Map<String, Object> user = userIndex.get(sn);
+            if (user != null) followers.add(user);
+        }
+        map.put("followers_count", followers.size());
+        map.put("followers", followers);
+        
+        // unfollowers
+        List<Map<String, Object>> unfollowers = new ArrayList<>(); 
+        Map<String, Number> unfollowers_names = (Map<String, Number>) map.remove("unfollowers_names");
+        if (unfollowers_names != null) for (String sn: unfollowers_names.keySet()) {
+            Map<String, Object> user = userIndex.get(sn);
+            if (user != null) unfollowers.add(user);
+        }
+        map.put("unfollowers_count", unfollowers.size());
+        map.put("unfollowers", unfollowers);
+ 
+        return map;
+    }
     
-    private static final int getFollowerLimit = 180;
-    private static int getFollowerRemaining = getFollowerLimit;
-    private static long getFollowerResetTime = 0;
-    public static int getFollowerRemaining() {return System.currentTimeMillis() > getFollowerResetTime ? getFollowerLimit : getFollowerRemaining;}
-    public static Map<String, Object> getFollower(String screen_name) throws IOException {
-        boolean complete;
+    private static final int getFollowersLimit = 180;
+    private static int getFollowersRemaining = getFollowersLimit;
+    private static long getFollowersResetTime = 0;
+    public static int getFollowersRemaining() {return System.currentTimeMillis() > getFollowersResetTime ? getFollowersLimit : getFollowersRemaining;}
+    public static Map<String, Object> getFollowersNames(final String screen_name, final int maxFollowers) throws IOException {
         Set<Number> followerIDs = new LinkedHashSet<>();
         Set<Number> unfollowerIDs = new LinkedHashSet<>();
-        Map<String, Object> map = DAO.follower_dump.getIndex("screen_name").get(screen_name);
-        if (map == null) map = DAO.follower_dump.getIndex("id_str").get(screen_name);
+        Map<String, Object> map = DAO.followers_dump.getIndex("screen_name").get(screen_name);
+        if (map == null) map = DAO.followers_dump.getIndex("id_str").get(screen_name);
         if (map != null) {
             // check if the map is complete
-            complete = (Boolean) map.get("complete");
-            if (complete) return map; // TODO: check date
-            List<Object> fol = (List<Object>) map.get("follower");
-            for (Object f: fol) {
-                followerIDs.add((Number) f);
-            }
+            //complete = (Boolean) map.get("complete");
+            return map; // TODO: check date and check if the map is complete
         }
         TwitterFactory tf = getUserTwitterFactory(screen_name);
         if (tf == null) tf = getAppTwitterFactory();
         if (tf == null) return null;
         Twitter twitter = tf.getInstance();
         long cursor = -1;
-        complete = true;
+        boolean complete = true;
         collect: while (cursor != 0) {
             try {
                 IDs ids = twitter.getFollowersIDs(screen_name, cursor);
@@ -252,6 +276,10 @@ public class TwitterAPI {
                     complete = false;
                     break collect;
                 }
+                if (followerIDs.size() >= Math.min(10000, maxFollowers >= 0 ? maxFollowers : 10000)) {
+                    complete = false;
+                    break collect;
+                }
                 cursor = ids.getNextCursor();
             } catch (TwitterException e) {
                 complete = false;
@@ -263,46 +291,59 @@ public class TwitterAPI {
         map.put("screen_name", screen_name);
         map.put("retrieval_date", AbstractIndexEntry.utcFormatter.print(System.currentTimeMillis()));
         map.put("complete", complete);
-        Map<Number, String> follower = getScreenName(followerIDs);
-        Map<Number, String> unfollower = getScreenName(unfollowerIDs);
-        map.put("follower_count", follower.size());
-        map.put("unfollower_count", unfollower.size());
-        map.put("follower", follower);
-        map.put("unfollower", unfollower);
-        if (complete) DAO.follower_dump.putUnique(map); // currently we write only complete data sets. In the future the update of datasets shall be supported
+        Map<String, Number> followers = getScreenName(followerIDs, maxFollowers, false);
+        Map<String, Number> unfollowers = getScreenName(unfollowerIDs, maxFollowers, false);
+        map.put("followers_count", followers.size());
+        map.put("unfollowers_count", unfollowers.size());
+        map.put("followers_names", followers);
+        map.put("unfollowers_names", unfollowers);
+        DAO.followers_dump.putUnique(map); // currently we write only complete data sets. In the future the update of datasets shall be supported
         return map;
     }
     
-    public static Map<Number, String> getScreenName(Set<Number> id_strs) throws IOException {
+    /**
+     * search for twitter user names by a given set of user id's
+     * @param id_strs
+     * @param lookupLocalUsersByUserId if this is true and successful, the resulting names may contain users without user info in the user dump
+     * @return
+     * @throws IOException
+     */
+    public static Map<String, Number> getScreenName(Set<Number> id_strs, final int maxFollowers, boolean lookupLocalUsersByUserId) throws IOException {
         // we have several sources to get this mapping:
         // - 1st / fastest: mapping from DAO.twitter_user_dump
         // - 2nd / fast   : mapping from DAO.searchLocalUserByUserId(user_id)
         // - 3rd / slow   : from twitter API with twitter.lookupUsers(String[] user_id)
         // first we check all fast solutions until trying the twitter api
-        Map<Number, String> r = new HashMap<>();
+        Map<String, Number> r = new HashMap<>();
         Set<Number> id4api = new HashSet<>();
         Index idIndex = DAO.user_dump.getIndex("id_str");
         for (Number id_str: id_strs) {
+            if (r.size() >= maxFollowers) break;
             Map<String, Object> map = idIndex.get(id_str.toString());
             if (map != null) {
                 String screen_name = (String) map.get("screen_name");
                 if (screen_name != null) {
-                    r.put(id_str, screen_name);
+                    r.put(screen_name, id_str);
                     continue;
                 }
             }
-            UserEntry ue = DAO.searchLocalUserByUserId(id_str.toString());
-            if (ue != null) {
-                String screen_name = ue.getScreenName();
-                if (screen_name != null) {
-                    r.put(id_str, screen_name);
-                    continue;
+            if (lookupLocalUsersByUserId) {
+                UserEntry ue = DAO.searchLocalUserByUserId(id_str.toString());
+                if (ue != null) {
+                    String screen_name = ue.getScreenName();
+                    if (screen_name != null) {
+                        r.put(screen_name, id_str);
+                        continue;
+                    }
                 }
             }
             id4api.add(id_str);
         }
+
+        while (id4api.size() > 100 && id4api.size() + r.size() > maxFollowers) id4api.remove(id4api.iterator().next());
+        
         // resolve the remaining user_ids from the twitter api
-        if (id4api.size() > 0) {
+        if (r.size() < maxFollowers && id4api.size() > 0) {
             TwitterFactory tf = getAppTwitterFactory();
             if (tf == null) return null;
             Twitter twitter = tf.getInstance();
@@ -318,7 +359,7 @@ public class TwitterAPI {
                     ResponseList<User> users = twitter.lookupUsers(u);
                     for (User usr: users) {
                         enrich(usr);
-                        r.put(usr.getId(), usr.getScreenName());
+                        r.put(usr.getScreenName(), usr.getId());
                         id4api.remove(usr.getId());
                     }
                 } catch (TwitterException e) {
@@ -330,14 +371,14 @@ public class TwitterAPI {
     }
 
     public static void main(String[] args) {
-        DAO.init(new File(new File("."), "data"));
+        DAO.init(FileSystems.getDefault().getPath("data"));
         try {
             System.out.println(getRateLimitStatus(RATE_FOLLOWERS_IDS));
         } catch (TwitterException e) {
             e.printStackTrace();
         }
         try {
-            System.out.println(getFollower("mariobehling"));
+            System.out.println(getFollowers("mariobehling", 99));
         } catch (IOException e) {
             e.printStackTrace();
         }
