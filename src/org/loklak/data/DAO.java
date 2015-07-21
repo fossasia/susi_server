@@ -751,6 +751,13 @@ public class DAO {
     
     public final static Set<Number> newUserIds = new ConcurrentHashSet<>();
     
+    public static void announceNewUserId(Timeline tl) {
+        for (MessageEntry message: tl) {
+            Number id = tl.getUser(message).getUser();
+            if (id != null) announceNewUserId(id);
+        }
+    }
+
     public static void announceNewUserId(Number id) {
         Index idIndex = DAO.user_dump.getIndex("id_str");
         Map<String, Object> map = idIndex.get(id.toString());
