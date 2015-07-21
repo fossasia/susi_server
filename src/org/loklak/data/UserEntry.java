@@ -54,6 +54,15 @@ public class UserEntry extends AbstractIndexEntry implements IndexEntry {
         return parseString((String) this.map.get("$type"));
     }
     
+    public Number getUser() {
+        String id = getUserId();
+        try {
+            return id == null ? null : Long.parseLong(id);
+        } catch (NumberFormatException e) {
+            return null;
+        }
+    }
+    
     public String getUserId() {
         return parseString((String) this.map.get(UserFactory.field_user_id));
     }

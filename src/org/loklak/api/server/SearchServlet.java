@@ -142,6 +142,13 @@ public class SearchServlet extends HttpServlet {
                 }
             }
         }
+        
+        // check the latest user_ids
+        for (MessageEntry message: tl) {
+            Number id = tl.getUser(message).getUser();
+            if (id != null) DAO.announceNewUserId(id);
+        }
+        
         hits = Math.max(hits, tl.size());
         // reduce the list to the wanted number of results if we have more
         tl.reduceToMaxsize(count);

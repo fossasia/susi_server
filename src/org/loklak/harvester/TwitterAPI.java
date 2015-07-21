@@ -140,7 +140,10 @@ public class TwitterAPI {
     private static Map<String, TwitterFactory> userFactory = new HashMap<>();
     
     public static TwitterFactory getAppTwitterFactory() {
-        if (appFactory == null) appFactory = getUserTwitterFactory(DAO.getConfig("twitterAccessToken", ""), DAO.getConfig("twitterAccessTokenSecret", ""));
+        String twitterAccessToken = DAO.getConfig("twitterAccessToken", "");
+        String twitterAccessTokenSecret = DAO.getConfig("twitterAccessTokenSecret", "");
+        if (twitterAccessToken.length() == 0 || twitterAccessTokenSecret.length() == 0) return null;
+        if (appFactory == null) appFactory = getUserTwitterFactory(twitterAccessToken, twitterAccessTokenSecret);
         return appFactory;
     }
 
@@ -211,7 +214,7 @@ public class TwitterAPI {
         return map;
     }
     
-    public static Map<String, Object> getFollowers(String screen_name, int maxFollowers) throws IOException {
+    public static Map<String, Object> getFollowers(String screen_name, int maxFollowers) throws IOException, TwitterException {
         Index userIndex = DAO.user_dump.getIndex("screen_name");
         Map<String, Object> map = new HashMap<>();
         map.putAll(getFollowersNames(screen_name, maxFollowers)); // we clone the map because we modify it
@@ -244,7 +247,7 @@ public class TwitterAPI {
     private static int getFollowersRemaining = getFollowersLimit;
     private static long getFollowersResetTime = 0;
     public static int getFollowersRemaining() {return System.currentTimeMillis() > getFollowersResetTime ? getFollowersLimit : getFollowersRemaining;}
-    public static Map<String, Object> getFollowersNames(final String screen_name, final int maxFollowers) throws IOException {
+    public static Map<String, Object> getFollowersNames(final String screen_name, final int maxFollowers) throws IOException, TwitterException {
         Set<Number> followerIDs = new LinkedHashSet<>();
         Set<Number> unfollowerIDs = new LinkedHashSet<>();
         Map<String, Object> map = DAO.followers_dump.getIndex("screen_name").get(screen_name);
@@ -307,8 +310,9 @@ public class TwitterAPI {
      * @param lookupLocalUsersByUserId if this is true and successful, the resulting names may contain users without user info in the user dump
      * @return
      * @throws IOException
+     * @throws TwitterException 
      */
-    public static Map<String, Number> getScreenName(Set<Number> id_strs, final int maxFollowers, boolean lookupLocalUsersByUserId) throws IOException {
+    public static Map<String, Number> getScreenName(Set<Number> id_strs, final int maxFollowers, boolean lookupLocalUsersByUserId) throws IOException, TwitterException {
         // we have several sources to get this mapping:
         // - 1st / fastest: mapping from DAO.twitter_user_dump
         // - 2nd / fast   : mapping from DAO.searchLocalUserByUserId(user_id)
@@ -363,6 +367,7 @@ public class TwitterAPI {
                         id4api.remove(usr.getId());
                     }
                 } catch (TwitterException e) {
+                    if (r.size() == 0) throw e;
                     break collect;
                 }
             }
@@ -379,7 +384,7 @@ public class TwitterAPI {
         }
         try {
             System.out.println(getFollowers("mariobehling", 99));
-        } catch (IOException e) {
+        } catch (IOException | TwitterException e) {
             e.printStackTrace();
         }
         DAO.close();

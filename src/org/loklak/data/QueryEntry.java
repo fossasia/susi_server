@@ -148,7 +148,7 @@ public class QueryEntry extends AbstractIndexEntry implements IndexEntry {
         }
         this.messages_per_day = (int) (DAY_MILLIS / this.message_period);
         this.expected_next = new Date(this.retrieval_last.getTime() + ((long) (ttl_factor *  this.message_period)));
-        long pivot_period = DAO.getConfig("retrieval.pivotfrequency", 10000);
+        long pivot_period = DAO.getConfig("retrieval.queries.pivotfrequency", 10000);
         long strategic_period =   // if the period is far below the minimum, we apply a penalty
                  (this.message_period < pivot_period ?
                      pivot_period + 1000 * (long) Math.pow((pivot_period - this.message_period) / 1000, 3) :

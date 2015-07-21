@@ -32,6 +32,8 @@ import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -41,6 +43,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.eclipse.jetty.util.ConcurrentHashSet;
 import org.eclipse.jetty.util.log.Log;
 import org.elasticsearch.action.count.CountResponse;
 import org.elasticsearch.action.search.SearchRequestBuilder;
@@ -73,6 +76,7 @@ import org.loklak.harvester.TwitterScraper;
 import org.loklak.tools.DateParser;
 import org.loklak.tools.JsonDataset;
 import org.loklak.tools.JsonDump;
+import org.loklak.tools.JsonDataset.Index;
 
 import com.fasterxml.jackson.core.JsonFactory;
 
@@ -743,6 +747,25 @@ public class DAO {
             }
         }
         return tl;
+    }
+    
+    public final static Set<Number> newUserIds = new ConcurrentHashSet<>();
+    
+    public static void announceNewUserId(Number id) {
+        Index idIndex = DAO.user_dump.getIndex("id_str");
+        Map<String, Object> map = idIndex.get(id.toString());
+        if (map == null) newUserIds.add(id);
+    }
+    
+    public static Set<Number> getNewUserIdsChunk() {
+        if (newUserIds.size() < 100) return null;
+        Set<Number> chunk = new HashSet<>();
+        Iterator<Number> i = newUserIds.iterator();
+        for (int j = 0; j < 100; j++) {
+            chunk.add(i.next());
+            i.remove();
+        }
+        return chunk;
     }
     
     public static void log(String line) {

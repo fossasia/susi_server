@@ -111,7 +111,11 @@ public class AccountServlet extends HttpServlet {
         AccountEntry accountEntry = DAO.searchLocalAccount(screen_name);
         Map<String, Object> twitterUserEntry = null;
         try {twitterUserEntry = TwitterAPI.getUser(screen_name);} catch (TwitterException e) {}
-        Map<String, Object> twitterFollowersEntry = maxFollowers > 0 ? TwitterAPI.getFollowers(screen_name, maxFollowers) : null;
+        Map<String, Object> twitterFollowersEntry = null;
+        try {
+            twitterFollowersEntry = maxFollowers > 0 ? TwitterAPI.getFollowers(screen_name, maxFollowers) : null;
+        } catch (TwitterException e) {
+        }
         
         post.setResponse(response, "application/javascript");
         
