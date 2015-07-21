@@ -20,7 +20,9 @@
 package org.loklak;
 
 import java.io.File;
+import java.io.IOException;
 import java.nio.file.FileSystems;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.attribute.PosixFilePermission;
 import java.util.EnumSet;
@@ -68,12 +70,18 @@ import org.loklak.vis.server.MarkdownServlet;
 
 public class LoklakServer {
 
-    public final static Set<PosixFilePermission> securePerm = new HashSet<PosixFilePermission>();
+    private final static Set<PosixFilePermission> securePerm = new HashSet<PosixFilePermission>();
     
     static {
         securePerm.add(PosixFilePermission.OWNER_READ);
         securePerm.add(PosixFilePermission.OWNER_WRITE);
         securePerm.add(PosixFilePermission.OWNER_EXECUTE);
+    }
+    
+    public final static void protectPath(Path path) {
+        try {
+            Files.setPosixFilePermissions(path, LoklakServer.securePerm);
+        } catch (UnsupportedOperationException | IOException e) {}
     }
     
     private static Server server = null;

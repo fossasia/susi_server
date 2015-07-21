@@ -24,7 +24,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.AbstractMap;
 import java.util.ArrayList;
@@ -155,7 +154,7 @@ public class DAO {
             
             account_dump_dir = dataPath.resolve("accounts");
             account_dump_dir.toFile().mkdirs();
-            Files.setPosixFilePermissions(account_dump_dir, LoklakServer.securePerm); // no other permissions to this path
+            LoklakServer.protectPath(account_dump_dir); // no other permissions to this path
             account_dump = new JsonDump(account_dump_dir.toFile(), ACCOUNT_DUMP_FILE_PREFIX, null);
 
             File user_dump_dir = new File(datadir, "accounts");
@@ -170,7 +169,7 @@ public class DAO {
             for (Map.Entry<Object, Object> entry: prop.entrySet()) config.put((String) entry.getKey(), (String) entry.getValue());
             settings_dir = dataPath.resolve("settings");
             settings_dir.toFile().mkdirs();
-            Files.setPosixFilePermissions(settings_dir, LoklakServer.securePerm);
+            LoklakServer.protectPath(settings_dir);
             customized_config = new File(settings_dir.toFile(), "customized_config.properties");
             if (!customized_config.exists()) {
                 BufferedWriter w = new BufferedWriter(new FileWriter(customized_config));
@@ -192,7 +191,7 @@ public class DAO {
             elasticsearch_node = NodeBuilder.nodeBuilder().settings(builder).node();
             elasticsearch_client = elasticsearch_node.client();
             Path index_dir = dataPath.resolve("index");
-            if (index_dir.toFile().exists()) Files.setPosixFilePermissions(index_dir, LoklakServer.securePerm); // no other permissions to this path
+            if (index_dir.toFile().exists()) LoklakServer.protectPath(index_dir); // no other permissions to this path
             
             
             // define the index factories
