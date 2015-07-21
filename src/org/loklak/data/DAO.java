@@ -100,10 +100,10 @@ public class DAO {
     
     public  static File conf_dir;
     private static File external_data, assets, dictionaries;
-    private static Path message_dump_dir, account_dump_dir;
+    private static Path message_dump_dir, account_dump_dir, settings_dir;
     private static JsonDump message_dump, account_dump;
     public  static JsonDataset user_dump, followers_dump;
-    private static File settings_dir, customized_config;
+    private static File customized_config;
     private static Node elasticsearch_node;
     private static Client elasticsearch_client;
     private static UserFactory users;
@@ -168,9 +168,10 @@ public class DAO {
             Properties prop = new Properties();
             prop.load(new FileInputStream(new File(conf_dir, "config.properties")));
             for (Map.Entry<Object, Object> entry: prop.entrySet()) config.put((String) entry.getKey(), (String) entry.getValue());
-            settings_dir = new File(datadir, "settings");
-            settings_dir.mkdirs();
-            customized_config = new File(settings_dir, "customized_config.properties");
+            settings_dir = dataPath.resolve("settings");
+            settings_dir.toFile().mkdirs();
+            Files.setPosixFilePermissions(settings_dir, LoklakServer.securePerm);
+            customized_config = new File(settings_dir.toFile(), "customized_config.properties");
             if (!customized_config.exists()) {
                 BufferedWriter w = new BufferedWriter(new FileWriter(customized_config));
                 w.write("# This file can be used to customize the configuration file conf/config.properties\n");
