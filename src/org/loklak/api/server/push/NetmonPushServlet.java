@@ -21,6 +21,7 @@ package org.loklak.api.server.push;
 import org.loklak.api.client.ClientConnection;
 import org.loklak.api.server.RemoteAccess;
 import org.loklak.data.DAO;
+import org.loklak.geo.LocationSource;
 import org.loklak.harvester.JsonFieldConverter;
 import org.loklak.harvester.SourceType;
 import org.w3c.dom.Document;
@@ -95,7 +96,8 @@ public class NetmonPushServlet extends HttpServlet {
             location_point.add(node.get("longitude"));
             location_point.add(node.get("latitude"));
             node.put("location_point", location_point);
-
+            node.put("location_mark", location_point);
+            node.put("location_source", LocationSource.USER.name());
             try {
                 node.put("id_str", PushServletHelper.computeMessageId(node, node.get("router_id"), SourceType.NETMON));
             } catch (Exception e) {

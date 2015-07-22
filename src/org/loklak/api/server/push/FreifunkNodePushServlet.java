@@ -25,6 +25,7 @@ import org.elasticsearch.common.xcontent.json.JsonXContent;
 import org.loklak.api.client.ClientConnection;
 import org.loklak.api.server.RemoteAccess;
 import org.loklak.data.DAO;
+import org.loklak.geo.LocationSource;
 import org.loklak.harvester.JsonFieldConverter;
 import org.loklak.harvester.JsonValidator;
 import org.loklak.harvester.SourceType;
@@ -85,6 +86,7 @@ public class FreifunkNodePushServlet extends HttpServlet {
                 node.put("text", "");
             }
             node.put("source_type", SourceType.FREIFUNK_NODE.name());
+            node.put("location_source", LocationSource.USER.name());
             try {
                 node.put("id_str", PushServletHelper.computeMessageId(node, node.get("id"), SourceType.FREIFUNK_NODE));
             } catch (Exception e) {

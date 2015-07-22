@@ -149,7 +149,8 @@ public class GeoJsonPushServlet extends HttpServlet {
             properties.put("provider_type", ProviderType.GEOJSON.name());
             properties.put("provider_hash", remoteHash);
             properties.put("location_point", geometry.get("coordinates"));
-            properties.put("location_source", LocationSource.REPORT.name());
+            properties.put("location_mark", geometry.get("coordinates"));
+            properties.put("location_source", LocationSource.USER.name());
             properties.put("place_context", PlaceContext.FROM.name());
 
             // avoid error text not found. TODO: a better strategy, e.g. require text as a mandatory field

@@ -25,6 +25,7 @@ import org.elasticsearch.common.xcontent.json.JsonXContent;
 import org.loklak.api.client.ClientConnection;
 import org.loklak.api.server.RemoteAccess;
 import org.loklak.data.DAO;
+import org.loklak.geo.LocationSource;
 import org.loklak.harvester.JsonFieldConverter;
 import org.loklak.harvester.JsonValidator;
 import org.loklak.harvester.SourceType;
@@ -94,6 +95,9 @@ public class NodelistPushServlet extends HttpServlet {
             location_point.add(longitude);
             location_point.add(latitude);
             node.put("location_point", location_point);
+            node.put("location_mark", location_point);
+            node.put("location_source", LocationSource.USER.name());
+            
             Map<String, Object> user = new HashMap<>();
             user.put("screen_name", "freifunk_" + community.get("name"));
             user.put("name", community.get("name"));

@@ -2,6 +2,6 @@
   "rules" :
   [
     ["value.hostname", ["screen_name", "user.screen_name", "user.name"]],
-    ["value.latlng", "location_point"]
+    ["value.latlng", ["location_point", "location_mark"]]
   ]
 }
