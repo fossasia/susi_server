@@ -151,7 +151,7 @@ public class LoklakServer {
         servletHandler.addServlet(OpenWifiMapPushServlet.class, "/api/push/openwifimap.json");
         servletHandler.addServlet(NodelistPushServlet.class, "/api/push/nodelist.json");
         servletHandler.addServlet(FreifunkNodePushServlet.class, "/api/push/freifunknode.json");
-        servletHandler.addServlet(NetmonPushServlet.class, "/api/push/netmon.json");
+        servletHandler.addServlet(NetmonPushServlet.class, "/api/push/netmon.xml");
         ServletHolder assetServletHolder = new ServletHolder(AssetServlet.class);
         assetServletHolder.getRegistration().setMultipartConfig(new MultipartConfigElement(tmp.getAbsolutePath()));
         servletHandler.addServlet(assetServletHolder, "/api/asset");
