@@ -522,12 +522,16 @@ public class MessageEntry extends AbstractIndexEntry implements IndexEntry {
     public static String html2utf8(String s) {
         int p, q;
         // hex coding &#
-        while ((p = s.indexOf("&#")) >= 0) {
-            q = s.indexOf(';', p + 2);
-            if (q < p) break;
-            String charcode = s.substring(p + 2, q);
-            int unicode = s.charAt(0) == 'x' ? Integer.parseInt(charcode.substring(1), 16) : Integer.parseInt(charcode);
-            s = s.substring(0, p) + ((unicode == 10 || unicode == 13) ? "\n" : ((char) unicode)) + s.substring(q + 1);
+        try {
+            while ((p = s.indexOf("&#")) >= 0) {
+                q = s.indexOf(';', p + 2);
+                if (q < p) break;
+                String charcode = s.substring(p + 2, q);
+                int unicode = s.charAt(0) == 'x' ? Integer.parseInt(charcode.substring(1), 16) : Integer.parseInt(charcode);
+                s = s.substring(0, p) + ((unicode == 10 || unicode == 13) ? "\n" : ((char) unicode)) + s.substring(q + 1);
+            }
+        } catch (Throwable e) {
+            e.printStackTrace();
         }
         // octal coding \\u
         try {
