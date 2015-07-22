@@ -2,7 +2,6 @@ package org.loklak.api.server.push;
 
 import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.elasticsearch.common.xcontent.XContentFactory;
-import org.loklak.api.server.push.PushReport;
 import org.loklak.data.DAO;
 import org.loklak.data.MessageEntry;
 import org.loklak.data.UserEntry;
@@ -83,7 +82,7 @@ public class PushServletHelper {
             mtime = Long.toString(System.currentTimeMillis());
             message.put("mtime", mtime);
         }
-        return sourceType.name() + "_" + initialId + "_" + longitude + "_" + latitude + "_" + mtime;
+        return sourceType.name() + "_" + initialId + "_" + latitude + "_" + longitude + "_" + mtime;
     }
 
 }
