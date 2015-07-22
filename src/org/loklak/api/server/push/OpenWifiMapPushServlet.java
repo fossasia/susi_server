@@ -27,6 +27,7 @@ import org.loklak.api.client.ClientConnection;
 import org.loklak.api.server.RemoteAccess;
 import org.loklak.data.DAO;
 import org.loklak.geo.LocationSource;
+import org.loklak.geo.PlaceContext;
 import org.loklak.harvester.JsonFieldConverter;
 import org.loklak.harvester.JsonValidator;
 import org.loklak.harvester.SourceType;
@@ -84,6 +85,8 @@ public class OpenWifiMapPushServlet extends HttpServlet {
             row.put("text", "");
             row.put("source_type", SourceType.OPENWIFIMAP.name());
             row.put("location_source", LocationSource.USER.name());
+            row.put("place_context", PlaceContext.ABOUT.name());
+
             try {
                 row.put("id_str", PushServletHelper.computeMessageId(row, row.get("id"), SourceType.OPENWIFIMAP));
             } catch (Exception e) {
