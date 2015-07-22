@@ -44,6 +44,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.eclipse.jetty.util.ConcurrentHashSet;
 import org.eclipse.jetty.util.log.Log;
+import org.elasticsearch.action.admin.cluster.health.ClusterHealthResponse;
 import org.elasticsearch.action.count.CountResponse;
 import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
@@ -193,7 +194,6 @@ public class DAO {
             Path index_dir = dataPath.resolve("index");
             if (index_dir.toFile().exists()) LoklakServer.protectPath(index_dir); // no other permissions to this path
             
-            
             // define the index factories
             messages = new MessageFactory(elasticsearch_client, MESSAGES_INDEX_NAME, CACHE_MAXSIZE);
             users = new UserFactory(elasticsearch_client, USERS_INDEX_NAME, CACHE_MAXSIZE);
@@ -211,9 +211,26 @@ public class DAO {
             elasticsearch_client.admin().indices().preparePutMapping(USERS_INDEX_NAME).setSource(users.getMapping()).setType("_default_").execute().actionGet();
             elasticsearch_client.admin().indices().preparePutMapping(ACCOUNTS_INDEX_NAME).setSource(accounts.getMapping()).setType("_default_").execute().actionGet();
             elasticsearch_client.admin().indices().preparePutMapping(QUERIES_INDEX_NAME).setSource(queries.getMapping()).setType("_default_").execute().actionGet();
+            
+            // finally wait for healty status of shards
+            ClusterHealthResponse health;
+            do {
+                log("Waiting for elasticsearch yellow status");
+                health = elasticsearch_client.admin().cluster().prepareHealth().setWaitForYellowStatus().execute().actionGet();
+            } while (health.isTimedOut());
+            do {
+                log("Waiting for elasticsearch green status");
+                health = elasticsearch_client.admin().cluster().prepareHealth().setWaitForGreenStatus().execute().actionGet();
+            } while (health.isTimedOut());
+            log("elasticsearch has started up! initializing the classifier");
+            
+            // start the classifier
+            Classifier.init(50000);
+            log("classifier initialized!");
         } catch (Throwable e) {
             e.printStackTrace();
         }
+        
     }
     
     public static File getAssetFile(String screen_name, String id_str, String file) {
@@ -367,6 +384,9 @@ public class DAO {
 
             // record tweet into search index
             messages.writeEntry(t.getIdStr(), t.getSourceType().name(), t);
+            
+            // teach the classifier
+            Classifier.learnPhrase(t.getText());
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -753,7 +773,10 @@ public class DAO {
     
     public static void announceNewUserId(Timeline tl) {
         for (MessageEntry message: tl) {
-            Number id = tl.getUser(message).getUser();
+            UserEntry user = tl.getUser(message);
+            assert user != null;
+            if (user == null) continue;
+            Number id = user.getUser();
             if (id != null) announceNewUserId(id);
         }
     }

@@ -28,6 +28,7 @@ import org.eclipse.jetty.util.log.Log;
 import org.elasticsearch.search.sort.SortOrder;
 import org.loklak.api.client.HelloClient;
 import org.loklak.api.client.PushClient;
+import org.loklak.data.Classifier;
 import org.loklak.data.DAO;
 import org.loklak.data.QueryEntry;
 import org.loklak.data.Timeline;
@@ -57,8 +58,8 @@ public class Caretaker extends Thread {
         // send a message to other peers that I am alive
         String[] remote = DAO.getConfig("backend", new String[0], ",");
         HelloClient.propagate(remote, (int) DAO.getConfig("port.http", 9000), (int) DAO.getConfig("port.https", 9443), (String) DAO.getConfig("peername", "anonymous"));
-
-        try {Thread.sleep(10000);} catch (InterruptedException e) {} // wait a bit to give elasticsearch a start-up time
+        
+        // work loop
         while (this.shallRun) {
             // sleep a bit to prevent that the DoS limit fires at backend server
             try {Thread.sleep(5000);} catch (InterruptedException e) {}

@@ -249,7 +249,10 @@ public class QueryEntry extends AbstractIndexEntry implements IndexEntry {
         link("links"),
         mention("mentions"),
         source_type("source_type"),
-        hashtag("hashtags");
+        hashtag("hashtags"),
+        emotion("classifier_emotion"),
+        profanity("classifier_profanity"),
+        language("classifier_language");
         protected String field_name;
         protected Pattern pattern;
         private Constraint(String field_name) {
@@ -339,7 +342,11 @@ public class QueryEntry extends AbstractIndexEntry implements IndexEntry {
             if (tokens.constraints_negative.contains("mention") && message.getMentions().length != 0) continue;
             if (tokens.constraints_positive.contains("hashtag") && message.getHashtags().length == 0) continue;
             if (tokens.constraints_negative.contains("hashtag") && message.getHashtags().length != 0) continue;
-
+            for (Classifier.Context context: Classifier.Context.values()) {
+                if (tokens.constraints_positive.contains(context.name()) && message.getClassifier(context) == null) continue messageloop;
+                if (tokens.constraints_negative.contains(context.name()) && message.getClassifier(context) != null) continue messageloop;
+            }
+            
             // special treatment of location and link constraint
             constraintCheck: for (String cs: tokens.constraints_positive) {
                 if (cs.startsWith(Constraint.location.name() + "=")) {
