@@ -103,7 +103,7 @@ public class JsonFieldConverter {
                 }
             }
         } else {
-            return object.remove("key");
+            return object.remove(key);
         }
         // unreachable code
         return null;
