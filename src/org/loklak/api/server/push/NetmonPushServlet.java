@@ -93,8 +93,8 @@ public class NetmonPushServlet extends HttpServlet {
             }
 
             List<Object> location_point = new ArrayList<>();
-            location_point.add(node.get("longitude"));
-            location_point.add(node.get("latitude"));
+            location_point.add(0, Double.parseDouble((String) node.get("latitude")));
+            location_point.add(1, Double.parseDouble((String) node.get("longitude")));
             node.put("location_point", location_point);
             node.put("location_mark", location_point);
             node.put("location_source", LocationSource.USER.name());

@@ -89,6 +89,8 @@ public class NodelistPushServlet extends HttpServlet {
         for (Map<String, Object> node : nodes) {
             node.put("source_type", SourceType.NODELIST.name());
             Map<String, Object> location = (Map) node.get("position");
+            if (location == null) continue;
+
             final Double longitude = Double.parseDouble((String) location.get("long"));
             final Double latitude = Double.parseDouble((String) location.get("lat"));
             List<Double> location_point = new ArrayList<>();
@@ -97,7 +99,7 @@ public class NodelistPushServlet extends HttpServlet {
             node.put("location_point", location_point);
             node.put("location_mark", location_point);
             node.put("location_source", LocationSource.USER.name());
-            
+
             Map<String, Object> user = new HashMap<>();
             user.put("screen_name", "freifunk_" + community.get("name"));
             user.put("name", community.get("name"));
