@@ -121,6 +121,9 @@ body {
   color: GreenYellow;
 }
 
+.nav-sidebar li a:hover {
+	background-color: grey;
+}
 
 /*
  * Main content
