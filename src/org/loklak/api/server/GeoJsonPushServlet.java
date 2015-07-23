@@ -183,17 +183,22 @@ public class GeoJsonPushServlet extends HttpServlet {
             recordCount++;
         }
 
-        Map<String, Object> profile = new HashMap<>();
-        profile.put("client_host", post.getClientHost());
-        profile.put("imported", importedMsgIds);
-        if (!"".equals(screenName)) { profile.put("screen_name", screenName); }
-        profile.put("source_url", url);
-        profile.put("source_type", sourceType);
-        // placholders
-        profile.put("harvesting_freq", Integer.MAX_VALUE);
-        profile.put("lifetime", Integer.MAX_VALUE);
-        ImportProfileEntry importProfileEntry = new ImportProfileEntry(profile);
-        DAO.writeImportProfile(importProfileEntry, true);
+        ImportProfileEntry importProfileEntry = null;
+        if (newCount > 0 ) {
+            Map<String, Object> profile = new HashMap<>();
+            profile.put("client_host", post.getClientHost());
+            profile.put("imported", importedMsgIds);
+            if (!"".equals(screenName)) {
+                profile.put("screen_name", screenName);
+            }
+            profile.put("source_url", url);
+            profile.put("source_type", sourceType);
+            // placholders
+            profile.put("harvesting_freq", Integer.MAX_VALUE);
+            profile.put("lifetime", Integer.MAX_VALUE);
+            importProfileEntry = new ImportProfileEntry(profile);
+            DAO.writeImportProfile(importProfileEntry, true);
+        }
 
         post.setResponse(response, "application/javascript");
 
@@ -205,7 +210,8 @@ public class GeoJsonPushServlet extends HttpServlet {
         json.field("new", newCount);
         json.field("known", knownCount);
         json.field("message", "pushed");
-        json.field("importProfile", importProfileEntry.toMap());
+        if (importProfileEntry != null)
+            json.field("importProfile", importProfileEntry.toMap());
         json.endObject(); // of root
 
         // write json
