@@ -24,7 +24,11 @@ public class ImportProfileFactory extends AbstractIndexFactory<ImportProfileEntr
                     .startObject("source_type").field("type", "string").field("include_in_all", "false").field("doc_values", true).endObject()
                     .startObject("harvesting_freq").field("type", "long").field("include_in_all", "false").field("doc_values", true).endObject()
                     .startObject("lifetime").field("type", "long").field("include_in_all", "false").field("doc_values", true).endObject()
-                .endObject()
+                    .startObject("created_at").field("type", "date").field("format","dateOptionalTime").field("include_in_all", "false").field("doc_values", true).endObject()
+                    .startObject("screen_name").field("type", "string").field("include_in_all", "false").field("doc_values", true).field("index","not_analyzed").endObject()
+                    .startObject("client_host").field("type","string").field("include_in_all","false").field("doc_values", true).endObject()
+                    .startArray("imported").endArray()
+                    .endObject()
               .endObject();
 
             return mapping;
