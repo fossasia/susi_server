@@ -92,16 +92,18 @@ public class DAO {
     public final static String ACCOUNT_DUMP_FILE_PREFIX = "accounts_";
     public final static String USER_DUMP_FILE_PREFIX = "users_";
     public final static String FOLLOWERS_DUMP_FILE_PREFIX = "followers_";
+    private static final String IMPORT_PROFILE_FILE_PREFIX = "profile_";
     public final static String QUERIES_INDEX_NAME = "queries";
     public final static String MESSAGES_INDEX_NAME = "messages";
     public final static String USERS_INDEX_NAME = "users";
     public final static String ACCOUNTS_INDEX_NAME = "accounts";
+    private static final String IMPORT_PROFILE_INDEX_NAME = "import_profiles";
     public final static int CACHE_MAXSIZE = 10000;
-    
+
     public  static File conf_dir;
     private static File external_data, assets, dictionaries;
-    private static Path message_dump_dir, account_dump_dir, settings_dir;
-    private static JsonDump message_dump, account_dump;
+    private static Path message_dump_dir, account_dump_dir, settings_dir, import_profile_dump_dir;
+    private static JsonDump message_dump, account_dump, import_profile_dump;
     public  static JsonDataset user_dump, followers_dump;
     private static File customized_config;
     private static Node elasticsearch_node;
@@ -110,6 +112,7 @@ public class DAO {
     private static AccountFactory accounts;
     private static MessageFactory messages;
     private static QueryFactory queries;
+    private static ImportProfileFactory importProfiles;
     private static BlockingQueue<Timeline> newMessageTimelines = new LinkedBlockingQueue<Timeline>();
     private static Map<String, String> config = new HashMap<>();
     public  static GeoNames geoNames;
@@ -162,7 +165,10 @@ public class DAO {
             user_dump_dir.mkdirs();
             user_dump = new JsonDataset(user_dump_dir,USER_DUMP_FILE_PREFIX, new String[]{"id_str","screen_name"});
             followers_dump = new JsonDataset(user_dump_dir, FOLLOWERS_DUMP_FILE_PREFIX, new String[]{"id_str","screen_name"});
-            
+
+            import_profile_dump_dir = dataPath.resolve("import-profiles");
+            import_profile_dump = new JsonDump(import_profile_dump_dir.toFile(), IMPORT_PROFILE_FILE_PREFIX, null);
+
             // load the config file(s);
             conf_dir = new File("conf");
             Properties prop = new Properties();
@@ -199,7 +205,7 @@ public class DAO {
             users = new UserFactory(elasticsearch_client, USERS_INDEX_NAME, CACHE_MAXSIZE);
             accounts = new AccountFactory(elasticsearch_client, ACCOUNTS_INDEX_NAME, CACHE_MAXSIZE);
             queries = new QueryFactory(elasticsearch_client, QUERIES_INDEX_NAME, CACHE_MAXSIZE);
-            
+            importProfiles = new ImportProfileFactory(elasticsearch_client, IMPORT_PROFILE_INDEX_NAME, CACHE_MAXSIZE);
             // set mapping (that shows how 'elastic' elasticsearch is: it's always good to define data types)
             try {
                 elasticsearch_client.admin().indices().prepareCreate(MESSAGES_INDEX_NAME).execute().actionGet();
@@ -350,7 +356,7 @@ public class DAO {
             return tl;
         }
     }
-    
+
     /**
      * Store a message together with a user into the search index
      * This method is synchronized to prevent concurrent IO caused by this call.
@@ -376,7 +382,7 @@ public class DAO {
             } else {
                 if (!users.exists(u.getScreenName())) {
                     writeUser(u, t.getSourceType().name());
-                } 
+                }
             }
 
             // record tweet into text file
@@ -384,7 +390,7 @@ public class DAO {
 
             // record tweet into search index
             messages.writeEntry(t.getIdStr(), t.getSourceType().name(), t);
-            
+
             // teach the classifier
             Classifier.learnPhrase(t.getText());
         } catch (IOException e) {
@@ -392,11 +398,11 @@ public class DAO {
         }
         return true;
     }
-    
+
     /**
      * Store an user into the search index
      * This method is synchronized to prevent concurrent IO caused by this call.
-     * @param a an account 
+     * @param a an account
      * @param u a user
      * @return true if the record was stored because it did not exist, false if it was not stored because the record existed already
      */
@@ -409,7 +415,7 @@ public class DAO {
         }
         return true;
     }
-    
+
     /**
      * Store an account together with a user into the search index
      * This method is synchronized to prevent concurrent IO caused by this call.
@@ -424,6 +430,25 @@ public class DAO {
 
             // record tweet into search index
             accounts.writeEntry(a.getScreenName(), a.getSourceType().name(), a);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return true;
+    }
+
+    /**
+     * Store an import profile into the search index
+     * This method is synchronized to prevent concurrent IO caused by this call.
+     * @param i an import profile
+     * @return true if the record was stored because it did not exist, false if it was not stored because the record existed already
+     */
+    public synchronized static boolean writeImportProfile(ImportProfileEntry i, boolean dump) {
+        try {
+            // record account into text file
+            if (dump) import_profile_dump.write(i.toMap());
+
+            // record tweet into search index
+            importProfiles.writeEntry(i.getId(), i.getSourceType().name(), i);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -687,6 +712,27 @@ public class DAO {
             
         } catch (IndexMissingException e) {}
         return queries;
+    }
+
+    public static List<ImportProfileEntry> SearchLocalImportProfiles(final String source_type) {
+        List<ImportProfileEntry> results = new ArrayList<>();
+        try {
+            SearchRequestBuilder request = elasticsearch_client.prepareSearch(IMPORT_PROFILE_INDEX_NAME)
+                    .setSearchType(SearchType.QUERY_THEN_FETCH)
+                    .setQuery(QueryBuilders.matchQuery("source_type", source_type))
+                    .setFrom(0);
+
+            // get response
+            SearchResponse response = request.execute().actionGet();
+
+            // evaluate search result
+            SearchHit[] hits = response.getHits().getHits();
+            for (SearchHit hit: hits) {
+                Map<String, Object> map = hit.getSource();
+                results.add(new ImportProfileEntry(map));
+            }
+        } catch (IndexMissingException e) {}
+        return results;
     }
     
     public static Timeline[] scrapeTwitter(final String q, final Timeline.Order order, final int timezoneOffset, boolean byUserQuery) {

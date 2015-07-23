@@ -27,4 +27,11 @@ public enum SourceType {
     FOSSASIA_API, // imported from FOSSASIA API data
     ;
 
+    public static boolean hasValue(String value) {
+        for (SourceType sourceType : SourceType.values()) {
+            if (sourceType.name().equals(value))
+                return true;
+            }
+        return false;
+    }
 }

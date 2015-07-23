@@ -62,6 +62,7 @@ import org.loklak.api.server.StatusServlet;
 import org.loklak.api.server.SuggestServlet;
 import org.loklak.api.server.AccountServlet;
 import org.loklak.api.server.ThreaddumpServlet;
+import org.loklak.api.server.ImportProfileServlet;
 import org.loklak.data.DAO;
 import org.loklak.harvester.TwitterScraper;
 import org.loklak.tools.Browser;
@@ -153,6 +154,7 @@ public class LoklakServer {
         servletHandler.addServlet(SuggestServlet.class, "/api/suggest.json");
         servletHandler.addServlet(AccountServlet.class, "/api/account.json");
         servletHandler.addServlet(CampaignServlet.class, "/api/campaign.json");
+        servletHandler.addServlet(ImportProfileServlet.class, "/api/import.json");
         servletHandler.addServlet(SettingsServlet.class, "/api/settings.json");
         servletHandler.addServlet(GeocodeServlet.class, "/api/geocode.json");
         servletHandler.addServlet(ProxyServlet.class, "/api/proxy.gif");

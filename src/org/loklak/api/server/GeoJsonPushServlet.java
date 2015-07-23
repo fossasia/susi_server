@@ -29,6 +29,7 @@ import org.loklak.data.DAO;
 import org.loklak.data.MessageEntry;
 import org.loklak.data.ProviderType;
 import org.loklak.data.UserEntry;
+import org.loklak.data.ImportProfileEntry;
 import org.loklak.geo.LocationSource;
 import org.loklak.geo.PlaceContext;
 import org.loklak.harvester.SourceType;
@@ -40,7 +41,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Map;
@@ -75,6 +75,11 @@ public class GeoJsonPushServlet extends HttpServlet {
         String url = post.get("url", "");
         String mapType = post.get("map_type", "");
         String sourceType = post.get("source_type", "");
+        if ("".equals(sourceType) || !SourceType.hasValue(sourceType)) {
+            DAO.log("invalid or missing source_type value : " + sourceType);
+            sourceType = SourceType.IMPORT.name();
+        }
+        String screenName = post.get("screen_name", "");
         String callback = post.get("callback", "");
         boolean jsonp = callback != null && callback.length() > 0;
 
@@ -121,6 +126,7 @@ public class GeoJsonPushServlet extends HttpServlet {
         }
 
         int recordCount = 0, newCount = 0, knownCount = 0;
+        List<String> importedMsgIds = new ArrayList<>();
         for (Map<String, Object> feature : features) {
             Object properties_obj = feature.get("properties");
             @SuppressWarnings("unchecked")
@@ -140,11 +146,7 @@ public class GeoJsonPushServlet extends HttpServlet {
             Map<String, Object> mappedProperties = convertMapRulesProperties(mapRules, properties);
             properties.putAll(mappedProperties);
 
-            if (!"".equals(sourceType)) {
-                properties.put("source_type", sourceType);
-            } else {
-                properties.put("source_type", SourceType.IMPORT);
-            }
+            properties.put("source_type", sourceType);
             properties.put("provider_type", ProviderType.GEOJSON.name());
             properties.put("provider_hash", remoteHash);
             properties.put("location_point", geometry.get("coordinates"));
@@ -156,9 +158,11 @@ public class GeoJsonPushServlet extends HttpServlet {
                 properties.put("text", "");
             }
 
-            // compute unique message id among geojson messages
+            // compute unique message id among all messages
+            String id_str;
             try {
-                properties.put("id_str", computeGeoJsonId(properties, geometry));
+                id_str = computeGeoJsonId(properties, geometry);
+                properties.put("id_str", id_str);
                 // response.getWriter().println(properties.get("shortname") + ", " + properties.get("screen_name") + ", " + properties.get("name") + " : " + computeGeoJsonId((feature)));
             } catch (Exception e) {
                 response.sendError(400, "Error computing id : " + e.getMessage());
@@ -170,9 +174,26 @@ public class GeoJsonPushServlet extends HttpServlet {
             // uncomment this causes NoShardAvailableException
             UserEntry userEntry = new UserEntry((user != null && user.get("screen_name") != null) ? user : new HashMap<String, Object>());
             boolean successful = DAO.writeMessage(messageEntry, userEntry, true, false);
-            if (successful) newCount++; else knownCount++;
+            if (successful) {
+                newCount++;
+                importedMsgIds.add(id_str);
+            } else {
+                knownCount++;
+            }
             recordCount++;
         }
+
+        Map<String, Object> profile = new HashMap<>();
+        profile.put("client_host", post.getClientHost());
+        profile.put("imported", importedMsgIds);
+        if (!"".equals(screenName)) { profile.put("screen_name", screenName); }
+        profile.put("source_url", url);
+        profile.put("source_type", sourceType);
+        // placholders
+        profile.put("harvesting_freq", Integer.MAX_VALUE);
+        profile.put("lifetime", Integer.MAX_VALUE);
+        ImportProfileEntry importProfileEntry = new ImportProfileEntry(profile);
+        DAO.writeImportProfile(importProfileEntry, true);
 
         post.setResponse(response, "application/javascript");
 
@@ -184,6 +205,7 @@ public class GeoJsonPushServlet extends HttpServlet {
         json.field("new", newCount);
         json.field("known", knownCount);
         json.field("message", "pushed");
+        json.field("importProfile", importProfileEntry.toMap());
         json.endObject(); // of root
 
         // write json
