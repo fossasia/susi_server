@@ -11,6 +11,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -42,7 +43,10 @@ public class ImportProfileServlet extends HttpServlet {
         }
 
         List<ImportProfileEntry> entries = DAO.SearchLocalImportProfiles(source_type);
-
+        List<Map<String, Object>>  entries_to_map = new ArrayList<>();
+        for (ImportProfileEntry entry : entries) {
+            entries_to_map.add(entry.toMap());
+        }
         post.setResponse(response, "application/javascript");
 
         Map<String, Object> m = new LinkedHashMap<>();
@@ -50,7 +54,7 @@ public class ImportProfileServlet extends HttpServlet {
         metadata.put("count", entries.size());
         metadata.put("client", post.getClientHost());
         m.put("search_metadata", metadata);
-        m.put("profiles", entries);
+        m.put("profiles", entries_to_map);
 
         // write json
         ServletOutputStream sos = response.getOutputStream();
