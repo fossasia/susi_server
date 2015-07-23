@@ -46,6 +46,7 @@ public class ImportProfileEntry extends AbstractIndexEntry implements IndexEntry
         this.harvesting_freq = (int) map.get("harvesting_freq");
         this.lifetime = (int) map.get("lifetime");
         this.imported = (List<String>) map.get("imported");
+        this.id = (String) map.get("id_str");
     }
 
     public String getId() {

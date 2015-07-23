@@ -196,6 +196,7 @@ public class GeoJsonPushServlet extends HttpServlet {
             // placholders
             profile.put("harvesting_freq", Integer.MAX_VALUE);
             profile.put("lifetime", Integer.MAX_VALUE);
+            profile.put("id_str", computeImportProfileId(profile));
             importProfileEntry = new ImportProfileEntry(profile);
             DAO.writeImportProfile(importProfileEntry, true);
         }
@@ -283,5 +284,15 @@ public class GeoJsonPushServlet extends HttpServlet {
         // longitude and latitude are added to id to a precision of 3 digits after comma
         Long id = (long) Math.floor(1000*longitude) + (long) Math.floor(1000*latitude) + mtime.getMillis();
         return id.toString();
+    }
+
+    private static String computeImportProfileId(Map<String, Object> importProfile) {
+        String screen_name = (String) importProfile.get("screen_name");
+        String source_url = (String) importProfile.get("source_url");
+        if (screen_name != null && !"".equals(screen_name)) {
+            return source_url + "_" + screen_name;
+        }
+        String client_host = (String) importProfile.get("client_host");
+        return source_url + "_" + client_host;
     }
 }
