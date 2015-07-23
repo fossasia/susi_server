@@ -38,6 +38,7 @@ import org.eclipse.jetty.server.Handler;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.server.handler.DefaultHandler;
+import org.eclipse.jetty.server.handler.ErrorHandler;
 import org.eclipse.jetty.server.handler.HandlerList;
 import org.eclipse.jetty.server.handler.ResourceHandler;
 import org.eclipse.jetty.servlet.FilterHolder;
@@ -180,6 +181,10 @@ public class LoklakServer {
         servletHandler.addServlet(MapServlet.class, "/vis/map.png.base64");
         servletHandler.addServlet(MapServlet.class, "/vis/map.jpg");
         servletHandler.addServlet(MapServlet.class, "/vis/map.jpg.base64");
+        
+        ErrorHandler errorHandler = new ErrorHandler();
+        errorHandler.setShowStacks(true);
+        servletHandler.setErrorHandler(errorHandler);
         
         ResourceHandler fileHandler = new ResourceHandler();
         fileHandler.setDirectoriesListed(true);
