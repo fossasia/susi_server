@@ -94,7 +94,7 @@ public class GeocodeServlet extends HttpServlet {
         // find locations for places
         Map<String, Object> locations = new LinkedHashMap<>();
         for (String p: place) {
-            GeoMark loc = DAO.geoNames.analyse(p, null, 5);
+            GeoMark loc = DAO.geoNames.analyse(p, null, 5, Long.toString(System.currentTimeMillis()).hashCode());
             Map<String, Object> location = new LinkedHashMap<>();
             if (loc != null) {
                 location.put("place", minified ? new String[]{loc.getNames().iterator().next()} : loc.getNames());
