@@ -1,6 +1,8 @@
 package org.loklak.api.server;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.elasticsearch.common.xcontent.XContentParser;
+import org.elasticsearch.common.xcontent.json.JsonXContent;
 import org.loklak.data.DAO;
 import org.loklak.data.ImportProfileEntry;
 import org.loklak.harvester.SourceType;
@@ -35,7 +37,39 @@ public class ImportProfileServlet extends HttpServlet {
         // parameters
         String callback = post.get("callback", "");
         boolean minified = post.get("minified", false);
+        boolean update = "update".equals(post.get("action", ""));
         boolean jsonp = callback != null && callback.length() > 0;
+
+        if (update) {
+            String data = post.get("data", "");
+            if (data == null || data.length() == 0) {
+                response.sendError(400, "your request does not contain a data object.");
+                return;
+            }
+
+            // parse the json data
+            boolean success;
+            try {
+                XContentParser parser = JsonXContent.jsonXContent.createParser(data);
+                Map<String, Object> map = parser == null ? null : parser.map();
+                ImportProfileEntry importProfileEntry = new ImportProfileEntry(map);
+                success = DAO.writeImportProfile(importProfileEntry, true);
+            } catch (IOException | NullPointerException e) {
+                response.sendError(400, "submitted data is not well-formed: " + e.getMessage());
+                e.printStackTrace();
+                return;
+            }
+
+            ServletOutputStream sos = response.getOutputStream();
+            if (success) {
+                sos.println("Update successfully");
+                return;
+            } else {
+                response.sendError(400, "Unable to update");
+                return;
+            }
+        }
+
         String source_type = post.get("source_type", "");
         if ("".equals(source_type) || !SourceType.hasValue(source_type)) {
             response.sendError(400, "your request does not contain a valid source_type parameter.");
@@ -43,7 +77,7 @@ public class ImportProfileServlet extends HttpServlet {
         }
 
         List<ImportProfileEntry> entries = DAO.SearchLocalImportProfiles(source_type);
-        List<Map<String, Object>>  entries_to_map = new ArrayList<>();
+        List<Map<String, Object>> entries_to_map = new ArrayList<>();
         for (ImportProfileEntry entry : entries) {
             entries_to_map.add(entry.toMap());
         }
