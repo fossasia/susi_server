@@ -49,9 +49,17 @@ public class ImportProfileServlet extends HttpServlet {
 
             // parse the json data
             boolean success;
+
             try {
                 XContentParser parser = JsonXContent.jsonXContent.createParser(data);
                 Map<String, Object> map = parser == null ? null : parser.map();
+                if (map.get("id_str") == null) {
+                    throw new IOException("id_str field missing");
+                }
+                ImportProfileEntry i = DAO.SearchLocalImportProfiles((String) map.get("id_str"));
+                if (i == null) {
+                    throw new IOException("import profile with id_str '" + map.get("id_str") + "' not found");
+                }
                 ImportProfileEntry importProfileEntry = new ImportProfileEntry(map);
                 success = DAO.writeImportProfile(importProfileEntry, true);
             } catch (IOException | NullPointerException e) {
@@ -76,7 +84,7 @@ public class ImportProfileServlet extends HttpServlet {
             return;
         }
 
-        List<ImportProfileEntry> entries = DAO.SearchLocalImportProfiles(source_type);
+        List<ImportProfileEntry> entries = DAO.SearchLocalImportProfilesBySourceType(source_type);
         List<Map<String, Object>> entries_to_map = new ArrayList<>();
         for (ImportProfileEntry entry : entries) {
             entries_to_map.add(entry.toMap());

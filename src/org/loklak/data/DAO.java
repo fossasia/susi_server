@@ -714,7 +714,16 @@ public class DAO {
         return queries;
     }
 
-    public static List<ImportProfileEntry> SearchLocalImportProfiles(final String source_type) {
+    public static ImportProfileEntry SearchLocalImportProfiles(final String id) {
+        try {
+            return importProfiles.read(id);
+        } catch (IOException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    public static List<ImportProfileEntry> SearchLocalImportProfilesBySourceType(final String source_type) {
         List<ImportProfileEntry> results = new ArrayList<>();
         try {
             SearchRequestBuilder request = elasticsearch_client.prepareSearch(IMPORT_PROFILE_INDEX_NAME)
