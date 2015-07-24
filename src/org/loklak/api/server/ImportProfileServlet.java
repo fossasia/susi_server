@@ -35,6 +35,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Date;
 
 public class ImportProfileServlet extends HttpServlet {
 
@@ -79,6 +80,7 @@ public class ImportProfileServlet extends HttpServlet {
                     throw new IOException("import profile with id_str '" + map.get("id_str") + "' not found");
                 }
                 ImportProfileEntry importProfileEntry = new ImportProfileEntry(map);
+                importProfileEntry.setLastModified(new Date());
                 success = DAO.writeImportProfile(importProfileEntry, true);
             } catch (IOException | NullPointerException e) {
                 response.sendError(400, "submitted data is not well-formed: " + e.getMessage());

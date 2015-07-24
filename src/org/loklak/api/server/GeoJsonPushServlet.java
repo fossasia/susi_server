@@ -47,7 +47,7 @@ import java.util.Map;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.regex.Pattern;
-
+import java.util.Date;
 /*
  * Test URLs:
  * http://localhost:9000/api/push/geojson.json?url=http://www.paris-streetart.com/test/map.geojson
@@ -114,7 +114,7 @@ public class GeoJsonPushServlet extends HttpServlet {
                     }
                     List<String> valuesList = mapRules.get(splitted[0]);
                     if (valuesList == null) {
-                        valuesList = new ArrayList<String>();
+                        valuesList = new ArrayList<>();
                         mapRules.put(splitted[0], valuesList);
                     }
                     valuesList.add(splitted[1]);
@@ -197,6 +197,9 @@ public class GeoJsonPushServlet extends HttpServlet {
             profile.put("harvesting_freq", Integer.MAX_VALUE);
             profile.put("lifetime", Integer.MAX_VALUE);
             profile.put("id_str", computeImportProfileId(profile));
+            Date currentDate = new Date();
+            profile.put("created_at" , currentDate);
+            profile.put("last_modified", currentDate);
             importProfileEntry = new ImportProfileEntry(profile);
             DAO.writeImportProfile(importProfileEntry, true);
         }
@@ -238,8 +241,8 @@ public class GeoJsonPushServlet extends HttpServlet {
         Map<String, Object> root = new HashMap<>();
         Iterator<Map.Entry<String, Object>> it = properties.entrySet().iterator();
         while (it.hasNext()) {
-            Map.Entry<String, Object> pair = (Map.Entry<String, Object>) it.next();
-            String key = (String) pair.getKey();
+            Map.Entry<String, Object> pair = it.next();
+            String key = pair.getKey();
             if (mapRules.containsKey(key)) {
                 for (String newField : mapRules.get(key)) {
                     if (newField.contains(".")) {

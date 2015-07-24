@@ -31,6 +31,8 @@ public class ImportProfileEntry extends AbstractIndexEntry implements IndexEntry
 
     protected String id;
     protected Date created_at;
+
+    protected Date last_modified;
     // importer username
     protected String screen_name;
     // importer ip address
@@ -59,6 +61,7 @@ public class ImportProfileEntry extends AbstractIndexEntry implements IndexEntry
             this.source_type = SourceType.USER;
         }
         this.created_at = parseDate(map.get("created_at"));
+        this.last_modified = parseDate(map.get("last_modified"));
         this.screen_name = (String) map.get("screen_name");
         this.client_host = (String) map.get("client_host");
         this.harvesting_freq = (int) map.get("harvesting_freq");
@@ -81,6 +84,14 @@ public class ImportProfileEntry extends AbstractIndexEntry implements IndexEntry
 
     public void setCreatedAt(Date created_at) {
         this.created_at = created_at;
+    }
+
+    public Date getLastModified() {
+        return last_modified;
+    }
+
+    public void setLastModified(Date last_modified) {
+        this.last_modified = last_modified;
     }
 
     public String getScreenName() {
@@ -145,6 +156,7 @@ public class ImportProfileEntry extends AbstractIndexEntry implements IndexEntry
         Map<String, Object> m = new LinkedHashMap<>();
         m.put("id_str", this.id);
         m.put("created_at", utcFormatter.print(this.created_at.getTime()));
+        m.put("last_modified", utcFormatter.print(this.last_modified.getTime()));
         m.put("screen_name", this.screen_name);
         m.put("client_host", this.client_host);
         m.put("source_url", this.source_url.toString());
