@@ -63,6 +63,7 @@ import org.loklak.api.server.StatusServlet;
 import org.loklak.api.server.SuggestServlet;
 import org.loklak.api.server.AccountServlet;
 import org.loklak.api.server.ThreaddumpServlet;
+import org.loklak.api.server.FossasiaPushServlet;
 import org.loklak.data.DAO;
 import org.loklak.harvester.TwitterScraper;
 import org.loklak.tools.Browser;
@@ -165,6 +166,7 @@ public class LoklakServer {
         ServletHolder geojsonPushServletHolder = new ServletHolder(GeoJsonPushServlet.class);
         geojsonPushServletHolder.getRegistration().setMultipartConfig(new MultipartConfigElement(tmp.getAbsolutePath()));
         servletHandler.addServlet(geojsonPushServletHolder, "/api/push/geojson.json");
+        servletHandler.addServlet(FossasiaPushServlet.class, "/api/push/fossasia.json");
         ServletHolder assetServletHolder = new ServletHolder(AssetServlet.class);
         assetServletHolder.getRegistration().setMultipartConfig(new MultipartConfigElement(tmp.getAbsolutePath()));
         servletHandler.addServlet(assetServletHolder, "/api/asset");
