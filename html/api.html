@@ -1,107 +1,202 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8">
-    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="description" content="loklak.org - Architecture">
-    <meta name="Content-Language" content="en, english"/>
-    <meta name="keywords" lang="en-us" content="search,search engine,twitter,messages,microblogging,elasticsearch,json,api,kibana,loklak"/>
-    <meta name="author" content="@0rb1t3r">
-    <link rel="icon" type="image/png" href="artwork/favicon.png">
-    <title>loklak.org - API</title>
+<head>
+<meta charset="utf-8">
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="loklak.org - Architecture">
+<meta name="Content-Language" content="en, english" />
+<meta name="keywords" lang="en-us"
+	content="search,search engine,twitter,messages,microblogging,elasticsearch,json,api,kibana,loklak" />
+<meta name="author" content="@0rb1t3r">
+<link rel="icon" type="image/png" href="artwork/favicon.png">
+<title>loklak.org - API</title>
 
-    <link href="css/bootstrap.min.css" rel="stylesheet">
-    <link href="css/dashboard.css" rel="stylesheet">
-    <link href="css/loklak.css" rel="stylesheet">
+<link href="css/bootstrap.min.css" rel="stylesheet">
+<link href="css/dashboard.css" rel="stylesheet">
+<link href="css/loklak.css" rel="stylesheet">
 
-    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
-    <!--[if lt IE 9]>
+<!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+<!--[if lt IE 9]>
       <script src="js/html5shiv.min.js"></script>
       <script src="js/respond.min.js"></script>
     <![endif]-->
-  </head>
+</head>
 
-  <body>
+<body>
+	<nav class="navbar navbar-inverse navbar-fixed-top">
+		<div class="container-fluid">
+			<div class="navbar-header">
+				<button type="button" class="navbar-toggle collapsed"
+					data-toggle="collapse" data-target="#navbar" aria-expanded="false"
+					aria-controls="navbar">
+					<span class="sr-only">Toggle navigation</span> <span
+						class="icon-bar"></span> <span class="icon-bar"></span> <span
+						class="icon-bar"></span>
+				</button>
+				<a class="navbar-brand" href="http://loklak.org"><img
+					src="images/loklak_org.png" height="24" style="float: left;">:
+					API</a>
+			</div>
+			<div id="navbar" class="navbar-collapse collapse">
+				<ul class="nav navbar-nav navbar-right">
+					<li><a href="index.html">Home</a></li>
+					<li><a href="about.html">About</a></li>
+					<li><a href="architecture.html">Architecture</a></li>
+					<li><a href="download.html">Download</a></li>
+					<li class="active"><a href="api.html">API</a></li>
+					<li><a href="dump.html">Dumps</a></li>
+				</ul>
+				<!-- <form action="/api/search.json" class="navbar-form navbar-right">
+  <input name="q" id="query" type="text" class="form-control" placeholder="Search Tweets...">
+</form> -->
+			</div>
+		</div>
+	</nav>
 
-    <nav class="navbar navbar-inverse navbar-fixed-top">
-      <div class="container-fluid">
-        <div class="navbar-header">
-          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
-            <span class="sr-only">Toggle navigation</span>
-            <span class="icon-bar"></span>
-            <span class="icon-bar"></span>
-            <span class="icon-bar"></span>
-          </button>
-          <a class="navbar-brand" href="http://loklak.org"><img src="images/loklak_org.png" height="24" style="float:left;">: API</a>
-        </div>
-        <div id="navbar" class="navbar-collapse collapse">
-          <ul class="nav navbar-nav navbar-right">
-            <li><a href="index.html">Home</a></li>
-            <li><a href="about.html">About</a></li>
-            <li><a href="architecture.html">Architecture</a></li>
-            <li><a href="download.html">Download</a></li>
-            <li class="active"><a href="api.html">API</a></li>
-            <li><a href="dump.html">Dumps</a></li>
-          </ul>
-          <!-- <form action="/api/search.json" class="navbar-form navbar-right">
-            <input name="q" id="query" type="text" class="form-control" placeholder="Search Tweets...">
-          </form> -->
-        </div>
-      </div>
-    </nav>
+	<div class="container-fluid">
+		<div class="row">
+			<div class="col-sm-3 col-md-2 sidebar">
+				<ul class="nav nav-sidebar">
+					<li><a href="#status">/api/status.json</a></li>
+					<li><a href="#search">/api/search.json</span></a></li>
+					<li><a href="#suggest">/api/suggest.json</span></a></li>
+					<li><a href="#crawler">/api/crawler.json</a></li>
+					<li><a href="#hello">/api/hello.json</a></li>
+					<li><a href="#geocode">/api/geocode.json</a></li>
+					<li><a href="#peers">/api/peers.json</a></li>
+					<li><a href="#proxy">/api/proxy.json</a></li>
+					<li><a href="#push">/api/push.json</a></li>
+					<li><a href="#geojsonpush">/api/push/geojson.json</a></li>
+					<li><a href="#settings">/api/settings.json</a></li>
+					<li><a href="#account">/api/account.json</a></li>
+					<li><a href="#asset">/api/asset</a></li>
+					<li><a href="#threaddump">/api/threaddump.txt</a></li>
+					<li><a href="#map">/vis/map.png</a></li>
+					<li><a href="#markdown">/vis/markdown.png</a></li>
+				</ul>
+			</div>
+			<div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
+			
+<!-- html formatting here at zero column to align with the pre-text parts -->
 
-    <div class="container-fluid">
-      <div class="row">
-        <div class="col-sm-3 col-md-2 sidebar">
-          <ul class="nav nav-sidebar">
-            <li><a href="#search">/api/search.json</span></a></li>
-            <li><a href="#crawler">/api/crawler.json</a></li>
-            <li><a href="#status">/api/status.json</a></li>
-            <li><a href="#peers">/api/peers.json</a></li>
-            <li><a href="#push">/api/push.json</a></li>
-            <li><a href="#geojsonpush">/api/push/geojson.json</a></li>
-            <li><a href="#account">/api/account.json</a></li>
-            <li><a href="#markdown">/vis/markdown.png</a></li>
-            <li><a href="#settings">/api/settings.json</a></li>
-          </ul>
-        </div>
-        <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
-          <h1 class="page-header">APIs</h1>
-          <p>This is the loklak API running on a HTTP protocol. Every servlet can be called with a POST request, all but <code>push.json</code> can be called with a PUT request.
-            <p>You can access the API <b>without any authentication</b>. This service has <b>no user management on purpose</b>. Excessive usage of APIs is restricted with DoS protection.</p>
-		  
-		  <br id="search"/><br/><br/>
-          <h2 class="sub-header"><code>/api/search.json</code></h2>
-          <p>
-          Get a search result. There are two formats available: json and rss. To get rss data (which is opensearch-compliant) use the path <code>/api/search.rss</code>.
-          The json return format is a subset of the Twitter API search result but has also some additional attributes. Request properties are:</p>
-          <ul class="request">
-			<li><div class="tabcol0">q</div><div class="tabcol2">&nbsp;=&nbsp;&lt;query term&gt;</div>// space replaced by '+', i.e. q=doctor+who</li>
-		  </ul>
-		  <p>The query term has a special syntax and may contain the following term tokens:</p>
-		  <ul class="request">
-			<li><div class="tabcol0">term1 term2</div>:&nbsp;term1 and term2 shall appear in the tweet text</li>
-			<li><div class="tabcol0">@user</div>:&nbsp;the user must be mentioned in the message</li>
-			<li><div class="tabcol0">from:user</div>:&nbsp;only messages published by the user</li>
-			<li><div class="tabcol0">#hashtag</div>:&nbsp;the message must contain the given hashtag</li>
-			<li><div class="tabcol0">near:&lt;location&gt;</div>:&nbsp;messages shall be created near the given location</li>
-			<li><div class="tabcol0">since:&lt;date&gt;</div>:&nbsp;only messages after the date (including the date), &lt;date&gt;=yyyy-MM-dd or yyyy-MM-dd_HH:mm</li>
-			<li><div class="tabcol0">until:&lt;date&gt;</div>:&nbsp;only messages before the date (excluding the date), &lt;date&gt;=yyyy-MM-dd or yyyy-MM-dd_HH:mm</li>
-		  </ul>
-		  <p>Furthermore the following GET-attributes can be used:</p>
-		  <ul class="request">
-			<li><div class="tabcol0">count</div><div class="tabcol2">&nbsp;=&nbsp;&lt;result count&gt;</div>// default 100, i.e. count=100, the wanted number of results</li>
-			<li><div class="tabcol0">source</div><div class="tabcol2">&nbsp;=&nbsp;&lt;cache|backend|twitter|all&gt;</div>// the source for the search, default all, i.e. source=cache</li>
-			<li><div class="tabcol0">fields</div><div class="tabcol2">&nbsp;=&nbsp;&lt;field name list, separated by ','&gt;</div>// aggregation fields for search facets, like "created_at,mentions"</li>
-			<li><div class="tabcol0">limit</div><div class="tabcol2">&nbsp;=&nbsp;&lt;maximum number of facets for each field&gt;</div>// a limitation of number of facets for each aggregation</li>
-			<li><div class="tabcol0">timezoneOffset</div><div class="tabcol2">&nbsp;=&nbsp;&lt;offset in minutes&gt;</div>// offset applied on since:, until: and the date histogram</li>
-			<li><div class="tabcol0">minified</div><div class="tabcol2">&nbsp;=&nbsp;&lt;true|false&gt;</div>// minify the result, default false, i.e. minified=true</li>
-          </ul>
-          </p>
-          <p>A search result in JSON format looks like:</p>
-          <pre>
+<h1 class="page-header">APIs</h1>
+<p>
+	This is the loklak API running on a HTTP protocol. Every servlet
+	can be called with a POST request, all but
+	<code>push.json</code>
+	can be called with a PUT request.
+<p>
+	You can access the API <b>without any authentication</b>. This
+	service has <b>no user management on purpose</b>. Excessive usage
+	of APIs is restricted with DoS protection. Some servlets can only
+	be called from localhost to protect user data submitted to the
+	server.
+</p>
+<p>
+	Most servlets can be called with a
+	<code>callback=&lt;function-name&gt;</code>
+	property to call a jsonp result format.
+</p>
+
+<!-- ===================================================================== -->
+
+<br id="status" />
+<br />
+<h2 class="sub-header">
+	<code>/api/status.json</code>
+</h2>
+<p>The status servlet shows the size of the internal
+	elasticsearch search index for messages and users. Furthermore the
+	servlet reflects the current browser clients settings in the
+	client_info.</p>
+
+<pre>{
+  "index_sizes" : {
+    "messages" : 127111,
+    "users" : 56341,
+    "queries" : 94
+  },
+  "client_info" : {
+    "RemoteHost" : "109.91.39.64",
+    "Accept-Language" : "de-DE,de;q=0.8,en-US;q=0.6,en;q=0.4",
+    "Host" : "loklak.org",
+    "Accept-Encoding" : "gzip, deflate, sdch",
+    "X-Forwarded-For" : "109.91.39.64",
+    "X-Real-IP" : "109.91.39.64",
+    "User-Agent" : "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2272.76 Safari/537.36",
+    "Accept" : "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
+    "Connection" : "close"
+  }
+}</pre>
+
+<!-- ===================================================================== -->
+
+<br id="search" />
+<br />
+<h2 class="sub-header">
+	<code>/api/search.json</code>
+</h2>
+<p>
+	Get a search result. There are two formats available: json and rss.
+	To get rss data (which is opensearch-compliant) use the path
+	<code>/api/search.rss</code>
+	. The json return format is a subset of the Twitter API search
+	result but has also some additional attributes. Request properties
+	are:
+</p>
+<ul class="request">
+	<li><div class="tabcol0">q</div>
+		<div class="tabcol2">&nbsp;=&nbsp;&lt;query term&gt;</div>// space
+		replaced by '+', i.e. q=doctor+who</li>
+</ul>
+<p>The query term has a special syntax and may contain the
+	following term tokens:</p>
+<ul class="request">
+	<li><div class="tabcol0">term1 term2</div>:&nbsp;term1 and
+		term2 shall appear in the tweet text</li>
+	<li><div class="tabcol0">@user</div>:&nbsp;the user must be
+		mentioned in the message</li>
+	<li><div class="tabcol0">from:user</div>:&nbsp;only messages
+		published by the user</li>
+	<li><div class="tabcol0">#hashtag</div>:&nbsp;the message must
+		contain the given hashtag</li>
+	<li><div class="tabcol0">near:&lt;location&gt;</div>:&nbsp;messages
+		shall be created near the given location</li>
+	<li><div class="tabcol0">since:&lt;date&gt;</div>:&nbsp;only
+		messages after the date (including the date),
+		&lt;date&gt;=yyyy-MM-dd or yyyy-MM-dd_HH:mm</li>
+	<li><div class="tabcol0">until:&lt;date&gt;</div>:&nbsp;only
+		messages before the date (excluding the date),
+		&lt;date&gt;=yyyy-MM-dd or yyyy-MM-dd_HH:mm</li>
+</ul>
+<p>Furthermore the following GET-attributes can be used:</p>
+<ul class="request">
+	<li><div class="tabcol0">count</div>
+		<div class="tabcol2">&nbsp;=&nbsp;&lt;result count&gt;</div>//
+		default 100, i.e. count=100, the wanted number of results</li>
+	<li><div class="tabcol0">source</div>
+		<div class="tabcol2">&nbsp;=&nbsp;&lt;cache|backend|twitter|all&gt;</div>//
+		the source for the search, default all, i.e. source=cache</li>
+	<li><div class="tabcol0">fields</div>
+		<div class="tabcol2">&nbsp;=&nbsp;&lt;field name list,
+			separated by ','&gt;</div>// aggregation fields for search facets, like
+		"created_at,mentions"</li>
+	<li><div class="tabcol0">limit</div>
+		<div class="tabcol2">&nbsp;=&nbsp;&lt;maximum number of
+			facets for each field&gt;</div>// a limitation of number of facets for
+		each aggregation</li>
+	<li><div class="tabcol0">timezoneOffset</div>
+		<div class="tabcol2">&nbsp;=&nbsp;&lt;offset in minutes&gt;</div>//
+		offset applied on since:, until: and the date histogram</li>
+	<li><div class="tabcol0">minified</div>
+		<div class="tabcol2">&nbsp;=&nbsp;&lt;true|false&gt;</div>//
+		minify the result, default false, i.e. minified=true</li>
+</ul>
+</p>
+<p>A search result in JSON format looks like:</p>
+<pre>
 {
   "search_metadata" : {
     "startIndex" : "0",
@@ -141,28 +236,45 @@
   ]
 }
 </pre>
-          <p>The text field is evaluated and all shortened links are extracted. Furthermore all hashtags and user screen names are extracted as well and written into special index fields, which can be used for statistical evaluation:</p>
-          <ul class="request">
-			<li><div class="tabcol0">links</div>&nbsp;:&nbsp;all links in the message. <b>(almost) all shortlinks are expanded!</b></li>
-			<li><div class="tabcol0">hosts</div>&nbsp;:&nbsp;the host names from the extracted links</li>
-			<li><div class="tabcol0">mentions</div>&nbsp;:&nbsp;all user names denoted by a '@'-prefix from the message; listed without the leading '@'</li>
-			<li><div class="tabcol0">hashtags</div>&nbsp;:&nbsp;all hashtags appearing in the message, without the leading '#'</li>
-          </ul>
-          <p>To identify the source of the tweet, the tweet system and the harvesting source is mentioned:</p>
-          <ul class="request">
-			<li><div class="tabcol0">source_type</div>&nbsp;:&nbsp;The source of the message, currently only 'TWITTER' is possible</li>
-			<li><div class="tabcol0">provider_type</div>&nbsp;:&nbsp;The type of the content provider, possible values are SCRAPED and  REMOTE (for pushed content)</li>
-          </ul>
-          <p>These extracted fields are especially useful for search aggregations, see below.</p>
+<p>The text field is evaluated and all shortened links are
+	extracted. Furthermore all hashtags and user screen names are
+	extracted as well and written into special index fields, which can
+	be used for statistical evaluation:</p>
+<ul class="request">
+	<li><div class="tabcol0">links</div>&nbsp;:&nbsp;all links in
+		the message. <b>(almost) all shortlinks are expanded!</b></li>
+	<li><div class="tabcol0">hosts</div>&nbsp;:&nbsp;the host
+		names from the extracted links</li>
+	<li><div class="tabcol0">mentions</div>&nbsp;:&nbsp;all user
+		names denoted by a '@'-prefix from the message; listed without the
+		leading '@'</li>
+	<li><div class="tabcol0">hashtags</div>&nbsp;:&nbsp;all
+		hashtags appearing in the message, without the leading '#'</li>
+</ul>
+<p>To identify the source of the tweet, the tweet system and the
+	harvesting source is mentioned:</p>
+<ul class="request">
+	<li><div class="tabcol0">source_type</div>&nbsp;:&nbsp;The
+		source of the message, currently only 'TWITTER' is possible</li>
+	<li><div class="tabcol0">provider_type</div>&nbsp;:&nbsp;The
+		type of the content provider, possible values are SCRAPED and
+		REMOTE (for pushed content)</li>
+</ul>
+<p>These extracted fields are especially useful for search
+	aggregations, see below.</p>
 
-     	  <h3>Search Result Aggregations</h3>
-     	  <p>A search result may also have field aggregations (aka 'facets') if they are requested in the search request.
-       	  To get aggregations, the attribute 'source' MUST be set to 'cache' and the fields to be aggregated must be listed in the attribute 'fields'.
-       	  Aggregations are only useful if the search query contains also since- and until-modifiers to define a time frame.
-       	  A typical aggregation search request sets the count of search results to zero. Example:</p>
-       	  <ul class="request">
-			<li>url&nbsp;:&nbsp;http://localhost:9100/api/search.json?q=spacex%20since:2015-04-01%20until:2015-04-06&source=cache&count=0&fields=mentions,hashtags&limit=6</li>
-          </ul>
+<h3>Search Result Aggregations</h3>
+<p>A search result may also have field aggregations (aka
+	'facets') if they are requested in the search request. To get
+	aggregations, the attribute 'source' MUST be set to 'cache' and the
+	fields to be aggregated must be listed in the attribute 'fields'.
+	Aggregations are only useful if the search query contains also
+	since- and until-modifiers to define a time frame. A typical
+	aggregation search request sets the count of search results to
+	zero. Example:</p>
+<ul class="request">
+	<li>url&nbsp;:&nbsp;http://localhost:9100/api/search.json?q=spacex%20since:2015-04-01%20until:2015-04-06&source=cache&count=0&fields=mentions,hashtags&limit=6</li>
+</ul>
 <pre>{
   "search_metadata" : {
     "startIndex" : "0",
@@ -190,13 +302,15 @@
     }
   }
 }</pre>
-       	  <p>A special field is the "created_at" field which
-     	  will create a date histogram if listed in the GET-attribute 'fields'. The date histogram resolution depends on the time frame as given in the
-     	  query modifer with the 'since' and 'until' time limits: minutes if the time frame is below three hours, hours if the time frame is below seven days
-     	  and days otherwise. Example:
-     	  <ul class="request">
-			<li>url&nbsp;:&nbsp;http://localhost:9100/api/search.json?q=spacex%20since:2015-04-05_23:10%20until:2015-04-05_23:20&source=cache&count=0&fields=created_at&timezoneOffset=-120</li>
-          </ul>
+<p>A special field is the "created_at" field which will create a
+	date histogram if listed in the GET-attribute 'fields'. The date
+	histogram resolution depends on the time frame as given in the
+	query modifer with the 'since' and 'until' time limits: minutes if
+	the time frame is below three hours, hours if the time frame is
+	below seven days and days otherwise. Example:
+<ul class="request">
+	<li>url&nbsp;:&nbsp;http://localhost:9100/api/search.json?q=spacex%20since:2015-04-05_23:10%20until:2015-04-05_23:20&source=cache&count=0&fields=created_at&timezoneOffset=-120</li>
+</ul>
 <pre>{
   "search_metadata" : {
     "startIndex" : "0",
@@ -218,20 +332,67 @@
   }
 }
 </pre>
-     	  <p>Please note that the times given here as since- und until modifiers as well as the histogram dates are shifted by -120 minutes as
-     	  given in the timezoneOffset attribute. This makes it possible to pass that attribute from a browser which knows the actual time zone of
-     	  the web front-end user and modify search attributes and result times according to the localized time of the user.</p>
-     	   
-		  <br id="crawler"/><br/>
-          <h2 class="sub-header"><code>/api/crawler.json</code></h2>
-          <p>With the crawler servlet it is possible to retrieve mass-data from the search back-end, including the twitter scraper. The crawler loads search results with a given set of query terms, extracts all the hashtags and user names from the result list and searches with those words again. Request properties are:</p>
-          <ul class="request">
-			<li><div class="tabcol0">start</div><div class="tabcol1">&nbsp;=&nbsp;&lt;terms, comma-separated&gt;</div>// i.e. start=fossasia,software</li>
-			<li><div class="tabcol0">depth</div><div class="tabcol1">&nbsp;=&nbsp;&lt;crawl depth&gt;</div>// default 0, non-localhost clients may only set a maximum of 1</li>
-			<li><div class="tabcol0">hashtags</div><div class="tabcol1">&nbsp;=&nbsp;&lt;true|false&gt;</div>// if true then hashtags from the results are used for the next search requests</li>
-			<li><div class="tabcol0">users</div><div class="tabcol1">&nbsp;=&nbsp;&lt;true|false&gt;</div>// if true then user names from the results are used for the next search requests</li>
-          </ul>
-          <p>The crawler returns immediately with an object describing the index size (exactly the same as with the status servlets) and an object describing the crawler status:</p>
+<p>Please note that the times given here as since- und until
+	modifiers as well as the histogram dates are shifted by -120
+	minutes as given in the timezoneOffset attribute. This makes it
+	possible to pass that attribute from a browser which knows the
+	actual time zone of the web front-end user and modify search
+	attributes and result times according to the localized time of the
+	user.</p>
+
+<!-- ===================================================================== -->
+
+<br id="suggest" />
+<br />
+<h2 class="sub-header">
+	<code>/api/suggest.json</code>
+</h2>
+<p>Usage-Description</p>
+<ul class="request">
+	<li><div class="tabcol0">key0</div>
+		<div class="tabcol1">&nbsp;=&nbsp;&lt;value0&gt;</div>// description0</li>
+	<li><div class="tabcol0">key1</div>
+		<div class="tabcol1">&nbsp;=&nbsp;&lt;value1&gt;</div>// description1</li>
+	<li><div class="tabcol0">key2</div>
+		<div class="tabcol1">&nbsp;=&nbsp;&lt;value2&gt;</div>// description2</li>
+</ul>
+<p>Result-Description</p>
+<pre>{
+  json
+}
+</pre>
+
+<!-- ===================================================================== -->
+
+<br id="crawler" />
+<br />
+<h2 class="sub-header">
+	<code>/api/crawler.json</code>
+</h2>
+<p>With the crawler servlet it is possible to retrieve mass-data
+	from the search back-end, including the twitter scraper. The
+	crawler loads search results with a given set of query terms,
+	extracts all the hashtags and user names from the result list and
+	searches with those words again. Request properties are:</p>
+<ul class="request">
+	<li><div class="tabcol0">start</div>
+		<div class="tabcol1">&nbsp;=&nbsp;&lt;terms,
+			comma-separated&gt;</div>// i.e. start=fossasia,software</li>
+	<li><div class="tabcol0">depth</div>
+		<div class="tabcol1">&nbsp;=&nbsp;&lt;crawl depth&gt;</div>//
+		default 0, non-localhost clients may only set a maximum of 1</li>
+	<li><div class="tabcol0">hashtags</div>
+		<div class="tabcol1">&nbsp;=&nbsp;&lt;true|false&gt;</div>// if
+		true then hashtags from the results are used for the next search
+		requests</li>
+	<li><div class="tabcol0">users</div>
+		<div class="tabcol1">&nbsp;=&nbsp;&lt;true|false&gt;</div>// if
+		true then user names from the results are used for the next search
+		requests</li>
+</ul>
+<p>The crawler returns immediately with an object describing the
+	index size (exactly the same as with the status servlets) and an
+	object describing the crawler status:</p>
 
 <pre>{
   "index_sizes" : {
@@ -247,34 +408,62 @@
   }
 }
 </pre>
-      
-		  <br id="status"/><br/>
-          <h2 class="sub-header"><code>/api/status.json</code></h2>
-          <p>The status servlet shows the size of the internal elasticsearch search index for messages and users.
-              Furthermore the servlet reflects the current browser clients settings in the client_info.</p>
-          
+
+<!-- ===================================================================== -->
+
+<br id="hello" />
+<br />
+<h2 class="sub-header">
+	<code>/api/hello.json</code>
+</h2>
+<p>Usage-Description</p>
+<ul class="request">
+	<li><div class="tabcol0">key0</div>
+		<div class="tabcol1">&nbsp;=&nbsp;&lt;value0&gt;</div>// description0</li>
+	<li><div class="tabcol0">key1</div>
+		<div class="tabcol1">&nbsp;=&nbsp;&lt;value1&gt;</div>// description1</li>
+	<li><div class="tabcol0">key2</div>
+		<div class="tabcol1">&nbsp;=&nbsp;&lt;value2&gt;</div>// description2</li>
+</ul>
+<p>Result-Description</p>
 <pre>{
-  "index_sizes" : {
-    "messages" : 127111,
-    "users" : 56341
-  },
-  "client_info" : {
-    "RemoteHost" : "109.91.39.64",
-    "Accept-Language" : "de-DE,de;q=0.8,en-US;q=0.6,en;q=0.4",
-    "Host" : "loklak.org",
-    "Accept-Encoding" : "gzip, deflate, sdch",
-    "X-Forwarded-For" : "109.91.39.64",
-    "X-Real-IP" : "109.91.39.64",
-    "User-Agent" : "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2272.76 Safari/537.36",
-    "Accept" : "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
-    "Connection" : "close"
-  }
-}</pre>
-          
-		  <br id="peers"/><br/>
-          <h2 class="sub-header"><code>/api/peers.json</code></h2>
-          <p>This servlet combined the result of the hello calls from all peers and provides a list of addresses where the remote peers can be accessed.</p>
-          
+  json
+}
+</pre>
+
+<!-- ===================================================================== -->
+
+<br id="geocode" />
+<br />
+<h2 class="sub-header">
+	<code>/api/geocode.json</code>
+</h2>
+<p>Usage-Description</p>
+<ul class="request">
+	<li><div class="tabcol0">key0</div>
+		<div class="tabcol1">&nbsp;=&nbsp;&lt;value0&gt;</div>// description0</li>
+	<li><div class="tabcol0">key1</div>
+		<div class="tabcol1">&nbsp;=&nbsp;&lt;value1&gt;</div>// description1</li>
+	<li><div class="tabcol0">key2</div>
+		<div class="tabcol1">&nbsp;=&nbsp;&lt;value2&gt;</div>// description2</li>
+</ul>
+<p>Result-Description</p>
+<pre>{
+  json
+}
+</pre>
+
+<!-- ===================================================================== -->
+
+<br id="peers" />
+<br />
+<h2 class="sub-header">
+	<code>/api/peers.json</code>
+</h2>
+<p>This servlet combined the result of the hello calls from all
+	peers and provides a list of addresses where the remote peers can
+	be accessed.</p>
+
 <pre>{
   "count" : "4",
   "peers" : [ {
@@ -304,14 +493,50 @@
   } ]
 }
 </pre>
-      
-		  <br id="push"/><br/>
-          <h2 class="sub-header"><code>/api/push.json</code></h2>
-          <p>Whenever a peer aquires new tweets, it reports these to the back-end for storage. Messages are first collected and bundled into http POST requests to the back-end push api. This servlet can only be requested with a POST request. The post must have only one attribute:</p>
+
+
+<!-- ===================================================================== -->
+
+<br id="proxy" />
+<br />
+<h2 class="sub-header">
+	<code>/api/proxy.json</code>
+</h2>
+<p>Usage-Description</p>
 <ul class="request">
-			<li><div class="tabcol0">data</div><div class="tabcol1">&nbsp;=&nbsp;&lt;a search result object&gt;</div>// push the same data as it is returned with search.json</li>
-          </ul>
-        <p>The servlet returns with</p>
+	<li><div class="tabcol0">key0</div>
+		<div class="tabcol1">&nbsp;=&nbsp;&lt;value0&gt;</div>// description0</li>
+	<li><div class="tabcol0">key1</div>
+		<div class="tabcol1">&nbsp;=&nbsp;&lt;value1&gt;</div>// description1</li>
+	<li><div class="tabcol0">key2</div>
+		<div class="tabcol1">&nbsp;=&nbsp;&lt;value2&gt;</div>// description2</li>
+</ul>
+<p>Result-Description</p>
+<pre>{
+  json
+}
+</pre>
+
+
+<!-- ===================================================================== -->
+
+<br id="push" />
+<br />
+<h2 class="sub-header">
+	<code>/api/push.json</code>
+</h2>
+<p>Whenever a peer aquires new tweets, it reports these to the
+	back-end for storage. Messages are first collected and bundled into
+	http POST requests to the back-end push api. This servlet can only
+	be requested with a POST request. The post must have only one
+	attribute:</p>
+<ul class="request">
+	<li><div class="tabcol0">data</div>
+		<div class="tabcol1">&nbsp;=&nbsp;&lt;a search result
+			object&gt;</div>// push the same data as it is returned with
+		search.json</li>
+</ul>
+<p>The servlet returns with</p>
 <pre>{
   "status" : "ok",
   "records" : "100",
@@ -319,11 +544,22 @@
   "known" : "93",
   "message" : "pushed"
 }</pre>
-      <p>When messages arrive the back-end peer, the value "source_type" of every message is replaced with "REMOTE"</p>
-      
-      <br id="geojsonpush"/><br/>
-          <h2 class="sub-header"><code>/api/push/geojson.json</code></h2>
-          <p>An alternative solution to push tweets data to back-end, using geojson format. Messages are collected from provided url, which contains a <a href="http://geojson.org/geojson-spec.html#introduction">GeoJSON Feature Collection</a>. Each message is a GeoJSON Feature. Example :
+<p>When messages arrive the back-end peer, the value
+	"source_type" of every message is replaced with "REMOTE"</p>
+
+<!-- ===================================================================== -->
+
+<br id="geojsonpush" />
+<br />
+<h2 class="sub-header">
+	<code>/api/push/geojson.json</code>
+</h2>
+<p>
+	An alternative solution to push tweets data to back-end, using
+	geojson format. Messages are collected from provided url, which
+	contains a <a
+		href="http://geojson.org/geojson-spec.html#introduction">GeoJSON
+		Feature Collection</a>. Each message is a GeoJSON Feature. Example :
 <pre>{
   {
     "type": "FeatureCollection",
@@ -335,8 +571,8 @@
       {
         "screen_name": "Message 1",
         "user" : {
-          "screen_name" : "exanonym77s",
-          "name" : "Example User"
+"screen_name" : "exanonym77s",
+"name" : "Example User"
         }
       }
     },
@@ -347,130 +583,390 @@
       {
         "screen_name": "Message 2",
         "user" : {
-          "screen_name" : "exanonym77s",
-          "name" : "Example User"
+"screen_name" : "exanonym77s",
+"name" : "Example User"
         }
       }
     }
     ]}
 }</pre>
-      <p>In the back-end, "geometry" fields are transformed into tweet "location_point". "properties" fields are pasted as tweet fields.</p>
-      <p>This servlet allows users to specify some rules to map "properties" fields differently, with <code>map_type</code> parameter.The HTTP GET or POST request has three attributes :</p>
-          <ul class="request">
-            <li><div class="tabcol0">url</div><div class="tabcol1">&nbsp;=&nbsp;&lt;an url to geojson&gt;</div>// public url to retrieve geojson data. This url will be used to update the source periodically</li>
-            <li><div class="tabcol0">source_type</div><div class="tabcol1">&nbsp;=&nbsp;&lt;source type&gt;</div>// "source_type" value of each message.</li>
-            <li><div class="tabcol0">map_type</div><div class="tabcol1">&nbsp;=&nbsp;&lt;mapping rule(s)&gt;</div>// field mapping rules, separated by commas</li>
-          </ul>
-      <p>The servlet returns with the same information as <code>/api/push.json</code>.
-      <p>Here is an example : </p>
-      <ul class="request">
-        <li><a href="http://localhost:9000/api/push/geojson.json?url=mysite.com/mygeojson.json&source_type=IMPORT">http://localhost:9000/api/push/geojson.json?url=mysite.com/mygeojson.json&source_type=IMPORT</a></li>
-      </ul>
-      <p>Another example, with 3 field mapping rules :</p>
-      <ul class="request">
-        <li><a href="http://localhost:9000/api/push/geojson.json?url=mysite.com/mygeojson.json&source_type=IMPORT">http://localhost:9000/api/push/geojson.json?url=mysite.com/mygeojson.json&source_type=IMPORT&map_type=message_name:screen_name,username:user.name,user_shortname:user.screen_name</a></li>
-      </ul>
-		  <br id="account"/><br/>
-          <h2 class="sub-header"><code>/api/account.json</code></h2>
-          <p>This servlet provides the storage and retrieval of twitter accounts. This servlet can only be called from localhost.</p>
-          <ul class="request">
-			<li><div class="tabcol0">screen_name</div><div class="tabcol1">&nbsp;=&nbsp;&lt;user nickname&gt;</div>// the identifier of the account record</li>
-			<li><div class="tabcol0">action</div><div class="tabcol1">&nbsp;=&nbsp;&lt;an action&gt;</div>// proper values are either &lt;empty&gt; or 'update'</li>
-			<li><div class="tabcol0">minified</div><div class="tabcol1">&nbsp;=&nbsp;&lt;true|false&gt;</div>// minify the result, default false, i.e. minified=true</li>
-			<li><div class="tabcol0">callback</div><div class="tabcol1">&nbsp;=&nbsp;&lt;a jsonp function name&gt;</div>// use this to call the servlet with jsonp result</li>
-			<li><div class="tabcol0">data</div><div class="tabcol1">&nbsp;=&nbsp;&lt;an object to store&gt;</div>// if you set action=update, you must submit this data object</li>
-          </ul>
-          
-          <p>If you want to retrieve data from the API, just submit the <code>screen_name</code> and you get the stored data object returned.
-             If you want to store one or more account objects, submit that object (these objects) inside the <code>data</code> value.
-             Hint: the <code>screen_name</code> is not used for storage of the objects, the <code>screen_name</code> must be inside the data object!</p>
-          <p>The data object must have the following form:</p>
-          <pre>{
-  "screen_name"           : "test",                            // primary key for the user
-  "source_type"           : "TWITTER",                         // the application which created the token, by default "TWITTER"
-  "oauth_token"           : "abc",                             // the oauth token
-  "oauth_token_secret"    : "def",                             // the oauth token_secret
-  "authentication_first"  : "2015-06-07T09:39:22.341Z",        // optional
-  "authentication_latest" : "2015-06-07T09:39:22.341Z",        // optional
-  "apps"                  : {"wall" : {"type" : "horizontal"}} // any json
-}
-</pre>
-<p>You can set such a record i.e. with the call
-<ul class="request">
-<li><a href="http://localhost:9000/api/account.json?action=update&data={%22screen_name%22:%22test%22,%22oauth_token%22:%22abc%22,%22oauth_token_secret%22:%22def%22}">http://localhost:9000/api/account.json?action=update&data={"screen_name":"test","oauth_token":"abc","oauth_token_secret":"def"}</a></li>
-</ul></p>
 
-<p>It can then be retrieved again with
-<ul class="request">
-<li><a href="http://localhost:9000/api/account.json?screen_name=test">http://localhost:9000/api/account.json?screen_name=test</a></li>
-</ul>
+<p>In the back-end, "geometry" fields are transformed into tweet
+	"location_point". "properties" fields are pasted as tweet fields.</p>
+<p>
+	This servlet allows users to specify some rules to map "properties"
+	fields differently, with
+	<code>map_type</code>
+	parameter.The HTTP GET or POST request has three attributes :
 </p>
-
-<p>To add or update a record with <code>apps</code> settings, simply omit the oauth details and just set apps
 <ul class="request">
-<li><a href="http://localhost:9000/api/account.json?action=update&data={%22screen_name%22:%22test%22,%22apps%22:{%22wall%22:{%22type%22:%22horizontal%22}}}">http://localhost:9000/api/account.json?action=update&data={"screen_name":"test","apps":{"wall":{"type":"horizontal"}}}</a></li>
+	<li><div class="tabcol0">url</div>
+		<div class="tabcol1">&nbsp;=&nbsp;&lt;an url to geojson&gt;</div>//
+		public url to retrieve geojson data. This url will be used to
+		update the source periodically</li>
+	<li><div class="tabcol0">source_type</div>
+		<div class="tabcol1">&nbsp;=&nbsp;&lt;source type&gt;</div>//
+		"source_type" value of each message.</li>
+	<li><div class="tabcol0">map_type</div>
+		<div class="tabcol1">&nbsp;=&nbsp;&lt;mapping rule(s)&gt;</div>//
+		field mapping rules, separated by commas</li>
 </ul>
-</p>
-
-
-		  <br id="markdown"/><br/>
-          <h2 class="sub-header"><code>/vis/markdown.png</code></h2>
-          <p>This servlet provides an image with text on it. It shall be used to attach large texts to tweets. The servlet can be called with POST and GET html requests, however it is recommended to call this using POST to be able to attach large texts. The request properties are:</p>
-          <ul class="request">
-			<li><div class="tabcol1">text</div><div class="tabcol2">&nbsp;=&nbsp;&lt;text to be printed, markdown possible&gt;</div>// the image size adopts automatically</li>
-			<li><div class="tabcol1">color_text</div><div class="tabcol2">&nbsp;=&nbsp;&lt;text color&gt;</div>// 6-character hex code for the color</li>
-			<li><div class="tabcol1">color_background</div><div class="tabcol2">&nbsp;=&nbsp;&lt;background color&gt;</div>// 6-character hex code for the color</li>
-			<li><div class="tabcol1">padding</div><div class="tabcol2">&nbsp;=&nbsp;&lt;space around text&gt;</div>// this is an integer number of the pixels</li>
-			<li><div class="tabcol1">uppercase</div><div class="tabcol2">&nbsp;=&nbsp;&lt;true|false&gt; by default true</div>// if true the text is printed UPPERCASE</li>
-          </ul>
-          
-          <p>The servlet can produce also gif and jpg images, just change the extension of the servlet path.</p>
-
-<p>Here is an example :
+<p>
+	The servlet returns with the same information as
+	<code>/api/push.json</code>
+	.
+<p>Here is an example :</p>
 <ul class="request">
-<li><a href="http://localhost:9000/vis/markdown.png?text=hello%20world%0Dhello%20universe&color_text=000000&color_background=ffffff&padding=3">http://localhost:9000/vis/markdown.png?text=hello%20world%0Dhello%20universe&color_text=000000&color_background=ffffff&padding=3</a></li>
-</ul></p>
+	<li><a
+		href="http://localhost:9000/api/push/geojson.json?url=mysite.com/mygeojson.json&source_type=IMPORT">http://localhost:9000/api/push/geojson.json?url=mysite.com/mygeojson.json&source_type=IMPORT</a></li>
+</ul>
+<p>Another example, with 3 field mapping rules :</p>
+<ul class="request">
+	<li><a
+		href="http://localhost:9000/api/push/geojson.json?url=mysite.com/mygeojson.json&source_type=IMPORT">http://localhost:9000/api/push/geojson.json?url=mysite.com/mygeojson.json&source_type=IMPORT&map_type=message_name:screen_name,username:user.name,user_shortname:user.screen_name</a></li>
+</ul>
 
+<!-- ===================================================================== -->
 
-        <br id="settings"/></br>
-        <h2 class="sub-header"><code>/api/settings.json</code></h2>
-        <p>This servlet provides a method to provide the settings API for the loklak front end connections. This servlet works for requests that are running the application from the localhost.</p>
-        <ul class="request">
-          <li>
-            <div class="tabcol1">File to edit</div> <div class="tabcol2">&nbsp;=&nbsp;/data/settings/customized_config.properties</div>
-          </li>
-        </ul>
-        <br>
-        <p>To serve the configuration the config file should read the parameters as follows with a <code>client.</code> prefix</p>
-        <ul class="request">
-          <li>
-            <div class="tabcol1">client.test</div> <div class="tabcol2">&nbsp;=&nbsp;abc</div>
-          </li>
-        </ul>
-        <br>
-        <p>Which renders the output as </p>
-        <pre>{
-  "test"           : "abc"
+<br id="settings" /></br>
+<h2 class="sub-header">
+	<code>/api/settings.json</code>
+</h2>
+<p>This servlet provides a method to provide the settings API
+	for the loklak front-end connections. This servlet works for
+	requests that are running the application from the localhost.</p>
+<ul class="request">
+	<li>
+		<div class="tabcol1">File to edit</div>
+		<div class="tabcol2">&nbsp;=&nbsp;/data/settings/customized_config.properties</div>
+	</li>
+</ul>
+<br />
+<p>
+	To serve the configuration the config file should read the
+	parameters as follows with a
+	<code>client.</code>
+	prefix
+</p>
+<ul class="request">
+	<li>
+		<div class="tabcol1">client.test</div>
+		<div class="tabcol2">&nbsp;=&nbsp;abc</div>
+	</li>
+</ul>
+<br>
+<p>Which renders the output as</p>
+<pre>{
+  "test" : "abc"
 }
 </pre>
 <p>Here is an example :</p>
 <ul class="request">
-  <li><a href="http://localhost:9000/api/settings.json">http://localhost:9000/api/settings.json</a></li>
+	<li><a href="http://localhost:9000/api/settings.json">http://localhost:9000/api/settings.json</a></li>
 </ul>
 
 
-          <br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/>
-        </div>
-      </div>
-    </div>
-    
-    <!-- Bootstrap core JavaScript
+<!-- ===================================================================== -->
+
+<br id="account" />
+<br />
+<h2 class="sub-header">
+	<code>/api/account.json</code>
+</h2>
+<p>This servlet provides the storage and retrieval of user account data.
+   This includes twitter account information (oauth tokens). This servlet can only be called from localhost.</p>
+<ul class="request">
+	<li><div class="tabcol0">screen_name</div>
+		<div class="tabcol1">&nbsp;=&nbsp;&lt;user nickname&gt;</div>//
+		the identifier of the account record</li>
+	<li><div class="tabcol0">action</div>
+		<div class="tabcol1">&nbsp;=&nbsp;&lt;an action&gt;</div>// proper
+		values are either &lt;empty&gt; or 'update'</li>
+	<li><div class="tabcol0">minified</div>
+		<div class="tabcol1">&nbsp;=&nbsp;&lt;true|false&gt;</div>//
+		minify the result, default false, i.e. minified=true</li>
+	<li><div class="tabcol0">callback</div>
+		<div class="tabcol1">&nbsp;=&nbsp;&lt;a jsonp function
+			name&gt;</div>// use this to call the servlet with jsonp result</li>
+	<li><div class="tabcol0">data</div>
+		<div class="tabcol1">&nbsp;=&nbsp;&lt;an object to store&gt;</div>//
+		if you set action=update, you must submit this data object</li>
+</ul>
+
+<p>
+	If you want to retrieve data from the API, just submit the
+	<code>screen_name</code>
+	and you get the stored data object returned. If you want to store
+	one or more account objects, submit that object (these objects)
+	inside the
+	<code>data</code>
+	value. Hint: the
+	<code>screen_name</code>
+	is not used for storage of the objects, the
+	<code>screen_name</code>
+	must be inside the data object!
+</p>
+<p>The data object must have the following form:</p>
+<pre>{
+  "screen_name"           : "test",        // primary key for the user
+  "source_type"           : "TWITTER",     // the application which created the token, by default "TWITTER"
+  "oauth_token"           : "abc",         // the oauth token
+  "oauth_token_secret"    : "def",         // the oauth token_secret
+  "authentication_first"  : "2015-06-07T09:39:22.341Z",        // optional
+  "authentication_latest" : "2015-06-07T09:39:22.341Z",        // optional
+  "apps"        : {"wall" : {"type" : "horizontal"}} // any json
+}
+</pre>
+<p>You can set such a record i.e. with the call
+<ul class="request">
+	<li><a
+		href="http://localhost:9000/api/account.json?action=update&data={%22screen_name%22:%22test%22,%22oauth_token%22:%22abc%22,%22oauth_token_secret%22:%22def%22}">http://localhost:9000/api/account.json?action=update&data={"screen_name":"test","oauth_token":"abc","oauth_token_secret":"def"}</a></li>
+</ul>
+</p>
+
+<p>It can then be retrieved again with
+<ul class="request">
+	<li><a
+		href="http://localhost:9000/api/account.json?screen_name=test">http://localhost:9000/api/account.json?screen_name=test</a></li>
+</ul>
+</p>
+
+<p>
+	To add or update a record with
+	<code>apps</code>
+	settings, simply omit the oauth details and just set apps
+<ul class="request">
+	<li><a
+		href="http://localhost:9000/api/account.json?action=update&data={%22screen_name%22:%22test%22,%22apps%22:{%22wall%22:{%22type%22:%22horizontal%22}}}">http://localhost:9000/api/account.json?action=update&data={"screen_name":"test","apps":{"wall":{"type":"horizontal"}}}</a></li>
+</ul>
+</p>
+
+<h3>Retrieval of Twitter User Account Data</h3>
+<p>By default, this api also retrieves account data from Twitter. It is not
+   necessary that the user is known with it's account data. Just submit the <code>screen_name</code>
+   as GET http attribute. Example:
+   <ul class="request">
+	<li><a href="http://localhost:9000/api/account.json?screen_name=loklak_app">http://localhost:9000/api/account.json?screen_name=loklak_app</a></li>
+   </ul>
+</p>
+<pre>{
+  "user" : {
+    "retrieval_date" : "2015-07-20T13:41:53.097Z",
+    "location" : "",
+    "default_profile" : true,
+    "profile_background_tile" : false,
+    "statuses_count" : 16,
+    "lang" : "en",
+    "profile_link_color" : "0084B4",
+    "id" : 3090229939,
+    "following" : false,
+    "profile_location" : null,
+    "favourites_count" : 7,
+    "protected" : false,
+    "profile_text_color" : "333333",
+    "description" : "We do large-scale distibuted message harvesting and analysis with free and open source software from http://t.co/D8XmZwuU2Y #freedom of information",
+    "verified" : false,
+    "contributors_enabled" : false,
+    "profile_sidebar_border_color" : "C0DEED",
+    "name" : "loklak_app",
+    "profile_background_color" : "C0DEED",
+    "created_at" : "Mon Mar 16 16:48:17 +0000 2015",
+    "is_translation_enabled" : false,
+    "default_profile_image" : false,
+    "followers_count" : 9,
+    "profile_image_url_https" : "https://pbs.twimg.com/profile_images/577512240640733184/fizL4YIn_normal.png",
+    "has_extended_profile" : false,
+    "geo_enabled" : false,
+    "profile_background_image_url" : "http://abs.twimg.com/images/themes/theme1/bg.png",
+    "profile_background_image_url_https" : "https://abs.twimg.com/images/themes/theme1/bg.png",
+    "needs_phone_verification" : false,
+    "follow_request_sent" : false,
+    "entities" : {
+      "description" : {
+        "urls" : [ {
+          "expanded_url" : "http://loklak.org",
+          "indices" : [ 101, 123 ],
+          "display_url" : "loklak.org",
+          "url" : "http://t.co/D8XmZwuU2Y"
+        } ]
+      },
+      "url" : {
+        "urls" : [ {
+          "expanded_url" : "http://loklak.org",
+          "indices" : [ 0, 22 ],
+          "display_url" : "loklak.org",
+          "url" : "http://t.co/D8XmZwuU2Y"
+        } ]
+      }
+    },
+    "suspended" : false,
+    "url" : "http://t.co/D8XmZwuU2Y",
+    "utc_offset" : -39600,
+    "time_zone" : "International Date Line West",
+    "notifications" : false,
+    "profile_use_background_image" : true,
+    "friends_count" : 8,
+    "profile_sidebar_fill_color" : "DDEEF6",
+    "screen_name" : "loklak_app",
+    "id_str" : "3090229939",
+    "profile_image_url" : "http://pbs.twimg.com/profile_images/577512240640733184/fizL4YIn_normal.png",
+    "listed_count" : 1,
+    "is_translator" : false
+  }
+}
+</pre>
+
+<p>It is also possible to get the followers of an account all at once. To trigger this, just
+   add the attribute <code>followers=&lt;maxcount&gt;</code> to the request. This will produce a list of
+   <code>&lt;maxcount&gt;</code> user entries in a 'topology' object. Example :
+   <ul class="request">
+	<li><a href="http://localhost:9000/api/account.json?screen_name=loklak_app&followers=10000">http://localhost:9000/api/account.json?screen_name=loklak_app&followers=10000</a></li>
+   </ul>
+</p>
+
+<pre>{
+  "user" : {
+    (user data)
+  },
+  "topology" : {
+    "followers" : [ {
+      (user's follower data)
+    }, {
+      (user's follower data)
+    },
+    ...
+    ],
+    "retrieval_date" : "2015-07-23T18:21:55.743Z",
+    "unfollowers" : [ ],
+    "complete" : true,
+    "unfollowers_count" : 0,
+    "followers_count" : 9
+  }
+}</pre>   
+   
+
+<!-- ===================================================================== -->
+
+<br id="asset" />
+<br />
+<h2 class="sub-header">
+	<code>/api/asset</code>
+</h2>
+<p>Usage-Description</p>
+<ul class="request">
+	<li><div class="tabcol0">key0</div>
+		<div class="tabcol1">&nbsp;=&nbsp;&lt;value0&gt;</div>// description0</li>
+	<li><div class="tabcol0">key1</div>
+		<div class="tabcol1">&nbsp;=&nbsp;&lt;value1&gt;</div>// description1</li>
+	<li><div class="tabcol0">key2</div>
+		<div class="tabcol1">&nbsp;=&nbsp;&lt;value2&gt;</div>// description2</li>
+</ul>
+<p>Result-Description</p>
+<pre>{
+  json
+}
+</pre>
+
+<!-- ===================================================================== -->
+
+<br id="threaddump" />
+<br />
+<h2 class="sub-header">
+	<code>/api/threaddump.txt</code>
+</h2>
+<p>Usage-Description</p>
+<ul class="request">
+	<li><div class="tabcol0">key0</div>
+		<div class="tabcol1">&nbsp;=&nbsp;&lt;value0&gt;</div>// description0</li>
+	<li><div class="tabcol0">key1</div>
+		<div class="tabcol1">&nbsp;=&nbsp;&lt;value1&gt;</div>// description1</li>
+	<li><div class="tabcol0">key2</div>
+		<div class="tabcol1">&nbsp;=&nbsp;&lt;value2&gt;</div>// description2</li>
+</ul>
+<p>Result-Description</p>
+<pre>{
+  json
+}
+</pre>
+
+<!-- ===================================================================== -->
+
+<br id="map" />
+<br />
+<h2 class="sub-header">
+	<code>/vis/map</code>
+</h2>
+<p>Usage-Description</p>
+<ul class="request">
+	<li><div class="tabcol0">key0</div>
+		<div class="tabcol1">&nbsp;=&nbsp;&lt;value0&gt;</div>// description0</li>
+	<li><div class="tabcol0">key1</div>
+		<div class="tabcol1">&nbsp;=&nbsp;&lt;value1&gt;</div>// description1</li>
+	<li><div class="tabcol0">key2</div>
+		<div class="tabcol1">&nbsp;=&nbsp;&lt;value2&gt;</div>// description2</li>
+</ul>
+<p>Result-Description</p>
+<pre>{
+  json
+}
+</pre>
+
+<!-- ===================================================================== -->
+
+<br id="markdown" />
+<br />
+<h2 class="sub-header">
+	<code>/vis/markdown.png</code>
+</h2>
+<p>This servlet provides an image with text on it. It shall be
+	used to attach large texts to tweets. The servlet can be called
+	with POST and GET html requests, however it is recommended to call
+	this using POST to be able to attach large texts. The request
+	properties are:</p>
+<ul class="request">
+	<li><div class="tabcol1">text</div>
+		<div class="tabcol2">&nbsp;=&nbsp;&lt;text to be printed,
+			markdown possible&gt;</div>// the image size adopts automatically</li>
+	<li><div class="tabcol1">color_text</div>
+		<div class="tabcol2">&nbsp;=&nbsp;&lt;text color&gt;</div>//
+		6-character hex code for the color</li>
+	<li><div class="tabcol1">color_background</div>
+		<div class="tabcol2">&nbsp;=&nbsp;&lt;background color&gt;</div>//
+		6-character hex code for the color</li>
+	<li><div class="tabcol1">padding</div>
+		<div class="tabcol2">&nbsp;=&nbsp;&lt;space around text&gt;</div>//
+		this is an integer number of the pixels</li>
+	<li><div class="tabcol1">uppercase</div>
+		<div class="tabcol2">&nbsp;=&nbsp;&lt;true|false&gt; by
+			default true</div>// if true the text is printed UPPERCASE</li>
+</ul>
+
+<p>The servlet can produce also gif and jpg images, just change
+	the extension of the servlet path.</p>
+
+<p>Here is an example :
+<ul class="request">
+	<li><a
+		href="http://localhost:9000/vis/markdown.png?text=hello%20world%0Dhello%20universe&color_text=000000&color_background=ffffff&padding=3">http://localhost:9000/vis/markdown.png?text=hello%20world%0Dhello%20universe&color_text=000000&color_background=ffffff&padding=3</a></li>
+</ul>
+</p>
+
+<!-- ===================================================================== -->
+
+<br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br />
+
+<!-- end of left-align formatting of the source code -->
+			</div>
+		</div>
+	</div>
+
+	<!-- Bootstrap core JavaScript
     ================================================== -->
-    <!-- Placed at the end of the document so the pages load faster -->
-    <script src="js/jquery.min.js"></script>
-    <script src="js/bootstrap.min.js"></script>
-    <script src="js/docs.min.js"></script>
-    <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
-    <script src="js/ie10-viewport-bug-workaround.js"></script>
-  </body>
+	<!-- Placed at the end of the document so the pages load faster -->
+	<script src="js/jquery.min.js"></script>
+	<script src="js/bootstrap.min.js"></script>
+	<script src="js/docs.min.js"></script>
+	<!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
+	<script src="js/ie10-viewport-bug-workaround.js"></script>
+</body>
 </html>

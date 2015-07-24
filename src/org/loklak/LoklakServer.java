@@ -20,7 +20,14 @@
 package org.loklak;
 
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.FileSystems;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.attribute.PosixFilePermission;
 import java.util.EnumSet;
+import java.util.HashSet;
+import java.util.Set;
 
 import javax.servlet.DispatcherType;
 import javax.servlet.MultipartConfigElement;
@@ -31,6 +38,7 @@ import org.eclipse.jetty.server.Handler;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.server.handler.DefaultHandler;
+import org.eclipse.jetty.server.handler.ErrorHandler;
 import org.eclipse.jetty.server.handler.HandlerList;
 import org.eclipse.jetty.server.handler.ResourceHandler;
 import org.eclipse.jetty.servlet.FilterHolder;
@@ -68,6 +76,20 @@ import org.loklak.vis.server.MarkdownServlet;
 
 public class LoklakServer {
 
+    private final static Set<PosixFilePermission> securePerm = new HashSet<PosixFilePermission>();
+    
+    static {
+        securePerm.add(PosixFilePermission.OWNER_READ);
+        securePerm.add(PosixFilePermission.OWNER_WRITE);
+        securePerm.add(PosixFilePermission.OWNER_EXECUTE);
+    }
+    
+    public final static void protectPath(Path path) {
+        try {
+            Files.setPosixFilePermissions(path, LoklakServer.securePerm);
+        } catch (UnsupportedOperationException | IOException e) {}
+    }
+    
     private static Server server = null;
     private static Caretaker caretaker = null;
     
@@ -75,14 +97,15 @@ public class LoklakServer {
         System.setProperty("java.awt.headless", "true"); // no awt used here so we can switch off that stuff
         
         // init config, log and elasticsearch
-        File data = new File(new File("."), "data");
-        if (!data.exists()) data.mkdirs(); // should already be there since the start.sh script creates it
+        Path data = FileSystems.getDefault().getPath("data");
+        File dataFile = data.toFile();
+        if (!dataFile.exists()) dataFile.mkdirs(); // should already be there since the start.sh script creates it
 
-        File pid = new File(data, "loklak.pid");
+        File pid = new File(dataFile, "loklak.pid");
         if (pid.exists()) pid.deleteOnExit(); // thats a signal for the stop.sh script that loklak has terminated
         
-        File tmp = new File(data, "tmp");
-        if (!tmp.exists()) data.mkdirs();
+        File tmp = new File(dataFile, "tmp");
+        if (!tmp.exists()) dataFile.mkdirs();
         DAO.init(data);
         
         /// https
@@ -168,6 +191,10 @@ public class LoklakServer {
         servletHandler.addServlet(MapServlet.class, "/vis/map.png.base64");
         servletHandler.addServlet(MapServlet.class, "/vis/map.jpg");
         servletHandler.addServlet(MapServlet.class, "/vis/map.jpg.base64");
+        
+        ErrorHandler errorHandler = new ErrorHandler();
+        errorHandler.setShowStacks(true);
+        servletHandler.setErrorHandler(errorHandler);
         
         ResourceHandler fileHandler = new ResourceHandler();
         fileHandler.setDirectoriesListed(true);

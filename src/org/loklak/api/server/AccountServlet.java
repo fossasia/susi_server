@@ -66,6 +66,8 @@ public class AccountServlet extends HttpServlet {
         boolean minified = post.get("minified", false);
         boolean update = "update".equals(post.get("action", ""));
         String screen_name = post.get("screen_name", "");
+        String followers = post.get("followers", "0");
+        int maxFollowers = Integer.parseInt(followers);
         
         String data = post.get("data", "");
         if (update) {
@@ -105,10 +107,15 @@ public class AccountServlet extends HttpServlet {
             }
         }
 
-        UserEntry userEntry = DAO.searchLocalUser(screen_name);
+        UserEntry userEntry = DAO.searchLocalUserByScreenName(screen_name);
         AccountEntry accountEntry = DAO.searchLocalAccount(screen_name);
-        Map<String, Object> twitterEntry = null;
-        try {twitterEntry = TwitterAPI.getUser(screen_name);} catch (TwitterException e) {}
+        Map<String, Object> twitterUserEntry = null;
+        try {twitterUserEntry = TwitterAPI.getUser(screen_name);} catch (TwitterException e) {}
+        Map<String, Object> twitterFollowersEntry = null;
+        try {
+            twitterFollowersEntry = maxFollowers > 0 ? TwitterAPI.getFollowers(screen_name, maxFollowers) : null;
+        } catch (TwitterException e) {
+        }
         
         post.setResponse(response, "application/javascript");
         
@@ -127,7 +134,8 @@ public class AccountServlet extends HttpServlet {
             accounts.add(accountEntry.toMap(userEntry));
         }
         m.put("accounts", accounts);
-        if (twitterEntry != null) m.put("user", twitterEntry);
+        if (twitterUserEntry != null) m.put("user", twitterUserEntry);
+        if (twitterFollowersEntry != null) m.put("topology", twitterFollowersEntry);
         
         // write json
         ServletOutputStream sos = response.getOutputStream();

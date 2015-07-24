@@ -88,8 +88,15 @@ public class MessageFactory extends AbstractIndexFactory<MessageEntry> implement
                   .startObject("mentions_count").field("type","long").field("include_in_all","false").field("doc_values", true).endObject()
                   .startObject("hashtags").field("type","string").field("include_in_all","false").field("doc_values", true).field("index","not_analyzed").endObject()
                   .startObject("hashtags_count").field("type","long").field("include_in_all","false").field("doc_values", true).endObject()
-                  .startObject("emotions").field("type","string").field("include_in_all","false").field("doc_values", true).field("index","not_analyzed").endObject() // i.e "anger+", "anger-", "disgust+", "disgust-", "fea+r", "fear-", "joy+", "joy-", "sadness+",  "sadness"-, "surprise+", "surprise-"
-                  .startObject("emotions_strength").field("type","double").field("include_in_all","false").field("doc_values", true).endObject() // the strength of the emotion, normalized to 1.0 (maximum). Non-amplified emotions have maximum 0.5. If an amplifier appears (like "very") this doubles.
+                  
+                  // classifier
+                  .startObject("classifier_" + Classifier.Context.emotion).field("type","string").field("include_in_all","false").field("doc_values", true).field("index","not_analyzed").endObject()
+                  .startObject("classifier_" + Classifier.Context.emotion + "_probability").field("type","double").field("include_in_all","false").field("doc_values", true).endObject()
+                  .startObject("classifier_" + Classifier.Context.language).field("type","string").field("include_in_all","false").field("doc_values", true).field("index","not_analyzed").endObject()
+                  .startObject("classifier_" + Classifier.Context.language + "_probability").field("type","double").field("include_in_all","false").field("doc_values", true).endObject()
+                  .startObject("classifier_" + Classifier.Context.profanity).field("type","string").field("include_in_all","false").field("doc_values", true).field("index","not_analyzed").endObject()
+                  .startObject("classifier_" + Classifier.Context.profanity + "_probability").field("type","double").field("include_in_all","false").field("doc_values", true).endObject()
+                  
                   // experimental, for ranking
                   .startObject("without_l_len").field("type","long").field("include_in_all","false").field("doc_values", true).endObject()
                   .startObject("without_lu_len").field("type","long").field("include_in_all","false").field("doc_values", true).endObject()

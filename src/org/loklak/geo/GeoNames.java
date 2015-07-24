@@ -173,9 +173,9 @@ public class GeoNames {
         }
     }
 
-    public GeoMark analyse(final String text, final String[] tags, final int maxlength) {
+    public GeoMark analyse(final String text, final String[] tags, final int maxlength, final int salt) {
         GeoLocation loc = geocode(text, tags, maxlength);
-        if (loc != null) return new GeoMark(loc);
+        if (loc != null) return new GeoMark(loc, salt);
         return reverse_geocode(text);
     }
 

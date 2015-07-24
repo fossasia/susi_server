@@ -74,7 +74,7 @@ public class ProxyServlet extends HttpServlet {
         if (buffer == null && screen_name.length() > 0) {
             if (buffer == null && (url.length() == 0 || isProfileImage(url))) {
                 // try to read it from the user profiles
-                user = DAO.searchLocalUser(screen_name);
+                user = DAO.searchLocalUserByScreenName(screen_name);
                 if (user != null) {
                     buffer = user.getProfileImage();
                     if (buffer != null) DAO.log("PROXY: got url=" + url + " content from user profile bas64 cache!");
