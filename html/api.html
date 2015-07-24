@@ -87,18 +87,54 @@
 	can be called with a POST request, all but
 	<code>push.json</code>
 	can be called with a PUT request.
+	
+<h3>Client Authentication</h3>
 <p>
 	You can access the API <b>without any authentication</b>. This
 	service has <b>no user management on purpose</b>. Excessive usage
 	of APIs is restricted with DoS protection. Some servlets can only
 	be called from localhost to protect user data submitted to the
-	server.
+	server. There are three classes for access rights:
+	<ul class="list-group">
+    <li class="list-group-item list-group-item-success">open: access without any restrictions for all clients from any ip</li>
+    <li class="list-group-item list-group-item-warning">limited: localhost clients are granted more data than public clients</li>
+    <li class="list-group-item list-group-item-danger">restriced: only localhost clients are granted access</li>
+    </ul>
 </p>
+<h3>Cross-Origin Resource Sharing</h3>
 <p>
-	Most servlets can be called with a
-	<code>callback=&lt;function-name&gt;</code>
-	property to call a jsonp result format.
+	Most servlets can be called with a <code>callback=&lt;function-name&gt;</code>
+	property to call a jsonp result format. This is sufficient to allow a
+	cross-origin access to the API. Servlets which do not provide <code>json</code>
+	content (i.e. all <code>/vis/</code> servlets) implement CORS headers to
+	enable embedding of their content (applies mostly to images).
 </p>
+<h3>Configuration Dependencies</h3>
+<p>
+    Some servlets read and provide configuation data from <code>data/settings/customized_config.properties</code>.
+	To enable such services please edit that file and add your custom values.
+	Example: these values are needed by <a href="https://github.com/loklak/loklak_webclient">loklak_webclient</a>.
+</p>
+
+<ul class="request">
+	<li><div class="tabcol1">client.apiUrl</div><div class="tabcol2">:&nbsp;http://localhost:9000/api/</div>&nbsp;</li>
+	<li><div class="tabcol1">client.domain</div><div class="tabcol2">:&nbsp;http://localhost:3001</div>&nbsp;</li>
+	<li><div class="tabcol1">client.twitterCallbackUrl</div><div class="tabcol2">:&nbsp;http://localhost:3000/auth/twitter/callback</div>&nbsp;</li>
+</ul><br/>
+
+<p>
+    Properties prefixed with <code>client.</code> are exposed at the <a href="#settings">/api/settings.json</a> API to clients outside.
+    Some outside services may share authorization values for OAuth-protecte services
+    which are also used inside of <code>loklak_server</code>.
+    Some services (like <a href="#account">/api/account.json</a>) also need access tokens, which shall never be exposed. You should configure the
+    following attributes:
+</p>
+<ul class="request">
+	<li><div class="tabcol1">client.twitterConsumerKey</div><div class="tabcol2">:&nbsp;&lt;KEY HERE&gt;</div>&nbsp;</li>
+	<li><div class="tabcol1">client.twitterConsumerSecret</div><div class="tabcol2">:&nbsp;&lt;KEY HERE&gt;</div>&nbsp;</li>
+	<li><div class="tabcol1">twitterAccessToken</div><div class="tabcol2">:&nbsp;&lt;KEY HERE&gt;</div>&nbsp;</li>
+	<li><div class="tabcol1">twitterAccessTokenSecret</div><div class="tabcol2">:&nbsp;&lt;KEY HERE&gt;</div>&nbsp;</li>
+</ul><br/>
 
 <!-- ===================================================================== -->
 
@@ -107,6 +143,7 @@
 <h2 class="sub-header">
 	<code>/api/status.json</code>
 </h2>
+<div class="alert alert-success" role="alert">This API is open and can be accessed without any restrictions!</div>
 <p>The status servlet shows the size of the internal
 	elasticsearch search index for messages and users. Furthermore the
 	servlet reflects the current browser clients settings in the
@@ -138,6 +175,7 @@
 <h2 class="sub-header">
 	<code>/api/search.json</code>
 </h2>
+<div class="alert alert-success" role="alert">This API is open and can be accessed without any restrictions!</div>
 <p>
 	Get a search result. There are two formats available: json and rss.
 	To get rss data (which is opensearch-compliant) use the path
@@ -150,7 +188,7 @@
 	<li><div class="tabcol0">q</div>
 		<div class="tabcol2">&nbsp;=&nbsp;&lt;query term&gt;</div>// space
 		replaced by '+', i.e. q=doctor+who</li>
-</ul>
+</ul><br/>
 <p>The query term has a special syntax and may contain the
 	following term tokens:</p>
 <ul class="request">
@@ -170,7 +208,7 @@
 	<li><div class="tabcol0">until:&lt;date&gt;</div>:&nbsp;only
 		messages before the date (excluding the date),
 		&lt;date&gt;=yyyy-MM-dd or yyyy-MM-dd_HH:mm</li>
-</ul>
+</ul><br/>
 <p>Furthermore the following GET-attributes can be used:</p>
 <ul class="request">
 	<li><div class="tabcol0">count</div>
@@ -193,8 +231,7 @@
 	<li><div class="tabcol0">minified</div>
 		<div class="tabcol2">&nbsp;=&nbsp;&lt;true|false&gt;</div>//
 		minify the result, default false, i.e. minified=true</li>
-</ul>
-</p>
+</ul><br/>
 <p>A search result in JSON format looks like:</p>
 <pre>
 {
@@ -250,7 +287,7 @@
 		leading '@'</li>
 	<li><div class="tabcol0">hashtags</div>&nbsp;:&nbsp;all
 		hashtags appearing in the message, without the leading '#'</li>
-</ul>
+</ul><br/>
 <p>To identify the source of the tweet, the tweet system and the
 	harvesting source is mentioned:</p>
 <ul class="request">
@@ -259,7 +296,7 @@
 	<li><div class="tabcol0">provider_type</div>&nbsp;:&nbsp;The
 		type of the content provider, possible values are SCRAPED and
 		REMOTE (for pushed content)</li>
-</ul>
+</ul><br/>
 <p>These extracted fields are especially useful for search
 	aggregations, see below.</p>
 
@@ -273,8 +310,8 @@
 	aggregation search request sets the count of search results to
 	zero. Example:</p>
 <ul class="request">
-	<li>url&nbsp;:&nbsp;http://localhost:9100/api/search.json?q=spacex%20since:2015-04-01%20until:2015-04-06&source=cache&count=0&fields=mentions,hashtags&limit=6</li>
-</ul>
+	<li>url&nbsp;:&nbsp;http://localhost:9000/api/search.json?q=spacex%20since:2015-04-01%20until:2015-04-06&source=cache&count=0&fields=mentions,hashtags&limit=6</li>
+</ul><br/>
 <pre>{
   "search_metadata" : {
     "startIndex" : "0",
@@ -309,8 +346,8 @@
 	the time frame is below three hours, hours if the time frame is
 	below seven days and days otherwise. Example:
 <ul class="request">
-	<li>url&nbsp;:&nbsp;http://localhost:9100/api/search.json?q=spacex%20since:2015-04-05_23:10%20until:2015-04-05_23:20&source=cache&count=0&fields=created_at&timezoneOffset=-120</li>
-</ul>
+	<li>url&nbsp;:&nbsp;http://localhost:9000/api/search.json?q=spacex%20since:2015-04-05_23:10%20until:2015-04-05_23:20&source=cache&count=0&fields=created_at&timezoneOffset=-120</li>
+</ul><br/>
 <pre>{
   "search_metadata" : {
     "startIndex" : "0",
@@ -347,20 +384,112 @@
 <h2 class="sub-header">
 	<code>/api/suggest.json</code>
 </h2>
-<p>Usage-Description</p>
+<div class="alert alert-warning" role="alert">This API has access limitations: localhost clients are granted more data than public clients.</div>
+<p>
+All search queries are recorded to be able to provide a suggestion function
+based on previous search requests. No IP addresses are stored together with the
+query term. The suggest.json API is basically a search interface on query terms
+with special order options. Queries on search terms are applied on index terms
+using a fuzzy matching algorithm. The result can be ordered by time (actuality)
+or by the number of appearances of the same query (popularity).
+</p>
+<p>
+A special search term is only allowed for localhost access: the empty search term.
+This will list all queries so far according to the given result order.
+It is possible to order by
+first query time, latest query time, number of times a user submitted a
+query, number of tweets per day estimated by the latest query result and
+much more. Examples:
+</p>
 <ul class="request">
-	<li><div class="tabcol0">key0</div>
-		<div class="tabcol1">&nbsp;=&nbsp;&lt;value0&gt;</div>// description0</li>
-	<li><div class="tabcol0">key1</div>
-		<div class="tabcol1">&nbsp;=&nbsp;&lt;value1&gt;</div>// description1</li>
-	<li><div class="tabcol0">key2</div>
-		<div class="tabcol1">&nbsp;=&nbsp;&lt;value2&gt;</div>// description2</li>
-</ul>
-<p>Result-Description</p>
+	<li><a href="http://localhost:9000/api/suggest.json?q=soj&orderby=query_count">http://localhost:9000/api/suggest.json?q=soj&orderby=query_count</a></li>
+	<li><a href="http://localhost:9000/api/suggest.json?count=20&order=asc">http://localhost:9000/api/suggest.json?count=20&order=asc</a></li>
+	<li><a href="http://localhost:9000/api/suggest.json?count=20&order=desc">http://localhost:9000/api/suggest.json?count=20&order=desc</a></li>
+	<li><a href="http://localhost:9000/api/suggest.json?count=20&orderby=messages_per_day&order=desc">http://localhost:9000/api/suggest.json?count=20&orderby=messages_per_day&order=desc</a></li>
+	<li><a href="http://localhost:9000/api/suggest.json?until=now&selectby=retrieval_next&orderby=retrieval_next&order=desc">http://localhost:9000/api/suggest.json?until=now&selectby=retrieval_next&orderby=retrieval_next&order=desc</a></li>
+</ul><br/>
+<p>
+Delete operations are also possible for localhost clients by simply adding a <code>delete=true</code> to the call properties. This will produce a result set like without the delete property, but all data shown are deleted afterwards.        
+</p>
+<ul class="request">
+	<li><div class="tabcol0">count</div>
+		<div class="tabcol0">&nbsp;=&nbsp;&lt;int-value&gt;</div>// number of queries</li>
+	<li><div class="tabcol0">q</div>
+		<div class="tabcol0">&nbsp;=&nbsp;&lt;string&gt;</div>// to get a list of queries which match; to get all latest: leave q empty</li>
+	<li><div class="tabcol0">source</div>
+		<div class="tabcol0">&nbsp;=&nbsp;&lt;constant&gt;</div>// possible values: all,query,geo; default:all</li>
+	<li><div class="tabcol0">order</div>
+		<div class="tabcol0">&nbsp;=&nbsp;&lt;constant&gt;</div>// possible values: desc, asc; default: desc</li>
+	<li><div class="tabcol0">orderby</div>
+		<div class="tabcol0">&nbsp;=&nbsp;&lt;constant&gt;</div>// a field name of the query index schema, i.e. retrieval_next or query_count</li>
+	<li><div class="tabcol0">timezoneOffset</div>
+		<div class="tabcol0">&nbsp;=&nbsp;&lt;int&gt;</div>// the time zone offset in minutes</li>
+	<li><div class="tabcol0">since</div>
+		<div class="tabcol0">&nbsp;=&nbsp;&lt;date&gt;</div>// left bound for a query time</li>
+	<li><div class="tabcol0">until</div>
+		<div class="tabcol0">&nbsp;=&nbsp;&lt;date&gt;</div>// right bound for a query time</li>
+	<li><div class="tabcol0">minified</div>
+		<div class="tabcol0">&nbsp;=&nbsp;&lt;boolean&gt;</div>// minify the result</li>
+	<li><div class="tabcol0">delete</div>
+		<div class="tabcol0">&nbsp;=&nbsp;&lt;boolean&gt;</div>// delete everything which is in the result set</li>
+</ul><br/>
+<p>The result shows a list of queries in the given order. Additionally to the queries, 'artificial' queries, generated by the location database, are attached as well.
+This API is therefore also a tool to generate location name suggestions.</p>
 <pre>{
-  json
-}
-</pre>
+  "search_metadata" : {
+    "count" : "7",
+    "query" : "soj",
+    "order" : "ASC",
+    "orderby" : "query_count",
+    "client" : "0:0:0:0:0:0:0:1"
+  },
+  "queries" : [ {
+    "query" : "Sojapango",
+    "query_length" : 9,
+    "source_type" : "IMPORT",
+    "timezoneOffset" : 0,
+    "query_first" : "2015-07-24T16:44:11.145Z",
+    "retrieval_last" : "2015-07-24T16:44:11.145Z",
+    "retrieval_next" : "2015-07-25T16:44:11.145Z",
+    "expected_next" : "2015-07-25T04:44:11.145Z",
+    "query_count" : 4,
+    "retrieval_count" : 1,
+    "message_period" : 86400000,
+    "messages_per_day" : 1,
+    "score_retrieval" : 0,
+    "score_suggest" : 0
+  }, {
+    "query" : "Soju",
+    "query_length" : 4,
+    "source_type" : "IMPORT",
+    "timezoneOffset" : 0,
+    "query_first" : "2015-07-24T16:44:11.145Z",
+    "retrieval_last" : "2015-07-24T16:44:11.145Z",
+    "retrieval_next" : "2015-07-25T16:44:11.145Z",
+    "expected_next" : "2015-07-25T04:44:11.145Z",
+    "query_count" : 2,
+    "retrieval_count" : 1,
+    "message_period" : 86400000,
+    "messages_per_day" : 1,
+    "score_retrieval" : 0,
+    "score_suggest" : 0
+  }, {
+    "query" : "Sojitra",
+    "query_length" : 7,
+    "source_type" : "IMPORT",
+    "timezoneOffset" : 0,
+    "query_first" : "2015-07-24T16:44:11.145Z",
+    "retrieval_last" : "2015-07-24T16:44:11.145Z",
+    "retrieval_next" : "2015-07-25T16:44:11.145Z",
+    "expected_next" : "2015-07-25T04:44:11.145Z",
+    "query_count" : 0,
+    "retrieval_count" : 1,
+    "message_period" : 86400000,
+    "messages_per_day" : 1,
+    "score_retrieval" : 0,
+    "score_suggest" : 0
+  } ] 
+}</pre>
 
 <!-- ===================================================================== -->
 
@@ -369,6 +498,7 @@
 <h2 class="sub-header">
 	<code>/api/crawler.json</code>
 </h2>
+<div class="alert alert-warning" role="alert">This API has access limitations: localhost clients are granted more data than public clients.</div>
 <p>With the crawler servlet it is possible to retrieve mass-data
 	from the search back-end, including the twitter scraper. The
 	crawler loads search results with a given set of query terms,
@@ -389,7 +519,7 @@
 		<div class="tabcol1">&nbsp;=&nbsp;&lt;true|false&gt;</div>// if
 		true then user names from the results are used for the next search
 		requests</li>
-</ul>
+</ul><br/>
 <p>The crawler returns immediately with an object describing the
 	index size (exactly the same as with the status servlets) and an
 	object describing the crawler status:</p>
@@ -416,20 +546,29 @@
 <h2 class="sub-header">
 	<code>/api/hello.json</code>
 </h2>
-<p>Usage-Description</p>
+<div class="alert alert-success" role="alert">This API is open and can be accessed without any restrictions!</div>
+<p>The hello servlet is part of the loklak peer-to-peer bootstrap process and shall be used to announce that a
+new client has been started up. The hello request is done automatically after a loklak startup against the loklak backend
+as configured in the settings in field <code>backend</code>. The back-end server then does not
+return any data, just a 'ok' string object.
+</p>
 <ul class="request">
-	<li><div class="tabcol0">key0</div>
-		<div class="tabcol1">&nbsp;=&nbsp;&lt;value0&gt;</div>// description0</li>
-	<li><div class="tabcol0">key1</div>
-		<div class="tabcol1">&nbsp;=&nbsp;&lt;value1&gt;</div>// description1</li>
-	<li><div class="tabcol0">key2</div>
-		<div class="tabcol1">&nbsp;=&nbsp;&lt;value2&gt;</div>// description2</li>
-</ul>
-<p>Result-Description</p>
+	<li><div class="tabcol0">callback</div>
+		<div class="tabcol0">&nbsp;=&nbsp;&lt;string&gt;</div>// jsonp callback function name</li>
+</ul><br/>
+<p>The result is always:</p>
 <pre>{
-  json
-}
-</pre>
+  "status" : "ok"
+}</pre>
+<p><code>loklak</code> does not collect IP addresses on API interfaces where user data
+is collected. However, to make a peer-to-peer system possible, the collection on APIs
+where no user data is submitted, is necessary. The most simple API where no data is submitted
+at all would be most appropriate for the IP collection. Thats the cause that this API exists,
+because it does not take any request option and it does not deliver any specific data.
+</p>
+<p>IPs, collected by this method is retrievable with the <code>peers.json</code> API.
+If a <code>loklak</code> user does not want that the IP addresses move along a p2p
+network, then simply the field <code>backend</code> in the configuration must be empty.
 
 <!-- ===================================================================== -->
 
@@ -438,15 +577,39 @@
 <h2 class="sub-header">
 	<code>/api/geocode.json</code>
 </h2>
-<p>Usage-Description</p>
+<div class="alert alert-success" role="alert">This API is open and can be accessed without any restrictions!</div>
+<p>
+This servlet provides geocoding of place names to location coordinates and also
+reverse geocoding of location coordinates to place names.
+Additionally to th
+
+added geocoding servlet: you can geocode place names into locations with
+this. To render markers, use the 'mark' location (they have an applied
+fuzzyness). location coordinates are given as [lon,lat]
+Example usage:
+http://localhost:9000/api/geocode.json?data={%22places%22:[%22Frankfurt%20am%20Main%22,%22New%20York%22,%22Singapore%22]}
+
+upgrade to geocode location detection: now recognizes also all
+alternative (different languages) place names. The geocode servlet shows
+all those alternative names in a string array. The minified version
+shortenes this array to only one entry
+
+added reverse geocoding
+
+added fuzzyness for marker computation
+
+</p>
+
 <ul class="request">
-	<li><div class="tabcol0">key0</div>
-		<div class="tabcol1">&nbsp;=&nbsp;&lt;value0&gt;</div>// description0</li>
-	<li><div class="tabcol0">key1</div>
-		<div class="tabcol1">&nbsp;=&nbsp;&lt;value1&gt;</div>// description1</li>
-	<li><div class="tabcol0">key2</div>
-		<div class="tabcol1">&nbsp;=&nbsp;&lt;value2&gt;</div>// description2</li>
-</ul>
+	<li><div class="tabcol0">callback</div>
+		<div class="tabcol1">&nbsp;=&nbsp;&lt;string&gt;</div>// jsonp callback function name</li>
+	<li><div class="tabcol0">minified</div>
+		<div class="tabcol1">&nbsp;=&nbsp;&lt;boolean&gt;</div>// set true to minify</li>
+	<li><div class="tabcol0">places</div>
+		<div class="tabcol1">&nbsp;=&nbsp;&lt;comma-separated strings&gt;</div>// a list of place names</li>
+	<li><div class="tabcol0">data</div>
+		<div class="tabcol1">&nbsp;=&nbsp;&lt;json&gt;</div>// the json must contain a 'places' property with an array of place name strings. This is an alernative to the 'places' property.</li>
+</ul><br/>
 <p>Result-Description</p>
 <pre>{
   json
@@ -460,6 +623,7 @@
 <h2 class="sub-header">
 	<code>/api/peers.json</code>
 </h2>
+<div class="alert alert-success" role="alert">This API is open and can be accessed without any restrictions!</div>
 <p>This servlet combined the result of the hello calls from all
 	peers and provides a list of addresses where the remote peers can
 	be accessed.</p>
@@ -468,7 +632,7 @@
   "count" : "4",
   "peers" : [ {
     "host" : "109.91.39.64",
-    "port.http" : 9100,
+    "port.http" : 9000,
     "port.https" : 9443,
     "lastSeen" : 1425477018081,
     "lastPath" : "/api/search.rss"
@@ -480,13 +644,13 @@
     "lastPath" : "/api/search.rss"
   }, {
     "host" : "162.210.197.234",
-    "port.http" : 9100,
+    "port.http" : 9000,
     "port.https" : 9443,
     "lastSeen" : 1425374236537,
     "lastPath" : "/api/hello.json"
   }, {
     "host" : "176.9.120.5",
-    "port.http" : 9100,
+    "port.http" : 9000,
     "port.https" : 9443,
     "lastSeen" : 1425464687783,
     "lastPath" : "/api/push.json"
@@ -502,6 +666,7 @@
 <h2 class="sub-header">
 	<code>/api/proxy.json</code>
 </h2>
+<div class="alert alert-danger" role="alert">This API has access restrictions: only localhost clients are granted.</div>
 <p>Usage-Description</p>
 <ul class="request">
 	<li><div class="tabcol0">key0</div>
@@ -510,7 +675,7 @@
 		<div class="tabcol1">&nbsp;=&nbsp;&lt;value1&gt;</div>// description1</li>
 	<li><div class="tabcol0">key2</div>
 		<div class="tabcol1">&nbsp;=&nbsp;&lt;value2&gt;</div>// description2</li>
-</ul>
+</ul><br/>
 <p>Result-Description</p>
 <pre>{
   json
@@ -525,6 +690,7 @@
 <h2 class="sub-header">
 	<code>/api/push.json</code>
 </h2>
+<div class="alert alert-warning" role="alert">This API has access limitations: localhost clients are granted more data than public clients.</div>
 <p>Whenever a peer aquires new tweets, it reports these to the
 	back-end for storage. Messages are first collected and bundled into
 	http POST requests to the back-end push api. This servlet can only
@@ -535,7 +701,7 @@
 		<div class="tabcol1">&nbsp;=&nbsp;&lt;a search result
 			object&gt;</div>// push the same data as it is returned with
 		search.json</li>
-</ul>
+</ul><br/>
 <p>The servlet returns with</p>
 <pre>{
   "status" : "ok",
@@ -554,6 +720,7 @@
 <h2 class="sub-header">
 	<code>/api/push/geojson.json</code>
 </h2>
+<div class="alert alert-success" role="alert">This API is open and can be accessed without any restrictions!</div>
 <p>
 	An alternative solution to push tweets data to back-end, using
 	geojson format. Messages are collected from provided url, which
@@ -610,7 +777,7 @@
 	<li><div class="tabcol0">map_type</div>
 		<div class="tabcol1">&nbsp;=&nbsp;&lt;mapping rule(s)&gt;</div>//
 		field mapping rules, separated by commas</li>
-</ul>
+</ul><br/>
 <p>
 	The servlet returns with the same information as
 	<code>/api/push.json</code>
@@ -619,12 +786,12 @@
 <ul class="request">
 	<li><a
 		href="http://localhost:9000/api/push/geojson.json?url=mysite.com/mygeojson.json&source_type=IMPORT">http://localhost:9000/api/push/geojson.json?url=mysite.com/mygeojson.json&source_type=IMPORT</a></li>
-</ul>
+</ul><br/>
 <p>Another example, with 3 field mapping rules :</p>
 <ul class="request">
 	<li><a
 		href="http://localhost:9000/api/push/geojson.json?url=mysite.com/mygeojson.json&source_type=IMPORT">http://localhost:9000/api/push/geojson.json?url=mysite.com/mygeojson.json&source_type=IMPORT&map_type=message_name:screen_name,username:user.name,user_shortname:user.screen_name</a></li>
-</ul>
+</ul><br/>
 
 <!-- ===================================================================== -->
 
@@ -632,6 +799,7 @@
 <h2 class="sub-header">
 	<code>/api/settings.json</code>
 </h2>
+<div class="alert alert-danger" role="alert">This API has access restrictions: only localhost clients are granted.</div>
 <p>This servlet provides a method to provide the settings API
 	for the loklak front-end connections. This servlet works for
 	requests that are running the application from the localhost.</p>
@@ -640,7 +808,7 @@
 		<div class="tabcol1">File to edit</div>
 		<div class="tabcol2">&nbsp;=&nbsp;/data/settings/customized_config.properties</div>
 	</li>
-</ul>
+</ul><br/>
 <br />
 <p>
 	To serve the configuration the config file should read the
@@ -653,7 +821,7 @@
 		<div class="tabcol1">client.test</div>
 		<div class="tabcol2">&nbsp;=&nbsp;abc</div>
 	</li>
-</ul>
+</ul><br/>
 <br>
 <p>Which renders the output as</p>
 <pre>{
@@ -663,7 +831,7 @@
 <p>Here is an example :</p>
 <ul class="request">
 	<li><a href="http://localhost:9000/api/settings.json">http://localhost:9000/api/settings.json</a></li>
-</ul>
+</ul><br/>
 
 
 <!-- ===================================================================== -->
@@ -673,6 +841,7 @@
 <h2 class="sub-header">
 	<code>/api/account.json</code>
 </h2>
+<div class="alert alert-danger" role="alert">This API has access restrictions: only localhost clients are granted.</div>
 <p>This servlet provides the storage and retrieval of user account data.
    This includes twitter account information (oauth tokens). This servlet can only be called from localhost.</p>
 <ul class="request">
@@ -691,7 +860,7 @@
 	<li><div class="tabcol0">data</div>
 		<div class="tabcol1">&nbsp;=&nbsp;&lt;an object to store&gt;</div>//
 		if you set action=update, you must submit this data object</li>
-</ul>
+</ul><br/>
 
 <p>
 	If you want to retrieve data from the API, just submit the
@@ -719,16 +888,14 @@
 </pre>
 <p>You can set such a record i.e. with the call
 <ul class="request">
-	<li><a
-		href="http://localhost:9000/api/account.json?action=update&data={%22screen_name%22:%22test%22,%22oauth_token%22:%22abc%22,%22oauth_token_secret%22:%22def%22}">http://localhost:9000/api/account.json?action=update&data={"screen_name":"test","oauth_token":"abc","oauth_token_secret":"def"}</a></li>
-</ul>
+	<li><a href="http://localhost:9000/api/account.json?action=update&data={%22screen_name%22:%22test%22,%22oauth_token%22:%22abc%22,%22oauth_token_secret%22:%22def%22}">http://localhost:9000/api/account.json?action=update&data={"screen_name":"test","oauth_token":"abc","oauth_token_secret":"def"}</a></li>
+</ul><br/>
 </p>
 
 <p>It can then be retrieved again with
 <ul class="request">
-	<li><a
-		href="http://localhost:9000/api/account.json?screen_name=test">http://localhost:9000/api/account.json?screen_name=test</a></li>
-</ul>
+	<li><a href="http://localhost:9000/api/account.json?screen_name=test">http://localhost:9000/api/account.json?screen_name=test</a></li>
+</ul><br/>
 </p>
 
 <p>
@@ -738,7 +905,7 @@
 <ul class="request">
 	<li><a
 		href="http://localhost:9000/api/account.json?action=update&data={%22screen_name%22:%22test%22,%22apps%22:{%22wall%22:{%22type%22:%22horizontal%22}}}">http://localhost:9000/api/account.json?action=update&data={"screen_name":"test","apps":{"wall":{"type":"horizontal"}}}</a></li>
-</ul>
+</ul><br/>
 </p>
 
 <h3>Retrieval of Twitter User Account Data</h3>
@@ -747,7 +914,7 @@
    as GET http attribute. Example:
    <ul class="request">
 	<li><a href="http://localhost:9000/api/account.json?screen_name=loklak_app">http://localhost:9000/api/account.json?screen_name=loklak_app</a></li>
-   </ul>
+   </ul><br/>
 </p>
 <pre>{
   "user" : {
@@ -821,7 +988,7 @@
    <code>&lt;maxcount&gt;</code> user entries in a 'topology' object. Example :
    <ul class="request">
 	<li><a href="http://localhost:9000/api/account.json?screen_name=loklak_app&followers=10000">http://localhost:9000/api/account.json?screen_name=loklak_app&followers=10000</a></li>
-   </ul>
+   </ul><br/>
 </p>
 
 <pre>{
@@ -852,7 +1019,21 @@
 <h2 class="sub-header">
 	<code>/api/asset</code>
 </h2>
-<p>Usage-Description</p>
+<div class="alert alert-warning" role="alert">This API has access limitations: localhost clients are granted more data than public clients.</div>
+<p>Storage of data must be done using POST http commands to servlet
+/api/asset and retrieval of data must be done using GET http commands to
+the same servlet /api/asset
+
+Example:
+curl -v -F "id_str=608991531941425153" -F "screen_name=loklak_app"
+-F "file=image0.png" -F "data=@/Users/admin/Desktop/wall0.png"
+http://localhost:9000/api/asset
+... stores the file from /Users/admin/Desktop/wall0.png as attachment
+for a message with id 608991531941425153 assigned to user
+loklak_messages under the name image0.png
+
+Retrieval of this file with the browser: simply open
+http://localhost:9000/api/asset?id_str=608991531941425153&screen_name=loklak_messages&file=image0.png</p>
 <ul class="request">
 	<li><div class="tabcol0">key0</div>
 		<div class="tabcol1">&nbsp;=&nbsp;&lt;value0&gt;</div>// description0</li>
@@ -860,7 +1041,7 @@
 		<div class="tabcol1">&nbsp;=&nbsp;&lt;value1&gt;</div>// description1</li>
 	<li><div class="tabcol0">key2</div>
 		<div class="tabcol1">&nbsp;=&nbsp;&lt;value2&gt;</div>// description2</li>
-</ul>
+</ul><br/>
 <p>Result-Description</p>
 <pre>{
   json
@@ -874,6 +1055,7 @@
 <h2 class="sub-header">
 	<code>/api/threaddump.txt</code>
 </h2>
+<div class="alert alert-warning" role="alert">This API has access limitations: localhost clients are granted more data than public clients.</div>
 <p>Usage-Description</p>
 <ul class="request">
 	<li><div class="tabcol0">key0</div>
@@ -882,7 +1064,7 @@
 		<div class="tabcol1">&nbsp;=&nbsp;&lt;value1&gt;</div>// description1</li>
 	<li><div class="tabcol0">key2</div>
 		<div class="tabcol1">&nbsp;=&nbsp;&lt;value2&gt;</div>// description2</li>
-</ul>
+</ul><br/>
 <p>Result-Description</p>
 <pre>{
   json
@@ -896,6 +1078,7 @@
 <h2 class="sub-header">
 	<code>/vis/map</code>
 </h2>
+<div class="alert alert-success" role="alert">This API is open and can be accessed without any restrictions!</div>
 <p>Usage-Description</p>
 <ul class="request">
 	<li><div class="tabcol0">key0</div>
@@ -904,7 +1087,7 @@
 		<div class="tabcol1">&nbsp;=&nbsp;&lt;value1&gt;</div>// description1</li>
 	<li><div class="tabcol0">key2</div>
 		<div class="tabcol1">&nbsp;=&nbsp;&lt;value2&gt;</div>// description2</li>
-</ul>
+</ul><br/>
 <p>Result-Description</p>
 <pre>{
   json
@@ -918,6 +1101,7 @@
 <h2 class="sub-header">
 	<code>/vis/markdown.png</code>
 </h2>
+<div class="alert alert-success" role="alert">This API is open and can be accessed without any restrictions!</div>
 <p>This servlet provides an image with text on it. It shall be
 	used to attach large texts to tweets. The servlet can be called
 	with POST and GET html requests, however it is recommended to call
@@ -939,16 +1123,15 @@
 	<li><div class="tabcol1">uppercase</div>
 		<div class="tabcol2">&nbsp;=&nbsp;&lt;true|false&gt; by
 			default true</div>// if true the text is printed UPPERCASE</li>
-</ul>
+</ul><br/>
 
 <p>The servlet can produce also gif and jpg images, just change
 	the extension of the servlet path.</p>
 
 <p>Here is an example :
 <ul class="request">
-	<li><a
-		href="http://localhost:9000/vis/markdown.png?text=hello%20world%0Dhello%20universe&color_text=000000&color_background=ffffff&padding=3">http://localhost:9000/vis/markdown.png?text=hello%20world%0Dhello%20universe&color_text=000000&color_background=ffffff&padding=3</a></li>
-</ul>
+	<li><a href="http://localhost:9000/vis/markdown.png?text=hello%20world%0Dhello%20universe&color_text=000000&color_background=ffffff&padding=3">http://localhost:9000/vis/markdown.png?text=hello%20world%0Dhello%20universe&color_text=000000&color_background=ffffff&padding=3</a></li>
+</ul><br/>
 </p>
 
 <!-- ===================================================================== -->
