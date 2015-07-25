@@ -127,8 +127,6 @@ public class FossasiaPushServlet extends HttpServlet {
         sos.print(json.string());
         if (jsonp) sos.println(");");
         sos.println();
-        sos.print(messageEntry.toString());
-        sos.print(userEntry.toString());
         DAO.log(request.getServletPath() + " -> records = " + recordCount + ", new = " + newCount + ", known = " + knownCount + ", from host hash " + remoteHash);
 
     }
