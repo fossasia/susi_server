@@ -755,8 +755,10 @@ public class DAO {
         try {
             SearchRequestBuilder request = elasticsearch_client.prepareSearch(IMPORT_PROFILE_INDEX_NAME)
                     .setSearchType(SearchType.QUERY_THEN_FETCH)
-                    .setQuery(QueryBuilders.matchQuery("source_type", source_type))
                     .setFrom(0);
+            if (!"".equals(source_type)) {
+                request.setQuery(QueryBuilders.matchQuery("source_type", source_type));
+            }
 
             // get response
             SearchResponse response = request.execute().actionGet();

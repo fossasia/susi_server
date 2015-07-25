@@ -99,7 +99,8 @@ public class ImportProfileServlet extends HttpServlet {
         }
 
         String source_type = post.get("source_type", "");
-        if ("".equals(source_type) || !SourceType.hasValue(source_type)) {
+        // source_type either has to be null a a valid SourceType value
+        if (!"".equals(source_type) && !SourceType.hasValue(source_type)) {
             response.sendError(400, "your request does not contain a valid source_type parameter.");
             return;
         }
