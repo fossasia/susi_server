@@ -121,6 +121,7 @@ public class Classifier {
         for (Context c: Context.values()) {
             Classification<String, Category> classification = c.classify(phrase);
             if (classification == null) return null;
+            if (classification.getProbability() == 0.0) return null;
             map.put(c, classification);
         }
         return map;

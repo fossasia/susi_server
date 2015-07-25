@@ -25,6 +25,7 @@
         <pathelement location="lib/jetty-webapp-9.2.6.v20141205.jar"/>
         <pathelement location="lib/jna-4.1.0.jar"/>
         <pathelement location="lib/joda-time-2.4.jar"/>
+        <pathelement location="lib/json-schema-validator-2.2.6-lib.jar"/>
         <pathelement location="lib/jts-1.13.jar"/>
         <pathelement location="lib/log4j-1.2.17.jar"/>
         <pathelement location="lib/lucene-analyzers-common-4.10.4.jar"/>

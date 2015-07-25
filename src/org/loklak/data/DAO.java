@@ -22,6 +22,7 @@ package org.loklak.data;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Path;
@@ -43,6 +44,10 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.eclipse.jetty.util.ConcurrentHashSet;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.github.fge.jackson.JsonLoader;
+import com.google.common.base.Charsets;
+import com.google.common.io.Files;
 import org.eclipse.jetty.util.log.Log;
 import org.elasticsearch.action.admin.cluster.health.ClusterHealthResponse;
 import org.elasticsearch.action.count.CountResponse;
@@ -53,6 +58,8 @@ import org.elasticsearch.client.Client;
 import org.elasticsearch.common.settings.ImmutableSettings;
 import org.elasticsearch.common.settings.ImmutableSettings.Builder;
 import org.elasticsearch.common.unit.Fuzziness;
+import org.elasticsearch.common.xcontent.XContentParser;
+import org.elasticsearch.common.xcontent.json.JsonXContent;
 import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.index.query.RangeQueryBuilder;
@@ -99,13 +106,13 @@ public class DAO {
     public final static String ACCOUNTS_INDEX_NAME = "accounts";
     private static final String IMPORT_PROFILE_INDEX_NAME = "import_profiles";
     public final static int CACHE_MAXSIZE = 10000;
-
+    
     public  static File conf_dir;
     private static File external_data, assets, dictionaries;
     private static Path message_dump_dir, account_dump_dir, settings_dir, import_profile_dump_dir;
     private static JsonDump message_dump, account_dump, import_profile_dump;
     public  static JsonDataset user_dump, followers_dump;
-    private static File customized_config;
+    private static File customized_config, schema_dir, conv_schema_dir;
     private static Node elasticsearch_node;
     private static Client elasticsearch_client;
     private static UserFactory users;
@@ -166,9 +173,12 @@ public class DAO {
             user_dump = new JsonDataset(user_dump_dir,USER_DUMP_FILE_PREFIX, new String[]{"id_str","screen_name"});
             followers_dump = new JsonDataset(user_dump_dir, FOLLOWERS_DUMP_FILE_PREFIX, new String[]{"id_str","screen_name"});
 
-            import_profile_dump_dir = dataPath.resolve("import-profiles");
+	    import_profile_dump_dir = dataPath.resolve("import-profiles");
             import_profile_dump = new JsonDump(import_profile_dump_dir.toFile(), IMPORT_PROFILE_FILE_PREFIX, null);
 
+            // load schema folder
+            conv_schema_dir = new File("conf/conversion");
+            schema_dir = new File("conf/schema");            
             // load the config file(s);
             conf_dir = new File("conf");
             Properties prop = new Properties();
@@ -326,7 +336,24 @@ public class DAO {
             return default_val;
         }
     }
-    
+
+    public static JsonNode getSchema(String key) throws IOException {
+        File schema = new File(schema_dir, key);
+        if (!schema.exists()) {
+            throw new FileNotFoundException("No schema file with name " + key + " found");
+        }
+        return JsonLoader.fromFile(schema);
+    }
+
+    public static Map<String, Object> getConversionSchema(String key) throws IOException {
+        File schema = new File(conv_schema_dir, key);
+        if (!schema.exists()) {
+            throw new FileNotFoundException("No schema file with name " + key + " found");
+        }
+        XContentParser parser = JsonXContent.jsonXContent.createParser(Files.toString(schema, Charsets.UTF_8));
+        return parser.map();
+    }
+
     public static boolean getConfig(String key, boolean default_val) {
         String value = config.get(key);
         return value == null ? default_val : value.equals("true") || value.equals("on") || value.equals("1");
@@ -356,7 +383,7 @@ public class DAO {
             return tl;
         }
     }
-
+    
     /**
      * Store a message together with a user into the search index
      * This method is synchronized to prevent concurrent IO caused by this call.
@@ -382,7 +409,7 @@ public class DAO {
             } else {
                 if (!users.exists(u.getScreenName())) {
                     writeUser(u, t.getSourceType().name());
-                }
+                } 
             }
 
             // record tweet into text file
@@ -390,7 +417,7 @@ public class DAO {
 
             // record tweet into search index
             messages.writeEntry(t.getIdStr(), t.getSourceType().name(), t);
-
+            
             // teach the classifier
             Classifier.learnPhrase(t.getText());
         } catch (IOException e) {
@@ -398,11 +425,11 @@ public class DAO {
         }
         return true;
     }
-
+    
     /**
      * Store an user into the search index
      * This method is synchronized to prevent concurrent IO caused by this call.
-     * @param a an account
+     * @param a an account 
      * @param u a user
      * @return true if the record was stored because it did not exist, false if it was not stored because the record existed already
      */
@@ -415,7 +442,7 @@ public class DAO {
         }
         return true;
     }
-
+    
     /**
      * Store an account together with a user into the search index
      * This method is synchronized to prevent concurrent IO caused by this call.
