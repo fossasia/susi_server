@@ -206,6 +206,8 @@ public class TwitterAPI {
         if (created_at != null && location != null) {
             GeoMark loc = DAO.geoNames.analyse(location, null, 5, created_at.hashCode());
             if (loc != null) {
+                map.put("location_country", DAO.geoNames.getCountryName(loc.getISO3166cc()));
+                map.put("location_country_code", loc.getISO3166cc());
                 map.put("location_point", new double[]{loc.lon(), loc.lat()}); //[longitude, latitude]
                 map.put("location_mark", new double[]{loc.mlon(), loc.mlat()}); //[longitude, latitude]
             }

@@ -44,10 +44,12 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.eclipse.jetty.util.ConcurrentHashSet;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.github.fge.jackson.JsonLoader;
 import com.google.common.base.Charsets;
 import com.google.common.io.Files;
+
 import org.eclipse.jetty.util.log.Log;
 import org.elasticsearch.action.admin.cluster.health.ClusterHealthResponse;
 import org.elasticsearch.action.count.CountResponse;
@@ -134,20 +136,6 @@ public class DAO {
             dictionaries = new File(external_data, "dictionaries");
             dictionaries.mkdirs();
             
-            // load dictionaries if they are embedded here
-            // read the file allCountries.zip from http://download.geonames.org/export/dump/allCountries.zip
-            //File allCountries = new File(dictionaries, "allCountries.zip");
-            File cities1000 = new File(dictionaries, "cities1000.zip");
-            if (!cities1000.exists()) {
-                // download this file
-                ClientConnection.download("http://download.geonames.org/export/dump/cities1000.zip", cities1000);
-            }
-            if (cities1000.exists()) {
-                geoNames = new GeoNames(cities1000, 1);
-            } else {
-                geoNames = null;
-            }
-            
             // create message dump dir
             String message_dump_readme =
                 "This directory contains dump files for messages which arrived the platform.\n" +
@@ -173,6 +161,7 @@ public class DAO {
             // load schema folder
             conv_schema_dir = new File("conf/conversion");
             schema_dir = new File("conf/schema");            
+
             // load the config file(s);
             conf_dir = new File("conf");
             Properties prop = new Properties();
@@ -198,6 +187,20 @@ public class DAO {
                 if (key.startsWith("elasticsearch.")) builder.put(key.substring(14), entry.getValue());
             }
 
+            // load dictionaries if they are embedded here
+            // read the file allCountries.zip from http://download.geonames.org/export/dump/allCountries.zip
+            //File allCountries = new File(dictionaries, "allCountries.zip");
+            File cities1000 = new File(dictionaries, "cities1000.zip");
+            if (!cities1000.exists()) {
+                // download this file
+                ClientConnection.download("http://download.geonames.org/export/dump/cities1000.zip", cities1000);
+            }
+            if (cities1000.exists()) {
+                geoNames = new GeoNames(cities1000, new File(conf_dir, "iso3166.json"), 1);
+            } else {
+                geoNames = null;
+            }
+            
             // start elasticsearch
             elasticsearch_node = NodeBuilder.nodeBuilder().settings(builder).node();
             elasticsearch_client = elasticsearch_node.client();
