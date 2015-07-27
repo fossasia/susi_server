@@ -109,8 +109,8 @@ public class AccountServlet extends HttpServlet {
         AccountEntry accountEntry = DAO.searchLocalAccount(screen_name);
         Map<String, Object> twitterUserEntry = null;
         try {twitterUserEntry = TwitterAPI.getUser(screen_name);} catch (TwitterException e) {}
-        Map<String, Object> twitterFollowerEntry = null;
-        twitterFollowerEntry = TwitterAPI.getFollower(screen_name);
+        Map<String, Object> twitterFollowerEntry = TwitterAPI.getFollower(screen_name);
+        Map<String, Object> twitterFollowingEntry = TwitterAPI.getFollowing(screen_name);
         
         post.setResponse(response, "application/javascript");
         
@@ -131,6 +131,7 @@ public class AccountServlet extends HttpServlet {
         m.put("accounts", accounts);
         if (twitterUserEntry != null) m.put("user", twitterUserEntry);
         if (twitterFollowerEntry != null) m.put("follower", twitterFollowerEntry);
+        if (twitterFollowingEntry != null) m.put("following", twitterFollowingEntry);
         
         // write json
         ServletOutputStream sos = response.getOutputStream();

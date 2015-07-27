@@ -85,6 +85,7 @@ public class DAO {
     public final static String ACCOUNT_DUMP_FILE_PREFIX = "accounts_";
     public final static String USER_DUMP_FILE_PREFIX = "users_";
     public final static String FOLLOWER_DUMP_FILE_PREFIX = "follower_";
+    public final static String FOLLOWING_DUMP_FILE_PREFIX = "following_";
     public final static String QUERIES_INDEX_NAME = "queries";
     public final static String MESSAGES_INDEX_NAME = "messages";
     public final static String USERS_INDEX_NAME = "users";
@@ -95,7 +96,7 @@ public class DAO {
     private static File external_data, assets, dictionaries;
     private static File message_dump_dir;
     private static JsonDump message_dump, account_dump;
-    public  static JsonDataset user_dump, follower_dump;
+    public  static JsonDataset user_dump, follower_dump, following_dump;
     private static File settings_dir, customized_config;
     private static Node elasticsearch_node;
     private static Client elasticsearch_client;
@@ -153,6 +154,7 @@ public class DAO {
             user_dump_dir.mkdirs();
             user_dump = new JsonDataset(user_dump_dir,USER_DUMP_FILE_PREFIX, new String[]{"id_str","screen_name"});
             follower_dump = new JsonDataset(user_dump_dir, FOLLOWER_DUMP_FILE_PREFIX, new String[]{"id_str","screen_name"});
+            following_dump = new JsonDataset(user_dump_dir, FOLLOWING_DUMP_FILE_PREFIX, new String[]{"id_str","screen_name"});
             
             // load the config file(s);
             conf_dir = new File("conf");
