@@ -73,10 +73,10 @@
             "type": "object",
             "properties": {
               "lat": {
-                "type": "number"
+                "type": ["number", "string"]
               },
               "long": {
-                "type": "number"
+                "type": ["number", "string"]
               },
               "alt": {
                 "type": "integer"
