@@ -79,8 +79,7 @@ public class Classification<T, K> {
      * @param category The category.
      * @param probability The probability.
      */
-    public Classification(Collection<T> featureset, K category,
-            float probability) {
+    public Classification(Collection<T> featureset, K category, float probability) {
         this.featureset = featureset;
         this.category = category;
         this.probability = probability;
