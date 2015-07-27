@@ -80,8 +80,8 @@ public class NetmonPushServlet extends HttpServlet {
             return;
         }
 
-        JsonFieldConverter converter = new JsonFieldConverter();
-        List<Map<String, Object>> nodes = converter.convert(nodesList, JsonFieldConverter.JsonConversionSchemaEnum.NETMON_NODE);
+        JsonFieldConverter converter = new JsonFieldConverter(JsonFieldConverter.JsonConversionSchemaEnum.NETMON_NODE);
+        List<Map<String, Object>> nodes = converter.convert(nodesList);
 
         for (Map<String, Object> node : nodes) {
             if (node.get("text") == null) {

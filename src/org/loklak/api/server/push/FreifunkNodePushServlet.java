@@ -18,89 +18,15 @@
  */
 package org.loklak.api.server.push;
 
-import com.github.fge.jsonschema.core.report.LogLevel;
-import com.github.fge.jsonschema.core.report.ProcessingReport;
-import org.elasticsearch.common.xcontent.XContentParser;
-import org.elasticsearch.common.xcontent.json.JsonXContent;
-import org.loklak.api.client.ClientConnection;
-import org.loklak.api.server.RemoteAccess;
 import org.loklak.data.DAO;
-import org.loklak.geo.LocationSource;
 import org.loklak.harvester.JsonFieldConverter;
 import org.loklak.harvester.JsonValidator;
 import org.loklak.harvester.SourceType;
 
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
 public class FreifunkNodePushServlet extends AbstractPushServlet {
-
-    @Override
-    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-
-        RemoteAccess.Post post = RemoteAccess.evaluate(request);
-        String remoteHash = Integer.toHexString(Math.abs(post.getClientHost().hashCode()));
-
-        // manage DoS
-        if (post.isDoS_blackout()) {
-            response.sendError(503, "your request frequency is too high");
-            return;
-        }
-
-        String url = post.get("url", "");
-        if (url == null || url.length() == 0) {
-            response.sendError(400, "your request does not contain an url to your data object");
-            return;
-        }
-
-        Map<String, Object> map;
-        byte[] jsonText;
-        try {
-            jsonText = ClientConnection.download(url);
-            XContentParser parser = JsonXContent.jsonXContent.createParser(jsonText);
-            map = parser.map();
-        } catch (Exception e) {
-            response.sendError(400, "error reading json file from url");
-            return;
-        }
-
-        JsonValidator validator = new JsonValidator();
-        ProcessingReport report = validator.validate(new String(jsonText), JsonValidator.JsonSchemaEnum.FREIFUNK_NODE);
-        if (report.getLogLevel() == LogLevel.ERROR || report.getLogLevel() == LogLevel.FATAL) {
-            response.sendError(400, "json does not conform to Freifunk node schema " + report);
-            return;
-        }
-
-        // push nodes
-        JsonFieldConverter converter = new JsonFieldConverter();
-        List<Map<String, Object>> nodes = (List<Map<String, Object>>) map.get("nodes");
-        nodes = converter.convert(nodes, JsonFieldConverter.JsonConversionSchemaEnum.FREIFUNK_NODE);
-
-        for (Map<String, Object> node : nodes) {
-            if (node.get("text") == null) {
-                node.put("text", "");
-            }
-            node.put("source_type", SourceType.FREIFUNK_NODE.name());
-            node.put("location_source", LocationSource.USER.name());
-            try {
-                node.put("id_str", PushServletHelper.computeMessageId(node, node.get("id"), SourceType.FREIFUNK_NODE));
-            } catch (Exception e) {
-                DAO.log("Problem computing id : " + e.getMessage());
-            }
-        }
-        PushReport nodePushReport = PushServletHelper.saveMessages(nodes);
-
-        String res = PushServletHelper.printResponse(post.get("callback", ""), nodePushReport);
-        response.getOutputStream().println(res);
-        DAO.log(request.getServletPath()
-                + " -> records = " + nodePushReport.getRecordCount()
-                + ", new = " + nodePushReport.getNewCount() + ", known = " + nodePushReport.getKnownCount() + ", from host hash " + remoteHash);
-    }
 
     @Override
     protected SourceType getSourceType() {

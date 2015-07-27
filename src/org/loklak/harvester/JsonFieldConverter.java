@@ -42,38 +42,43 @@ public class JsonFieldConverter {
         public String getFilename() { return filename; }
     }
 
-    public List<Map<String, Object>> convert(List<Map<String, Object>> initialJson, JsonConversionSchemaEnum schema)
-    throws IOException {
-        List<Map<String, Object>> result = new ArrayList<>();
-        for (Map<String, Object> o : initialJson) {
-            result.add(this.convert(o, schema));
-        }
-        return result;
-    }
 
-    @SuppressWarnings("unchecked")
-    public Map<String, Object> convert(Map<String, Object> initialJson, JsonConversionSchemaEnum schema) throws IOException {
-        final Map<String, Object> convSchema = DAO.getConversionSchema(schema.getFilename());
+    private Map<String, List<String>> conversionRules;
+
+    public JsonFieldConverter(JsonConversionSchemaEnum conversionSchema) throws IOException {
+        final Map<String, Object> convSchema = DAO.getConversionSchema(conversionSchema.getFilename());
         List<List> convRules = (List) convSchema.get("rules");
-
-        Map<String, List<String>> convRulesMap = new HashMap<>();
-
+        this.conversionRules = new HashMap<>();
         for (List rule : convRules) {
             List<String> toInsert = new ArrayList<>();
-            convRulesMap.put((String) rule.get(0), toInsert);
+            this.conversionRules.put((String) rule.get(0), toInsert);
 
             // the 2nd rule can be either a string
             if (rule.get(1) instanceof String) {
                 toInsert.add((String) rule.get(1));
             } else {
-            // or an array
+                // or an array
                 for (String afterField : (List<String>) rule.get(1)) {
                     toInsert.add(afterField);
                 }
             }
         }
+    }
 
-        Iterator it = convRulesMap.entrySet().iterator();
+    public List<Map<String, Object>> convert(List<Map<String, Object>> initialJson)
+    throws IOException {
+        List<Map<String, Object>> result = new ArrayList<>();
+        for (Map<String, Object> o : initialJson) {
+            result.add(this.convert(o));
+        }
+        return result;
+    }
+
+    @SuppressWarnings("unchecked")
+    public Map<String, Object> convert(Map<String, Object> initialJson) throws IOException {
+
+
+        Iterator it = this.conversionRules.entrySet().iterator();
         while (it.hasNext()) {
             Map.Entry<String, List<String>> entry = (Map.Entry) it.next();
             String key = entry.getKey();

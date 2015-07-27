@@ -48,28 +48,27 @@ public class JsonValidator {
         public String getFilename() { return filename; }
     }
 
-    private JsonSchemaFactory schemaFactory;
+    private JsonSchema schema;
 
-    public JsonValidator() {
-        this.schemaFactory = JsonSchemaFactory.byDefault();
+    public JsonValidator(JsonSchemaEnum schemaEnum) throws IOException {
+        JsonSchemaFactory schemaFactory = JsonSchemaFactory.byDefault();
+        JsonNode schemaInJson;
+        try {
+            schemaInJson = DAO.getSchema(schemaEnum.getFilename());
+            this.schema = schemaFactory.getJsonSchema(schemaInJson);
+        } catch (ProcessingException e) {
+            throw new IOException("Unable to parse json schema " + schemaEnum.getFilename());
+        }
     }
 
-    public ProcessingReport validate(String jsonText, JsonSchemaEnum schema) throws IOException {
-        final JsonNode fossasiaSchema= DAO.getSchema(schema.getFilename());
-        JsonSchema jsonSchema;
-        try {
-            jsonSchema = this.schemaFactory.getJsonSchema(fossasiaSchema);
-        } catch (ProcessingException e) {
-            throw new IOException("Unable to parse json schema " + schema.getFilename());
-        }
+    public ProcessingReport validate(String jsonText) throws IOException {
 
-        ProcessingReport report = null;
-
-        JsonNode toValidate = JsonLoader.fromString(new String(jsonText));
+        ProcessingReport report;
+        JsonNode toValidate = JsonLoader.fromString(jsonText);
         try {
-            report= jsonSchema.validate(toValidate);
+            report = this.schema.validate(toValidate);
         } catch (ProcessingException e) {
-            e.printStackTrace();
+            throw new IOException("Error validating json text : " +  e.getMessage());
         }
         return report;
     }

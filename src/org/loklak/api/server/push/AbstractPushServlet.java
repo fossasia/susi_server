@@ -41,6 +41,25 @@ import java.util.Map;
 
 public abstract class AbstractPushServlet extends HttpServlet {
 
+    private JsonValidator validator;
+    private JsonFieldConverter converter;
+
+    @Override
+    public void init() throws ServletException {
+        try {
+            validator = new JsonValidator(this.getValidatorSchema());
+        } catch (IOException e) {
+            DAO.log("Unable to initialize push servlet validator : " + e.getMessage());
+            e.printStackTrace();
+        }
+        try {
+            converter = new JsonFieldConverter(this.getConversionSchema());
+        } catch (IOException e) {
+            DAO.log("Unable to initialize push servlet field converter : " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         this.doGet(request, response);
@@ -74,19 +93,16 @@ public abstract class AbstractPushServlet extends HttpServlet {
             return;
         }
 
-
         // validation phase
-        JsonValidator validator = new JsonValidator();
-        ProcessingReport report = validator.validate(new String(jsonText), this.getValidatorSchema());
+        ProcessingReport report = this.validator.validate(new String(jsonText));
         if (!report.isSuccess()) {
             response.sendError(400, "json does not conform to schema : " + this.getValidatorSchema().name() + "\n" + report);
             return;
         }
 
         // conversion phase
-        JsonFieldConverter converter = new JsonFieldConverter();
         List<Map<String, Object>> messages = extractMessages(map);
-        messages = converter.convert(messages, this.getConversionSchema());
+        messages = this.converter.convert(messages);
 
         // custom treatment for each message
         for (Map<String, Object> message : messages) {
