@@ -22,6 +22,8 @@ package org.loklak.harvester;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.FileSystems;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -134,12 +136,14 @@ public class TwitterAPI {
     private final static String RATE_USERS_SUGGESTIONS_SLUG = "/users/suggestions/:slug"; // limit = 15
     private final static String RATE_USERS_SUGGESTIONS_SLUG_MEMBERS = "/users/suggestions/:slug/members"; // limit = 15
 
-
     private static TwitterFactory appFactory = null;
     private static Map<String, TwitterFactory> userFactory = new HashMap<>();
     
     public static TwitterFactory getAppTwitterFactory() {
-        if (appFactory == null) appFactory = getUserTwitterFactory(DAO.getConfig("twitterAccessToken", ""), DAO.getConfig("twitterAccessTokenSecret", ""));
+        String twitterAccessToken = DAO.getConfig("twitterAccessToken", "");
+        String twitterAccessTokenSecret = DAO.getConfig("twitterAccessTokenSecret", "");
+        if (twitterAccessToken.length() == 0 || twitterAccessTokenSecret.length() == 0) return null;
+        if (appFactory == null) appFactory = getUserTwitterFactory(twitterAccessToken, twitterAccessTokenSecret);
         return appFactory;
     }
 
@@ -178,7 +182,7 @@ public class TwitterAPI {
         if (map != null) return map;
         TwitterFactory tf = getUserTwitterFactory(screen_name);
         if (tf == null) tf = getAppTwitterFactory();
-        if (tf == null) return null;
+        if (tf == null) return new HashMap<>();
         Twitter twitter = tf.getInstance();
         User user = twitter.showUser(screen_name);
         RateLimitStatus rateLimitStatus = user.getRateLimitStatus();
@@ -202,6 +206,8 @@ public class TwitterAPI {
         if (created_at != null && location != null) {
             GeoMark loc = DAO.geoNames.analyse(location, null, 5, created_at.hashCode());
             if (loc != null) {
+                map.put("location_country", DAO.geoNames.getCountryName(loc.getISO3166cc()));
+                map.put("location_country_code", loc.getISO3166cc());
                 map.put("location_point", new double[]{loc.lon(), loc.lat()}); //[longitude, latitude]
                 map.put("location_mark", new double[]{loc.mlon(), loc.mlat()}); //[longitude, latitude]
             }
@@ -210,8 +216,30 @@ public class TwitterAPI {
         return map;
     }
     
+    public static Map<String, Object> getNetwork(String screen_name, int maxFollowers, int maxFollowing) throws IOException, TwitterException {
+        Index userIndex = DAO.user_dump.getIndex("screen_name");
+        Map<String, Object> map = new HashMap<>();
+        // we clone the maps because we modify it
+        map.putAll(getNetworkerNames(screen_name, maxFollowers, Networker.FOLLOWERS));
+        map.putAll(getNetworkerNames(screen_name, maxFollowing, Networker.FOLLOWING));
+        map.remove("screen_name");
+
+        for (String setname : new String[]{"followers","unfollowers","following","unfollowing"}) {
+            List<Map<String, Object>> users = new ArrayList<>(); 
+            Map<String, Number> names = (Map<String, Number>) map.remove(setname + "_names");
+            if (names != null) for (String sn: names.keySet()) {
+                Map<String, Object> user = userIndex.get(sn);
+                if (user != null) users.add(user);
+            }
+            map.put(setname + "_count", users.size());
+            map.put(setname, users);
+        }
+        
+        return map;
+    }
+    
     private static enum Networker {
-        FOLLOWER, FOLLOWING;
+        FOLLOWERS, FOLLOWING;
     }
 
     private static final int getFollowerIdLimit = 180, getFollowingIdLimit = 180;
@@ -219,38 +247,39 @@ public class TwitterAPI {
     private static long getFollowerIdResetTime = 0, getFollowingIdResetTime = 0;
     public static int getFollowerIdRemaining() {return System.currentTimeMillis() > getFollowerIdResetTime ? getFollowerIdLimit : getFollowerIdRemaining;}
     public static int getFollowingIdRemaining() {return System.currentTimeMillis() > getFollowingIdResetTime ? getFollowingIdLimit : getFollowingIdRemaining;}
-    public static Map<String, Object> getFollower(final String screen_name) throws IOException {
-        return getNetworker(screen_name, Networker.FOLLOWER);
+    public static Map<String, Object> getFollowersNames(final String screen_name, final int max_count) throws IOException, TwitterException {
+        return getNetworkerNames(screen_name, max_count, Networker.FOLLOWERS);
     }
-    public static Map<String, Object> getFollowing(final String screen_name) throws IOException {
-        return getNetworker(screen_name, Networker.FOLLOWING);
+    public static Map<String, Object> getFollowingNames(final String screen_name, final int max_count) throws IOException, TwitterException {
+        return getNetworkerNames(screen_name, max_count, Networker.FOLLOWING);
     }
-    public static Map<String, Object> getNetworker(final String screen_name, final Networker networkRelation) throws IOException {
-        boolean complete;
+    public static Map<String, Object> getNetworkerNames(final String screen_name, final int max_count, final Networker networkRelation) throws IOException, TwitterException {
+        if (max_count == 0) return new HashMap<>();
+        boolean complete = true;
         Set<Number> networkingIDs = new LinkedHashSet<>();
         Set<Number> unnetworkingIDs = new LinkedHashSet<>();
-        Map<String, Object> map = (networkRelation == Networker.FOLLOWER ? DAO.follower_dump : DAO.following_dump).getIndex("screen_name").get(screen_name);
-        if (map == null) map = (networkRelation == Networker.FOLLOWER ? DAO.follower_dump : DAO.following_dump).getIndex("id_str").get(screen_name);
+        Map<String, Object> map = (networkRelation == Networker.FOLLOWERS ? DAO.followers_dump : DAO.following_dump).getIndex("screen_name").get(screen_name);
+        if (map == null) map = (networkRelation == Networker.FOLLOWERS ? DAO.followers_dump : DAO.following_dump).getIndex("id_str").get(screen_name);
+
         if (map != null) {
             // check if the map is complete
             complete = (Boolean) map.get("complete");
             if (complete) return map; // TODO: check date
-            List<Object> fro = (List<Object>) map.get(networkRelation == Networker.FOLLOWER ? "follower" : "following");
+            List<Object> fro = (List<Object>) map.get(networkRelation == Networker.FOLLOWERS ? "follower" : "following");
             for (Object f: fro) {
                 networkingIDs.add((Number) f);
             }
         }
         TwitterFactory tf = getUserTwitterFactory(screen_name);
         if (tf == null) tf = getAppTwitterFactory();
-        if (tf == null) return null;
+        if (tf == null) return new HashMap<String, Object>();
         Twitter twitter = tf.getInstance();
         long cursor = -1;
-        complete = true;
         collect: while (cursor != 0) {
             try {
-                IDs ids = networkRelation == Networker.FOLLOWER ? twitter.getFollowersIDs(screen_name, cursor) : twitter.getFriendsIDs(screen_name, cursor);
+                IDs ids = networkRelation == Networker.FOLLOWERS ? twitter.getFollowersIDs(screen_name, cursor) : twitter.getFriendsIDs(screen_name, cursor);
                 RateLimitStatus rateStatus = ids.getRateLimitStatus();
-                if (networkRelation == Networker.FOLLOWER) {
+                if (networkRelation == Networker.FOLLOWERS) {
                     getFollowerIdRemaining = rateStatus.getRemaining();
                     getFollowerIdResetTime = System.currentTimeMillis() + rateStatus.getSecondsUntilReset() * 1000;
                 } else {
@@ -269,6 +298,10 @@ public class TwitterAPI {
                     complete = false;
                     break collect;
                 }
+                if (networkingIDs.size() >= Math.min(10000, max_count >= 0 ? max_count : 10000)) {
+                    complete = false;
+                    break collect;
+                }
                 cursor = ids.getNextCursor();
             } catch (TwitterException e) {
                 complete = false;
@@ -280,56 +313,70 @@ public class TwitterAPI {
         map.put("screen_name", screen_name);
         map.put("retrieval_date", AbstractIndexEntry.utcFormatter.print(System.currentTimeMillis()));
         map.put("complete", complete);
-        Map<Number, String> networking = getScreenName(networkingIDs);
-        Map<Number, String> unnetworking = getScreenName(unnetworkingIDs);
-        if (networkRelation == Networker.FOLLOWER) {
-            map.put("follower_count", networking.size());
-            map.put("unfollower_count", unnetworking.size());
-            map.put("follower", networking);
-            map.put("unfollower", unnetworking);
-            if (complete) DAO.follower_dump.putUnique(map); // currently we write only complete data sets. In the future the update of datasets shall be supported
+        Map<String, Number> networking = getScreenName(networkingIDs, max_count, true);
+        Map<String, Number> unnetworking = getScreenName(unnetworkingIDs, max_count, true);
+        if (networkRelation == Networker.FOLLOWERS) {
+            map.put("followers_count", networking.size());
+            map.put("unfollowers_count", unnetworking.size());
+            map.put("followers_names", networking);
+            map.put("unfollowers_names", unnetworking);
+            if (complete) DAO.followers_dump.putUnique(map); // currently we write only complete data sets. In the future the update of datasets shall be supported
         } else {
             map.put("following_count", networking.size());
             map.put("unfollowing_count", unnetworking.size());
-            map.put("following", networking);
-            map.put("unfollowing", unnetworking);
+            map.put("following_names", networking);
+            map.put("unfollowing_names", unnetworking);
             if (complete) DAO.following_dump.putUnique(map);
         }
         return map;
     }
     
-    public static Map<Number, String> getScreenName(Set<Number> id_strs) throws IOException {
+    /**
+     * search for twitter user names by a given set of user id's
+     * @param id_strs
+     * @param lookupLocalUsersByUserId if this is true and successful, the resulting names may contain users without user info in the user dump
+     * @return
+     * @throws IOException
+     * @throws TwitterException 
+     */
+    public static Map<String, Number> getScreenName(Set<Number> id_strs, final int maxFollowers, boolean lookupLocalUsersByUserId) throws IOException, TwitterException {
         // we have several sources to get this mapping:
         // - 1st / fastest: mapping from DAO.twitter_user_dump
         // - 2nd / fast   : mapping from DAO.searchLocalUserByUserId(user_id)
         // - 3rd / slow   : from twitter API with twitter.lookupUsers(String[] user_id)
         // first we check all fast solutions until trying the twitter api
-        Map<Number, String> r = new HashMap<>();
+        Map<String, Number> r = new HashMap<>();
         Set<Number> id4api = new HashSet<>();
         Index idIndex = DAO.user_dump.getIndex("id_str");
         for (Number id_str: id_strs) {
+            if (r.size() >= maxFollowers) break;
             Map<String, Object> map = idIndex.get(id_str.toString());
             if (map != null) {
                 String screen_name = (String) map.get("screen_name");
                 if (screen_name != null) {
-                    r.put(id_str, screen_name);
+                    r.put(screen_name, id_str);
                     continue;
                 }
             }
-            UserEntry ue = DAO.searchLocalUserByUserId(id_str.toString());
-            if (ue != null) {
-                String screen_name = ue.getScreenName();
-                if (screen_name != null) {
-                    r.put(id_str, screen_name);
-                    continue;
+            if (lookupLocalUsersByUserId) {
+                UserEntry ue = DAO.searchLocalUserByUserId(id_str.toString());
+                if (ue != null) {
+                    String screen_name = ue.getScreenName();
+                    if (screen_name != null) {
+                        r.put(screen_name, id_str);
+                        continue;
+                    }
                 }
             }
             id4api.add(id_str);
         }
+
+        while (id4api.size() > 100 && id4api.size() + r.size() > maxFollowers) id4api.remove(id4api.iterator().next());
+        
         // resolve the remaining user_ids from the twitter api
-        if (id4api.size() > 0) {
+        if (r.size() < maxFollowers && id4api.size() > 0) {
             TwitterFactory tf = getAppTwitterFactory();
-            if (tf == null) return null;
+            if (tf == null) return new HashMap<>();
             Twitter twitter = tf.getInstance();
             collect: while (id4api.size() > 0) {
                 // construct a query term with at most 100 id's
@@ -343,32 +390,34 @@ public class TwitterAPI {
                     ResponseList<User> users = twitter.lookupUsers(u);
                     for (User usr: users) {
                         enrich(usr);
-                        r.put(usr.getId(), usr.getScreenName());
+                        r.put(usr.getScreenName(), usr.getId());
                         id4api.remove(usr.getId());
                     }
                 } catch (TwitterException e) {
+                    if (r.size() == 0) throw e;
                     break collect;
                 }
             }
         }
         return r;
     }
-
+    
+    
     public static void main(String[] args) {
-        DAO.init(new File(new File("."), "data"));
+        DAO.init(FileSystems.getDefault().getPath("data"));
         try {
             System.out.println(getRateLimitStatus(RATE_FOLLOWERS_IDS));
         } catch (TwitterException e) {
             e.printStackTrace();
         }
         try {
-            System.out.println(getFollower("loklak_app"));
-        } catch (IOException e) {
+            System.out.println(getFollowersNames("loklak_app", 10000));
+        } catch (IOException | TwitterException e) {
             e.printStackTrace();
         }
         try {
-            System.out.println(getFollowing("loklak_app"));
-        } catch (IOException e) {
+            System.out.println(getFollowingNames("loklak_app", 10000));
+        } catch (IOException | TwitterException e) {
             e.printStackTrace();
         }
         DAO.close();

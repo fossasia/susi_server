@@ -22,14 +22,18 @@ package org.loklak.data;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -39,7 +43,15 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.eclipse.jetty.util.ConcurrentHashSet;
+
+import com.fasterxml.jackson.databind.JsonNode;
+import com.github.fge.jackson.JsonLoader;
+import com.google.common.base.Charsets;
+import com.google.common.io.Files;
+
 import org.eclipse.jetty.util.log.Log;
+import org.elasticsearch.action.admin.cluster.health.ClusterHealthResponse;
 import org.elasticsearch.action.count.CountResponse;
 import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
@@ -48,6 +60,8 @@ import org.elasticsearch.client.Client;
 import org.elasticsearch.common.settings.ImmutableSettings;
 import org.elasticsearch.common.settings.ImmutableSettings.Builder;
 import org.elasticsearch.common.unit.Fuzziness;
+import org.elasticsearch.common.xcontent.XContentParser;
+import org.elasticsearch.common.xcontent.json.JsonXContent;
 import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.index.query.RangeQueryBuilder;
@@ -62,6 +76,7 @@ import org.elasticsearch.search.aggregations.bucket.terms.Terms;
 import org.elasticsearch.search.aggregations.bucket.terms.Terms.Bucket;
 import org.elasticsearch.search.sort.SortOrder;
 import org.loklak.Caretaker;
+import org.loklak.LoklakServer;
 import org.loklak.api.client.ClientConnection;
 import org.loklak.api.client.SearchClient;
 import org.loklak.geo.GeoNames;
@@ -70,6 +85,7 @@ import org.loklak.harvester.TwitterScraper;
 import org.loklak.tools.DateParser;
 import org.loklak.tools.JsonDataset;
 import org.loklak.tools.JsonDump;
+import org.loklak.tools.JsonDataset.Index;
 
 import com.fasterxml.jackson.core.JsonFactory;
 
@@ -84,7 +100,7 @@ public class DAO {
     public final static String MESSAGE_DUMP_FILE_PREFIX = "messages_";
     public final static String ACCOUNT_DUMP_FILE_PREFIX = "accounts_";
     public final static String USER_DUMP_FILE_PREFIX = "users_";
-    public final static String FOLLOWER_DUMP_FILE_PREFIX = "follower_";
+    public final static String FOLLOWERS_DUMP_FILE_PREFIX = "followers_";
     public final static String FOLLOWING_DUMP_FILE_PREFIX = "following_";
     public final static String QUERIES_INDEX_NAME = "queries";
     public final static String MESSAGES_INDEX_NAME = "messages";
@@ -94,10 +110,10 @@ public class DAO {
     
     public  static File conf_dir;
     private static File external_data, assets, dictionaries;
-    private static File message_dump_dir;
+    private static Path message_dump_dir, account_dump_dir, settings_dir;
     private static JsonDump message_dump, account_dump;
-    public  static JsonDataset user_dump, follower_dump, following_dump;
-    private static File settings_dir, customized_config;
+    public  static JsonDataset user_dump, followers_dump, following_dump;
+    private static File customized_config, schema_dir, conv_schema_dir;
     private static Node elasticsearch_node;
     private static Client elasticsearch_client;
     private static UserFactory users;
@@ -112,27 +128,14 @@ public class DAO {
      * initialize the DAO
      * @param datadir the path to the data directory
      */
-    public static void init(File datadir) {
+    public static void init(Path dataPath) {
+        File datadir = dataPath.toFile();
         try {
             // create and document the data dump dir
             assets = new File(datadir, "assets");
             external_data = new File(datadir, "external");
             dictionaries = new File(external_data, "dictionaries");
             dictionaries.mkdirs();
-            
-            // load dictionaries if they are embedded here
-            // read the file allCountries.zip from http://download.geonames.org/export/dump/allCountries.zip
-            //File allCountries = new File(dictionaries, "allCountries.zip");
-            File cities1000 = new File(dictionaries, "cities1000.zip");
-            if (!cities1000.exists()) {
-                // download this file
-                ClientConnection.download("http://download.geonames.org/export/dump/cities1000.zip", cities1000);
-            }
-            if (cities1000.exists()) {
-                geoNames = new GeoNames(cities1000, 1);
-            } else {
-                geoNames = null;
-            }
             
             // create message dump dir
             String message_dump_readme =
@@ -143,27 +146,33 @@ public class DAO {
                 "- imported: dump files which had been processed from the import directory are moved here.\n" +
                 "You can import dump files from other peers by dropping them into the import directory.\n" +
                 "Each dump file must start with the prefix '" + MESSAGE_DUMP_FILE_PREFIX + "' to be recognized.\n";
-            message_dump_dir = new File(datadir, "dump");
-            message_dump = new JsonDump(message_dump_dir, MESSAGE_DUMP_FILE_PREFIX, message_dump_readme);
+            message_dump_dir = dataPath.resolve("dump");
+            message_dump = new JsonDump(message_dump_dir.toFile(), MESSAGE_DUMP_FILE_PREFIX, message_dump_readme);
             
-            File account_dump_dir = new File(datadir, "accounts");
-            account_dump_dir.mkdirs();
-            account_dump = new JsonDump(account_dump_dir, ACCOUNT_DUMP_FILE_PREFIX, null);
+            account_dump_dir = dataPath.resolve("accounts");
+            account_dump_dir.toFile().mkdirs();
+            LoklakServer.protectPath(account_dump_dir); // no other permissions to this path
+            account_dump = new JsonDump(account_dump_dir.toFile(), ACCOUNT_DUMP_FILE_PREFIX, null);
 
             File user_dump_dir = new File(datadir, "accounts");
             user_dump_dir.mkdirs();
             user_dump = new JsonDataset(user_dump_dir,USER_DUMP_FILE_PREFIX, new String[]{"id_str","screen_name"});
-            follower_dump = new JsonDataset(user_dump_dir, FOLLOWER_DUMP_FILE_PREFIX, new String[]{"id_str","screen_name"});
+            followers_dump = new JsonDataset(user_dump_dir, FOLLOWERS_DUMP_FILE_PREFIX, new String[]{"id_str","screen_name"});
             following_dump = new JsonDataset(user_dump_dir, FOLLOWING_DUMP_FILE_PREFIX, new String[]{"id_str","screen_name"});
-            
+
+            // load schema folder
+            conv_schema_dir = new File("conf/conversion");
+            schema_dir = new File("conf/schema");            
+
             // load the config file(s);
             conf_dir = new File("conf");
             Properties prop = new Properties();
             prop.load(new FileInputStream(new File(conf_dir, "config.properties")));
             for (Map.Entry<Object, Object> entry: prop.entrySet()) config.put((String) entry.getKey(), (String) entry.getValue());
-            settings_dir = new File(datadir, "settings");
-            settings_dir.mkdirs();
-            customized_config = new File(settings_dir, "customized_config.properties");
+            settings_dir = dataPath.resolve("settings");
+            settings_dir.toFile().mkdirs();
+            LoklakServer.protectPath(settings_dir);
+            customized_config = new File(settings_dir.toFile(), "customized_config.properties");
             if (!customized_config.exists()) {
                 BufferedWriter w = new BufferedWriter(new FileWriter(customized_config));
                 w.write("# This file can be used to customize the configuration file conf/config.properties\n");
@@ -180,9 +189,25 @@ public class DAO {
                 if (key.startsWith("elasticsearch.")) builder.put(key.substring(14), entry.getValue());
             }
 
+            // load dictionaries if they are embedded here
+            // read the file allCountries.zip from http://download.geonames.org/export/dump/allCountries.zip
+            //File allCountries = new File(dictionaries, "allCountries.zip");
+            File cities1000 = new File(dictionaries, "cities1000.zip");
+            if (!cities1000.exists()) {
+                // download this file
+                ClientConnection.download("http://download.geonames.org/export/dump/cities1000.zip", cities1000);
+            }
+            if (cities1000.exists()) {
+                geoNames = new GeoNames(cities1000, new File(conf_dir, "iso3166.json"), 1);
+            } else {
+                geoNames = null;
+            }
+            
             // start elasticsearch
             elasticsearch_node = NodeBuilder.nodeBuilder().settings(builder).node();
             elasticsearch_client = elasticsearch_node.client();
+            Path index_dir = dataPath.resolve("index");
+            if (index_dir.toFile().exists()) LoklakServer.protectPath(index_dir); // no other permissions to this path
             
             // define the index factories
             messages = new MessageFactory(elasticsearch_client, MESSAGES_INDEX_NAME, CACHE_MAXSIZE);
@@ -201,9 +226,26 @@ public class DAO {
             elasticsearch_client.admin().indices().preparePutMapping(USERS_INDEX_NAME).setSource(users.getMapping()).setType("_default_").execute().actionGet();
             elasticsearch_client.admin().indices().preparePutMapping(ACCOUNTS_INDEX_NAME).setSource(accounts.getMapping()).setType("_default_").execute().actionGet();
             elasticsearch_client.admin().indices().preparePutMapping(QUERIES_INDEX_NAME).setSource(queries.getMapping()).setType("_default_").execute().actionGet();
+            
+            // finally wait for healty status of shards
+            ClusterHealthResponse health;
+            do {
+                log("Waiting for elasticsearch yellow status");
+                health = elasticsearch_client.admin().cluster().prepareHealth().setWaitForYellowStatus().execute().actionGet();
+            } while (health.isTimedOut());
+            do {
+                log("Waiting for elasticsearch green status");
+                health = elasticsearch_client.admin().cluster().prepareHealth().setWaitForGreenStatus().execute().actionGet();
+            } while (health.isTimedOut());
+            log("elasticsearch has started up! initializing the classifier");
+            
+            // start the classifier
+            Classifier.init(50000);
+            log("classifier initialized!");
         } catch (Throwable e) {
             e.printStackTrace();
         }
+        
     }
     
     public static File getAssetFile(String screen_name, String id_str, String file) {
@@ -293,7 +335,24 @@ public class DAO {
             return default_val;
         }
     }
-    
+
+    public static JsonNode getSchema(String key) throws IOException {
+        File schema = new File(schema_dir, key);
+        if (!schema.exists()) {
+            throw new FileNotFoundException("No schema file with name " + key + " found");
+        }
+        return JsonLoader.fromFile(schema);
+    }
+
+    public static Map<String, Object> getConversionSchema(String key) throws IOException {
+        File schema = new File(conv_schema_dir, key);
+        if (!schema.exists()) {
+            throw new FileNotFoundException("No schema file with name " + key + " found");
+        }
+        XContentParser parser = JsonXContent.jsonXContent.createParser(Files.toString(schema, Charsets.UTF_8));
+        return parser.map();
+    }
+
     public static boolean getConfig(String key, boolean default_val) {
         String value = config.get(key);
         return value == null ? default_val : value.equals("true") || value.equals("on") || value.equals("1");
@@ -357,6 +416,9 @@ public class DAO {
 
             // record tweet into search index
             messages.writeEntry(t.getIdStr(), t.getSourceType().name(), t);
+            
+            // teach the classifier
+            Classifier.learnPhrase(t.getText());
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -586,7 +648,7 @@ public class DAO {
             SearchHit[] hits = response.getHits().getHits();
             if (hits.length == 0) return null;
             assert hits.length == 1;
-            Map<String, Object> map = hits[1].getSource();
+            Map<String, Object> map = hits[0].getSource();
             return new UserEntry(map);            
         } catch (IndexMissingException e) {}
         return null;
@@ -737,6 +799,35 @@ public class DAO {
             }
         }
         return tl;
+    }
+    
+    public final static Set<Number> newUserIds = new ConcurrentHashSet<>();
+    
+    public static void announceNewUserId(Timeline tl) {
+        for (MessageEntry message: tl) {
+            UserEntry user = tl.getUser(message);
+            assert user != null;
+            if (user == null) continue;
+            Number id = user.getUser();
+            if (id != null) announceNewUserId(id);
+        }
+    }
+
+    public static void announceNewUserId(Number id) {
+        Index idIndex = DAO.user_dump.getIndex("id_str");
+        Map<String, Object> map = idIndex.get(id.toString());
+        if (map == null) newUserIds.add(id);
+    }
+    
+    public static Set<Number> getNewUserIdsChunk() {
+        if (newUserIds.size() < 100) return null;
+        Set<Number> chunk = new HashSet<>();
+        Iterator<Number> i = newUserIds.iterator();
+        for (int j = 0; j < 100; j++) {
+            chunk.add(i.next());
+            i.remove();
+        }
+        return chunk;
     }
     
     public static void log(String line) {

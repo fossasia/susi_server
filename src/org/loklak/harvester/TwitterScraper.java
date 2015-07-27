@@ -68,7 +68,6 @@ public class TwitterScraper {
                 }
             }
             String q = t.length() == 0 ? "*" : URLEncoder.encode(t.substring(1), "UTF-8");
-            DAO.log("Twitter Scraper:" + q);
             //https://twitter.com/search?q=from:yacy_search&src=typd
             https_url = "https://twitter.com/search?q=" + q + "&src=typd&vertical=default&f=tweets";
         } catch (UnsupportedEncodingException e) {}

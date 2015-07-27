@@ -99,6 +99,8 @@ public class GeocodeServlet extends HttpServlet {
             if (loc != null) {
                 location.put("place", minified ? new String[]{loc.getNames().iterator().next()} : loc.getNames());
                 location.put("population", loc.getPopulation());
+                location.put("country_code", loc.getISO3166cc());
+                location.put("country", DAO.geoNames.getCountryName(loc.getISO3166cc()));
                 location.put("location", new double[]{loc.lon(), loc.lat()});
                 location.put("mark", new double[]{loc.mlon(), loc.mlat()});
             }

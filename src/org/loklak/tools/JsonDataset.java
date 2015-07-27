@@ -21,9 +21,6 @@ package org.loklak.tools;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -33,7 +30,6 @@ import org.loklak.tools.JsonDump.ConcurrentReader;
 public class JsonDataset {
     
     private final JsonDump indexDump;
-    private final Collection<Map<String, Object>> data;
     private final Map<String, Index> index;
     
     /**
@@ -45,7 +41,6 @@ public class JsonDataset {
      */
     public JsonDataset(File dump_dir, String dump_file_prefix, String[] index_keys) throws IOException {
         this.indexDump = new JsonDump(dump_dir, dump_file_prefix, null);
-        this.data = Collections.synchronizedList(new ArrayList<Map<String, Object>>());
         this.index = new ConcurrentHashMap<>();
         for (String idx: index_keys) this.index.put(idx, new Index());
         int concurrency = Runtime.getRuntime().availableProcessors();
@@ -65,7 +60,6 @@ public class JsonDataset {
                                     if (x != null) idxo.getValue().put(x, obj);
                                 }
                                 Object op = obj.remove(new String(JsonDump.OPERATION_KEY));
-                                JsonDataset.this.data.add(obj);
                             }
                         } catch (InterruptedException e) {
                             e.printStackTrace();
@@ -87,14 +81,15 @@ public class JsonDataset {
      * @throws IOException
      */
     public void putUnique(Map<String, Object> obj) throws IOException {
-        for (Map.Entry<String, Index> idxo: JsonDataset.this.index.entrySet()) {
-            Object x = obj.get(idxo.getKey());
-            if (x != null) {
-                if (idxo.getValue().containsKey(x)) return; // we don't overwrite existing indexes
-                idxo.getValue().put(x, obj);
+        idxstore: for (Map.Entry<String, Index> idxo: this.index.entrySet()) {
+            String idx_field = idxo.getKey();
+            Object value = obj.get(idx_field);
+            if (value != null) {
+                Index index = idxo.getValue();
+                if (index.containsKey(value)) continue idxstore; // we don't overwrite existing indexes
+                index.put(value, obj);
             }
         }
-        JsonDataset.this.data.add(obj);
         indexDump.write(obj, 'I');
     }
     
@@ -107,7 +102,7 @@ public class JsonDataset {
     }
     
     
-    public static class Index extends HashMap<Object, Map<String, Object>> implements Map<Object, Map<String, Object>> {
+    public static class Index extends ConcurrentHashMap<Object, Map<String, Object>> implements Map<Object, Map<String, Object>> {
         private static final long serialVersionUID = 4596787150066539880L;
     }
     
@@ -128,6 +123,8 @@ public class JsonDataset {
             dtst = new JsonDataset(testidx, "idx_", new String[]{"abc", "def"});
             Index idx = dtst.getIndex("abc");
             System.out.println(idx.get(1));
+            idx = dtst.getIndex("def");
+            System.out.println(idx.get("Hello World"));
         } catch (IOException e) {
             e.printStackTrace();
         }

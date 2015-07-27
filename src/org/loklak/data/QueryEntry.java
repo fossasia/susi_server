@@ -148,7 +148,7 @@ public class QueryEntry extends AbstractIndexEntry implements IndexEntry {
         }
         this.messages_per_day = (int) (DAY_MILLIS / this.message_period);
         this.expected_next = new Date(this.retrieval_last.getTime() + ((long) (ttl_factor *  this.message_period)));
-        long pivot_period = DAO.getConfig("retrieval.pivotfrequency", 10000);
+        long pivot_period = DAO.getConfig("retrieval.queries.pivotfrequency", 10000);
         long strategic_period =   // if the period is far below the minimum, we apply a penalty
                  (this.message_period < pivot_period ?
                      pivot_period + 1000 * (long) Math.pow((pivot_period - this.message_period) / 1000, 3) :
@@ -249,7 +249,10 @@ public class QueryEntry extends AbstractIndexEntry implements IndexEntry {
         link("links"),
         mention("mentions"),
         source_type("source_type"),
-        hashtag("hashtags");
+        hashtag("hashtags"),
+        emotion("classifier_emotion"),
+        profanity("classifier_profanity"),
+        language("classifier_language");
         protected String field_name;
         protected Pattern pattern;
         private Constraint(String field_name) {
@@ -339,7 +342,11 @@ public class QueryEntry extends AbstractIndexEntry implements IndexEntry {
             if (tokens.constraints_negative.contains("mention") && message.getMentions().length != 0) continue;
             if (tokens.constraints_positive.contains("hashtag") && message.getHashtags().length == 0) continue;
             if (tokens.constraints_negative.contains("hashtag") && message.getHashtags().length != 0) continue;
-
+            for (Classifier.Context context: Classifier.Context.values()) {
+                if (tokens.constraints_positive.contains(context.name()) && message.getClassifier(context) == null) continue messageloop;
+                if (tokens.constraints_negative.contains(context.name()) && message.getClassifier(context) != null) continue messageloop;
+            }
+            
             // special treatment of location and link constraint
             constraintCheck: for (String cs: tokens.constraints_positive) {
                 if (cs.startsWith(Constraint.location.name() + "=")) {

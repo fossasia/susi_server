@@ -40,5 +40,6 @@
 	<classpathentry kind="lib" path="lib/jackson-annotations-2.6.0.jar"/>
 	<classpathentry kind="lib" path="lib/joda-time-2.4.jar"/>
 	<classpathentry kind="lib" path="lib/elasticsearch-1.6.0.jar"/>
+	<classpathentry kind="lib" path="lib/json-schema-validator-2.2.6-lib.jar" sourcepath="lib/json-schema-validator-2.2.6-lib.jar"/>
 	<classpathentry kind="output" path="classes"/>
 </classpath>
