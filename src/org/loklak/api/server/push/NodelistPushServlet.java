@@ -40,84 +40,51 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class NodelistPushServlet extends HttpServlet {
+public class NodelistPushServlet extends AbstractPushServlet {
 
     @Override
-    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+    protected SourceType getSourceType() {
+        return SourceType.NODELIST;
+    }
 
-        RemoteAccess.Post post = RemoteAccess.evaluate(request);
-        String remoteHash = Integer.toHexString(Math.abs(post.getClientHost().hashCode()));
+    @Override
+    protected JsonValidator.JsonSchemaEnum getValidatorSchema() {
+        return JsonValidator.JsonSchemaEnum.NODELIST;
+    }
 
-        // manage DoS
-        if (post.isDoS_blackout()) {
-            response.sendError(503, "your request frequency is too high");
-            return;
-        }
+    @Override
+    protected JsonFieldConverter.JsonConversionSchemaEnum getConversionSchema() {
+        return JsonFieldConverter.JsonConversionSchemaEnum.NODELIST_NODE;
+    }
 
-        String url = post.get("url", "");
-        if (url == null || url.length() == 0) {
-            response.sendError(400, "your request does not contain an url to your data object");
-            return;
-        }
+    @SuppressWarnings("unchecked")
+    @Override
+    protected List<Map<String, Object>> extractMessages(Map<String, Object> data) {
+        return (List<Map<String, Object>>) data.get("nodes");
+    }
 
-        Map<String, Object> map;
-        byte[] jsonText;
+    @SuppressWarnings("unchecked")
+    @Override
+    protected void customProcessing(Map<String, Object> message) {
+        Map<String, Object> location = (Map<String, Object>) message.get("position");
+        if (location == null) return;
+
+        final Double longitude = Double.parseDouble((String) location.get("long"));
+        final Double latitude = Double.parseDouble((String) location.get("lat"));
+        List<Double> location_point = new ArrayList<>();
+        location_point.add(longitude);
+        location_point.add(latitude);
+        message.put("location_point", location_point);
+        message.put("location_mark", location_point);
+
+        Map<String, Object> user = new HashMap<>();
+        user.put("screen_name", "freifunk_" + message.get("name"));
+        user.put("name", message.get("name"));
+        message.put("user", user);
         try {
-            jsonText = ClientConnection.download(url);
-            XContentParser parser = JsonXContent.jsonXContent.createParser(jsonText);
-            map = parser.map();
+            message.put("id_str", PushServletHelper.computeMessageId(message, message.get("id"), getSourceType()));
         } catch (Exception e) {
-            response.sendError(400, "error reading json file from url");
-            return;
+            DAO.log("Problem computing id : " + e.getMessage());
         }
-
-        JsonValidator validator = new JsonValidator();
-        ProcessingReport report = validator.validate(new String(jsonText), JsonValidator.JsonSchemaEnum.NODELIST);
-        if (report.getLogLevel() == LogLevel.ERROR || report.getLogLevel() == LogLevel.FATAL) {
-            response.sendError(400, "json does not conform to Freifunk nodelist schema" + report);
-            return;
-        }
-
-        // push nodes
-        JsonFieldConverter converter = new JsonFieldConverter();
-        List<Map<String, Object>> nodes = (List<Map<String, Object>>) map.get("nodes");
-        nodes = converter.convert(nodes, JsonFieldConverter.JsonConversionSchemaEnum.NODELIST_NODE);
-
-        Map<String, Object> community = (Map<String, Object>) map.get("community");
-
-        // prepare fields that need more complex manips than simple field mapping
-        for (Map<String, Object> node : nodes) {
-            node.put("source_type", SourceType.NODELIST.name());
-            Map<String, Object> location = (Map) node.get("position");
-            if (location == null) continue;
-
-            final Double longitude = Double.parseDouble((String) location.get("long"));
-            final Double latitude = Double.parseDouble((String) location.get("lat"));
-            List<Double> location_point = new ArrayList<>();
-            location_point.add(longitude);
-            location_point.add(latitude);
-            node.put("location_point", location_point);
-            node.put("location_mark", location_point);
-            node.put("location_source", LocationSource.USER.name());
-
-            Map<String, Object> user = new HashMap<>();
-            user.put("screen_name", "freifunk_" + community.get("name"));
-            user.put("name", community.get("name"));
-            node.put("user", user);
-            try {
-                node.put("id_str", PushServletHelper.computeMessageId(node, node.get("id"), SourceType.NODELIST));
-            } catch (Exception e) {
-                DAO.log("Problem computing id : " + e.getMessage());
-            }
-        }
-        PushReport nodePushReport = PushServletHelper.saveMessages(nodes);
-
-        String res = PushServletHelper.printResponse(post.get("callback", ""), nodePushReport);
-        response.getOutputStream().println(res);
-        DAO.log(request.getServletPath()
-                + " -> records = " + nodePushReport.getRecordCount()
-                + ", new = " + nodePushReport.getNewCount()
-                + ", known = " + nodePushReport.getKnownCount()
-                + ", from host hash " + remoteHash);
     }
 }

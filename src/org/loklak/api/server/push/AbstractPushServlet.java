@@ -1,6 +1,6 @@
 /**
- * FreifunkNodePushServlet
- * Copyright 16.07.2015 by Dang Hai An, @zyzo
+ * AbstractPushServlet
+ * Copyright 27.07.2015 by Dang Hai An, @zyzo
  * <p/>
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -16,9 +16,9 @@
  * along with this program in the file lgpl21.txt
  * If not, see <http://www.gnu.org/licenses/>.
  */
+
 package org.loklak.api.server.push;
 
-import com.github.fge.jsonschema.core.report.LogLevel;
 import com.github.fge.jsonschema.core.report.ProcessingReport;
 import org.elasticsearch.common.xcontent.XContentParser;
 import org.elasticsearch.common.xcontent.json.JsonXContent;
@@ -26,6 +26,7 @@ import org.loklak.api.client.ClientConnection;
 import org.loklak.api.server.RemoteAccess;
 import org.loklak.data.DAO;
 import org.loklak.geo.LocationSource;
+import org.loklak.geo.PlaceContext;
 import org.loklak.harvester.JsonFieldConverter;
 import org.loklak.harvester.JsonValidator;
 import org.loklak.harvester.SourceType;
@@ -38,11 +39,15 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
-public class FreifunkNodePushServlet extends AbstractPushServlet {
+public abstract class AbstractPushServlet extends HttpServlet {
+
+    @Override
+    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        this.doGet(request, response);
+    }
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-
         RemoteAccess.Post post = RemoteAccess.evaluate(request);
         String remoteHash = Integer.toHexString(Math.abs(post.getClientHost().hashCode()));
 
@@ -69,66 +74,50 @@ public class FreifunkNodePushServlet extends AbstractPushServlet {
             return;
         }
 
+
+        // validation phase
         JsonValidator validator = new JsonValidator();
-        ProcessingReport report = validator.validate(new String(jsonText), JsonValidator.JsonSchemaEnum.FREIFUNK_NODE);
-        if (report.getLogLevel() == LogLevel.ERROR || report.getLogLevel() == LogLevel.FATAL) {
-            response.sendError(400, "json does not conform to Freifunk node schema " + report);
+        ProcessingReport report = validator.validate(new String(jsonText), this.getValidatorSchema());
+        if (!report.isSuccess()) {
+            response.sendError(400, "json does not conform to schema : " + this.getValidatorSchema().name() + "\n" + report);
             return;
         }
 
-        // push nodes
+        // conversion phase
         JsonFieldConverter converter = new JsonFieldConverter();
-        List<Map<String, Object>> nodes = (List<Map<String, Object>>) map.get("nodes");
-        nodes = converter.convert(nodes, JsonFieldConverter.JsonConversionSchemaEnum.FREIFUNK_NODE);
+        List<Map<String, Object>> messages = extractMessages(map);
+        messages = converter.convert(messages, this.getConversionSchema());
 
-        for (Map<String, Object> node : nodes) {
-            if (node.get("text") == null) {
-                node.put("text", "");
+        // custom treatment for each message
+        for (Map<String, Object> message : messages) {
+            message.put("source_type", this.getSourceType().name());
+            message.put("location_source", LocationSource.USER.name());
+            message.put("place_context", PlaceContext.ABOUT.name());
+            if (message.get("text") == null) {
+                message.put("text", "");
             }
-            node.put("source_type", SourceType.FREIFUNK_NODE.name());
-            node.put("location_source", LocationSource.USER.name());
-            try {
-                node.put("id_str", PushServletHelper.computeMessageId(node, node.get("id"), SourceType.FREIFUNK_NODE));
-            } catch (Exception e) {
-                DAO.log("Problem computing id : " + e.getMessage());
-            }
+            customProcessing(message);
         }
-        PushReport nodePushReport = PushServletHelper.saveMessages(nodes);
+
+        PushReport nodePushReport = PushServletHelper.saveMessages(messages);
 
         String res = PushServletHelper.printResponse(post.get("callback", ""), nodePushReport);
         response.getOutputStream().println(res);
         DAO.log(request.getServletPath()
                 + " -> records = " + nodePushReport.getRecordCount()
-                + ", new = " + nodePushReport.getNewCount() + ", known = " + nodePushReport.getKnownCount() + ", from host hash " + remoteHash);
+                + ", new = " + nodePushReport.getNewCount()
+                + ", known = " + nodePushReport.getKnownCount()
+                + ", error = " + nodePushReport.getErrorCount()
+                + ", from host hash " + remoteHash);
     }
 
-    @Override
-    protected SourceType getSourceType() {
-        return SourceType.FREIFUNK_NODE;
-    }
+    protected abstract SourceType getSourceType();
 
-    @Override
-    protected JsonValidator.JsonSchemaEnum getValidatorSchema() {
-        return JsonValidator.JsonSchemaEnum.FREIFUNK_NODE;
-    }
+    protected abstract JsonValidator.JsonSchemaEnum getValidatorSchema();
 
-    @Override
-    protected JsonFieldConverter.JsonConversionSchemaEnum getConversionSchema() {
-        return JsonFieldConverter.JsonConversionSchemaEnum.FREIFUNK_NODE;
-    }
+    protected abstract JsonFieldConverter.JsonConversionSchemaEnum getConversionSchema();
 
-    @SuppressWarnings("unchecked")
-    @Override
-    protected List<Map<String, Object>> extractMessages(Map<String, Object> data) {
-        return (List<Map<String, Object>>) data.get("nodes");
-    }
+    protected abstract List<Map<String, Object>> extractMessages(Map<String, Object> data);
 
-    @Override
-    protected void customProcessing(Map<String, Object> message) {
-        try {
-            message.put("id_str", PushServletHelper.computeMessageId(message, message.get("id"), getSourceType()));
-        } catch (Exception e) {
-            DAO.log("Problem computing id : " + e.getMessage());
-        }
-    }
+    protected abstract void customProcessing(Map<String, Object> message);
 }
