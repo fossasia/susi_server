@@ -755,8 +755,8 @@ public class DAO {
         }
     }
 
-    public static List<ImportProfileEntry> SearchLocalImportProfilesBySourceType(final String source_type) {
-        List<ImportProfileEntry> results = new ArrayList<>();
+    public static Collection<ImportProfileEntry> SearchLocalImportProfilesBySourceType(final String source_type) {
+        List<ImportProfileEntry> rawResults = new ArrayList<>();
         try {
             SearchRequestBuilder request = elasticsearch_client.prepareSearch(IMPORT_PROFILE_INDEX_NAME)
                     .setSearchType(SearchType.QUERY_THEN_FETCH)
@@ -772,10 +772,30 @@ public class DAO {
             SearchHit[] hits = response.getHits().getHits();
             for (SearchHit hit: hits) {
                 Map<String, Object> map = hit.getSource();
-                results.add(new ImportProfileEntry(map));
+                rawResults.add(new ImportProfileEntry(map));
             }
-        } catch (IndexMissingException e) {}
-        return results;
+        } catch (IndexMissingException e) {
+            DAO.log("Error searching import profiles : " + e.getMessage());
+        }
+
+        // filter results to display only latest profiles
+        Map<String, ImportProfileEntry> latests = new HashMap<>();
+        for (ImportProfileEntry entry : rawResults) {
+            String uniqueKey;
+            if (entry.getScreenName() != null) {
+                uniqueKey = entry.getSourceUrl() + entry.getScreenName();
+            } else {
+                uniqueKey = entry.getSourceUrl() + entry.getClientHost();
+            }
+            if (latests.containsKey(uniqueKey)) {
+                if (entry.getLastModified().compareTo(latests.get(uniqueKey).getLastModified()) > 0) {
+                    latests.put(uniqueKey, entry);
+                }
+            } else {
+                latests.put(uniqueKey, entry);
+            }
+        }
+        return latests.values();
     }
     
     public static Timeline[] scrapeTwitter(final String q, final Timeline.Order order, final int timezoneOffset, boolean byUserQuery) {

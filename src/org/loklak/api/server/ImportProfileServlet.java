@@ -36,6 +36,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Date;
+import java.util.Collection;
 
 public class ImportProfileServlet extends HttpServlet {
 
@@ -105,7 +106,7 @@ public class ImportProfileServlet extends HttpServlet {
             return;
         }
 
-        List<ImportProfileEntry> entries = DAO.SearchLocalImportProfilesBySourceType(source_type);
+        Collection<ImportProfileEntry> entries = DAO.SearchLocalImportProfilesBySourceType(source_type);
         List<Map<String, Object>> entries_to_map = new ArrayList<>();
         for (ImportProfileEntry entry : entries) {
             entries_to_map.add(entry.toMap());
