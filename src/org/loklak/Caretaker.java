@@ -65,21 +65,22 @@ public class Caretaker extends Thread {
             try {Thread.sleep(5000);} catch (InterruptedException e) {}
             
             // peer-to-peer operation
-            Timeline tl = DAO.takeTimeline(Timeline.Order.CREATED_AT, 500, 3000);
+            Timeline tl = DAO.takeTimelineMin(Timeline.Order.CREATED_AT, 30, 1000, 1);
             if (!this.shallRun) break;
             if (tl != null && tl.size() > 0 && remote.length > 0) {
                 // transmit the timeline
+                try {Thread.sleep(2000);} catch (InterruptedException e) {}
                 boolean success = PushClient.push(remote, tl);
                 if (!success) {
                     // we should try again.. but not an infinite number because then
                     // our timeline in RAM would fill up our RAM creating a memory leak
                     retrylook: for (int retry = 0; retry < 3; retry++) {
                         // give back-end time to recover
+                        try {Thread.sleep(3000 + retry * 3000);} catch (InterruptedException e) {}
                         if (PushClient.push(remote, tl)) {
                             DAO.log("success pushing to backend in " + retry + " attempt");
                             break retrylook;
                         }
-                        try {Thread.sleep(3000 + retry * 3000);} catch (InterruptedException e) {}
                     }
                     DAO.log("failed pushing " + tl.size() + " messages to backend");
                 }

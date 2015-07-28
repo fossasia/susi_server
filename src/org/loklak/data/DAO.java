@@ -346,7 +346,20 @@ public class DAO {
         if (getConfig("backend", new String[0], ",").length > 0) newMessageTimelines.add(tl);
     }
 
-    public static Timeline takeTimeline(Timeline.Order order, int maxsize, long maxwait) {
+    public static Timeline takeTimelineMin(Timeline.Order order, int minsize, int maxsize, long maxwait) {
+        Timeline tl = takeTimelineMax(order, minsize, maxwait);
+        if (tl.size() >= minsize) {
+            // split that and return the maxsize
+            Timeline tlr = tl.reduceToMaxsize(minsize);
+            newMessageTimelines.add(tlr); // push back the remaining
+            return tl;
+        }
+        // push back that timeline and return nothing
+        newMessageTimelines.add(tl);
+        return new Timeline(order);
+    }
+
+    public static Timeline takeTimelineMax(Timeline.Order order, int maxsize, long maxwait) {
         Timeline tl = new Timeline(order);
         try {
             Timeline tl0 = newMessageTimelines.poll(maxwait, TimeUnit.MILLISECONDS);

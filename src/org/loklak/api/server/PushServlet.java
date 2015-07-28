@@ -68,7 +68,10 @@ public class PushServlet extends HttpServlet {
         String remoteHash = Integer.toHexString(Math.abs(post.getClientHost().hashCode()));
                 
         // manage DoS
-        if (post.isDoS_blackout()) {response.sendError(503, "your request frequency is too high"); return;}
+        if (post.isDoS_blackout()) {
+            response.sendError(503, "your request frequency is too high");
+            return;
+        }
 
         Map<String, byte[]> m = RemoteAccess.getPostMap(request);
         byte[] data = m.get("data");
