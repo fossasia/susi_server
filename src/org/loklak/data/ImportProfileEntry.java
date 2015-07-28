@@ -45,6 +45,8 @@ public class ImportProfileEntry extends AbstractIndexEntry implements IndexEntry
     // id list of imported messages
     protected List<String> imported;
 
+    protected EntryStatus activeStatus;
+
 
     @SuppressWarnings("unchecked")
     public ImportProfileEntry(Map<String, Object> map) {
@@ -68,6 +70,9 @@ public class ImportProfileEntry extends AbstractIndexEntry implements IndexEntry
         this.lifetime = (int) map.get("lifetime");
         this.imported = (List<String>) map.get("imported");
         this.id = (String) map.get("id_str");
+
+        // profile should be active in the beginning
+        this.activeStatus = EntryStatus.ACTIVE;
     }
 
     public String getId() {
@@ -151,6 +156,14 @@ public class ImportProfileEntry extends AbstractIndexEntry implements IndexEntry
     }
 
 
+    public EntryStatus getActiveStatus() {
+        return activeStatus;
+    }
+
+    public void setActiveStatus(EntryStatus status) {
+        this.activeStatus = status;
+    }
+
     @Override
     public Map<String, Object> toMap() {
         Map<String, Object> m = new LinkedHashMap<>();
@@ -164,6 +177,7 @@ public class ImportProfileEntry extends AbstractIndexEntry implements IndexEntry
         m.put("harvesting_freq", this.harvesting_freq);
         m.put("lifetime", this.lifetime);
         m.put("imported", this.imported);
+        m.put("active_status", this.activeStatus.name());
         return m;
     }
 

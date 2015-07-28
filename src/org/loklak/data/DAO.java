@@ -43,6 +43,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.apache.lucene.queryparser.classic.QueryParser;
 import org.eclipse.jetty.util.ConcurrentHashSet;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -227,12 +228,14 @@ public class DAO {
                 elasticsearch_client.admin().indices().prepareCreate(USERS_INDEX_NAME).execute().actionGet();
                 elasticsearch_client.admin().indices().prepareCreate(ACCOUNTS_INDEX_NAME).execute().actionGet();
                 elasticsearch_client.admin().indices().prepareCreate(QUERIES_INDEX_NAME).execute().actionGet();
+                elasticsearch_client.admin().indices().preparePutMapping(IMPORT_PROFILE_INDEX_NAME).execute().actionGet();
             } catch (IndexAlreadyExistsException ee) {}; // existing indexes are simply ignored, not re-created
             elasticsearch_client.admin().indices().preparePutMapping(MESSAGES_INDEX_NAME).setSource(messages.getMapping()).setType("_default_").execute().actionGet();
             elasticsearch_client.admin().indices().preparePutMapping(USERS_INDEX_NAME).setSource(users.getMapping()).setType("_default_").execute().actionGet();
             elasticsearch_client.admin().indices().preparePutMapping(ACCOUNTS_INDEX_NAME).setSource(accounts.getMapping()).setType("_default_").execute().actionGet();
             elasticsearch_client.admin().indices().preparePutMapping(QUERIES_INDEX_NAME).setSource(queries.getMapping()).setType("_default_").execute().actionGet();
-            
+            elasticsearch_client.admin().indices().preparePutMapping(IMPORT_PROFILE_INDEX_NAME).setSource(importProfiles.getMapping()).setType("_default").execute().actionGet();
+
             // finally wait for healty status of shards
             ClusterHealthResponse health;
             do {
@@ -478,7 +481,6 @@ public class DAO {
         try {
             // record account into text file
             if (dump) import_profile_dump.write(i.toMap());
-
             // record tweet into search index
             importProfiles.writeEntry(i.getId(), i.getSourceType().name(), i);
         } catch (IOException e) {
@@ -525,6 +527,10 @@ public class DAO {
     
     public static boolean deleteQuery(String id, SourceType sourceType) {
         return queries.delete(id, sourceType);
+    }
+
+    public  static boolean deleteImportProfile(String id, SourceType sourceType) {
+        return importProfiles.delete(id, sourceType);
     }
     
     public static class SearchLocalMessages {
@@ -755,15 +761,19 @@ public class DAO {
         }
     }
 
-    public static Collection<ImportProfileEntry> SearchLocalImportProfilesBySourceType(final String source_type) {
+    public static Collection<ImportProfileEntry> SearchLocalImportProfilesWithConstraints(final Map<String, String> constraints, boolean latest) throws IOException {
         List<ImportProfileEntry> rawResults = new ArrayList<>();
         try {
             SearchRequestBuilder request = elasticsearch_client.prepareSearch(IMPORT_PROFILE_INDEX_NAME)
                     .setSearchType(SearchType.QUERY_THEN_FETCH)
                     .setFrom(0);
-            if (!"".equals(source_type)) {
-                request.setQuery(QueryBuilders.matchQuery("source_type", source_type));
+
+            String queryString = "active_status:" + EntryStatus.ACTIVE.name();
+            for (Object o : constraints.entrySet()) {
+                Map.Entry entry = (Map.Entry) o;
+                queryString += " AND " + entry.getKey() + ":" + QueryParser.escape((String) entry.getValue());
             }
+            request.setQuery(QueryBuilders.queryStringQuery(queryString));
 
             // get response
             SearchResponse response = request.execute().actionGet();
@@ -775,7 +785,12 @@ public class DAO {
                 rawResults.add(new ImportProfileEntry(map));
             }
         } catch (IndexMissingException e) {
-            DAO.log("Error searching import profiles : " + e.getMessage());
+            e.printStackTrace();
+            throw new IOException("Error searching import profiles : " + e.getMessage());
+        }
+
+        if (!latest) {
+            return rawResults;
         }
 
         // filter results to display only latest profiles
