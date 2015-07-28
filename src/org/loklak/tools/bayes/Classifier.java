@@ -34,12 +34,11 @@
 package org.loklak.tools.bayes;
 
 import java.util.Collection;
-import java.util.Dictionary;
-import java.util.Enumeration;
-import java.util.Hashtable;
 import java.util.LinkedList;
+import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Abstract base extended by any concrete classifier.  It implements the basic
@@ -52,7 +51,7 @@ import java.util.Set;
  * @param <T> A feature class
  * @param <K> A category class
  */
-public abstract class Classifier<T, K> implements IFeatureProbability<T, K> {
+public abstract class Classifier<T, K> {
 
     /**
      * Initial capacity of category dictionaries.
@@ -74,17 +73,17 @@ public abstract class Classifier<T, K> implements IFeatureProbability<T, K> {
      * A dictionary mapping features to their number of occurrences in each
      * known category.
      */
-    private Dictionary<K, Dictionary<T, Integer>> featureCountPerCategory;
+    private Map<K, Map<T, Integer>> featureCountPerCategory;
 
     /**
      * A dictionary mapping features to their number of occurrences.
      */
-    private Dictionary<T, Integer> totalFeatureCount;
+    private Map<T, Integer> totalFeatureCount;
 
     /**
      * A dictionary mapping categories to their number of occurrences.
      */
-    private Dictionary<K, Integer> totalCategoryCount;
+    private Map<K, Integer> totalCategoryCount;
 
     /**
      * The classifier's memory. It will forget old classifications as soon as
@@ -104,13 +103,13 @@ public abstract class Classifier<T, K> implements IFeatureProbability<T, K> {
      */
     public void reset() {
         this.featureCountPerCategory =
-                new Hashtable<K, Dictionary<T,Integer>>(
+                new ConcurrentHashMap<K, Map<T,Integer>>(
                         Classifier.INITIAL_CATEGORY_DICTIONARY_CAPACITY);
         this.totalFeatureCount =
-                new Hashtable<T, Integer>(
+                new ConcurrentHashMap<T, Integer>(
                         Classifier.INITIAL_FEATURE_DICTIONARY_CAPACITY);
         this.totalCategoryCount =
-                new Hashtable<K, Integer>(
+                new ConcurrentHashMap<K, Integer>(
                         Classifier.INITIAL_CATEGORY_DICTIONARY_CAPACITY);
         this.memoryQueue = new LinkedList<Classification<T, K>>();
     }
@@ -121,7 +120,7 @@ public abstract class Classifier<T, K> implements IFeatureProbability<T, K> {
      * @return The <code>Set</code> of features the classifier knows about.
      */
     public Set<T> getFeatures() {
-        return ((Hashtable<T, Integer>) this.totalFeatureCount).keySet();
+        return this.totalFeatureCount.keySet();
     }
 
     /**
@@ -130,7 +129,7 @@ public abstract class Classifier<T, K> implements IFeatureProbability<T, K> {
      * @return The <code>Set</code> of categories the classifier knows about.
      */
     public Set<K> getCategories() {
-        return ((Hashtable<K, Integer>) this.totalCategoryCount).keySet();
+        return this.totalCategoryCount.keySet();
     }
 
     /**
@@ -140,9 +139,8 @@ public abstract class Classifier<T, K> implements IFeatureProbability<T, K> {
      */
     public int getCategoriesTotal() {
         int toReturn = 0;
-        for (Enumeration<Integer> e = this.totalCategoryCount.elements();
-                e.hasMoreElements();) {
-            toReturn += e.nextElement();
+        for (Integer c: this.totalCategoryCount.values()) {
+            toReturn += c;
         }
         return toReturn;
     }
@@ -178,12 +176,11 @@ public abstract class Classifier<T, K> implements IFeatureProbability<T, K> {
      * @param category The category the feature occurred in.
      */
     public void incrementFeature(T feature, K category) {
-        Dictionary<T, Integer> features =
+        Map<T, Integer> features =
                 this.featureCountPerCategory.get(category);
         if (features == null) {
             this.featureCountPerCategory.put(category,
-                    new Hashtable<T, Integer>(
-                            Classifier.INITIAL_FEATURE_DICTIONARY_CAPACITY));
+                    new ConcurrentHashMap<T, Integer>(Classifier.INITIAL_FEATURE_DICTIONARY_CAPACITY));
             features = this.featureCountPerCategory.get(category);
         }
         Integer count = features.get(feature);
@@ -225,7 +222,7 @@ public abstract class Classifier<T, K> implements IFeatureProbability<T, K> {
      * @param category The category.
      */
     public void decrementFeature(T feature, K category) {
-        Dictionary<T, Integer> features =
+        Map<T, Integer> features =
                 this.featureCountPerCategory.get(category);
         if (features == null) {
             return;
@@ -281,7 +278,7 @@ public abstract class Classifier<T, K> implements IFeatureProbability<T, K> {
      * @return The number of occurrences of the feature in the category.
      */
     public int featureCount(T feature, K category) {
-        Dictionary<T, Integer> features =
+        Map<T, Integer> features =
                 this.featureCountPerCategory.get(category);
         if (features == null)
             return 0;
@@ -303,7 +300,6 @@ public abstract class Classifier<T, K> implements IFeatureProbability<T, K> {
     /**
      * {@inheritDoc}
      */
-    @Override
     public float featureProbability(T feature, K category) {
         if (this.categoryCount(category) == 0)
             return 0;
@@ -325,8 +321,7 @@ public abstract class Classifier<T, K> implements IFeatureProbability<T, K> {
      * @return The weighed average probability.
      */
     public float featureWeighedAverage(T feature, K category) {
-        return this.featureWeighedAverage(feature, category,
-                null, 1.0f, 0.5f);
+        return this.featureWeighedAverage(feature, category, null, 1.0f, 0.5f);
     }
 
     /**
@@ -341,8 +336,7 @@ public abstract class Classifier<T, K> implements IFeatureProbability<T, K> {
      * @param calculator The calculating object.
      * @return The weighed average probability.
      */
-    public float featureWeighedAverage(T feature, K category,
-            IFeatureProbability<T, K> calculator) {
+    public float featureWeighedAverage(T feature, K category, Classifier<T, K> calculator) {
         return this.featureWeighedAverage(feature, category,
                 calculator, 1.0f, 0.5f);
     }
@@ -360,8 +354,7 @@ public abstract class Classifier<T, K> implements IFeatureProbability<T, K> {
      * @param weight The feature weight.
      * @return The weighed average probability.
      */
-    public float featureWeighedAverage(T feature, K category,
-            IFeatureProbability<T, K> calculator, float weight) {
+    public float featureWeighedAverage(T feature, K category, Classifier<T, K> calculator, float weight) {
         return this.featureWeighedAverage(feature, category,
                 calculator, weight, 0.5f);
     }
@@ -378,9 +371,7 @@ public abstract class Classifier<T, K> implements IFeatureProbability<T, K> {
      * @param assumedProbability The assumed probability.
      * @return The weighed average probability.
      */
-    public float featureWeighedAverage(T feature, K category,
-            IFeatureProbability<T, K> calculator, float weight,
-            float assumedProbability) {
+    public float featureWeighedAverage(T feature, K category, Classifier<T, K> calculator, float weight, float assumedProbability) {
 
         /*
          * use the given calculating object or the default method to calculate

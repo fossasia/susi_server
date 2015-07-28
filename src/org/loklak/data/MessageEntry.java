@@ -463,7 +463,7 @@ public class MessageEntry extends AbstractIndexEntry implements IndexEntry {
                 this.location_point = new double[]{loc.lon(), loc.lat()}; //[longitude, latitude]
                 this.location_mark = new double[]{loc.mlon(), loc.mlat()}; //[longitude, latitude]
                 this.location_source = LocationSource.ANNOTATION;
-                this.place_country = loc.getIO3166cc();
+                this.place_country = loc.getISO3166cc();
             }
         }
     }
@@ -507,7 +507,8 @@ public class MessageEntry extends AbstractIndexEntry implements IndexEntry {
         m.put("place_id", this.place_id);
         if (this.place_context != null) m.put("place_context", this.place_context.name());
         if (this.place_country != null && this.place_country.length() == 2) {
-            m.put("place_country", this.place_country);
+            m.put("place_country", DAO.geoNames.getCountryName(this.place_country));
+            m.put("place_country_code", this.place_country);
             m.put("place_country_center", DAO.geoNames.getCountryCenter(this.place_country));
         }
   

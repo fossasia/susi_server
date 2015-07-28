@@ -185,7 +185,8 @@ public class LoklakServer {
         servletHandler.addServlet(MapServlet.class, "/vis/map.png.base64");
         servletHandler.addServlet(MapServlet.class, "/vis/map.jpg");
         servletHandler.addServlet(MapServlet.class, "/vis/map.jpg.base64");
-        
+        servletHandler.setMaxFormContentSize(10 * 1024 * 1024); // 10 MB
+
         ErrorHandler errorHandler = new ErrorHandler();
         errorHandler.setShowStacks(true);
         servletHandler.setErrorHandler(errorHandler);
@@ -208,7 +209,7 @@ public class LoklakServer {
         HandlerList handlerlist2 = new HandlerList();
         handlerlist2.setHandlers(new Handler[]{fileHandler, rewriteHandler, new DefaultHandler()});
         LoklakServer.server.setHandler(handlerlist2);
- 
+
         LoklakServer.server.start();
         LoklakServer.caretaker = new Caretaker();
         LoklakServer.caretaker.start();

@@ -41,7 +41,7 @@ public class GeoLocation extends IntegerGeoPoint implements Comparable<GeoLocati
         return this.names;
     }
     
-    public String getIO3166cc() {
+    public String getISO3166cc() {
         return this.iso3166cc;
     }
 
