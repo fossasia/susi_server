@@ -19,11 +19,8 @@
 
 package org.loklak.data;
 
-import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.AbstractMap;
@@ -36,7 +33,6 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -110,10 +106,10 @@ public class DAO {
     
     public  static File conf_dir;
     private static File external_data, assets, dictionaries;
-    private static Path message_dump_dir, account_dump_dir, settings_dir;
+    private static Path message_dump_dir, account_dump_dir;
     private static JsonDump message_dump, account_dump;
     public  static JsonDataset user_dump, followers_dump, following_dump;
-    private static File customized_config, schema_dir, conv_schema_dir;
+    private static File schema_dir, conv_schema_dir;
     private static Node elasticsearch_node;
     private static Client elasticsearch_client;
     private static UserFactory users;
@@ -128,7 +124,9 @@ public class DAO {
      * initialize the DAO
      * @param datadir the path to the data directory
      */
-    public static void init(Path dataPath) {
+    public static void init(Map<String, String> configMap, Path dataPath) {
+        config = configMap;
+        File conf_dir = new File("conf");
         File datadir = dataPath.toFile();
         try {
             // create and document the data dump dir
@@ -164,24 +162,6 @@ public class DAO {
             conv_schema_dir = new File("conf/conversion");
             schema_dir = new File("conf/schema");            
 
-            // load the config file(s);
-            conf_dir = new File("conf");
-            Properties prop = new Properties();
-            prop.load(new FileInputStream(new File(conf_dir, "config.properties")));
-            for (Map.Entry<Object, Object> entry: prop.entrySet()) config.put((String) entry.getKey(), (String) entry.getValue());
-            settings_dir = dataPath.resolve("settings");
-            settings_dir.toFile().mkdirs();
-            LoklakServer.protectPath(settings_dir);
-            customized_config = new File(settings_dir.toFile(), "customized_config.properties");
-            if (!customized_config.exists()) {
-                BufferedWriter w = new BufferedWriter(new FileWriter(customized_config));
-                w.write("# This file can be used to customize the configuration file conf/config.properties\n");
-                w.close();
-            }
-            Properties customized_config_props = new Properties();
-            customized_config_props.load(new FileInputStream(customized_config));
-            for (Map.Entry<Object, Object> entry: customized_config_props.entrySet()) config.put((String) entry.getKey(), (String) entry.getValue());
-            
             // use all config attributes with a key starting with "elasticsearch." to set elasticsearch settings
             Builder builder = ImmutableSettings.settingsBuilder();
             for (Map.Entry<String, String> entry: config.entrySet()) {
