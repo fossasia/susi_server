@@ -71,13 +71,13 @@ public class ImportProfileServlet extends HttpServlet {
 
             try {
                 XContentParser parser = JsonXContent.jsonXContent.createParser(data);
-                Map<String, Object> map = parser == null ? null : parser.map();
+                Map<String, Object> map = parser.map();
                 if (map.get("id_str") == null) {
                     throw new IOException("id_str field missing");
                 }
                 ImportProfileEntry i = DAO.SearchLocalImportProfiles((String) map.get("id_str"));
                 if (i == null) {
-                    throw new IOException("import profile with id_str '" + map.get("id_str") + "' not found");
+                    throw new IOException("import profile id_str field '" + map.get("id_str") + "' not found");
                 }
                 ImportProfileEntry importProfileEntry = new ImportProfileEntry(map);
                 importProfileEntry.setLastModified(new Date());
