@@ -22,7 +22,6 @@ package org.loklak;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.net.ServerSocket;
@@ -130,7 +129,8 @@ public class LoklakServer {
         Map<String, String> config = readConfig(data);
         
         // check if a loklak service is already running on configured port
-        int httpPort = (int) DAO.getConfig("port.http", 9000);
+        String httpPortS = config.get("port.http");
+        int httpPort = httpPortS == null ? 9000 : Integer.parseInt(httpPortS);
         ServerSocket ss = null;
         try {
             ss = new ServerSocket(httpPort);
