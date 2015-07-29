@@ -79,6 +79,8 @@ public class ImportProfileServlet extends HttpServlet {
     }
 
     private void doUpdate(RemoteAccess.Post post, HttpServletResponse response) throws IOException {
+        String callback = post.get("callback", null);
+        boolean jsonp = callback != null && callback.length() > 0;
         String data = post.get("data", "");
         if (data == null || data.length() == 0) {
             response.sendError(400, "your request must contain a data object.");
@@ -107,12 +109,19 @@ public class ImportProfileServlet extends HttpServlet {
             return;
         }
 
+        post.setResponse(response, "application/javascript");
+        XContentBuilder json = XContentFactory.jsonBuilder().prettyPrint().lfAtEnd();
+        json.startObject();
+        json.field("status", "ok");
+        json.field("records", success ? 1 : 0);
+        json.field("message", "updated");
+        json.endObject();
+        // write json
         ServletOutputStream sos = response.getOutputStream();
-        if (success) {
-            sos.println("Update successfully");
-        } else {
-            response.sendError(400, "Unable to update");
-        }
+        if (jsonp) sos.print(callback + "(");
+        sos.print(json.string());
+        if (jsonp) sos.println(");");
+        sos.println();
     }
 
     private void doDelete(RemoteAccess.Post post, HttpServletResponse response) throws IOException {
