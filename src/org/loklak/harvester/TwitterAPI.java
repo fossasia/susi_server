@@ -23,6 +23,7 @@ package org.loklak.harvester;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.FileSystems;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -36,6 +37,7 @@ import java.util.TreeSet;
 
 import org.elasticsearch.common.xcontent.XContentParser;
 import org.elasticsearch.common.xcontent.json.JsonXContent;
+import org.loklak.LoklakServer;
 import org.loklak.data.AbstractIndexEntry;
 import org.loklak.data.AccountEntry;
 import org.loklak.data.DAO;
@@ -404,23 +406,28 @@ public class TwitterAPI {
     
     
     public static void main(String[] args) {
-        DAO.init(FileSystems.getDefault().getPath("data"));
         try {
-            System.out.println(getRateLimitStatus(RATE_FOLLOWERS_IDS));
-        } catch (TwitterException e) {
-            e.printStackTrace();
+            Path data = FileSystems.getDefault().getPath("data");
+            DAO.init(LoklakServer.readConfig(data), data);
+            try {
+                System.out.println(getRateLimitStatus(RATE_FOLLOWERS_IDS));
+            } catch (TwitterException e) {
+                e.printStackTrace();
+            }
+            try {
+                System.out.println(getFollowersNames("loklak_app", 10000));
+            } catch (IOException | TwitterException e) {
+                e.printStackTrace();
+            }
+            try {
+                System.out.println(getFollowingNames("loklak_app", 10000));
+            } catch (IOException | TwitterException e) {
+                e.printStackTrace();
+            }
+            DAO.close();
+        } catch (IOException e1) {
+            e1.printStackTrace();
         }
-        try {
-            System.out.println(getFollowersNames("loklak_app", 10000));
-        } catch (IOException | TwitterException e) {
-            e.printStackTrace();
-        }
-        try {
-            System.out.println(getFollowingNames("loklak_app", 10000));
-        } catch (IOException | TwitterException e) {
-            e.printStackTrace();
-        }
-        DAO.close();
         System.exit(0);
     }
     
