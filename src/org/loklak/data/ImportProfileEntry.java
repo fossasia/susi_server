@@ -66,8 +66,8 @@ public class ImportProfileEntry extends AbstractIndexEntry implements IndexEntry
         this.last_modified = parseDate(map.get("last_modified"));
         this.screen_name = (String) map.get("screen_name");
         this.client_host = (String) map.get("client_host");
-        this.harvesting_freq = (int) map.get("harvesting_freq");
-        this.lifetime = (int) map.get("lifetime");
+        this.harvesting_freq = (int) parseLong(map.get("harvesting_freq"));
+        this.lifetime = (int) parseLong(map.get("lifetime"));
         this.imported = (List<String>) map.get("imported");
         this.id = (String) map.get("id_str");
 
