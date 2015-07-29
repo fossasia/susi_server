@@ -78,9 +78,9 @@ public class MapServlet extends HttpServlet {
         RasterPlotter map = OSMTile.getCombinedTiles(coord, tiles_horizontal, tiles_vertical);
         
         // compute the bbox of the map
-        double north_lat = coord.north_lat,
-               south_lat = coord.north_lat + (coord.south_lat - coord.north_lat) * tiles_vertical,
-               west_lon = coord.west_lon -  (coord.east_lon - coord.west_lon) * (tiles_horizontal / 2),
+        double north_lat = coord.north_lat - (coord.south_lat - coord.north_lat) * (tiles_vertical / 2),
+               south_lat = north_lat + (coord.south_lat - coord.north_lat) * tiles_vertical,
+               west_lon = coord.west_lon - (coord.east_lon - coord.west_lon) * (tiles_horizontal / 2),
                east_lon = west_lon + (coord.east_lon - coord.west_lon) * tiles_horizontal;
         
         // cut away parts of the map if less was wanted        
