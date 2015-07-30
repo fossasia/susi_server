@@ -112,28 +112,33 @@ public class JsonDataset {
         this.indexDump.close();
     }
     
-
     public static class JsonCapsule {
-        byte[] capsule;
+        byte[] capsule; // byte 0 is a flag: 0 = raw json, 1 = compressed json
         public JsonCapsule(Map<String, Object> json) throws JsonProcessingException {
-            this.capsule =  new ObjectMapper().writer().writeValueAsBytes(json);
+            byte[] b =  new ObjectMapper().writer().writeValueAsBytes(json);
+            byte[] c = Compression.gzip(b);
+            if (b.length <= c.length) {
+                this.capsule = new byte[b.length + 1];
+                this.capsule[0] = 0;
+                System.arraycopy(b, 0, this.capsule, 1, b.length);
+            } else {
+                this.capsule = new byte[c.length + 1];
+                this.capsule[0] = 1;
+                System.arraycopy(c, 0, this.capsule, 1, c.length);
+            }
         }
         public Map<String, Object> getJson() {
+            byte[] x = new byte[this.capsule.length - 1];
+            System.arraycopy(this.capsule, 1, x, 0, this.capsule.length - 1);
+            if (this.capsule[0] == 1) {
+                x = Compression.gunzip(x);
+            }
             try {
-                Map<String, Object> json = DAO.jsonMapper.readValue(capsule, DAO.jsonTypeRef);
+                Map<String, Object> json = DAO.jsonMapper.readValue(x, DAO.jsonTypeRef);
                 return json;
             } catch (Throwable e) {
                 Log.getLog().warn("cannot parse capsule \"" + UTF8.String(this.capsule) + "\"", e);
             } 
-            /*
-            try {
-                XContentParser parser = JsonXContent.jsonXContent.createParser(capsule);
-                Map<String, Object> json = parser == null ? null : parser.map();
-                return json;
-            } catch (Throwable e) {
-                Log.getLog().warn("cannot parse capsule \"" + UTF8.String(this.capsule) + "\"", e);
-            }
-            */
             return null;
         }
     }
