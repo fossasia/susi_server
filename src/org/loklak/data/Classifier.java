@@ -127,10 +127,10 @@ public class Classifier {
         return map;
     }
     
-    public static void init(int count) {
+    public static void init(int maxsize, int initsize) {
         
         // load the context keys
-        for (Context c: Context.values()) c.init(count);
+        for (Context c: Context.values()) c.init(maxsize);
         /*
         // ensure consistency throughout the contexts: remove words which could confuse the bayesian filter
         for (Context c: Context.values()) {
@@ -143,7 +143,7 @@ public class Classifier {
          */
         
         // load a test set
-        DAO.SearchLocalMessages testset = new DAO.SearchLocalMessages("", Timeline.Order.CREATED_AT, 0, count, 0);
+        DAO.SearchLocalMessages testset = new DAO.SearchLocalMessages("", Timeline.Order.CREATED_AT, 0, initsize, 0);
         Timeline tl = testset.timeline;
         for (Context c: Context.values()) {
             //Set<String> voc = c.vocabulary();

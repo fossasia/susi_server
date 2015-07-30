@@ -21,7 +21,9 @@ package org.loklak.vis.server;
 
 import java.awt.image.BufferedImage;
 import java.io.IOException;
+import java.nio.file.FileSystems;
 
+import javax.imageio.ImageIO;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -33,6 +35,7 @@ import org.loklak.geo.OSMTile;
 import org.loklak.visualization.graphics.PrintTool;
 import org.loklak.visualization.graphics.RasterPlotter;
 import org.loklak.visualization.graphics.RasterPlotter.DrawMode;
+import org.loklak.visualization.graphics.RasterPlotter.FilterMode;
 
 public class MapServlet extends HttpServlet {
 
@@ -71,23 +74,49 @@ public class MapServlet extends HttpServlet {
         // one tile has the size 256x256
 
         // compute image
-        final OSMTile.tileCoordinates coord = new OSMTile.tileCoordinates(lat, lon, zoom);
+        final OSMTile.TileCoordinates coord = new OSMTile.TileCoordinates(lat, lon, zoom);
         RasterPlotter map = OSMTile.getCombinedTiles(coord, tiles_horizontal, tiles_vertical);
-        // cut away parts of the map if less was wanted
         
+        // compute the bbox of the map
+        double north_lat = coord.north_lat - (coord.south_lat - coord.north_lat) * (tiles_vertical / 2),
+               south_lat = north_lat + (coord.south_lat - coord.north_lat) * tiles_vertical,
+               west_lon = coord.west_lon - (coord.east_lon - coord.west_lon) * (tiles_horizontal / 2),
+               east_lon = west_lon + (coord.east_lon - coord.west_lon) * tiles_horizontal;
+        
+        // cut away parts of the map if less was wanted        
         if (map.getHeight() > height || map.getWidth() > width) {
             BufferedImage bi = map.getImage();
+            // calculate the cut-off size for each side (in pixels)
             int xoff = (map.getWidth() - width) / 2;
             int yoff = (map.getHeight() - height) / 2;
+
+            // correct the bbox coordinates
+            double lonoff = (east_lon - west_lon) * xoff / map.getWidth();
+            double latoff = (south_lat - north_lat) * yoff / map.getHeight();
+            west_lon += lonoff; east_lon -= lonoff;
+            north_lat += latoff; south_lat -= latoff;
+            
+            // cut away equal border parts
             bi = bi.getSubimage(xoff, yoff, width, height);
             map = new RasterPlotter(width, height, RasterPlotter.DrawMode.MODE_REPLACE, "FFFFFF");
             map.insertBitmap(bi, 0, 0);
         }
         
+        // draw message text on map
         map.setDrawMode(DrawMode.MODE_SUB);
         map.setColor(0xffffff);
         if (text.length() > 0) PrintTool.print(map, 6, 12, 0, uppercase ? text.toUpperCase() : text, -1, 100);
         PrintTool.print(map, map.getWidth() - 6, map.getHeight() - 6, 0, "MADE WITH LOKLAK.ORG", 1, 50);
+
+        // draw marker on map
+        int mx = (int) (map.getWidth() * (lon - west_lon) / (east_lon - west_lon));
+        int my = (int) (map.getHeight() * (lat - north_lat) / (south_lat - north_lat));
+        // PrintTool.print(map, mx, my, 0, "X", 1, 100);
+        // the marker has a height of 40 pixel and a width of 25 pixel
+        final BufferedImage logo = ImageIO.read(FileSystems.getDefault().getPath("html").resolve("artwork").resolve("marker-red.png").toFile());
+        map.insertBitmap(logo, Math.min(map.getWidth() - 25, Math.max(0, mx - 12)), Math.min(map.getHeight() - 40, Math.max(0, my - 40)), FilterMode.FILTER_ANTIALIASING);
+
+        // draw copyright notice on map
         /*
          * copyright notice on OSM Tiles
          * According to http://www.openstreetmap.org/copyright/ the (C) of the map tiles is (CC BY-SA)

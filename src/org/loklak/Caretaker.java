@@ -28,7 +28,6 @@ import org.eclipse.jetty.util.log.Log;
 import org.elasticsearch.search.sort.SortOrder;
 import org.loklak.api.client.HelloClient;
 import org.loklak.api.client.PushClient;
-import org.loklak.data.Classifier;
 import org.loklak.data.DAO;
 import org.loklak.data.QueryEntry;
 import org.loklak.data.Timeline;
@@ -62,24 +61,28 @@ public class Caretaker extends Thread {
         // work loop
         while (this.shallRun) {
             // sleep a bit to prevent that the DoS limit fires at backend server
-            try {Thread.sleep(5000);} catch (InterruptedException e) {}
+            try {Thread.sleep(4000);} catch (InterruptedException e) {}
             
             // peer-to-peer operation
-            Timeline tl = DAO.takeTimeline(Timeline.Order.CREATED_AT, 500, 3000);
+            Timeline tl = DAO.takeTimelineMin(Timeline.Order.CREATED_AT, 100, 1000, 1);
             if (!this.shallRun) break;
             if (tl != null && tl.size() > 0 && remote.length > 0) {
                 // transmit the timeline
+                try {Thread.sleep(2000);} catch (InterruptedException e) {}
                 boolean success = PushClient.push(remote, tl);
+                if (success) {
+                    DAO.log("success pushing " + tl.size() + " messages to backend in 1st attempt");
+                }
                 if (!success) {
                     // we should try again.. but not an infinite number because then
                     // our timeline in RAM would fill up our RAM creating a memory leak
                     retrylook: for (int retry = 0; retry < 3; retry++) {
                         // give back-end time to recover
+                        try {Thread.sleep(3000 + retry * 3000);} catch (InterruptedException e) {}
                         if (PushClient.push(remote, tl)) {
-                            DAO.log("success pushing to backend in " + retry + " attempt");
+                            DAO.log("success pushing " + tl.size() + " messages to backend in " + (retry + 2) + ". attempt");
                             break retrylook;
                         }
-                        try {Thread.sleep(3000 + retry * 3000);} catch (InterruptedException e) {}
                     }
                     DAO.log("failed pushing " + tl.size() + " messages to backend");
                 }

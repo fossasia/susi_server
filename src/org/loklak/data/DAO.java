@@ -19,11 +19,8 @@
 
 package org.loklak.data;
 
-import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.AbstractMap;
@@ -36,7 +33,6 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -87,6 +83,7 @@ import org.loklak.tools.DateParser;
 import org.loklak.tools.JsonDataset;
 import org.loklak.tools.JsonDump;
 import org.loklak.tools.JsonDataset.Index;
+import org.loklak.tools.JsonDataset.JsonCapsule;
 
 import com.fasterxml.jackson.core.JsonFactory;
 
@@ -113,10 +110,10 @@ public class DAO {
     
     public  static File conf_dir;
     private static File external_data, assets, dictionaries;
-    private static Path message_dump_dir, account_dump_dir, settings_dir, import_profile_dump_dir;
+    private static Path message_dump_dir, account_dump_dir, import_profile_dump_dir;
     private static JsonDump message_dump, account_dump, import_profile_dump;
     public  static JsonDataset user_dump, followers_dump, following_dump;
-    private static File customized_config, schema_dir, conv_schema_dir;
+    private static File schema_dir, conv_schema_dir;
     private static Node elasticsearch_node;
     private static Client elasticsearch_client;
     private static UserFactory users;
@@ -132,7 +129,9 @@ public class DAO {
      * initialize the DAO
      * @param datadir the path to the data directory
      */
-    public static void init(Path dataPath) {
+    public static void init(Map<String, String> configMap, Path dataPath) {
+        config = configMap;
+        File conf_dir = new File("conf");
         File datadir = dataPath.toFile();
         try {
             // create and document the data dump dir
@@ -140,7 +139,7 @@ public class DAO {
             external_data = new File(datadir, "external");
             dictionaries = new File(external_data, "dictionaries");
             dictionaries.mkdirs();
-
+            
             // create message dump dir
             String message_dump_readme =
                 "This directory contains dump files for messages which arrived the platform.\n" +
@@ -171,24 +170,6 @@ public class DAO {
             conv_schema_dir = new File("conf/conversion");
             schema_dir = new File("conf/schema");            
 
-            // load the config file(s);
-            conf_dir = new File("conf");
-            Properties prop = new Properties();
-            prop.load(new FileInputStream(new File(conf_dir, "config.properties")));
-            for (Map.Entry<Object, Object> entry: prop.entrySet()) config.put((String) entry.getKey(), (String) entry.getValue());
-            settings_dir = dataPath.resolve("settings");
-            settings_dir.toFile().mkdirs();
-            LoklakServer.protectPath(settings_dir);
-            customized_config = new File(settings_dir.toFile(), "customized_config.properties");
-            if (!customized_config.exists()) {
-                BufferedWriter w = new BufferedWriter(new FileWriter(customized_config));
-                w.write("# This file can be used to customize the configuration file conf/config.properties\n");
-                w.close();
-            }
-            Properties customized_config_props = new Properties();
-            customized_config_props.load(new FileInputStream(customized_config));
-            for (Map.Entry<Object, Object> entry: customized_config_props.entrySet()) config.put((String) entry.getKey(), (String) entry.getValue());
-            
             // use all config attributes with a key starting with "elasticsearch." to set elasticsearch settings
             Builder builder = ImmutableSettings.settingsBuilder();
             for (Map.Entry<String, String> entry: config.entrySet()) {
@@ -249,7 +230,7 @@ public class DAO {
             log("elasticsearch has started up! initializing the classifier");
             
             // start the classifier
-            Classifier.init(50000);
+            Classifier.init(10000, 1000);
             log("classifier initialized!");
         } catch (Throwable e) {
             e.printStackTrace();
@@ -375,7 +356,20 @@ public class DAO {
         if (getConfig("backend", new String[0], ",").length > 0) newMessageTimelines.add(tl);
     }
 
-    public static Timeline takeTimeline(Timeline.Order order, int maxsize, long maxwait) {
+    public static Timeline takeTimelineMin(Timeline.Order order, int minsize, int maxsize, long maxwait) {
+        Timeline tl = takeTimelineMax(order, minsize, maxwait);
+        if (tl.size() >= minsize) {
+            // split that and return the maxsize
+            Timeline tlr = tl.reduceToMaxsize(minsize);
+            newMessageTimelines.add(tlr); // push back the remaining
+            return tl;
+        }
+        // push back that timeline and return nothing
+        newMessageTimelines.add(tl);
+        return new Timeline(order);
+    }
+
+    public static Timeline takeTimelineMax(Timeline.Order order, int maxsize, long maxwait) {
         Timeline tl = new Timeline(order);
         try {
             Timeline tl0 = newMessageTimelines.poll(maxwait, TimeUnit.MILLISECONDS);
@@ -399,7 +393,7 @@ public class DAO {
      * @param u a user
      * @return true if the record was stored because it did not exist, false if it was not stored because the record existed already
      */
-    public synchronized static boolean writeMessage(MessageEntry t, UserEntry u, boolean dump, boolean overwriteUser) {
+    public static boolean writeMessage(MessageEntry t, UserEntry u, boolean dump, boolean overwriteUser) {
         try {
 
             // check if tweet exists in index
@@ -408,23 +402,25 @@ public class DAO {
                 ((TwitterScraper.TwitterTweet) t).exist().booleanValue()) ||
                 messages.exists(t.getIdStr())) return false; // we omit writing this again
 
-            // check if user exists in index
-            if (overwriteUser) {
-                UserEntry oldUser = users.read(u.getScreenName());
-                if (oldUser == null || !oldUser.equals(u)) {
-                    writeUser(u, t.getSourceType().name());
+            synchronized (DAO.class) {
+                // check if user exists in index
+                if (overwriteUser) {
+                    UserEntry oldUser = users.read(u.getScreenName());
+                    if (oldUser == null || !oldUser.equals(u)) {
+                        writeUser(u, t.getSourceType().name());
+                    }
+                } else {
+                    if (!users.exists(u.getScreenName())) {
+                        writeUser(u, t.getSourceType().name());
+                    } 
                 }
-            } else {
-                if (!users.exists(u.getScreenName())) {
-                    writeUser(u, t.getSourceType().name());
-                } 
+    
+                // record tweet into search index
+                messages.writeEntry(t.getIdStr(), t.getSourceType().name(), t);
             }
-
+            
             // record tweet into text file
             if (dump) message_dump.write(t.toMap(u, false));
-
-            // record tweet into search index
-            messages.writeEntry(t.getIdStr(), t.getSourceType().name(), t);
             
             // teach the classifier
             Classifier.learnPhrase(t.getText());
@@ -907,7 +903,8 @@ public class DAO {
 
     public static void announceNewUserId(Number id) {
         Index idIndex = DAO.user_dump.getIndex("id_str");
-        Map<String, Object> map = idIndex.get(id.toString());
+        JsonCapsule mapcapsule = idIndex.get(id.toString());
+        Map<String, Object> map = mapcapsule == null ? null : mapcapsule.getJson();
         if (map == null) newUserIds.add(id);
     }
     

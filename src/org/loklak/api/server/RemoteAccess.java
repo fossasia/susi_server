@@ -113,8 +113,9 @@ public class RemoteAccess {
             this.access_time = System.currentTimeMillis();
             boolean localhost = isLocalhostAccess();
             this.time_since_last_access = this.access_time - RemoteAccess.latestVisit(this.clientHost);
+            //System.out.println("*** this.time_since_last_access = " + this.time_since_last_access);
             this.DoS_blackout = !localhost && (this.time_since_last_access < DAO.getConfig("DoS.blackout", 100) || sleeping4clients.contains(this.clientHost));
-            this.DoS_servicereduction = !localhost && this.time_since_last_access < DAO.getConfig("DoS.servicereduction", 1000);
+            this.DoS_servicereduction = !localhost && (this.time_since_last_access < DAO.getConfig("DoS.servicereduction", 1000) || sleeping4clients.contains(this.clientHost));
         }
         public void initGET(final Map<String, String> qm) {
             this.qm = qm;
