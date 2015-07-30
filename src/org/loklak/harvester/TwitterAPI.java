@@ -44,6 +44,7 @@ import org.loklak.data.DAO;
 import org.loklak.data.UserEntry;
 import org.loklak.geo.GeoMark;
 import org.loklak.tools.JsonDataset.Index;
+import org.loklak.tools.JsonDataset.JsonCapsule;
 
 import twitter4j.IDs;
 import twitter4j.RateLimitStatus;
@@ -179,9 +180,9 @@ public class TwitterAPI {
     private static long getUserResetTime = 0;
     public static int getUserRemaining() {return System.currentTimeMillis() > getUserResetTime ? getUserLimit : getUserRemaining;}
     public static Map<String, Object> getUser(String screen_name) throws TwitterException, IOException {
-        Map<String, Object> map = DAO.user_dump.getIndex("screen_name").get(screen_name);
-        if (map == null) map = DAO.user_dump.getIndex("id_str").get(screen_name);
-        if (map != null) return map;
+        JsonCapsule mapcapsule = DAO.user_dump.getIndex("screen_name").get(screen_name);
+        if (mapcapsule == null) mapcapsule = DAO.user_dump.getIndex("id_str").get(screen_name);
+        if (mapcapsule != null) return mapcapsule.getJson();
         TwitterFactory tf = getUserTwitterFactory(screen_name);
         if (tf == null) tf = getAppTwitterFactory();
         if (tf == null) return new HashMap<>();
@@ -190,8 +191,7 @@ public class TwitterAPI {
         RateLimitStatus rateLimitStatus = user.getRateLimitStatus();
         getUserResetTime = System.currentTimeMillis() + rateLimitStatus.getSecondsUntilReset() * 1000;
         getUserRemaining = rateLimitStatus.getRemaining();
-        map = enrich(user);
-        return map;
+        return enrich(user);
     }
     
     public static Map<String, Object> enrich(User user) throws IOException {
@@ -230,8 +230,8 @@ public class TwitterAPI {
             List<Map<String, Object>> users = new ArrayList<>(); 
             Map<String, Number> names = (Map<String, Number>) map.remove(setname + "_names");
             if (names != null) for (String sn: names.keySet()) {
-                Map<String, Object> user = userIndex.get(sn);
-                if (user != null) users.add(user);
+                JsonCapsule user = userIndex.get(sn);
+                if (user != null) users.add(user.getJson());
             }
             map.put(setname + "_count", users.size());
             map.put(setname, users);
@@ -260,11 +260,12 @@ public class TwitterAPI {
         boolean complete = true;
         Set<Number> networkingIDs = new LinkedHashSet<>();
         Set<Number> unnetworkingIDs = new LinkedHashSet<>();
-        Map<String, Object> map = (networkRelation == Networker.FOLLOWERS ? DAO.followers_dump : DAO.following_dump).getIndex("screen_name").get(screen_name);
-        if (map == null) map = (networkRelation == Networker.FOLLOWERS ? DAO.followers_dump : DAO.following_dump).getIndex("id_str").get(screen_name);
+        JsonCapsule mapcapsule = (networkRelation == Networker.FOLLOWERS ? DAO.followers_dump : DAO.following_dump).getIndex("screen_name").get(screen_name);
+        if (mapcapsule == null) mapcapsule = (networkRelation == Networker.FOLLOWERS ? DAO.followers_dump : DAO.following_dump).getIndex("id_str").get(screen_name);
 
-        if (map != null) {
+        if (mapcapsule != null) {
             // check if the map is complete
+            Map<String, Object> map = mapcapsule.getJson();
             complete = (Boolean) map.get("complete");
             if (complete) return map; // TODO: check date
             List<Object> fro = (List<Object>) map.get(networkRelation == Networker.FOLLOWERS ? "follower" : "following");
@@ -311,7 +312,7 @@ public class TwitterAPI {
             }
         }
         // create result
-        map = new LinkedHashMap<>();
+        Map<String, Object> map = new LinkedHashMap<>();
         map.put("screen_name", screen_name);
         map.put("retrieval_date", AbstractIndexEntry.utcFormatter.print(System.currentTimeMillis()));
         map.put("complete", complete);
@@ -352,8 +353,9 @@ public class TwitterAPI {
         Index idIndex = DAO.user_dump.getIndex("id_str");
         for (Number id_str: id_strs) {
             if (r.size() >= maxFollowers) break;
-            Map<String, Object> map = idIndex.get(id_str.toString());
-            if (map != null) {
+            JsonCapsule mapcapsule = idIndex.get(id_str.toString());
+            if (mapcapsule != null) {
+                Map<String, Object> map = mapcapsule.getJson();
                 String screen_name = (String) map.get("screen_name");
                 if (screen_name != null) {
                     r.put(screen_name, id_str);

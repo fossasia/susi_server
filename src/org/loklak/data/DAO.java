@@ -82,6 +82,7 @@ import org.loklak.tools.DateParser;
 import org.loklak.tools.JsonDataset;
 import org.loklak.tools.JsonDump;
 import org.loklak.tools.JsonDataset.Index;
+import org.loklak.tools.JsonDataset.JsonCapsule;
 
 import com.fasterxml.jackson.core.JsonFactory;
 
@@ -810,7 +811,8 @@ public class DAO {
 
     public static void announceNewUserId(Number id) {
         Index idIndex = DAO.user_dump.getIndex("id_str");
-        Map<String, Object> map = idIndex.get(id.toString());
+        JsonCapsule mapcapsule = idIndex.get(id.toString());
+        Map<String, Object> map = mapcapsule == null ? null : mapcapsule.getJson();
         if (map == null) newUserIds.add(id);
     }
     
