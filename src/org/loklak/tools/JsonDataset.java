@@ -25,17 +25,15 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.eclipse.jetty.util.log.Log;
-import org.loklak.data.DAO;
 import org.loklak.tools.JsonDump.ConcurrentReader;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class JsonDataset {
     
     private final JsonDump indexDump;
     private final Map<String, Index> index;
+    private final JsonMinifier minifier;
     
     /**
      * define a data set
@@ -47,6 +45,7 @@ public class JsonDataset {
     public JsonDataset(File dump_dir, String dump_file_prefix, String[] index_keys) throws IOException {
         this.indexDump = new JsonDump(dump_dir, dump_file_prefix, null);
         this.index = new ConcurrentHashMap<>();
+        this.minifier = new JsonMinifier();
         for (String idx: index_keys) this.index.put(idx, new Index());
         int concurrency = Runtime.getRuntime().availableProcessors();
         final ConcurrentReader reader = indexDump.getOwnDumpReader(concurrency);
@@ -62,7 +61,7 @@ public class JsonDataset {
                                 // write index to object
                                 Object op = obj.remove(new String(JsonDump.OPERATION_KEY));
                                 try {
-                                    JsonCapsule json = new JsonCapsule(obj);
+                                    JsonMinifier.Capsule json = JsonDataset.this.minifier.minify(obj);
                                     for (Map.Entry<String, Index> idxo: JsonDataset.this.index.entrySet()) {
                                         Object x = obj.get(idxo.getKey());
                                         if (x != null) idxo.getValue().put(x, json);
@@ -91,7 +90,7 @@ public class JsonDataset {
      * @throws IOException
      */
     public void putUnique(Map<String, Object> obj) throws IOException {
-        JsonCapsule json = new JsonCapsule(obj);
+        JsonMinifier.Capsule json = this.minifier.minify(obj);
         idxstore: for (Map.Entry<String, Index> idxo: this.index.entrySet()) {
             String idx_field = idxo.getKey();
             Object value = obj.get(idx_field);
@@ -112,39 +111,8 @@ public class JsonDataset {
         this.indexDump.close();
     }
     
-    public static class JsonCapsule {
-        byte[] capsule; // byte 0 is a flag: 0 = raw json, 1 = compressed json
-        public JsonCapsule(Map<String, Object> json) throws JsonProcessingException {
-            byte[] b =  new ObjectMapper().writer().writeValueAsBytes(json);
-            byte[] c = Compression.gzip(b);
-            if (b.length <= c.length) {
-                this.capsule = new byte[b.length + 1];
-                this.capsule[0] = 0;
-                System.arraycopy(b, 0, this.capsule, 1, b.length);
-            } else {
-                this.capsule = new byte[c.length + 1];
-                this.capsule[0] = 1;
-                System.arraycopy(c, 0, this.capsule, 1, c.length);
-            }
-        }
-        public Map<String, Object> getJson() {
-            byte[] x = new byte[this.capsule.length - 1];
-            System.arraycopy(this.capsule, 1, x, 0, this.capsule.length - 1);
-            if (this.capsule[0] == 1) {
-                x = Compression.gunzip(x);
-            }
-            try {
-                Map<String, Object> json = DAO.jsonMapper.readValue(x, DAO.jsonTypeRef);
-                return json;
-            } catch (Throwable e) {
-                Log.getLog().warn("cannot parse capsule \"" + UTF8.String(this.capsule) + "\"", e);
-            } 
-            return null;
-        }
-    }
-    
-    public static class Index extends ConcurrentHashMap<Object, JsonCapsule> implements Map<Object, JsonCapsule> {
-        private static final long serialVersionUID = 4596787150066539880L;
+    public static class Index extends ConcurrentHashMap<Object, JsonMinifier.Capsule> implements Map<Object, JsonMinifier.Capsule> {
+        private static final long serialVersionUID = 4596787150066539880L;        
     }
     
     public static void main(String[] args) {
