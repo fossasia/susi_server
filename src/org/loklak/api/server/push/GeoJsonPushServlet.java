@@ -17,7 +17,7 @@
  * If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.loklak.api.server;
+package org.loklak.api.server.push;
 
 import org.elasticsearch.common.joda.time.DateTime;
 import org.elasticsearch.common.xcontent.XContentBuilder;
@@ -25,6 +25,7 @@ import org.elasticsearch.common.xcontent.XContentFactory;
 import org.elasticsearch.common.xcontent.XContentParser;
 import org.elasticsearch.common.xcontent.json.JsonXContent;
 import org.loklak.api.client.ClientConnection;
+import org.loklak.api.server.RemoteAccess;
 import org.loklak.data.DAO;
 import org.loklak.data.MessageEntry;
 import org.loklak.data.ProviderType;
@@ -148,7 +149,8 @@ public class GeoJsonPushServlet extends HttpServlet {
             properties.put("provider_type", ProviderType.GEOJSON.name());
             properties.put("provider_hash", remoteHash);
             properties.put("location_point", geometry.get("coordinates"));
-            properties.put("location_source", LocationSource.REPORT.name());
+            properties.put("location_mark", geometry.get("coordinates"));
+            properties.put("location_source", LocationSource.USER.name());
             properties.put("place_context", PlaceContext.FROM.name());
 
             // avoid error text not found. TODO: a better strategy, e.g. require text as a mandatory field

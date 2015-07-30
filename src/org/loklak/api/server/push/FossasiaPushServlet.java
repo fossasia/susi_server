@@ -17,7 +17,7 @@
  * If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.loklak.api.server;
+package org.loklak.api.server.push;
 
 import com.github.fge.jsonschema.core.report.LogLevel;
 import com.github.fge.jsonschema.core.report.ProcessingReport;
@@ -26,6 +26,7 @@ import org.elasticsearch.common.xcontent.XContentFactory;
 import org.elasticsearch.common.xcontent.XContentParser;
 import org.elasticsearch.common.xcontent.json.JsonXContent;
 import org.loklak.api.client.ClientConnection;
+import org.loklak.api.server.RemoteAccess;
 import org.loklak.data.DAO;
 import org.loklak.data.MessageEntry;
 import org.loklak.data.UserEntry;
@@ -76,8 +77,8 @@ public class FossasiaPushServlet extends HttpServlet {
         }
 
         // validation phase
-        JsonValidator validator = new JsonValidator();
-        ProcessingReport report = validator.validate(new String(jsonText), JsonValidator.JsonSchemaEnum.FOSSASIA);
+        JsonValidator validator = new JsonValidator(JsonValidator.JsonSchemaEnum.FOSSASIA);
+        ProcessingReport report = validator.validate(new String(jsonText));
         if (report.getLogLevel() == LogLevel.ERROR || report.getLogLevel() == LogLevel.FATAL) {
             response.sendError(400, "json does not conform to FOSSIA API schema https://github.com/fossasia/api.fossasia.net/blob/master/specs/1.0.1.json" + report);
             return;
@@ -93,8 +94,8 @@ public class FossasiaPushServlet extends HttpServlet {
         }
 
         // conversion phase
-        JsonFieldConverter converter = new JsonFieldConverter();
-        map = converter.convert(map, JsonFieldConverter.JsonConversionSchemaEnum.FOSSASIA);
+        JsonFieldConverter converter = new JsonFieldConverter(JsonFieldConverter.JsonConversionSchemaEnum.FOSSASIA);
+        map = converter.convert(map);
 
         // save to elastic
         int recordCount = 0, newCount = 0, knownCount = 0;
