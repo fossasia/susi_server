@@ -19,6 +19,7 @@
 
 package org.loklak.tools;
 
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -30,14 +31,26 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class JsonMinifier {
 
-    private final ConcurrentHashMap<String, String> keytransform;
+    private final ConcurrentHashMap<String, String> key2short, short2key;
     
     public JsonMinifier() {
-        this.keytransform = new ConcurrentHashMap<>();
+        this.key2short = new ConcurrentHashMap<>();
+        this.short2key = new ConcurrentHashMap<>();
     }
     
     public Capsule minify(Map<String, Object> json) throws JsonProcessingException {
-        return new Capsule(json);
+        if (json == null) return null;
+        LinkedHashMap<String, Object> minified = new LinkedHashMap<>();
+        for (Map.Entry<String, Object> entry: json.entrySet()) {
+            String s = this.key2short.get(entry.getKey());
+            if (s == null) synchronized(this.key2short) {
+                s = "$" + Integer.toHexString(this.key2short.size());
+                this.key2short.put(entry.getKey(), s);
+                this.short2key.put(s, entry.getKey());
+            }
+            minified.put(s, entry.getValue());
+        }
+        return new Capsule(minified);
     }
     
     public class Capsule {
@@ -59,7 +72,14 @@ public class JsonMinifier {
         }
         
         public Map<String, Object> getJson() {
-            return getRawJson();
+            Map<String, Object> minified = getRawJson();
+            LinkedHashMap<String, Object> original = new LinkedHashMap<>();
+            for (Map.Entry<String, Object> entry: minified.entrySet()) {
+                String s = JsonMinifier.this.short2key.get(entry.getKey());
+                assert s != null;
+                if (s != null) original.put(s, entry.getValue());
+            }
+            return original;
         }
         
         private Map<String, Object> getRawJson() {
