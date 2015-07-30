@@ -220,7 +220,7 @@ public class DAO {
             log("elasticsearch has started up! initializing the classifier");
             
             // start the classifier
-            Classifier.init(50000);
+            Classifier.init(10000, 1000);
             log("classifier initialized!");
         } catch (Throwable e) {
             e.printStackTrace();
