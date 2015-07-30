@@ -56,7 +56,7 @@ public class AccountServlet extends HttpServlet {
      
         // manage DoS
         if (post.isDoS_blackout()) {response.sendError(503, "your request frequency is too high"); return;}
-        if (!post.isLocalhostAccess()) {response.sendError(503, "access only allowed from localhost"); return;} // danger! do not remove this!
+        if (!post.isLocalhostAccess()) {response.sendError(503, "access only allowed from localhost, your request comes from " + post.getClientHost()); return;} // danger! do not remove this!
         
         // parameters
         String callback = post.get("callback", "");
