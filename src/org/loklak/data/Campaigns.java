@@ -39,8 +39,6 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.zip.GZIPInputStream;
 
-import org.elasticsearch.common.xcontent.XContentParser;
-import org.elasticsearch.common.xcontent.json.JsonXContent;
 import org.loklak.tools.UTF8;
 
 public class Campaigns {
@@ -134,8 +132,7 @@ public class Campaigns {
                 if (dumpFile.getName().endsWith(".gz")) is = new GZIPInputStream(is);
                 br = new BufferedReader(new InputStreamReader(is, UTF8.charset));
                 while ((line = br.readLine()) != null) {
-                    XContentParser parser = JsonXContent.jsonXContent.createParser(line);
-                    Map<String, Object> campaign = parser == null ? null : parser.map();
+                    Map<String, Object> campaign = DAO.jsonMapper.readValue(line, DAO.jsonTypeRef);
                     if (campaign == null) continue;
                     Campaign e = new Campaign(campaign);
                     campaigns.add(e);

@@ -42,6 +42,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.eclipse.jetty.util.ConcurrentHashSet;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.fge.jackson.JsonLoader;
 import com.google.common.base.Charsets;
 import com.google.common.io.Files;
@@ -56,8 +57,6 @@ import org.elasticsearch.client.Client;
 import org.elasticsearch.common.settings.ImmutableSettings;
 import org.elasticsearch.common.settings.ImmutableSettings.Builder;
 import org.elasticsearch.common.unit.Fuzziness;
-import org.elasticsearch.common.xcontent.XContentParser;
-import org.elasticsearch.common.xcontent.json.JsonXContent;
 import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.index.query.RangeQueryBuilder;
@@ -85,6 +84,7 @@ import org.loklak.tools.JsonDataset.Index;
 import org.loklak.tools.JsonDataset.JsonCapsule;
 
 import com.fasterxml.jackson.core.JsonFactory;
+import com.fasterxml.jackson.core.type.TypeReference;
 
 /**
  * The Data Access Object for the message project.
@@ -94,6 +94,9 @@ import com.fasterxml.jackson.core.JsonFactory;
 public class DAO {
 
     public final static JsonFactory jsonFactory = new JsonFactory();
+    public final static ObjectMapper jsonMapper = new ObjectMapper(DAO.jsonFactory);
+    public final static TypeReference<HashMap<String,Object>> jsonTypeRef = new TypeReference<HashMap<String,Object>>() {};
+
     public final static String MESSAGE_DUMP_FILE_PREFIX = "messages_";
     public final static String ACCOUNT_DUMP_FILE_PREFIX = "accounts_";
     public final static String USER_DUMP_FILE_PREFIX = "users_";
@@ -330,8 +333,7 @@ public class DAO {
         if (!schema.exists()) {
             throw new FileNotFoundException("No schema file with name " + key + " found");
         }
-        XContentParser parser = JsonXContent.jsonXContent.createParser(Files.toString(schema, Charsets.UTF_8));
-        return parser.map();
+        return DAO.jsonMapper.readValue(Files.toString(schema, Charsets.UTF_8), DAO.jsonTypeRef);
     }
 
     public static boolean getConfig(String key, boolean default_val) {

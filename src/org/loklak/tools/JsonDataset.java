@@ -26,8 +26,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.eclipse.jetty.util.log.Log;
-import org.elasticsearch.common.xcontent.XContentParser;
-import org.elasticsearch.common.xcontent.json.JsonXContent;
+import org.loklak.data.DAO;
 import org.loklak.tools.JsonDump.ConcurrentReader;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -121,12 +120,20 @@ public class JsonDataset {
         }
         public Map<String, Object> getJson() {
             try {
+                Map<String, Object> json = DAO.jsonMapper.readValue(capsule, DAO.jsonTypeRef);
+                return json;
+            } catch (Throwable e) {
+                Log.getLog().warn("cannot parse capsule \"" + UTF8.String(this.capsule) + "\"", e);
+            } 
+            /*
+            try {
                 XContentParser parser = JsonXContent.jsonXContent.createParser(capsule);
                 Map<String, Object> json = parser == null ? null : parser.map();
                 return json;
             } catch (Throwable e) {
                 Log.getLog().warn("cannot parse capsule \"" + UTF8.String(this.capsule) + "\"", e);
             }
+            */
             return null;
         }
     }

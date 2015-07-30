@@ -35,8 +35,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
-import org.elasticsearch.common.xcontent.XContentParser;
-import org.elasticsearch.common.xcontent.json.JsonXContent;
 import org.loklak.LoklakServer;
 import org.loklak.data.AbstractIndexEntry;
 import org.loklak.data.AccountEntry;
@@ -45,6 +43,9 @@ import org.loklak.data.UserEntry;
 import org.loklak.geo.GeoMark;
 import org.loklak.tools.JsonDataset.Index;
 import org.loklak.tools.JsonDataset.JsonCapsule;
+
+import com.google.common.base.Charsets;
+import com.google.common.io.Files;
 
 import twitter4j.IDs;
 import twitter4j.RateLimitStatus;
@@ -196,8 +197,7 @@ public class TwitterAPI {
     
     public static Map<String, Object> enrich(User user) throws IOException {
         String json = TwitterObjectFactory.getRawJSON(user);
-        XContentParser parser = JsonXContent.jsonXContent.createParser(json);
-        Map<String, Object> map = parser == null ? null : parser.map();
+        Map<String, Object> map = DAO.jsonMapper.readValue(json, DAO.jsonTypeRef);
         map.put("retrieval_date", AbstractIndexEntry.utcFormatter.print(System.currentTimeMillis()));
         Object status = map.remove("status"); // we don't need to store the latest status update in the user dump
         // TODO: store the latest status in our message database

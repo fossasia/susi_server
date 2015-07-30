@@ -21,10 +21,9 @@ package org.loklak.api.server.push;
 
 import com.github.fge.jsonschema.core.report.LogLevel;
 import com.github.fge.jsonschema.core.report.ProcessingReport;
+
 import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.elasticsearch.common.xcontent.XContentFactory;
-import org.elasticsearch.common.xcontent.XContentParser;
-import org.elasticsearch.common.xcontent.json.JsonXContent;
 import org.loklak.api.client.ClientConnection;
 import org.loklak.api.server.RemoteAccess;
 import org.loklak.data.DAO;
@@ -39,6 +38,7 @@ import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
 import java.io.IOException;
 import java.util.*;
 
@@ -69,8 +69,7 @@ public class FossasiaPushServlet extends HttpServlet {
         byte[] jsonText;
         try {
             jsonText = ClientConnection.download(url);
-            XContentParser parser = JsonXContent.jsonXContent.createParser(jsonText);
-            map = parser.map();
+            map = DAO.jsonMapper.readValue(jsonText, DAO.jsonTypeRef);
         } catch (Exception e) {
             response.sendError(400, "error reading json file from url");
             return;

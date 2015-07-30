@@ -22,8 +22,6 @@ package org.loklak.api.server.push;
 import org.elasticsearch.common.joda.time.DateTime;
 import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.elasticsearch.common.xcontent.XContentFactory;
-import org.elasticsearch.common.xcontent.XContentParser;
-import org.elasticsearch.common.xcontent.json.JsonXContent;
 import org.loklak.api.client.ClientConnection;
 import org.loklak.api.server.RemoteAccess;
 import org.loklak.data.DAO;
@@ -41,7 +39,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Map;
@@ -85,8 +82,7 @@ public class GeoJsonPushServlet extends HttpServlet {
         final List<Map<String, Object>> features;
         try {
             byte[] jsonText = ClientConnection.download(url);
-            XContentParser parser = JsonXContent.jsonXContent.createParser(jsonText);
-            Map<String, Object> map = parser == null ? null : parser.map();
+            Map<String, Object> map = DAO.jsonMapper.readValue(jsonText, DAO.jsonTypeRef);
             Object features_obj = map.get("features");
             features = features_obj instanceof List<?> ? (List<Map<String, Object>>) features_obj : null;
         } catch (Exception e) {
