@@ -383,7 +383,7 @@ public class DAO {
      * @param u a user
      * @return true if the record was stored because it did not exist, false if it was not stored because the record existed already
      */
-    public synchronized static boolean writeMessage(MessageEntry t, UserEntry u, boolean dump, boolean overwriteUser) {
+    public static boolean writeMessage(MessageEntry t, UserEntry u, boolean dump, boolean overwriteUser) {
         try {
 
             // check if tweet exists in index
@@ -392,23 +392,25 @@ public class DAO {
                 ((TwitterScraper.TwitterTweet) t).exist().booleanValue()) ||
                 messages.exists(t.getIdStr())) return false; // we omit writing this again
 
-            // check if user exists in index
-            if (overwriteUser) {
-                UserEntry oldUser = users.read(u.getScreenName());
-                if (oldUser == null || !oldUser.equals(u)) {
-                    writeUser(u, t.getSourceType().name());
+            synchronized (DAO.class) {
+                // check if user exists in index
+                if (overwriteUser) {
+                    UserEntry oldUser = users.read(u.getScreenName());
+                    if (oldUser == null || !oldUser.equals(u)) {
+                        writeUser(u, t.getSourceType().name());
+                    }
+                } else {
+                    if (!users.exists(u.getScreenName())) {
+                        writeUser(u, t.getSourceType().name());
+                    } 
                 }
-            } else {
-                if (!users.exists(u.getScreenName())) {
-                    writeUser(u, t.getSourceType().name());
-                } 
+    
+                // record tweet into search index
+                messages.writeEntry(t.getIdStr(), t.getSourceType().name(), t);
             }
-
+            
             // record tweet into text file
             if (dump) message_dump.write(t.toMap(u, false));
-
-            // record tweet into search index
-            messages.writeEntry(t.getIdStr(), t.getSourceType().name(), t);
             
             // teach the classifier
             Classifier.learnPhrase(t.getText());
