@@ -36,6 +36,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -65,6 +66,7 @@ public abstract class AbstractPushServlet extends HttpServlet {
         this.doGet(request, response);
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         RemoteAccess.Post post = RemoteAccess.evaluate(request);
@@ -101,11 +103,20 @@ public abstract class AbstractPushServlet extends HttpServlet {
         }
 
         // conversion phase
-        List<Map<String, Object>> messages = extractMessages(map);
-        messages = this.converter.convert(messages);
+        Object extractResults = extractMessages(map);
+        List<Map<String, Object>> typedMessages = null;
+        if (extractResults instanceof List) {
+            typedMessages = (List<Map<String, Object>>) extractResults;
+        } else if (extractResults instanceof Map) {
+            typedMessages = new ArrayList<>();
+            typedMessages.add((Map<String, Object>) extractResults);
+        } else {
+            throw new IOException("extractMessages must return either a List or a Map");
+        }
+        typedMessages = this.converter.convert(typedMessages);
 
         // custom treatment for each message
-        for (Map<String, Object> message : messages) {
+        for (Map<String, Object> message : typedMessages) {
             message.put("source_type", this.getSourceType().name());
             message.put("location_source", LocationSource.USER.name());
             message.put("place_context", PlaceContext.ABOUT.name());
@@ -115,7 +126,7 @@ public abstract class AbstractPushServlet extends HttpServlet {
             customProcessing(message);
         }
 
-        PushReport nodePushReport = PushServletHelper.saveMessagesAndImportProfile(messages, jsonText.hashCode(), post, getSourceType());
+        PushReport nodePushReport = PushServletHelper.saveMessagesAndImportProfile(typedMessages, jsonText.hashCode(), post, getSourceType());
 
         String res = PushServletHelper.printResponse(post.get("callback", ""), nodePushReport);
         response.getOutputStream().println(res);
@@ -133,7 +144,8 @@ public abstract class AbstractPushServlet extends HttpServlet {
 
     protected abstract JsonFieldConverter.JsonConversionSchemaEnum getConversionSchema();
 
-    protected abstract List<Map<String, Object>> extractMessages(Map<String, Object> data);
+    // return either a list or a map of <String,Object>
+    protected abstract Object extractMessages(Map<String, Object> data);
 
     protected abstract void customProcessing(Map<String, Object> message);
 }
