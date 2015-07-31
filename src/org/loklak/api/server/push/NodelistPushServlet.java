@@ -55,7 +55,6 @@ public class NodelistPushServlet extends AbstractPushServlet {
     @Override
     protected void customProcessing(Map<String, Object> message) {
         Map<String, Object> location = (Map<String, Object>) message.get("position");
-        if (location == null) return;
 
         final Double longitude = Double.parseDouble((String) location.get("long"));
         final Double latitude = Double.parseDouble((String) location.get("lat"));
