@@ -21,6 +21,7 @@ package org.loklak.api.server;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.ConcurrentModificationException;
 import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -176,9 +177,14 @@ public class SearchServlet extends HttpServlet {
             metadata.put("servicereduction", post.isDoS_servicereduction() ? "true" : "false");
             m.put("search_metadata", metadata);
             List<Object> statuses = new ArrayList<>();
-            for (MessageEntry t: tl) {
-                UserEntry u = tl.getUser(t);
-                statuses.add(t.toMap(u, true));
+            try {
+                for (MessageEntry t: tl) {
+                    UserEntry u = tl.getUser(t);
+                    statuses.add(t.toMap(u, true));
+                }
+            } catch (ConcurrentModificationException e) {
+                // late incoming messages from concurrent peer retrieval may cause this
+                // we siletly do nothing here and return what we listed so far
             }
             m.put("statuses", statuses);
             
@@ -211,16 +217,21 @@ public class SearchServlet extends HttpServlet {
             channel.setLink("");
             RSSFeed feed = new RSSFeed(tl.size());
             feed.setChannel(channel);
-            for (MessageEntry t: tl) {
-                UserEntry u = tl.getUser(t);
-                RSSMessage m = new RSSMessage();
-                m.setLink(t.getStatusIdUrl().toExternalForm());
-                m.setAuthor(u.getName() + " @" + u.getScreenName());
-                m.setTitle(u.getName() + " @" + u.getScreenName());
-                m.setDescription(t.getText());
-                m.setPubDate(t.getCreatedAt());
-                m.setGuid(t.getIdStr());
-                feed.addMessage(m);
+            try {
+                for (MessageEntry t: tl) {
+                    UserEntry u = tl.getUser(t);
+                    RSSMessage m = new RSSMessage();
+                    m.setLink(t.getStatusIdUrl().toExternalForm());
+                    m.setAuthor(u.getName() + " @" + u.getScreenName());
+                    m.setTitle(u.getName() + " @" + u.getScreenName());
+                    m.setDescription(t.getText());
+                    m.setPubDate(t.getCreatedAt());
+                    m.setGuid(t.getIdStr());
+                    feed.addMessage(m);
+                }
+            } catch (ConcurrentModificationException e) {
+                // late incoming messages from concurrent peer retrieval may cause this
+                // we siletly do nothing here and return what we listed so far
             }
             String rss = feed.toString();
             //System.out.println("feed has " + feed.size() + " entries");

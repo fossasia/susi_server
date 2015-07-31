@@ -38,9 +38,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class SearchClient {
 
-    private final static ObjectMapper jsonMapper = new ObjectMapper(DAO.jsonFactory);
-    private final static TypeReference<HashMap<String,Object>> jsonTypeRef = new TypeReference<HashMap<String,Object>>() {};
-    
     public final static String backend_hash = Integer.toHexString(Integer.MAX_VALUE);
     public final static String frontpeer_hash = Integer.toHexString(Integer.MAX_VALUE - 1);
 
@@ -57,7 +54,7 @@ public class SearchClient {
         byte[] json = response;
         if (json == null || json.length == 0) return tl;
         try {
-            Map<String, Object> map = jsonMapper.readValue(json, jsonTypeRef);
+            Map<String, Object> map = DAO.jsonMapper.readValue(json, DAO.jsonTypeRef);
             Object statuses_obj = map.get("statuses");
             @SuppressWarnings("unchecked") List<Map<String, Object>> statuses = statuses_obj instanceof List<?> ? (List<Map<String, Object>>) statuses_obj : null;
             if (statuses != null) {

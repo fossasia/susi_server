@@ -31,8 +31,6 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.elasticsearch.common.xcontent.XContentFactory;
-import org.elasticsearch.common.xcontent.XContentParser;
-import org.elasticsearch.common.xcontent.json.JsonXContent;
 import org.loklak.data.DAO;
 import org.loklak.data.ProviderType;
 import org.loklak.data.MessageEntry;
@@ -82,8 +80,7 @@ public class PushServlet extends HttpServlet {
         // parse the json data
         int recordCount = 0, newCount = 0, knownCount = 0;
         try {
-            XContentParser parser = JsonXContent.jsonXContent.createParser(UTF8.String(data));
-            Map<String, Object> map = parser == null ? null : parser.map();
+            Map<String, Object> map = DAO.jsonMapper.readValue(data, DAO.jsonTypeRef);
             Object statuses_obj = map.get("statuses");
             @SuppressWarnings("unchecked") List<Map<String, Object>> statuses = statuses_obj instanceof List<?> ? (List<Map<String, Object>>) statuses_obj : null;
             if (statuses != null) {

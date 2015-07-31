@@ -35,8 +35,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
-import org.elasticsearch.common.xcontent.XContentParser;
-import org.elasticsearch.common.xcontent.json.JsonXContent;
 import org.loklak.LoklakServer;
 import org.loklak.data.AbstractIndexEntry;
 import org.loklak.data.AccountEntry;
@@ -44,7 +42,10 @@ import org.loklak.data.DAO;
 import org.loklak.data.UserEntry;
 import org.loklak.geo.GeoMark;
 import org.loklak.tools.JsonDataset.Index;
-import org.loklak.tools.JsonDataset.JsonCapsule;
+import org.loklak.tools.JsonMinifier;
+
+import com.google.common.base.Charsets;
+import com.google.common.io.Files;
 
 import twitter4j.IDs;
 import twitter4j.RateLimitStatus;
@@ -180,7 +181,7 @@ public class TwitterAPI {
     private static long getUserResetTime = 0;
     public static int getUserRemaining() {return System.currentTimeMillis() > getUserResetTime ? getUserLimit : getUserRemaining;}
     public static Map<String, Object> getUser(String screen_name) throws TwitterException, IOException {
-        JsonCapsule mapcapsule = DAO.user_dump.getIndex("screen_name").get(screen_name);
+        JsonMinifier.Capsule mapcapsule = DAO.user_dump.getIndex("screen_name").get(screen_name);
         if (mapcapsule == null) mapcapsule = DAO.user_dump.getIndex("id_str").get(screen_name);
         if (mapcapsule != null) return mapcapsule.getJson();
         TwitterFactory tf = getUserTwitterFactory(screen_name);
@@ -196,8 +197,7 @@ public class TwitterAPI {
     
     public static Map<String, Object> enrich(User user) throws IOException {
         String json = TwitterObjectFactory.getRawJSON(user);
-        XContentParser parser = JsonXContent.jsonXContent.createParser(json);
-        Map<String, Object> map = parser == null ? null : parser.map();
+        Map<String, Object> map = DAO.jsonMapper.readValue(json, DAO.jsonTypeRef);
         map.put("retrieval_date", AbstractIndexEntry.utcFormatter.print(System.currentTimeMillis()));
         Object status = map.remove("status"); // we don't need to store the latest status update in the user dump
         // TODO: store the latest status in our message database
@@ -230,7 +230,7 @@ public class TwitterAPI {
             List<Map<String, Object>> users = new ArrayList<>(); 
             Map<String, Number> names = (Map<String, Number>) map.remove(setname + "_names");
             if (names != null) for (String sn: names.keySet()) {
-                JsonCapsule user = userIndex.get(sn);
+                JsonMinifier.Capsule user = userIndex.get(sn);
                 if (user != null) users.add(user.getJson());
             }
             map.put(setname + "_count", users.size());
@@ -260,7 +260,7 @@ public class TwitterAPI {
         boolean complete = true;
         Set<Number> networkingIDs = new LinkedHashSet<>();
         Set<Number> unnetworkingIDs = new LinkedHashSet<>();
-        JsonCapsule mapcapsule = (networkRelation == Networker.FOLLOWERS ? DAO.followers_dump : DAO.following_dump).getIndex("screen_name").get(screen_name);
+        JsonMinifier.Capsule mapcapsule = (networkRelation == Networker.FOLLOWERS ? DAO.followers_dump : DAO.following_dump).getIndex("screen_name").get(screen_name);
         if (mapcapsule == null) mapcapsule = (networkRelation == Networker.FOLLOWERS ? DAO.followers_dump : DAO.following_dump).getIndex("id_str").get(screen_name);
 
         if (mapcapsule != null) {
@@ -353,7 +353,7 @@ public class TwitterAPI {
         Index idIndex = DAO.user_dump.getIndex("id_str");
         for (Number id_str: id_strs) {
             if (r.size() >= maxFollowers) break;
-            JsonCapsule mapcapsule = idIndex.get(id_str.toString());
+            JsonMinifier.Capsule mapcapsule = idIndex.get(id_str.toString());
             if (mapcapsule != null) {
                 Map<String, Object> map = mapcapsule.getJson();
                 String screen_name = (String) map.get("screen_name");

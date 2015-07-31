@@ -63,6 +63,7 @@ import org.loklak.api.server.HelloServlet;
 import org.loklak.api.server.PeersServlet;
 import org.loklak.api.server.ProxyServlet;
 import org.loklak.api.server.PushServlet;
+import org.loklak.api.server.UserServlet;
 import org.loklak.api.server.push.GeoJsonPushServlet;
 import org.loklak.api.server.SearchServlet;
 import org.loklak.api.server.SettingsServlet;
@@ -207,6 +208,7 @@ public class LoklakServer {
         servletHandler.addServlet(SearchServlet.class, "/api/search.json"); // both have same servlet class
         servletHandler.addServlet(SuggestServlet.class, "/api/suggest.json");
         servletHandler.addServlet(AccountServlet.class, "/api/account.json");
+        servletHandler.addServlet(UserServlet.class, "/api/user.json");
         servletHandler.addServlet(CampaignServlet.class, "/api/campaign.json");
         servletHandler.addServlet(ImportProfileServlet.class, "/api/import.json");
         servletHandler.addServlet(SettingsServlet.class, "/api/settings.json");

@@ -91,8 +91,7 @@ public class GeoJsonPushServlet extends HttpServlet {
         byte[] jsonText;
         try {
             jsonText = ClientConnection.download(url);
-            XContentParser parser = JsonXContent.jsonXContent.createParser(jsonText);
-            Map<String, Object> map = parser == null ? null : parser.map();
+            Map<String, Object> map = DAO.jsonMapper.readValue(jsonText, DAO.jsonTypeRef);
             Object features_obj = map.get("features");
             features = features_obj instanceof List<?> ? (List<Map<String, Object>>) features_obj : null;
         } catch (Exception e) {
@@ -148,7 +147,11 @@ public class GeoJsonPushServlet extends HttpServlet {
             Map<String, Object> mappedProperties = convertMapRulesProperties(mapRules, properties);
             properties.putAll(mappedProperties);
 
-            properties.put("source_type", sourceType);
+            if (!"".equals(sourceType)) {
+                properties.put("source_type", sourceType);
+            } else {
+                properties.put("source_type", SourceType.IMPORT);
+            }
             properties.put("provider_type", ProviderType.GEOJSON.name());
             properties.put("provider_hash", remoteHash);
             properties.put("location_point", geometry.get("coordinates"));
@@ -280,7 +283,7 @@ public class GeoJsonPushServlet extends HttpServlet {
         if (mtime_obj == null) {
             throw new Exception("geojson format error : member 'mtime' required in feature properties");
         }
-        DateTime mtime = new DateTime((String) mtime_obj);
+        DateTime mtime = new DateTime(mtime_obj);
 
         List<?> coords = (List<?>) geometry.get("coordinates");
 

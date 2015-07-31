@@ -449,20 +449,22 @@ public class MessageEntry extends AbstractIndexEntry implements IndexEntry {
         // find location
         if ((this.location_point == null || this.location_point.length == 0) && DAO.geoNames != null) {
             GeoMark loc = null;
-            if (this.place_name != null && this.place_name.length() > 0 && (this.location_source == null || this.location_source != LocationSource.ANNOTATION)) {
+            if (this.place_name != null && this.place_name.length() > 0 &&
+                (this.location_source == null || this.location_source == LocationSource.ANNOTATION || this.location_source == LocationSource.PLACE)) {
                 loc = DAO.geoNames.analyse(this.place_name, null, 5, this.text.hashCode());
                 this.place_context = PlaceContext.FROM;
+                this.location_source = LocationSource.PLACE;
             }
             if (loc == null) {
                 loc = DAO.geoNames.analyse(this.text, this.hashtags, 5, this.text.hashCode());
                 this.place_context = PlaceContext.ABOUT;
+                this.location_source = LocationSource.ANNOTATION;
             }
             if (loc != null) {
-                this.place_name = loc.getNames().iterator().next();
+                if (this.place_name == null || this.place_name.length() == 0) this.place_name = loc.getNames().iterator().next();
                 this.location_radius = 0;
                 this.location_point = new double[]{loc.lon(), loc.lat()}; //[longitude, latitude]
                 this.location_mark = new double[]{loc.mlon(), loc.mlat()}; //[longitude, latitude]
-                this.location_source = LocationSource.ANNOTATION;
                 this.place_country = loc.getISO3166cc();
             }
         }

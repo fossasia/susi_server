@@ -28,7 +28,8 @@
             "type": "string"
           },
           "name": {
-            "type": "string"
+            "type": "string",
+            "required": true
           },
           "node_type": {
             "type": "string"
@@ -71,12 +72,15 @@
           },
           "position": {
             "type": "object",
+            "required": true,
             "properties": {
               "lat": {
-                "type": ["number", "string"]
+                "type": ["number", "string"],
+                "required": true
               },
               "long": {
-                "type": ["number", "string"]
+                "type": ["number", "string"],
+                "required": true
               },
               "alt": {
                 "type": "integer"

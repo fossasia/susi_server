@@ -31,8 +31,6 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.elasticsearch.common.xcontent.XContentParser;
-import org.elasticsearch.common.xcontent.json.JsonXContent;
 import org.loklak.data.AccountEntry;
 import org.loklak.data.DAO;
 import org.loklak.data.UserEntry;
@@ -58,7 +56,7 @@ public class AccountServlet extends HttpServlet {
      
         // manage DoS
         if (post.isDoS_blackout()) {response.sendError(503, "your request frequency is too high"); return;}
-        if (!post.isLocalhostAccess()) {response.sendError(503, "access only allowed from localhost"); return;} // danger! do not remove this!
+        if (!post.isLocalhostAccess()) {response.sendError(503, "access only allowed from localhost, your request comes from " + post.getClientHost()); return;} // danger! do not remove this!
         
         // parameters
         String callback = post.get("callback", "");
@@ -66,10 +64,6 @@ public class AccountServlet extends HttpServlet {
         boolean minified = post.get("minified", false);
         boolean update = "update".equals(post.get("action", ""));
         String screen_name = post.get("screen_name", "");
-        String followers = post.get("followers", "0");
-        String following = post.get("following", "0");
-        int maxFollowers = Integer.parseInt(followers);
-        int maxFollowing = Integer.parseInt(following);
         
         String data = post.get("data", "");
         if (update) {
@@ -80,8 +74,7 @@ public class AccountServlet extends HttpServlet {
         
             // parse the json data
             try {
-                XContentParser parser = JsonXContent.jsonXContent.createParser(data);
-                Map<String, Object> map = parser == null ? null : parser.map();
+                Map<String, Object> map = DAO.jsonMapper.readValue(data, DAO.jsonTypeRef);
                 Object accounts_obj = map.get("accounts");
                 List<Map<String, Object>> accounts;
                 if (accounts_obj instanceof List<?>) {
@@ -111,10 +104,6 @@ public class AccountServlet extends HttpServlet {
 
         UserEntry userEntry = DAO.searchLocalUserByScreenName(screen_name);
         AccountEntry accountEntry = DAO.searchLocalAccount(screen_name);
-        Map<String, Object> twitterUserEntry = null;
-        try {twitterUserEntry = TwitterAPI.getUser(screen_name);} catch (TwitterException e) {}
-        Map<String, Object> topology = null;
-        try {topology = TwitterAPI.getNetwork(screen_name, maxFollowers, maxFollowing);} catch (TwitterException e) {}
         
         post.setResponse(response, "application/javascript");
         
@@ -133,8 +122,6 @@ public class AccountServlet extends HttpServlet {
             accounts.add(accountEntry.toMap(userEntry));
         }
         m.put("accounts", accounts);
-        if (twitterUserEntry != null) m.put("user", twitterUserEntry);
-        if (topology != null) m.put("topology", topology);
         
         // write json
         ServletOutputStream sos = response.getOutputStream();

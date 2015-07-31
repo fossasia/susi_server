@@ -30,6 +30,7 @@ import java.util.Map;
 
 public class FossasiaPushServlet extends AbstractPushServlet {
 
+    @SuppressWarnings("unchecked")
     @Override
     protected SourceType getSourceType() {
         return SourceType.FOSSASIA_API;

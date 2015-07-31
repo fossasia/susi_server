@@ -18,23 +18,11 @@
  */
 package org.loklak.api.server.push;
 
-import com.github.fge.jsonschema.core.report.LogLevel;
-import com.github.fge.jsonschema.core.report.ProcessingReport;
-import org.elasticsearch.common.xcontent.XContentParser;
-import org.elasticsearch.common.xcontent.json.JsonXContent;
-import org.loklak.api.client.ClientConnection;
-import org.loklak.api.server.RemoteAccess;
 import org.loklak.data.DAO;
-import org.loklak.geo.LocationSource;
 import org.loklak.harvester.JsonFieldConverter;
 import org.loklak.harvester.JsonValidator;
 import org.loklak.harvester.SourceType;
 
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -67,7 +55,6 @@ public class NodelistPushServlet extends AbstractPushServlet {
     @Override
     protected void customProcessing(Map<String, Object> message) {
         Map<String, Object> location = (Map<String, Object>) message.get("position");
-        if (location == null) return;
 
         final Double longitude = Double.parseDouble((String) location.get("long"));
         final Double latitude = Double.parseDouble((String) location.get("lat"));
