@@ -112,7 +112,7 @@ public class NetmonPushServlet extends HttpServlet {
             }
         }
 
-        PushReport pushReport = PushServletHelper.saveMessages(nodes);
+        PushReport pushReport = PushServletHelper.saveMessagesAndImportProfile(nodes, xmlText.hashCode(), post, SourceType.NETMON);
 
         String res = PushServletHelper.printResponse(post.get("callback", ""), pushReport);
         response.getOutputStream().println(res);

@@ -2,7 +2,9 @@ package org.loklak.api.server.push;
 
 import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.elasticsearch.common.xcontent.XContentFactory;
+import org.loklak.api.server.RemoteAccess;
 import org.loklak.data.DAO;
+import org.loklak.data.ImportProfileEntry;
 import org.loklak.data.MessageEntry;
 import org.loklak.data.UserEntry;
 import org.loklak.harvester.SourceType;
@@ -11,11 +13,14 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.ArrayList;
+import java.util.Date;
 
 public class PushServletHelper {
 
-    public static PushReport saveMessages(List<Map<String, Object>> messages) {
+    public static PushReport saveMessagesAndImportProfile(List<Map<String, Object>> messages, int fileHash, RemoteAccess.Post post, SourceType sourceType) {
         PushReport report = new PushReport();
+        List<String> importedMsgIds = new ArrayList<>();
         for (Map<String, Object> message : messages) {
             Map<String, Object> user = (Map<String, Object>) message.remove("user");
             MessageEntry messageEntry = new MessageEntry(message);
@@ -28,8 +33,40 @@ public class PushServletHelper {
                 report.incrementErrorCount();
                 continue;
             }
-            if (successful) report.incrementNewCount();
-            else report.incrementKnownCount();
+            if (successful) {
+                report.incrementNewCount();
+                importedMsgIds.add((String) message.get("id_str"));
+            } else {
+                report.incrementKnownCount();
+            }
+        }
+
+        ImportProfileEntry importProfileEntry = null;
+        if (report.getNewCount() > 0 ) {
+            Map<String, Object> profile = new HashMap<>();
+            profile.put("client_host", post.getClientHost());
+            profile.put("imported", importedMsgIds);
+
+            String screen_name = post.get("screen_name", "");
+            if (!"".equals(screen_name)) {
+                profile.put("screen_name", screen_name);
+            }
+            profile.put("source_url", post.get("url", ""));
+            profile.put("source_type", sourceType.name());
+            // placholders
+            profile.put("harvesting_freq", Integer.MAX_VALUE);
+            profile.put("lifetime", Integer.MAX_VALUE);
+            profile.put("id_str", computeImportProfileId(profile, fileHash));
+            Date currentDate = new Date();
+            profile.put("created_at" , currentDate);
+            profile.put("last_modified", currentDate);
+            importProfileEntry = new ImportProfileEntry(profile);
+            boolean success = DAO.writeImportProfile(importProfileEntry, true);
+            if (success) {
+                report.setImportProfile(importProfileEntry);
+            } else {
+                DAO.log("Error saving import profile from " + post.getClientHost());
+            }
         }
 
         return report;
@@ -45,6 +82,9 @@ public class PushServletHelper {
         json.field("new", pushReport.getNewCount());
         json.field("known", pushReport.getKnownCount());
         json.field("error", pushReport.getErrorCount());
+        ImportProfileEntry importProfile = pushReport.getImportProfile();
+        if (importProfile != null)
+            json.field("importProfile", importProfile.toMap());
         json.field("message", "pushed");
         json.endObject();
 
@@ -57,6 +97,16 @@ public class PushServletHelper {
         if (jsonp) result += ");";
 
         return result;
+    }
+
+    private static String computeImportProfileId(Map<String, Object> importProfile, int fileHash) {
+        String screen_name = (String) importProfile.get("screen_name");
+        String source_url = (String) importProfile.get("source_url");
+        if (screen_name != null && !"".equals(screen_name)) {
+            return source_url + "_" + screen_name + "_" + fileHash;
+        }
+        String client_host = (String) importProfile.get("client_host");
+        return source_url + "_" + client_host + "_" + fileHash;
     }
 
     public static String computeMessageId(Map<String, Object> message, Object initialId, SourceType sourceType) throws Exception {
