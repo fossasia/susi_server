@@ -18,6 +18,7 @@
  */
 package org.loklak.data;
 
+import org.loklak.harvester.HarvestingFrequency;
 import org.loklak.harvester.SourceType;
 
 import java.net.MalformedURLException;
@@ -39,7 +40,9 @@ public class ImportProfileEntry extends AbstractIndexEntry implements IndexEntry
     protected String client_host;
     protected URL source_url;
     protected SourceType source_type;
-    protected int harvesting_freq;
+
+    // harvesting frequency (in min)
+    protected HarvestingFrequency harvesting_freq;
     protected int lifetime;
 
     // id list of imported messages
@@ -66,7 +69,12 @@ public class ImportProfileEntry extends AbstractIndexEntry implements IndexEntry
         this.last_modified = parseDate(map.get("last_modified"));
         this.screen_name = (String) map.get("screen_name");
         this.client_host = (String) map.get("client_host");
-        this.harvesting_freq = (int) parseLong(map.get("harvesting_freq"));
+
+        try {
+            this.harvesting_freq = HarvestingFrequency.init((int) parseLong(map.get("harvesting_freq")));
+        } catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException("harvesting_freq value not permitted : " + map.get("harvesting_freq"));
+        }
         this.lifetime = (int) parseLong(map.get("lifetime"));
         this.imported = (List<String>) map.get("imported");
         this.id = (String) map.get("id_str");
@@ -131,11 +139,11 @@ public class ImportProfileEntry extends AbstractIndexEntry implements IndexEntry
         this.source_type = source_type;
     }
 
-    public int getHarvestingFreq() {
+    public HarvestingFrequency getHarvestingFreq() {
         return harvesting_freq;
     }
 
-    public void setHarvestingFreq(int harvesting_freq) {
+    public void setHarvestingFreq(HarvestingFrequency harvesting_freq) {
         this.harvesting_freq = harvesting_freq;
     }
 
@@ -174,7 +182,7 @@ public class ImportProfileEntry extends AbstractIndexEntry implements IndexEntry
         m.put("client_host", this.client_host);
         m.put("source_url", this.source_url.toString());
         m.put("source_type", this.source_type.name());
-        m.put("harvesting_freq", this.harvesting_freq);
+        m.put("harvesting_freq", this.harvesting_freq.getFrequency());
         m.put("lifetime", this.lifetime);
         m.put("imported", this.imported);
         m.put("active_status", this.activeStatus.name());

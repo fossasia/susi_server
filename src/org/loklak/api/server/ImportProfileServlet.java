@@ -100,7 +100,13 @@ public class ImportProfileServlet extends HttpServlet {
             if (i == null) {
                 throw new IOException("import profile id_str field '" + map.get("id_str") + "' not found");
             }
-            ImportProfileEntry importProfileEntry = new ImportProfileEntry(map);
+            ImportProfileEntry importProfileEntry;
+            try {
+                importProfileEntry = new ImportProfileEntry(map);
+            } catch (IllegalArgumentException e) {
+                response.sendError(400, "Error updating import profile : " + e.getMessage());
+                return;
+            }
             importProfileEntry.setLastModified(new Date());
             success = DAO.writeImportProfile(importProfileEntry, true);
         } catch (IOException | NullPointerException e) {
