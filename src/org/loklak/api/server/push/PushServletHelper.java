@@ -53,6 +53,7 @@ public class PushServletHelper {
             }
             profile.put("source_url", post.get("url", ""));
             profile.put("source_type", sourceType.name());
+            profile.put("source_hash", fileHash);
             // placholders
             profile.put("harvesting_freq", Integer.MAX_VALUE);
             profile.put("lifetime", Integer.MAX_VALUE);
@@ -60,6 +61,7 @@ public class PushServletHelper {
             Date currentDate = new Date();
             profile.put("created_at" , currentDate);
             profile.put("last_modified", currentDate);
+            profile.put("last_harvested", currentDate);
             importProfileEntry = new ImportProfileEntry(profile);
             boolean success = DAO.writeImportProfile(importProfileEntry, true);
             if (success) {

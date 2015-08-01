@@ -33,12 +33,17 @@ public class ImportProfileEntry extends AbstractIndexEntry implements IndexEntry
     protected String id;
     protected Date created_at;
 
+    // last time the import profile entry is modified
     protected Date last_modified;
+
+    // last time the url is harvested & updated by loklak harvester
+    protected Date last_harvested;
     // importer username
     protected String screen_name;
     // importer ip address
     protected String client_host;
     protected URL source_url;
+    protected long source_hash;
     protected SourceType source_type;
 
     // harvesting frequency (in min)
@@ -65,8 +70,10 @@ public class ImportProfileEntry extends AbstractIndexEntry implements IndexEntry
         } catch (IllegalArgumentException e) {
             this.source_type = SourceType.USER;
         }
+        this.source_hash = parseLong(map.get("source_hash"));
         this.created_at = parseDate(map.get("created_at"));
         this.last_modified = parseDate(map.get("last_modified"));
+        this.last_harvested = parseDate(map.get("last_harvested"));
         this.screen_name = (String) map.get("screen_name");
         this.client_host = (String) map.get("client_host");
 
@@ -107,6 +114,14 @@ public class ImportProfileEntry extends AbstractIndexEntry implements IndexEntry
         this.last_modified = last_modified;
     }
 
+    public Date getLastHarvested() {
+        return last_harvested;
+    }
+
+    public void setLastHarvested(Date last_harvested) {
+        this.last_harvested = last_harvested;
+    }
+
     public String getScreenName() {
         return screen_name;
     }
@@ -129,6 +144,14 @@ public class ImportProfileEntry extends AbstractIndexEntry implements IndexEntry
 
     public void setSourceUrl(URL source_url) {
         this.source_url = source_url;
+    }
+
+    public long getSourceHash() {
+        return source_hash;
+    }
+
+    public void setSourceHash(long source_hash) {
+        this.source_hash = source_hash;
     }
 
     public SourceType getSourceType() {
@@ -178,9 +201,11 @@ public class ImportProfileEntry extends AbstractIndexEntry implements IndexEntry
         m.put("id_str", this.id);
         m.put("created_at", utcFormatter.print(this.created_at.getTime()));
         m.put("last_modified", utcFormatter.print(this.last_modified.getTime()));
+        m.put("last_harvested", utcFormatter.print(this.last_harvested.getTime()));
         m.put("screen_name", this.screen_name);
         m.put("client_host", this.client_host);
         m.put("source_url", this.source_url.toString());
+        m.put("source_hash", this.source_hash);
         m.put("source_type", this.source_type.name());
         m.put("harvesting_freq", this.harvesting_freq.getFrequency());
         m.put("lifetime", this.lifetime);

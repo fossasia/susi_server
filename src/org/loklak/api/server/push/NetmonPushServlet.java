@@ -41,6 +41,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Arrays;
 
 public class NetmonPushServlet extends HttpServlet {
 
@@ -112,7 +113,7 @@ public class NetmonPushServlet extends HttpServlet {
             }
         }
 
-        PushReport pushReport = PushServletHelper.saveMessagesAndImportProfile(nodes, xmlText.hashCode(), post, SourceType.NETMON);
+        PushReport pushReport = PushServletHelper.saveMessagesAndImportProfile(nodes, Arrays.hashCode(xmlText), post, SourceType.NETMON);
 
         String res = PushServletHelper.printResponse(post.get("callback", ""), pushReport);
         response.getOutputStream().println(res);

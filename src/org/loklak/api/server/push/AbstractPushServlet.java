@@ -36,6 +36,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -124,7 +125,7 @@ public abstract class AbstractPushServlet extends HttpServlet {
             customProcessing(message);
         }
 
-        PushReport nodePushReport = PushServletHelper.saveMessagesAndImportProfile(typedMessages, jsonText.hashCode(), post, getSourceType());
+        PushReport nodePushReport = PushServletHelper.saveMessagesAndImportProfile(typedMessages, Arrays.hashCode(jsonText), post, getSourceType());
 
         String res = PushServletHelper.printResponse(post.get("callback", ""), nodePushReport);
         response.getOutputStream().println(res);

@@ -22,8 +22,6 @@ package org.loklak.api.server.push;
 import org.elasticsearch.common.joda.time.DateTime;
 import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.elasticsearch.common.xcontent.XContentFactory;
-import org.elasticsearch.common.xcontent.XContentParser;
-import org.elasticsearch.common.xcontent.json.JsonXContent;
 import org.loklak.api.client.ClientConnection;
 import org.loklak.api.server.RemoteAccess;
 import org.loklak.data.DAO;
@@ -47,6 +45,7 @@ import java.util.ArrayList;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Arrays;
 import java.util.regex.Pattern;
 import java.util.Date;
 /*
@@ -189,6 +188,8 @@ public class GeoJsonPushServlet extends HttpServlet {
         }
 
         ImportProfileEntry importProfileEntry = null;
+
+        int fileHash = Arrays.hashCode(jsonText);
         if (newCount > 0 ) {
             Map<String, Object> profile = new HashMap<>();
             profile.put("client_host", post.getClientHost());
@@ -198,14 +199,14 @@ public class GeoJsonPushServlet extends HttpServlet {
             }
             profile.put("source_url", url);
             profile.put("source_type", sourceType);
-            // placholders
+            profile.put("source_hash", fileHash);
             profile.put("harvesting_freq", Integer.MAX_VALUE);
             profile.put("lifetime", Integer.MAX_VALUE);
-            int fileHash = jsonText.hashCode();
             profile.put("id_str", computeImportProfileId(profile, fileHash));
             Date currentDate = new Date();
             profile.put("created_at" , currentDate);
             profile.put("last_modified", currentDate);
+            profile.put("last_harvested", currentDate);
             importProfileEntry = new ImportProfileEntry(profile);
             DAO.writeImportProfile(importProfileEntry, true);
         }
