@@ -97,6 +97,7 @@ public class GeoNames {
         Map<String, CountryBounds> countryBounds = new HashMap<>();
 
         if ( cities1000_zip == null || !cities1000_zip.exists() ) {
+            DAO.log("GeoNames: cities1000.zip file does not exist!");
             return;
         }
         ZipFile zf = null;
@@ -109,6 +110,8 @@ public class GeoNames {
             final InputStream is = zf.getInputStream(ze);
             reader = new BufferedReader(new InputStreamReader(is, UTF8.charset));
         } catch (final IOException e ) {
+            DAO.log("GeoNames: Error when decompressing cities1000.zip!");
+            e.printStackTrace();
             return;
         }
 
