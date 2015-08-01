@@ -134,7 +134,16 @@ public class PushServletHelper {
             mtime = Long.toString(System.currentTimeMillis());
             message.put("mtime", mtime);
         }
-        return sourceType.name() + "_" + initialId + "_" + latitude + "_" + longitude + "_" + mtime;
+
+        // If initialId found, append it in the id. The new id has this format
+        // <source_type>_<id>_<lat>_<lon>_<mtime>
+        // otherwise, the new id is <source_type>_<lat>_<lon>_<mtime>
+        boolean hasInitialId = initialId != null && !"".equals(initialId.toString());
+        if (hasInitialId) {
+            return sourceType.name() + "_" + initialId + "_" + latitude + "_" + longitude + "_" + mtime;
+        } else {
+            return sourceType.name() + "_" + latitude + "_" + longitude + "_" + mtime;
+        }
     }
 
 }
