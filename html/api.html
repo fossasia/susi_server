@@ -71,6 +71,7 @@
 					<li><a href="#geojsonpush">/api/push/geojson.json</a></li>
 					<li><a href="#settings">/api/settings.json</a></li>
 					<li><a href="#account">/api/account.json</a></li>
+					<li><a href="#user">/api/user.json</a></li>
 					<li><a href="#asset">/api/asset</a></li>
 					<li><a href="#threaddump">/api/threaddump.txt</a></li>
 					<li><a href="#map">/vis/map.png</a></li>
@@ -883,7 +884,7 @@ added fuzzyness for marker computation
   "oauth_token_secret"    : "def",         // the oauth token_secret
   "authentication_first"  : "2015-06-07T09:39:22.341Z",        // optional
   "authentication_latest" : "2015-06-07T09:39:22.341Z",        // optional
-  "apps"        : {"wall" : {"type" : "horizontal"}} // any json
+  "apps"                  : {"wall" : {"type" : "horizontal"}} // any json
 }
 </pre>
 <p>You can set such a record i.e. with the call
@@ -908,12 +909,19 @@ added fuzzyness for marker computation
 </ul><br/>
 </p>
 
-<h3>Retrieval of Twitter User Account Data</h3>
-<p>By default, this api also retrieves account data from Twitter. It is not
-   necessary that the user is known with it's account data. Just submit the <code>screen_name</code>
-   as GET http attribute. Example:
+
+<!-- ===================================================================== -->
+
+<br id="user" />
+<br />
+<h2 class="sub-header">
+	<code>/api/user.json</code>
+</h2>
+<div class="alert alert-success" role="alert">This API is open and can be accessed without any restrictions!</div>
+<p>This servlet provides the retrieval of user followers and the accounts which the user is following.
+   Just submit the <code>screen_name</code> as GET http attribute. Example:
    <ul class="request">
-	<li><a href="http://localhost:9000/api/account.json?screen_name=loklak_app">http://localhost:9000/api/account.json?screen_name=loklak_app</a></li>
+	<li><a href="http://localhost:9000/api/user.json?screen_name=loklak_app">http://localhost:9000/api/user.json?screen_name=loklak_app</a></li>
    </ul><br/>
 </p>
 <pre>{
@@ -984,10 +992,12 @@ added fuzzyness for marker computation
 </pre>
 
 <p>It is also possible to get the followers of an account all at once. To trigger this, just
-   add the attribute <code>followers=&lt;maxcount&gt;</code> to the request. This will produce a list of
+   add the attribute <code>followers=&lt;maxcount&gt;</code> to the request.
+   The same applies to the account which the user is following, just add <code>following=&lt;maxcount&gt;</code>.
+   This will produce a list of
    <code>&lt;maxcount&gt;</code> user entries in a 'topology' object. Example :
    <ul class="request">
-	<li><a href="http://localhost:9000/api/account.json?screen_name=loklak_app&followers=10000">http://localhost:9000/api/account.json?screen_name=loklak_app&followers=10000</a></li>
+	<li><a href="http://localhost:9000/api/user.json?screen_name=loklak_app&followers=10000&following=10000">http://localhost:9000/api/user.json?screen_name=loklak_app&followers=10000&following=10000</a></li>
    </ul><br/>
 </p>
 
