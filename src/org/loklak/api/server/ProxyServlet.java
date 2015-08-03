@@ -105,6 +105,7 @@ public class ProxyServlet extends HttpServlet {
                 try {
                     Map<String, Object> usermap = TwitterAPI.getUser(screen_name, true);
                     newUrl = (String) usermap.get("profile_image_url");
+                    if (newUrl != null && newUrl.length() > 0 && !newUrl.startsWith("http:"))  newUrl = (String) usermap.get("profile_image_url_https");
                     if (newUrl != null && newUrl.length() > 0) buffer = ClientConnection.download(newUrl);
                     if (buffer != null) DAO.log("PROXY: downloaded url=" + url + " from recently downloaded user setting successfully!");
                 } catch (TwitterException e) {
