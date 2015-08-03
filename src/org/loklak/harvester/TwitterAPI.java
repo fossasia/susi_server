@@ -180,10 +180,16 @@ public class TwitterAPI {
     private static int getUserRemaining = getUserLimit;
     private static long getUserResetTime = 0;
     public static int getUserRemaining() {return System.currentTimeMillis() > getUserResetTime ? getUserLimit : getUserRemaining;}
-    public static Map<String, Object> getUser(String screen_name) throws TwitterException, IOException {
-        JsonMinifier.Capsule mapcapsule = DAO.user_dump.getIndex("screen_name").get(screen_name);
-        if (mapcapsule == null) mapcapsule = DAO.user_dump.getIndex("id_str").get(screen_name);
-        if (mapcapsule != null) return mapcapsule.getJson();
+    public static Map<String, Object> getUser(String screen_name, boolean forceReload) throws TwitterException, IOException {
+        if (!forceReload) {
+            JsonMinifier.Capsule mapcapsule = DAO.user_dump.getIndex("screen_name").get(screen_name);
+            if (mapcapsule == null) mapcapsule = DAO.user_dump.getIndex("id_str").get(screen_name);
+            if (mapcapsule != null) {
+                Map<String, Object> map = mapcapsule.getJson();
+                // check if the entry is maybe outdated, i.e. if it is empty or too old
+                if (map.size() > 0) return map;
+            }
+        }
         TwitterFactory tf = getUserTwitterFactory(screen_name);
         if (tf == null) tf = getAppTwitterFactory();
         if (tf == null) return new HashMap<>();

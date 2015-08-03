@@ -20,6 +20,7 @@
 package org.loklak.api.server;
 
 import java.io.IOException;
+import java.util.Map;
 
 import javax.servlet.ServletException;
 import javax.servlet.ServletOutputStream;
@@ -31,7 +32,10 @@ import org.loklak.api.client.ClientConnection;
 import org.loklak.api.server.RemoteAccess;
 import org.loklak.data.DAO;
 import org.loklak.data.UserEntry;
+import org.loklak.harvester.TwitterAPI;
 import org.loklak.tools.Cache;
+
+import twitter4j.TwitterException;
 
 public class ProxyServlet extends HttpServlet {
 
@@ -94,11 +98,23 @@ public class ProxyServlet extends HttpServlet {
                 // if this fails, then check if the stored url is different.
                 // That may happen because new user avatar images get new urls
                 buffer = ClientConnection.download(newUrl);
-                if (buffer != null) DAO.log("PROXY: downloaded url=" + url + " from user setting successfully!");
+                if (buffer != null) DAO.log("PROXY: downloaded url=" + url + " from old user setting successfully!");
+            }
+            if (buffer == null) {
+                // ask the Twitter API for new user data
+                try {
+                    Map<String, Object> usermap = TwitterAPI.getUser(screen_name, true);
+                    newUrl = (String) usermap.get("profile_image_url");
+                    if (newUrl != null && newUrl.length() > 0) buffer = ClientConnection.download(newUrl);
+                    if (buffer != null) DAO.log("PROXY: downloaded url=" + url + " from recently downloaded user setting successfully!");
+                } catch (TwitterException e) {
+                    DAO.log("ProxyServlet: call to twitter api failed: " + e.getMessage());
+                }
             }
             if (buffer != null) {
                 // write the buffer
                 if (user != null && user.getType().length() > 0) {
+                    user.setProfileImageUrl(newUrl);
                     user.setProfileImage(buffer);
                     DAO.writeUser(user, user.getType());
                     if (!cache.full()) cache.put(url, buffer);

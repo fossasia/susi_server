@@ -63,9 +63,8 @@ public class UserServlet extends HttpServlet {
         int maxFollowers = Integer.parseInt(followers);
         int maxFollowing = Integer.parseInt(following);
         
-        UserEntry userEntry = DAO.searchLocalUserByScreenName(screen_name);
         Map<String, Object> twitterUserEntry = null;
-        try {twitterUserEntry = TwitterAPI.getUser(screen_name);} catch (TwitterException e) {}
+        try {twitterUserEntry = TwitterAPI.getUser(screen_name, false);} catch (TwitterException e) {}
         Map<String, Object> topology = null;
         try {topology = TwitterAPI.getNetwork(screen_name, maxFollowers, maxFollowing);} catch (TwitterException e) {}
         
@@ -74,7 +73,6 @@ public class UserServlet extends HttpServlet {
         // generate json
         Map<String, Object> m = new LinkedHashMap<>();
         Map<String, Object> metadata = new LinkedHashMap<>();
-        metadata.put("count", userEntry == null ? "0" : "1");
         metadata.put("client", post.getClientHost());
         m.put("search_metadata", metadata);
 
