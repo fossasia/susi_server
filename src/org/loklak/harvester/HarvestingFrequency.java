@@ -41,7 +41,7 @@ public enum HarvestingFrequency {
     /**
      * @throws IllegalArgumentException when frequency value is not permitted (not declared as an enum)
      */
-    public static HarvestingFrequency init(int frequency) {
+    public static HarvestingFrequency valueOf(int frequency) {
         for (HarvestingFrequency f: HarvestingFrequency.values()) {
             if (f.getFrequency() == frequency) {
                 return f;

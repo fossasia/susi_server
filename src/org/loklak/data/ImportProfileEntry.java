@@ -78,7 +78,7 @@ public class ImportProfileEntry extends AbstractIndexEntry implements IndexEntry
         this.client_host = (String) map.get("client_host");
 
         try {
-            this.harvesting_freq = HarvestingFrequency.init((int) parseLong(map.get("harvesting_freq")));
+            this.harvesting_freq = HarvestingFrequency.valueOf((int) parseLong(map.get("harvesting_freq")));
         } catch (IllegalArgumentException e) {
             throw new IllegalArgumentException("harvesting_freq value not permitted : " + map.get("harvesting_freq"));
         }

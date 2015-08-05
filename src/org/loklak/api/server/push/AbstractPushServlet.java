@@ -124,9 +124,13 @@ public abstract class AbstractPushServlet extends HttpServlet {
             }
             customProcessing(message);
         }
-
-        PushReport nodePushReport = PushServletHelper.saveMessagesAndImportProfile(typedMessages, Arrays.hashCode(jsonText), post, getSourceType());
-
+        PushReport nodePushReport;
+        try {
+            nodePushReport = PushServletHelper.saveMessagesAndImportProfile(typedMessages, Arrays.hashCode(jsonText), post, getSourceType());
+        } catch (IOException e) {
+            response.sendError(404, e.getMessage());
+            return;
+        }
         String res = PushServletHelper.printResponse(post.get("callback", ""), nodePushReport);
         response.getOutputStream().println(res);
         DAO.log(request.getServletPath()

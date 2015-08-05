@@ -7,6 +7,7 @@ import org.loklak.data.DAO;
 import org.loklak.data.ImportProfileEntry;
 import org.loklak.data.MessageEntry;
 import org.loklak.data.UserEntry;
+import org.loklak.harvester.HarvestingFrequency;
 import org.loklak.harvester.SourceType;
 
 import java.io.IOException;
@@ -18,7 +19,7 @@ import java.util.Date;
 
 public class PushServletHelper {
 
-    public static PushReport saveMessagesAndImportProfile(List<Map<String, Object>> messages, int fileHash, RemoteAccess.Post post, SourceType sourceType) {
+    public static PushReport saveMessagesAndImportProfile(List<Map<String, Object>> messages, int fileHash, RemoteAccess.Post post, SourceType sourceType) throws IOException {
         PushReport report = new PushReport();
         List<String> importedMsgIds = new ArrayList<>();
         for (Map<String, Object> message : messages) {
@@ -30,6 +31,7 @@ public class PushServletHelper {
             try {
                 successful = DAO.writeMessage(messageEntry, userEntry, true, false);
             } catch (Exception e) {
+                e.printStackTrace();
                 report.incrementErrorCount();
                 continue;
             }
@@ -51,18 +53,41 @@ public class PushServletHelper {
             if (!"".equals(screen_name)) {
                 profile.put("screen_name", screen_name);
             }
+            String harvesting_freq = post.get("harvesting_freq", "");
+            if (!"".equals(harvesting_freq)) {
+                try {
+                    profile.put("harvesting_freq", HarvestingFrequency.valueOf(harvesting_freq));
+                } catch (IllegalArgumentException e) {
+                    throw new IOException("Unsupported 'harvesting_freq' parameter value : " + harvesting_freq);
+                }
+            } else {
+                profile.put("harvesting_freq", HarvestingFrequency.NEVER);
+            }
+            String lifetime_str = post.get("lifetime", "");
+            if (!"".equals(lifetime_str)) {
+                int lifetime;
+                try {
+                    lifetime = Integer.parseInt(lifetime_str);
+                } catch (NumberFormatException e) {
+                    throw new IOException("Invalid lifetime parameter (must be an integer) : " + lifetime_str);
+                }
+                profile.put("lifetime", lifetime);
+            } else {
+                profile.put("lifetime", Integer.MAX_VALUE);
+            }
             profile.put("source_url", post.get("url", ""));
             profile.put("source_type", sourceType.name());
             profile.put("source_hash", fileHash);
-            // placholders
-            profile.put("harvesting_freq", Integer.MAX_VALUE);
-            profile.put("lifetime", Integer.MAX_VALUE);
             profile.put("id_str", computeImportProfileId(profile, fileHash));
             Date currentDate = new Date();
             profile.put("created_at" , currentDate);
             profile.put("last_modified", currentDate);
             profile.put("last_harvested", currentDate);
-            importProfileEntry = new ImportProfileEntry(profile);
+            try {
+                importProfileEntry = new ImportProfileEntry(profile);
+            } catch (Exception e) {
+                throw new IOException("Unable to save import profile : " + e.getMessage());
+            }
             boolean success = DAO.writeImportProfile(importProfileEntry, true);
             if (success) {
                 report.setImportProfile(importProfileEntry);
