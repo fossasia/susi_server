@@ -37,6 +37,7 @@ import java.util.List;
 
 import javax.imageio.ImageIO;
 
+import org.loklak.data.DAO;
 import org.loklak.visualization.graphics.RasterPlotter;
 
 
@@ -109,7 +110,8 @@ public class OSMTile {
         InputStream is;
         try {
             is = tileURL.openStream();
-        } catch (IOException e1) {
+        } catch (IOException e) {
+            DAO.log("OSMTile: cannot open stream: " + e.getMessage());
             return null;
         }
         byte[] buffer = new byte[2048];
@@ -117,15 +119,19 @@ public class OSMTile {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         try {
             while ((c = is.read(buffer)) > 0) baos.write(buffer, 0, c);
-        } catch (IOException e) {}
+        } catch (IOException e) {
+            DAO.log("OSMTile: cannot read stream: " + e.getMessage());
+        }
         byte[] tileb = baos.toByteArray();
         
         try {
             ImageIO.setUseCache(false); // do not write a cache to disc; keep in RAM
             return ImageIO.read(new ByteArrayInputStream(tileb));
         } catch (final EOFException e) {
+            DAO.log("OSMTile: cannot parse image: " + e.getMessage());
             return null;
         } catch (final IOException e) {
+            DAO.log("OSMTile: cannot open image: " + e.getMessage());
             return null;
         }
     }

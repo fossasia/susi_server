@@ -65,10 +65,17 @@ public class MapServlet extends HttpServlet {
         FileTypeEncoding fileType = RemoteAccess.getFileType(request);
         
         int zoom = post.get("zoom", 19);
+        if (zoom > 19) {response.sendError(503, "zoom must be <= 19"); return;}
         double lat = post.get("mlat", 50.11362d);
+        if (lat < -90.0) {response.sendError(503, "mlat must be >= -90.0"); return;}
+        if (lat >  90.0) {response.sendError(503, "mlat must be <= 90.0"); return;}
         double lon = post.get("mlon", 8.67919d);
+        if (lon < -180.0) {response.sendError(503, "mlon must be >= -180.0"); return;}
+        if (lon >  180.0) {response.sendError(503, "mlon must be <= 180.0"); return;}
         int width = post.get("width", 512);
+        if (width > 2560) {response.sendError(503, "width must be <= -2560"); return;}
         int height = post.get("height", 256);
+        if (height > 2560) {response.sendError(503, "height must be <= -2560"); return;}
         int tiles_horizontal = (width - 1) / 256 + 1; if (((tiles_horizontal / 2 ) * 2) == tiles_horizontal) tiles_horizontal++;
         int tiles_vertical = (height - 1) / 256 + 1; if (((tiles_vertical / 2 ) * 2) == tiles_vertical) tiles_vertical++;
         // one tile has the size 256x256
