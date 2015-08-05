@@ -553,8 +553,7 @@ public class DAO {
                         UserEntry user = users.read(tweet.getScreenName());
                         assert user != null;
                         if (user != null) {
-                            timeline.addTweet(tweet);
-                            timeline.addUser(user);
+                            timeline.add(tweet, user);
                         }
                     } catch (IOException e) {
                         // TODO Auto-generated catch block
@@ -744,8 +743,7 @@ public class DAO {
                 assert u != null;
                 boolean newTweet = writeMessage(t, u, true, true);
                 if (newTweet) {
-                    newMessages.addTweet(t);
-                    newMessages.addUser(u);
+                    newMessages.add(t, u);
                 }
             }
             DAO.transmitTimeline(newMessages);

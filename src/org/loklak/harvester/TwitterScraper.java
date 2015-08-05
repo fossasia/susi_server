@@ -216,8 +216,7 @@ public class TwitterScraper {
                 //new Thread(tweet).start(); // todo: use thread pools
                 //tweet.run(); // for debugging
                 executor.execute(tweet);
-                timeline.addUser(user);
-                timeline.addTweet(tweet);
+                timeline.add(tweet, user);
                 images.clear();
                 props.clear();
                 continue;

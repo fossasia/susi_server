@@ -86,8 +86,8 @@ public class Timeline implements Iterable<MessageEntry> {
         
         // create new timeline
         for (MessageEntry me: m) {
-            t.addTweet(me);
             t.addUser(this.users.get(me.getScreenName()));
+            t.addTweet(me);
         }
         
         // prune away users not needed any more in this structure
@@ -103,12 +103,17 @@ public class Timeline implements Iterable<MessageEntry> {
         return t;
     }
     
-    public void addUser(UserEntry user) {
+    public void add(MessageEntry tweet, UserEntry user) {
+        this.addUser(user);
+        this.addTweet(tweet);
+    }
+    
+    private void addUser(UserEntry user) {
         assert user != null;
         if (user != null) this.users.put(user.getScreenName(), user);
     }
     
-    public void addTweet(MessageEntry tweet) {
+    private void addTweet(MessageEntry tweet) {
         String key = "";
         if (this.order == Order.RETWEET_COUNT) {
             key = Long.toHexString(tweet.getRetweetCount());
@@ -136,13 +141,13 @@ public class Timeline implements Iterable<MessageEntry> {
     
     public void putAll(Timeline other) {
         assert this.order.equals(other.order);
-        for (MessageEntry t: other) this.addTweet(t);
         for (Map.Entry<String, UserEntry> u: other.users.entrySet()) {
             UserEntry t = this.users.get(u.getKey());
             if (t == null || !t.containsProfileImage()) {
                 this.users.put(u.getKey(), u.getValue());
             }
         }
+        for (MessageEntry t: other) this.addTweet(t);
     }
     
     public MessageEntry getBottomTweet() {

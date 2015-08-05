@@ -378,7 +378,7 @@ public class QueryEntry extends AbstractIndexEntry implements IndexEntry {
                 }
             }
             
-            tl1.addTweet(message);
+            tl1.add(message, tl0.getUser(message.getScreenName()));
         }
         return tl1;
     }

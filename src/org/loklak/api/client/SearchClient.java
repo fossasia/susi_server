@@ -22,7 +22,6 @@ package org.loklak.api.client;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -33,7 +32,6 @@ import org.loklak.data.MessageEntry;
 import org.loklak.data.UserEntry;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class SearchClient {
@@ -65,8 +63,7 @@ public class SearchClient {
                     tweet.put("provider_hash", provider_hash);
                     UserEntry u = new UserEntry(user);
                     MessageEntry t = new MessageEntry(tweet);
-                    tl.addUser(u);
-                    tl.addTweet(t);
+                    tl.add(t, u);
                 }
             }
             //System.out.println(parser.text());
