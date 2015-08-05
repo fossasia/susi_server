@@ -36,16 +36,32 @@ import java.io.IOException;
 public class JsonValidator {
 
     public enum JsonSchemaEnum {
-        FOSSASIA("fossasia.json"),
-        OPENWIFIMAP("openwifimap.json"),
-        NODELIST("nodelist-1.0.1.json"),
-        FREIFUNK_NODE("freifunk-node.json"),
+        FOSSASIA("fossasia.json", SourceType.FOSSASIA_API),
+        OPENWIFIMAP("openwifimap.json", SourceType.OPENWIFIMAP),
+        NODELIST("nodelist-1.0.1.json", SourceType.NODELIST),
+        FREIFUNK_NODE("freifunk-node.json", SourceType.FREIFUNK_NODE),
         ;
         private String filename;
-        JsonSchemaEnum(String filename) {
+        private SourceType sourceType;
+        JsonSchemaEnum(String filename, SourceType sourceType) {
             this.filename = filename;
+            this.sourceType = sourceType;
         }
         public String getFilename() { return filename; }
+
+        public SourceType getSourceType() {
+            return sourceType;
+        }
+
+        public static JsonSchemaEnum valueOf(SourceType sourceType) {
+            for (JsonSchemaEnum schema : JsonSchemaEnum.values()) {
+                if (schema.getSourceType().equals(sourceType)) {
+                    return schema;
+                }
+            }
+            throw new IllegalArgumentException("Invalid sourceType value : " + sourceType);
+        }
+
     }
 
     private JsonSchema schema;
