@@ -1,10 +1,14 @@
 package org.loklak.api.server.push;
 
+import org.loklak.data.ImportProfileEntry;
+
 public class PushReport {
     private int recordCount, newCount, knownCount, errorCount;
+    private ImportProfileEntry importProfile;
 
     public PushReport() {
         recordCount = newCount = knownCount = errorCount = 0;
+        importProfile = null;
     }
 
     public int getNewCount() {
@@ -31,12 +35,12 @@ public class PushReport {
         return this.errorCount;
     }
 
-    public PushReport combine(PushReport that) {
-        PushReport newReport = new PushReport();
-        newReport.newCount = this.getNewCount() + that.getNewCount();
-        newReport.knownCount = this.getKnownCount() + that.getKnownCount();
-        newReport.errorCount = this.getErrorCount() + that.getErrorCount();
-        return newReport;
+    public ImportProfileEntry getImportProfile() {
+        return importProfile;
+    }
+
+    public void setImportProfile(ImportProfileEntry importProfile) {
+        this.importProfile = importProfile;
     }
 
     public int getRecordCount() {

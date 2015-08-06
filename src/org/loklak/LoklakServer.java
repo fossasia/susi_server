@@ -77,6 +77,7 @@ import org.loklak.api.server.push.OpenWifiMapPushServlet;
 import org.loklak.api.server.push.NodelistPushServlet;
 import org.loklak.api.server.push.FreifunkNodePushServlet;
 import org.loklak.api.server.push.NetmonPushServlet;
+import org.loklak.api.server.ImportProfileServlet;
 import org.loklak.data.DAO;
 import org.loklak.harvester.TwitterScraper;
 import org.loklak.tools.Browser;
@@ -210,6 +211,7 @@ public class LoklakServer {
         servletHandler.addServlet(AccountServlet.class, "/api/account.json");
         servletHandler.addServlet(UserServlet.class, "/api/user.json");
         servletHandler.addServlet(CampaignServlet.class, "/api/campaign.json");
+        servletHandler.addServlet(ImportProfileServlet.class, "/api/import.json");
         servletHandler.addServlet(SettingsServlet.class, "/api/settings.json");
         servletHandler.addServlet(GeocodeServlet.class, "/api/geocode.json");
         servletHandler.addServlet(ProxyServlet.class, "/api/proxy.gif");

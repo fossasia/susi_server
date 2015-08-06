@@ -39,6 +39,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.apache.lucene.queryparser.classic.QueryParser;
 import org.eclipse.jetty.util.ConcurrentHashSet;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -102,16 +103,18 @@ public class DAO {
     public final static String USER_DUMP_FILE_PREFIX = "users_";
     public final static String FOLLOWERS_DUMP_FILE_PREFIX = "followers_";
     public final static String FOLLOWING_DUMP_FILE_PREFIX = "following_";
+    private static final String IMPORT_PROFILE_FILE_PREFIX = "profile_";
     public final static String QUERIES_INDEX_NAME = "queries";
     public final static String MESSAGES_INDEX_NAME = "messages";
     public final static String USERS_INDEX_NAME = "users";
     public final static String ACCOUNTS_INDEX_NAME = "accounts";
+    private static final String IMPORT_PROFILE_INDEX_NAME = "import_profiles";
     public final static int CACHE_MAXSIZE = 10000;
     
     public  static File conf_dir;
     private static File external_data, assets, dictionaries;
-    private static Path message_dump_dir, account_dump_dir;
-    private static JsonDump message_dump, account_dump;
+    private static Path message_dump_dir, account_dump_dir, import_profile_dump_dir;
+    private static JsonDump message_dump, account_dump, import_profile_dump;
     public  static JsonDataset user_dump, followers_dump, following_dump;
     private static File schema_dir, conv_schema_dir;
     private static Node elasticsearch_node;
@@ -120,6 +123,7 @@ public class DAO {
     private static AccountFactory accounts;
     private static MessageFactory messages;
     private static QueryFactory queries;
+    private static ImportProfileFactory importProfiles;
     private static BlockingQueue<Timeline> newMessageTimelines = new LinkedBlockingQueue<Timeline>();
     private static Map<String, String> config = new HashMap<>();
     public  static GeoNames geoNames;
@@ -162,6 +166,9 @@ public class DAO {
             followers_dump = new JsonDataset(user_dump_dir, FOLLOWERS_DUMP_FILE_PREFIX, new String[]{"id_str","screen_name"});
             following_dump = new JsonDataset(user_dump_dir, FOLLOWING_DUMP_FILE_PREFIX, new String[]{"id_str","screen_name"});
 
+	        import_profile_dump_dir = dataPath.resolve("import-profiles");
+            import_profile_dump = new JsonDump(import_profile_dump_dir.toFile(), IMPORT_PROFILE_FILE_PREFIX, null);
+
             // load schema folder
             conv_schema_dir = new File("conf/conversion");
             schema_dir = new File("conf/schema");            
@@ -198,19 +205,21 @@ public class DAO {
             users = new UserFactory(elasticsearch_client, USERS_INDEX_NAME, CACHE_MAXSIZE);
             accounts = new AccountFactory(elasticsearch_client, ACCOUNTS_INDEX_NAME, CACHE_MAXSIZE);
             queries = new QueryFactory(elasticsearch_client, QUERIES_INDEX_NAME, CACHE_MAXSIZE);
-            
+            importProfiles = new ImportProfileFactory(elasticsearch_client, IMPORT_PROFILE_INDEX_NAME, CACHE_MAXSIZE);
             // set mapping (that shows how 'elastic' elasticsearch is: it's always good to define data types)
             try {
                 elasticsearch_client.admin().indices().prepareCreate(MESSAGES_INDEX_NAME).execute().actionGet();
                 elasticsearch_client.admin().indices().prepareCreate(USERS_INDEX_NAME).execute().actionGet();
                 elasticsearch_client.admin().indices().prepareCreate(ACCOUNTS_INDEX_NAME).execute().actionGet();
                 elasticsearch_client.admin().indices().prepareCreate(QUERIES_INDEX_NAME).execute().actionGet();
+                elasticsearch_client.admin().indices().preparePutMapping(IMPORT_PROFILE_INDEX_NAME).execute().actionGet();
             } catch (IndexAlreadyExistsException ee) {}; // existing indexes are simply ignored, not re-created
             elasticsearch_client.admin().indices().preparePutMapping(MESSAGES_INDEX_NAME).setSource(messages.getMapping()).setType("_default_").execute().actionGet();
             elasticsearch_client.admin().indices().preparePutMapping(USERS_INDEX_NAME).setSource(users.getMapping()).setType("_default_").execute().actionGet();
             elasticsearch_client.admin().indices().preparePutMapping(ACCOUNTS_INDEX_NAME).setSource(accounts.getMapping()).setType("_default_").execute().actionGet();
             elasticsearch_client.admin().indices().preparePutMapping(QUERIES_INDEX_NAME).setSource(queries.getMapping()).setType("_default_").execute().actionGet();
-            
+            elasticsearch_client.admin().indices().preparePutMapping(IMPORT_PROFILE_INDEX_NAME).setSource(importProfiles.getMapping()).setType("_default").execute().actionGet();
+
             // finally wait for healty status of shards
             ClusterHealthResponse health;
             do {
@@ -460,6 +469,24 @@ public class DAO {
         return true;
     }
 
+    /**
+     * Store an import profile into the search index
+     * This method is synchronized to prevent concurrent IO caused by this call.
+     * @param i an import profile
+     * @return true if the record was stored because it did not exist, false if it was not stored because the record existed already
+     */
+    public synchronized static boolean writeImportProfile(ImportProfileEntry i, boolean dump) {
+        try {
+            // record account into text file
+            if (dump) import_profile_dump.write(i.toMap());
+            // record tweet into search index
+            importProfiles.writeEntry(i.getId(), i.getSourceType().name(), i);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return true;
+    }
+
     public static long countLocalMessages() {
         return countLocal(MESSAGES_INDEX_NAME);
     }
@@ -498,6 +525,10 @@ public class DAO {
     
     public static boolean deleteQuery(String id, SourceType sourceType) {
         return queries.delete(id, sourceType);
+    }
+
+    public  static boolean deleteImportProfile(String id, SourceType sourceType) {
+        return importProfiles.delete(id, sourceType);
     }
     
     public static class SearchLocalMessages {
@@ -716,6 +747,67 @@ public class DAO {
             
         } catch (IndexMissingException e) {}
         return queries;
+    }
+
+    public static ImportProfileEntry SearchLocalImportProfiles(final String id) {
+        try {
+            return importProfiles.read(id);
+        } catch (IOException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    public static Collection<ImportProfileEntry> SearchLocalImportProfilesWithConstraints(final Map<String, String> constraints, boolean latest) throws IOException {
+        List<ImportProfileEntry> rawResults = new ArrayList<>();
+        try {
+            SearchRequestBuilder request = elasticsearch_client.prepareSearch(IMPORT_PROFILE_INDEX_NAME)
+                    .setSearchType(SearchType.QUERY_THEN_FETCH)
+                    .setFrom(0);
+
+            String queryString = "active_status:" + EntryStatus.ACTIVE.name();
+            for (Object o : constraints.entrySet()) {
+                Map.Entry entry = (Map.Entry) o;
+                queryString += " AND " + entry.getKey() + ":" + QueryParser.escape((String) entry.getValue());
+            }
+            request.setQuery(QueryBuilders.queryStringQuery(queryString));
+
+            // get response
+            SearchResponse response = request.execute().actionGet();
+
+            // evaluate search result
+            SearchHit[] hits = response.getHits().getHits();
+            for (SearchHit hit: hits) {
+                Map<String, Object> map = hit.getSource();
+                rawResults.add(new ImportProfileEntry(map));
+            }
+        } catch (IndexMissingException e) {
+            e.printStackTrace();
+            throw new IOException("Error searching import profiles : " + e.getMessage());
+        }
+
+        if (!latest) {
+            return rawResults;
+        }
+
+        // filter results to display only latest profiles
+        Map<String, ImportProfileEntry> latests = new HashMap<>();
+        for (ImportProfileEntry entry : rawResults) {
+            String uniqueKey;
+            if (entry.getScreenName() != null) {
+                uniqueKey = entry.getSourceUrl() + entry.getScreenName();
+            } else {
+                uniqueKey = entry.getSourceUrl() + entry.getClientHost();
+            }
+            if (latests.containsKey(uniqueKey)) {
+                if (entry.getLastModified().compareTo(latests.get(uniqueKey).getLastModified()) > 0) {
+                    latests.put(uniqueKey, entry);
+                }
+            } else {
+                latests.put(uniqueKey, entry);
+            }
+        }
+        return latests.values();
     }
     
     public static Timeline[] scrapeTwitter(final String q, final Timeline.Order order, final int timezoneOffset, boolean byUserQuery) {

@@ -2,20 +2,22 @@ package org.loklak.api.server.push;
 
 import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.elasticsearch.common.xcontent.XContentFactory;
+import org.loklak.api.server.RemoteAccess;
 import org.loklak.data.DAO;
+import org.loklak.data.ImportProfileEntry;
 import org.loklak.data.MessageEntry;
 import org.loklak.data.UserEntry;
+import org.loklak.harvester.HarvestingFrequency;
 import org.loklak.harvester.SourceType;
 
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class PushServletHelper {
 
-    public static PushReport saveMessages(List<Map<String, Object>> messages) {
+    public static PushReport saveMessagesAndImportProfile(List<Map<String, Object>> messages, int fileHash, RemoteAccess.Post post, SourceType sourceType) throws IOException {
         PushReport report = new PushReport();
+        List<String> importedMsgIds = new ArrayList<>();
         for (Map<String, Object> message : messages) {
             Map<String, Object> user = (Map<String, Object>) message.remove("user");
             MessageEntry messageEntry = new MessageEntry(message);
@@ -25,17 +27,80 @@ public class PushServletHelper {
             try {
                 successful = DAO.writeMessage(messageEntry, userEntry, true, false);
             } catch (Exception e) {
+                e.printStackTrace();
                 report.incrementErrorCount();
                 continue;
             }
-            if (successful) report.incrementNewCount();
-            else report.incrementKnownCount();
+            if (successful) {
+                report.incrementNewCount();
+                importedMsgIds.add((String) message.get("id_str"));
+            } else {
+                report.incrementKnownCount();
+            }
+        }
+
+        if (report.getNewCount() > 0 ) {
+            ImportProfileEntry importProfileEntry = saveImportProfile(fileHash, post, sourceType, importedMsgIds);
+            report.setImportProfile(importProfileEntry);
         }
 
         return report;
     }
 
-    public static String printResponse(String callback, PushReport pushReport) throws IOException {
+    protected static ImportProfileEntry saveImportProfile(int fileHash, RemoteAccess.Post post, SourceType sourceType, List<String> importedMsgIds) throws IOException {
+        ImportProfileEntry importProfileEntry ;
+        Map<String, Object> profile = new HashMap<>();
+        profile.put("client_host", post.getClientHost());
+        profile.put("imported", importedMsgIds);
+
+        String screen_name = post.get("screen_name", "");
+        if (!"".equals(screen_name)) {
+            profile.put("screen_name", screen_name);
+        }
+        String harvesting_freq = post.get("harvesting_freq", "");
+        if (!"".equals(harvesting_freq)) {
+            try {
+                profile.put("harvesting_freq", HarvestingFrequency.valueOf(harvesting_freq).getFrequency());
+            } catch (IllegalArgumentException e) {
+                throw new IOException("Unsupported 'harvesting_freq' parameter value : " + harvesting_freq);
+            }
+        } else {
+            profile.put("harvesting_freq", HarvestingFrequency.NEVER.getFrequency());
+        }
+        String lifetime_str = post.get("lifetime", "");
+        if (!"".equals(lifetime_str)) {
+            int lifetime;
+            try {
+                lifetime = Integer.parseInt(lifetime_str);
+            } catch (NumberFormatException e) {
+                throw new IOException("Invalid lifetime parameter (must be an integer) : " + lifetime_str);
+            }
+            profile.put("lifetime", lifetime);
+        } else {
+            profile.put("lifetime", Integer.MAX_VALUE);
+        }
+        profile.put("source_url", post.get("url", ""));
+        profile.put("source_type", sourceType.name());
+        profile.put("source_hash", fileHash);
+        profile.put("id_str", computeImportProfileId(profile, fileHash));
+        Date currentDate = new Date();
+        profile.put("created_at" , currentDate);
+        profile.put("last_modified", currentDate);
+        profile.put("last_harvested", currentDate);
+        try {
+            importProfileEntry = new ImportProfileEntry(profile);
+        } catch (Exception e) {
+            throw new IOException("Unable to create import profile : " + e.getMessage());
+        }
+        boolean success = DAO.writeImportProfile(importProfileEntry, true);
+        if (!success) {
+            DAO.log("Error saving import profile from " + post.getClientHost());
+            throw new IOException("Unable to save import profile : " + importProfileEntry);
+        }
+        return importProfileEntry;
+    }
+
+    public static String buildJSONResponse(String callback, PushReport pushReport) throws IOException {
 
         // generate json
         XContentBuilder json = XContentFactory.jsonBuilder().prettyPrint().lfAtEnd();
@@ -45,6 +110,9 @@ public class PushServletHelper {
         json.field("new", pushReport.getNewCount());
         json.field("known", pushReport.getKnownCount());
         json.field("error", pushReport.getErrorCount());
+        ImportProfileEntry importProfile = pushReport.getImportProfile();
+        if (importProfile != null)
+            json.field("importProfile", importProfile.toMap());
         json.field("message", "pushed");
         json.endObject();
 
@@ -57,6 +125,16 @@ public class PushServletHelper {
         if (jsonp) result += ");";
 
         return result;
+    }
+
+    private static String computeImportProfileId(Map<String, Object> importProfile, int fileHash) {
+        String screen_name = (String) importProfile.get("screen_name");
+        String source_url = (String) importProfile.get("source_url");
+        if (screen_name != null && !"".equals(screen_name)) {
+            return source_url + "_" + screen_name + "_" + fileHash;
+        }
+        String client_host = (String) importProfile.get("client_host");
+        return source_url + "_" + client_host + "_" + fileHash;
     }
 
     public static String computeMessageId(Map<String, Object> message, Object initialId, SourceType sourceType) throws Exception {
@@ -82,7 +160,16 @@ public class PushServletHelper {
             mtime = Long.toString(System.currentTimeMillis());
             message.put("mtime", mtime);
         }
-        return sourceType.name() + "_" + initialId + "_" + latitude + "_" + longitude + "_" + mtime;
+
+        // If initialId found, append it in the id. The new id has this format
+        // <source_type>_<id>_<lat>_<lon>_<mtime>
+        // otherwise, the new id is <source_type>_<lat>_<lon>_<mtime>
+        boolean hasInitialId = initialId != null && !"".equals(initialId.toString());
+        if (hasInitialId) {
+            return sourceType.name() + "_" + initialId + "_" + latitude + "_" + longitude + "_" + mtime;
+        } else {
+            return sourceType.name() + "_" + latitude + "_" + longitude + "_" + mtime;
+        }
     }
 
 }

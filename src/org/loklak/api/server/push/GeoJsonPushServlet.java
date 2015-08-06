@@ -20,32 +20,21 @@
 package org.loklak.api.server.push;
 
 import org.elasticsearch.common.joda.time.DateTime;
-import org.elasticsearch.common.xcontent.XContentBuilder;
-import org.elasticsearch.common.xcontent.XContentFactory;
 import org.loklak.api.client.ClientConnection;
 import org.loklak.api.server.RemoteAccess;
 import org.loklak.data.DAO;
-import org.loklak.data.MessageEntry;
 import org.loklak.data.ProviderType;
-import org.loklak.data.UserEntry;
 import org.loklak.geo.LocationSource;
 import org.loklak.geo.PlaceContext;
 import org.loklak.harvester.SourceType;
 
 import javax.servlet.ServletException;
-import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
 import java.io.IOException;
-import java.util.List;
-import java.util.ArrayList;
-import java.util.Map;
-import java.util.HashMap;
-import java.util.Iterator;
+import java.util.*;
 import java.util.regex.Pattern;
-
 /*
  * Test URLs:
  * http://localhost:9000/api/push/geojson.json?url=http://www.paris-streetart.com/test/map.geojson
@@ -71,17 +60,21 @@ public class GeoJsonPushServlet extends HttpServlet {
         if (post.isDoS_blackout()) {response.sendError(503, "your request frequency is too high"); return;}
 
         String url = post.get("url", "");
-        String mapType = post.get("map_type", "");
-        String sourceType = post.get("source_type", "");
-        String callback = post.get("callback", "");
-        boolean jsonp = callback != null && callback.length() > 0;
+        String map_type = post.get("map_type", "");
+        String source_type_str = post.get("source_type", "");
+        if ("".equals(source_type_str) || !SourceType.hasValue(source_type_str)) {
+            DAO.log("invalid or missing source_type value : " + source_type_str);
+            source_type_str = SourceType.IMPORT.name();
+        }
+        SourceType sourceType = SourceType.valueOf(source_type_str);
 
         if (url == null || url.length() == 0) {response.sendError(400, "your request does not contain an url to your data object"); return;}
 
         // parse json retrieved from url
         final List<Map<String, Object>> features;
+        byte[] jsonText;
         try {
-            byte[] jsonText = ClientConnection.download(url);
+            jsonText = ClientConnection.download(url);
             Map<String, Object> map = DAO.jsonMapper.readValue(jsonText, DAO.jsonTypeRef);
             Object features_obj = map.get("features");
             features = features_obj instanceof List<?> ? (List<Map<String, Object>>) features_obj : null;
@@ -96,9 +89,9 @@ public class GeoJsonPushServlet extends HttpServlet {
 
         // parse maptype
         Map<String, List<String>> mapRules = new HashMap<>();
-        if (!"".equals(mapType)) {
+        if (!"".equals(map_type)) {
             try {
-                String[] mapRulesArray = mapType.split(",");
+                String[] mapRulesArray = map_type.split(",");
                 for (String rule : mapRulesArray) {
                     String[] splitted = rule.split(":", 2);
                     if (splitted.length != 2) {
@@ -106,18 +99,19 @@ public class GeoJsonPushServlet extends HttpServlet {
                     }
                     List<String> valuesList = mapRules.get(splitted[0]);
                     if (valuesList == null) {
-                        valuesList = new ArrayList<String>();
+                        valuesList = new ArrayList<>();
                         mapRules.put(splitted[0], valuesList);
                     }
                     valuesList.add(splitted[1]);
                 }
             } catch (Exception e) {
-                response.sendError(400, "error parsing map_type : " + mapType + ". Please check its format");
+                response.sendError(400, "error parsing map_type : " + map_type + ". Please check its format");
                 return;
             }
         }
 
-        int recordCount = 0, newCount = 0, knownCount = 0;
+        List<Map<String, Object>> rawMessages = new ArrayList<>();
+
         for (Map<String, Object> feature : features) {
             Object properties_obj = feature.get("properties");
             @SuppressWarnings("unchecked")
@@ -138,7 +132,7 @@ public class GeoJsonPushServlet extends HttpServlet {
             properties.putAll(mappedProperties);
 
             if (!"".equals(sourceType)) {
-                properties.put("source_type", sourceType);
+                properties.put("source_type", sourceType.name());
             } else {
                 properties.put("source_type", SourceType.IMPORT);
             }
@@ -154,44 +148,30 @@ public class GeoJsonPushServlet extends HttpServlet {
                 properties.put("text", "");
             }
 
-            // compute unique message id among geojson messages
+            // compute unique message id among all messages
+            String id_str;
             try {
-                properties.put("id_str", computeGeoJsonId(properties, geometry));
+                id_str = computeGeoJsonId(properties, geometry);
+                properties.put("id_str", id_str);
                 // response.getWriter().println(properties.get("shortname") + ", " + properties.get("screen_name") + ", " + properties.get("name") + " : " + computeGeoJsonId((feature)));
             } catch (Exception e) {
                 response.sendError(400, "Error computing id : " + e.getMessage());
                 return;
             }
-            @SuppressWarnings("unchecked")
-            Map<String, Object> user = (Map<String, Object>) properties.remove("user");
-            MessageEntry messageEntry = new MessageEntry(properties);
-            UserEntry userEntry = new UserEntry((user != null && user.get("screen_name") != null) ? user : new HashMap<String, Object>());
-            boolean successful = DAO.writeMessage(messageEntry, userEntry, true, false);
-            if (successful) newCount++; else knownCount++;
-            recordCount++;
+            rawMessages.add(properties);
         }
 
+        PushReport report = PushServletHelper.saveMessagesAndImportProfile(rawMessages, Arrays.hashCode(jsonText), post, sourceType);
+
+        String res = PushServletHelper.buildJSONResponse(post.get("callback", ""), report);
         post.setResponse(response, "application/javascript");
-
-        // generate json
-        XContentBuilder json = XContentFactory.jsonBuilder().prettyPrint().lfAtEnd();
-        json.startObject();
-        json.field("status", "ok");
-        json.field("records", recordCount);
-        json.field("new", newCount);
-        json.field("known", knownCount);
-        json.field("message", "pushed");
-        json.endObject(); // of root
-
-        // write json
-        ServletOutputStream sos = response.getOutputStream();
-        if (jsonp) sos.print(callback + "(");
-        sos.print(json.string());
-        if (jsonp) sos.println(");");
-        sos.println();
-
-        DAO.log(request.getServletPath() + " -> records = " + recordCount + ", new = " + newCount + ", known = " + knownCount + ", from host hash " + remoteHash);
-
+        response.getOutputStream().println(res);
+        DAO.log(request.getServletPath()
+                + " -> records = " + report.getRecordCount()
+                + ", new = " + report.getNewCount()
+                + ", known = " + report.getKnownCount()
+                + ", error = " + report.getErrorCount()
+                + ", from host hash " + remoteHash);
     }
 
     /**
@@ -206,8 +186,8 @@ public class GeoJsonPushServlet extends HttpServlet {
         Map<String, Object> root = new HashMap<>();
         Iterator<Map.Entry<String, Object>> it = properties.entrySet().iterator();
         while (it.hasNext()) {
-            Map.Entry<String, Object> pair = (Map.Entry<String, Object>) it.next();
-            String key = (String) pair.getKey();
+            Map.Entry<String, Object> pair = it.next();
+            String key = pair.getKey();
             if (mapRules.containsKey(key)) {
                 for (String newField : mapRules.get(key)) {
                     if (newField.contains(".")) {
@@ -242,7 +222,7 @@ public class GeoJsonPushServlet extends HttpServlet {
         if (mtime_obj == null) {
             throw new Exception("geojson format error : member 'mtime' required in feature properties");
         }
-        DateTime mtime = new DateTime((String) mtime_obj);
+        DateTime mtime = new DateTime(mtime_obj);
 
         List<?> coords = (List<?>) geometry.get("coordinates");
 

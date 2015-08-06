@@ -32,4 +32,11 @@ public enum SourceType {
     NINUX,        // imported from Ninux http://map.ninux.org
     ;
 
+    public static boolean hasValue(String value) {
+        for (SourceType sourceType : SourceType.values()) {
+            if (sourceType.name().equals(value))
+                return true;
+            }
+        return false;
+    }
 }
