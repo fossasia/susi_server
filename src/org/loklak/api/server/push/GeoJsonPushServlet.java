@@ -20,34 +20,21 @@
 package org.loklak.api.server.push;
 
 import org.elasticsearch.common.joda.time.DateTime;
-import org.elasticsearch.common.xcontent.XContentBuilder;
-import org.elasticsearch.common.xcontent.XContentFactory;
 import org.loklak.api.client.ClientConnection;
 import org.loklak.api.server.RemoteAccess;
 import org.loklak.data.DAO;
-import org.loklak.data.MessageEntry;
 import org.loklak.data.ProviderType;
-import org.loklak.data.UserEntry;
-import org.loklak.data.ImportProfileEntry;
 import org.loklak.geo.LocationSource;
 import org.loklak.geo.PlaceContext;
 import org.loklak.harvester.SourceType;
 
 import javax.servlet.ServletException;
-import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
 import java.io.IOException;
-import java.util.List;
-import java.util.ArrayList;
-import java.util.Map;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Arrays;
+import java.util.*;
 import java.util.regex.Pattern;
-import java.util.Date;
 /*
  * Test URLs:
  * http://localhost:9000/api/push/geojson.json?url=http://www.paris-streetart.com/test/map.geojson
@@ -73,15 +60,13 @@ public class GeoJsonPushServlet extends HttpServlet {
         if (post.isDoS_blackout()) {response.sendError(503, "your request frequency is too high"); return;}
 
         String url = post.get("url", "");
-        String mapType = post.get("map_type", "");
-        String sourceType = post.get("source_type", "");
-        if ("".equals(sourceType) || !SourceType.hasValue(sourceType)) {
-            DAO.log("invalid or missing source_type value : " + sourceType);
-            sourceType = SourceType.IMPORT.name();
+        String map_type = post.get("map_type", "");
+        String source_type_str = post.get("source_type", "");
+        if ("".equals(source_type_str) || !SourceType.hasValue(source_type_str)) {
+            DAO.log("invalid or missing source_type value : " + source_type_str);
+            source_type_str = SourceType.IMPORT.name();
         }
-        String screenName = post.get("screen_name", "");
-        String callback = post.get("callback", "");
-        boolean jsonp = callback != null && callback.length() > 0;
+        SourceType sourceType = SourceType.valueOf(source_type_str);
 
         if (url == null || url.length() == 0) {response.sendError(400, "your request does not contain an url to your data object"); return;}
 
@@ -104,9 +89,9 @@ public class GeoJsonPushServlet extends HttpServlet {
 
         // parse maptype
         Map<String, List<String>> mapRules = new HashMap<>();
-        if (!"".equals(mapType)) {
+        if (!"".equals(map_type)) {
             try {
-                String[] mapRulesArray = mapType.split(",");
+                String[] mapRulesArray = map_type.split(",");
                 for (String rule : mapRulesArray) {
                     String[] splitted = rule.split(":", 2);
                     if (splitted.length != 2) {
@@ -120,13 +105,13 @@ public class GeoJsonPushServlet extends HttpServlet {
                     valuesList.add(splitted[1]);
                 }
             } catch (Exception e) {
-                response.sendError(400, "error parsing map_type : " + mapType + ". Please check its format");
+                response.sendError(400, "error parsing map_type : " + map_type + ". Please check its format");
                 return;
             }
         }
 
-        int recordCount = 0, newCount = 0, knownCount = 0;
-        List<String> importedMsgIds = new ArrayList<>();
+        List<Map<String, Object>> rawMessages = new ArrayList<>();
+
         for (Map<String, Object> feature : features) {
             Object properties_obj = feature.get("properties");
             @SuppressWarnings("unchecked")
@@ -147,7 +132,7 @@ public class GeoJsonPushServlet extends HttpServlet {
             properties.putAll(mappedProperties);
 
             if (!"".equals(sourceType)) {
-                properties.put("source_type", sourceType);
+                properties.put("source_type", sourceType.name());
             } else {
                 properties.put("source_type", SourceType.IMPORT);
             }
@@ -173,67 +158,20 @@ public class GeoJsonPushServlet extends HttpServlet {
                 response.sendError(400, "Error computing id : " + e.getMessage());
                 return;
             }
-            @SuppressWarnings("unchecked")
-            Map<String, Object> user = (Map<String, Object>) properties.remove("user");
-            MessageEntry messageEntry = new MessageEntry(properties);
-            UserEntry userEntry = new UserEntry((user != null && user.get("screen_name") != null) ? user : new HashMap<String, Object>());
-            boolean successful = DAO.writeMessage(messageEntry, userEntry, true, false);
-            if (successful) {
-                newCount++;
-                importedMsgIds.add(id_str);
-            } else {
-                knownCount++;
-            }
-            recordCount++;
+            rawMessages.add(properties);
         }
 
-        ImportProfileEntry importProfileEntry = null;
+        PushReport report = PushServletHelper.saveMessagesAndImportProfile(rawMessages, Arrays.hashCode(jsonText), post, sourceType);
 
-        int fileHash = Arrays.hashCode(jsonText);
-        if (newCount > 0 ) {
-            Map<String, Object> profile = new HashMap<>();
-            profile.put("client_host", post.getClientHost());
-            profile.put("imported", importedMsgIds);
-            if (!"".equals(screenName)) {
-                profile.put("screen_name", screenName);
-            }
-            profile.put("source_url", url);
-            profile.put("source_type", sourceType);
-            profile.put("source_hash", fileHash);
-            profile.put("harvesting_freq", Integer.MAX_VALUE);
-            profile.put("lifetime", Integer.MAX_VALUE);
-            profile.put("id_str", computeImportProfileId(profile, fileHash));
-            Date currentDate = new Date();
-            profile.put("created_at" , currentDate);
-            profile.put("last_modified", currentDate);
-            profile.put("last_harvested", currentDate);
-            importProfileEntry = new ImportProfileEntry(profile);
-            DAO.writeImportProfile(importProfileEntry, true);
-        }
-
+        String res = PushServletHelper.buildJSONResponse(post.get("callback", ""), report);
         post.setResponse(response, "application/javascript");
-
-        // generate json
-        XContentBuilder json = XContentFactory.jsonBuilder().prettyPrint().lfAtEnd();
-        json.startObject();
-        json.field("status", "ok");
-        json.field("records", recordCount);
-        json.field("new", newCount);
-        json.field("known", knownCount);
-        json.field("message", "pushed");
-        if (importProfileEntry != null)
-            json.field("importProfile", importProfileEntry.toMap());
-        json.endObject(); // of root
-
-        // write json
-        ServletOutputStream sos = response.getOutputStream();
-        if (jsonp) sos.print(callback + "(");
-        sos.print(json.string());
-        if (jsonp) sos.println(");");
-        sos.println();
-
-        DAO.log(request.getServletPath() + " -> records = " + recordCount + ", new = " + newCount + ", known = " + knownCount + ", from host hash " + remoteHash);
-
+        response.getOutputStream().println(res);
+        DAO.log(request.getServletPath()
+                + " -> records = " + report.getRecordCount()
+                + ", new = " + report.getNewCount()
+                + ", known = " + report.getKnownCount()
+                + ", error = " + report.getErrorCount()
+                + ", from host hash " + remoteHash);
     }
 
     /**
@@ -294,15 +232,5 @@ public class GeoJsonPushServlet extends HttpServlet {
         // longitude and latitude are added to id to a precision of 3 digits after comma
         Long id = (long) Math.floor(1000*longitude) + (long) Math.floor(1000*latitude) + mtime.getMillis();
         return id.toString();
-    }
-
-    private static String computeImportProfileId(Map<String, Object> importProfile, int fileHash) {
-        String screen_name = (String) importProfile.get("screen_name");
-        String source_url = (String) importProfile.get("source_url");
-        if (screen_name != null && !"".equals(screen_name)) {
-            return source_url + "_" + screen_name + "_" + fileHash;
-        }
-        String client_host = (String) importProfile.get("client_host");
-        return source_url + "_" + client_host + "_" + fileHash;
     }
 }

@@ -131,7 +131,9 @@ public abstract class AbstractPushServlet extends HttpServlet {
             response.sendError(404, e.getMessage());
             return;
         }
-        String res = PushServletHelper.printResponse(post.get("callback", ""), nodePushReport);
+        String res = PushServletHelper.buildJSONResponse(post.get("callback", ""), nodePushReport);
+
+        post.setResponse(response, "application/javascript");
         response.getOutputStream().println(res);
         DAO.log(request.getServletPath()
                 + " -> records = " + nodePushReport.getRecordCount()

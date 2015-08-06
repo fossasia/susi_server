@@ -115,7 +115,7 @@ public class NetmonPushServlet extends HttpServlet {
 
         PushReport pushReport = PushServletHelper.saveMessagesAndImportProfile(nodes, Arrays.hashCode(xmlText), post, SourceType.NETMON);
 
-        String res = PushServletHelper.printResponse(post.get("callback", ""), pushReport);
+        String res = PushServletHelper.buildJSONResponse(post.get("callback", ""), pushReport);
         response.getOutputStream().println(res);
         DAO.log(request.getServletPath()
                 + " -> records = " + pushReport.getRecordCount()
