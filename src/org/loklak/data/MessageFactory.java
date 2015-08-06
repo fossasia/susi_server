@@ -42,7 +42,8 @@ public class MessageFactory extends AbstractIndexFactory<MessageEntry> implement
                   .startObject("created_at").field("type","date").field("format","dateOptionalTime").field("include_in_all","false").field("doc_values", true).endObject()
                   .startObject("on").field("type","date").field("format","dateOptionalTime").field("include_in_all","false").field("doc_values", true).endObject()
                   .startObject("to").field("type","date").field("format","dateOptionalTime").field("include_in_all","false").field("doc_values", true).endObject()
-                  .startObject("screen_name").field("type","string").field("include_in_all","false").field("doc_values", true).field("index","not_analyzed").endObject()
+                  .startObject("screen_name").field("type","string").field("include_in_all","false").field("doc_values", true).field("index","not_analyzed").endObject() // the screen_name is the nickname and unique in combination with 
+                  .startObject("retweet_from").field("type","string").field("include_in_all","false").field("doc_values", true).field("index","not_analyzed").endObject() // refers to a screen_name of the original author; indicates that this is a re-tweet of that user
                   .startObject("text").field("type","string").field("include_in_all","false").endObject()
                   .startObject("link").field("type","string").field("include_in_all","false").field("index","not_analyzed").field("doc_values", true).endObject() // not to be indexed because it is not part of the content
                   .startObject("id_str").field("type","string").field("include_in_all","false").field("index","not_analyzed").field("doc_values", true).endObject()
