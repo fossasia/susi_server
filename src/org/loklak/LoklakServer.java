@@ -71,6 +71,7 @@ import org.loklak.api.server.StatusServlet;
 import org.loklak.api.server.SuggestServlet;
 import org.loklak.api.server.AccountServlet;
 import org.loklak.api.server.ThreaddumpServlet;
+import org.loklak.api.server.ValidateServlet;
 import org.loklak.api.server.push.FossasiaPushServlet;
 import org.loklak.api.server.push.OpenWifiMapPushServlet;
 import org.loklak.api.server.push.NodelistPushServlet;
@@ -214,6 +215,7 @@ public class LoklakServer {
         servletHandler.addServlet(ProxyServlet.class, "/api/proxy.gif");
         servletHandler.addServlet(ProxyServlet.class, "/api/proxy.png");
         servletHandler.addServlet(ProxyServlet.class, "/api/proxy.jpg");
+        servletHandler.addServlet(ValidateServlet.class, "/api/validate.json");
         ServletHolder pushServletHolder = new ServletHolder(PushServlet.class);
         pushServletHolder.getRegistration().setMultipartConfig(new MultipartConfigElement(tmp.getAbsolutePath()));
         servletHandler.addServlet(pushServletHolder, "/api/push.json");
