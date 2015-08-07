@@ -634,8 +634,9 @@ public class QueryEntry extends AbstractIndexEntry implements IndexEntry {
             if (constraints_positive.contains("location")) {
                 filters.add(FilterBuilders.termsFilter("place_context", (constraint_about ? PlaceContext.ABOUT : PlaceContext.FROM).name()));
             }
-            
+
             // special treatment of location constraints of the form /location=lon-west,lat-south,lon-east,lat-north i.e. /location=8.58,50.178,8.59,50.181
+            //                      source_type constraint of the form /source_type=FOSSASIA_API -> search exact term (source_type must exists in SourceType enum)
             for (String cs: constraints_positive) {
                 if (cs.startsWith(Constraint.location.name() + "=")) {
                     String params = cs.substring(Constraint.location.name().length() + 1);
@@ -656,11 +657,25 @@ public class QueryEntry extends AbstractIndexEntry implements IndexEntry {
                                 .bottomRight(lat_south, lon_east));
                         if (coord.length == 5) filters.add(FilterBuilders.termsFilter("location_source", coord[4]));
                     }
-                }
-                if (cs.startsWith(Constraint.link.name() + "=")) {
+                } else if (cs.startsWith(Constraint.link.name() + "=")) {
                     String regexp = cs.substring(Constraint.link.name().length() + 1);
                     filters.add(FilterBuilders.existsFilter(Constraint.link.field_name));
                     filters.add(FilterBuilders.regexpFilter(Constraint.link.field_name, regexp));
+                } else if (cs.startsWith(Constraint.source_type.name() + "=")) {
+                    String regexp = cs.substring(Constraint.source_type.name().length() + 1);
+                    if (SourceType.hasValue(regexp)) {
+                        filters.add(FilterBuilders.termFilter("_type", regexp));
+                    }
+                }
+            }
+
+            for (String cs : constraints_negative) {
+                if (cs.startsWith(Constraint.source_type.name() + "=")) {
+                    String regexp = cs.substring(Constraint.source_type.name().length() + 1);
+                    if (SourceType.hasValue(regexp)) {
+                        filters.add(FilterBuilders.notFilter(FilterBuilders.termFilter("_type", regexp)));
+                    }
+
                 }
             }
 
