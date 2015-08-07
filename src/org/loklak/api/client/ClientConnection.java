@@ -139,7 +139,9 @@ public class ClientConnection {
             int count;
             try {
                 while ((count = connection.inputStream.read(buffer)) > 0) os.write(buffer, 0, count);
-            } catch (IOException e) {}
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
             connection.close();
             os.close();
         } catch (IOException e) {

@@ -19,27 +19,37 @@
 
 package org.loklak.data;
 
-import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileWriter;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.apache.lucene.queryparser.classic.QueryParser;
+import org.eclipse.jetty.util.ConcurrentHashSet;
+
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.github.fge.jackson.JsonLoader;
+import com.google.common.base.Charsets;
+import com.google.common.io.Files;
+
 import org.eclipse.jetty.util.log.Log;
+import org.elasticsearch.action.admin.cluster.health.ClusterHealthResponse;
 import org.elasticsearch.action.count.CountResponse;
 import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
@@ -62,6 +72,7 @@ import org.elasticsearch.search.aggregations.bucket.terms.Terms;
 import org.elasticsearch.search.aggregations.bucket.terms.Terms.Bucket;
 import org.elasticsearch.search.sort.SortOrder;
 import org.loklak.Caretaker;
+import org.loklak.LoklakServer;
 import org.loklak.api.client.ClientConnection;
 import org.loklak.api.client.SearchClient;
 import org.loklak.geo.GeoNames;
@@ -70,8 +81,11 @@ import org.loklak.harvester.TwitterScraper;
 import org.loklak.tools.DateParser;
 import org.loklak.tools.JsonDataset;
 import org.loklak.tools.JsonDump;
+import org.loklak.tools.JsonMinifier;
+import org.loklak.tools.JsonDataset.Index;
 
 import com.fasterxml.jackson.core.JsonFactory;
+import com.fasterxml.jackson.core.type.TypeReference;
 
 /**
  * The Data Access Object for the message project.
@@ -81,27 +95,35 @@ import com.fasterxml.jackson.core.JsonFactory;
 public class DAO {
 
     public final static JsonFactory jsonFactory = new JsonFactory();
+    public final static ObjectMapper jsonMapper = new ObjectMapper(DAO.jsonFactory);
+    public final static TypeReference<HashMap<String,Object>> jsonTypeRef = new TypeReference<HashMap<String,Object>>() {};
+
     public final static String MESSAGE_DUMP_FILE_PREFIX = "messages_";
     public final static String ACCOUNT_DUMP_FILE_PREFIX = "accounts_";
-    public final static String TWITTER_USER_DUMP_FILE_PREFIX = "twitter_users_";
+    public final static String USER_DUMP_FILE_PREFIX = "users_";
+    public final static String FOLLOWERS_DUMP_FILE_PREFIX = "followers_";
+    public final static String FOLLOWING_DUMP_FILE_PREFIX = "following_";
+    private static final String IMPORT_PROFILE_FILE_PREFIX = "profile_";
     public final static String QUERIES_INDEX_NAME = "queries";
     public final static String MESSAGES_INDEX_NAME = "messages";
     public final static String USERS_INDEX_NAME = "users";
     public final static String ACCOUNTS_INDEX_NAME = "accounts";
+    private static final String IMPORT_PROFILE_INDEX_NAME = "import_profiles";
     public final static int CACHE_MAXSIZE = 10000;
     
     public  static File conf_dir;
     private static File external_data, assets, dictionaries;
-    private static File message_dump_dir;
-    private static JsonDump message_dump, account_dump;
-    public  static JsonDataset twitter_user_dump;
-    private static File settings_dir, customized_config;
+    private static Path message_dump_dir, account_dump_dir, import_profile_dump_dir;
+    private static JsonDump message_dump, account_dump, import_profile_dump;
+    public  static JsonDataset user_dump, followers_dump, following_dump;
+    private static File schema_dir, conv_schema_dir;
     private static Node elasticsearch_node;
     private static Client elasticsearch_client;
     private static UserFactory users;
     private static AccountFactory accounts;
     private static MessageFactory messages;
     private static QueryFactory queries;
+    private static ImportProfileFactory importProfiles;
     private static BlockingQueue<Timeline> newMessageTimelines = new LinkedBlockingQueue<Timeline>();
     private static Map<String, String> config = new HashMap<>();
     public  static GeoNames geoNames;
@@ -110,27 +132,16 @@ public class DAO {
      * initialize the DAO
      * @param datadir the path to the data directory
      */
-    public static void init(File datadir) {
+    public static void init(Map<String, String> configMap, Path dataPath) {
+        config = configMap;
+        File conf_dir = new File("conf");
+        File datadir = dataPath.toFile();
         try {
             // create and document the data dump dir
             assets = new File(datadir, "assets");
             external_data = new File(datadir, "external");
             dictionaries = new File(external_data, "dictionaries");
             dictionaries.mkdirs();
-            
-            // load dictionaries if they are embedded here
-            // read the file allCountries.zip from http://download.geonames.org/export/dump/allCountries.zip
-            //File allCountries = new File(dictionaries, "allCountries.zip");
-            File cities1000 = new File(dictionaries, "cities1000.zip");
-            if (!cities1000.exists()) {
-                // download this file
-                ClientConnection.download("http://download.geonames.org/export/dump/cities1000.zip", cities1000);
-            }
-            if (cities1000.exists()) {
-                geoNames = new GeoNames(cities1000, 1);
-            } else {
-                geoNames = null;
-            }
             
             // create message dump dir
             String message_dump_readme =
@@ -141,34 +152,27 @@ public class DAO {
                 "- imported: dump files which had been processed from the import directory are moved here.\n" +
                 "You can import dump files from other peers by dropping them into the import directory.\n" +
                 "Each dump file must start with the prefix '" + MESSAGE_DUMP_FILE_PREFIX + "' to be recognized.\n";
-            message_dump_dir = new File(datadir, "dump");
-            message_dump = new JsonDump(message_dump_dir, MESSAGE_DUMP_FILE_PREFIX, message_dump_readme);
+            message_dump_dir = dataPath.resolve("dump");
+            message_dump = new JsonDump(message_dump_dir.toFile(), MESSAGE_DUMP_FILE_PREFIX, message_dump_readme);
             
-            File account_dump_dir = new File(datadir, "accounts");
-            account_dump_dir.mkdirs();
-            account_dump = new JsonDump(account_dump_dir, ACCOUNT_DUMP_FILE_PREFIX, null);
+            account_dump_dir = dataPath.resolve("accounts");
+            account_dump_dir.toFile().mkdirs();
+            LoklakServer.protectPath(account_dump_dir); // no other permissions to this path
+            account_dump = new JsonDump(account_dump_dir.toFile(), ACCOUNT_DUMP_FILE_PREFIX, null);
 
-            File twitter_user_dump_dir = new File(datadir, "accounts");
-            twitter_user_dump_dir.mkdirs();
-            twitter_user_dump = new JsonDataset(twitter_user_dump_dir, TWITTER_USER_DUMP_FILE_PREFIX, new String[]{"id_str","screen_name"});
-            
-            // load the config file(s);
-            conf_dir = new File("conf");
-            Properties prop = new Properties();
-            prop.load(new FileInputStream(new File(conf_dir, "config.properties")));
-            for (Map.Entry<Object, Object> entry: prop.entrySet()) config.put((String) entry.getKey(), (String) entry.getValue());
-            settings_dir = new File(datadir, "settings");
-            settings_dir.mkdirs();
-            customized_config = new File(settings_dir, "customized_config.properties");
-            if (!customized_config.exists()) {
-                BufferedWriter w = new BufferedWriter(new FileWriter(customized_config));
-                w.write("# This file can be used to customize the configuration file conf/config.properties\n");
-                w.close();
-            }
-            Properties customized_config_props = new Properties();
-            customized_config_props.load(new FileInputStream(customized_config));
-            for (Map.Entry<Object, Object> entry: customized_config_props.entrySet()) config.put((String) entry.getKey(), (String) entry.getValue());
-            
+            File user_dump_dir = new File(datadir, "accounts");
+            user_dump_dir.mkdirs();
+            user_dump = new JsonDataset(user_dump_dir,USER_DUMP_FILE_PREFIX, new String[]{"id_str","screen_name"});
+            followers_dump = new JsonDataset(user_dump_dir, FOLLOWERS_DUMP_FILE_PREFIX, new String[]{"id_str","screen_name"});
+            following_dump = new JsonDataset(user_dump_dir, FOLLOWING_DUMP_FILE_PREFIX, new String[]{"id_str","screen_name"});
+
+	        import_profile_dump_dir = dataPath.resolve("import-profiles");
+            import_profile_dump = new JsonDump(import_profile_dump_dir.toFile(), IMPORT_PROFILE_FILE_PREFIX, null);
+
+            // load schema folder
+            conv_schema_dir = new File("conf/conversion");
+            schema_dir = new File("conf/schema");            
+
             // use all config attributes with a key starting with "elasticsearch." to set elasticsearch settings
             Builder builder = ImmutableSettings.settingsBuilder();
             for (Map.Entry<String, String> entry: config.entrySet()) {
@@ -176,30 +180,65 @@ public class DAO {
                 if (key.startsWith("elasticsearch.")) builder.put(key.substring(14), entry.getValue());
             }
 
+            // load dictionaries if they are embedded here
+            // read the file allCountries.zip from http://download.geonames.org/export/dump/allCountries.zip
+            //File allCountries = new File(dictionaries, "allCountries.zip");
+            File cities1000 = new File(dictionaries, "cities1000.zip");
+            if (!cities1000.exists()) {
+                // download this file
+                ClientConnection.download("http://download.geonames.org/export/dump/cities1000.zip", cities1000);
+            }
+            if (cities1000.exists()) {
+                geoNames = new GeoNames(cities1000, new File(conf_dir, "iso3166.json"), 1);
+            } else {
+                geoNames = null;
+            }
+            
             // start elasticsearch
             elasticsearch_node = NodeBuilder.nodeBuilder().settings(builder).node();
             elasticsearch_client = elasticsearch_node.client();
+            Path index_dir = dataPath.resolve("index");
+            if (index_dir.toFile().exists()) LoklakServer.protectPath(index_dir); // no other permissions to this path
             
             // define the index factories
             messages = new MessageFactory(elasticsearch_client, MESSAGES_INDEX_NAME, CACHE_MAXSIZE);
             users = new UserFactory(elasticsearch_client, USERS_INDEX_NAME, CACHE_MAXSIZE);
             accounts = new AccountFactory(elasticsearch_client, ACCOUNTS_INDEX_NAME, CACHE_MAXSIZE);
             queries = new QueryFactory(elasticsearch_client, QUERIES_INDEX_NAME, CACHE_MAXSIZE);
-            
+            importProfiles = new ImportProfileFactory(elasticsearch_client, IMPORT_PROFILE_INDEX_NAME, CACHE_MAXSIZE);
             // set mapping (that shows how 'elastic' elasticsearch is: it's always good to define data types)
             try {
                 elasticsearch_client.admin().indices().prepareCreate(MESSAGES_INDEX_NAME).execute().actionGet();
                 elasticsearch_client.admin().indices().prepareCreate(USERS_INDEX_NAME).execute().actionGet();
                 elasticsearch_client.admin().indices().prepareCreate(ACCOUNTS_INDEX_NAME).execute().actionGet();
                 elasticsearch_client.admin().indices().prepareCreate(QUERIES_INDEX_NAME).execute().actionGet();
+                elasticsearch_client.admin().indices().preparePutMapping(IMPORT_PROFILE_INDEX_NAME).execute().actionGet();
             } catch (IndexAlreadyExistsException ee) {}; // existing indexes are simply ignored, not re-created
             elasticsearch_client.admin().indices().preparePutMapping(MESSAGES_INDEX_NAME).setSource(messages.getMapping()).setType("_default_").execute().actionGet();
             elasticsearch_client.admin().indices().preparePutMapping(USERS_INDEX_NAME).setSource(users.getMapping()).setType("_default_").execute().actionGet();
             elasticsearch_client.admin().indices().preparePutMapping(ACCOUNTS_INDEX_NAME).setSource(accounts.getMapping()).setType("_default_").execute().actionGet();
             elasticsearch_client.admin().indices().preparePutMapping(QUERIES_INDEX_NAME).setSource(queries.getMapping()).setType("_default_").execute().actionGet();
+            elasticsearch_client.admin().indices().preparePutMapping(IMPORT_PROFILE_INDEX_NAME).setSource(importProfiles.getMapping()).setType("_default").execute().actionGet();
+
+            // finally wait for healty status of shards
+            ClusterHealthResponse health;
+            do {
+                log("Waiting for elasticsearch yellow status");
+                health = elasticsearch_client.admin().cluster().prepareHealth().setWaitForYellowStatus().execute().actionGet();
+            } while (health.isTimedOut());
+            do {
+                log("Waiting for elasticsearch green status");
+                health = elasticsearch_client.admin().cluster().prepareHealth().setWaitForGreenStatus().execute().actionGet();
+            } while (health.isTimedOut());
+            log("elasticsearch has started up! initializing the classifier");
+            
+            // start the classifier
+            Classifier.init(10000, 1000);
+            log("classifier initialized!");
         } catch (Throwable e) {
             e.printStackTrace();
         }
+        
     }
     
     public static File getAssetFile(String screen_name, String id_str, String file) {
@@ -289,7 +328,23 @@ public class DAO {
             return default_val;
         }
     }
-    
+
+    public static JsonNode getSchema(String key) throws IOException {
+        File schema = new File(schema_dir, key);
+        if (!schema.exists()) {
+            throw new FileNotFoundException("No schema file with name " + key + " found");
+        }
+        return JsonLoader.fromFile(schema);
+    }
+
+    public static Map<String, Object> getConversionSchema(String key) throws IOException {
+        File schema = new File(conv_schema_dir, key);
+        if (!schema.exists()) {
+            throw new FileNotFoundException("No schema file with name " + key + " found");
+        }
+        return DAO.jsonMapper.readValue(Files.toString(schema, Charsets.UTF_8), DAO.jsonTypeRef);
+    }
+
     public static boolean getConfig(String key, boolean default_val) {
         String value = config.get(key);
         return value == null ? default_val : value.equals("true") || value.equals("on") || value.equals("1");
@@ -303,7 +358,20 @@ public class DAO {
         if (getConfig("backend", new String[0], ",").length > 0) newMessageTimelines.add(tl);
     }
 
-    public static Timeline takeTimeline(Timeline.Order order, int maxsize, long maxwait) {
+    public static Timeline takeTimelineMin(Timeline.Order order, int minsize, int maxsize, long maxwait) {
+        Timeline tl = takeTimelineMax(order, minsize, maxwait);
+        if (tl.size() >= minsize) {
+            // split that and return the maxsize
+            Timeline tlr = tl.reduceToMaxsize(minsize);
+            newMessageTimelines.add(tlr); // push back the remaining
+            return tl;
+        }
+        // push back that timeline and return nothing
+        newMessageTimelines.add(tl);
+        return new Timeline(order);
+    }
+
+    public static Timeline takeTimelineMax(Timeline.Order order, int maxsize, long maxwait) {
         Timeline tl = new Timeline(order);
         try {
             Timeline tl0 = newMessageTimelines.poll(maxwait, TimeUnit.MILLISECONDS);
@@ -327,7 +395,7 @@ public class DAO {
      * @param u a user
      * @return true if the record was stored because it did not exist, false if it was not stored because the record existed already
      */
-    public synchronized static boolean writeMessage(MessageEntry t, UserEntry u, boolean dump, boolean overwriteUser) {
+    public static boolean writeMessage(MessageEntry t, UserEntry u, boolean dump, boolean overwriteUser) {
         try {
 
             // check if tweet exists in index
@@ -336,23 +404,28 @@ public class DAO {
                 ((TwitterScraper.TwitterTweet) t).exist().booleanValue()) ||
                 messages.exists(t.getIdStr())) return false; // we omit writing this again
 
-            // check if user exists in index
-            if (overwriteUser) {
-                UserEntry oldUser = users.read(u.getScreenName());
-                if (oldUser == null || !oldUser.equals(u)) {
-                    writeUser(u, t.getSourceType().name());
+            synchronized (DAO.class) {
+                // check if user exists in index
+                if (overwriteUser) {
+                    UserEntry oldUser = users.read(u.getScreenName());
+                    if (oldUser == null || !oldUser.equals(u)) {
+                        writeUser(u, t.getSourceType().name());
+                    }
+                } else {
+                    if (!users.exists(u.getScreenName())) {
+                        writeUser(u, t.getSourceType().name());
+                    } 
                 }
-            } else {
-                if (!users.exists(u.getScreenName())) {
-                    writeUser(u, t.getSourceType().name());
-                } 
+    
+                // record tweet into search index
+                messages.writeEntry(t.getIdStr(), t.getSourceType().name(), t);
             }
-
+            
             // record tweet into text file
             if (dump) message_dump.write(t.toMap(u, false));
-
-            // record tweet into search index
-            messages.writeEntry(t.getIdStr(), t.getSourceType().name(), t);
+            
+            // teach the classifier
+            Classifier.learnPhrase(t.getText());
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -390,6 +463,24 @@ public class DAO {
 
             // record tweet into search index
             accounts.writeEntry(a.getScreenName(), a.getSourceType().name(), a);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return true;
+    }
+
+    /**
+     * Store an import profile into the search index
+     * This method is synchronized to prevent concurrent IO caused by this call.
+     * @param i an import profile
+     * @return true if the record was stored because it did not exist, false if it was not stored because the record existed already
+     */
+    public synchronized static boolean writeImportProfile(ImportProfileEntry i, boolean dump) {
+        try {
+            // record account into text file
+            if (dump) import_profile_dump.write(i.toMap());
+            // record tweet into search index
+            importProfiles.writeEntry(i.getId(), i.getSourceType().name(), i);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -434,6 +525,10 @@ public class DAO {
     
     public static boolean deleteQuery(String id, SourceType sourceType) {
         return queries.delete(id, sourceType);
+    }
+
+    public  static boolean deleteImportProfile(String id, SourceType sourceType) {
+        return importProfiles.delete(id, sourceType);
     }
     
     public static class SearchLocalMessages {
@@ -489,8 +584,7 @@ public class DAO {
                         UserEntry user = users.read(tweet.getScreenName());
                         assert user != null;
                         if (user != null) {
-                            timeline.addTweet(tweet);
-                            timeline.addUser(user);
+                            timeline.add(tweet, user);
                         }
                     } catch (IOException e) {
                         // TODO Auto-generated catch block
@@ -552,21 +646,23 @@ public class DAO {
      * Search the local user cache using a elasticsearch query.
      * @param screen_name - the user id
      */
-    public static UserEntry searchLocalUser(final String screen_name) {
+    public static UserEntry searchLocalUserByScreenName(final String screen_name) {
         try {
             return users.read(screen_name);
         } catch (IOException e) {
             e.printStackTrace();
             return null;
         }
-        /*
-        if (screen_name == null || screen_name.length() == 0) return null;
+    }
+
+    public static UserEntry searchLocalUserByUserId(final String user_id) {
+        if (user_id == null || user_id.length() == 0) return null;
         try {
             // prepare request
             BoolQueryBuilder query = QueryBuilders.boolQuery();
-            query.must(QueryBuilders.termQuery("screen_name", screen_name));
+            query.must(QueryBuilders.termQuery(UserFactory.field_user_id, user_id));
 
-            SearchRequestBuilder request = elasticsearch_client.prepareSearch(QUERIES_INDEX_NAME)
+            SearchRequestBuilder request = elasticsearch_client.prepareSearch(USERS_INDEX_NAME)
                     .setSearchType(SearchType.QUERY_THEN_FETCH)
                     .setQuery(query)
                     .setFrom(0)
@@ -580,13 +676,12 @@ public class DAO {
             SearchHit[] hits = response.getHits().getHits();
             if (hits.length == 0) return null;
             assert hits.length == 1;
-            Map<String, Object> map = hits[1].getSource();
+            Map<String, Object> map = hits[0].getSource();
             return new UserEntry(map);            
         } catch (IndexMissingException e) {}
         return null;
-        */
     }
-
+    
     /**
      * Search the local account cache using a elasticsearch query.
      * @param screen_name - the user id
@@ -653,6 +748,67 @@ public class DAO {
         } catch (IndexMissingException e) {}
         return queries;
     }
+
+    public static ImportProfileEntry SearchLocalImportProfiles(final String id) {
+        try {
+            return importProfiles.read(id);
+        } catch (IOException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    public static Collection<ImportProfileEntry> SearchLocalImportProfilesWithConstraints(final Map<String, String> constraints, boolean latest) throws IOException {
+        List<ImportProfileEntry> rawResults = new ArrayList<>();
+        try {
+            SearchRequestBuilder request = elasticsearch_client.prepareSearch(IMPORT_PROFILE_INDEX_NAME)
+                    .setSearchType(SearchType.QUERY_THEN_FETCH)
+                    .setFrom(0);
+
+            String queryString = "active_status:" + EntryStatus.ACTIVE.name();
+            for (Object o : constraints.entrySet()) {
+                Map.Entry entry = (Map.Entry) o;
+                queryString += " AND " + entry.getKey() + ":" + QueryParser.escape((String) entry.getValue());
+            }
+            request.setQuery(QueryBuilders.queryStringQuery(queryString));
+
+            // get response
+            SearchResponse response = request.execute().actionGet();
+
+            // evaluate search result
+            SearchHit[] hits = response.getHits().getHits();
+            for (SearchHit hit: hits) {
+                Map<String, Object> map = hit.getSource();
+                rawResults.add(new ImportProfileEntry(map));
+            }
+        } catch (IndexMissingException e) {
+            e.printStackTrace();
+            throw new IOException("Error searching import profiles : " + e.getMessage());
+        }
+
+        if (!latest) {
+            return rawResults;
+        }
+
+        // filter results to display only latest profiles
+        Map<String, ImportProfileEntry> latests = new HashMap<>();
+        for (ImportProfileEntry entry : rawResults) {
+            String uniqueKey;
+            if (entry.getScreenName() != null) {
+                uniqueKey = entry.getSourceUrl() + entry.getScreenName();
+            } else {
+                uniqueKey = entry.getSourceUrl() + entry.getClientHost();
+            }
+            if (latests.containsKey(uniqueKey)) {
+                if (entry.getLastModified().compareTo(latests.get(uniqueKey).getLastModified()) > 0) {
+                    latests.put(uniqueKey, entry);
+                }
+            } else {
+                latests.put(uniqueKey, entry);
+            }
+        }
+        return latests.values();
+    }
     
     public static Timeline[] scrapeTwitter(final String q, final Timeline.Order order, final int timezoneOffset, boolean byUserQuery) {
         // retrieve messages from remote server
@@ -679,8 +835,7 @@ public class DAO {
                 assert u != null;
                 boolean newTweet = writeMessage(t, u, true, true);
                 if (newTweet) {
-                    newMessages.addTweet(t);
-                    newMessages.addUser(u);
+                    newMessages.add(t, u);
                 }
             }
             DAO.transmitTimeline(newMessages);
@@ -732,6 +887,36 @@ public class DAO {
             }
         }
         return tl;
+    }
+    
+    public final static Set<Number> newUserIds = new ConcurrentHashSet<>();
+    
+    public static void announceNewUserId(Timeline tl) {
+        for (MessageEntry message: tl) {
+            UserEntry user = tl.getUser(message);
+            assert user != null;
+            if (user == null) continue;
+            Number id = user.getUser();
+            if (id != null) announceNewUserId(id);
+        }
+    }
+
+    public static void announceNewUserId(Number id) {
+        Index idIndex = DAO.user_dump.getIndex("id_str");
+        JsonMinifier.Capsule mapcapsule = idIndex.get(id.toString());
+        Map<String, Object> map = mapcapsule == null ? null : mapcapsule.getJson();
+        if (map == null) newUserIds.add(id);
+    }
+    
+    public static Set<Number> getNewUserIdsChunk() {
+        if (newUserIds.size() < 100) return null;
+        Set<Number> chunk = new HashSet<>();
+        Iterator<Number> i = newUserIds.iterator();
+        for (int j = 0; j < 100; j++) {
+            chunk.add(i.next());
+            i.remove();
+        }
+        return chunk;
     }
     
     public static void log(String line) {

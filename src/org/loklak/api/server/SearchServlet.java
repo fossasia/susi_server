@@ -21,6 +21,7 @@ package org.loklak.api.server;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.ConcurrentModificationException;
 import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -54,12 +55,12 @@ public class SearchServlet extends HttpServlet {
     private static final long serialVersionUID = 563533152152063908L;
 
     @Override
-    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+    protected void doPost(final HttpServletRequest request, final HttpServletResponse response) throws ServletException, IOException {
         doGet(request, response);
     }
     
     @Override
-    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+    protected void doGet(final HttpServletRequest request, final HttpServletResponse response) throws ServletException, IOException {
         try {
         RemoteAccess.Post post = RemoteAccess.evaluate(request);
         
@@ -97,7 +98,9 @@ public class SearchServlet extends HttpServlet {
                 final int timezoneOffsetf = timezoneOffset;
                 Thread scraperThread = tokens.raw.length() == 0 ? null : new Thread() {
                     public void run() {
-                        Timeline[] twitterTl = DAO.scrapeTwitter(tokens.translate4scraper(), order, timezoneOffsetf, true);
+                        final String scraper_query = tokens.translate4scraper();
+                        DAO.log(request.getServletPath() + " scraping with query: " + scraper_query);
+                        Timeline[] twitterTl = DAO.scrapeTwitter(scraper_query, order, timezoneOffsetf, true);
                         newrecords.set(twitterTl[1].size());
                         tl.putAll(QueryEntry.applyConstraint(twitterTl[1], tokens));
                     }
@@ -117,7 +120,9 @@ public class SearchServlet extends HttpServlet {
                 if (scraperThread != null) try {scraperThread.join(8000);} catch (InterruptedException e) {}
             } else {
                 if ("twitter".equals(source) && tokens.raw.length() > 0) {
-                    Timeline[] twitterTl = DAO.scrapeTwitter(tokens.translate4scraper(), order, timezoneOffset, true);
+                    final String scraper_query = tokens.translate4scraper();
+                    DAO.log(request.getServletPath() + " scraping with query: " + scraper_query);
+                    Timeline[] twitterTl = DAO.scrapeTwitter(scraper_query, order, timezoneOffset, true);
                     newrecords.set(twitterTl[1].size());
                     tl.putAll(QueryEntry.applyConstraint(twitterTl[0], tokens));
                     // in this case we use all tweets, not only the latest one because it may happen that there are no new and that is not what the user expects
@@ -138,8 +143,12 @@ public class SearchServlet extends HttpServlet {
                 }
             }
         }
-        hits = Math.max(hits, tl.size());
+        
+        // check the latest user_ids
+        DAO.announceNewUserId(tl);
+        
         // reduce the list to the wanted number of results if we have more
+        hits = Math.max(hits, tl.size());
         tl.reduceToMaxsize(count);
         
 
@@ -168,9 +177,14 @@ public class SearchServlet extends HttpServlet {
             metadata.put("servicereduction", post.isDoS_servicereduction() ? "true" : "false");
             m.put("search_metadata", metadata);
             List<Object> statuses = new ArrayList<>();
-            for (MessageEntry t: tl) {
-                UserEntry u = tl.getUser(t);
-                statuses.add(t.toMap(u, true));
+            try {
+                for (MessageEntry t: tl) {
+                    UserEntry u = tl.getUser(t);
+                    statuses.add(t.toMap(u, true));
+                }
+            } catch (ConcurrentModificationException e) {
+                // late incoming messages from concurrent peer retrieval may cause this
+                // we siletly do nothing here and return what we listed so far
             }
             m.put("statuses", statuses);
             
@@ -203,16 +217,21 @@ public class SearchServlet extends HttpServlet {
             channel.setLink("");
             RSSFeed feed = new RSSFeed(tl.size());
             feed.setChannel(channel);
-            for (MessageEntry t: tl) {
-                UserEntry u = tl.getUser(t);
-                RSSMessage m = new RSSMessage();
-                m.setLink(t.getStatusIdUrl().toExternalForm());
-                m.setAuthor(u.getName() + " @" + u.getScreenName());
-                m.setTitle(u.getName() + " @" + u.getScreenName());
-                m.setDescription(t.getText());
-                m.setPubDate(t.getCreatedAt());
-                m.setGuid(t.getIdStr());
-                feed.addMessage(m);
+            try {
+                for (MessageEntry t: tl) {
+                    UserEntry u = tl.getUser(t);
+                    RSSMessage m = new RSSMessage();
+                    m.setLink(t.getStatusIdUrl().toExternalForm());
+                    m.setAuthor(u.getName() + " @" + u.getScreenName());
+                    m.setTitle(u.getName() + " @" + u.getScreenName());
+                    m.setDescription(t.getText());
+                    m.setPubDate(t.getCreatedAt());
+                    m.setGuid(t.getIdStr());
+                    feed.addMessage(m);
+                }
+            } catch (ConcurrentModificationException e) {
+                // late incoming messages from concurrent peer retrieval may cause this
+                // we siletly do nothing here and return what we listed so far
             }
             String rss = feed.toString();
             //System.out.println("feed has " + feed.size() + " entries");

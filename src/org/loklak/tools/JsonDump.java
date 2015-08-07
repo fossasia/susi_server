@@ -46,8 +46,6 @@ import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
 import org.eclipse.jetty.util.log.Log;
-import org.elasticsearch.common.xcontent.XContentParser;
-import org.elasticsearch.common.xcontent.json.JsonXContent;
 import org.loklak.data.DAO;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -224,8 +222,7 @@ public class JsonDump {
                         br = new BufferedReader(new InputStreamReader(is, UTF8.charset));
                         while((line = br.readLine()) != null) {
                             try {
-                                XContentParser parser = JsonXContent.jsonXContent.createParser(line);
-                                Map<String, Object> json = parser == null ? null : parser.map();
+                                Map<String, Object> json = DAO.jsonMapper.readValue(line, DAO.jsonTypeRef);
                                 if (json == null) continue;
                                 this.jsonline.put(json);
                             } catch (Throwable e) {

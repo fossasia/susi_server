@@ -32,17 +32,20 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.loklak.data.Classifier.Category;
+import org.loklak.data.Classifier.Context;
 import org.loklak.geo.GeoMark;
 import org.loklak.geo.LocationSource;
 import org.loklak.geo.PlaceContext;
 import org.loklak.harvester.SourceType;
+import org.loklak.tools.bayes.Classification;
 
 public class MessageEntry extends AbstractIndexEntry implements IndexEntry {
     
     protected Date created_at, on, to; // created_at will allways be set, on means 'valid from' and 'to' means 'valid_until' and may not be set
     protected SourceType source_type; // where did the message come from
     protected ProviderType provider_type;  // who created the message
-    protected String provider_hash, screen_name, id_str, canonical_id, parent, text;
+    protected String provider_hash, screen_name, retweet_from, id_str, canonical_id, parent, text;
     protected URL status_id_url;
     protected long retweet_count, favourites_count;
     protected LinkedHashSet<String> images, audio, videos;
@@ -58,7 +61,8 @@ public class MessageEntry extends AbstractIndexEntry implements IndexEntry {
     // the following can be computed from the tweet data but is stored in the search index to provide statistical data and ranking attributes
     private int without_l_len, without_lu_len, without_luh_len; // the length of tweets without links, users, hashtags
     private String[] hosts, links, mentions, hashtags; // the arrays of links, users, hashtags
-
+    private Map<Context, Classification<String, Category>> classifier;
+    
     public MessageEntry() throws MalformedURLException {
         this.created_at = new Date();
         this.on = null;
@@ -67,6 +71,7 @@ public class MessageEntry extends AbstractIndexEntry implements IndexEntry {
         this.provider_type = ProviderType.NOONE;
         this.provider_hash = "";
         this.screen_name = "";
+        this.retweet_from = "";
         this.id_str = "";
         this.canonical_id = "";
         this.parent = "";
@@ -92,6 +97,7 @@ public class MessageEntry extends AbstractIndexEntry implements IndexEntry {
         this.links = new String[0]; 
         this.mentions = new String[0];
         this.hashtags = new String[0];
+        this.classifier = null;
     }
 
     public MessageEntry(Map<String, Object> map) {
@@ -114,6 +120,7 @@ public class MessageEntry extends AbstractIndexEntry implements IndexEntry {
         }
         this.provider_hash = (String) map.get("provider_hash");
         this.screen_name = (String) map.get("screen_name");
+        this.retweet_from = (String) map.get("retweet_from");
         this.id_str = (String) map.get("id_str");
         this.text = (String) map.get("text");
         try {
@@ -212,6 +219,14 @@ public class MessageEntry extends AbstractIndexEntry implements IndexEntry {
         this.screen_name = user_screen_name;
     }
 
+    public String getRetweetFrom() {
+        return this.retweet_from;
+    }
+    
+    public void setRetweetFrom(String retweet_from) {
+        this.retweet_from = retweet_from;
+    }
+    
     public String getIdStr() {
         return id_str;
     }
@@ -359,6 +374,20 @@ public class MessageEntry extends AbstractIndexEntry implements IndexEntry {
         return this.images;
     }
 
+    public Classifier.Category getClassifier(Classifier.Context context) {
+        if (this.classifier == null) return null;
+        Classification<String, Category> classification = this.classifier.get(context);
+        if (classification == null) return null;
+        return classification.getCategory() == Classifier.Category.NONE ? null : classification.getCategory();
+    }
+    
+    public double getClassifierProbability(Classifier.Context context) {
+        if (this.classifier == null) return 0.0d;
+        Classification<String, Category> classification = this.classifier.get(context);
+        if (classification == null) return 0.0d;
+        return classification.getProbability();
+    }
+    
     final static Pattern SPACEX_PATTERN = Pattern.compile("  +"); // two or more
     final static Pattern URL_PATTERN = Pattern.compile("(?:\\b|^)(https?://.*?)(?:[) ]|$)"); // right boundary must be space since others may appear in urls
     final static Pattern USER_PATTERN = Pattern.compile("(?:[ (]|^)(@..*?)(?:\\b|$)"); // left boundary must be space since the @ is itself a boundary
@@ -409,6 +438,9 @@ public class MessageEntry extends AbstractIndexEntry implements IndexEntry {
         this.links = new String[links.size()];
         for (int i = 0; i < links.size(); i++) this.links[i] = links.get(i);
         
+        // classify content
+        this.classifier = Classifier.classify(this.text);
+        
         // more media data, analyze the links
         for (String link: this.links) {
             if (link.endsWith(".mp4") || link.endsWith(".m4v") ||
@@ -427,21 +459,23 @@ public class MessageEntry extends AbstractIndexEntry implements IndexEntry {
         // find location
         if ((this.location_point == null || this.location_point.length == 0) && DAO.geoNames != null) {
             GeoMark loc = null;
-            if (this.place_name != null && this.place_name.length() > 0 && (this.location_source == null || this.location_source != LocationSource.ANNOTATION)) {
-                loc = DAO.geoNames.analyse(this.place_name, null, 5);
+            if (this.place_name != null && this.place_name.length() > 0 &&
+                (this.location_source == null || this.location_source == LocationSource.ANNOTATION || this.location_source == LocationSource.PLACE)) {
+                loc = DAO.geoNames.analyse(this.place_name, null, 5, this.text.hashCode());
                 this.place_context = PlaceContext.FROM;
+                this.location_source = LocationSource.PLACE;
             }
             if (loc == null) {
-                loc = DAO.geoNames.analyse(this.text, this.hashtags, 5);
+                loc = DAO.geoNames.analyse(this.text, this.hashtags, 5, this.text.hashCode());
                 this.place_context = PlaceContext.ABOUT;
+                this.location_source = LocationSource.ANNOTATION;
             }
             if (loc != null) {
-                this.place_name = loc.getNames().iterator().next();
+                if (this.place_name == null || this.place_name.length() == 0) this.place_name = loc.getNames().iterator().next();
                 this.location_radius = 0;
                 this.location_point = new double[]{loc.lon(), loc.lat()}; //[longitude, latitude]
                 this.location_mark = new double[]{loc.mlon(), loc.mlat()}; //[longitude, latitude]
-                this.location_source = LocationSource.ANNOTATION;
-                this.place_country = loc.getIO3166cc();
+                this.place_country = loc.getISO3166cc();
             }
         }
     }
@@ -467,6 +501,7 @@ public class MessageEntry extends AbstractIndexEntry implements IndexEntry {
         if (this.on != null) m.put("on", utcFormatter.print(this.on.getTime()));
         if (this.to != null) m.put("to", utcFormatter.print(this.to.getTime()));
         m.put("screen_name", this.screen_name);
+        if (this.retweet_from != null && this.retweet_from.length() > 0) m.put("retweet_from", this.retweet_from);
         m.put("text", this.text); // the tweet
         if (this.status_id_url != null) m.put("link", this.status_id_url.toExternalForm());
         m.put("id_str", this.id_str);
@@ -485,7 +520,8 @@ public class MessageEntry extends AbstractIndexEntry implements IndexEntry {
         m.put("place_id", this.place_id);
         if (this.place_context != null) m.put("place_context", this.place_context.name());
         if (this.place_country != null && this.place_country.length() == 2) {
-            m.put("place_country", this.place_country);
+            m.put("place_country", DAO.geoNames.getCountryName(this.place_country));
+            m.put("place_country_code", this.place_country);
             m.put("place_country_center", DAO.geoNames.getCountryCenter(this.place_country));
         }
   
@@ -500,6 +536,7 @@ public class MessageEntry extends AbstractIndexEntry implements IndexEntry {
         
         // add statistic/calculated data
         if (calculatedData) {
+            // redundant data for enhanced navigation with aggregations
             m.put("hosts", this.hosts);
             m.put("hosts_count", this.hosts.length);
             m.put("links", this.links);
@@ -508,6 +545,17 @@ public class MessageEntry extends AbstractIndexEntry implements IndexEntry {
             m.put("mentions_count", this.mentions.length);
             m.put("hashtags", this.hashtags);
             m.put("hashtags_count", this.hashtags.length);
+            
+            // text classifier
+            if (this.classifier != null) {
+                for (Map.Entry<Context, Classification<String, Category>> c: this.classifier.entrySet()) {
+                    assert c.getValue() != null;
+                    if (c.getValue().getCategory() == Classifier.Category.NONE) continue; // we don't store non-existing classifications
+                    m.put("classifier_" + c.getKey().name(), c.getValue().getCategory());
+                    m.put("classifier_" + c.getKey().name() + "_probability", c.getValue().getProbability());
+                }
+            }
+            
             // experimental, for ranking
             m.put("without_l_len", this.without_l_len);
             m.put("without_lu_len", this.without_lu_len);
@@ -522,18 +570,26 @@ public class MessageEntry extends AbstractIndexEntry implements IndexEntry {
     public static String html2utf8(String s) {
         int p, q;
         // hex coding &#
-        while ((p = s.indexOf("&#")) >= 0) {
-            q = s.indexOf(';', p + 2);
-            if (q < p) break;
-            String charcode = s.substring(p + 2, q);
-            int unicode = s.charAt(0) == 'x' ? Integer.parseInt(charcode.substring(1), 16) : Integer.parseInt(charcode);
-            s = s.substring(0, p) + ((unicode == 10 || unicode == 13) ? "\n" : ((char) unicode)) + s.substring(q + 1);
+        try {
+            while ((p = s.indexOf("&#")) >= 0) {
+                q = s.indexOf(';', p + 2);
+                if (q < p) break;
+                String charcode = s.substring(p + 2, q);
+                int unicode = s.charAt(0) == 'x' ? Integer.parseInt(charcode.substring(1), 16) : Integer.parseInt(charcode);
+                s = s.substring(0, p) + ((unicode == 10 || unicode == 13) ? "\n" : ((char) unicode)) + s.substring(q + 1);
+            }
+        } catch (Throwable e) {
+            e.printStackTrace();
         }
         // octal coding \\u
-        while ((p = s.indexOf("\\u")) >= 0) {
-            char r = ((char) Integer.parseInt(s.substring(p + 2, p + 6), 8));
-            if (r < ' ') r = ' ';
-            s = s.substring(0, p) + r + s.substring(p + 6);
+        try {
+            while ((p = s.indexOf("\\u")) >= 0 && s.length() >= p + 6) {
+                char r = ((char) Integer.parseInt(s.substring(p + 2, p + 6), 8));
+                if (r < ' ') r = ' ';
+                s = s.substring(0, p) + r + s.substring(p + 6);
+            }
+        } catch (Throwable e) {
+            e.printStackTrace();
         }
         // remove tags
         s = s.replaceAll("</a>", "").replaceAll("&quot;", "\"").replaceAll("&amp;", "&");

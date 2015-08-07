@@ -28,6 +28,16 @@ import org.elasticsearch.common.xcontent.XContentFactory;
 
 public class UserFactory extends AbstractIndexFactory<UserEntry> implements IndexFactory<UserEntry> {
 
+    public final static String field_screen_name = "screen_name"; // used as id of the record
+    public final static String field_user_id = "user_id"; // to reference the id of the providing service (here: twitter)
+    public final static String field_name = "name";
+    public final static String field_profile_image_url_http = "profile_image_url_http";
+    public final static String field_profile_image_url_https = "profile_image_url_https";
+    public final static String field_profile_image = "profile_image";
+    public final static String field_appearance_first = "appearance_first";
+    public final static String field_appearance_latest = "appearance_latest";
+    
+    
     public UserFactory(final Client elasticsearch_client, final String index_name, final int cacheSize) {
         super(elasticsearch_client, index_name, cacheSize);
     }
@@ -38,14 +48,14 @@ public class UserFactory extends AbstractIndexFactory<UserEntry> implements Inde
             XContentBuilder mapping = XContentFactory.jsonBuilder()
                 .startObject()
                   .startObject("properties") // the id has been omitted on purpose, we identify the user by its screen_name (even if that is changeable..)
-                    .startObject("screen_name").field("type","string").field("include_in_all","false").field("index","not_analyzed").field("doc_values", true).endObject() // our identification of the object
-                    .startObject("name").field("type","string").field("include_in_all","false").endObject()
-                    .startObject("user_id").field("type","string").field("include_in_all","false").field("index","not_analyzed").field("doc_values", true).endObject() // stored as reference to twitter, not as identification in loklak
-                    .startObject("appearance_first").field("type","date").field("format","dateOptionalTime").field("include_in_all","false").field("doc_values", true).endObject()
-                    .startObject("appearance_latest").field("type","date").field("format","dateOptionalTime").field("include_in_all","false").field("doc_values", true).endObject()
-                    .startObject("profile_image_url_http").field("type","string").field("index","not_analyzed").field("include_in_all","false").field("doc_values", true).endObject()
-                    .startObject("profile_image_url_https").field("type","string").field("index","not_analyzed").field("include_in_all","false").field("doc_values", true).endObject()
-                    .startObject("profile_image").field("type","binary").field("index","no").field("include_in_all","false").endObject() // base64 of the image if available
+                    .startObject(field_screen_name).field("type","string").field("include_in_all","false").field("index","not_analyzed").field("doc_values", true).endObject() // our identification of the object
+                    .startObject(field_name).field("type","string").field("include_in_all","false").endObject()
+                    .startObject(field_user_id).field("type","string").field("include_in_all","false").field("index","not_analyzed").field("doc_values", true).endObject() // stored as reference to twitter, not as identification in loklak
+                    .startObject(field_appearance_first).field("type","date").field("format","dateOptionalTime").field("include_in_all","false").field("doc_values", true).endObject()
+                    .startObject(field_appearance_latest).field("type","date").field("format","dateOptionalTime").field("include_in_all","false").field("doc_values", true).endObject()
+                    .startObject(field_profile_image_url_http).field("type","string").field("index","not_analyzed").field("include_in_all","false").field("doc_values", true).endObject()
+                    .startObject(field_profile_image_url_https).field("type","string").field("index","not_analyzed").field("include_in_all","false").field("doc_values", true).endObject()
+                    .startObject(field_profile_image).field("type","binary").field("index","no").field("include_in_all","false").endObject() // base64 of the image if available
                   .endObject()
                 .endObject();
             return mapping;

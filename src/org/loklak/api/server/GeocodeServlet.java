@@ -30,8 +30,6 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.elasticsearch.common.xcontent.XContentParser;
-import org.elasticsearch.common.xcontent.json.JsonXContent;
 import org.loklak.data.DAO;
 import org.loklak.geo.GeoMark;
 
@@ -75,8 +73,7 @@ public class GeocodeServlet extends HttpServlet {
         } else {
             // parse the json data
             try {
-                XContentParser parser = JsonXContent.jsonXContent.createParser(data);
-                Map<String, Object> map = parser == null ? null : parser.map();
+                Map<String, Object> map = DAO.jsonMapper.readValue(data, DAO.jsonTypeRef);
                 Object places_obj = map.get("places");
                 if (places_obj instanceof List<?>) {
                     List<Object> p = (List<Object>) places_obj;
@@ -94,11 +91,13 @@ public class GeocodeServlet extends HttpServlet {
         // find locations for places
         Map<String, Object> locations = new LinkedHashMap<>();
         for (String p: place) {
-            GeoMark loc = DAO.geoNames.analyse(p, null, 5);
+            GeoMark loc = DAO.geoNames.analyse(p, null, 5, Long.toString(System.currentTimeMillis()).hashCode());
             Map<String, Object> location = new LinkedHashMap<>();
             if (loc != null) {
                 location.put("place", minified ? new String[]{loc.getNames().iterator().next()} : loc.getNames());
                 location.put("population", loc.getPopulation());
+                location.put("country_code", loc.getISO3166cc());
+                location.put("country", DAO.geoNames.getCountryName(loc.getISO3166cc()));
                 location.put("location", new double[]{loc.lon(), loc.lat()});
                 location.put("mark", new double[]{loc.mlon(), loc.mlat()});
             }

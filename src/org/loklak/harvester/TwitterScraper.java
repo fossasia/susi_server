@@ -51,28 +51,25 @@ public class TwitterScraper {
 
     public static ExecutorService executor = Executors.newFixedThreadPool(20);
     
-    public static Timeline search(String query, Timeline.Order order) {
+    public static Timeline search(final String query, final Timeline.Order order) {
         // check
         // https://twitter.com/search-advanced for a better syntax
         // https://support.twitter.com/articles/71577-how-to-use-advanced-twitter-search#
         String https_url = "";
         try {
-            query = query.replace('+', ' ');
             StringBuilder t = new StringBuilder(query.length());
-            for (String s: query.split(" ")) {
+            for (String s: query.replace('+', ' ').split(" ")) {
                 t.append(' ');
-                if (s.startsWith("@")) {
-                    t.append('(').append("from:").append(s.substring(1)).append(" OR ").append("to:").append(s.substring(1)).append(" OR ").append(s).append(')');
-                } if (s.startsWith("since:") || s.startsWith("until:")) {
+                if (s.startsWith("since:") || s.startsWith("until:")) {
                     int u = s.indexOf('_');
                     t.append(u < 0 ? s : s.substring(0, u));
                 } else {
                     t.append(s);
                 }
             }
-            String q = t.length() == 0 ? "*" : t.substring(1);
+            String q = t.length() == 0 ? "*" : URLEncoder.encode(t.substring(1), "UTF-8");
             //https://twitter.com/search?q=from:yacy_search&src=typd
-            https_url = "https://twitter.com/search?q=" + URLEncoder.encode(q, "UTF-8") + "&src=typd&vertical=default&f=tweets";
+            https_url = "https://twitter.com/search?q=" + q + "&src=typd&vertical=default&f=tweets";
         } catch (UnsupportedEncodingException e) {}
         Timeline timeline = null;
         try {
@@ -107,7 +104,7 @@ public class TwitterScraper {
         return timeline;
     }
     
-    public static Timeline search(BufferedReader br, Timeline.Order order) throws IOException {
+    private static Timeline search(final BufferedReader br, final Timeline.Order order) throws IOException {
         Timeline timeline = new Timeline(order);
         String input;
         Map<String, prop> props = new HashMap<String, prop>();
@@ -117,7 +114,7 @@ public class TwitterScraper {
         boolean parsing_favourite = false, parsing_retweet = false;
         while ((input = br.readLine()) != null){
             input = input.trim();
-            System.out.println(input); // uncomment temporary to debug or add new fields
+            //System.out.println(input); // uncomment temporary to debug or add new fields
             int p;
             if ((p = input.indexOf("class=\"account-group")) > 0) {
                 props.put("userid", new prop(input, p, "data-user-id"));
@@ -219,8 +216,7 @@ public class TwitterScraper {
                 //new Thread(tweet).start(); // todo: use thread pools
                 //tweet.run(); // for debugging
                 executor.execute(tweet);
-                timeline.addUser(user);
-                timeline.addTweet(tweet);
+                timeline.add(tweet, user);
                 images.clear();
                 props.clear();
                 continue;

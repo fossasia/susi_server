@@ -20,12 +20,14 @@
 package org.loklak.data;
 
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
+import java.util.concurrent.ConcurrentHashMap;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -52,7 +54,7 @@ public class Timeline implements Iterable<MessageEntry> {
     
     public Timeline(Order order) {
         this.tweets = new TreeMap<String, MessageEntry>();
-        this.users = new HashMap<String, UserEntry>();
+        this.users = new ConcurrentHashMap<String, UserEntry>();
         this.order = order;
     }
     
@@ -72,17 +74,46 @@ public class Timeline implements Iterable<MessageEntry> {
         return this.tweets.size();
     }
     
-    public void reduceToMaxsize(final int maxsize) {
-        if (maxsize < 0) return;
-        while (this.tweets.size() > maxsize) this.tweets.remove(this.tweets.firstEntry().getKey());
+    public Timeline reduceToMaxsize(final int maxsize) {
+        List<MessageEntry> m = new ArrayList<>();
+        Timeline t = new Timeline(this.order);
+        if (maxsize < 0) return t;
+        
+        // remove tweets from this timeline
+        synchronized (tweets) {
+            while (this.tweets.size() > maxsize) m.add(this.tweets.remove(this.tweets.firstEntry().getKey()));
+        }
+        
+        // create new timeline
+        for (MessageEntry me: m) {
+            t.addUser(this.users.get(me.getScreenName()));
+            t.addTweet(me);
+        }
+        
+        // prune away users not needed any more in this structure
+        Set<String> screen_names = new HashSet<>();
+        for (MessageEntry me: this.tweets.values()) screen_names.add(me.getScreenName());
+        synchronized (this.users) {
+            Iterator<Map.Entry<String, UserEntry>> i = this.users.entrySet().iterator();
+            while (i.hasNext()) {
+                Map.Entry<String, UserEntry> e = i.next();
+                if (!screen_names.contains(e.getValue().getScreenName())) i.remove();
+            }
+        }        
+        return t;
     }
     
-    public void addUser(UserEntry user) {
+    public void add(MessageEntry tweet, UserEntry user) {
+        this.addUser(user);
+        this.addTweet(tweet);
+    }
+    
+    private void addUser(UserEntry user) {
         assert user != null;
         if (user != null) this.users.put(user.getScreenName(), user);
     }
     
-    public void addTweet(MessageEntry tweet) {
+    private void addTweet(MessageEntry tweet) {
         String key = "";
         if (this.order == Order.RETWEET_COUNT) {
             key = Long.toHexString(tweet.getRetweetCount());
@@ -95,7 +126,9 @@ public class Timeline implements Iterable<MessageEntry> {
         } else {
             key = Long.toHexString(tweet.getCreatedAt().getTime()) + "_" + tweet.getIdStr();
         }
-        this.tweets.put(key, tweet);
+        synchronized (tweets) {
+            this.tweets.put(key, tweet);
+        }
     }
 
     protected UserEntry getUser(String user_screen_name) {
@@ -108,21 +141,25 @@ public class Timeline implements Iterable<MessageEntry> {
     
     public void putAll(Timeline other) {
         assert this.order.equals(other.order);
-        for (MessageEntry t: other) this.addTweet(t);
         for (Map.Entry<String, UserEntry> u: other.users.entrySet()) {
             UserEntry t = this.users.get(u.getKey());
             if (t == null || !t.containsProfileImage()) {
                 this.users.put(u.getKey(), u.getValue());
             }
         }
+        for (MessageEntry t: other) this.addTweet(t);
     }
     
     public MessageEntry getBottomTweet() {
-        return this.tweets.firstEntry().getValue();
+        synchronized (tweets) {
+            return this.tweets.firstEntry().getValue();
+        }
     }
     
     public MessageEntry getTopTweet() {
-        return this.tweets.lastEntry().getValue();
+        synchronized (tweets) {
+            return this.tweets.lastEntry().getValue();
+        }
     }
     
     public String toString() {

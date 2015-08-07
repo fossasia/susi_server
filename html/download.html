@@ -81,9 +81,13 @@
           <p>After all server processes are running, <code>loklak</code> tries to open a browser page itself.
             If that does not happen, just open <a href="http://localhost:9100">http://localhost:9100</a>; if
             you made the installation on a headless or remote server, then replace 'localhost' with your server name.</p>
-          <p>To stop <code>loklak</code>, run:</p>
+          <p>To stop <code>loklak</code>, run: (this will block until the server has actually terminated)</p>
           <ul class="request">
-            <li>&gt; ./stop.sh</li>
+            <li>&gt; bin/stop.sh</li>
+          </ul>
+          <p>A self-upgrading process is available which must be triggered by a shell command. Just run:</p>
+          <ul class="request">
+            <li>&gt; bin/upgrade.sh</li>
           </ul>
            
  <br>

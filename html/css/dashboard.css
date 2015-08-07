@@ -30,7 +30,7 @@ ul.request {
   color: GreenYellow;
 }
 .tabcol1 {
-  width:190px;
+  width:200px;
   display:block;
   float:left;
   color: GreenYellow;
@@ -121,6 +121,9 @@ body {
   color: GreenYellow;
 }
 
+.nav-sidebar li a:hover {
+	background-color: grey;
+}
 
 /*
  * Main content

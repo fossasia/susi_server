@@ -19,8 +19,10 @@
 
 package org.loklak;
 
+import java.io.IOException;
 import java.util.Date;
 import java.util.List;
+import java.util.Set;
 
 import org.eclipse.jetty.util.log.Log;
 import org.elasticsearch.search.sort.SortOrder;
@@ -29,6 +31,9 @@ import org.loklak.api.client.PushClient;
 import org.loklak.data.DAO;
 import org.loklak.data.QueryEntry;
 import org.loklak.data.Timeline;
+import org.loklak.harvester.TwitterAPI;
+
+import twitter4j.TwitterException;
 
 /**
  * The caretaker class is a concurrent thread which does peer-to-peer operations
@@ -52,28 +57,32 @@ public class Caretaker extends Thread {
         // send a message to other peers that I am alive
         String[] remote = DAO.getConfig("backend", new String[0], ",");
         HelloClient.propagate(remote, (int) DAO.getConfig("port.http", 9000), (int) DAO.getConfig("port.https", 9443), (String) DAO.getConfig("peername", "anonymous"));
-
-        try {Thread.sleep(10000);} catch (InterruptedException e) {} // wait a bit to give elasticsearch a start-up time
+        
+        // work loop
         while (this.shallRun) {
             // sleep a bit to prevent that the DoS limit fires at backend server
-            try {Thread.sleep(5000);} catch (InterruptedException e) {}
+            try {Thread.sleep(4000);} catch (InterruptedException e) {}
             
             // peer-to-peer operation
-            Timeline tl = DAO.takeTimeline(Timeline.Order.CREATED_AT, 500, 3000);
+            Timeline tl = DAO.takeTimelineMin(Timeline.Order.CREATED_AT, 100, 1000, 1);
             if (!this.shallRun) break;
             if (tl != null && tl.size() > 0 && remote.length > 0) {
                 // transmit the timeline
+                try {Thread.sleep(2000);} catch (InterruptedException e) {}
                 boolean success = PushClient.push(remote, tl);
+                if (success) {
+                    DAO.log("success pushing " + tl.size() + " messages to backend in 1st attempt");
+                }
                 if (!success) {
                     // we should try again.. but not an infinite number because then
                     // our timeline in RAM would fill up our RAM creating a memory leak
                     retrylook: for (int retry = 0; retry < 3; retry++) {
                         // give back-end time to recover
+                        try {Thread.sleep(3000 + retry * 3000);} catch (InterruptedException e) {}
                         if (PushClient.push(remote, tl)) {
-                            DAO.log("success pushing to backend in " + retry + " attempt");
+                            DAO.log("success pushing " + tl.size() + " messages to backend in " + (retry + 2) + ". attempt");
                             break retrylook;
                         }
-                        try {Thread.sleep(3000 + retry * 3000);} catch (InterruptedException e) {}
                     }
                     DAO.log("failed pushing " + tl.size() + " messages to backend");
                 }
@@ -87,7 +96,8 @@ public class Caretaker extends Thread {
                 if (Crawler.process() == 0) break; // this may produce tweets for the timeline push
             }
             
-            if (DAO.getConfig("retrieval.enabled", false)) {
+            // run automatic searches
+            if (DAO.getConfig("retrieval.queries.enabled", false)) {
                 // execute some queries again: look out in the suggest database for queries with outdated due-time in field retrieval_next
                 List<QueryEntry> queryList = DAO.SearchLocalQueries("", 10, "retrieval_next", SortOrder.ASC, null, new Date(), "retrieval_next");
                 for (QueryEntry qe: queryList) {
@@ -97,7 +107,19 @@ public class Caretaker extends Thread {
                     }
                     Timeline[] t = DAO.scrapeTwitter(qe.getQuery(), Timeline.Order.CREATED_AT, qe.getTimezoneOffset(), false);
                     DAO.log("automatic retrieval of " + t[0].size() + " messages, " + t[1].size() + " new for q = \"" + qe.getQuery() + "\"");
+                    DAO.announceNewUserId(t[0]);
                     try {Thread.sleep(1000);} catch (InterruptedException e) {} // prevent remote DoS protection handling
+                }
+            }
+            
+            // retrieve user data
+            Set<Number> ids = DAO.getNewUserIdsChunk();
+            if (ids != null && DAO.getConfig("retrieval.user.enabled", false) && TwitterAPI.getAppTwitterFactory() != null) {
+                try {
+                    TwitterAPI.getScreenName(ids, 10000, false);
+                } catch (IOException | TwitterException e) {
+                    for (Number n: ids) DAO.announceNewUserId(n); // push back unread values
+                    if (e instanceof TwitterException) try {Thread.sleep(10000);} catch (InterruptedException ee) {}
                 }
             }
         }

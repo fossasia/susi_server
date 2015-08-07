@@ -29,13 +29,10 @@ import java.util.zip.GZIPOutputStream;
 public class Compression {
 
     public static byte[] gzip(byte[] b) {
-        byte[] buffer = new byte[2^20];
         try {
-            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            GZIPOutputStream out = new GZIPOutputStream(baos, 65536){{def.setLevel(Deflater.BEST_COMPRESSION);}};
-            ByteArrayInputStream in = new ByteArrayInputStream(b);
-            int l; while ((l = in.read(buffer)) > 0) out.write(buffer, 0, l);
-            in.close();
+            ByteArrayOutputStream baos = new ByteArrayOutputStream(b.length);
+            GZIPOutputStream out = new GZIPOutputStream(baos, Math.min(65536, b.length)){{def.setLevel(Deflater.BEST_COMPRESSION);}};
+            out.write(b, 0, b.length);
             out.finish();
             out.close();
             return baos.toByteArray();
@@ -44,10 +41,10 @@ public class Compression {
     }
     
     public static byte[] gunzip(byte[] b) {
-        byte[] buffer = new byte[2^20];
+        byte[] buffer = new byte[Math.min(2^20, b.length)];
         try {
-            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            GZIPInputStream in = new GZIPInputStream(new ByteArrayInputStream(b), 65536);
+            ByteArrayOutputStream baos = new ByteArrayOutputStream(b.length * 2);
+            GZIPInputStream in = new GZIPInputStream(new ByteArrayInputStream(b), Math.min(65536, b.length));
             int l; while ((l = in.read(buffer)) > 0) baos.write(buffer, 0, l);
             in.close();
             baos.close();

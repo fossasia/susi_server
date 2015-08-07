@@ -104,6 +104,9 @@ public abstract class AbstractIndexEntry implements IndexEntry {
     }
     
     public static long parseLong(Object n) {
+        if (n instanceof String) {
+            return Long.parseLong((String) n);
+        }
         assert n instanceof Number;
         return n == null ? 0 : ((Number) n).longValue();
     }

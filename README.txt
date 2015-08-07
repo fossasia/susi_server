@@ -32,6 +32,11 @@ loklak. With loklak you can do:
 
 - ant (just this, type "ant" - without quotes - and hit enter)
 
+*** How do I configure loklak?
+
+The basis configuration file is in conf/config.properties.
+To customize these settings place a file 'customized_config.properties'
+to the path data/settings/
 
 *** How do I run loklak?
 

@@ -37,6 +37,7 @@ import java.util.List;
 
 import javax.imageio.ImageIO;
 
+import org.loklak.data.DAO;
 import org.loklak.visualization.graphics.RasterPlotter;
 
 
@@ -53,7 +54,7 @@ public class OSMTile {
      * @param height number of tiles
      * @return the image
      */
-    public static RasterPlotter getCombinedTiles(final tileCoordinates t, int width, int height) {
+    public static RasterPlotter getCombinedTiles(final TileCoordinates t, int width, int height) {
         final int w = (width - 1) / 2;
         width = w * 2 + 1;
         final int h = (height - 1) / 2;
@@ -83,7 +84,7 @@ public class OSMTile {
         }
         @Override
         public void run() {
-            final tileCoordinates t = new tileCoordinates(this.xt, this.yt, this.z);
+            final TileCoordinates t = new TileCoordinates(this.xt, this.yt, this.z);
             BufferedImage bi = null;
             for (int i = 0; i < 5; i++) {
                 bi = getSingleTile(t, i);
@@ -97,7 +98,7 @@ public class OSMTile {
         }
     }
 
-    public static BufferedImage getSingleTile(final tileCoordinates tile, final int retry) {
+    public static BufferedImage getSingleTile(final TileCoordinates tile, final int retry) {
         URL tileURL;
         try {
             tileURL = new URL(tile.url(retry));
@@ -109,7 +110,8 @@ public class OSMTile {
         InputStream is;
         try {
             is = tileURL.openStream();
-        } catch (IOException e1) {
+        } catch (IOException e) {
+            DAO.log("OSMTile: cannot open stream: " + e.getMessage());
             return null;
         }
         byte[] buffer = new byte[2048];
@@ -117,34 +119,74 @@ public class OSMTile {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         try {
             while ((c = is.read(buffer)) > 0) baos.write(buffer, 0, c);
-        } catch (IOException e) {}
+        } catch (IOException e) {
+            DAO.log("OSMTile: cannot read stream: " + e.getMessage());
+        }
         byte[] tileb = baos.toByteArray();
         
         try {
             ImageIO.setUseCache(false); // do not write a cache to disc; keep in RAM
             return ImageIO.read(new ByteArrayInputStream(tileb));
         } catch (final EOFException e) {
+            DAO.log("OSMTile: cannot parse image: " + e.getMessage());
             return null;
         } catch (final IOException e) {
+            DAO.log("OSMTile: cannot open image: " + e.getMessage());
             return null;
         }
     }
 
-    public static class tileCoordinates {
+    public static class TileCoordinates {
 
-        int xtile, ytile, zoom;
-
-        public tileCoordinates(final double lat, final double lon, final int zoom) {
+        public int xtile, ytile, zoom, n;
+        public double north_lat, south_lat, east_lon, west_lon;   
+          
+        public TileCoordinates(final double lat_deg, final double lon_deg, final int zoom) {
             // see http://wiki.openstreetmap.org/wiki/Slippy_map_tilenames
-            this.zoom = zoom;
-            this.xtile = (int) Math.floor((lon + 180) / 360 * (1 << zoom));
-            this.ytile = (int) Math.floor((1 - Math.log(Math.tan(lat * RasterPlotter.PI180) + 1 / Math.cos(lat * RasterPlotter.PI180)) / Math.PI) / 2 * (1 << zoom));
-        }
+            // X goes from 0 (left edge is 180 °W) to 2^zoom − 1 (right edge is 180 °E)
+            // Y goes from 0 (top edge is 85.0511 °N) to 2^zoom − 1 (bottom edge is 85.0511 °S) in a Mercator projection
+            // the number 85.0511 is the result of arctan(sinh(π)). By using this bound, the entire map becomes a (very large) square.
 
-        public tileCoordinates(final int xtile, final int ytile, final int zoom) {
+            // Lon./lat. to tile numbers
+            // n = 2 ^ zoom
+            // xtile = n * ((lon_deg + 180) / 360)
+            // ytile = n * (1 - (log(tan(lat_rad) + sec(lat_rad)) / π)) / 2
+
+            // Tile numbers to lon./lat.
+            // n = 2 ^ zoom
+            // lon_deg = xtile / n * 360.0 - 180.0
+            // lat_rad = arctan(sinh(π * (1 - 2 * ytile / n)))
+            // lat_deg = lat_rad * 180.0 / π
+            
+            this.zoom = zoom;
+            this.n = 1 << zoom;
+            this.xtile = (int) Math.floor((lon_deg + 180) / 360 * this.n);
+            double lat_rad = lat_deg * RasterPlotter.PI180;
+            this.ytile = (int) Math.floor((1 - Math.log(Math.tan(lat_rad) + 1 / Math.cos(lat_rad)) / Math.PI) / 2 * this.n);
+            tile2boundingBox();
+        }
+        
+        public TileCoordinates(final int xtile, final int ytile, final int zoom) {
             this.zoom = zoom;
             this.xtile = xtile;
             this.ytile = ytile;
+            tile2boundingBox();
+        }
+        
+        private void tile2boundingBox() {
+            this.north_lat = tile2lat(this.ytile);
+            this.south_lat = tile2lat(this.ytile + 1);
+            this.west_lon = tile2lon(this.xtile);
+            this.east_lon = tile2lon(this.xtile + 1);
+        }
+         
+        private double tile2lon(int x) {
+            return x * 360.0d / this.n - 180.0d;
+        }
+         
+        private double tile2lat(int y) {
+            //return Math.toDegrees(Math.atan(Math.sinh(Math.PI * (1 - 2 * y) / this.n)));
+            return Math.toDegrees(Math.atan(Math.sinh(Math.PI - 2.0 * Math.PI * y / this.n)));
         }
 
         public String url(final int retry) {

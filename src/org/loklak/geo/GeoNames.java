@@ -42,8 +42,12 @@ import java.util.TreeMap;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
+import org.loklak.data.DAO;
 import org.loklak.tools.CommonPattern;
 import org.loklak.tools.UTF8;
+
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class GeoNames {
     
@@ -51,6 +55,7 @@ public class GeoNames {
     private final HashMap<Integer, List<Integer>> hash2ids;
     private final Set<Integer> stopwordHashes;
     private final Map<String, double[]> countryCenter; // mapping from the  ISO-3166 country code to [longitude, latitude], the country central
+    private Map<String, String> iso3166toCountry;
     
     public static class CountryBounds {
         public double lon_west = 0.0, lon_east = 0.0, lat_north = 0.0, lat_south = 0.0;
@@ -62,7 +67,27 @@ public class GeoNames {
         }
     }
     
-    public GeoNames(final File cities1000_zip, long minPopulation) {
+    public String getCountryName(String iso3166cc) {
+        return this.iso3166toCountry.get(iso3166cc.toUpperCase());
+    }
+    
+    public GeoNames(final File cities1000_zip, final File iso3166json, long minPopulation) {
+
+        // load iso3166 info
+        this.iso3166toCountry = new HashMap<>();
+        try {
+            ObjectMapper jsonMapper = new ObjectMapper(DAO.jsonFactory);
+            JsonNode j = jsonMapper.readTree(iso3166json);
+            for (JsonNode n: j) {
+                // contains name,alpha-2,alpha-3,country-code,iso_3166-2,region-code,sub-region-code
+                String name = n.get("name").textValue();
+                String cc = n.get("alpha-2").textValue();
+                this.iso3166toCountry.put(cc, name);
+            }
+        } catch (IOException e) {
+            this.iso3166toCountry = new HashMap<String, String>();
+        }
+        
         // this is a processing of the cities1000.zip file from http://download.geonames.org/export/dump/
 
         this.id2loc = new HashMap<>();
@@ -72,6 +97,7 @@ public class GeoNames {
         Map<String, CountryBounds> countryBounds = new HashMap<>();
 
         if ( cities1000_zip == null || !cities1000_zip.exists() ) {
+            DAO.log("GeoNames: cities1000.zip file does not exist!");
             return;
         }
         ZipFile zf = null;
@@ -84,6 +110,8 @@ public class GeoNames {
             final InputStream is = zf.getInputStream(ze);
             reader = new BufferedReader(new InputStreamReader(is, UTF8.charset));
         } catch (final IOException e ) {
+            DAO.log("GeoNames: Error when decompressing cities1000.zip!");
+            e.printStackTrace();
             return;
         }
 
@@ -173,9 +201,9 @@ public class GeoNames {
         }
     }
 
-    public GeoMark analyse(final String text, final String[] tags, final int maxlength) {
+    public GeoMark analyse(final String text, final String[] tags, final int maxlength, final int salt) {
         GeoLocation loc = geocode(text, tags, maxlength);
-        if (loc != null) return new GeoMark(loc);
+        if (loc != null) return new GeoMark(loc, salt);
         return reverse_geocode(text);
     }
 
