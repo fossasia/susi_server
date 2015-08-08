@@ -24,7 +24,6 @@ import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -44,6 +43,9 @@ import org.loklak.geo.GeoLocation;
 import org.loklak.geo.PlaceContext;
 import org.loklak.harvester.SourceType;
 import org.loklak.tools.DateParser;
+
+import com.google.common.collect.HashMultimap;
+import com.google.common.collect.Multimap;
 
 /**
  * A Query is a recording of a search result based on the query.
@@ -265,6 +267,7 @@ public class QueryEntry extends AbstractIndexEntry implements IndexEntry {
         
         public final String original, raw;
         public final HashSet<String> constraints_positive, constraints_negative;
+        public Multimap<String, String> modifier;
         public PlaceContext place_context;
         public double[] bbox;
         
@@ -276,11 +279,20 @@ public class QueryEntry extends AbstractIndexEntry implements IndexEntry {
 
             this.constraints_positive = new HashSet<>();
             this.constraints_negative = new HashSet<>();
+            this.modifier = HashMultimap.create();
             StringBuilder rawb = new StringBuilder(q.length() + 1);
             for (String t: tokens) {
-                if (t.startsWith("/")) this.constraints_positive.add(t.substring(1));
-                else if (t.startsWith("-/")) this.constraints_negative.add(t.substring(2));
-                else rawb.append(t).append(' ');
+                if (t.startsWith("/")) {
+                    constraints_positive.add(t.substring(1));
+                    continue;
+                } else if (t.startsWith("-/")) {
+                    constraints_negative.add(t.substring(2));
+                    continue;
+                } else if (t.indexOf(':') > 0) {
+                    int p = t.indexOf(':');
+                    modifier.put(t.substring(0, p).toLowerCase(), t.substring(p + 1));
+                    continue;
+                } else rawb.append(t).append(' ');
             }
             this.place_context = this.constraints_positive.remove("about") ? PlaceContext.ABOUT : PlaceContext.FROM;
             if (this.constraints_negative.remove("about")) this.place_context = PlaceContext.FROM;
@@ -327,9 +339,24 @@ public class QueryEntry extends AbstractIndexEntry implements IndexEntry {
     }
     
     public static Timeline applyConstraint(Timeline tl0, Tokens tokens) {
-        if (tokens.constraints_positive.size() == 0 && tokens.constraints_negative.size() == 0) return tl0;
+        if (tokens.constraints_positive.size() == 0 && tokens.constraints_negative.size() == 0 && tokens.modifier.size() == 0) return tl0;
         Timeline tl1 = new Timeline(tl0.getOrder());
         messageloop: for (MessageEntry message: tl0) {
+
+            // check modifier
+            if (tokens.modifier.containsKey("from")) {
+                for (String screen_name: tokens.modifier.get("from")) {
+                    if (!message.getScreenName().equals(screen_name)) continue messageloop;
+                }
+            }
+            if (tokens.modifier.containsKey("-from")) {
+                for (String screen_name: tokens.modifier.get("-from")) {
+                    if (message.getScreenName().equals(screen_name)) continue messageloop;
+                }
+            }
+            // TODO: more modifier checks here!
+            
+            // check constraints
             if (tokens.constraints_positive.contains("image") && message.getImages().size() == 0) continue;
             if (tokens.constraints_negative.contains("image") && message.getImages().size() != 0) continue;
             if (tokens.constraints_positive.contains("place") && message.getPlaceName().length() == 0) continue;
@@ -465,9 +492,9 @@ public class QueryEntry extends AbstractIndexEntry implements IndexEntry {
             ArrayList<String> users_negative = new ArrayList<>();
             ArrayList<String> hashtags_positive = new ArrayList<>();
             ArrayList<String> hashtags_negative = new ArrayList<>();
-            HashMap<String, String> modifier = new HashMap<>();
-            HashSet<String> constraints_positive = new HashSet<>();
-            HashSet<String> constraints_negative = new HashSet<>();
+            Multimap<String, String> modifier = HashMultimap.create();
+            Set<String> constraints_positive = new HashSet<>();
+            Set<String> constraints_negative = new HashSet<>();
             for (String t: qe) {
                 if (t.length() == 0) continue;
                 if (t.startsWith("@")) {
@@ -510,8 +537,8 @@ public class QueryEntry extends AbstractIndexEntry implements IndexEntry {
                     continue;
                 }
             }
-            if (modifier.containsKey("to")) users_positive.add(modifier.get("to"));
-            if (modifier.containsKey("-to")) users_negative.add(modifier.get("-to"));
+            if (modifier.containsKey("to")) users_positive.addAll(modifier.get("to"));
+            if (modifier.containsKey("-to")) users_negative.addAll(modifier.get("-to"));
 
             // special constraints
             boolean constraint_about = constraints_positive.remove("about");
@@ -546,23 +573,25 @@ public class QueryEntry extends AbstractIndexEntry implements IndexEntry {
             for (String hashtag: hashtags_negative) nops.add(QueryBuilders.termQuery("hashtags", hashtag.toLowerCase()));
             
             if (modifier.containsKey("from")) {
-                String screen_name = modifier.get("from");
-                if (screen_name.indexOf(',') < 0) {
-                    ops.add(QueryBuilders.termQuery("screen_name", screen_name));
-                } else {
-                    String[] screen_names = screen_name.split(",");
-                    BoolQueryBuilder disjunction = QueryBuilders.boolQuery();
-                    for (String name: screen_names) disjunction.should(QueryBuilders.termQuery("screen_name", name));
-                    ops.add(disjunction);
+                for (String screen_name: modifier.get("from")) {
+                    if (screen_name.indexOf(',') < 0) {
+                        ops.add(QueryBuilders.termQuery("screen_name", screen_name));
+                    } else {
+                        String[] screen_names = screen_name.split(",");
+                        BoolQueryBuilder disjunction = QueryBuilders.boolQuery();
+                        for (String name: screen_names) disjunction.should(QueryBuilders.termQuery("screen_name", name));
+                        ops.add(disjunction);
+                    }
                 }
             }
             if (modifier.containsKey("-from")) {
-                String screen_name = modifier.get("-from");
-                if (screen_name.indexOf(',') < 0) {
-                    nops.add(QueryBuilders.termQuery("screen_name", screen_name));
-                } else {
-                    String[] screen_names = screen_name.split(",");
-                    for (String name: screen_names) nops.add(QueryBuilders.termQuery("screen_name", name));
+                for (String screen_name: modifier.get("-from")) {
+                    if (screen_name.indexOf(',') < 0) {
+                        nops.add(QueryBuilders.termQuery("screen_name", screen_name));
+                    } else {
+                        String[] screen_names = screen_name.split(",");
+                        for (String name: screen_names) nops.add(QueryBuilders.termQuery("screen_name", name));
+                    }
                 }
             }
             if (modifier.containsKey("near")) {
@@ -573,11 +602,11 @@ public class QueryEntry extends AbstractIndexEntry implements IndexEntry {
                 if (ORconnective) ops.add(nearquery);
             }
             if (modifier.containsKey("since")) try {
-                Calendar since = DateParser.parse(modifier.get("since"), timezoneOffset);
+                Calendar since = DateParser.parse(modifier.get("since").iterator().next(), timezoneOffset);
                 this.since = since.getTime();
                 RangeQueryBuilder rangeQuery = QueryBuilders.rangeQuery("created_at").from(this.since);
                 if (modifier.containsKey("until")) {
-                    Calendar until = DateParser.parse(modifier.get("until"), timezoneOffset);
+                    Calendar until = DateParser.parse(modifier.get("until").iterator().next(), timezoneOffset);
                     if (until.get(Calendar.HOUR) == 0 && until.get(Calendar.MINUTE) == 0) {
                         // until must be the day which is included in results.
                         // To get the result within the same day, we must add one day.
@@ -590,7 +619,7 @@ public class QueryEntry extends AbstractIndexEntry implements IndexEntry {
                 }
                 ops.add(rangeQuery);
             } catch (ParseException e) {} else if (modifier.containsKey("until")) try {
-                Calendar until = DateParser.parse(modifier.get("until"), timezoneOffset);
+                Calendar until = DateParser.parse(modifier.get("until").iterator().next(), timezoneOffset);
                 if (until.get(Calendar.HOUR) == 0 && until.get(Calendar.MINUTE) == 0) {
                     // until must be the day which is included in results.
                     // To get the result within the same day, we must add one day.
