@@ -212,14 +212,17 @@ public class DAO {
                 elasticsearch_client.admin().indices().prepareCreate(USERS_INDEX_NAME).execute().actionGet();
                 elasticsearch_client.admin().indices().prepareCreate(ACCOUNTS_INDEX_NAME).execute().actionGet();
                 elasticsearch_client.admin().indices().prepareCreate(QUERIES_INDEX_NAME).execute().actionGet();
-                elasticsearch_client.admin().indices().preparePutMapping(IMPORT_PROFILE_INDEX_NAME).execute().actionGet();
+                elasticsearch_client.admin().indices().prepareCreate(IMPORT_PROFILE_INDEX_NAME).execute().actionGet();
             } catch (IndexAlreadyExistsException ee) {}; // existing indexes are simply ignored, not re-created
-            elasticsearch_client.admin().indices().preparePutMapping(MESSAGES_INDEX_NAME).setSource(messages.getMapping()).setType("_default_").execute().actionGet();
-            elasticsearch_client.admin().indices().preparePutMapping(USERS_INDEX_NAME).setSource(users.getMapping()).setType("_default_").execute().actionGet();
-            elasticsearch_client.admin().indices().preparePutMapping(ACCOUNTS_INDEX_NAME).setSource(accounts.getMapping()).setType("_default_").execute().actionGet();
-            elasticsearch_client.admin().indices().preparePutMapping(QUERIES_INDEX_NAME).setSource(queries.getMapping()).setType("_default_").execute().actionGet();
-            elasticsearch_client.admin().indices().preparePutMapping(IMPORT_PROFILE_INDEX_NAME).setSource(importProfiles.getMapping()).setType("_default").execute().actionGet();
-
+            try {
+                elasticsearch_client.admin().indices().preparePutMapping(MESSAGES_INDEX_NAME).setSource(messages.getMapping()).setType("_default_").execute().actionGet();
+                elasticsearch_client.admin().indices().preparePutMapping(USERS_INDEX_NAME).setSource(users.getMapping()).setType("_default_").execute().actionGet();
+                elasticsearch_client.admin().indices().preparePutMapping(ACCOUNTS_INDEX_NAME).setSource(accounts.getMapping()).setType("_default_").execute().actionGet();
+                elasticsearch_client.admin().indices().preparePutMapping(QUERIES_INDEX_NAME).setSource(queries.getMapping()).setType("_default_").execute().actionGet();
+                elasticsearch_client.admin().indices().preparePutMapping(IMPORT_PROFILE_INDEX_NAME).setSource(importProfiles.getMapping()).setType("_default").execute().actionGet();
+            } catch (Throwable e) {
+                e.printStackTrace();
+            }
             // finally wait for healty status of shards
             ClusterHealthResponse health;
             do {
