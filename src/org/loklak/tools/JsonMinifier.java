@@ -44,9 +44,12 @@ public class JsonMinifier {
         for (Map.Entry<String, Object> entry: json.entrySet()) {
             String s = this.key2short.get(entry.getKey());
             if (s == null) synchronized(this.key2short) {
-                s = "$" + Integer.toHexString(this.key2short.size());
-                this.key2short.put(entry.getKey(), s);
-                this.short2key.put(s, entry.getKey());
+                s = this.key2short.get(entry.getKey());
+                if (s == null) {
+                    s = Integer.toHexString(this.key2short.size());
+                    this.key2short.put(entry.getKey(), s);
+                    this.short2key.put(s, entry.getKey());
+                }
             }
             minified.put(s, entry.getValue());
         }
