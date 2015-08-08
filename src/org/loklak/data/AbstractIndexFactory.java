@@ -99,7 +99,7 @@ public abstract class AbstractIndexFactory<Entry extends IndexEntry> implements 
         this.cache.put(id, entry);
         // record user into search index
         Map<String, Object> jsonMap = entry.toMap();
-        DAO.log((new ObjectMapper().writerWithDefaultPrettyPrinter()).writeValueAsString(jsonMap));
+        //DAO.log((new ObjectMapper().writerWithDefaultPrettyPrinter()).writeValueAsString(jsonMap));
         if (jsonMap != null) {
             elasticsearch_client.prepareIndex(this.index_name, type, id).setSource(jsonMap)
                 .setVersion(1).setVersionType(VersionType.FORCE).execute().actionGet();
