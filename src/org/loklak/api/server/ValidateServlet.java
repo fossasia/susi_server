@@ -90,24 +90,28 @@ public class ValidateServlet extends HttpServlet {
         ValidationStatus status = null;
         String message = "";
 
-        Map<String, Object> map;
-
         boolean offline = false;
 
-        byte[] jsonText = null;
+        byte[] content = null;
+        String contentToStr = null;
         try {
-            jsonText = ClientConnection.download(url);
-            map = DAO.jsonMapper.readValue(jsonText, DAO.jsonTypeRef);
+            content = ClientConnection.download(url);
         } catch (Exception e) {
             message = "Error reading json file from url";
             status = ValidationStatus.offline;
             offline = true;
         }
 
+        if (content == null) {
+            message = "Error reading json file from url";
+            status = ValidationStatus.offline;
+            offline = true;
+        }
+
         if (!offline) {
+            contentToStr = new String(content);
             JsonValidator validator = new JsonValidator(jsonSchemaEnum);
-            // validation phase
-            ProcessingReport report = validator.validate(new String(jsonText));
+            ProcessingReport report = validator.validate(contentToStr);
             if (!report.isSuccess()) {
                 status = ValidationStatus.invalid;
                 message = "json does not conform to schema : " + jsonSchemaEnum.name() + "\n" + report;
@@ -124,6 +128,8 @@ public class ValidateServlet extends HttpServlet {
         json.field("status", status.name());
         if (!(message.length() == 0))
             json.field("details", message);
+        if (contentToStr != null)
+            json.field("content", contentToStr);
         json.endObject();
 
         // write json
