@@ -414,9 +414,9 @@ public abstract class Classifier<T, K> {
         this.incrementCategory(classification.getCategory());
 
         this.memoryQueue.offer(classification);
-        if (this.memoryQueue.size() > this.memoryCapacity) {
+        while (this.memoryQueue.size() > this.memoryCapacity) {
             Classification<T, K> toForget = this.memoryQueue.remove();
-
+            if (toForget == null) break;
             for (T feature : toForget.getFeatureset())
                 this.decrementFeature(feature, toForget.getCategory());
             this.decrementCategory(toForget.getCategory());

@@ -88,16 +88,20 @@ public class Classifier {
             }
         }
         public void learnPhrase(String phrase) {
-            List<String> words = normalize(phrase);
-            for (Map.Entry<Category, Set<String>> entry: categories.entrySet()) {
-                for (String word: words) {
-                    if (word.length() == 0) continue;
-                    if (entry.getValue().contains(word)) {
-                        bayes.learn(entry.getKey(), words);
+            try {
+                List<String> words = normalize(phrase);
+                for (Map.Entry<Category, Set<String>> entry: categories.entrySet()) {
+                    for (String word: words) {
+                        if (word.length() == 0) continue;
+                        if (entry.getValue().contains(word)) {
+                            bayes.learn(entry.getKey(), words);
+                        }
                     }
                 }
+                bayes.learn(NEGATIVE_FEATURE, words);
+            } catch (Throwable t) {
+                t.printStackTrace();
             }
-            bayes.learn(NEGATIVE_FEATURE, words);
         }
         public Classification<String, Category> classify(String phrase) {
             List<String> words = normalize(phrase);
