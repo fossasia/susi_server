@@ -33,6 +33,7 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.elasticsearch.common.unit.DistanceUnit;
 import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.FilterBuilder;
 import org.elasticsearch.index.query.FilterBuilders;
@@ -40,6 +41,7 @@ import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.index.query.RangeQueryBuilder;
 import org.loklak.geo.GeoLocation;
+import org.loklak.geo.GeoMark;
 import org.loklak.geo.PlaceContext;
 import org.loklak.harvester.SourceType;
 import org.loklak.tools.DateParser;
@@ -269,7 +271,7 @@ public class QueryEntry extends AbstractIndexEntry implements IndexEntry {
         public final HashSet<String> constraints_positive, constraints_negative;
         public Multimap<String, String> modifier;
         public PlaceContext place_context;
-        public double[] bbox;
+        public double[] bbox; // double[]{lon_west,lat_south,lon_east,lat_north}
         
         public Tokens(final String q) {
             this.original = q;
@@ -291,6 +293,7 @@ public class QueryEntry extends AbstractIndexEntry implements IndexEntry {
                 } else if (t.indexOf(':') > 0) {
                     int p = t.indexOf(':');
                     modifier.put(t.substring(0, p).toLowerCase(), t.substring(p + 1));
+                    rawb.append(t).append(' ');
                     continue;
                 } else rawb.append(t).append(' ');
             }
@@ -312,11 +315,22 @@ public class QueryEntry extends AbstractIndexEntry implements IndexEntry {
                     }
                 }
             }
+            
+            if (modifier.containsKey("near")) {
+                // either check coordinates or name
+                String near_name = modifier.get("near").iterator().next();
+                GeoMark loc = DAO.geoNames.analyse(near_name, null, 10, Long.toString(System.currentTimeMillis()).hashCode());
+                if (loc != null) {
+                    this.bbox = new double[]{loc.lon() - 1.0, loc.lat() + 1.0, loc.lon() + 1.0, loc.lat() - 1.0};
+                }
+            }
         }
         
         public String translate4scraper() {
             // check if a location constraint was given
-            if (this.bbox == null) return this.raw;
+            if (this.bbox == null || this.original.indexOf("near:") > 0) {
+                return this.raw;
+            }
             // find place within the bbox
             double lon_west  = this.bbox[0];
             double lat_south = this.bbox[1];
@@ -339,7 +353,7 @@ public class QueryEntry extends AbstractIndexEntry implements IndexEntry {
     }
     
     public static Timeline applyConstraint(Timeline tl0, Tokens tokens) {
-        if (tokens.constraints_positive.size() == 0 && tokens.constraints_negative.size() == 0 && tokens.modifier.size() == 0) return tl0;
+         if (tokens.constraints_positive.size() == 0 && tokens.constraints_negative.size() == 0 && tokens.modifier.size() == 0) return tl0;
         Timeline tl1 = new Timeline(tl0.getOrder());
         messageloop: for (MessageEntry message: tl0) {
 
@@ -354,7 +368,11 @@ public class QueryEntry extends AbstractIndexEntry implements IndexEntry {
                     if (message.getScreenName().equals(screen_name)) continue messageloop;
                 }
             }
-            // TODO: more modifier checks here!
+            if (tokens.bbox != null) {
+                if (message.location_point == null || message.location_point.length < 2) continue messageloop; //longitude, latitude
+                if (message.location_point[0] < tokens.bbox[0] || message.location_point[0] > tokens.bbox[2] ||  // double[]{lon_west,lat_south,lon_east,lat_north}
+                    message.location_point[1] > tokens.bbox[1] || message.location_point[1] < tokens.bbox[3]) continue messageloop;
+            }
             
             // check constraints
             if (tokens.constraints_positive.contains("image") && message.getImages().size() == 0) continue;
@@ -547,6 +565,7 @@ public class QueryEntry extends AbstractIndexEntry implements IndexEntry {
             // compose query for text
             List<QueryBuilder> ops = new ArrayList<>();
             List<QueryBuilder> nops = new ArrayList<>();
+            List<FilterBuilder> filters = new ArrayList<>();
             for (String text: text_positive_match)  {
                 ops.add(QueryBuilders.matchQuery("text", text));
             }
@@ -595,11 +614,17 @@ public class QueryEntry extends AbstractIndexEntry implements IndexEntry {
                 }
             }
             if (modifier.containsKey("near")) {
-                BoolQueryBuilder nearquery = QueryBuilders.boolQuery()
-                        .must(QueryBuilders.matchQuery("place_context", PlaceContext.FROM.name()))
-                        .should(QueryBuilders.matchQuery("place_name", modifier.get("near")))
-                        .should(QueryBuilders.matchQuery("text", modifier.get("near")));
-                if (ORconnective) ops.add(nearquery);
+                // either check coordinates or name
+                String near_name = modifier.get("near").iterator().next();
+                GeoMark loc = DAO.geoNames.analyse(near_name, null, 10, Long.toString(System.currentTimeMillis()).hashCode());
+                if (loc == null) {
+                    BoolQueryBuilder nearquery = QueryBuilders.boolQuery()
+                        .should(QueryBuilders.matchQuery("place_name", near_name))
+                        .should(QueryBuilders.matchQuery("text", near_name));
+                    ops.add(QueryBuilders.boolQuery().must(nearquery).must(QueryBuilders.matchQuery("place_context", PlaceContext.FROM.name())));
+                } else {                    
+                    filters.add(FilterBuilders.geoDistanceFilter("location_point").distance(100.0, DistanceUnit.KILOMETERS).lat(loc.lat()).lon(loc.lon()));
+                }
             }
             if (modifier.containsKey("since")) try {
                 Calendar since = DateParser.parse(modifier.get("since").iterator().next(), timezoneOffset);
@@ -647,7 +672,6 @@ public class QueryEntry extends AbstractIndexEntry implements IndexEntry {
             }
             
             // apply constraints as filters
-            List<FilterBuilder> filters = new ArrayList<>();
             for (String text: text_positive_filter) {
                 filters.add(FilterBuilders.termsFilter("text", text));
             }

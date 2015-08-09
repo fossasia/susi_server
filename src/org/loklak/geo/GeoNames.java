@@ -201,6 +201,14 @@ public class GeoNames {
         }
     }
 
+    /**
+     * Analyse a text for the presence of a location name
+     * @param text to be analyzed
+     * @param tags which could be location names (in favor of texts in the text string)
+     * @param maxlength the maximum number of words in the text that are tried to be combined to a location name
+     * @param salt a salt which is used for fuzzyness of the mark location
+     * @return
+     */
     public GeoMark analyse(final String text, final String[] tags, final int maxlength, final int salt) {
         GeoLocation loc = geocode(text, tags, maxlength);
         if (loc != null) return new GeoMark(loc, salt);
@@ -287,7 +295,7 @@ public class GeoNames {
      * find the geolocation for place names given in a text and/or hashtags
      * @param text
      * @param tags
-     * @param maxlength
+     * @param maxlength the maximum number of words in the text that are tried to be combined to a location name
      * @return the location if one was found or null;
      */
     private GeoLocation geocode(final String text, final String[] tags, final int maxlength) {
