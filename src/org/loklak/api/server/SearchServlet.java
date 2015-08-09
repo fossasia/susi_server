@@ -69,6 +69,8 @@ public class SearchServlet extends HttpServlet {
         
         // check call type
         boolean jsonExt = request.getServletPath().endsWith(".json");
+        boolean rssExt = request.getServletPath().endsWith(".rss");
+        boolean txtExt = request.getServletPath().endsWith(".txt");
 
         // evaluate get parameter
         String callback = post.get("callback", "");
@@ -154,10 +156,10 @@ public class SearchServlet extends HttpServlet {
         if (post.isDoS_servicereduction() && !RemoteAccess.isSleepingForClient(post.getClientHost())) {
             RemoteAccess.sleep(post.getClientHost(), 2000);
         }
-        post.setResponse(response, jsonExt ? (jsonp ? "application/javascript": "application/json") : "application/rss+xml;charset=utf-8");
         
         // create json or xml according to path extension
         if (jsonExt) {
+            post.setResponse(response, jsonp ? "application/javascript": "application/json");
             // generate json
             Map<String, Object> m = new LinkedHashMap<String, Object>();
             Map<String, Object> metadata = new LinkedHashMap<String, Object>();
@@ -207,7 +209,8 @@ public class SearchServlet extends HttpServlet {
             sos.print(minified ? new ObjectMapper().writer().writeValueAsString(m) : new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(m));
             if (jsonp) sos.println(");");
             sos.println();
-        } else {
+        } else if (rssExt) {
+            post.setResponse(response, "application/rss+xml;charset=utf-8");
             // generate xml
             RSSMessage channel = new RSSMessage();
             channel.setPubDate(new Date());
@@ -230,13 +233,26 @@ public class SearchServlet extends HttpServlet {
                 }
             } catch (ConcurrentModificationException e) {
                 // late incoming messages from concurrent peer retrieval may cause this
-                // we siletly do nothing here and return what we listed so far
+                // we silently do nothing here and return what we listed so far
             }
             String rss = feed.toString();
             //System.out.println("feed has " + feed.size() + " entries");
             
             // write xml
             response.getOutputStream().write(UTF8.getBytes(rss));
+        } else if (txtExt) {
+            post.setResponse(response, "text/plain");
+            final StringBuilder buffer = new StringBuilder(1000);
+            try {
+                for (MessageEntry t: tl) {
+                    UserEntry u = tl.getUser(t);
+                    buffer.append(t.getCreatedAt()).append(" ").append(u.getScreenName()).append(": ").append(t.getText()).append('\n');
+                }
+            } catch (ConcurrentModificationException e) {
+                // late incoming messages from concurrent peer retrieval may cause this
+                // we silently do nothing here and return what we listed so far
+            }
+            response.getOutputStream().write(UTF8.getBytes(buffer.toString()));
         }
         DAO.log(request.getServletPath() + "?" + request.getQueryString() + " -> " + tl.size() + " records returned, " +  newrecords.get() + " new");
         } catch (Throwable e) {

@@ -169,7 +169,7 @@ public class ThreaddumpServlet extends HttpServlet {
 
     private static void bufferappend(final StringBuilder buffer, final String a) {
         buffer.append(a);
-        buffer.append("\n");
+        buffer.append('\n');
     }
     
     private static class ThreadDump extends HashMap<StackTrace, List<String>> implements Map<StackTrace, List<String>> {
