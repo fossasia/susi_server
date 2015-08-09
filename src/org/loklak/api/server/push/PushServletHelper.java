@@ -167,13 +167,6 @@ public class PushServletHelper {
         return m1.equals(m2);
     }
 
-    private static boolean compareMessage(Map<String, Object> m1, Map<String, Object> m2) {
-        // Do not compare id_str
-        m1.remove("id_str");
-        m2.remove("id_str");
-        return m1.equals(m2);
-    }
-
     public static String computeMessageId(Map<String, Object> message, Object initialId, SourceType sourceType) throws Exception {
         List<Object> location = (List<Object>) message.get("location_point");
         if (location == null) {
