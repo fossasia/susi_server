@@ -92,55 +92,54 @@ public class SearchServlet extends HttpServlet {
         long hits = 0;
         final AtomicInteger newrecords = new AtomicInteger(0);
         final QueryEntry.Tokens tokens = new QueryEntry.Tokens(query);
-        if (query.length() > 0) {
-            if ("all".equals(source)) {
-                // start all targets for search concurrently
-                final int timezoneOffsetf = timezoneOffset;
-                Thread scraperThread = tokens.raw.length() == 0 ? null : new Thread() {
-                    public void run() {
-                        final String scraper_query = tokens.translate4scraper();
-                        DAO.log(request.getServletPath() + " scraping with query: " + scraper_query);
-                        Timeline[] twitterTl = DAO.scrapeTwitter(scraper_query, order, timezoneOffsetf, true);
-                        newrecords.set(twitterTl[1].size());
-                        tl.putAll(QueryEntry.applyConstraint(twitterTl[1], tokens));
-                    }
-                };
-                if (scraperThread != null) scraperThread.start();
-                Thread backendThread = new Thread() {
-                    public void run() {
-                        Timeline backendTl = DAO.searchBackend(tokens.original, order, count, timezoneOffsetf, "cache");
-                        tl.putAll(QueryEntry.applyConstraint(backendTl, tokens));
-                    }
-                };
-                backendThread.start();
-                DAO.SearchLocalMessages localSearchResult = new DAO.SearchLocalMessages(query, order, timezoneOffset, count, 0);
-                hits = localSearchResult.hits;
-                tl.putAll(localSearchResult.timeline);
-                try {backendThread.join(5000);} catch (InterruptedException e) {}
-                if (scraperThread != null) try {scraperThread.join(8000);} catch (InterruptedException e) {}
-            } else {
-                if ("twitter".equals(source) && tokens.raw.length() > 0) {
+        
+        if ("all".equals(source)) {
+            // start all targets for search concurrently
+            final int timezoneOffsetf = timezoneOffset;
+            Thread scraperThread = tokens.raw.length() == 0 ? null : new Thread() {
+                public void run() {
                     final String scraper_query = tokens.translate4scraper();
                     DAO.log(request.getServletPath() + " scraping with query: " + scraper_query);
-                    Timeline[] twitterTl = DAO.scrapeTwitter(scraper_query, order, timezoneOffset, true);
+                    Timeline[] twitterTl = DAO.scrapeTwitter(scraper_query, order, timezoneOffsetf, true);
                     newrecords.set(twitterTl[1].size());
-                    tl.putAll(QueryEntry.applyConstraint(twitterTl[0], tokens));
-                    // in this case we use all tweets, not only the latest one because it may happen that there are no new and that is not what the user expects
+                    tl.putAll(QueryEntry.applyConstraint(twitterTl[1], tokens));
                 }
-    
-                // replace the timeline with one from the own index which now includes the remote result
-                if ("backend".equals(source)) {
-                    Timeline backendTl = DAO.searchBackend(query, order, count, timezoneOffset, "cache");
+            };
+            if (scraperThread != null) scraperThread.start();
+            Thread backendThread = tokens.original.length() == 0 ? null : new Thread() {
+                public void run() {
+                    Timeline backendTl = DAO.searchBackend(tokens.original, order, count, timezoneOffsetf, "cache");
                     tl.putAll(QueryEntry.applyConstraint(backendTl, tokens));
                 }
-    
-                // replace the timeline with one from the own index which now includes the remote result
-                if ("cache".equals(source)) {
-                    DAO.SearchLocalMessages localSearchResult = new DAO.SearchLocalMessages(query, order, timezoneOffset, count, limit, fields);
-                    hits = localSearchResult.hits;
-                    tl.putAll(localSearchResult.timeline);
-                    aggregations = localSearchResult.aggregations;
-                }
+            };
+            if (backendThread != null) backendThread.start();
+            DAO.SearchLocalMessages localSearchResult = new DAO.SearchLocalMessages(query, order, timezoneOffset, count, 0);
+            hits = localSearchResult.hits;
+            tl.putAll(localSearchResult.timeline);
+            if (backendThread != null) try {backendThread.join(5000);} catch (InterruptedException e) {}
+            if (scraperThread != null) try {scraperThread.join(8000);} catch (InterruptedException e) {}
+        } else {
+            if ("twitter".equals(source) && tokens.raw.length() > 0) {
+                final String scraper_query = tokens.translate4scraper();
+                DAO.log(request.getServletPath() + " scraping with query: " + scraper_query);
+                Timeline[] twitterTl = DAO.scrapeTwitter(scraper_query, order, timezoneOffset, true);
+                newrecords.set(twitterTl[1].size());
+                tl.putAll(QueryEntry.applyConstraint(twitterTl[0], tokens));
+                // in this case we use all tweets, not only the latest one because it may happen that there are no new and that is not what the user expects
+            }
+
+            // replace the timeline with one from the own index which now includes the remote result
+            if ("backend".equals(source) && query.length() > 0) {
+                Timeline backendTl = DAO.searchBackend(query, order, count, timezoneOffset, "cache");
+                tl.putAll(QueryEntry.applyConstraint(backendTl, tokens));
+            }
+
+            // replace the timeline with one from the own index which now includes the remote result
+            if ("cache".equals(source)) {
+                DAO.SearchLocalMessages localSearchResult = new DAO.SearchLocalMessages(query, order, timezoneOffset, count, limit, fields);
+                hits = localSearchResult.hits;
+                tl.putAll(localSearchResult.timeline);
+                aggregations = localSearchResult.aggregations;
             }
         }
         
