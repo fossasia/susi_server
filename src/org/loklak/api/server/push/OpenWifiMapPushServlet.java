@@ -19,7 +19,6 @@
 
 package org.loklak.api.server.push;
 
-import org.loklak.data.DAO;
 import org.loklak.harvester.JsonFieldConverter;
 import org.loklak.harvester.JsonValidator;
 import org.loklak.harvester.SourceType;
@@ -51,11 +50,5 @@ public class OpenWifiMapPushServlet extends AbstractPushServlet {
     }
 
     @Override
-    protected void customProcessing(Map<String, Object> message) {
-        try {
-            message.put("id_str", PushServletHelper.computeMessageId(message, message.get("id"), getSourceType()));
-        } catch (Exception e) {
-            DAO.log("Problem computing id : " + e.getMessage());
-        }
-    }
+    protected void customProcessing(Map<String, Object> message) {}
 }

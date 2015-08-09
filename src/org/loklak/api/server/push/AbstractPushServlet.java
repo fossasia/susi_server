@@ -122,7 +122,22 @@ public abstract class AbstractPushServlet extends HttpServlet {
             if (message.get("text") == null) {
                 message.put("text", "");
             }
+
             customProcessing(message);
+
+            if (message.get("mtime") == null) {
+                boolean existed = PushServletHelper.checkMessageExistence(message);
+                // message known
+                if (existed) continue;
+                // updated message -> save with new mtime value
+                message.put("mtime", Long.toString(System.currentTimeMillis()));
+            }
+
+            try {
+                message.put("id_str", PushServletHelper.computeMessageId(message, message.get("id"), getSourceType()));
+            } catch (Exception e) {
+                DAO.log("Problem computing id : " + e.getMessage());
+            }
         }
         PushReport nodePushReport;
         try {

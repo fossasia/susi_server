@@ -3,17 +3,21 @@ package org.loklak.api.server.push;
 import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.elasticsearch.common.xcontent.XContentFactory;
 import org.loklak.api.server.RemoteAccess;
-import org.loklak.data.DAO;
-import org.loklak.data.ImportProfileEntry;
-import org.loklak.data.MessageEntry;
-import org.loklak.data.UserEntry;
+import org.loklak.data.*;
 import org.loklak.harvester.HarvestingFrequency;
 import org.loklak.harvester.SourceType;
 
 import java.io.IOException;
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.Iterator;
 
 public class PushServletHelper {
+
+    public static final int MAX_MESSAGE_VERSIONS = 100;
 
     public static PushReport saveMessagesAndImportProfile(List<Map<String, Object>> messages, int fileHash, RemoteAccess.Post post, SourceType sourceType) throws IOException {
         PushReport report = new PushReport();
@@ -29,6 +33,7 @@ public class PushServletHelper {
             } catch (Exception e) {
                 e.printStackTrace();
                 report.incrementErrorCount();
+                e.printStackTrace();
                 continue;
             }
             if (successful) {
@@ -137,6 +142,38 @@ public class PushServletHelper {
         return source_url + "_" + client_host + "_" + fileHash;
     }
 
+    @SuppressWarnings("unchecked")
+    public static boolean checkMessageExistence(Map<String, Object> message) {
+        String source_type = (String) message.get("source_type");
+        List<Double> location_point = (List<Double>) message.get("location_point");
+        Double latitude = location_point.get(0);
+        Double longitude = location_point.get(1);
+        String query = "/source_type=" + source_type + " /location=[" + latitude + "," + longitude + "]";
+        DAO.SearchLocalMessages search = new DAO.SearchLocalMessages(query, Timeline.Order.CREATED_AT, 0, MAX_MESSAGE_VERSIONS, 0);
+        Iterator it = search.timeline.iterator();
+        while (it.hasNext()) {
+            MessageEntry messageEntry = (MessageEntry) it.next();
+            if (compareMessage(messageEntry.toMap(), message)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static boolean compareMessage(Map<String, Object> m1, Map<String, Object> m2) {
+        // Do not compare id_str
+        m1.remove("id_str");
+        m2.remove("id_str");
+        return m1.equals(m2);
+    }
+
+    private static boolean compareMessage(Map<String, Object> m1, Map<String, Object> m2) {
+        // Do not compare id_str
+        m1.remove("id_str");
+        m2.remove("id_str");
+        return m1.equals(m2);
+    }
+
     public static String computeMessageId(Map<String, Object> message, Object initialId, SourceType sourceType) throws Exception {
         List<Object> location = (List<Object>) message.get("location_point");
         if (location == null) {
@@ -154,22 +191,18 @@ public class PushServletHelper {
         } catch (ClassCastException e) {
             throw new ClassCastException("Unable to extract lat, lon from location_point " + e.getMessage());
         }
-        // Modification time = 'mtime' value. If not found, take current time
-        Object mtime = message.get("mtime");
-        if (mtime == null) {
-            mtime = Long.toString(System.currentTimeMillis());
-            message.put("mtime", mtime);
-        }
 
         // If initialId found, append it in the id. The new id has this format
         // <source_type>_<id>_<lat>_<lon>_<mtime>
         // otherwise, the new id is <source_type>_<lat>_<lon>_<mtime>
+        Object mtime = message.get("mtime");
         boolean hasInitialId = initialId != null && !"".equals(initialId.toString());
         if (hasInitialId) {
             return sourceType.name() + "_" + initialId + "_" + latitude + "_" + longitude + "_" + mtime;
         } else {
             return sourceType.name() + "_" + latitude + "_" + longitude + "_" + mtime;
         }
+
     }
 
 }
