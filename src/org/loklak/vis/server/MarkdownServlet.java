@@ -32,6 +32,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.loklak.api.server.RemoteAccess;
 import org.loklak.api.server.RemoteAccess.FileTypeEncoding;
+import org.loklak.data.DAO;
 import org.loklak.visualization.graphics.PrintTool;
 import org.loklak.visualization.graphics.RasterPlotter;
 import org.loklak.visualization.graphics.RasterPlotter.DrawMode;
@@ -73,7 +74,13 @@ public class MarkdownServlet extends HttpServlet {
         // compute image
         BufferedReader rdr = new BufferedReader(new StringReader(text));
         List<String> lines = new ArrayList<String>();
-        for (String line = rdr.readLine(); line != null; line = rdr.readLine()) lines.add(line);
+        for (String line = rdr.readLine(); line != null; line = rdr.readLine()) {
+            String[] sublines = line.split("\n");
+            for (String subline: sublines) {
+                DAO.log("MARKDOWN-LINE: " + subline);
+                lines.add(subline);
+            }
+        }
         rdr.close();
         int charwidth = 6;
         int width = 0; for (String line: lines) width = Math.max(width, line.length());
