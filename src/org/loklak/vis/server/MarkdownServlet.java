@@ -22,6 +22,7 @@ package org.loklak.vis.server;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.StringReader;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -62,6 +63,7 @@ public class MarkdownServlet extends HttpServlet {
     protected void process(HttpServletRequest request, HttpServletResponse response, RemoteAccess.Post post) throws ServletException, IOException {
         // parse arguments
         String text = post.get("text", "");
+        DAO.log("MARKDOWN-TEXT: " + URLEncoder.encode(text, "UTF-8"));
         int padding = post.get("padding", 3);
         boolean uppercase = post.get("uppercase", true);
         long color_text = Long.parseLong(post.get("color_text", "ffffff"), 16);
