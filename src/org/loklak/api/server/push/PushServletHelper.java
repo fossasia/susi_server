@@ -1,5 +1,8 @@
 package org.loklak.api.server.push;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectWriter;
 import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.elasticsearch.common.xcontent.XContentFactory;
 import org.loklak.api.server.RemoteAccess;
@@ -17,7 +20,13 @@ import java.util.Iterator;
 
 public class PushServletHelper {
 
-    public static final int MAX_MESSAGE_VERSIONS = 100;
+    /* Fields that can be updated */
+    public static final String[] FIELDS_TO_COMPARE =
+    {
+        "screen_name",
+        "link",
+        "text" // can embed rich content
+    };
 
     public static PushReport saveMessagesAndImportProfile(List<Map<String, Object>> messages, int fileHash, RemoteAccess.Post post, SourceType sourceType) throws IOException {
         PushReport report = new PushReport();
@@ -148,11 +157,13 @@ public class PushServletHelper {
         List<Double> location_point = (List<Double>) message.get("location_point");
         Double latitude = location_point.get(0);
         Double longitude = location_point.get(1);
-        String query = "/source_type=" + source_type + " /location=[" + latitude + "," + longitude + "]";
-        DAO.SearchLocalMessages search = new DAO.SearchLocalMessages(query, Timeline.Order.CREATED_AT, 0, MAX_MESSAGE_VERSIONS, 0);
+        String query = "/source_type=" + source_type + " /location=" + latitude + "," + longitude;
+        // search only latest message
+        DAO.SearchLocalMessages search = new DAO.SearchLocalMessages(query, Timeline.Order.CREATED_AT, 0, 1, 0);
         Iterator it = search.timeline.iterator();
         while (it.hasNext()) {
             MessageEntry messageEntry = (MessageEntry) it.next();
+            DAO.log(messageEntry.getIdStr());
             if (compareMessage(messageEntry.toMap(), message)) {
                 return true;
             }
@@ -161,10 +172,14 @@ public class PushServletHelper {
     }
 
     private static boolean compareMessage(Map<String, Object> m1, Map<String, Object> m2) {
-        // Do not compare id_str
-        m1.remove("id_str");
-        m2.remove("id_str");
-        return m1.equals(m2);
+        for (String field : FIELDS_TO_COMPARE) {
+            if ((m1.get(field) == null && m2.get(field) != null)
+            || (m1.get(field) != null && m2.get(field) == null)
+            || !m1.get(field).equals(m2.get(field))) {
+                return false;
+            }
+        }
+        return true;
     }
 
     public static String computeMessageId(Map<String, Object> message, Object initialId, SourceType sourceType) throws Exception {

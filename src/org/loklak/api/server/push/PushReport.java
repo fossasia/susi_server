@@ -50,4 +50,13 @@ public class PushReport {
     public void incrementRecordCount() {
         this.recordCount++;
     }
+
+    public void combine(PushReport that) {
+        this.recordCount += that.recordCount;
+        this.newCount += that.newCount;
+        this.errorCount += that.errorCount;
+        // prioritize `that` import profile
+        if (that.importProfile != null)
+            this.importProfile = that.importProfile;
+    }
 }

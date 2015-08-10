@@ -103,7 +103,7 @@ public abstract class AbstractPushServlet extends HttpServlet {
 
         // conversion phase
         Object extractResults = extractMessages(map);
-        List<Map<String, Object>> typedMessages = null;
+        List<Map<String, Object>> typedMessages;
         if (extractResults instanceof List) {
             typedMessages = (List<Map<String, Object>>) extractResults;
         } else if (extractResults instanceof Map) {
@@ -114,8 +114,10 @@ public abstract class AbstractPushServlet extends HttpServlet {
         }
         typedMessages = this.converter.convert(typedMessages);
 
+        PushReport nodePushReport = new PushReport();
         // custom treatment for each message
-        for (Map<String, Object> message : typedMessages) {
+        for (int i = 0; i < typedMessages.size(); i++) {
+            Map<String, Object> message = typedMessages.get(i);
             message.put("source_type", this.getSourceType().name());
             message.put("location_source", LocationSource.USER.name());
             message.put("place_context", PlaceContext.ABOUT.name());
@@ -128,7 +130,11 @@ public abstract class AbstractPushServlet extends HttpServlet {
             if (message.get("mtime") == null) {
                 boolean existed = PushServletHelper.checkMessageExistence(message);
                 // message known
-                if (existed) continue;
+                if (existed) {
+                    typedMessages.remove(i);
+                    nodePushReport.incrementKnownCount();
+                    continue;
+                }
                 // updated message -> save with new mtime value
                 message.put("mtime", Long.toString(System.currentTimeMillis()));
             }
@@ -139,9 +145,9 @@ public abstract class AbstractPushServlet extends HttpServlet {
                 DAO.log("Problem computing id : " + e.getMessage());
             }
         }
-        PushReport nodePushReport;
         try {
-            nodePushReport = PushServletHelper.saveMessagesAndImportProfile(typedMessages, Arrays.hashCode(jsonText), post, getSourceType());
+            PushReport savingReport = PushServletHelper.saveMessagesAndImportProfile(typedMessages, Arrays.hashCode(jsonText), post, getSourceType());
+            nodePushReport.combine(savingReport);
         } catch (IOException e) {
             response.sendError(404, e.getMessage());
             return;
