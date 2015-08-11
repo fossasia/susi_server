@@ -60,8 +60,9 @@ public class PushServletHelper {
         String harvesting_freq = post.get("harvesting_freq", "");
         if (!"".equals(harvesting_freq)) {
             try {
-                profile.put("harvesting_freq", HarvestingFrequency.valueOf(harvesting_freq).getFrequency());
+                profile.put("harvesting_freq", HarvestingFrequency.valueOf(Integer.parseInt(harvesting_freq)).getFrequency());
             } catch (IllegalArgumentException e) {
+                e.printStackTrace();
                 throw new IOException("Unsupported 'harvesting_freq' parameter value : " + harvesting_freq);
             }
         } else {
@@ -69,10 +70,11 @@ public class PushServletHelper {
         }
         String lifetime_str = post.get("lifetime", "");
         if (!"".equals(lifetime_str)) {
-            int lifetime;
+            long lifetime;
             try {
-                lifetime = Integer.parseInt(lifetime_str);
+                lifetime = Long.parseLong(lifetime_str);
             } catch (NumberFormatException e) {
+                e.printStackTrace();
                 throw new IOException("Invalid lifetime parameter (must be an integer) : " + lifetime_str);
             }
             profile.put("lifetime", lifetime);

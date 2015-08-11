@@ -22,8 +22,8 @@ package org.loklak.harvester;
 public enum HarvestingFrequency {
     THIRTY_MIN(30),           // every half-hour
     AN_HOUR(60),              // every hour
-    THREE_HOUR(180),          // every three hours
-    SIX_HOURS(360),           // every six hours
+    THREE_HOURS(180),          // every three hours
+    SIX_HOURS(360),            // every six hours
     A_DAY(1440),              // every day
     NEVER(Integer.MAX_VALUE); // never update
 

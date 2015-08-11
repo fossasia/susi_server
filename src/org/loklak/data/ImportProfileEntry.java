@@ -48,7 +48,7 @@ public class ImportProfileEntry extends AbstractIndexEntry implements IndexEntry
 
     // harvesting frequency (in min)
     protected HarvestingFrequency harvesting_freq;
-    protected int lifetime;
+    protected long lifetime;
 
     // id list of imported messages
     protected List<String> imported;
@@ -82,7 +82,7 @@ public class ImportProfileEntry extends AbstractIndexEntry implements IndexEntry
         } catch (IllegalArgumentException e) {
             throw new IllegalArgumentException("harvesting_freq value not permitted : " + map.get("harvesting_freq"));
         }
-        this.lifetime = (int) parseLong(map.get("lifetime"));
+        this.lifetime = parseLong(map.get("lifetime"));
         this.imported = (List<String>) map.get("imported");
         this.id = (String) map.get("id_str");
 
@@ -170,11 +170,11 @@ public class ImportProfileEntry extends AbstractIndexEntry implements IndexEntry
         this.harvesting_freq = harvesting_freq;
     }
 
-    public int getLifetime() {
+    public long getLifetime() {
         return lifetime;
     }
 
-    public void setLifetime(int lifetime) {
+    public void setLifetime(long lifetime) {
         this.lifetime = lifetime;
     }
 
