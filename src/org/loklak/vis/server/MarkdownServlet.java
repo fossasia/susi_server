@@ -114,9 +114,10 @@ public class MarkdownServlet extends HttpServlet {
         int x = padding - 1;
         int y = yoffset + padding + 4;
         int column = 0;
-        int hashcount = 0, backticks = 0;
+        int hashcount = 0;
         int default_intensity = 90;
         int intensity = default_intensity;
+        boolean isFormatted = false;
         for (int pos = 0; pos < sb.length(); pos++) {
             char c = sb.charAt(pos);
             int nextspace = sb.indexOf(" ", pos + 1);
@@ -124,38 +125,51 @@ public class MarkdownServlet extends HttpServlet {
                 x = padding - 1;
                 y += lineheight;
                 column = 0;
-                hashcount = 0; backticks = 0;
+                hashcount = 0;
+                if (!isFormatted);
                 matrix.setColor(color_text);
                 intensity = default_intensity;
                 continue;
             }
-            if (column == 0 && c == '#') {
+            if (!isFormatted && column == 0 && c == '#') {
                 // count the hashes at the beginning of the line
                 hashcount = Math.min(6, hashcount + 1); // there may be at most 6
                 matrix.setColor(color_headline);
                 intensity = 80 + (7 - hashcount) * 3;
                 continue;
             }
-            if (column == 0 && c == ' ' && hashcount > 0) {
+            if (!isFormatted && column == 0 && c == ' ' && hashcount > 0) {
                 // ignore first space after hash
                 continue;
             }
-            if (c == '*' && pos < sb.length() - 1 && sb.charAt(pos + 1) != ' ') {
+            if (!isFormatted && c == '*' && pos < sb.length() - 1 && sb.charAt(pos + 1) != ' ') {
                 matrix.setColor(color_bold);
                 intensity = 100;
                 continue;
             }
-            if (c == '*' && pos > 0 && sb.charAt(pos - 1) != ' ') {
+            if (!isFormatted && c == '*' && pos > 0 && sb.charAt(pos - 1) != ' ') {
                 matrix.setColor(color_text);
                 intensity = default_intensity;
                 continue;
             }
-            if (c == '`' && pos < sb.length() - 1 && sb.charAt(pos + 1) != ' ') {
+            if (!isFormatted && c == '`' && pos >= 2 && sb.charAt(pos - 1) == '`' && sb.charAt(pos - 2) == '`') {
+                matrix.setColor(color_code);
+                intensity = 100;
+                isFormatted = true;
+                continue;
+            }
+            if (isFormatted && c == '`' && pos < sb.length() - 2 && sb.charAt(pos + 1) == '`' && sb.charAt(pos + 2) == '`') {
+                matrix.setColor(color_text);
+                intensity = default_intensity;
+                isFormatted = false;
+                continue;
+            }
+            if (!isFormatted && c == '`' && pos < sb.length() - 1 && sb.charAt(pos + 1) != ' ') {
                 matrix.setColor(color_code);
                 intensity = 100;
                 continue;
             }
-            if (c == '`' && pos > 0 && sb.charAt(pos - 1) != ' ') {
+            if (!isFormatted && c == '`' && pos > 0 && sb.charAt(pos - 1) != ' ') {
                 matrix.setColor(color_text);
                 intensity = default_intensity;
                 continue;
