@@ -58,20 +58,20 @@ public class MarkdownServlet extends HttpServlet {
     // http://localhost:9000/vis/markdown.png?text=hello%20world%0Dhello%20universe&color_text=000000&color_background=ffffff&padding=3
     // http://localhost:9000/vis/markdown.png?text=loklak%20has%20now%20an%20amazing%20new%20feature!%0D%0Dthe%20server%20is%20able%20to%20render%20large%20amounts%20of%20text%20lines%0Dinto%20a%20single%20image!!!%0D%0Dsuch%20an%20image%20can%20then%20be%20attached%20to%20a%20tweet%20as%20image%0Dand%20therefore%20is%20able%20to%20transport%20much%20more%0Dthan%20the%20limit%20of%20140%20characters!%0D%0Dif%20you%20want%20to%20see%20what%20loklak%20is,%20check%20out:%0D%0Dloklak.org&color_text=000000&color_background=ffffff&padding=3
     // http://localhost:9000/vis/markdown.png?text=line+one%0Aline+two%0Aline+three%0A%C2%A0%0Avery+long+line+very+long+line+very+long+line+very+long+line+very+long+line+very+long+line+very+long+line+very+long+line+very+long+line+very+long+line+very+long+line+very+long+line+very+long+line+very+long+line+very+long+line+very+long+line+very+long+line+very+long+line
-
+    // http://localhost:9000/vis/markdown.png?text=%23+This+is+a+Test-Text+for+large+attachment+texts.%0A%C2%A0%0A%23+The+largest+heading+%28an+%3Ch1%3E+tag%29%0A%23%23+The+second+largest+heading+%28an+%3Ch2%3E+tag%29%0A%E2%80%A6%0A%23%23%23%23%23%23+The+6th+largest+heading+%28an+%3Ch6%3E+tag%29%0A%C2%A0%0AIn+the+words+of+Abraham+Lincoln%3A%0A%C2%A0%0A%3E+Pardon+my+french%0A%C2%A0%0A*This+text+will+be+italic*%0A**This+text+will+be+bold**%0A%C2%A0%0A*+Item%0A*+Item%0A*+Item%0A%C2%A0%0A1.+Item+1%0A2.+Item+2%0A3.+Item+3%0A%C2%A0%0AHere%27s+an+idea%3A+why+don%27t+we+take+%60SuperiorProject%60+and+turn+it+into+%60**Reasonable**Project%60.%0A%C2%A0%0ACheck+out+this+neat+program+I+wrote%3A%0A%C2%A0%0A%60%60%60%0Ax+%3D+0%0Ax+%3D+2+%2B+2%0Awhat+is+x%0A%60%60%60%0A%C2%A0%0AIf+you+like+this%2C+check+the+loklak+project+at%0A++http%3A%2F%2Floklak.org+%28for+the+server%29+and%0A++http%3A%2F%2Floklak.net+%28for+the+webclient%29%0A++%0ATo+get+latest+news%2C+check+%400rb1t3r
+    
     protected void process(HttpServletRequest request, HttpServletResponse response, RemoteAccess.Post post) throws ServletException, IOException {
         // parse arguments
         String text = post.get("text", "");
         DAO.log("MARKDOWN-TEXT: " + URLEncoder.encode(text, "UTF-8"));
         int padding = post.get("padding", 3);
         boolean uppercase = post.get("uppercase", true);
-        long color_text = Long.parseLong(post.get("color_text", "ffffff"), 16);
-        long color_code = Long.parseLong(post.get("color_code", "00ff00"), 16);
-        long color_bold = Long.parseLong(post.get("color_bold", "ff0000"), 16);
-        long color_headline = Long.parseLong(post.get("color_headline", "00aaaa"), 16);
         long color_background = Long.parseLong(post.get("color_background", "000000"), 16);
-        String drawmodes = post.get("drawmode", color_background > 0x888888 ? DrawMode.MODE_SUB.name() : DrawMode.MODE_ADD.name());
-        DrawMode drawmode = DrawMode.valueOf(drawmodes);
+        DrawMode drawmode = color_background > 0x888888 ? DrawMode.MODE_SUB : DrawMode.MODE_ADD;
+        long color_text = Long.parseLong(post.get("color_text", drawmode == DrawMode.MODE_SUB ? "000000" : "ffffff"), 16);
+        long color_code = Long.parseLong(post.get("color_code", drawmode == DrawMode.MODE_SUB ? "66ffaa" : "00ff00"), 16);
+        long color_bold = Long.parseLong(post.get("color_bold", drawmode == DrawMode.MODE_SUB ? "ff66aa" : "ff0000"), 16);
+        long color_headline = Long.parseLong(post.get("color_headline", drawmode == DrawMode.MODE_SUB ? "44aaee" : "00aaff"), 16);
         if (drawmode == DrawMode.MODE_SUB) color_text = RasterPlotter.invertColor(color_text);
         FileTypeEncoding fileType = RemoteAccess.getFileType(request);
         
@@ -117,7 +117,7 @@ public class MarkdownServlet extends HttpServlet {
         int hashcount = 0;
         int default_intensity = 90;
         int intensity = default_intensity;
-        boolean isFormatted = false;
+        boolean isInlineFormatted = false, isFormatted = false;
         for (int pos = 0; pos < sb.length(); pos++) {
             char c = sb.charAt(pos);
             int nextspace = sb.indexOf(" ", pos + 1);
@@ -126,12 +126,13 @@ public class MarkdownServlet extends HttpServlet {
                 y += lineheight;
                 column = 0;
                 hashcount = 0;
-                if (!isFormatted);
-                matrix.setColor(color_text);
-                intensity = default_intensity;
+                if (!isFormatted) {
+                    matrix.setColor(color_text);
+                    intensity = default_intensity;
+                }
                 continue;
             }
-            if (!isFormatted && column == 0 && c == '#') {
+            if (!isFormatted && !isInlineFormatted && column == 0 && c == '#') {
                 // count the hashes at the beginning of the line
                 hashcount = Math.min(6, hashcount + 1); // there may be at most 6
                 matrix.setColor(color_headline);
@@ -142,17 +143,17 @@ public class MarkdownServlet extends HttpServlet {
                 // ignore first space after hash
                 continue;
             }
-            if (!isFormatted && c == '*' && pos < sb.length() - 1 && sb.charAt(pos + 1) != ' ') {
+            if (!isFormatted && !isInlineFormatted && c == '*' && pos < sb.length() - 1 && sb.charAt(pos + 1) != ' ') {
                 matrix.setColor(color_bold);
                 intensity = 100;
                 continue;
             }
-            if (!isFormatted && c == '*' && pos > 0 && sb.charAt(pos - 1) != ' ') {
+            if (!isFormatted && !isInlineFormatted && c == '*' && pos > 0 && sb.charAt(pos - 1) != ' ') {
                 matrix.setColor(color_text);
                 intensity = default_intensity;
                 continue;
             }
-            if (!isFormatted && c == '`' && pos >= 2 && sb.charAt(pos - 1) == '`' && sb.charAt(pos - 2) == '`') {
+            if (!isFormatted && c == '`' && pos < sb.length() - 2 && sb.charAt(pos + 1) == '`' && sb.charAt(pos + 2) == '`') {
                 matrix.setColor(color_code);
                 intensity = 100;
                 isFormatted = true;
@@ -167,11 +168,16 @@ public class MarkdownServlet extends HttpServlet {
             if (!isFormatted && c == '`' && pos < sb.length() - 1 && sb.charAt(pos + 1) != ' ') {
                 matrix.setColor(color_code);
                 intensity = 100;
+                isInlineFormatted = true;
                 continue;
             }
             if (!isFormatted && c == '`' && pos > 0 && sb.charAt(pos - 1) != ' ') {
                 matrix.setColor(color_text);
                 intensity = default_intensity;
+                isInlineFormatted = false;
+                continue;
+            }
+            if (c == '`') {
                 continue;
             }
             
@@ -181,7 +187,7 @@ public class MarkdownServlet extends HttpServlet {
         }
         
         // write branding
-        PrintTool.print(matrix, matrix.getWidth() - 6, matrix.getHeight() - 6, 0, "MADE WITH HTTP://LOKLAK.ORG", 1, 20);
+        PrintTool.print(matrix, matrix.getWidth() - 6, matrix.getHeight() - 6, 0, "MADE WITH HTTP://LOKLAK.NET", 1, 50);
         
         // write image
         response.addHeader("Access-Control-Allow-Origin", "*");
