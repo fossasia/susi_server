@@ -83,7 +83,7 @@ public class MarkdownServlet extends HttpServlet {
         for (String line = rdr.readLine(); line != null; line = rdr.readLine()) {
             String[] sublines = line.split("\n");
             for (String subline: sublines) {
-                DAO.log("MARKDOWN-LINE: " + subline);
+                //DAO.log("MARKDOWN-LINE: " + subline);
                 width = Math.max(width, subline.length());
                 linecount += subline.length() / 80 + 1;
                 sb.append(subline).append('\n');
@@ -117,7 +117,7 @@ public class MarkdownServlet extends HttpServlet {
         int hashcount = 0;
         int default_intensity = 90;
         int intensity = default_intensity;
-        boolean isInlineFormatted = false, isFormatted = false;
+        boolean isInlineFormatted = false, isFormatted = false, isBold = false, isItalic = false;
         for (int pos = 0; pos < sb.length(); pos++) {
             char c = sb.charAt(pos);
             int nextspace = sb.indexOf(" ", pos + 1);
@@ -143,14 +143,16 @@ public class MarkdownServlet extends HttpServlet {
                 // ignore first space after hash
                 continue;
             }
-            if (!isFormatted && !isInlineFormatted && c == '*' && pos < sb.length() - 1 && sb.charAt(pos + 1) != ' ') {
+            if (!isFormatted && !isInlineFormatted && c == '*' && (pos == 0 || (pos < sb.length() - 1 && sb.charAt(pos + 1) != ' '))) {
                 matrix.setColor(color_bold);
                 intensity = 100;
+                isBold = true;
                 continue;
             }
-            if (!isFormatted && !isInlineFormatted && c == '*' && pos > 0 && sb.charAt(pos - 1) != ' ') {
+            if (!isFormatted && !isInlineFormatted && c == '*' && (pos == sb.length() - 1 || (pos > 0 && sb.charAt(pos - 1) != ' '))) {
                 matrix.setColor(color_text);
                 intensity = default_intensity;
+                isBold = false;
                 continue;
             }
             if (!isFormatted && c == '`' && pos < sb.length() - 2 && sb.charAt(pos + 1) == '`' && sb.charAt(pos + 2) == '`') {
@@ -177,7 +179,7 @@ public class MarkdownServlet extends HttpServlet {
                 isInlineFormatted = false;
                 continue;
             }
-            if (c == '`') {
+            if (c == '`' || (!isFormatted && !isInlineFormatted && c == '*')) {
                 continue;
             }
             
