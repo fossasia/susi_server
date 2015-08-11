@@ -111,7 +111,13 @@ public class ValidateServlet extends HttpServlet {
         if (!offline) {
             contentToStr = new String(content);
             JsonValidator validator = new JsonValidator(jsonSchemaEnum);
-            ProcessingReport report = validator.validate(contentToStr);
+            ProcessingReport report;
+            try {
+                report = validator.validate(contentToStr);
+            } catch(Exception e) {
+                response.sendError(400, "The url does not contain valid json data");
+                return;
+            }
             if (!report.isSuccess()) {
                 status = ValidationStatus.invalid;
                 message = "json does not conform to schema : " + jsonSchemaEnum.name() + "\n" + report;
