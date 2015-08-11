@@ -23,8 +23,6 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.StringReader;
 import java.net.URLEncoder;
-import java.util.ArrayList;
-import java.util.List;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -59,6 +57,7 @@ public class MarkdownServlet extends HttpServlet {
     
     // http://localhost:9000/vis/markdown.png?text=hello%20world%0Dhello%20universe&color_text=000000&color_background=ffffff&padding=3
     // http://localhost:9000/vis/markdown.png?text=loklak%20has%20now%20an%20amazing%20new%20feature!%0D%0Dthe%20server%20is%20able%20to%20render%20large%20amounts%20of%20text%20lines%0Dinto%20a%20single%20image!!!%0D%0Dsuch%20an%20image%20can%20then%20be%20attached%20to%20a%20tweet%20as%20image%0Dand%20therefore%20is%20able%20to%20transport%20much%20more%0Dthan%20the%20limit%20of%20140%20characters!%0D%0Dif%20you%20want%20to%20see%20what%20loklak%20is,%20check%20out:%0D%0Dloklak.org&color_text=000000&color_background=ffffff&padding=3
+    // http://localhost:9000/vis/markdown.png?text=line+one%0Aline+two%0Aline+three%0A%C2%A0%0Avery+long+line+very+long+line+very+long+line+very+long+line+very+long+line+very+long+line+very+long+line+very+long+line+very+long+line+very+long+line+very+long+line+very+long+line+very+long+line+very+long+line+very+long+line+very+long+line+very+long+line+very+long+line
 
     protected void process(HttpServletRequest request, HttpServletResponse response, RemoteAccess.Post post) throws ServletException, IOException {
         // parse arguments
@@ -67,32 +66,39 @@ public class MarkdownServlet extends HttpServlet {
         int padding = post.get("padding", 3);
         boolean uppercase = post.get("uppercase", true);
         long color_text = Long.parseLong(post.get("color_text", "ffffff"), 16);
+        long color_code = Long.parseLong(post.get("color_code", "00ff00"), 16);
+        long color_bold = Long.parseLong(post.get("color_bold", "ff0000"), 16);
+        long color_headline = Long.parseLong(post.get("color_headline", "00aaaa"), 16);
         long color_background = Long.parseLong(post.get("color_background", "000000"), 16);
         String drawmodes = post.get("drawmode", color_background > 0x888888 ? DrawMode.MODE_SUB.name() : DrawMode.MODE_ADD.name());
         DrawMode drawmode = DrawMode.valueOf(drawmodes);
         if (drawmode == DrawMode.MODE_SUB) color_text = RasterPlotter.invertColor(color_text);
         FileTypeEncoding fileType = RemoteAccess.getFileType(request);
         
-        // compute image
+        // read and measure the text
         BufferedReader rdr = new BufferedReader(new StringReader(text));
-        List<String> lines = new ArrayList<String>();
+        StringBuilder sb = new StringBuilder();
+        int width = 0;
+        int linecount = 0;
         for (String line = rdr.readLine(); line != null; line = rdr.readLine()) {
             String[] sublines = line.split("\n");
             for (String subline: sublines) {
                 DAO.log("MARKDOWN-LINE: " + subline);
-                lines.add(subline);
+                width = Math.max(width, subline.length());
+                linecount += subline.length() / 80 + 1;
+                sb.append(subline).append('\n');
             }
         }
         rdr.close();
         int charwidth = 6;
-        int width = 0; for (String line: lines) width = Math.max(width, line.length());
-        width = charwidth * width + 2 * padding - 1;
+        width = charwidth * 80 + 2 * padding - 1;
         
+        // compute optimum image size
         int lineheight = 7;
         int yoffset = 0;
         int height = width / 2;
         while (lineheight <= 12) {
-            height = lines.size() * lineheight + 2 * padding - 1;
+            height = linecount * lineheight + 2 * padding - 1;
             // a perfect size has the format 2:1, that fits into the preview window.
             // We should not allow that the left or right border is cut away; resize if necessary
             if (width <= 2 * height) break;
@@ -100,13 +106,64 @@ public class MarkdownServlet extends HttpServlet {
             yoffset = (width / 2 - height) / 2;
             height = width / 2; 
             lineheight++;
-        }        
+        }
         
+        // print to the image
         RasterPlotter matrix = new RasterPlotter(width, height, drawmode, color_background);
         matrix.setColor(color_text);
-        for (int line = 0; line < lines.size(); line++) {
-            String l = lines.get(line);
-            PrintTool.print(matrix, padding - 1, yoffset + padding + 4 + line * lineheight, 0, uppercase ? l.toUpperCase() : l, -1, 100);
+        int x = padding - 1;
+        int y = yoffset + padding + 4;
+        int column = 0;
+        int hashcount = 0, backticks = 0;
+        int default_intensity = 90;
+        int intensity = default_intensity;
+        for (int pos = 0; pos < sb.length(); pos++) {
+            char c = sb.charAt(pos);
+            int nextspace = sb.indexOf(" ", pos + 1);
+            if (c == '\n' || (c == ' ' && column + nextspace - pos >= 80)) {
+                x = padding - 1;
+                y += lineheight;
+                column = 0;
+                hashcount = 0; backticks = 0;
+                matrix.setColor(color_text);
+                intensity = default_intensity;
+                continue;
+            }
+            if (column == 0 && c == '#') {
+                // count the hashes at the beginning of the line
+                hashcount = Math.min(6, hashcount + 1); // there may be at most 6
+                matrix.setColor(color_headline);
+                intensity = 80 + (7 - hashcount) * 3;
+                continue;
+            }
+            if (column == 0 && c == ' ' && hashcount > 0) {
+                // ignore first space after hash
+                continue;
+            }
+            if (c == '*' && pos < sb.length() - 1 && sb.charAt(pos + 1) != ' ') {
+                matrix.setColor(color_bold);
+                intensity = 100;
+                continue;
+            }
+            if (c == '*' && pos > 0 && sb.charAt(pos - 1) != ' ') {
+                matrix.setColor(color_text);
+                intensity = default_intensity;
+                continue;
+            }
+            if (c == '`' && pos < sb.length() - 1 && sb.charAt(pos + 1) != ' ') {
+                matrix.setColor(color_code);
+                intensity = 100;
+                continue;
+            }
+            if (c == '`' && pos > 0 && sb.charAt(pos - 1) != ' ') {
+                matrix.setColor(color_text);
+                intensity = default_intensity;
+                continue;
+            }
+            
+            PrintTool.print(matrix, x, y, 0, uppercase || hashcount > 0 ? Character.toUpperCase(c) : c, intensity);
+            x += 6;
+            column++;
         }
         
         // write branding

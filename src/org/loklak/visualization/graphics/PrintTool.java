@@ -39,7 +39,7 @@ public class PrintTool {
     	0x0000000EC2E0ECL,0x0000000EC2E030L,0x0000000FF2E3FCL,0x000F0B8B80B80FL,0x00300C0300C030L,0x03C0B80B8B83C0L,0x0000B83BB0B800L,0x03FFC0F03C0FFFL
     };
 
-    private static void print(final RasterPlotter matrix, int x, int y, final int angle, final char letter, int intensity) {
+    public static void print(final RasterPlotter matrix, int x, int y, final int angle, final char letter, int intensity) {
         final int index = letter - 0x20;
         if (index >= font.length) return;
         long character = font[index];
