@@ -113,7 +113,7 @@ public class MapServlet extends HttpServlet {
         map.setDrawMode(DrawMode.MODE_SUB);
         map.setColor(0xffffff);
         if (text.length() > 0) PrintTool.print(map, 6, 12, 0, uppercase ? text.toUpperCase() : text, -1, 100);
-        PrintTool.print(map, map.getWidth() - 6, map.getHeight() - 6, 0, "MADE WITH LOKLAK.ORG", 1, 50);
+        PrintTool.print(map, map.getWidth() - 6, map.getHeight() - 6, 0, "MADE WITH LOKLAK.NET", 1, 50);
 
         // draw marker on map
         int mx = (int) (map.getWidth() * (lon - west_lon) / (east_lon - west_lon));
