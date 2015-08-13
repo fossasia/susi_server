@@ -15,7 +15,9 @@ import java.util.*;
 
 public class PushServletHelper {
 
-    public static PushReport saveMessagesAndImportProfile(List<Map<String, Object>> messages, int fileHash, RemoteAccess.Post post, SourceType sourceType) throws IOException {
+    public static PushReport saveMessagesAndImportProfile(
+            List<Map<String, Object>> messages, int fileHash, RemoteAccess.Post post,
+            SourceType sourceType, String screenName) throws IOException {
         PushReport report = new PushReport();
         List<String> importedMsgIds = new ArrayList<>();
         for (Map<String, Object> message : messages) {
@@ -40,23 +42,19 @@ public class PushServletHelper {
         }
 
         if (report.getNewCount() > 0 ) {
-            ImportProfileEntry importProfileEntry = saveImportProfile(fileHash, post, sourceType, importedMsgIds);
+            ImportProfileEntry importProfileEntry = saveImportProfile(fileHash, post, sourceType, screenName, importedMsgIds);
             report.setImportProfile(importProfileEntry);
         }
 
         return report;
     }
 
-    protected static ImportProfileEntry saveImportProfile(int fileHash, RemoteAccess.Post post, SourceType sourceType, List<String> importedMsgIds) throws IOException {
+    protected static ImportProfileEntry saveImportProfile(int fileHash, RemoteAccess.Post post, SourceType sourceType, String screenName, List<String> importedMsgIds) throws IOException {
         ImportProfileEntry importProfileEntry ;
         Map<String, Object> profile = new HashMap<>();
         profile.put("client_host", post.getClientHost());
         profile.put("imported", importedMsgIds);
-
-        String screen_name = post.get("screen_name", "");
-        if (!"".equals(screen_name)) {
-            profile.put("screen_name", screen_name);
-        }
+        profile.put("screen_name", screenName);
         String harvesting_freq = post.get("harvesting_freq", "");
         if (!"".equals(harvesting_freq)) {
             try {
@@ -132,11 +130,7 @@ public class PushServletHelper {
     private static String computeImportProfileId(Map<String, Object> importProfile, int fileHash) {
         String screen_name = (String) importProfile.get("screen_name");
         String source_url = (String) importProfile.get("source_url");
-        if (screen_name != null && !"".equals(screen_name)) {
-            return source_url + "_" + screen_name + "_" + fileHash;
-        }
-        String client_host = (String) importProfile.get("client_host");
-        return source_url + "_" + client_host + "_" + fileHash;
+        return source_url + "_" + screen_name + "_" + fileHash;
     }
 
     public static String computeMessageId(Map<String, Object> message, Object initialId, SourceType sourceType) throws Exception {

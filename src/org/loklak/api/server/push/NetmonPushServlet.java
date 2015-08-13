@@ -62,6 +62,11 @@ public class NetmonPushServlet extends HttpServlet {
             response.sendError(400, "your request does not contain an url to your data object");
             return;
         }
+        String screen_name = post.get("screen_name", "");
+        if (screen_name == null || screen_name.length() == 0) {
+            response.sendError(400, "your request does not contain required screen_name parameter");
+            return;
+        }
 
         List<Map<String, Object>> nodesList = new ArrayList<>();
         byte[] xmlText;
@@ -113,7 +118,7 @@ public class NetmonPushServlet extends HttpServlet {
             }
         }
 
-        PushReport pushReport = PushServletHelper.saveMessagesAndImportProfile(nodes, Arrays.hashCode(xmlText), post, SourceType.NETMON);
+        PushReport pushReport = PushServletHelper.saveMessagesAndImportProfile(nodes, Arrays.hashCode(xmlText), post, SourceType.NETMON, screen_name);
 
         String res = PushServletHelper.buildJSONResponse(post.get("callback", ""), pushReport);
         response.getOutputStream().println(res);
