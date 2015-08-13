@@ -112,8 +112,8 @@ public class MapServlet extends HttpServlet {
         // draw message text on map
         map.setDrawMode(DrawMode.MODE_SUB);
         map.setColor(0xffffff);
-        if (text.length() > 0) PrintTool.print(map, 6, 12, 0, uppercase ? text.toUpperCase() : text, -1, 100);
-        PrintTool.print(map, map.getWidth() - 6, map.getHeight() - 6, 0, "MADE WITH LOKLAK.ORG", 1, 50);
+        if (text.length() > 0) PrintTool.print(map, 6, 12, 0, uppercase ? text.toUpperCase() : text, -1, false, 100);
+        PrintTool.print(map, map.getWidth() - 6, map.getHeight() - 6, 0, "MADE WITH LOKLAK.ORG", 1, false, 50);
 
         // draw marker on map
         int mx = (int) (map.getWidth() * (lon - west_lon) / (east_lon - west_lon));
@@ -132,7 +132,7 @@ public class MapServlet extends HttpServlet {
          * set the lowercase letters do not look good, so we use uppercase only.
          * The (C) symbol is not available in our font, so we use the letters (C) instead.
          */
-        PrintTool.print(map, 6, map.getHeight() - 6, 0, "(C) OPENSTREETMAP CONTRIBUTORS", -1, 100);
+        PrintTool.print(map, 6, map.getHeight() - 6, 0, "(C) OPENSTREETMAP CONTRIBUTORS", -1, false, 100);
         
         // write image
         response.addHeader("Access-Control-Allow-Origin", "*");

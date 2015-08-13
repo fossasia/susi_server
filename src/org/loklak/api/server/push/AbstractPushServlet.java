@@ -83,6 +83,11 @@ public abstract class AbstractPushServlet extends HttpServlet {
             response.sendError(400, "your request does not contain an url to your data object");
             return;
         }
+        String screen_name = post.get("screen_name", "");
+        if (screen_name == null || screen_name.length() == 0) {
+            response.sendError(400, "your request does not contain required screen_name parameter");
+            return;
+        }
 
         Map<String, Object> map;
         byte[] jsonText;
@@ -124,7 +129,6 @@ public abstract class AbstractPushServlet extends HttpServlet {
             if (message.get("text") == null) {
                 message.put("text", "");
             }
-
             customProcessing(message);
 
             if (message.get("mtime") == null) {
@@ -146,7 +150,7 @@ public abstract class AbstractPushServlet extends HttpServlet {
             }
         }
         try {
-            PushReport savingReport = PushServletHelper.saveMessagesAndImportProfile(typedMessages, Arrays.hashCode(jsonText), post, getSourceType());
+            PushReport savingReport = PushServletHelper.saveMessagesAndImportProfile(typedMessages, Arrays.hashCode(jsonText), post, getSourceType(), screen_name);
             nodePushReport.combine(savingReport);
         } catch (IOException e) {
             response.sendError(404, e.getMessage());

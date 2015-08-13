@@ -39,7 +39,7 @@ public class PrintTool {
     	0x0000000EC2E0ECL,0x0000000EC2E030L,0x0000000FF2E3FCL,0x000F0B8B80B80FL,0x00300C0300C030L,0x03C0B80B8B83C0L,0x0000B83BB0B800L,0x03FFC0F03C0FFFL
     };
 
-    private static void print(final RasterPlotter matrix, int x, int y, final int angle, final char letter, int intensity) {
+    public static void print(final RasterPlotter matrix, int x, int y, final int angle, final char letter, final boolean tilt, final int intensity) {
         final int index = letter - 0x20;
         if (index >= font.length) return;
         long character = font[index];
@@ -54,8 +54,10 @@ public class PrintTool {
             if (angle == 0) {
                 for (int j = 0; j < 5; j++) {
                 	c = row & 3L;
-                    if (c == 3) matrix.plot(x + 5 - j, y, intensity);
-                    else if (c == 2) matrix.plot(x + 5 - j, y, i3);
+                	int xx = x + 5 - j;
+                	if (tilt) xx += (i + 1) / 2;
+                    if (c == 3) matrix.plot(xx, y, intensity);
+                    else if (c == 2) matrix.plot(xx, y, i3);
                     row = row >> 2;
                 }
                 y--;
@@ -82,7 +84,7 @@ public class PrintTool {
         }
     }
 
-    public static void print(final RasterPlotter matrix, final int x, final int y, final int angle, final String message, final int align, int intensity) {
+    public static void print(final RasterPlotter matrix, final int x, final int y, final int angle, final String message, final int align, boolean tilt, int intensity) {
         // align = -1 : left
         // align =  1 : right
         // align =  0 : center
@@ -98,7 +100,7 @@ public class PrintTool {
             yy = (align == -1) ? y : (align == 1) ? y - 6 * message.length() : y - 3 * message.length();
         }
         for (int i = 0; i < message.length(); i++) {
-            print(matrix, xx, yy, angle, message.charAt(i), intensity);
+            print(matrix, xx, yy, angle, message.charAt(i), tilt, intensity);
             if (angle == 0) xx += 6;
             else if (angle == 90) yy -= 6;
             else if (angle == 315) {xx += 6; yy += 6;}
@@ -127,7 +129,7 @@ public class PrintTool {
         int xp = x - 3 * message.length();
         if ((angle > (90 + arcDist)) && (angle < (270 - arcDist))) xp = x - 6 * message.length();
         if ((angle < (90 - arcDist)) || (angle > (270 + arcDist))) xp = x;
-        print(matrix, xp, yp, 0, message, -1, intensity);
+        print(matrix, xp, yp, 0, message, -1, false, intensity);
     }
 
 

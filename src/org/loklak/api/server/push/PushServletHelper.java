@@ -1,12 +1,13 @@
 package org.loklak.api.server.push;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.ObjectWriter;
 import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.elasticsearch.common.xcontent.XContentFactory;
 import org.loklak.api.server.RemoteAccess;
-import org.loklak.data.*;
+import org.loklak.data.DAO;
+import org.loklak.data.ImportProfileEntry;
+import org.loklak.data.MessageEntry;
+import org.loklak.data.UserEntry;
+import org.loklak.data.Timeline;
 import org.loklak.harvester.HarvestingFrequency;
 import org.loklak.harvester.SourceType;
 
@@ -28,7 +29,9 @@ public class PushServletHelper {
         "text" // can embed rich content
     };
 
-    public static PushReport saveMessagesAndImportProfile(List<Map<String, Object>> messages, int fileHash, RemoteAccess.Post post, SourceType sourceType) throws IOException {
+    public static PushReport saveMessagesAndImportProfile(
+            List<Map<String, Object>> messages, int fileHash, RemoteAccess.Post post,
+            SourceType sourceType, String screenName) throws IOException {
         PushReport report = new PushReport();
         List<String> importedMsgIds = new ArrayList<>();
         for (Map<String, Object> message : messages) {
@@ -42,7 +45,6 @@ public class PushServletHelper {
             } catch (Exception e) {
                 e.printStackTrace();
                 report.incrementErrorCount();
-                e.printStackTrace();
                 continue;
             }
             if (successful) {
@@ -54,28 +56,25 @@ public class PushServletHelper {
         }
 
         if (report.getNewCount() > 0 ) {
-            ImportProfileEntry importProfileEntry = saveImportProfile(fileHash, post, sourceType, importedMsgIds);
+            ImportProfileEntry importProfileEntry = saveImportProfile(fileHash, post, sourceType, screenName, importedMsgIds);
             report.setImportProfile(importProfileEntry);
         }
 
         return report;
     }
 
-    protected static ImportProfileEntry saveImportProfile(int fileHash, RemoteAccess.Post post, SourceType sourceType, List<String> importedMsgIds) throws IOException {
+    protected static ImportProfileEntry saveImportProfile(int fileHash, RemoteAccess.Post post, SourceType sourceType, String screenName, List<String> importedMsgIds) throws IOException {
         ImportProfileEntry importProfileEntry ;
         Map<String, Object> profile = new HashMap<>();
         profile.put("client_host", post.getClientHost());
         profile.put("imported", importedMsgIds);
-
-        String screen_name = post.get("screen_name", "");
-        if (!"".equals(screen_name)) {
-            profile.put("screen_name", screen_name);
-        }
+        profile.put("screen_name", screenName);
         String harvesting_freq = post.get("harvesting_freq", "");
         if (!"".equals(harvesting_freq)) {
             try {
-                profile.put("harvesting_freq", HarvestingFrequency.valueOf(harvesting_freq).getFrequency());
+                profile.put("harvesting_freq", HarvestingFrequency.valueOf(Integer.parseInt(harvesting_freq)).getFrequency());
             } catch (IllegalArgumentException e) {
+                e.printStackTrace();
                 throw new IOException("Unsupported 'harvesting_freq' parameter value : " + harvesting_freq);
             }
         } else {
@@ -83,10 +82,11 @@ public class PushServletHelper {
         }
         String lifetime_str = post.get("lifetime", "");
         if (!"".equals(lifetime_str)) {
-            int lifetime;
+            long lifetime;
             try {
-                lifetime = Integer.parseInt(lifetime_str);
+                lifetime = Long.parseLong(lifetime_str);
             } catch (NumberFormatException e) {
+                e.printStackTrace();
                 throw new IOException("Invalid lifetime parameter (must be an integer) : " + lifetime_str);
             }
             profile.put("lifetime", lifetime);
@@ -144,11 +144,7 @@ public class PushServletHelper {
     private static String computeImportProfileId(Map<String, Object> importProfile, int fileHash) {
         String screen_name = (String) importProfile.get("screen_name");
         String source_url = (String) importProfile.get("source_url");
-        if (screen_name != null && !"".equals(screen_name)) {
-            return source_url + "_" + screen_name + "_" + fileHash;
-        }
-        String client_host = (String) importProfile.get("client_host");
-        return source_url + "_" + client_host + "_" + fileHash;
+        return source_url + "_" + screen_name + "_" + fileHash;
     }
 
     @SuppressWarnings("unchecked")
@@ -199,7 +195,6 @@ public class PushServletHelper {
         } catch (ClassCastException e) {
             throw new ClassCastException("Unable to extract lat, lon from location_point " + e.getMessage());
         }
-
         // If initialId found, append it in the id. The new id has this format
         // <source_type>_<id>_<lat>_<lon>_<mtime>
         // otherwise, the new id is <source_type>_<lat>_<lon>_<mtime>
@@ -210,7 +205,6 @@ public class PushServletHelper {
         } else {
             return sourceType.name() + "_" + latitude + "_" + longitude + "_" + mtime;
         }
-
     }
 
 }
