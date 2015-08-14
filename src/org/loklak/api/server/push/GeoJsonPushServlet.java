@@ -69,7 +69,11 @@ public class GeoJsonPushServlet extends HttpServlet {
         SourceType sourceType = SourceType.valueOf(source_type_str);
 
         if (url == null || url.length() == 0) {response.sendError(400, "your request does not contain an url to your data object"); return;}
-
+        String screen_name = post.get("screen_name", "");
+        if (screen_name == null || screen_name.length() == 0) {
+            response.sendError(400, "your request does not contain required screen_name parameter");
+            return;
+        }
         // parse json retrieved from url
         final List<Map<String, Object>> features;
         byte[] jsonText;
@@ -161,7 +165,7 @@ public class GeoJsonPushServlet extends HttpServlet {
             rawMessages.add(properties);
         }
 
-        PushReport report = PushServletHelper.saveMessagesAndImportProfile(rawMessages, Arrays.hashCode(jsonText), post, sourceType);
+        PushReport report = PushServletHelper.saveMessagesAndImportProfile(rawMessages, Arrays.hashCode(jsonText), post, sourceType, screen_name);
 
         String res = PushServletHelper.buildJSONResponse(post.get("callback", ""), report);
         post.setResponse(response, "application/javascript");

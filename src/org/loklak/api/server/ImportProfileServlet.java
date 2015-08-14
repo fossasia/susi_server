@@ -194,6 +194,7 @@ public class ImportProfileServlet extends HttpServlet {
         boolean minified = post.get("minified", false);
         boolean jsonp = callback != null && callback.length() > 0;
         String source_type = post.get("source_type", "");
+        String screen_name = post.get("screen_name", "");
         // source_type either has to be null a a valid SourceType value
         if (!"".equals(source_type) && !SourceType.hasValue(source_type)) {
             response.sendError(400, "your request must contain a valid source_type parameter.");
@@ -202,6 +203,9 @@ public class ImportProfileServlet extends HttpServlet {
         Map<String, String> searchConstraints = new HashMap<>();
         if (!"".equals(source_type)) {
             searchConstraints.put("source_type", source_type);
+        }
+        if (!"".equals(screen_name)) {
+            searchConstraints.put("screen_name", screen_name);
         }
         Collection<ImportProfileEntry> entries = DAO.SearchLocalImportProfilesWithConstraints(searchConstraints, true);
         List<Map<String, Object>> entries_to_map = new ArrayList<>();
