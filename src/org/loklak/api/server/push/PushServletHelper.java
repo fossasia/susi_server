@@ -21,9 +21,12 @@ public class PushServletHelper {
         PushReport report = new PushReport();
         List<String> importedMsgIds = new ArrayList<>();
         for (Map<String, Object> message : messages) {
+            message.put("screen_name", screenName);
             Map<String, Object> user = (Map<String, Object>) message.remove("user");
+            if (user != null)
+                user.put("screen_name", screenName);
             MessageEntry messageEntry = new MessageEntry(message);
-            UserEntry userEntry = new UserEntry((user != null && user.get("screen_name") != null) ? user : new HashMap<String, Object>());
+            UserEntry userEntry = new UserEntry(user != null ? user : new HashMap<String, Object>());
             boolean successful;
             report.incrementRecordCount();
             try {
