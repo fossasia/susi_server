@@ -535,12 +535,7 @@ public class QueryEntry extends AbstractIndexEntry implements IndexEntry {
                     continue;
                 } else if (t.indexOf(':') > 0) {
                     int p = t.indexOf(':');
-                    String key = t.substring(0, p).toLowerCase();
-                    String value = t.substring(p + 1);
-                    String[] terms = value.split(",");
-                    for (String term: terms) {
-                        modifier.put(key, term);
-                    }
+                    modifier.put(t.substring(0, p).toLowerCase(), t.substring(p + 1));
                     continue;
                 } else {
                     // patch characters that will confuse elasticsearch or have a different meaning
