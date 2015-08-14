@@ -53,7 +53,7 @@ public class OpenWifiMapPushServlet extends AbstractPushServlet {
     @Override
     protected void customProcessing(Map<String, Object> message) {
         try {
-            message.put("id_str", PushServletHelper.computeMessageId(message, message.get("id"), getSourceType()));
+            message.put("id_str", PushServletHelper.computeMessageId(message, getSourceType()));
         } catch (Exception e) {
             DAO.log("Problem computing id : " + e.getMessage());
         }

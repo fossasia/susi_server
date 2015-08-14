@@ -133,7 +133,7 @@ public class PushServletHelper {
         return source_url + "_" + screen_name + "_" + fileHash;
     }
 
-    public static String computeMessageId(Map<String, Object> message, Object initialId, SourceType sourceType) throws Exception {
+    public static String computeMessageId(Map<String, Object> message, SourceType sourceType) throws Exception {
         List<Object> location = (List<Object>) message.get("location_point");
         if (location == null) {
             throw new Exception("location_point not found");
@@ -157,15 +157,8 @@ public class PushServletHelper {
             message.put("mtime", mtime);
         }
 
-        // If initialId found, append it in the id. The new id has this format
-        // <source_type>_<id>_<lat>_<lon>_<mtime>
-        // otherwise, the new id is <source_type>_<lat>_<lon>_<mtime>
-        boolean hasInitialId = initialId != null && !"".equals(initialId.toString());
-        if (hasInitialId) {
-            return sourceType.name() + "_" + initialId + "_" + latitude + "_" + longitude + "_" + mtime;
-        } else {
-            return sourceType.name() + "_" + latitude + "_" + longitude + "_" + mtime;
-        }
+        // Id format : <source_type>_<lat>_<lon>_<mtime>
+        return sourceType.name() + "_" + latitude + "_" + longitude + "_" + mtime;
     }
 
 }
