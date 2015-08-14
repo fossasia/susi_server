@@ -535,7 +535,12 @@ public class QueryEntry extends AbstractIndexEntry implements IndexEntry {
                     continue;
                 } else if (t.indexOf(':') > 0) {
                     int p = t.indexOf(':');
-                    modifier.put(t.substring(0, p).toLowerCase(), t.substring(p + 1));
+                    String key = t.substring(0, p).toLowerCase();
+                    String value = t.substring(p + 1);
+                    String[] terms = value.split(",");
+                    for (String term: terms) {
+                        modifier.put(key, term);
+                    }
                     continue;
                 } else {
                     // patch characters that will confuse elasticsearch or have a different meaning
@@ -577,9 +582,9 @@ public class QueryEntry extends AbstractIndexEntry implements IndexEntry {
             
             // apply modifiers
             if (modifier.containsKey("id")) {
-                ops.add(QueryBuilders.termQuery("id_str", modifier.get("id")));
+                ops.add(QueryBuilders.termsQuery("id_str", modifier.get("id")));
             }
-            if (modifier.containsKey("-id")) nops.add(QueryBuilders.termQuery("id_str", modifier.get("-id")));
+            if (modifier.containsKey("-id")) nops.add(QueryBuilders.termsQuery("id_str", modifier.get("-id")));
 
             for (String user: users_positive) {
                 ops.add(QueryBuilders.termQuery("mentions", user));
