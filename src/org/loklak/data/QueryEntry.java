@@ -535,12 +535,7 @@ public class QueryEntry extends AbstractIndexEntry implements IndexEntry {
                     continue;
                 } else if (t.indexOf(':') > 0) {
                     int p = t.indexOf(':');
-                    String key = t.substring(0, p).toLowerCase();
-                    String value = t.substring(p + 1);
-                    String[] terms = value.split(",");
-                    for (String term: terms) {
-                        modifier.put(key, term);
-                    }
+                    modifier.put(t.substring(0, p).toLowerCase(), t.substring(p + 1));
                     continue;
                 } else {
                     // patch characters that will confuse elasticsearch or have a different meaning
@@ -701,6 +696,14 @@ public class QueryEntry extends AbstractIndexEntry implements IndexEntry {
                     String[] coord = params.split(",");
                     if (coord.length == 1) {
                         filters.add(FilterBuilders.termsFilter("location_source", coord[0]));
+                    } else if (coord.length == 2) {
+                        double lon = Double.parseDouble(coord[0]);
+                        double lat = Double.parseDouble(coord[1]);
+                        // ugly way to search exact geo_point : using geoboundingboxfilter, with two identical bounding points
+                        // geoshape filter can search for exact point shape but it can't be performed on geo_point field
+                        filters.add(FilterBuilders.geoBoundingBoxFilter("location_point")
+                                .topLeft(lat, lon)
+                                .bottomRight(lat, lon));
                     }
                     else if (coord.length == 4 || coord.length == 5) {
                         double lon_west  = Double.parseDouble(coord[0]);
