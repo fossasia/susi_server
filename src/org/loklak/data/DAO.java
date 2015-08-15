@@ -111,7 +111,7 @@ public class DAO {
     private static final String IMPORT_PROFILE_INDEX_NAME = "import_profiles";
     public final static int CACHE_MAXSIZE = 10000;
     
-    public  static File conf_dir;
+    public  static File conf_dir, bin_dir;
     private static File external_data, assets, dictionaries;
     private static Path message_dump_dir, account_dump_dir, import_profile_dump_dir;
     private static JsonDump message_dump, account_dump, import_profile_dump;
@@ -134,7 +134,8 @@ public class DAO {
      */
     public static void init(Map<String, String> configMap, Path dataPath) {
         config = configMap;
-        File conf_dir = new File("conf");
+        conf_dir = new File("conf");
+        bin_dir = new File("bin");
         File datadir = dataPath.toFile();
         try {
             // create and document the data dump dir

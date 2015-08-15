@@ -30,7 +30,9 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.elasticsearch.common.xcontent.XContentFactory;
+import org.loklak.Caretaker;
 import org.loklak.data.DAO;
+import org.loklak.tools.OS;
 
 public class StatusServlet extends HttpServlet {
    
@@ -47,6 +49,10 @@ public class StatusServlet extends HttpServlet {
         
         String callback = post.get("callback", "");
         boolean jsonp = callback != null && callback.length() > 0;
+        
+        if (post.isLocalhostAccess() && OS.canExecUnix && post.get("upgrade", "").equals("true")) {
+            Caretaker.upgrade(); // it's a hack to add this here, this may disappear anytime
+        }
         
         post.setResponse(response, "application/javascript");
         
