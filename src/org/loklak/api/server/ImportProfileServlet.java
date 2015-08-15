@@ -163,7 +163,7 @@ public class ImportProfileServlet extends HttpServlet {
         for (ImportProfileEntry entry : entries) {
             // filter exact results, as SearchLocalImportProfilesWithConstraints is implemented with query term query (unreliable)
             if (source_url.equals(entry.getSourceUrl().toString())
-                && ((hasScreenName && screen_name.equals(entry.getScreenName()))
+                && ((hasScreenName && screen_name.equals(entry.getImporter()))
                     || client_host.equals(entry.getClientHost())))
             {
                 if (DAO.deleteImportProfile(entry.getId(), entry.getSourceType())) {

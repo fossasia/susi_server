@@ -572,7 +572,6 @@ public class DAO {
                         request.addAggregation(AggregationBuilders.terms(field).field(field).minDocCount(1).size(aggregationLimit));
                     }
                 }
-                
                 // get response
                 SearchResponse response = request.execute().actionGet();
                 this.hits = response.getHits().getTotalHits();
@@ -797,8 +796,8 @@ public class DAO {
         Map<String, ImportProfileEntry> latests = new HashMap<>();
         for (ImportProfileEntry entry : rawResults) {
             String uniqueKey;
-            if (entry.getScreenName() != null) {
-                uniqueKey = entry.getSourceUrl() + entry.getScreenName();
+            if (entry.getImporter() != null) {
+                uniqueKey = entry.getSourceUrl() + entry.getImporter();
             } else {
                 uniqueKey = entry.getSourceUrl() + entry.getClientHost();
             }
