@@ -59,6 +59,7 @@ public class StatusServlet extends HttpServlet {
         json.field("messages", DAO.countLocalMessages());
         json.field("users", DAO.countLocalUsers());
         json.field("queries", DAO.countLocalQueries());
+        json.field("accounts", DAO.countLocalAccounts());
         json.endObject(); // of index_sizes
         
         json.field("client_info");
