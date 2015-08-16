@@ -57,7 +57,7 @@ public class PushServletHelper {
         Map<String, Object> profile = new HashMap<>();
         profile.put("client_host", post.getClientHost());
         profile.put("imported", importedMsgIds);
-        profile.put("screen_name", screenName);
+        profile.put("importer", screenName);
         String harvesting_freq = post.get("harvesting_freq", "");
         if (!"".equals(harvesting_freq)) {
             try {
@@ -131,9 +131,9 @@ public class PushServletHelper {
     }
 
     private static String computeImportProfileId(Map<String, Object> importProfile, int fileHash) {
-        String screen_name = (String) importProfile.get("screen_name");
+        String importer = (String) importProfile.get("importer");
         String source_url = (String) importProfile.get("source_url");
-        return source_url + "_" + screen_name + "_" + fileHash;
+        return source_url + "_" + importer + "_" + fileHash;
     }
 
     public static String computeMessageId(Map<String, Object> message, SourceType sourceType) throws Exception {

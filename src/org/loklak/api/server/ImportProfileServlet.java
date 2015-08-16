@@ -136,35 +136,27 @@ public class ImportProfileServlet extends HttpServlet {
         boolean jsonp = callback != null && callback.length() > 0;
 
         String source_url = post.get("source_url", "");
-        String screen_name = post.get("screen_name", "");
-        boolean hasScreenName = !"".equals(screen_name);
-        String client_host = post.get("client_host", "");
-
         if ("".equals(source_url)) {
             response.sendError(400, "your request must contain a source_url parameter.");
             return;
         }
 
-        if (!hasScreenName && "".equals(client_host)) {
-            response.sendError(400, "your request must contain either a screen_name or a client_host parameter.");
+        String screen_name = post.get("screen_name", "");
+        if ("".equals(screen_name)) {
+            response.sendError(400, "your request must contain a screen_name parameter.");
             return;
         }
 
         Map<String, String> searchConstraints = new HashMap<>();
         searchConstraints.put("source_url", source_url);
-        if (hasScreenName) {
-            searchConstraints.put("screen_name", screen_name);
-        } else {
-            searchConstraints.put("client_host", client_host);
-        }
+        searchConstraints.put("importer", screen_name);
         Collection<ImportProfileEntry> entries = DAO.SearchLocalImportProfilesWithConstraints(searchConstraints, false);
 
         int count = 0;
         for (ImportProfileEntry entry : entries) {
             // filter exact results, as SearchLocalImportProfilesWithConstraints is implemented with query term query (unreliable)
             if (source_url.equals(entry.getSourceUrl().toString())
-                && ((hasScreenName && screen_name.equals(entry.getImporter()))
-                    || client_host.equals(entry.getClientHost())))
+                && screen_name.equals(entry.getImporter()))
             {
                 if (DAO.deleteImportProfile(entry.getId(), entry.getSourceType())) {
                     count++;
@@ -205,7 +197,7 @@ public class ImportProfileServlet extends HttpServlet {
             searchConstraints.put("source_type", source_type);
         }
         if (!"".equals(screen_name)) {
-            searchConstraints.put("screen_name", screen_name);
+            searchConstraints.put("importer", screen_name);
         }
         Collection<ImportProfileEntry> entries = DAO.SearchLocalImportProfilesWithConstraints(searchConstraints, true);
         List<Map<String, Object>> entries_to_map = new ArrayList<>();
