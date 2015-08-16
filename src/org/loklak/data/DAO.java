@@ -400,8 +400,10 @@ public class DAO {
      * @return true if the record was stored because it did not exist, false if it was not stored because the record existed already
      */
     public static boolean writeMessage(MessageEntry t, UserEntry u, boolean dump, boolean overwriteUser) {
+        if (t == null) {
+            return false;
+        }
         try {
-
             // check if tweet exists in index
             if ((t instanceof TwitterScraper.TwitterTweet &&
                 ((TwitterScraper.TwitterTweet) t).exist() != null &&
