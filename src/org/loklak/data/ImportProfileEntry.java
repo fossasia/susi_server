@@ -58,6 +58,8 @@ public class ImportProfileEntry extends AbstractIndexEntry implements IndexEntry
 
     protected EntryStatus activeStatus;
 
+    protected PrivacyStatus privacyStatus;
+
 
     @SuppressWarnings("unchecked")
     public ImportProfileEntry(Map<String, Object> map) {
@@ -92,6 +94,11 @@ public class ImportProfileEntry extends AbstractIndexEntry implements IndexEntry
 
         // profile should be active in the beginning
         this.activeStatus = EntryStatus.ACTIVE;
+        try {
+            this.privacyStatus = PrivacyStatus.valueOf((String) map.get("privacy_status"));
+        } catch (IllegalArgumentException e) {
+            this.privacyStatus = PrivacyStatus.PRIVATE;
+        }
     }
 
     public String getId() {
@@ -206,6 +213,15 @@ public class ImportProfileEntry extends AbstractIndexEntry implements IndexEntry
         this.activeStatus = status;
     }
 
+    public PrivacyStatus getPrivacyStatus() {
+        return privacyStatus;
+    }
+
+    public void setPrivacyStatus(PrivacyStatus privacyStatus) {
+        this.privacyStatus = privacyStatus;
+    }
+
+
     @Override
     public Map<String, Object> toMap() {
         Map<String, Object> m = new LinkedHashMap<>();
@@ -223,6 +239,7 @@ public class ImportProfileEntry extends AbstractIndexEntry implements IndexEntry
         m.put("imported", this.imported);
         m.put("sharers", this.sharers);
         m.put("active_status", this.activeStatus.name());
+        m.put("privacy_status", this.privacyStatus.name());
         return m;
     }
 

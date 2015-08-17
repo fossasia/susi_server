@@ -7,6 +7,7 @@ import org.loklak.data.DAO;
 import org.loklak.data.ImportProfileEntry;
 import org.loklak.data.MessageEntry;
 import org.loklak.data.UserEntry;
+import org.loklak.data.PrivacyStatus;
 import org.loklak.harvester.HarvestingFrequency;
 import org.loklak.harvester.SourceType;
 
@@ -59,6 +60,16 @@ public class PushServletHelper {
         profile.put("imported", importedMsgIds);
         profile.put("importer", screenName);
         String harvesting_freq = post.get("harvesting_freq", "");
+
+        // optional parameter 'public' to
+        String public_profile = post.get("public", "");
+        PrivacyStatus privacyStatus;
+        if ("".equals(public_profile) || !"true".equals("public")){
+            privacyStatus = PrivacyStatus.PRIVATE;
+        } else {
+            privacyStatus = PrivacyStatus.PUBLIC;
+        }
+
         if (!"".equals(harvesting_freq)) {
             try {
                 profile.put("harvesting_freq", HarvestingFrequency.valueOf(Integer.parseInt(harvesting_freq)).getFrequency());
@@ -90,6 +101,7 @@ public class PushServletHelper {
         profile.put("created_at" , currentDate);
         profile.put("last_modified", currentDate);
         profile.put("last_harvested", currentDate);
+        profile.put("privacy_status", privacyStatus.name());
         try {
             importProfileEntry = new ImportProfileEntry(profile);
         } catch (Exception e) {
