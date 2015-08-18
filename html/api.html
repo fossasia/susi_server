@@ -69,6 +69,9 @@
 					<li><a href="#proxy">/api/proxy.json</a></li>
 					<li><a href="#push">/api/push.json</a></li>
 					<li><a href="#geojsonpush">/api/push/geojson.json</a></li>
+					<li><a href="#custompush">/api/push/*.*</a></li>
+					<li><a href="#import">/api/import.json</a></li>
+					<li><a href="#validate">/api/validate.json</a>
 					<li><a href="#settings">/api/settings.json</a></li>
 					<li><a href="#account">/api/account.json</a></li>
 					<li><a href="#user">/api/user.json</a></li>
@@ -727,7 +730,7 @@ added fuzzyness for marker computation
 	geojson format. Messages are collected from provided url, which
 	contains a <a
 		href="http://geojson.org/geojson-spec.html#introduction">GeoJSON
-		Feature Collection</a>. Each message is a GeoJSON Feature. Example :
+		Feature Collection</a>. Each message is a GeoJSON Feature. Example:
 <pre>{
   {
     "type": "FeatureCollection",
@@ -765,30 +768,45 @@ added fuzzyness for marker computation
 	This servlet allows users to specify some rules to map "properties"
 	fields differently, with
 	<code>map_type</code>
-	parameter.The HTTP GET or POST request has three attributes :
+	parameter.The HTTP GET or POST request has these attributes:
 </p>
 <ul class="request">
-	<li><div class="tabcol0">url</div>
-		<div class="tabcol1">&nbsp;=&nbsp;&lt;an url to geojson&gt;</div>//
+	<li><div class="tabcol0">url*</div>
+		<div class="tabcol1">&nbsp;=&nbsp;&lt;string&gt;</div>//
 		public url to retrieve geojson data. This url will be used to
 		update the source periodically</li>
-	<li><div class="tabcol0">source_type</div>
+	<li><div class="tabcol0">screen_name*</div>
+		<div class="tabcol1">&nbsp;=&nbsp;&lt;source type&gt;</div>//
+		importer screen name.</li>
+	<li><div class="tabcol0">source_type*</div>
 		<div class="tabcol1">&nbsp;=&nbsp;&lt;source type&gt;</div>//
 		"source_type" value of each message.</li>
 	<li><div class="tabcol0">map_type</div>
 		<div class="tabcol1">&nbsp;=&nbsp;&lt;mapping rule(s)&gt;</div>//
 		field mapping rules, separated by commas</li>
 </ul><br/>
+
+<p>Along with some optional parameters to specify how loklak should treat the data source:</p>
+<ul class="request">
+	<li><div class="tabcol0">harvesting_freq</div>
+		<div class="tabcol1">&nbsp;=&nbsp;&lt;number&gt;</div>//
+		Update frequency (in minutes) of the data source</li>
+	<li><div class="tabcol0">lifetime</div>
+	<div class="tabcol1">&nbsp;=&nbsp;&lt;number&gt;</div>//
+	expiration date (in epoch time) of the data source</li>
+	<li><div class="tabcol0">public</div>
+	<div class="tabcol1">&nbsp;=&nbsp;&lt;string&gt;</div>//
+	set to `true` to make the data searchable by other users</li>
+</ul>
+
 <p>
-	The servlet returns with the same information as
-	<code>/api/push.json</code>
-	.
-<p>Here is an example :</p>
+	The servlet returns with the same information as <code>/api/push.json</code>.
+<p>Here is an example:</p>
 <ul class="request">
 	<li><a
 		href="http://localhost:9000/api/push/geojson.json?url=mysite.com/mygeojson.json&source_type=IMPORT">http://localhost:9000/api/push/geojson.json?url=mysite.com/mygeojson.json&source_type=IMPORT</a></li>
 </ul><br/>
-<p>Another example, with 3 field mapping rules :</p>
+<p>Another example, with 3 field mapping rules:</p>
 <ul class="request">
 	<li><a
 		href="http://localhost:9000/api/push/geojson.json?url=mysite.com/mygeojson.json&source_type=IMPORT">http://localhost:9000/api/push/geojson.json?url=mysite.com/mygeojson.json&source_type=IMPORT&map_type=message_name:screen_name,username:user.name,user_shortname:user.screen_name</a></li>
@@ -796,6 +814,101 @@ added fuzzyness for marker computation
 
 <!-- ===================================================================== -->
 
+<br id="custompush" />
+<br />
+<h2 class="sub-header">
+	<code>/api/push/*.*</code>
+</h2>
+<div class="alert alert-success" role="alert">This API is open and can be accessed without any restrictions!</div>
+<p>Numerous data formats are internally supported by loklak push feature, other than geojson. The main difference is that these formats are hardwired and do not support custom mapping rules. This is a non-exhaustive list of active push endpoints: </p>
+<ul class="request">
+	<li>/api/fossasia_api.json</li>
+	<li>/api/freifunk_node.json</li>
+	<li>/api/openwifimap.json</li>
+	<li>/api/nodelist.json</li>
+	<li>/api/netmon.xml</li>
+</ul>
+
+<p>Required attributes are:</p>
+
+<ul class="request">
+	<li><div class="tabcol0">url*</div>
+		<div class="tabcol1">&nbsp;=&nbsp;&lt;string&gt;</div>//
+		public url of the data source</li>
+	<li><div class="tabcol0">screen_name*</div>
+	<div class="tabcol1">&nbsp;=&nbsp;&lt;string&gt;</div>//
+	importer screen name</li>
+</ul>
+
+<p>Along with some optional parameters to specify how loklak should treat the data source:</p>
+<ul class="request">
+	<li><div class="tabcol0">harvesting_freq</div>
+		<div class="tabcol1">&nbsp;=&nbsp;&lt;number&gt;</div>//
+		Update frequency (in minutes) of the data source</li>
+	<li><div class="tabcol0">lifetime</div>
+	<div class="tabcol1">&nbsp;=&nbsp;&lt;number&gt;</div>//
+	expiration date (in epoch time) of the data source</li>
+	<li><div class="tabcol0">public</div>
+	<div class="tabcol1">&nbsp;=&nbsp;&lt;string&gt;</div>//
+	set to `true` to make the data searchable by other users</li>
+</ul>
+<!-- ===================================================================== -->
+
+<br id="import" />
+<br />
+<h2 class="sub-header">
+	<code>/api/import.json</code>
+</h2>
+<div class="alert alert-success" role="alert">This API is open and can be accessed without any restrictions!</div>
+
+<p>While pushing custom data using /api/push/*.json, loklak saves metadata of the push: harvesting frequency, lifetime, privacy status, etc.. in an object structure called ImportProfile. This api enables Read-Update-Delete operations on those objects. The type of action to performed is defined by `action` attribute : </p>
+<ul class="request">
+	<li><div class="tabcol0">action</div>
+		<div class="tabcol1">&nbsp;=&nbsp;&lt;action type&gt;</div>// accepted values are update|delete. Leave blank for read operation.
+	</li>
+</ul>
+
+<p>Request attributes are different depending on action type. For read action:</p>
+<ul class="request">
+	<li><div class="tabcol0">screen_name</div>
+		<div class="tabcol1">&nbsp;=&nbsp;&lt;string&gt;</div>// unique screen_name of the importer
+	</li>
+	<li><div class="tabcol0">source_type</div>
+		<div class="tabcol1">&nbsp;=&nbsp;&lt;string&gt;</div>// source type data
+	</li>
+</ul>
+<p>For update action:</p>
+<ul class="request">
+	<li><div class="tabcol0">data*</div>
+		<div class="tabcol1">&nbsp;=&nbsp;&lt;json&gt;</div>// the data to update. Must contain an `id_str` field to identify the import profile to update.
+	</li>
+</ul>
+<p>For delete action:</p>
+<ul class="request">
+	<li><div class="tabcol0">source_url*</div>
+		<div class="tabcol1">&nbsp;=&nbsp;&lt;string&gt;</div>// url of the source
+	</li>
+	<li><div class="tabcol0">screen_name*</div>
+		<div class="tabcol1">&nbsp;=&nbsp;&lt;string&gt;</div>// importer screen_name. Along with source_url this attribute is required to identify the import profile.
+	</li>
+</ul>
+<!-- ===================================================================== -->
+<br id="validate" />
+<br />
+<h2 class="sub-header">
+	<code>/api/validate.json</code>
+</h2>
+<div class="alert alert-success" role="alert">This API is open and can be accessed without any restrictions!</div>
+<p>In loklak, before pushing custom data, the data format is validated against its corresponding json schema. This step ensures the data format to be correct. This API help users check their data even before pushing it. Required attributes are:</p>
+<ul class="request">
+	<li><div class="tabcol0">url*</div>
+		<div class="tabcol1">&nbsp;=&nbsp;&lt;string&gt;</div>// public url of the data
+	</li>
+	<li><div class="tabcol0">source_type*</div>
+		<div class="tabcol1">&nbsp;=&nbsp;&lt;string&gt;</div>// indicate the data format to validate against. Some valid values are : FOSSASIA_API, FREIFUNK_NODE, OPENWIFIMAP, etc..
+	</li>
+</ul>
+<!-- ===================================================================== -->
 <br id="settings" /></br>
 <h2 class="sub-header">
 	<code>/api/settings.json</code>
