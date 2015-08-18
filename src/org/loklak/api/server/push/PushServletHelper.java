@@ -64,7 +64,7 @@ public class PushServletHelper {
         // optional parameter 'public' to
         String public_profile = post.get("public", "");
         PrivacyStatus privacyStatus;
-        if ("".equals(public_profile) || !"true".equals("public")){
+        if ("".equals(public_profile) || !"true".equals(public_profile)){
             privacyStatus = PrivacyStatus.PRIVATE;
         } else {
             privacyStatus = PrivacyStatus.PUBLIC;
