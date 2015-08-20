@@ -38,8 +38,8 @@ public class ImportProfileEntry extends AbstractIndexEntry implements IndexEntry
 
     // last time the url is harvested & updated by loklak harvester
     protected Date last_harvested;
-    // importer username
-    protected String screen_name;
+    // importer screen name
+    protected String importer;
     // importer ip address
     protected String client_host;
     protected URL source_url;
@@ -53,7 +53,12 @@ public class ImportProfileEntry extends AbstractIndexEntry implements IndexEntry
     // id list of imported messages
     protected List<String> imported;
 
+    // id list of users sharing this data
+    protected List<String> sharers;
+
     protected EntryStatus activeStatus;
+
+    protected PrivacyStatus privacyStatus;
 
 
     @SuppressWarnings("unchecked")
@@ -74,7 +79,7 @@ public class ImportProfileEntry extends AbstractIndexEntry implements IndexEntry
         this.created_at = parseDate(map.get("created_at"));
         this.last_modified = parseDate(map.get("last_modified"));
         this.last_harvested = parseDate(map.get("last_harvested"));
-        this.screen_name = (String) map.get("screen_name");
+        this.importer = (String) map.get("importer");
         this.client_host = (String) map.get("client_host");
 
         try {
@@ -84,10 +89,16 @@ public class ImportProfileEntry extends AbstractIndexEntry implements IndexEntry
         }
         this.lifetime = parseLong(map.get("lifetime"));
         this.imported = (List<String>) map.get("imported");
+        this.sharers = (List<String>) map.get("sharers");
         this.id = (String) map.get("id_str");
 
         // profile should be active in the beginning
         this.activeStatus = EntryStatus.ACTIVE;
+        try {
+            this.privacyStatus = PrivacyStatus.valueOf((String) map.get("privacy_status"));
+        } catch (IllegalArgumentException e) {
+            this.privacyStatus = PrivacyStatus.PRIVATE;
+        }
     }
 
     public String getId() {
@@ -122,12 +133,12 @@ public class ImportProfileEntry extends AbstractIndexEntry implements IndexEntry
         this.last_harvested = last_harvested;
     }
 
-    public String getScreenName() {
-        return screen_name;
+    public String getImporter() {
+        return importer;
     }
 
-    public void setScreenName(String screen_name) {
-        this.screen_name = screen_name;
+    public void setImporter(String importer) {
+        this.importer = importer;
     }
 
     public String getClientHost() {
@@ -186,6 +197,13 @@ public class ImportProfileEntry extends AbstractIndexEntry implements IndexEntry
         this.imported = imported;
     }
 
+    public List<String> getSharers() {
+        return sharers;
+    }
+
+    public void setSharers(List<String> sharers) {
+        this.sharers = sharers;
+    }
 
     public EntryStatus getActiveStatus() {
         return activeStatus;
@@ -195,6 +213,15 @@ public class ImportProfileEntry extends AbstractIndexEntry implements IndexEntry
         this.activeStatus = status;
     }
 
+    public PrivacyStatus getPrivacyStatus() {
+        return privacyStatus;
+    }
+
+    public void setPrivacyStatus(PrivacyStatus privacyStatus) {
+        this.privacyStatus = privacyStatus;
+    }
+
+
     @Override
     public Map<String, Object> toMap() {
         Map<String, Object> m = new LinkedHashMap<>();
@@ -202,7 +229,7 @@ public class ImportProfileEntry extends AbstractIndexEntry implements IndexEntry
         m.put("created_at", utcFormatter.print(this.created_at.getTime()));
         m.put("last_modified", utcFormatter.print(this.last_modified.getTime()));
         m.put("last_harvested", utcFormatter.print(this.last_harvested.getTime()));
-        m.put("screen_name", this.screen_name);
+        m.put("importer", this.importer);
         m.put("client_host", this.client_host);
         m.put("source_url", this.source_url.toString());
         m.put("source_hash", this.source_hash);
@@ -210,7 +237,9 @@ public class ImportProfileEntry extends AbstractIndexEntry implements IndexEntry
         m.put("harvesting_freq", this.harvesting_freq.getFrequency());
         m.put("lifetime", this.lifetime);
         m.put("imported", this.imported);
+        m.put("sharers", this.sharers);
         m.put("active_status", this.activeStatus.name());
+        m.put("privacy_status", this.privacyStatus.name());
         return m;
     }
 
