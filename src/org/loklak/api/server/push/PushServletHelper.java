@@ -7,14 +7,28 @@ import org.loklak.data.DAO;
 import org.loklak.data.ImportProfileEntry;
 import org.loklak.data.MessageEntry;
 import org.loklak.data.UserEntry;
+import org.loklak.data.Timeline;
 import org.loklak.data.PrivacyStatus;
 import org.loklak.harvester.HarvestingFrequency;
 import org.loklak.harvester.SourceType;
 
 import java.io.IOException;
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.Iterator;
 
 public class PushServletHelper {
+
+    /* Fields that can be updated */
+    public static final String[] FIELDS_TO_COMPARE =
+    {
+        "screen_name",
+        "link",
+        "text" // can embed rich content
+    };
 
     public static PushReport saveMessagesAndImportProfile(
             List<Map<String, Object>> messages, int fileHash, RemoteAccess.Post post,
@@ -146,6 +160,37 @@ public class PushServletHelper {
         String importer = (String) importProfile.get("importer");
         String source_url = (String) importProfile.get("source_url");
         return source_url + "_" + importer + "_" + fileHash;
+    }
+
+    @SuppressWarnings("unchecked")
+    public static boolean checkMessageExistence(Map<String, Object> message) {
+        String source_type = (String) message.get("source_type");
+        List<Double> location_point = (List<Double>) message.get("location_point");
+        Double latitude = location_point.get(0);
+        Double longitude = location_point.get(1);
+        String query = "/source_type=" + source_type + " /location=" + latitude + "," + longitude;
+        // search only latest message
+        DAO.SearchLocalMessages search = new DAO.SearchLocalMessages(query, Timeline.Order.CREATED_AT, 0, 1, 0);
+        Iterator it = search.timeline.iterator();
+        while (it.hasNext()) {
+            MessageEntry messageEntry = (MessageEntry) it.next();
+            DAO.log(messageEntry.getIdStr());
+            if (compareMessage(messageEntry.toMap(), message)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static boolean compareMessage(Map<String, Object> m1, Map<String, Object> m2) {
+        for (String field : FIELDS_TO_COMPARE) {
+            if ((m1.get(field) == null && m2.get(field) != null)
+            || (m1.get(field) != null && m2.get(field) == null)
+            || !m1.get(field).equals(m2.get(field))) {
+                return false;
+            }
+        }
+        return true;
     }
 
     public static String computeMessageId(Map<String, Object> message, SourceType sourceType) throws Exception {

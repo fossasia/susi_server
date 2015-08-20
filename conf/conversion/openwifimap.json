@@ -2,6 +2,7 @@
   "rules" :
   [
     ["value.hostname", "text"],
-    ["value.latlng", ["location_point", "location_mark"]]
+    ["value.latlng", ["location_point", "location_mark"]],
+    ["value.mtime", "mtime"]
   ]
 }

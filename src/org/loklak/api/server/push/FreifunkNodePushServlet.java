@@ -50,11 +50,5 @@ public class FreifunkNodePushServlet extends AbstractPushServlet {
     }
 
     @Override
-    protected void customProcessing(Map<String, Object> message) {
-        try {
-            message.put("id_str", PushServletHelper.computeMessageId(message, getSourceType()));
-        } catch (Exception e) {
-            DAO.log("Problem computing id : " + e.getMessage());
-        }
-    }
+    protected void customProcessing(Map<String, Object> message) {}
 }

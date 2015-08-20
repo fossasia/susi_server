@@ -66,11 +66,5 @@ public class FossasiaPushServlet extends AbstractPushServlet {
         location_point.add(latitude);
         message.put("location_point", location_point);
         message.put("location_mark", location_point);
-
-        try {
-            message.put("id_str", PushServletHelper.computeMessageId(message, getSourceType()));
-        } catch (Exception e) {
-            DAO.log("Problem computing id : " + e.getMessage());
-        }
     }
 }
