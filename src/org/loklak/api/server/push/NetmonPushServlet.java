@@ -105,7 +105,7 @@ public class NetmonPushServlet extends HttpServlet {
             node.put("location_mark", location_point);
             node.put("location_source", LocationSource.USER.name());
             try {
-                node.put("id_str", PushServletHelper.computeMessageId(node, node.get("router_id"), SourceType.NETMON));
+                node.put("id_str", PushServletHelper.computeMessageId(node, SourceType.NETMON));
             } catch (Exception e) {
                 DAO.log("Problem computing id" + e.getMessage());
                 continue;

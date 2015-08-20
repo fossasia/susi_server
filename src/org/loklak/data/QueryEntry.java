@@ -577,9 +577,11 @@ public class QueryEntry extends AbstractIndexEntry implements IndexEntry {
             
             // apply modifiers
             if (modifier.containsKey("id")) {
-                ops.add(QueryBuilders.termQuery("id_str", modifier.get("id")));
+                ops.add(QueryBuilders.termsQuery("id_str", modifier.get("id")));
             }
-            if (modifier.containsKey("-id")) nops.add(QueryBuilders.termQuery("id_str", modifier.get("-id")));
+            if (modifier.containsKey("-id")) {
+                nops.add(QueryBuilders.termsQuery("id_str", modifier.get("-id")));
+            }
 
             for (String user: users_positive) {
                 ops.add(QueryBuilders.termQuery("mentions", user));

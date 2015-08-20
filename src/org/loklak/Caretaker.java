@@ -19,6 +19,7 @@
 
 package org.loklak;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.Date;
 import java.util.List;
@@ -32,6 +33,7 @@ import org.loklak.data.DAO;
 import org.loklak.data.QueryEntry;
 import org.loklak.data.Timeline;
 import org.loklak.harvester.TwitterAPI;
+import org.loklak.tools.OS;
 
 import twitter4j.TwitterException;
 
@@ -42,6 +44,10 @@ import twitter4j.TwitterException;
 public class Caretaker extends Thread {
 
     private boolean shallRun = true;
+    
+    public final static long startupTime = System.currentTimeMillis();
+    public final static long upgradeWait = 1000 * 60 * 60 * 24; // 1 day
+    public       static long upgradeTime = startupTime + upgradeWait;
     
     /**
      * ask the thread to shut down
@@ -60,6 +66,13 @@ public class Caretaker extends Thread {
         
         // work loop
         while (this.shallRun) {
+            if (System.currentTimeMillis() > upgradeTime) {
+                // do an upgrade
+                DAO.log("UPGRADE: starting an upgrade");
+                upgrade();
+                DAO.log("UPGRADE: started an upgrade");
+            }
+            
             // sleep a bit to prevent that the DoS limit fires at backend server
             try {Thread.sleep(4000);} catch (InterruptedException e) {}
             
@@ -129,6 +142,21 @@ public class Caretaker extends Thread {
 
     public static boolean acceptQuery4Retrieval(String q) {
         return q.length() > 1 && q.length() <=16 && q.indexOf(':') < 0;
+    }
+    
+    /**
+     * loklak upgrades itself if this is called
+     */
+    public static void upgrade() {
+        final File upgradeScript = new File(DAO.bin_dir.getAbsolutePath().replaceAll(" ", "\\ "), "upgrade.sh");
+      
+        try {
+            List<String> rsp = OS.execSynchronous(upgradeScript.getAbsolutePath());
+            for (String s: rsp) DAO.log("UPGRADE: " + s);
+        } catch (IOException e) {
+            DAO.log("UPGRADE failed: " + e.getMessage());
+            e.printStackTrace();
+        }
     }
     
 }

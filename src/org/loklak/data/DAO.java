@@ -111,7 +111,7 @@ public class DAO {
     private static final String IMPORT_PROFILE_INDEX_NAME = "import_profiles";
     public final static int CACHE_MAXSIZE = 10000;
     
-    public  static File conf_dir;
+    public  static File conf_dir, bin_dir;
     private static File external_data, assets, dictionaries;
     private static Path message_dump_dir, account_dump_dir, import_profile_dump_dir;
     private static JsonDump message_dump, account_dump, import_profile_dump;
@@ -134,7 +134,8 @@ public class DAO {
      */
     public static void init(Map<String, String> configMap, Path dataPath) {
         config = configMap;
-        File conf_dir = new File("conf");
+        conf_dir = new File("conf");
+        bin_dir = new File("bin");
         File datadir = dataPath.toFile();
         try {
             // create and document the data dump dir
@@ -399,8 +400,10 @@ public class DAO {
      * @return true if the record was stored because it did not exist, false if it was not stored because the record existed already
      */
     public static boolean writeMessage(MessageEntry t, UserEntry u, boolean dump, boolean overwriteUser) {
+        if (t == null) {
+            return false;
+        }
         try {
-
             // check if tweet exists in index
             if ((t instanceof TwitterScraper.TwitterTweet &&
                 ((TwitterScraper.TwitterTweet) t).exist() != null &&
@@ -572,7 +575,6 @@ public class DAO {
                         request.addAggregation(AggregationBuilders.terms(field).field(field).minDocCount(1).size(aggregationLimit));
                     }
                 }
-                
                 // get response
                 SearchResponse response = request.execute().actionGet();
                 this.hits = response.getHits().getTotalHits();
@@ -797,8 +799,8 @@ public class DAO {
         Map<String, ImportProfileEntry> latests = new HashMap<>();
         for (ImportProfileEntry entry : rawResults) {
             String uniqueKey;
-            if (entry.getScreenName() != null) {
-                uniqueKey = entry.getSourceUrl() + entry.getScreenName();
+            if (entry.getImporter() != null) {
+                uniqueKey = entry.getSourceUrl() + entry.getImporter();
             } else {
                 uniqueKey = entry.getSourceUrl() + entry.getClientHost();
             }

@@ -274,6 +274,11 @@ public class LoklakServer {
         LoklakServer.server.start();
         LoklakServer.caretaker = new Caretaker();
         LoklakServer.caretaker.start();
+        
+        // read upgrade interval
+        Caretaker.upgradeTime = Caretaker.startupTime + DAO.getConfig("upgradeInterval", 86400000);
+        
+        // if this is not headless, we can open a browser automatically
         Browser.openBrowser("http://localhost:" + httpPort + "/");
         
         // ** services are now running **

@@ -79,7 +79,7 @@
             <li>&gt; bin/start.sh</li>
           </ul>
           <p>After all server processes are running, <code>loklak</code> tries to open a browser page itself.
-            If that does not happen, just open <a href="http://localhost:9100">http://localhost:9100</a>; if
+            If that does not happen, just open <a href="http://localhost:9000">http://localhost:9000</a>; if
             you made the installation on a headless or remote server, then replace 'localhost' with your server name.</p>
           <p>To stop <code>loklak</code>, run: (this will block until the server has actually terminated)</p>
           <ul class="request">
@@ -195,7 +195,7 @@ https://github.com/loklak/loklak_server.git&nbsp;</li>
   listen 80;
   server_name myserver.mytld;
   location / {
-    proxy_pass 127.0.0.1:9100;
+    proxy_pass 127.0.0.1:9000;
     include /etc/nginx/proxy_params;
     proxy_set_header X-Real-IP $remote_addr;
     proxy_set_header Host $host;

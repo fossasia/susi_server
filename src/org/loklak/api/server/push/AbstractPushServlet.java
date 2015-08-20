@@ -144,7 +144,7 @@ public abstract class AbstractPushServlet extends HttpServlet {
             }
 
             try {
-                message.put("id_str", PushServletHelper.computeMessageId(message, message.get("id"), getSourceType()));
+                message.put("id_str", PushServletHelper.computeMessageId(message, getSourceType()));
             } catch (Exception e) {
                 DAO.log("Problem computing id : " + e.getMessage());
             }

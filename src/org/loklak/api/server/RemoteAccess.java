@@ -265,7 +265,13 @@ public class RemoteAccess {
     
     public static Map<String, byte[]> getPostMap(HttpServletRequest request) {
         Map<String, byte[]> map = new HashMap<>();
-        try {
+        Map<String, String[]> pm = request.getParameterMap();
+        if (pm != null && pm.size() > 0) {
+            for (Map.Entry<String, String[]> entry: pm.entrySet()) {
+                String[] v = entry.getValue();
+                if (v != null && v.length > 0) map.put(entry.getKey(), UTF8.getBytes(v[0]));
+            }
+        } else try {
             final byte[] b = new byte[1024];
             for (Part part: request.getParts()) {
                 String name = part.getName();

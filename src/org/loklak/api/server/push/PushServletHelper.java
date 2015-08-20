@@ -8,6 +8,7 @@ import org.loklak.data.ImportProfileEntry;
 import org.loklak.data.MessageEntry;
 import org.loklak.data.UserEntry;
 import org.loklak.data.Timeline;
+import org.loklak.data.PrivacyStatus;
 import org.loklak.harvester.HarvestingFrequency;
 import org.loklak.harvester.SourceType;
 
@@ -35,9 +36,12 @@ public class PushServletHelper {
         PushReport report = new PushReport();
         List<String> importedMsgIds = new ArrayList<>();
         for (Map<String, Object> message : messages) {
+            message.put("screen_name", screenName);
             Map<String, Object> user = (Map<String, Object>) message.remove("user");
+            if (user != null)
+                user.put("screen_name", screenName);
             MessageEntry messageEntry = new MessageEntry(message);
-            UserEntry userEntry = new UserEntry((user != null && user.get("screen_name") != null) ? user : new HashMap<String, Object>());
+            UserEntry userEntry = new UserEntry(user != null ? user : new HashMap<String, Object>());
             boolean successful;
             report.incrementRecordCount();
             try {
@@ -68,8 +72,18 @@ public class PushServletHelper {
         Map<String, Object> profile = new HashMap<>();
         profile.put("client_host", post.getClientHost());
         profile.put("imported", importedMsgIds);
-        profile.put("screen_name", screenName);
+        profile.put("importer", screenName);
         String harvesting_freq = post.get("harvesting_freq", "");
+
+        // optional parameter 'public' to
+        String public_profile = post.get("public", "");
+        PrivacyStatus privacyStatus;
+        if ("".equals(public_profile) || !"true".equals(public_profile)){
+            privacyStatus = PrivacyStatus.PRIVATE;
+        } else {
+            privacyStatus = PrivacyStatus.PUBLIC;
+        }
+
         if (!"".equals(harvesting_freq)) {
             try {
                 profile.put("harvesting_freq", HarvestingFrequency.valueOf(Integer.parseInt(harvesting_freq)).getFrequency());
@@ -101,6 +115,7 @@ public class PushServletHelper {
         profile.put("created_at" , currentDate);
         profile.put("last_modified", currentDate);
         profile.put("last_harvested", currentDate);
+        profile.put("privacy_status", privacyStatus.name());
         try {
             importProfileEntry = new ImportProfileEntry(profile);
         } catch (Exception e) {
@@ -142,9 +157,9 @@ public class PushServletHelper {
     }
 
     private static String computeImportProfileId(Map<String, Object> importProfile, int fileHash) {
-        String screen_name = (String) importProfile.get("screen_name");
+        String importer = (String) importProfile.get("importer");
         String source_url = (String) importProfile.get("source_url");
-        return source_url + "_" + screen_name + "_" + fileHash;
+        return source_url + "_" + importer + "_" + fileHash;
     }
 
     @SuppressWarnings("unchecked")
@@ -178,7 +193,7 @@ public class PushServletHelper {
         return true;
     }
 
-    public static String computeMessageId(Map<String, Object> message, Object initialId, SourceType sourceType) throws Exception {
+    public static String computeMessageId(Map<String, Object> message, SourceType sourceType) throws Exception {
         List<Object> location = (List<Object>) message.get("location_point");
         if (location == null) {
             throw new Exception("location_point not found");
@@ -195,16 +210,15 @@ public class PushServletHelper {
         } catch (ClassCastException e) {
             throw new ClassCastException("Unable to extract lat, lon from location_point " + e.getMessage());
         }
-        // If initialId found, append it in the id. The new id has this format
-        // <source_type>_<id>_<lat>_<lon>_<mtime>
-        // otherwise, the new id is <source_type>_<lat>_<lon>_<mtime>
+        // Modification time = 'mtime' value. If not found, take current time
         Object mtime = message.get("mtime");
-        boolean hasInitialId = initialId != null && !"".equals(initialId.toString());
-        if (hasInitialId) {
-            return sourceType.name() + "_" + initialId + "_" + latitude + "_" + longitude + "_" + mtime;
-        } else {
-            return sourceType.name() + "_" + latitude + "_" + longitude + "_" + mtime;
+        if (mtime == null) {
+            mtime = Long.toString(System.currentTimeMillis());
+            message.put("mtime", mtime);
         }
+
+        // Id format : <source_type>_<lat>_<lon>_<mtime>
+        return sourceType.name() + "_" + latitude + "_" + longitude + "_" + mtime;
     }
 
 }
