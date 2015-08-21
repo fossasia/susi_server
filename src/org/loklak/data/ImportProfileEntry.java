@@ -71,8 +71,9 @@ public class ImportProfileEntry extends AbstractIndexEntry implements IndexEntry
         String source_type_string = (String) map.get("source_type");
         if (source_type_string == null) source_type_string = SourceType.USER.name();
         try {
-            this.source_type = SourceType.valueOf(source_type_string);
+            this.source_type = SourceType.valueOf(source_type_string.toUpperCase());
         } catch (IllegalArgumentException e) {
+            DAO.log("Illegal source type value : " + source_type_string);
             this.source_type = SourceType.USER;
         }
         this.source_hash = parseLong(map.get("source_hash"));

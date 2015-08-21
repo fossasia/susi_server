@@ -96,6 +96,9 @@ public class ImportProfileServlet extends HttpServlet {
             if (map.get("id_str") == null) {
                 throw new IOException("id_str field missing");
             }
+            if (map.get("source_type") == null) {
+                throw new IOException("source_type field missing");
+            }
             ImportProfileEntry i = DAO.SearchLocalImportProfiles((String) map.get("id_str"));
             if (i == null) {
                 throw new IOException("import profile id_str field '" + map.get("id_str") + "' not found");

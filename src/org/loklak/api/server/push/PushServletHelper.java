@@ -116,6 +116,9 @@ public class PushServletHelper {
         profile.put("last_modified", currentDate);
         profile.put("last_harvested", currentDate);
         profile.put("privacy_status", privacyStatus.name());
+        List<String> sharers = new ArrayList<>();
+        sharers.add(screenName);
+        profile.put("sharers", sharers);
         try {
             importProfileEntry = new ImportProfileEntry(profile);
         } catch (Exception e) {
