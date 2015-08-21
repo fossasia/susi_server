@@ -93,10 +93,14 @@ public class ImportProfileEntry extends AbstractIndexEntry implements IndexEntry
         this.id = (String) map.get("id_str");
 
         // profile should be active in the beginning
-        this.activeStatus = EntryStatus.ACTIVE;
+        try {
+            this.activeStatus = EntryStatus.valueOf((String) map.get("active_status"));
+        } catch (IllegalArgumentException|NullPointerException e) {
+            this.activeStatus = EntryStatus.ACTIVE;
+        }
         try {
             this.privacyStatus = PrivacyStatus.valueOf((String) map.get("privacy_status"));
-        } catch (IllegalArgumentException e) {
+        } catch (IllegalArgumentException|NullPointerException e) {
             this.privacyStatus = PrivacyStatus.PRIVATE;
         }
     }

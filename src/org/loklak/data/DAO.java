@@ -483,9 +483,9 @@ public class DAO {
      */
     public synchronized static boolean writeImportProfile(ImportProfileEntry i, boolean dump) {
         try {
-            // record account into text file
+            // record import profile into text file
             if (dump) import_profile_dump.write(i.toMap());
-            // record tweet into search index
+            // record import profile into search index
             importProfiles.writeEntry(i.getId(), i.getSourceType().name(), i);
         } catch (IOException e) {
             e.printStackTrace();

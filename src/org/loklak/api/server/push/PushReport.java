@@ -54,6 +54,7 @@ public class PushReport {
     public void combine(PushReport that) {
         this.recordCount += that.recordCount;
         this.newCount += that.newCount;
+        this.knownCount += that.knownCount;
         this.errorCount += that.errorCount;
         // prioritize `that` import profile
         if (that.importProfile != null)

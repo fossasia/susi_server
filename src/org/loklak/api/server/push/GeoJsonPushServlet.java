@@ -19,10 +19,12 @@
 
 package org.loklak.api.server.push;
 
-import org.elasticsearch.common.joda.time.DateTime;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectWriter;
 import org.loklak.api.client.ClientConnection;
 import org.loklak.api.server.RemoteAccess;
 import org.loklak.data.DAO;
+import org.loklak.data.MessageEntry;
 import org.loklak.data.ProviderType;
 import org.loklak.geo.LocationSource;
 import org.loklak.geo.PlaceContext;
@@ -115,7 +117,8 @@ public class GeoJsonPushServlet extends HttpServlet {
         }
 
         List<Map<String, Object>> rawMessages = new ArrayList<>();
-
+        ObjectWriter ow = new ObjectMapper().writerWithDefaultPrettyPrinter();
+        PushReport nodePushReport = new PushReport();
         for (Map<String, Object> feature : features) {
             Object properties_obj = feature.get("properties");
             @SuppressWarnings("unchecked")
@@ -131,38 +134,50 @@ public class GeoJsonPushServlet extends HttpServlet {
                 geometry = new HashMap<>();
             }
 
+            Map<String, Object> message = new HashMap<>();
+
             // add mapped properties
             Map<String, Object> mappedProperties = convertMapRulesProperties(mapRules, properties);
-            properties.putAll(mappedProperties);
+            message.putAll(mappedProperties);
 
             if (!"".equals(sourceType)) {
-                properties.put("source_type", sourceType.name());
+                message.put("source_type", sourceType.name());
             } else {
-                properties.put("source_type", SourceType.IMPORT);
+                message.put("source_type", SourceType.IMPORT);
             }
-            properties.put("provider_type", ProviderType.GEOJSON.name());
-            properties.put("provider_hash", remoteHash);
-            properties.put("location_point", geometry.get("coordinates"));
-            properties.put("location_mark", geometry.get("coordinates"));
-            properties.put("location_source", LocationSource.USER.name());
-            properties.put("place_context", PlaceContext.FROM.name());
+            message.put("provider_type", ProviderType.GEOJSON.name());
+            message.put("provider_hash", remoteHash);
+            message.put("location_point", geometry.get("coordinates"));
+            message.put("location_mark", geometry.get("coordinates"));
+            message.put("location_source", LocationSource.USER.name());
+            message.put("place_context", PlaceContext.FROM.name());
 
-            // avoid error text not found. TODO: a better strategy, e.g. require text as a mandatory field
-            if (properties.get("text") == null) {
-                properties.put("text", "");
+            if (message.get("text") == null) {
+                message.put("text", "");
+            }
+            // append rich-text attachment
+            String jsonToText = ow.writeValueAsString(properties);
+            message.put("text", message.get("text") + MessageEntry.RICH_TEXT_SEPARATOR + jsonToText);
+
+            if (properties.get("mtime") == null) {
+                boolean existed = PushServletHelper.checkMessageExistence(message);
+                // message known
+                if (existed) {
+                    nodePushReport.incrementKnownCount();
+                    continue;
+                }
+                // updated message -> save with new mtime value
+                message.put("mtime", Long.toString(System.currentTimeMillis()));
             }
 
-            // compute unique message id among all messages
-            String id_str;
             try {
-                id_str = computeGeoJsonId(properties, geometry);
-                properties.put("id_str", id_str);
-                // response.getWriter().println(properties.get("shortname") + ", " + properties.get("screen_name") + ", " + properties.get("name") + " : " + computeGeoJsonId((feature)));
+                message.put("id_str", PushServletHelper.computeMessageId(message, sourceType));
             } catch (Exception e) {
-                response.sendError(400, "Error computing id : " + e.getMessage());
-                return;
+                DAO.log("Problem computing id : " + e.getMessage());
+                nodePushReport.incrementErrorCount();
             }
-            rawMessages.add(properties);
+
+            rawMessages.add(message);
         }
 
         PushReport report = PushServletHelper.saveMessagesAndImportProfile(rawMessages, Arrays.hashCode(jsonText), post, sourceType, screen_name);
@@ -215,26 +230,5 @@ public class GeoJsonPushServlet extends HttpServlet {
             }
         }
         return root;
-    }
-
-    private static String computeGeoJsonId(Map<String, Object> properties, Map<String, Object> geometry) throws Exception {
-        String geometryType = (String) geometry.get("type");
-        if (!"Point".equals(geometryType)) {
-            throw new Exception("Geometry object unsupported : " + geometryType);
-        }
-        Object mtime_obj = properties.get("mtime");
-        if (mtime_obj == null) {
-            throw new Exception("geojson format error : member 'mtime' required in feature properties");
-        }
-        DateTime mtime = new DateTime(mtime_obj);
-
-        List<?> coords = (List<?>) geometry.get("coordinates");
-
-        Double longitude = coords.get(0) instanceof Integer ? ((Integer) coords.get(0)).doubleValue() : (Double) coords.get(0);
-        Double latitude = coords.get(1) instanceof Integer ? ((Integer) coords.get(1)).doubleValue() : (Double) coords.get(1);
-
-        // longitude and latitude are added to id to a precision of 3 digits after comma
-        Long id = (long) Math.floor(1000*longitude) + (long) Math.floor(1000*latitude) + mtime.getMillis();
-        return id.toString();
     }
 }

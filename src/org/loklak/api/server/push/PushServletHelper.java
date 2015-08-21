@@ -119,6 +119,7 @@ public class PushServletHelper {
         try {
             importProfileEntry = new ImportProfileEntry(profile);
         } catch (Exception e) {
+            e.printStackTrace();
             throw new IOException("Unable to create import profile : " + e.getMessage());
         }
         boolean success = DAO.writeImportProfile(importProfileEntry, true);
