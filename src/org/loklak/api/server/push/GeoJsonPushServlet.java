@@ -160,10 +160,10 @@ public class GeoJsonPushServlet extends HttpServlet {
             message.put("text", message.get("text") + MessageEntry.RICH_TEXT_SEPARATOR + jsonToText);
 
             if (properties.get("mtime") == null) {
-                boolean existed = PushServletHelper.checkMessageExistence(message);
+                String existed = PushServletHelper.checkMessageExistence(message);
                 // message known
-                if (existed) {
-                    nodePushReport.incrementKnownCount();
+                if (existed != null) {
+                    nodePushReport.incrementKnownCount(existed);
                     continue;
                 }
                 // updated message -> save with new mtime value

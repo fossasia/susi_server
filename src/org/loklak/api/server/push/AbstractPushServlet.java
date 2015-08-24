@@ -140,11 +140,11 @@ public abstract class AbstractPushServlet extends HttpServlet {
             customProcessing(message);
 
             if (message.get("mtime") == null) {
-                boolean existed = PushServletHelper.checkMessageExistence(message);
+                String existed = PushServletHelper.checkMessageExistence(message);
                 // message known
-                if (existed) {
+                if (existed != null) {
                     messages.remove(i);
-                    nodePushReport.incrementKnownCount();
+                    nodePushReport.incrementKnownCount(existed);
                     continue;
                 }
                 // updated message -> save with new mtime value

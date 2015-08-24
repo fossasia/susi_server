@@ -55,7 +55,7 @@ public class PushServletHelper {
                 report.incrementNewCount();
                 importedMsgIds.add((String) message.get("id_str"));
             } else {
-                report.incrementKnownCount();
+                report.incrementKnownCount((String) message.get("id_str"));
             }
         }
 
@@ -142,6 +142,7 @@ public class PushServletHelper {
         json.field("records", pushReport.getRecordCount());
         json.field("new", pushReport.getNewCount());
         json.field("known", pushReport.getKnownCount());
+        json.field("knownIds", pushReport.getKnownMessageIds());
         json.field("error", pushReport.getErrorCount());
         ImportProfileEntry importProfile = pushReport.getImportProfile();
         if (importProfile != null)
@@ -167,7 +168,7 @@ public class PushServletHelper {
     }
 
     @SuppressWarnings("unchecked")
-    public static boolean checkMessageExistence(Map<String, Object> message) {
+    public static String checkMessageExistence(Map<String, Object> message) {
         String source_type = (String) message.get("source_type");
         List<Double> location_point = (List<Double>) message.get("location_point");
         Double latitude = location_point.get(0);
@@ -178,12 +179,11 @@ public class PushServletHelper {
         Iterator it = search.timeline.iterator();
         while (it.hasNext()) {
             MessageEntry messageEntry = (MessageEntry) it.next();
-            DAO.log(messageEntry.getIdStr());
             if (compareMessage(messageEntry.toMap(), message)) {
-                return true;
+                return messageEntry.getIdStr();
             }
         }
-        return false;
+        return null;
     }
 
     private static boolean compareMessage(Map<String, Object> m1, Map<String, Object> m2) {
