@@ -24,6 +24,7 @@ import org.elasticsearch.common.xcontent.XContentFactory;
 import org.elasticsearch.common.xcontent.XContentParser;
 import org.elasticsearch.common.xcontent.json.JsonXContent;
 import org.loklak.data.DAO;
+import org.loklak.data.EntryStatus;
 import org.loklak.data.ImportProfileEntry;
 import org.loklak.harvester.SourceType;
 
@@ -157,15 +158,11 @@ public class ImportProfileServlet extends HttpServlet {
 
         int count = 0;
         for (ImportProfileEntry entry : entries) {
-            // filter exact results, as SearchLocalImportProfilesWithConstraints is implemented with query term query (unreliable)
-            if (source_url.equals(entry.getSourceUrl().toString())
-                && screen_name.equals(entry.getImporter()))
-            {
-                if (DAO.deleteImportProfile(entry.getId(), entry.getSourceType())) {
-                    count++;
-                } else {
-                    throw new IOException("Unable to delete import profile : " + entry.getId());
-                }
+            entry.setActiveStatus(EntryStatus.DELETED);
+            if (DAO.writeImportProfile(entry, true)) {
+                count++;
+            } else {
+                throw new IOException("Unable to delete import profile : " + entry.getId());
             }
         }
         post.setResponse(response, "application/javascript");
@@ -201,7 +198,7 @@ public class ImportProfileServlet extends HttpServlet {
             searchConstraints.put("source_type", source_type);
         }
         if (!"".equals(screen_name)) {
-            searchConstraints.put("importer", screen_name);
+            searchConstraints.put("sharers", screen_name);
         }
         if (!"".equals(msg_id)) {
             searchConstraints.put("imported", msg_id);

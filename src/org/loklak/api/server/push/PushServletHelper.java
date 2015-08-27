@@ -25,7 +25,6 @@ public class PushServletHelper {
     /* Fields that can be updated */
     public static final String[] FIELDS_TO_COMPARE =
     {
-        "screen_name",
         "link",
         "text" // can embed rich content
     };

@@ -51,7 +51,7 @@ public class ImportProfileFactory extends AbstractIndexFactory<ImportProfileEntr
                     .startObject("active_status").field("type", "string").field("include_in_all", "false").field("doc_values", true).field("index", "not_analyzed").endObject()
                     .startObject("privacy_status").field("type", "string").field("include_in_all", "false").field("doc_values", true).field("index", "not_analyzed").endObject()
                     .startObject("imported").field("type", "string").field("include_in_all", "false").field("doc_values", true).field("index", "not_analyzed").endObject()
-                    .startArray("sharers").endArray()
+                    .startObject("sharers").field("type", "string").field("include_in_all", "false").field("doc_values", true).field("index", "not_analyzed").endObject()
                     .endObject()
               .endObject();
 
