@@ -772,10 +772,10 @@ public class DAO {
                     .setFrom(0);
 
             BoolFilterBuilder bFilter = FilterBuilders.boolFilter();
-            bFilter.must(FilterBuilders.termFilter("active_status", EntryStatus.ACTIVE.name()));
+            bFilter.must(FilterBuilders.termFilter("active_status", EntryStatus.ACTIVE.name().toLowerCase()));
             for (Object o : constraints.entrySet()) {
                 Map.Entry entry = (Map.Entry) o;
-                bFilter.must(FilterBuilders.termFilter((String) entry.getKey(), entry.getValue()));
+                bFilter.must(FilterBuilders.termFilter((String) entry.getKey(), ((String) entry.getValue()).toLowerCase()));
             }
             request.setQuery(QueryBuilders.filteredQuery(QueryBuilders.matchAllQuery(), bFilter));
             DAO.log(QueryBuilders.filteredQuery(QueryBuilders.matchAllQuery(), bFilter).toString());
