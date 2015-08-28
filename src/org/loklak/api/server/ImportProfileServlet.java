@@ -139,37 +139,33 @@ public class ImportProfileServlet extends HttpServlet {
         String callback = post.get("callback", null);
         boolean jsonp = callback != null && callback.length() > 0;
 
-        String source_url = post.get("source_url", "");
-        if ("".equals(source_url)) {
-            response.sendError(400, "your request must contain a source_url parameter.");
+        String id = post.get("id_str", "");
+        if ("".equals(id)) {
+            response.sendError(400, "your request must contain a `id_str` parameter.");
             return;
         }
 
         String screen_name = post.get("screen_name", "");
         if ("".equals(screen_name)) {
-            response.sendError(400, "your request must contain a screen_name parameter.");
+            response.sendError(400, "your request must contain a `screen_name` parameter.");
             return;
         }
 
-        Map<String, String> searchConstraints = new HashMap<>();
-        searchConstraints.put("source_url", source_url);
-        searchConstraints.put("importer", screen_name);
-        Collection<ImportProfileEntry> entries = DAO.SearchLocalImportProfilesWithConstraints(searchConstraints, false);
-
-        int count = 0;
-        for (ImportProfileEntry entry : entries) {
-            entry.setActiveStatus(EntryStatus.DELETED);
-            if (DAO.writeImportProfile(entry, true)) {
-                count++;
-            } else {
-                throw new IOException("Unable to delete import profile : " + entry.getId());
-            }
+        ImportProfileEntry entry = DAO.SearchLocalImportProfiles(id);
+        List<String> sharers = entry.getSharers();
+        boolean sharerExists = sharers.remove(screen_name);
+        entry.setSharers(sharers);
+        boolean successful = false;
+        if (sharerExists && DAO.writeImportProfile(entry, true)) {
+            successful = true;
+        } else {
+            throw new IOException("Unable to delete import profile : " + entry.getId());
         }
         post.setResponse(response, "application/javascript");
         XContentBuilder json = XContentFactory.jsonBuilder().prettyPrint().lfAtEnd();
         json.startObject();
         json.field("status", "ok");
-        json.field("records", count);
+        json.field("records", sharerExists && successful ? 1 : 0);
         json.field("message", "deleted");
         json.endObject();
         // write json
