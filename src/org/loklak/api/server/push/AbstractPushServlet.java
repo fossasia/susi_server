@@ -118,14 +118,14 @@ public abstract class AbstractPushServlet extends HttpServlet {
             messages = new ArrayList<>();
             messages.add((Map<String, Object>) extractResults);
         } else {
-            throw new IOException("extractMessages must return either a List or a Map");
+            throw new IOException("extractMessages must return either a List or a Map. Get " + (extractResults == null ? "null" : extractResults.getClass().getCanonicalName()) + " instead");
         }
         List<Map<String, Object>> convertedMessages = this.converter.convert(messages);
 
         PushReport nodePushReport = new PushReport();
         ObjectWriter ow = new ObjectMapper().writerWithDefaultPrettyPrinter();
         // custom treatment for each message
-        for (int i = 0; i < convertedMessages.size(); i++) {
+        for (int i = 0; i < messages.size(); i++) {
             Map<String, Object> message = convertedMessages.get(i);
             message.put("source_type", this.getSourceType().name());
             message.put("location_source", LocationSource.USER.name());
