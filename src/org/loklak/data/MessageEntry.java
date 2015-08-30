@@ -41,6 +41,8 @@ import org.loklak.harvester.SourceType;
 import org.loklak.tools.bayes.Classification;
 
 public class MessageEntry extends AbstractIndexEntry implements IndexEntry {
+
+    public static final String RICH_TEXT_SEPARATOR = "\n***\n";
     
     protected Date created_at, on, to; // created_at will allways be set, on means 'valid from' and 'to' means 'valid_until' and may not be set
     protected SourceType source_type; // where did the message come from

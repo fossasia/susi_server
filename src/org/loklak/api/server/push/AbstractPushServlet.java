@@ -19,11 +19,14 @@
 
 package org.loklak.api.server.push;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectWriter;
 import com.github.fge.jsonschema.core.report.ProcessingReport;
 
 import org.loklak.api.client.ClientConnection;
 import org.loklak.api.server.RemoteAccess;
 import org.loklak.data.DAO;
+import org.loklak.data.MessageEntry;
 import org.loklak.geo.LocationSource;
 import org.loklak.geo.PlaceContext;
 import org.loklak.harvester.JsonFieldConverter;
@@ -108,35 +111,40 @@ public abstract class AbstractPushServlet extends HttpServlet {
 
         // conversion phase
         Object extractResults = extractMessages(map);
-        List<Map<String, Object>> typedMessages;
+        List<Map<String, Object>> messages;
         if (extractResults instanceof List) {
-            typedMessages = (List<Map<String, Object>>) extractResults;
+            messages = (List<Map<String, Object>>) extractResults;
         } else if (extractResults instanceof Map) {
-            typedMessages = new ArrayList<>();
-            typedMessages.add((Map<String, Object>) extractResults);
+            messages = new ArrayList<>();
+            messages.add((Map<String, Object>) extractResults);
         } else {
-            throw new IOException("extractMessages must return either a List or a Map");
+            throw new IOException("extractMessages must return either a List or a Map. Get " + (extractResults == null ? "null" : extractResults.getClass().getCanonicalName()) + " instead");
         }
-        typedMessages = this.converter.convert(typedMessages);
+        List<Map<String, Object>> convertedMessages = this.converter.convert(messages);
 
         PushReport nodePushReport = new PushReport();
+        ObjectWriter ow = new ObjectMapper().writerWithDefaultPrettyPrinter();
         // custom treatment for each message
-        for (int i = 0; i < typedMessages.size(); i++) {
-            Map<String, Object> message = typedMessages.get(i);
+        for (int i = 0; i < messages.size(); i++) {
+            Map<String, Object> message = convertedMessages.get(i);
             message.put("source_type", this.getSourceType().name());
             message.put("location_source", LocationSource.USER.name());
             message.put("place_context", PlaceContext.ABOUT.name());
             if (message.get("text") == null) {
                 message.put("text", "");
             }
+
+            // append rich-text attachment
+            String jsonToText = ow.writeValueAsString(messages.get(i));
+            message.put("text", message.get("text") + MessageEntry.RICH_TEXT_SEPARATOR + jsonToText);
             customProcessing(message);
 
             if (message.get("mtime") == null) {
-                boolean existed = PushServletHelper.checkMessageExistence(message);
+                String existed = PushServletHelper.checkMessageExistence(message);
                 // message known
-                if (existed) {
-                    typedMessages.remove(i);
-                    nodePushReport.incrementKnownCount();
+                if (existed != null) {
+                    messages.remove(i);
+                    nodePushReport.incrementKnownCount(existed);
                     continue;
                 }
                 // updated message -> save with new mtime value
@@ -150,7 +158,7 @@ public abstract class AbstractPushServlet extends HttpServlet {
             }
         }
         try {
-            PushReport savingReport = PushServletHelper.saveMessagesAndImportProfile(typedMessages, Arrays.hashCode(jsonText), post, getSourceType(), screen_name);
+            PushReport savingReport = PushServletHelper.saveMessagesAndImportProfile(convertedMessages, Arrays.hashCode(jsonText), post, getSourceType(), screen_name);
             nodePushReport.combine(savingReport);
         } catch (IOException e) {
             response.sendError(404, e.getMessage());

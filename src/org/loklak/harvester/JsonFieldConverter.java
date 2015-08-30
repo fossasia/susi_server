@@ -82,7 +82,7 @@ public class JsonFieldConverter {
         while (it.hasNext()) {
             Map.Entry<String, List<String>> entry = (Map.Entry) it.next();
             String key = entry.getKey();
-            Object value = removeFieldValue(initialJson, key);
+            Object value = getFieldValue(initialJson, key);
 
             if (value == null) { continue; }  // field not found
 
@@ -93,13 +93,13 @@ public class JsonFieldConverter {
         return initialJson;
     }
 
-    private static Object removeFieldValue(Map<String, Object> object, String key) {
+    private static Object getFieldValue(Map<String, Object> object, String key) {
         if (key.contains(".")) {
             String[] deepFields = key.split(Pattern.quote("."));
             Map<String, Object> currentLevel = object;
             for (int lvl = 0; lvl < deepFields.length; lvl++) {
                 if (lvl == deepFields.length - 1) {
-                    return currentLevel.remove(deepFields[lvl]);
+                    return currentLevel.get(deepFields[lvl]);
                 } else {
                     if (currentLevel.get(deepFields[lvl]) == null) {
                         return null;
@@ -108,7 +108,7 @@ public class JsonFieldConverter {
                 }
             }
         } else {
-            return object.remove(key);
+            return object.get(key);
         }
         // unreachable code
         return null;

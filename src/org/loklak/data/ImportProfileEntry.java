@@ -71,8 +71,9 @@ public class ImportProfileEntry extends AbstractIndexEntry implements IndexEntry
         String source_type_string = (String) map.get("source_type");
         if (source_type_string == null) source_type_string = SourceType.USER.name();
         try {
-            this.source_type = SourceType.valueOf(source_type_string);
+            this.source_type = SourceType.valueOf(source_type_string.toUpperCase());
         } catch (IllegalArgumentException e) {
+            DAO.log("Illegal source type value : " + source_type_string);
             this.source_type = SourceType.USER;
         }
         this.source_hash = parseLong(map.get("source_hash"));
@@ -93,10 +94,14 @@ public class ImportProfileEntry extends AbstractIndexEntry implements IndexEntry
         this.id = (String) map.get("id_str");
 
         // profile should be active in the beginning
-        this.activeStatus = EntryStatus.ACTIVE;
+        try {
+            this.activeStatus = EntryStatus.valueOf((String) map.get("active_status"));
+        } catch (IllegalArgumentException|NullPointerException e) {
+            this.activeStatus = EntryStatus.ACTIVE;
+        }
         try {
             this.privacyStatus = PrivacyStatus.valueOf((String) map.get("privacy_status"));
-        } catch (IllegalArgumentException e) {
+        } catch (IllegalArgumentException|NullPointerException e) {
             this.privacyStatus = PrivacyStatus.PRIVATE;
         }
     }

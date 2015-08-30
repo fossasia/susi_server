@@ -39,7 +39,6 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.apache.lucene.queryparser.classic.QueryParser;
 import org.eclipse.jetty.util.ConcurrentHashSet;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -61,6 +60,8 @@ import org.elasticsearch.common.unit.Fuzziness;
 import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.index.query.RangeQueryBuilder;
+import org.elasticsearch.index.query.BoolFilterBuilder;
+import org.elasticsearch.index.query.FilterBuilders;
 import org.elasticsearch.indices.IndexAlreadyExistsException;
 import org.elasticsearch.indices.IndexMissingException;
 import org.elasticsearch.node.Node;
@@ -483,9 +484,9 @@ public class DAO {
      */
     public synchronized static boolean writeImportProfile(ImportProfileEntry i, boolean dump) {
         try {
-            // record account into text file
+            // record import profile into text file
             if (dump) import_profile_dump.write(i.toMap());
-            // record tweet into search index
+            // record import profile into search index
             importProfiles.writeEntry(i.getId(), i.getSourceType().name(), i);
         } catch (IOException e) {
             e.printStackTrace();
@@ -770,13 +771,14 @@ public class DAO {
                     .setSearchType(SearchType.QUERY_THEN_FETCH)
                     .setFrom(0);
 
-            String queryString = "active_status:" + EntryStatus.ACTIVE.name();
+            BoolFilterBuilder bFilter = FilterBuilders.boolFilter();
+            bFilter.must(FilterBuilders.termFilter("active_status", EntryStatus.ACTIVE.name().toLowerCase()));
             for (Object o : constraints.entrySet()) {
                 Map.Entry entry = (Map.Entry) o;
-                queryString += " AND " + entry.getKey() + ":" + QueryParser.escape((String) entry.getValue());
+                bFilter.must(FilterBuilders.termFilter((String) entry.getKey(), ((String) entry.getValue()).toLowerCase()));
             }
-            request.setQuery(QueryBuilders.queryStringQuery(queryString));
-
+            request.setQuery(QueryBuilders.filteredQuery(QueryBuilders.matchAllQuery(), bFilter));
+            DAO.log(QueryBuilders.filteredQuery(QueryBuilders.matchAllQuery(), bFilter).toString());
             // get response
             SearchResponse response = request.execute().actionGet();
 
