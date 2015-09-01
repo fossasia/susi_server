@@ -35,6 +35,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.loklak.Caretaker;
 import org.loklak.tools.CharacterCoding;
 import org.loklak.tools.UTF8;
 
@@ -68,6 +69,14 @@ public class ThreaddumpServlet extends HttpServlet {
         bufferappend(buffer, "Assigned   Memory = " + (runtime.maxMemory()));
         bufferappend(buffer, "Used       Memory = " + (runtime.totalMemory() - runtime.freeMemory()));
         bufferappend(buffer, "Available  Memory = " + (runtime.maxMemory() - runtime.totalMemory() + runtime.freeMemory()));
+        long runtimeseconds = (System.currentTimeMillis() - Caretaker.startupTime) / 1000;
+        int runtimeminutes = (int) (runtimeseconds / 60); runtimeseconds = runtimeseconds % 60;
+        int runtimehours = runtimeminutes / 60; runtimeminutes = runtimeminutes % 60;
+        bufferappend(buffer, "Runtime           = " + runtimehours + "h " + runtimeminutes + "m " + runtimeseconds + "s");
+        long timetorestartseconds = (Caretaker.upgradeTime - System.currentTimeMillis()) / 1000;
+        int timetorestartminutes = (int) (timetorestartseconds / 60); timetorestartseconds = timetorestartseconds % 60;
+        int timetorestarthours = timetorestartminutes / 60; timetorestartminutes = timetorestartminutes % 60;
+        bufferappend(buffer, "Time To Restart   = " + timetorestarthours + "h " + timetorestartminutes + "m " + timetorestartseconds + "s");
         bufferappend(buffer, "");
         bufferappend(buffer, "");
 
