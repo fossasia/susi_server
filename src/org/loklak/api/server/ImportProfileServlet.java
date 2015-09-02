@@ -24,7 +24,7 @@ import org.elasticsearch.common.xcontent.XContentFactory;
 import org.elasticsearch.common.xcontent.XContentParser;
 import org.elasticsearch.common.xcontent.json.JsonXContent;
 import org.loklak.data.DAO;
-import org.loklak.data.EntryStatus;
+import org.loklak.data.Timeline;
 import org.loklak.data.ImportProfileEntry;
 import org.loklak.harvester.SourceType;
 
@@ -184,6 +184,7 @@ public class ImportProfileServlet extends HttpServlet {
         String source_type = post.get("source_type", "");
         String screen_name = post.get("screen_name", "");
         String msg_id = post.get("msg_id", "");
+        String detailed = post.get("detailed", "");
         // source_type either has to be null a a valid SourceType value
         if (!"".equals(source_type) && !SourceType.hasValue(source_type)) {
             response.sendError(400, "your request must contain a valid source_type parameter.");
@@ -202,7 +203,16 @@ public class ImportProfileServlet extends HttpServlet {
         Collection<ImportProfileEntry> entries = DAO.SearchLocalImportProfilesWithConstraints(searchConstraints, true);
         List<Map<String, Object>> entries_to_map = new ArrayList<>();
         for (ImportProfileEntry entry : entries) {
-            entries_to_map.add(entry.toMap());
+            Map<String, Object> entry_to_map = entry.toMap();
+            if ("true".equals(detailed)) {
+                String query = "";
+                for (String msgId : entry.getImported()) {
+                    query += "id:" + msgId + " ";
+                }
+                DAO.SearchLocalMessages search = new DAO.SearchLocalMessages(query, Timeline.Order.CREATED_AT, 0, 1000, 0);
+                entry_to_map.put("imported", search.timeline.toMap(false).get("statuses"));
+            }
+            entries_to_map.add(entry_to_map);
         }
         post.setResponse(response, "application/javascript");
 
