@@ -209,7 +209,6 @@ public class ImportProfileServlet extends HttpServlet {
                 for (String msgId : entry.getImported()) {
                     query += "id:" + msgId + " ";
                 }
-                DAO.log("query = " + query);
                 DAO.SearchLocalMessages search = new DAO.SearchLocalMessages(query, Timeline.Order.CREATED_AT, 0, 1000, 0);
                 entry_to_map.put("imported", search.timeline.toMap(false).get("statuses"));
             }
