@@ -24,6 +24,7 @@ import org.elasticsearch.common.xcontent.XContentFactory;
 import org.elasticsearch.common.xcontent.XContentParser;
 import org.elasticsearch.common.xcontent.json.JsonXContent;
 import org.loklak.data.DAO;
+import org.loklak.data.Timeline;
 import org.loklak.data.ImportProfileEntry;
 import org.loklak.harvester.SourceType;
 
@@ -96,6 +97,9 @@ public class ImportProfileServlet extends HttpServlet {
             if (map.get("id_str") == null) {
                 throw new IOException("id_str field missing");
             }
+            if (map.get("source_type") == null) {
+                throw new IOException("source_type field missing");
+            }
             ImportProfileEntry i = DAO.SearchLocalImportProfiles((String) map.get("id_str"));
             if (i == null) {
                 throw new IOException("import profile id_str field '" + map.get("id_str") + "' not found");
@@ -135,49 +139,33 @@ public class ImportProfileServlet extends HttpServlet {
         String callback = post.get("callback", null);
         boolean jsonp = callback != null && callback.length() > 0;
 
-        String source_url = post.get("source_url", "");
+        String id = post.get("id_str", "");
+        if ("".equals(id)) {
+            response.sendError(400, "your request must contain a `id_str` parameter.");
+            return;
+        }
+
         String screen_name = post.get("screen_name", "");
-        boolean hasScreenName = !"".equals(screen_name);
-        String client_host = post.get("client_host", "");
-
-        if ("".equals(source_url)) {
-            response.sendError(400, "your request must contain a source_url parameter.");
+        if ("".equals(screen_name)) {
+            response.sendError(400, "your request must contain a `screen_name` parameter.");
             return;
         }
 
-        if (!hasScreenName && "".equals(client_host)) {
-            response.sendError(400, "your request must contain either a screen_name or a client_host parameter.");
-            return;
-        }
-
-        Map<String, String> searchConstraints = new HashMap<>();
-        searchConstraints.put("source_url", source_url);
-        if (hasScreenName) {
-            searchConstraints.put("screen_name", screen_name);
+        ImportProfileEntry entry = DAO.SearchLocalImportProfiles(id);
+        List<String> sharers = entry.getSharers();
+        boolean sharerExists = sharers.remove(screen_name);
+        entry.setSharers(sharers);
+        boolean successful = false;
+        if (sharerExists && DAO.writeImportProfile(entry, true)) {
+            successful = true;
         } else {
-            searchConstraints.put("client_host", client_host);
-        }
-        Collection<ImportProfileEntry> entries = DAO.SearchLocalImportProfilesWithConstraints(searchConstraints, false);
-
-        int count = 0;
-        for (ImportProfileEntry entry : entries) {
-            // filter exact results, as SearchLocalImportProfilesWithConstraints is implemented with query term query (unreliable)
-            if (source_url.equals(entry.getSourceUrl().toString())
-                && ((hasScreenName && screen_name.equals(entry.getScreenName()))
-                    || client_host.equals(entry.getClientHost())))
-            {
-                if (DAO.deleteImportProfile(entry.getId(), entry.getSourceType())) {
-                    count++;
-                } else {
-                    throw new IOException("Unable to delete import profile : " + entry.getId());
-                }
-            }
+            throw new IOException("Unable to delete import profile : " + entry.getId());
         }
         post.setResponse(response, "application/javascript");
         XContentBuilder json = XContentFactory.jsonBuilder().prettyPrint().lfAtEnd();
         json.startObject();
         json.field("status", "ok");
-        json.field("records", count);
+        json.field("records", sharerExists && successful ? 1 : 0);
         json.field("message", "deleted");
         json.endObject();
         // write json
@@ -194,6 +182,9 @@ public class ImportProfileServlet extends HttpServlet {
         boolean minified = post.get("minified", false);
         boolean jsonp = callback != null && callback.length() > 0;
         String source_type = post.get("source_type", "");
+        String screen_name = post.get("screen_name", "");
+        String msg_id = post.get("msg_id", "");
+        String detailed = post.get("detailed", "");
         // source_type either has to be null a a valid SourceType value
         if (!"".equals(source_type) && !SourceType.hasValue(source_type)) {
             response.sendError(400, "your request must contain a valid source_type parameter.");
@@ -203,10 +194,25 @@ public class ImportProfileServlet extends HttpServlet {
         if (!"".equals(source_type)) {
             searchConstraints.put("source_type", source_type);
         }
+        if (!"".equals(screen_name)) {
+            searchConstraints.put("sharers", screen_name);
+        }
+        if (!"".equals(msg_id)) {
+            searchConstraints.put("imported", msg_id);
+        }
         Collection<ImportProfileEntry> entries = DAO.SearchLocalImportProfilesWithConstraints(searchConstraints, true);
         List<Map<String, Object>> entries_to_map = new ArrayList<>();
         for (ImportProfileEntry entry : entries) {
-            entries_to_map.add(entry.toMap());
+            Map<String, Object> entry_to_map = entry.toMap();
+            if ("true".equals(detailed)) {
+                String query = "";
+                for (String msgId : entry.getImported()) {
+                    query += "id:" + msgId + " ";
+                }
+                DAO.SearchLocalMessages search = new DAO.SearchLocalMessages(query, Timeline.Order.CREATED_AT, 0, 1000, 0);
+                entry_to_map.put("imported", search.timeline.toMap(false).get("statuses"));
+            }
+            entries_to_map.add(entry_to_map);
         }
         post.setResponse(response, "application/javascript");
 

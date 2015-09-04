@@ -51,11 +51,5 @@ public class OpenWifiMapPushServlet extends AbstractPushServlet {
     }
 
     @Override
-    protected void customProcessing(Map<String, Object> message) {
-        try {
-            message.put("id_str", PushServletHelper.computeMessageId(message, message.get("id"), getSourceType()));
-        } catch (Exception e) {
-            DAO.log("Problem computing id : " + e.getMessage());
-        }
-    }
+    protected void customProcessing(Map<String, Object> message) {}
 }

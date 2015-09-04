@@ -68,10 +68,5 @@ public class NodelistPushServlet extends AbstractPushServlet {
         user.put("screen_name", "freifunk_" + message.get("name"));
         user.put("name", message.get("name"));
         message.put("user", user);
-        try {
-            message.put("id_str", PushServletHelper.computeMessageId(message, message.get("id"), getSourceType()));
-        } catch (Exception e) {
-            DAO.log("Problem computing id : " + e.getMessage());
-        }
     }
 }

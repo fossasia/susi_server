@@ -51,8 +51,9 @@ public class PushServlet extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        response.sendError(400, "your must call this with HTTP POST");
-        return;
+        doPost(request, response);
+        //response.sendError(400, "your must call this with HTTP POST");
+        //return;
     }
     
     /*

@@ -577,9 +577,11 @@ public class QueryEntry extends AbstractIndexEntry implements IndexEntry {
             
             // apply modifiers
             if (modifier.containsKey("id")) {
-                ops.add(QueryBuilders.termQuery("id_str", modifier.get("id")));
+                ops.add(QueryBuilders.termsQuery("id_str", modifier.get("id")));
             }
-            if (modifier.containsKey("-id")) nops.add(QueryBuilders.termQuery("id_str", modifier.get("-id")));
+            if (modifier.containsKey("-id")) {
+                nops.add(QueryBuilders.termsQuery("id_str", modifier.get("-id")));
+            }
 
             for (String user: users_positive) {
                 ops.add(QueryBuilders.termQuery("mentions", user));
@@ -696,6 +698,14 @@ public class QueryEntry extends AbstractIndexEntry implements IndexEntry {
                     String[] coord = params.split(",");
                     if (coord.length == 1) {
                         filters.add(FilterBuilders.termsFilter("location_source", coord[0]));
+                    } else if (coord.length == 2) {
+                        double lon = Double.parseDouble(coord[0]);
+                        double lat = Double.parseDouble(coord[1]);
+                        // ugly way to search exact geo_point : using geoboundingboxfilter, with two identical bounding points
+                        // geoshape filter can search for exact point shape but it can't be performed on geo_point field
+                        filters.add(FilterBuilders.geoBoundingBoxFilter("location_point")
+                                .topLeft(lat, lon)
+                                .bottomRight(lat, lon));
                     }
                     else if (coord.length == 4 || coord.length == 5) {
                         double lon_west  = Double.parseDouble(coord[0]);

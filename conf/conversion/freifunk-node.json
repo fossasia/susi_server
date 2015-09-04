@@ -1,7 +1,7 @@
 {
   "rules" :
   [
-    ["name", ["screen_name", "user.name", "user.screen_name", "text"]],
+    ["name", "text"],
     ["geo", ["location_point", "location_mark"]]
   ]
 }

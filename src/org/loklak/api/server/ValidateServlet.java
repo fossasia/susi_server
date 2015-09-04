@@ -40,6 +40,7 @@ public class ValidateServlet extends HttpServlet {
     enum ValidationStatus {
         offline,
         invalid,
+        unsupported,
         valid
     }
 
@@ -70,25 +71,33 @@ public class ValidateServlet extends HttpServlet {
             response.sendError(400, "your request does not contain a source_type parameter");
             return;
         }
-        SourceType sourceType;
-        try {
-            sourceType = SourceType.valueOf(source_type_str.toUpperCase());
-        } catch (IllegalArgumentException e) {
-            response.sendError(400, "Invalid source_type parameter : " + source_type_str);
-            return;
+        SourceType sourceType = null;
+        // treat geojson as a special source_type
+        if (!source_type_str.toUpperCase().equals("GEOJSON")) {
+            try {
+                sourceType = SourceType.valueOf(source_type_str.toUpperCase());
+            } catch (IllegalArgumentException e) {
+                response.sendError(400, "Invalid source_type parameter : " + source_type_str);
+                return;
+            }
         }
-        JsonValidator.JsonSchemaEnum jsonSchemaEnum;
+
+        ValidationStatus status = null;
+        String message = "";
+
+        boolean unsupported = false;
+        JsonValidator.JsonSchemaEnum jsonSchemaEnum = null;
         try {
             jsonSchemaEnum = JsonValidator.JsonSchemaEnum.valueOf(sourceType);
         } catch (IllegalArgumentException e) {
-            response.sendError(400, "Current version of /api/validate.json doesn't support this source type: " + source_type_str);
-            return;
+            DAO.log("Current version of /api/validate.json doesn't support this source type: " + source_type_str);
+            unsupported = true;
+            status = ValidationStatus.unsupported;
+            message = "Current version of /api/validate.json doesn't support this source type: " + source_type_str;
         }
         String callback = post.get("callback", "");
         boolean jsonp = callback != null && callback.length() > 0;
 
-        ValidationStatus status = null;
-        String message = "";
 
         boolean offline = false;
 
@@ -110,19 +119,21 @@ public class ValidateServlet extends HttpServlet {
 
         if (!offline) {
             contentToStr = new String(content);
-            JsonValidator validator = new JsonValidator(jsonSchemaEnum);
-            ProcessingReport report;
-            try {
-                report = validator.validate(contentToStr);
-            } catch(Exception e) {
-                response.sendError(400, "The url does not contain valid json data");
-                return;
-            }
-            if (!report.isSuccess()) {
-                status = ValidationStatus.invalid;
-                message = "json does not conform to schema : " + jsonSchemaEnum.name() + "\n" + report;
-            } else {
-                status = ValidationStatus.valid;
+            if (!unsupported) {
+                JsonValidator validator = new JsonValidator(jsonSchemaEnum);
+                ProcessingReport report;
+                try {
+                    report = validator.validate(contentToStr);
+                } catch (Exception e) {
+                    response.sendError(400, "The url does not contain valid json data");
+                    return;
+                }
+                if (!report.isSuccess()) {
+                    status = ValidationStatus.invalid;
+                    message = "json does not conform to schema : " + jsonSchemaEnum.name() + "\n" + report;
+                } else {
+                    status = ValidationStatus.valid;
+                }
             }
         }
 

@@ -46,10 +46,12 @@ public class ImportProfileFactory extends AbstractIndexFactory<ImportProfileEntr
                     .startObject("created_at").field("type", "date").field("format","dateOptionalTime").field("include_in_all", "false").field("doc_values", true).endObject()
                     .startObject("last_modified").field("type", "date").field("format","dateOptionalTime").field("include_in_all", "false").field("doc_values", true).endObject()
                     .startObject("last_harvested").field("type", "date").field("format","dateOptionalTime").field("include_in_all", "false").field("doc_values", true).endObject()
-                    .startObject("screen_name").field("type", "string").field("include_in_all", "false").field("doc_values", true).field("index","not_analyzed").endObject()
+                    .startObject("importer").field("type", "string").field("include_in_all", "false").field("doc_values", true).field("index","not_analyzed").endObject()
                     .startObject("client_host").field("type","string").field("include_in_all","false").field("doc_values", true).field("index", "not_analyzed").endObject()
                     .startObject("active_status").field("type", "string").field("include_in_all", "false").field("doc_values", true).field("index", "not_analyzed").endObject()
-                    .startArray("imported").endArray()
+                    .startObject("privacy_status").field("type", "string").field("include_in_all", "false").field("doc_values", true).field("index", "not_analyzed").endObject()
+                    .startObject("imported").field("type", "string").field("include_in_all", "false").field("doc_values", true).field("index", "not_analyzed").endObject()
+                    .startObject("sharers").field("type", "string").field("include_in_all", "false").field("doc_values", true).field("index", "not_analyzed").endObject()
                     .endObject()
               .endObject();
 

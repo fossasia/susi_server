@@ -70,7 +70,7 @@ public class MarkdownServlet extends HttpServlet {
         DrawMode drawmode = color_background > 0x888888 ? DrawMode.MODE_SUB : DrawMode.MODE_ADD;
         long color_text = Long.parseLong(post.get("color_text", drawmode == DrawMode.MODE_SUB ? "000000" : "ffffff"), 16);
         long color_code = Long.parseLong(post.get("color_code", drawmode == DrawMode.MODE_SUB ? "66ffaa" : "00ff00"), 16);
-        long color_bold = Long.parseLong(post.get("color_bold", drawmode == DrawMode.MODE_SUB ? "ff66aa" : "ff0000"), 16);
+        //long color_bold = Long.parseLong(post.get("color_bold", drawmode == DrawMode.MODE_SUB ? "ff66aa" : "ff0000"), 16);
         long color_headline = Long.parseLong(post.get("color_headline", drawmode == DrawMode.MODE_SUB ? "44aaee" : "00aaff"), 16);
         if (drawmode == DrawMode.MODE_SUB) color_text = RasterPlotter.invertColor(color_text);
         FileTypeEncoding fileType = RemoteAccess.getFileType(request);
@@ -115,8 +115,7 @@ public class MarkdownServlet extends HttpServlet {
         int y = yoffset + padding + 4;
         int column = 0;
         int hashcount = 0;
-        int default_intensity = 90;
-        int intensity = default_intensity;
+        int default_intensity = 100;
         boolean isInlineFormatted = false, isFormatted = false, isBold = false, isItalic = false;
         for (int pos = 0; pos < sb.length(); pos++) {
             char c = sb.charAt(pos);
@@ -128,68 +127,69 @@ public class MarkdownServlet extends HttpServlet {
                 hashcount = 0;
                 if (!isFormatted) {
                     matrix.setColor(color_text);
-                    intensity = default_intensity;
                 }
+                isBold = false;
+                isItalic = false;
                 continue;
             }
             if (!isFormatted && !isInlineFormatted && column == 0 && c == '#') {
                 // count the hashes at the beginning of the line
                 hashcount = Math.min(6, hashcount + 1); // there may be at most 6
                 matrix.setColor(color_headline);
-                intensity = 80 + (7 - hashcount) * 3;
                 continue;
             }
             if (!isFormatted && column == 0 && c == ' ' && hashcount > 0) {
                 // ignore first space after hash
                 continue;
             }
-            if (!isFormatted && !isInlineFormatted && c == '*' && (pos == 0 || (pos < sb.length() - 1 && sb.charAt(pos + 1) != ' '))) {
-                matrix.setColor(color_bold);
-                intensity = 100;
+            if (!isFormatted && !isInlineFormatted && c == '*' && pos > 0 && sb.charAt(pos - 1) == '*' && pos < sb.length() - 1 && sb.charAt(pos + 1) != ' ') {
                 isBold = true;
                 continue;
             }
-            if (!isFormatted && !isInlineFormatted && c == '*' && (pos == sb.length() - 1 || (pos > 0 && sb.charAt(pos - 1) != ' '))) {
-                matrix.setColor(color_text);
-                intensity = default_intensity;
+            if (!isFormatted && !isInlineFormatted && c == '*' && pos > 0 && sb.charAt(pos + 1) == '*' && pos > 0 && sb.charAt(pos - 1) != ' ') {
                 isBold = false;
+                continue;
+            }
+            if (!isFormatted && !isInlineFormatted && c == '*' && pos < sb.length() - 1 && sb.charAt(pos + 1) != ' ') {
+                isItalic = true;
+                continue;
+            }
+            if (!isFormatted && !isInlineFormatted && c == '*' && pos > 0 && sb.charAt(pos - 1) != ' ') {
+                isItalic = false;
                 continue;
             }
             if (!isFormatted && c == '`' && pos < sb.length() - 2 && sb.charAt(pos + 1) == '`' && sb.charAt(pos + 2) == '`') {
                 matrix.setColor(color_code);
-                intensity = 100;
                 isFormatted = true;
                 continue;
             }
             if (isFormatted && c == '`' && pos < sb.length() - 2 && sb.charAt(pos + 1) == '`' && sb.charAt(pos + 2) == '`') {
                 matrix.setColor(color_text);
-                intensity = default_intensity;
                 isFormatted = false;
                 continue;
             }
             if (!isFormatted && c == '`' && pos < sb.length() - 1 && sb.charAt(pos + 1) != ' ') {
                 matrix.setColor(color_code);
-                intensity = 100;
                 isInlineFormatted = true;
                 continue;
             }
             if (!isFormatted && c == '`' && pos > 0 && sb.charAt(pos - 1) != ' ') {
                 matrix.setColor(color_text);
-                intensity = default_intensity;
                 isInlineFormatted = false;
                 continue;
             }
             if (c == '`' || (!isFormatted && !isInlineFormatted && c == '*')) {
                 continue;
             }
-            
-            PrintTool.print(matrix, x, y, 0, uppercase || hashcount > 0 ? Character.toUpperCase(c) : c, intensity);
+
+            PrintTool.print(matrix, x, y, 0, uppercase || hashcount > 0 ? Character.toUpperCase(c) : c, isItalic, default_intensity);
+            if (isBold) PrintTool.print(matrix, x+1, y, 0, uppercase || hashcount > 0 ? Character.toUpperCase(c) : c, isItalic, default_intensity);
             x += 6;
             column++;
         }
         
         // write branding
-        PrintTool.print(matrix, matrix.getWidth() - 6, matrix.getHeight() - 6, 0, "MADE WITH HTTP://LOKLAK.NET", 1, 50);
+        PrintTool.print(matrix, matrix.getWidth() - 6, matrix.getHeight() - 6, 0, "MADE WITH HTTP://LOKLAK.NET", 1, false, 50);
         
         // write image
         response.addHeader("Access-Control-Allow-Origin", "*");

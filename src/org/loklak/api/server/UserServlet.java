@@ -20,7 +20,9 @@
 package org.loklak.api.server;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 import javax.servlet.ServletException;
@@ -55,16 +57,21 @@ public class UserServlet extends HttpServlet {
         String callback = post.get("callback", "");
         boolean jsonp = callback != null && callback.length() > 0;
         boolean minified = post.get("minified", false);
-        String screen_name = post.get("screen_name", "");
-        String followers = post.get("followers", "0");
-        String following = post.get("following", "0");
+        String[] screen_names = post.get("screen_name", "").split(",");
+        String followers = screen_names.length == 1 ? post.get("followers", "0") : "0";
+        String following = screen_names.length == 1 ? post.get("following", "0") : "0";
         int maxFollowers = Integer.parseInt(followers);
         int maxFollowing = Integer.parseInt(following);
         
-        Map<String, Object> twitterUserEntry = null;
-        try {twitterUserEntry = TwitterAPI.getUser(screen_name, false);} catch (TwitterException e) {}
+        List<Map<String, Object>> twitterUserEntries = new ArrayList<>();
+        for (String screen_name: screen_names) {
+            try {
+                Map<String, Object> twitterUserEntry = TwitterAPI.getUser(screen_name, false);
+                if (twitterUserEntry != null) twitterUserEntries.add(twitterUserEntry);
+            } catch (TwitterException e) {}
+        }
         Map<String, Object> topology = null;
-        try {topology = TwitterAPI.getNetwork(screen_name, maxFollowers, maxFollowing);} catch (TwitterException e) {}
+        try {topology = TwitterAPI.getNetwork(screen_names[0], maxFollowers, maxFollowing);} catch (TwitterException e) {}
         
         post.setResponse(response, "application/javascript");
         
@@ -74,7 +81,8 @@ public class UserServlet extends HttpServlet {
         metadata.put("client", post.getClientHost());
         m.put("search_metadata", metadata);
 
-        if (twitterUserEntry != null) m.put("user", twitterUserEntry);
+        if (twitterUserEntries.size() == 1) m.put("user", twitterUserEntries.iterator().next());
+        if (twitterUserEntries.size() > 1) m.put("users", twitterUserEntries);
         if (topology != null) m.put("topology", topology);
         
         // write json

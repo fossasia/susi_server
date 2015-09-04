@@ -39,7 +39,6 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.apache.lucene.queryparser.classic.QueryParser;
 import org.eclipse.jetty.util.ConcurrentHashSet;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -61,6 +60,8 @@ import org.elasticsearch.common.unit.Fuzziness;
 import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.index.query.RangeQueryBuilder;
+import org.elasticsearch.index.query.BoolFilterBuilder;
+import org.elasticsearch.index.query.FilterBuilders;
 import org.elasticsearch.indices.IndexAlreadyExistsException;
 import org.elasticsearch.indices.IndexMissingException;
 import org.elasticsearch.node.Node;
@@ -111,7 +112,7 @@ public class DAO {
     private static final String IMPORT_PROFILE_INDEX_NAME = "import_profiles";
     public final static int CACHE_MAXSIZE = 10000;
     
-    public  static File conf_dir;
+    public  static File conf_dir, bin_dir;
     private static File external_data, assets, dictionaries;
     private static Path message_dump_dir, account_dump_dir, import_profile_dump_dir;
     private static JsonDump message_dump, account_dump, import_profile_dump;
@@ -134,7 +135,8 @@ public class DAO {
      */
     public static void init(Map<String, String> configMap, Path dataPath) {
         config = configMap;
-        File conf_dir = new File("conf");
+        conf_dir = new File("conf");
+        bin_dir = new File("bin");
         File datadir = dataPath.toFile();
         try {
             // create and document the data dump dir
@@ -399,8 +401,10 @@ public class DAO {
      * @return true if the record was stored because it did not exist, false if it was not stored because the record existed already
      */
     public static boolean writeMessage(MessageEntry t, UserEntry u, boolean dump, boolean overwriteUser) {
+        if (t == null) {
+            return false;
+        }
         try {
-
             // check if tweet exists in index
             if ((t instanceof TwitterScraper.TwitterTweet &&
                 ((TwitterScraper.TwitterTweet) t).exist() != null &&
@@ -480,9 +484,9 @@ public class DAO {
      */
     public synchronized static boolean writeImportProfile(ImportProfileEntry i, boolean dump) {
         try {
-            // record account into text file
+            // record import profile into text file
             if (dump) import_profile_dump.write(i.toMap());
-            // record tweet into search index
+            // record import profile into search index
             importProfiles.writeEntry(i.getId(), i.getSourceType().name(), i);
         } catch (IOException e) {
             e.printStackTrace();
@@ -572,7 +576,6 @@ public class DAO {
                         request.addAggregation(AggregationBuilders.terms(field).field(field).minDocCount(1).size(aggregationLimit));
                     }
                 }
-                
                 // get response
                 SearchResponse response = request.execute().actionGet();
                 this.hits = response.getHits().getTotalHits();
@@ -768,13 +771,14 @@ public class DAO {
                     .setSearchType(SearchType.QUERY_THEN_FETCH)
                     .setFrom(0);
 
-            String queryString = "active_status:" + EntryStatus.ACTIVE.name();
+            BoolFilterBuilder bFilter = FilterBuilders.boolFilter();
+            bFilter.must(FilterBuilders.termFilter("active_status", EntryStatus.ACTIVE.name().toLowerCase()));
             for (Object o : constraints.entrySet()) {
                 Map.Entry entry = (Map.Entry) o;
-                queryString += " AND " + entry.getKey() + ":" + QueryParser.escape((String) entry.getValue());
+                bFilter.must(FilterBuilders.termFilter((String) entry.getKey(), ((String) entry.getValue()).toLowerCase()));
             }
-            request.setQuery(QueryBuilders.queryStringQuery(queryString));
-
+            request.setQuery(QueryBuilders.filteredQuery(QueryBuilders.matchAllQuery(), bFilter));
+            DAO.log(QueryBuilders.filteredQuery(QueryBuilders.matchAllQuery(), bFilter).toString());
             // get response
             SearchResponse response = request.execute().actionGet();
 
@@ -797,8 +801,8 @@ public class DAO {
         Map<String, ImportProfileEntry> latests = new HashMap<>();
         for (ImportProfileEntry entry : rawResults) {
             String uniqueKey;
-            if (entry.getScreenName() != null) {
-                uniqueKey = entry.getSourceUrl() + entry.getScreenName();
+            if (entry.getImporter() != null) {
+                uniqueKey = entry.getSourceUrl() + entry.getImporter();
             } else {
                 uniqueKey = entry.getSourceUrl() + entry.getClientHost();
             }
