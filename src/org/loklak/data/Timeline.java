@@ -140,6 +140,7 @@ public class Timeline implements Iterable<MessageEntry> {
     }
     
     public void putAll(Timeline other) {
+        if (other == null) return;
         assert this.order.equals(other.order);
         for (Map.Entry<String, UserEntry> u: other.users.entrySet()) {
             UserEntry t = this.users.get(u.getKey());
@@ -220,4 +221,11 @@ public class Timeline implements Iterable<MessageEntry> {
         return p < 4000 ? p / 4 + 3000 : p;
     }    
     
+    public void writeToIndex() {
+        for (MessageEntry t: this) {
+            UserEntry u = getUser(t);
+            assert u != null;
+            DAO.writeMessage(t, u, true, false);
+        }
+    }
 }

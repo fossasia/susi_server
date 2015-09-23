@@ -40,7 +40,7 @@ public class SearchClient {
     public final static String frontpeer_hash = Integer.toHexString(Integer.MAX_VALUE - 1);
 
     // possible values: cache, twitter, all
-    public static Timeline search(final String protocolhostportstub, final String query, final Timeline.Order order, final String source, final int count, final int timezoneOffset, final String provider_hash) {
+    public static Timeline search(final String protocolhostportstub, final String query, final Timeline.Order order, final String source, final int count, final int timezoneOffset, final String provider_hash) throws IOException {
         Timeline tl = new Timeline(order);
         String urlstring = "";
         try {
@@ -51,33 +51,29 @@ public class SearchClient {
         byte[] response = ClientConnection.download(urlstring);
         byte[] json = response;
         if (json == null || json.length == 0) return tl;
-        try {
-            Map<String, Object> map = DAO.jsonMapper.readValue(json, DAO.jsonTypeRef);
-            Object statuses_obj = map.get("statuses");
-            @SuppressWarnings("unchecked") List<Map<String, Object>> statuses = statuses_obj instanceof List<?> ? (List<Map<String, Object>>) statuses_obj : null;
-            if (statuses != null) {
-                for (Map<String, Object> tweet: statuses) {
-                    @SuppressWarnings("unchecked") Map<String, Object> user = (Map<String, Object>) tweet.remove("user");
-                    if (user == null) continue;
-                    tweet.put("provider_type", (Object) ProviderType.REMOTE.name());
-                    tweet.put("provider_hash", provider_hash);
-                    UserEntry u = new UserEntry(user);
-                    MessageEntry t = new MessageEntry(tweet);
-                    tl.add(t, u);
-                }
+        Map<String, Object> map = DAO.jsonMapper.readValue(json, DAO.jsonTypeRef);
+        Object statuses_obj = map.get("statuses");
+        @SuppressWarnings("unchecked") List<Map<String, Object>> statuses = statuses_obj instanceof List<?> ? (List<Map<String, Object>>) statuses_obj : null;
+        if (statuses != null) {
+            for (Map<String, Object> tweet: statuses) {
+                @SuppressWarnings("unchecked") Map<String, Object> user = (Map<String, Object>) tweet.remove("user");
+                if (user == null) continue;
+                tweet.put("provider_type", (Object) ProviderType.REMOTE.name());
+                tweet.put("provider_hash", provider_hash);
+                UserEntry u = new UserEntry(user);
+                MessageEntry t = new MessageEntry(tweet);
+                tl.add(t, u);
             }
-            //System.out.println(parser.text());
-        } catch (IOException e) {
-            e.printStackTrace();
         }
+        //System.out.println(parser.text());
         return tl;
     }
     
     public static void main(String[] args) {
-        Timeline tl = search("http://loklak.org", "beer", Timeline.Order.CREATED_AT, "cache", 20, -120, backend_hash);
         try {
+            Timeline tl = search("http://loklak.org", "beer", Timeline.Order.CREATED_AT, "cache", 20, -120, backend_hash);
             System.out.println(new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(tl.toMap(false)));
-        } catch (JsonProcessingException e) {
+        } catch (IOException e) {
             e.printStackTrace();
         }
     }

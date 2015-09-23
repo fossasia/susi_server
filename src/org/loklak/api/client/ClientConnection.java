@@ -131,36 +131,29 @@ public class ClientConnection {
         try {this.con.disconnect();} catch (Throwable e) {}
     }
     
-    public static void download(String source_url, File target_file) {
+    public static void download(String source_url, File target_file) throws IOException {
         byte[] buffer = new byte[2048];
+        ClientConnection connection = new ClientConnection(source_url);
+        OutputStream os = new BufferedOutputStream(new FileOutputStream(target_file));
+        int count;
         try {
-            ClientConnection connection = new ClientConnection(source_url);
-            OutputStream os = new BufferedOutputStream(new FileOutputStream(target_file));
-            int count;
-            try {
-                while ((count = connection.inputStream.read(buffer)) > 0) os.write(buffer, 0, count);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            connection.close();
-            os.close();
+            while ((count = connection.inputStream.read(buffer)) > 0) os.write(buffer, 0, count);
         } catch (IOException e) {
+            e.printStackTrace();
         }
+        connection.close();
+        os.close();
     }
     
-    public static byte[] download(String source_url) {
+    public static byte[] download(String source_url) throws IOException {
         byte[] buffer = new byte[2048];
+        ClientConnection connection = new ClientConnection(source_url);
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        int count;
         try {
-            ClientConnection connection = new ClientConnection(source_url);
-            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            int count;
-            try {
-                while ((count = connection.inputStream.read(buffer)) > 0) baos.write(buffer, 0, count);
-            } catch (IOException e) {}
-            connection.close();
-            return baos.toByteArray();
-        } catch (IOException e) {
-            return null;
-        }
+            while ((count = connection.inputStream.read(buffer)) > 0) baos.write(buffer, 0, count);
+        } catch (IOException e) {}
+        connection.close();
+        return baos.toByteArray();
     }
 }

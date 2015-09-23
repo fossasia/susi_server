@@ -67,6 +67,9 @@ public class Caretaker extends Thread {
         // work loop
         while (this.shallRun) {
             if (System.currentTimeMillis() > upgradeTime) {
+                // increase the upgrade time to prevent that the peer runs amok (re-tries the attempt all the time) when upgrade fails for any reason
+                upgradeTime = upgradeTime + upgradeWait;
+                
                 // do an upgrade
                 DAO.log("UPGRADE: starting an upgrade");
                 upgrade();
@@ -135,6 +138,9 @@ public class Caretaker extends Thread {
                     if (e instanceof TwitterException) try {Thread.sleep(10000);} catch (InterruptedException ee) {}
                 }
             }
+            
+            // heal the latency to give peers with out-dated information a new chance
+            DAO.healLatency(0.95f);
         }
 
         Log.getLog().info("caretaker terminated");
