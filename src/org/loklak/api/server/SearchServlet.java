@@ -111,7 +111,7 @@ public class SearchServlet extends HttpServlet {
             Thread backendThread = tokens.original.length() == 0 ? null : new Thread() {
                 public void run() {
                     Timeline backendTl = DAO.searchBackend(tokens.original, order, count, timezoneOffsetf, "cache");
-                    tl.putAll(QueryEntry.applyConstraint(backendTl, tokens));
+                    if (backendTl != null) tl.putAll(QueryEntry.applyConstraint(backendTl, tokens));
                 }
             };
             if (backendThread != null) backendThread.start();
@@ -133,7 +133,7 @@ public class SearchServlet extends HttpServlet {
             // replace the timeline with one from the own index which now includes the remote result
             if ("backend".equals(source) && query.length() > 0) {
                 Timeline backendTl = DAO.searchBackend(query, order, count, timezoneOffset, "cache");
-                tl.putAll(QueryEntry.applyConstraint(backendTl, tokens));
+                if (backendTl != null) tl.putAll(QueryEntry.applyConstraint(backendTl, tokens));
             }
 
             // replace the timeline with one from the own index which now includes the remote result
