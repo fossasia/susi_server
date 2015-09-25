@@ -82,6 +82,7 @@ public class RemoteAccess {
             // overwrite if new port configuration is submitted
             RemoteAccess ra = new RemoteAccess(remoteHost, path, httpport, httpsport, peername);
             history.put(remoteHost, ra);
+            DAO.updateFrontPeerCache(ra);
         }
         return post;
     }

@@ -41,5 +41,9 @@
 	<classpathentry kind="lib" path="lib/json-schema-validator-2.2.6-lib.jar" sourcepath="lib/json-schema-validator-2.2.6-lib.jar"/>
 	<classpathentry kind="lib" path="lib/elasticsearch-1.7.1.jar"/>
 	<classpathentry kind="lib" path="lib/groovy-all-2.4.4.jar"/>
+	<classpathentry kind="lib" path="lib/commons-logging-1.2.jar"/>
+	<classpathentry kind="lib" path="lib/httpclient-4.5.1.jar"/>
+	<classpathentry kind="lib" path="lib/httpcore-4.4.3.jar"/>
+	<classpathentry kind="lib" path="lib/httpmime-4.5.1.jar"/>
 	<classpathentry kind="output" path="classes"/>
 </classpath>

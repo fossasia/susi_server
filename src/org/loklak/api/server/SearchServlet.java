@@ -62,6 +62,7 @@ public class SearchServlet extends HttpServlet {
     @Override
     protected void doGet(final HttpServletRequest request, final HttpServletResponse response) throws ServletException, IOException {
         try {
+        long start = System.currentTimeMillis();
         RemoteAccess.Post post = RemoteAccess.evaluate(request);
         
         // manage DoS
@@ -175,6 +176,7 @@ public class SearchServlet extends HttpServlet {
             if (order == Timeline.Order.CREATED_AT) metadata.put("period", tl.period());
             metadata.put("query", query);
             metadata.put("client", post.getClientHost());
+            metadata.put("time", System.currentTimeMillis() - start);
             metadata.put("servicereduction", post.isDoS_servicereduction() ? "true" : "false");
             m.put("search_metadata", metadata);
             List<Object> statuses = new ArrayList<>();

@@ -82,6 +82,7 @@ import org.loklak.api.server.RemoteAccess;
 import org.loklak.geo.GeoNames;
 import org.loklak.harvester.SourceType;
 import org.loklak.harvester.TwitterScraper;
+import org.loklak.harvester.TwitterScraper.TwitterTweet;
 import org.loklak.tools.DateParser;
 import org.loklak.tools.JsonDataset;
 import org.loklak.tools.JsonDump;
@@ -842,6 +843,11 @@ public class DAO {
         } else {
             // record the result; this may be moved to a concurrent process
             for (MessageEntry t: remoteMessages) {
+                // wait until messages are ready (i.e. unshortening of shortlinks)
+                if (t instanceof TwitterTweet) {
+                    ((TwitterTweet) t).waitReady();
+                }
+                // write the message to the index
                 UserEntry u = remoteMessages.getUser(t);
                 assert u != null;
                 boolean newTweet = writeMessage(t, u, true, true);
@@ -906,6 +912,14 @@ public class DAO {
     private static Set<String> frontPeerCache = new HashSet<String>();
     private static Set<String> backendPeerCache = new HashSet<String>();
     
+    public static void updateFrontPeerCache(RemoteAccess remoteAccess) {
+        if (remoteAccess.getLocalHTTPPort() >= 80) {
+            frontPeerCache.add("http://" + remoteAccess.getRemoteHost() + (remoteAccess.getLocalHTTPPort() == 80 ? "" : ":" + remoteAccess.getLocalHTTPPort()));
+        } else if (remoteAccess.getLocalHTTPSPort() >= 443) {
+            frontPeerCache.add("https://" + remoteAccess.getRemoteHost() + (remoteAccess.getLocalHTTPSPort() == 443 ? "" : ":" + remoteAccess.getLocalHTTPSPort()));
+        }
+    }
+    
     /**
      * from all known front peers, generate a list of available peers, ordered by the peer latency
      * @return a list of front peers. only the first one shall be used, but the other are fail-over peers
@@ -917,12 +931,7 @@ public class DAO {
             for (String peer: remote) frontPeerCache.add(peer);
             // add dynamically all peers that contacted myself
             for (Map.Entry<String, RemoteAccess> peer: RemoteAccess.history.entrySet()) {
-                RemoteAccess remoteAccess = peer.getValue();
-                if (remoteAccess.getLocalHTTPPort() >= 80) {
-                    frontPeerCache.add("http://" + peer.getKey() + (remoteAccess.getLocalHTTPPort() == 80 ? "" : ":" + remoteAccess.getLocalHTTPPort()));
-                } else if (remoteAccess.getLocalHTTPSPort() >= 443) {
-                    frontPeerCache.add("https://" + peer.getKey() + (remoteAccess.getLocalHTTPSPort() == 443 ? "" : ":" + remoteAccess.getLocalHTTPSPort()));                    
-                }
+                updateFrontPeerCache(peer.getValue());
             }
         }
         testpeers.addAll(frontPeerCache);
