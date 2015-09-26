@@ -52,7 +52,6 @@ public class TwitterScraper {
     public static ExecutorService executor = Executors.newFixedThreadPool(20);
     
     public static Timeline search(final String query, final Timeline.Order order) {
-        long start = System.currentTimeMillis();
         // check
         // https://twitter.com/search-advanced for a better syntax
         // https://support.twitter.com/articles/71577-how-to-use-advanced-twitter-search#
@@ -72,44 +71,33 @@ public class TwitterScraper {
             //https://twitter.com/search?q=from:yacy_search&src=typd
             https_url = "https://twitter.com/search?q=" + q + "&src=typd&vertical=default&f=tweets";
         } catch (UnsupportedEncodingException e) {}
-        System.out.println("debug-time search0 = " + (System.currentTimeMillis() - start));
         Timeline timeline = null;
         try {
-            System.out.println("debug-time searchA = " + (System.currentTimeMillis() - start));
             ClientConnection connection = new ClientConnection(https_url);
-            System.out.println("debug-time searchB = " + (System.currentTimeMillis() - start));
             if (connection.inputStream == null) return null;
             try {
-                System.out.println("debug-time search1 = " + (System.currentTimeMillis() - start));
                 BufferedReader br = new BufferedReader(new InputStreamReader(connection.inputStream, UTF8.charset));
-                System.out.println("debug-time search2 = " + (System.currentTimeMillis() - start));
                 timeline = search(br, order);
-                System.out.println("debug-time search3 = " + (System.currentTimeMillis() - start));
             } catch (IOException e) {
                e.printStackTrace();
             } finally {
-                System.out.println("debug-time search4 = " + (System.currentTimeMillis() - start));
                 connection.close();
             }
-            System.out.println("debug-time search5 = " + (System.currentTimeMillis() - start));
         } catch (IOException e) {
             // this could mean that twitter rejected the connection (DoS protection?)
             e.printStackTrace();
             if (timeline == null) timeline = new Timeline(order);
         };
 
-        System.out.println("debug-time search6 = " + (System.currentTimeMillis() - start));
         // wait until all messages in the timeline are ready
         if (timeline == null) {
             // timeout occurred
             timeline = new Timeline(order);
         }
-        System.out.println("debug-time search7 = " + (System.currentTimeMillis() - start));
         return timeline;
     }
     
     private static Timeline search(final BufferedReader br, final Timeline.Order order) throws IOException {
-        long start = System.currentTimeMillis();
         Timeline timeline = new Timeline(order);
         String input;
         Map<String, prop> props = new HashMap<String, prop>();
@@ -229,7 +217,6 @@ public class TwitterScraper {
         }
         //for (prop p: props.values()) System.out.println(p);
         br.close();
-        System.out.println("debug-time scraper = " + (System.currentTimeMillis() - start));
         return timeline;
     }
     
