@@ -35,9 +35,11 @@ import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpHost;
 import org.apache.http.HttpResponse;
+import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpUriRequest;
+import org.apache.http.client.params.ClientPNames;
 import org.apache.http.conn.routing.HttpRoute;
 import org.apache.http.entity.mime.HttpMultipartMode;
 import org.apache.http.entity.mime.MultipartEntityBuilder;
@@ -119,6 +121,33 @@ public class ClientConnection {
             }
         } else {
             throw new IOException("client connection to " + request.getURI() + " fail: no connection");
+        }
+    }
+    
+    /**
+     * get a redirect for an url: this mehtod shall be called if it is expected that a url
+     * is redirected to another url. This method then discovers the redirect.
+     * @param urlstring
+     * @return the redirect url for the given urlstring
+     * @throws IOException if the url is not redirected
+     */
+    public static String getRedirect(String urlstring) throws IOException {
+        HttpGet get = new HttpGet(urlstring);
+        get.setConfig(RequestConfig.custom().setRedirectsEnabled(false).build());
+        get.setHeader("User-Agent", USER_AGENT);
+        HttpResponse httpResponse = httpClient.execute(get);
+        HttpEntity httpEntity = httpResponse.getEntity();
+        if (httpEntity != null) {
+            if (httpResponse.getStatusLine().getStatusCode() == 301) {
+                for (Header header: httpResponse.getAllHeaders()) {
+                    if (header.getName().toLowerCase().equals("location")) return header.getValue();
+                }
+                throw new IOException("redirect for  " + urlstring+ ": no location attribute found");
+            } else {
+                throw new IOException("no redirect for  " + urlstring+ " fail: " + httpResponse.getStatusLine().getStatusCode() + ": " + httpResponse.getStatusLine().getReasonPhrase());
+            }
+        } else {
+            throw new IOException("client connection to " + urlstring + " fail: no connection");
         }
     }
     

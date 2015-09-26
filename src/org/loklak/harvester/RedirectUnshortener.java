@@ -49,7 +49,7 @@ public class RedirectUnshortener {
         try {
             int termination = 10;
             while (isApplicable(urlstring) && termination-- > 0) {
-                String unshortened = getRedirect(urlstring);
+                String unshortened = ClientConnection.getRedirect(urlstring);
                 if (unshortened.equals(urlstring)) return urlstring;
                 urlstring = unshortened; // recursive apply unshortener because some unshortener are applied several times
             }
@@ -72,6 +72,14 @@ public class RedirectUnshortener {
         return false;
     }
     
+    /**
+     * this is the raw implementation if ClientConnection.getRedirect.
+     * Surprisingly it's much slower, but some redirects cannot be discovered with the other
+     * method, but with this one.
+     * @param urlstring
+     * @return
+     * @throws IOException
+     */
     private static String getRedirect(String urlstring) throws IOException {
         URL url = new URL(urlstring);
         Socket socket = new Socket(url.getHost(), 80);
@@ -82,7 +90,6 @@ public class RedirectUnshortener {
         out.println("Host: " + url.getHost());
         // fake a bit that we are real
         out.println("User-Agent: " + ClientConnection.USER_AGENT);
-        out.println("Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8");
         out.println("Accept-Language: en-us,en;q=0.5");
         out.println("Accept-Encoding: gzip,deflate");
         out.println("Accept-Charset: ISO-8859-1,utf-8;q=0.7,*;q=0.7");
@@ -129,7 +136,16 @@ public class RedirectUnshortener {
         };
         for (String t: test) {
             try {
+                long start = System.currentTimeMillis();
                 System.out.println("Test \"" + t + "\" -> " + getRedirect(t));
+                System.out.println("time: " + (System.currentTimeMillis() - start));
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            try {
+                long start = System.currentTimeMillis();
+                System.out.println("Test \"" + t + "\" -> " + ClientConnection.getRedirect(t));
+                System.out.println("time: " + (System.currentTimeMillis() - start));
             } catch (IOException e) {
                 e.printStackTrace();
             }
