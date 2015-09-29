@@ -17,7 +17,7 @@
  *  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.loklak.tools;
+package org.loklak.tools.storage;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -47,6 +47,7 @@ import java.util.zip.GZIPOutputStream;
 
 import org.eclipse.jetty.util.log.Log;
 import org.loklak.data.DAO;
+import org.loklak.tools.UTF8;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 

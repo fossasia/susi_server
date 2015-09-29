@@ -17,14 +17,15 @@
  *  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.loklak.tools;
+package org.loklak.tools.storage;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.eclipse.jetty.util.log.Log;
 import org.loklak.data.DAO;
+import org.loklak.tools.Compression;
+import org.loklak.tools.UTF8;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -95,7 +96,7 @@ public class JsonMinifier {
                 Map<String, Object> json = DAO.jsonMapper.readValue(x, DAO.jsonTypeRef);
                 return json;
             } catch (Throwable e) {
-                Log.getLog().warn("cannot parse capsule \"" + UTF8.String(this.capsule) + "\"", e);
+                DAO.log("cannot parse capsule \"" + UTF8.String(this.capsule) + "\"");
             } 
             return null;
         }

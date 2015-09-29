@@ -17,7 +17,7 @@
  *  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.loklak.tools;
+package org.loklak.tools.storage;
 
 import java.io.File;
 import java.io.IOException;
@@ -25,7 +25,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.loklak.tools.JsonDump.ConcurrentReader;
+import org.loklak.tools.storage.JsonDump.ConcurrentReader;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 

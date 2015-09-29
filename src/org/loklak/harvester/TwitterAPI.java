@@ -41,8 +41,8 @@ import org.loklak.data.AccountEntry;
 import org.loklak.data.DAO;
 import org.loklak.data.UserEntry;
 import org.loklak.geo.GeoMark;
-import org.loklak.tools.JsonDataset.Index;
-import org.loklak.tools.JsonMinifier;
+import org.loklak.tools.storage.JsonMinifier;
+import org.loklak.tools.storage.JsonDataset.Index;
 
 import com.google.common.base.Charsets;
 import com.google.common.io.Files;

@@ -84,10 +84,10 @@ import org.loklak.harvester.SourceType;
 import org.loklak.harvester.TwitterScraper;
 import org.loklak.harvester.TwitterScraper.TwitterTweet;
 import org.loklak.tools.DateParser;
-import org.loklak.tools.JsonDataset;
-import org.loklak.tools.JsonDump;
-import org.loklak.tools.JsonMinifier;
-import org.loklak.tools.JsonDataset.Index;
+import org.loklak.tools.storage.JsonDataset;
+import org.loklak.tools.storage.JsonDump;
+import org.loklak.tools.storage.JsonMinifier;
+import org.loklak.tools.storage.JsonDataset.Index;
 
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.type.TypeReference;
