@@ -9,7 +9,7 @@
         <pathelement location="lib/asm-4.1.jar"/>
         <pathelement location="lib/asm-commons-4.1.jar"/>
         <pathelement location="lib/commons-logging-1.2.jar"/>
-        <pathelement location="lib/elasticsearch-1.7.1.jar"/>
+        <pathelement location="lib/elasticsearch-1.7.2.jar"/>
         <pathelement location="lib/groovy-all-2.4.4.jar"/>
         <pathelement location="lib/httpclient-4.5.1.jar"/>
         <pathelement location="lib/httpcore-4.4.3.jar"/>
