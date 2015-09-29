@@ -314,11 +314,11 @@ public class TwitterScraper {
             }
             */
             
-            this.text = text_raw; // this MUST be analysed with analyse(); this is not done here because it should be started concurrently; run run();
+            this.text = text_raw.replaceAll("</?(s|b|strong)>", "").replaceAll("<a href=\"/hashtag.*?>", "").replaceAll("<a.*?class=\"twitter-atreply.*?>", "").replaceAll("<span.*?span>", "").replaceAll("  ", " ");
+            // this.text MUST be analysed with analyse(); this is not done here because it should be started concurrently; run run();
         }
 
         private void analyse() {
-            this.text = this.text.replaceAll("</?(s|b|strong)>", "").replaceAll("<a href=\"/hashtag.*?>", "").replaceAll("<a.*?class=\"twitter-atreply.*?>", "").replaceAll("<span.*?span>", "").replaceAll("  ", " ");
             while (true) {
                 try {
                     Matcher m = timeline_link_pattern.matcher(this.text);
