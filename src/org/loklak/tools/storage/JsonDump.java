@@ -61,7 +61,7 @@ public class JsonDump {
     final String dump_file_prefix;
     final RandomAccessFile json_log;
     
-    public JsonDump(File dump_dir, String dump_file_prefix, String readme) throws IOException {
+    public JsonDump(File dump_dir, String dump_file_prefix, String readme, final boolean historicDumpsZipped) throws IOException {
         this.dump_dir = dump_dir;
         this.dump_file_prefix = dump_file_prefix;
         this.dump_dir_own = new File(this.dump_dir, "own");
@@ -79,30 +79,50 @@ public class JsonDump {
                 w.close();
             }
         }
-        this.json_log = new RandomAccessFile(getCurrentDump(dump_dir_own, this.dump_file_prefix), "rw");
+        this.json_log = new RandomAccessFile(getCurrentDump(dump_dir_own, this.dump_file_prefix, historicDumpsZipped), "rw");
     }
     
-    private static File getCurrentDump(File path, String prefix) {
+    private static File getCurrentDump(File path, String prefix, final boolean historicDumpsZipped) {
         SimpleDateFormat formatYearMonth = new SimpleDateFormat("yyyyMM", Locale.US);
         formatYearMonth.setTimeZone(TimeZone.getTimeZone("GMT"));
         String currentDatePart = formatYearMonth.format(new Date());
         
         // if there is already a dump, use it
         String[] existingDumps = path.list();
-        if (existingDumps != null) for (String d: existingDumps) {
-            if (d.startsWith(prefix + currentDatePart) && d.endsWith(".txt")) {
-                return new File(path, d);
+        if (existingDumps != null) {
+            for (String d: existingDumps) {
+                if (d.startsWith(prefix + currentDatePart) && d.endsWith(".txt")) {
+                    continue;
+                }
+                
+                // in case the file is a dump file but ends with '.txt', we compress it here on-the-fly
+                if (historicDumpsZipped) {
+                    if (d.startsWith(prefix) && d.endsWith(".txt")) {
+                        final File source = new File(path, d);
+                        final File dest = new File(path, d + ".gz");
+                        if (dest.exists()) dest.delete();
+                        try {
+                            Compression.gzip(source, dest, true);
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                } else {
+                    if (d.startsWith(prefix) && d.endsWith(".txt.gz")) {
+                        final File source = new File(path, d);
+                        final File dest = new File(path, d.substring(0,  d.length() - 3));
+                        if (dest.exists()) dest.delete();
+                        try {
+                            Compression.gunzip(source, dest, true);
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }
             }
-            
-            // in case the file is a dump file but ends with '.txt', we compress it here on-the-fly
-            if (d.startsWith(prefix) && d.endsWith(".txt")) {
-                final File source = new File(path, d);
-                final File dest = new File(path, d + ".gz");
-                if (dest.exists()) dest.delete();
-                try {
-                    Compression.gzip(source, dest, true);
-                } catch (IOException e) {
-                    e.printStackTrace();
+            for (String d: existingDumps) {
+                if (d.startsWith(prefix + currentDatePart) && d.endsWith(".txt")) {
+                    return new File(path, d);
                 }
             }
         }

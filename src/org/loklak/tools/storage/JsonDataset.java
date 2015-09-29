@@ -27,8 +27,6 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.loklak.tools.storage.JsonDump.ConcurrentReader;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-
 public class JsonDataset {
     
     private final JsonDump indexDump;
@@ -43,7 +41,7 @@ public class JsonDataset {
      * @throws IOException
      */
     public JsonDataset(File dump_dir, String dump_file_prefix, String[] index_keys) throws IOException {
-        this.indexDump = new JsonDump(dump_dir, dump_file_prefix, null);
+        this.indexDump = new JsonDump(dump_dir, dump_file_prefix, null, false);
         this.index = new ConcurrentHashMap<>();
         this.minifier = new JsonMinifier();
         for (String idx: index_keys) this.index.put(idx, new Index());

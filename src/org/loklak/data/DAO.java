@@ -159,12 +159,12 @@ public class DAO {
                 "You can import dump files from other peers by dropping them into the import directory.\n" +
                 "Each dump file must start with the prefix '" + MESSAGE_DUMP_FILE_PREFIX + "' to be recognized.\n";
             message_dump_dir = dataPath.resolve("dump");
-            message_dump = new JsonDump(message_dump_dir.toFile(), MESSAGE_DUMP_FILE_PREFIX, message_dump_readme);
+            message_dump = new JsonDump(message_dump_dir.toFile(), MESSAGE_DUMP_FILE_PREFIX, message_dump_readme, true);
             
             account_dump_dir = dataPath.resolve("accounts");
             account_dump_dir.toFile().mkdirs();
             LoklakServer.protectPath(account_dump_dir); // no other permissions to this path
-            account_dump = new JsonDump(account_dump_dir.toFile(), ACCOUNT_DUMP_FILE_PREFIX, null);
+            account_dump = new JsonDump(account_dump_dir.toFile(), ACCOUNT_DUMP_FILE_PREFIX, null, false);
 
             File user_dump_dir = new File(datadir, "accounts");
             user_dump_dir.mkdirs();
@@ -173,7 +173,7 @@ public class DAO {
             following_dump = new JsonDataset(user_dump_dir, FOLLOWING_DUMP_FILE_PREFIX, new String[]{"id_str","screen_name"});
 
 	        import_profile_dump_dir = dataPath.resolve("import-profiles");
-            import_profile_dump = new JsonDump(import_profile_dump_dir.toFile(), IMPORT_PROFILE_FILE_PREFIX, null);
+            import_profile_dump = new JsonDump(import_profile_dump_dir.toFile(), IMPORT_PROFILE_FILE_PREFIX, null, true);
 
             // load schema folder
             conv_schema_dir = new File("conf/conversion");
