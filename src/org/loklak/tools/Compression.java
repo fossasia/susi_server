@@ -19,8 +19,14 @@
 
 package org.loklak.tools;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.zip.Deflater;
 import java.util.zip.GZIPInputStream;
@@ -28,6 +34,15 @@ import java.util.zip.GZIPOutputStream;
 
 public class Compression {
 
+    public static void gzip(File source, File dest, boolean deleteSource) throws IOException {
+        byte[] buffer = new byte[2^20];
+        GZIPOutputStream out = new GZIPOutputStream(new BufferedOutputStream(new FileOutputStream(dest), 65536)){{def.setLevel(Deflater.BEST_COMPRESSION);}};
+        FileInputStream in = new FileInputStream(source);
+        int l; while ((l = in.read(buffer)) > 0) out.write(buffer, 0, l);
+        in.close(); out.finish(); out.close();
+        if (deleteSource && dest.exists()) source.delete();
+    }
+    
     public static byte[] gzip(byte[] b) {
         try {
             ByteArrayOutputStream baos = new ByteArrayOutputStream(b.length);
@@ -38,6 +53,15 @@ public class Compression {
             return baos.toByteArray();
         } catch (IOException e) {}
         return null;
+    }
+    
+    public static void gunzip(File source, File dest, boolean deleteSource) throws IOException {
+        byte[] buffer = new byte[2^20];
+        FileOutputStream out = new FileOutputStream(dest);
+        GZIPInputStream in = new GZIPInputStream(new BufferedInputStream(new FileInputStream(source)));
+        int l; while ((l = in.read(buffer)) > 0) out.write(buffer, 0, l);
+        in.close(); out.close();
+        if (deleteSource && dest.exists()) source.delete();
     }
     
     public static byte[] gunzip(byte[] b) {

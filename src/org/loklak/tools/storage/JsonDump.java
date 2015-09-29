@@ -24,7 +24,6 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
@@ -41,12 +40,11 @@ import java.util.Random;
 import java.util.TimeZone;
 import java.util.TreeSet;
 import java.util.concurrent.ArrayBlockingQueue;
-import java.util.zip.Deflater;
 import java.util.zip.GZIPInputStream;
-import java.util.zip.GZIPOutputStream;
 
 import org.eclipse.jetty.util.log.Log;
 import org.loklak.data.DAO;
+import org.loklak.tools.Compression;
 import org.loklak.tools.UTF8;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -100,18 +98,12 @@ public class JsonDump {
             if (d.startsWith(prefix) && d.endsWith(".txt")) {
                 final File source = new File(path, d);
                 final File dest = new File(path, d + ".gz");
-                new Thread() {
-                    public void run() {
-                        byte[] buffer = new byte[2^20];
-                        try {
-                            GZIPOutputStream out = new GZIPOutputStream(new FileOutputStream(dest), 65536){{def.setLevel(Deflater.BEST_COMPRESSION);}};
-                            FileInputStream in = new FileInputStream(source);
-                            int l; while ((l = in.read(buffer)) > 0) out.write(buffer, 0, l);
-                            in.close(); out.finish(); out.close();
-                            if (dest.exists()) source.delete();
-                       } catch (IOException e) {}
-                    }
-                }.start();
+                if (dest.exists()) dest.delete();
+                try {
+                    Compression.gzip(source, dest, true);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             }
         }
         // create a new one, use a random number. The random is used to make it possible to join many different dumps from different locations without renaming them
