@@ -302,7 +302,7 @@ public class Digest {
     }
     
     private static byte[] longToBytes(long x) {
-        ByteBuffer buffer = ByteBuffer.allocate(Long.BYTES);
+        ByteBuffer buffer = ByteBuffer.allocate(8);
         buffer.putLong(x);
         byte[] b = buffer.array();
         assert b.length == 8;
