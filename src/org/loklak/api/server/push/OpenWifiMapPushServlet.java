@@ -28,6 +28,8 @@ import java.util.Map;
 
 public class OpenWifiMapPushServlet extends AbstractPushServlet {
 
+    private static final long serialVersionUID = -5983742254182146642L;
+
     @Override
     protected SourceType getSourceType() {
         return SourceType.OPENWIFIMAP;

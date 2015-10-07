@@ -36,6 +36,8 @@ import java.io.IOException;
 
 public class ValidateServlet extends HttpServlet {
 
+    private static final long serialVersionUID = -7325042684311478289L;
+
     enum ValidationStatus {
         offline,
         invalid,

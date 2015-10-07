@@ -29,6 +29,8 @@ import java.util.Map;
 
 public class NodelistPushServlet extends AbstractPushServlet {
 
+    private static final long serialVersionUID = -7526015654376919340L;
+
     @Override
     protected SourceType getSourceType() {
         return SourceType.NODELIST;

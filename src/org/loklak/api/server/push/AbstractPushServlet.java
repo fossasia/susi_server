@@ -45,6 +45,7 @@ import java.util.Map;
 
 public abstract class AbstractPushServlet extends HttpServlet {
 
+    private static final long serialVersionUID = 8849199146929807638L;
     private JsonValidator validator;
     private JsonFieldConverter converter;
 

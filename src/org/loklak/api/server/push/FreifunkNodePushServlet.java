@@ -27,6 +27,8 @@ import java.util.Map;
 
 public class FreifunkNodePushServlet extends AbstractPushServlet {
 
+    private static final long serialVersionUID = 563611786137243970L;
+
     @Override
     protected SourceType getSourceType() {
         return SourceType.FREIFUNK_NODE;

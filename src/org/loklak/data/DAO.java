@@ -89,7 +89,6 @@ import org.loklak.tools.storage.JsonReader;
 import org.loklak.tools.storage.JsonRepository;
 import org.loklak.tools.storage.JsonStreamReader;
 import org.loklak.tools.storage.JsonFactory;
-import org.loklak.tools.storage.JsonDataset.JsonFactoryIndex;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 
