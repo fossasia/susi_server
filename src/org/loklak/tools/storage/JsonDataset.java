@@ -78,7 +78,6 @@ public class JsonDataset {
         if (readers != null) for (final JsonReader reader: readers) {
             DAO.log("loading " + reader.getName());
             (new Thread(reader)).start();
-            concurrency = 1;
             Thread[] indexerThreads = new Thread[concurrency];
             for (int i = 0; i < concurrency; i++) {
                 indexerThreads[i] = new Thread() {
