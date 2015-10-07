@@ -21,56 +21,125 @@ package org.loklak.tools.storage;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.loklak.tools.storage.JsonDump.ConcurrentReader;
+import junit.framework.TestCase;
+
+import org.junit.After;
+import org.junit.Before;
+import org.loklak.data.DAO;
+import org.loklak.tools.ASCII;
+import org.loklak.tools.BufferedRandomAccessFile;
 
 public class JsonDataset {
     
-    private final JsonDump indexDump;
-    private final Map<String, Index> index;
-    private final JsonMinifier minifier;
+    private final JsonRepository indexDump; // a directory containing dump, import and imported subdirectories
+    private final Map<String, JsonFactoryIndex> index; // a mapping from a search key to the search index
+    private final JsonMinifier minifier; // a minifier for json which learns about json mapping key names
+    private final Map<String, Boolean> columns; // a mapping from the column key to a boolean which is true if the column value is case-insensitive
+    
+    public static class Column {
+        public String key;
+        public boolean caseInsensitive;
+        public Column (String key, boolean caseInsensitive) {
+            this.key = key;
+            this.caseInsensitive = caseInsensitive;
+        }
+    }
     
     /**
-     * define a data set
+     * define a data set: an indexed JsonDump where the index is held in RAM
      * @param dump_dir the path where the subdirectories for this data set shall be stored
      * @param dump_file_prefix a prefix for the file names
      * @param index_keys the names of the json property keys where their content shall be indexed by this field
+     * @param mode the indexing mode, either completely in RAM with Mode.COMPRESSED or with file handles with Mode.REWRITABLE
      * @throws IOException
      */
-    public JsonDataset(File dump_dir, String dump_file_prefix, String[] index_keys) throws IOException {
-        this.indexDump = new JsonDump(dump_dir, dump_file_prefix, null, false);
+    public JsonDataset(File dump_dir, String dump_file_prefix, Column[] columns, JsonRepository.Mode mode) throws IOException {
+        
+        // initialize class objects
+        int concurrency = Runtime.getRuntime().availableProcessors();
+        this.indexDump = new JsonRepository(dump_dir, dump_file_prefix, null, mode, concurrency);
         this.index = new ConcurrentHashMap<>();
         this.minifier = new JsonMinifier();
-        for (String idx: index_keys) this.index.put(idx, new Index());
-        int concurrency = Runtime.getRuntime().availableProcessors();
-        final ConcurrentReader reader = indexDump.getOwnDumpReader(concurrency);
-        if (reader != null) {
-            reader.start();
+        this.columns = new HashMap<>();
+        for (Column column: columns) this.columns.put(column.key, column.caseInsensitive);
+        
+        // assign for each index key one JsonFactory index
+        for (Column col: columns) this.index.put(col.key, new JsonFactoryIndex());
+
+        // start reading of the JsonDump
+        final Collection<JsonReader> readers = indexDump.getOwnDumpReaders(true);
+
+        // for each reader one threqd is started which does Json parsing and indexing
+        if (readers != null) for (final JsonReader reader: readers) {
+            DAO.log("loading " + reader.getName());
+            (new Thread(reader)).start();
+            concurrency = 1;
             Thread[] indexerThreads = new Thread[concurrency];
             for (int i = 0; i < concurrency; i++) {
                 indexerThreads[i] = new Thread() {
                     public void run() {
-                        Map<String, Object> obj;
+                        JsonFactory jsonHandle;
                         try {
-                            while ((obj = reader.take()) != JsonDump.POISON_JSON_MAP) {
-                                // write index to object
-                                Object op = obj.remove(new String(JsonDump.OPERATION_KEY));
-                                JsonMinifier.Capsule json = JsonDataset.this.minifier.minify(obj);
-                                for (Map.Entry<String, Index> idxo: JsonDataset.this.index.entrySet()) {
-                                    Object x = obj.get(idxo.getKey());
-                                    if (x != null) idxo.getValue().put(x, json);
+                            while ((jsonHandle = reader.take()) != JsonStreamReader.POISON_JSON_MAP) {
+                                Map<String, Object> op = jsonHandle.getJson();
+                                JsonFactory json;
+                                if (jsonHandle instanceof JsonRandomAccessFile.JsonHandle) {
+                                    JsonRandomAccessFile.JsonHandle handle = (JsonRandomAccessFile.JsonHandle) jsonHandle;
+                                    assert reader instanceof JsonRandomAccessFile;
+                                    // create the file json handle which does not contain the json any more
+                                    // but only the file handle
+                                    json = ((JsonRandomAccessFile) reader).getJsonFactory(handle.getIndex(), handle.getLength());
+                                } else {
+                                    assert JsonDataset.this.indexDump.getMode() == JsonRepository.COMPRESSED_MODE;
+                                    // create the json minifier object which contains the json in minified version
+                                    // before we create the minifier, we remove the meta keys from the json to further minify it
+                                    for (byte[] meta_key: JsonRepository.META_KEYS) {
+                                        op.remove(ASCII.String(meta_key));
+                                    }
+                                    json = JsonDataset.this.minifier.minify(op);
+                                }
+                                // the resulting json factory is written to each search index
+                                for (Map.Entry<String, Boolean> column: JsonDataset.this.columns.entrySet()) {
+                                    String searchKey = column.getKey();
+                                    boolean case_insensitive = column.getValue();
+                                    JsonFactoryIndex factoryIndex = JsonDataset.this.index.get(searchKey);
+                                    Object searchValue = op.get(searchKey);
+                                    if (searchValue != null && searchValue instanceof String) {
+                                        JsonFactory old = factoryIndex.put(case_insensitive ? ((String) searchValue).toLowerCase() : (String) searchValue, json);
+                                        /*
+                                        if (old != null) {
+                                            if (json instanceof ReaderJsonFactory) {
+                                                ReaderJsonFactory rjf = (ReaderJsonFactory) json;
+                                                System.out.println("Double Key: new is in pos " + rjf.getIndex() + " in file " +  rjf.getFile());
+                                            } else {
+                                                System.out.println("Double Key: new is " + json);
+                                            }
+                                            if (old instanceof ReaderJsonFactory) {
+                                                ReaderJsonFactory rjf = (ReaderJsonFactory) old;
+                                                System.out.println("Double Key: old is in pos " + rjf.getIndex() + " in file " +  rjf.getFile());
+                                            } else {
+                                                System.out.println("Double Key: old is " + json);
+                                            }
+                                        }
+                                        */
+                                    }
                                 }
                             }
                         } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        } catch (IOException e) {
                             e.printStackTrace();
                         }
                     }
                 };
                 indexerThreads[i].start();
             }
+            // wait for the completion of each task
             for (int i = 0; i < concurrency; i++) {
                 try {indexerThreads[i].join();} catch (InterruptedException e) {}
             }
@@ -83,53 +152,88 @@ public class JsonDataset {
      * @param value
      * @throws IOException
      */
-    public void putUnique(Map<String, Object> obj) throws IOException {
-        JsonMinifier.Capsule json = this.minifier.minify(obj);
-        idxstore: for (Map.Entry<String, Index> idxo: this.index.entrySet()) {
-            String idx_field = idxo.getKey();
-            Object value = obj.get(idx_field);
-            if (value != null) {
-                Index index = idxo.getValue();
-                if (index.containsKey(value)) continue idxstore; // we don't overwrite existing indexes
-                index.put(value, json);
+    public JsonFactory putUnique(Map<String, Object> obj) throws IOException {
+        JsonFactory json = indexDump.write(obj, 'I');
+        idxstore: for (Map.Entry<String, Boolean> column: this.columns.entrySet()) {
+            //for (Map.Entry<String, JsonFactoryIndex> idxo: this.index.entrySet()) {
+            String searchKey = column.getKey();
+            boolean case_insensitive = column.getValue();
+            Object value = obj.get(searchKey);
+            if (value != null && value instanceof String) {
+                JsonFactoryIndex index = this.index.get(searchKey);
+                String valueString = case_insensitive ? ((String) value).toLowerCase() : (String) value;
+                if (index.containsKey(valueString)) continue idxstore; // we don't overwrite existing indexes
+                index.put(valueString, json);
             }
         }
-        indexDump.write(obj, 'I');
+        return json;
     }
     
-    public Index getIndex(String key) {
-        return this.index.get(key);
+    public JsonFactory get(String column, String value) {
+        Boolean insensitive = this.columns.get(column);
+        if (insensitive == null) throw new RuntimeException("Column " + column + " was not declared");
+        JsonFactoryIndex jfi = this.index.get(column);
+        if (jfi == null) throw new RuntimeException("Column " + column + " was not defined");
+        return jfi.get(insensitive ? value.toLowerCase() : value);
     }
     
     public void close() {
         this.indexDump.close();
     }
     
-    public static class Index extends ConcurrentHashMap<Object, JsonMinifier.Capsule> implements Map<Object, JsonMinifier.Capsule> {
+    public static class JsonFactoryIndex extends ConcurrentHashMap<String, JsonFactory> implements Map<String, JsonFactory> {
         private static final long serialVersionUID = 4596787150066539880L;        
     }
     
-    public static void main(String[] args) {
-        File testidx = new File("testidx");
-        try {
-            JsonDataset dtst = new JsonDataset(testidx, "idx_", new String[]{"abc", "def"});
-            
-            Map<String,  Object> map = new HashMap<>();
-            map.put("abc", 1);
-            map.put("def", "Hello World");
-            map.put("ghj", new String[]{"Hello", "World"});
-            
-            dtst.putUnique(map);
-            
-            dtst.close();
-
-            dtst = new JsonDataset(testidx, "idx_", new String[]{"abc", "def"});
-            Index idx = dtst.getIndex("abc");
-            System.out.println(idx.get(1));
-            idx = dtst.getIndex("def");
-            System.out.println(idx.get("Hello World"));
-        } catch (IOException e) {
-            e.printStackTrace();
+    public int size() {
+        int size = 0;
+        for (JsonFactoryIndex fi: this.index.values()) {
+            size = Math.max(size, fi.size());
         }
+        return size;
     }
+
+    public static void main(String[] args) {
+        junit.textui.TestRunner.run(Test.class);
+    }
+
+    public static class Test extends TestCase {
+        
+        private File testFile;
+        
+        @Before
+        public void setUp() throws Exception {
+            this.testFile = BufferedRandomAccessFile.Test.getTestFile();
+        }
+    
+        @After
+        public void tearDown() throws Exception {
+            this.testFile.delete();
+        }
+    
+        public void test() throws IOException {
+            for (JsonRepository.Mode mode: JsonRepository.Mode.values()) try {
+                JsonDataset dtst = new JsonDataset(this.testFile, "idx_", new Column[]{new Column("abc", true), new Column("def", false)}, mode);
+                
+                Map<String,  Object> map = new HashMap<>();
+                map.put("abc", 1);
+                map.put("def", "Hello World");
+                map.put("ghj", new String[]{"Hello", "World"});
+                
+                dtst.putUnique(map);
+                
+                dtst.close();
+
+                dtst = new JsonDataset(this.testFile, "idx_", new Column[]{new Column("abc", true), new Column("def", false)}, mode);
+                JsonFactoryIndex idx = dtst.index.get("abc");
+                System.out.println(idx.get(1));
+                idx = dtst.index.get("def");
+                System.out.println(idx.get("Hello World"));
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        
+    }
+    
 }

@@ -99,7 +99,7 @@ public abstract class AbstractIndexEntry implements IndexEntry {
     }
 
     public static String parseString(Object s) {
-        assert s instanceof String;
+        assert s == null || s instanceof String: "type of object s: " + s.getClass().toString();
         return s == null ? "" : (String) s;
     }
     

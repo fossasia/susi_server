@@ -85,11 +85,12 @@ import org.loklak.harvester.TwitterScraper;
 import org.loklak.harvester.TwitterScraper.TwitterTweet;
 import org.loklak.tools.DateParser;
 import org.loklak.tools.storage.JsonDataset;
-import org.loklak.tools.storage.JsonDump;
-import org.loklak.tools.storage.JsonMinifier;
-import org.loklak.tools.storage.JsonDataset.Index;
+import org.loklak.tools.storage.JsonReader;
+import org.loklak.tools.storage.JsonRepository;
+import org.loklak.tools.storage.JsonStreamReader;
+import org.loklak.tools.storage.JsonFactory;
+import org.loklak.tools.storage.JsonDataset.JsonFactoryIndex;
 
-import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.type.TypeReference;
 
 /**
@@ -99,7 +100,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
  */
 public class DAO {
 
-    public final static JsonFactory jsonFactory = new JsonFactory();
+    public final static com.fasterxml.jackson.core.JsonFactory jsonFactory = new com.fasterxml.jackson.core.JsonFactory();
     public final static ObjectMapper jsonMapper = new ObjectMapper(DAO.jsonFactory);
     public final static TypeReference<HashMap<String,Object>> jsonTypeRef = new TypeReference<HashMap<String,Object>>() {};
 
@@ -119,7 +120,7 @@ public class DAO {
     public  static File conf_dir, bin_dir;
     private static File external_data, assets, dictionaries;
     private static Path message_dump_dir, account_dump_dir, import_profile_dump_dir;
-    private static JsonDump message_dump, account_dump, import_profile_dump;
+    private static JsonRepository message_dump, account_dump, import_profile_dump;
     public  static JsonDataset user_dump, followers_dump, following_dump;
     private static File schema_dir, conv_schema_dir;
     private static Node elasticsearch_node;
@@ -159,21 +160,21 @@ public class DAO {
                 "You can import dump files from other peers by dropping them into the import directory.\n" +
                 "Each dump file must start with the prefix '" + MESSAGE_DUMP_FILE_PREFIX + "' to be recognized.\n";
             message_dump_dir = dataPath.resolve("dump");
-            message_dump = new JsonDump(message_dump_dir.toFile(), MESSAGE_DUMP_FILE_PREFIX, message_dump_readme, true);
+            message_dump = new JsonRepository(message_dump_dir.toFile(), MESSAGE_DUMP_FILE_PREFIX, message_dump_readme, JsonRepository.COMPRESSED_MODE, -1);
             
             account_dump_dir = dataPath.resolve("accounts");
             account_dump_dir.toFile().mkdirs();
             LoklakServer.protectPath(account_dump_dir); // no other permissions to this path
-            account_dump = new JsonDump(account_dump_dir.toFile(), ACCOUNT_DUMP_FILE_PREFIX, null, false);
+            account_dump = new JsonRepository(account_dump_dir.toFile(), ACCOUNT_DUMP_FILE_PREFIX, null, JsonRepository.REWRITABLE_MODE, -1);
 
             File user_dump_dir = new File(datadir, "accounts");
             user_dump_dir.mkdirs();
-            user_dump = new JsonDataset(user_dump_dir,USER_DUMP_FILE_PREFIX, new String[]{"id_str","screen_name"});
-            followers_dump = new JsonDataset(user_dump_dir, FOLLOWERS_DUMP_FILE_PREFIX, new String[]{"id_str","screen_name"});
-            following_dump = new JsonDataset(user_dump_dir, FOLLOWING_DUMP_FILE_PREFIX, new String[]{"id_str","screen_name"});
+            user_dump = new JsonDataset(user_dump_dir,USER_DUMP_FILE_PREFIX, new JsonDataset.Column[]{new JsonDataset.Column("id_str", false), new JsonDataset.Column("screen_name", true)}, JsonRepository.REWRITABLE_MODE);
+            followers_dump = new JsonDataset(user_dump_dir, FOLLOWERS_DUMP_FILE_PREFIX, new JsonDataset.Column[]{new JsonDataset.Column("screen_name", true)}, JsonRepository.REWRITABLE_MODE);
+            following_dump = new JsonDataset(user_dump_dir, FOLLOWING_DUMP_FILE_PREFIX, new JsonDataset.Column[]{new JsonDataset.Column("screen_name", true)}, JsonRepository.REWRITABLE_MODE);
 
 	        import_profile_dump_dir = dataPath.resolve("import-profiles");
-            import_profile_dump = new JsonDump(import_profile_dump_dir.toFile(), IMPORT_PROFILE_FILE_PREFIX, null, true);
+            import_profile_dump = new JsonRepository(import_profile_dump_dir.toFile(), IMPORT_PROFILE_FILE_PREFIX, null, JsonRepository.COMPRESSED_MODE, -1);
 
             // load schema folder
             conv_schema_dir = new File("conf/conversion");
@@ -261,32 +262,38 @@ public class DAO {
         return message_dump.getOwnDumps();
     }
     
-    public static int importMessageDumps() {
+    public static int importMessageDumps() throws IOException {
         int imported = 0;
-        int concurrency = Runtime.getRuntime().availableProcessors();
-        JsonDump.ConcurrentReader message_reader = message_dump.getImportDumpReader(concurrency);
-        if (message_reader == null) return 0;
-        imported = importMessageDump(message_reader, concurrency);
+        Collection<JsonReader> message_readers = message_dump.getImportDumpReaders(true);
+        if (message_readers == null || message_readers.size() == 0) return 0;
+        for (JsonReader reader: message_readers) {
+            imported += importMessageDump(reader);
+        }
         message_dump.shiftProcessedDumps();
         return imported;
     }
     
-    public static int importMessageDump(final JsonDump.ConcurrentReader dumpReader, int concurrency) {
-        dumpReader.start();
+    public static int importMessageDump(final JsonReader dumpReader) {
+        (new Thread(dumpReader)).start();
         final AtomicInteger newTweet = new AtomicInteger(0);
-        Thread[] indexerThreads = new Thread[concurrency];
-        for (int i = 0; i < concurrency; i++) {
+        Thread[] indexerThreads = new Thread[dumpReader.getConcurrency()];
+        for (int i = 0; i < dumpReader.getConcurrency(); i++) {
             indexerThreads[i] = new Thread() {
                 public void run() {
-                    Map<String, Object> tweet;
+                    JsonFactory tweet;
                     try {
-                        while ((tweet = dumpReader.take()) != JsonDump.POISON_JSON_MAP) {
-                            @SuppressWarnings("unchecked") Map<String, Object> user = (Map<String, Object>) tweet.remove("user");
-                            if (user == null) continue;
-                            UserEntry u = new UserEntry(user);
-                            MessageEntry t = new MessageEntry(tweet);
-                            boolean newtweet = DAO.writeMessage(t, u, false, true);
-                            if (newtweet) newTweet.incrementAndGet();
+                        while ((tweet = dumpReader.take()) != JsonStreamReader.POISON_JSON_MAP) {
+                            try {
+                                Map<String, Object> json = tweet.getJson();
+                                @SuppressWarnings("unchecked") Map<String, Object> user = (Map<String, Object>) json.remove("user");
+                                if (user == null) continue;
+                                UserEntry u = new UserEntry(user);
+                                MessageEntry t = new MessageEntry(json);
+                                boolean newtweet = DAO.writeMessage(t, u, false, true);
+                                if (newtweet) newTweet.incrementAndGet();
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                            }
                         }
                     } catch (InterruptedException e) {
                         e.printStackTrace();
@@ -295,7 +302,7 @@ public class DAO {
             };
             indexerThreads[i].start();
         }
-        for (int i = 0; i < concurrency; i++) {
+        for (int i = 0; i < dumpReader.getConcurrency(); i++) {
             try {indexerThreads[i].join();} catch (InterruptedException e) {}
         }
         return newTweet.get();
@@ -989,9 +996,9 @@ public class DAO {
     }
 
     public static void announceNewUserId(Number id) {
-        Index idIndex = DAO.user_dump.getIndex("id_str");
-        JsonMinifier.Capsule mapcapsule = idIndex.get(id.toString());
-        Map<String, Object> map = mapcapsule == null ? null : mapcapsule.getJson();
+        JsonFactory mapcapsule = DAO.user_dump.get("id_str", id.toString());
+        Map<String, Object> map = null;
+        try {map = mapcapsule == null ? null : mapcapsule.getJson();} catch (IOException e) {}
         if (map == null) newUserIds.add(id);
     }
     

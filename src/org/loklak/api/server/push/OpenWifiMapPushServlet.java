@@ -19,7 +19,6 @@
 
 package org.loklak.api.server.push;
 
-import org.loklak.data.DAO;
 import org.loklak.harvester.JsonFieldConverter;
 import org.loklak.harvester.JsonValidator;
 import org.loklak.harvester.SourceType;

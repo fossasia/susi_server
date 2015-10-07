@@ -41,8 +41,10 @@ import org.loklak.data.AccountEntry;
 import org.loklak.data.DAO;
 import org.loklak.data.UserEntry;
 import org.loklak.geo.GeoMark;
+import org.loklak.tools.storage.JsonDataset;
+import org.loklak.tools.storage.JsonFactory;
 import org.loklak.tools.storage.JsonMinifier;
-import org.loklak.tools.storage.JsonDataset.Index;
+import org.loklak.tools.storage.JsonDataset.JsonFactoryIndex;
 
 import com.google.common.base.Charsets;
 import com.google.common.io.Files;
@@ -182,8 +184,8 @@ public class TwitterAPI {
     public static int getUserRemaining() {return System.currentTimeMillis() > getUserResetTime ? getUserLimit : getUserRemaining;}
     public static Map<String, Object> getUser(String screen_name, boolean forceReload) throws TwitterException, IOException {
         if (!forceReload) {
-            JsonMinifier.Capsule mapcapsule = DAO.user_dump.getIndex("screen_name").get(screen_name);
-            if (mapcapsule == null) mapcapsule = DAO.user_dump.getIndex("id_str").get(screen_name);
+            JsonFactory mapcapsule = DAO.user_dump.get("screen_name",screen_name);
+            if (mapcapsule == null) mapcapsule = DAO.user_dump.get("id_str", screen_name);
             if (mapcapsule != null) {
                 Map<String, Object> map = mapcapsule.getJson();
                 // check if the entry is maybe outdated, i.e. if it is empty or too old
@@ -225,7 +227,6 @@ public class TwitterAPI {
     }
     
     public static Map<String, Object> getNetwork(String screen_name, int maxFollowers, int maxFollowing) throws IOException, TwitterException {
-        Index userIndex = DAO.user_dump.getIndex("screen_name");
         Map<String, Object> map = new HashMap<>();
         // we clone the maps because we modify it
         map.putAll(getNetworkerNames(screen_name, maxFollowers, Networker.FOLLOWERS));
@@ -236,7 +237,7 @@ public class TwitterAPI {
             List<Map<String, Object>> users = new ArrayList<>(); 
             Map<String, Number> names = (Map<String, Number>) map.remove(setname + "_names");
             if (names != null) for (String sn: names.keySet()) {
-                JsonMinifier.Capsule user = userIndex.get(sn);
+                JsonFactory user = DAO.user_dump.get("screen_name", sn);
                 if (user != null) users.add(user.getJson());
             }
             map.put(setname + "_count", users.size());
@@ -266,8 +267,11 @@ public class TwitterAPI {
         boolean complete = true;
         Set<Number> networkingIDs = new LinkedHashSet<>();
         Set<Number> unnetworkingIDs = new LinkedHashSet<>();
-        JsonMinifier.Capsule mapcapsule = (networkRelation == Networker.FOLLOWERS ? DAO.followers_dump : DAO.following_dump).getIndex("screen_name").get(screen_name);
-        if (mapcapsule == null) mapcapsule = (networkRelation == Networker.FOLLOWERS ? DAO.followers_dump : DAO.following_dump).getIndex("id_str").get(screen_name);
+        JsonFactory mapcapsule = (networkRelation == Networker.FOLLOWERS ? DAO.followers_dump : DAO.following_dump).get("screen_name", screen_name);
+        if (mapcapsule == null) {
+            JsonDataset ds = networkRelation == Networker.FOLLOWERS ? DAO.followers_dump : DAO.following_dump;
+            mapcapsule = ds.get("screen_name", screen_name);
+        }
 
         if (mapcapsule != null) {
             // check if the map is complete
@@ -356,10 +360,9 @@ public class TwitterAPI {
         // first we check all fast solutions until trying the twitter api
         Map<String, Number> r = new HashMap<>();
         Set<Number> id4api = new HashSet<>();
-        Index idIndex = DAO.user_dump.getIndex("id_str");
         for (Number id_str: id_strs) {
             if (r.size() >= maxFollowers) break;
-            JsonMinifier.Capsule mapcapsule = idIndex.get(id_str.toString());
+            JsonFactory mapcapsule = DAO.user_dump.get("id_str", id_str.toString());
             if (mapcapsule != null) {
                 Map<String, Object> map = mapcapsule.getJson();
                 String screen_name = (String) map.get("screen_name");

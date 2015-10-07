@@ -43,7 +43,7 @@ public class JsonMinifier {
         this.short2key = new ConcurrentHashMap<>();
     }
     
-    public Capsule minify(Map<String, Object> json) {
+    public JsonCapsuleFactory minify(Map<String, Object> json) {
         if (json == null) return null;
         LinkedHashMap<String, Object> minified = new LinkedHashMap<>();
         for (Map.Entry<String, Object> entry: json.entrySet()) {
@@ -58,14 +58,14 @@ public class JsonMinifier {
             }
             minified.put(s, entry.getValue());
         }
-        return new Capsule(minified);
+        return new JsonCapsuleFactory(minified);
     }
     
-    public class Capsule {
+    public class JsonCapsuleFactory implements JsonFactory {
         
         byte[] capsule; // byte 0 is a flag: 0 = raw json, 1 = compressed json
 
-        private Capsule(Map<String, Object> json) {
+        private JsonCapsuleFactory(Map<String, Object> json) {
             JSONObject jo = new JSONObject(json);
             ByteArrayOutputStream baos = new ByteArrayOutputStream(1024);
             GZIPOutputStream out = null; try {out = new GZIPOutputStream(baos, 1024){{def.setLevel(Deflater.BEST_COMPRESSION);}};} catch (IOException e) {}
