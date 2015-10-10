@@ -35,6 +35,8 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.TimeUnit;
 
 import javax.servlet.DispatcherType;
 import javax.servlet.MultipartConfigElement;
@@ -53,6 +55,7 @@ import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
 import org.eclipse.jetty.servlets.GzipFilter;
 import org.eclipse.jetty.util.log.Log;
+import org.eclipse.jetty.util.thread.ExecutorThreadPool;
 import org.eclipse.jetty.webapp.WebAppContext;
 import org.loklak.api.server.AssetServlet;
 import org.loklak.api.server.CampaignServlet;
@@ -185,7 +188,11 @@ public class LoklakServer {
         /// https
         
         // init the http server
-        LoklakServer.server = new Server();
+        
+        
+        LinkedBlockingQueue<Runnable> queue = new LinkedBlockingQueue<Runnable>(300);
+        ExecutorThreadPool pool = new ExecutorThreadPool(10, 100, 10000, TimeUnit.MILLISECONDS, queue);;
+        LoklakServer.server = new Server(pool);
         LoklakServer.server.setStopAtShutdown(true);
         ServerConnector connector = new ServerConnector(LoklakServer.server);
         connector.setPort(httpPort);
