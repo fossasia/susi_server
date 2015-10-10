@@ -21,7 +21,11 @@ package org.loklak.tools.storage;
 
 import java.io.File;
 import java.io.IOException;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Collection;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -40,6 +44,8 @@ public class JsonDataset {
     private final Map<String, JsonFactoryIndex> index; // a mapping from a search key to the search index
     private final JsonMinifier minifier; // a minifier for json which learns about json mapping key names
     private final Map<String, Boolean> columns; // a mapping from the column key to a boolean which is true if the column value is case-insensitive
+    private final String dateFieldName; // a name of a date field which shows the update time of the record
+    private final DateFormat dateFieldFormat; 
     
     public static class Column {
         public String key;
@@ -58,7 +64,11 @@ public class JsonDataset {
      * @param mode the indexing mode, either completely in RAM with Mode.COMPRESSED or with file handles with Mode.REWRITABLE
      * @throws IOException
      */
-    public JsonDataset(File dump_dir, String dump_file_prefix, Column[] columns, JsonRepository.Mode mode) throws IOException {
+    public JsonDataset(
+            File dump_dir, String dump_file_prefix,
+            Column[] columns,
+            String dateFieldName, String dateFieldFormat,
+            JsonRepository.Mode mode) throws IOException {
         
         // initialize class objects
         int concurrency = Runtime.getRuntime().availableProcessors();
@@ -66,6 +76,8 @@ public class JsonDataset {
         this.index = new ConcurrentHashMap<>();
         this.minifier = new JsonMinifier();
         this.columns = new HashMap<>();
+        this.dateFieldName = dateFieldName == null ? "" : dateFieldName;
+        this.dateFieldFormat = this.dateFieldName.length() == 0 ? null : new SimpleDateFormat(dateFieldFormat);
         for (Column column: columns) this.columns.put(column.key, column.caseInsensitive);
         
         // assign for each index key one JsonFactory index
@@ -153,7 +165,7 @@ public class JsonDataset {
      */
     public JsonFactory putUnique(Map<String, Object> obj) throws IOException {
         JsonFactory json = indexDump.write(obj, 'I');
-        idxstore: for (Map.Entry<String, Boolean> column: this.columns.entrySet()) {
+        for (Map.Entry<String, Boolean> column: this.columns.entrySet()) {
             //for (Map.Entry<String, JsonFactoryIndex> idxo: this.index.entrySet()) {
             String searchKey = column.getKey();
             boolean case_insensitive = column.getValue();
@@ -161,7 +173,6 @@ public class JsonDataset {
             if (value != null && value instanceof String) {
                 JsonFactoryIndex index = this.index.get(searchKey);
                 String valueString = case_insensitive ? ((String) value).toLowerCase() : (String) value;
-                if (index.containsKey(valueString)) continue idxstore; // we don't overwrite existing indexes
                 index.put(valueString, json);
             }
         }
@@ -174,6 +185,15 @@ public class JsonDataset {
         JsonFactoryIndex jfi = this.index.get(column);
         if (jfi == null) throw new RuntimeException("Column " + column + " was not defined");
         return jfi.get(insensitive ? value.toLowerCase() : value);
+    }
+    
+    public Date parseDate(Map<String, Object> json) throws ParseException {
+        if (this.dateFieldName == null || this.dateFieldName.length() == 0 || this.dateFieldFormat == null) throw new ParseException("no date field defined", 0);
+        Object d = json.get(this.dateFieldName);
+        if (d == null) throw new ParseException("no date field in json, expected field '" + this.dateFieldName + "'", 0);
+        if (d instanceof Date) return (Date) d;
+        if (!(d instanceof String)) throw new ParseException("date field in json must contain a String or Date, not " + d.getClass().getName(), 0);
+        return this.dateFieldFormat.parse((String) d);
     }
     
     public void close() {
@@ -212,7 +232,7 @@ public class JsonDataset {
     
         public void test() throws IOException {
             for (JsonRepository.Mode mode: JsonRepository.Mode.values()) try {
-                JsonDataset dtst = new JsonDataset(this.testFile, "idx_", new Column[]{new Column("abc", true), new Column("def", false)}, mode);
+                JsonDataset dtst = new JsonDataset(this.testFile, "idx_", new Column[]{new Column("abc", true), new Column("def", false)}, null, null, mode);
                 
                 Map<String,  Object> map = new HashMap<>();
                 map.put("abc", 1);
@@ -223,7 +243,7 @@ public class JsonDataset {
                 
                 dtst.close();
 
-                dtst = new JsonDataset(this.testFile, "idx_", new Column[]{new Column("abc", true), new Column("def", false)}, mode);
+                dtst = new JsonDataset(this.testFile, "idx_", new Column[]{new Column("abc", true), new Column("def", false)}, null, null, mode);
                 JsonFactoryIndex idx = dtst.index.get("abc");
                 System.out.println(idx.get(1));
                 idx = dtst.index.get("def");

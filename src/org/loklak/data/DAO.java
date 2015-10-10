@@ -168,9 +168,21 @@ public class DAO {
 
             File user_dump_dir = new File(datadir, "accounts");
             user_dump_dir.mkdirs();
-            user_dump = new JsonDataset(user_dump_dir,USER_DUMP_FILE_PREFIX, new JsonDataset.Column[]{new JsonDataset.Column("id_str", false), new JsonDataset.Column("screen_name", true)}, JsonRepository.REWRITABLE_MODE);
-            followers_dump = new JsonDataset(user_dump_dir, FOLLOWERS_DUMP_FILE_PREFIX, new JsonDataset.Column[]{new JsonDataset.Column("screen_name", true)}, JsonRepository.REWRITABLE_MODE);
-            following_dump = new JsonDataset(user_dump_dir, FOLLOWING_DUMP_FILE_PREFIX, new JsonDataset.Column[]{new JsonDataset.Column("screen_name", true)}, JsonRepository.REWRITABLE_MODE);
+            user_dump = new JsonDataset(
+                    user_dump_dir,USER_DUMP_FILE_PREFIX,
+                    new JsonDataset.Column[]{new JsonDataset.Column("id_str", false), new JsonDataset.Column("screen_name", true)},
+                    "retrieval_date", DateParser.PATTERN_ISO8601MILLIS,
+                    JsonRepository.REWRITABLE_MODE);
+            followers_dump = new JsonDataset(
+                    user_dump_dir, FOLLOWERS_DUMP_FILE_PREFIX,
+                    new JsonDataset.Column[]{new JsonDataset.Column("screen_name", true)},
+                    "retrieval_date", DateParser.PATTERN_ISO8601MILLIS,
+                    JsonRepository.REWRITABLE_MODE);
+            following_dump = new JsonDataset(
+                    user_dump_dir, FOLLOWING_DUMP_FILE_PREFIX,
+                    new JsonDataset.Column[]{new JsonDataset.Column("screen_name", true)},
+                    "retrieval_date", DateParser.PATTERN_ISO8601MILLIS,
+                    JsonRepository.REWRITABLE_MODE);
 
 	        import_profile_dump_dir = dataPath.resolve("import-profiles");
             import_profile_dump = new JsonRepository(import_profile_dump_dir.toFile(), IMPORT_PROFILE_FILE_PREFIX, null, JsonRepository.COMPRESSED_MODE, -1);
@@ -577,7 +589,7 @@ public class DAO {
                 if (resultCount > 0) request.addSort(order_field.getMessageFieldName(), SortOrder.DESC);
                 boolean addTimeHistogram = false;
                 long interval = sq.until.getTime() - sq.since.getTime();
-                DateHistogram.Interval dateHistogrammInterval = interval > 1000 * 60 * 60 * 24 * 7 ? DateHistogram.Interval.DAY : interval > 1000 * 60 * 60 * 3 ? DateHistogram.Interval.HOUR : DateHistogram.Interval.MINUTE;
+                DateHistogram.Interval dateHistogrammInterval = interval > DateParser.WEEK_MILLIS ? DateHistogram.Interval.DAY : interval > DateParser.HOUR_MILLIS * 3 ? DateHistogram.Interval.HOUR : DateHistogram.Interval.MINUTE;
                 for (String field: aggregationFields) {
                     if (field.equals("created_at")) {
                         addTimeHistogram = true;

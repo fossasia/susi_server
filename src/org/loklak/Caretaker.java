@@ -33,6 +33,7 @@ import org.loklak.data.DAO;
 import org.loklak.data.QueryEntry;
 import org.loklak.data.Timeline;
 import org.loklak.harvester.TwitterAPI;
+import org.loklak.tools.DateParser;
 import org.loklak.tools.OS;
 
 import twitter4j.TwitterException;
@@ -46,7 +47,7 @@ public class Caretaker extends Thread {
     private boolean shallRun = true;
     
     public final static long startupTime = System.currentTimeMillis();
-    public final static long upgradeWait = 1000 * 60 * 60 * 24; // 1 day
+    public final static long upgradeWait = DateParser.DAY_MILLIS; // 1 day
     public       static long upgradeTime = startupTime + upgradeWait;
     
     /**

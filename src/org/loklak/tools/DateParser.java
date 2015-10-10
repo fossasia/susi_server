@@ -24,12 +24,24 @@ import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.Locale;
 import java.util.TimeZone;
 
 public class DateParser {
 
-    public final static DateFormat dayDateFormat = new SimpleDateFormat("yyyy-MM-dd"); // this is the twitter search modifier format
-    public final static DateFormat minuteDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm"); // this is the format which morris.js understands for date-histogram graphs
+    public final static long HOUR_MILLIS = 60 * 60 * 1000;
+    public final static long DAY_MILLIS = HOUR_MILLIS * 24;
+    public final static long WEEK_MILLIS = DAY_MILLIS * 7;
+
+    public final static String PATTERN_ISO8601 = "yyyy-MM-dd'T'HH:mm:ss'Z'"; // pattern for a W3C datetime variant of a non-localized ISO8601 date
+    public final static String PATTERN_ISO8601MILLIS = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"; // same with milliseconds
+    public final static String PATTERN_MONTHDAY = "yyyy-MM-dd"; // the twitter search modifier format
+    public final static String PATTERN_MONTHDAYHOURMINUTE = "yyyy-MM-dd HH:mm"; // this is the format which morris.js understands for date-histogram graphs
+    
+    /** Date formatter/non-sloppy parser for W3C datetime (ISO8601) in GMT/UTC */
+    public final static SimpleDateFormat iso8601Format = new SimpleDateFormat(PATTERN_ISO8601, Locale.US);
+    public final static DateFormat dayDateFormat = new SimpleDateFormat(PATTERN_MONTHDAY, Locale.US);
+    public final static DateFormat minuteDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.US);
     
     public final static Calendar UTCCalendar = Calendar.getInstance();
     public final static TimeZone UTCtimeZone = TimeZone.getTimeZone("UTC");

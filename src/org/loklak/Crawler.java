@@ -14,6 +14,7 @@ import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.loklak.data.DAO;
 import org.loklak.data.Timeline;
 import org.loklak.data.MessageEntry;
+import org.loklak.tools.DateParser;
 
 public class Crawler {
 
@@ -39,7 +40,7 @@ public class Crawler {
         if (pending.size() == 0) {
             // remove old entries
             Iterator<Map.Entry<String, Long>> i = stacked.entrySet().iterator();
-            long timeout = System.currentTimeMillis() - 60 * 60 * 1000; // 1 hour: a user rarely posts more than 20 tweets an hour, so this should be sufficient
+            long timeout = System.currentTimeMillis() - DateParser.HOUR_MILLIS; // 1 hour: a user rarely posts more than 20 tweets an hour, so this should be sufficient
             while (i.hasNext()) {
                 if (i.next().getValue().longValue() < timeout) i.remove();
             }

@@ -147,14 +147,18 @@ public class BufferedRandomAccessFile extends RandomAccessFile {
     }
 
     /**
-     * Moves the internal pointer to the passed (byte) position in the file.
-     * @param pos The byte position to move to.
+     * Overridden seek method always throws exception: this would not work in concurrent environments.
+     * All seek operations must be encapsulated here in synchronized methods.
      */
     @Override
     public synchronized void seek(long pos) throws IOException {
         throw new UnsupportedOperationException("seek cannot be called public to avoid synchronization issues");
     }
-    
+
+    /**
+     * Moves the internal pointer to the passed (byte) position in the file.
+     * @param pos the byte position to move to.
+     */
     private void seekPrivate(long pos) throws IOException {
         int n = (int) (real_pos - pos);
         if (n >= 0 && n <= buf_end) {
@@ -170,11 +174,18 @@ public class BufferedRandomAccessFile extends RandomAccessFile {
         read(b, 0, b.length);
     }
     
+    /**
+     * add a line at the end of the file
+     * @param b
+     * @return the seek position where the line started
+     * @throws IOException
+     */
     public synchronized long appendLine(final byte[] b) throws IOException {
         long seekpos = this.length();
         this.seekPrivate(seekpos); // go to end of file
         this.write(b);
         this.writeByte((byte) '\n');
+        this.invalidate(); // instead of invalidate it could be better to refresh the buffer with the latest byte[]
         return seekpos;
     }
     
@@ -289,7 +300,6 @@ public class BufferedRandomAccessFile extends RandomAccessFile {
         public void setUp() throws Exception {
             this.testFile = getTestFile();
             this.testLines = getTestLines(1000000);
-            writeLines(this.testFile, this.testLines);
         }
     
         @After
@@ -297,18 +307,22 @@ public class BufferedRandomAccessFile extends RandomAccessFile {
             this.testFile.delete();
         }
         
-        public void testRead() throws IOException {
-            File f = new File("data/accounts/own/users_201508_74114447.txt");
-
-            final BufferedRandomAccessFile braf = new BufferedRandomAccessFile(f, "rw", 5000);
-            IndexedLine b;
-            while ((b = braf.readIndexedLine() ) != null) {
-                if (b.text.length == 0) System.out.println(b.text.length);
+        public void testSimultanousWriteAndRead() throws IOException {
+            if (this.testFile.exists()) this.testFile.delete();
+            BufferedRandomAccessFile braf = new BufferedRandomAccessFile(this.testFile, "rw", 5000);
+            for (int i = 0; i < this.testLines.length; i++) {
+                long pos = braf.getFilePointer();
+                braf.appendLine(UTF8.getBytes(this.testLines[i]));
+                braf.seekPrivate(pos);
+                byte[] b = braf.getNextLine();
+                if (!ASCII.String(b).equals(this.testLines[i])) System.out.println(ASCII.String(b) + " != " + this.testLines[i]);
+                assertTrue(ASCII.String(b).equals(this.testLines[i]));
             }
             braf.close();
         }
         
-        public void test() throws IOException {
+        public void testSequentialWriteThenRead() throws IOException {
+            writeLines(this.testFile, this.testLines);
             BufferedRandomAccessFile braf = new BufferedRandomAccessFile(this.testFile, "rw", 5000);
             Map<Long, String> m = new HashMap<>();
             // test if sequential read is identical to original

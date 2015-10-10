@@ -24,7 +24,9 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.FileSystems;
 import java.nio.file.Path;
+import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -41,6 +43,7 @@ import org.loklak.data.AccountEntry;
 import org.loklak.data.DAO;
 import org.loklak.data.UserEntry;
 import org.loklak.geo.GeoMark;
+import org.loklak.tools.DateParser;
 import org.loklak.tools.storage.JsonDataset;
 import org.loklak.tools.storage.JsonFactory;
 import org.loklak.tools.storage.JsonMinifier;
@@ -188,8 +191,15 @@ public class TwitterAPI {
             if (mapcapsule == null) mapcapsule = DAO.user_dump.get("id_str", screen_name);
             if (mapcapsule != null) {
                 Map<String, Object> map = mapcapsule.getJson();
-                // check if the entry is maybe outdated, i.e. if it is empty or too old
-                if (map.size() > 0) return map;
+                if (map.size() > 0) {
+                    // check if the entry is maybe outdated, i.e. if it is empty or too old
+                    try {
+                        Date d = DAO.user_dump.parseDate(map);
+                        if (d.getTime() + DateParser.DAY_MILLIS > System.currentTimeMillis()) return map;
+                    } catch (ParseException e) {
+                        return map;
+                    }
+                }
             }
         }
         TwitterFactory tf = getUserTwitterFactory(screen_name);
