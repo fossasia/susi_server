@@ -49,6 +49,7 @@ import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.server.handler.DefaultHandler;
 import org.eclipse.jetty.server.handler.ErrorHandler;
 import org.eclipse.jetty.server.handler.HandlerList;
+import org.eclipse.jetty.server.handler.IPAccessHandler;
 import org.eclipse.jetty.server.handler.ResourceHandler;
 import org.eclipse.jetty.servlet.FilterHolder;
 import org.eclipse.jetty.servlet.ServletContextHandler;
@@ -201,6 +202,15 @@ public class LoklakServer {
         connector.setIdleTimeout(20000); // timout in ms when no bytes send / received
         LoklakServer.server.addConnector(connector);
 
+        // Setup IPAccessHandler for blacklists
+        String blacklist = config.get("server.blacklist");
+        if (blacklist != null && blacklist.length() > 0) {
+            IPAccessHandler ipaccess = new IPAccessHandler();
+            String[] bx = blacklist.split(",");
+            for (String b: bx) ipaccess.addBlack(b);
+            LoklakServer.server.setHandler(ipaccess);
+        }
+        
         WebAppContext htrootContext = new WebAppContext();
         htrootContext.setContextPath("/");
 
