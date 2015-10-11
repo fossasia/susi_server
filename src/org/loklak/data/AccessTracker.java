@@ -33,31 +33,29 @@ import java.util.concurrent.ConcurrentSkipListMap;
 import org.loklak.api.server.RemoteAccess;
 import org.loklak.tools.DateParser;
 import org.loklak.tools.json.JSONObject;
-import org.loklak.tools.storage.JsonDataset;
 import org.loklak.tools.storage.JsonRepository;
-import org.loklak.tools.storage.JsonDataset.Column;
 
 public class AccessTracker extends Thread {
 
-    private final static String START_DATE_KEY = "$S";
-    private final static String FINISH_DATE_KEY = "$F";
-    private final static String CLASS_KEY = "$C";
-    private final static String CLIENT_KEY = "$H"; // host address of the client
-    private final static String LOCALHOST_FLAG = "$L"; // boolean from isLocalhost
-    private final static String COMMENT_KEY = "$O"; // to write i.e. termination reason
-    private final static String TIME_SINCE_LAST_ACCESS_KEY = "$A";
-    private final static String DOS_BLACKOUT_KEY = "$B";
-    private final static String DOS_SERVICEREDUCTION_KEY = "$R";
-    private final static String RUNTIME_KEY = "$T";
-    private final static String QUERY_KEY = "$Q";
+    private final static String START_DATE_KEY    = "start";
+    private final static String FINISH_DATE_KEY   = "finish";
+    private final static String CLASS_KEY         = "class";
+    private final static String CLIENT_KEY        = "host"; // host address of the client
+    private final static String LOCALHOST_FLAG    = "local"; // boolean from isLocalhost
+    private final static String COMMENT_KEY       = "comment"; // to write i.e. termination reason
+    private final static String IDLE_TIME_KEY     = "idle";
+    private final static String DOS_BLACKOUT_KEY  = "dosb";
+    private final static String DOS_REDUCTION_KEY = "dosr";
+    private final static String RUNTIME_KEY       = "busy";
+    private final static String QUERY_KEY         = "query";
     
-    private final static String EVENT_DATE_PREFIX = "$E_";
+    public final static String EVENT_PREFIX = "event_";
 
     private final static String COMMENT_CLOSED = "closed";
     
     public final static int MAX_FINISHED = 1000;
     
-    private JsonDataset history;
+    private JsonRepository history;
     private long track_timeout;
     private long schedule_period;
     private boolean terminate;
@@ -65,11 +63,7 @@ public class AccessTracker extends Thread {
     
     
     public AccessTracker(File dump_dir, String dump_file_prefix, long track_timeout, long schedule_period) throws IOException {
-        this.history = new JsonDataset(
-                dump_dir, dump_file_prefix,
-                new Column[]{new Column(START_DATE_KEY, false)},
-                START_DATE_KEY, DateParser.PATTERN_ISO8601MILLIS,
-                JsonRepository.Mode.REWRITABLE);
+        this.history = new JsonRepository(dump_dir, dump_file_prefix, null, JsonRepository.Mode.COMPRESSED, 1);
         this.track_timeout = track_timeout;
         this.schedule_period = schedule_period;
         this.terminate = false;
@@ -117,7 +111,7 @@ public class AccessTracker extends Thread {
     
     private void writeToHistory(Track track, String comment) throws IOException {
         if (comment != null) track.put(COMMENT_KEY, comment);
-        this.history.putUnique(track);
+        this.history.write(track);
     }
     
     public void close() {
@@ -183,7 +177,7 @@ public class AccessTracker extends Thread {
 
         public void setTimeSinceLastAccess(long time_since_last_access) {
             this.time_since_last_access = time_since_last_access;
-            this.put(TIME_SINCE_LAST_ACCESS_KEY, time_since_last_access);
+            this.put(IDLE_TIME_KEY, time_since_last_access);
         }
 
         public boolean isDoSBlackout() {
@@ -201,7 +195,7 @@ public class AccessTracker extends Thread {
 
         public void setDoSServicereduction(boolean doS_servicereduction) {
             DoS_servicereduction = doS_servicereduction;
-            this.put(DOS_SERVICEREDUCTION_KEY, doS_servicereduction);
+            this.put(DOS_REDUCTION_KEY, doS_servicereduction);
         }
         
         public boolean isLocalhostAccess() {

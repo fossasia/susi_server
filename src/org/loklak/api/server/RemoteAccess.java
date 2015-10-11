@@ -152,6 +152,9 @@ public class RemoteAccess {
         public boolean isDoS_servicereduction() {
             return this.track.isDoSServicereduction();
         }
+        public void recordEvent(String eventName, Object eventValue) {
+            this.track.put(AccessTracker.EVENT_PREFIX + eventName, eventValue);
+        }
         public String get(String key, String dflt) {
             String val = qm == null ? request.getParameter(key) : qm.get(key);
             return val == null ? dflt : val;
