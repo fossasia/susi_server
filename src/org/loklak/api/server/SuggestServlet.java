@@ -26,6 +26,7 @@ import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import javax.servlet.ServletException;
 import javax.servlet.ServletOutputStream;
@@ -47,6 +48,8 @@ public class SuggestServlet extends HttpServlet {
    
     private static final long serialVersionUID = 8578478303032749879L;
 
+    public static Map<Integer, Map<String, Object>> cache = new ConcurrentHashMap<>();
+    
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         doGet(request, response);
@@ -58,74 +61,80 @@ public class SuggestServlet extends HttpServlet {
      
         // manage DoS
         if (post.isDoS_blackout()) {response.sendError(503, "your request frequency is too high"); return;}
-        
+
         String callback = post.get("callback", "");
         boolean jsonp = callback != null && callback.length() > 0;
-        boolean local = post.isLocalhostAccess();
         boolean minified = post.get("minified", false);
-        boolean delete = post.get("delete", false);
-        int count = post.get("count", 10); // number of queries
-        String query = post.get("q", ""); // to get a list of queries which match; to get all latest: leave q empty
-        String source = post.get("source", "all"); // values: all,query,geo
-        String orders = post.get("order", query.length() == 0 ? "desc" : "asc").toUpperCase();
-        SortOrder order = SortOrder.valueOf(orders);        
-        String orderby = post.get("orderby", query.length() == 0 ? "retrieval_next" : "query_count");
-        int timezoneOffset = post.get("timezoneOffset", 0);
-        Date since = post.get("since", (Date) null, timezoneOffset);
-        Date until = post.get("until", (Date) null, timezoneOffset);
-        String selectby = post.get("selectby", "retrieval_next");
-        List<QueryEntry> queryList = new ArrayList<>();
-
-        if ((source.equals("all") || source.equals("query")) && query.length() >= 0) {
-            long start = System.currentTimeMillis();
-            queryList.addAll(DAO.SearchLocalQueries(query, count, orderby, order, since, until, selectby));
-            post.recordEvent("localqueries_time", System.currentTimeMillis() - start);
-        }
         
-        if (delete && local && queryList.size() > 0) {
-            long start = System.currentTimeMillis();
-            for (QueryEntry qe: queryList) DAO.deleteQuery(qe.getQuery(), qe.getSourceType());
-            queryList.clear();
-            queryList.addAll(DAO.SearchLocalQueries(query, count, orderby, order, since, until, selectby));
-            post.recordEvent("localquerydelete_time", System.currentTimeMillis() - start);
-        }
-        
-        if (source.equals("all") || source.equals("geo")) {
-            long start = System.currentTimeMillis();
-            LinkedHashSet<String> suggestions = DAO.geoNames.suggest(query, count, 0);
-            if (suggestions.size() < count && query.length() > 2) suggestions.addAll(DAO.geoNames.suggest(query, count, 1));
-            if (suggestions.size() < count && query.length() > 5) suggestions.addAll(DAO.geoNames.suggest(query, count, 2));
-            for (String s: suggestions) {
-                QueryEntry qe = new QueryEntry(s, 0, Long.MAX_VALUE, SourceType.IMPORT, false);
-                queryList.add(qe);
+        int requestkey = post.hashCode();
+        Map<String, Object> m = post.isDoS_servicereduction() ? cache.get(requestkey) : null;
+        if (m == null) {
+            boolean local = post.isLocalhostAccess();
+            boolean delete = post.get("delete", false);
+            int count = post.get("count", 10); // number of queries
+            String query = post.get("q", ""); // to get a list of queries which match; to get all latest: leave q empty
+            String source = post.get("source", "all"); // values: all,query,geo
+            String orders = post.get("order", query.length() == 0 ? "desc" : "asc").toUpperCase();
+            SortOrder order = SortOrder.valueOf(orders);        
+            String orderby = post.get("orderby", query.length() == 0 ? "retrieval_next" : "query_count");
+            int timezoneOffset = post.get("timezoneOffset", 0);
+            Date since = post.get("since", (Date) null, timezoneOffset);
+            Date until = post.get("until", (Date) null, timezoneOffset);
+            String selectby = post.get("selectby", "retrieval_next");
+            List<QueryEntry> queryList = new ArrayList<>();
+    
+            if ((source.equals("all") || source.equals("query")) && query.length() >= 0) {
+                long start = System.currentTimeMillis();
+                queryList.addAll(DAO.SearchLocalQueries(query, count, orderby, order, since, until, selectby));
+                post.recordEvent("localqueries_time", System.currentTimeMillis() - start);
             }
-            post.recordEvent("suggestionsquery_time", System.currentTimeMillis() - start);
-        }
-        
-
-        long start = System.currentTimeMillis();        
-        post.setResponse(response, "application/javascript");
-        
-        // generate json
-        Map<String, Object> m = new LinkedHashMap<String, Object>();
-        Map<String, Object> metadata = new LinkedHashMap<String, Object>();
-        metadata.put("count", queryList == null ? "0" : Integer.toString(queryList.size()));
-        metadata.put("query", query);
-        metadata.put("order", orders);
-        metadata.put("orderby", orderby);
-        if (since != null) metadata.put("since", AbstractIndexEntry.utcFormatter.print(since.getTime()));
-        if (until != null) metadata.put("until", AbstractIndexEntry.utcFormatter.print(until.getTime()));
-        if (since != null || until != null) metadata.put("selectby", selectby);
-        metadata.put("client", post.getClientHost());
-        m.put("search_metadata", metadata);
-        
-        List<Object> queries = new ArrayList<>();
-        if (queryList != null) {
-            for (QueryEntry t: queryList) {
-                queries.add(t.toMap());
+            
+            if (delete && local && queryList.size() > 0) {
+                long start = System.currentTimeMillis();
+                for (QueryEntry qe: queryList) DAO.deleteQuery(qe.getQuery(), qe.getSourceType());
+                queryList.clear();
+                queryList.addAll(DAO.SearchLocalQueries(query, count, orderby, order, since, until, selectby));
+                post.recordEvent("localquerydelete_time", System.currentTimeMillis() - start);
             }
+            
+            if (source.equals("all") || source.equals("geo")) {
+                long start = System.currentTimeMillis();
+                LinkedHashSet<String> suggestions = DAO.geoNames.suggest(query, count, 0);
+                if (suggestions.size() < count && query.length() > 2) suggestions.addAll(DAO.geoNames.suggest(query, count, 1));
+                if (suggestions.size() < count && query.length() > 5) suggestions.addAll(DAO.geoNames.suggest(query, count, 2));
+                for (String s: suggestions) {
+                    QueryEntry qe = new QueryEntry(s, 0, Long.MAX_VALUE, SourceType.IMPORT, false);
+                    queryList.add(qe);
+                }
+                post.recordEvent("suggestionsquery_time", System.currentTimeMillis() - start);
+            }
+            
+    
+            long start = System.currentTimeMillis();        
+            post.setResponse(response, "application/javascript");
+            
+            // generate json
+            m = new LinkedHashMap<String, Object>();
+            Map<String, Object> metadata = new LinkedHashMap<String, Object>();
+            metadata.put("count", queryList == null ? "0" : Integer.toString(queryList.size()));
+            metadata.put("query", query);
+            metadata.put("order", orders);
+            metadata.put("orderby", orderby);
+            if (since != null) metadata.put("since", AbstractIndexEntry.utcFormatter.print(since.getTime()));
+            if (until != null) metadata.put("until", AbstractIndexEntry.utcFormatter.print(until.getTime()));
+            if (since != null || until != null) metadata.put("selectby", selectby);
+            metadata.put("client", post.getClientHost());
+            m.put("search_metadata", metadata);
+            
+            List<Object> queries = new ArrayList<>();
+            if (queryList != null) {
+                for (QueryEntry t: queryList) {
+                    queries.add(t.toMap());
+                }
+            }
+            m.put("queries", queries);
+            post.recordEvent("postprocessing_time", System.currentTimeMillis() - start);
         }
-        m.put("queries", queries);
         
         // write json
         ServletOutputStream sos = response.getOutputStream();
@@ -133,7 +142,6 @@ public class SuggestServlet extends HttpServlet {
         sos.print(minified ? new ObjectMapper().writer().writeValueAsString(m) : new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(m));
         if (jsonp) sos.println(");");
         sos.println();
-        post.recordEvent("postprocessing_time", System.currentTimeMillis() - start);
         post.finalize();
     }
     

@@ -192,6 +192,9 @@ public class RemoteAccess {
             response.setCharacterEncoding("UTF-8");
             response.setStatus(HttpServletResponse.SC_OK);
         }
+        public int hashCode() {
+            return qm.hashCode();
+        }
     }
     
     private static HashSet<String> sleeping4clients = new HashSet<>();

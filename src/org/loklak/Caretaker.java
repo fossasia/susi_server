@@ -29,6 +29,7 @@ import org.eclipse.jetty.util.log.Log;
 import org.elasticsearch.search.sort.SortOrder;
 import org.loklak.api.client.HelloClient;
 import org.loklak.api.client.PushClient;
+import org.loklak.api.server.SuggestServlet;
 import org.loklak.data.DAO;
 import org.loklak.data.QueryEntry;
 import org.loklak.data.Timeline;
@@ -76,6 +77,9 @@ public class Caretaker extends Thread {
                 upgrade();
                 DAO.log("UPGRADE: started an upgrade");
             }
+            
+            // clear caches
+            if (SuggestServlet.cache.size() > 100) SuggestServlet.cache.clear();
             
             // sleep a bit to prevent that the DoS limit fires at backend server
             try {Thread.sleep(4000);} catch (InterruptedException e) {}
