@@ -132,6 +132,7 @@ public class ImportProfileServlet extends HttpServlet {
         sos.print(json.string());
         if (jsonp) sos.println(");");
         sos.println();
+        post.finalize();
     }
 
     private void doDelete(RemoteAccess.Post post, HttpServletResponse response) throws IOException {

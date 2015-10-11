@@ -113,6 +113,7 @@ public class ThreaddumpServlet extends HttpServlet {
 
         post.setResponse(response, "text/plain");
         response.getOutputStream().write(UTF8.getBytes(buffer.toString()));
+        post.finalize();
     }
 
     private static class StackTrace {

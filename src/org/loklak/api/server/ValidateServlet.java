@@ -158,5 +158,6 @@ public class ValidateServlet extends HttpServlet {
         sos.println();
 
         DAO.log("Validated url " + url + ". Result = " + status.name());
+        post.finalize();
     }
 }

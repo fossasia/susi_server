@@ -91,6 +91,7 @@ public class UserServlet extends HttpServlet {
         sos.print((minified ? new ObjectMapper().writer() : new ObjectMapper().writerWithDefaultPrettyPrinter()).writeValueAsString(m));
         if (jsonp) sos.println(");");
         sos.println();
+        post.finalize();
     }
     
 }

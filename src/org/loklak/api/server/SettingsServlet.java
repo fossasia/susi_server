@@ -63,6 +63,8 @@ public class SettingsServlet extends HttpServlet {
         ServletOutputStream sos = response.getOutputStream();
         sos.print(json.string());
         sos.println();
+
+        post.finalize();
     }
     
 }

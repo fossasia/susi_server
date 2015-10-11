@@ -194,5 +194,6 @@ public class MarkdownServlet extends HttpServlet {
         // write image
         response.addHeader("Access-Control-Allow-Origin", "*");
         RemoteAccess.writeImage(fileType, response, post, matrix);
+        post.finalize();
     }
 }

@@ -137,5 +137,6 @@ public class MapServlet extends HttpServlet {
         // write image
         response.addHeader("Access-Control-Allow-Origin", "*");
         RemoteAccess.writeImage(fileType, response, post, map);
+        post.finalize();
     }
 }

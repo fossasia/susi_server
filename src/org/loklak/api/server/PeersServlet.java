@@ -82,7 +82,7 @@ public class PeersServlet extends HttpServlet {
         if (jsonp) sos.println(");");
         sos.println();
 
-        DAO.log(path + "?" + request.getQueryString());
+        post.finalize();
     }
     
 }

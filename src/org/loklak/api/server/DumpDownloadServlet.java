@@ -122,8 +122,7 @@ public class DumpDownloadServlet extends HttpServlet {
         int c;
         while ((c = fis.read(buffer)) > 0) response.getOutputStream().write(buffer, 0, c);
         fis.close();
-        
-        DAO.log(path);
-        return;
+
+        post.finalize();
     }
 }

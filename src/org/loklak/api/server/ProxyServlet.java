@@ -142,6 +142,7 @@ public class ProxyServlet extends HttpServlet {
 
         ServletOutputStream sos = response.getOutputStream();
         sos.write(buffer);
+        post.finalize();
     }
     
     private boolean isProfileImage(String url) {

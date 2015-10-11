@@ -77,6 +77,7 @@ public class CrawlerServlet extends HttpServlet {
         sos.print(json.string());
         if (jsonp) sos.println(");");
         sos.println();
+        post.finalize();
     }
     
 }

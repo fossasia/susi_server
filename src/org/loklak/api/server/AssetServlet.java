@@ -102,7 +102,7 @@ public class AssetServlet extends HttpServlet {
         fos.close();
         
         post.setResponse(response, "application/octet-stream");
-        DAO.log("");
+        post.finalize();
     }
     
     

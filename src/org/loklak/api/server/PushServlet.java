@@ -119,7 +119,9 @@ public class PushServlet extends HttpServlet {
         sos.print(json.string());
         if (jsonp) sos.println(");");
         sos.println();
-            
+        
         DAO.log(request.getServletPath() + " -> records = " + recordCount + ", new = " + newCount + ", known = " + knownCount + ", from host hash " + remoteHash);
+
+        post.finalize();
     }
 }

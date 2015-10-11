@@ -125,6 +125,7 @@ public class SuggestServlet extends HttpServlet {
         sos.print(minified ? new ObjectMapper().writer().writeValueAsString(m) : new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(m));
         if (jsonp) sos.println(");");
         sos.println();
+        post.finalize();
     }
     
 }
