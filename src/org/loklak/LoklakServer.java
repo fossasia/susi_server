@@ -57,6 +57,7 @@ import org.eclipse.jetty.servlets.GzipFilter;
 import org.eclipse.jetty.util.log.Log;
 import org.eclipse.jetty.util.thread.ExecutorThreadPool;
 import org.eclipse.jetty.webapp.WebAppContext;
+import org.loklak.api.server.AccessServlet;
 import org.loklak.api.server.AssetServlet;
 import org.loklak.api.server.CampaignServlet;
 import org.loklak.api.server.CrawlerServlet;
@@ -208,6 +209,9 @@ public class LoklakServer {
         FilterHolder filter = servletHandler.addFilter(GzipFilter.class, "/*", EnumSet.of(DispatcherType.REQUEST));
             filter.setInitParameter("mimeTypes", "text/plain");
         servletHandler.addServlet(DumpDownloadServlet.class, "/dump/*");
+        servletHandler.addServlet(AccessServlet.class, "/api/access.json");
+        servletHandler.addServlet(AccessServlet.class, "/api/access.html");
+        servletHandler.addServlet(AccessServlet.class, "/api/access.txt");
         servletHandler.addServlet(HelloServlet.class, "/api/hello.json");
         servletHandler.addServlet(PeersServlet.class, "/api/peers.json");
         servletHandler.addServlet(CrawlerServlet.class, "/api/crawler.json");

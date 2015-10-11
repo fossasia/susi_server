@@ -42,6 +42,7 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.Part;
 
 import org.elasticsearch.common.Base64;
+import org.loklak.data.AccessTracker;
 import org.loklak.data.DAO;
 import org.loklak.tools.DateParser;
 import org.loklak.tools.UTF8;
@@ -99,49 +100,57 @@ public class RemoteAccess {
     public static class Post {
         private HttpServletRequest request;
         private Map<String, String> qm;
-        private String clientHost;
-        private long access_time, time_since_last_access;
-        private boolean DoS_blackout, DoS_servicereduction;
+        private AccessTracker.Track track;
         public Post(final HttpServletRequest request) {
             this.qm = new HashMap<>();
             for (Map.Entry<String, String[]> entry: request.getParameterMap().entrySet()) {
                 this.qm.put(entry.getKey(), entry.getValue()[0]);
             }
             this.request = request;
-            this.clientHost = request.getRemoteHost();
+            
+            // discover remote host
+            String clientHost = request.getRemoteHost();
             String XRealIP = request.getHeader("X-Real-IP");
-            if (XRealIP != null && XRealIP.length() > 0) this.clientHost = XRealIP; // get IP through nginx config "proxy_set_header X-Real-IP $remote_addr;"
-            this.access_time = System.currentTimeMillis();
-            boolean localhost = isLocalhostAccess();
-            this.time_since_last_access = this.access_time - RemoteAccess.latestVisit(this.clientHost);
+            if (XRealIP != null && XRealIP.length() > 0) clientHost = XRealIP; // get IP through nginx config "proxy_set_header X-Real-IP $remote_addr;"
+            
+            // start tracking: get calling thread and start tracking for that
+            StackTraceElement[] stackTraceElements = Thread.currentThread().getStackTrace();
+            StackTraceElement caller = stackTraceElements[3];
+            this.track = DAO.access.startTracking(caller.getClassName(), clientHost);
+            
+            this.track.setTimeSinceLastAccess(this.track.getDate().getTime() - RemoteAccess.latestVisit(clientHost));
             //System.out.println("*** this.time_since_last_access = " + this.time_since_last_access);
-            this.DoS_blackout = !localhost && (this.time_since_last_access < DAO.getConfig("DoS.blackout", 100) || sleeping4clients.contains(this.clientHost));
-            this.DoS_servicereduction = !localhost && (this.time_since_last_access < DAO.getConfig("DoS.servicereduction", 1000) || sleeping4clients.contains(this.clientHost));
+            this.track.setDoSBlackout(!this.track.isLocalhostAccess() && (this.track.getTimeSinceLastAccess() < DAO.getConfig("DoS.blackout", 100) || sleeping4clients.contains(clientHost)));
+            this.track.setDoSServicereduction(!this.track.isLocalhostAccess() && (this.track.getTimeSinceLastAccess() < DAO.getConfig("DoS.servicereduction", 1000) || sleeping4clients.contains(clientHost)));
+        }
+        public void finalize() {
+            this.track.finalize();
         }
         public void initGET(final Map<String, String> qm) {
             this.qm = qm;
+            this.track.setQuery(qm);
         }
         public void initPOST(final Map<String, byte[]> map) {
             this.qm = new HashMap<>();
             for (Map.Entry<String, byte[]> entry: map.entrySet()) this.qm.put(entry.getKey(), UTF8.String(entry.getValue()));
         }
         public String getClientHost() {
-            return this.clientHost;
+            return this.track.getClientHost();
         }
         public boolean isLocalhostAccess() {
-            return isLocalhost(this.clientHost);
+            return this.track.isLocalhostAccess();
         }
         public long getAccessTime() {
-            return this.access_time;
+            return this.track.getDate().getTime();
         }
         public long getTimeSinceLastAccess() {
-            return this.time_since_last_access;
+            return this.track.getTimeSinceLastAccess();
         }
         public boolean isDoS_blackout() {
-            return this.DoS_blackout;
+            return this.track.isDoSBlackout();
         }
         public boolean isDoS_servicereduction() {
-            return this.DoS_servicereduction;
+            return this.track.isDoSServicereduction();
         }
         public String get(String key, String dflt) {
             String val = qm == null ? request.getParameter(key) : qm.get(key);
@@ -172,8 +181,9 @@ public class RemoteAccess {
             }
         }
         public void setResponse(final HttpServletResponse response, final String mime) {
-            response.setDateHeader("Last-Modified", this.access_time);
-            response.setDateHeader("Expires", this.access_time + 2 * DAO.getConfig("DoS.servicereduction", 1000));
+            long access_time = this.getAccessTime();
+            response.setDateHeader("Last-Modified", access_time);
+            response.setDateHeader("Expires", access_time + 2 * DAO.getConfig("DoS.servicereduction", 1000));
             response.setContentType(mime);
             response.setHeader("X-Robots-Tag",  "noindex,noarchive,nofollow,nosnippet");
             response.setCharacterEncoding("UTF-8");

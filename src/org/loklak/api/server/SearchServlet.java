@@ -61,9 +61,9 @@ public class SearchServlet extends HttpServlet {
     
     @Override
     protected void doGet(final HttpServletRequest request, final HttpServletResponse response) throws ServletException, IOException {
+        RemoteAccess.Post post = RemoteAccess.evaluate(request);
         try {
         long start = System.currentTimeMillis();
-        RemoteAccess.Post post = RemoteAccess.evaluate(request);
         
         // manage DoS
         if (post.isDoS_blackout()) {response.sendError(503, "your (" + post.getClientHost() + ") request frequency is too high"); return;}
@@ -257,6 +257,7 @@ public class SearchServlet extends HttpServlet {
             response.getOutputStream().write(UTF8.getBytes(buffer.toString()));
         }
         DAO.log(request.getServletPath() + "?" + request.getQueryString() + " -> " + tl.size() + " records returned, " +  newrecords.get() + " new");
+        post.finalize();
         } catch (Throwable e) {
             Log.getLog().warn(e.getMessage(), e);
             //e.printStackTrace();

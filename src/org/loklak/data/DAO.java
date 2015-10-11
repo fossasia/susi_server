@@ -106,6 +106,7 @@ public class DAO {
     public final static String MESSAGE_DUMP_FILE_PREFIX = "messages_";
     public final static String ACCOUNT_DUMP_FILE_PREFIX = "accounts_";
     public final static String USER_DUMP_FILE_PREFIX = "users_";
+    public final static String ACCESS_DUMP_FILE_PREFIX = "access_";
     public final static String FOLLOWERS_DUMP_FILE_PREFIX = "followers_";
     public final static String FOLLOWING_DUMP_FILE_PREFIX = "following_";
     private static final String IMPORT_PROFILE_FILE_PREFIX = "profile_";
@@ -121,6 +122,7 @@ public class DAO {
     private static Path message_dump_dir, account_dump_dir, import_profile_dump_dir;
     private static JsonRepository message_dump, account_dump, import_profile_dump;
     public  static JsonDataset user_dump, followers_dump, following_dump;
+    public  static AccessTracker access;
     private static File schema_dir, conv_schema_dir;
     private static Node elasticsearch_node;
     private static Client elasticsearch_client;
@@ -183,7 +185,13 @@ public class DAO {
                     new JsonDataset.Column[]{new JsonDataset.Column("screen_name", true)},
                     "retrieval_date", DateParser.PATTERN_ISO8601MILLIS,
                     JsonRepository.REWRITABLE_MODE);
-
+            
+            Path log_dump_dir = dataPath.resolve("log");
+            log_dump_dir.toFile().mkdirs();
+            LoklakServer.protectPath(log_dump_dir); // no other permissions to this path
+            access = new AccessTracker(log_dump_dir.toFile(), ACCESS_DUMP_FILE_PREFIX, 60000, 3000);
+            access.start(); // start monitor
+            
 	        import_profile_dump_dir = dataPath.resolve("import-profiles");
             import_profile_dump = new JsonRepository(import_profile_dump_dir.toFile(), IMPORT_PROFILE_FILE_PREFIX, null, JsonRepository.COMPRESSED_MODE, -1);
 
@@ -326,6 +334,11 @@ public class DAO {
         Log.getLog().info("closing DAO");
         message_dump.close();
         account_dump.close();
+        import_profile_dump.close();
+        user_dump.close();
+        followers_dump.close();
+        following_dump.close();
+        access.close();
         elasticsearch_node.close();
         while (!elasticsearch_node.isClosed()) try {Thread.sleep(100);} catch (InterruptedException e) {break;}
         Log.getLog().info("closed DAO");
