@@ -77,16 +77,21 @@ public class SuggestServlet extends HttpServlet {
         List<QueryEntry> queryList = new ArrayList<>();
 
         if ((source.equals("all") || source.equals("query")) && query.length() >= 0) {
+            long start = System.currentTimeMillis();
             queryList.addAll(DAO.SearchLocalQueries(query, count, orderby, order, since, until, selectby));
+            post.recordEvent("localqueries_time", System.currentTimeMillis() - start);
         }
         
         if (delete && local && queryList.size() > 0) {
+            long start = System.currentTimeMillis();
             for (QueryEntry qe: queryList) DAO.deleteQuery(qe.getQuery(), qe.getSourceType());
             queryList.clear();
             queryList.addAll(DAO.SearchLocalQueries(query, count, orderby, order, since, until, selectby));
+            post.recordEvent("localquerydelete_time", System.currentTimeMillis() - start);
         }
         
         if (source.equals("all") || source.equals("geo")) {
+            long start = System.currentTimeMillis();
             LinkedHashSet<String> suggestions = DAO.geoNames.suggest(query, count, 0);
             if (suggestions.size() < count && query.length() > 2) suggestions.addAll(DAO.geoNames.suggest(query, count, 1));
             if (suggestions.size() < count && query.length() > 5) suggestions.addAll(DAO.geoNames.suggest(query, count, 2));
@@ -94,8 +99,11 @@ public class SuggestServlet extends HttpServlet {
                 QueryEntry qe = new QueryEntry(s, 0, Long.MAX_VALUE, SourceType.IMPORT, false);
                 queryList.add(qe);
             }
+            post.recordEvent("suggestionsquery_time", System.currentTimeMillis() - start);
         }
         
+
+        long start = System.currentTimeMillis();        
         post.setResponse(response, "application/javascript");
         
         // generate json
@@ -125,6 +133,7 @@ public class SuggestServlet extends HttpServlet {
         sos.print(minified ? new ObjectMapper().writer().writeValueAsString(m) : new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(m));
         if (jsonp) sos.println(");");
         sos.println();
+        post.recordEvent("postprocessing_time", System.currentTimeMillis() - start);
         post.finalize();
     }
     
