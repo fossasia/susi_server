@@ -204,11 +204,13 @@ public class LoklakServer {
 
         // Setup IPAccessHandler for blacklists
         String blacklist = config.get("server.blacklist");
-        if (blacklist != null && blacklist.length() > 0) {
+        if (blacklist != null && blacklist.length() > 0) try {
             IPAccessHandler ipaccess = new IPAccessHandler();
             String[] bx = blacklist.split(",");
-            for (String b: bx) ipaccess.addBlack(b);
+            ipaccess.setBlack(bx);
             LoklakServer.server.setHandler(ipaccess);
+        } catch (IllegalArgumentException e) {
+            Log.getLog().warn("bad blacklist:" + blacklist, e);
         }
         
         WebAppContext htrootContext = new WebAppContext();
