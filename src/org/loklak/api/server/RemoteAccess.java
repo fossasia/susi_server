@@ -42,6 +42,7 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.Part;
 
 import org.elasticsearch.common.Base64;
+import org.loklak.LoklakServer;
 import org.loklak.data.AccessTracker;
 import org.loklak.data.DAO;
 import org.loklak.tools.DateParser;
@@ -124,7 +125,7 @@ public class RemoteAccess {
             
             this.track.setTimeSinceLastAccess(this.track.getDate().getTime() - RemoteAccess.latestVisit(this.track.getClassName(), clientHost));
             //System.out.println("*** this.time_since_last_access = " + this.time_since_last_access);
-            this.track.setDoSBlackout(!this.track.isLocalhostAccess() && (this.track.getTimeSinceLastAccess() < DAO.getConfig("DoS.blackout", 100) || sleeping4clients.contains(clientHost)));
+            this.track.setDoSBlackout(LoklakServer.blacklistedHosts.contains(clientHost) || (!this.track.isLocalhostAccess() && (this.track.getTimeSinceLastAccess() < DAO.getConfig("DoS.blackout", 100) || sleeping4clients.contains(clientHost))));
             this.track.setDoSServicereduction(!this.track.isLocalhostAccess() && (this.track.getTimeSinceLastAccess() < DAO.getConfig("DoS.servicereduction", 1000) || sleeping4clients.contains(clientHost)));
         }
         public void finalize() {

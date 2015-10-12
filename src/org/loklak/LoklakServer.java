@@ -55,6 +55,7 @@ import org.eclipse.jetty.servlet.FilterHolder;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
 import org.eclipse.jetty.servlets.GzipFilter;
+import org.eclipse.jetty.util.ConcurrentHashSet;
 import org.eclipse.jetty.util.log.Log;
 import org.eclipse.jetty.util.thread.ExecutorThreadPool;
 import org.eclipse.jetty.webapp.WebAppContext;
@@ -92,6 +93,8 @@ import org.loklak.vis.server.MarkdownServlet;
 public class LoklakServer {
 
     private final static Set<PosixFilePermission> securePerm = new HashSet<PosixFilePermission>();
+    
+    public final static Set<String> blacklistedHosts = new ConcurrentHashSet<>();
     
     static {
         securePerm.add(PosixFilePermission.OWNER_READ);
@@ -208,6 +211,10 @@ public class LoklakServer {
             IPAccessHandler ipaccess = new IPAccessHandler();
             String[] bx = blacklist.split(",");
             ipaccess.setBlack(bx);
+            for (String b: bx) {
+                int p = b.indexOf('|');
+                blacklistedHosts.add(p < 0 ? b : b.substring(0, p));
+            }
             LoklakServer.server.setHandler(ipaccess);
         } catch (IllegalArgumentException e) {
             Log.getLog().warn("bad blacklist:" + blacklist, e);
