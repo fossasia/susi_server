@@ -552,6 +552,10 @@ public class DAO {
                 .actionGet();
         return response.getCount();
     }
+
+    public static MessageEntry readMessage(String id) throws IOException {
+        return messages.read(id);
+    }
     
     public static boolean existMessage(String id) {
         return messages.exists(id);
@@ -853,21 +857,28 @@ public class DAO {
         return latests.values();
     }
     
-    public static Timeline[] scrapeTwitter(final String q, final Timeline.Order order, final int timezoneOffset, boolean byUserQuery) {
+    public static Timeline[] scrapeTwitter(final RemoteAccess.Post post, final String q, final Timeline.Order order, final int timezoneOffset, boolean byUserQuery) {
         // retrieve messages from remote server
         ArrayList<String> remote = DAO.getFrontPeers();
         Timeline remoteMessages;
         if (remote.size() > 0 && (peerLatency.get(remote.get(0)) == null || peerLatency.get(remote.get(0)) < 3000)) {
+            long start = System.currentTimeMillis();
             remoteMessages = searchOnOtherPeers(remote, q, order, 100, timezoneOffset, "twitter", SearchClient.frontpeer_hash);
+            if (post != null) post.recordEvent("remote_scraper_on_" + (remote.size() == 1 ? remote.get(0) : "frontpeers"), System.currentTimeMillis() - start);
             if (remoteMessages == null || remoteMessages.size() == 0) {
                 // maybe the remote server died, we try then ourself
+                start = System.currentTimeMillis();
                 remoteMessages = TwitterScraper.search(q, order);
+                if (post != null) post.recordEvent("local_scraper", System.currentTimeMillis() - start);
             }
         } else {
+            long start = System.currentTimeMillis();
             remoteMessages = TwitterScraper.search(q, order);
+            if (post != null) post.recordEvent("local_scraper", System.currentTimeMillis() - start);
         }
         
         // identify new tweets
+        long start = System.currentTimeMillis();
         Timeline newMessages = new Timeline(order); // we store new tweets here to be able to transmit them to peers
         if (remoteMessages == null) {// can be caused by time-out
             remoteMessages = new Timeline(order);
@@ -888,8 +899,10 @@ public class DAO {
             }
             DAO.transmitTimeline(newMessages);
         }
+        if (post != null) post.recordEvent("local_scraper_wait_ready", System.currentTimeMillis() - start);
 
         // record the query
+        start = System.currentTimeMillis();
         QueryEntry qe = null;
         try {
             qe = queries.read(q);
@@ -913,6 +926,7 @@ public class DAO {
             // accept rules may change, we want to delete the query then in the index
             if (qe != null) queries.delete(q, qe.source_type);
         }
+        if (post != null) post.recordEvent("query_recorder", System.currentTimeMillis() - start);
         
         return new Timeline[]{remoteMessages, newMessages};
     }

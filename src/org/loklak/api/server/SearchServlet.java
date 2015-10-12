@@ -103,7 +103,7 @@ public class SearchServlet extends HttpServlet {
                 public void run() {
                     final String scraper_query = tokens.translate4scraper();
                     DAO.log(request.getServletPath() + " scraping with query: " + scraper_query);
-                    Timeline[] twitterTl = DAO.scrapeTwitter(scraper_query, order, timezoneOffsetf, true);
+                    Timeline[] twitterTl = DAO.scrapeTwitter(post, scraper_query, order, timezoneOffsetf, true);
                     newrecords.set(twitterTl[1].size());
                     tl.putAll(QueryEntry.applyConstraint(twitterTl[1], tokens));
                     post.recordEvent("twitterscraper_time", System.currentTimeMillis() - start);
@@ -122,14 +122,14 @@ public class SearchServlet extends HttpServlet {
             post.recordEvent("cache_time", System.currentTimeMillis() - start);
             hits = localSearchResult.hits;
             tl.putAll(localSearchResult.timeline);
-            if (backendThread != null) try {backendThread.join(5000);} catch (InterruptedException e) {}
-            if (scraperThread != null) try {scraperThread.join(8000);} catch (InterruptedException e) {}
+            if (backendThread != null) try {backendThread.join(tl.size() < count ? 5000 : 2000);} catch (InterruptedException e) {}
+            if (scraperThread != null) try {scraperThread.join(tl.size() < count ? 8000 : 2000);} catch (InterruptedException e) {}
         } else {
             if ("twitter".equals(source) && tokens.raw.length() > 0) {
                 long start = System.currentTimeMillis();
                 final String scraper_query = tokens.translate4scraper();
                 DAO.log(request.getServletPath() + " scraping with query: " + scraper_query);
-                Timeline[] twitterTl = DAO.scrapeTwitter(scraper_query, order, timezoneOffset, true);
+                Timeline[] twitterTl = DAO.scrapeTwitter(post, scraper_query, order, timezoneOffset, true);
                 newrecords.set(twitterTl[1].size());
                 tl.putAll(QueryEntry.applyConstraint(twitterTl[0], tokens));
                 post.recordEvent("twitterscraper_time", System.currentTimeMillis() - start);

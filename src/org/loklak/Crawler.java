@@ -63,7 +63,7 @@ public class Crawler {
         }
         
         // execute the query
-        Timeline tl = DAO.scrapeTwitter(term.query, Timeline.Order.CREATED_AT, 0, false)[1]; // we use only the new tweets, not old/known
+        Timeline tl = DAO.scrapeTwitter(null, term.query, Timeline.Order.CREATED_AT, 0, false)[1]; // we use only the new tweets, not old/known
         
         // if depth of query was 0, terminate
         if (term.depth == 0) return 0;

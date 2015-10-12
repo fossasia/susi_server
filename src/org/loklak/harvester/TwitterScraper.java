@@ -206,10 +206,19 @@ public class TwitterScraper {
                         Long.parseLong(props.get("tweetfavouritecount").value),
                         imgs, vids, place_name, place_id
                         );
-                //new Thread(tweet).start(); // todo: use thread pools
-                //tweet.run(); // for debugging
-                executor.execute(tweet);
-                timeline.add(tweet, user);
+                if (tweet.willBeTimeConsuming()) {
+                    // check if this tweet could be simply replaced by one from the database
+                    MessageEntry messageFromIndex = DAO.readMessage(tweet.getIdStr());
+                    if (messageFromIndex == null) {
+                        executor.execute(tweet);
+                        timeline.add(tweet, user);
+                    } else {
+                        timeline.add(messageFromIndex, user);
+                    }
+                } else {
+                    tweet.run();
+                    timeline.add(tweet, user);
+                }
                 images.clear();
                 props.clear();
                 continue;
@@ -265,7 +274,13 @@ public class TwitterScraper {
     final static Pattern timeline_link_pattern = Pattern.compile("<a .*?href=\"(.*?)\".*?data-expanded-url=\"(.*?)\".*?twitter-timeline-link.*title=\"(.*?)\".*?>.*?</a>");
     final static Pattern timeline_embed_pattern = Pattern.compile("<a .*?href=\"(.*?)\".*?twitter-timeline-link.*?>pic.twitter.com/(.*?)</a>");
     final static Pattern emoji_pattern = Pattern.compile("<img .*?class=\"twitter-emoji\".*?alt=\"(.*?)\".*?>");
-    
+    final static Pattern doublespace_pattern = Pattern.compile("  ");
+    final static Pattern cleanup_pattern = Pattern.compile(
+        "</?(s|b|strong)>|" +
+        "<a href=\"/hashtag.*?>|" +
+        "<a.*?class=\"twitter-atreply.*?>|" +
+        "<span.*?span>"
+    );
     
     public static class TwitterTweet extends MessageEntry implements Runnable {
 
@@ -298,7 +313,7 @@ public class TwitterScraper {
             this.place_id = place_id;
             this.images = new LinkedHashSet<>(); for (String image: images) this.images.add(image);
             this.videos = new LinkedHashSet<>(); for (String video: videos) this.videos.add(video);
-
+            this.text = text_raw;
             //Date d = new Date(timemsraw);
             //System.out.println(d);
             
@@ -313,11 +328,14 @@ public class TwitterScraper {
                 // Singapore a = 1487192992, b = 3578663936
             }
             */
-            
-            this.text = text_raw.replaceAll("</?(s|b|strong)>", "").replaceAll("<a href=\"/hashtag.*?>", "").replaceAll("<a.*?class=\"twitter-atreply.*?>", "").replaceAll("<span.*?span>", "").replaceAll("  ", " ");
+
             // this.text MUST be analysed with analyse(); this is not done here because it should be started concurrently; run run();
         }
 
+        public boolean willBeTimeConsuming() {
+            return timeline_link_pattern.matcher(this.text).matches() || timeline_embed_pattern.matcher(this.text).matches();
+        }
+        
         private void analyse() {
             while (true) {
                 try {
@@ -358,7 +376,11 @@ public class TwitterScraper {
                 }
                 break;
             }
-            this.text = html2utf8(this.text).replaceAll("  ", " ").trim();
+            this.text = cleanup_pattern.matcher(this.text).replaceAll("");
+            this.text = html2utf8(this.text);
+            this.text = doublespace_pattern.matcher(this.text).replaceAll(" ");
+            this.text = this.text.trim();
+            //System.out.println("SCRAPED TEXT: " + this.text);
         }
         
         @Override
@@ -366,11 +388,8 @@ public class TwitterScraper {
             this.ready = new Semaphore(0);
             try {
                 this.exists = new Boolean(DAO.existMessage(this.getIdStr()));
-                // only analyse and enrich the message if it does not actually exist in the search index because it will be abandoned otherwise anyway
-                //if (!this.exists) {
-                    this.analyse();
-                    this.enrich();
-                //}
+                this.analyse();
+                this.enrich();
             } catch (Throwable e) {
                 e.printStackTrace();
             } finally {
@@ -379,11 +398,13 @@ public class TwitterScraper {
         }
 
         public boolean isReady() {
-            return this.ready == null || this.ready.availablePermits() > 0;
+            if (this.ready == null) throw new RuntimeException("isReady() should not be called if postprocessing is not started");
+            return this.ready.availablePermits() > 0;
         }
         
         public void waitReady() {
-            if (this.ready != null) try {
+            if (this.ready == null) throw new RuntimeException("waitReady() should not be called if postprocessing is not started");
+            try {
                 this.ready.acquire();
             } catch (InterruptedException e) {}
         }
