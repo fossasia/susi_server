@@ -40,6 +40,7 @@ import org.loklak.data.QueryEntry;
 import org.loklak.data.Timeline;
 import org.loklak.data.MessageEntry;
 import org.loklak.data.UserEntry;
+import org.loklak.harvester.TwitterScraper;
 import org.loklak.rss.RSSFeed;
 import org.loklak.rss.RSSMessage;
 import org.loklak.tools.CharacterCoding;
@@ -193,6 +194,7 @@ public class SearchServlet extends HttpServlet {
             try {
                 for (MessageEntry t: tl) {
                     UserEntry u = tl.getUser(t);
+                    if (DAO.getConfig("flag.fixunshorten", false)) t.setText(TwitterScraper.unshorten(t.getText()));
                     statuses.add(t.toMap(u, true));
                 }
             } catch (ConcurrentModificationException e) {

@@ -207,13 +207,18 @@ public class TwitterScraper {
                         imgs, vids, place_name, place_id
                         );
                 if (tweet.willBeTimeConsuming()) {
-                    // check if this tweet could be simply replaced by one from the database
-                    MessageEntry messageFromIndex = DAO.readMessage(tweet.getIdStr());
-                    if (messageFromIndex == null) {
+                    if (DAO.getConfig("flag.replaceinsteadunshorten", false)) {
+                        // check if this tweet could be simply replaced by one from the database
+                        MessageEntry messageFromIndex = DAO.readMessage(tweet.getIdStr());
+                        if (messageFromIndex == null) {
+                            executor.execute(tweet);
+                            timeline.add(tweet, user);
+                        } else {
+                            timeline.add(messageFromIndex, user);
+                        }
+                    } else {
                         executor.execute(tweet);
                         timeline.add(tweet, user);
-                    } else {
-                        timeline.add(messageFromIndex, user);
                     }
                 } else {
                     tweet.run();

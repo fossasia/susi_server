@@ -869,7 +869,7 @@ public class DAO {
                 // maybe the remote server died, we try then ourself
                 start = System.currentTimeMillis();
                 remoteMessages = TwitterScraper.search(q, order);
-                if (post != null) post.recordEvent("local_scraper", System.currentTimeMillis() - start);
+                if (post != null) post.recordEvent("local_scraper_after_unsuccessful_remote", System.currentTimeMillis() - start);
             }
         } else {
             long start = System.currentTimeMillis();
