@@ -62,8 +62,8 @@ public class AccessServlet extends HttpServlet {
         json.field("access").startArray();
         int maxcount = anonymize ? 100 : 1000;
         for (Track track: tracks) {
-            json.startObject();
             if (anonymize && !track.get("class").equals("SearchServlet")) continue;
+            json.startObject();
             for (Map.Entry<String, Object> entry: track.entrySet()) {
                 if (anonymize && "host".equals(entry.getKey())) {
                     json.field("host-anonymized", Integer.toHexString(Math.abs(entry.getValue().hashCode())));
