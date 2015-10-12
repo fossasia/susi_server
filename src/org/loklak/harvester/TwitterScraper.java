@@ -338,7 +338,7 @@ public class TwitterScraper {
         }
 
         public boolean willBeTimeConsuming() {
-            return timeline_link_pattern.matcher(this.text).matches() || timeline_embed_pattern.matcher(this.text).matches();
+            return timeline_link_pattern.matcher(this.text).find() || timeline_embed_pattern.matcher(this.text).find();
         }
         
         private void analyse() {
