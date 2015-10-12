@@ -46,7 +46,9 @@ public class AccessServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         RemoteAccess.Post post = RemoteAccess.evaluate(request);
-        if (!post.isLocalhostAccess()) {response.sendError(503, "unauthorized"); return;}
+        if (post.isDoS_servicereduction() || post.isDoS_blackout()) {response.sendError(503, "your request frequency is too high"); return;} // DoS protection
+        
+        boolean anonymize = !post.isLocalhostAccess();
         
         String callback = post.get("callback", "");
         boolean jsonp = callback != null && callback.length() > 0;
@@ -58,11 +60,16 @@ public class AccessServlet extends HttpServlet {
         XContentBuilder json = XContentFactory.jsonBuilder().prettyPrint().lfAtEnd();
         json.startObject();
         json.field("access").startArray();
-        int maxcount = 1000;
+        int maxcount = anonymize ? 100 : 1000;
         for (Track track: tracks) {
             json.startObject();
+            if (anonymize && !track.get("class").equals("SearchServlet")) continue;
             for (Map.Entry<String, Object> entry: track.entrySet()) {
-                json.field(entry.getKey(), entry.getValue());
+                if (anonymize && "host".equals(entry.getKey())) {
+                    json.field("host-anonymized", Integer.toHexString(Math.abs(entry.getValue().hashCode())));
+                } else {
+                    json.field(entry.getKey(), entry.getValue());
+                }
             }
             json.endObject();
             if (maxcount-- <= 0) break;
