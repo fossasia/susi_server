@@ -337,50 +337,7 @@ public class TwitterScraper {
         }
         
         private void analyse() {
-            while (true) {
-                try {
-                    Matcher m = timeline_link_pattern.matcher(this.text);
-                    if (m.find()) {
-                        //String href = m.group(1);
-                        String expanded = RedirectUnshortener.unShorten(m.group(2));
-                        //String title = m.group(3);
-                        this.text = m.replaceFirst(expanded);
-                        continue;
-                    }
-                } catch (Throwable e) {
-                    e.printStackTrace();
-                    break;
-                }
-                try {
-                    Matcher m = timeline_embed_pattern.matcher(this.text);
-                    if (m.find()) {
-                        //String href = resolveShortURL(m.group(1));
-                        String shorturl = RedirectUnshortener.unShorten(m.group(2));
-                        this.text = m.replaceFirst("https://pic.twitter.com/" + shorturl + " ");
-                        continue;
-                    }
-                } catch (Throwable e) {
-                    e.printStackTrace();
-                    break;
-                }
-                try {
-                    Matcher m = emoji_pattern.matcher(this.text);
-                    if (m.find()) {
-                        String emoji = m.group(1);
-                        this.text = m.replaceFirst(emoji);
-                        continue;
-                    }
-                } catch (Throwable e) {
-                    e.printStackTrace();
-                    break;
-                }
-                break;
-            }
-            this.text = cleanup_pattern.matcher(this.text).replaceAll("");
-            this.text = html2utf8(this.text);
-            this.text = doublespace_pattern.matcher(this.text).replaceAll(" ");
-            this.text = this.text.trim();
-            //System.out.println("SCRAPED TEXT: " + this.text);
+            this.text = unshorten(this.text);
         }
         
         @Override
@@ -417,6 +374,50 @@ public class TwitterScraper {
             return this.exists;
         }
         
+    }
+    
+    public static String unshorten(String text) {
+        while (true) {
+            try {
+                Matcher m = timeline_link_pattern.matcher(text);
+                if (m.find()) {
+                    String expanded = RedirectUnshortener.unShorten(m.group(2));
+                    text = m.replaceFirst(expanded);
+                    continue;
+                }
+            } catch (Throwable e) {
+                e.printStackTrace();
+                break;
+            }
+            try {
+                Matcher m = timeline_embed_pattern.matcher(text);
+                if (m.find()) {
+                    String shorturl = RedirectUnshortener.unShorten(m.group(2));
+                    text = m.replaceFirst("https://pic.twitter.com/" + shorturl + " ");
+                    continue;
+                }
+            } catch (Throwable e) {
+                e.printStackTrace();
+                break;
+            }
+            try {
+                Matcher m = emoji_pattern.matcher(text);
+                if (m.find()) {
+                    String emoji = m.group(1);
+                    text = m.replaceFirst(emoji);
+                    continue;
+                }
+            } catch (Throwable e) {
+                e.printStackTrace();
+                break;
+            }
+            break;
+        }
+        text = cleanup_pattern.matcher(text).replaceAll("");
+        text = MessageEntry.html2utf8(text);
+        text = doublespace_pattern.matcher(text).replaceAll(" ");
+        text = text.trim(); 
+        return text;
     }
     
     /**
