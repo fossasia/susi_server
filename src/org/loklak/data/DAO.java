@@ -961,8 +961,10 @@ public class DAO {
             String[] remote = DAO.getConfig("frontpeers", new String[0], ",");
             for (String peer: remote) frontPeerCache.add(peer);
             // add dynamically all peers that contacted myself
-            for (Map.Entry<String, RemoteAccess> peer: RemoteAccess.history.entrySet()) {
-                updateFrontPeerCache(peer.getValue());
+            for (Map<String, RemoteAccess> hmap: RemoteAccess.history.values()) {
+                for (Map.Entry<String, RemoteAccess> peer: hmap.entrySet()) {
+                    updateFrontPeerCache(peer.getValue());
+                }
             }
         }
         testpeers.addAll(frontPeerCache);

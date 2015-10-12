@@ -167,6 +167,10 @@ public class AccessTracker extends Thread {
             } 
         }
         
+        public String getClassName() {
+            return (String) this.get(CLASS_KEY);
+        }
+        
         public Date getDate() {
             return this.accessTime;
         }

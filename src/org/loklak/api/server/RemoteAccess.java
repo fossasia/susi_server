@@ -55,7 +55,7 @@ import org.loklak.visualization.graphics.RasterPlotter;
  */
 public class RemoteAccess {
 
-    public static Map<String, RemoteAccess> history = new ConcurrentHashMap<String, RemoteAccess>();
+    public static Map<String, Map<String, RemoteAccess>> history = new ConcurrentHashMap<String, Map<String, RemoteAccess>>();
     
     public static Post evaluate(final HttpServletRequest request) {
         String path = request.getServletPath();
@@ -69,11 +69,13 @@ public class RemoteAccess {
         String peername = qm == null ? request.getParameter("peername") : qm.get("peername");
         if (peername == null || peername.length() > 132) peername = "anonymous";
         final String remoteHost = post.getClientHost();
+        Map<String, RemoteAccess> hmap = history.get(post.track.getClassName());
+        if (hmap == null) {hmap = new ConcurrentHashMap<>(); history.put(post.track.getClassName(), hmap);}
         if (httpport == null || httpsport == null) {
             // if port configuration is omitted, just update the value if it exist
-            RemoteAccess ra = history.get(remoteHost);
+            RemoteAccess ra = hmap.get(remoteHost);
             if (ra == null) {
-                history.put(remoteHost, new RemoteAccess(remoteHost, path, httpport, httpsport, peername));
+                hmap.put(remoteHost, new RemoteAccess(remoteHost, path, httpport, httpsport, peername));
             } else {
                 assert ra.remoteHost.equals(remoteHost);
                 ra.localPath = path;
@@ -82,14 +84,16 @@ public class RemoteAccess {
         } else {
             // overwrite if new port configuration is submitted
             RemoteAccess ra = new RemoteAccess(remoteHost, path, httpport, httpsport, peername);
-            history.put(remoteHost, ra);
+            hmap.put(remoteHost, ra);
             DAO.updateFrontPeerCache(ra);
         }
         return post;
     }
     
-    public static long latestVisit(String remoteHost) {
-        RemoteAccess ra = history.get(remoteHost);
+    public static long latestVisit(String servlet, String remoteHost) {
+        Map<String, RemoteAccess> hmap = history.get(servlet);
+        if (hmap == null) {hmap = new ConcurrentHashMap<>(); history.put(servlet, hmap);}
+        RemoteAccess ra = hmap.get(remoteHost);
         return ra == null ? -1 : ra.accessTime;
     }
     
@@ -118,7 +122,7 @@ public class RemoteAccess {
             StackTraceElement caller = stackTraceElements[3];
             this.track = DAO.access.startTracking(caller.getClassName(), clientHost);
             
-            this.track.setTimeSinceLastAccess(this.track.getDate().getTime() - RemoteAccess.latestVisit(clientHost));
+            this.track.setTimeSinceLastAccess(this.track.getDate().getTime() - RemoteAccess.latestVisit(this.track.getClassName(), clientHost));
             //System.out.println("*** this.time_since_last_access = " + this.time_since_last_access);
             this.track.setDoSBlackout(!this.track.isLocalhostAccess() && (this.track.getTimeSinceLastAccess() < DAO.getConfig("DoS.blackout", 100) || sleeping4clients.contains(clientHost)));
             this.track.setDoSServicereduction(!this.track.isLocalhostAccess() && (this.track.getTimeSinceLastAccess() < DAO.getConfig("DoS.servicereduction", 1000) || sleeping4clients.contains(clientHost)));

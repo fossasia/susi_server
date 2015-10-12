@@ -20,7 +20,9 @@
 package org.loklak.api.server;
 
 import java.io.IOException;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 import javax.servlet.ServletException;
 import javax.servlet.ServletOutputStream;
@@ -30,7 +32,6 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.elasticsearch.common.xcontent.XContentFactory;
-import org.loklak.data.DAO;
 
 public class PeersServlet extends HttpServlet {
 
@@ -48,6 +49,10 @@ public class PeersServlet extends HttpServlet {
         // manage DoS
         String path = request.getServletPath();
         if (post.isDoS_blackout()) {response.sendError(503, "your request frequency is too high"); return;}
+        String[] classes = post.get("classes", new String[0], ",");
+        if (classes.length == 0) classes = new String[]{"HelloServlet"};
+        Set<String> classcheck = new HashSet<>();
+        for (String c: classes) classcheck.add(c);
         
         String callback = post.get("callback", "");
         boolean jsonp = callback != null && callback.length() > 0;
@@ -59,20 +64,27 @@ public class PeersServlet extends HttpServlet {
         // generate json
         XContentBuilder json = XContentFactory.jsonBuilder().prettyPrint().lfAtEnd();
         json.startObject();
-        json.field("count", Integer.toString(RemoteAccess.history.size()));
+        int count = 0;
         json.field("peers").startArray();
-        for (Map.Entry<String, RemoteAccess> peer: RemoteAccess.history.entrySet()) {
-            json.startObject();
-            json.field("host", peer.getKey());
-            RemoteAccess remoteAccess = peer.getValue();
-            json.field("port.http", remoteAccess.getLocalHTTPPort());
-            json.field("port.https", remoteAccess.getLocalHTTPSPort());
-            json.field("lastSeen", remoteAccess.getAccessTime());
-            json.field("lastPath", remoteAccess.getLocalPath());
-            json.field("peername", remoteAccess.getPeername());
-            json.endObject();
+        for (Map.Entry<String, Map<String, RemoteAccess>> hmap: RemoteAccess.history.entrySet()) {
+            if (classcheck.contains(hmap.getKey())) {
+                for (Map.Entry<String, RemoteAccess> peer: hmap.getValue().entrySet()) {
+                    json.startObject();
+                    json.field("class", hmap.getKey());
+                    json.field("host", peer.getKey());
+                    RemoteAccess remoteAccess = peer.getValue();
+                    json.field("port.http", remoteAccess.getLocalHTTPPort());
+                    json.field("port.https", remoteAccess.getLocalHTTPSPort());
+                    json.field("lastSeen", remoteAccess.getAccessTime());
+                    json.field("lastPath", remoteAccess.getLocalPath());
+                    json.field("peername", remoteAccess.getPeername());
+                    json.endObject();
+                    count++;
+                }
+            }
         }
         json.endArray();
+        json.field("count", count);
         json.endObject(); // of root
 
         // write json
