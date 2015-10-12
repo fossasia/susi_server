@@ -267,7 +267,8 @@ public class QueryEntry extends AbstractIndexEntry implements IndexEntry {
     
     public static class Tokens {
         
-        public final String original, raw;
+        public final String original;
+        public String raw;
         public final HashSet<String> constraints_positive, constraints_negative;
         public Multimap<String, String> modifier;
         public PlaceContext place_context;
@@ -283,6 +284,7 @@ public class QueryEntry extends AbstractIndexEntry implements IndexEntry {
             this.constraints_negative = new HashSet<>();
             this.modifier = HashMultimap.create();
             StringBuilder rawb = new StringBuilder(q.length() + 1);
+            Set<String> hashtags = new HashSet<>();
             for (String t: tokens) {
                 if (t.startsWith("/")) {
                     constraints_positive.add(t.substring(1));
@@ -295,12 +297,22 @@ public class QueryEntry extends AbstractIndexEntry implements IndexEntry {
                     modifier.put(t.substring(0, p).toLowerCase(), t.substring(p + 1));
                     rawb.append(t).append(' ');
                     continue;
-                } else rawb.append(t).append(' ');
+                } else {
+                    if (t.startsWith("#")) hashtags.add(t.substring(1));
+                    rawb.append(t).append(' ');
+                }
             }
             this.place_context = this.constraints_positive.remove("about") ? PlaceContext.ABOUT : PlaceContext.FROM;
             if (this.constraints_negative.remove("about")) this.place_context = PlaceContext.FROM;
             if (rawb.length() > 0 && rawb.charAt(rawb.length() - 1) == ' ') rawb.setLength(rawb.length() - 1);
             this.raw = rawb.toString();
+            // fix common mistake using hashtags in combination with their words without hashtag
+            for (String h: hashtags) {
+                int p = this.raw.indexOf(h + " #" + h);
+                if (p >= 0) this.raw = this.raw.substring(0,  p) + h + " OR #" + h + this.raw.substring(p + h.length() * 2 + 2);
+                p = this.raw.indexOf("#" + h + " " + h);
+                if (p >= 0) this.raw = this.raw.substring(0,  p) + "#" + h + " OR " + h + this.raw.substring(p + h.length() * 2 + 2);
+            }
             
             // find bbox
             this.bbox = null;
@@ -469,12 +481,30 @@ public class QueryEntry extends AbstractIndexEntry implements IndexEntry {
             // detect usage of OR connector usage.
             q = q.replaceAll(" AND ", " "); // AND is default
             List<String> terms = splitIntoORGroups(q);
+
             if (terms.size() == 0) return QueryBuilders.matchAllQuery();
+            
+            // check for query mistakes
+            for (int i = 0; i < terms.size(); i++) {
+                String[] c = terms.get(i).split(" ");
+                if (c.length == 2) {
+                    String c0 = c[0];
+                    String c1 = c[1];
+                    if (((c0.startsWith("#") && c0.equals("#" + c1))) || ("#" + c0).equals(c1)) {
+                        terms.set(i, c0);
+                        terms.add(i, c1);
+                        continue;
+                    }
+                }
+            }
+            
+            // special handling
             if (terms.size() == 1) return parse(terms.get(0), timezoneOffset);
 
+            // generic handling
             BoolQueryBuilder aquery = QueryBuilders.boolQuery();
             for (String t: terms) {
-                aquery.must(parse(t, timezoneOffset));
+                aquery.should(parse(t, timezoneOffset));
             }
             return aquery;
         }
