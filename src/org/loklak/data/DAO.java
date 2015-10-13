@@ -887,7 +887,9 @@ public class DAO {
             remoteMessages = new Timeline(order);
         } else {
             // record the result; this may be moved to a concurrent process
-            for (MessageEntry t: remoteMessages) {
+            Iterator<MessageEntry> mi = remoteMessages.iterator();
+            while (mi.hasNext()) {
+                MessageEntry t = mi.next();
                 // wait until messages are ready (i.e. unshortening of shortlinks)
                 boolean tweetOk = true;
                 if (t instanceof TwitterTweet) {
@@ -901,6 +903,8 @@ public class DAO {
                     if (newTweet) {
                         newMessages.add(t, u);
                     }
+                } else {
+                    mi.remove();
                 }
             }
             DAO.transmitTimeline(newMessages);

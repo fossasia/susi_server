@@ -8,6 +8,7 @@ import java.net.Socket;
 import java.net.URL;
 
 import org.loklak.api.client.ClientConnection;
+import org.loklak.data.DAO;
 
 public class RedirectUnshortener {
 
@@ -47,7 +48,7 @@ public class RedirectUnshortener {
     
     public static String unShorten(String urlstring) {
         try {
-            int termination = 10;
+            int termination = 10; // loop for recursively shortened urls
             while (isApplicable(urlstring) && termination-- > 0) {
                 String unshortened = ClientConnection.getRedirect(urlstring);
                 if (unshortened.equals(urlstring)) return urlstring;
@@ -55,6 +56,7 @@ public class RedirectUnshortener {
             }
             return urlstring;
         } catch (IOException e) {
+            DAO.log("UNSHORTEN failed for " + urlstring);
             return urlstring;
         }
     }
