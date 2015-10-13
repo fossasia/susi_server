@@ -123,8 +123,12 @@ public class SearchServlet extends HttpServlet {
             post.recordEvent("cache_time", System.currentTimeMillis() - start);
             hits = localSearchResult.hits;
             tl.putAll(localSearchResult.timeline);
+            long start1 = System.currentTimeMillis();
             if (backendThread != null) try {backendThread.join(tl.size() < count ? 5000 : 2000);} catch (InterruptedException e) {}
+            post.recordEvent("backend_time_join", System.currentTimeMillis() - start1);
+            long start2 = System.currentTimeMillis();
             if (scraperThread != null) try {scraperThread.join(tl.size() < count ? 8000 : 2000);} catch (InterruptedException e) {}
+            post.recordEvent("twitterscraper_time_join", System.currentTimeMillis() - start2);
         } else {
             if ("twitter".equals(source) && tokens.raw.length() > 0) {
                 long start = System.currentTimeMillis();

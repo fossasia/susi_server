@@ -861,10 +861,12 @@ public class DAO {
         // retrieve messages from remote server
         ArrayList<String> remote = DAO.getFrontPeers();
         Timeline remoteMessages;
-        if (remote.size() > 0 && (peerLatency.get(remote.get(0)) == null || peerLatency.get(remote.get(0)) < 3000)) {
+        String remotePeer = remote.get(0);
+        Long latency = peerLatency.get(remotePeer);
+        if (remote.size() > 0 && (latency == null || latency.longValue() < 3000)) {
             long start = System.currentTimeMillis();
             remoteMessages = searchOnOtherPeers(remote, q, order, 100, timezoneOffset, "twitter", SearchClient.frontpeer_hash);
-            if (post != null) post.recordEvent("remote_scraper_on_" + (remote.size() == 1 ? remote.get(0) : "frontpeers"), System.currentTimeMillis() - start);
+            if (post != null) post.recordEvent("remote_scraper_on_" + remotePeer, System.currentTimeMillis() - start);
             if (remoteMessages == null || remoteMessages.size() == 0) {
                 // maybe the remote server died, we try then ourself
                 start = System.currentTimeMillis();
@@ -872,6 +874,7 @@ public class DAO {
                 if (post != null) post.recordEvent("local_scraper_after_unsuccessful_remote", System.currentTimeMillis() - start);
             }
         } else {
+            if (post != null) post.recordEvent("omitted_scraper_latency_" + remotePeer, latency);        
             long start = System.currentTimeMillis();
             remoteMessages = TwitterScraper.search(q, order);
             if (post != null) post.recordEvent("local_scraper", System.currentTimeMillis() - start);
@@ -886,15 +889,18 @@ public class DAO {
             // record the result; this may be moved to a concurrent process
             for (MessageEntry t: remoteMessages) {
                 // wait until messages are ready (i.e. unshortening of shortlinks)
+                boolean tweetOk = true;
                 if (t instanceof TwitterTweet) {
-                    ((TwitterTweet) t).waitReady();
+                    tweetOk = ((TwitterTweet) t).waitReady(1000);
                 }
                 // write the message to the index
-                UserEntry u = remoteMessages.getUser(t);
-                assert u != null;
-                boolean newTweet = writeMessage(t, u, true, true);
-                if (newTweet) {
-                    newMessages.add(t, u);
+                if (tweetOk) {
+                    UserEntry u = remoteMessages.getUser(t);
+                    assert u != null;
+                    boolean newTweet = writeMessage(t, u, true, true);
+                    if (newTweet) {
+                        newMessages.add(t, u);
+                    }
                 }
             }
             DAO.transmitTimeline(newMessages);

@@ -36,6 +36,7 @@ import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Semaphore;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -289,7 +290,7 @@ public class TwitterScraper {
     
     public static class TwitterTweet extends MessageEntry implements Runnable {
 
-        private Semaphore ready = null;
+        private final Semaphore ready;
         private Boolean exists = null;
         
         public TwitterTweet(
@@ -335,6 +336,8 @@ public class TwitterScraper {
             */
 
             // this.text MUST be analysed with analyse(); this is not done here because it should be started concurrently; run run();
+
+            this.ready = new Semaphore(0);
         }
 
         public boolean willBeTimeConsuming() {
@@ -347,9 +350,7 @@ public class TwitterScraper {
         
         @Override
         public void run() {
-            this.ready = new Semaphore(0);
             try {
-                this.exists = new Boolean(DAO.existMessage(this.getIdStr()));
                 this.analyse();
                 this.enrich();
             } catch (Throwable e) {
@@ -364,11 +365,14 @@ public class TwitterScraper {
             return this.ready.availablePermits() > 0;
         }
         
-        public void waitReady() {
+        public boolean waitReady(long millis) {
             if (this.ready == null) throw new RuntimeException("waitReady() should not be called if postprocessing is not started");
             try {
-                this.ready.acquire();
-            } catch (InterruptedException e) {}
+                this.ready.tryAcquire(millis, TimeUnit.MILLISECONDS);
+                return true;
+            } catch (InterruptedException e) {
+                return false;
+            }
         }
         
         /**
@@ -376,6 +380,7 @@ public class TwitterScraper {
          * @return
          */
         public Boolean exist() {
+            if (this.exists == null) this.exists = new Boolean(DAO.existMessage(this.getIdStr()));
             return this.exists;
         }
         
@@ -435,7 +440,7 @@ public class TwitterScraper {
         Timeline result = TwitterScraper.search(args[0], Timeline.Order.CREATED_AT);
         for (MessageEntry tweet : result) {
             if (tweet instanceof TwitterTweet) {
-                ((TwitterTweet) tweet).waitReady();
+                ((TwitterTweet) tweet).waitReady(10000);
             }
             System.out.println("@" + tweet.getScreenName() + " - " + tweet.getText());
         }
