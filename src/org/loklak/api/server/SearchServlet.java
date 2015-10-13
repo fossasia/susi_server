@@ -92,9 +92,9 @@ public class SearchServlet extends HttpServlet {
         // create tweet timeline
         final Timeline tl = new Timeline(order);
         Map<String, List<Map.Entry<String, Long>>> aggregations = null;
-        long hits = 0;
-        final AtomicInteger newrecords = new AtomicInteger(0);
         final QueryEntry.Tokens tokens = new QueryEntry.Tokens(query);
+        
+        final AtomicInteger cache_hits = new AtomicInteger(0), count_backend = new AtomicInteger(0), count_twitter_all = new AtomicInteger(0), count_twitter_new = new AtomicInteger(0);
         
         if ("all".equals(source)) {
             // start all targets for search concurrently
@@ -105,8 +105,9 @@ public class SearchServlet extends HttpServlet {
                     final String scraper_query = tokens.translate4scraper();
                     DAO.log(request.getServletPath() + " scraping with query: " + scraper_query);
                     Timeline[] twitterTl = DAO.scrapeTwitter(post, scraper_query, order, timezoneOffsetf, true);
-                    newrecords.set(twitterTl[1].size());
-                    tl.putAll(QueryEntry.applyConstraint(twitterTl[1], tokens));
+                    count_twitter_all.set(twitterTl[0].size());
+                    count_twitter_new.set(twitterTl[1].size());
+                    tl.putAll(QueryEntry.applyConstraint(twitterTl[1], tokens, false)); // pre-localized results are not filtered with location constraint any more 
                     post.recordEvent("twitterscraper_time", System.currentTimeMillis() - start);
                 }
             };
@@ -114,14 +115,17 @@ public class SearchServlet extends HttpServlet {
             Thread backendThread = tokens.original.length() == 0 ? null : new Thread() {
                 public void run() {
                     Timeline backendTl = DAO.searchBackend(tokens.original, order, count, timezoneOffsetf, "cache");
-                    if (backendTl != null) tl.putAll(QueryEntry.applyConstraint(backendTl, tokens));
+                    if (backendTl != null) {
+                        tl.putAll(QueryEntry.applyConstraint(backendTl, tokens, true));
+                        count_backend.set(tl.size());
+                    }
                     post.recordEvent("backend_time", System.currentTimeMillis() - start);
                 }
             };
             if (backendThread != null) backendThread.start();
             DAO.SearchLocalMessages localSearchResult = new DAO.SearchLocalMessages(query, order, timezoneOffset, count, 0);
             post.recordEvent("cache_time", System.currentTimeMillis() - start);
-            hits = localSearchResult.hits;
+            cache_hits.set(localSearchResult.hits);
             tl.putAll(localSearchResult.timeline);
             long start1 = System.currentTimeMillis();
             if (backendThread != null) try {backendThread.join(tl.size() < count ? 5000 : 2000);} catch (InterruptedException e) {}
@@ -135,8 +139,9 @@ public class SearchServlet extends HttpServlet {
                 final String scraper_query = tokens.translate4scraper();
                 DAO.log(request.getServletPath() + " scraping with query: " + scraper_query);
                 Timeline[] twitterTl = DAO.scrapeTwitter(post, scraper_query, order, timezoneOffset, true);
-                newrecords.set(twitterTl[1].size());
-                tl.putAll(QueryEntry.applyConstraint(twitterTl[0], tokens));
+                count_twitter_all.set(twitterTl[0].size());
+                count_twitter_new.set(twitterTl[1].size());
+                tl.putAll(QueryEntry.applyConstraint(twitterTl[0], tokens, false)); // pre-localized results are not filtered with location constraint any more 
                 post.recordEvent("twitterscraper_time", System.currentTimeMillis() - start);
                 // in this case we use all tweets, not only the latest one because it may happen that there are no new and that is not what the user expects
             }
@@ -145,7 +150,10 @@ public class SearchServlet extends HttpServlet {
             if ("backend".equals(source) && query.length() > 0) {
                 long start = System.currentTimeMillis();
                 Timeline backendTl = DAO.searchBackend(query, order, count, timezoneOffset, "cache");
-                if (backendTl != null) tl.putAll(QueryEntry.applyConstraint(backendTl, tokens));
+                if (backendTl != null) {
+                    tl.putAll(QueryEntry.applyConstraint(backendTl, tokens, true));
+                    count_backend.set(tl.size());
+                }
                 post.recordEvent("backend_time", System.currentTimeMillis() - start);
             }
 
@@ -153,7 +161,7 @@ public class SearchServlet extends HttpServlet {
             if ("cache".equals(source)) {
                 long start = System.currentTimeMillis();
                 DAO.SearchLocalMessages localSearchResult = new DAO.SearchLocalMessages(query, order, timezoneOffset, count, limit, fields);
-                hits = localSearchResult.hits;
+                cache_hits.set(localSearchResult.hits);
                 tl.putAll(localSearchResult.timeline);
                 aggregations = localSearchResult.aggregations;
                 post.recordEvent("cache_time", System.currentTimeMillis() - start);
@@ -165,9 +173,7 @@ public class SearchServlet extends HttpServlet {
         DAO.announceNewUserId(tl);
         
         // reduce the list to the wanted number of results if we have more
-        hits = Math.max(hits, tl.size());
-        tl.reduceToMaxsize(count);
-        
+        tl.reduceToMaxsize(count);        
 
         if (post.isDoS_servicereduction() && !RemoteAccess.isSleepingForClient(post.getClientHost())) {
             RemoteAccess.sleep(post.getClientHost(), 2000);
@@ -187,7 +193,7 @@ public class SearchServlet extends HttpServlet {
             }
             metadata.put("itemsPerPage", Integer.toString(count));
             metadata.put("count", Integer.toString(tl.size()));
-            metadata.put("hits", hits);
+            metadata.put("hits", Math.max(cache_hits.get(), tl.size()));
             if (order == Timeline.Order.CREATED_AT) metadata.put("period", tl.period());
             metadata.put("query", query);
             metadata.put("client", post.getClientHost());
@@ -203,7 +209,7 @@ public class SearchServlet extends HttpServlet {
                 }
             } catch (ConcurrentModificationException e) {
                 // late incoming messages from concurrent peer retrieval may cause this
-                // we siletly do nothing here and return what we listed so far
+                // we silently do nothing here and return what we listed so far
             }
             m.put("statuses", statuses);
             
@@ -272,8 +278,15 @@ public class SearchServlet extends HttpServlet {
             }
             response.getOutputStream().write(UTF8.getBytes(buffer.toString()));
         }
+        post.recordEvent("result_count", tl.size());
         post.recordEvent("postprocessing_time", System.currentTimeMillis() - start);
-        DAO.log(request.getServletPath() + "?" + request.getQueryString() + " -> " + tl.size() + " records returned, " +  newrecords.get() + " new");
+        Map<String, Object> hits = new LinkedHashMap<>();
+        hits.put("count_twitter_all", count_twitter_all.get());
+        hits.put("count_twitter_new", count_twitter_new.get());
+        hits.put("count_backend", count_backend.get());
+        hits.put("cache_hits", cache_hits.get());
+        post.recordEvent("hits", hits);
+        DAO.log(request.getServletPath() + "?" + request.getQueryString() + " -> " + tl.size() + " records returned, " +  count_twitter_new.get() + " new");
         post.finalize();
         } catch (Throwable e) {
             Log.getLog().warn(e.getMessage(), e);

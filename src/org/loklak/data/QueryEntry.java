@@ -364,7 +364,7 @@ public class QueryEntry extends AbstractIndexEntry implements IndexEntry {
         }
     }
     
-    public static Timeline applyConstraint(Timeline tl0, Tokens tokens) {
+    public static Timeline applyConstraint(Timeline tl0, Tokens tokens, boolean applyLocationConstraint) {
          if (tokens.constraints_positive.size() == 0 && tokens.constraints_negative.size() == 0 && tokens.modifier.size() == 0) return tl0;
         Timeline tl1 = new Timeline(tl0.getOrder());
         messageloop: for (MessageEntry message: tl0) {
@@ -380,7 +380,7 @@ public class QueryEntry extends AbstractIndexEntry implements IndexEntry {
                     if (message.getScreenName().equals(screen_name)) continue messageloop;
                 }
             }
-            if (tokens.bbox != null) {
+            if (applyLocationConstraint && tokens.bbox != null) {
                 if (message.location_point == null || message.location_point.length < 2) continue messageloop; //longitude, latitude
                 if (message.location_point[0] < tokens.bbox[0] || message.location_point[0] > tokens.bbox[2] ||  // double[]{lon_west,lat_south,lon_east,lat_north}
                     message.location_point[1] > tokens.bbox[1] || message.location_point[1] < tokens.bbox[3]) continue messageloop;
