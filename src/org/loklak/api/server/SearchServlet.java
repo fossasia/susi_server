@@ -80,6 +80,7 @@ public class SearchServlet extends HttpServlet {
         String query = post.get("q", "");
         if (query == null || query.length() == 0) query = post.get("query", "");
         query = CharacterCoding.html2unicode(query).replaceAll("\\+", " ");
+        final long timeout = (long) post.get("timeout", DAO.getConfig("search.timeout", 3000));
         final int count = post.isDoS_servicereduction() ? 10 : Math.min(post.get("count", post.get("maximumRecords", 100)), post.isLocalhostAccess() ? 10000 : 1000);
         String source = post.isDoS_servicereduction() ? "cache" : post.get("source", "all"); // possible values: cache, backend, twitter, all
         int limit = post.get("limit", 100);
@@ -107,7 +108,7 @@ public class SearchServlet extends HttpServlet {
                     Timeline[] twitterTl = DAO.scrapeTwitter(post, scraper_query, order, timezoneOffsetf, true);
                     count_twitter_all.set(twitterTl[0].size());
                     count_twitter_new.set(twitterTl[1].size());
-                    tl.putAll(QueryEntry.applyConstraint(twitterTl[1], tokens, false)); // pre-localized results are not filtered with location constraint any more 
+                    tl.putAll(QueryEntry.applyConstraint(twitterTl[0], tokens, false)); // pre-localized results are not filtered with location constraint any more 
                     post.recordEvent("twitterscraper_time", System.currentTimeMillis() - start);
                 }
             };
@@ -128,10 +129,10 @@ public class SearchServlet extends HttpServlet {
             cache_hits.set(localSearchResult.hits);
             tl.putAll(localSearchResult.timeline);
             long start1 = System.currentTimeMillis();
-            if (backendThread != null) try {backendThread.join(tl.size() < count ? 5000 : 2000);} catch (InterruptedException e) {}
+            if (backendThread != null) try {backendThread.join(Math.max(100, timeout - start + System.currentTimeMillis()));} catch (InterruptedException e) {}
             post.recordEvent("backend_time_join", System.currentTimeMillis() - start1);
             long start2 = System.currentTimeMillis();
-            if (scraperThread != null) try {scraperThread.join(tl.size() < count ? 8000 : 2000);} catch (InterruptedException e) {}
+            if (scraperThread != null) try {scraperThread.join(Math.max(100, timeout - start + System.currentTimeMillis()));} catch (InterruptedException e) {}
             post.recordEvent("twitterscraper_time_join", System.currentTimeMillis() - start2);
         } else {
             if ("twitter".equals(source) && tokens.raw.length() > 0) {
@@ -193,6 +194,10 @@ public class SearchServlet extends HttpServlet {
             }
             metadata.put("itemsPerPage", Integer.toString(count));
             metadata.put("count", Integer.toString(tl.size()));
+            metadata.put("count_twitter_all", count_twitter_all.get());
+            metadata.put("count_twitter_new", count_twitter_new.get());
+            metadata.put("count_backend", count_backend.get());
+            metadata.put("count_cache", cache_hits.get());
             metadata.put("hits", Math.max(cache_hits.get(), tl.size()));
             if (order == Timeline.Order.CREATED_AT) metadata.put("period", tl.period());
             metadata.put("query", query);
