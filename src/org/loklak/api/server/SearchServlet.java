@@ -129,10 +129,10 @@ public class SearchServlet extends HttpServlet {
             cache_hits.set(localSearchResult.hits);
             tl.putAll(localSearchResult.timeline);
             long start1 = System.currentTimeMillis();
-            if (backendThread != null) try {backendThread.join(Math.max(100, timeout - start + System.currentTimeMillis()));} catch (InterruptedException e) {}
+            if (backendThread != null) try {backendThread.join(Math.max(100, timeout - System.currentTimeMillis() + start));} catch (InterruptedException e) {}
             post.recordEvent("backend_time_join", System.currentTimeMillis() - start1);
             long start2 = System.currentTimeMillis();
-            if (scraperThread != null) try {scraperThread.join(Math.max(100, timeout - start + System.currentTimeMillis()));} catch (InterruptedException e) {}
+            if (scraperThread != null) try {scraperThread.join(Math.max(100, timeout - System.currentTimeMillis() + start));} catch (InterruptedException e) {}
             post.recordEvent("twitterscraper_time_join", System.currentTimeMillis() - start2);
         } else {
             if ("twitter".equals(source) && tokens.raw.length() > 0) {
