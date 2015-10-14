@@ -210,30 +210,48 @@ public class TwitterAPI {
         RateLimitStatus rateLimitStatus = user.getRateLimitStatus();
         getUserResetTime = System.currentTimeMillis() + rateLimitStatus.getSecondsUntilReset() * 1000;
         getUserRemaining = rateLimitStatus.getRemaining();
-        return enrich(user);
+        Map<String, Object> map = user2json(user);
+        enrichLocation(map);
+        DAO.user_dump.putUnique(map);
+        return map;
     }
-    
-    public static Map<String, Object> enrich(User user) throws IOException {
+
+    public static Map<String, Object> user2json(User user) throws IOException {
         String json = TwitterObjectFactory.getRawJSON(user);
         Map<String, Object> map = DAO.jsonMapper.readValue(json, DAO.jsonTypeRef);
         map.put("retrieval_date", AbstractIndexEntry.utcFormatter.print(System.currentTimeMillis()));
         Object status = map.remove("status"); // we don't need to store the latest status update in the user dump
         // TODO: store the latest status in our message database
-        
+        return map;
+    }
+    
+    public static void enrichLocation(Map<String, Object> map) throws IOException {
         // enrich the user data with geocoding information
         String created_at = (String) map.get("created_at");
+        int salt = created_at == null ? map.hashCode() : created_at.hashCode();
+        
+        // if a location is given, try to reverse geocode to get country name, country code and coordinates
         String location = (String) map.get("location");
-        if (created_at != null && location != null) {
-            GeoMark loc = DAO.geoNames.analyse(location, null, 5, created_at.hashCode());
+        String location_country = (String) map.get("location_country");
+        String location_country_code = (String) map.get("location_country_code");
+        Object location_point = map.get("location_point");
+        Object location_mark = map.get("location");
+        if (location != null && location.length() > 0 && (
+            location_country == null || location_country.length() == 0 ||
+            location_country_code == null || location_country_code.length() == 0 ||
+            location_point == null || location_mark == null
+        )) {
+            GeoMark loc = DAO.geoNames.analyse(location, null, 5, salt);
             if (loc != null) {
                 map.put("location_country", DAO.geoNames.getCountryName(loc.getISO3166cc()));
                 map.put("location_country_code", loc.getISO3166cc());
                 map.put("location_point", new double[]{loc.lon(), loc.lat()}); //[longitude, latitude]
                 map.put("location_mark", new double[]{loc.mlon(), loc.mlat()}); //[longitude, latitude]
+                //DAO.log("enrichLocation: FOUND   location '" + location + "'");
+            } else {
+                //DAO.log("enrichLocation: UNKNOWN location '" + location + "'");
             }
         }
-        DAO.user_dump.putUnique(map);
-        return map;
     }
     
     public static Map<String, Object> getNetwork(String screen_name, int maxFollowers, int maxFollowing) throws IOException, TwitterException {
@@ -248,7 +266,11 @@ public class TwitterAPI {
             Map<String, Number> names = (Map<String, Number>) map.remove(setname + "_names");
             if (names != null) for (String sn: names.keySet()) {
                 JsonFactory user = DAO.user_dump.get("screen_name", sn);
-                if (user != null) users.add(user.getJson());
+                if (user != null) {
+                    Map<String, Object> usermap = user.getJson();
+                    enrichLocation(usermap);
+                    users.add(usermap);
+                }
             }
             map.put(setname + "_count", users.size());
             map.put(setname, users);
@@ -412,7 +434,9 @@ public class TwitterAPI {
                 try {
                     ResponseList<User> users = twitter.lookupUsers(u);
                     for (User usr: users) {
-                        enrich(usr);
+                        Map<String, Object> map = user2json(usr);
+                        enrichLocation(map);
+                        DAO.user_dump.putUnique(map);
                         r.put(usr.getScreenName(), usr.getId());
                         id4api.remove(usr.getId());
                     }

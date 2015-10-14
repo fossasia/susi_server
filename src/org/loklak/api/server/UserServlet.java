@@ -67,7 +67,10 @@ public class UserServlet extends HttpServlet {
         for (String screen_name: screen_names) {
             try {
                 Map<String, Object> twitterUserEntry = TwitterAPI.getUser(screen_name, false);
-                if (twitterUserEntry != null) twitterUserEntries.add(twitterUserEntry);
+                if (twitterUserEntry != null) {
+                    TwitterAPI.enrichLocation(twitterUserEntry);
+                    twitterUserEntries.add(twitterUserEntry);
+                }
             } catch (TwitterException e) {}
         }
         Map<String, Object> topology = null;
