@@ -225,10 +225,11 @@ public class TwitterAPI {
         return map;
     }
     
-    public static void enrichLocation(Map<String, Object> map) throws IOException {
-        // enrich the user data with geocoding information
-        String created_at = (String) map.get("created_at");
-        int salt = created_at == null ? map.hashCode() : created_at.hashCode();
+    /**
+     * enrich the user data with geocoding information
+     * @param map the user json
+     */
+    public static void enrichLocation(Map<String, Object> map) {
         
         // if a location is given, try to reverse geocode to get country name, country code and coordinates
         String location = (String) map.get("location");
@@ -238,7 +239,7 @@ public class TwitterAPI {
             // sometimes the time zone contains city names! Try that
             String time_zone = (String) map.get("time_zone");
             if (time_zone != null && time_zone.length() > 0) {
-                GeoMark loc = DAO.geoNames.analyse(time_zone, null, 5, salt);
+                GeoMark loc = DAO.geoNames.analyse(time_zone, null, 5, 0);
                 // check if the time zone was actually a location name
                 if (loc != null && loc.getNames().contains(time_zone)) {
                     // success! It's just a guess, however...
@@ -260,6 +261,10 @@ public class TwitterAPI {
                 location_country_code == null || location_country_code.length() == 0 ||
                 location_point == null || location_mark == null
             ) {
+                // get a salt 
+                String created_at = (String) map.get("created_at");
+                int salt = created_at == null ? map.hashCode() : created_at.hashCode();
+                // reverse geocode
                 GeoMark loc = DAO.geoNames.analyse(location, null, 5, salt);
                 if (loc != null) {
                     String countryCode = loc.getISO3166cc();
@@ -279,6 +284,31 @@ public class TwitterAPI {
 
     }
     
+    /**
+     * beautify given location information. This should only be called before an export is done, not for storage
+     * @param map
+     */
+    public static void correctLocation(Map<String, Object> map) {
+        // if a location is given, try to reverse geocode to get country name, country code and coordinates
+        String location = (String) map.get("location");
+        
+        // if we finally have a location, then compute country name and geo-coordinates
+        if (location != null && location.length() > 0) {
+            String location_country = (String) map.get("location_country");
+            
+            // maybe we already computed these values before, but they may be incomplete. If they are not complete, we repeat the geocoding
+            if (location_country != null && location_country.length() > 0) {
+                // check if the location name was made in a "City-Name, Country-Name" schema
+                if (location.endsWith(", " + location_country)) {
+                    // remove the country name from the location name
+                    location = location.substring(0, location.length() - location_country.length() - 2);
+                    map.put("location", location);
+                    //DAO.log("correctLocation: CORRECTED '" + location + ", " + location_country + "'");
+                }
+            }
+        }
+    }
+    
     public static Map<String, Object> getNetwork(String screen_name, int maxFollowers, int maxFollowing) throws IOException, TwitterException {
         Map<String, Object> map = new HashMap<>();
         // we clone the maps because we modify it
@@ -291,14 +321,17 @@ public class TwitterAPI {
         for (String setname : new String[]{"followers","unfollowers","following","unfollowing"}) {
             List<Map<String, Object>> users = new ArrayList<>(); 
             Map<String, Number> names = (Map<String, Number>) map.remove(setname + "_names");
-            if (names != null) for (String sn: names.keySet()) {
-                JsonFactory user = DAO.user_dump.get("screen_name", sn);
-                if (user != null) {
-                    Map<String, Object> usermap = user.getJson();
-                    //if (usermap.get("location") != null && ((String) usermap.get("location")).length() > 0) with_before++;
-                    enrichLocation(usermap);
-                    //if (usermap.get("location") != null && ((String) usermap.get("location")).length() > 0) with_after++;
-                    users.add(usermap);
+            if (names != null) {
+                for (String sn: names.keySet()) {
+                    JsonFactory user = DAO.user_dump.get("screen_name", sn);
+                    if (user != null) {
+                        Map<String, Object> usermap = user.getJson();
+                        //if (usermap.get("location") != null && ((String) usermap.get("location")).length() > 0) with_before++;
+                        enrichLocation(usermap);
+                        correctLocation(usermap);
+                        //if (usermap.get("location") != null && ((String) usermap.get("location")).length() > 0) with_after++;
+                        users.add(usermap);
+                    }
                 }
             }
             //if (users.size() > 0) DAO.log("enrichLocation result: set = " + setname + ", users = " + users.size() + ", with location before = " + with_before + ", with location after = " + with_after + ", success = " + (100 * (with_after - with_before) / users.size()) + "%");
