@@ -232,26 +232,51 @@ public class TwitterAPI {
         
         // if a location is given, try to reverse geocode to get country name, country code and coordinates
         String location = (String) map.get("location");
-        String location_country = (String) map.get("location_country");
-        String location_country_code = (String) map.get("location_country_code");
-        Object location_point = map.get("location_point");
-        Object location_mark = map.get("location");
-        if (location != null && location.length() > 0 && (
-            location_country == null || location_country.length() == 0 ||
-            location_country_code == null || location_country_code.length() == 0 ||
-            location_point == null || location_mark == null
-        )) {
-            GeoMark loc = DAO.geoNames.analyse(location, null, 5, salt);
-            if (loc != null) {
-                map.put("location_country", DAO.geoNames.getCountryName(loc.getISO3166cc()));
-                map.put("location_country_code", loc.getISO3166cc());
-                map.put("location_point", new double[]{loc.lon(), loc.lat()}); //[longitude, latitude]
-                map.put("location_mark", new double[]{loc.mlon(), loc.mlat()}); //[longitude, latitude]
-                //DAO.log("enrichLocation: FOUND   location '" + location + "'");
-            } else {
-                //DAO.log("enrichLocation: UNKNOWN location '" + location + "'");
+        
+        // in case that no location is given, we try to hack that information out of the context
+        if (location == null || location.length() == 0) {
+            // sometimes the time zone contains city names! Try that
+            String time_zone = (String) map.get("time_zone");
+            if (time_zone != null && time_zone.length() > 0) {
+                GeoMark loc = DAO.geoNames.analyse(time_zone, null, 5, salt);
+                // check if the time zone was actually a location name
+                if (loc != null && loc.getNames().contains(time_zone)) {
+                    // success! It's just a guess, however...
+                    location = time_zone;
+                    map.put("location", location);
+                    //DAO.log("enrichLocation: TRANSLATED time_zone to location '" + location + "'");
+                }
             }
         }
+        
+        // if we finally have a location, then compute country name and geo-coordinates
+        if (location != null && location.length() > 0) {
+            String location_country = (String) map.get("location_country");
+            String location_country_code = (String) map.get("location_country_code");
+            Object location_point = map.get("location_point");
+            Object location_mark = map.get("location");
+            // maybe we already computed these values before, but they may be incomplete. If they are not complete, we repeat the geocoding
+            if (location_country == null || location_country.length() == 0 ||
+                location_country_code == null || location_country_code.length() == 0 ||
+                location_point == null || location_mark == null
+            ) {
+                GeoMark loc = DAO.geoNames.analyse(location, null, 5, salt);
+                if (loc != null) {
+                    String countryCode = loc.getISO3166cc();
+                    if (countryCode != null && countryCode.length() > 0) {
+                        String countryName = DAO.geoNames.getCountryName(countryCode);
+                        map.put("location_country", countryName);
+                        map.put("location_country_code", countryCode);
+                    }
+                    map.put("location_point", new double[]{loc.lon(), loc.lat()}); //[longitude, latitude]
+                    map.put("location_mark", new double[]{loc.mlon(), loc.mlat()}); //[longitude, latitude]
+                    //DAO.log("enrichLocation: FOUND   location '" + location + "'");
+                } else {
+                    //DAO.log("enrichLocation: UNKNOWN location '" + location + "'");
+                }
+            }
+        }
+
     }
     
     public static Map<String, Object> getNetwork(String screen_name, int maxFollowers, int maxFollowing) throws IOException, TwitterException {
@@ -261,6 +286,8 @@ public class TwitterAPI {
         map.putAll(getNetworkerNames(screen_name, maxFollowing, Networker.FOLLOWING));
         map.remove("screen_name");
 
+        //int with_before = 0, with_after = 0;
+        
         for (String setname : new String[]{"followers","unfollowers","following","unfollowing"}) {
             List<Map<String, Object>> users = new ArrayList<>(); 
             Map<String, Number> names = (Map<String, Number>) map.remove(setname + "_names");
@@ -268,10 +295,13 @@ public class TwitterAPI {
                 JsonFactory user = DAO.user_dump.get("screen_name", sn);
                 if (user != null) {
                     Map<String, Object> usermap = user.getJson();
+                    //if (usermap.get("location") != null && ((String) usermap.get("location")).length() > 0) with_before++;
                     enrichLocation(usermap);
+                    //if (usermap.get("location") != null && ((String) usermap.get("location")).length() > 0) with_after++;
                     users.add(usermap);
                 }
             }
+            //if (users.size() > 0) DAO.log("enrichLocation result: set = " + setname + ", users = " + users.size() + ", with location before = " + with_before + ", with location after = " + with_after + ", success = " + (100 * (with_after - with_before) / users.size()) + "%");
             map.put(setname + "_count", users.size());
             map.put(setname, users);
         }
