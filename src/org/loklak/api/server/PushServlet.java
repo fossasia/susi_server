@@ -122,6 +122,7 @@ public class PushServlet extends HttpServlet {
         
         DAO.log(request.getServletPath() + " -> records = " + recordCount + ", new = " + newCount + ", known = " + knownCount + ", from host hash " + remoteHash);
 
+        response.addHeader("Access-Control-Allow-Origin", "*");
         post.finalize();
     }
 }
