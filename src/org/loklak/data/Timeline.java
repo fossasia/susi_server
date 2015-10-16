@@ -25,9 +25,10 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.NavigableMap;
 import java.util.Set;
-import java.util.TreeMap;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentSkipListMap;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -48,12 +49,12 @@ public class Timeline implements Iterable<MessageEntry> {
         }
     }
     
-    private TreeMap<String, MessageEntry> tweets; // the key is the date plus id of the tweet
+    private NavigableMap<String, MessageEntry> tweets; // the key is the date plus id of the tweet
     private Map<String, UserEntry> users;
     final private Order order;
     
     public Timeline(Order order) {
-        this.tweets = new TreeMap<String, MessageEntry>();
+        this.tweets = new ConcurrentSkipListMap<String, MessageEntry>();
         this.users = new ConcurrentHashMap<String, UserEntry>();
         this.order = order;
     }

@@ -52,7 +52,7 @@ public class TwitterScraper {
 
     public static ExecutorService executor = Executors.newFixedThreadPool(20);
     
-    public static Timeline search(final String query, final Timeline.Order order) {
+    public static Timeline[] search(final String query, final Timeline.Order order) {
         // check
         // https://twitter.com/search-advanced for a better syntax
         // https://support.twitter.com/articles/71577-how-to-use-advanced-twitter-search#
@@ -72,13 +72,13 @@ public class TwitterScraper {
             //https://twitter.com/search?q=from:yacy_search&src=typd
             https_url = "https://twitter.com/search?q=" + q + "&src=typd&vertical=default&f=tweets";
         } catch (UnsupportedEncodingException e) {}
-        Timeline timeline = null;
+        Timeline[] timelines = null;
         try {
             ClientConnection connection = new ClientConnection(https_url);
             if (connection.inputStream == null) return null;
             try {
                 BufferedReader br = new BufferedReader(new InputStreamReader(connection.inputStream, UTF8.charset));
-                timeline = search(br, order);
+                timelines = search(br, order);
             } catch (IOException e) {
                e.printStackTrace();
             } finally {
@@ -87,19 +87,27 @@ public class TwitterScraper {
         } catch (IOException e) {
             // this could mean that twitter rejected the connection (DoS protection?)
             e.printStackTrace();
-            if (timeline == null) timeline = new Timeline(order);
+            if (timelines == null) timelines = new Timeline[]{new Timeline(order), new Timeline(order)};
         };
 
         // wait until all messages in the timeline are ready
-        if (timeline == null) {
+        if (timelines == null) {
             // timeout occurred
-            timeline = new Timeline(order);
+            if (timelines == null) timelines = new Timeline[]{new Timeline(order), new Timeline(order)};
         }
-        return timeline;
+        return timelines;
     }
     
-    private static Timeline search(final BufferedReader br, final Timeline.Order order) throws IOException {
-        Timeline timeline = new Timeline(order);
+    /**
+     * scrape messages from the reader stream: this already checks if a message is new. There are only new messages returned
+     * @param br
+     * @param order
+     * @return two timelines in one array: Timeline[0] is the one which is finished to be used, Timeline[1] contains messages which are in postprocessing
+     * @throws IOException
+     */
+    private static Timeline[] search(final BufferedReader br, final Timeline.Order order) throws IOException {
+        Timeline timelineReady = new Timeline(order);
+        Timeline timelineWorking = new Timeline(order);
         String input;
         Map<String, prop> props = new HashMap<String, prop>();
         Set<String> images = new LinkedHashSet<>();
@@ -205,25 +213,25 @@ public class TwitterScraper {
                         props.get("tweettext").value,
                         Long.parseLong(props.get("tweetretweetcount").value),
                         Long.parseLong(props.get("tweetfavouritecount").value),
-                        imgs, vids, place_name, place_id
+                        imgs, vids, place_name, place_id,
+                        user
                         );
-                if (tweet.willBeTimeConsuming()) {
-                    if (DAO.getConfig("flag.replaceinsteadunshorten", false)) {
-                        // check if this tweet could be simply replaced by one from the database
-                        MessageEntry messageFromIndex = DAO.readMessage(tweet.getIdStr());
-                        if (messageFromIndex == null) {
-                            executor.execute(tweet);
-                            timeline.add(tweet, user);
+                if (!tweet.exist()) {
+                    if (tweet.willBeTimeConsuming()) {
+                        executor.execute(tweet);
+                        // because the executor may run the thread in the current thread it could be possible that the result is here already
+                        if (tweet.isReady()) {
+                            timelineReady.add(tweet, user);
+                            //DAO.log("SCRAPERTEST: messageINIT is ready");
                         } else {
-                            timeline.add(messageFromIndex, user);
+                            timelineWorking.add(tweet, user);
+                            //DAO.log("SCRAPERTEST: messageINIT unshortening");
                         }
                     } else {
-                        executor.execute(tweet);
-                        timeline.add(tweet, user);
+                        // no additional thread needed, run the postprocessing in the current thread
+                        tweet.run();
+                        timelineReady.add(tweet, user);
                     }
-                } else {
-                    tweet.run();
-                    timeline.add(tweet, user);
                 }
                 images.clear();
                 props.clear();
@@ -232,7 +240,7 @@ public class TwitterScraper {
         }
         //for (prop p: props.values()) System.out.println(p);
         br.close();
-        return timeline;
+        return new Timeline[]{timelineReady, timelineWorking};
     }
     
     private static class prop {
@@ -292,6 +300,7 @@ public class TwitterScraper {
 
         private final Semaphore ready;
         private Boolean exists = null;
+        private UserEntry user;
         
         public TwitterTweet(
                 final String user_screen_name_raw,
@@ -304,7 +313,8 @@ public class TwitterScraper {
                 final Collection<String> images,
                 final Collection<String> videos,
                 final String place_name,
-                final String place_id) throws MalformedURLException {
+                final String place_id,
+                final UserEntry user) throws MalformedURLException {
             super();
             this.source_type = SourceType.TWITTER;
             this.provider_type = ProviderType.SCRAPED;
@@ -320,6 +330,7 @@ public class TwitterScraper {
             this.images = new LinkedHashSet<>(); for (String image: images) this.images.add(image);
             this.videos = new LinkedHashSet<>(); for (String video: videos) this.videos.add(video);
             this.text = text_raw;
+            this.user = user;
             //Date d = new Date(timemsraw);
             //System.out.println(d);
             
@@ -340,19 +351,27 @@ public class TwitterScraper {
             this.ready = new Semaphore(0);
         }
 
+        public UserEntry getUser() {
+            return this.user;
+        }
+        
         public boolean willBeTimeConsuming() {
             return timeline_link_pattern.matcher(this.text).find() || timeline_embed_pattern.matcher(this.text).find();
         }
         
-        private void analyse() {
-            this.text = unshorten(this.text);
-        }
-        
         @Override
         public void run() {
+            //long start = System.currentTimeMillis();
             try {
-                this.analyse();
+                //DAO.log("TwitterTweet [" + this.id_str + "] start");
+                this.text = unshorten(this.text);
+                //DAO.log("TwitterTweet [" + this.id_str + "] unshorten after " + (System.currentTimeMillis() - start) + "ms");
                 this.enrich();
+                //DAO.log("TwitterTweet [" + this.id_str + "] enrich    after " + (System.currentTimeMillis() - start) + "ms");
+                DAO.writeMessage(this, this.user, true, true);
+                //DAO.log("TwitterTweet [" + this.id_str + "] write     after " + (System.currentTimeMillis() - start) + "ms");
+                DAO.transmitMessage(this, this.user);
+                //DAO.log("TwitterTweet [" + this.id_str + "] transmit  after " + (System.currentTimeMillis() - start) + "ms");
             } catch (Throwable e) {
                 e.printStackTrace();
             } finally {
@@ -367,9 +386,9 @@ public class TwitterScraper {
         
         public boolean waitReady(long millis) {
             if (this.ready == null) throw new RuntimeException("waitReady() should not be called if postprocessing is not started");
+            if (this.ready.availablePermits() > 0) return true;
             try {
-                this.ready.tryAcquire(millis, TimeUnit.MILLISECONDS);
-                return true;
+                return this.ready.tryAcquire(millis, TimeUnit.MILLISECONDS);
             } catch (InterruptedException e) {
                 return false;
             }
@@ -437,12 +456,15 @@ public class TwitterScraper {
      */
     public static void main(String[] args) {
         //wget --no-check-certificate "https://twitter.com/search?q=eifel&src=typd&f=realtime"
-        Timeline result = TwitterScraper.search(args[0], Timeline.Order.CREATED_AT);
-        for (MessageEntry tweet : result) {
-            if (tweet instanceof TwitterTweet) {
-                ((TwitterTweet) tweet).waitReady(10000);
+        
+         Timeline[] result = TwitterScraper.search(args[0], Timeline.Order.CREATED_AT);
+        for (int x = 0; x < 2; x++) {
+            for (MessageEntry tweet : result[x]) {
+                if (tweet instanceof TwitterTweet) {
+                    ((TwitterTweet) tweet).waitReady(10000);
+                }
+                System.out.println("@" + tweet.getScreenName() + " - " + tweet.getText());
             }
-            System.out.println("@" + tweet.getScreenName() + " - " + tweet.getText());
         }
         System.exit(0);
     }

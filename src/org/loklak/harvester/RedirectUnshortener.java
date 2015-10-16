@@ -13,6 +13,7 @@ import org.loklak.data.DAO;
 public class RedirectUnshortener {
 
     private final static String[] workingHosts = new String[] {
+        "bbc.in",
         "fb.me",
         "wp.me",
         "j.mp",
@@ -41,12 +42,12 @@ public class RedirectUnshortener {
         "Fwd4.Me",
         "budurl.com",
         "snipurl.com",
-        "youtu.be",
         "igg.me",
         "twiza.ru"
     };
     
     public static String unShorten(String urlstring) {
+        //long start = System.currentTimeMillis();
         try {
             int termination = 10; // loop for recursively shortened urls
             while (isApplicable(urlstring) && termination-- > 0) {
@@ -54,6 +55,7 @@ public class RedirectUnshortener {
                 if (unshortened.equals(urlstring)) return urlstring;
                 urlstring = unshortened; // recursive apply unshortener because some unshortener are applied several times
             }
+            //DAO.log("UNSHORTENED in " + (System.currentTimeMillis() - start) + " milliseconds: " + urlstring);
             return urlstring;
         } catch (IOException e) {
             DAO.log("UNSHORTEN failed for " + urlstring);

@@ -39,11 +39,11 @@ public class SearchClient {
     public final static String frontpeer_hash = Integer.toHexString(Integer.MAX_VALUE - 1);
 
     // possible values: cache, twitter, all
-    public static Timeline search(final String protocolhostportstub, final String query, final Timeline.Order order, final String source, final int count, final int timezoneOffset, final String provider_hash) throws IOException {
+    public static Timeline search(final String protocolhostportstub, final String query, final Timeline.Order order, final String source, final int count, final int timezoneOffset, final String provider_hash, final long timeout) throws IOException {
         Timeline tl = new Timeline(order);
         String urlstring = "";
         try {
-            urlstring = protocolhostportstub + "/api/search.json?q=" + URLEncoder.encode(query.replace(' ', '+'), "UTF-8") + "&timezoneOffset=" + timezoneOffset + "&maximumRecords=" + count + "&source=" + (source == null ? "all" : source) + "&minified=true";
+            urlstring = protocolhostportstub + "/api/search.json?q=" + URLEncoder.encode(query.replace(' ', '+'), "UTF-8") + "&timezoneOffset=" + timezoneOffset + "&maximumRecords=" + count + "&source=" + (source == null ? "all" : source) + "&minified=true&timeout=" + timeout;
         } catch (UnsupportedEncodingException e1) {
             return tl;
         }
@@ -70,7 +70,7 @@ public class SearchClient {
     
     public static void main(String[] args) {
         try {
-            Timeline tl = search("http://loklak.org", "beer", Timeline.Order.CREATED_AT, "cache", 20, -120, backend_hash);
+            Timeline tl = search("http://loklak.org", "beer", Timeline.Order.CREATED_AT, "cache", 20, -120, backend_hash, 10000);
             System.out.println(new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(tl.toMap(false)));
         } catch (IOException e) {
             e.printStackTrace();

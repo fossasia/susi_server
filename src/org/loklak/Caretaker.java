@@ -130,9 +130,9 @@ public class Caretaker extends Thread {
                         DAO.deleteQuery(qe.getQuery(), qe.getSourceType());
                         continue;
                     }
-                    Timeline[] t = DAO.scrapeTwitter(null, qe.getQuery(), Timeline.Order.CREATED_AT, qe.getTimezoneOffset(), false);
-                    DAO.log("automatic retrieval of " + t[0].size() + " messages, " + t[1].size() + " new for q = \"" + qe.getQuery() + "\"");
-                    DAO.announceNewUserId(t[0]);
+                    Timeline t = DAO.scrapeTwitter(null, qe.getQuery(), Timeline.Order.CREATED_AT, qe.getTimezoneOffset(), false, 10000);
+                    DAO.log("automatic retrieval of " + t.size() + " new messages for q = \"" + qe.getQuery() + "\"");
+                    DAO.announceNewUserId(t);
                     try {Thread.sleep(1000);} catch (InterruptedException e) {} // prevent remote DoS protection handling
                 }
             }

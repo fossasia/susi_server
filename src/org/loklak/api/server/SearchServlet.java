@@ -80,7 +80,7 @@ public class SearchServlet extends HttpServlet {
         String query = post.get("q", "");
         if (query == null || query.length() == 0) query = post.get("query", "");
         query = CharacterCoding.html2unicode(query).replaceAll("\\+", " ");
-        final long timeout = (long) post.get("timeout", DAO.getConfig("search.timeout", 3000));
+        final long timeout = (long) post.get("timeout", DAO.getConfig("search.timeout", 2000));
         final int count = post.isDoS_servicereduction() ? 10 : Math.min(post.get("count", post.get("maximumRecords", 100)), post.isLocalhostAccess() ? 10000 : 1000);
         String source = post.isDoS_servicereduction() ? "cache" : post.get("source", "all"); // possible values: cache, backend, twitter, all
         int limit = post.get("limit", 100);
@@ -105,17 +105,16 @@ public class SearchServlet extends HttpServlet {
                 public void run() {
                     final String scraper_query = tokens.translate4scraper();
                     DAO.log(request.getServletPath() + " scraping with query: " + scraper_query);
-                    Timeline[] twitterTl = DAO.scrapeTwitter(post, scraper_query, order, timezoneOffsetf, true);
-                    count_twitter_all.set(twitterTl[0].size());
-                    count_twitter_new.set(twitterTl[1].size());
-                    tl.putAll(QueryEntry.applyConstraint(twitterTl[0], tokens, false)); // pre-localized results are not filtered with location constraint any more 
+                    Timeline twitterTl = DAO.scrapeTwitter(post, scraper_query, order, timezoneOffsetf, true, timeout);
+                    count_twitter_new.set(twitterTl.size());
+                    tl.putAll(QueryEntry.applyConstraint(twitterTl, tokens, false)); // pre-localized results are not filtered with location constraint any more 
                     post.recordEvent("twitterscraper_time", System.currentTimeMillis() - start);
                 }
             };
             if (scraperThread != null) scraperThread.start();
             Thread backendThread = tokens.original.length() == 0 ? null : new Thread() {
                 public void run() {
-                    Timeline backendTl = DAO.searchBackend(tokens.original, order, count, timezoneOffsetf, "cache");
+                    Timeline backendTl = DAO.searchBackend(tokens.original, order, count, timezoneOffsetf, "cache", timeout);
                     if (backendTl != null) {
                         tl.putAll(QueryEntry.applyConstraint(backendTl, tokens, true));
                         count_backend.set(tl.size());
@@ -139,10 +138,9 @@ public class SearchServlet extends HttpServlet {
                 long start = System.currentTimeMillis();
                 final String scraper_query = tokens.translate4scraper();
                 DAO.log(request.getServletPath() + " scraping with query: " + scraper_query);
-                Timeline[] twitterTl = DAO.scrapeTwitter(post, scraper_query, order, timezoneOffset, true);
-                count_twitter_all.set(twitterTl[0].size());
-                count_twitter_new.set(twitterTl[1].size());
-                tl.putAll(QueryEntry.applyConstraint(twitterTl[0], tokens, false)); // pre-localized results are not filtered with location constraint any more 
+                Timeline twitterTl = DAO.scrapeTwitter(post, scraper_query, order, timezoneOffset, true, timeout);
+                count_twitter_new.set(twitterTl.size());
+                tl.putAll(QueryEntry.applyConstraint(twitterTl, tokens, false)); // pre-localized results are not filtered with location constraint any more 
                 post.recordEvent("twitterscraper_time", System.currentTimeMillis() - start);
                 // in this case we use all tweets, not only the latest one because it may happen that there are no new and that is not what the user expects
             }
@@ -150,7 +148,7 @@ public class SearchServlet extends HttpServlet {
             // replace the timeline with one from the own index which now includes the remote result
             if ("backend".equals(source) && query.length() > 0) {
                 long start = System.currentTimeMillis();
-                Timeline backendTl = DAO.searchBackend(query, order, count, timezoneOffset, "cache");
+                Timeline backendTl = DAO.searchBackend(query, order, count, timezoneOffset, "cache", timeout);
                 if (backendTl != null) {
                     tl.putAll(QueryEntry.applyConstraint(backendTl, tokens, true));
                     count_backend.set(tl.size());

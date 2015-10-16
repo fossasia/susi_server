@@ -397,6 +397,14 @@ public class DAO {
     public static void transmitTimeline(Timeline tl) {
         if (getConfig("backend", new String[0], ",").length > 0) newMessageTimelines.add(tl);
     }
+    
+    public static void transmitMessage(final MessageEntry tweet, final UserEntry user) {
+        if (getConfig("backend", new String[0], ",").length <= 0) return;
+        Timeline tl = newMessageTimelines.poll();
+        if (tl == null) tl = new Timeline(Timeline.Order.CREATED_AT);
+        tl.add(tweet, user);
+        newMessageTimelines.add(tl);
+    }
 
     public static Timeline takeTimelineMin(Timeline.Order order, int minsize, int maxsize, long maxwait) {
         Timeline tl = takeTimelineMax(order, minsize, maxwait);
@@ -857,15 +865,16 @@ public class DAO {
         return latests.values();
     }
     
-    public static Timeline[] scrapeTwitter(final RemoteAccess.Post post, final String q, final Timeline.Order order, final int timezoneOffset, boolean byUserQuery) {
+    public static Timeline scrapeTwitter(final RemoteAccess.Post post, final String q, final Timeline.Order order, final int timezoneOffset, boolean byUserQuery, long timeout) {
         // retrieve messages from remote server
+        long start0 = System.currentTimeMillis();
         ArrayList<String> remote = DAO.getFrontPeers();
-        Timeline remoteMessages;
+        Timeline[] remoteMessages; // Timeline[2] as [finished to be used, messages in postprocessing]; all of them are only new messages!
         if (remote.size() > 0 && (peerLatency.get(remote.get(0)) == null || peerLatency.get(remote.get(0)).longValue() < 3000)) {
             long start = System.currentTimeMillis();
-            remoteMessages = searchOnOtherPeers(remote, q, order, 100, timezoneOffset, "twitter", SearchClient.frontpeer_hash);
+            remoteMessages = new Timeline[]{searchOnOtherPeers(remote, q, order, 100, timezoneOffset, "all", SearchClient.frontpeer_hash, timeout), new Timeline(order)}; // all must be selected here to catch up missing tweets between intervals
             if (post != null) post.recordEvent("remote_scraper_on_" + remote.get(0), System.currentTimeMillis() - start);
-            if (remoteMessages == null || remoteMessages.size() == 0) {
+            if (remoteMessages == null || (remoteMessages[0].size() == 0 && remoteMessages[1].size() == 0)) {
                 // maybe the remote server died, we try then ourself
                 start = System.currentTimeMillis();
                 remoteMessages = TwitterScraper.search(q, order);
@@ -878,39 +887,32 @@ public class DAO {
             if (post != null) post.recordEvent("local_scraper", System.currentTimeMillis() - start);
         }
         
-        // identify new tweets
-        long start = System.currentTimeMillis();
-        Timeline newMessages = new Timeline(order); // we store new tweets here to be able to transmit them to peers
-        if (remoteMessages == null) {// can be caused by time-out
-            remoteMessages = new Timeline(order);
-        } else {
-            // record the result; this may be moved to a concurrent process
-            Iterator<MessageEntry> mi = remoteMessages.iterator();
-            while (mi.hasNext()) {
-                MessageEntry t = mi.next();
-                // wait until messages are ready (i.e. unshortening of shortlinks)
-                boolean tweetOk = true;
-                if (t instanceof TwitterTweet) {
-                    tweetOk = ((TwitterTweet) t).waitReady(1000);
-                }
-                // write the message to the index
-                if (tweetOk) {
-                    UserEntry u = remoteMessages.getUser(t);
-                    assert u != null;
-                    boolean newTweet = writeMessage(t, u, true, true);
-                    if (newTweet) {
-                        newMessages.add(t, u);
-                    }
-                } else {
-                    mi.remove();
-                }
+        
+        // wait some time until timeout until either all messages have been processed or if timeout occurs, whatever happens first
+        long start1 = System.currentTimeMillis();
+        Timeline finishedTweets = remoteMessages[0]; // put all finished tweets here, abandon all other (they will live if they are finished in the search index)
+        int expectedJoin = remoteMessages[1].size();
+        long termination = start0 + timeout;
+        //log("SCRAPER: TIME LEFT before unshortening = " + (termination - System.currentTimeMillis()));
+        while (System.currentTimeMillis() < termination && expectedJoin > 0) {
+            // iterate over all messages, wait a bit and re-calculate expectedJoin at the end
+            long remainingTime = timeout - (System.currentTimeMillis() - start0);
+            long jointime = Math.max(10, remainingTime / expectedJoin / 20);
+            //log("SCRAPER: expectedJoin = " + expectedJoin + ", jointime = " + jointime);
+            expectedJoin = 0;
+            for (MessageEntry me: remoteMessages[1]) {
+                assert me instanceof TwitterTweet;
+                TwitterTweet tt = (TwitterTweet) me;
+                if (tt.waitReady(jointime)) finishedTweets.add(tt, tt.getUser()); else expectedJoin++; // double additions are detected
             }
-            DAO.transmitTimeline(newMessages);
+            //log("SCRAPER: expectedJoin after loop = " + expectedJoin);
         }
-        if (post != null) post.recordEvent("local_scraper_wait_ready", System.currentTimeMillis() - start);
+        //log("SCRAPER: TIME LEFT after unshortening = " + (termination - System.currentTimeMillis()));
+        
+        if (post != null) post.recordEvent("local_scraper_wait_ready", System.currentTimeMillis() - start1);
 
         // record the query
-        start = System.currentTimeMillis();
+        long start2 = System.currentTimeMillis();
         QueryEntry qe = null;
         try {
             qe = queries.read(q);
@@ -920,10 +922,10 @@ public class DAO {
         if (Caretaker.acceptQuery4Retrieval(q)) {
             if (qe == null) {
                 // a new query occurred
-                qe = new QueryEntry(q, timezoneOffset, remoteMessages.period(), SourceType.TWITTER, byUserQuery);
+                qe = new QueryEntry(q, timezoneOffset, finishedTweets.period(), SourceType.TWITTER, byUserQuery);
             } else {
                 // existing queries are updated
-                qe.update(remoteMessages.period(), byUserQuery);
+                qe.update(finishedTweets.period(), byUserQuery);
             }
             try {
                 queries.writeEntry(q, SourceType.TWITTER.name(), qe);
@@ -934,9 +936,10 @@ public class DAO {
             // accept rules may change, we want to delete the query then in the index
             if (qe != null) queries.delete(q, qe.source_type);
         }
-        if (post != null) post.recordEvent("query_recorder", System.currentTimeMillis() - start);
+        if (post != null) post.recordEvent("query_recorder", System.currentTimeMillis() - start2);
+        //log("SCRAPER: TIME LEFT after recording = " + (termination - System.currentTimeMillis()));
         
-        return new Timeline[]{remoteMessages, newMessages};
+        return finishedTweets;
     }
     
     public static final Random random = new Random(System.currentTimeMillis());
@@ -1003,21 +1006,21 @@ public class DAO {
         return getBestPeers(testpeers);
     }
     
-    public static Timeline searchBackend(final String q, final Timeline.Order order, final int count, final int timezoneOffset, final String where) {
+    public static Timeline searchBackend(final String q, final Timeline.Order order, final int count, final int timezoneOffset, final String where, final long timeout) {
         List<String> remote = getBackendPeers();
         if (remote.size() > 0 && (peerLatency.get(remote.get(0)) == null || peerLatency.get(remote.get(0)) < 3000)) {
-            Timeline tt = searchOnOtherPeers(remote, q, order, count, timezoneOffset, where, SearchClient.backend_hash);
+            Timeline tt = searchOnOtherPeers(remote, q, order, count, timezoneOffset, where, SearchClient.backend_hash, timeout);
             if (tt != null) tt.writeToIndex();
             return tt;
         }
         return null;
     }
     
-    public static Timeline searchOnOtherPeers(final Collection<String> remote, final String q, final Timeline.Order order, final int count, final int timezoneOffset, final String source, final String provider_hash) {
+    public static Timeline searchOnOtherPeers(final Collection<String> remote, final String q, final Timeline.Order order, final int count, final int timezoneOffset, final String source, final String provider_hash, final long timeout) {
         for (String peer: remote) {
             long start = System.currentTimeMillis();
             try {
-                Timeline tl = SearchClient.search(peer, q, order, source, count, timezoneOffset, provider_hash);
+                Timeline tl = SearchClient.search(peer, q, order, source, count, timezoneOffset, provider_hash, timeout);
                 peerLatency.put(peer, System.currentTimeMillis() - start);
                 return tl;
             } catch (IOException e) {
