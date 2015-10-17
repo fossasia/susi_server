@@ -1,4 +1,4 @@
-#!/usr/bin/env sh
+#!/usr/bin/env bash
 cd "`dirname $0`"
 
 # for a production environment with high-availability requirement,
@@ -6,7 +6,7 @@ cd "`dirname $0`"
 # 0 *	* * *	root    cd /usr/share/loklak/bin && ./checkalive.sh
 
 FLAG=0
-if [ `./apicall.sh /index.html | grep "</html>"` ]; then
+if [[ -n `./apicall.sh index.html | grep "loklak"` ]]; then
   FLAG=1
 fi
 
