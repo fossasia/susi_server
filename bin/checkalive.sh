@@ -11,8 +11,8 @@ if [ `./apicall.sh /index.html | grep "</html>"` ]; then
 fi
 
 if [ $FLAG -eq '0' ]; then
-    ./stop.sh
-    ./kill.sh
-    ./start.sh
+  ./stop.sh & sleep 60; kill $!
+  ./kill.sh
+  ./start.sh
 fi
 exit
