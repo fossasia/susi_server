@@ -892,7 +892,7 @@ public class DAO {
         long start1 = System.currentTimeMillis();
         Timeline finishedTweets = remoteMessages[0]; // put all finished tweets here, abandon all other (they will live if they are finished in the search index)
         int expectedJoin = remoteMessages[1].size();
-        long termination = start0 + timeout;
+        long termination = start0 + timeout - 200; // the -200 is here to give the recording process some time as well. If we exceed the timeout, the front-end will discard all results!
         //log("SCRAPER: TIME LEFT before unshortening = " + (termination - System.currentTimeMillis()));
         while (System.currentTimeMillis() < termination && expectedJoin > 0) {
             // iterate over all messages, wait a bit and re-calculate expectedJoin at the end
