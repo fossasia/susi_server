@@ -511,7 +511,7 @@ public class DAO {
             // record account into text file
             if (dump) account_dump.write(a.toMap(null));
 
-            // record tweet into search index
+            // record account into search index
             accounts.writeEntry(a.getScreenName(), a.getSourceType().name(), a);
         } catch (IOException e) {
             e.printStackTrace();
@@ -874,7 +874,7 @@ public class DAO {
             long start = System.currentTimeMillis();
             remoteMessages = new Timeline[]{searchOnOtherPeers(remote, q, order, 100, timezoneOffset, "all", SearchClient.frontpeer_hash, timeout), new Timeline(order)}; // all must be selected here to catch up missing tweets between intervals
             if (post != null) post.recordEvent("remote_scraper_on_" + remote.get(0), System.currentTimeMillis() - start);
-            if (remoteMessages == null || (remoteMessages[0].size() == 0 && remoteMessages[1].size() == 0)) {
+            if (remoteMessages == null || ((remoteMessages[0] == null || remoteMessages[0].size() == 0) && (remoteMessages[1] == null || remoteMessages[1].size() == 0))) {
                 // maybe the remote server died, we try then ourself
                 start = System.currentTimeMillis();
                 remoteMessages = TwitterScraper.search(q, order);
@@ -1024,7 +1024,7 @@ public class DAO {
                 peerLatency.put(peer, System.currentTimeMillis() - start);
                 return tl;
             } catch (IOException e) {
-                e.printStackTrace();
+                DAO.log("searchOnOtherPeers: no IO to scraping target: " + e.getMessage());
                 // the remote peer seems to be unresponsive, remove it (temporary) from the remote peer list
                 peerLatency.put(peer, System.currentTimeMillis() - start);
                 frontPeerCache.remove(peer);

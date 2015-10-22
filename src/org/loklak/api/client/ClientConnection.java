@@ -26,6 +26,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -104,7 +105,12 @@ public class ClientConnection {
     }
 
     private void init(HttpUriRequest request) throws IOException {
-        HttpResponse httpResponse = httpClient.execute(request);
+        HttpResponse httpResponse = null;
+        try {
+            httpResponse = httpClient.execute(request);
+        } catch (UnknownHostException e) {
+            throw new IOException(e.getMessage());
+        }
         HttpEntity httpEntity = httpResponse.getEntity();
         if (httpEntity != null) {
             if (httpResponse.getStatusLine().getStatusCode() == 200) {
