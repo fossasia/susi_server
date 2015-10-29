@@ -18,12 +18,12 @@
  */
 package org.loklak.api.server.push;
 
-import org.loklak.api.client.ClientConnection;
-import org.loklak.api.server.RemoteAccess;
 import org.loklak.data.DAO;
 import org.loklak.geo.LocationSource;
 import org.loklak.harvester.JsonFieldConverter;
 import org.loklak.harvester.SourceType;
+import org.loklak.http.ClientConnection;
+import org.loklak.http.RemoteAccess;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -35,6 +35,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
+
 import java.io.IOException;
 import java.io.StringReader;
 import java.util.ArrayList;

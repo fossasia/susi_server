@@ -40,12 +40,12 @@ import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.loklak.api.client.ClientConnection;
 import org.loklak.data.DAO;
 import org.loklak.data.ProviderType;
 import org.loklak.data.Timeline;
 import org.loklak.data.MessageEntry;
 import org.loklak.data.UserEntry;
+import org.loklak.http.ClientConnection;
 import org.loklak.tools.UTF8;
 
 public class TwitterScraper {

@@ -23,8 +23,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.github.fge.jsonschema.core.report.ProcessingReport;
 
-import org.loklak.api.client.ClientConnection;
-import org.loklak.api.server.RemoteAccess;
 import org.loklak.data.DAO;
 import org.loklak.data.MessageEntry;
 import org.loklak.geo.LocationSource;
@@ -32,11 +30,14 @@ import org.loklak.geo.PlaceContext;
 import org.loklak.harvester.JsonFieldConverter;
 import org.loklak.harvester.JsonValidator;
 import org.loklak.harvester.SourceType;
+import org.loklak.http.ClientConnection;
+import org.loklak.http.RemoteAccess;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;

@@ -7,8 +7,8 @@ import java.io.PrintWriter;
 import java.net.Socket;
 import java.net.URL;
 
-import org.loklak.api.client.ClientConnection;
 import org.loklak.data.DAO;
+import org.loklak.http.ClientConnection;
 
 public class RedirectUnshortener {
 

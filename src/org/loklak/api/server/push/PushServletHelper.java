@@ -2,7 +2,6 @@ package org.loklak.api.server.push;
 
 import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.elasticsearch.common.xcontent.XContentFactory;
-import org.loklak.api.server.RemoteAccess;
 import org.loklak.data.DAO;
 import org.loklak.data.ImportProfileEntry;
 import org.loklak.data.MessageEntry;
@@ -11,6 +10,7 @@ import org.loklak.data.Timeline;
 import org.loklak.data.PrivacyStatus;
 import org.loklak.harvester.HarvestingFrequency;
 import org.loklak.harvester.SourceType;
+import org.loklak.http.RemoteAccess;
 
 import java.io.IOException;
 import java.util.HashMap;

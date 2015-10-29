@@ -32,6 +32,7 @@ import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.elasticsearch.common.xcontent.XContentFactory;
 import org.loklak.Caretaker;
 import org.loklak.data.DAO;
+import org.loklak.http.RemoteAccess;
 import org.loklak.tools.OS;
 
 public class StatusServlet extends HttpServlet {

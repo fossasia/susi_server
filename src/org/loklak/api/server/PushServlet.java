@@ -35,6 +35,7 @@ import org.loklak.data.DAO;
 import org.loklak.data.ProviderType;
 import org.loklak.data.MessageEntry;
 import org.loklak.data.UserEntry;
+import org.loklak.http.RemoteAccess;
 import org.loklak.tools.UTF8;
 
 

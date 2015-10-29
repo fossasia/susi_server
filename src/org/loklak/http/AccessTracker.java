@@ -17,7 +17,7 @@
  *  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.loklak.data;
+package org.loklak.http;
 
 import java.io.File;
 import java.io.IOException;
@@ -30,7 +30,7 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.concurrent.ConcurrentSkipListMap;
 
-import org.loklak.api.server.RemoteAccess;
+import org.loklak.data.DAO;
 import org.loklak.tools.DateParser;
 import org.loklak.tools.json.JSONObject;
 import org.loklak.tools.storage.JsonRepository;

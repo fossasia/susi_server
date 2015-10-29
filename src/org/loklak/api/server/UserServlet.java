@@ -32,6 +32,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.loklak.harvester.TwitterAPI;
+import org.loklak.http.RemoteAccess;
 
 import twitter4j.TwitterException;
 

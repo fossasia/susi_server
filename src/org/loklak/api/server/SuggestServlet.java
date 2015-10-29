@@ -39,6 +39,7 @@ import org.loklak.data.AbstractIndexEntry;
 import org.loklak.data.DAO;
 import org.loklak.data.QueryEntry;
 import org.loklak.harvester.SourceType;
+import org.loklak.http.RemoteAccess;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 

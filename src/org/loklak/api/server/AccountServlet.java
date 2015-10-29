@@ -34,6 +34,8 @@ import javax.servlet.http.HttpServletResponse;
 import org.loklak.data.AccountEntry;
 import org.loklak.data.DAO;
 import org.loklak.data.UserEntry;
+import org.loklak.http.RemoteAccess;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class AccountServlet extends HttpServlet {

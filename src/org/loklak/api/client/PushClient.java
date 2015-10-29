@@ -24,6 +24,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.loklak.data.Timeline;
+import org.loklak.http.ClientConnection;
 import org.loklak.tools.UTF8;
 
 import com.fasterxml.jackson.core.JsonProcessingException;

@@ -30,6 +30,7 @@ import org.loklak.data.ProviderType;
 import org.loklak.data.Timeline;
 import org.loklak.data.MessageEntry;
 import org.loklak.data.UserEntry;
+import org.loklak.http.ClientConnection;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 

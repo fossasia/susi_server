@@ -17,7 +17,7 @@
  *  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.loklak.api.server;
+package org.loklak.http;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -43,7 +43,6 @@ import javax.servlet.http.Part;
 
 import org.elasticsearch.common.Base64;
 import org.loklak.LoklakServer;
-import org.loklak.data.AccessTracker;
 import org.loklak.data.DAO;
 import org.loklak.tools.DateParser;
 import org.loklak.tools.UTF8;

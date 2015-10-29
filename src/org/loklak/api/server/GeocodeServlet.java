@@ -32,6 +32,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.loklak.data.DAO;
 import org.loklak.geo.GeoMark;
+import org.loklak.http.RemoteAccess;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 

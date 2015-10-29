@@ -36,6 +36,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.loklak.Caretaker;
+import org.loklak.http.RemoteAccess;
 import org.loklak.tools.CharacterCoding;
 import org.loklak.tools.UTF8;
 

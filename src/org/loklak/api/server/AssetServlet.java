@@ -34,8 +34,8 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.loklak.api.server.RemoteAccess;
 import org.loklak.data.DAO;
+import org.loklak.http.RemoteAccess;
 import org.loklak.tools.UTF8;
 
 public class AssetServlet extends HttpServlet {
