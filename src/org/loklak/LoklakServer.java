@@ -87,26 +87,14 @@ import org.loklak.api.server.ImportProfileServlet;
 import org.loklak.data.DAO;
 import org.loklak.harvester.TwitterScraper;
 import org.loklak.tools.Browser;
+import org.loklak.tools.OS;
 import org.loklak.vis.server.MapServlet;
 import org.loklak.vis.server.MarkdownServlet;
 
 public class LoklakServer {
 
-    private final static Set<PosixFilePermission> securePerm = new HashSet<PosixFilePermission>();
-    
     public final static Set<String> blacklistedHosts = new ConcurrentHashSet<>();
-    
-    static {
-        securePerm.add(PosixFilePermission.OWNER_READ);
-        securePerm.add(PosixFilePermission.OWNER_WRITE);
-        securePerm.add(PosixFilePermission.OWNER_EXECUTE);
-    }
-    
-    public final static void protectPath(Path path) {
-        try {
-            Files.setPosixFilePermissions(path, LoklakServer.securePerm);
-        } catch (UnsupportedOperationException | IOException e) {}
-    }
+
     
     private static Server server = null;
     private static Caretaker caretaker = null;
@@ -119,7 +107,7 @@ public class LoklakServer {
         for (Map.Entry<Object, Object> entry: prop.entrySet()) config.put((String) entry.getKey(), (String) entry.getValue());
         Path settings_dir = data.resolve("settings");
         settings_dir.toFile().mkdirs();
-        LoklakServer.protectPath(settings_dir);
+        OS.protectPath(settings_dir);
         File customized_config = new File(settings_dir.toFile(), "customized_config.properties");
         if (!customized_config.exists()) {
             BufferedWriter w = new BufferedWriter(new FileWriter(customized_config));

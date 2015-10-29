@@ -84,6 +84,7 @@ import org.loklak.harvester.SourceType;
 import org.loklak.harvester.TwitterScraper;
 import org.loklak.harvester.TwitterScraper.TwitterTweet;
 import org.loklak.tools.DateParser;
+import org.loklak.tools.OS;
 import org.loklak.tools.storage.JsonDataset;
 import org.loklak.tools.storage.JsonReader;
 import org.loklak.tools.storage.JsonRepository;
@@ -165,7 +166,7 @@ public class DAO {
             
             account_dump_dir = dataPath.resolve("accounts");
             account_dump_dir.toFile().mkdirs();
-            LoklakServer.protectPath(account_dump_dir); // no other permissions to this path
+            OS.protectPath(account_dump_dir); // no other permissions to this path
             account_dump = new JsonRepository(account_dump_dir.toFile(), ACCOUNT_DUMP_FILE_PREFIX, null, JsonRepository.REWRITABLE_MODE, 1);
 
             File user_dump_dir = new File(datadir, "accounts");
@@ -188,7 +189,7 @@ public class DAO {
             
             Path log_dump_dir = dataPath.resolve("log");
             log_dump_dir.toFile().mkdirs();
-            LoklakServer.protectPath(log_dump_dir); // no other permissions to this path
+            OS.protectPath(log_dump_dir); // no other permissions to this path
             access = new AccessTracker(log_dump_dir.toFile(), ACCESS_DUMP_FILE_PREFIX, 60000, 3000);
             access.start(); // start monitor
             
@@ -224,7 +225,7 @@ public class DAO {
             elasticsearch_node = NodeBuilder.nodeBuilder().settings(builder).node();
             elasticsearch_client = elasticsearch_node.client();
             Path index_dir = dataPath.resolve("index");
-            if (index_dir.toFile().exists()) LoklakServer.protectPath(index_dir); // no other permissions to this path
+            if (index_dir.toFile().exists()) OS.protectPath(index_dir); // no other permissions to this path
             
             // define the index factories
             messages = new MessageFactory(elasticsearch_client, MESSAGES_INDEX_NAME, CACHE_MAXSIZE);
@@ -280,7 +281,7 @@ public class DAO {
     public static Collection<File> getTweetOwnDumps() {
         return message_dump.getOwnDumps();
     }
-    
+
     public static int importMessageDumps() throws IOException {
         int imported = 0;
         Collection<JsonReader> message_readers = message_dump.getImportDumpReaders(true);
@@ -292,6 +293,15 @@ public class DAO {
         return imported;
     }
     
+    public static void importAccountDumps() throws IOException {
+        Collection<JsonReader> account_readers = account_dump.getImportDumpReaders(true);
+        if (account_readers == null || account_readers.size() == 0) return;
+        for (JsonReader reader: account_readers) {
+            importAccountDump(reader);
+        }
+        account_dump.shiftProcessedDumps();
+    }
+
     public static int importMessageDump(final JsonReader dumpReader) {
         (new Thread(dumpReader)).start();
         final AtomicInteger newTweet = new AtomicInteger(0);
@@ -325,6 +335,35 @@ public class DAO {
             try {indexerThreads[i].join();} catch (InterruptedException e) {}
         }
         return newTweet.get();
+    }
+    
+    public static void importAccountDump(final JsonReader dumpReader) {
+        (new Thread(dumpReader)).start();
+        Thread[] indexerThreads = new Thread[dumpReader.getConcurrency()];
+        for (int i = 0; i < dumpReader.getConcurrency(); i++) {
+            indexerThreads[i] = new Thread() {
+                public void run() {
+                    JsonFactory accountEntry;
+                    try {
+                        while ((accountEntry = dumpReader.take()) != JsonStreamReader.POISON_JSON_MAP) {
+                            try {
+                                Map<String, Object> json = accountEntry.getJson();
+                                AccountEntry a = new AccountEntry(json);
+                                DAO.writeAccount(a, false);
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                            }
+                        }
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }
+            };
+            indexerThreads[i].start();
+        }
+        for (int i = 0; i < dumpReader.getConcurrency(); i++) {
+            try {indexerThreads[i].join();} catch (InterruptedException e) {}
+        }
     }
     
     /**

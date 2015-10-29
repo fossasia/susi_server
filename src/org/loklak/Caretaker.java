@@ -112,6 +112,7 @@ public class Caretaker extends Thread {
             // scan dump input directory to import files
             try {
                 DAO.importMessageDumps();
+                DAO.importAccountDumps();
             } catch (IOException e1) {
                 e1.printStackTrace();
             }

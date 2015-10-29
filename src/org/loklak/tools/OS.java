@@ -32,11 +32,16 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.lang.management.ManagementFactory;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.attribute.PosixFilePermission;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 
 import org.loklak.data.DAO;
 
@@ -65,6 +70,8 @@ public final class OS {
     public  static final Map<String, String> macFSTypeCache = new HashMap<String, String>();
     public  static final Map<String, String> macFSCreatorCache = new HashMap<String, String>();
 
+    private final static Set<PosixFilePermission> securePerm = new HashSet<PosixFilePermission>();
+    
     // static initialization
     static {
         // check operation system type
@@ -83,8 +90,18 @@ public final class OS {
 
         // set up maximum path length according to system
         if (isWindows) maxPathLength = 255; else maxPathLength = 65535;
+        
+        securePerm.add(PosixFilePermission.OWNER_READ);
+        securePerm.add(PosixFilePermission.OWNER_WRITE);
+        securePerm.add(PosixFilePermission.OWNER_EXECUTE);
     }
-
+    
+    public final static void protectPath(Path path) {
+        try {
+            Files.setPosixFilePermissions(path, securePerm);
+        } catch (UnsupportedOperationException | IOException e) {}
+    }
+    
     private static long copy(final InputStream source, final OutputStream dest, final long count)
             throws IOException {
         assert count < 0 || count > 0 : "precondition violated: count == " + count + " (nothing to copy)";
