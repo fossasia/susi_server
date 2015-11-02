@@ -358,8 +358,10 @@ public class MessageEntry extends AbstractIndexEntry implements IndexEntry {
     
     public String getText(final int iflinkexceedslength, final String urlstub) {
         // check if we shall replace shortlinks
-        if (this.getLinks() != null && this.getLinks().length == 1 && this.getLinks()[0] != null && this.getLinks()[0].length() > iflinkexceedslength) {
-            return this.text.replace(this.getLinks()[0], urlstub + "/x?id=" + this.getId());
+        if (this.getLinks() != null && this.getLinks().length == 1 &&
+            this.getLinks()[0] != null && this.getLinks()[0].length() > iflinkexceedslength &&
+            DAO.existMessage(this.getIdStr())) {
+            return this.text.replace(this.getLinks()[0], urlstub + "/x?id=" + this.getIdStr());
         }
         return this.text;
     }
