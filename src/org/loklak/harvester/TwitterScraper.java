@@ -463,7 +463,7 @@ public class TwitterScraper {
                 if (tweet instanceof TwitterTweet) {
                     ((TwitterTweet) tweet).waitReady(10000);
                 }
-                System.out.println("@" + tweet.getScreenName() + " - " + tweet.getText());
+                System.out.println("@" + tweet.getScreenName() + " - " + tweet.getText(Integer.MAX_VALUE, ""));
             }
         }
         System.exit(0);

@@ -180,6 +180,8 @@ public class SearchServlet extends HttpServlet {
         }
         
         // create json or xml according to path extension
+        int shortlink_iflinkexceedslength = (int) DAO.getConfig("shortlink.iflinkexceedslength", 500L);
+        String shortlink_urlstub = DAO.getConfig("shortlink.urlstub", "http://localhost:9000");
         if (jsonExt) {
             post.setResponse(response, jsonp ? "application/javascript": "application/json");
             // generate json
@@ -208,8 +210,8 @@ public class SearchServlet extends HttpServlet {
             try {
                 for (MessageEntry t: tl) {
                     UserEntry u = tl.getUser(t);
-                    if (DAO.getConfig("flag.fixunshorten", false)) t.setText(TwitterScraper.unshorten(t.getText()));
-                    statuses.add(t.toMap(u, true));
+                    if (DAO.getConfig("flag.fixunshorten", false)) t.setText(TwitterScraper.unshorten(t.getText(shortlink_iflinkexceedslength, shortlink_urlstub)));
+                    statuses.add(t.toMap(u, true, shortlink_iflinkexceedslength, shortlink_urlstub));
                 }
             } catch (ConcurrentModificationException e) {
                 // late incoming messages from concurrent peer retrieval may cause this
@@ -254,7 +256,7 @@ public class SearchServlet extends HttpServlet {
                     m.setLink(t.getStatusIdUrl().toExternalForm());
                     m.setAuthor(u.getName() + " @" + u.getScreenName());
                     m.setTitle(u.getName() + " @" + u.getScreenName());
-                    m.setDescription(t.getText());
+                    m.setDescription(t.getText(shortlink_iflinkexceedslength, shortlink_urlstub));
                     m.setPubDate(t.getCreatedAt());
                     m.setGuid(t.getIdStr());
                     feed.addMessage(m);
@@ -274,7 +276,7 @@ public class SearchServlet extends HttpServlet {
             try {
                 for (MessageEntry t: tl) {
                     UserEntry u = tl.getUser(t);
-                    buffer.append(t.getCreatedAt()).append(" ").append(u.getScreenName()).append(": ").append(t.getText()).append('\n');
+                    buffer.append(t.getCreatedAt()).append(" ").append(u.getScreenName()).append(": ").append(t.getText(shortlink_iflinkexceedslength, shortlink_urlstub)).append('\n');
                 }
             } catch (ConcurrentModificationException e) {
                 // late incoming messages from concurrent peer retrieval may cause this

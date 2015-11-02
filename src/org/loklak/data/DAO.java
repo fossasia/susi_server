@@ -511,10 +511,10 @@ public class DAO {
             }
             
             // record tweet into text file
-            if (dump) message_dump.write(t.toMap(u, false));
+            if (dump) message_dump.write(t.toMap(u, false, Integer.MAX_VALUE, ""));
             
             // teach the classifier
-            Classifier.learnPhrase(t.getText());
+            Classifier.learnPhrase(t.getText(Integer.MAX_VALUE, ""));
         } catch (IOException e) {
             e.printStackTrace();
         }

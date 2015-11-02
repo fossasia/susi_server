@@ -181,7 +181,7 @@ public class Timeline implements Iterable<MessageEntry> {
         List<Object> statuses = new ArrayList<>();
         for (MessageEntry t: this) {
             UserEntry u = this.users.get(t.getScreenName());
-            statuses.add(t.toMap(u, withEnrichedData));
+            statuses.add(t.toMap(u, withEnrichedData, Integer.MAX_VALUE, ""));
         }
         m.put("statuses", statuses);
         return m;
