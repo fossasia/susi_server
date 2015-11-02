@@ -75,7 +75,6 @@ import org.elasticsearch.search.aggregations.bucket.terms.Terms;
 import org.elasticsearch.search.aggregations.bucket.terms.Terms.Bucket;
 import org.elasticsearch.search.sort.SortOrder;
 import org.loklak.Caretaker;
-import org.loklak.LoklakServer;
 import org.loklak.api.client.SearchClient;
 import org.loklak.geo.GeoNames;
 import org.loklak.harvester.SourceType;
@@ -1055,9 +1054,14 @@ public class DAO {
         }
         return null;
     }
+
+    private final static Random randomPicker = new Random(System.currentTimeMillis());
     
-    public static Timeline searchOnOtherPeers(final Collection<String> remote, final String q, final Timeline.Order order, final int count, final int timezoneOffset, final String source, final String provider_hash, final long timeout) {
-        for (String peer: remote) {
+    public static Timeline searchOnOtherPeers(final List<String> remote, final String q, final Timeline.Order order, final int count, final int timezoneOffset, final String source, final String provider_hash, final long timeout) {
+        // select remote peer
+        while (remote.size() > 0) {
+            int pick = randomPicker.nextInt(remote.size());
+            String peer = remote.get(pick);
             long start = System.currentTimeMillis();
             try {
                 Timeline tl = SearchClient.search(peer, q, order, source, count, timezoneOffset, provider_hash, timeout);
@@ -1069,6 +1073,7 @@ public class DAO {
                 peerLatency.put(peer, System.currentTimeMillis() - start);
                 frontPeerCache.remove(peer);
                 backendPeerCache.remove(peer);
+                remote.remove(pick);
             }
         }
         return null;
