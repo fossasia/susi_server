@@ -69,6 +69,7 @@ import org.loklak.api.server.HelloServlet;
 import org.loklak.api.server.PeersServlet;
 import org.loklak.api.server.ProxyServlet;
 import org.loklak.api.server.PushServlet;
+import org.loklak.api.server.ShortlinkFromTweetServlet;
 import org.loklak.api.server.UserServlet;
 import org.loklak.api.server.push.GeoJsonPushServlet;
 import org.loklak.api.server.SearchServlet;
@@ -214,8 +215,9 @@ public class LoklakServer {
         File tmp = new File(dataFile, "tmp");
         ServletContextHandler servletHandler = new ServletContextHandler();
         FilterHolder filter = servletHandler.addFilter(GzipFilter.class, "/*", EnumSet.of(DispatcherType.REQUEST));
-            filter.setInitParameter("mimeTypes", "text/plain");
+        filter.setInitParameter("mimeTypes", "text/plain");
         servletHandler.addServlet(DumpDownloadServlet.class, "/dump/*");
+        servletHandler.addServlet(ShortlinkFromTweetServlet.class, "/x");
         servletHandler.addServlet(AccessServlet.class, "/api/access.json");
         servletHandler.addServlet(AccessServlet.class, "/api/access.html");
         servletHandler.addServlet(AccessServlet.class, "/api/access.txt");
