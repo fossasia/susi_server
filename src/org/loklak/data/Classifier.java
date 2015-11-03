@@ -152,7 +152,7 @@ public class Classifier {
         for (Context c: Context.values()) {
             //Set<String> voc = c.vocabulary();
             for (MessageEntry m: tl) {
-                c.learnPhrase(m.getText());
+                c.learnPhrase(m.getText(Integer.MAX_VALUE, ""));
             }
         }
         /*
