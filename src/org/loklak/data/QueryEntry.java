@@ -504,6 +504,7 @@ public class QueryEntry extends AbstractIndexEntry implements IndexEntry {
             for (String t: terms) {
                 aquery.should(parse(t, timezoneOffset));
             }
+            aquery.minimumNumberShouldMatch(1);
             return aquery;
         }
         
@@ -629,6 +630,7 @@ public class QueryEntry extends AbstractIndexEntry implements IndexEntry {
                         String[] screen_names = screen_name.split(",");
                         BoolQueryBuilder disjunction = QueryBuilders.boolQuery();
                         for (String name: screen_names) disjunction.should(QueryBuilders.termQuery("screen_name", name));
+                        disjunction.minimumNumberShouldMatch(1);
                         ops.add(disjunction);
                     }
                 }
@@ -651,6 +653,7 @@ public class QueryEntry extends AbstractIndexEntry implements IndexEntry {
                     BoolQueryBuilder nearquery = QueryBuilders.boolQuery()
                         .should(QueryBuilders.matchQuery("place_name", near_name))
                         .should(QueryBuilders.matchQuery("text", near_name));
+                    nearquery.minimumNumberShouldMatch(1);
                     ops.add(QueryBuilders.boolQuery().must(nearquery).must(QueryBuilders.matchQuery("place_context", PlaceContext.FROM.name())));
                 } else {                    
                     filters.add(QueryBuilders.geoDistanceQuery("location_point").distance(100.0, DistanceUnit.KILOMETERS).lat(loc.lat()).lon(loc.lon()));
@@ -695,6 +698,7 @@ public class QueryEntry extends AbstractIndexEntry implements IndexEntry {
                 for (QueryBuilder qb: ops) {
                     if (ORconnective) ((BoolQueryBuilder) bquery).should(qb); else ((BoolQueryBuilder) bquery).must(qb);
                 }
+                ((BoolQueryBuilder) bquery).minimumNumberShouldMatch(1);
                 for (QueryBuilder nqb: nops) {
                     ((BoolQueryBuilder) bquery).mustNot(nqb);
                 }

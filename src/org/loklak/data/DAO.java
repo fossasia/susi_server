@@ -832,6 +832,7 @@ public class DAO {
             suggest.should(QueryBuilders.moreLikeThisQuery("query").likeText(q));
             suggest.should(QueryBuilders.matchPhrasePrefixQuery("query", q));
             if (q.indexOf('*') >= 0 || q.indexOf('?') >= 0) suggest.should(QueryBuilders.wildcardQuery("query", q));
+            suggest.minimumNumberShouldMatch(1);
         }
 
         BoolQueryBuilder query;
