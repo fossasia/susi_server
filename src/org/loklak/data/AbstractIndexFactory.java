@@ -118,6 +118,7 @@ public abstract class AbstractIndexFactory<Entry extends IndexEntry> implements 
             if (be == null) break;
             bulkRequest.add(elasticsearch_client.prepareIndex(this.index_name, be.type, be.id).setSource(be.jsonMap));
             count++;
+            if (count >= 1000) break; // protect against OOM, the cache can be filled concurrently
         }
         if (count == 0) return 0;
         BulkResponse bulkResponse = bulkRequest.get();
