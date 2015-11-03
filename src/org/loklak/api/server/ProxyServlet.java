@@ -117,7 +117,7 @@ public class ProxyServlet extends HttpServlet {
                 if (user != null && user.getType().length() > 0) {
                     user.setProfileImageUrl(newUrl);
                     user.setProfileImage(buffer);
-                    DAO.writeUser(user, user.getType());
+                    DAO.writeUser(user, user.getType(), false);
                     if (!cache.full()) cache.put(url, buffer);
                 } else {
                     cache.put(url, buffer);

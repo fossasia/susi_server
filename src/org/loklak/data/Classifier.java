@@ -116,7 +116,7 @@ public class Classifier {
         }
     }
     
-    public static void learnPhrase(String message) {
+    public static synchronized void learnPhrase(String message) {
         for (Context c: Context.values()) c.learnPhrase(message);
     }
     

@@ -138,9 +138,9 @@ public class DAO {
     private static File schema_dir, conv_schema_dir;
     private static Node elasticsearch_node;
     private static Client elasticsearch_client;
-    private static UserFactory users;
+    public static UserFactory users;
     private static AccountFactory accounts;
-    private static MessageFactory messages;
+    public static MessageFactory messages;
     private static QueryFactory queries;
     private static ImportProfileFactory importProfiles;
     private static BlockingQueue<Timeline> newMessageTimelines = new LinkedBlockingQueue<Timeline>();
@@ -173,12 +173,12 @@ public class DAO {
                 "You can import dump files from other peers by dropping them into the import directory.\n" +
                 "Each dump file must start with the prefix '" + MESSAGE_DUMP_FILE_PREFIX + "' to be recognized.\n";
             message_dump_dir = dataPath.resolve("dump");
-            message_dump = new JsonRepository(message_dump_dir.toFile(), MESSAGE_DUMP_FILE_PREFIX, message_dump_readme, JsonRepository.COMPRESSED_MODE, 1);
+            message_dump = new JsonRepository(message_dump_dir.toFile(), MESSAGE_DUMP_FILE_PREFIX, message_dump_readme, JsonRepository.COMPRESSED_MODE, Runtime.getRuntime().availableProcessors());
             
             account_dump_dir = dataPath.resolve("accounts");
             account_dump_dir.toFile().mkdirs();
             OS.protectPath(account_dump_dir); // no other permissions to this path
-            account_dump = new JsonRepository(account_dump_dir.toFile(), ACCOUNT_DUMP_FILE_PREFIX, null, JsonRepository.REWRITABLE_MODE, 1);
+            account_dump = new JsonRepository(account_dump_dir.toFile(), ACCOUNT_DUMP_FILE_PREFIX, null, JsonRepository.REWRITABLE_MODE, Runtime.getRuntime().availableProcessors());
 
             File user_dump_dir = new File(datadir, "accounts");
             user_dump_dir.mkdirs();
@@ -205,7 +205,7 @@ public class DAO {
             access.start(); // start monitor
             
 	        import_profile_dump_dir = dataPath.resolve("import-profiles");
-            import_profile_dump = new JsonRepository(import_profile_dump_dir.toFile(), IMPORT_PROFILE_FILE_PREFIX, null, JsonRepository.COMPRESSED_MODE, 1);
+            import_profile_dump = new JsonRepository(import_profile_dump_dir.toFile(), IMPORT_PROFILE_FILE_PREFIX, null, JsonRepository.COMPRESSED_MODE, Runtime.getRuntime().availableProcessors());
 
             // load schema folder
             conv_schema_dir = new File("conf/conversion");
@@ -332,7 +332,7 @@ public class DAO {
                                 if (user == null) continue;
                                 UserEntry u = new UserEntry(user);
                                 MessageEntry t = new MessageEntry(json);
-                                boolean newtweet = DAO.writeMessage(t, u, false, true);
+                                boolean newtweet = DAO.writeMessage(t, u, false, true, true);
                                 if (newtweet) newTweet.incrementAndGet();
                             } catch (IOException e) {
                                 e.printStackTrace();
@@ -348,6 +348,8 @@ public class DAO {
         for (int i = 0; i < dumpReader.getConcurrency(); i++) {
             try {indexerThreads[i].join();} catch (InterruptedException e) {}
         }
+        try {DAO.users.bulkCacheFlush();} catch (IOException e) {}
+        try {DAO.messages.bulkCacheFlush();} catch (IOException e) {}
         return newTweet.get();
     }
     
@@ -496,7 +498,7 @@ public class DAO {
      * @param u a user
      * @return true if the record was stored because it did not exist, false if it was not stored because the record existed already
      */
-    public static boolean writeMessage(MessageEntry t, UserEntry u, boolean dump, boolean overwriteUser) {
+    public static boolean writeMessage(MessageEntry t, UserEntry u, boolean dump, boolean overwriteUser, boolean bulk) {
         if (t == null) {
             return false;
         }
@@ -512,16 +514,16 @@ public class DAO {
                 if (overwriteUser) {
                     UserEntry oldUser = users.read(u.getScreenName());
                     if (oldUser == null || !oldUser.equals(u)) {
-                        writeUser(u, t.getSourceType().name());
+                        writeUser(u, t.getSourceType().name(), bulk);
                     }
                 } else {
                     if (!users.exists(u.getScreenName())) {
-                        writeUser(u, t.getSourceType().name());
+                        writeUser(u, t.getSourceType().name(), bulk);
                     } 
                 }
     
                 // record tweet into search index
-                messages.writeEntry(t.getIdStr(), t.getSourceType().name(), t);
+                if (bulk) messages.writeEntryBulk(t.getIdStr(), t.getSourceType().name(), t); else messages.writeEntry(t.getIdStr(), t.getSourceType().name(), t);
             }
             
             // record tweet into text file
@@ -542,10 +544,10 @@ public class DAO {
      * @param u a user
      * @return true if the record was stored because it did not exist, false if it was not stored because the record existed already
      */
-    public synchronized static boolean writeUser(UserEntry u, String source_type) {
+    public synchronized static boolean writeUser(UserEntry u, String source_type, boolean bulk) {
         try {
             // record user into search index
-            users.writeEntry(u.getScreenName(), source_type, u);
+            if (bulk) users.writeEntryBulk(u.getScreenName(), source_type, u); else users.writeEntry(u.getScreenName(), source_type, u);
         } catch (IOException e) {
             e.printStackTrace();
         }

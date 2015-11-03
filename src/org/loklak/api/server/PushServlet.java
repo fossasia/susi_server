@@ -94,9 +94,11 @@ public class PushServlet extends HttpServlet {
                     tweet.put("provider_hash", remoteHash);
                     UserEntry u = new UserEntry(user);
                     MessageEntry t = new MessageEntry(tweet);
-                    boolean newtweet = DAO.writeMessage(t, u, true, true);
+                    boolean newtweet = DAO.writeMessage(t, u, true, true, true);
                     if (newtweet) newCount++; else knownCount++;
                 }
+                try {DAO.users.bulkCacheFlush();} catch (IOException e) {}
+                try {DAO.messages.bulkCacheFlush();} catch (IOException e) {}
             }
         } catch (IOException e) {
             e.printStackTrace();

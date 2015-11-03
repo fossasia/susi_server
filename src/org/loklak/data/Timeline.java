@@ -233,7 +233,7 @@ public class Timeline implements Iterable<MessageEntry> {
         for (MessageEntry t: this) {
             UserEntry u = getUser(t);
             assert u != null;
-            DAO.writeMessage(t, u, true, false);
+            DAO.writeMessage(t, u, true, false, false);
         }
     }
 }

@@ -21,7 +21,11 @@ package org.loklak.data;
 
 import java.io.IOException;
 import java.util.Map;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
 
+import org.elasticsearch.action.bulk.BulkRequestBuilder;
+import org.elasticsearch.action.bulk.BulkResponse;
 import org.elasticsearch.action.get.GetResponse;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.index.VersionType;
@@ -53,7 +57,7 @@ public abstract class AbstractIndexFactory<Entry extends IndexEntry> implements 
     }
     
     @Override
-public boolean exists(String id) {
+    public boolean exists(String id) {
         if (this.cache.exist(id)) return true;
         return elasticsearch_client.prepareGet(index_name, null, id).execute().actionGet().isExists();
     }
@@ -79,6 +83,7 @@ public boolean exists(String id) {
     
 
     public void writeEntry(String id, String type, Entry entry) throws IOException {
+        bulkCacheFlush();
         this.cache.put(id, entry);
         // record user into search index
         Map<String, Object> jsonMap = entry.toMap();
@@ -86,6 +91,50 @@ public boolean exists(String id) {
         if (jsonMap != null) {
             elasticsearch_client.prepareIndex(this.index_name, type, id).setSource(jsonMap)
                 .setVersion(1).setVersionType(VersionType.FORCE).execute().actionGet();
+        }
+    }
+    
+    public void writeEntryBulk(String id, String type, Entry entry) throws IOException {
+        BulkEntry be = new BulkEntry(id, type, entry);
+        if (be.jsonMap != null) try {
+            bulkCache.put(be);
+        } catch (InterruptedException e) {
+            throw new IOException(e.getMessage());
+        }
+        if (bulkCacheSize() >= 1000) bulkCacheFlush(); // protect against OOM
+    }
+
+    public int bulkCacheSize() {
+        return this.bulkCache.size();
+    }
+
+    public int bulkCacheFlush() throws IOException {
+        if (this.bulkCache.size() == 0) return 0;
+        
+        BulkRequestBuilder bulkRequest = elasticsearch_client.prepareBulk();
+        int count = 0;
+        while (this.bulkCache.size() > 0) {
+            BulkEntry be = this.bulkCache.poll();
+            if (be == null) break;
+            bulkRequest.add(elasticsearch_client.prepareIndex(this.index_name, be.type, be.id).setSource(be.jsonMap));
+            count++;
+        }
+        if (count == 0) return 0;
+        BulkResponse bulkResponse = bulkRequest.get();
+        if (bulkResponse.hasFailures()) throw new IOException(bulkResponse.buildFailureMessage());
+        return count;
+    }
+    
+    private BlockingQueue<BulkEntry> bulkCache = new LinkedBlockingQueue<>();
+    
+    private class BulkEntry {
+        private String id;
+        private String type;
+        private Map<String, Object> jsonMap;
+        public BulkEntry(String id, String type, Entry entry) {
+            this.id = id;
+            this.type = type;
+            this.jsonMap = entry.toMap();
         }
     }
 
