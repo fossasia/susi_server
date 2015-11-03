@@ -40,12 +40,19 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 public class Timeline implements Iterable<MessageEntry> {
 
     public static enum Order {
-        CREATED_AT,
-        RETWEET_COUNT,
-        FAVOURITES_COUNT;
-            
+        CREATED_AT("date"),
+        RETWEET_COUNT("long"),
+        FAVOURITES_COUNT("long");
+        String field_type;
+        
+        Order(String field_type) {this.field_type = field_type;}
+
         public String getMessageFieldName() {
             return this.name().toLowerCase();
+        }
+        
+        public String getMessageFieldType() {
+            return this.field_type;
         }
     }
     

@@ -85,8 +85,8 @@ public class TwitterScraper {
                 connection.close();
             }
         } catch (IOException e) {
-            // this could mean that twitter rejected the connection (DoS protection?)
-            e.printStackTrace();
+            // this could mean that twitter rejected the connection (DoS protection?) or we are offline (we should be silent then)
+            // e.printStackTrace();
             if (timelines == null) timelines = new Timeline[]{new Timeline(order), new Timeline(order)};
         };
 

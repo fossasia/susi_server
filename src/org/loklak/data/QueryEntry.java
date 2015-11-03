@@ -35,8 +35,6 @@ import java.util.regex.Pattern;
 
 import org.elasticsearch.common.unit.DistanceUnit;
 import org.elasticsearch.index.query.BoolQueryBuilder;
-import org.elasticsearch.index.query.FilterBuilder;
-import org.elasticsearch.index.query.FilterBuilders;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.index.query.RangeQueryBuilder;
@@ -595,7 +593,7 @@ public class QueryEntry extends AbstractIndexEntry implements IndexEntry {
             // compose query for text
             List<QueryBuilder> ops = new ArrayList<>();
             List<QueryBuilder> nops = new ArrayList<>();
-            List<FilterBuilder> filters = new ArrayList<>();
+            List<QueryBuilder> filters = new ArrayList<>();
             for (String text: text_positive_match)  {
                 ops.add(QueryBuilders.matchQuery("text", text));
             }
@@ -655,7 +653,7 @@ public class QueryEntry extends AbstractIndexEntry implements IndexEntry {
                         .should(QueryBuilders.matchQuery("text", near_name));
                     ops.add(QueryBuilders.boolQuery().must(nearquery).must(QueryBuilders.matchQuery("place_context", PlaceContext.FROM.name())));
                 } else {                    
-                    filters.add(FilterBuilders.geoDistanceFilter("location_point").distance(100.0, DistanceUnit.KILOMETERS).lat(loc.lat()).lon(loc.lon()));
+                    filters.add(QueryBuilders.geoDistanceQuery("location_point").distance(100.0, DistanceUnit.KILOMETERS).lat(loc.lat()).lon(loc.lon()));
                 }
             }
             if (modifier.containsKey("since")) try {
@@ -705,19 +703,19 @@ public class QueryEntry extends AbstractIndexEntry implements IndexEntry {
             
             // apply constraints as filters
             for (String text: text_positive_filter) {
-                filters.add(FilterBuilders.termsFilter("text", text));
+                filters.add(QueryBuilders.termsQuery("text", text));
             }
-            for (String text: text_negative_filter) filters.add(FilterBuilders.notFilter(FilterBuilders.termsFilter("text", text)));
+            for (String text: text_negative_filter) filters.add(QueryBuilders.notQuery(QueryBuilders.termsQuery("text", text)));
             for (Constraint c: Constraint.values()) {
                 if (constraints_positive.contains(c.name())) {
-                    filters.add(FilterBuilders.existsFilter(c.field_name));
+                    filters.add(QueryBuilders.existsQuery(c.field_name));
                 }
                 if (constraints_negative.contains(c.name())) {
-                    filters.add(FilterBuilders.notFilter(FilterBuilders.existsFilter(c.field_name)));
+                    filters.add(QueryBuilders.notQuery(QueryBuilders.existsQuery(c.field_name)));
                 }
             }
             if (constraints_positive.contains("location")) {
-                filters.add(FilterBuilders.termsFilter("place_context", (constraint_about ? PlaceContext.ABOUT : PlaceContext.FROM).name()));
+                filters.add(QueryBuilders.termsQuery("place_context", (constraint_about ? PlaceContext.ABOUT : PlaceContext.FROM).name()));
             }
 
             // special treatment of location constraints of the form /location=lon-west,lat-south,lon-east,lat-north i.e. /location=8.58,50.178,8.59,50.181
@@ -727,13 +725,13 @@ public class QueryEntry extends AbstractIndexEntry implements IndexEntry {
                     String params = cs.substring(Constraint.location.name().length() + 1);
                     String[] coord = params.split(",");
                     if (coord.length == 1) {
-                        filters.add(FilterBuilders.termsFilter("location_source", coord[0]));
+                        filters.add(QueryBuilders.termsQuery("location_source", coord[0]));
                     } else if (coord.length == 2) {
                         double lon = Double.parseDouble(coord[0]);
                         double lat = Double.parseDouble(coord[1]);
                         // ugly way to search exact geo_point : using geoboundingboxfilter, with two identical bounding points
                         // geoshape filter can search for exact point shape but it can't be performed on geo_point field
-                        filters.add(FilterBuilders.geoBoundingBoxFilter("location_point")
+                        filters.add(QueryBuilders.geoBoundingBoxQuery("location_point")
                                 .topLeft(lat, lon)
                                 .bottomRight(lat, lon));
                     }
@@ -743,21 +741,21 @@ public class QueryEntry extends AbstractIndexEntry implements IndexEntry {
                         double lon_east  = Double.parseDouble(coord[2]);
                         double lat_north = Double.parseDouble(coord[3]);
                         PlaceContext context = constraint_about ? PlaceContext.ABOUT : PlaceContext.FROM;
-                        filters.add(FilterBuilders.existsFilter(Constraint.location.field_name));
-                        filters.add(FilterBuilders.termsFilter("place_context", context.name()));
-                        filters.add(FilterBuilders.geoBoundingBoxFilter("location_point")
+                        filters.add(QueryBuilders.existsQuery(Constraint.location.field_name));
+                        filters.add(QueryBuilders.termsQuery("place_context", context.name()));
+                        filters.add(QueryBuilders.geoBoundingBoxQuery("location_point")
                                 .topLeft(lat_north, lon_west)
                                 .bottomRight(lat_south, lon_east));
-                        if (coord.length == 5) filters.add(FilterBuilders.termsFilter("location_source", coord[4]));
+                        if (coord.length == 5) filters.add(QueryBuilders.termsQuery("location_source", coord[4]));
                     }
                 } else if (cs.startsWith(Constraint.link.name() + "=")) {
                     String regexp = cs.substring(Constraint.link.name().length() + 1);
-                    filters.add(FilterBuilders.existsFilter(Constraint.link.field_name));
-                    filters.add(FilterBuilders.regexpFilter(Constraint.link.field_name, regexp));
+                    filters.add(QueryBuilders.existsQuery(Constraint.link.field_name));
+                    filters.add(QueryBuilders.regexpQuery(Constraint.link.field_name, regexp));
                 } else if (cs.startsWith(Constraint.source_type.name() + "=")) {
                     String regexp = cs.substring(Constraint.source_type.name().length() + 1);
                     if (SourceType.hasValue(regexp)) {
-                        filters.add(FilterBuilders.termFilter("_type", regexp));
+                        filters.add(QueryBuilders.termQuery("_type", regexp));
                     }
                 }
             }
@@ -766,13 +764,13 @@ public class QueryEntry extends AbstractIndexEntry implements IndexEntry {
                 if (cs.startsWith(Constraint.source_type.name() + "=")) {
                     String regexp = cs.substring(Constraint.source_type.name().length() + 1);
                     if (SourceType.hasValue(regexp)) {
-                        filters.add(FilterBuilders.notFilter(FilterBuilders.termFilter("_type", regexp)));
+                        filters.add(QueryBuilders.notQuery(QueryBuilders.termQuery("_type", regexp)));
                     }
 
                 }
             }
 
-            QueryBuilder cquery = filters.size() == 0 ? bquery : QueryBuilders.filteredQuery(bquery, FilterBuilders.andFilter(filters.toArray(new FilterBuilder[filters.size()])));
+            QueryBuilder cquery = filters.size() == 0 ? bquery : QueryBuilders.filteredQuery(bquery, QueryBuilders.andQuery(filters.toArray(new QueryBuilder[filters.size()])));
             return cquery;
         }
     }

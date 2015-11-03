@@ -56,26 +56,22 @@ import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.action.search.SearchType;
 import org.elasticsearch.client.Client;
-import org.elasticsearch.common.settings.ImmutableSettings;
-import org.elasticsearch.common.settings.ImmutableSettings.Builder;
+import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.common.unit.Fuzziness;
 import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.index.query.RangeQueryBuilder;
-import org.elasticsearch.index.query.BoolFilterBuilder;
-import org.elasticsearch.index.query.FilterBuilders;
-import org.elasticsearch.indices.IndexAlreadyExistsException;
-import org.elasticsearch.indices.IndexMissingException;
 import org.elasticsearch.node.Node;
 import org.elasticsearch.node.NodeBuilder;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.aggregations.AggregationBuilders;
-import org.elasticsearch.search.aggregations.bucket.histogram.DateHistogram;
+import org.elasticsearch.search.aggregations.bucket.histogram.DateHistogramInterval;
+import org.elasticsearch.search.aggregations.bucket.histogram.InternalHistogram;
 import org.elasticsearch.search.aggregations.bucket.terms.Terms;
 import org.elasticsearch.search.aggregations.bucket.terms.Terms.Bucket;
+import org.elasticsearch.search.sort.SortBuilders;
 import org.elasticsearch.search.sort.SortOrder;
 import org.loklak.Caretaker;
-import org.loklak.LoklakServer;
 import org.loklak.api.client.SearchClient;
 import org.loklak.geo.GeoNames;
 import org.loklak.harvester.SourceType;
@@ -98,6 +94,20 @@ import com.fasterxml.jackson.core.type.TypeReference;
  * The Data Access Object for the message project.
  * This provides only static methods because the class methods shall be available for
  * all other classes.
+ * 
+ * To debug, call elasticsearch directly i.e.:
+ * 
+ * get statistics
+ * curl localhost:9200/_stats?pretty=true
+ * 
+ * get statistics for message index
+ * curl -XGET 'http://127.0.0.1:9200/messages?pretty=true'
+ * 
+ * get mappings in message index
+ * curl -XGET "http://localhost:9200/messages/_mapping?pretty=true"
+ * 
+ * get search result from message index
+ * curl -XGET 'http://127.0.0.1:9200/messages/_search?q=*&pretty=true'
  */
 public class DAO {
 
@@ -202,11 +212,15 @@ public class DAO {
             schema_dir = new File("conf/schema");            
 
             // use all config attributes with a key starting with "elasticsearch." to set elasticsearch settings
-            Builder builder = ImmutableSettings.settingsBuilder();
+            Settings.Builder settings = Settings.builder();
             for (Map.Entry<String, String> entry: config.entrySet()) {
                 String key = entry.getKey();
-                if (key.startsWith("elasticsearch.")) builder.put(key.substring(14), entry.getValue());
+                if (key.startsWith("elasticsearch.")) settings.put(key.substring(14), entry.getValue());
             }
+            // patch the home path
+            settings.put("path.home", datadir.getAbsolutePath());
+            settings.put("path.data", datadir.getAbsolutePath());
+            settings.build();
 
             // load dictionaries if they are embedded here
             // read the file allCountries.zip from http://download.geonames.org/export/dump/allCountries.zip
@@ -223,8 +237,9 @@ public class DAO {
             }
             
             // start elasticsearch
-            elasticsearch_node = NodeBuilder.nodeBuilder().settings(builder).node();
-            elasticsearch_client = elasticsearch_node.client();
+            elasticsearch_node = NodeBuilder.nodeBuilder().settings(settings).node();
+            elasticsearch_client = elasticsearch_node.client(); // TransportClient.builder().settings(settings).build();
+
             Path index_dir = dataPath.resolve("index");
             if (index_dir.toFile().exists()) OS.protectPath(index_dir); // no other permissions to this path
             
@@ -234,23 +249,21 @@ public class DAO {
             accounts = new AccountFactory(elasticsearch_client, ACCOUNTS_INDEX_NAME, CACHE_MAXSIZE);
             queries = new QueryFactory(elasticsearch_client, QUERIES_INDEX_NAME, CACHE_MAXSIZE);
             importProfiles = new ImportProfileFactory(elasticsearch_client, IMPORT_PROFILE_INDEX_NAME, CACHE_MAXSIZE);
+
+            // create indices
+            try {elasticsearch_client.admin().indices().prepareCreate(MESSAGES_INDEX_NAME).execute().actionGet();} catch (Throwable e) {};
+            try {elasticsearch_client.admin().indices().prepareCreate(USERS_INDEX_NAME).execute().actionGet();} catch (Throwable e) {};
+            try {elasticsearch_client.admin().indices().prepareCreate(ACCOUNTS_INDEX_NAME).execute().actionGet();} catch (Throwable e) {};
+            try {elasticsearch_client.admin().indices().prepareCreate(QUERIES_INDEX_NAME).execute().actionGet();} catch (Throwable e) {};
+            try {elasticsearch_client.admin().indices().prepareCreate(IMPORT_PROFILE_INDEX_NAME).execute().actionGet();} catch (Throwable e) {};
+
             // set mapping (that shows how 'elastic' elasticsearch is: it's always good to define data types)
-            try {
-                elasticsearch_client.admin().indices().prepareCreate(MESSAGES_INDEX_NAME).execute().actionGet();
-                elasticsearch_client.admin().indices().prepareCreate(USERS_INDEX_NAME).execute().actionGet();
-                elasticsearch_client.admin().indices().prepareCreate(ACCOUNTS_INDEX_NAME).execute().actionGet();
-                elasticsearch_client.admin().indices().prepareCreate(QUERIES_INDEX_NAME).execute().actionGet();
-                elasticsearch_client.admin().indices().prepareCreate(IMPORT_PROFILE_INDEX_NAME).execute().actionGet();
-            } catch (IndexAlreadyExistsException ee) {}; // existing indexes are simply ignored, not re-created
-            try {
-                elasticsearch_client.admin().indices().preparePutMapping(MESSAGES_INDEX_NAME).setSource(messages.getMapping()).setType("_default_").execute().actionGet();
-                elasticsearch_client.admin().indices().preparePutMapping(USERS_INDEX_NAME).setSource(users.getMapping()).setType("_default_").execute().actionGet();
-                elasticsearch_client.admin().indices().preparePutMapping(ACCOUNTS_INDEX_NAME).setSource(accounts.getMapping()).setType("_default_").execute().actionGet();
-                elasticsearch_client.admin().indices().preparePutMapping(QUERIES_INDEX_NAME).setSource(queries.getMapping()).setType("_default_").execute().actionGet();
-                elasticsearch_client.admin().indices().preparePutMapping(IMPORT_PROFILE_INDEX_NAME).setSource(importProfiles.getMapping()).setType("_default_").execute().actionGet();
-            } catch (Throwable e) {
-                e.printStackTrace();
-            }
+            try {elasticsearch_client.admin().indices().preparePutMapping(MESSAGES_INDEX_NAME).setSource(messages.getMapping()).setType("_default_").execute().actionGet();} catch (Throwable e) {e.printStackTrace();};
+            try {elasticsearch_client.admin().indices().preparePutMapping(USERS_INDEX_NAME).setSource(users.getMapping()).setType("_default_").execute().actionGet();} catch (Throwable e) {e.printStackTrace();};
+            try {elasticsearch_client.admin().indices().preparePutMapping(ACCOUNTS_INDEX_NAME).setSource(accounts.getMapping()).setType("_default_").execute().actionGet();} catch (Throwable e) {e.printStackTrace();};
+            try {elasticsearch_client.admin().indices().preparePutMapping(QUERIES_INDEX_NAME).setSource(queries.getMapping()).setType("_default_").execute().actionGet();} catch (Throwable e) {e.printStackTrace();};
+            try {elasticsearch_client.admin().indices().preparePutMapping(IMPORT_PROFILE_INDEX_NAME).setSource(importProfiles.getMapping()).setType("_default_").execute().actionGet();} catch (Throwable e) {e.printStackTrace();};
+            
             // finally wait for healty status of shards
             ClusterHealthResponse health;
             do {
@@ -379,8 +392,8 @@ public class DAO {
         followers_dump.close();
         following_dump.close();
         access.close();
+        elasticsearch_client.close();
         elasticsearch_node.close();
-        while (!elasticsearch_node.isClosed()) try {Thread.sleep(100);} catch (InterruptedException e) {break;}
         Log.getLog().info("closed DAO");
     }
     
@@ -594,11 +607,16 @@ public class DAO {
     }
     
     private static long countLocal(String index) {
-        CountResponse response = elasticsearch_client.prepareCount(index)
+        try {
+            CountResponse response = elasticsearch_client.prepareCount(index)
                 .setQuery(QueryBuilders.matchAllQuery())
                 .execute()
                 .actionGet();
-        return response.getCount();
+            return response.getCount();
+        } catch (Throwable e) {
+            e.printStackTrace();
+            return 0;
+        }
     }
 
     public static MessageEntry readMessage(String id) throws IOException {
@@ -642,96 +660,104 @@ public class DAO {
          */
         public SearchLocalMessages(final String q, Timeline.Order order_field, int timezoneOffset, int resultCount, int aggregationLimit, String... aggregationFields) {
             this.timeline = new Timeline(order_field);
-            try {
-                // prepare request
-                QueryEntry.ElasticsearchQuery sq = new QueryEntry.ElasticsearchQuery(q, timezoneOffset);
-                SearchRequestBuilder request = elasticsearch_client.prepareSearch(MESSAGES_INDEX_NAME)
-                        .setSearchType(SearchType.QUERY_THEN_FETCH)
-                        .setQuery(sq.queryBuilder)
-                        .setFrom(0)
-                        .setSize(resultCount);
-                request.clearRescorers();
-                if (resultCount > 0) request.addSort(order_field.getMessageFieldName(), SortOrder.DESC);
-                boolean addTimeHistogram = false;
-                long interval = sq.until.getTime() - sq.since.getTime();
-                DateHistogram.Interval dateHistogrammInterval = interval > DateParser.WEEK_MILLIS ? DateHistogram.Interval.DAY : interval > DateParser.HOUR_MILLIS * 3 ? DateHistogram.Interval.HOUR : DateHistogram.Interval.MINUTE;
-                for (String field: aggregationFields) {
-                    if (field.equals("created_at")) {
-                        addTimeHistogram = true;
-                        request.addAggregation(AggregationBuilders.dateHistogram("created_at").field("created_at").timeZone("UTC").minDocCount(0).interval(dateHistogrammInterval));
-                    } else {
-                        request.addAggregation(AggregationBuilders.terms(field).field(field).minDocCount(1).size(aggregationLimit));
+            // prepare request
+            QueryEntry.ElasticsearchQuery sq = new QueryEntry.ElasticsearchQuery(q, timezoneOffset);
+            SearchRequestBuilder request = elasticsearch_client.prepareSearch(MESSAGES_INDEX_NAME)
+                    .setSearchType(SearchType.QUERY_THEN_FETCH)
+                    .setQuery(sq.queryBuilder)
+                    .setFrom(0)
+                    .setSize(resultCount);
+            request.clearRescorers();
+            if (resultCount > 0) {
+                request.addSort(
+                        SortBuilders.fieldSort(order_field.getMessageFieldName())
+                            .unmappedType(order_field.getMessageFieldType())
+                            .order(SortOrder.DESC)
+                        );
+            }
+            boolean addTimeHistogram = false;
+            long interval = sq.until.getTime() - sq.since.getTime();
+            DateHistogramInterval dateHistogrammInterval = interval > DateParser.WEEK_MILLIS ? DateHistogramInterval.DAY : interval > DateParser.HOUR_MILLIS * 3 ? DateHistogramInterval.HOUR : DateHistogramInterval.MINUTE;
+            for (String field: aggregationFields) {
+                if (field.equals("created_at")) {
+                    addTimeHistogram = true;
+                    request.addAggregation(AggregationBuilders.dateHistogram("created_at").field("created_at").timeZone("UTC").minDocCount(0).interval(dateHistogrammInterval));
+                } else {
+                    request.addAggregation(AggregationBuilders.terms(field).field(field).minDocCount(1).size(aggregationLimit));
+                }
+            }
+            // get response
+            SearchResponse response = request.execute().actionGet();
+            this.hits = (int) response.getHits().getTotalHits();
+                    
+            // evaluate search result
+            //long totalHitCount = response.getHits().getTotalHits();
+            SearchHit[] hits = response.getHits().getHits();
+            for (SearchHit hit: hits) {
+                Map<String, Object> map = hit.getSource();
+                MessageEntry tweet = new MessageEntry(map);
+                try {
+                    UserEntry user = users.read(tweet.getScreenName());
+                    assert user != null;
+                    if (user != null) {
+                        timeline.add(tweet, user);
+                    }
+                } catch (IOException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
+            }
+            
+            // evaluate aggregation
+            // collect results: fields
+            this.aggregations = new HashMap<>();
+            for (String field: aggregationFields) {
+                if (field.equals("created_at")) continue; // this has special handling below
+                Terms fieldCounts = response.getAggregations().get(field);
+                List<Bucket> buckets = fieldCounts.getBuckets();
+                // aggregate double-tokens (matching lowercase)
+                Map<String, Long> checkMap = new HashMap<>();
+                for (Bucket bucket: buckets) {
+                    String key = bucket.getKeyAsString().trim();
+                    if (key.length() > 0) {
+                        String k = key.toLowerCase();
+                        Long v = checkMap.get(k);
+                        checkMap.put(k, v == null ? bucket.getDocCount() : v + bucket.getDocCount());
                     }
                 }
-                // get response
-                SearchResponse response = request.execute().actionGet();
-                this.hits = (int) response.getHits().getTotalHits();
-                        
-                // evaluate search result
-                //long totalHitCount = response.getHits().getTotalHits();
-                SearchHit[] hits = response.getHits().getHits();
-                for (SearchHit hit: hits) {
-                    Map<String, Object> map = hit.getSource();
-                    MessageEntry tweet = new MessageEntry(map);
-                    try {
-                        UserEntry user = users.read(tweet.getScreenName());
-                        assert user != null;
-                        if (user != null) {
-                            timeline.add(tweet, user);
-                        }
-                    } catch (IOException e) {
-                        // TODO Auto-generated catch block
-                        e.printStackTrace();
+                ArrayList<Map.Entry<String, Long>> list = new ArrayList<>(buckets.size());
+                for (Bucket bucket: buckets) {
+                    String key = bucket.getKeyAsString().trim();
+                    if (key.length() > 0) {
+                        Long v = checkMap.remove(key.toLowerCase());
+                        if (v == null) continue;
+                        list.add(new AbstractMap.SimpleEntry<String, Long>(key, v));
                     }
                 }
+                aggregations.put(field, list);
+                //if (field.equals("place_country")) {
+                    // special handling of country aggregation: add the country center as well
+                //}
+            }
+            // date histogram:
+            if (addTimeHistogram) {
+                InternalHistogram<InternalHistogram.Bucket> dateCounts = response.getAggregations().get("created_at");              
+                ArrayList<Map.Entry<String, Long>> list = new ArrayList<>();
+                for (InternalHistogram.Bucket bucket : dateCounts.getBuckets()) {
+                    Calendar cal = Calendar.getInstance(DateParser.UTCtimeZone);
+                    org.joda.time.DateTime k = (org.joda.time.DateTime) bucket.getKey();
+                    cal.setTime(k.toDate());
+                    cal.add(Calendar.MINUTE, -timezoneOffset);
+                    long docCount = bucket.getDocCount();
+                    Map.Entry<String,Long> entry = new AbstractMap.SimpleEntry<String, Long>(
+                        (dateHistogrammInterval == DateHistogramInterval.DAY ?
+                            DateParser.dayDateFormat : DateParser.minuteDateFormat)
+                        .format(cal.getTime()), docCount);
+                    list.add(entry);
+                }
+                aggregations.put("created_at", list);
                 
-                // evaluate aggregation
-                // collect results: fields
-                this.aggregations = new HashMap<>();
-                for (String field: aggregationFields) {
-                    if (field.equals("created_at")) continue; // this has special handling below
-                    Terms fieldCounts = response.getAggregations().get(field);
-                    List<Bucket> buckets = fieldCounts.getBuckets();
-                    // aggregate double-tokens (matching lowercase)
-                    Map<String, Long> checkMap = new HashMap<>();
-                    for (Bucket bucket: buckets) {
-                        if (bucket.getKey().trim().length() > 0) {
-                            String k = bucket.getKey().toLowerCase();
-                            Long v = checkMap.get(k);
-                            checkMap.put(k, v == null ? bucket.getDocCount() : v + bucket.getDocCount());
-                        }
-                    }
-                    ArrayList<Map.Entry<String, Long>> list = new ArrayList<>(buckets.size());
-                    for (Bucket bucket: buckets) {
-                        if (bucket.getKey().trim().length() > 0) {
-                            Long v = checkMap.remove(bucket.getKey().toLowerCase());
-                            if (v == null) continue;
-                            list.add(new AbstractMap.SimpleEntry<String, Long>(bucket.getKey(), v));
-                        }
-                    }
-                    aggregations.put(field, list);
-                    //if (field.equals("place_country")) {
-                        // special handling of country aggregation: add the country center as well
-                    //}
-                }
-                // date histogram:
-                if (addTimeHistogram) {
-                    DateHistogram dateCounts = response.getAggregations().get("created_at");
-                    ArrayList<Map.Entry<String, Long>> list = new ArrayList<>();
-                    for (DateHistogram.Bucket bucket : dateCounts.getBuckets()) {
-                        Calendar cal = Calendar.getInstance(DateParser.UTCtimeZone);
-                        cal.setTime(bucket.getKeyAsDate().toDate());
-                        cal.add(Calendar.MINUTE, -timezoneOffset);
-                        long docCount = bucket.getDocCount();
-                        Map.Entry<String,Long> entry = new AbstractMap.SimpleEntry<String, Long>(
-                            (dateHistogrammInterval == DateHistogram.Interval.DAY ?
-                                DateParser.dayDateFormat : DateParser.minuteDateFormat)
-                            .format(cal.getTime()), docCount);
-                        list.add(entry);
-                    }
-                    aggregations.put("created_at", list);
-                }
-            } catch (IndexMissingException e) {}
+            }
         }
     }
 
@@ -750,33 +776,30 @@ public class DAO {
 
     public static UserEntry searchLocalUserByUserId(final String user_id) {
         if (user_id == null || user_id.length() == 0) return null;
-        try {
-            // prepare request
-            BoolQueryBuilder query = QueryBuilders.boolQuery();
-            query.must(QueryBuilders.termQuery(UserFactory.field_user_id, user_id));
+        // prepare request
+        BoolQueryBuilder query = QueryBuilders.boolQuery();
+        query.must(QueryBuilders.termQuery(UserFactory.field_user_id, user_id));
 
-            SearchRequestBuilder request = elasticsearch_client.prepareSearch(USERS_INDEX_NAME)
-                    .setSearchType(SearchType.QUERY_THEN_FETCH)
-                    .setQuery(query)
-                    .setFrom(0)
-                    .setSize(1);
+        SearchRequestBuilder request = elasticsearch_client.prepareSearch(USERS_INDEX_NAME)
+                .setSearchType(SearchType.QUERY_THEN_FETCH)
+                .setQuery(query)
+                .setFrom(0)
+                .setSize(1);
 
-            // get response
-            SearchResponse response = request.execute().actionGet();
+        // get response
+        SearchResponse response = request.execute().actionGet();
 
-            // evaluate search result
-            //long totalHitCount = response.getHits().getTotalHits();
-            SearchHit[] hits = response.getHits().getHits();
-            if (hits.length == 0) return null;
-            assert hits.length == 1;
-            Map<String, Object> map = hits[0].getSource();
-            return new UserEntry(map);            
-        } catch (IndexMissingException e) {}
-        return null;
+        // evaluate search result
+        //long totalHitCount = response.getHits().getTotalHits();
+        SearchHit[] hits = response.getHits().getHits();
+        if (hits.length == 0) return null;
+        assert hits.length == 1;
+        Map<String, Object> map = hits[0].getSource();
+        return new UserEntry(map);
     }
     
     /**
-     * Search the local account cache using a elasticsearch query.
+     * Search the local account cache using an elasticsearch query.
      * @param screen_name - the user id
      */
     public static AccountEntry searchLocalAccount(final String screen_name) {
@@ -795,50 +818,52 @@ public class DAO {
      * @param sort_field - the field name to sort the result list, i.e. "query_first"
      * @param sort_order - the sort order (you want to use SortOrder.DESC here)
      */
-    public static List<QueryEntry> SearchLocalQueries(final String q, final int resultCount, final String sort_field, final SortOrder sort_order, final Date since, final Date until, final String range_field) {
+    public static List<QueryEntry> SearchLocalQueries(final String q, final int resultCount, final String sort_field, final String default_sort_type, final SortOrder sort_order, final Date since, final Date until, final String range_field) {
         List<QueryEntry> queries = new ArrayList<>();
-        try {
-            // prepare request
-            BoolQueryBuilder suggest = QueryBuilders.boolQuery();
-            if (q != null && q.length() > 0) {
-                suggest.should(QueryBuilders.fuzzyLikeThisQuery("query").likeText(q).fuzziness(Fuzziness.fromEdits(2)));
-                suggest.should(QueryBuilders.moreLikeThisQuery("query").likeText(q));
-                suggest.should(QueryBuilders.matchPhrasePrefixQuery("query", q));
-                if (q.indexOf('*') >= 0 || q.indexOf('?') >= 0) suggest.should(QueryBuilders.wildcardQuery("query", q));
-            }
+        
+        // prepare request
+        BoolQueryBuilder suggest = QueryBuilders.boolQuery();
+        if (q != null && q.length() > 0) {
+            suggest.should(QueryBuilders.fuzzyQuery("query", q).fuzziness(Fuzziness.fromEdits(2)));
+            suggest.should(QueryBuilders.moreLikeThisQuery("query").likeText(q));
+            suggest.should(QueryBuilders.matchPhrasePrefixQuery("query", q));
+            if (q.indexOf('*') >= 0 || q.indexOf('?') >= 0) suggest.should(QueryBuilders.wildcardQuery("query", q));
+        }
 
-            BoolQueryBuilder query;
-            
-            if (range_field != null && range_field.length() > 0 && (since != null || until != null)) {
-                query = QueryBuilders.boolQuery();
-                if (q.length() > 0) query.must(suggest);
-                RangeQueryBuilder rangeQuery = QueryBuilders.rangeQuery(range_field);
-                rangeQuery.from(since == null ? 0 : since.getTime());
-                rangeQuery.to(until == null ? Long.MAX_VALUE : until.getTime());
-                query.must(rangeQuery);
-            } else {
-                query = suggest;
-            }
-            
-            SearchRequestBuilder request = elasticsearch_client.prepareSearch(QUERIES_INDEX_NAME)
-                    .setSearchType(SearchType.QUERY_THEN_FETCH)
-                    .setQuery(query)
-                    .setFrom(0)
-                    .setSize(resultCount)
-                    .addSort(sort_field, sort_order);
+        BoolQueryBuilder query;
+        
+        if (range_field != null && range_field.length() > 0 && (since != null || until != null)) {
+            query = QueryBuilders.boolQuery();
+            if (q.length() > 0) query.must(suggest);
+            RangeQueryBuilder rangeQuery = QueryBuilders.rangeQuery(range_field);
+            if (since != null) rangeQuery.from(since);
+            if (until != null) rangeQuery.to(until);
+            query.must(rangeQuery);
+        } else {
+            query = suggest;
+        }
+        
+        SearchRequestBuilder request = elasticsearch_client.prepareSearch(QUERIES_INDEX_NAME)
+                .setSearchType(SearchType.QUERY_THEN_FETCH)
+                .setQuery(query)
+                .setFrom(0)
+                .setSize(resultCount)
+                .addSort(
+                        SortBuilders.fieldSort(sort_field)
+                        .unmappedType(default_sort_type)
+                        .order(sort_order));
 
-            // get response
-            SearchResponse response = request.execute().actionGet();
+        // get response
+        SearchResponse response = request.execute().actionGet();
 
-            // evaluate search result
-            //long totalHitCount = response.getHits().getTotalHits();
-            SearchHit[] hits = response.getHits().getHits();
-            for (SearchHit hit: hits) {
-                Map<String, Object> map = hit.getSource();
-                queries.add(new QueryEntry(map));
-            }
+        // evaluate search result
+        //long totalHitCount = response.getHits().getTotalHits();
+        SearchHit[] hits = response.getHits().getHits();
+        for (SearchHit hit: hits) {
+            Map<String, Object> map = hit.getSource();
+            queries.add(new QueryEntry(map));
+        }
             
-        } catch (IndexMissingException e) {}
         return queries;
     }
 
@@ -853,32 +878,27 @@ public class DAO {
 
     public static Collection<ImportProfileEntry> SearchLocalImportProfilesWithConstraints(final Map<String, String> constraints, boolean latest) throws IOException {
         List<ImportProfileEntry> rawResults = new ArrayList<>();
-        try {
-            SearchRequestBuilder request = elasticsearch_client.prepareSearch(IMPORT_PROFILE_INDEX_NAME)
-                    .setSearchType(SearchType.QUERY_THEN_FETCH)
-                    .setFrom(0);
+        SearchRequestBuilder request = elasticsearch_client.prepareSearch(IMPORT_PROFILE_INDEX_NAME)
+                .setSearchType(SearchType.QUERY_THEN_FETCH)
+                .setFrom(0);
 
-            BoolFilterBuilder bFilter = FilterBuilders.boolFilter();
-            bFilter.must(FilterBuilders.termFilter("active_status", EntryStatus.ACTIVE.name().toLowerCase()));
-            for (Object o : constraints.entrySet()) {
-                @SuppressWarnings("rawtypes")
-                Map.Entry entry = (Map.Entry) o;
-                bFilter.must(FilterBuilders.termFilter((String) entry.getKey(), ((String) entry.getValue()).toLowerCase()));
-            }
-            request.setQuery(QueryBuilders.filteredQuery(QueryBuilders.matchAllQuery(), bFilter));
-            DAO.log(QueryBuilders.filteredQuery(QueryBuilders.matchAllQuery(), bFilter).toString());
-            // get response
-            SearchResponse response = request.execute().actionGet();
+        BoolQueryBuilder bFilter = QueryBuilders.boolQuery();
+        bFilter.must(QueryBuilders.termQuery("active_status", EntryStatus.ACTIVE.name().toLowerCase()));
+        for (Object o : constraints.entrySet()) {
+            @SuppressWarnings("rawtypes")
+            Map.Entry entry = (Map.Entry) o;
+            bFilter.must(QueryBuilders.termQuery((String) entry.getKey(), ((String) entry.getValue()).toLowerCase()));
+        }
+        request.setQuery(QueryBuilders.filteredQuery(QueryBuilders.matchAllQuery(), bFilter));
+        DAO.log(QueryBuilders.filteredQuery(QueryBuilders.matchAllQuery(), bFilter).toString());
+        // get response
+        SearchResponse response = request.execute().actionGet();
 
-            // evaluate search result
-            SearchHit[] hits = response.getHits().getHits();
-            for (SearchHit hit: hits) {
-                Map<String, Object> map = hit.getSource();
-                rawResults.add(new ImportProfileEntry(map));
-            }
-        } catch (IndexMissingException e) {
-            e.printStackTrace();
-            throw new IOException("Error searching import profiles : " + e.getMessage());
+        // evaluate search result
+        SearchHit[] hits = response.getHits().getHits();
+        for (SearchHit hit: hits) {
+            Map<String, Object> map = hit.getSource();
+            rawResults.add(new ImportProfileEntry(map));
         }
 
         if (!latest) {

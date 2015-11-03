@@ -25,7 +25,6 @@ import java.util.Map;
 import org.elasticsearch.action.get.GetResponse;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.index.VersionType;
-import org.elasticsearch.indices.IndexMissingException;
 import org.loklak.harvester.SourceType;
 import org.loklak.tools.Cache;
 
@@ -54,35 +53,20 @@ public abstract class AbstractIndexFactory<Entry extends IndexEntry> implements 
     }
     
     @Override
-    public boolean exists(String id) {
-        try {
-            if (this.cache.exist(id)) return true;
-            return elasticsearch_client.prepareGet(index_name, null, id).execute().actionGet().isExists();
-        } catch (IndexMissingException e) {
-            // may happen for first query
-            return false;
-        }
+public boolean exists(String id) {
+        if (this.cache.exist(id)) return true;
+        return elasticsearch_client.prepareGet(index_name, null, id).execute().actionGet().isExists();
     }
     
     @Override
     public boolean delete(String id, SourceType sourceType) {
-        try {
-            this.cache.remove(id);
+        this.cache.remove(id);
             return elasticsearch_client.prepareDelete(index_name, sourceType.name(), id).execute().actionGet().isFound();
-        } catch (IndexMissingException e) {
-            // may happen for first query
-            return false;
-        }
     }
 
     @Override
     public Map<String, Object> readMap(String id) {
-        try {
-            return getMap(elasticsearch_client.prepareGet(index_name, null, id).execute().actionGet());
-        } catch (IndexMissingException e) {
-            // may happen for first query
-            return null;
-        }
+        return getMap(elasticsearch_client.prepareGet(index_name, null, id).execute().actionGet());
     }
     
     protected static Map<String, Object> getMap(GetResponse response) {

@@ -125,7 +125,7 @@ public class Caretaker extends Thread {
             // run automatic searches
             if (DAO.getConfig("retrieval.queries.enabled", false)) {
                 // execute some queries again: look out in the suggest database for queries with outdated due-time in field retrieval_next
-                List<QueryEntry> queryList = DAO.SearchLocalQueries("", 10, "retrieval_next", SortOrder.ASC, null, new Date(), "retrieval_next");
+                List<QueryEntry> queryList = DAO.SearchLocalQueries("", 10, "retrieval_next", "date", SortOrder.ASC, null, new Date(), "retrieval_next");
                 for (QueryEntry qe: queryList) {
                     if (!acceptQuery4Retrieval(qe.getQuery())) {
                         DAO.deleteQuery(qe.getQuery(), qe.getSourceType());

@@ -86,7 +86,7 @@ public class SuggestServlet extends HttpServlet {
     
             if ((source.equals("all") || source.equals("query")) && query.length() >= 0) {
                 long start = System.currentTimeMillis();
-                queryList.addAll(DAO.SearchLocalQueries(query, count, orderby, order, since, until, selectby));
+                queryList.addAll(DAO.SearchLocalQueries(query, count, orderby, "long", order, since, until, selectby));
                 post.recordEvent("localqueries_time", System.currentTimeMillis() - start);
             }
             
@@ -94,7 +94,7 @@ public class SuggestServlet extends HttpServlet {
                 long start = System.currentTimeMillis();
                 for (QueryEntry qe: queryList) DAO.deleteQuery(qe.getQuery(), qe.getSourceType());
                 queryList.clear();
-                queryList.addAll(DAO.SearchLocalQueries(query, count, orderby, order, since, until, selectby));
+                queryList.addAll(DAO.SearchLocalQueries(query, count, orderby, "long", order, since, until, selectby));
                 post.recordEvent("localquerydelete_time", System.currentTimeMillis() - start);
             }
             
