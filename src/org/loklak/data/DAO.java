@@ -270,10 +270,12 @@ public class DAO {
                 log("Waiting for elasticsearch yellow status");
                 health = elasticsearch_client.admin().cluster().prepareHealth().setWaitForYellowStatus().execute().actionGet();
             } while (health.isTimedOut());
+            /**
             do {
                 log("Waiting for elasticsearch green status");
                 health = elasticsearch_client.admin().cluster().prepareHealth().setWaitForGreenStatus().execute().actionGet();
             } while (health.isTimedOut());
+            **/
             log("elasticsearch has started up! initializing the classifier");
             
             // start the classifier
