@@ -938,7 +938,8 @@ public class DAO {
         if (remote.size() > 0 && (peerLatency.get(remote.get(0)) == null || peerLatency.get(remote.get(0)).longValue() < 3000)) {
             long start = System.currentTimeMillis();
             remoteMessages = new Timeline[]{searchOnOtherPeers(remote, q, order, 100, timezoneOffset, "all", SearchClient.frontpeer_hash, timeout), new Timeline(order)}; // all must be selected here to catch up missing tweets between intervals
-            if (post != null) post.recordEvent("remote_scraper_on_" + remote.get(0), System.currentTimeMillis() - start);
+            // at this point the remote list can be empty as a side-effect of the remote search attempt
+            if (post != null && remote.size() > 0 && remoteMessages != null) post.recordEvent("remote_scraper_on_" + remote.get(0), System.currentTimeMillis() - start);
             if (remoteMessages == null || ((remoteMessages[0] == null || remoteMessages[0].size() == 0) && (remoteMessages[1] == null || remoteMessages[1].size() == 0))) {
                 // maybe the remote server died, we try then ourself
                 start = System.currentTimeMillis();
@@ -1092,6 +1093,8 @@ public class DAO {
             try {
                 Timeline tl = SearchClient.search(peer, q, order, source, count, timezoneOffset, provider_hash, timeout);
                 peerLatency.put(peer, System.currentTimeMillis() - start);
+                // to show which peer was used for the retrieval, we move the picked peer to the front of the list
+                if (pick != 0) remote.add(0, remote.remove(pick));
                 return tl;
             } catch (IOException e) {
                 DAO.log("searchOnOtherPeers: no IO to scraping target: " + e.getMessage());
