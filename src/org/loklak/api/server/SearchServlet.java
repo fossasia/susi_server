@@ -126,7 +126,7 @@ public class SearchServlet extends HttpServlet {
             if (backendThread != null) backendThread.start();
             DAO.SearchLocalMessages localSearchResult = new DAO.SearchLocalMessages(query, order, timezoneOffset, count, 0);
             post.recordEvent("cache_time", System.currentTimeMillis() - start);
-            cache_hits.set(localSearchResult.hits);
+            cache_hits.set(localSearchResult.timeline.getHits());
             tl.putAll(localSearchResult.timeline);
             long start1 = System.currentTimeMillis();
             if (backendThread != null) try {backendThread.join(Math.max(100, timeout - System.currentTimeMillis() + start));} catch (InterruptedException e) {}
@@ -161,7 +161,7 @@ public class SearchServlet extends HttpServlet {
             if ("cache".equals(source)) {
                 long start = System.currentTimeMillis();
                 DAO.SearchLocalMessages localSearchResult = new DAO.SearchLocalMessages(query, order, timezoneOffset, count, limit, fields);
-                cache_hits.set(localSearchResult.hits);
+                cache_hits.set(localSearchResult.timeline.getHits());
                 tl.putAll(localSearchResult.timeline);
                 aggregations = localSearchResult.aggregations;
                 post.recordEvent("cache_time", System.currentTimeMillis() - start);
