@@ -58,6 +58,7 @@ public class Timeline implements Iterable<MessageEntry> {
     
     private NavigableMap<String, MessageEntry> tweets; // the key is the date plus id of the tweet
     private Map<String, UserEntry> users;
+    private int hits = -1;
     final private Order order;
     
     public Timeline(Order order) {
@@ -235,5 +236,13 @@ public class Timeline implements Iterable<MessageEntry> {
             assert u != null;
             DAO.writeMessage(t, u, true, false, false);
         }
+    }
+    
+    public void setHits(int hits) {
+        this.hits = hits;
+    }
+    
+    public int getHits() {
+        return this.hits == -1 ? this.size() : this.hits;
     }
 }

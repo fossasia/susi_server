@@ -48,8 +48,7 @@ public class SearchClient {
         } catch (UnsupportedEncodingException e1) {
             return tl;
         }
-        byte[] response = ClientConnection.download(urlstring);
-        byte[] json = response;
+        byte[] json = ClientConnection.download(urlstring);
         if (json == null || json.length == 0) return tl;
         Map<String, Object> map = DAO.jsonMapper.readValue(json, DAO.jsonTypeRef);
         Object statuses_obj = map.get("statuses");
@@ -64,6 +63,12 @@ public class SearchClient {
                 MessageEntry t = new MessageEntry(tweet);
                 tl.add(t, u);
             }
+        }
+        Object metadata_obj = map.get("search_metadata");
+        @SuppressWarnings("unchecked") Map<String, Object> metadata = metadata_obj instanceof Map<?,?> ? (Map<String, Object>) metadata_obj : null;
+        if (metadata != null) {
+            int hits = ((Integer) metadata.get("hits")).intValue();
+            tl.setHits((int) hits);
         }
         //System.out.println(parser.text());
         return tl;
