@@ -478,23 +478,8 @@ public class QueryEntry extends AbstractIndexEntry implements IndexEntry {
         private QueryBuilder preparse(String q, int timezoneOffset) {
             // detect usage of OR connector usage.
             q = q.replaceAll(" AND ", " "); // AND is default
-            List<String> terms = splitIntoORGroups(q);
-
+            List<String> terms = splitIntoORGroups(q); // OR binds stronger than AND
             if (terms.size() == 0) return QueryBuilders.matchAllQuery();
-            
-            // check for query mistakes
-            for (int i = 0; i < terms.size(); i++) {
-                String[] c = terms.get(i).split(" ");
-                if (c.length == 2) {
-                    String c0 = c[0];
-                    String c1 = c[1];
-                    if (((c0.startsWith("#") && c0.equals("#" + c1))) || ("#" + c0).equals(c1)) {
-                        terms.set(i, c0);
-                        terms.add(i, c1);
-                        continue;
-                    }
-                }
-            }
             
             // special handling
             if (terms.size() == 1) return parse(terms.get(0), timezoneOffset);
@@ -502,9 +487,9 @@ public class QueryEntry extends AbstractIndexEntry implements IndexEntry {
             // generic handling
             BoolQueryBuilder aquery = QueryBuilders.boolQuery();
             for (String t: terms) {
-                aquery.should(parse(t, timezoneOffset));
+                QueryBuilder partial = parse(t, timezoneOffset);
+                aquery.must(partial);
             }
-            aquery.minimumNumberShouldMatch(1);
             return aquery;
         }
         
@@ -698,7 +683,7 @@ public class QueryEntry extends AbstractIndexEntry implements IndexEntry {
                 for (QueryBuilder qb: ops) {
                     if (ORconnective) ((BoolQueryBuilder) bquery).should(qb); else ((BoolQueryBuilder) bquery).must(qb);
                 }
-                ((BoolQueryBuilder) bquery).minimumNumberShouldMatch(1);
+                if (ORconnective) ((BoolQueryBuilder) bquery).minimumNumberShouldMatch(1);
                 for (QueryBuilder nqb: nops) {
                     ((BoolQueryBuilder) bquery).mustNot(nqb);
                 }
