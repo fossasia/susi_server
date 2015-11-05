@@ -296,7 +296,7 @@ public class DAO {
                         BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(new File(harvestingPath, queryfile))));
                         String line;
                         while ((line = reader.readLine()) != null) {
-                            line = line.trim();
+                            line = line.trim().toLowerCase();
                             if (line.length() == 0) continue;
                             if (line.charAt(0) <= '9') {
                                 // truncate statistic
