@@ -967,7 +967,7 @@ public class DAO {
         return latests.values();
     }
     
-    public static Timeline scrapeTwitter(final RemoteAccess.Post post, final String q, final Timeline.Order order, final int timezoneOffset, boolean byUserQuery, long timeout) {
+    public static Timeline scrapeTwitter(final RemoteAccess.Post post, final String q, final Timeline.Order order, final int timezoneOffset, boolean byUserQuery, long timeout, boolean recordQuery) {
         // retrieve messages from remote server
         long start0 = System.currentTimeMillis();
         ArrayList<String> remote = DAO.getFrontPeers();
@@ -997,6 +997,7 @@ public class DAO {
         int expectedJoin = remoteMessages[1].size();
         long termination = start0 + timeout - 200; // the -200 is here to give the recording process some time as well. If we exceed the timeout, the front-end will discard all results!
         //log("SCRAPER: TIME LEFT before unshortening = " + (termination - System.currentTimeMillis()));
+        //long unshortenStart = System.currentTimeMillis();
         while (System.currentTimeMillis() < termination && expectedJoin > 0) {
             // iterate over all messages, wait a bit and re-calculate expectedJoin at the end
             long remainingTime = timeout - (System.currentTimeMillis() - start0);
@@ -1011,6 +1012,7 @@ public class DAO {
             //log("SCRAPER: expectedJoin after loop = " + expectedJoin);
         }
         //log("SCRAPER: TIME LEFT after unshortening = " + (termination - System.currentTimeMillis()));
+        //log("SCRAPER: unshortening time = " + (System.currentTimeMillis() - unshortenStart));
         
         if (post != null) post.recordEvent("local_scraper_wait_ready", System.currentTimeMillis() - start1);
 
@@ -1022,7 +1024,8 @@ public class DAO {
         } catch (IOException e1) {
             e1.printStackTrace();
         }
-        if (Caretaker.acceptQuery4Retrieval(q)) {
+        
+        if (qe != null || (recordQuery && Caretaker.acceptQuery4Retrieval(q))) {
             if (qe == null) {
                 // a new query occurred
                 qe = new QueryEntry(q, timezoneOffset, finishedTweets.period(), SourceType.TWITTER, byUserQuery);

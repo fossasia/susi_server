@@ -106,7 +106,7 @@ public class SearchServlet extends HttpServlet {
                 public void run() {
                     final String scraper_query = tokens.translate4scraper();
                     DAO.log(request.getServletPath() + " scraping with query: " + scraper_query);
-                    Timeline twitterTl = DAO.scrapeTwitter(post, scraper_query, order, timezoneOffsetf, true, timeout);
+                    Timeline twitterTl = DAO.scrapeTwitter(post, scraper_query, order, timezoneOffsetf, true, timeout, true);
                     count_twitter_new.set(twitterTl.size());
                     tl.putAll(QueryEntry.applyConstraint(twitterTl, tokens, false)); // pre-localized results are not filtered with location constraint any more 
                     post.recordEvent("twitterscraper_time", System.currentTimeMillis() - start);
@@ -139,7 +139,7 @@ public class SearchServlet extends HttpServlet {
                 long start = System.currentTimeMillis();
                 final String scraper_query = tokens.translate4scraper();
                 DAO.log(request.getServletPath() + " scraping with query: " + scraper_query);
-                Timeline twitterTl = DAO.scrapeTwitter(post, scraper_query, order, timezoneOffset, true, timeout);
+                Timeline twitterTl = DAO.scrapeTwitter(post, scraper_query, order, timezoneOffset, true, timeout, true);
                 count_twitter_new.set(twitterTl.size());
                 tl.putAll(QueryEntry.applyConstraint(twitterTl, tokens, false)); // pre-localized results are not filtered with location constraint any more 
                 post.recordEvent("twitterscraper_time", System.currentTimeMillis() - start);
