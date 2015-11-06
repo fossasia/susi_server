@@ -998,6 +998,7 @@ public class DAO {
         long termination = start0 + timeout - 200; // the -200 is here to give the recording process some time as well. If we exceed the timeout, the front-end will discard all results!
         //log("SCRAPER: TIME LEFT before unshortening = " + (termination - System.currentTimeMillis()));
         //long unshortenStart = System.currentTimeMillis();
+        int previousExpectedJoin = -1;
         while (System.currentTimeMillis() < termination && expectedJoin > 0) {
             // iterate over all messages, wait a bit and re-calculate expectedJoin at the end
             long remainingTime = timeout - (System.currentTimeMillis() - start0);
@@ -1010,6 +1011,8 @@ public class DAO {
                 if (tt.waitReady(jointime)) finishedTweets.add(tt, tt.getUser()); else expectedJoin++; // double additions are detected
             }
             //log("SCRAPER: expectedJoin after loop = " + expectedJoin);
+            if (expectedJoin == previousExpectedJoin) break; // if there is no change, exit
+            previousExpectedJoin = expectedJoin;
         }
         //log("SCRAPER: TIME LEFT after unshortening = " + (termination - System.currentTimeMillis()));
         //log("SCRAPER: unshortening time = " + (System.currentTimeMillis() - unshortenStart));
