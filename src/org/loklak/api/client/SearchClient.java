@@ -67,8 +67,8 @@ public class SearchClient {
         Object metadata_obj = map.get("search_metadata");
         @SuppressWarnings("unchecked") Map<String, Object> metadata = metadata_obj instanceof Map<?,?> ? (Map<String, Object>) metadata_obj : null;
         if (metadata != null) {
-            int hits = ((Integer) metadata.get("hits")).intValue();
-            tl.setHits((int) hits);
+            Integer hits = (Integer) metadata.get("hits");
+            if (hits != null) tl.setHits(hits.intValue());
         }
         //System.out.println(parser.text());
         return tl;
