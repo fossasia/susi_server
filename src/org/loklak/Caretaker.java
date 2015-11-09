@@ -67,7 +67,7 @@ public class Caretaker extends Thread {
         HelloClient.propagate(remote, (int) DAO.getConfig("port.http", 9000), (int) DAO.getConfig("port.https", 9443), (String) DAO.getConfig("peername", "anonymous"));
         
         // work loop
-        while (this.shallRun) {
+        while (this.shallRun) try {
             if (System.currentTimeMillis() > upgradeTime) {
                 // increase the upgrade time to prevent that the peer runs amok (re-tries the attempt all the time) when upgrade fails for any reason
                 upgradeTime = upgradeTime + upgradeWait;
@@ -151,6 +151,8 @@ public class Caretaker extends Thread {
             
             // heal the latency to give peers with out-dated information a new chance
             DAO.healLatency(0.95f);
+        } catch (Throwable e) {
+            Log.getLog().warn("CARETAKER THREAD", e);
         }
 
         Log.getLog().info("caretaker terminated");
