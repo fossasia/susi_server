@@ -65,8 +65,6 @@ public class QueryEntry extends AbstractIndexEntry implements IndexEntry {
     private final static long DAY_MILLIS = 1000L * 60L * 60L * 24L;
     private final static int RETRIEVAL_CONSTANT = 20; // the number of messages that we get with each retrieval at maximum
     
-    public static double ttl_factor = 0.5d;
-    
     protected String query;           // the query in the exact way as the user typed it in
     protected int query_length;       // the length in the query, number of characters
     protected SourceType source_type; // the (external) retrieval system where that query was submitted
@@ -149,8 +147,9 @@ public class QueryEntry extends AbstractIndexEntry implements IndexEntry {
             this.message_period = this.message_period == 0 ? new_message_period : (this.message_period + new_message_period) / 2;
         }
         this.messages_per_day = (int) (DAY_MILLIS / this.message_period);
-        this.expected_next = new Date(this.retrieval_last.getTime() + ((long) (ttl_factor *  this.message_period)));
+        double ttl_factor = DAO.getConfig("retrieval.queries.ttlfactor", 0.75d);
         long pivot_period = DAO.getConfig("retrieval.queries.pivotfrequency", 10000);
+        this.expected_next = new Date(this.retrieval_last.getTime() + ((long) (ttl_factor *  this.message_period)));
         long strategic_period =   // if the period is far below the minimum, we apply a penalty
                  (this.message_period < pivot_period ?
                      pivot_period + 1000 * (long) Math.pow((pivot_period - this.message_period) / 1000, 3) :

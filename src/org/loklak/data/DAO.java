@@ -463,6 +463,15 @@ public class DAO {
             return default_val;
         }
     }
+    
+    public static double getConfig(String key, double default_val) {
+        String value = config.get(key);
+        try {
+            return value == null ? default_val : Double.parseDouble(value);
+        } catch (NumberFormatException e) {
+            return default_val;
+        }
+    }
 
     public static JsonNode getSchema(String key) throws IOException {
         File schema = new File(schema_dir, key);
