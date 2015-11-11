@@ -20,7 +20,9 @@
 package org.loklak.api.server;
 
 import java.io.IOException;
+import java.util.Date;
 import java.util.Enumeration;
+import java.util.List;
 
 import javax.servlet.ServletException;
 import javax.servlet.ServletOutputStream;
@@ -30,8 +32,10 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.elasticsearch.common.xcontent.XContentFactory;
+import org.elasticsearch.search.sort.SortOrder;
 import org.loklak.Caretaker;
 import org.loklak.data.DAO;
+import org.loklak.data.QueryEntry;
 import org.loklak.http.RemoteAccess;
 import org.loklak.tools.OS;
 
@@ -70,6 +74,10 @@ public class StatusServlet extends HttpServlet {
         json.field("user", DAO.user_dump.size());
         json.field("followers", DAO.followers_dump.size());
         json.field("following", DAO.following_dump.size());
+        if (DAO.getConfig("retrieval.queries.enabled", false)) {
+            List<QueryEntry> queryList = DAO.SearchLocalQueries("", 1000, "retrieval_next", "date", SortOrder.ASC, null, new Date(), "retrieval_next");
+            json.field("queries_pending", queryList.size());
+        }
         json.endObject(); // of index_sizes
         
         json.field("client_info");
