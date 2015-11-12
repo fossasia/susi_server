@@ -203,29 +203,26 @@ public class Timeline implements Iterable<MessageEntry> {
         return this.tweets.descendingMap().values().iterator();
     }
 
+    /**
+     * compute the average time between any two consecutive tweets
+     * @return time in milliseconds
+     */
     public long period() {
         if (this.size() < 1) return Long.MAX_VALUE;
-        if (this.size() < 2) {
-            // try to calculate the period time based on the current time.
-            // That may fail if the current time is not set correctly!
-            long timeInterval = System.currentTimeMillis() - this.getBottomTweet().created_at.getTime();
-            long p = 1 + timeInterval / this.size();
-            return p < 4000 ? p / 4 + 3000 : p;
-        }
         
         // calculate the time based on the latest 20 tweets (or less)
-        long first = 0;
-        long last = 0;
+        long latest = 0;
+        long earliest = 0;
         int count = 0;
         for (MessageEntry messageEntry: this) {
-            if (first == 0) {first = messageEntry.created_at.getTime(); continue;}
-            last = messageEntry.created_at.getTime();
+            if (latest == 0) {latest = messageEntry.created_at.getTime(); continue;}
+            earliest = messageEntry.created_at.getTime();
             count++;
             if (count >= 19) break;
         }
 
-        if (count == 0) return 60000;
-        long timeInterval = first - last;
+        if (count == 0) return Long.MAX_VALUE;
+        long timeInterval = latest - earliest;
         long p = 1 + timeInterval / count;
         return p < 4000 ? p / 4 + 3000 : p;
     }    

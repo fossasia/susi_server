@@ -67,6 +67,7 @@ import org.elasticsearch.index.query.RangeQueryBuilder;
 import org.elasticsearch.node.Node;
 import org.elasticsearch.node.NodeBuilder;
 import org.elasticsearch.search.SearchHit;
+import org.elasticsearch.search.SearchHits;
 import org.elasticsearch.search.aggregations.AggregationBuilders;
 import org.elasticsearch.search.aggregations.bucket.histogram.DateHistogramInterval;
 import org.elasticsearch.search.aggregations.bucket.histogram.InternalHistogram;
@@ -859,14 +860,14 @@ public class DAO {
      * @param sort_field - the field name to sort the result list, i.e. "query_first"
      * @param sort_order - the sort order (you want to use SortOrder.DESC here)
      */
-    public static List<QueryEntry> SearchLocalQueries(final String q, final int resultCount, final String sort_field, final String default_sort_type, final SortOrder sort_order, final Date since, final Date until, final String range_field) {
-        List<QueryEntry> queries = new ArrayList<>();
+    public static ResultList<QueryEntry> SearchLocalQueries(final String q, final int resultCount, final String sort_field, final String default_sort_type, final SortOrder sort_order, final Date since, final Date until, final String range_field) {
+        ResultList<QueryEntry> queries = new ResultList<>();
         
         // prepare request
         BoolQueryBuilder suggest = QueryBuilders.boolQuery();
         if (q != null && q.length() > 0) {
             suggest.should(QueryBuilders.fuzzyQuery("query", q).fuzziness(Fuzziness.fromEdits(2)));
-            suggest.should(QueryBuilders.moreLikeThisQuery("query").likeText(q));
+            suggest.should(QueryBuilders.moreLikeThisQuery("query").like(q));
             suggest.should(QueryBuilders.matchPhrasePrefixQuery("query", q));
             if (q.indexOf('*') >= 0 || q.indexOf('?') >= 0) suggest.should(QueryBuilders.wildcardQuery("query", q));
             suggest.minimumNumberShouldMatch(1);
@@ -878,8 +879,8 @@ public class DAO {
             query = QueryBuilders.boolQuery();
             if (q.length() > 0) query.must(suggest);
             RangeQueryBuilder rangeQuery = QueryBuilders.rangeQuery(range_field);
-            if (since != null) rangeQuery.from(since);
-            if (until != null) rangeQuery.to(until);
+            if (since != null) rangeQuery.from(since).includeLower(true);
+            if (until != null) rangeQuery.to(until).includeUpper(true);
             query.must(rangeQuery);
         } else {
             query = suggest;
@@ -900,7 +901,10 @@ public class DAO {
 
         // evaluate search result
         //long totalHitCount = response.getHits().getTotalHits();
-        SearchHit[] hits = response.getHits().getHits();
+        SearchHits rhits = response.getHits();
+        long totalHits = rhits.getTotalHits();
+        queries.setHits(totalHits);
+        SearchHit[] hits = rhits.getHits();
         for (SearchHit hit: hits) {
             Map<String, Object> map = hit.getSource();
             queries.add(new QueryEntry(map));

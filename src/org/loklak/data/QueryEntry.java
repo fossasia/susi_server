@@ -87,7 +87,7 @@ public class QueryEntry extends AbstractIndexEntry implements IndexEntry {
      * This initializer can only be used for first-time creation of a query track.
      * @param query
      * @param timezoneOffset
-     * @param timeline
+     * @param message_period
      * @param source_type
      * @throws MalformedURLException
      */
@@ -131,7 +131,7 @@ public class QueryEntry extends AbstractIndexEntry implements IndexEntry {
     
     /**
      * update the query entry
-     * @param timeline the latest timeline retrieved from the target system
+     * @param message_period 
      * @param byUserQuery is true, if the query was submitted by the user; false if the query was submitted by an automatic system
      */
     public void update(final long message_period, final boolean byUserQuery) {

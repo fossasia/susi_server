@@ -26,6 +26,7 @@ import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
 
 import javax.servlet.ServletException;
@@ -38,12 +39,21 @@ import org.elasticsearch.search.sort.SortOrder;
 import org.loklak.data.AbstractIndexEntry;
 import org.loklak.data.DAO;
 import org.loklak.data.QueryEntry;
+import org.loklak.data.ResultList;
 import org.loklak.harvester.SourceType;
 import org.loklak.http.RemoteAccess;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-// test suggestions with http://localhost:9000/api/suggest.json?q=beer&orderby=query_count&order=desc
+/*
+ * - test suggestions -
+ * 
+ * most common queries
+ * http://localhost:9000/api/suggest.json?q=beer&orderby=query_count&order=desc
+ *
+ * random list of re-load queries
+ * http://localhost:9000/api/suggest.json?source=query&orderby=retrieval_next&order=asc&count=1000&until=now&random=3
+ */
 
 public class SuggestServlet extends HttpServlet {
    
@@ -76,17 +86,17 @@ public class SuggestServlet extends HttpServlet {
             String query = post.get("q", ""); // to get a list of queries which match; to get all latest: leave q empty
             String source = post.get("source", "all"); // values: all,query,geo
             String orders = post.get("order", query.length() == 0 ? "desc" : "asc").toUpperCase();
-            SortOrder order = SortOrder.valueOf(orders);        
+            SortOrder order = SortOrder.valueOf(orders);
             String orderby = post.get("orderby", query.length() == 0 ? "retrieval_next" : "query_count");
             int timezoneOffset = post.get("timezoneOffset", 0);
-            Date since = post.get("since", (Date) null, timezoneOffset);
-            Date until = post.get("until", (Date) null, timezoneOffset);
+            Date since = post.get("since",  "").equals("now") ? new Date() : post.get("since", (Date) null, timezoneOffset);
+            Date until = post.get("until",  "").equals("now") ? new Date() : post.get("until", (Date) null, timezoneOffset);
             String selectby = post.get("selectby", "retrieval_next");
-            List<QueryEntry> queryList = new ArrayList<>();
+            ResultList<QueryEntry> queryList = new ResultList<>();
     
             if ((source.equals("all") || source.equals("query")) && query.length() >= 0) {
                 long start = System.currentTimeMillis();
-                queryList.addAll(DAO.SearchLocalQueries(query, count, orderby, "long", order, since, until, selectby));
+                queryList = DAO.SearchLocalQueries(query, count, orderby, "long", order, since, until, selectby);
                 post.recordEvent("localqueries_time", System.currentTimeMillis() - start);
             }
             
@@ -94,7 +104,7 @@ public class SuggestServlet extends HttpServlet {
                 long start = System.currentTimeMillis();
                 for (QueryEntry qe: queryList) DAO.deleteQuery(qe.getQuery(), qe.getSourceType());
                 queryList.clear();
-                queryList.addAll(DAO.SearchLocalQueries(query, count, orderby, "long", order, since, until, selectby));
+                queryList = DAO.SearchLocalQueries(query, count, orderby, "long", order, since, until, selectby);
                 post.recordEvent("localquerydelete_time", System.currentTimeMillis() - start);
             }
             
@@ -109,15 +119,31 @@ public class SuggestServlet extends HttpServlet {
                 }
                 post.recordEvent("suggestionsquery_time", System.currentTimeMillis() - start);
             }
-            
-    
+
             long start = System.currentTimeMillis();        
             post.setResponse(response, "application/javascript");
+
+            List<Object> queries = new ArrayList<>();
+            if (queryList != null) for (QueryEntry t: queryList) queries.add(t.toMap());
+
+            int random = post.get("random", -1);
+            if (random > 0 && random < queries.size()) {
+                // take the given number from the result list and use random to choose
+                List<Object> random_queries = new ArrayList<>();
+                Random r = new Random(System.currentTimeMillis());
+                while (random-- > 0) {
+                    random_queries.add(queries.remove(r.nextInt(queries.size())));
+                    int shrink = Math.max(queries.size() / 2, random * 10);
+                    while (queries.size() > shrink) queries.remove(queries.size() - 1); // prefer from top
+                }
+                queries = random_queries;
+            }
             
             // generate json
             m = new LinkedHashMap<String, Object>();
             Map<String, Object> metadata = new LinkedHashMap<String, Object>();
-            metadata.put("count", queryList == null ? "0" : Integer.toString(queryList.size()));
+            metadata.put("count", queryList == null ? "0" : Integer.toString(queries.size()));
+            metadata.put("hits", queryList.getHits());
             metadata.put("query", query);
             metadata.put("order", orders);
             metadata.put("orderby", orderby);
@@ -127,12 +153,6 @@ public class SuggestServlet extends HttpServlet {
             metadata.put("client", post.getClientHost());
             m.put("search_metadata", metadata);
             
-            List<Object> queries = new ArrayList<>();
-            if (queryList != null) {
-                for (QueryEntry t: queryList) {
-                    queries.add(t.toMap());
-                }
-            }
             m.put("queries", queries);
             post.recordEvent("postprocessing_time", System.currentTimeMillis() - start);
         }
