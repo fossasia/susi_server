@@ -272,14 +272,15 @@ public class RemoteAccess {
         return localhostNames.contains(host);
     }
 
-    public static Map<String, String> getQueryMap(String query)   {  
-        if (query == null) return null;
-        String[] params = query.split("&");  
-        Map<String, String> map = new HashMap<String, String>();  
+    public static Map<String, String> getQueryMap(String query) {
+        Map<String, String> map = new HashMap<String, String>();
+        if (query == null) return map;
+        String[] params = query.split("&");
         for (String param : params) {
             int p = param.indexOf('=');
-            if (p >= 0)
-                try {map.put(param.substring(0, p), URLDecoder.decode(param.substring(p + 1), "UTF-8"));} catch (UnsupportedEncodingException e) {}
+            if (p >= 0) try {
+                map.put(param.substring(0, p), URLDecoder.decode(param.substring(p + 1), "UTF-8"));
+            } catch (UnsupportedEncodingException e) {}
         }  
         return map;  
     }
