@@ -31,10 +31,15 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.elasticsearch.common.xcontent.XContentFactory;
+import org.loklak.Caretaker;
 import org.loklak.data.DAO;
 import org.loklak.data.ProviderType;
 import org.loklak.data.MessageEntry;
+import org.loklak.data.QueryEntry;
+import org.loklak.data.Timeline;
+import org.loklak.data.Timeline.Order;
 import org.loklak.data.UserEntry;
+import org.loklak.harvester.SourceType;
 import org.loklak.http.RemoteAccess;
 import org.loklak.tools.UTF8;
 
@@ -83,9 +88,14 @@ public class PushServlet extends HttpServlet {
         int recordCount = 0, newCount = 0, knownCount = 0;
         try {
             Map<String, Object> map = DAO.jsonMapper.readValue(data, DAO.jsonTypeRef);
+            // read metadata
+            Object metadata_obj = map.get("search_metadata");
+            
+            // read statuses
             Object statuses_obj = map.get("statuses");
             @SuppressWarnings("unchecked") List<Map<String, Object>> statuses = statuses_obj instanceof List<?> ? (List<Map<String, Object>>) statuses_obj : null;
             if (statuses != null) {
+                Timeline tl = new Timeline(Order.CREATED_AT);
                 for (Map<String, Object> tweet: statuses) {
                     recordCount++;
                     @SuppressWarnings("unchecked") Map<String, Object> user = (Map<String, Object>) tweet.remove("user");
@@ -94,11 +104,36 @@ public class PushServlet extends HttpServlet {
                     tweet.put("provider_hash", remoteHash);
                     UserEntry u = new UserEntry(user);
                     MessageEntry t = new MessageEntry(tweet);
+                    tl.add(t, u);
                     boolean newtweet = DAO.writeMessage(t, u, true, true, true);
                     if (newtweet) newCount++; else knownCount++;
                 }
                 try {DAO.users.bulkCacheFlush();} catch (IOException e) {}
                 try {DAO.messages.bulkCacheFlush();} catch (IOException e) {}
+                
+                // update query database if query was given in the result list
+                @SuppressWarnings("unchecked") Map<String, Object> metadata = metadata_obj instanceof Map<?, ?> ? (Map<String, Object>) metadata_obj : null;
+                if (metadata != null && tl.size() > 0) {
+                    String query = (String) metadata.get("query");
+                    if (query != null) {
+                        // update query database
+                        QueryEntry qe = null;
+                        try {
+                            qe = DAO.queries.read(query);
+                        } catch (IOException e1) {
+                            e1.printStackTrace();
+                        }
+                        if (qe != null && Caretaker.acceptQuery4Retrieval(query)) {
+                            // existing queries are updated
+                            qe.update(tl.period(), false);
+                            try {
+                                DAO.queries.writeEntry(query, qe.getSourceType().name(), qe);
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                            }
+                        }
+                    }
+                }
             }
         } catch (IOException e) {
             e.printStackTrace();

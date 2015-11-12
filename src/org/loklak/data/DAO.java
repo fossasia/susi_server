@@ -145,7 +145,7 @@ public class DAO {
     public static UserFactory users;
     private static AccountFactory accounts;
     public static MessageFactory messages;
-    private static QueryFactory queries;
+    public static QueryFactory queries;
     private static ImportProfileFactory importProfiles;
     private static BlockingQueue<Timeline> newMessageTimelines = new LinkedBlockingQueue<Timeline>();
     private static Map<String, String> config = new HashMap<>();
@@ -1050,7 +1050,7 @@ public class DAO {
                 qe.update(finishedTweets.period(), byUserQuery);
             }
             try {
-                queries.writeEntry(q, SourceType.TWITTER.name(), qe);
+                queries.writeEntry(q, qe.source_type.name(), qe);
             } catch (IOException e) {
                 e.printStackTrace();
             }
