@@ -71,7 +71,7 @@ public class Harvester {
     public static Ticket harvest() {
         String backend = DAO.getConfig("backend","http://loklak.org");
         
-        if (pendingQueries.size() == 0 && hitsOnBackend < HITS_LIMIT_4_QUERIES && pendingContext.size() > 0) {
+        if (random.nextInt(20) != 0 && hitsOnBackend < HITS_LIMIT_4_QUERIES && pendingQueries.size() == 0 && pendingContext.size() > 0) {
             // harvest using the collected keys instead using the queries
             int r = random.nextInt(pendingContext.size());
             String q = pendingContext.remove(r);

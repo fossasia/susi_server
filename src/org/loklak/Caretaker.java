@@ -123,7 +123,7 @@ public class Caretaker extends Thread {
                 for (int i = 0; i < 5; i++) {
                     Harvester.Ticket ticket = Harvester.harvest();
                     if (ticket == null) break;
-                    DAO.log("automatic retrieval of " + ticket.count + " new messages for q = " + ticket.q + (ticket.synchronous ? ", pushed to backend synchronously" : ", scheduled push"));
+                    DAO.log("retrieval of " + ticket.count + " new messages for q = " + ticket.q + (ticket.synchronous ? ", pushed to backend synchronously" : ", scheduled push"));
                 }
             }
             
@@ -132,7 +132,7 @@ public class Caretaker extends Thread {
                 if (Crawler.process() == 0) break; // this may produce tweets for the timeline push
             }
             
-            // run automatic searches
+            // run searches
             if (DAO.getConfig("retrieval.queries.enabled", false)) {
                 // execute some queries again: look out in the suggest database for queries with outdated due-time in field retrieval_next
                 List<QueryEntry> queryList = DAO.SearchLocalQueries("", 10, "retrieval_next", "date", SortOrder.ASC, null, new Date(), "retrieval_next");
@@ -142,7 +142,7 @@ public class Caretaker extends Thread {
                         continue;
                     }
                     Timeline t = DAO.scrapeTwitter(null, qe.getQuery(), Timeline.Order.CREATED_AT, qe.getTimezoneOffset(), false, 10000, true);
-                    DAO.log("automatic retrieval of " + t.size() + " new messages for q = \"" + qe.getQuery() + "\"");
+                    DAO.log("retrieval of " + t.size() + " new messages for q = \"" + qe.getQuery() + "\"");
                     DAO.announceNewUserId(t);
                     try {Thread.sleep(1000);} catch (InterruptedException e) {} // prevent remote DoS protection handling
                 }
