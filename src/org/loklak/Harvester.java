@@ -38,7 +38,6 @@ import org.loklak.tools.DateParser;
 
 public class Harvester {
 
-    private final static int FETCH_COUNT = 1000;
     private final static int FETCH_RANDOM = 3;
     private final static int HITS_LIMIT_4_QUERIES = 100;
     private final static Random random = new Random(System.currentTimeMillis());
@@ -88,7 +87,7 @@ public class Harvester {
         // load more queries if pendingQueries is empty
         if (pendingQueries.size() == 0) {
             try {
-                ResultList<QueryEntry> rl = SuggestClient.suggest(backend, "", "query", FETCH_COUNT, "asc", "retrieval_next", DateParser.getTimezoneOffset(), null, "now", "retrieval_next", FETCH_RANDOM);
+                ResultList<QueryEntry> rl = SuggestClient.suggest(backend, "", "query", Math.max(FETCH_RANDOM * 30, hitsOnBackend / 10), "asc", "retrieval_next", DateParser.getTimezoneOffset(), null, "now", "retrieval_next", FETCH_RANDOM);
                 for (QueryEntry qe: rl) {
                     pendingQueries.add(qe.getQuery());
                 }
