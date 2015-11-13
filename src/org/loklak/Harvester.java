@@ -118,6 +118,8 @@ public class Harvester {
                 success = PushClient.push(new String[]{backend}, tl);
                 if (success) break pushloop;
             } catch (Throwable e) {
+                //e.printStackTrace();
+                DAO.log("failed synchronous push to backend, attempt " + i);
                 try {Thread.sleep((i + 1) * 3000);} catch (InterruptedException e1) {}
             }
         }

@@ -60,11 +60,16 @@ public class ClientConnection {
     public static final byte[] CRLF = {CR, LF};
 
     private static PoolingHttpClientConnectionManager cm = new PoolingHttpClientConnectionManager();
-    private static CloseableHttpClient httpClient;
+    private static RequestConfig defaultRequestConfig = RequestConfig.custom()
+            .setSocketTimeout(5000)
+            .setConnectTimeout(5000)
+            .setConnectionRequestTimeout(5000)
+            .build();
     
     public int status;
     public BufferedInputStream inputStream;
     public Map<String, List<String>> header;
+    private CloseableHttpClient httpClient;
     
     
     static {
@@ -72,12 +77,7 @@ public class ClientConnection {
         cm.setDefaultMaxPerRoute(20);
         HttpHost twitter = new HttpHost("twitter.com", 443);
         cm.setMaxPerRoute(new HttpRoute(twitter), 50);
-        RequestConfig defaultRequestConfig = RequestConfig.custom()
-             .setSocketTimeout(5000)
-             .setConnectTimeout(5000)
-             .setConnectionRequestTimeout(5000)
-             .build();
-        httpClient = HttpClients.custom().setConnectionManager(cm).setDefaultRequestConfig(defaultRequestConfig).build();
+        
     }
     
     /**
@@ -86,6 +86,7 @@ public class ClientConnection {
      * @throws IOException
      */
     public ClientConnection(String urlstring) throws IOException {
+        this.httpClient = HttpClients.custom().setConnectionManager(cm).setDefaultRequestConfig(defaultRequestConfig).build();
         HttpGet get = new HttpGet(urlstring);
         get.setHeader("User-Agent", USER_AGENT);
         this.init(get);
@@ -98,6 +99,7 @@ public class ClientConnection {
      * @throws IOException
      */
     public ClientConnection(String urlstring, Map<String, byte[]> map) throws IOException {
+        this.httpClient = HttpClients.custom().setConnectionManager(cm).setDefaultRequestConfig(defaultRequestConfig).build();
         HttpPost post = new HttpPost(urlstring);        
         MultipartEntityBuilder entityBuilder = MultipartEntityBuilder.create();
         entityBuilder.setMode(HttpMultipartMode.BROWSER_COMPATIBLE);
@@ -135,19 +137,17 @@ public class ClientConnection {
     }
     
     /**
-     * get a redirect for an url: this mehtod shall be called if it is expected that a url
+     * get a redirect for an url: this method shall be called if it is expected that a url
      * is redirected to another url. This method then discovers the redirect.
      * @param urlstring
      * @return the redirect url for the given urlstring
      * @throws IOException if the url is not redirected
      */
     public static String getRedirect(String urlstring) throws IOException {
-        
-        
-        
         HttpGet get = new HttpGet(urlstring);
         get.setConfig(RequestConfig.custom().setRedirectsEnabled(false).build());
         get.setHeader("User-Agent", USER_AGENT);
+        CloseableHttpClient httpClient = HttpClients.custom().setConnectionManager(cm).setDefaultRequestConfig(defaultRequestConfig).build();
         HttpResponse httpResponse = httpClient.execute(get);
         HttpEntity httpEntity = httpResponse.getEntity();
         if (httpEntity != null) {
