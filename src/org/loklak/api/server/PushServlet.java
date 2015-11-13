@@ -39,7 +39,6 @@ import org.loklak.data.QueryEntry;
 import org.loklak.data.Timeline;
 import org.loklak.data.Timeline.Order;
 import org.loklak.data.UserEntry;
-import org.loklak.harvester.SourceType;
 import org.loklak.http.RemoteAccess;
 import org.loklak.tools.UTF8;
 
@@ -86,6 +85,7 @@ public class PushServlet extends HttpServlet {
         
         // parse the json data
         int recordCount = 0, newCount = 0, knownCount = 0;
+        String query = null;
         try {
             Map<String, Object> map = DAO.jsonMapper.readValue(data, DAO.jsonTypeRef);
             // read metadata
@@ -114,7 +114,7 @@ public class PushServlet extends HttpServlet {
                 // update query database if query was given in the result list
                 @SuppressWarnings("unchecked") Map<String, Object> metadata = metadata_obj instanceof Map<?, ?> ? (Map<String, Object>) metadata_obj : null;
                 if (metadata != null && tl.size() > 0) {
-                    String query = (String) metadata.get("query");
+                    query = (String) metadata.get("query");
                     if (query != null) {
                         // update query database
                         QueryEntry qe = null;
@@ -158,7 +158,7 @@ public class PushServlet extends HttpServlet {
         if (jsonp) sos.println(");");
         sos.println();
         
-        DAO.log(request.getServletPath() + " -> records = " + recordCount + ", new = " + newCount + ", known = " + knownCount + ", from host hash " + remoteHash);
+        DAO.log(request.getServletPath() + " -> records = " + recordCount + ", new = " + newCount + ", known = " + knownCount + ", from host hash " + remoteHash + (query == null ? "" : " for query=" + query));
 
         response.addHeader("Access-Control-Allow-Origin", "*");
         post.finalize();

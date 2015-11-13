@@ -52,7 +52,24 @@ public class TwitterScraper {
 
     public static ExecutorService executor = Executors.newFixedThreadPool(20);
     
-    public static Timeline[] search(final String query, final Timeline.Order order) {
+    public static Timeline search(
+            final String query,
+            final boolean writeToIndex,
+            final boolean writeToBackend) {
+        Timeline[] tl = search(query, Timeline.Order.CREATED_AT, writeToIndex, writeToBackend);
+        for (MessageEntry me: tl[1]) {
+            assert me instanceof TwitterTweet;
+            TwitterTweet tt = (TwitterTweet) me;
+            if (tt.waitReady(2000)) tl[0].add(tt, tt.getUser()); // double additions are detected
+        }
+        return tl[0];
+    }
+    
+    public static Timeline[] search(
+            final String query,
+            final Timeline.Order order,
+            final boolean writeToIndex,
+            final boolean writeToBackend) {
         // check
         // https://twitter.com/search-advanced for a better syntax
         // https://support.twitter.com/articles/71577-how-to-use-advanced-twitter-search#
@@ -78,7 +95,7 @@ public class TwitterScraper {
             if (connection.inputStream == null) return null;
             try {
                 BufferedReader br = new BufferedReader(new InputStreamReader(connection.inputStream, UTF8.charset));
-                timelines = search(br, order);
+                timelines = search(br, order, writeToIndex, writeToBackend);
             } catch (IOException e) {
                e.printStackTrace();
             } finally {
@@ -105,7 +122,11 @@ public class TwitterScraper {
      * @return two timelines in one array: Timeline[0] is the one which is finished to be used, Timeline[1] contains messages which are in postprocessing
      * @throws IOException
      */
-    private static Timeline[] search(final BufferedReader br, final Timeline.Order order) throws IOException {
+    private static Timeline[] search(
+            final BufferedReader br,
+            final Timeline.Order order,
+            final boolean writeToIndex,
+            final boolean writeToBackend) throws IOException {
         Timeline timelineReady = new Timeline(order);
         Timeline timelineWorking = new Timeline(order);
         String input;
@@ -214,7 +235,7 @@ public class TwitterScraper {
                         Long.parseLong(props.get("tweetretweetcount").value),
                         Long.parseLong(props.get("tweetfavouritecount").value),
                         imgs, vids, place_name, place_id,
-                        user
+                        user, writeToIndex,  writeToBackend
                         );
                 if (!tweet.exist()) {
                     if (tweet.willBeTimeConsuming()) {
@@ -301,6 +322,7 @@ public class TwitterScraper {
         private final Semaphore ready;
         private Boolean exists = null;
         private UserEntry user;
+        private boolean writeToIndex, writeToBackend;
         
         public TwitterTweet(
                 final String user_screen_name_raw,
@@ -314,7 +336,9 @@ public class TwitterScraper {
                 final Collection<String> videos,
                 final String place_name,
                 final String place_id,
-                final UserEntry user) throws MalformedURLException {
+                final UserEntry user,
+                final boolean writeToIndex,
+                final boolean writeToBackend) throws MalformedURLException {
             super();
             this.source_type = SourceType.TWITTER;
             this.provider_type = ProviderType.SCRAPED;
@@ -331,6 +355,8 @@ public class TwitterScraper {
             this.videos = new LinkedHashSet<>(); for (String video: videos) this.videos.add(video);
             this.text = text_raw;
             this.user = user;
+            this.writeToIndex = writeToIndex;
+            this.writeToBackend = writeToBackend;
             //Date d = new Date(timemsraw);
             //System.out.println(d);
             
@@ -368,9 +394,9 @@ public class TwitterScraper {
                 //DAO.log("TwitterTweet [" + this.id_str + "] unshorten after " + (System.currentTimeMillis() - start) + "ms");
                 this.enrich();
                 //DAO.log("TwitterTweet [" + this.id_str + "] enrich    after " + (System.currentTimeMillis() - start) + "ms");
-                DAO.writeMessage(this, this.user, true, true, false);
+                if (this.writeToIndex) DAO.writeMessage(this, this.user, true, true, false);
                 //DAO.log("TwitterTweet [" + this.id_str + "] write     after " + (System.currentTimeMillis() - start) + "ms");
-                DAO.transmitMessage(this, this.user);
+                if (this.writeToBackend) DAO.transmitMessage(this, this.user);
                 //DAO.log("TwitterTweet [" + this.id_str + "] transmit  after " + (System.currentTimeMillis() - start) + "ms");
             } catch (Throwable e) {
                 e.printStackTrace();
@@ -457,7 +483,7 @@ public class TwitterScraper {
     public static void main(String[] args) {
         //wget --no-check-certificate "https://twitter.com/search?q=eifel&src=typd&f=realtime"
         
-         Timeline[] result = TwitterScraper.search(args[0], Timeline.Order.CREATED_AT);
+         Timeline[] result = TwitterScraper.search(args[0], Timeline.Order.CREATED_AT, true, true);
         for (int x = 0; x < 2; x++) {
             for (MessageEntry tweet : result[x]) {
                 if (tweet instanceof TwitterTweet) {

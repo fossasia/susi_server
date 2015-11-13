@@ -993,13 +993,13 @@ public class DAO {
             if (remoteMessages == null || ((remoteMessages[0] == null || remoteMessages[0].size() == 0) && (remoteMessages[1] == null || remoteMessages[1].size() == 0))) {
                 // maybe the remote server died, we try then ourself
                 start = System.currentTimeMillis();
-                remoteMessages = TwitterScraper.search(q, order);
+                remoteMessages = TwitterScraper.search(q, order, true, true);
                 if (post != null) post.recordEvent("local_scraper_after_unsuccessful_remote", System.currentTimeMillis() - start);
             }
         } else {
             if (post != null && remote.size() > 0) post.recordEvent("omitted_scraper_latency_" + remote.get(0), peerLatency.get(remote.get(0)));
             long start = System.currentTimeMillis();
-            remoteMessages = TwitterScraper.search(q, order);
+            remoteMessages = TwitterScraper.search(q, order, true, true);
             if (post != null) post.recordEvent("local_scraper", System.currentTimeMillis() - start);
         }
         

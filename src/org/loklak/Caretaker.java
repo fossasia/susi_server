@@ -117,6 +117,15 @@ public class Caretaker extends Thread {
                 e1.printStackTrace();
             }
             
+            // run some harvesting steps
+            if (DAO.getConfig("retrieval.forbackend.enabled", false) && (DAO.getConfig("backend", "").length() > 0)) {
+                for (int i = 0; i < 5; i++) {
+                    Harvester.Ticket ticket = Harvester.harvest();
+                    if (ticket == null) break;
+                    DAO.log("automatic retrieval of " + ticket.count + " new messages for q = " + ticket.q + (ticket.synchronous ? ", pushed to backend synchronously" : ", scheduled push"));
+                }
+            }
+            
             // run some crawl steps
             for (int i = 0; i < 10; i++) {
                 if (Crawler.process() == 0) break; // this may produce tweets for the timeline push
