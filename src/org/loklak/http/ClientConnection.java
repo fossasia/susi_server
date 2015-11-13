@@ -73,9 +73,9 @@ public class ClientConnection {
         HttpHost twitter = new HttpHost("twitter.com", 443);
         cm.setMaxPerRoute(new HttpRoute(twitter), 50);
         RequestConfig defaultRequestConfig = RequestConfig.custom()
-             .setSocketTimeout(3000)
-             .setConnectTimeout(3000)
-             .setConnectionRequestTimeout(3000)
+             .setSocketTimeout(5000)
+             .setConnectTimeout(5000)
+             .setConnectionRequestTimeout(5000)
              .build();
         httpClient = HttpClients.custom().setConnectionManager(cm).setDefaultRequestConfig(defaultRequestConfig).build();
     }
