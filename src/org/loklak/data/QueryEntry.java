@@ -103,7 +103,7 @@ public class QueryEntry extends AbstractIndexEntry implements IndexEntry {
         this.query_first = retrieval_last;
     }
 
-    protected QueryEntry(Map<String, Object> map) throws IllegalArgumentException {
+    public QueryEntry(Map<String, Object> map) throws IllegalArgumentException {
         init(map);
     }
     
