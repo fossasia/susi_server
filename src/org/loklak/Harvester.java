@@ -20,7 +20,10 @@
 package org.loklak;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
+import java.util.Random;
 import java.util.Set;
 
 import org.loklak.api.client.PushClient;
@@ -38,11 +41,12 @@ public class Harvester {
     private final static int FETCH_COUNT = 1000;
     private final static int FETCH_RANDOM = 3;
     private final static int HITS_LIMIT_4_QUERIES = 100;
+    private final static Random random = new Random(System.currentTimeMillis());
     
     private static Set<String> pendingQueries = new HashSet<>();
-    private static Set<String> pendingContext = new HashSet<>();
+    private static List<String> pendingContext = new ArrayList<>();
     private static Set<String> harvestedContext = new HashSet<>();
-
+    
     private static int hitsOnBackend = 1000;
      
     public static class Ticket {
@@ -61,7 +65,7 @@ public class Harvester {
         }
     }
     public static void checkContext(String s) {
-        if (!harvestedContext.contains(s)) pendingContext.add(s);
+        if (!harvestedContext.contains(s) && !pendingContext.contains(s)) pendingContext.add(s);
     }
     
     public static Ticket harvest() {
@@ -69,7 +73,8 @@ public class Harvester {
         
         if (pendingQueries.size() == 0 && hitsOnBackend < HITS_LIMIT_4_QUERIES && pendingContext.size() > 0) {
             // harvest using the collected keys instead using the queries
-            String q = pendingContext.iterator().next();
+            int r = random.nextInt(pendingContext.size());
+            String q = pendingContext.remove(r);
             pendingContext.remove(q);
             harvestedContext.add(q);
             Timeline tl = TwitterScraper.search(q, true, true);
@@ -107,7 +112,15 @@ public class Harvester {
         
         // if we loaded a pending query, push results to backpeer right now
         tl.setQuery(q);
-        boolean success = PushClient.push(new String[]{backend}, tl);
+        boolean success = false;
+        pushloop: for (int i = 0; i < 5; i++) {
+            try {
+                success = PushClient.push(new String[]{backend}, tl);
+                if (success) break pushloop;
+            } catch (Throwable e) {
+                try {Thread.sleep((i + 1) * 3000);} catch (InterruptedException e1) {}
+            }
+        }
         if (success) return new Ticket(q, tl.size(), true);
         
         tl.setQuery(null);

@@ -56,7 +56,7 @@ public class PushClient {
                     connection.close();
                     transmittedToAtLeastOnePeer = true;
                 } catch (IOException e) {
-                    e.printStackTrace();
+                    //e.printStackTrace();
                 }
             }
             return transmittedToAtLeastOnePeer;
