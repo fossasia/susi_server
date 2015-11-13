@@ -60,11 +60,13 @@ public class Timeline implements Iterable<MessageEntry> {
     private Map<String, UserEntry> users;
     private int hits = -1;
     final private Order order;
+    private String query;
     
     public Timeline(Order order) {
         this.tweets = new ConcurrentSkipListMap<String, MessageEntry>();
         this.users = new ConcurrentHashMap<String, UserEntry>();
         this.order = order;
+        this.query = null;
     }
     
     public static Order parseOrder(String order) {
@@ -77,6 +79,14 @@ public class Timeline implements Iterable<MessageEntry> {
     
     public Order getOrder() {
         return this.order;
+    }
+    
+    public String getQuery() {
+        return this.query;
+    }
+    
+    public void setQuery(String query) {
+        this.query = query;
     }
     
     public int size() {
@@ -185,6 +195,8 @@ public class Timeline implements Iterable<MessageEntry> {
         Map<String, Object> m = new LinkedHashMap<>();
         Map<String, Object> metadata = new LinkedHashMap<>();
         metadata.put("count", Integer.toString(this.tweets.size()));
+        if (this.query != null) metadata.put("query", this.query);
+        if (this.hits >= 0) metadata.put("hits", Math.max(this.hits, this.size()));        
         m.put("search_metadata", metadata);
         List<Object> statuses = new ArrayList<>();
         for (MessageEntry t: this) {

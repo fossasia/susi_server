@@ -106,9 +106,11 @@ public class Harvester {
         checkContext(tl);
         
         // if we loaded a pending query, push results to backpeer right now
+        tl.setQuery(q);
         boolean success = PushClient.push(new String[]{backend}, tl);
         if (success) return new Ticket(q, tl.size(), true);
         
+        tl.setQuery(null);
         DAO.transmitTimeline(tl);
         return new Ticket(q, tl.size(), false);
     }
