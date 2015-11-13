@@ -102,10 +102,11 @@ public class Caretaker extends Thread {
                         try {Thread.sleep(3000 + retry * 3000);} catch (InterruptedException e) {}
                         if (PushClient.push(remote, tl)) {
                             DAO.log("success pushing " + tl.size() + " messages to backend in " + (retry + 2) + ". attempt");
+                            success = true;
                             break retrylook;
                         }
                     }
-                    DAO.log("failed pushing " + tl.size() + " messages to backend");
+                    if (!success) DAO.log("failed pushing " + tl.size() + " messages to backend");
                 }
             }
             

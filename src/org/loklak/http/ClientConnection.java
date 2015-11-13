@@ -68,11 +68,16 @@ public class ClientConnection {
     
     
     static {
-     cm.setMaxTotal(200);
-     cm.setDefaultMaxPerRoute(20);
-     HttpHost twitter = new HttpHost("twitter.com", 443);
-     cm.setMaxPerRoute(new HttpRoute(twitter), 50);
-     httpClient = HttpClients.custom().setConnectionManager(cm).build();
+        cm.setMaxTotal(200);
+        cm.setDefaultMaxPerRoute(20);
+        HttpHost twitter = new HttpHost("twitter.com", 443);
+        cm.setMaxPerRoute(new HttpRoute(twitter), 50);
+        RequestConfig defaultRequestConfig = RequestConfig.custom()
+             .setSocketTimeout(3000)
+             .setConnectTimeout(3000)
+             .setConnectionRequestTimeout(3000)
+             .build();
+        httpClient = HttpClients.custom().setConnectionManager(cm).setDefaultRequestConfig(defaultRequestConfig).build();
     }
     
     /**
@@ -137,6 +142,9 @@ public class ClientConnection {
      * @throws IOException if the url is not redirected
      */
     public static String getRedirect(String urlstring) throws IOException {
+        
+        
+        
         HttpGet get = new HttpGet(urlstring);
         get.setConfig(RequestConfig.custom().setRedirectsEnabled(false).build());
         get.setHeader("User-Agent", USER_AGENT);
