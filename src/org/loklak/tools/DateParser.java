@@ -24,8 +24,11 @@ import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.Locale;
 import java.util.TimeZone;
+import java.util.concurrent.TimeUnit;
 
 public class DateParser {
 
@@ -43,6 +46,7 @@ public class DateParser {
     public final static SimpleDateFormat iso8601MillisFormat = new SimpleDateFormat(PATTERN_ISO8601MILLIS, Locale.US);
     public final static DateFormat dayDateFormat = new SimpleDateFormat(PATTERN_MONTHDAY, Locale.US);
     public final static DateFormat minuteDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.US);
+    public final static DateFormat secondDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.US);
     
     public final static Calendar UTCCalendar = Calendar.getInstance();
     public final static TimeZone UTCtimeZone = TimeZone.getTimeZone("UTC");
@@ -50,6 +54,7 @@ public class DateParser {
         UTCCalendar.setTimeZone(UTCtimeZone);
         dayDateFormat.setCalendar(UTCCalendar);
         minuteDateFormat.setCalendar(UTCCalendar);
+        secondDateFormat.setCalendar(UTCCalendar);
     }
 
     /**
@@ -63,12 +68,51 @@ public class DateParser {
         Calendar cal = Calendar.getInstance(UTCtimeZone);
         if ("now".equals(dateString)) return cal; 
         dateString = dateString.replaceAll("_", " ");
-        if (dateString.indexOf(':') > 0) synchronized (minuteDateFormat) {
-            cal.setTime(minuteDateFormat.parse(dateString));
+        int p = -1;
+        if ((p = dateString.indexOf(':')) > 0) {
+            if (dateString.indexOf(':', p + 1) > 0)
+                synchronized (secondDateFormat) {
+                    cal.setTime(secondDateFormat.parse(dateString));
+                } else synchronized (minuteDateFormat) {
+                    cal.setTime(minuteDateFormat.parse(dateString));
+                }
         } else synchronized (dayDateFormat) {
             cal.setTime(dayDateFormat.parse(dateString));
         }
         cal.add(Calendar.MINUTE, timezoneOffset); // add a correction; i.e. for UTC+1 -60 minutes is added to patch a time given in UTC+1 to the actual time at UTC
         return cal;
+    }
+    
+    public static String toPostDate(Date d) {
+        return secondDateFormat.format(d).replace(' ', '_');
+    }
+    
+    public static int getTimezoneOffset() {
+        Calendar calendar = new GregorianCalendar();
+        TimeZone timeZone = calendar.getTimeZone();
+        return - (int) TimeUnit.MILLISECONDS.toMinutes(timeZone.getRawOffset()); // we negate the offset because thats the value which is provided by the browser as well 
+    }
+    
+    /*
+    public static String toPostDate(Date d, int timezoneOffset) {
+        Calendar cal = Calendar.getInstance(DateParser.UTCtimeZone);
+        org.joda.time.DateTime k = (org.joda.time.DateTime) bucket.getKey();
+        cal.setTime(k.toDate());
+        cal.add(Calendar.MINUTE, -timezoneOffset);
+        
+    }
+    */
+    public static void main(String[] args) {
+        Calendar calendar = new GregorianCalendar();
+        TimeZone timeZone = calendar.getTimeZone();
+        System.out.println("the date is           : " + calendar.getTime().getTime());
+        System.out.println("the timezoneOffset is : " + getTimezoneOffset());
+        String postDate = toPostDate(calendar.getTime());
+        System.out.println("the post date is      : " + postDate);
+        try {
+            System.out.println("post date to date     : " + parse(postDate, getTimezoneOffset()).getTime().getTime());
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
     }
 }
