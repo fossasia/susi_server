@@ -51,12 +51,14 @@ public class PushClient {
                 if (hoststub.endsWith("/")) hoststub = hoststub.substring(0, hoststub.length() - 1);
                 Map<String, byte[]> post = new HashMap<String, byte[]>();
                 post.put("data", UTF8.getBytes(data)); // optionally implement a gzipped form here
+                ClientConnection connection = null;
                 try {
-                    ClientConnection connection = new ClientConnection(hoststub + "/api/push.json", post);
-                    connection.close();
+                    connection = new ClientConnection(hoststub + "/api/push.json", post);
                     transmittedToAtLeastOnePeer = true;
                 } catch (IOException e) {
                     //e.printStackTrace();
+                } finally {
+                    if (connection != null) connection.close();
                 }
             }
             return transmittedToAtLeastOnePeer;
