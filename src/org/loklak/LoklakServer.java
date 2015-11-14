@@ -309,6 +309,7 @@ public class LoklakServer {
                     LoklakServer.caretaker.shutdown();
                     DAO.close();
                     TwitterScraper.executor.shutdown();
+                    Harvester.executor.shutdown();
                     Log.getLog().info("main terminated, goodby.");
                 } catch (Exception e) {
                 }

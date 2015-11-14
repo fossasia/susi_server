@@ -50,17 +50,19 @@ import org.loklak.tools.UTF8;
 
 public class TwitterScraper {
 
-    public static ExecutorService executor = Executors.newFixedThreadPool(20);
+    public final static ExecutorService executor = Executors.newFixedThreadPool(40);
     
     public static Timeline search(
             final String query,
             final boolean writeToIndex,
             final boolean writeToBackend) {
         Timeline[] tl = search(query, Timeline.Order.CREATED_AT, writeToIndex, writeToBackend);
+        long timeout = System.currentTimeMillis() + 400;
         for (MessageEntry me: tl[1]) {
             assert me instanceof TwitterTweet;
             TwitterTweet tt = (TwitterTweet) me;
-            if (tt.waitReady(2000)) tl[0].add(tt, tt.getUser()); // double additions are detected
+            long remainingWait = Math.max(10, timeout - System.currentTimeMillis());
+            if (tt.waitReady(remainingWait)) tl[0].add(tt, tt.getUser()); // double additions are detected
         }
         return tl[0];
     }
@@ -240,6 +242,7 @@ public class TwitterScraper {
                 if (!tweet.exist()) {
                     if (tweet.willBeTimeConsuming()) {
                         executor.execute(tweet);
+                        //new Thread(tweet).start();
                         // because the executor may run the thread in the current thread it could be possible that the result is here already
                         if (tweet.isReady()) {
                             timelineReady.add(tweet, user);

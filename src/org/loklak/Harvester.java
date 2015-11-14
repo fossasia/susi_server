@@ -25,6 +25,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Random;
 import java.util.Set;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import org.loklak.api.client.PushClient;
 import org.loklak.api.client.SuggestClient;
@@ -41,21 +43,13 @@ public class Harvester {
     private final static int FETCH_RANDOM = 3;
     private final static int HITS_LIMIT_4_QUERIES = 100;
     private final static Random random = new Random(System.currentTimeMillis());
+    public final static ExecutorService executor = Executors.newFixedThreadPool(2);
     
     private static Set<String> pendingQueries = new HashSet<>();
     private static List<String> pendingContext = new ArrayList<>();
     private static Set<String> harvestedContext = new HashSet<>();
     
     private static int hitsOnBackend = 1000;
-     
-    public static class Ticket {
-        public String q;
-        public int count;
-        public boolean synchronous;
-        public Ticket(final String q, final int count, final boolean synchronous) {
-            this.q = q; this.count = count; this.synchronous = synchronous;
-        }
-    }
 
     public static void checkContext(Timeline tl) {
         for (MessageEntry tweet: tl) {
@@ -67,7 +61,7 @@ public class Harvester {
         if (!harvestedContext.contains(s) && !pendingContext.contains(s)) pendingContext.add(s);
     }
     
-    public static Ticket harvest() {
+    public static int harvest() {
         String backend = DAO.getConfig("backend","http://loklak.org");
         
         if (random.nextInt(20) != 0 && hitsOnBackend < HITS_LIMIT_4_QUERIES && pendingQueries.size() == 0 && pendingContext.size() > 0) {
@@ -77,11 +71,12 @@ public class Harvester {
             pendingContext.remove(q);
             harvestedContext.add(q);
             Timeline tl = TwitterScraper.search(q, true, true);
-            if (tl == null || tl.size() == 0) return null;
+            if (tl == null || tl.size() == 0) return -1;
             
             // find content query strings and store them in the context cache
             checkContext(tl);
-            return new Ticket(q, tl.size(), false);
+            DAO.log("retrieval of " + tl.size() + " new messages for q = " + q + ", scheduled push");
+            return tl.size();
         }
         
         // load more queries if pendingQueries is empty
@@ -97,36 +92,55 @@ public class Harvester {
             }
         }
         
-        if (pendingQueries.size() == 0) return null;
+        if (pendingQueries.size() == 0) return -1;
         
         // take one of the pending queries or pending context and load the tweets
         String q = pendingQueries.iterator().next();
         pendingQueries.remove(q);
         Timeline tl = TwitterScraper.search(q, true, false);
         
-        if (tl == null || tl.size() == 0) return null;
+        if (tl == null || tl.size() == 0) return -1;
         
         // find content query strings and store them in the context cache
         checkContext(tl);
         
         // if we loaded a pending query, push results to backpeer right now
         tl.setQuery(q);
-        boolean success = false;
-        pushloop: for (int i = 0; i < 5; i++) {
-            try {
-                success = PushClient.push(new String[]{backend}, tl);
-                if (success) break pushloop;
-            } catch (Throwable e) {
-                //e.printStackTrace();
-                DAO.log("failed synchronous push to backend, attempt " + i);
-                try {Thread.sleep((i + 1) * 3000);} catch (InterruptedException e1) {}
-            }
+        PushThread pushThread = new PushThread(backend, tl);
+        executor.execute(pushThread);
+        return tl.size();
+    }
+    
+    private static class PushThread implements Runnable {
+        private String peer;
+        private Timeline tl;
+        public PushThread(String peer, Timeline tl) {
+            this.peer = peer;
+            this.tl = tl;
         }
-        if (success) return new Ticket(q, tl.size(), true);
+        @Override
+        public void run() {
+            boolean success = false;
+            for (int i = 0; i < 5; i++) {
+                try {
+                    long start = System.currentTimeMillis();
+                    success = PushClient.push(new String[]{peer}, tl);
+                    if (success) {
+                        DAO.log("retrieval of " + tl.size() + " new messages for q = " + tl.getQuery() + ", pushed to backend synchronously in " + (System.currentTimeMillis() - start) + " ms");
+                        return;
+                    }
+                } catch (Throwable e) {
+                    //e.printStackTrace();
+                    DAO.log("failed synchronous push to backend, attempt " + i);
+                    try {Thread.sleep((i + 1) * 3000);} catch (InterruptedException e1) {}
+                }
+            }
+            String q = tl.getQuery();
+            tl.setQuery(null);
+            DAO.transmitTimeline(tl);
+            DAO.log("retrieval of " + tl.size() + " new messages for q = " + q + ", scheduled push");
+        }
         
-        tl.setQuery(null);
-        DAO.transmitTimeline(tl);
-        return new Ticket(q, tl.size(), false);
     }
     
 }

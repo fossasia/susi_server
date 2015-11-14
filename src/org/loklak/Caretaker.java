@@ -89,19 +89,20 @@ public class Caretaker extends Thread {
             if (!this.shallRun) break;
             if (tl != null && tl.size() > 0 && remote.length > 0) {
                 // transmit the timeline
-                try {Thread.sleep(2000);} catch (InterruptedException e) {}
+                long start = System.currentTimeMillis();
                 boolean success = PushClient.push(remote, tl);
                 if (success) {
-                    DAO.log("success pushing " + tl.size() + " messages to backend in 1st attempt");
+                    DAO.log("success pushing " + tl.size() + " messages to backend in 1st attempt in " + (System.currentTimeMillis() - start) + " ms");
                 }
                 if (!success) {
                     // we should try again.. but not an infinite number because then
                     // our timeline in RAM would fill up our RAM creating a memory leak
-                    retrylook: for (int retry = 0; retry < 3; retry++) {
+                    retrylook: for (int retry = 0; retry < 5; retry++) {
                         // give back-end time to recover
                         try {Thread.sleep(3000 + retry * 3000);} catch (InterruptedException e) {}
+                        start = System.currentTimeMillis();
                         if (PushClient.push(remote, tl)) {
-                            DAO.log("success pushing " + tl.size() + " messages to backend in " + (retry + 2) + ". attempt");
+                            DAO.log("success pushing " + tl.size() + " messages to backend in " + (retry + 2) + ". attempt in " + (System.currentTimeMillis() - start) + " ms");
                             success = true;
                             break retrylook;
                         }
@@ -121,9 +122,8 @@ public class Caretaker extends Thread {
             // run some harvesting steps
             if (DAO.getConfig("retrieval.forbackend.enabled", false) && (DAO.getConfig("backend", "").length() > 0)) {
                 for (int i = 0; i < 5; i++) {
-                    Harvester.Ticket ticket = Harvester.harvest();
-                    if (ticket == null) break;
-                    DAO.log("retrieval of " + ticket.count + " new messages for q = " + ticket.q + (ticket.synchronous ? ", pushed to backend synchronously" : ", scheduled push"));
+                    int count = Harvester.harvest();
+                    if (count == -1) break;
                 }
             }
             
