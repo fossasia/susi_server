@@ -424,13 +424,26 @@ public class DAO {
      */
     public static void close() {
         Log.getLog().info("closing DAO");
+        
+        // close the dump files
         message_dump.close();
         account_dump.close();
         import_profile_dump.close();
         user_dump.close();
         followers_dump.close();
         following_dump.close();
+        
+        // close the tracker
         access.close();
+        
+        // close the index factories (flushes the caches)
+        messages.close();
+        users.close();
+        accounts.close();
+        queries.close();
+        importProfiles.close();
+
+        // close the index
         elasticsearch_client.close();
         elasticsearch_node.close();
         Log.getLog().info("closed DAO");

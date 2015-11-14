@@ -138,5 +138,12 @@ public abstract class AbstractIndexFactory<Entry extends IndexEntry> implements 
             this.jsonMap = entry.toMap();
         }
     }
+    
+    public void close() {
+        try {
+            this.bulkCacheFlush();
+        } catch (IOException e) {
+        }
+    }
 
 }
