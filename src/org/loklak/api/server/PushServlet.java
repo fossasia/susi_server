@@ -68,6 +68,9 @@ public class PushServlet extends HttpServlet {
     
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+
+        long timeStart = System.currentTimeMillis();
+        
         RemoteAccess.Post post = RemoteAccess.evaluate(request);
         String remoteHash = Integer.toHexString(Math.abs(post.getClientHost().hashCode()));
                 
@@ -84,10 +87,14 @@ public class PushServlet extends HttpServlet {
         if (data == null || data.length == 0) {response.sendError(400, "your request does not contain a data object. The data object should contain data to be pushed. The format of the data object is JSON; it is exactly the same as the JSON search result"); return;}
         
         // parse the json data
-        int recordCount = 0, newCount = 0, knownCount = 0;
+        int recordCount = 0;//, newCount = 0, knownCount = 0;
         String query = null;
+        long timeParsing = 0, timeTimelineStorage = 0, timeQueryStorage = 0;
         try {
             Map<String, Object> map = DAO.jsonMapper.readValue(data, DAO.jsonTypeRef);
+
+            timeParsing = System.currentTimeMillis();
+            
             // read metadata
             Object metadata_obj = map.get("search_metadata");
             
@@ -105,11 +112,14 @@ public class PushServlet extends HttpServlet {
                     UserEntry u = new UserEntry(user);
                     MessageEntry t = new MessageEntry(tweet);
                     tl.add(t, u);
-                    boolean newtweet = DAO.writeMessage(t, u, true, true, true);
-                    if (newtweet) newCount++; else knownCount++;
+                    //boolean newtweet = DAO.writeMessage(t, u, true, true, true);
+                    //if (newtweet) newCount++; else knownCount++;
                 }
-                try {DAO.users.bulkCacheFlush();} catch (IOException e) {}
-                try {DAO.messages.bulkCacheFlush();} catch (IOException e) {}
+                Caretaker.storeTimelineScheduler(tl);
+                //try {DAO.users.bulkCacheFlush();} catch (IOException e) {}
+                //try {DAO.messages.bulkCacheFlush();} catch (IOException e) {}
+
+                timeTimelineStorage = System.currentTimeMillis();
                 
                 // update query database if query was given in the result list
                 @SuppressWarnings("unchecked") Map<String, Object> metadata = metadata_obj instanceof Map<?, ?> ? (Map<String, Object>) metadata_obj : null;
@@ -127,13 +137,15 @@ public class PushServlet extends HttpServlet {
                             // existing queries are updated
                             qe.update(tl.period(), false);
                             try {
-                                DAO.queries.writeEntry(query, qe.getSourceType().name(), qe);
+                                DAO.queries.writeEntry(query, qe.getSourceType().name(), qe, false);
                             } catch (IOException e) {
                                 e.printStackTrace();
                             }
                         }
                     }
                 }
+
+                timeQueryStorage = System.currentTimeMillis();
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -146,8 +158,8 @@ public class PushServlet extends HttpServlet {
         json.startObject();
         json.field("status", "ok");
         json.field("records", recordCount);
-        json.field("new", newCount);
-        json.field("known", knownCount);
+        //json.field("new", newCount);
+        //json.field("known", knownCount);
         json.field("message", "pushed");
         json.endObject(); // of root
 
@@ -157,8 +169,21 @@ public class PushServlet extends HttpServlet {
         sos.print(json.string());
         if (jsonp) sos.println(");");
         sos.println();
+
+        long timeResponse = System.currentTimeMillis();
         
-        DAO.log(request.getServletPath() + " -> records = " + recordCount + ", new = " + newCount + ", known = " + knownCount + ", from host hash " + remoteHash + (query == null ? "" : " for query=" + query));
+        DAO.log(
+                request.getServletPath() + " -> records = " + recordCount +
+                //", new = " + newCount +
+                //", known = " + knownCount +
+                ", from host hash " + remoteHash +
+                (query == null ? "" : " for query=" + query) +
+                ", timeParsing = " + (timeParsing - timeStart) +
+                ", timeTimelineStorage = " + (timeTimelineStorage - timeParsing) +
+                ", timeQueryStorage = " + (timeQueryStorage - timeTimelineStorage) +
+                ", timeResponse = " + (timeResponse - timeQueryStorage) +
+                ", total time = " + (timeResponse - timeStart)
+                );
 
         response.addHeader("Access-Control-Allow-Origin", "*");
         post.finalize();

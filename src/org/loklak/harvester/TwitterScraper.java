@@ -40,6 +40,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.loklak.Caretaker;
 import org.loklak.data.DAO;
 import org.loklak.data.ProviderType;
 import org.loklak.data.Timeline;
@@ -399,7 +400,7 @@ public class TwitterScraper {
                 //DAO.log("TwitterTweet [" + this.id_str + "] enrich    after " + (System.currentTimeMillis() - start) + "ms");
                 if (this.writeToIndex) DAO.writeMessage(this, this.user, true, true, false);
                 //DAO.log("TwitterTweet [" + this.id_str + "] write     after " + (System.currentTimeMillis() - start) + "ms");
-                if (this.writeToBackend) DAO.transmitMessage(this, this.user);
+                if (this.writeToBackend) Caretaker.transmitMessage(this, this.user);
                 //DAO.log("TwitterTweet [" + this.id_str + "] transmit  after " + (System.currentTimeMillis() - start) + "ms");
             } catch (Throwable e) {
                 e.printStackTrace();

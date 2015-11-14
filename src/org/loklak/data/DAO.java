@@ -39,9 +39,6 @@ import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 import java.util.TreeMap;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.eclipse.jetty.util.ConcurrentHashSet;
@@ -147,7 +144,6 @@ public class DAO {
     public static MessageFactory messages;
     public static QueryFactory queries;
     private static ImportProfileFactory importProfiles;
-    private static BlockingQueue<Timeline> newMessageTimelines = new LinkedBlockingQueue<Timeline>();
     private static Map<String, String> config = new HashMap<>();
     public  static GeoNames geoNames;
     
@@ -308,7 +304,11 @@ public class DAO {
                             // write line into query database
                             if (!existQuery(line)) {
                                 try {
-                                    queries.writeEntry(line, SourceType.TWITTER.name(), new QueryEntry(line, 0, 60000, SourceType.TWITTER, false));
+                                    queries.writeEntry(
+                                            line,
+                                            SourceType.TWITTER.name(),
+                                            new QueryEntry(line, 0, 60000, SourceType.TWITTER, false),
+                                            true);
                                 } catch (IOException e) {
                                     e.printStackTrace();
                                 }
@@ -319,6 +319,7 @@ public class DAO {
                         e.printStackTrace();
                     }
                 }
+                queries.bulkCacheFlush();
             }
         } catch (Throwable e) {
             e.printStackTrace();
@@ -428,13 +429,26 @@ public class DAO {
      */
     public static void close() {
         Log.getLog().info("closing DAO");
+        
+        // close the dump files
         message_dump.close();
         account_dump.close();
         import_profile_dump.close();
         user_dump.close();
         followers_dump.close();
         following_dump.close();
+        
+        // close the tracker
         access.close();
+        
+        // close the index factories (flushes the caches)
+        messages.close();
+        users.close();
+        accounts.close();
+        queries.close();
+        importProfiles.close();
+
+        // close the index
         elasticsearch_client.close();
         elasticsearch_node.close();
         Log.getLog().info("closed DAO");
@@ -499,48 +513,6 @@ public class DAO {
         return config.keySet();
     }
     
-    public static void transmitTimeline(Timeline tl) {
-        if (getConfig("backend", new String[0], ",").length > 0) newMessageTimelines.add(tl);
-    }
-    
-    public static void transmitMessage(final MessageEntry tweet, final UserEntry user) {
-        if (getConfig("backend", new String[0], ",").length <= 0) return;
-        Timeline tl = newMessageTimelines.poll();
-        if (tl == null) tl = new Timeline(Timeline.Order.CREATED_AT);
-        tl.add(tweet, user);
-        newMessageTimelines.add(tl);
-    }
-
-    public static Timeline takeTimelineMin(Timeline.Order order, int minsize, int maxsize, long maxwait) {
-        Timeline tl = takeTimelineMax(order, minsize, maxwait);
-        if (tl.size() >= minsize) {
-            // split that and return the maxsize
-            Timeline tlr = tl.reduceToMaxsize(minsize);
-            newMessageTimelines.add(tlr); // push back the remaining
-            return tl;
-        }
-        // push back that timeline and return nothing
-        newMessageTimelines.add(tl);
-        return new Timeline(order);
-    }
-
-    public static Timeline takeTimelineMax(Timeline.Order order, int maxsize, long maxwait) {
-        Timeline tl = new Timeline(order);
-        try {
-            Timeline tl0 = newMessageTimelines.poll(maxwait, TimeUnit.MILLISECONDS);
-            if (tl0 == null) return tl;
-            tl.putAll(tl0);
-            while (tl0.size() < maxsize && newMessageTimelines.size() > 0 && newMessageTimelines.peek().size() + tl0.size() <= maxsize) {
-                tl0 = newMessageTimelines.take();
-                if (tl0 == null) return tl;
-                tl.putAll(tl0);
-            }
-            return tl;
-        } catch (InterruptedException e) {
-            return tl;
-        }
-    }
-    
     /**
      * Store a message together with a user into the search index
      * This method is synchronized to prevent concurrent IO caused by this call.
@@ -573,7 +545,7 @@ public class DAO {
                 }
     
                 // record tweet into search index
-                if (bulk) messages.writeEntryBulk(t.getIdStr(), t.getSourceType().name(), t); else messages.writeEntry(t.getIdStr(), t.getSourceType().name(), t);
+                messages.writeEntry(t.getIdStr(), t.getSourceType().name(), t, bulk);
             }
             
             // record tweet into text file
@@ -597,7 +569,7 @@ public class DAO {
     public synchronized static boolean writeUser(UserEntry u, String source_type, boolean bulk) {
         try {
             // record user into search index
-            if (bulk) users.writeEntryBulk(u.getScreenName(), source_type, u); else users.writeEntry(u.getScreenName(), source_type, u);
+            users.writeEntry(u.getScreenName(), source_type, u, bulk);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -617,7 +589,7 @@ public class DAO {
             if (dump) account_dump.write(a.toMap(null));
 
             // record account into search index
-            accounts.writeEntry(a.getScreenName(), a.getSourceType().name(), a);
+            accounts.writeEntry(a.getScreenName(), a.getSourceType().name(), a, false);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -635,7 +607,7 @@ public class DAO {
             // record import profile into text file
             if (dump) import_profile_dump.write(i.toMap());
             // record import profile into search index
-            importProfiles.writeEntry(i.getId(), i.getSourceType().name(), i);
+            importProfiles.writeEntry(i.getId(), i.getSourceType().name(), i, false);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -1050,7 +1022,7 @@ public class DAO {
                 qe.update(finishedTweets.period(), byUserQuery);
             }
             try {
-                queries.writeEntry(q, qe.source_type.name(), qe);
+                queries.writeEntry(q, qe.source_type.name(), qe, false);
             } catch (IOException e) {
                 e.printStackTrace();
             }
