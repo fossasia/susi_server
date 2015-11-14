@@ -39,9 +39,6 @@ import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 import java.util.TreeMap;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.eclipse.jetty.util.ConcurrentHashSet;
@@ -147,7 +144,6 @@ public class DAO {
     public static MessageFactory messages;
     public static QueryFactory queries;
     private static ImportProfileFactory importProfiles;
-    private static BlockingQueue<Timeline> newMessageTimelines = new LinkedBlockingQueue<Timeline>();
     private static Map<String, String> config = new HashMap<>();
     public  static GeoNames geoNames;
     
@@ -497,48 +493,6 @@ public class DAO {
     
     public static Set<String> getConfigKeys() {
         return config.keySet();
-    }
-    
-    public static void transmitTimeline(Timeline tl) {
-        if (getConfig("backend", new String[0], ",").length > 0) newMessageTimelines.add(tl);
-    }
-    
-    public static void transmitMessage(final MessageEntry tweet, final UserEntry user) {
-        if (getConfig("backend", new String[0], ",").length <= 0) return;
-        Timeline tl = newMessageTimelines.poll();
-        if (tl == null) tl = new Timeline(Timeline.Order.CREATED_AT);
-        tl.add(tweet, user);
-        newMessageTimelines.add(tl);
-    }
-
-    public static Timeline takeTimelineMin(Timeline.Order order, int minsize, int maxsize, long maxwait) {
-        Timeline tl = takeTimelineMax(order, minsize, maxwait);
-        if (tl.size() >= minsize) {
-            // split that and return the maxsize
-            Timeline tlr = tl.reduceToMaxsize(minsize);
-            newMessageTimelines.add(tlr); // push back the remaining
-            return tl;
-        }
-        // push back that timeline and return nothing
-        newMessageTimelines.add(tl);
-        return new Timeline(order);
-    }
-
-    public static Timeline takeTimelineMax(Timeline.Order order, int maxsize, long maxwait) {
-        Timeline tl = new Timeline(order);
-        try {
-            Timeline tl0 = newMessageTimelines.poll(maxwait, TimeUnit.MILLISECONDS);
-            if (tl0 == null) return tl;
-            tl.putAll(tl0);
-            while (tl0.size() < maxsize && newMessageTimelines.size() > 0 && newMessageTimelines.peek().size() + tl0.size() <= maxsize) {
-                tl0 = newMessageTimelines.take();
-                if (tl0 == null) return tl;
-                tl.putAll(tl0);
-            }
-            return tl;
-        } catch (InterruptedException e) {
-            return tl;
-        }
     }
     
     /**

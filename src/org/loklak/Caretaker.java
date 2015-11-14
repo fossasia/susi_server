@@ -24,6 +24,9 @@ import java.io.IOException;
 import java.util.Date;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.TimeUnit;
 
 import org.eclipse.jetty.util.log.Log;
 import org.elasticsearch.search.sort.SortOrder;
@@ -31,8 +34,10 @@ import org.loklak.api.client.HelloClient;
 import org.loklak.api.client.PushClient;
 import org.loklak.api.server.SuggestServlet;
 import org.loklak.data.DAO;
+import org.loklak.data.MessageEntry;
 import org.loklak.data.QueryEntry;
 import org.loklak.data.Timeline;
+import org.loklak.data.UserEntry;
 import org.loklak.harvester.TwitterAPI;
 import org.loklak.tools.DateParser;
 import org.loklak.tools.OS;
@@ -50,6 +55,9 @@ public class Caretaker extends Thread {
     public final static long startupTime = System.currentTimeMillis();
     public final static long upgradeWait = DateParser.DAY_MILLIS; // 1 day
     public       static long upgradeTime = startupTime + upgradeWait;
+
+    public static BlockingQueue<Timeline> pushToBackendTimeline = new LinkedBlockingQueue<Timeline>();
+    public static BlockingQueue<Timeline> receivedFromPushTimeline = new LinkedBlockingQueue<Timeline>();
     
     /**
      * ask the thread to shut down
@@ -85,7 +93,7 @@ public class Caretaker extends Thread {
             try {Thread.sleep(4000);} catch (InterruptedException e) {}
             
             // peer-to-peer operation
-            Timeline tl = DAO.takeTimelineMin(Timeline.Order.CREATED_AT, 100, 1000, 1);
+            Timeline tl = takeTimelineMin(pushToBackendTimeline, Timeline.Order.CREATED_AT, 100, 1000, 1);
             if (!this.shallRun) break;
             if (tl != null && tl.size() > 0 && remote.length > 0) {
                 // transmit the timeline
@@ -184,6 +192,48 @@ public class Caretaker extends Thread {
         } catch (IOException e) {
             DAO.log("UPGRADE failed: " + e.getMessage());
             e.printStackTrace();
+        }
+    }
+
+    public static void transmitTimeline(Timeline tl) {
+        if (DAO.getConfig("backend", new String[0], ",").length > 0) pushToBackendTimeline.add(tl);
+    }
+    
+    public static void transmitMessage(final MessageEntry tweet, final UserEntry user) {
+        if (DAO.getConfig("backend", new String[0], ",").length <= 0) return;
+        Timeline tl = pushToBackendTimeline.poll();
+        if (tl == null) tl = new Timeline(Timeline.Order.CREATED_AT);
+        tl.add(tweet, user);
+        pushToBackendTimeline.add(tl);
+    }
+
+    public static Timeline takeTimelineMin(final BlockingQueue<Timeline> dumptl, final Timeline.Order order, final int minsize, final int maxsize, final long maxwait) {
+        Timeline tl = takeTimelineMax(dumptl, order, minsize, maxwait);
+        if (tl.size() >= minsize) {
+            // split that and return the maxsize
+            Timeline tlr = tl.reduceToMaxsize(minsize);
+            dumptl.add(tlr); // push back the remaining
+            return tl;
+        }
+        // push back that timeline and return nothing
+        dumptl.add(tl);
+        return new Timeline(order);
+    }
+
+    private static Timeline takeTimelineMax(final BlockingQueue<Timeline> dumptl, final Timeline.Order order, final int maxsize, final long maxwait) {
+        Timeline tl = new Timeline(order);
+        try {
+            Timeline tl0 = dumptl.poll(maxwait, TimeUnit.MILLISECONDS);
+            if (tl0 == null) return tl;
+            tl.putAll(tl0);
+            while (tl0.size() < maxsize && dumptl.size() > 0 && dumptl.peek().size() + tl0.size() <= maxsize) {
+                tl0 = dumptl.take();
+                if (tl0 == null) return tl;
+                tl.putAll(tl0);
+            }
+            return tl;
+        } catch (InterruptedException e) {
+            return tl;
         }
     }
     
