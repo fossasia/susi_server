@@ -108,8 +108,8 @@ public class PushServlet extends HttpServlet {
                     boolean newtweet = DAO.writeMessage(t, u, true, true, true);
                     if (newtweet) newCount++; else knownCount++;
                 }
-                try {DAO.users.bulkCacheFlush();} catch (IOException e) {}
-                try {DAO.messages.bulkCacheFlush();} catch (IOException e) {}
+                //try {DAO.users.bulkCacheFlush();} catch (IOException e) {}
+                //try {DAO.messages.bulkCacheFlush();} catch (IOException e) {}
                 
                 // update query database if query was given in the result list
                 @SuppressWarnings("unchecked") Map<String, Object> metadata = metadata_obj instanceof Map<?, ?> ? (Map<String, Object>) metadata_obj : null;
