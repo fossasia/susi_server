@@ -304,7 +304,11 @@ public class DAO {
                             // write line into query database
                             if (!existQuery(line)) {
                                 try {
-                                    queries.writeEntry(line, SourceType.TWITTER.name(), new QueryEntry(line, 0, 60000, SourceType.TWITTER, false));
+                                    queries.writeEntry(
+                                            line,
+                                            SourceType.TWITTER.name(),
+                                            new QueryEntry(line, 0, 60000, SourceType.TWITTER, false),
+                                            true);
                                 } catch (IOException e) {
                                     e.printStackTrace();
                                 }
@@ -315,6 +319,7 @@ public class DAO {
                         e.printStackTrace();
                     }
                 }
+                queries.bulkCacheFlush();
             }
         } catch (Throwable e) {
             e.printStackTrace();
@@ -540,7 +545,7 @@ public class DAO {
                 }
     
                 // record tweet into search index
-                if (bulk) messages.writeEntryBulk(t.getIdStr(), t.getSourceType().name(), t); else messages.writeEntry(t.getIdStr(), t.getSourceType().name(), t);
+                messages.writeEntry(t.getIdStr(), t.getSourceType().name(), t, bulk);
             }
             
             // record tweet into text file
@@ -564,7 +569,7 @@ public class DAO {
     public synchronized static boolean writeUser(UserEntry u, String source_type, boolean bulk) {
         try {
             // record user into search index
-            if (bulk) users.writeEntryBulk(u.getScreenName(), source_type, u); else users.writeEntry(u.getScreenName(), source_type, u);
+            users.writeEntry(u.getScreenName(), source_type, u, bulk);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -584,7 +589,7 @@ public class DAO {
             if (dump) account_dump.write(a.toMap(null));
 
             // record account into search index
-            accounts.writeEntry(a.getScreenName(), a.getSourceType().name(), a);
+            accounts.writeEntry(a.getScreenName(), a.getSourceType().name(), a, false);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -602,7 +607,7 @@ public class DAO {
             // record import profile into text file
             if (dump) import_profile_dump.write(i.toMap());
             // record import profile into search index
-            importProfiles.writeEntry(i.getId(), i.getSourceType().name(), i);
+            importProfiles.writeEntry(i.getId(), i.getSourceType().name(), i, false);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -1017,7 +1022,7 @@ public class DAO {
                 qe.update(finishedTweets.period(), byUserQuery);
             }
             try {
-                queries.writeEntry(q, qe.source_type.name(), qe);
+                queries.writeEntry(q, qe.source_type.name(), qe, false);
             } catch (IOException e) {
                 e.printStackTrace();
             }
