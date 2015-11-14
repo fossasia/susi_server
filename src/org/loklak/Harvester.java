@@ -137,7 +137,7 @@ public class Harvester {
             }
             String q = tl.getQuery();
             tl.setQuery(null);
-            Caretaker.transmitTimeline(tl);
+            Caretaker.transmitTimelineToBackend(tl);
             DAO.log("retrieval of " + tl.size() + " new messages for q = " + q + ", scheduled push");
         }
         

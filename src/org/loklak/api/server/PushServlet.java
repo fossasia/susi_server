@@ -87,7 +87,7 @@ public class PushServlet extends HttpServlet {
         if (data == null || data.length == 0) {response.sendError(400, "your request does not contain a data object. The data object should contain data to be pushed. The format of the data object is JSON; it is exactly the same as the JSON search result"); return;}
         
         // parse the json data
-        int recordCount = 0, newCount = 0, knownCount = 0;
+        int recordCount = 0;//, newCount = 0, knownCount = 0;
         String query = null;
         long timeParsing = 0, timeTimelineStorage = 0, timeQueryStorage = 0;
         try {
@@ -112,9 +112,10 @@ public class PushServlet extends HttpServlet {
                     UserEntry u = new UserEntry(user);
                     MessageEntry t = new MessageEntry(tweet);
                     tl.add(t, u);
-                    boolean newtweet = DAO.writeMessage(t, u, true, true, true);
-                    if (newtweet) newCount++; else knownCount++;
+                    //boolean newtweet = DAO.writeMessage(t, u, true, true, true);
+                    //if (newtweet) newCount++; else knownCount++;
                 }
+                Caretaker.storeTimelineScheduler(tl);
                 //try {DAO.users.bulkCacheFlush();} catch (IOException e) {}
                 //try {DAO.messages.bulkCacheFlush();} catch (IOException e) {}
 
@@ -157,8 +158,8 @@ public class PushServlet extends HttpServlet {
         json.startObject();
         json.field("status", "ok");
         json.field("records", recordCount);
-        json.field("new", newCount);
-        json.field("known", knownCount);
+        //json.field("new", newCount);
+        //json.field("known", knownCount);
         json.field("message", "pushed");
         json.endObject(); // of root
 
@@ -173,8 +174,8 @@ public class PushServlet extends HttpServlet {
         
         DAO.log(
                 request.getServletPath() + " -> records = " + recordCount +
-                ", new = " + newCount +
-                ", known = " + knownCount +
+                //", new = " + newCount +
+                //", known = " + knownCount +
                 ", from host hash " + remoteHash +
                 (query == null ? "" : " for query=" + query) +
                 ", timeParsing = " + (timeParsing - timeStart) +
