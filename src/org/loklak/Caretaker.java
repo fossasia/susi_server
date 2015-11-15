@@ -23,10 +23,10 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Date;
 import java.util.List;
+import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.TimeUnit;
 
 import org.eclipse.jetty.util.log.Log;
 import org.elasticsearch.search.sort.SortOrder;
@@ -51,6 +51,8 @@ import twitter4j.TwitterException;
  */
 public class Caretaker extends Thread {
 
+    private static final Random random = new Random(System.currentTimeMillis());
+    
     private boolean shallRun = true;
     
     public final static long startupTime = System.currentTimeMillis();
@@ -97,15 +99,15 @@ public class Caretaker extends Thread {
             if (newandknown[0] > 0 || newandknown[1] > 0) {
                 DAO.log("dumped timelines from push api: " + newandknown[0] + " new, " + newandknown[1] + " known, storage time: " + (dumpfinish - dumpstart) + " ms");
             }
-            if (dumpfinish - dumpstart < 4000) {
+            if (dumpfinish - dumpstart < 3000) {
                 // sleep a bit to prevent that the DoS limit fires at backend server
-                try {Thread.sleep(4000 - (dumpfinish - dumpstart));} catch (InterruptedException e) {}
+                try {Thread.sleep(3000 - (dumpfinish - dumpstart));} catch (InterruptedException e) {}
             }
             
             DAO.log("connection pool: " + ClientConnection.cm.getTotalStats().toString());
             
             // peer-to-peer operation
-            Timeline tl = takeTimelineMin(pushToBackendTimeline, Timeline.Order.CREATED_AT, 100, 1000, 1);
+            Timeline tl = takeTimelineMin(pushToBackendTimeline, Timeline.Order.CREATED_AT, 200, 1000);
             if (!this.shallRun) break;
             if (tl != null && tl.size() > 0 && remote.length > 0) {
                 // transmit the timeline
@@ -141,15 +143,17 @@ public class Caretaker extends Thread {
             
             // run some harvesting steps
             if (DAO.getConfig("retrieval.forbackend.enabled", false) && (DAO.getConfig("backend", "").length() > 0)) {
-                for (int i = 0; i < 5; i++) {
+                for (int i = 0; i < 10; i++) {
                     int count = Harvester.harvest();
                     if (count == -1) break;
+                    try {Thread.sleep(random.nextInt(200));} catch (InterruptedException e) {}
                 }
             }
             
             // run some crawl steps
             for (int i = 0; i < 10; i++) {
                 if (Crawler.process() == 0) break; // this may produce tweets for the timeline push
+                try {Thread.sleep(random.nextInt(200));} catch (InterruptedException e) {}
             }
             
             // run searches
@@ -164,7 +168,7 @@ public class Caretaker extends Thread {
                     Timeline t = DAO.scrapeTwitter(null, qe.getQuery(), Timeline.Order.CREATED_AT, qe.getTimezoneOffset(), false, 10000, true);
                     DAO.log("retrieval of " + t.size() + " new messages for q = \"" + qe.getQuery() + "\"");
                     DAO.announceNewUserId(t);
-                    try {Thread.sleep(1000);} catch (InterruptedException e) {} // prevent remote DoS protection handling
+                    try {Thread.sleep(random.nextInt(200));} catch (InterruptedException e) {}
                 }
             }
             
@@ -240,23 +244,35 @@ public class Caretaker extends Thread {
         pushToBackendTimeline.add(tl);
     }
 
-    public static Timeline takeTimelineMin(final BlockingQueue<Timeline> dumptl, final Timeline.Order order, final int minsize, final int maxsize, final long maxwait) {
-        Timeline tl = takeTimelineMax(dumptl, order, minsize, maxwait);
-        if (tl.size() >= minsize) {
+    public static Timeline takeTimelineMin(final BlockingQueue<Timeline> dumptl, final Timeline.Order order, final int minsize, final int maxsize) {
+        Timeline tl = takeTimelineMax(dumptl, order, minsize);
+        if (tl.size() >= maxsize) {
             // split that and return the maxsize
-            Timeline tlr = tl.reduceToMaxsize(minsize);
-            dumptl.add(tlr); // push back the remaining
+            Timeline tlr = tl.reduceToMaxsize(maxsize);
+            try {
+                dumptl.put(tlr);
+            } catch (InterruptedException e) {
+                tl.putAll(tlr); // repair
+                return tl;
+            } // push back the remaining
             return tl;
         }
-        // push back that timeline and return nothing
-        dumptl.add(tl);
-        return new Timeline(order);
+        if (tl.size() < minsize) {
+            // push back that timeline and return nothing
+            try {
+                dumptl.put(tl);
+            } catch (InterruptedException e) {
+                return tl;
+            }
+            return new Timeline(order);
+        }
+        return tl;
     }
 
-    private static Timeline takeTimelineMax(final BlockingQueue<Timeline> dumptl, final Timeline.Order order, final int maxsize, final long maxwait) {
+    private static Timeline takeTimelineMax(final BlockingQueue<Timeline> dumptl, final Timeline.Order order, final int maxsize) {
         Timeline tl = new Timeline(order);
         try {
-            Timeline tl0 = dumptl.poll(maxwait, TimeUnit.MILLISECONDS);
+            Timeline tl0 = dumptl.poll();
             if (tl0 == null) return tl;
             tl.putAll(tl0);
             while (tl0.size() < maxsize && dumptl.size() > 0 && dumptl.peek().size() + tl0.size() <= maxsize) {
