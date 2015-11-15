@@ -36,6 +36,7 @@ import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpHost;
 import org.apache.http.HttpResponse;
+import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
@@ -60,7 +61,7 @@ public class ClientConnection {
     private static final byte CR = 13;
     public static final byte[] CRLF = {CR, LF};
 
-    private static PoolingHttpClientConnectionManager cm = new PoolingHttpClientConnectionManager();
+    public static PoolingHttpClientConnectionManager cm = new PoolingHttpClientConnectionManager();
     private static RequestConfig defaultRequestConfig = RequestConfig.custom()
             .setSocketTimeout(5000)
             .setConnectTimeout(5000)
@@ -80,7 +81,6 @@ public class ClientConnection {
         cm.setDefaultMaxPerRoute(20);
         HttpHost twitter = new HttpHost("twitter.com", 443);
         cm.setMaxPerRoute(new HttpRoute(twitter), 50);
-        
     }
     
     /**
@@ -99,9 +99,10 @@ public class ClientConnection {
      * POST request
      * @param urlstring
      * @param map
+     * @throws ClientProtocolException 
      * @throws IOException
      */
-    public ClientConnection(String urlstring, Map<String, byte[]> map) throws IOException {
+    public ClientConnection(String urlstring, Map<String, byte[]> map) throws ClientProtocolException, IOException {
         this.httpClient = HttpClients.custom().setConnectionManager(cm).setDefaultRequestConfig(defaultRequestConfig).build();
         this.request = new HttpPost(urlstring);        
         MultipartEntityBuilder entityBuilder = MultipartEntityBuilder.create();
@@ -119,12 +120,18 @@ public class ClientConnection {
         try {
             this.httpResponse = httpClient.execute(this.request);
         } catch (UnknownHostException e) {
+            this.request.releaseConnection();
             throw new IOException(e.getMessage());
         }
         HttpEntity httpEntity = this.httpResponse.getEntity();
         if (httpEntity != null) {
             if (this.httpResponse.getStatusLine().getStatusCode() == 200) {
-                this.inputStream = new BufferedInputStream(httpEntity.getContent());
+                try {
+                    this.inputStream = new BufferedInputStream(httpEntity.getContent());
+                } catch (IOException e) {
+                    this.request.releaseConnection();
+                    throw e;
+                }
                 this.header = new HashMap<String, List<String>>();
                 for (Header header: httpResponse.getAllHeaders()) {
                     List<String> vals = this.header.get(header.getName());
@@ -132,9 +139,11 @@ public class ClientConnection {
                     vals.add(header.getValue());
                 }
             } else {
+                this.request.releaseConnection();
                 throw new IOException("client connection to " + this.request.getURI() + " fail: " + status + ": " + httpResponse.getStatusLine().getReasonPhrase());
             }
         } else {
+            this.request.releaseConnection();
             throw new IOException("client connection to " + this.request.getURI() + " fail: no connection");
         }
     }
@@ -182,31 +191,48 @@ public class ClientConnection {
         }
     }
     
-    public static void download(String source_url, File target_file) throws IOException {
-        byte[] buffer = new byte[2048];
-        ClientConnection connection = new ClientConnection(source_url);
-        OutputStream os = new BufferedOutputStream(new FileOutputStream(target_file));
-        int count;
+    public static void download(String source_url, File target_file) {
         try {
-            while ((count = connection.inputStream.read(buffer)) > 0) os.write(buffer, 0, count);
+            ClientConnection connection = new ClientConnection(source_url);
+            try {
+                OutputStream os = new BufferedOutputStream(new FileOutputStream(target_file));
+                int count;
+                byte[] buffer = new byte[2048];
+                try {
+                    while ((count = connection.inputStream.read(buffer)) > 0) os.write(buffer, 0, count);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                } finally {
+                    os.close();
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            } finally {
+                connection.close();
+            }
         } catch (IOException e) {
             e.printStackTrace();
-        } finally {
-            connection.close();
-            os.close();
         }
     }
     
     public static byte[] download(String source_url) throws IOException {
-        byte[] buffer = new byte[2048];
-        ClientConnection connection = new ClientConnection(source_url);
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        int count;
         try {
-            while ((count = connection.inputStream.read(buffer)) > 0) baos.write(buffer, 0, count);
-        } catch (IOException e) {} finally {
-            connection.close();
+            ClientConnection connection = new ClientConnection(source_url);
+            if (connection.inputStream == null) return null;
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            int count;
+            byte[] buffer = new byte[2048];
+            try {
+                while ((count = connection.inputStream.read(buffer)) > 0) baos.write(buffer, 0, count);
+            } catch (IOException e) {
+                e.printStackTrace();
+            } finally {
+                connection.close();
+            }
+            return baos.toByteArray();
+        } catch (IOException e) {
+            e.printStackTrace();
+            return null;
         }
-        return baos.toByteArray();
     }
 }

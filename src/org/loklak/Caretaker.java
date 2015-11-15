@@ -39,6 +39,7 @@ import org.loklak.data.QueryEntry;
 import org.loklak.data.Timeline;
 import org.loklak.data.UserEntry;
 import org.loklak.harvester.TwitterAPI;
+import org.loklak.http.ClientConnection;
 import org.loklak.tools.DateParser;
 import org.loklak.tools.OS;
 
@@ -100,6 +101,8 @@ public class Caretaker extends Thread {
                 // sleep a bit to prevent that the DoS limit fires at backend server
                 try {Thread.sleep(4000 - (dumpfinish - dumpstart));} catch (InterruptedException e) {}
             }
+            
+            DAO.log("connection pool: " + ClientConnection.cm.getTotalStats().toString());
             
             // peer-to-peer operation
             Timeline tl = takeTimelineMin(pushToBackendTimeline, Timeline.Order.CREATED_AT, 100, 1000, 1);
