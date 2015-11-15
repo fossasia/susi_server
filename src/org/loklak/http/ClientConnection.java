@@ -66,6 +66,7 @@ public class ClientConnection {
             .setSocketTimeout(5000)
             .setConnectTimeout(5000)
             .setConnectionRequestTimeout(5000)
+            .setContentCompressionEnabled(true)
             .build();
     
     private int status;
