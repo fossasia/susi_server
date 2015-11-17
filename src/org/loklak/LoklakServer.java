@@ -211,7 +211,8 @@ public class LoklakServer {
 
         File tmp = new File(dataFile, "tmp");
         ServletContextHandler servletHandler = new ServletContextHandler();
-        servletHandler.addFilter(GzipFilter.class, "/*", EnumSet.allOf(DispatcherType.class));
+        FilterHolder filter = servletHandler.addFilter(GzipFilter.class, "/*", EnumSet.allOf(DispatcherType.class));
+        filter.setInitParameter("mimeTypes", "text/plain");
         servletHandler.addServlet(DumpDownloadServlet.class, "/dump/*");
         servletHandler.addServlet(ShortlinkFromTweetServlet.class, "/x");
         servletHandler.addServlet(AccessServlet.class, "/api/access.json");
