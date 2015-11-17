@@ -22,7 +22,7 @@ package org.loklak;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
+import java.util.LinkedHashSet;
 import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
@@ -42,23 +42,30 @@ public class Harvester {
 
     private final static int FETCH_RANDOM = 3;
     private final static int HITS_LIMIT_4_QUERIES = 100;
+    private final static int MAX_PENDING = 200; // this could be much larger but we don't want to cache too many of these
+    private final static int MAX_HARVESTED = 10000; // just to prevent a memory leak with possible OOM after a long time we flush that cache after a while
     private final static Random random = new Random(System.currentTimeMillis());
-    public final static ExecutorService executor = Executors.newFixedThreadPool(2);
+    public final static ExecutorService executor = Executors.newFixedThreadPool(1);
     
-    private static Set<String> pendingQueries = new HashSet<>();
-    private static List<String> pendingContext = new ArrayList<>();
+    private static LinkedHashSet<String> pendingQueries = new LinkedHashSet<>();
+    private static ArrayList<String> pendingContext = new ArrayList<>();
     private static Set<String> harvestedContext = new HashSet<>();
     
     private static int hitsOnBackend = 1000;
 
-    public static void checkContext(Timeline tl) {
+    public static void checkContext(Timeline tl, boolean front) {
         for (MessageEntry tweet: tl) {
-            for (String user: tweet.getMentions()) checkContext("from:" + user);
-            for (String hashtag: tweet.getHashtags()) checkContext(hashtag);
+            for (String user: tweet.getMentions()) checkContext("from:" + user, front);
+            for (String hashtag: tweet.getHashtags()) checkContext(hashtag, front);
         }
     }
-    public static void checkContext(String s) {
-        if (!harvestedContext.contains(s) && !pendingContext.contains(s)) pendingContext.add(s);
+    public static void checkContext(String s, boolean front) {
+        if (!front && pendingContext.size() > MAX_PENDING) return; // queue is full
+        if (!harvestedContext.contains(s) && !pendingContext.contains(s)) {
+            if (front) pendingContext.add(0, s); else pendingContext.add(s);
+        }
+        while (pendingContext.size() > MAX_PENDING) pendingContext.remove(pendingContext.size() - 1);
+        if (harvestedContext.size() > MAX_HARVESTED) harvestedContext.clear();
     }
     
     public static int harvest() {
@@ -66,16 +73,15 @@ public class Harvester {
         
         if (random.nextInt(20) != 0 && hitsOnBackend < HITS_LIMIT_4_QUERIES && pendingQueries.size() == 0 && pendingContext.size() > 0) {
             // harvest using the collected keys instead using the queries
-            int r = random.nextInt(pendingContext.size());
+            int r = random.nextInt((pendingContext.size() / 2) + 1);
             String q = pendingContext.remove(r);
-            pendingContext.remove(q);
             harvestedContext.add(q);
             Timeline tl = TwitterScraper.search(q, true, true);
             if (tl == null || tl.size() == 0) return -1;
             
             // find content query strings and store them in the context cache
-            checkContext(tl);
-            DAO.log("retrieval of " + tl.size() + " new messages for q = " + q + ", scheduled push");
+            checkContext(tl, false);
+            DAO.log("retrieval of " + tl.size() + " new messages for q = " + q + ", scheduled push; pendingQueries = " + pendingQueries.size() + ", pendingContext = " + pendingContext.size() + ", harvestedContext = " + harvestedContext.size());
             return tl.size();
         }
         
@@ -97,12 +103,14 @@ public class Harvester {
         // take one of the pending queries or pending context and load the tweets
         String q = pendingQueries.iterator().next();
         pendingQueries.remove(q);
+        pendingContext.remove(q);
+        harvestedContext.add(q);
         Timeline tl = TwitterScraper.search(q, true, false);
         
         if (tl == null || tl.size() == 0) return -1;
         
         // find content query strings and store them in the context cache
-        checkContext(tl);
+        checkContext(tl, true);
         
         // if we loaded a pending query, push results to backpeer right now
         tl.setQuery(q);
@@ -126,7 +134,7 @@ public class Harvester {
                     long start = System.currentTimeMillis();
                     success = PushClient.push(new String[]{peer}, tl);
                     if (success) {
-                        DAO.log("retrieval of " + tl.size() + " new messages for q = " + tl.getQuery() + ", pushed to backend synchronously in " + (System.currentTimeMillis() - start) + " ms");
+                        DAO.log("retrieval of " + tl.size() + " new messages for q = " + tl.getQuery() + ", pushed to backend synchronously in " + (System.currentTimeMillis() - start) + " ms; pendingQueries = " + pendingQueries.size() + ", pendingContext = " + pendingContext.size() + ", harvestedContext = " + harvestedContext.size());
                         return;
                     }
                 } catch (Throwable e) {
