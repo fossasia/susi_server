@@ -20,11 +20,11 @@
 package org.loklak.api.server;
 
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.Collection;
 import java.util.Map;
 
 import javax.servlet.ServletException;
-import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -79,7 +79,7 @@ public class AccessServlet extends HttpServlet {
         json.endObject(); // of root
 
         // write json
-        ServletOutputStream sos = response.getOutputStream();
+        PrintWriter sos = response.getWriter();
         if (jsonp) sos.print(callback + "(");
         sos.print(json.string());
         if (jsonp) sos.println(");");

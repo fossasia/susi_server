@@ -20,6 +20,7 @@
 package org.loklak.api.server;
 
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.ConcurrentModificationException;
 import java.util.Date;
@@ -29,7 +30,6 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.servlet.ServletException;
-import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -234,12 +234,14 @@ public class SearchServlet extends HttpServlet {
             m.put("aggregations", agg);
             
             // write json
-            ServletOutputStream sos = response.getOutputStream();
+            response.setCharacterEncoding("UTF-8");
+            PrintWriter sos = response.getWriter();
             if (jsonp) sos.print(callback + "(");
             sos.print(minified ? new ObjectMapper().writer().writeValueAsString(m) : new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(m));
             if (jsonp) sos.println(");");
             sos.println();
         } else if (rssExt) {
+            response.setCharacterEncoding("UTF-8");
             post.setResponse(response, "application/rss+xml;charset=utf-8");
             // generate xml
             RSSMessage channel = new RSSMessage();

@@ -20,12 +20,12 @@
 package org.loklak.api.server;
 
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.Calendar;
 import java.util.Date;
 import java.text.ParseException;
 
 import javax.servlet.ServletException;
-import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -100,7 +100,8 @@ public class CampaignServlet extends HttpServlet {
         json.endObject();
 
         // write json
-        ServletOutputStream sos = response.getOutputStream();
+        response.setCharacterEncoding("UTF-8");
+        PrintWriter sos = response.getWriter();
         if (jsonp) sos.print(callback + "(");
         sos.print(json.string());
         if (jsonp) sos.println(");");
