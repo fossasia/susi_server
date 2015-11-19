@@ -76,7 +76,7 @@ public class Harvester {
             int r = random.nextInt((pendingContext.size() / 2) + 1);
             String q = pendingContext.remove(r);
             harvestedContext.add(q);
-            Timeline tl = TwitterScraper.search(q, true, true);
+            Timeline tl = TwitterScraper.search(q, Timeline.Order.CREATED_AT, true, true, 400);
             if (tl == null || tl.size() == 0) return -1;
             
             // find content query strings and store them in the context cache
@@ -105,7 +105,7 @@ public class Harvester {
         pendingQueries.remove(q);
         pendingContext.remove(q);
         harvestedContext.add(q);
-        Timeline tl = TwitterScraper.search(q, true, false);
+        Timeline tl = TwitterScraper.search(q, Timeline.Order.CREATED_AT, true, false, 400);
         
         if (tl == null || tl.size() == 0) return -1;
         

@@ -55,10 +55,12 @@ public class TwitterScraper {
     
     public static Timeline search(
             final String query,
+            final Timeline.Order order,
             final boolean writeToIndex,
-            final boolean writeToBackend) {
-        Timeline[] tl = search(query, Timeline.Order.CREATED_AT, writeToIndex, writeToBackend);
-        long timeout = System.currentTimeMillis() + 400;
+            final boolean writeToBackend,
+            int jointime) {
+        Timeline[] tl = search(query, order, writeToIndex, writeToBackend);
+        long timeout = System.currentTimeMillis() + jointime;
         for (MessageEntry me: tl[1]) {
             assert me instanceof TwitterTweet;
             TwitterTweet tt = (TwitterTweet) me;
@@ -68,7 +70,7 @@ public class TwitterScraper {
         return tl[0];
     }
     
-    public static Timeline[] search(
+    private static Timeline[] search(
             final String query,
             final Timeline.Order order,
             final boolean writeToIndex,
@@ -114,6 +116,10 @@ public class TwitterScraper {
         if (timelines == null) {
             // timeout occurred
             if (timelines == null) timelines = new Timeline[]{new Timeline(order), new Timeline(order)};
+        }
+        if (timelines != null) {
+            if (timelines[0] != null) timelines[0].setScraperInfo("local");
+            if (timelines[1] != null) timelines[1].setScraperInfo("local");
         }
         return timelines;
     }

@@ -109,6 +109,7 @@ public class SearchServlet extends HttpServlet {
                     Timeline twitterTl = DAO.scrapeTwitter(post, scraper_query, order, timezoneOffsetf, true, timeout, true);
                     count_twitter_new.set(twitterTl.size());
                     tl.putAll(QueryEntry.applyConstraint(twitterTl, tokens, false)); // pre-localized results are not filtered with location constraint any more 
+                    tl.setScraperInfo(twitterTl.getScraperInfo());
                     post.recordEvent("twitterscraper_time", System.currentTimeMillis() - start);
                 }
             };
@@ -142,6 +143,7 @@ public class SearchServlet extends HttpServlet {
                 Timeline twitterTl = DAO.scrapeTwitter(post, scraper_query, order, timezoneOffset, true, timeout, true);
                 count_twitter_new.set(twitterTl.size());
                 tl.putAll(QueryEntry.applyConstraint(twitterTl, tokens, false)); // pre-localized results are not filtered with location constraint any more 
+                tl.setScraperInfo(twitterTl.getScraperInfo());
                 post.recordEvent("twitterscraper_time", System.currentTimeMillis() - start);
                 // in this case we use all tweets, not only the latest one because it may happen that there are no new and that is not what the user expects
             }
@@ -152,6 +154,7 @@ public class SearchServlet extends HttpServlet {
                 Timeline backendTl = DAO.searchBackend(query, order, count, timezoneOffset, "cache", timeout);
                 if (backendTl != null) {
                     tl.putAll(QueryEntry.applyConstraint(backendTl, tokens, true));
+                    tl.setScraperInfo(backendTl.getScraperInfo());
                     count_backend.set(tl.size());
                 }
                 post.recordEvent("backend_time", System.currentTimeMillis() - start);
@@ -205,6 +208,7 @@ public class SearchServlet extends HttpServlet {
             metadata.put("client", post.getClientHost());
             metadata.put("time", System.currentTimeMillis() - post.getAccessTime());
             metadata.put("servicereduction", post.isDoS_servicereduction() ? "true" : "false");
+            if (tl.getScraperInfo().length() > 0) metadata.put("scraperInfo", tl.getScraperInfo());
             m.put("search_metadata", metadata);
             List<Object> statuses = new ArrayList<>();
             try {

@@ -69,6 +69,8 @@ public class SearchClient {
         if (metadata != null) {
             Integer hits = (Integer) metadata.get("hits");
             if (hits != null) tl.setHits(hits.intValue());
+            String scraperInfo = (String) metadata.get("scraperInfo");
+            if (scraperInfo != null) tl.setScraperInfo(scraperInfo);
         }
         //System.out.println(parser.text());
         return tl;

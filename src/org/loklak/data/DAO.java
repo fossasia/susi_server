@@ -954,55 +954,25 @@ public class DAO {
     
     public static Timeline scrapeTwitter(final RemoteAccess.Post post, final String q, final Timeline.Order order, final int timezoneOffset, boolean byUserQuery, long timeout, boolean recordQuery) {
         // retrieve messages from remote server
-        long start0 = System.currentTimeMillis();
         ArrayList<String> remote = DAO.getFrontPeers();
-        Timeline[] remoteMessages; // Timeline[2] as [finished to be used, messages in postprocessing]; all of them are only new messages!
+        Timeline tl;
         if (remote.size() > 0 && (peerLatency.get(remote.get(0)) == null || peerLatency.get(remote.get(0)).longValue() < 3000)) {
             long start = System.currentTimeMillis();
-            remoteMessages = new Timeline[]{searchOnOtherPeers(remote, q, order, 100, timezoneOffset, "all", SearchClient.frontpeer_hash, timeout), new Timeline(order)}; // all must be selected here to catch up missing tweets between intervals
+            tl = searchOnOtherPeers(remote, q, order, 100, timezoneOffset, "all", SearchClient.frontpeer_hash, timeout); // all must be selected here to catch up missing tweets between intervals
             // at this point the remote list can be empty as a side-effect of the remote search attempt
-            if (post != null && remote.size() > 0 && remoteMessages != null) post.recordEvent("remote_scraper_on_" + remote.get(0), System.currentTimeMillis() - start);
-            if (remoteMessages == null || ((remoteMessages[0] == null || remoteMessages[0].size() == 0) && (remoteMessages[1] == null || remoteMessages[1].size() == 0))) {
+            if (post != null && remote.size() > 0 && tl != null) post.recordEvent("remote_scraper_on_" + remote.get(0), System.currentTimeMillis() - start);
+            if (tl == null || tl.size() == 0) {
                 // maybe the remote server died, we try then ourself
                 start = System.currentTimeMillis();
-                remoteMessages = TwitterScraper.search(q, order, true, true);
+                tl = TwitterScraper.search(q, order, true, true, 400);
                 if (post != null) post.recordEvent("local_scraper_after_unsuccessful_remote", System.currentTimeMillis() - start);
             }
         } else {
             if (post != null && remote.size() > 0) post.recordEvent("omitted_scraper_latency_" + remote.get(0), peerLatency.get(remote.get(0)));
             long start = System.currentTimeMillis();
-            remoteMessages = TwitterScraper.search(q, order, true, true);
+            tl = TwitterScraper.search(q, order, true, true, 400);
             if (post != null) post.recordEvent("local_scraper", System.currentTimeMillis() - start);
         }
-        
-        
-        // wait some time until timeout until either all messages have been processed or if timeout occurs, whatever happens first
-        long start1 = System.currentTimeMillis();
-        Timeline finishedTweets = remoteMessages[0]; // put all finished tweets here, abandon all other (they will live if they are finished in the search index)
-        int expectedJoin = remoteMessages[1].size();
-        long termination = start0 + timeout - 200; // the -200 is here to give the recording process some time as well. If we exceed the timeout, the front-end will discard all results!
-        //log("SCRAPER: TIME LEFT before unshortening = " + (termination - System.currentTimeMillis()));
-        //long unshortenStart = System.currentTimeMillis();
-        int previousExpectedJoin = -1;
-        while (System.currentTimeMillis() < termination && expectedJoin > 0) {
-            // iterate over all messages, wait a bit and re-calculate expectedJoin at the end
-            long remainingTime = timeout - (System.currentTimeMillis() - start0);
-            long jointime = Math.max(10, remainingTime / expectedJoin / 20);
-            //log("SCRAPER: expectedJoin = " + expectedJoin + ", jointime = " + jointime);
-            expectedJoin = 0;
-            for (MessageEntry me: remoteMessages[1]) {
-                assert me instanceof TwitterTweet;
-                TwitterTweet tt = (TwitterTweet) me;
-                if (tt.waitReady(jointime)) finishedTweets.add(tt, tt.getUser()); else expectedJoin++; // double additions are detected
-            }
-            //log("SCRAPER: expectedJoin after loop = " + expectedJoin);
-            if (expectedJoin == previousExpectedJoin) break; // if there is no change, exit
-            previousExpectedJoin = expectedJoin;
-        }
-        //log("SCRAPER: TIME LEFT after unshortening = " + (termination - System.currentTimeMillis()));
-        //log("SCRAPER: unshortening time = " + (System.currentTimeMillis() - unshortenStart));
-        
-        if (post != null) post.recordEvent("local_scraper_wait_ready", System.currentTimeMillis() - start1);
 
         // record the query
         long start2 = System.currentTimeMillis();
@@ -1016,10 +986,10 @@ public class DAO {
         if (qe != null || (recordQuery && Caretaker.acceptQuery4Retrieval(q))) {
             if (qe == null) {
                 // a new query occurred
-                qe = new QueryEntry(q, timezoneOffset, finishedTweets.period(), SourceType.TWITTER, byUserQuery);
+                qe = new QueryEntry(q, timezoneOffset, tl.period(), SourceType.TWITTER, byUserQuery);
             } else {
                 // existing queries are updated
-                qe.update(finishedTweets.period(), byUserQuery);
+                qe.update(tl.period(), byUserQuery);
             }
             try {
                 queries.writeEntry(q, qe.source_type.name(), qe, false);
@@ -1033,7 +1003,7 @@ public class DAO {
         if (post != null) post.recordEvent("query_recorder", System.currentTimeMillis() - start2);
         //log("SCRAPER: TIME LEFT after recording = " + (termination - System.currentTimeMillis()));
         
-        return finishedTweets;
+        return tl;
     }
     
     public static final Random random = new Random(System.currentTimeMillis());
@@ -1123,6 +1093,7 @@ public class DAO {
                 peerLatency.put(peer, System.currentTimeMillis() - start);
                 // to show which peer was used for the retrieval, we move the picked peer to the front of the list
                 if (pick != 0) remote.add(0, remote.remove(pick));
+                tl.setScraperInfo(tl.getScraperInfo().length() > 0 ? peer + "," + tl.getScraperInfo() : peer);
                 return tl;
             } catch (IOException e) {
                 DAO.log("searchOnOtherPeers: no IO to scraping target: " + e.getMessage());

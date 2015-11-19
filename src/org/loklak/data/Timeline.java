@@ -59,14 +59,19 @@ public class Timeline implements Iterable<MessageEntry> {
     private NavigableMap<String, MessageEntry> tweets; // the key is the date plus id of the tweet
     private Map<String, UserEntry> users;
     private int hits = -1;
+    private String scraperInfo = "";
     final private Order order;
     private String query;
-    
+
     public Timeline(Order order) {
         this.tweets = new ConcurrentSkipListMap<String, MessageEntry>();
         this.users = new ConcurrentHashMap<String, UserEntry>();
         this.order = order;
         this.query = null;
+    }
+    public Timeline(Order order, String scraperInfo) {
+        this(order);
+        this.scraperInfo = scraperInfo;
     }
     
     public static Order parseOrder(String order) {
@@ -75,6 +80,14 @@ public class Timeline implements Iterable<MessageEntry> {
         } catch (Throwable e) {
             return Order.CREATED_AT;
         }
+    }
+    
+    public void setScraperInfo(String info) {
+        this.scraperInfo = info;
+    }
+    
+    public String getScraperInfo() {
+        return this.scraperInfo;
     }
     
     public Order getOrder() {
@@ -196,7 +209,8 @@ public class Timeline implements Iterable<MessageEntry> {
         Map<String, Object> metadata = new LinkedHashMap<>();
         metadata.put("count", Integer.toString(this.tweets.size()));
         if (this.query != null) metadata.put("query", this.query);
-        if (this.hits >= 0) metadata.put("hits", Math.max(this.hits, this.size()));        
+        if (this.hits >= 0) metadata.put("hits", Math.max(this.hits, this.size()));
+        if (this.scraperInfo.length() > 0) metadata.put("scraperInfo", this.scraperInfo);
         m.put("search_metadata", metadata);
         List<Object> statuses = new ArrayList<>();
         for (MessageEntry t: this) {
