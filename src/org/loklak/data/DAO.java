@@ -26,6 +26,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.file.Path;
+import java.text.ParseException;
 import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -614,26 +615,26 @@ public class DAO {
         return true;
     }
 
-    public static long countLocalMessages() {
-        return countLocal(MESSAGES_INDEX_NAME);
+    public static long countLocalMessages(long millis) {
+        return countLocal(MESSAGES_INDEX_NAME, millis);
     }
     
     public static long countLocalUsers() {
-        return countLocal(USERS_INDEX_NAME);
+        return countLocal(USERS_INDEX_NAME, -1);
     }
 
     public static long countLocalQueries() {
-        return countLocal(QUERIES_INDEX_NAME);
+        return countLocal(QUERIES_INDEX_NAME, -1);
     }
     
     public static long countLocalAccounts() {
-        return countLocal(ACCOUNTS_INDEX_NAME);
+        return countLocal(ACCOUNTS_INDEX_NAME, -1);
     }
     
-    private static long countLocal(String index) {
+    private static long countLocal(String index, long millis) {
         try {
             CountResponse response = elasticsearch_client.prepareCount(index)
-                .setQuery(QueryBuilders.matchAllQuery())
+                .setQuery(millis <= 0 ? QueryBuilders.matchAllQuery() : QueryBuilders.rangeQuery("created_at").from(new Date(System.currentTimeMillis() - millis)))
                 .execute()
                 .actionGet();
             return response.getCount();
