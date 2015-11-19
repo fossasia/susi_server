@@ -39,6 +39,8 @@ import org.loklak.geo.LocationSource;
 import org.loklak.geo.PlaceContext;
 import org.loklak.harvester.SourceType;
 import org.loklak.tools.bayes.Classification;
+import org.loklak.tools.json.JSONException;
+import org.loklak.tools.json.JSONObject;
 
 public class MessageEntry extends AbstractIndexEntry implements IndexEntry {
 
@@ -577,6 +579,63 @@ public class MessageEntry extends AbstractIndexEntry implements IndexEntry {
         // add user
         if (user != null) m.put("user", user.toMap());
         return m;
+    }
+    
+    public JSONObject toJSON(final UserEntry user, final boolean calculatedData, final int iflinkexceedslength, final String urlstub) throws JSONException {
+        JSONObject json = new JSONObject();
+
+        // tweet data
+        json.put("created_at", utcFormatter.print(getCreatedAt().getTime()));
+        if (this.on != null) json.put("on", utcFormatter.print(this.on.getTime()));
+        if (this.to != null) json.put("to", utcFormatter.print(this.to.getTime()));
+        json.put("screen_name", this.screen_name);
+        if (this.retweet_from != null && this.retweet_from.length() > 0) json.put("retweet_from", this.retweet_from);
+        json.put("text", this.getText(iflinkexceedslength, urlstub)); // the tweet; the cleanup is a helper function which cleans mistakes from the past in scraping
+        if (this.status_id_url != null) json.put("link", this.status_id_url.toExternalForm());
+        json.put("id_str", this.id_str);
+        if (this.canonical_id != null) json.put("canonical_id", this.canonical_id);
+        if (this.parent != null) json.put("parent", this.parent);
+        if (this.provider_hash != null && this.provider_hash.length() > 0) json.put("provider_hash", this.provider_hash);
+        json.put("retweet_count", this.retweet_count);
+        json.put("favourites_count", this.favourites_count); // there is a slight inconsistency here in the plural naming but thats how it is noted in the twitter api
+        json.put("images", this.images);
+        json.put("images_count", this.images.size());
+        json.put("audio", this.audio);
+        json.put("audio_count", this.audio.size());
+        json.put("videos", this.videos);
+        json.put("videos_count", this.videos.size());
+        json.put("place_name", this.place_name);
+        json.put("place_id", this.place_id);
+
+        // add statistic/calculated data
+        if (calculatedData) {
+            // location data
+            if (this.place_country != null && this.place_country.length() == 2) {
+                json.put("place_country_code", this.place_country);
+            }
+
+            // add optional location data. This is written even if calculatedData == false if the source is from REPORT to prevent that it is lost
+            if (this.location_point != null && this.location_point.length == 2 && this.location_mark != null && this.location_mark.length == 2) {
+                // reference for this format: https://www.elastic.co/guide/en/elasticsearch/reference/current/mapping-geo-point-type.html#_lat_lon_as_array_5
+                json.put("location_point", this.location_point); // [longitude, latitude]
+                json.put("location_radius", this.location_radius);
+                json.put("location_mark", this.location_mark);
+            }
+
+            // redundant data for enhanced navigation with aggregations
+            json.put("hosts", this.hosts);
+            json.put("hosts_count", this.hosts.length);
+            json.put("links", this.links);
+            json.put("links_count", this.links.length);
+            json.put("mentions", this.mentions);
+            json.put("mentions_count", this.mentions.length);
+            json.put("hashtags", this.hashtags);
+            json.put("hashtags_count", this.hashtags.length);
+        }
+
+        // add user
+        if (user != null) json.put("user", user.toJSON());
+        return json;
     }
     
     public static String html2utf8(String s) {

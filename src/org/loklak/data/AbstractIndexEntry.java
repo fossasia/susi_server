@@ -48,7 +48,7 @@ public abstract class AbstractIndexEntry implements IndexEntry {
         }
     }
 
-    public byte[] toJSON() {
+    public byte[] toJSONBytes() {
         String s = toString();
         return s == null ? null : UTF8.getBytes(s);
     }

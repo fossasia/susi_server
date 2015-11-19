@@ -26,9 +26,7 @@ import java.util.Map;
 import org.loklak.data.Timeline;
 import org.loklak.http.ClientConnection;
 import org.loklak.tools.UTF8;
-
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import org.loklak.tools.json.JSONException;
 
 public class PushClient {
     
@@ -44,7 +42,7 @@ public class PushClient {
         if (timeline.size() == 0) return true;
         
         try {
-            String data = new ObjectMapper().writer().writeValueAsString(timeline.toMap(false));
+            String data = timeline.toJSON(false).toString();
             assert data != null;
             boolean transmittedToAtLeastOnePeer = false;
             for (String hoststub: hoststubs) {
@@ -62,7 +60,7 @@ public class PushClient {
                 }
             }
             return transmittedToAtLeastOnePeer;
-        } catch (JsonProcessingException e) {
+        } catch (JSONException e) {
             e.printStackTrace();
             return false;
         }

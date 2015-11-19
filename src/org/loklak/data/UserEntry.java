@@ -20,6 +20,8 @@
 package org.loklak.data;
 
 import org.elasticsearch.common.Base64;
+import org.loklak.tools.json.JSONException;
+import org.loklak.tools.json.JSONObject;
 
 import java.io.IOException;
 import java.util.Date;
@@ -139,6 +141,19 @@ public class UserEntry extends AbstractIndexEntry implements IndexEntry {
         m.put(UserFactory.field_appearance_latest, utcFormatter.print(getAppearanceLatest().getTime()));
         if (this.map.containsKey(UserFactory.field_profile_image)) m.put(UserFactory.field_profile_image, this.map.get(UserFactory.field_profile_image));
         return m;
+    }
+    
+    public JSONObject toJSON() throws JSONException {
+        JSONObject json = new JSONObject();
+        json.put(UserFactory.field_screen_name, getScreenName());
+        json.put(UserFactory.field_user_id, getUserId());
+        json.put(UserFactory.field_name, getName());
+        if (this.map.containsKey(UserFactory.field_profile_image_url_http)) json.put(UserFactory.field_profile_image_url_http, this.map.get(UserFactory.field_profile_image_url_http));
+        if (this.map.containsKey(UserFactory.field_profile_image_url_https)) json.put(UserFactory.field_profile_image_url_https, this.map.get(UserFactory.field_profile_image_url_https));
+        json.put(UserFactory.field_appearance_first, utcFormatter.print(getAppearanceFirst().getTime()));
+        json.put(UserFactory.field_appearance_latest, utcFormatter.print(getAppearanceLatest().getTime()));
+        if (this.map.containsKey(UserFactory.field_profile_image)) json.put(UserFactory.field_profile_image, this.map.get(UserFactory.field_profile_image));
+        return json;
     }
 
     @Override

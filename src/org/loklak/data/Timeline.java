@@ -30,6 +30,10 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentSkipListMap;
 
+import org.loklak.tools.json.JSONArray;
+import org.loklak.tools.json.JSONException;
+import org.loklak.tools.json.JSONObject;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -196,14 +200,11 @@ public class Timeline implements Iterable<MessageEntry> {
     }
     
     public String toString() {
-        try {
-            return new ObjectMapper().writer().writeValueAsString(toMap(true));
-        } catch (JsonProcessingException e) {
-            e.printStackTrace();
-            return "";
-        }
+        return toJSON(true).toString();
+        //return new ObjectMapper().writer().writeValueAsString(toMap(true));
     }
     
+    /*
     public Map<String, Object> toMap(boolean withEnrichedData) {
         Map<String, Object> m = new LinkedHashMap<>();
         Map<String, Object> metadata = new LinkedHashMap<>();
@@ -219,6 +220,24 @@ public class Timeline implements Iterable<MessageEntry> {
         }
         m.put("statuses", statuses);
         return m;
+    }
+     */
+    
+    public JSONObject toJSON(boolean withEnrichedData) throws JSONException {
+        JSONObject json = new JSONObject();
+        JSONObject metadata = new JSONObject();
+        metadata.put("count", Integer.toString(this.tweets.size()));
+        if (this.query != null) metadata.put("query", this.query);
+        if (this.hits >= 0) metadata.put("hits", Math.max(this.hits, this.size()));
+        if (this.scraperInfo.length() > 0) metadata.put("scraperInfo", this.scraperInfo);
+        json.put("search_metadata", metadata);
+        JSONArray statuses = new JSONArray();
+        for (MessageEntry t: this) {
+            UserEntry u = this.users.get(t.getScreenName());
+            statuses.put(t.toJSON(u, withEnrichedData, Integer.MAX_VALUE, ""));
+        }
+        json.put("statuses", statuses);
+        return json;
     }
     
     /**

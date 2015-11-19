@@ -20,6 +20,7 @@ package org.loklak.data;
 
 import org.loklak.harvester.HarvestingFrequency;
 import org.loklak.harvester.SourceType;
+import org.loklak.tools.json.JSONObject;
 
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -246,6 +247,26 @@ public class ImportProfileEntry extends AbstractIndexEntry implements IndexEntry
         m.put("active_status", this.activeStatus.name());
         m.put("privacy_status", this.privacyStatus.name());
         return m;
+    }
+    
+    public JSONObject toJSON() {
+        JSONObject json = new JSONObject();
+        json.put("id_str", this.id);
+        json.put("created_at", utcFormatter.print(this.created_at.getTime()));
+        json.put("last_modified", utcFormatter.print(this.last_modified.getTime()));
+        json.put("last_harvested", utcFormatter.print(this.last_harvested.getTime()));
+        json.put("importer", this.importer);
+        json.put("client_host", this.client_host);
+        json.put("source_url", this.source_url.toString());
+        json.put("source_hash", this.source_hash);
+        json.put("source_type", this.source_type.name());
+        json.put("harvesting_freq", this.harvesting_freq.getFrequency());
+        json.put("lifetime", this.lifetime);
+        json.put("imported", this.imported);
+        json.put("sharers", this.sharers);
+        json.put("active_status", this.activeStatus.name());
+        json.put("privacy_status", this.privacyStatus.name());
+        return json;
     }
 
 }

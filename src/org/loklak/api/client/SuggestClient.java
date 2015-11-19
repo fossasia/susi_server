@@ -85,7 +85,7 @@ public class SuggestClient {
         try {
             ResultList<QueryEntry> rl = suggest("http://loklak.org", "","query",1000,"asc","retrieval_next",DateParser.getTimezoneOffset(),null,"now","retrieval_next",3);
             for (QueryEntry qe: rl) {
-                System.out.println(UTF8.String(qe.toJSON()));
+                System.out.println(UTF8.String(qe.toJSONBytes()));
             }
             System.out.println("hits: " + rl.getHits());
         } catch (IOException e) {

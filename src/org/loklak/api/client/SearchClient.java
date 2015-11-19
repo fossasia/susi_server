@@ -79,7 +79,7 @@ public class SearchClient {
     public static void main(String[] args) {
         try {
             Timeline tl = search("http://loklak.org", "beer", Timeline.Order.CREATED_AT, "cache", 20, -120, backend_hash, 10000);
-            System.out.println(new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(tl.toMap(false)));
+            System.out.println(tl.toJSON(false).toString(2));
         } catch (IOException e) {
             e.printStackTrace();
         }
