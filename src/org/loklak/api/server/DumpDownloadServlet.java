@@ -1,9 +1,11 @@
 package org.loklak.api.server;
 
+import java.io.BufferedInputStream;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStreamWriter;
 import java.util.Collection;
 import java.util.Date;
@@ -26,6 +28,8 @@ import java.util.Date;
  *  along with this program in the file lgpl21.txt
  *  If not, see <http://www.gnu.org/licenses/>.
  */
+
+
 
 
 
@@ -118,13 +122,15 @@ public class DumpDownloadServlet extends HttpServlet {
         response.setContentType("application/octet-stream");
         response.setCharacterEncoding("UTF-8");
         response.setStatus(HttpServletResponse.SC_OK);
-        
-        FileInputStream fis = new FileInputStream(dump);
-        byte[] buffer = new byte[1024];
-        int c;
-        while ((c = fis.read(buffer)) > 0) response.getOutputStream().write(buffer, 0, c);
-        fis.close();
-
+        try {
+            InputStream fis = new BufferedInputStream(new FileInputStream(dump));
+            byte[] buffer = new byte[65536];
+            int c;
+            while ((c = fis.read(buffer)) > 0) response.getOutputStream().write(buffer, 0, c);
+            fis.close();
+        } catch (Throwable e) {
+            e.printStackTrace();
+        }
         post.finalize();
     }
 }
