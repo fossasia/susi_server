@@ -26,7 +26,6 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.file.Path;
-import java.text.ParseException;
 import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -78,7 +77,6 @@ import org.loklak.api.client.SearchClient;
 import org.loklak.geo.GeoNames;
 import org.loklak.harvester.SourceType;
 import org.loklak.harvester.TwitterScraper;
-import org.loklak.harvester.TwitterScraper.TwitterTweet;
 import org.loklak.http.AccessTracker;
 import org.loklak.http.ClientConnection;
 import org.loklak.http.RemoteAccess;
@@ -993,7 +991,7 @@ public class DAO {
                 qe.update(tl.period(), byUserQuery);
             }
             try {
-                queries.writeEntry(q, qe.source_type.name(), qe, false);
+                queries.writeEntry(q, qe.source_type == null ? SourceType.TWITTER.name() : qe.source_type.name(), qe, false);
             } catch (IOException e) {
                 e.printStackTrace();
             }
