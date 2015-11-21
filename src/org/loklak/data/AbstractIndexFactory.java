@@ -32,6 +32,11 @@ import org.elasticsearch.index.VersionType;
 import org.loklak.harvester.SourceType;
 import org.loklak.tools.Cache;
 
+/**
+ * test calls:
+ * curl "http://localhost:9000/api/account.json?screen_name=test"
+ * curl -g "http://localhost:9000/api/account.json?action=update&data={\"screen_name\":\"test\",\"apps\":{\"wall\":{\"type\":\"vertical\"}}}"
+ */
 public abstract class AbstractIndexFactory<Entry extends IndexEntry> implements IndexFactory<Entry> {
 
     protected final Client elasticsearch_client;

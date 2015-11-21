@@ -22,7 +22,6 @@ package org.loklak.data;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.NavigableMap;
@@ -33,9 +32,6 @@ import java.util.concurrent.ConcurrentSkipListMap;
 import org.loklak.tools.json.JSONArray;
 import org.loklak.tools.json.JSONException;
 import org.loklak.tools.json.JSONObject;
-
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
  * A timeline is a structure which holds tweet for the purpose of presentation

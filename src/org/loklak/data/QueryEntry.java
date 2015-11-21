@@ -43,6 +43,8 @@ import org.loklak.geo.GeoMark;
 import org.loklak.geo.PlaceContext;
 import org.loklak.harvester.SourceType;
 import org.loklak.tools.DateParser;
+import org.loklak.tools.json.JSONException;
+import org.loklak.tools.json.JSONObject;
 
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
@@ -125,6 +127,31 @@ public class QueryEntry extends AbstractIndexEntry implements IndexEntry {
         this.messages_per_day = (int) parseLong((Number) map.get("messages_per_day"));
         this.score_retrieval = (int) parseLong((Number) map.get("score_retrieval"));
         this.score_suggest = (int) parseLong((Number) map.get("score_suggest"));
+    }
+
+    public QueryEntry(JSONObject json) throws IllegalArgumentException, JSONException {
+        init(json);
+    }
+
+    public void init(JSONObject json) throws IllegalArgumentException, JSONException {
+        this.query = (String) json.get("query");
+        this.query_length = (int) parseLong((Number) json.get("query_length"));
+        String source_type_string = (String) json.get("source_type");
+        if (source_type_string == null) source_type_string = SourceType.USER.name();
+        this.source_type = SourceType.valueOf(source_type_string);
+        this.timezoneOffset = (int) parseLong((Number) json.get("timezoneOffset"));
+        Date now = new Date();
+        this.query_first = parseDate(json.get("query_first"), now);
+        this.query_last = parseDate(json.get("query_last"), now);
+        this.retrieval_last = parseDate(json.get("retrieval_last"), now);
+        this.retrieval_next = parseDate(json.get("retrieval_next"), now);
+        this.expected_next = parseDate(json.get("expected_next"), now);
+        this.query_count = (int) parseLong((Number) json.get("query_count"));
+        this.retrieval_count = (int) parseLong((Number) json.get("retrieval_count"));
+        this.message_period = parseLong((Number) json.get("message_period"));
+        this.messages_per_day = (int) parseLong((Number) json.get("messages_per_day"));
+        this.score_retrieval = (int) parseLong((Number) json.get("score_retrieval"));
+        this.score_suggest = (int) parseLong((Number) json.get("score_suggest"));
     }
     
     /**
