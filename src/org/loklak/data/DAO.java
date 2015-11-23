@@ -617,6 +617,10 @@ public class DAO {
         return countLocal(MESSAGES_INDEX_NAME, millis);
     }
     
+    public static long countLocalMessages(String provider_hash) {
+        return countLocal(MESSAGES_INDEX_NAME, provider_hash);
+    }
+    
     public static long countLocalUsers() {
         return countLocal(USERS_INDEX_NAME, -1);
     }
@@ -628,11 +632,24 @@ public class DAO {
     public static long countLocalAccounts() {
         return countLocal(ACCOUNTS_INDEX_NAME, -1);
     }
-    
+
     private static long countLocal(String index, long millis) {
         try {
             CountResponse response = elasticsearch_client.prepareCount(index)
                 .setQuery(millis <= 0 ? QueryBuilders.matchAllQuery() : QueryBuilders.rangeQuery("created_at").from(new Date(System.currentTimeMillis() - millis)))
+                .execute()
+                .actionGet();
+            return response.getCount();
+        } catch (Throwable e) {
+            e.printStackTrace();
+            return 0;
+        }
+    }
+    
+    private static long countLocal(String index, String provider_hash) {
+        try {
+            CountResponse response = elasticsearch_client.prepareCount(index)
+                .setQuery(QueryBuilders.matchQuery("provider_hash", provider_hash))
                 .execute()
                 .actionGet();
             return response.getCount();

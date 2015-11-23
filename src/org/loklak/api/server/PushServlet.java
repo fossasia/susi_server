@@ -73,6 +73,7 @@ public class PushServlet extends HttpServlet {
         
         RemoteAccess.Post post = RemoteAccess.evaluate(request);
         String remoteHash = Integer.toHexString(Math.abs(post.getClientHost().hashCode()));
+        boolean remoteHashFromPeerId = false;
                 
         // manage DoS
         if (post.isDoS_blackout()) {
@@ -97,6 +98,15 @@ public class PushServlet extends HttpServlet {
             
             // read metadata
             Object metadata_obj = map.get("search_metadata");
+            @SuppressWarnings("unchecked") Map<String, Object> metadata = metadata_obj instanceof Map<?, ?> ? (Map<String, Object>) metadata_obj : null;
+            // read peer id if they submitted one
+            if (metadata != null) {
+                String peerid = (String) metadata.get("peerid");
+                if (peerid != null && peerid.length() > 3 && peerid.charAt(2) == '_') {
+                    remoteHash = peerid;
+                    remoteHashFromPeerId = true;
+                }
+            }
             
             // read statuses
             Object statuses_obj = map.get("statuses");
@@ -122,7 +132,6 @@ public class PushServlet extends HttpServlet {
                 timeTimelineStorage = System.currentTimeMillis();
                 
                 // update query database if query was given in the result list
-                @SuppressWarnings("unchecked") Map<String, Object> metadata = metadata_obj instanceof Map<?, ?> ? (Map<String, Object>) metadata_obj : null;
                 if (metadata != null && tl.size() > 0) {
                     query = (String) metadata.get("query");
                     if (query != null) {
@@ -150,6 +159,9 @@ public class PushServlet extends HttpServlet {
         } catch (IOException e) {
             e.printStackTrace();
         }
+        
+        // in case that a peer submitted their peer id, we return also some statistics for that peer
+        long messages_from_client = remoteHashFromPeerId ? DAO.countLocalMessages(remoteHash) : -1;
 
         post.setResponse(response, "application/javascript");
         
@@ -158,6 +170,7 @@ public class PushServlet extends HttpServlet {
         json.startObject();
         json.field("status", "ok");
         json.field("records", recordCount);
+        if (remoteHashFromPeerId) json.field("contribution_message_count", messages_from_client);
         //json.field("new", newCount);
         //json.field("known", knownCount);
         json.field("message", "pushed");
