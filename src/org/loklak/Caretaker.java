@@ -107,7 +107,7 @@ public class Caretaker extends Thread {
             DAO.log("connection pool: " + ClientConnection.cm.getTotalStats().toString());
             
             // peer-to-peer operation
-            Timeline tl = takeTimelineMin(pushToBackendTimeline, Timeline.Order.CREATED_AT, 200, 1000);
+            Timeline tl = takeTimelineMin(pushToBackendTimeline, Timeline.Order.CREATED_AT, 200);
             if (!this.shallRun) break;
             if (tl != null && tl.size() > 0 && remote.length > 0) {
                 // transmit the timeline
@@ -244,39 +244,24 @@ public class Caretaker extends Thread {
         pushToBackendTimeline.add(tl);
     }
 
-    public static Timeline takeTimelineMin(final BlockingQueue<Timeline> dumptl, final Timeline.Order order, final int minsize, final int maxsize) {
-        Timeline tl = takeTimelineMax(dumptl, order, minsize);
-        if (tl.size() >= maxsize) {
-            // split that and return the maxsize
-            Timeline tlr = tl.reduceToMaxsize(maxsize);
-            try {
-                dumptl.put(tlr);
-            } catch (InterruptedException e) {
-                tl.putAll(tlr); // repair
-                return tl;
-            } // push back the remaining
-            return tl;
-        }
-        if (tl.size() < minsize) {
-            // push back that timeline and return nothing
-            try {
-                dumptl.put(tl);
-            } catch (InterruptedException e) {
-                return tl;
-            }
-            return new Timeline(order);
-        }
-        return tl;
-    }
-
-    private static Timeline takeTimelineMax(final BlockingQueue<Timeline> dumptl, final Timeline.Order order, final int maxsize) {
+    /**
+     * if the given list of timelines contain at least the wanted minimum size of messages, they are flushed from the queue
+     * and combined into a new timeline
+     * @param dumptl
+     * @param order
+     * @param minsize
+     * @return
+     */
+    public static Timeline takeTimelineMin(final BlockingQueue<Timeline> dumptl, final Timeline.Order order, final int minsize) {
+        int c = 0;
+        for (Timeline tl: dumptl) c += tl.size();
+        if (c < minsize) return new Timeline(order);
+        
+        // now flush the timeline queue completely
         Timeline tl = new Timeline(order);
         try {
-            Timeline tl0 = dumptl.poll();
-            if (tl0 == null) return tl;
-            tl.putAll(tl0);
-            while (tl0.size() < maxsize && dumptl.size() > 0 && dumptl.peek().size() + tl0.size() <= maxsize) {
-                tl0 = dumptl.take();
+            while (dumptl.size() > 0) {
+                Timeline tl0 = dumptl.take();
                 if (tl0 == null) return tl;
                 tl.putAll(tl0);
             }
