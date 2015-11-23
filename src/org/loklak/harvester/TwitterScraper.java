@@ -91,8 +91,8 @@ public class TwitterScraper {
                 }
             }
             String q = t.length() == 0 ? "*" : URLEncoder.encode(t.substring(1), "UTF-8");
-            //https://twitter.com/search?q=from:yacy_search&src=typd
-            https_url = "https://twitter.com/search?q=" + q + "&src=typd&vertical=default&f=tweets";
+            //https://twitter.com/search?f=tweets&vertical=default&q=kaffee&src=typd
+            https_url = "https://twitter.com/search?f=tweets&vertical=default&q=" + q + "&src=typd";
         } catch (UnsupportedEncodingException e) {}
         Timeline[] timelines = null;
         try {
