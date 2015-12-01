@@ -34,9 +34,9 @@ import java.util.regex.Pattern;
 
 import org.loklak.data.Classifier.Category;
 import org.loklak.data.Classifier.Context;
+import org.loklak.data.QueryEntry.PlaceContext;
 import org.loklak.geo.GeoMark;
 import org.loklak.geo.LocationSource;
-import org.loklak.geo.PlaceContext;
 import org.loklak.harvester.SourceType;
 import org.loklak.tools.bayes.Classification;
 import org.loklak.tools.json.JSONException;

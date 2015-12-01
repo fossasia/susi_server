@@ -25,8 +25,8 @@ import com.github.fge.jsonschema.core.report.ProcessingReport;
 
 import org.loklak.data.DAO;
 import org.loklak.data.MessageEntry;
+import org.loklak.data.QueryEntry.PlaceContext;
 import org.loklak.geo.LocationSource;
-import org.loklak.geo.PlaceContext;
 import org.loklak.harvester.JsonFieldConverter;
 import org.loklak.harvester.JsonValidator;
 import org.loklak.harvester.SourceType;
