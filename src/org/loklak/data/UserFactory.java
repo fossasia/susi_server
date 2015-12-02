@@ -25,6 +25,7 @@ import java.util.Map;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.elasticsearch.common.xcontent.XContentFactory;
+import org.loklak.tools.json.JSONObject;
 
 public class UserFactory extends AbstractIndexFactory<UserEntry> implements IndexFactory<UserEntry> {
 
@@ -68,6 +69,11 @@ public class UserFactory extends AbstractIndexFactory<UserEntry> implements Inde
     @Override
     public UserEntry init(Map<String, Object> map) {
         return new UserEntry(map);
+    }
+
+    //@Override
+    public UserEntry init(JSONObject json) {
+        return new UserEntry(json);
     }
     
 }

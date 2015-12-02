@@ -25,6 +25,7 @@ import org.loklak.tools.json.JSONObject;
 
 import java.io.IOException;
 import java.util.Date;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -51,6 +52,22 @@ public class UserEntry extends AbstractIndexEntry implements IndexEntry {
         map.put(UserFactory.field_appearance_first, parseDate(map.get(UserFactory.field_appearance_first), now));
         map.put(UserFactory.field_appearance_latest, parseDate(map.get(UserFactory.field_appearance_latest), now));
     }
+
+    public UserEntry(final JSONObject json) {
+        this.map = new LinkedHashMap<String, Object>();
+        Iterator<String> ki =json.keys();
+        while (ki.hasNext()) {
+            String key = ki.next();
+            try {
+                Object val = json.get(key);
+                this.map.put(key, val);
+            } catch (JSONException e) {}
+        }
+        Date now = new Date();
+        map.put(UserFactory.field_appearance_first, parseDate(map.get(UserFactory.field_appearance_first), now));
+        map.put(UserFactory.field_appearance_latest, parseDate(map.get(UserFactory.field_appearance_latest), now));
+    }
+
     
     public String getType() {
         return parseString((String) this.map.get("$type"));

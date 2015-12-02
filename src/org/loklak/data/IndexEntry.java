@@ -21,10 +21,15 @@ package org.loklak.data;
 
 import java.util.Map;
 
+import org.loklak.tools.json.JSONObject;
+
 public interface IndexEntry {
 
     public String toString();
-    
+
+    @Deprecated
     public Map<String, Object> toMap();
+    
+    public JSONObject toJSON();
     
 }

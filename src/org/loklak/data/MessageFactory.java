@@ -25,6 +25,7 @@ import java.util.Map;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.elasticsearch.common.xcontent.XContentFactory;
+import org.loklak.tools.json.JSONObject;
 
 public class MessageFactory extends AbstractIndexFactory<MessageEntry> implements IndexFactory<MessageEntry> {
 
@@ -125,6 +126,11 @@ public class MessageFactory extends AbstractIndexFactory<MessageEntry> implement
     @Override
     public MessageEntry init(Map<String, Object> map) {
         return new MessageEntry(map);
+    }
+
+    //@Override
+    public MessageEntry init(JSONObject json) {
+        return new MessageEntry(json);
     }
     
 }

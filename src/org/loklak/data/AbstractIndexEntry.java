@@ -27,6 +27,9 @@ import java.util.LinkedHashSet;
 import org.joda.time.format.DateTimeFormatter;
 import org.joda.time.format.ISODateTimeFormat;
 import org.loklak.tools.UTF8;
+import org.loklak.tools.json.JSONArray;
+import org.loklak.tools.json.JSONException;
+import org.loklak.tools.json.JSONObject;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -130,8 +133,28 @@ public abstract class AbstractIndexEntry implements IndexEntry {
             for (String s: (LinkedHashSet<String>) l) if (s != null) a.add(s);
             return a;
         }
+        if (l instanceof JSONArray) {
+            LinkedHashSet<String> a = new LinkedHashSet<String>();
+            JSONArray la = (JSONArray) l;
+            for (int i = 0; i < la.length(); i++) {
+                try {
+                    String s = la.getString(i);
+                    if (s != null) a.add(s);
+                } catch (JSONException e) {}
+            }
+            return a;
+        }
         LinkedHashSet<String> a = new LinkedHashSet<>();
         for (Object s: ((Collection<?>) l)) if (s != null) a.add((String) s);
         return a;
+    }
+
+    public Object lazyGet(JSONObject json, String key) {
+        try {
+            Object o = json.get(key);
+            return o;
+        } catch (JSONException e) {
+            return null;
+        }
     }
 }

@@ -25,6 +25,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.loklak.harvester.SourceType;
+import org.loklak.tools.json.JSONObject;
 
 public class AccountEntry extends AbstractIndexEntry implements IndexEntry {
     
@@ -98,6 +99,11 @@ public class AccountEntry extends AbstractIndexEntry implements IndexEntry {
         return toMap(null);
     }
     
+    @Override
+    public JSONObject toJSON() {
+        return toJSON(null);
+    }
+    
     public Map<String, Object> toMap(UserEntry user) {
         Map<String, Object> m = new LinkedHashMap<>();
         m.put(AccountFactory.Field.authentication_latest.name(), utcFormatter.print(getAuthenticationLatest().getTime()));
@@ -111,6 +117,22 @@ public class AccountEntry extends AbstractIndexEntry implements IndexEntry {
         }
         // add user
         if (user != null) m.put("user", user.toMap());
+        return m;
+    }
+    
+    public JSONObject toJSON(UserEntry user) {
+        JSONObject m = new JSONObject();
+        m.put(AccountFactory.Field.authentication_latest.name(), utcFormatter.print(getAuthenticationLatest().getTime()));
+        m.put(AccountFactory.Field.authentication_first.name(), utcFormatter.print(getAuthenticationFirst().getTime()));
+        m.put(AccountFactory.Field.source_type.name(), getSourceType().toString());
+        m.put(AccountFactory.Field.screen_name.name(), getScreenName());
+        if (this.map.containsKey(AccountFactory.Field.oauth_token.name())) m.put(AccountFactory.Field.oauth_token.name(), this.map.get(AccountFactory.Field.oauth_token.name()));
+        if (this.map.containsKey(AccountFactory.Field.oauth_token_secret.name())) m.put(AccountFactory.Field.oauth_token_secret.name(), this.map.get(AccountFactory.Field.oauth_token_secret.name()));
+        if (this.map.containsKey(AccountFactory.Field.apps.name())) {
+            m.put(AccountFactory.Field.apps.name(), this.map.get(AccountFactory.Field.apps.name()));
+        }
+        // add user
+        if (user != null) m.put("user", user.toJSON());
         return m;
     }
     

@@ -104,6 +104,66 @@ public class MessageEntry extends AbstractIndexEntry implements IndexEntry {
         this.classifier = null;
     }
 
+    public MessageEntry(JSONObject json) {
+        Object created_at_obj = lazyGet(json, "created_at"); this.created_at = parseDate(created_at_obj);
+        Object on_obj = lazyGet(json, "on"); this.on = on_obj == null ? null : parseDate(on);
+        Object to_obj = lazyGet(json, "to"); this.to = to_obj == null ? null : parseDate(to);
+        String source_type_string = (String) lazyGet(json, "source_type");
+        try {
+            this.source_type = SourceType.valueOf(source_type_string);
+        } catch (IllegalArgumentException e) {
+            this.source_type = SourceType.USER;
+        }
+        String provider_type_string = (String) lazyGet(json, "provider_type");
+        if (provider_type_string == null) provider_type_string = ProviderType.GENERIC.name();
+        try {
+            this.provider_type = ProviderType.valueOf(provider_type_string);
+        } catch (IllegalArgumentException e) {
+            this.provider_type = ProviderType.GENERIC;
+        }
+        this.provider_hash = (String) lazyGet(json, "provider_hash");
+        this.screen_name = (String) lazyGet(json, "screen_name");
+        this.retweet_from = (String) lazyGet(json, "retweet_from");
+        this.id_str = (String) lazyGet(json, "id_str");
+        this.text = (String) lazyGet(json, "text");
+        try {
+            this.status_id_url = new URL((String) lazyGet(json, "link"));
+        } catch (MalformedURLException e) {
+            this.status_id_url = null;
+        }
+        this.retweet_count = parseLong((Number) lazyGet(json, "retweet_count"));
+        this.favourites_count = parseLong((Number) lazyGet(json, "favourites_count"));
+        this.images = parseArrayList(lazyGet(json, "images"));
+        this.audio = parseArrayList(lazyGet(json, "audio"));
+        this.videos = parseArrayList(lazyGet(json, "videos"));
+        this.place_id = parseString((String) lazyGet(json, "place_id"));
+        this.place_name = parseString((String) lazyGet(json, "place_name"));
+        this.place_country = parseString((String) lazyGet(json, "place_country"));
+        if (this.place_country != null && this.place_country.length() != 2) this.place_country = null;
+
+        // optional location
+        Object location_point_obj = lazyGet(json, "location_point");
+        Object location_radius_obj = lazyGet(json, "location_radius");
+        Object location_mark_obj = lazyGet(json, "location_mark");
+        Object location_source_obj = lazyGet(json, "location_source");
+        if (location_point_obj == null || location_mark_obj == null ||
+                !(location_point_obj instanceof List<?>) ||
+                !(location_mark_obj instanceof List<?>)) {
+            this.location_point = null;
+            this.location_radius = 0;
+            this.location_mark = null;
+            this.location_source = null;
+        } else {
+            this.location_point = new double[]{(Double) ((List<?>) location_point_obj).get(0), (Double) ((List<?>) location_point_obj).get(1)};
+            this.location_radius = (int) parseLong((Number) location_radius_obj);
+            this.location_mark = new double[]{(Double) ((List<?>) location_mark_obj).get(0), (Double) ((List<?>) location_mark_obj).get(1)};
+            this.location_source = LocationSource.valueOf((String) location_source_obj);
+        }
+
+        // load enriched data
+        enrich();
+    }
+
     public MessageEntry(Map<String, Object> map) {
         Object created_at_obj = map.get("created_at"); this.created_at = parseDate(created_at_obj);
         Object on_obj = map.get("on"); this.on = on_obj == null ? null : parseDate(on);
@@ -160,7 +220,7 @@ public class MessageEntry extends AbstractIndexEntry implements IndexEntry {
             this.location_point = new double[]{(Double) ((List<?>) location_point_obj).get(0), (Double) ((List<?>) location_point_obj).get(1)};
             this.location_radius = (int) parseLong((Number) location_radius_obj);
             this.location_mark = new double[]{(Double) ((List<?>) location_mark_obj).get(0), (Double) ((List<?>) location_mark_obj).get(1)};
-            this.location_source = LocationSource.valueOf((String) location_source_obj);;
+            this.location_source = LocationSource.valueOf((String) location_source_obj);
         }
         
         // load enriched data
@@ -501,6 +561,11 @@ public class MessageEntry extends AbstractIndexEntry implements IndexEntry {
     @Override
     public Map<String, Object> toMap() {
         return toMap(null, true, Integer.MAX_VALUE, ""); // very important to include calculated data here because that is written into the index using the abstract index factory
+    }
+    
+    @Override
+    public JSONObject toJSON() {
+        return toJSON(null, true, Integer.MAX_VALUE, ""); // very important to include calculated data here because that is written into the index using the abstract index factory
     }
     
     public Map<String, Object> toMap(final UserEntry user, final boolean calculatedData, final int iflinkexceedslength, final String urlstub) {

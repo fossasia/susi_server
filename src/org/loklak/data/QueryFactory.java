@@ -25,6 +25,7 @@ import java.util.Map;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.elasticsearch.common.xcontent.XContentFactory;
+import org.loklak.tools.json.JSONObject;
 
 public class QueryFactory extends AbstractIndexFactory<QueryEntry> implements IndexFactory<QueryEntry> {
 
@@ -67,6 +68,11 @@ public class QueryFactory extends AbstractIndexFactory<QueryEntry> implements In
     @Override
     public QueryEntry init(Map<String, Object> map) {
         return new QueryEntry(map);
+    }
+
+    //@Override
+    public QueryEntry init(JSONObject json) {
+        return new QueryEntry(json);
     }
     
 }

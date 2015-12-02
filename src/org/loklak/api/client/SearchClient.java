@@ -32,8 +32,6 @@ import org.loklak.data.MessageEntry;
 import org.loklak.data.UserEntry;
 import org.loklak.http.ClientConnection;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-
 public class SearchClient {
 
     public final static String backend_hash = Integer.toHexString(Integer.MAX_VALUE);
