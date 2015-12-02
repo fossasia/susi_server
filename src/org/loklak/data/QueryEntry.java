@@ -40,7 +40,6 @@ import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.index.query.RangeQueryBuilder;
 import org.loklak.geo.GeoLocation;
 import org.loklak.geo.GeoMark;
-import org.loklak.geo.PlaceContext;
 import org.loklak.harvester.SourceType;
 import org.loklak.tools.DateParser;
 import org.loklak.tools.json.JSONException;
@@ -810,4 +809,12 @@ public class QueryEntry extends AbstractIndexEntry implements IndexEntry {
             return cquery;
         }
     }
+    
+    public static enum PlaceContext {
+        
+        FROM,  // the message was made at that place
+        ABOUT; // the message is about that place
+        
+    }
+
 }
