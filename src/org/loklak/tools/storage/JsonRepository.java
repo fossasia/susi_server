@@ -35,6 +35,7 @@ import java.util.TimeZone;
 import java.util.TreeSet;
 import java.util.zip.GZIPInputStream;
 
+import org.loklak.data.DAO;
 import org.loklak.tools.Compression;
 import org.loklak.tools.UTF8;
 import org.loklak.tools.json.JSONObject;
@@ -111,6 +112,7 @@ public class JsonRepository {
                         final File dest = new File(path, d + ".gz");
                         if (dest.exists()) dest.delete();
                         try {
+                            DAO.log("gzip of " + source);
                             Compression.gzip(source, dest, true);
                         } catch (IOException e) {
                             e.printStackTrace();
