@@ -132,7 +132,7 @@ public class PushServlet extends HttpServlet {
                 timeTimelineStorage = System.currentTimeMillis();
                 
                 // update query database if query was given in the result list
-                if (metadata != null && tl.size() > 0) {
+                if (metadata != null) {
                     query = (String) metadata.get("query");
                     if (query != null) {
                         // update query database
@@ -142,7 +142,7 @@ public class PushServlet extends HttpServlet {
                         } catch (IOException e1) {
                             e1.printStackTrace();
                         }
-                        if (qe != null && Caretaker.acceptQuery4Retrieval(query)) {
+                        if (qe != null) {
                             // existing queries are updated
                             qe.update(tl.period(), false);
                             try {

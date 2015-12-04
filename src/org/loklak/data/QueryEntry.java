@@ -159,6 +159,7 @@ public class QueryEntry extends AbstractIndexEntry implements IndexEntry {
      * @param byUserQuery is true, if the query was submitted by the user; false if the query was submitted by an automatic system
      */
     public void update(final long message_period, final boolean byUserQuery) {
+        // message_period may have the value Long.MAX_VALUE if search requests have been empty and a message period cannot be computed
         this.retrieval_last = new Date();
         this.retrieval_count++;
         if (byUserQuery) {
@@ -168,7 +169,7 @@ public class QueryEntry extends AbstractIndexEntry implements IndexEntry {
         long new_message_period = message_period; // can be Long.MAX_VALUE if less than 2 messages are in timeline!
         int new_messages_per_day = (int) (DAY_MILLIS / new_message_period); // this is an interpolation based on the last tweet list, can be 0!
         if (new_message_period == Long.MAX_VALUE || new_messages_per_day == 0) {
-            this.message_period = this.message_period == 0 ? DAY_MILLIS : Math.min(DAY_MILLIS, this.message_period * 2);
+            this.message_period = DAY_MILLIS;
         } else {
             this.message_period = this.message_period == 0 ? new_message_period : (this.message_period + new_message_period) / 2;
         }

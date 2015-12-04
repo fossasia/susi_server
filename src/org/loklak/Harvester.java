@@ -35,6 +35,7 @@ import org.loklak.data.MessageEntry;
 import org.loklak.data.QueryEntry;
 import org.loklak.data.ResultList;
 import org.loklak.data.Timeline;
+import org.loklak.data.Timeline.Order;
 import org.loklak.harvester.TwitterScraper;
 import org.loklak.tools.DateParser;
 
@@ -107,7 +108,14 @@ public class Harvester {
         harvestedContext.add(q);
         Timeline tl = TwitterScraper.search(q, Timeline.Order.CREATED_AT, true, false, 400);
         
-        if (tl == null || tl.size() == 0) return -1;
+        if (tl == null || tl.size() == 0) {
+            // even if the result is empty, we must push this to the backend to make it possible that the query gets an update
+            if (tl == null) tl = new Timeline(Order.CREATED_AT);
+            tl.setQuery(q);
+            PushThread pushThread = new PushThread(backend, tl);
+            executor.execute(pushThread);
+            return -1;
+        }
         
         // find content query strings and store them in the context cache
         checkContext(tl, true);
