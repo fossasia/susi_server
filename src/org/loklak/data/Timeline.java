@@ -81,6 +81,12 @@ public class Timeline implements Iterable<MessageEntry> {
             return Order.CREATED_AT;
         }
     }
+
+    public void clear() {
+        this.tweets.clear();
+        this.users.clear();
+        // we keep the other details (like order, scraperInfo and query) to be able to test with zero-size pushes
+    }
     
     public void setScraperInfo(String info) {
         this.scraperInfo = info;
