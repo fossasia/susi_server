@@ -160,7 +160,7 @@ public class GeoNames {
                 geoLocation.setPopulation(population);
                 this.id2loc.put(geonameid, geoLocation);
                 for (final String name : locnames) {
-                    if (name.length() < 4) continue; //1843908184=圣胡利娅 德洛里亚
+                    if (name.length() < 4) continue;
                     String normalized = normalize(name);
                     int lochash = normalized.hashCode();
                     List<Integer> locs = this.hash2ids.get(lochash);

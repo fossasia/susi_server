@@ -143,8 +143,8 @@ public class OSMTile {
           
         public TileCoordinates(final double lat_deg, final double lon_deg, final int zoom) {
             // see http://wiki.openstreetmap.org/wiki/Slippy_map_tilenames
-            // X goes from 0 (left edge is 180 °W) to 2^zoom − 1 (right edge is 180 °E)
-            // Y goes from 0 (top edge is 85.0511 °N) to 2^zoom − 1 (bottom edge is 85.0511 °S) in a Mercator projection
+            // X goes from 0 (left edge is 180 W) to 2^zoom − 1 (right edge is 180 E)
+            // Y goes from 0 (top edge is 85.0511 N) to 2^zoom − 1 (bottom edge is 85.0511 S) in a Mercator projection
             // the number 85.0511 is the result of arctan(sinh(π)). By using this bound, the entire map becomes a (very large) square.
 
             // Lon./lat. to tile numbers
