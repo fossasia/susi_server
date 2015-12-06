@@ -29,6 +29,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import org.loklak.api.client.PushClient;
+import org.loklak.api.client.SearchClient;
 import org.loklak.api.client.SuggestClient;
 import org.loklak.data.DAO;
 import org.loklak.data.MessageEntry;
@@ -72,7 +73,7 @@ public class Harvester {
     public static int harvest() {
         String backend = DAO.getConfig("backend","http://loklak.org");
         
-        if (random.nextInt(20) != 0 && hitsOnBackend < HITS_LIMIT_4_QUERIES && pendingQueries.size() == 0 && pendingContext.size() > 0) {
+        if (random.nextInt(100) != 0 && hitsOnBackend < HITS_LIMIT_4_QUERIES && pendingQueries.size() == 0 && pendingContext.size() > 0) {
             // harvest using the collected keys instead using the queries
             int r = random.nextInt((pendingContext.size() / 2) + 1);
             String q = pendingContext.remove(r);
@@ -94,6 +95,18 @@ public class Harvester {
                     pendingQueries.add(qe.getQuery());
                 }
                 hitsOnBackend = (int) rl.getHits();
+                if (hitsOnBackend == 0) {
+                    // the backend does not have any new query words for this time.
+                    if (pendingContext.size() == 0) {
+                        // try to fill the pendingContext using a matchall-query from the cache
+                        // http://loklak.org/api/search.json?source=cache&q=
+                        Timeline tl = SearchClient.search(backend, "", Timeline.Order.CREATED_AT, "cache", 100, 0, SearchClient.backend_hash, 60000);
+                        checkContext(tl, false);
+                    }
+                    // if we still don't have any context, we are a bit helpless and hope that this situation
+                    // will be better in the future. To prevent that this is called excessively fast, do a pause.
+                    if (pendingContext.size() == 0) try {Thread.sleep(10000);} catch (InterruptedException e) {}
+                }
             } catch (IOException e) {
                 e.printStackTrace();
             }
