@@ -237,7 +237,6 @@ public class GeoNames {
                 continue;
             }
            // iPhone: 37.313690,-122.022911 as well
-           // ÜT: 19.109458,72.825842. 
         }
         return null;
     }
