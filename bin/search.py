@@ -1,3 +1,10 @@
+#!/usr/bin/env python
+"""
+Requirements:
+
+requests (installation: pip install requests)
+"""
+
 import argparse
 import requests
 import json
@@ -15,4 +22,4 @@ resp = requests.get(url=SEARCH_URL, params=params)
 data = json.loads(resp.text)
 statuses = data['statuses']
 for status in statuses:
-    print(status['text'])
+    print status['text']
