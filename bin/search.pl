@@ -1,4 +1,6 @@
 #!/usr/bin/perl
+# Requirements Dep: CPAN:JSON
+# Installtion: cpan install JSON
 
 use LWP::Simple;                # From CPAN
 use JSON qw( decode_json );     # From CPAN
