@@ -26,14 +26,16 @@
   <body>
     <div ng-controller="search">
       <h2>Search</h2>
-      <input type="text" ng-model="query">
-      <button ng-click="search()">Search</button>
+      <form ng-submit="search()">
+        <input type="text" ng-model="query">
+        <button type="submit">Search</button>
+      </form>
       <h2>Results</h2>
       <div ng-repeat='result in results'>
         {{result}}
       </div>
     </div>
-    
+
     <script src="js/jquery.min.js"></script>
     <script src="js/bootstrap.min.js"></script>
     <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
