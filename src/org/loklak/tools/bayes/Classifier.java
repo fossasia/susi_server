@@ -43,7 +43,7 @@ import java.util.concurrent.ConcurrentHashMap;
 /**
  * Abstract base extended by any concrete classifier.  It implements the basic
  * functionality for storing categories or features and can be used to calculate
- * basic probabilities – both category and feature probabilities. The classify
+ * basic probabilities both category and feature probabilities. The classify
  * function has to be implemented by the concrete classifier class.
  *
  * @author Philipp Nolte
