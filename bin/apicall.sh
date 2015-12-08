@@ -4,7 +4,7 @@ port=$(grep ^port.http= ../data/settings/customized_config.properties |cut -d= -
 if [ -z "$port" ]; then port=9000; fi
 
 if which curl &>/dev/null; then
-  curl -s "http://127.0.0.1:$port/$1"
+  curl -m 60 -s "http://127.0.0.1:$port/$1"
 elif which wget &>/dev/null; then
   wget -q -t 1 --timeout=120 "http://127.0.0.1:$port/$1" -O -
 else
