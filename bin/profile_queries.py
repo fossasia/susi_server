@@ -1,21 +1,27 @@
+#!/usr/bin/env sh
 import os
-import sys
 import time
 import json
 try:
     import requests
 except ImportError:
     print('Profiling script requires requests package. \n'
-          'You can install it by running "pip instal requests"')
+          'You can install it by running "pip install requests"')
     exit()
 
 API_BASE_URL = 'http://localhost:9000/api/'
 
+# If user in bin directory set correct path to quires
+if os.getcwd().endswith('bin'):
+    queries_folder = os.getcwd().rstrip('bin') + 'test/queries'
+else:
+    queries_folder = os.getcwd() + '/test/queries'
+
 results = []
 test_queries = []
-for file_name in os.listdir('test/queries'):
+for file_name in os.listdir(queries_folder):
     if file_name.endswith('.txt') and file_name != 'README.txt':
-        for query in open('test/queries/{}'.format(file_name)).readlines():
+        for query in open('{}/{}'.format(queries_folder, file_name)).readlines():
             test_queries.append(query.rstrip())
 
 print('Start profiling {} queries'.format(len(test_queries)))
