@@ -1,4 +1,4 @@
-#!/usr/bin/env sh
+#!/usr/bin/env python
 import os
 import time
 import json
