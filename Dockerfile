@@ -19,7 +19,7 @@ RUN ant
 # Expose the web interface ports
 EXPOSE 80 443
 
-# change config
+# change config file
 RUN sed -i.bak 's/^\(port.http=\).*/\180/'                conf/config.properties
 RUN sed -i.bak 's/^\(port.https=\).*/\1443/'              conf/config.properties
 RUN sed -i.bak 's/^\(upgradeInterval=\).*/\186400000000/' conf/config.properties
