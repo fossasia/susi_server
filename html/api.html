@@ -671,20 +671,40 @@ added fuzzyness for marker computation
 	<code>/api/proxy.json</code>
 </h2>
 <div class="alert alert-danger" role="alert">This API has access restrictions: only localhost clients are granted.</div>
-<p>Usage-Description</p>
+<p>Either a url or a screen_name can be passed to the api, or both. The 
+	proxy.json loads the url and returns the content. If a screen_name is given, 
+	the url content is stored in a cache related to the given screen_name. If only 
+	the screen_name and no url is given, the proxy returns the image of that user. 
+	If only a url is given, the proxy.json tries to identify the url as user-
+	related and loads the content.
+	To retrieve an image, there are three possible paths: <code>/api/proxy.gif</code>,
+    <code>/api/proxy.png</code>, or <code>/api/proxy.jpg</code>.
+        
+	This API supports both GET and POST requests. The HTTP GET or POST request 
+	has these attributes:</p>
 <ul class="request">
-	<li><div class="tabcol0">key0</div>
-		<div class="tabcol1">&nbsp;=&nbsp;&lt;value0&gt;</div>// description0</li>
-	<li><div class="tabcol0">key1</div>
-		<div class="tabcol1">&nbsp;=&nbsp;&lt;value1&gt;</div>// description1</li>
-	<li><div class="tabcol0">key2</div>
-		<div class="tabcol1">&nbsp;=&nbsp;&lt;value2&gt;</div>// description2</li>
-</ul><br/>
-<p>Result-Description</p>
+	<li><div class="tabcol0">url</div>
+		<div class="tabcol1">&nbsp;=&nbsp;&lt;string&gt</div>//
+		the public url of the data source. This URL will be used to load the 
+		content.</li>
+	<li><div class="tabcol0">screen_name</div>
+		<div class="tabcol1">&nbsp;=&nbsp;&lt;string&gt</div>// 
+		importer screen name</li>
+</ul>
+
+<p> Example </p>
 <pre>{
-  json
-}
-</pre>
+	"screen_name" : "loklak_app";
+	"url" : "https://pbs.twimg.com/profile_images/577512240640733184/fizL4YIn_bigger.png"
+}</pre>
+
+<p>Retrieval of the image</p>
+   <ul class="request">
+   
+	<li><a href="http://localhost:9000/api/proxy.png?screen_name=loklak_app&url=https://pbs.twimg.com/profile_images/577512240640733184/fizL4YIn_bigger.png">http://localhost:9000/api/proxy.png?screen_name=loklak_app&url=https://pbs.twimg.com/profile_images/577512240640733184/fizL4YIn_bigger.png</a></li>
+	
+	</ul><br/>
+
 
 
 <!-- ===================================================================== -->
