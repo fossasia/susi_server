@@ -44,7 +44,7 @@ public class PushServletHelper {
             boolean successful;
             report.incrementRecordCount();
             try {
-                successful = DAO.writeMessage(messageEntry, userEntry, true, false, false);
+                successful = DAO.writeMessage(messageEntry, userEntry, true, true, false, false);
             } catch (Exception e) {
                 e.printStackTrace();
                 report.incrementErrorCount();

@@ -20,13 +20,8 @@
 package org.loklak.api.client;
 
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
-import java.util.List;
-import java.util.Map;
 
-import org.loklak.data.DAO;
-import org.loklak.data.ProviderType;
 import org.loklak.data.Timeline;
 import org.loklak.data.MessageEntry;
 import org.loklak.data.UserEntry;
@@ -40,45 +35,6 @@ public class SearchClient {
     public final static String backend_hash = Integer.toHexString(Integer.MAX_VALUE);
     public final static String frontpeer_hash = Integer.toHexString(Integer.MAX_VALUE - 1);
 
-    /*
-    // possible values: cache, twitter, all
-    public static Timeline search(final String protocolhostportstub, final String query, final Timeline.Order order, final String source, final int count, final int timezoneOffset, final String provider_hash, final long timeout) throws IOException {
-        Timeline tl = new Timeline(order);
-        String urlstring = "";
-        try {
-            urlstring = protocolhostportstub + "/api/search.json?q=" + URLEncoder.encode(query.replace(' ', '+'), "UTF-8") + "&timezoneOffset=" + timezoneOffset + "&maximumRecords=" + count + "&source=" + (source == null ? "all" : source) + "&minified=true&timeout=" + timeout;
-        } catch (UnsupportedEncodingException e1) {
-            return tl;
-        }
-        byte[] json = ClientConnection.download(urlstring);
-        if (json == null || json.length == 0) return tl;
-        Map<String, Object> map = DAO.jsonMapper.readValue(json, DAO.jsonTypeRef);
-        Object statuses_obj = map.get("statuses");
-        @SuppressWarnings("unchecked") List<Map<String, Object>> statuses = statuses_obj instanceof List<?> ? (List<Map<String, Object>>) statuses_obj : null;
-        if (statuses != null) {
-            for (Map<String, Object> tweet: statuses) {
-                @SuppressWarnings("unchecked") Map<String, Object> user = (Map<String, Object>) tweet.remove("user");
-                if (user == null) continue;
-                tweet.put("provider_type", (Object) ProviderType.REMOTE.name());
-                tweet.put("provider_hash", provider_hash);
-                UserEntry u = new UserEntry(user);
-                MessageEntry t = new MessageEntry(tweet);
-                tl.add(t, u);
-            }
-        }
-        Object metadata_obj = map.get("search_metadata");
-        @SuppressWarnings("unchecked") Map<String, Object> metadata = metadata_obj instanceof Map<?,?> ? (Map<String, Object>) metadata_obj : null;
-        if (metadata != null) {
-            Integer hits = (Integer) metadata.get("hits");
-            if (hits != null) tl.setHits(hits.intValue());
-            String scraperInfo = (String) metadata.get("scraperInfo");
-            if (scraperInfo != null) tl.setScraperInfo(scraperInfo);
-        }
-        //System.out.println(parser.text());
-        return tl;
-    }
-    */
-
     // possible values: cache, twitter, all
     public static Timeline search(final String protocolhostportstub, final String query, final Timeline.Order order, final String source, final int count, final int timezoneOffset, final String provider_hash, final long timeout) throws IOException {
         Timeline tl = new Timeline(order);
@@ -86,7 +42,9 @@ public class SearchClient {
         try {
             urlstring = protocolhostportstub + "/api/search.json?q=" + URLEncoder.encode(query.replace(' ', '+'), "UTF-8") + "&timezoneOffset=" + timezoneOffset + "&maximumRecords=" + count + "&source=" + (source == null ? "all" : source) + "&minified=true&timeout=" + timeout;
             byte[] jsonb = ClientConnection.download(urlstring);
-            JSONObject json = new JSONObject(UTF8.String(jsonb));
+            if (jsonb == null || jsonb.length == 0) throw new IOException("empty content from " + protocolhostportstub);
+            String jsons = UTF8.String(jsonb);
+            JSONObject json = new JSONObject(jsons);
             if (json == null || json.length() == 0) return tl;
             JSONArray statuses = json.getJSONArray("statuses");
             if (statuses != null) {
@@ -104,10 +62,11 @@ public class SearchClient {
             if (metadata != null) {
                 Integer hits = (Integer) metadata.get("hits");
                 if (hits != null) tl.setHits(hits.intValue());
-                String scraperInfo = (String) metadata.get("scraperInfo");
+                String scraperInfo = metadata.has("scraperInfo") ? (String) metadata.get("scraperInfo") : null;
                 if (scraperInfo != null) tl.setScraperInfo(scraperInfo);
             }
         } catch (Throwable e) {
+            e.printStackTrace();
             return tl;
         }
         //System.out.println(parser.text());

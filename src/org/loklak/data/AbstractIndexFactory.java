@@ -21,8 +21,8 @@ package org.loklak.data;
 
 import java.io.IOException;
 import java.util.Map;
+import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.LinkedBlockingQueue;
 
 import org.elasticsearch.action.bulk.BulkRequestBuilder;
 import org.elasticsearch.action.bulk.BulkResponse;
@@ -39,6 +39,10 @@ import org.loklak.tools.Cache;
  */
 public abstract class AbstractIndexFactory<Entry extends IndexEntry> implements IndexFactory<Entry> {
 
+
+    private final static VersionType update_version_type = VersionType.FORCE;
+    private final static int MAX_BULK_SIZE = 1500;
+    
     protected final Client elasticsearch_client;
     protected final Cache<String, Entry> cache;
     protected final String index_name;
@@ -94,20 +98,27 @@ public abstract class AbstractIndexFactory<Entry extends IndexEntry> implements 
             } catch (InterruptedException e) {
                 throw new IOException(e.getMessage());
             }
-            if (bulkCacheSize() >= 1000) bulkCacheFlush(); // protect against OOM
+            if (bulkCacheSize() >= MAX_BULK_SIZE) bulkCacheFlush(); // protect against OOM
         } else {
             bulkCacheFlush();
             this.cache.put(id, entry);
             // record user into search index
             Map<String, Object> jsonMap = entry.toMap();
-            //DAO.log((new ObjectMapper().writerWithDefaultPrettyPrinter()).writeValueAsString(jsonMap));
+            
+            /*
+             * best data format here would be XContentBuilder because the data is converted into
+             * this format always; in this case with these lines
+             *   XContentBuilder builder = XContentFactory.contentBuilder(XContentType.JSON);
+             *   builder.map(source);
+             */
             if (jsonMap != null) {
                 elasticsearch_client.prepareIndex(this.index_name, type, id).setSource(jsonMap)
-                    .setVersion(1).setVersionType(VersionType.FORCE).execute().actionGet();
+                    .setVersion(1).setVersionType(update_version_type).execute().actionGet();
+                //System.out.println("writing 1 entry"); // debug
             }
         }
     }
-
+    
     public int bulkCacheSize() {
         return this.bulkCache.size();
     }
@@ -120,17 +131,20 @@ public abstract class AbstractIndexFactory<Entry extends IndexEntry> implements 
         while (this.bulkCache.size() > 0) {
             BulkEntry be = this.bulkCache.poll();
             if (be == null) break;
+            be.jsonMap.put("_version_type", update_version_type.name()); // set version type as metadata
+            // be.jsonMap.put("_version", 1); // cannot change DocValues type from NUMERIC to SORTED_NUMERIC 
             bulkRequest.add(elasticsearch_client.prepareIndex(this.index_name, be.type, be.id).setSource(be.jsonMap));
             count++;
-            if (count >= 1000) break; // protect against OOM, the cache can be filled concurrently
+            if (count >= MAX_BULK_SIZE) break; // protect against OOM, the cache can be filled concurrently
         }
         if (count == 0) return 0;
+        //System.out.println("writing bulk of " + count + " entries"); // debug
         BulkResponse bulkResponse = bulkRequest.get();
         if (bulkResponse.hasFailures()) throw new IOException(bulkResponse.buildFailureMessage());
         return count;
     }
     
-    private BlockingQueue<BulkEntry> bulkCache = new LinkedBlockingQueue<>();
+    private BlockingQueue<BulkEntry> bulkCache = new ArrayBlockingQueue<>(2 * MAX_BULK_SIZE);
     
     private class BulkEntry {
         private String id;

@@ -21,11 +21,15 @@ package org.loklak.api.client;
 
 import java.io.IOException;
 
+import org.loklak.data.DAO;
 import org.loklak.http.ClientConnection;
 
 public class HelloClient {
 
-    public static void propagate(final String[] hoststubs, final int httpport, final int httpsport, final String peername) {
+    public static void propagate(final String[] hoststubs) {
+        int httpport = (int) DAO.getConfig("port.http", 9000);
+        int httpsport = (int) DAO.getConfig("port.https", 9443);
+        String peername = (String) DAO.getConfig("peername", "anonymous");
         for (String hoststub: hoststubs) {
             if (hoststub.endsWith("/")) hoststub = hoststub.substring(0, hoststub.length() - 1);
             ClientConnection connection = null;

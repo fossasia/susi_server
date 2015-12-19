@@ -116,7 +116,7 @@ public abstract class AbstractIndexEntry implements IndexEntry {
     
     @SuppressWarnings("unchecked")
     public static LinkedHashSet<String> parseArrayList(Object l) {
-        assert l == null || l instanceof String  || l instanceof String[] || l instanceof Collection<?>;
+        assert l == null || l instanceof String  || l instanceof String[] || l instanceof Collection<?> || l instanceof JSONArray : "unexpected class in parseArrayList:" + l.getClass().getName();
         if (l == null) return new LinkedHashSet<String>();
         if (l instanceof String) {
             LinkedHashSet<String> a = new LinkedHashSet<>();

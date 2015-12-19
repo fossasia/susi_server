@@ -39,7 +39,7 @@ import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 import java.util.TreeMap;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 
 import org.eclipse.jetty.util.ConcurrentHashSet;
 
@@ -357,9 +357,9 @@ public class DAO {
         account_dump.shiftProcessedDumps();
     }
 
-    public static int importMessageDump(final JsonReader dumpReader) {
+    public static long importMessageDump(final JsonReader dumpReader) {
         (new Thread(dumpReader)).start();
-        final AtomicInteger newTweet = new AtomicInteger(0);
+        final AtomicLong newTweets = new AtomicLong(0);
         Thread[] indexerThreads = new Thread[dumpReader.getConcurrency()];
         for (int i = 0; i < dumpReader.getConcurrency(); i++) {
             indexerThreads[i] = new Thread() {
@@ -373,8 +373,8 @@ public class DAO {
                                 if (user == null) continue;
                                 UserEntry u = new UserEntry(user);
                                 MessageEntry t = new MessageEntry(json);
-                                boolean newtweet = DAO.writeMessage(t, u, false, true, true);
-                                if (newtweet) newTweet.incrementAndGet();
+                                DAO.writeMessage(t, u, false, false, true, true);
+                                newTweets.incrementAndGet();
                             } catch (IOException e) {
                                 e.printStackTrace();
                             }
@@ -386,12 +386,22 @@ public class DAO {
             };
             indexerThreads[i].start();
         }
-        for (int i = 0; i < dumpReader.getConcurrency(); i++) {
-            try {indexerThreads[i].join();} catch (InterruptedException e) {}
+        boolean running = true;
+        while (running) {
+            long startTime = System.currentTimeMillis();
+            long startCount = newTweets.get();
+            running = false;
+            for (int i = 0; i < dumpReader.getConcurrency(); i++) {
+                if (indexerThreads[i].isAlive()) running = true;
+            }
+            try {Thread.sleep(10000);} catch (InterruptedException e) {}
+            long runtime = System.currentTimeMillis() - startTime;
+            long count = newTweets.get() - startCount;
+            Log.getLog().info("imported " + newTweets.get() + " tweets at " + (count * 1000 / runtime) + " tweets per second");
         }
         try {DAO.users.bulkCacheFlush();} catch (IOException e) {}
         try {DAO.messages.bulkCacheFlush();} catch (IOException e) {}
-        return newTweet.get();
+        return newTweets.get();
     }
     
     public static void importAccountDump(final JsonReader dumpReader) {
@@ -519,16 +529,13 @@ public class DAO {
      * @param u a user
      * @return true if the record was stored because it did not exist, false if it was not stored because the record existed already
      */
-    public static boolean writeMessage(MessageEntry t, UserEntry u, boolean dump, boolean overwriteUser, boolean bulk) {
+    public static boolean writeMessage(MessageEntry t, UserEntry u, boolean checkExist, boolean dump, boolean overwriteUser, boolean bulk) {
         if (t == null) {
             return false;
         }
         try {
             // check if tweet exists in index
-            if ((t instanceof TwitterScraper.TwitterTweet &&
-                ((TwitterScraper.TwitterTweet) t).exist() != null &&
-                ((TwitterScraper.TwitterTweet) t).exist().booleanValue()) ||
-                messages.exists(t.getIdStr())) return false; // we omit writing this again
+            if (checkExist && messages.exists(t.getIdStr())) return false; // we omit writing this again
 
             synchronized (DAO.class) {
                 // check if user exists in index
@@ -1088,7 +1095,8 @@ public class DAO {
     
     public static Timeline searchBackend(final String q, final Timeline.Order order, final int count, final int timezoneOffset, final String where, final long timeout) {
         List<String> remote = getBackendPeers();
-        if (remote.size() > 0 && (peerLatency.get(remote.get(0)) == null || peerLatency.get(remote.get(0)) < 3000)) {
+        
+        if (remote.size() > 0 /*&& (peerLatency.get(remote.get(0)) == null || peerLatency.get(remote.get(0)) < 3000)*/) { // condition deactivated because we need always at least one peer
             Timeline tt = searchOnOtherPeers(remote, q, order, count, timezoneOffset, where, SearchClient.backend_hash, timeout);
             if (tt != null) tt.writeToIndex();
             return tt;

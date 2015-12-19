@@ -63,9 +63,9 @@ public class ClientConnection {
 
     public static PoolingHttpClientConnectionManager cm = new PoolingHttpClientConnectionManager();
     private static RequestConfig defaultRequestConfig = RequestConfig.custom()
-            .setSocketTimeout(5000)
-            .setConnectTimeout(5000)
-            .setConnectionRequestTimeout(5000)
+            .setSocketTimeout(60000)
+            .setConnectTimeout(60000)
+            .setConnectionRequestTimeout(60000)
             .setContentCompressionEnabled(true)
             .build();
     

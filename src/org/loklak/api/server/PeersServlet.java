@@ -51,7 +51,7 @@ public class PeersServlet extends HttpServlet {
         String path = request.getServletPath();
         if (post.isDoS_blackout()) {response.sendError(503, "your request frequency is too high"); return;}
         String[] classes = post.get("classes", new String[0], ",");
-        if (classes.length == 0) classes = new String[]{"HelloServlet"};
+        if (classes.length == 0) classes = new String[]{"HelloServlet","SuggestServlet"};
         Set<String> classcheck = new HashSet<>();
         for (String c: classes) classcheck.add(c);
         

@@ -45,6 +45,9 @@ public class SuggestClient {
             final String until,
             final String selectby,
             final int random) throws IOException {
+        int httpport = (int) DAO.getConfig("port.http", 9000);
+        int httpsport = (int) DAO.getConfig("port.https", 9443);
+        String peername = (String) DAO.getConfig("peername", "anonymous");
         ResultList<QueryEntry>  rl = new ResultList<QueryEntry>();
         String urlstring = "";
         urlstring = protocolhostportstub + "/api/suggest.json?q=" + URLEncoder.encode(q.replace(' ', '+'), "UTF-8") +
@@ -57,7 +60,10 @@ public class SuggestClient {
                 (until == null ? "" : ("&until=" + until)) +
                 (selectby == null ? "" : ("&selectby=" + selectby)) +
                 (random < 0 ? "" : ("&random=" + random)) +
-                "&minified=true";
+                "&minified=true" +
+                "&port.http=" + httpport +
+                "&port.https=" + httpsport +
+                "&peername=" + peername;
         byte[] response = ClientConnection.download(urlstring);
         byte[] json = response;
         if (json == null || json.length == 0) return rl;

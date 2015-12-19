@@ -39,7 +39,6 @@ import org.loklak.data.QueryEntry;
 import org.loklak.data.Timeline;
 import org.loklak.data.UserEntry;
 import org.loklak.harvester.TwitterAPI;
-import org.loklak.http.ClientConnection;
 import org.loklak.tools.DateParser;
 import org.loklak.tools.OS;
 
@@ -55,12 +54,12 @@ public class Caretaker extends Thread {
     
     private boolean shallRun = true;
     
-    public final static long startupTime = System.currentTimeMillis();
-    public final static long upgradeWait = DateParser.DAY_MILLIS; // 1 day
-    public       static long upgradeTime = startupTime + upgradeWait;
+    public  final static long startupTime = System.currentTimeMillis();
+    private final static long upgradeWait = DateParser.DAY_MILLIS; // 1 day
+    public        static long upgradeTime = startupTime + upgradeWait;
 
-    public static BlockingQueue<Timeline> pushToBackendTimeline = new LinkedBlockingQueue<Timeline>();
-    public static BlockingQueue<Timeline> receivedFromPushTimeline = new LinkedBlockingQueue<Timeline>();
+    private static BlockingQueue<Timeline> pushToBackendTimeline = new LinkedBlockingQueue<Timeline>();
+    private static BlockingQueue<Timeline> receivedFromPushTimeline = new LinkedBlockingQueue<Timeline>();
     
     /**
      * ask the thread to shut down
@@ -75,7 +74,7 @@ public class Caretaker extends Thread {
     public void run() {
         // send a message to other peers that I am alive
         String[] remote = DAO.getConfig("backend", new String[0], ",");
-        HelloClient.propagate(remote, (int) DAO.getConfig("port.http", 9000), (int) DAO.getConfig("port.https", 9443), (String) DAO.getConfig("peername", "anonymous"));
+        HelloClient.propagate(remote);
         
         // work loop
         while (this.shallRun) try {
@@ -104,7 +103,7 @@ public class Caretaker extends Thread {
                 try {Thread.sleep(3000 - (dumpfinish - dumpstart));} catch (InterruptedException e) {}
             }
             
-            DAO.log("connection pool: " + ClientConnection.cm.getTotalStats().toString());
+            //DAO.log("connection pool: " + ClientConnection.cm.getTotalStats().toString());
             
             // peer-to-peer operation
             Timeline tl = takeTimelineMin(pushToBackendTimeline, Timeline.Order.CREATED_AT, 200);
@@ -142,7 +141,7 @@ public class Caretaker extends Thread {
             }
             
             // run some harvesting steps
-            if (DAO.getConfig("retrieval.forbackend.enabled", false) && (DAO.getConfig("backend", "").length() > 0)) {
+            if (DAO.getConfig("retrieval.forbackend.enabled", false) && DAO.getConfig("backend.push.enabled", false) && (DAO.getConfig("backend", "").length() > 0)) {
                 for (int i = 0; i < 10; i++) {
                     int count = Harvester.harvest();
                     if (count == -1) break;
@@ -217,7 +216,7 @@ public class Caretaker extends Thread {
         while (!receivedFromPushTimeline.isEmpty() && (tl = receivedFromPushTimeline.poll()) != null) {
             for (MessageEntry me: tl) {
                 me.enrich(); // we enrich here again because the remote peer may have done this with an outdated version or not at all
-                boolean stored = DAO.writeMessage(me, tl.getUser(me), true, true, true);
+                boolean stored = DAO.writeMessage(me, tl.getUser(me), true, true, true, true);
                 if (stored) newMessages++; else knownMessages++;
             }
         }
@@ -238,6 +237,7 @@ public class Caretaker extends Thread {
     
     public static void transmitMessage(final MessageEntry tweet, final UserEntry user) {
         if (DAO.getConfig("backend", new String[0], ",").length <= 0) return;
+        if (!DAO.getConfig("backend.push.enabled", false)) return;
         Timeline tl = pushToBackendTimeline.poll();
         if (tl == null) tl = new Timeline(Timeline.Order.CREATED_AT);
         tl.add(tweet, user);
