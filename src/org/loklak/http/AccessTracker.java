@@ -63,7 +63,7 @@ public class AccessTracker extends Thread {
     
     
     public AccessTracker(File dump_dir, String dump_file_prefix, long track_timeout, long schedule_period) throws IOException {
-        this.history = new JsonRepository(dump_dir, dump_file_prefix, null, JsonRepository.Mode.COMPRESSED, 1);
+        this.history = new JsonRepository(dump_dir, dump_file_prefix, null, JsonRepository.Mode.COMPRESSED, false, 1);
         this.track_timeout = track_timeout;
         this.schedule_period = schedule_period;
         this.terminate = false;

@@ -172,12 +172,12 @@ public class DAO {
                 "You can import dump files from other peers by dropping them into the import directory.\n" +
                 "Each dump file must start with the prefix '" + MESSAGE_DUMP_FILE_PREFIX + "' to be recognized.\n";
             message_dump_dir = dataPath.resolve("dump");
-            message_dump = new JsonRepository(message_dump_dir.toFile(), MESSAGE_DUMP_FILE_PREFIX, message_dump_readme, JsonRepository.COMPRESSED_MODE, Runtime.getRuntime().availableProcessors());
+            message_dump = new JsonRepository(message_dump_dir.toFile(), MESSAGE_DUMP_FILE_PREFIX, message_dump_readme, JsonRepository.COMPRESSED_MODE, true, Runtime.getRuntime().availableProcessors());
             
             account_dump_dir = dataPath.resolve("accounts");
             account_dump_dir.toFile().mkdirs();
             OS.protectPath(account_dump_dir); // no other permissions to this path
-            account_dump = new JsonRepository(account_dump_dir.toFile(), ACCOUNT_DUMP_FILE_PREFIX, null, JsonRepository.REWRITABLE_MODE, Runtime.getRuntime().availableProcessors());
+            account_dump = new JsonRepository(account_dump_dir.toFile(), ACCOUNT_DUMP_FILE_PREFIX, null, JsonRepository.REWRITABLE_MODE, false, Runtime.getRuntime().availableProcessors());
 
             File user_dump_dir = new File(datadir, "accounts");
             user_dump_dir.mkdirs();
@@ -185,17 +185,17 @@ public class DAO {
                     user_dump_dir,USER_DUMP_FILE_PREFIX,
                     new JsonDataset.Column[]{new JsonDataset.Column("id_str", false), new JsonDataset.Column("screen_name", true)},
                     "retrieval_date", DateParser.PATTERN_ISO8601MILLIS,
-                    JsonRepository.REWRITABLE_MODE);
+                    JsonRepository.REWRITABLE_MODE, false);
             followers_dump = new JsonDataset(
                     user_dump_dir, FOLLOWERS_DUMP_FILE_PREFIX,
                     new JsonDataset.Column[]{new JsonDataset.Column("screen_name", true)},
                     "retrieval_date", DateParser.PATTERN_ISO8601MILLIS,
-                    JsonRepository.REWRITABLE_MODE);
+                    JsonRepository.REWRITABLE_MODE, false);
             following_dump = new JsonDataset(
                     user_dump_dir, FOLLOWING_DUMP_FILE_PREFIX,
                     new JsonDataset.Column[]{new JsonDataset.Column("screen_name", true)},
                     "retrieval_date", DateParser.PATTERN_ISO8601MILLIS,
-                    JsonRepository.REWRITABLE_MODE);
+                    JsonRepository.REWRITABLE_MODE, false);
             
             Path log_dump_dir = dataPath.resolve("log");
             log_dump_dir.toFile().mkdirs();
@@ -204,7 +204,7 @@ public class DAO {
             access.start(); // start monitor
             
 	        import_profile_dump_dir = dataPath.resolve("import-profiles");
-            import_profile_dump = new JsonRepository(import_profile_dump_dir.toFile(), IMPORT_PROFILE_FILE_PREFIX, null, JsonRepository.COMPRESSED_MODE, Runtime.getRuntime().availableProcessors());
+            import_profile_dump = new JsonRepository(import_profile_dump_dir.toFile(), IMPORT_PROFILE_FILE_PREFIX, null, JsonRepository.COMPRESSED_MODE, false, Runtime.getRuntime().availableProcessors());
 
             // load schema folder
             conv_schema_dir = new File("conf/conversion");

@@ -63,7 +63,7 @@ public class JsonRepository {
     final Mode mode;
     final int concurrency;
     
-    public JsonRepository(File dump_dir, String dump_file_prefix, String readme, final Mode mode, final int concurrency) throws IOException {
+    public JsonRepository(File dump_dir, String dump_file_prefix, String readme, final Mode mode, final boolean dailyDump, final int concurrency) throws IOException {
         this.dump_dir = dump_dir;
         this.dump_file_prefix = dump_file_prefix;
         this.dump_dir_own = new File(this.dump_dir, "own");
@@ -83,17 +83,17 @@ public class JsonRepository {
                 w.close();
             }
         }
-        this.json_log = new JsonRandomAccessFile(getCurrentDump(dump_dir_own, this.dump_file_prefix, mode), this.concurrency);
+        this.json_log = new JsonRandomAccessFile(getCurrentDump(dump_dir_own, this.dump_file_prefix, mode, dailyDump), this.concurrency);
     }
     
     public Mode getMode() {
         return this.mode;
     }
     
-    private static File getCurrentDump(File path, String prefix, final Mode mode) {
-        SimpleDateFormat formatYearMonth = new SimpleDateFormat("yyyyMM", Locale.US);
-        formatYearMonth.setTimeZone(TimeZone.getTimeZone("GMT"));
-        String currentDatePart = formatYearMonth.format(new Date());
+    private static File getCurrentDump(File path, String prefix, final Mode mode, final boolean dailyDump) {
+        SimpleDateFormat dateFomat = new SimpleDateFormat(dailyDump ? "yyyyMMdd" : "yyyyMM", Locale.US);
+        dateFomat.setTimeZone(TimeZone.getTimeZone("GMT"));
+        String currentDatePart = dateFomat.format(new Date());
         
         // if there is already a dump, use it
         String[] existingDumps = path.list();
