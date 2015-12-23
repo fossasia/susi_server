@@ -8,3 +8,6 @@
 /data.bkp/
 
 *.xml~
+
+# python
+venv/*
