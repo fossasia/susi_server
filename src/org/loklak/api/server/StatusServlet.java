@@ -24,6 +24,7 @@ import java.io.PrintWriter;
 import java.util.Date;
 import java.util.Enumeration;
 import java.util.List;
+import java.util.Map;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -34,6 +35,7 @@ import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.elasticsearch.common.xcontent.XContentFactory;
 import org.elasticsearch.search.sort.SortOrder;
 import org.loklak.Caretaker;
+import org.loklak.api.client.StatusClient;
 import org.loklak.data.DAO;
 import org.loklak.data.QueryEntry;
 import org.loklak.http.RemoteAccess;
@@ -48,6 +50,7 @@ public class StatusServlet extends HttpServlet {
         doGet(request, response);
     }
     
+    @SuppressWarnings("unchecked")
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         RemoteAccess.Post post = RemoteAccess.evaluate(request);
@@ -59,6 +62,19 @@ public class StatusServlet extends HttpServlet {
             Caretaker.upgrade(); // it's a hack to add this here, this may disappear anytime
         }
         
+        final String backend = DAO.getConfig("backend", "");
+        final boolean backend_push = DAO.getConfig("backend.push.enabled", false);
+        Map<String, Object> backend_status = null;
+        Map<String, Object> backend_status_index_sizes = null;
+        if (backend.length() > 0 && !backend_push) {
+            backend_status = StatusClient.status(backend);
+            backend_status_index_sizes = backend_status == null ? null : (Map<String, Object>) backend_status.get("index_sizes");
+        }
+        long backend_messages = backend_status_index_sizes == null ? 0 : ((Number) backend_status_index_sizes.get("messages")).longValue();
+        long backend_users = backend_status_index_sizes == null ? 0 : ((Number) backend_status_index_sizes.get("users")).longValue();
+        long local_messages = DAO.countLocalMessages(-1);
+        long local_users = DAO.countLocalUsers();
+        
         post.setResponse(response, "application/javascript");
         
         // generate json
@@ -67,9 +83,13 @@ public class StatusServlet extends HttpServlet {
         
         json.field("index_sizes");
         json.startObject();
-        json.field("messages", DAO.countLocalMessages(-1));
+        json.field("messages", local_messages + backend_messages);
+        json.field("messages_local", local_messages);
+        json.field("messages_backend", backend_messages);
         json.field("mps", DAO.countLocalMessages(86400000) / 86400);
-        json.field("users", DAO.countLocalUsers());
+        json.field("users", local_users + backend_users);
+        json.field("users_local", local_users);
+        json.field("users_backend", backend_users);
         json.field("queries", DAO.countLocalQueries());
         json.field("accounts", DAO.countLocalAccounts());
         json.field("user", DAO.user_dump.size());
