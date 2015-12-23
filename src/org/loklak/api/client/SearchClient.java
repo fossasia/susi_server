@@ -60,7 +60,7 @@ public class SearchClient {
             }
             JSONObject metadata = json.getJSONObject("search_metadata");
             if (metadata != null) {
-                Integer hits = (Integer) metadata.get("hits");
+                Integer hits = metadata.has("hits") ? (Integer) metadata.get("hits") : null;
                 if (hits != null) tl.setHits(hits.intValue());
                 String scraperInfo = metadata.has("scraperInfo") ? (String) metadata.get("scraperInfo") : null;
                 if (scraperInfo != null) tl.setScraperInfo(scraperInfo);
