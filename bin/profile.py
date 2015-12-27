@@ -1,8 +1,14 @@
+#!/usr/bin/env python
+"""
+Requirements:
+
+requests (installation: pip install requests)
+"""
 import requests
 import json
 import os
 
-SEARCH_URL = 'http://loklak.org/api/search.json'
+SEARCH_URL = 'http://localhost:9000/api/search.json'
 _ALL_FILES_ = []
 
 for (d, f, filenames) in os.walk(os.path.join(os.getcwd(),
