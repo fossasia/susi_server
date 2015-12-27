@@ -183,7 +183,7 @@ public class LoklakServer {
         
         
         LinkedBlockingQueue<Runnable> queue = new LinkedBlockingQueue<Runnable>(300);
-        ExecutorThreadPool pool = new ExecutorThreadPool(10, 100, 10000, TimeUnit.MILLISECONDS, queue);;
+        ExecutorThreadPool pool = new ExecutorThreadPool(10, 20, 2000, TimeUnit.MILLISECONDS, queue);;
         LoklakServer.server = new Server(pool);
         LoklakServer.server.setStopAtShutdown(true);
         ServerConnector connector = new ServerConnector(LoklakServer.server);
