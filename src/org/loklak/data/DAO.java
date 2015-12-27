@@ -373,7 +373,7 @@ public class DAO {
                                 if (user == null) continue;
                                 UserEntry u = new UserEntry(user);
                                 MessageEntry t = new MessageEntry(json);
-                                DAO.writeMessage(t, u, false, false, true, true);
+                                DAO.writeMessage(t, u, false, true, true);
                                 newTweets.incrementAndGet();
                             } catch (IOException e) {
                                 e.printStackTrace();
@@ -524,38 +524,26 @@ public class DAO {
     
     /**
      * Store a message together with a user into the search index
-     * This method is synchronized to prevent concurrent IO caused by this call.
      * @param t a tweet
      * @param u a user
      * @return true if the record was stored because it did not exist, false if it was not stored because the record existed already
      */
-    public static boolean writeMessage(MessageEntry t, UserEntry u, boolean checkExist, boolean dump, boolean overwriteUser, boolean bulk) {
+    public static boolean writeMessage(MessageEntry t, UserEntry u, boolean dump, boolean overwriteUser, boolean bulk) {
         if (t == null) {
             return false;
         }
         try {
-            // check if tweet exists in index
-            if (checkExist && messages.exists(t.getIdStr())) return false; // we omit writing this again
-
-            synchronized (DAO.class) {
-                // check if user exists in index
-                if (overwriteUser) {
-                    UserEntry oldUser = users.read(u.getScreenName());
-                    if (oldUser == null || !oldUser.equals(u)) {
-                        writeUser(u, t.getSourceType().name(), bulk);
-                    }
-                } else {
-                    if (!users.exists(u.getScreenName())) {
-                        writeUser(u, t.getSourceType().name(), bulk);
-                    } 
-                }
-    
-                // record tweet into search index
-                messages.writeEntry(t.getIdStr(), t.getSourceType().name(), t, bulk);
+            // record tweet into text file
+            if (dump) {
+                if (messages.exists(t.getIdStr())) return false;
+                message_dump.write(t.toMap(u, false, Integer.MAX_VALUE, ""));
             }
             
-            // record tweet into text file
-            if (dump) message_dump.write(t.toMap(u, false, Integer.MAX_VALUE, ""));
+            // write user; even write the entry if it exist. We do not check this here and leave it to elasticsearch to check that
+            writeUser(u, t.getSourceType().name(), bulk);
+    
+            // record tweet into search index
+            messages.writeEntry(t.getIdStr(), t.getSourceType().name(), t, bulk);
             
             // teach the classifier
             Classifier.learnPhrase(t.getText(Integer.MAX_VALUE, ""));
@@ -572,7 +560,7 @@ public class DAO {
      * @param u a user
      * @return true if the record was stored because it did not exist, false if it was not stored because the record existed already
      */
-    public synchronized static boolean writeUser(UserEntry u, String source_type, boolean bulk) {
+    public static boolean writeUser(UserEntry u, String source_type, boolean bulk) {
         try {
             // record user into search index
             users.writeEntry(u.getScreenName(), source_type, u, bulk);
@@ -589,7 +577,7 @@ public class DAO {
      * @param u a user
      * @return true if the record was stored because it did not exist, false if it was not stored because the record existed already
      */
-    public synchronized static boolean writeAccount(AccountEntry a, boolean dump) {
+    public static boolean writeAccount(AccountEntry a, boolean dump) {
         try {
             // record account into text file
             if (dump) account_dump.write(a.toMap(null));
@@ -608,7 +596,7 @@ public class DAO {
      * @param i an import profile
      * @return true if the record was stored because it did not exist, false if it was not stored because the record existed already
      */
-    public synchronized static boolean writeImportProfile(ImportProfileEntry i, boolean dump) {
+    public static boolean writeImportProfile(ImportProfileEntry i, boolean dump) {
         try {
             // record import profile into text file
             if (dump) import_profile_dump.write(i.toMap());

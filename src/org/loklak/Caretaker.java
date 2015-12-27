@@ -216,7 +216,7 @@ public class Caretaker extends Thread {
         while (!receivedFromPushTimeline.isEmpty() && (tl = receivedFromPushTimeline.poll()) != null) {
             for (MessageEntry me: tl) {
                 me.enrich(); // we enrich here again because the remote peer may have done this with an outdated version or not at all
-                boolean stored = DAO.writeMessage(me, tl.getUser(me), true, true, true, true);
+                boolean stored = DAO.writeMessage(me, tl.getUser(me), true, true, true);
                 if (stored) newMessages++; else knownMessages++;
             }
         }
