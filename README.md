@@ -20,34 +20,34 @@ If you like to be anonymous when searching things, want to archive tweets or mes
 
 ## How can I build loklak myself?
 
-- ant (just this, type "ant" - without quotes - and hit enter)
+- `ant` (just this, type "ant" - without quotes - and hit enter)
 
 ## How do I configure loklak?
 
 The basis configuration file is in conf/config.properties. To customize these settings place a file 'customized_config.properties' to the path data/settings/
 
-*** How do I run loklak?
+## How do I run loklak?
 
 - build loklak (you need to do this only once, see above)
-- run bin/start.sh
-- open http://localhost:9000 in your browser
-- to shut down loklak, run bin/stop.sh
+- run `bin/start.sh`
+- open `http://localhost:9000` in your browser
+- to shut down loklak, run `bin/stop.sh`
 
 ## How do I analyze data aquired by loklak
 
 loklak stores data into an elasticsearch index. There is a front-end
 for the index available in elasticsearch-head. To install this, do:
-- sudo npm install -g grunt-cli
-- cd into the parent directly of loklak_server
-- git clone git://github.com/mobz/elasticsearch-head.git
-- cd elasticsearch-head
-- npm install
+- `sudo npm install -g grunt-cli`
+- `cd` into the parent directly of loklak_server
+- `git clone git://github.com/mobz/elasticsearch-head.git`
+- `cd elasticsearch-head`
+- `npm install`
 
 Run elasticsearch-head with:
-- grunt server
-..which opens the administration page at http://localhost:9100
+- `grunt server`
+..which opens the administration page at `http://localhost:9100`
 
-*** Where can I find more information and documentation
+## Where can I find more information and documentation?
 
 The application has built-in documentation web pages, you will see them when you opened the application web pages or you can simply open html/index.html or just use http://loklak.org as reference.
 
@@ -57,7 +57,7 @@ The application has built-in documentation web pages, you will see them when you
 LGPL 2.1
 
 
-*** There should be XXX and YYY can be enhanced!!
+## There should be XXX and YYY can be enhanced!!
 
 This project is considered a community work. There is no company behind loklak. The development crew consist of YOU also. I am very thankful for pull request. So if you discovered that something can be enhanced, please do it yourself and send me a pull request. If you find a bug, please try to fix it. If you report a bug to me I will possibly consider it but at the very end of a giant, always growing heap of work. The best chance for you to get things done is to try it yourself.
 
@@ -69,8 +69,8 @@ Please see above.
 ## Where can I download ready-built releases of loklak?
 
 Nowhere, you must clone the git repository of loklak and built it yourself. Thats easy, just do
-- git clone https://github.com/loklak/loklak_server.git
-- cd loklak
+- `git clone https://github.com/loklak/loklak_server.git`
+- `cd loklak`
 - then see above ("How do I run loklak")
 
 
