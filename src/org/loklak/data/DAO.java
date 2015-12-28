@@ -1122,7 +1122,7 @@ public class DAO {
             } catch (IOException e) {
                 DAO.log("searchOnOtherPeers: no IO to scraping target: " + e.getMessage());
                 // the remote peer seems to be unresponsive, remove it (temporary) from the remote peer list
-                peerLatency.put(peer, System.currentTimeMillis() - start);
+                peerLatency.put(peer, 3600000L);
                 frontPeerCache.remove(peer);
                 backendPeerCache.remove(peer);
                 remote.remove(pick);
