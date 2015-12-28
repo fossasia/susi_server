@@ -126,7 +126,7 @@ public abstract class AbstractIndexFactory<Entry extends IndexEntry> implements 
     public int bulkCacheFlush() throws IOException {
         if (this.bulkCache.size() == 0) return 0;
         
-        BulkRequestBuilder bulkRequest = elasticsearch_client.prepareBulk();
+        BulkRequestBuilder bulkRequest = elasticsearch_client.prepareBulk().setRefresh(true);
         int count = 0;
         while (this.bulkCache.size() > 0) {
             BulkEntry be = this.bulkCache.poll();
@@ -141,6 +141,8 @@ public abstract class AbstractIndexFactory<Entry extends IndexEntry> implements 
         //System.out.println("writing bulk of " + count + " entries"); // debug
         BulkResponse bulkResponse = bulkRequest.get();
         if (bulkResponse.hasFailures()) throw new IOException(bulkResponse.buildFailureMessage());
+        // flush the translog cache
+        
         return count;
     }
     
