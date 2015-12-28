@@ -521,7 +521,7 @@ public class DAO {
     public static Set<String> getConfigKeys() {
         return config.keySet();
     }
-    
+
     /**
      * Store a message together with a user into the search index
      * @param t a tweet
@@ -533,20 +533,32 @@ public class DAO {
             return false;
         }
         try {
-            // record tweet into text file
-            if (dump) {
-                if (messages.exists(t.getIdStr())) return false;
-                message_dump.write(t.toMap(u, false, Integer.MAX_VALUE, ""));
-            }
-            
-            // write user; even write the entry if it exist. We do not check this here and leave it to elasticsearch to check that
-            writeUser(u, t.getSourceType().name(), bulk);
+            // check if tweet exists in index
+            if (dump && messages.exists(t.getIdStr())) return false; // we omit writing this again
     
-            // record tweet into search index
-            messages.writeEntry(t.getIdStr(), t.getSourceType().name(), t, bulk);
+            synchronized (DAO.class) {
+                // check if user exists in index
+                if (overwriteUser) {
+                    UserEntry oldUser = users.read(u.getScreenName());
+                    if (oldUser == null || !oldUser.equals(u)) {
+                        writeUser(u, t.getSourceType().name(), bulk);
+                    }
+                } else {
+                    if (!users.exists(u.getScreenName())) {
+                        writeUser(u, t.getSourceType().name(), bulk);
+                    } 
+                }
+    
+                // record tweet into search index
+                messages.writeEntry(t.getIdStr(), t.getSourceType().name(), t, bulk);
+                 
+                // record tweet into text file
+                if (dump) message_dump.write(t.toMap(u, false, Integer.MAX_VALUE, ""));
+    
+             }
             
-            // teach the classifier
-            Classifier.learnPhrase(t.getText(Integer.MAX_VALUE, ""));
+             // teach the classifier
+             Classifier.learnPhrase(t.getText(Integer.MAX_VALUE, ""));
         } catch (IOException e) {
             e.printStackTrace();
         }
