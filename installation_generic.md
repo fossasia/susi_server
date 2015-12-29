@@ -7,7 +7,7 @@ Its very easy!
 
 ## Download
 - `git clone https://github.com/loklak/loklak_server.git`
-- `cd loklak`
+- `cd loklak_server`
 
 ## Build
 - `ant` (just this, type "ant" - without quotes - and hit enter)
