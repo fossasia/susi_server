@@ -97,4 +97,3 @@ Hey, this is the tool for that! Just put http://loklak.org/api/search.rss?q=%23l
 
 Have fun!
 @0rb1t3r
-2015-03-07 Frankfurt am Main
