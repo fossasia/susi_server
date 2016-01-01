@@ -17,7 +17,7 @@ If you like to be anonymous when searching things, want to archive tweets or mes
 - create your own tweet search portal or statistical evaluations
 - use Kibana to analyze large amounts of tweets for statistical data.
 
-## Installation: Download, Build, Run
+## How do I install loklak: Download, Build, Run
 
 At this time, loklak is not provided in compiled form, you easily build it yourself. It's not difficult and done in one minute! The source code is hosted at https://github.com/loklak/loklak_server, you can download it and run loklak with:
 
