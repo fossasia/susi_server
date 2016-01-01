@@ -17,10 +17,27 @@ If you like to be anonymous when searching things, want to archive tweets or mes
 - create your own tweet search portal or statistical evaluations
 - use Kibana to analyze large amounts of tweets for statistical data.
 
+## Installation: Download, Build, Run
 
-## How can I build loklak myself?
+At this time, loklak is not provided in compiled form, you easily build it yourself. It's not difficult and done in one minute! The source code is hosted at https://github.com/loklak/loklak_server, you can download it and run loklak with:
 
-- `ant` (just this, type "ant" - without quotes - and hit enter)
+    > git clone https://github.com/loklak/loklak_server.git
+    > cd loklak_server
+    > ant
+    > bin/start.sh
+
+After all server processes are running, loklak tries to open a browser page itself. If that does not happen, just open http://localhost:9000; if you made the installation on a headless or remote server, then replace 'localhost' with your server name.
+
+To stop loklak, run: (this will block until the server has actually terminated)
+
+    > bin/stop.sh
+
+A self-upgrading process is available which must be triggered by a shell command. Just run:
+
+    > bin/upgrade.sh
+
+### How do I install loklak with Docker?
+To install loklak with Docker please refer to the [loklak Docker installation readme](https://raw.githubusercontent.com/loklak/loklak_server/master/installation_docker.md).
 
 ## How do I configure loklak?
 
