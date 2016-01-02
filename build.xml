@@ -110,4 +110,16 @@
         </java>
     </target>
     
+    <target name="jar" depends="build">
+	    <manifestclasspath property="jar.classpath" jarfile="Loklak.jar">
+		    <classpath refid="loklak.classpath" />
+	    </manifestclasspath>
+	    <jar destfile="Loklak.jar" basedir="classes/">
+		    <manifest>
+			    <attribute name="Class-Path" value="${jar.classpath}" />
+			    <attribute name="Main-Class" value="org.loklak.LoklakServer" />
+		    </manifest>
+	    </jar>
+    </target>
+    
 </project>
