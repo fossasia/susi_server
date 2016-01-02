@@ -111,10 +111,11 @@
     </target>
     
     <target name="jar" depends="build">
-	    <manifestclasspath property="jar.classpath" jarfile="Loklak.jar">
+        <mkdir dir="dist"/>
+	    <manifestclasspath property="jar.classpath" jarfile="dist/loklak.jar">
 		    <classpath refid="loklak.classpath" />
 	    </manifestclasspath>
-	    <jar destfile="Loklak.jar" basedir="classes/">
+	    <jar destfile="dist/loklak.jar" basedir="classes/">
 		    <manifest>
 			    <attribute name="Class-Path" value="${jar.classpath}" />
 			    <attribute name="Main-Class" value="org.loklak.LoklakServer" />
