@@ -170,7 +170,7 @@ public class DAO {
             settings.build();
             
             // start elasticsearch
-            elasticsearch_node = NodeBuilder.nodeBuilder().settings(settings).client(false).clusterName("loklak_" + System.currentTimeMillis()).node();
+            elasticsearch_node = NodeBuilder.nodeBuilder().settings(settings).client(false).node();
             elasticsearch_client = elasticsearch_node.client(); // TransportClient.builder().settings(settings).build();
 
             Path index_dir = dataPath.resolve("index");
