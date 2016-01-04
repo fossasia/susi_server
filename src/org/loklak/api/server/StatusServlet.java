@@ -86,7 +86,7 @@ public class StatusServlet extends HttpServlet {
         json.field("messages", local_messages + backend_messages);
         json.field("messages_local", local_messages);
         json.field("messages_backend", backend_messages);
-        json.field("mps", DAO.countLocalMessages(86400000) / 86400);
+        json.field("mps", Math.max(DAO.countLocalMessages(86400000) / 86400, DAO.countLocalMessages(600000) / 600)); // best of 24h and 10m
         json.field("users", local_users + backend_users);
         json.field("users_local", local_users);
         json.field("users_backend", backend_users);
