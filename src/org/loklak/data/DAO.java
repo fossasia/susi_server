@@ -51,6 +51,7 @@ import com.google.common.io.Files;
 
 import org.eclipse.jetty.util.log.Log;
 import org.elasticsearch.action.admin.cluster.health.ClusterHealthResponse;
+import org.elasticsearch.action.admin.cluster.health.ClusterHealthStatus;
 import org.elasticsearch.action.count.CountResponse;
 import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
@@ -324,6 +325,11 @@ public class DAO {
             e.printStackTrace();
         }
         
+    }
+    
+    public boolean clusterReady() {
+        ClusterHealthResponse chr = elasticsearch_client.admin().cluster().prepareHealth().get();
+        return chr.getStatus() != ClusterHealthStatus.RED;
     }
     
     public static File getAssetFile(String screen_name, String id_str, String file) {
