@@ -157,6 +157,48 @@ public class DAO {
         bin_dir = new File("bin");
         File datadir = dataPath.toFile();
         try {
+
+            // use all config attributes with a key starting with "elasticsearch." to set elasticsearch settings
+            Settings.Builder settings = Settings.builder();
+            for (Map.Entry<String, String> entry: config.entrySet()) {
+                String key = entry.getKey();
+                if (key.startsWith("elasticsearch.")) settings.put(key.substring(14), entry.getValue());
+            }
+            // patch the home path
+            settings.put("path.home", datadir.getAbsolutePath());
+            settings.put("path.data", datadir.getAbsolutePath());
+            settings.build();
+            
+            // start elasticsearch
+            elasticsearch_node = NodeBuilder.nodeBuilder().settings(settings).client(false).clusterName("loklak_" + System.currentTimeMillis()).node();
+            elasticsearch_client = elasticsearch_node.client(); // TransportClient.builder().settings(settings).build();
+
+            Path index_dir = dataPath.resolve("index");
+            if (index_dir.toFile().exists()) OS.protectPath(index_dir); // no other permissions to this path
+            
+            // define the index factories
+            messages = new MessageFactory(elasticsearch_client, MESSAGES_INDEX_NAME, CACHE_MAXSIZE);
+            users = new UserFactory(elasticsearch_client, USERS_INDEX_NAME, CACHE_MAXSIZE);
+            accounts = new AccountFactory(elasticsearch_client, ACCOUNTS_INDEX_NAME, CACHE_MAXSIZE);
+            queries = new QueryFactory(elasticsearch_client, QUERIES_INDEX_NAME, CACHE_MAXSIZE);
+            importProfiles = new ImportProfileFactory(elasticsearch_client, IMPORT_PROFILE_INDEX_NAME, CACHE_MAXSIZE);
+
+            // create indices
+            try {elasticsearch_client.admin().indices().prepareCreate(MESSAGES_INDEX_NAME).execute().actionGet();} catch (Throwable e) {};
+            try {elasticsearch_client.admin().indices().prepareCreate(USERS_INDEX_NAME).execute().actionGet();} catch (Throwable e) {};
+            try {elasticsearch_client.admin().indices().prepareCreate(ACCOUNTS_INDEX_NAME).execute().actionGet();} catch (Throwable e) {};
+            try {elasticsearch_client.admin().indices().prepareCreate(QUERIES_INDEX_NAME).execute().actionGet();} catch (Throwable e) {};
+            try {elasticsearch_client.admin().indices().prepareCreate(IMPORT_PROFILE_INDEX_NAME).execute().actionGet();} catch (Throwable e) {};
+
+            // set mapping (that shows how 'elastic' elasticsearch is: it's always good to define data types)
+            try {elasticsearch_client.admin().indices().preparePutMapping(MESSAGES_INDEX_NAME).setSource(messages.getMapping()).setType("_default_").execute().actionGet();} catch (Throwable e) {e.printStackTrace();};
+            try {elasticsearch_client.admin().indices().preparePutMapping(USERS_INDEX_NAME).setSource(users.getMapping()).setType("_default_").execute().actionGet();} catch (Throwable e) {e.printStackTrace();};
+            try {elasticsearch_client.admin().indices().preparePutMapping(ACCOUNTS_INDEX_NAME).setSource(accounts.getMapping()).setType("_default_").execute().actionGet();} catch (Throwable e) {e.printStackTrace();};
+            try {elasticsearch_client.admin().indices().preparePutMapping(QUERIES_INDEX_NAME).setSource(queries.getMapping()).setType("_default_").execute().actionGet();} catch (Throwable e) {e.printStackTrace();};
+            try {elasticsearch_client.admin().indices().preparePutMapping(IMPORT_PROFILE_INDEX_NAME).setSource(importProfiles.getMapping()).setType("_default_").execute().actionGet();} catch (Throwable e) {e.printStackTrace();};
+            
+            // elasticsearch will probably take some time until it is started up. We do some other stuff meanwhile..
+            
             // create and document the data dump dir
             assets = new File(datadir, "assets");
             external_data = new File(datadir, "external");
@@ -211,17 +253,6 @@ public class DAO {
             conv_schema_dir = new File("conf/conversion");
             schema_dir = new File("conf/schema");            
 
-            // use all config attributes with a key starting with "elasticsearch." to set elasticsearch settings
-            Settings.Builder settings = Settings.builder();
-            for (Map.Entry<String, String> entry: config.entrySet()) {
-                String key = entry.getKey();
-                if (key.startsWith("elasticsearch.")) settings.put(key.substring(14), entry.getValue());
-            }
-            // patch the home path
-            settings.put("path.home", datadir.getAbsolutePath());
-            settings.put("path.data", datadir.getAbsolutePath());
-            settings.build();
-
             // load dictionaries if they are embedded here
             // read the file allCountries.zip from http://download.geonames.org/export/dump/allCountries.zip
             //File allCountries = new File(dictionaries, "allCountries.zip");
@@ -236,35 +267,7 @@ public class DAO {
                 geoNames = null;
             }
             
-            // start elasticsearch
-            elasticsearch_node = NodeBuilder.nodeBuilder().settings(settings).client(false).clusterName("loklak_" + System.currentTimeMillis()).node();
-            elasticsearch_client = elasticsearch_node.client(); // TransportClient.builder().settings(settings).build();
-
-            Path index_dir = dataPath.resolve("index");
-            if (index_dir.toFile().exists()) OS.protectPath(index_dir); // no other permissions to this path
-            
-            // define the index factories
-            messages = new MessageFactory(elasticsearch_client, MESSAGES_INDEX_NAME, CACHE_MAXSIZE);
-            users = new UserFactory(elasticsearch_client, USERS_INDEX_NAME, CACHE_MAXSIZE);
-            accounts = new AccountFactory(elasticsearch_client, ACCOUNTS_INDEX_NAME, CACHE_MAXSIZE);
-            queries = new QueryFactory(elasticsearch_client, QUERIES_INDEX_NAME, CACHE_MAXSIZE);
-            importProfiles = new ImportProfileFactory(elasticsearch_client, IMPORT_PROFILE_INDEX_NAME, CACHE_MAXSIZE);
-
-            // create indices
-            try {elasticsearch_client.admin().indices().prepareCreate(MESSAGES_INDEX_NAME).execute().actionGet();} catch (Throwable e) {};
-            try {elasticsearch_client.admin().indices().prepareCreate(USERS_INDEX_NAME).execute().actionGet();} catch (Throwable e) {};
-            try {elasticsearch_client.admin().indices().prepareCreate(ACCOUNTS_INDEX_NAME).execute().actionGet();} catch (Throwable e) {};
-            try {elasticsearch_client.admin().indices().prepareCreate(QUERIES_INDEX_NAME).execute().actionGet();} catch (Throwable e) {};
-            try {elasticsearch_client.admin().indices().prepareCreate(IMPORT_PROFILE_INDEX_NAME).execute().actionGet();} catch (Throwable e) {};
-
-            // set mapping (that shows how 'elastic' elasticsearch is: it's always good to define data types)
-            try {elasticsearch_client.admin().indices().preparePutMapping(MESSAGES_INDEX_NAME).setSource(messages.getMapping()).setType("_default_").execute().actionGet();} catch (Throwable e) {e.printStackTrace();};
-            try {elasticsearch_client.admin().indices().preparePutMapping(USERS_INDEX_NAME).setSource(users.getMapping()).setType("_default_").execute().actionGet();} catch (Throwable e) {e.printStackTrace();};
-            try {elasticsearch_client.admin().indices().preparePutMapping(ACCOUNTS_INDEX_NAME).setSource(accounts.getMapping()).setType("_default_").execute().actionGet();} catch (Throwable e) {e.printStackTrace();};
-            try {elasticsearch_client.admin().indices().preparePutMapping(QUERIES_INDEX_NAME).setSource(queries.getMapping()).setType("_default_").execute().actionGet();} catch (Throwable e) {e.printStackTrace();};
-            try {elasticsearch_client.admin().indices().preparePutMapping(IMPORT_PROFILE_INDEX_NAME).setSource(importProfiles.getMapping()).setType("_default_").execute().actionGet();} catch (Throwable e) {e.printStackTrace();};
-            
-            // finally wait for healty status of shards
+            // finally wait for healty status of elasticsearch shards
             ClusterHealthResponse health;
             do {
                 log("Waiting for elasticsearch yellow status");
@@ -327,9 +330,12 @@ public class DAO {
         
     }
     
-    public boolean clusterReady() {
+    private static boolean clusterReadyCache = false;
+    public static boolean clusterReady() {
+        if (clusterReadyCache) return true;
         ClusterHealthResponse chr = elasticsearch_client.admin().cluster().prepareHealth().get();
-        return chr.getStatus() != ClusterHealthStatus.RED;
+        clusterReadyCache = chr.getStatus() != ClusterHealthStatus.RED;
+        return clusterReadyCache;
     }
     
     public static File getAssetFile(String screen_name, String id_str, String file) {

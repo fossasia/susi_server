@@ -25,7 +25,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.Random;
 import java.util.Set;
-import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
@@ -60,7 +59,6 @@ public class Caretaker extends Thread {
     public        static long upgradeTime = startupTime + upgradeWait;
 
     private static BlockingQueue<Timeline> pushToBackendTimeline = new LinkedBlockingQueue<Timeline>();
-    private static BlockingQueue<Timeline> receivedFromPushTimeline = new ArrayBlockingQueue<Timeline>(1000);
     
     /**
      * ask the thread to shut down
@@ -92,17 +90,8 @@ public class Caretaker extends Thread {
             // clear caches
             if (SuggestServlet.cache.size() > 100) SuggestServlet.cache.clear();
             
-            // dump timelines submitted by the peers
-            long dumpstart = System.currentTimeMillis();
-            int[] newandknown = scheduledTimelineStorage();
-            long dumpfinish = System.currentTimeMillis();
-            if (newandknown[0] > 0 || newandknown[1] > 0) {
-                DAO.log("dumped timelines from push api: " + newandknown[0] + " new, " + newandknown[1] + " known, storage time: " + (dumpfinish - dumpstart) + " ms, remaining timelines: " + receivedFromPushTimeline.size());
-            }
-            if (dumpfinish - dumpstart < 3000) {
-                // sleep a bit to prevent that the DoS limit fires at backend server
-                try {Thread.sleep(3000 - (dumpfinish - dumpstart));} catch (InterruptedException e) {}
-            }
+            // sleep a bit to prevent that the DoS limit fires at backend server
+            try {Thread.sleep(3000);} catch (InterruptedException e) {}
             
             //DAO.log("connection pool: " + ClientConnection.cm.getTotalStats().toString());
             
@@ -208,37 +197,6 @@ public class Caretaker extends Thread {
         } catch (IOException e) {
             DAO.log("UPGRADE failed: " + e.getMessage());
             e.printStackTrace();
-        }
-    }
-    
-    private int[] scheduledTimelineStorage() {
-        Timeline tl;
-        int newMessages = 0, knownMessages = 0, terminateAlerts = 0;
-        while (!receivedFromPushTimeline.isEmpty() && (tl = receivedFromPushTimeline.poll()) != null) {
-            int queuesizeBefore = receivedFromPushTimeline.size();
-            for (MessageEntry me: tl) {
-                me.enrich(); // we enrich here again because the remote peer may have done this with an outdated version or not at all
-                boolean stored = DAO.writeMessage(me, tl.getUser(me), true, true, true);
-                if (stored) newMessages++; else knownMessages++;
-            }
-            int queuesizeAfter = receivedFromPushTimeline.size();
-            if (queuesizeAfter > queuesizeBefore) {
-                // this is an emergency case which indicates that this loop cannot terminate
-                DAO.log("scheduledTimelineStorage: too slow processing, delta = " + (queuesizeAfter - queuesizeBefore));
-                terminateAlerts++;
-            }
-            if (terminateAlerts > 10) break; // if we stop this then the stack will fill up and throttle the peers if stack is full
-        }
-        return new int[]{newMessages, knownMessages};
-    }
-
-    public static int storeTimelineScheduler(Timeline tl) {
-        try {
-            receivedFromPushTimeline.put(tl);
-            return receivedFromPushTimeline.size();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-            return -1;
         }
     }
     

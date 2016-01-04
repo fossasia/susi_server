@@ -31,7 +31,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.elasticsearch.common.xcontent.XContentFactory;
-import org.loklak.Caretaker;
+import org.loklak.QueuedIndexing;
 import org.loklak.data.DAO;
 import org.loklak.data.ProviderType;
 import org.loklak.data.MessageEntry;
@@ -126,7 +126,7 @@ public class PushServlet extends HttpServlet {
                     //boolean newtweet = DAO.writeMessage(t, u, true, true, true);
                     //if (newtweet) newCount++; else knownCount++;
                 }
-                queuesize = Caretaker.storeTimelineScheduler(tl);
+                queuesize = QueuedIndexing.storeTimelineScheduler(tl);
                 //try {DAO.users.bulkCacheFlush();} catch (IOException e) {}
                 //try {DAO.messages.bulkCacheFlush();} catch (IOException e) {}
 
