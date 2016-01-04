@@ -30,7 +30,7 @@ import org.elasticsearch.action.get.GetResponse;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.index.VersionType;
 import org.loklak.harvester.SourceType;
-import org.loklak.tools.Cache;
+import org.loklak.tools.CacheMap;
 
 /**
  * test calls:
@@ -44,13 +44,13 @@ public abstract class AbstractIndexFactory<Entry extends IndexEntry> implements 
     private final static int MAX_BULK_SIZE = 1500;
     
     protected final Client elasticsearch_client;
-    protected final Cache<String, Entry> cache;
+    protected final CacheMap<String, Entry> cache;
     protected final String index_name;
     
     public AbstractIndexFactory(final Client elasticsearch_client, final String index_name, final int cacheSize) {
         this.elasticsearch_client = elasticsearch_client;
         this.index_name = index_name;
-        this.cache = new Cache<>(cacheSize);
+        this.cache = new CacheMap<>(cacheSize);
     }
     
     public Entry read(String id) throws IOException {

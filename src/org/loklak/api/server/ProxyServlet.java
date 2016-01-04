@@ -33,7 +33,7 @@ import org.loklak.data.UserEntry;
 import org.loklak.harvester.TwitterAPI;
 import org.loklak.http.ClientConnection;
 import org.loklak.http.RemoteAccess;
-import org.loklak.tools.Cache;
+import org.loklak.tools.CacheMap;
 
 import twitter4j.TwitterException;
 
@@ -41,7 +41,7 @@ public class ProxyServlet extends HttpServlet {
 
     private static final long serialVersionUID = -9112326722297824443L;
 
-    private final static Cache<String, byte[]> cache = new Cache<>(1000);
+    private final static CacheMap<String, byte[]> cache = new CacheMap<>(1000);
     
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {

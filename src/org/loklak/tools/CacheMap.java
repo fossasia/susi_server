@@ -22,12 +22,12 @@ package org.loklak.tools;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 
-public class Cache<K,V> {
+public class CacheMap<K,V> {
 
     private int maxSize;
     private LinkedHashMap<K, V> map;
     
-    public Cache(int maxSize) {
+    public CacheMap(int maxSize) {
         this.maxSize = maxSize;
         this.map = new LinkedHashMap<K, V>();
     }
