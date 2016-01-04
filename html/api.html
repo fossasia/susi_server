@@ -1163,10 +1163,11 @@ added fuzzyness for marker computation
 	<code>/api/asset</code>
 </h2>
 <div class="alert alert-warning" role="alert">This API has access limitations: localhost clients are granted more data than public clients.</div>
-<p>This API provides the storage(uploading and downloading) of large binary files, such as images.</p>
-<p>Uploading and downloading shares the same URL, and they are distinguished by it is a GET or POST request.</p>
-<p>Uploading should be done with a <strong>POST</strong> request to <a href="http://localhost:9000/api/asset">http://localhost:9000/api/asset</a>. There are four parameters associated with this POST request.</p>
-<p>POST parameters:
+
+<p>Storage of data must be done using POST http commands to servlet
+/api/asset and retrieval of data must be done using GET http commands to
+the same servlet /api/asset.</p>
+<p>POST request:
 <ul class="request">
 	<li><div class="tabcol0">screen_name</div>
 		<div class="tabcol1">&nbsp;=&nbsp;&lt;user nickname&gt;</div>// the identifier of the account record</li>
@@ -1177,22 +1178,18 @@ added fuzzyness for marker computation
 	<li><div class="tabcol0">data</div>
 		<div class="tabcol1">&nbsp;=&nbsp;&lt;binary&gt;</div>// binary data of image</li>
 </ul></p>
-<p>When uploading a file, you may consider use results of hash functions(e.g.: md5 of the file) as file names instead of real file names to prevent possible collisons of names. Hash functions can also provides dedulication and minimize the overall disk requirement..</p>
-<p>Similarly, retrieval(or download) of file on server could be achieved by making a <strong>GET</strong> requests to <a href="http://localhost:9000/api/asset">http://localhost:9000/api/asset</a>. There are three parameters needed for retrieval:</p>
-<ul class="request">
-	<li><div class="tabcol0">screen_name</div>
-		<div class="tabcol1">&nbsp;=&nbsp;&lt;user nickname&gt;</div>// the identifier of the account record</li>
-	<li><div class="tabcol0">id_str</div>
-		<div class="tabcol1">&nbsp;=&nbsp;&lt;number&gt;</div>// message id</li>
-	<li><div class="tabcol0">file</div>
-		<div class="tabcol1">&nbsp;=&nbsp;&lt;file name&gt;</div>// name of files on loklak server</li>
-</ul></p>
-<p>Here we provide a example for file retrieval:</p>
+<p>For example,</p>
 <ul class="request">
 	<li><a href="http://localhost:9000/api/asset?id_str=608991531941425153&screen_name=loklak_messages&file=image0.png">http://localhost:9000/api/asset?id_str=608991531941425153&screen_name=loklak_messages&file=image0.png</a></li>
 </ul><br/>
-<p>The GET results' Content-type header will provides you the content type.</p>
-
+<p>... with data in POST parameter stores the file from /Users/admin/Desktop/wall0.png as attachment
+for a message with id 608991531941425153 assigned to user
+loklak_messages under the name image0.png</p>
+<p>Retrieval of this file with the browser you can do with GET request to:
+<ul class="request">
+	<li><a href="http://localhost:9000/api/asset?id_str=608991531941425153&screen_name=loklak_messages&file=image0.png">http://localhost:9000/api/asset?id_str=608991531941425153&screen_name=loklak_messages&file=image0.png</a></li>
+</ul><br/>
+</p>
 
 <!-- ===================================================================== -->
 
