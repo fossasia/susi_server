@@ -96,7 +96,7 @@ public class LoklakServer {
     
     private static Server server = null;
     private static Caretaker caretaker = null;
-    private static QueuedIndexing queuedIndexing = null;
+    public  static QueuedIndexing queuedIndexing = null;
     
     public static Map<String, String> readConfig(Path data) throws IOException {
         File conf_dir = new File("conf");

@@ -74,6 +74,7 @@ import org.elasticsearch.search.aggregations.bucket.terms.Terms.Bucket;
 import org.elasticsearch.search.sort.SortBuilders;
 import org.elasticsearch.search.sort.SortOrder;
 import org.loklak.Caretaker;
+import org.loklak.LoklakServer;
 import org.loklak.api.client.SearchClient;
 import org.loklak.geo.GeoNames;
 import org.loklak.harvester.SourceType;
@@ -390,6 +391,7 @@ public class DAO {
                             } catch (IOException e) {
                                 e.printStackTrace();
                             }
+                            if (LoklakServer.queuedIndexing.isBusy()) try {Thread.sleep(200);} catch (InterruptedException e) {}
                         }
                     } catch (InterruptedException e) {
                         e.printStackTrace();

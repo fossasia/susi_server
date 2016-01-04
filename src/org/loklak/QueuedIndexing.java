@@ -29,7 +29,7 @@ import org.loklak.data.Timeline;
 
 public class QueuedIndexing extends Thread {
 
-    private boolean shallRun = true;
+    private boolean shallRun = true, isBusy = false;
     private static BlockingQueue<Timeline> receivedFromPushTimeline = new ArrayBlockingQueue<Timeline>(1000);
     
     /**
@@ -41,11 +41,16 @@ public class QueuedIndexing extends Thread {
         Log.getLog().info("catched QueuedIndexing termination signal");
     }
     
+    public boolean isBusy() {
+        return this.isBusy;
+    }
+    
     @Override
     public void run() {
         
         // work loop
         loop: while (this.shallRun) try {
+            this.isBusy = false;
             
             if (receivedFromPushTimeline.isEmpty() || !DAO.clusterReady()) {
                 try {Thread.sleep(10000);} catch (InterruptedException e) {}
@@ -53,6 +58,7 @@ public class QueuedIndexing extends Thread {
             }
             
             // dump timelines submitted by the peers
+            this.isBusy = true;
             long dumpstart = System.currentTimeMillis();
             int newMessages = 0, knownMessages = 0;
             Timeline tl = receivedFromPushTimeline.poll();
@@ -64,8 +70,10 @@ public class QueuedIndexing extends Thread {
             }
             long dumpfinish = System.currentTimeMillis();
             DAO.log("dumped timelines from push api: " + newMessages + " new, " + knownMessages + " known, storage time: " + (dumpfinish - dumpstart) + " ms, remaining timelines: " + receivedFromPushTimeline.size());
+
+            this.isBusy = false;
         } catch (Throwable e) {
-            Log.getLog().warn("CARETAKER THREAD", e);
+            Log.getLog().warn("QueuedIndexing THREAD", e);
         }
 
         Log.getLog().info("QueuedIndexing terminated");
