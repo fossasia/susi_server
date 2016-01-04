@@ -26,11 +26,17 @@ import org.eclipse.jetty.util.log.Log;
 import org.loklak.data.DAO;
 import org.loklak.data.MessageEntry;
 import org.loklak.data.Timeline;
+import org.loklak.tools.CacheSet;
 
 public class QueuedIndexing extends Thread {
 
     private boolean shallRun = true, isBusy = false;
     private static BlockingQueue<Timeline> receivedFromPushTimeline = new ArrayBlockingQueue<Timeline>(1000);
+    private CacheSet<String> existCache;
+    
+    public QueuedIndexing() {
+        this.existCache = new CacheSet<>(1000000);
+    }
     
     /**
      * ask the thread to shut down
@@ -60,16 +66,22 @@ public class QueuedIndexing extends Thread {
             // dump timelines submitted by the peers
             this.isBusy = true;
             long dumpstart = System.currentTimeMillis();
-            int newMessages = 0, knownMessages = 0;
+            int newMessages = 0, knownMessagesCache = 0, knownMessagesIndex = 0;
             Timeline tl = receivedFromPushTimeline.poll();
             assert tl != null; // because we tested in the beginning of the loop that it is not empty
-            for (MessageEntry me: tl) {
+            tlloop: for (MessageEntry me: tl) {
+                boolean stored = false;
+                if (this.existCache.contains(me.getIdStr())) {
+                    knownMessagesCache++;
+                    continue tlloop;
+                }
+                this.existCache.add(me.getIdStr());
                 me.enrich(); // we enrich here again because the remote peer may have done this with an outdated version or not at all
-                boolean stored = DAO.writeMessage(me, tl.getUser(me), true, true, true);
-                if (stored) newMessages++; else knownMessages++;
+                stored = DAO.writeMessage(me, tl.getUser(me), true, true, true);
+                if (stored) newMessages++; else knownMessagesIndex++;
             }
             long dumpfinish = System.currentTimeMillis();
-            DAO.log("dumped timelines from push api: " + newMessages + " new, " + knownMessages + " known, storage time: " + (dumpfinish - dumpstart) + " ms, remaining timelines: " + receivedFromPushTimeline.size());
+            DAO.log("dumped timelines from push api: " + newMessages + " new, " + knownMessagesCache + " known from cache, "  + knownMessagesIndex + " known from index, storage time: " + (dumpfinish - dumpstart) + " ms, remaining timelines: " + receivedFromPushTimeline.size());
 
             this.isBusy = false;
         } catch (Throwable e) {
