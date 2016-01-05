@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html ng-app="Twitter">
+  <head>
+    <meta charset="UTF-8">
+    <title>Search Box Practice #3</title>
+    <link rel="stylesheet" href="css/style.css">
+    <script src="http://code.angularjs.org/angular-1.0.0rc4.min.js"></script>
+        <script src="js/jquery.min.js"></script>
+    <script src="http://code.angularjs.org/angular-resource-1.0.0rc4.min.js"></script>
+  </head>
+  <body>
+ <div  ng-controller="TwitterCtrl">
+    <form class="form-wrapper cf">
+  	<input type="text"  ng-model="searchTerm" placeholder="Search Tweet" required>
+	  <button type="submit" ng-click="doSearch()" >Search</button>
+</form>
+    <table class="table table-striped">
+        <tr ng-repeat="tweet in twitterResult.statuses">
+            <td>{{tweet.text}}</td>
+        </tr>
+    </table>
+
+</div>
+   
+   <script>
+
+angular.module('Twitter', ['ngResource']);
+
+function TwitterCtrl($scope, $resource) {
+    $scope.twitter = $resource('/api/:action',
+        {action:'search.json', q:'angularjs', callback:'JSON_CALLBACK'},
+        {get:{method:'JSONP'}});
+
+    $scope.doSearch = function () {
+        $scope.twitterResult = $scope.twitter.get({q:$scope.searchTerm});
+    };
+}
+</script> 
+       <script src='http://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js'></script>
+    
+    
+  </body>
+</html>
