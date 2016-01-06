@@ -39,7 +39,6 @@ import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 import java.util.TreeMap;
-import java.util.concurrent.atomic.AtomicLong;
 
 import org.eclipse.jetty.util.ConcurrentHashSet;
 
@@ -74,7 +73,6 @@ import org.elasticsearch.search.aggregations.bucket.terms.Terms.Bucket;
 import org.elasticsearch.search.sort.SortBuilders;
 import org.elasticsearch.search.sort.SortOrder;
 import org.loklak.Caretaker;
-import org.loklak.LoklakServer;
 import org.loklak.api.client.SearchClient;
 import org.loklak.geo.GeoNames;
 import org.loklak.harvester.SourceType;
@@ -134,7 +132,9 @@ public class DAO {
     public  static File conf_dir, bin_dir;
     private static File external_data, assets, dictionaries;
     private static Path message_dump_dir, account_dump_dir, import_profile_dump_dir;
-    private static JsonRepository message_dump, account_dump, import_profile_dump;
+    public static JsonRepository message_dump;
+    private static JsonRepository account_dump;
+    private static JsonRepository import_profile_dump;
     public  static JsonDataset user_dump, followers_dump, following_dump;
     public  static AccessTracker access;
     private static File schema_dir, conv_schema_dir;
@@ -350,103 +350,41 @@ public class DAO {
         return message_dump.getOwnDumps();
     }
 
-    public static int importMessageDumps() throws IOException {
-        int imported = 0;
-        Collection<JsonReader> message_readers = message_dump.getImportDumpReaders(true);
-        if (message_readers == null || message_readers.size() == 0) return 0;
-        for (JsonReader reader: message_readers) {
-            imported += importMessageDump(reader);
-        }
-        message_dump.shiftProcessedDumps();
-        return imported;
-    }
-    
     public static void importAccountDumps() throws IOException {
-        Collection<JsonReader> account_readers = account_dump.getImportDumpReaders(true);
-        if (account_readers == null || account_readers.size() == 0) return;
-        for (JsonReader reader: account_readers) {
-            importAccountDump(reader);
+        Collection<File> dumps = account_dump.getImportDumps();
+        if (dumps == null || dumps.size() == 0) return;
+        for (File dump: dumps) {
+            JsonReader reader = account_dump.getDumpReader(dump);
+            final JsonReader dumpReader = reader;
+            Thread[] indexerThreads = new Thread[dumpReader.getConcurrency()];
+            for (int i = 0; i < dumpReader.getConcurrency(); i++) {
+                indexerThreads[i] = new Thread() {
+                    public void run() {
+                        JsonFactory accountEntry;
+                        try {
+                            while ((accountEntry = dumpReader.take()) != JsonStreamReader.POISON_JSON_MAP) {
+                                try {
+                                    Map<String, Object> json = accountEntry.getJson();
+                                    AccountEntry a = new AccountEntry(json);
+                                    DAO.writeAccount(a, false);
+                                } catch (IOException e) {
+                                    e.printStackTrace();
+                                }
+                            }
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                };
+                indexerThreads[i].start();
+            }
+            for (int i = 0; i < dumpReader.getConcurrency(); i++) {
+                try {indexerThreads[i].join();} catch (InterruptedException e) {}
+            }
+            account_dump.shiftProcessedDump(dump.getName());
         }
-        account_dump.shiftProcessedDumps();
     }
 
-    public static long importMessageDump(final JsonReader dumpReader) {
-        (new Thread(dumpReader)).start();
-        final AtomicLong newTweets = new AtomicLong(0);
-        Thread[] indexerThreads = new Thread[dumpReader.getConcurrency()];
-        for (int i = 0; i < dumpReader.getConcurrency(); i++) {
-            indexerThreads[i] = new Thread() {
-                public void run() {
-                    JsonFactory tweet;
-                    try {
-                        while ((tweet = dumpReader.take()) != JsonStreamReader.POISON_JSON_MAP) {
-                            try {
-                                Map<String, Object> json = tweet.getJson();
-                                @SuppressWarnings("unchecked") Map<String, Object> user = (Map<String, Object>) json.remove("user");
-                                if (user == null) continue;
-                                UserEntry u = new UserEntry(user);
-                                MessageEntry t = new MessageEntry(json);
-                                DAO.writeMessage(t, u, false, true, true);
-                                newTweets.incrementAndGet();
-                            } catch (IOException e) {
-                                e.printStackTrace();
-                            }
-                            if (LoklakServer.queuedIndexing.isBusy()) try {Thread.sleep(200);} catch (InterruptedException e) {}
-                        }
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
-                }
-            };
-            indexerThreads[i].start();
-        }
-        boolean running = true;
-        while (running) {
-            long startTime = System.currentTimeMillis();
-            long startCount = newTweets.get();
-            running = false;
-            for (int i = 0; i < dumpReader.getConcurrency(); i++) {
-                if (indexerThreads[i].isAlive()) running = true;
-            }
-            try {Thread.sleep(10000);} catch (InterruptedException e) {}
-            long runtime = System.currentTimeMillis() - startTime;
-            long count = newTweets.get() - startCount;
-            Log.getLog().info("imported " + newTweets.get() + " tweets at " + (count * 1000 / runtime) + " tweets per second");
-        }
-        try {DAO.users.bulkCacheFlush();} catch (IOException e) {}
-        try {DAO.messages.bulkCacheFlush();} catch (IOException e) {}
-        return newTweets.get();
-    }
-    
-    public static void importAccountDump(final JsonReader dumpReader) {
-        (new Thread(dumpReader)).start();
-        Thread[] indexerThreads = new Thread[dumpReader.getConcurrency()];
-        for (int i = 0; i < dumpReader.getConcurrency(); i++) {
-            indexerThreads[i] = new Thread() {
-                public void run() {
-                    JsonFactory accountEntry;
-                    try {
-                        while ((accountEntry = dumpReader.take()) != JsonStreamReader.POISON_JSON_MAP) {
-                            try {
-                                Map<String, Object> json = accountEntry.getJson();
-                                AccountEntry a = new AccountEntry(json);
-                                DAO.writeAccount(a, false);
-                            } catch (IOException e) {
-                                e.printStackTrace();
-                            }
-                        }
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
-                }
-            };
-            indexerThreads[i].start();
-        }
-        for (int i = 0; i < dumpReader.getConcurrency(); i++) {
-            try {indexerThreads[i].join();} catch (InterruptedException e) {}
-        }
-    }
-    
     /**
      * close all objects in this class
      */

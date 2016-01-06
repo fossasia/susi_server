@@ -84,12 +84,12 @@ public class JsonDataset {
         for (Column col: columns) this.index.put(col.key, new JsonFactoryIndex());
 
         // start reading of the JsonDump
-        final Collection<JsonReader> readers = indexDump.getOwnDumpReaders(true);
+        final Collection<File> dumps = indexDump.getOwnDumps();
 
         // for each reader one threqd is started which does Json parsing and indexing
-        if (readers != null) for (final JsonReader reader: readers) {
+        if (dumps != null) for (final File dump: dumps) {
+            final JsonReader reader = indexDump.getDumpReader(dump);
             DAO.log("loading " + reader.getName());
-            (new Thread(reader)).start();
             Thread[] indexerThreads = new Thread[concurrency];
             for (int i = 0; i < concurrency; i++) {
                 indexerThreads[i] = new Thread() {

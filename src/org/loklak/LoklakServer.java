@@ -97,6 +97,7 @@ public class LoklakServer {
     private static Server server = null;
     private static Caretaker caretaker = null;
     public  static QueuedIndexing queuedIndexing = null;
+    private static DumpImporter dumpImporter = null;
     
     public static Map<String, String> readConfig(Path data) throws IOException {
         File conf_dir = new File("conf");
@@ -297,6 +298,9 @@ public class LoklakServer {
         LoklakServer.caretaker.start();
         LoklakServer.queuedIndexing = new QueuedIndexing();
         LoklakServer.queuedIndexing.start();
+        LoklakServer.dumpImporter = new DumpImporter();
+        LoklakServer.dumpImporter.start();
+        
         
         // read upgrade interval
         Caretaker.upgradeTime = Caretaker.startupTime + DAO.getConfig("upgradeInterval", 86400000);
@@ -311,6 +315,7 @@ public class LoklakServer {
             public void run() {
                 try {
                     Log.getLog().info("catched main termination signal");
+                    LoklakServer.dumpImporter.shutdown();
                     LoklakServer.queuedIndexing.shutdown();
                     LoklakServer.caretaker.shutdown();
                     LoklakServer.server.stop();
