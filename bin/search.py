@@ -18,4 +18,4 @@ statuses = json.loads(fetchData).get("statuses")
 texts = [tweet.get("text") for tweet in statuses]
 
 for text in texts:
-	print "TEXT:",text
+	print text
