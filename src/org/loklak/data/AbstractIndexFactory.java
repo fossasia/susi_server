@@ -30,7 +30,7 @@ import org.elasticsearch.action.get.GetResponse;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.index.VersionType;
 import org.loklak.harvester.SourceType;
-import org.loklak.tools.Cache;
+import org.loklak.tools.CacheMap;
 
 /**
  * test calls:
@@ -44,13 +44,13 @@ public abstract class AbstractIndexFactory<Entry extends IndexEntry> implements 
     private final static int MAX_BULK_SIZE = 1500;
     
     protected final Client elasticsearch_client;
-    protected final Cache<String, Entry> cache;
+    protected final CacheMap<String, Entry> cache;
     protected final String index_name;
     
     public AbstractIndexFactory(final Client elasticsearch_client, final String index_name, final int cacheSize) {
         this.elasticsearch_client = elasticsearch_client;
         this.index_name = index_name;
-        this.cache = new Cache<>(cacheSize);
+        this.cache = new CacheMap<>(cacheSize);
     }
     
     public Entry read(String id) throws IOException {
@@ -126,7 +126,7 @@ public abstract class AbstractIndexFactory<Entry extends IndexEntry> implements 
     public int bulkCacheFlush() throws IOException {
         if (this.bulkCache.size() == 0) return 0;
         
-        BulkRequestBuilder bulkRequest = elasticsearch_client.prepareBulk();
+        BulkRequestBuilder bulkRequest = elasticsearch_client.prepareBulk().setRefresh(true);
         int count = 0;
         while (this.bulkCache.size() > 0) {
             BulkEntry be = this.bulkCache.poll();
@@ -141,6 +141,8 @@ public abstract class AbstractIndexFactory<Entry extends IndexEntry> implements 
         //System.out.println("writing bulk of " + count + " entries"); // debug
         BulkResponse bulkResponse = bulkRequest.get();
         if (bulkResponse.hasFailures()) throw new IOException(bulkResponse.buildFailureMessage());
+        // flush the translog cache
+        
         return count;
     }
     

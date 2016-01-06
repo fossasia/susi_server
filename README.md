@@ -17,37 +17,54 @@ If you like to be anonymous when searching things, want to archive tweets or mes
 - create your own tweet search portal or statistical evaluations
 - use Kibana to analyze large amounts of tweets for statistical data.
 
+## How do I install loklak: Download, Build, Run
 
-## How can I build loklak myself?
+At this time, loklak is not provided in compiled form, you easily build it yourself. It's not difficult and done in one minute! The source code is hosted at https://github.com/loklak/loklak_server, you can download it and run loklak with:
 
-- ant (just this, type "ant" - without quotes - and hit enter)
+    > git clone https://github.com/loklak/loklak_server.git
+    > cd loklak_server
+    > ant
+    > bin/start.sh
+
+After all server processes are running, loklak tries to open a browser page itself. If that does not happen, just open http://localhost:9000; if you made the installation on a headless or remote server, then replace 'localhost' with your server name.
+
+To stop loklak, run: (this will block until the server has actually terminated)
+
+    > bin/stop.sh
+
+A self-upgrading process is available which must be triggered by a shell command. Just run:
+
+    > bin/upgrade.sh
+
+### How do I install loklak with Docker?
+To install loklak with Docker please refer to the [loklak Docker installation readme](https://raw.githubusercontent.com/loklak/loklak_server/master/installation_docker.md).
 
 ## How do I configure loklak?
 
 The basis configuration file is in conf/config.properties. To customize these settings place a file 'customized_config.properties' to the path data/settings/
 
-*** How do I run loklak?
+## How do I run loklak?
 
 - build loklak (you need to do this only once, see above)
-- run bin/start.sh
-- open http://localhost:9000 in your browser
-- to shut down loklak, run bin/stop.sh
+- run `bin/start.sh`
+- open `http://localhost:9000` in your browser
+- to shut down loklak, run `bin/stop.sh`
 
 ## How do I analyze data aquired by loklak
 
 loklak stores data into an elasticsearch index. There is a front-end
 for the index available in elasticsearch-head. To install this, do:
-- sudo npm install -g grunt-cli
-- cd into the parent directly of loklak_server
-- git clone git://github.com/mobz/elasticsearch-head.git
-- cd elasticsearch-head
-- npm install
+- `sudo npm install -g grunt-cli`
+- `cd` into the parent directly of loklak_server
+- `git clone git://github.com/mobz/elasticsearch-head.git`
+- `cd elasticsearch-head`
+- `npm install`
 
 Run elasticsearch-head with:
-- grunt server
-..which opens the administration page at http://localhost:9100
+- `grunt server`
+..which opens the administration page at `http://localhost:9100`
 
-*** Where can I find more information and documentation
+## Where can I find more information and documentation?
 
 The application has built-in documentation web pages, you will see them when you opened the application web pages or you can simply open html/index.html or just use http://loklak.org as reference.
 
@@ -57,7 +74,7 @@ The application has built-in documentation web pages, you will see them when you
 LGPL 2.1
 
 
-*** There should be XXX and YYY can be enhanced!!
+## There should be XXX and YYY can be enhanced!!
 
 This project is considered a community work. There is no company behind loklak. The development crew consist of YOU also. I am very thankful for pull request. So if you discovered that something can be enhanced, please do it yourself and send me a pull request. If you find a bug, please try to fix it. If you report a bug to me I will possibly consider it but at the very end of a giant, always growing heap of work. The best chance for you to get things done is to try it yourself.
 
@@ -69,8 +86,8 @@ Please see above.
 ## Where can I download ready-built releases of loklak?
 
 Nowhere, you must clone the git repository of loklak and built it yourself. Thats easy, just do
-- git clone https://github.com/loklak/loklak_server.git
-- cd loklak
+- `git clone https://github.com/loklak/loklak_server.git`
+- `cd loklak`
 - then see above ("How do I run loklak")
 
 
@@ -80,4 +97,3 @@ Hey, this is the tool for that! Just put http://loklak.org/api/search.rss?q=%23l
 
 Have fun!
 @0rb1t3r
-2015-03-07 Frankfurt am Main

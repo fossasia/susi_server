@@ -11,3 +11,6 @@
 
 # python
 venv/*
+
+dist
+dist/loklak.jar

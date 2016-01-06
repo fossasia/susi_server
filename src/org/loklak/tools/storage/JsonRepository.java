@@ -196,44 +196,47 @@ public class JsonRepository {
         return dumps;
     }
 
-    private boolean shiftProcessedDump(String dumpName) {
+    /**
+     * move a file from the import directory to the imported directory.
+     * @param dumpName only the name, not the full path. The file must be in the import file path
+     * @return true if the file was shifted successfully, false if file did not exist or cannot be moved
+     */
+    public boolean shiftProcessedDump(String dumpName) {
         File f = new File(this.dump_dir_import, dumpName);
         if (!f.exists()) return false;
         File g = new File(this.dump_dir_imported, dumpName);
         if (g.exists()) g.delete();
         return f.renameTo(g);
     }
-
-    public void shiftProcessedDumps() {
-        for (File f: this.getImportDumps()) shiftProcessedDump(f.getName());
-    }
-
-    public Collection<JsonReader> getOwnDumpReaders(boolean startReader) throws IOException {
-        return getDumpReaders(this.getOwnDumps(), this.concurrency, startReader);
-    }
     
-    public Collection<JsonReader> getImportDumpReaders(boolean startReader) throws IOException {
-        return getDumpReaders(this.getImportDumps(), this.concurrency, startReader);
-    }
-
-    private Collection<JsonReader> getDumpReaders(Collection<File> dumps, int concurrency, boolean startReaders) throws IOException {
-        Collection<JsonReader> reader = new ArrayList<>(dumps == null || dumps.size() == 0 ? 0 : dumps.size());
-        if (dumps == null || dumps.size() == 0) return reader;
-        for (File dump: dumps) {
-            if (dump.getName().endsWith(".gz")) {
-                assert this.mode == COMPRESSED_MODE;
-                reader.add(new JsonStreamReader(new GZIPInputStream(new FileInputStream(dump)), dump.getAbsolutePath(), concurrency));
-            } else if (dump.getName().endsWith(".txt")) {
-                // no assert for the mode here because both mode would be valid
-                final JsonRandomAccessFile r = new JsonRandomAccessFile(dump, concurrency);
-                if (startReaders) {
-                    final Thread readerThread = new Thread(r);
-                    readerThread.start();
-                }
-                reader.add(r);
-            }
+    /**
+     * create a concurrent dump reader for the given file. The reader is either a JsonStreamReader if the
+     * dump file is gzipped or a JsonRandomAccessFile if the file is a plain txt file. Both reader types
+     * must be started as concurrent process which this method does on it's own. The reader process dies
+     * automatically when the file is read completely. When the reader thread dies, it pushed several 
+     * JsonReader.POISON_JSON_MAP objects to the reading queue, according to the concurrency defined with the
+     * initializer of this class.
+     * @param dump file
+     * @return a concurrent JsonReader with started Thread wrapper
+     * @throws IOException
+     */
+    public JsonReader getDumpReader(File dump) throws IOException {
+        if (dump == null || !dump.exists()) throw new IOException("dump file " + dump + " does not exist");
+        if (dump.getName().endsWith(".gz")) {
+            assert this.mode == COMPRESSED_MODE;
+            JsonStreamReader r = new JsonStreamReader(new GZIPInputStream(new FileInputStream(dump)), dump.getAbsolutePath(), this.concurrency);
+            final Thread readerThread = new Thread(r);
+            readerThread.start();
+            return r;
         }
-        return reader;
+        if (dump.getName().endsWith(".txt")) {
+            // no assert for the mode here because both mode would be valid
+            final JsonRandomAccessFile r = new JsonRandomAccessFile(dump, this.concurrency);
+            final Thread readerThread = new Thread(r);
+            readerThread.start();
+            return r;
+        }
+        throw new IOException("wrong file extension: must be txt or gz");
     }
     
 }

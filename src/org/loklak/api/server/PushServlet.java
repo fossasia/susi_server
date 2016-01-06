@@ -31,7 +31,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.elasticsearch.common.xcontent.XContentFactory;
-import org.loklak.Caretaker;
+import org.loklak.QueuedIndexing;
 import org.loklak.data.DAO;
 import org.loklak.data.ProviderType;
 import org.loklak.data.MessageEntry;
@@ -91,6 +91,7 @@ public class PushServlet extends HttpServlet {
         int recordCount = 0;//, newCount = 0, knownCount = 0;
         String query = null;
         long timeParsing = 0, timeTimelineStorage = 0, timeQueryStorage = 0;
+        int queuesize = -1;
         try {
             Map<String, Object> map = DAO.jsonMapper.readValue(data, DAO.jsonTypeRef);
 
@@ -125,7 +126,7 @@ public class PushServlet extends HttpServlet {
                     //boolean newtweet = DAO.writeMessage(t, u, true, true, true);
                     //if (newtweet) newCount++; else knownCount++;
                 }
-                Caretaker.storeTimelineScheduler(tl);
+                queuesize = QueuedIndexing.storeTimelineScheduler(tl);
                 //try {DAO.users.bulkCacheFlush();} catch (IOException e) {}
                 //try {DAO.messages.bulkCacheFlush();} catch (IOException e) {}
 
@@ -192,6 +193,7 @@ public class PushServlet extends HttpServlet {
                 //", known = " + knownCount +
                 ", from host hash " + remoteHash +
                 (query == null ? "" : " for query=" + query) +
+                ", queue size = " + queuesize +
                 ", timeParsing = " + (timeParsing - timeStart) +
                 ", timeTimelineStorage = " + (timeTimelineStorage - timeParsing) +
                 ", timeQueryStorage = " + (timeQueryStorage - timeTimelineStorage) +

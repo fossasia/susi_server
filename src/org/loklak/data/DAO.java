@@ -39,7 +39,6 @@ import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 import java.util.TreeMap;
-import java.util.concurrent.atomic.AtomicLong;
 
 import org.eclipse.jetty.util.ConcurrentHashSet;
 
@@ -51,6 +50,7 @@ import com.google.common.io.Files;
 
 import org.eclipse.jetty.util.log.Log;
 import org.elasticsearch.action.admin.cluster.health.ClusterHealthResponse;
+import org.elasticsearch.action.admin.cluster.health.ClusterHealthStatus;
 import org.elasticsearch.action.count.CountResponse;
 import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
@@ -132,7 +132,9 @@ public class DAO {
     public  static File conf_dir, bin_dir;
     private static File external_data, assets, dictionaries;
     private static Path message_dump_dir, account_dump_dir, import_profile_dump_dir;
-    private static JsonRepository message_dump, account_dump, import_profile_dump;
+    public static JsonRepository message_dump;
+    private static JsonRepository account_dump;
+    private static JsonRepository import_profile_dump;
     public  static JsonDataset user_dump, followers_dump, following_dump;
     public  static AccessTracker access;
     private static File schema_dir, conv_schema_dir;
@@ -156,6 +158,48 @@ public class DAO {
         bin_dir = new File("bin");
         File datadir = dataPath.toFile();
         try {
+
+            // use all config attributes with a key starting with "elasticsearch." to set elasticsearch settings
+            Settings.Builder settings = Settings.builder();
+            for (Map.Entry<String, String> entry: config.entrySet()) {
+                String key = entry.getKey();
+                if (key.startsWith("elasticsearch.")) settings.put(key.substring(14), entry.getValue());
+            }
+            // patch the home path
+            settings.put("path.home", datadir.getAbsolutePath());
+            settings.put("path.data", datadir.getAbsolutePath());
+            settings.build();
+            
+            // start elasticsearch
+            elasticsearch_node = NodeBuilder.nodeBuilder().settings(settings).client(false).node();
+            elasticsearch_client = elasticsearch_node.client(); // TransportClient.builder().settings(settings).build();
+
+            Path index_dir = dataPath.resolve("index");
+            if (index_dir.toFile().exists()) OS.protectPath(index_dir); // no other permissions to this path
+            
+            // define the index factories
+            messages = new MessageFactory(elasticsearch_client, MESSAGES_INDEX_NAME, CACHE_MAXSIZE);
+            users = new UserFactory(elasticsearch_client, USERS_INDEX_NAME, CACHE_MAXSIZE);
+            accounts = new AccountFactory(elasticsearch_client, ACCOUNTS_INDEX_NAME, CACHE_MAXSIZE);
+            queries = new QueryFactory(elasticsearch_client, QUERIES_INDEX_NAME, CACHE_MAXSIZE);
+            importProfiles = new ImportProfileFactory(elasticsearch_client, IMPORT_PROFILE_INDEX_NAME, CACHE_MAXSIZE);
+
+            // create indices
+            try {elasticsearch_client.admin().indices().prepareCreate(MESSAGES_INDEX_NAME).execute().actionGet();} catch (Throwable e) {};
+            try {elasticsearch_client.admin().indices().prepareCreate(USERS_INDEX_NAME).execute().actionGet();} catch (Throwable e) {};
+            try {elasticsearch_client.admin().indices().prepareCreate(ACCOUNTS_INDEX_NAME).execute().actionGet();} catch (Throwable e) {};
+            try {elasticsearch_client.admin().indices().prepareCreate(QUERIES_INDEX_NAME).execute().actionGet();} catch (Throwable e) {};
+            try {elasticsearch_client.admin().indices().prepareCreate(IMPORT_PROFILE_INDEX_NAME).execute().actionGet();} catch (Throwable e) {};
+
+            // set mapping (that shows how 'elastic' elasticsearch is: it's always good to define data types)
+            try {elasticsearch_client.admin().indices().preparePutMapping(MESSAGES_INDEX_NAME).setSource(messages.getMapping()).setType("_default_").execute().actionGet();} catch (Throwable e) {e.printStackTrace();};
+            try {elasticsearch_client.admin().indices().preparePutMapping(USERS_INDEX_NAME).setSource(users.getMapping()).setType("_default_").execute().actionGet();} catch (Throwable e) {e.printStackTrace();};
+            try {elasticsearch_client.admin().indices().preparePutMapping(ACCOUNTS_INDEX_NAME).setSource(accounts.getMapping()).setType("_default_").execute().actionGet();} catch (Throwable e) {e.printStackTrace();};
+            try {elasticsearch_client.admin().indices().preparePutMapping(QUERIES_INDEX_NAME).setSource(queries.getMapping()).setType("_default_").execute().actionGet();} catch (Throwable e) {e.printStackTrace();};
+            try {elasticsearch_client.admin().indices().preparePutMapping(IMPORT_PROFILE_INDEX_NAME).setSource(importProfiles.getMapping()).setType("_default_").execute().actionGet();} catch (Throwable e) {e.printStackTrace();};
+            
+            // elasticsearch will probably take some time until it is started up. We do some other stuff meanwhile..
+            
             // create and document the data dump dir
             assets = new File(datadir, "assets");
             external_data = new File(datadir, "external");
@@ -210,17 +254,6 @@ public class DAO {
             conv_schema_dir = new File("conf/conversion");
             schema_dir = new File("conf/schema");            
 
-            // use all config attributes with a key starting with "elasticsearch." to set elasticsearch settings
-            Settings.Builder settings = Settings.builder();
-            for (Map.Entry<String, String> entry: config.entrySet()) {
-                String key = entry.getKey();
-                if (key.startsWith("elasticsearch.")) settings.put(key.substring(14), entry.getValue());
-            }
-            // patch the home path
-            settings.put("path.home", datadir.getAbsolutePath());
-            settings.put("path.data", datadir.getAbsolutePath());
-            settings.build();
-
             // load dictionaries if they are embedded here
             // read the file allCountries.zip from http://download.geonames.org/export/dump/allCountries.zip
             //File allCountries = new File(dictionaries, "allCountries.zip");
@@ -235,35 +268,7 @@ public class DAO {
                 geoNames = null;
             }
             
-            // start elasticsearch
-            elasticsearch_node = NodeBuilder.nodeBuilder().settings(settings).client(false).node();
-            elasticsearch_client = elasticsearch_node.client(); // TransportClient.builder().settings(settings).build();
-
-            Path index_dir = dataPath.resolve("index");
-            if (index_dir.toFile().exists()) OS.protectPath(index_dir); // no other permissions to this path
-            
-            // define the index factories
-            messages = new MessageFactory(elasticsearch_client, MESSAGES_INDEX_NAME, CACHE_MAXSIZE);
-            users = new UserFactory(elasticsearch_client, USERS_INDEX_NAME, CACHE_MAXSIZE);
-            accounts = new AccountFactory(elasticsearch_client, ACCOUNTS_INDEX_NAME, CACHE_MAXSIZE);
-            queries = new QueryFactory(elasticsearch_client, QUERIES_INDEX_NAME, CACHE_MAXSIZE);
-            importProfiles = new ImportProfileFactory(elasticsearch_client, IMPORT_PROFILE_INDEX_NAME, CACHE_MAXSIZE);
-
-            // create indices
-            try {elasticsearch_client.admin().indices().prepareCreate(MESSAGES_INDEX_NAME).execute().actionGet();} catch (Throwable e) {};
-            try {elasticsearch_client.admin().indices().prepareCreate(USERS_INDEX_NAME).execute().actionGet();} catch (Throwable e) {};
-            try {elasticsearch_client.admin().indices().prepareCreate(ACCOUNTS_INDEX_NAME).execute().actionGet();} catch (Throwable e) {};
-            try {elasticsearch_client.admin().indices().prepareCreate(QUERIES_INDEX_NAME).execute().actionGet();} catch (Throwable e) {};
-            try {elasticsearch_client.admin().indices().prepareCreate(IMPORT_PROFILE_INDEX_NAME).execute().actionGet();} catch (Throwable e) {};
-
-            // set mapping (that shows how 'elastic' elasticsearch is: it's always good to define data types)
-            try {elasticsearch_client.admin().indices().preparePutMapping(MESSAGES_INDEX_NAME).setSource(messages.getMapping()).setType("_default_").execute().actionGet();} catch (Throwable e) {e.printStackTrace();};
-            try {elasticsearch_client.admin().indices().preparePutMapping(USERS_INDEX_NAME).setSource(users.getMapping()).setType("_default_").execute().actionGet();} catch (Throwable e) {e.printStackTrace();};
-            try {elasticsearch_client.admin().indices().preparePutMapping(ACCOUNTS_INDEX_NAME).setSource(accounts.getMapping()).setType("_default_").execute().actionGet();} catch (Throwable e) {e.printStackTrace();};
-            try {elasticsearch_client.admin().indices().preparePutMapping(QUERIES_INDEX_NAME).setSource(queries.getMapping()).setType("_default_").execute().actionGet();} catch (Throwable e) {e.printStackTrace();};
-            try {elasticsearch_client.admin().indices().preparePutMapping(IMPORT_PROFILE_INDEX_NAME).setSource(importProfiles.getMapping()).setType("_default_").execute().actionGet();} catch (Throwable e) {e.printStackTrace();};
-            
-            // finally wait for healty status of shards
+            // finally wait for healty status of elasticsearch shards
             ClusterHealthResponse health;
             do {
                 log("Waiting for elasticsearch yellow status");
@@ -326,6 +331,14 @@ public class DAO {
         
     }
     
+    private static boolean clusterReadyCache = false;
+    public static boolean clusterReady() {
+        if (clusterReadyCache) return true;
+        ClusterHealthResponse chr = elasticsearch_client.admin().cluster().prepareHealth().get();
+        clusterReadyCache = chr.getStatus() != ClusterHealthStatus.RED;
+        return clusterReadyCache;
+    }
+    
     public static File getAssetFile(String screen_name, String id_str, String file) {
         String letter0 = ("" + screen_name.charAt(0)).toLowerCase();
         String letter1 = ("" + screen_name.charAt(1)).toLowerCase();
@@ -337,102 +350,41 @@ public class DAO {
         return message_dump.getOwnDumps();
     }
 
-    public static int importMessageDumps() throws IOException {
-        int imported = 0;
-        Collection<JsonReader> message_readers = message_dump.getImportDumpReaders(true);
-        if (message_readers == null || message_readers.size() == 0) return 0;
-        for (JsonReader reader: message_readers) {
-            imported += importMessageDump(reader);
-        }
-        message_dump.shiftProcessedDumps();
-        return imported;
-    }
-    
     public static void importAccountDumps() throws IOException {
-        Collection<JsonReader> account_readers = account_dump.getImportDumpReaders(true);
-        if (account_readers == null || account_readers.size() == 0) return;
-        for (JsonReader reader: account_readers) {
-            importAccountDump(reader);
+        Collection<File> dumps = account_dump.getImportDumps();
+        if (dumps == null || dumps.size() == 0) return;
+        for (File dump: dumps) {
+            JsonReader reader = account_dump.getDumpReader(dump);
+            final JsonReader dumpReader = reader;
+            Thread[] indexerThreads = new Thread[dumpReader.getConcurrency()];
+            for (int i = 0; i < dumpReader.getConcurrency(); i++) {
+                indexerThreads[i] = new Thread() {
+                    public void run() {
+                        JsonFactory accountEntry;
+                        try {
+                            while ((accountEntry = dumpReader.take()) != JsonStreamReader.POISON_JSON_MAP) {
+                                try {
+                                    Map<String, Object> json = accountEntry.getJson();
+                                    AccountEntry a = new AccountEntry(json);
+                                    DAO.writeAccount(a, false);
+                                } catch (IOException e) {
+                                    e.printStackTrace();
+                                }
+                            }
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                };
+                indexerThreads[i].start();
+            }
+            for (int i = 0; i < dumpReader.getConcurrency(); i++) {
+                try {indexerThreads[i].join();} catch (InterruptedException e) {}
+            }
+            account_dump.shiftProcessedDump(dump.getName());
         }
-        account_dump.shiftProcessedDumps();
     }
 
-    public static long importMessageDump(final JsonReader dumpReader) {
-        (new Thread(dumpReader)).start();
-        final AtomicLong newTweets = new AtomicLong(0);
-        Thread[] indexerThreads = new Thread[dumpReader.getConcurrency()];
-        for (int i = 0; i < dumpReader.getConcurrency(); i++) {
-            indexerThreads[i] = new Thread() {
-                public void run() {
-                    JsonFactory tweet;
-                    try {
-                        while ((tweet = dumpReader.take()) != JsonStreamReader.POISON_JSON_MAP) {
-                            try {
-                                Map<String, Object> json = tweet.getJson();
-                                @SuppressWarnings("unchecked") Map<String, Object> user = (Map<String, Object>) json.remove("user");
-                                if (user == null) continue;
-                                UserEntry u = new UserEntry(user);
-                                MessageEntry t = new MessageEntry(json);
-                                DAO.writeMessage(t, u, false, true, true);
-                                newTweets.incrementAndGet();
-                            } catch (IOException e) {
-                                e.printStackTrace();
-                            }
-                        }
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
-                }
-            };
-            indexerThreads[i].start();
-        }
-        boolean running = true;
-        while (running) {
-            long startTime = System.currentTimeMillis();
-            long startCount = newTweets.get();
-            running = false;
-            for (int i = 0; i < dumpReader.getConcurrency(); i++) {
-                if (indexerThreads[i].isAlive()) running = true;
-            }
-            try {Thread.sleep(10000);} catch (InterruptedException e) {}
-            long runtime = System.currentTimeMillis() - startTime;
-            long count = newTweets.get() - startCount;
-            Log.getLog().info("imported " + newTweets.get() + " tweets at " + (count * 1000 / runtime) + " tweets per second");
-        }
-        try {DAO.users.bulkCacheFlush();} catch (IOException e) {}
-        try {DAO.messages.bulkCacheFlush();} catch (IOException e) {}
-        return newTweets.get();
-    }
-    
-    public static void importAccountDump(final JsonReader dumpReader) {
-        (new Thread(dumpReader)).start();
-        Thread[] indexerThreads = new Thread[dumpReader.getConcurrency()];
-        for (int i = 0; i < dumpReader.getConcurrency(); i++) {
-            indexerThreads[i] = new Thread() {
-                public void run() {
-                    JsonFactory accountEntry;
-                    try {
-                        while ((accountEntry = dumpReader.take()) != JsonStreamReader.POISON_JSON_MAP) {
-                            try {
-                                Map<String, Object> json = accountEntry.getJson();
-                                AccountEntry a = new AccountEntry(json);
-                                DAO.writeAccount(a, false);
-                            } catch (IOException e) {
-                                e.printStackTrace();
-                            }
-                        }
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
-                }
-            };
-            indexerThreads[i].start();
-        }
-        for (int i = 0; i < dumpReader.getConcurrency(); i++) {
-            try {indexerThreads[i].join();} catch (InterruptedException e) {}
-        }
-    }
-    
     /**
      * close all objects in this class
      */
@@ -521,7 +473,7 @@ public class DAO {
     public static Set<String> getConfigKeys() {
         return config.keySet();
     }
-    
+
     /**
      * Store a message together with a user into the search index
      * @param t a tweet
@@ -533,20 +485,32 @@ public class DAO {
             return false;
         }
         try {
-            // record tweet into text file
-            if (dump) {
-                if (messages.exists(t.getIdStr())) return false;
-                message_dump.write(t.toMap(u, false, Integer.MAX_VALUE, ""));
-            }
-            
-            // write user; even write the entry if it exist. We do not check this here and leave it to elasticsearch to check that
-            writeUser(u, t.getSourceType().name(), bulk);
+            // check if tweet exists in index
+            if (dump && messages.exists(t.getIdStr())) return false; // we omit writing this again
     
-            // record tweet into search index
-            messages.writeEntry(t.getIdStr(), t.getSourceType().name(), t, bulk);
+            synchronized (DAO.class) {
+                // check if user exists in index
+                if (overwriteUser) {
+                    UserEntry oldUser = users.read(u.getScreenName());
+                    if (oldUser == null || !oldUser.equals(u)) {
+                        writeUser(u, t.getSourceType().name(), bulk);
+                    }
+                } else {
+                    if (!users.exists(u.getScreenName())) {
+                        writeUser(u, t.getSourceType().name(), bulk);
+                    } 
+                }
+    
+                // record tweet into search index
+                messages.writeEntry(t.getIdStr(), t.getSourceType().name(), t, bulk);
+                 
+                // record tweet into text file
+                if (dump) message_dump.write(t.toMap(u, false, Integer.MAX_VALUE, ""));
+    
+             }
             
-            // teach the classifier
-            Classifier.learnPhrase(t.getText(Integer.MAX_VALUE, ""));
+             // teach the classifier
+             Classifier.learnPhrase(t.getText(Integer.MAX_VALUE, ""));
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -1110,7 +1074,7 @@ public class DAO {
             } catch (IOException e) {
                 DAO.log("searchOnOtherPeers: no IO to scraping target: " + e.getMessage());
                 // the remote peer seems to be unresponsive, remove it (temporary) from the remote peer list
-                peerLatency.put(peer, System.currentTimeMillis() - start);
+                peerLatency.put(peer, 3600000L);
                 frontPeerCache.remove(peer);
                 backendPeerCache.remove(peer);
                 remote.remove(pick);

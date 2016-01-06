@@ -1,25 +1,21 @@
 #!/usr/bin/env python
 """
-Requirements:
+    Requirements:
 
-requests (installation: pip install requests)
+    requests (installation: pip install requests)
 """
 
-import argparse
+from __future__ import print_function
 import requests
-import json
+import sys
 
-parser = argparse.ArgumentParser(description='Process the query input')
-parser.add_argument('query', type=str, help='Query to search for')
-args = parser.parse_args()
-query = args.query
-
-SEARCH_URL = 'http://127.0.0.1:9000/api/search.json'
-params = dict(q=query)
+if len(sys.argv) < 2:
+    print('Please pass in the query which you want to search for')
+    sys.exit(-1)
 
 
-resp = requests.get(url=SEARCH_URL, params=params)
-data = json.loads(resp.text)
-statuses = data['statuses']
-for status in statuses:
-    print status['text']
+query = sys.argv[-1]
+url = 'http://127.0.0.1:9000/api/search.json'
+data = requests.get(url, params={'query': query})
+for status in data.json()['statuses']:
+    print(status['text'])

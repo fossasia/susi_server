@@ -135,8 +135,8 @@ public class SearchServlet extends HttpServlet {
             if (backend_push) start_backend_thread = true; else {
                 // wait now for termination of scraper thread and local search
                 // to evaluate how many results are available
+                if (scraperThread != null) try {scraperThread.join(Math.max(10000, timeout - System.currentTimeMillis() + start));} catch (InterruptedException e) {}
                 if (localThread != null)  try {localThread.join(Math.max(100, timeout - System.currentTimeMillis() + start));} catch (InterruptedException e) {}
-                if (scraperThread != null) try {scraperThread.join(Math.max(100, timeout - System.currentTimeMillis() + start));} catch (InterruptedException e) {}
                 localThread = null; scraperThread = null;
                 if (tl.size() < count) start_backend_thread = true;
             }
@@ -154,10 +154,10 @@ public class SearchServlet extends HttpServlet {
             if (backendThread != null) backendThread.start();
             
             // wait for termination of all threads
+            if (scraperThread != null) try {scraperThread.join(Math.max(10000, timeout - System.currentTimeMillis() + start));} catch (InterruptedException e) {}
             if (localThread != null)  try {localThread.join(Math.max(100, timeout - System.currentTimeMillis() + start));} catch (InterruptedException e) {}
             if (backendThread != null) try {backendThread.join(Math.max(100, timeout - System.currentTimeMillis() + start));} catch (InterruptedException e) {}
-            if (scraperThread != null) try {scraperThread.join(Math.max(100, timeout - System.currentTimeMillis() + start));} catch (InterruptedException e) {}
-       
+            
         } else if ("twitter".equals(source) && tokens.raw.length() > 0) {
             final long start = System.currentTimeMillis();
             final String scraper_query = tokens.translate4scraper();

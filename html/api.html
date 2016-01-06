@@ -82,7 +82,7 @@
 				</ul>
 			</div>
 			<div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
-			
+
 <!-- html formatting here at zero column to align with the pre-text parts -->
 
 <h1 class="page-header">APIs</h1>
@@ -91,7 +91,7 @@
 	can be called with a POST request, all but
 	<code>push.json</code>
 	can be called with a PUT request.
-	
+
 <h3>Client Authentication</h3>
 <p>
 	You can access the API <b>without any authentication</b>. This
@@ -413,7 +413,7 @@ much more. Examples:
 	<li><a href="http://localhost:9000/api/suggest.json?until=now&selectby=retrieval_next&orderby=retrieval_next&order=desc">http://localhost:9000/api/suggest.json?until=now&selectby=retrieval_next&orderby=retrieval_next&order=desc</a></li>
 </ul><br/>
 <p>
-Delete operations are also possible for localhost clients by simply adding a <code>delete=true</code> to the call properties. This will produce a result set like without the delete property, but all data shown are deleted afterwards.        
+Delete operations are also possible for localhost clients by simply adding a <code>delete=true</code> to the call properties. This will produce a result set like without the delete property, but all data shown are deleted afterwards.
 </p>
 <ul class="request">
 	<li><div class="tabcol0">count</div>
@@ -492,7 +492,7 @@ This API is therefore also a tool to generate location name suggestions.</p>
     "messages_per_day" : 1,
     "score_retrieval" : 0,
     "score_suggest" : 0
-  } ] 
+  } ]
 }</pre>
 
 <!-- ===================================================================== -->
@@ -671,24 +671,24 @@ added fuzzyness for marker computation
 	<code>/api/proxy.json</code>
 </h2>
 <div class="alert alert-danger" role="alert">This API has access restrictions: only localhost clients are granted.</div>
-<p>Either a url or a screen_name can be passed to the api, or both. The 
-	proxy.json loads the url and returns the content. If a screen_name is given, 
-	the url content is stored in a cache related to the given screen_name. If only 
-	the screen_name and no url is given, the proxy returns the image of that user. 
+<p>Either a url or a screen_name can be passed to the api, or both. The
+	proxy.json loads the url and returns the content. If a screen_name is given,
+	the url content is stored in a cache related to the given screen_name. If only
+	the screen_name and no url is given, the proxy returns the image of that user.
 	If only a url is given, the proxy.json tries to identify the url as user-
 	related and loads the content.
 	To retrieve an image, there are three possible paths: <code>/api/proxy.gif</code>,
     <code>/api/proxy.png</code>, or <code>/api/proxy.jpg</code>.
-        
-	This API supports both GET and POST requests. The HTTP GET or POST request 
+
+	This API supports both GET and POST requests. The HTTP GET or POST request
 	has these attributes:</p>
 <ul class="request">
 	<li><div class="tabcol0">url</div>
-		<div class="tabcol1">&nbsp;=&nbsp;&lt;string&gt</div>//
-		the public url of the data source. This URL will be used to load the 
+		<div class="tabcol1">&nbsp;=&nbsp;&lt;string&gt;</div>//
+		the public url of the data source. This URL will be used to load the
 		content.</li>
 	<li><div class="tabcol0">screen_name</div>
-		<div class="tabcol1">&nbsp;=&nbsp;&lt;string&gt</div>// 
+		<div class="tabcol1">&nbsp;=&nbsp;&lt;string&gt;</div>//
 		importer screen name</li>
 </ul>
 
@@ -700,9 +700,9 @@ added fuzzyness for marker computation
 
 <p>Retrieval of the image</p>
    <ul class="request">
-   
+
 	<li><a href="http://localhost:9000/api/proxy.png?screen_name=loklak_app&url=https://pbs.twimg.com/profile_images/577512240640733184/fizL4YIn_bigger.png">http://localhost:9000/api/proxy.png?screen_name=loklak_app&url=https://pbs.twimg.com/profile_images/577512240640733184/fizL4YIn_bigger.png</a></li>
-	
+
 	</ul><br/>
 
 
@@ -1152,8 +1152,8 @@ added fuzzyness for marker computation
     "unfollowers_count" : 0,
     "followers_count" : 9
   }
-}</pre>   
-   
+}</pre>
+
 
 <!-- ===================================================================== -->
 
@@ -1163,6 +1163,7 @@ added fuzzyness for marker computation
 	<code>/api/asset</code>
 </h2>
 <div class="alert alert-warning" role="alert">This API has access limitations: localhost clients are granted more data than public clients.</div>
+
 <p>Storage of data must be done using POST http commands to servlet
 /api/asset and retrieval of data must be done using GET http commands to
 the same servlet /api/asset.</p>
@@ -1198,19 +1199,142 @@ loklak_messages under the name image0.png</p>
 	<code>/api/threaddump.txt</code>
 </h2>
 <div class="alert alert-warning" role="alert">This API has access limitations: localhost clients are granted more data than public clients.</div>
-<p>Usage-Description</p>
-<ul class="request">
-	<li><div class="tabcol0">key0</div>
-		<div class="tabcol1">&nbsp;=&nbsp;&lt;value0&gt;</div>// description0</li>
-	<li><div class="tabcol0">key1</div>
-		<div class="tabcol1">&nbsp;=&nbsp;&lt;value1&gt;</div>// description1</li>
-	<li><div class="tabcol0">key2</div>
-		<div class="tabcol1">&nbsp;=&nbsp;&lt;value2&gt;</div>// description2</li>
-</ul><br/>
-<p>Result-Description</p>
-<pre>{
-  json
-}
+<p>Simply download <a href="http://localhost:9000/api/threaddump.txt">http://localhost:9000/api/threaddump.txt</a> file. Either <strong>GET</strong> or <strong>POST</strong> request is valid for thread dump api. <strong>No parameter is needed in this api</strong>.</p>
+<p><a href="http://localhost:9000/api/threaddump.txt.">http://localhost:9000/api/threaddump.txt</a> contains the real-time information about loklak in JVM, including:</p>
+<ul>
+	<li>Memory usage</li>
+	<li>Total running time</li>
+	<li>Time to restart</li>
+	<li>Status of individual threads</li>
+	<li>Threads that have been terminated</li>
+</ul>
+<p>Thread dump can be used to track the memory use of loklak, and it helps developers to discover potential problems like memory leaks. There are six states that has been assigned to a thread, see further reading: <a href="https://docs.oracle.com/javase/7/docs/api/java/lang/Thread.State.html">Enum Thread.State</a></p>
+<p>At the end of the thread dump is a list of running thread. This list may indicate the load of the server.</p>
+<p>Here is some example of <a href="http://localhost:9000/api/threaddump.txt">threaddump.txt</a>(The following example has been delibrately cut to fit in the document):</p>
+<pre>
+	************* Start Thread Dump Thu Dec 31 07:51:47 CET 2015 *******************
+
+	Assigned   Memory = 9544663040
+	Used       Memory = 4937137296
+	Available  Memory = 4607525744
+	Runtime           = 16h 57m 16s
+	Time To Restart   = 7h 2m 43s
+
+
+	THREADS WITH STATES: BLOCKED
+
+
+	THREADS WITH STATES: RUNNABLE
+
+	Thread= elasticsearch[Tag][http_server_worker][T#3]{New I/O worker #37} daemon id=236 RUNNABLE
+	at sun.nio.ch.SelectorImpl.select(SelectorImpl.java:98)
+
+
+	Thread= pool-1-thread-5-acceptor-0@5927ff67-httpd:9000@785dd85d{HTTP/1.1}{0.0.0.0:9000}  id=278 RUNNABLE
+	at sun.nio.ch.ServerSocketChannelImpl.accept(ServerSocketChannelImpl.java:250)
+	at org.eclipse.jetty.server.ServerConnector.accept(ServerConnector.java:377)
+
+
+	Thread= Thread-12680  id=14172 RUNNABLE
+	at java.net.Socket.connect(Socket.java:579)
+	at org.loklak.api.server.SearchServlet$1.run(SearchServlet.java:113)
+
+
+	Thread= pool-1-thread-2-selector-ServerConnectorManager@3242d75a/1  id=275 RUNNABLE
+	at sun.nio.ch.SelectorImpl.select(SelectorImpl.java:102)
+
+
+	Thread= elasticsearch[Tag][transport_client_boss][T#1]{New I/O boss #17} daemon id=210 RUNNABLE
+	at sun.nio.ch.SelectorImpl.select(SelectorImpl.java:98)
+	at org.jboss.netty.channel.socket.nio.SelectorUtil.select(SelectorUtil.java:68)actNioSelector.run(AbstractNioSelector.java:212)
+	at java.lang.Thread.run(Thread.java:745)
+
+
+	Thread= elasticsearch[Tag][http_server_boss][T#1]{New I/O server boss #51} daemon id=250 RUNNABLE
+	at sun.nio.ch.SelectorImpl.select(SelectorImpl.java:102)
+	at org.jboss.netty.channel.socket.nio.NioServerBoss.select(NioServerBoss.java:163)
+	at java.lang.Thread.run(Thread.java:745)
+
+
+	Thread= pool-1-thread-10  id=290 RUNNABLE
+	at java.lang.Thread.getAllStackTraces(Thread.java:1640)
+	at org.eclipse.jetty.servlet.ServletHandler$CachedChain.doFilter(ServletHandler.java:1652)
+
+
+	THREADS WITH STATES: TIMED_WAITING
+
+	Thread= elasticsearch[Tag][transport_client_timer][T#1]{Hashed wheel timer #1} daemon id=209 TIMED_WAITING
+	at java.lang.Thread.sleep(Native Method)
+	at java.lang.Thread.run(Thread.java:745)
+
+
+	Thread= elasticsearch[Tag][[ttl_expire]] daemon id=192 TIMED_WAITING
+	at java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject.await(AbstractQueuedSynchronizer.java:2176)
+	at org.elasticsearch.indices.ttl.IndicesTTLService$Notifier.await(IndicesTTLService.java:341)
+	at org.elasticsearch.indices.ttl.IndicesTTLService$PurgerThread.run(IndicesTTLService.java:147)
+
+
+	Thread= elasticsearch[Tag][[timer]] daemon id=189 TIMED_WAITING
+	at java.lang.Thread.sleep(Native Method)
+	at org.elasticsearch.threadpool.ThreadPool$EstimatedTimeThread.run(ThreadPool.java:703)
+
+
+	Thread= elasticsearch[Tag][generic][T#4] daemon id=257 TIMED_WAITING
+	at java.lang.Thread.run(Thread.java:745)
+
+
+	Thread= Thread-180  id=188 TIMED_WAITING
+	at java.lang.Thread.sleep(Native Method)
+	at org.loklak.http.AccessTracker.run(AccessTracker.java:103)
+
+
+	Thread= main  id=1 TIMED_WAITING
+	at org.eclipse.jetty.server.Server.join(Server.java:560)
+	at org.loklak.LoklakServer.main(LoklakServer.java:324)
+
+
+
+	THREADS WITH STATES: WAITING
+
+	Thread= Thread-184  id=279 WAITING
+	at java.util.ArrayList.add(ArrayList.java:440)
+	at org.loklak.data.MessageEntry.extract(MessageEntry.java:556)
+	at org.loklak.Caretaker.run(Caretaker.java:96)
+
+
+	Thread= elasticsearch[Tag][search][T#12] daemon id=299 WAITING
+	at java.util.concurrent.LinkedTransferQueue.take(LinkedTransferQueue.java:1137)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:615)
+	at java.lang.Thread.run(Thread.java:745)
+
+
+	Thread= elasticsearch[Tag][listener][T#3] daemon id=259 WAITING
+	at java.lang.Thread.run(Thread.java:745)
+
+
+	Thread= Reference Handler daemon id=2 WAITING
+	at java.lang.ref.Reference$ReferenceHandler.run(Reference.java:133)
+
+
+	Thread= Finalizer daemon id=3 WAITING
+	at java.lang.ref.Finalizer$FinalizerThread.run(Finalizer.java:209)
+
+
+
+	THREADS WITH STATES: NEW
+
+
+	THREADS WITH STATES: TERMINATED
+
+
+	************* End Thread Dump Thu Dec 31 07:51:47 CET 2015 *******************
+
+	Thread list from ThreadMXBean, 165 threads:
+	Thread-12680
+	Keep-Alive-SocketCleaner
+	Finalizer
+	Reference Handler
+	main
 </pre>
 
 <!-- ===================================================================== -->

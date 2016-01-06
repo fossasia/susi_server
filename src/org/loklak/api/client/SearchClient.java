@@ -67,7 +67,7 @@ public class SearchClient {
             }
         } catch (Throwable e) {
             e.printStackTrace();
-            return tl;
+            throw new IOException(e.getMessage());
         }
         //System.out.println(parser.text());
         return tl;
