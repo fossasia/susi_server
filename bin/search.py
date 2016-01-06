@@ -14,7 +14,7 @@ parser.add_argument('query', type=str, help='Query to search for')
 args = parser.parse_args()
 query = args.query
 
-SEARCH_URL = 'http://loklak.org/api/search.json'
+SEARCH_URL = 'http://127.0.0.1:9000/api/search.json'
 params = dict(q=query)
 
 

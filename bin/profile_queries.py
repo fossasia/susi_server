@@ -9,7 +9,7 @@ except ImportError:
           'You can install it by running "pip install requests"')
     exit()
 
-API_BASE_URL = 'http://localhost:9000/api/'
+API_BASE_URL = 'http://127.0.0.1:9000/api/'
 
 # If user in bin directory set correct path to quires
 if os.getcwd().endswith('bin'):

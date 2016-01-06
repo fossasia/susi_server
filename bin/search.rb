@@ -7,7 +7,7 @@ if ARGV.length == 0
   exit
 end
 
-url = URI.parse('http://loklak.org/api/search.json?q=' + ARGV[0])
+url = URI.parse('http://127.0.0.1:9000/api/search.json?q=' + ARGV[0])
 req = Net::HTTP::Get.new(url.to_s)
 res = Net::HTTP.start(url.host, url.port) {|http|
   http.request(req)
