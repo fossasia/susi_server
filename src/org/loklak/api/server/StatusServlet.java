@@ -80,6 +80,21 @@ public class StatusServlet extends HttpServlet {
         // generate json
         XContentBuilder json = XContentFactory.jsonBuilder().prettyPrint().lfAtEnd();
         json.startObject();
+
+        Runtime runtime = Runtime.getRuntime();
+        json.field("system");
+        json.startObject();
+        json.field("assigned_memory", runtime.maxMemory());
+        json.field("used_memory", runtime.totalMemory() - runtime.freeMemory());
+        json.field("available_memory", runtime.maxMemory() - runtime.totalMemory() + runtime.freeMemory());
+        json.field("cores", runtime.availableProcessors());
+        json.field("threads", Thread.activeCount());
+        json.field("runtime", System.currentTimeMillis() - Caretaker.startupTime);
+        json.field("time_to_restart", Caretaker.upgradeTime - System.currentTimeMillis());
+        json.field("load_system_average", OS.getSystemLoadAverage());
+        json.field("load_system_cpu", OS.getSystemCpuLoad());
+        json.field("load_process_cpu", OS.getProcessCpuLoad());
+        json.endObject(); // of system
         
         json.field("index_sizes");
         json.startObject();
@@ -123,5 +138,6 @@ public class StatusServlet extends HttpServlet {
         sos.println();
         post.finalize();
     }
+
     
 }
