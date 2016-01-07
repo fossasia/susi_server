@@ -34,6 +34,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -759,6 +760,33 @@ public class DAO {
         }
     }
 
+    public static LinkedHashMap<String, Long> FullDateHistogram(int timezoneOffset) {
+        // prepare request
+        SearchRequestBuilder request = elasticsearch_client.prepareSearch(MESSAGES_INDEX_NAME)
+                .setSearchType(SearchType.QUERY_THEN_FETCH)
+                .setQuery(QueryBuilders.matchAllQuery())
+                .setFrom(0)
+                .setSize(0);
+        request.clearRescorers();
+        request.addAggregation(AggregationBuilders.dateHistogram("created_at").field("created_at").timeZone("UTC").minDocCount(1).interval(DateHistogramInterval.DAY));
+         
+        // get response
+        SearchResponse response = request.execute().actionGet();
+                
+        // evaluate date histogram:
+        InternalHistogram<InternalHistogram.Bucket> dateCounts = response.getAggregations().get("created_at");              
+        LinkedHashMap<String, Long> list = new LinkedHashMap<>();
+        for (InternalHistogram.Bucket bucket : dateCounts.getBuckets()) {
+            Calendar cal = Calendar.getInstance(DateParser.UTCtimeZone);
+            org.joda.time.DateTime k = (org.joda.time.DateTime) bucket.getKey();
+            cal.setTime(k.toDate());
+            cal.add(Calendar.MINUTE, -timezoneOffset);
+            long docCount = bucket.getDocCount();
+            list.put(DateParser.dayDateFormat.format(cal.getTime()), docCount);
+        }
+        return list;
+    }
+    
     /**
      * Search the local user cache using a elasticsearch query.
      * @param screen_name - the user id
