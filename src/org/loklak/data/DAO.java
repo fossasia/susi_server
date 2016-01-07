@@ -52,6 +52,9 @@ import com.google.common.io.Files;
 import org.eclipse.jetty.util.log.Log;
 import org.elasticsearch.action.admin.cluster.health.ClusterHealthResponse;
 import org.elasticsearch.action.admin.cluster.health.ClusterHealthStatus;
+import org.elasticsearch.action.admin.cluster.state.ClusterStateResponse;
+import org.elasticsearch.action.admin.cluster.stats.ClusterStatsResponse;
+import org.elasticsearch.action.admin.cluster.tasks.PendingClusterTasksResponse;
 import org.elasticsearch.action.count.CountResponse;
 import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
@@ -338,6 +341,20 @@ public class DAO {
         ClusterHealthResponse chr = elasticsearch_client.admin().cluster().prepareHealth().get();
         clusterReadyCache = chr.getStatus() != ClusterHealthStatus.RED;
         return clusterReadyCache;
+    }
+    
+    public static String pendingClusterTasks() {
+        PendingClusterTasksResponse r = elasticsearch_client.admin().cluster().preparePendingClusterTasks().get();
+        return r.prettyPrint();
+    }
+    
+    public static String clusterStats() {
+        ClusterStatsResponse r = elasticsearch_client.admin().cluster().prepareClusterStats().get();
+        return r.toString();
+    }
+
+    public static Map<String, String> nodeSettings() {
+        return elasticsearch_node.settings().getAsMap();
     }
     
     public static File getAssetFile(String screen_name, String id_str, String file) {

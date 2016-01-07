@@ -21,8 +21,12 @@ package org.loklak.api.server;
 
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
+import java.lang.management.OperatingSystemMXBean;
 import java.lang.management.ThreadInfo;
 import java.lang.management.ThreadMXBean;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -36,6 +40,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.loklak.Caretaker;
+import org.loklak.data.DAO;
 import org.loklak.http.RemoteAccess;
 import org.loklak.tools.CharacterCoding;
 import org.loklak.tools.UTF8;
@@ -46,8 +51,9 @@ public class ThreaddumpServlet extends HttpServlet {
 
     private static final String multiDumpFilter = ".*((java.net.DatagramSocket.receive)|(java.lang.Thread.getAllStackTraces)|(java.net.SocketInputStream.read)|(java.net.ServerSocket.accept)|(java.net.Socket.connect)).*";
     private static final Pattern multiDumpFilterPattern = Pattern.compile(multiDumpFilter);
-
-
+    private static ThreadMXBean threadBean = ManagementFactory.getThreadMXBean();
+    private static OperatingSystemMXBean osBean = ManagementFactory.getOperatingSystemMXBean();
+    
     @Override
     protected void doPost(final HttpServletRequest request, final HttpServletResponse response) throws ServletException, IOException {
         doGet(request, response);
@@ -64,19 +70,33 @@ public class ThreaddumpServlet extends HttpServlet {
         final Date dt = new Date();
         Runtime runtime = Runtime.getRuntime();
 
+        int keylen = 30;
         bufferappend(buffer, "************* Start Thread Dump " + dt + " *******************");
         bufferappend(buffer, "");
-        bufferappend(buffer, "Assigned   Memory = " + (runtime.maxMemory()));
-        bufferappend(buffer, "Used       Memory = " + (runtime.totalMemory() - runtime.freeMemory()));
-        bufferappend(buffer, "Available  Memory = " + (runtime.maxMemory() - runtime.totalMemory() + runtime.freeMemory()));
+        bufferappend(buffer, keylen, "Assigned   Memory", runtime.maxMemory());
+        bufferappend(buffer, keylen, "Used       Memory", runtime.totalMemory() - runtime.freeMemory());
+        bufferappend(buffer, keylen, "Available  Memory", runtime.maxMemory() - runtime.totalMemory() + runtime.freeMemory());
+        bufferappend(buffer, keylen, "Cores", runtime.availableProcessors());
+        bufferappend(buffer, keylen, "Active Thread Count", Thread.activeCount());
+        bufferappend(buffer, keylen, "Total Started Thread Count", threadBean.getTotalStartedThreadCount());
+        bufferappend(buffer, keylen, "Peak Thread Count", threadBean.getPeakThreadCount());
+        bufferappend(buffer, keylen, "System Load Average", osBean.getSystemLoadAverage());
         long runtimeseconds = (System.currentTimeMillis() - Caretaker.startupTime) / 1000;
         int runtimeminutes = (int) (runtimeseconds / 60); runtimeseconds = runtimeseconds % 60;
         int runtimehours = runtimeminutes / 60; runtimeminutes = runtimeminutes % 60;
-        bufferappend(buffer, "Runtime           = " + runtimehours + "h " + runtimeminutes + "m " + runtimeseconds + "s");
+        bufferappend(buffer, keylen, "Runtime", runtimehours + "h " + runtimeminutes + "m " + runtimeseconds + "s");
         long timetorestartseconds = (Caretaker.upgradeTime - System.currentTimeMillis()) / 1000;
         int timetorestartminutes = (int) (timetorestartseconds / 60); timetorestartseconds = timetorestartseconds % 60;
         int timetorestarthours = timetorestartminutes / 60; timetorestartminutes = timetorestartminutes % 60;
-        bufferappend(buffer, "Time To Restart   = " + timetorestarthours + "h " + timetorestartminutes + "m " + timetorestartseconds + "s");
+        bufferappend(buffer, keylen, "Time To Restart", timetorestarthours + "h " + timetorestartminutes + "m " + timetorestartseconds + "s");
+        // print system beans
+        for (Method method : osBean.getClass().getDeclaredMethods()) try {
+            method.setAccessible(true);
+            if (method.getName().startsWith("get") && Modifier.isPublic(method.getModifiers())) {
+                bufferappend(buffer, keylen, method.getName(), method.invoke(osBean));
+            }
+        } catch (Throwable e) {}
+        
         bufferappend(buffer, "");
         bufferappend(buffer, "");
 
@@ -101,17 +121,30 @@ public class ThreaddumpServlet extends HttpServlet {
             new ThreadDump(stackTraces, Thread.State.TERMINATED).appendStackTraces(buffer, Thread.State.TERMINATED);
         }
 
-        bufferappend(buffer, "************* End Thread Dump " + dt + " *******************");
-
-
-        bufferappend(buffer, "");
         ThreadMXBean threadbean = ManagementFactory.getThreadMXBean();
-        bufferappend(buffer, "Thread list from ThreadMXBean, " + threadbean.getThreadCount() + " threads:");
+        bufferappend(buffer, "");
+        bufferappend(buffer, "THREAD LIST FROM ThreadMXBean, " + threadbean.getThreadCount() + " threads:");
+        bufferappend(buffer, "");
         ThreadInfo[] threadinfo = threadbean.dumpAllThreads(true, true);
         for (ThreadInfo ti: threadinfo) {
             bufferappend(buffer, ti.getThreadName());
         }
 
+        bufferappend(buffer, "");
+        bufferappend(buffer, "ELASTICSEARCH ClUSTER STATS");
+        bufferappend(buffer, DAO.clusterStats());
+
+        bufferappend(buffer, "");
+        bufferappend(buffer, "ELASTICSEARCH PENDING ClUSTER TASKS");
+        bufferappend(buffer, DAO.pendingClusterTasks());
+        
+        if (post.isLocalhostAccess()) {
+            // this can reveal private data, so keep it on localhost access only
+            bufferappend(buffer, "");
+            bufferappend(buffer, "ELASTICSEARCH NODE SETTINGS");
+            bufferappend(buffer, DAO.nodeSettings().toString());
+        }
+        
         post.setResponse(response, "text/plain");
         response.getOutputStream().write(UTF8.getBytes(buffer.toString()));
         post.finalize();
@@ -176,7 +209,30 @@ public class ThreaddumpServlet extends HttpServlet {
         result.remove(max.getKey());
         return max;
     }
-
+    
+    private static void bufferappend(final StringBuilder buffer, int keylen, final String key, Object value) {
+        if (value instanceof Double)
+            bufferappend(buffer, keylen, key, ((Double) value).toString());
+        else if (value instanceof Number)
+            bufferappend(buffer, keylen, key, ((Number) value).longValue());
+        else
+            bufferappend(buffer, keylen, key, value.toString());
+    }
+    
+    private static final DecimalFormat cardinalFormatter = new DecimalFormat("###,###,###,###,###");
+    private static void bufferappend(final StringBuilder buffer, int keylen, final String key, long value) {
+        bufferappend(buffer, keylen, key, cardinalFormatter.format(value));
+    }
+    
+    private static void bufferappend(final StringBuilder buffer, int keylen, final String key, String value) {
+        String a = key;
+        while (a.length() < keylen) a += " ";
+        a += "=";
+        for (int i = value.length(); i < 20; i++) a += " ";
+        a += value;
+        bufferappend(buffer, a);
+    }
+    
     private static void bufferappend(final StringBuilder buffer, final String a) {
         buffer.append(a);
         buffer.append('\n');
@@ -204,7 +260,8 @@ public class ThreaddumpServlet extends HttpServlet {
                 String tracename = "";
                 if ((stateIn == null || stateIn.equals(thread.getState())) && stackTraceElements.length > 0) {
                     final StringBuilder sb = new StringBuilder(3000);
-                    final String threadtitle = tracename + "Thread= " + thread.getName() + " " + (thread.isDaemon()?"daemon":"") + " id=" + thread.getId() + " " + thread.getState().toString();
+                    final ThreadInfo info = threadBean.getThreadInfo(thread.getId());
+                    final String threadtitle = tracename + "Thread= " + thread.getName() + " " + (thread.isDaemon()?"daemon":"") + " id=" + thread.getId() + " " + thread.getState().toString() + (info.getLockOwnerId() >= 0 ? " lock owner =" + info.getLockOwnerId() : "");
                     String className;
                     boolean cutcore = true;
                     for (int i = 0; i < stackTraceElements.length; i++) {

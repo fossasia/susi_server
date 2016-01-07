@@ -32,6 +32,8 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.lang.management.ManagementFactory;
+import java.lang.management.OperatingSystemMXBean;
+import java.lang.reflect.Method;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.attribute.PosixFilePermission;
@@ -71,6 +73,9 @@ public final class OS {
     public  static final Map<String, String> macFSCreatorCache = new HashMap<String, String>();
 
     private final static Set<PosixFilePermission> securePerm = new HashSet<PosixFilePermission>();
+    
+    // system beans
+    private static OperatingSystemMXBean osBean = ManagementFactory.getOperatingSystemMXBean();
     
     // static initialization
     static {
@@ -259,4 +264,25 @@ public final class OS {
         return output;
     }
 
+    public static double getSystemLoadAverage() {
+        return osBean.getSystemLoadAverage();
+    }
+
+    public static double getSystemCpuLoad() {
+        return getOSBean("getSystemCpuLoad");
+    }
+    
+    public static double getProcessCpuLoad() {
+        return getOSBean("getProcessCpuLoad");
+    }
+    
+    private static double getOSBean(String name) {
+        try {
+            Method m = osBean.getClass().getMethod(name);
+            m.setAccessible(true);
+            Object o = m.invoke(osBean);
+            if (o instanceof Double) return ((Double) o).doubleValue();
+        } catch (Throwable e) {}
+        return 0.0d;
+    }
 }
