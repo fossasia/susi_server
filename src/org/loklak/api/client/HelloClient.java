@@ -23,9 +23,12 @@ import java.io.IOException;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+import org.eclipse.jetty.util.log.Log;
 import org.loklak.data.DAO;
 import org.loklak.http.ClientConnection;
 import org.loklak.tools.DateParser;
+import org.loklak.tools.UTF8;
+import org.loklak.tools.json.JSONObject;
 
 public class HelloClient {
 
@@ -71,9 +74,8 @@ public class HelloClient {
         // send data to peers
         for (String hoststub: hoststubs) {
             if (hoststub.endsWith("/")) hoststub = hoststub.substring(0, hoststub.length() - 1);
-            ClientConnection connection = null;
             try {
-                connection = new ClientConnection(hoststub + "/api/hello.json?port.http=" + httpport + "&port.https=" + httpsport +
+                String urlstring = hoststub + "/api/hello.json?port.http=" + httpport + "&port.https=" + httpsport +
                         "&peername=" + peername +
                         "&time=" + System.currentTimeMillis() +
                         "&timezoneOffset=" + timezoneOffset +
@@ -86,10 +88,13 @@ public class HelloClient {
                         "&firstDay=" + firstDay +
                         "&firstCount=" + firstCount +
                         "&lastDay=" + lastDay +
-                        "&lastCount=" + lastCount);
+                        "&lastCount=" + lastCount;
+                byte[] jsonb = ClientConnection.download(urlstring);
+                if (jsonb == null || jsonb.length == 0) throw new IOException("empty content from " + hoststub);
+                String jsons = UTF8.String(jsonb);
+                JSONObject json = new JSONObject(jsons);
+                Log.getLog().info("Hello response: " + json.toString());
             } catch (IOException e) {
-            } finally {
-                if (connection != null) connection.close();
             }
         }
     }

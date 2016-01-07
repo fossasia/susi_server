@@ -57,6 +57,8 @@ public class Caretaker extends Thread {
     public  final static long startupTime = System.currentTimeMillis();
     private final static long upgradeWait = DateParser.DAY_MILLIS; // 1 day
     public        static long upgradeTime = startupTime + upgradeWait;
+    private final static long helloPeriod = 600000; // one ping each 10 minutes
+    private       static long helloTime   = 0; // latest hello ping time
 
     private static BlockingQueue<Timeline> pushToBackendTimeline = new LinkedBlockingQueue<Timeline>();
     
@@ -73,10 +75,10 @@ public class Caretaker extends Thread {
     public void run() {
         // send a message to other peers that I am alive
         String[] remote = DAO.getConfig("backend", new String[0], ",");
-        HelloClient.propagate(remote);
         
         // work loop
         while (this.shallRun) try {
+            // check upgrate time
             if (System.currentTimeMillis() > upgradeTime) {
                 // increase the upgrade time to prevent that the peer runs amok (re-tries the attempt all the time) when upgrade fails for any reason
                 upgradeTime = upgradeTime + upgradeWait;
@@ -85,6 +87,12 @@ public class Caretaker extends Thread {
                 DAO.log("UPGRADE: starting an upgrade");
                 upgrade();
                 DAO.log("UPGRADE: started an upgrade");
+            }
+            
+            // check ping
+            if (System.currentTimeMillis() - helloPeriod > helloTime) {
+                HelloClient.propagate(remote);
+                helloTime = System.currentTimeMillis();
             }
             
             // clear caches
