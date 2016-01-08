@@ -151,6 +151,7 @@ public class DAO {
     private static ImportProfileFactory importProfiles;
     private static Map<String, String> config = new HashMap<>();
     public  static GeoNames geoNames;
+    public static Peers peers = new Peers();
     
     /**
      * initialize the DAO
