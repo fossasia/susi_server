@@ -71,3 +71,7 @@ cf ic login   (No credentials are necessary of you logged in to bluemix before
 ## Installing loklak on AWS with Docker
 
 Add step by step information here.
+
+## Installing loklak on Google Cloud with Docker
+
+Add step by step information here.
