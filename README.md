@@ -41,7 +41,7 @@ To install loklak with Docker please refer to the [loklak Docker installation re
 
 ## How do I configure loklak?
 
-The basis configuration file is in conf/config.properties. To customize these settings place a file 'customized_config.properties' to the path data/settings/
+The basis configuration file is in ```conf/config.properties```. To customize these settings place a file ```customized_config.properties``` to the path ```data/settings/```
 
 ## How do I run loklak?
 
