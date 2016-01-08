@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html ng-app="Twitter">
+  <head>
+    <meta charset="UTF-8">
+    <title>Tweet Search</title>
+    <link rel="stylesheet" href="css/main.css">
+    <script src="http://code.angularjs.org/angular-1.0.0rc4.min.js"></script>
+    <script src="http://code.angularjs.org/angular-resource-1.0.0rc4.min.js"></script>
+  </head>
+  <body>
+ <div  ng-controller="TwitterCtrl">
+  <form class="form-wrapper">
+  	<input type="text"  ng-model="searchTerm" placeholder="Search Tweet" id="search" required>
+	  <button type="submit" id="submit" ng-click="doSearch()" >Search</button>
+  </form>
+  <h3>Results</h3>
+  <div class="result-wrap">
+    <ul>
+      <li class="no-result" ng-hide="hideit">Kindly search using the form above.</li>
+      <li ng-repeat="tweet in twitterResult.statuses" ng-bind-html-unsafe="tweet.text"></li>
+    </ul>
+  </div>
+</div>
+   <script>
+angular.module('Twitter', ['ngResource']);
+function TwitterCtrl($scope, $resource) {
+    $scope.twitter = $resource('/api/:action',
+        {
+          action:'search.json', 
+          callback:'JSON_CALLBACK'
+        },
+        {
+          get:{
+            method:'JSONP'
+          }
+    });
+    $scope.hideit = false;
+    $scope.doSearch = function () {
+      if ($scope.hideit !== true) {
+        $scope.hideit = !$scope.hideit;
+      }
+      $scope.twitterResult = $scope.twitter.get({q:$scope.searchTerm});
+    };
+}
+</script> 
+  </body>
+</html>
