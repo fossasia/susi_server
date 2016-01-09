@@ -8,7 +8,7 @@ import requests
 import json
 import os
 
-SEARCH_URL = 'http://localhost:9000/api/search.json'
+SEARCH_URL = 'http://127.0.0.1:9000/api/search.json'
 _ALL_FILES_ = []
 
 for (d, f, filenames) in os.walk(os.path.join(os.getcwd(),

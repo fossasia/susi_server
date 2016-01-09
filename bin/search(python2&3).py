@@ -19,7 +19,7 @@ args = parser.parse_args()
 query = args.query
 
 # Crafts url
-SEARCH_URL = "http://loklak.org/api/search.json?q="
+SEARCH_URL = "http://127.0.0.1:9000/api/search.json?q="
 full_url = SEARCH_URL + query
 
 # Gets page

@@ -14,7 +14,7 @@ if ($amount_of_args != 1) {
 	exit;
 }
  
-my $url = "http://loklak.org/api/search.json?q=$ARGV[0]";
+my $url = "http://127.0.0.1:9000/api/search.json?q=$ARGV[0]";
 my $json = get( $url );
 die "Sorry! Could not open $url!" unless defined $json;
 

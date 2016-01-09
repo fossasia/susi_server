@@ -6,7 +6,7 @@ import requests
 def print_response_from_file(file_name, path):
 	current_file = open(path + file_name, 'r', encoding="utf8")
 	for line in current_file:
-		response = requests.get("http://localhost:9000/api/search.json?q=" +  line)
+		response = requests.get("http://127.0.0.1:9000/api/search.json?q=" +  line)
 		x = response.json()
 		try:
 			print(x['statuses'])

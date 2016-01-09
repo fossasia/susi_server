@@ -5,7 +5,7 @@ import json
 import sys
 
 searchTerm = sys.argv[1]
-query = "http://www.loklak.org/api/search.json?q={}".format(searchTerm)
+query = "http://127.0.0.1:9000/api/search.json?q={}".format(searchTerm)
 
 try:
 	fetchData = urllib.urlopen(query).read()
