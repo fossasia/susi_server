@@ -1,21 +1,22 @@
 #!/usr/bin/env python
-"""
-    Requirements:
 
-    requests (installation: pip install requests)
-"""
-
-from __future__ import print_function
-import requests
+import urllib
+import json
 import sys
 
-if len(sys.argv) < 2:
-    print('Please pass in the query which you want to search for')
-    sys.exit(-1)
+searchTerm = sys.argv[1]
+query = "http://www.loklak.org/api/search.json?q={}".format(searchTerm)
 
+try:
+	fetchData = urllib.urlopen(query).read()
+except Exception, e:
+	print "! Sorry, something went wrong:"
+	print "! Error: %s"%e
+	sys.exit(1)
 
-query = sys.argv[-1]
-url = 'http://127.0.0.1:9000/api/search.json'
-data = requests.get(url, params={'query': query})
-for status in data.json()['statuses']:
-    print(status['text'])
+statuses = json.loads(fetchData).get("statuses")
+texts = [tweet.get("text") for tweet in statuses]
+
+for text in texts:
+	print text
+
