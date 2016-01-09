@@ -1,4 +1,6 @@
-# Installing loklak on Bluemix with Docker
+# Installation of loklak with Docker
+
+## Installing loklak on Bluemix with Docker
 
 1. Install docker on your system
 
@@ -65,3 +67,11 @@ cf ic login   (No credentials are necessary of you logged in to bluemix before
    check at https://XXXX.mybluemix.net is working with your version of loklak
    ```
 15. Send your own bluemix loklak link to Mario in order to prove your done it
+
+## Installing loklak on AWS with Docker
+
+Add step by step information here.
+
+## Installing loklak on Google Cloud with Docker
+
+Add step by step information here.
