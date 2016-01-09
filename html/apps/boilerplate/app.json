@@ -1,0 +1,16 @@
+{
+  "@context":"http://schema.org",
+  "@type":"SoftwareApplication",
+  "name":"boilerplate",
+  "headline":"Boilerplate for loklak apps",
+  "alternativeHeadline":"the 'hello world' app that you want to copy-paste for your own app",
+  "applicationCategory":"Demo",
+  "applicationSubCategory":"Hello World",
+  "operatingSystem":"http://loklak.org",
+  "author":{
+    "@type":"Person",
+    "name":"Michael Christen",
+    "url":"http://yacy.net",
+    "sameAs":"https://github.com/orbiter"
+  }
+}
