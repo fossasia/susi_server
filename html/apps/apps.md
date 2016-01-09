@@ -5,21 +5,41 @@ These services do not have a graphical front-end. Supporters may develop and sub
 for loklak and send pull requests to add their front-ends to the loklak main release.
 These front-ends are called 'apps' and must be placed here.
 
-The rules to add an app are:
-- the pull request must contain files only in one single sub-path of the apps directory
-- the sub-path will be the application path for the app
-- the sub-path must contain at least two files
-  * a file named index.html for the front-most landing page of the app
-  * a file named app.json in json-ld format which describes the app
-  
-The app should make use of the json libraries in html/js but if it requires additional libraries
-they must be either linked directly or contained in the app path.
-The required app.json must be a schema.org object of type SoftwareApplication.
-See https://schema.org/SoftwareApplication for a complete documentation.
-The author must test if the app.json is valid using the tool provided in 
-https://developers.google.com/structured-data/testing-tool/
+## How to create a loklak app
 
+1. Prepare your development environment
+  - clone https://github.com/loklak/loklak_server
+  - run loklak yourself because all apps must use their own server
+
+2. Create your app
+  - make a subdirectory in your own ```loklak_server/html/apps/``` folder
+  - add at least two files into this folder, named ```index.html``` and ```app.json```
+  - all libraries, css files, javascript and fonts must be either already existent
+    in loklak or you must add this to your app path as well
+  - the file ```index.html``` is the landing page of your app.
+    Use ```/js/angular.min.js``` from the loklak root path for your application.
+    The app should make use of the json libraries in ```html/js```.
+    If applicable, make use of the bootstrap style from ```html/css```.
+  - the file ```app.json``` must be in json-ld format (see http://json-ld.org/)
+    and must contain the ```SoftwareApplication``` object from schema.org:
+    https://schema.org/SoftwareApplication -- just copy-paste an existing app.json from another app to start you own file
+
+3. Check quality of your app
+  - do a json-ld validation: use https://developers.google.com/structured-data/testing-tool/ to check your ```app.json```
+  - call http://localhost:9000/api/apps.json to see if your app.json is included in the app list
+  - check if all declarations in your ```app.json``` relate to your own app
+    (if you copy-pasted another ```app.json```, you may have forgotten to change some fields)
+  - check the style and behaviour of your app: don't deliver half-done code.
+  - open your ```index.html``` in different browser to check that your code is not browser-specific
+  - add a backlink in your app to ```/apps/``` to make it possible that users can browse from one app to all other apps
+
+4. Publish your app
+  - send a pull request to https://github.com/loklak/loklak_server
+  - all your files must be contained into one commit
+
+## How users will discover your app
 The loklak front-end will compute an aggregation of all those app.json descriptions and
 provide this in /api/apps.json as a list of the single app.json files.
-A front-end (another app) will provide an overview of the given apps in visual form
+A front-end (another app) will provide an overview of the given apps in visual form.
+This will be linked in the loklak front-end.
 
