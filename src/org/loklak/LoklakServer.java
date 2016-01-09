@@ -57,6 +57,7 @@ import org.eclipse.jetty.util.log.Log;
 import org.eclipse.jetty.util.thread.ExecutorThreadPool;
 import org.eclipse.jetty.webapp.WebAppContext;
 import org.loklak.api.server.AccessServlet;
+import org.loklak.api.server.AppsServlet;
 import org.loklak.api.server.AssetServlet;
 import org.loklak.api.server.CampaignServlet;
 import org.loklak.api.server.CrawlerServlet;
@@ -221,6 +222,7 @@ public class LoklakServer {
         servletHandler.addServlet(AccessServlet.class, "/api/access.json");
         servletHandler.addServlet(AccessServlet.class, "/api/access.html");
         servletHandler.addServlet(AccessServlet.class, "/api/access.txt");
+        servletHandler.addServlet(AppsServlet.class, "/api/apps.json");
         servletHandler.addServlet(HelloServlet.class, "/api/hello.json");
         servletHandler.addServlet(PeersServlet.class, "/api/peers.json");
         servletHandler.addServlet(CrawlerServlet.class, "/api/crawler.json");

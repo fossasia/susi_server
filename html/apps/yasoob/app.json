@@ -1,0 +1,17 @@
+{
+  "@context":"http://schema.org",
+  "@type":"SoftwareApplication",
+  "name":"yasoob",
+  "headline":"loklak search page",
+  "alternativeHeadline":"work from GCI task",
+  "applicationCategory":"Message Search",
+  "applicationSubCategory":"Text Retrieval",
+  "operatingSystem":"http://loklak.org",
+  "author":{
+    "@type":"Person",
+    "name":"M.Yasoob Ullah",
+    "email":"yasoob.khld@gmail.com",
+    "url":"http://yasoob.me",
+    "sameAs":"https://github.com/yasoob"
+  }
+}
