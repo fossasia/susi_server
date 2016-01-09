@@ -21,6 +21,8 @@
       <script src="js/html5shiv.min.js"></script>
       <script src="js/respond.min.js"></script>
     <![endif]-->
+    
+    <script src="js/angular.min.js"></script>
   </head>
 
   <body>
@@ -80,7 +82,7 @@
     <script>
     var app = angular.module('querybrowser', []);
     app.controller('queryCtrl', function($scope, $http) {
-        $http.get("http://loklak.org/api/suggest.json?count=20&order=desc&orderby=query_last")
+        $http.get("/api/suggest.json?count=20&order=desc&orderby=query_last")
         .then(function (response) {$scope.queries = response.data.queries;});
     });
     </script>
@@ -93,6 +95,5 @@
     <script src="js/docs.min.js"></script>
     <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
     <script src="js/ie10-viewport-bug-workaround.js"></script>
-    <script src="js/angular.min.js"></script>
   </body>
 </html>
