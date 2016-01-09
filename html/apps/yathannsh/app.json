@@ -1,0 +1,17 @@
+{
+  "@context":"http://schema.org",
+  "@type":"SoftwareApplication",
+  "name":"yathannsh",
+  "headline":"loklak search page",
+  "alternativeHeadline":"work from GCI task",
+  "applicationCategory":"Message Search",
+  "applicationSubCategory":"Text Retrieval",
+  "operatingSystem":"http://loklak.org",
+  "author":{
+    "@type":"Person",
+    "name":"Yathannsh Kulshrestha",
+    "email":"yathannsh@gmail.com",
+    "url":"http://yathannsh.com",
+    "sameAs":"https://github.com/yathannsh"
+  }
+}

@@ -52,7 +52,6 @@ import com.google.common.io.Files;
 import org.eclipse.jetty.util.log.Log;
 import org.elasticsearch.action.admin.cluster.health.ClusterHealthResponse;
 import org.elasticsearch.action.admin.cluster.health.ClusterHealthStatus;
-import org.elasticsearch.action.admin.cluster.state.ClusterStateResponse;
 import org.elasticsearch.action.admin.cluster.stats.ClusterStatsResponse;
 import org.elasticsearch.action.admin.cluster.tasks.PendingClusterTasksResponse;
 import org.elasticsearch.action.count.CountResponse;
@@ -133,7 +132,7 @@ public class DAO {
     private static final String IMPORT_PROFILE_INDEX_NAME = "import_profiles";
     public final static int CACHE_MAXSIZE = 10000;
     
-    public  static File conf_dir, bin_dir;
+    public  static File conf_dir, bin_dir, html_dir;
     private static File external_data, assets, dictionaries;
     private static Path message_dump_dir, account_dump_dir, import_profile_dump_dir;
     public static JsonRepository message_dump;
@@ -161,6 +160,7 @@ public class DAO {
         config = configMap;
         conf_dir = new File("conf");
         bin_dir = new File("bin");
+        html_dir = new File("html");
         File datadir = dataPath.toFile();
         try {
 
