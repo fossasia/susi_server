@@ -1066,10 +1066,13 @@ public class DAO {
      * @return a list of front peers. only the first one shall be used, but the other are fail-over peers
      */
     public static ArrayList<String> getFrontPeers() {
+        String[] remote = DAO.getConfig("frontpeers", new String[0], ",");
         ArrayList<String> testpeers = new ArrayList<>();
+        if (remote.length > 0) {
+            for (String peer: remote) testpeers.add(peer);
+            return testpeers;
+        }
         if (frontPeerCache.size() == 0) {
-            String[] remote = DAO.getConfig("frontpeers", new String[0], ",");
-            for (String peer: remote) frontPeerCache.add(peer);
             // add dynamically all peers that contacted myself
             for (Map<String, RemoteAccess> hmap: RemoteAccess.history.values()) {
                 for (Map.Entry<String, RemoteAccess> peer: hmap.entrySet()) {
