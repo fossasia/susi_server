@@ -412,6 +412,7 @@ much more. Examples:
 	<li><a href="http://localhost:9000/api/suggest.json?count=20&order=desc">http://localhost:9000/api/suggest.json?count=20&order=desc</a></li>
 	<li><a href="http://localhost:9000/api/suggest.json?count=20&orderby=messages_per_day&order=desc">http://localhost:9000/api/suggest.json?count=20&orderby=messages_per_day&order=desc</a></li>
 	<li><a href="http://localhost:9000/api/suggest.json?until=now&selectby=retrieval_next&orderby=retrieval_next&order=desc">http://localhost:9000/api/suggest.json?until=now&selectby=retrieval_next&orderby=retrieval_next&order=desc</a></li>
+	<li><a href="http://localhost:9000/api/suggest.json?q=&timezoneOffset=-60&count=90&source=query&order=asc&orderby=retrieval_next&until=now&selectby=retrieval_next&random=3&minified=true&port.http=9000&port.https=9443&peername=anonymous">http://localhost:9000/api/suggest.json?q=&timezoneOffset=-60&count=90&source=query&order=asc&orderby=retrieval_next&until=now&selectby=retrieval_next&random=3&minified=true&port.http=9000&port.https=9443&peername=anonymous</a></li>
 </ul><br/>
 <p>
 Delete operations are also possible for localhost clients by simply adding a <code>delete=true</code> to the call properties. This will produce a result set like without the delete property, but all data shown are deleted afterwards.
