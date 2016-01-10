@@ -292,7 +292,7 @@ public class DAO {
             log("classifier initialized!");
             
             // initialize query harvesting
-            if (getConfig("retrieval.queries.enabled", false)) {
+            //if (getConfig("retrieval.queries.enabled", false)) {
                 File harvestingPath = new File(datadir, "queries");
                 if (!harvestingPath.exists()) harvestingPath.mkdirs();
                 String[] list = harvestingPath.list();
@@ -329,7 +329,7 @@ public class DAO {
                     }
                 }
                 queries.bulkCacheFlush();
-            }
+            //}
         } catch (Throwable e) {
             e.printStackTrace();
         }
