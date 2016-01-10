@@ -25,7 +25,6 @@ import java.io.FileInputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Locale;
@@ -111,12 +110,17 @@ public class JsonRepository {
                         final File source = new File(path, d);
                         final File dest = new File(path, d + ".gz");
                         if (dest.exists()) dest.delete();
-                        try {
-                            DAO.log("gzip of " + source);
-                            Compression.gzip(source, dest, true);
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        }
+                        new Thread() {
+                            public void run() {
+                                try {
+                                    DAO.log("starting gzip of " + source);
+                                    Compression.gzip(source, dest, true);
+                                    DAO.log("finished gzip of " + source);
+                                } catch (IOException e) {
+                                    DAO.log("gzip of " + source + " failed: " + e.getMessage());
+                                }
+                            }
+                        }.start();
                     }
                 } else {
                     // all files should be uncompressed to enable random-access mode
