@@ -1,0 +1,16 @@
+{
+  "@context":"http://schema.org",
+  "@type":"SoftwareApplication",
+  "name":"querybrowser",
+  "headline":"Query Browser",
+  "alternativeHeadline":"list all queries made in loklak",
+  "applicationCategory":"Suggestion Search",
+  "applicationSubCategory":"Text Retrieval",
+  "operatingSystem":"http://loklak.org",
+  "author":{
+    "@type":"Person",
+    "name":"Anshuman Agarwal",
+    "url":"https://github.com/anshuman73",
+    "sameAs":"https://github.com/anshuman73"
+  }
+}
