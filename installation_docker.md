@@ -27,8 +27,8 @@
 7. Login to bluemix with 
    ```
    cf login
-   API endpoint: api.ng.bluemix.net
    ```
+   API endpoint is api.ng.bluemix.net
 8. Login to docker on bluemix with
 cf ic login   (No credentials are necessary of you logged in to bluemix before
 
