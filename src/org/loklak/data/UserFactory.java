@@ -50,7 +50,7 @@ public class UserFactory extends AbstractIndexFactory<UserEntry> implements Inde
                 .startObject()
                   .startObject("properties") // the id has been omitted on purpose, we identify the user by its screen_name (even if that is changeable..)
                     .startObject(field_screen_name).field("type","string").field("include_in_all","false").field("index","not_analyzed").endObject() // our identification of the object
-                    .startObject(field_name).field("type","string").field("include_in_all","false").endObject()
+                    .startObject(field_name).field("type","string").field("include_in_all","false").field("index","analyzed").endObject()
                     .startObject(field_user_id).field("type","string").field("include_in_all","false").field("index","not_analyzed").endObject() // stored as reference to twitter, not as identification in loklak
                     .startObject(field_appearance_first).field("type","date").field("format","dateOptionalTime").field("include_in_all","false").field("index","not_analyzed").endObject()
                     .startObject(field_appearance_latest).field("type","date").field("format","dateOptionalTime").field("include_in_all","false").field("index","not_analyzed").endObject()
