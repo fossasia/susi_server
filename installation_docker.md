@@ -74,4 +74,46 @@ Add step by step information here.
 
 ## Installing loklak on Google Cloud with Docker
 
-Add step by step information here.
+
+1.  Go to [Google Cloud Free Trial](https://cloud.google.com/free-trial/) and sign up. You will get 300 dollars credit for 3 month.
+
+
+2. Go to the console page: [Console](https://console.cloud.google.com/home)
+
+
+3. If you don’t have any project, it will pop up a page and guide you to start a project. Give a name to your project.
+
+
+4.  In the search bar above on console page, enter ```Compute Engine``` and click into Compute Engine. 
+
+
+5. If you do not activate billing for compute engine, click enable billing and choose your account to activate your Compute Engine.Your Google Compute Engine should be activated within a few minutes.
+
+
+6. Click to create a instance, in machine type, choose ```small(1 shared vCPU)```.
+ Choose whatever zone you like.
+ 
+ In Boot Disk, choose ```Ubuntu 14.04```, and the disk size should be larger than 40GB.
+On the bottom of the page, click ```Management, disk, networking, access & security options``` to show more options. Inside of this, click into networking and choose new static IP instead of ephemeral. Enter a name for your IP. Google will assign a IP for you.
+Click allow http and https traffic. Finally click create to create a instance. Wait a few minutes for creation to complete.
+
+
+7. Once creation finished, click ssh bottom to establish a web ssh connections.
+
+8. In the Web Console, enter:
+
+
+```
+sudo apt-get update
+sudo apt-get upgrade
+apt-get -y install docker.io
+sudo docker build https://github.com/loklak/loklak_server.git
+```
+
+Once finished, the last line will provide the image ID, like ```Successfully built 4e11208a7b34```. Copy or remember this id, we will need this id to tag the image.
+Tag your image by enter ```sudo docker tag YOUR_IMAGE_ID loklak```. In my case, we enter ```sudo docker tag 4e11208a7b34 loklak```
+   Run our server by enter:
+```
+sudo docker run -d -p 80:80 -p 443:443 loklak
+```
+Enter your assigned IP to browser to check if it is working.
