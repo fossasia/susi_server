@@ -70,7 +70,49 @@ cf ic login   (No credentials are necessary of you logged in to bluemix before
 
 ## Installing loklak on AWS with Docker
 
-Add step by step information here.
+1. Sign in to [AWS](https://aws.amazon.com)
+
+2. In the up-right corner, choose a area you want to set up the instance, e.g.: Singapore.
+
+3. In the console panel, choose EC2. In EC2 Control Panel, choose key pairs and create a new key pairs. It will automatically download the private key, and you should do ```chmod 400 YOUR_KEY_NAME``` to prevent other user to access your private key. After that, click Launch Instance.
+
+4. In Step 1: Choose an Amazon Machine Image, we choose ```Ubuntu Server 14.04 LTS (HVM), SSD Volume Type```.
+
+5. In Step 2: Choose an Instance Type, we choose ```t2.micro```
+
+6. Then we click ```Configure Instance Details```, do not create a instance yet.
+
+7. Under ```Auto-assign Public IP```, we choose ```Enable```
+
+8. Then we click ```Review and Launch```
+
+9. We modify the storage to ```30GiB``` instead of default ```8Gib```
+
+10. Click ```Next``` twice to go to ```Step 6: Configure Security Group```. Under this, we choose ```All TCP``` for type and source fro ```Anywhere```
+
+11. We are ready to launch, click ```Review and Launch```, if everything is correct, click ```Launch```. It will ask you to choose a key pairs, choose the one we just created.
+
+11. We go back to EC2 control panel again. Click instance on the left hand side. Then choose the instance you just created, and click connect button. It will you connect to your EC2 by giving you a example like:
+```
+ssh -i "loklak.pem" ubuntu@ec2-54-169-103-75.ap-southeast-1.compute.amazonaws.com
+```
+
+12. Once connected, we have to set up docker:
+```
+sudo apt-get update
+sudo apt-get -y upgrade
+sudo apt-get install linux-image-extra-`uname -r`
+sudo apt-key adv --keyserver hkp://pgp.mit.edu:80 --recv-keys 58118E89F3A912897C070ADBF76221572C52609D
+echo "deb https://apt.dockerproject.org/repo ubuntu-trusty main" | sudo tee /etc/apt/sources.list.d/docker.list
+sudo apt-get update
+sudo apt-get install docker-engine
+```
+
+13. Once docker is installed, we start our loklak-server by enter:
+```
+sudo docker pull mariobehling/loklak
+sudo docker run -d -p 80:80 -p 443:443 mariobehling/loklak:latest
+```
 
 ## Installing loklak on Google Cloud with Docker
 
