@@ -88,7 +88,9 @@ public class DumpImporter extends Thread {
                                     if (user == null) continue;
                                     UserEntry u = new UserEntry(user);
                                     MessageEntry t = new MessageEntry(json);
-                                    DAO.writeMessage(t, u, false, true, true);
+                                    // record user into search index
+                                    DAO.users.writeEntry(u.getScreenName(), t.getSourceType().name(), u, true);
+                                    DAO.messages.writeEntry(t.getIdStr(), t.getSourceType().name(), t, true);
                                     newTweets.incrementAndGet();
                                 } catch (IOException e) {
                                     e.printStackTrace();

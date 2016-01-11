@@ -41,16 +41,19 @@ public abstract class AbstractIndexFactory<Entry extends IndexEntry> implements 
 
 
     private final static VersionType update_version_type = VersionType.FORCE;
-    private final static int MAX_BULK_SIZE = 1500;
+    private final static int MAX_BULK_SIZE =  1500;
+    private final static int MAX_BULK_TIME = 10000;
     
     protected final Client elasticsearch_client;
     protected final CacheMap<String, Entry> cache;
     protected final String index_name;
+    private long lastBulkWrite;
     
     public AbstractIndexFactory(final Client elasticsearch_client, final String index_name, final int cacheSize) {
         this.elasticsearch_client = elasticsearch_client;
         this.index_name = index_name;
         this.cache = new CacheMap<>(cacheSize);
+        this.lastBulkWrite = System.currentTimeMillis();
     }
     
     public Entry read(String id) throws IOException {
@@ -98,7 +101,7 @@ public abstract class AbstractIndexFactory<Entry extends IndexEntry> implements 
             } catch (InterruptedException e) {
                 throw new IOException(e.getMessage());
             }
-            if (bulkCacheSize() >= MAX_BULK_SIZE) bulkCacheFlush(); // protect against OOM
+            if (bulkCacheSize() >= MAX_BULK_SIZE || this.lastBulkWrite + MAX_BULK_TIME < System.currentTimeMillis()) bulkCacheFlush(); // protect against OOM
         } else {
             bulkCacheFlush();
             this.cache.put(id, entry);
@@ -124,6 +127,7 @@ public abstract class AbstractIndexFactory<Entry extends IndexEntry> implements 
     }
 
     public int bulkCacheFlush() throws IOException {
+        this.lastBulkWrite = System.currentTimeMillis();
         if (this.bulkCache.size() == 0) return 0;
         
         BulkRequestBuilder bulkRequest = elasticsearch_client.prepareBulk().setRefresh(true);

@@ -512,11 +512,21 @@ public class DAO {
                 if (overwriteUser) {
                     UserEntry oldUser = users.read(u.getScreenName());
                     if (oldUser == null || !oldUser.equals(u)) {
-                        writeUser(u, t.getSourceType().name(), bulk);
+                        try {
+                            // record user into search index
+                            users.writeEntry(u.getScreenName(), t.getSourceType().name(), u, bulk);
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
                     }
                 } else {
                     if (!users.exists(u.getScreenName())) {
-                        writeUser(u, t.getSourceType().name(), bulk);
+                        try {
+                            // record user into search index
+                            users.writeEntry(u.getScreenName(), t.getSourceType().name(), u, bulk);
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
                     } 
                 }
     
@@ -530,23 +540,6 @@ public class DAO {
             
              // teach the classifier
              Classifier.learnPhrase(t.getText(Integer.MAX_VALUE, ""));
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return true;
-    }
-    
-    /**
-     * Store an user into the search index
-     * This method is synchronized to prevent concurrent IO caused by this call.
-     * @param a an account 
-     * @param u a user
-     * @return true if the record was stored because it did not exist, false if it was not stored because the record existed already
-     */
-    public static boolean writeUser(UserEntry u, String source_type, boolean bulk) {
-        try {
-            // record user into search index
-            users.writeEntry(u.getScreenName(), source_type, u, bulk);
         } catch (IOException e) {
             e.printStackTrace();
         }
