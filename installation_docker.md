@@ -97,10 +97,14 @@ cf ic login   (No credentials are necessary of you logged in to bluemix before
 ssh -i "loklak.pem" ubuntu@ec2-54-169-103-75.ap-southeast-1.compute.amazonaws.com
 ```
 
-12. Once connected, we have to set up docker:
+12. Once connected, we have to set up docker and add a 4G swapfile to prevent lack of memory:
 ```
 sudo apt-get update
 sudo apt-get -y upgrade
+sudo fallocate -l 4G /swapfile
+sudo chmod 600 /swapfile
+sudo mkswap /swapfile
+sudo swapon /swapfile
 sudo apt-get install linux-image-extra-`uname -r`
 sudo apt-key adv --keyserver hkp://pgp.mit.edu:80 --recv-keys 58118E89F3A912897C070ADBF76221572C52609D
 echo "deb https://apt.dockerproject.org/repo ubuntu-trusty main" | sudo tee /etc/apt/sources.list.d/docker.list
@@ -149,6 +153,10 @@ Click allow http and https traffic. Finally click create to create a instance. W
 sudo apt-get update
 sudo apt-get upgrade
 apt-get -y install docker.io
+sudo fallocate -l 4G /swapfile
+sudo chmod 600 /swapfile
+sudo mkswap /swapfile
+sudo swapon /swapfile
 sudo docker build https://github.com/loklak/loklak_server.git
 ```
 
