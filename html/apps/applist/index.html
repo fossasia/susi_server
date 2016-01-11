@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en" ng-app="appListApp">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Twitter Scraper">
+    <meta name="author" content="Michael Peter Christen">
+
+    <title>loklak: Distributed Tweet Search Server</title>
+
+    <link href="../../css/bootstrap.min.css" rel="stylesheet">
+    <link href="../../css/loklak.css" rel="stylesheet">
+
+    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+      <script src="../../js/html5shiv.min.js"></script>
+      <script src="../../js/respond.min.js"></script>
+    <![endif]-->
+
+    <script src="../../js/angular.min.js"></script>
+    <script src="app_list.js"></script>
+  </head>
+
+  <body>
+    <div ng-controller="app_list">
+      <h1>Loklak Apps</h1>
+      <li class="list-group" ng-repeat="app in apps track by $index" style="display: inline">
+        <ul class="list-group-item">
+          <h4><a href='/apps/{{ app.name }}'>{{ app.headline }}</a></p>
+          <p>{{ app.alternativeHeadline }}</p>
+          Author: <a href='{{ app.author.url }}'>{{ app.author.name }}</a>
+        </ul>
+      </li>
+    </div>
+
+    <script src="../../js/jquery.min.js"></script>
+    <script src="../../js/bootstrap.min.js"></script
+    <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
+    <script src="../../js/ie10-viewport-bug-workaround.js"></script>
+  </body>
+</html>
