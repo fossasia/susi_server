@@ -40,6 +40,8 @@ public interface IndexFactory<Entry extends IndexEntry> {
 
     public boolean exists(String id);
     
+    public boolean existsCache(String id);
+    
     public boolean delete(String id, SourceType sourceType);
     
     public Map<String, Object> readMap(String id);

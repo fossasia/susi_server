@@ -39,8 +39,8 @@ public class AccountFactory extends AbstractIndexFactory<AccountEntry> implement
         apps;
     }
     
-    public AccountFactory(final Client elasticsearch_client, final String index_name, final int cacheSize) {
-        super(elasticsearch_client, index_name, cacheSize);
+    public AccountFactory(final Client elasticsearch_client, final String index_name, final int cacheSize, final int existSize) {
+        super(elasticsearch_client, index_name, cacheSize, existSize);
     }
 
     @Override

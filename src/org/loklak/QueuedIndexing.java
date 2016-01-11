@@ -26,16 +26,13 @@ import org.eclipse.jetty.util.log.Log;
 import org.loklak.data.DAO;
 import org.loklak.data.MessageEntry;
 import org.loklak.data.Timeline;
-import org.loklak.tools.CacheSet;
 
 public class QueuedIndexing extends Thread {
 
     private boolean shallRun = true, isBusy = false;
     private static BlockingQueue<Timeline> receivedFromPushTimeline = new ArrayBlockingQueue<Timeline>(1000);
-    private CacheSet<String> existCache;
     
     public QueuedIndexing() {
-        this.existCache = new CacheSet<>(1000000);
     }
     
     /**
@@ -71,11 +68,10 @@ public class QueuedIndexing extends Thread {
             assert tl != null; // because we tested in the beginning of the loop that it is not empty
             tlloop: for (MessageEntry me: tl) {
                 boolean stored = false;
-                if (this.existCache.contains(me.getIdStr())) {
+                if (DAO.messages.existsCache(me.getIdStr())) {
                     knownMessagesCache++;
                     continue tlloop;
                 }
-                this.existCache.add(me.getIdStr());
                 me.enrich(); // we enrich here again because the remote peer may have done this with an outdated version or not at all
                 stored = DAO.writeMessage(me, tl.getUser(me), true, true, true);
                 if (stored) newMessages++; else knownMessagesIndex++;

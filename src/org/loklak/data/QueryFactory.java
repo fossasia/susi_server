@@ -29,8 +29,8 @@ import org.loklak.tools.json.JSONObject;
 
 public class QueryFactory extends AbstractIndexFactory<QueryEntry> implements IndexFactory<QueryEntry> {
 
-    public QueryFactory(final Client elasticsearch_client, final String index_name, final int cacheSize) {
-        super(elasticsearch_client, index_name, cacheSize);
+    public QueryFactory(final Client elasticsearch_client, final String index_name, final int cacheSize, final int existSize) {
+        super(elasticsearch_client, index_name, cacheSize, existSize);
     }
 
     @Override

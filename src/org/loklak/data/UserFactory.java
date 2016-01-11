@@ -39,8 +39,8 @@ public class UserFactory extends AbstractIndexFactory<UserEntry> implements Inde
     public final static String field_appearance_latest = "appearance_latest";
     
     
-    public UserFactory(final Client elasticsearch_client, final String index_name, final int cacheSize) {
-        super(elasticsearch_client, index_name, cacheSize);
+    public UserFactory(final Client elasticsearch_client, final String index_name, final int cacheSize, final int existSize) {
+        super(elasticsearch_client, index_name, cacheSize, existSize);
     }
 
     @Override

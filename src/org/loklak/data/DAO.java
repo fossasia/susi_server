@@ -130,7 +130,8 @@ public class DAO {
     public final static String USERS_INDEX_NAME = "users";
     public final static String ACCOUNTS_INDEX_NAME = "accounts";
     private static final String IMPORT_PROFILE_INDEX_NAME = "import_profiles";
-    public final static int CACHE_MAXSIZE = 10000;
+    public final static int CACHE_MAXSIZE =   10000;
+    public final static int EXIST_MAXSIZE = 1000000;
     
     public  static File conf_dir, bin_dir, html_dir;
     private static File external_data, assets, dictionaries;
@@ -183,11 +184,11 @@ public class DAO {
             if (index_dir.toFile().exists()) OS.protectPath(index_dir); // no other permissions to this path
             
             // define the index factories
-            messages = new MessageFactory(elasticsearch_client, MESSAGES_INDEX_NAME, CACHE_MAXSIZE);
-            users = new UserFactory(elasticsearch_client, USERS_INDEX_NAME, CACHE_MAXSIZE);
-            accounts = new AccountFactory(elasticsearch_client, ACCOUNTS_INDEX_NAME, CACHE_MAXSIZE);
-            queries = new QueryFactory(elasticsearch_client, QUERIES_INDEX_NAME, CACHE_MAXSIZE);
-            importProfiles = new ImportProfileFactory(elasticsearch_client, IMPORT_PROFILE_INDEX_NAME, CACHE_MAXSIZE);
+            messages = new MessageFactory(elasticsearch_client, MESSAGES_INDEX_NAME, CACHE_MAXSIZE, EXIST_MAXSIZE);
+            users = new UserFactory(elasticsearch_client, USERS_INDEX_NAME, CACHE_MAXSIZE, EXIST_MAXSIZE);
+            accounts = new AccountFactory(elasticsearch_client, ACCOUNTS_INDEX_NAME, CACHE_MAXSIZE, EXIST_MAXSIZE);
+            queries = new QueryFactory(elasticsearch_client, QUERIES_INDEX_NAME, CACHE_MAXSIZE, EXIST_MAXSIZE);
+            importProfiles = new ImportProfileFactory(elasticsearch_client, IMPORT_PROFILE_INDEX_NAME, CACHE_MAXSIZE, EXIST_MAXSIZE);
 
             // create indices
             try {elasticsearch_client.admin().indices().prepareCreate(MESSAGES_INDEX_NAME).execute().actionGet();} catch (Throwable e) {};
@@ -512,21 +513,13 @@ public class DAO {
                 if (overwriteUser) {
                     UserEntry oldUser = users.read(u.getScreenName());
                     if (oldUser == null || !oldUser.equals(u)) {
-                        try {
-                            // record user into search index
-                            users.writeEntry(u.getScreenName(), t.getSourceType().name(), u, bulk);
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        }
+                        // record user into search index
+                        users.writeEntry(u.getScreenName(), t.getSourceType().name(), u, bulk);
                     }
                 } else {
                     if (!users.exists(u.getScreenName())) {
-                        try {
-                            // record user into search index
-                            users.writeEntry(u.getScreenName(), t.getSourceType().name(), u, bulk);
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        }
+                        // record user into search index
+                        users.writeEntry(u.getScreenName(), t.getSourceType().name(), u, bulk);
                     } 
                 }
     
