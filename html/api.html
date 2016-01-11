@@ -88,7 +88,7 @@
 
 <h1 class="page-header">APIs</h1>
 <p>
-	This is the loklak API running on a HTTP protocol. Every servlet
+	This is the loklak API running on an HTTP protocol. Every servlet
 	can be called with a POST request, all but
 	<code>push.json</code>
 	can be called with a PUT request.
@@ -101,22 +101,22 @@
 	be called from localhost to protect user data submitted to the
 	server. There are three classes for access rights:
 	<ul class="list-group">
-    <li class="list-group-item list-group-item-success">open: access without any restrictions for all clients from any ip</li>
+    <li class="list-group-item list-group-item-success">open: access without any restrictions for all clients from any IP</li>
     <li class="list-group-item list-group-item-warning">limited: localhost clients are granted more data than public clients</li>
-    <li class="list-group-item list-group-item-danger">restriced: only localhost clients are granted access</li>
+    <li class="list-group-item list-group-item-danger">restricted: only localhost clients are granted access</li>
     </ul>
 </p>
 <h3>Cross-Origin Resource Sharing</h3>
 <p>
 	Most servlets can be called with a <code>callback=&lt;function-name&gt;</code>
 	property to call a jsonp result format. This is sufficient to allow a
-	cross-origin access to the API. Servlets which do not provide <code>json</code>
+	cross-origin access to the API. Servlets which do not provide <code>json</code>S
 	content (i.e. all <code>/vis/</code> servlets) implement CORS headers to
 	enable embedding of their content (applies mostly to images).
 </p>
 <h3>Configuration Dependencies</h3>
 <p>
-    Some servlets read and provide configuation data from <code>data/settings/customized_config.properties</code>.
+    Some servlets read and provide configuration data from <code>data/settings/customized_config.properties</code>.
 	To enable such services please edit that file and add your custom values.
 	Example: these values are needed by <a href="https://github.com/loklak/loklak_webclient">loklak_webclient</a>.
 </p>
@@ -129,7 +129,7 @@
 
 <p>
     Properties prefixed with <code>client.</code> are exposed at the <a href="#settings">/api/settings.json</a> API to clients outside.
-    Some outside services may share authorization values for OAuth-protecte services
+    Some outside services may share authorization values for OAuth-protected services
     which are also used inside of <code>loklak_server</code>.
     Some services (like <a href="#account">/api/account.json</a>) also need access tokens, which shall never be exposed. You should configure the
     following attributes:
@@ -150,7 +150,7 @@
 </h2>
 <div class="alert alert-success" role="alert">This API is open and can be accessed without any restrictions!</div>
 <p>The status servlet shows the size of the internal
-	elasticsearch search index for messages and users. Furthermore the
+	Elasticsearch search index for messages and users. Furthermore, the
 	servlet reflects the current browser clients settings in the
 	client_info.</p>
 
@@ -182,10 +182,10 @@
 </h2>
 <div class="alert alert-success" role="alert">This API is open and can be accessed without any restrictions!</div>
 <p>
-	Get a search result. There are two formats available: json and rss.
-	To get rss data (which is opensearch-compliant) use the path
+	Get a search result. There are two formats available: JSON and RSS.
+	To get RSS data (which is OpenSearch-compliant) use the path
 	<code>/api/search.rss</code>
-	. The json return format is a subset of the Twitter API search
+	. The JSON return format is a subset of the Twitter API search
 	result but has also some additional attributes. Request properties
 	are:
 </p>
@@ -198,7 +198,7 @@
 	following term tokens:</p>
 <ul class="request">
 	<li><div class="tabcol0">term1 term2</div>:&nbsp;term1 and
-		term2 shall appear in the tweet text</li>
+		term2 shall appear in the Tweet text</li>
 	<li><div class="tabcol0">@user</div>:&nbsp;the user must be
 		mentioned in the message</li>
 	<li><div class="tabcol0">from:user</div>:&nbsp;only messages
@@ -293,7 +293,7 @@
 	<li><div class="tabcol0">hashtags</div>&nbsp;:&nbsp;all
 		hashtags appearing in the message, without the leading '#'</li>
 </ul><br/>
-<p>To identify the source of the tweet, the tweet system and the
+<p>To identify the source of the Tweet, the Tweet system and the
 	harvesting source is mentioned:</p>
 <ul class="request">
 	<li><div class="tabcol0">source_type</div>&nbsp;:&nbsp;The
@@ -347,7 +347,7 @@
 <p>A special field is the "created_at" field which will create a
 	date histogram if listed in the GET-attribute 'fields'. The date
 	histogram resolution depends on the time frame as given in the
-	query modifer with the 'since' and 'until' time limits: minutes if
+	query modifier with the 'since' and 'until' time limits: minutes if
 	the time frame is below three hours, hours if the time frame is
 	below seven days and days otherwise. Example:
 <ul class="request">
@@ -403,7 +403,7 @@ A special search term is only allowed for localhost access: the empty search ter
 This will list all queries so far according to the given result order.
 It is possible to order by
 first query time, latest query time, number of times a user submitted a
-query, number of tweets per day estimated by the latest query result and
+query, number of Tweets per day estimated by the latest query result and
 much more. Examples:
 </p>
 <ul class="request">
@@ -506,7 +506,7 @@ This API is therefore also a tool to generate location name suggestions.</p>
 </h2>
 <div class="alert alert-warning" role="alert">This API has access limitations: localhost clients are granted more data than public clients.</div>
 <p>With the crawler servlet it is possible to retrieve mass-data
-	from the search back-end, including the twitter scraper. The
+	from the search back-end, including the Twitter scraper. The
 	crawler loads search results with a given set of query terms,
 	extracts all the hashtags and user names from the result list and
 	searches with those words again. Request properties are:</p>
@@ -556,7 +556,7 @@ This API is therefore also a tool to generate location name suggestions.</p>
 <p>The hello servlet is part of the loklak peer-to-peer bootstrap process and shall be used to announce that a
 new client has been started up. The hello request is done automatically after a loklak startup against the loklak backend
 as configured in the settings in field <code>backend</code>. The back-end server then does not
-return any data, just a 'ok' string object.
+return any data, just an 'ok' string object.
 </p>
 <ul class="request">
 	<li><div class="tabcol0">callback</div>
@@ -569,7 +569,7 @@ return any data, just a 'ok' string object.
 <p><code>loklak</code> does not collect IP addresses on API interfaces where user data
 is collected. However, to make a peer-to-peer system possible, the collection on APIs
 where no user data is submitted, is necessary. The most simple API where no data is submitted
-at all would be most appropriate for the IP collection. Thats the cause that this API exists,
+at all would be most appropriate for the IP collection. That is why this API exists,
 because it does not take any request option and it does not deliver any specific data.
 </p>
 <p>IPs, collected by this method is retrievable with the <code>peers.json</code> API.
@@ -591,19 +591,14 @@ Additionally to th
 
 added geocoding servlet: you can geocode place names into locations with
 this. To render markers, use the 'mark' location (they have an applied
-fuzzyness). location coordinates are given as [lon,lat]
+fuzziness). location coordinates are given as [lon,lat]
 Example usage:
 http://localhost:9000/api/geocode.json?data={%22places%22:[%22Frankfurt%20am%20Main%22,%22New%20York%22,%22Singapore%22]}
 
 upgrade to geocode location detection: now recognizes also all
 alternative (different languages) place names. The geocode servlet shows
 all those alternative names in a string array. The minified version
-shortenes this array to only one entry
-
-added reverse geocoding
-
-added fuzzyness for marker computation
-
+shortens this array to only one entry. The API also has reverse geocoding and fuzziness for marker computation.
 </p>
 
 <ul class="request">
@@ -673,11 +668,11 @@ added fuzzyness for marker computation
 	<code>/api/proxy.json</code>
 </h2>
 <div class="alert alert-danger" role="alert">This API has access restrictions: only localhost clients are granted.</div>
-<p>Either a url or a screen_name can be passed to the api, or both. The
-	proxy.json loads the url and returns the content. If a screen_name is given,
+<p>Either a URL or a screen_name can be passed to the API, or both. The
+	proxy.json loads the URL and returns the content. If a screen_name is given,
 	the url content is stored in a cache related to the given screen_name. If only
-	the screen_name and no url is given, the proxy returns the image of that user.
-	If only a url is given, the proxy.json tries to identify the url as user-
+	the screen_name and no URL is given, the proxy returns the image of that user.
+	If only a URL is given, the proxy.json tries to identify the url as user-
 	related and loads the content.
 	To retrieve an image, there are three possible paths: <code>/api/proxy.gif</code>,
     <code>/api/proxy.png</code>, or <code>/api/proxy.jpg</code>.
@@ -717,9 +712,9 @@ added fuzzyness for marker computation
 	<code>/api/push.json</code>
 </h2>
 <div class="alert alert-warning" role="alert">This API has access limitations: localhost clients are granted more data than public clients.</div>
-<p>Whenever a peer aquires new tweets, it reports these to the
+<p>Whenever a peer acquires new Tweets, it reports these to the
 	back-end for storage. Messages are first collected and bundled into
-	http POST requests to the back-end push api. This servlet can only
+	HTTP POST requests to the back-end PUSH API. This servlet can only
 	be requested with a POST request. The post must have only one
 	attribute:</p>
 <ul class="request">
@@ -748,8 +743,8 @@ added fuzzyness for marker computation
 </h2>
 <div class="alert alert-success" role="alert">This API is open and can be accessed without any restrictions!</div>
 <p>
-	An alternative solution to push tweets data to back-end, using
-	geojson format. Messages are collected from provided url, which
+	An alternative solution to push Tweets data to back-end, using
+	GeoJSON format. Messages are collected from provided url, which
 	contains a <a
 		href="http://geojson.org/geojson-spec.html#introduction">GeoJSON
 		Feature Collection</a>. Each message is a GeoJSON Feature. Example:
@@ -784,8 +779,8 @@ added fuzzyness for marker computation
     ]}
 }</pre>
 
-<p>In the back-end, "geometry" fields are transformed into tweet
-	"location_point". "properties" fields are pasted as tweet fields.</p>
+<p>In the back-end, "geometry" fields are transformed into Tweet
+	"location_point". "properties" fields are pasted as Tweet fields.</p>
 <p>
 	This servlet allows users to specify some rules to map "properties"
 	fields differently, with
@@ -883,7 +878,7 @@ added fuzzyness for marker computation
 </h2>
 <div class="alert alert-success" role="alert">This API is open and can be accessed without any restrictions!</div>
 
-<p>While pushing custom data using /api/push/*.json, loklak saves metadata of the push: harvesting frequency, lifetime, privacy status, etc.. in an object structure called ImportProfile. This api enables Read-Update-Delete operations on those objects. The type of action to performed is defined by `action` attribute : </p>
+<p>While pushing custom data using /api/push/*.json, loklak saves metadata of the push: harvesting frequency, lifetime, privacy status, etc.. in an object structure called ImportProfile. This API enables Read-Update-Delete operations on those objects. The type of action to performed is defined by `action` attribute: </p>
 <ul class="request">
 	<li><div class="tabcol0">action</div>
 		<div class="tabcol1">&nbsp;=&nbsp;&lt;action type&gt;</div>// accepted values are update|delete. Leave blank for read operation.
@@ -921,7 +916,7 @@ added fuzzyness for marker computation
 	<code>/api/validate.json</code>
 </h2>
 <div class="alert alert-success" role="alert">This API is open and can be accessed without any restrictions!</div>
-<p>In loklak, before pushing custom data, the data format is validated against its corresponding json schema. This step ensures the data format to be correct. This API help users check their data even before pushing it. Required attributes are:</p>
+<p>In loklak, before pushing custom data, the data format is validated against its corresponding JSON schema. This step ensures the data format is correct and helps users check their data even before pushing it. Required attributes are:</p>
 <ul class="request">
 	<li><div class="tabcol0">url*</div>
 		<div class="tabcol1">&nbsp;=&nbsp;&lt;string&gt;</div>// public url of the data
@@ -947,7 +942,7 @@ added fuzzyness for marker computation
 </ul><br/>
 <br />
 <p>
-	To serve the configuration the config file should read the
+	To serve the configuration, the config file should read the
 	parameters as follows with a
 	<code>client.</code>
 	prefix
@@ -979,7 +974,7 @@ added fuzzyness for marker computation
 </h2>
 <div class="alert alert-danger" role="alert">This API has access restrictions: only localhost clients are granted.</div>
 <p>This servlet provides the storage and retrieval of user account data.
-   This includes twitter account information (oauth tokens). This servlet can only be called from localhost.</p>
+   This includes Twitter account information (OAuth tokens). This servlet can only be called from localhost.</p>
 <ul class="request">
 	<li><div class="tabcol0">screen_name</div>
 		<div class="tabcol1">&nbsp;=&nbsp;&lt;user nickname&gt;</div>//
@@ -1037,7 +1032,7 @@ added fuzzyness for marker computation
 <p>
 	To add or update a record with
 	<code>apps</code>
-	settings, simply omit the oauth details and just set apps
+	settings, simply omit the OAuth details and just set apps
 <ul class="request">
 	<li><a
 		href="http://localhost:9000/api/account.json?action=update&data={%22screen_name%22:%22test%22,%22apps%22:{%22wall%22:{%22type%22:%22horizontal%22}}}">http://localhost:9000/api/account.json?action=update&data={"screen_name":"test","apps":{"wall":{"type":"horizontal"}}}</a></li>
@@ -1379,7 +1374,7 @@ loklak_messages under the name image0.png</p>
 </h2>
 <div class="alert alert-success" role="alert">This API is open and can be accessed without any restrictions!</div>
 <p>This servlet provides an image with text on it. It shall be
-	used to attach large texts to tweets. The servlet can be called
+	used to attach large texts to Tweets. The servlet can be called
 	with POST and GET html requests, however it is recommended to call
 	this using POST to be able to attach large texts. The request
 	properties are:</p>
