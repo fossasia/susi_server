@@ -1,0 +1,25 @@
+{
+  "properties":{
+    "screen_name":{
+      "type":"string", "include_in_all":"false", "index":"not_analyzed"
+    },
+    "source_type":{
+      "type":"string", "include_in_all":"false", "index":"not_analyzed"
+    },
+    "authentication_first":{
+      "type":"date", "format":"dateOptionalTime", "include_in_all":"false", "index":"not_analyzed"
+    },
+    "authentication_latest":{
+      "type":"date", "format":"dateOptionalTime", "include_in_all":"false", "index":"not_analyzed"
+    },
+    "oauth_token":{
+      "type":"string", "include_in_all":"false", "index":"not_analyzed"
+    },
+    "oauth_token_secret":{
+      "type":"string", "include_in_all":"false", "index":"not_analyzed"
+    },
+    "apps":{
+      "type":"object", "include_in_all":"false"
+    }
+  }
+}

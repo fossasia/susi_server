@@ -19,50 +19,15 @@
 
 package org.loklak.data;
 
-import java.io.IOException;
 import java.util.Map;
 
 import org.elasticsearch.client.Client;
-import org.elasticsearch.common.xcontent.XContentBuilder;
-import org.elasticsearch.common.xcontent.XContentFactory;
 import org.loklak.tools.json.JSONObject;
 
 public class QueryFactory extends AbstractIndexFactory<QueryEntry> implements IndexFactory<QueryEntry> {
 
     public QueryFactory(final Client elasticsearch_client, final String index_name, final int cacheSize, final int existSize) {
         super(elasticsearch_client, index_name, cacheSize, existSize);
-    }
-
-    @Override
-    public XContentBuilder getMapping() {
-        try {
-            XContentBuilder mapping = XContentFactory.jsonBuilder()
-                .startObject()
-                .startObject("properties")
-                  .startObject("query").field("type","string").field("include_in_all","false").endObject()
-                  .startObject("query_length").field("type","long").field("include_in_all","false").field("index","not_analyzed").endObject()
-                  .startObject("since").field("type","date").field("format","dateOptionalTime").field("include_in_all","false").field("index","not_analyzed").endObject()
-                  .startObject("until").field("type","date").field("format","dateOptionalTime").field("include_in_all","false").field("index","not_analyzed").endObject()
-                  .startObject("source_type").field("type","string").field("include_in_all","false").field("index","not_analyzed").endObject()
-                  .startObject("timezoneOffset").field("type","long").field("include_in_all","false").field("index","not_analyzed").endObject()
-                  .startObject("query_first").field("type","date").field("format","dateOptionalTime").field("include_in_all","false").field("index","not_analyzed").endObject()
-                  .startObject("query_last").field("type","date").field("format","dateOptionalTime").field("include_in_all","false").field("index","not_analyzed").endObject()
-                  .startObject("retrieval_last").field("type","date").field("format","dateOptionalTime").field("include_in_all","false").field("index","not_analyzed").endObject()
-                  .startObject("retrieval_next").field("type","date").field("format","dateOptionalTime").field("include_in_all","false").field("index","not_analyzed").endObject()
-                  .startObject("expected_next").field("type","date").field("format","dateOptionalTime").field("include_in_all","false").field("index","not_analyzed").endObject()
-                  .startObject("query_count").field("type","long").field("include_in_all","false").field("index","not_analyzed").endObject()
-                  .startObject("retrieval_count").field("type","long").field("include_in_all","false").field("index","not_analyzed").endObject()
-                  .startObject("message_period").field("type","long").field("include_in_all","false").field("index","not_analyzed").endObject()
-                  .startObject("messages_per_day").field("type","long").field("include_in_all","false").field("index","not_analyzed").endObject()
-                  .startObject("score_retrieval").field("type","long").field("include_in_all","false").field("index","not_analyzed").endObject()
-                  .startObject("score_suggest").field("type","long").field("include_in_all","false").field("index","not_analyzed").endObject()
-                .endObject()
-              .endObject();
-            return mapping;
-        } catch (IOException e) {
-            e.printStackTrace();
-            return null;
-        }
     }
 
     @Override

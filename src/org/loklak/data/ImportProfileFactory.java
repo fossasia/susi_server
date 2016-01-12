@@ -19,8 +19,6 @@
 package org.loklak.data;
 
 import org.elasticsearch.client.Client;
-import org.elasticsearch.common.xcontent.XContentBuilder;
-import org.elasticsearch.common.xcontent.XContentFactory;
 
 import java.io.IOException;
 import java.util.Map;
@@ -29,37 +27,6 @@ public class ImportProfileFactory extends AbstractIndexFactory<ImportProfileEntr
 
     public ImportProfileFactory(Client elasticsearch_client, String index_name, int cacheSize, final int existSize) {
         super(elasticsearch_client, index_name, cacheSize, existSize);
-    }
-
-    @Override
-    public XContentBuilder getMapping() {
-        try {
-            XContentBuilder mapping = XContentFactory.jsonBuilder()
-              .startObject()
-                .startObject("properties")
-                  .startObject("id").field("type", "string").field("include_in_all","false").field("index","not_analyzed").endObject()
-                    .startObject("source_url").field("type", "string").field("include_in_all","false").field("index","not_analyzed").endObject()
-                    .startObject("source_type").field("type", "string").field("include_in_all","false").field("index","not_analyzed").endObject()
-                    .startObject("source_hash").field("type", "long").field("include_in_all","false").field("index","not_analyzed").endObject()
-                    .startObject("harvesting_freq").field("type", "long").field("include_in_all","false").field("index","not_analyzed").endObject()
-                    .startObject("lifetime").field("type", "long").field("include_in_all","false").field("index","not_analyzed").endObject()
-                    .startObject("created_at").field("type", "date").field("format","dateOptionalTime").field("include_in_all","false").field("index","not_analyzed").endObject()
-                    .startObject("last_modified").field("type", "date").field("format","dateOptionalTime").field("include_in_all","false").field("index","not_analyzed").endObject()
-                    .startObject("last_harvested").field("type", "date").field("format","dateOptionalTime").field("include_in_all","false").field("index","not_analyzed").endObject()
-                    .startObject("importer").field("type", "string").field("include_in_all","false").field("index","not_analyzed").endObject()
-                    .startObject("client_host").field("type","string").field("include_in_all","false").field("index","not_analyzed").endObject()
-                    .startObject("active_status").field("type", "string").field("include_in_all","false").field("index","not_analyzed").endObject()
-                    .startObject("privacy_status").field("type", "string").field("include_in_all","false").field("index","not_analyzed").endObject()
-                    .startObject("imported").field("type", "string").field("include_in_all","false").field("index","not_analyzed").endObject()
-                    .startObject("sharers").field("type", "string").field("include_in_all","false").field("index","not_analyzed").endObject()
-                    .endObject()
-              .endObject();
-
-            return mapping;
-        } catch (IOException e) {
-            e.printStackTrace();
-            return null;
-        }
     }
 
     @Override

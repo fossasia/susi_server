@@ -1,0 +1,49 @@
+{
+  "properties":{
+    "id":{
+      "type":"string", "include_in_all":"false", "index":"not_analyzed"
+    },
+    "source_url":{
+      "type":"string", "include_in_all":"false", "index":"not_analyzed"
+    },
+    "source_type":{
+      "type":"string", "include_in_all":"false", "index":"not_analyzed"
+    },
+    "source_hash":{
+      "type":"long", "include_in_all":"false", "index":"not_analyzed"
+    },
+    "harvesting_freq":{
+      "type":"long", "include_in_all":"false", "index":"not_analyzed"
+    },
+    "lifetime":{
+      "type":"long", "include_in_all":"false", "index":"not_analyzed"
+    },
+    "created_at":{
+      "type":"date", "format":"dateOptionalTime", "include_in_all":"false", "index":"not_analyzed"
+    },
+    "last_modified":{
+      "type":"date", "format":"dateOptionalTime", "include_in_all":"false", "index":"not_analyzed"
+    },
+    "last_harvested":{
+      "type":"date", "format":"dateOptionalTime", "include_in_all":"false", "index":"not_analyzed"
+    },
+    "importer":{
+      "type":"string", "include_in_all":"false", "index":"not_analyzed"
+    },
+    "client_host":{
+      "type":"string", "include_in_all":"false", "index":"not_analyzed"
+    },
+    "active_status":{
+      "type":"string", "include_in_all":"false", "index":"not_analyzed"
+    },
+    "privacy_status":{
+      "type":"string", "include_in_all":"false", "index":"not_analyzed"
+    },
+    "imported":{
+      "type":"string", "include_in_all":"false", "index":"not_analyzed"
+    },
+    "sharers":{
+      "type":"string", "include_in_all":"false", "index":"not_analyzed"
+    }
+  }
+}

@@ -1,0 +1,154 @@
+{
+  "properties":{
+    "created_at":{
+      "type":"date", "format":"dateOptionalTime", "include_in_all":"false", "index":"not_analyzed"
+    },
+    "screen_name":{
+      "type":"string", "include_in_all":"false", "index":"not_analyzed"
+    },
+    "id_str":{
+      "type":"string", "include_in_all":"false", "index":"not_analyzed"
+    },
+    "text":{
+      "type":"string", "include_in_all":"false", "index":"analyzed"
+    },
+    "retweet_from":{
+      "type":"string", "include_in_all":"false", "index":"not_analyzed"
+    },
+    "link":{
+      "type":"string", "include_in_all":"false", "index":"not_analyzed"
+    },
+    "source_type":{
+      "type":"string", "include_in_all":"false", "index":"not_analyzed"
+    },
+    "provider_type":{
+      "type":"string", "include_in_all":"false", "index":"not_analyzed"
+    },
+    "provider_hash":{
+      "type":"string", "include_in_all":"false", "index":"not_analyzed"
+    },
+    "canonical_id":{
+      "type":"string", "include_in_all":"false", "index":"not_analyzed"
+    },
+    "parent":{
+      "type":"string", "include_in_all":"false", "index":"not_analyzed"
+    },
+    "place_name":{
+      "type":"string", "include_in_all":"false", "index":"not_analyzed"
+    },
+    "place_id":{
+      "type":"string", "include_in_all":"false", "index":"not_analyzed"
+    },
+    "on":{
+      "type":"date", "format":"dateOptionalTime", "include_in_all":"false", "index":"not_analyzed"
+    },
+    "to":{
+      "type":"date", "format":"dateOptionalTime", "include_in_all":"false", "index":"not_analyzed"
+    },
+    "retweet_count":{
+      "type":"long", "include_in_all":"false", "index":"not_analyzed"
+    },
+    "favourites_count":{
+      "type":"long", "include_in_all":"false", "index":"not_analyzed"
+    },
+    "links":{
+      "type":"string", "include_in_all":"false", "index":"not_analyzed"
+    },
+    "links_count":{
+      "type":"long", "include_in_all":"false", "index":"not_analyzed"
+    },
+    "images":{
+      "type":"string", "include_in_all":"false", "index":"not_analyzed"
+    },
+    "images_count":{
+      "type":"long", "include_in_all":"false", "index":"not_analyzed"
+    },
+    "audio":{
+      "type":"string", "include_in_all":"false", "index":"not_analyzed"
+    },
+    "audio_count":{
+      "type":"long", "include_in_all":"false", "index":"not_analyzed"
+    },
+    "videos":{
+      "type":"string", "include_in_all":"false", "index":"not_analyzed"
+    },
+    "videos_count":{
+      "type":"long", "include_in_all":"false", "index":"not_analyzed"
+    },
+    "campaign":{
+      "type":"string", "include_in_all":"false", "index":"not_analyzed"
+    },
+    "campaign_count":{
+      "type":"long", "include_in_all":"false", "index":"not_analyzed"
+    },
+    "place_country":{
+      "type":"string", "include_in_all":"false", "index":"not_analyzed"
+    },
+    "place_context":{
+      "type":"string", "include_in_all":"false", "index":"not_analyzed"
+    },
+    "location_point":{
+      "type":"geo_point", "include_in_all":"false", "index":"not_analyzed"
+    },
+    "location_radius":{
+      "type":"long", "include_in_all":"false", "index":"not_analyzed"
+    },
+    "location_mark":{
+      "type":"geo_point", "include_in_all":"false", "index":"not_analyzed"
+    },
+    "location_source":{
+      "type":"string", "include_in_all":"false", "index":"not_analyzed"
+    },
+    "hosts":{
+      "type":"string", "include_in_all":"false", "index":"not_analyzed"
+    },
+    "hosts_count":{
+      "type":"long", "include_in_all":"false", "index":"not_analyzed"
+    },
+    "links":{
+      "type":"string", "include_in_all":"false", "index":"not_analyzed"
+    },
+    "links_count":{
+      "type":"long", "include_in_all":"false", "index":"not_analyzed"
+    },
+    "mentions":{
+      "type":"string", "include_in_all":"false", "index":"not_analyzed"
+    },
+    "mentions_count":{
+      "type":"long", "include_in_all":"false", "index":"not_analyzed"
+    },
+    "hashtags":{
+      "type":"string", "include_in_all":"false", "index":"not_analyzed"
+    },
+    "hashtags_count":{
+      "type":"long", "include_in_all":"false", "index":"not_analyzed"
+    },
+    "classifier_emotion":{
+      "type":"string", "include_in_all":"false", "index":"not_analyzed"
+    },
+    "classifier_emotion_probability":{
+      "type":"double", "include_in_all":"false", "index":"not_analyzed"
+    },
+    "classifier_language":{
+      "type":"string", "include_in_all":"false", "index":"not_analyzed"
+    },
+    "classifier_language_probability":{
+      "type":"double", "include_in_all":"false", "index":"not_analyzed"
+    },
+    "classifier_profanity":{
+      "type":"string", "include_in_all":"false", "index":"not_analyzed"
+    },
+    "classifier_profanity_probability":{
+      "type":"double", "include_in_all":"false", "index":"not_analyzed"
+    },
+    "without_l_len":{
+      "type":"long", "include_in_all":"false", "index":"not_analyzed"
+    },
+    "without_lu_len":{
+      "type":"long", "include_in_all":"false", "index":"not_analyzed"
+    },
+    "without_luh_len":{
+      "type":"long", "include_in_all":"false", "index":"not_analyzed"
+    }
+  }
+}

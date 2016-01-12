@@ -1,0 +1,55 @@
+{
+  "properties":{
+    "query":{
+      "type":"string", "include_in_all":"false"
+    },
+    "query_length":{
+      "type":"long", "include_in_all":"false", "index":"not_analyzed"
+    },
+    "since":{
+      "type":"date", "format":"dateOptionalTime", "include_in_all":"false", "index":"not_analyzed"
+    },
+    "until":{
+      "type":"date", "format":"dateOptionalTime", "include_in_all":"false", "index":"not_analyzed"
+    },
+    "source_type":{
+      "type":"string", "include_in_all":"false", "index":"not_analyzed"
+    },
+    "timezoneOffset":{
+      "type":"long", "include_in_all":"false", "index":"not_analyzed"
+    },
+    "query_first":{
+      "type":"date", "format":"dateOptionalTime", "include_in_all":"false", "index":"not_analyzed"
+    },
+    "query_last":{
+      "type":"date", "format":"dateOptionalTime", "include_in_all":"false", "index":"not_analyzed"
+    },
+    "retrieval_last":{
+      "type":"date", "format":"dateOptionalTime", "include_in_all":"false", "index":"not_analyzed"
+    },
+    "retrieval_next":{
+      "type":"date", "format":"dateOptionalTime", "include_in_all":"false", "index":"not_analyzed"
+    },
+    "expected_next":{
+      "type":"date", "format":"dateOptionalTime", "include_in_all":"false", "index":"not_analyzed"
+    },
+    "query_count":{
+      "type":"long", "include_in_all":"false", "index":"not_analyzed"
+    },
+    "retrieval_count":{
+      "type":"long", "include_in_all":"false", "index":"not_analyzed"
+    },
+    "message_period":{
+      "type":"long", "include_in_all":"false", "index":"not_analyzed"
+    },
+    "messages_per_day":{
+      "type":"long", "include_in_all":"false", "index":"not_analyzed"
+    },
+    "score_retrieval":{
+      "type":"long", "include_in_all":"false", "index":"not_analyzed"
+    },
+    "score_suggest":{
+      "type":"long", "include_in_all":"false", "index":"not_analyzed"
+    }
+  }
+}
