@@ -27,6 +27,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -44,7 +45,6 @@ import java.util.zip.ZipFile;
 
 import org.loklak.data.DAO;
 import org.loklak.tools.CommonPattern;
-import org.loklak.tools.UTF8;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -108,7 +108,7 @@ public class GeoNames {
             entryName = entryName.substring(0, entryName.length() - 3) + "txt";
             final ZipEntry ze = zf.getEntry(entryName);
             final InputStream is = zf.getInputStream(ze);
-            reader = new BufferedReader(new InputStreamReader(is, UTF8.charset));
+            reader = new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8));
         } catch (final IOException e ) {
             DAO.log("GeoNames: Error when decompressing cities1000.zip!");
             e.printStackTrace();

@@ -1,14 +1,3 @@
-package org.loklak.api.server;
-
-import java.io.BufferedInputStream;
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStreamWriter;
-import java.util.Collection;
-import java.util.Date;
 
 /**
  *  DumpDownloadServlet
@@ -29,14 +18,18 @@ import java.util.Date;
  *  If not, see <http://www.gnu.org/licenses/>.
  */
 
+package org.loklak.api.server;
 
-
-
-
-
-
-
-
+import java.io.BufferedInputStream;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStreamWriter;
+import java.nio.charset.StandardCharsets;
+import java.util.Collection;
+import java.util.Date;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -44,7 +37,6 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.loklak.data.DAO;
 import org.loklak.http.RemoteAccess;
-import org.loklak.tools.UTF8;
 
 public class DumpDownloadServlet extends HttpServlet {
 
@@ -70,7 +62,7 @@ public class DumpDownloadServlet extends HttpServlet {
             response.setCharacterEncoding("UTF-8");
             response.setStatus(HttpServletResponse.SC_OK);
             
-            OutputStreamWriter osw = new OutputStreamWriter(response.getOutputStream(), UTF8.charset);
+            OutputStreamWriter osw = new OutputStreamWriter(response.getOutputStream(), StandardCharsets.UTF_8);
             BufferedWriter writer = new BufferedWriter(osw);
             writer.write("<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 3.2 Final//EN\">\n");
             writer.write("<html>\n");

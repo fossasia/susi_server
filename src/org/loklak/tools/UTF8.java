@@ -19,14 +19,9 @@
 
 package org.loklak.tools;
 
-import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 
 public class UTF8 {
-
-    public final static Charset charset;
-    static {
-        charset = Charset.forName("UTF-8");
-    }
 
     public boolean insensitive;
 
@@ -37,12 +32,12 @@ public class UTF8 {
      * @return
      */
     public final static String String(final byte[] bytes) {
-        return bytes == null ? "" : new String(bytes, 0, bytes.length, charset);
+        return bytes == null ? "" : new String(bytes, 0, bytes.length, StandardCharsets.UTF_8);
     }
 
     public final static String String(final byte[] bytes, final int offset, final int length) {
         assert bytes != null;
-        return new String(bytes, offset, length, charset);
+        return new String(bytes, offset, length, StandardCharsets.UTF_8);
     }
 
     /**
@@ -56,12 +51,12 @@ public class UTF8 {
      */
     public final static byte[] getBytes(final String s) {
         if (s == null) return null;
-        return s.getBytes(charset);
+        return s.getBytes(StandardCharsets.UTF_8);
     }
 
     public final static byte[] getBytes(final StringBuilder s) {
         if (s == null) return null;
-        return s.toString().getBytes(charset);
+        return s.toString().getBytes(StandardCharsets.UTF_8);
     }
 
 }

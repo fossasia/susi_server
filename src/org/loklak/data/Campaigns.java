@@ -30,6 +30,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
+import java.nio.charset.StandardCharsets;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -38,8 +39,6 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.zip.GZIPInputStream;
-
-import org.loklak.tools.UTF8;
 
 public class Campaigns {
     
@@ -130,7 +129,7 @@ public class Campaigns {
             BufferedReader br = null;
             try {
                 if (dumpFile.getName().endsWith(".gz")) is = new GZIPInputStream(is);
-                br = new BufferedReader(new InputStreamReader(is, UTF8.charset));
+                br = new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8));
                 while ((line = br.readLine()) != null) {
                     Map<String, Object> campaign = DAO.jsonMapper.readValue(line, DAO.jsonTypeRef);
                     if (campaign == null) continue;
@@ -157,7 +156,7 @@ public class Campaigns {
             OutputStream os = new FileOutputStream(dumpFile);
             BufferedWriter bw = null;
             try {
-                bw = new BufferedWriter(new OutputStreamWriter(os, UTF8.charset));
+                bw = new BufferedWriter(new OutputStreamWriter(os, StandardCharsets.UTF_8));
                 for (Campaign campaign: campaigns) {
                     bw.write(campaign.toString());
                     bw.write('\n');

@@ -26,6 +26,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
@@ -47,7 +48,6 @@ import org.loklak.data.Timeline;
 import org.loklak.data.MessageEntry;
 import org.loklak.data.UserEntry;
 import org.loklak.http.ClientConnection;
-import org.loklak.tools.UTF8;
 
 /**
  *  TwitterScraper
@@ -118,7 +118,7 @@ public class TwitterScraper {
             ClientConnection connection = new ClientConnection(https_url);
             if (connection.inputStream == null) return null;
             try {
-                BufferedReader br = new BufferedReader(new InputStreamReader(connection.inputStream, UTF8.charset));
+                BufferedReader br = new BufferedReader(new InputStreamReader(connection.inputStream, StandardCharsets.UTF_8));
                 timelines = search(br, order, writeToIndex, writeToBackend);
             } catch (IOException e) {
                e.printStackTrace();

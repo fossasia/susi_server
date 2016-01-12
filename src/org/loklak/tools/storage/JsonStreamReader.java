@@ -25,12 +25,11 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.concurrent.ArrayBlockingQueue;
 
 import org.loklak.data.DAO;
-import org.loklak.tools.UTF8;
-
 
 public class JsonStreamReader implements JsonReader {
 
@@ -74,7 +73,7 @@ public class JsonStreamReader implements JsonReader {
         BufferedReader br = null;
         try {
             String line;
-            br = new BufferedReader(new InputStreamReader(inputStream, UTF8.charset));
+            br = new BufferedReader(new InputStreamReader(inputStream, StandardCharsets.UTF_8));
             while ((line = br.readLine()) != null) {
                 try {
                     Map<String, Object> json = DAO.jsonMapper.readValue(line, DAO.jsonTypeRef);
