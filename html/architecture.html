@@ -67,7 +67,7 @@
         </div>
         <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
           <h1 class="page-header">The <code>loklak</code> Architecture</h1>
-          <p><code>loklak</code> is a java application which runs a jetty web server for the html interface and an elasticsearch search server. The application contains a self-documentation which consists of the web pages you are looking at right now. There is also a <a href="javadoc.html">javadoc</a>.</p>
+          <p><code>loklak</code> is a java application which runs a jetty web server for the html interface and an Elasticsearch search server. The application contains a self-documentation which consists of the web pages you are looking at right now. There is also a <a href="javadoc.html">javadoc</a>.</p>
             
 		  
 		  <br id="filesystem"/><br/>
@@ -87,7 +87,7 @@
             <li><div class="tabcol2">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lfloor;<i>import</i></div>// directory: to import a dump, throw the dump in here, it will got to...</li>
             <li><div class="tabcol2">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lfloor;<i>imported</i></div>// directory: processed dump files from the import folder are moved here</li>
             <li><div class="tabcol2">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lfloor;<i>own</i></div>// directory: dump files which this application creates, accessible at <a href="dump/">/dump/</a></li>
-            <li><div class="tabcol2">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lfloor;<i>index</i></div>// directory: the elasticsearch shard folder </li>
+            <li><div class="tabcol2">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lfloor;<i>index</i></div>// directory: the Elasticsearch shard folder </li>
             <li><div class="tabcol2">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lfloor;<i>settings</i></div>// directory: application settings storage</li>
             <li><div class="tabcol2">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lfloor;customized_config.properties</div>// file&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: app settings, overwrites conf/config.properties.</li>
             <li><div class="tabcol2">&nbsp;&nbsp;&nbsp;&nbsp;&lfloor;<i>html</i></div>// directory: the loklak web pages including this page you are looking at</li>
@@ -101,17 +101,18 @@
             
           <br id="socketsandports"/><br/>
           <h2 class="sub-header">Application Sockets and Ports</h2>
-          <p>There is only one public port available, port 9100. <code>loklak</code> opens two more ports for elasticsearch, port 9200 (elasticsearch html api) and 9300 (elasticsearch transport api) but they are configured to be unavailable for clients from non-localhost sockets. You can change the port numbers and access rules in conf/config.properties. If you want to run several <code>loklak</code> instances on the same host, you must change three port number (i.e. by increasing all by one).</p>
+          <p>There is only one public port available, port 9100. <code>loklak</code> opens two more ports for Elasticsearch, port 9200 (Elasticsearch HTML api) and 9300 (Elasticsearch Transport API) but they are configured to be unavailable for clients from non-localhost sockets. You can change the port numbers and access rules in conf/config.properties. If you want to run several <code>loklak</code> instances on the same host, you must change three port number (i.e. by increasing all by one).</p>
             
             
           <br id="searchprocess"/><br/>
           <h2 class="sub-header">Search Process and Communication to the Back-End</h2>
-          <p>Search results are combined from the internal elasticsearch index and external sources such as twitter.
-            To retrieve the twitter search results, a web page scraper is used to circumvent the forced OAuth identification of the search users. The search process has three phases:</p>
+          <p>Search results are combined from the internal Elasticsearch index and external sources such as Twitter.
+            To retrieve the Twitter search results, a web page scraper is used to circumvent the forced OAuth identification of the search users. The search process has three phases:</p>
             <h3>Dispatching the Search Request</h3>
-            <p>This happens when the <a href="api.html#search">search.json</a> api is called: the api servlet concurrently queries a twitter scraper and the internal elasticsearch index:</p>
+            <p>This happens when the <a href="api.html#search">search.json</a> api is called: the api servlet concurrently queries a Twitter scraper and the internal Elasticsearch index:</p>
+            <p>This happens when the <a href="api.html#search">search.json</a> api is called: the api servlet concurrently queries a Twitter scraper and the internal Elasticsearch index:</p>
             <img src="images/architecture_phase1.png" width="720">
-            <p>As a part of this process, the twitter scraper also <a href="about.html#deshortener">de-shortens</a> all links embedded in all tweets from the search result.</p>
+            <p>As a part of this process, the Twitter scraper also <a href="about.html#deshortener">de-shortens</a> all links embedded in all Tweets from the search result.</p>
             <h3>Merging the Search Results </h3>
             <p>The search result is merged into one message list. Merging is easily done because all messages have an identifier and the messages are simply ordered by their date:</p>
             <img src="images/architecture_phase2.png" width="720">
@@ -129,9 +130,9 @@
             <h3>Organic Growth</h3>
             <p>If you install loklak, you may keep the assigned back-end peer (see config.properties: backend property),
             or assign another one. If you tell people about <code>loklak</code>, tell them to assign your peer as backend.
-            Your peer will get all tweets from those new peers, and it will dispatch them also to your back-end.</p>
+            Your peer will get all Tweets from those new peers, and it will dispatch them also to your back-end.</p>
             <h3>Delegate Scraping</h3>
-            <p>If your peer cannot access twitter.com or you don't want to load tweets yourself, you can assign a 'front-peer'
+            <p>If your peer cannot access Twitter.com or you don't want to load Tweets yourself, you can assign a 'front-peer'
             to do that for your (see config.properties: frontpeers). You can also assign several peers (which will be used round-robin)
             and even peers which have no back-end themself (maybe your own swarm of scrapers).</p>
     
@@ -152,7 +153,7 @@
             <p>These dump files can easily filtered with standard shell script tools - like grep - to produce new input dump files to be imported in new/different loklak instances.</p>
           <br id="useraccounts"/><br/>
           <h2 class="sub-header">User Accounts and Access Restrictions</h2>
-          <p>There are no user accounts in <code>loklak</code> and you cannot configure some. There is an exception with the embedded elasticsearch instance, please refer to the documentation of that library.</p>
+          <p>There are no user accounts in <code>loklak</code> and you cannot configure some. There is an exception with the embedded Elasticsearch instance, please refer to the documentation of that library.</p>
           <p>Access restrictions are done by distinguishing accesses frow localhost and from other hosts. While requests to servlets from localhost clients do not have any restrictions, external client accesses may have restrictions. Restricted are i.e. a large depth number for the crawl start and excessive requests to the html interface.</p>
         </div>
       </div>
