@@ -23,13 +23,11 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -194,12 +192,12 @@ public class DAO {
             importProfiles = new ImportProfileFactory(elasticsearch_client, IndexName.import_profiles.name(), CACHE_MAXSIZE, EXIST_MAXSIZE);
 
             // create indices and set mapping (that shows how 'elastic' elasticsearch is: it's always good to define data types)
-            File schemaDir = new File(new File(conf_dir, "elasticsearch"), "schema");
+            File mappingsDir = new File(new File(conf_dir, "elasticsearch"), "mappings");
             for (IndexName index: IndexName.values()) {
             	try {
             		elasticsearch_client.admin().indices().prepareCreate(index.name()).execute().actionGet();
                 	elasticsearch_client.admin().indices().preparePutMapping(index.name())
-                		.setSource(new String(Files.readAllBytes(new File(schemaDir, index.name() + ".json").toPath()), StandardCharsets.UTF_8))
+                		.setSource(new String(Files.readAllBytes(new File(mappingsDir, index.name() + ".json").toPath()), StandardCharsets.UTF_8))
                 		.setType("_default_")
                 		.execute()
                 		.actionGet();
