@@ -78,7 +78,7 @@ cf ic login   (No credentials are necessary of you logged in to bluemix before
 
 4. In Step 1: Choose an Amazon Machine Image, we choose ```Ubuntu Server 14.04 LTS (HVM), SSD Volume Type```.
 
-5. In Step 2: Choose an Instance Type, we choose ```t2.micro```
+5. In Step 2: Choose an Instance Type, we choose ```t2.micro```(<strong>Warning:</strong> ```t2.micro``` is not suitable for running loklak for a long period, and AWS may shut down your instance(block your Internet access on specific port) at any time. ```t2.micro``` instance users are only allow to use <strong>10%</strong> of a single CPU core on average. In our case, loklak_server uses 30 - 40% on average. Reference: [Burstable Instance](http://aws.amazon.com/ec2/faqs/#burst)  Case study: [Real case running loklak](http://geekinguniverse.com/2016/01/14/dont-use-aws-for-your-web-application/))
 
 6. Then we click ```Configure Instance Details```, do not create a instance yet.
 
