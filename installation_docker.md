@@ -142,8 +142,8 @@ cf ic login   (No credentials are necessary of you logged in to bluemix before
  Choose whatever zone you like.
  
  In Boot Disk, choose ```Ubuntu 14.04```, and the disk size should be larger than 40GB.
-On the bottom of the page, click ```Management, disk, networking, access & security options``` to show more options. Inside of this, click into networking and choose new static IP instead of ephemeral. Enter a name for your IP. Google will assign a IP for you.
-Click allow http and https traffic. Finally click create to create a instance. Wait a few minutes for creation to complete.
+On the bottom of the page, click ```Management, disk, networking, access & security options``` to show more options. Inside of this, click into the tab ```Networking``` and choose ```New static IP``` instead of ```Ephemeral```. Enter a name for your IP. Google will assign a IP for you.
+Check the two boxes Allow http and https traffic. Finally click Create to create a instance. Wait a few minutes for creation to complete.
 
 
 7. Once creation finished, click ssh bottom to establish a web ssh connections.
