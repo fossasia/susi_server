@@ -1,7 +1,7 @@
 {
   "@context":"http://schema.org",
   "@type":"SoftwareApplication",
-  "name":"yasoob",
+  "name":"histogram",
   "headline":"Tweet Histogram Plotter",
   "alternativeHeadline":"work from GCI task",
   "applicationCategory":"Message Visualizer",
