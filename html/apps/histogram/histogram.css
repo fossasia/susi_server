@@ -1,0 +1,43 @@
+#bar-example{
+	width: 90%;
+	margin: 0 auto; 
+	margin-top: 20vmin;
+}
+h3{
+	text-align: center;
+	font-size: 27px;
+	font-family: helvetica;
+}
+form{
+	width: 80%;
+	margin: 0 auto;
+	margin-top: 10vmin;
+	text-align: center;
+}
+label.from{
+	font-weight: bold; 
+}
+label.to{
+	width: 47px;
+	display: inline-block;
+	margin-top: 14px;
+	font-weight: bold;
+}
+a.submit{
+	display: inline-block;
+	margin-top: 10px;
+	text-decoration: none;
+	background-color: silver;
+	color: white;
+	border-radius: 5px;
+	padding: 5px 50px;
+	transition: all .4s;
+}
+a.submit:hover{
+	background-color: grey;
+}
+svg#spinner{
+	display: block;
+	margin: 0 auto;
+	margin-top: 20vmin;
+}
