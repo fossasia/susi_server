@@ -13,6 +13,7 @@
 <body ng-controller="LoklakCtrl">
 <h3>Tweet Histogram Plotter</h3>
 <form>
+	<label for="query" class="query">Query: </label><input ng-model="query" id="query"/><br>
 	<label for="from" class="from">From: </label><input ng-model="from" id="from" type="date"/><br>
 	<label for="to" class="to">To: </label><input ng-model="to" id="to" type="date" /><br>
 	<a href="#" class='submit' ng-click="doSearch()">Plot</a>
@@ -41,27 +42,31 @@
 			if (diffDays < 5){
 				alert('Kindly provide a difference of more than 4 days between the two dates.')
 			} else{
-		        $("#bar-example")[0].innerHTML = spinner;
-		      	$scope.loklakResult = $scope.loklak.get({q:'fossasia since:'+$scope.from+' untill:'+$scope.to},function(){
-		        		$("#bar-example")[0].innerHTML = "";
-				        var data_list = [];
-				      	angular.forEach($scope.loklakResult.aggregations.created_at, function(i,item){
-				      		console.log(i,item);
-				      		data_list.push({
-				      			"y": item,
-				      			"a": i
-				      		})
-				      	});
+				if ($scope.query !== 'undefined'){
+					alert("Kindly provide a query to search for!");
+				} else{
+			        $("#bar-example")[0].innerHTML = spinner;
+			      	$scope.loklakResult = $scope.loklak.get({q:$scope.query+' since:'+$scope.from+' untill:'+$scope.to},function(){
+			        		$("#bar-example")[0].innerHTML = "";
+					        var data_list = [];
+					      	angular.forEach($scope.loklakResult.aggregations.created_at, function(i,item){
+					      		console.log(i,item);
+					      		data_list.push({
+					      			"y": item,
+					      			"a": i
+					      		})
+					      	});
 
-				      	Morris.Bar({
-				      	  element: 'bar-example',
-				      	  data: data_list,
-				      	  xkey: 'y',
-				      	  ykeys: ['a'],
-				      	  labels: ['Total Tweets']
-				      	});
-			        }
-			    );
+					      	Morris.Bar({
+					      	  element: 'bar-example',
+					      	  data: data_list,
+					      	  xkey: 'y',
+					      	  ykeys: ['a'],
+					      	  labels: ['Total Tweets']
+					      	});
+				        }
+				    );
+		        }
 		    }
         };
 	}
