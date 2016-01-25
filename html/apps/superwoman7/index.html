@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>Lokalak Tweet Timeline</title>
+		<script type='text/javascript' src='https://ajax.googleapis.com/ajax/libs/angularjs/1.5.0-rc.1/angular.min.js'></script>
+		<script type='text/javascript' src='http://code.jquery.com/jquery-1.12.0.min.js'></script>
+		<script type='text/javascript' src='./js/app.js'></script>
+		<script type='text/javascript' src='https://cdnjs.cloudflare.com/ajax/libs/angular-loading-bar/0.7.1/loading-bar.min.js'></script>
+		<link rel='stylesheet' href='https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css' >
+		<link rel='stylesheet' type='text/css' href='./css/timeline.css'>
+		<link rel='stylesheet' href='https://cdnjs.cloudflare.com/ajax/libs/angular-loading-bar/0.7.1/loading-bar.min.css' type='text/css' media='all'/>
+	</head>
+	<body ng-app='tweet-timeline'>
+		<div class='container' ng-controller='tweet-search'>
+			<h1 class='header'>Tweet Search Timeline</h1>
+			<hr>
+			<div class='input-group input-group-lg search-bar' ng-submit='getTweets()'>
+				<input type='text' ng-model='search' class='form-control' placeholder='Search..'>
+				<div class='input-group-btn'>
+					<button type='submit' ng-click='getTweets()' class='btn btn-success search-button'><span style='padding-left:30px; padding-right:30px;' class='glyphicon glyphicon-search'></span></button>
+				</div>
+			</div>
+			<h4 class='header' style='margin-top:20px;' ng-hide='loading'><center>Search results for '<span >{{searchTerm}}</span>'</center></h4>
+			<ul class='timeline' ng-hide='loading'>
+				<li style='margin-bottom: 50px'><div class='timeline-badge'><i class='glyphicon glyphicon-comment'></i></div></li>
+				<li ng-class-odd="'empty-class'" ng-class-even="'timeline-inverted'" ng-hide='loading' ng-repeat='tweet in tweets'>
+					<div class='timeline-panel'>
+						<img ng-src='{{tweet.user.profile_image_url_https}}'>
+						<div class='timeline-content'>
+							<div class='timeline-heading'>
+								<div class='tweet-user'>
+									<p class='timeline-title full-name' ng-bind-html='tweet.user.name'></p>
+									<p class='text-muted'>@{{tweet.user.screen_name}}</p>
+								</div>
+								<p style='margin-top: -10px;'>
+									<small class='text-muted'><i class='glyphicon glyphicon-time'></i>&nbsp;{{tweet.created_at.substring(0,10)}}</small>
+								</p>
+							</div>
+							<div class='timeline-body' ng-bind-html='tweet.text' style='margin-top:-8px;word-wrap: break-word;'>
+							</div>
+							<div class='tweet-images'>
+								<img ng-src='images' ng-repeat='images in tweet.images'>
+							</div>
+							<hr>
+							<div class='tweet-stats' style='margin-top: -10px;'>
+								<p class='text-muted'>{{tweet.retweet_count}} retweets</p>
+								<p class='text-muted'>{{tweet.favourites_count}} favorites</p>
+								<a href='{{tweet.link}}' target="_blank" class='text-muted'> Link to Tweet </a>
+							</div>
+						</div>
+					</div>
+				</li>
+			</ul>
+		</div>
+	</body>
+</html>
