@@ -1,0 +1,16 @@
+{
+  "@context":"http://schema.org",
+  "@type":"SoftwareApplication",
+  "name":"fossasia-histogram",
+  "headline":"loklak tweets histogram about Fossasia",
+  "alternativeHeadline":"work from GCI task",
+  "applicationCategory":"Tweets analytics",
+  "applicationSubCategory":"About project",
+  "operatingSystem":"http://loklak.org",
+  "author":{
+    "@type":"Person",
+    "name":"Seva Zhidkov",
+    "email":"zhidkovseva@gmail.com",
+    "url":"https://github.com/sevazhidkov",
+    "sameAs":"https://github.com/sevazhidkov"
+  }

@@ -44,4 +44,3 @@ The loklak front-end will compute an aggregation of all those app.json descripti
 provide this in ```/api/apps.json``` as a list of the single app.json files.
 A front-end (another app) will provide an overview of the given apps in visual form.
 This will be linked in the loklak front-end.
-
