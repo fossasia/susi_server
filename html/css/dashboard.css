@@ -120,9 +120,11 @@ body {
 .nav-sidebar > .active > a:focus {
   color: GreenYellow;
 }
-
+.nav-sidebar > .active > a{
+  background-color: grey;
+}
 .nav-sidebar li a:hover {
-	background-color: grey;
+  background-color: grey;
 }
 
 /*
