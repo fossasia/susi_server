@@ -24,7 +24,7 @@
     <![endif]-->
 </head>
 
-<body>
+<body data-spy="scroll" data-target="#navSidebar" data-offset="50">
 	<nav class="navbar navbar-inverse navbar-fixed-top">
 		<div class="container-fluid">
 			<div class="navbar-header">
@@ -59,28 +59,30 @@
 	<div class="container-fluid">
 		<div class="row">
 			<div class="col-sm-3 col-md-2 sidebar">
-				<ul class="nav nav-sidebar">
-					<li><a href="#status">/api/status.json</a></li>
-					<li><a href="#search">/api/search.json</span></a></li>
-					<li><a href="#suggest">/api/suggest.json</span></a></li>
-					<li><a href="#crawler">/api/crawler.json</a></li>
-					<li><a href="#hello">/api/hello.json</a></li>
-					<li><a href="#geocode">/api/geocode.json</a></li>
-					<li><a href="#peers">/api/peers.json</a></li>
-					<li><a href="#proxy">/api/proxy.json</a></li>
-					<li><a href="#push">/api/push.json</a></li>
-					<li><a href="#geojsonpush">/api/push/geojson.json</a></li>
-					<li><a href="#custompush">/api/push/*.*</a></li>
-					<li><a href="#import">/api/import.json</a></li>
-					<li><a href="#validate">/api/validate.json</a>
-					<li><a href="#settings">/api/settings.json</a></li>
-					<li><a href="#account">/api/account.json</a></li>
-					<li><a href="#user">/api/user.json</a></li>
-					<li><a href="#asset">/api/asset</a></li>
-					<li><a href="#threaddump">/api/threaddump.txt</a></li>
-					<li><a href="#map">/vis/map.png</a></li>
-					<li><a href="#markdown">/vis/markdown.png</a></li>
-				</ul>
+				<div id="navSidebar">
+					<ul class="nav nav-sidebar">
+						<li><a href="#status">/api/status.json</a></li>
+						<li><a href="#search">/api/search.json</a></li>
+						<li><a href="#suggest">/api/suggest.json</a></li>
+						<li><a href="#crawler">/api/crawler.json</a></li>
+						<li><a href="#hello">/api/hello.json</a></li>
+						<li><a href="#geocode">/api/geocode.json</a></li>
+						<li><a href="#peers">/api/peers.json</a></li>
+						<li><a href="#proxy">/api/proxy.json</a></li>
+						<li><a href="#push">/api/push.json</a></li>
+						<li><a href="#geojsonpush">/api/push/geojson.json</a></li>
+						<li><a href="#custompush">/api/push/*.*</a></li>
+						<li><a href="#import">/api/import.json</a></li>
+						<li><a href="#validate">/api/validate.json</a></li>
+						<li><a href="#settings">/api/settings.json</a></li>
+						<li><a href="#account">/api/account.json</a></li>
+						<li><a href="#user">/api/user.json</a></li>
+						<li><a href="#asset">/api/asset</a></li>
+						<li><a href="#threaddump">/api/threaddump.txt</a></li>
+						<li><a href="#map">/vis/map.png</a></li>
+						<li><a href="#markdown">/vis/markdown.png</a></li>
+					</ul>
+				</div>
 			</div>
 			<div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
 
@@ -143,8 +145,9 @@
 
 <!-- ===================================================================== -->
 
-<br id="status" />
-<br />
+<br/>
+<br/>
+<section id="status">
 <h2 class="sub-header">
 	<code>/api/status.json</code>
 </h2>
@@ -172,11 +175,12 @@
     "Connection" : "close"
   }
 }</pre>
-
+</section>
 <!-- ===================================================================== -->
 
-<br id="search" />
-<br />
+<br/>
+<br/>
+<section id="search">
 <h2 class="sub-header">
 	<code>/api/search.json</code>
 </h2>
@@ -381,11 +385,12 @@
 	actual time zone of the web front-end user and modify search
 	attributes and result times according to the localized time of the
 	user.</p>
-
+</section>
 <!-- ===================================================================== -->
 
-<br id="suggest" />
-<br />
+<br/>
+<br/>
+<section id="suggest">
 <h2 class="sub-header">
 	<code>/api/suggest.json</code>
 </h2>
@@ -496,11 +501,12 @@ This API is therefore also a tool to generate location name suggestions.</p>
     "score_suggest" : 0
   } ]
 }</pre>
-
+</section>
 <!-- ===================================================================== -->
 
-<br id="crawler" />
-<br />
+<br/>
+<br/>
+<section id="crawler">
 <h2 class="sub-header">
 	<code>/api/crawler.json</code>
 </h2>
@@ -544,11 +550,12 @@ This API is therefore also a tool to generate location name suggestions.</p>
   }
 }
 </pre>
-
+</section>
 <!-- ===================================================================== -->
 
-<br id="hello" />
-<br />
+<br/>
+<br/>
+<section id="hello">
 <h2 class="sub-header">
 	<code>/api/hello.json</code>
 </h2>
@@ -574,12 +581,13 @@ because it does not take any request option and it does not deliver any specific
 </p>
 <p>IPs, collected by this method is retrievable with the <code>peers.json</code> API.
 If a <code>loklak</code> user does not want that the IP addresses move along a p2p
-network, then simply the field <code>backend</code> in the configuration must be empty.
-
+network, then simply the field <code>backend</code> in the configuration must be empty.</p>
+</section>
 <!-- ===================================================================== -->
 
-<br id="geocode" />
-<br />
+<br/>
+<br/>
+<section id="geocode">
 <h2 class="sub-header">
 	<code>/api/geocode.json</code>
 </h2>
@@ -616,11 +624,12 @@ shortens this array to only one entry. The API also has reverse geocoding and fu
   json
 }
 </pre>
-
+</section>
 <!-- ===================================================================== -->
 
-<br id="peers" />
-<br />
+<br/>
+<br/>
+<section id="peers">
 <h2 class="sub-header">
 	<code>/api/peers.json</code>
 </h2>
@@ -659,11 +668,12 @@ shortens this array to only one entry. The API also has reverse geocoding and fu
 }
 </pre>
 
-
+</section>
 <!-- ===================================================================== -->
 
-<br id="proxy" />
-<br />
+<br/>
+<br/>
+<section id="proxy">
 <h2 class="sub-header">
 	<code>/api/proxy.json</code>
 </h2>
@@ -703,11 +713,12 @@ shortens this array to only one entry. The API also has reverse geocoding and fu
 	</ul><br/>
 
 
-
+</section>
 <!-- ===================================================================== -->
 
-<br id="push" />
-<br />
+<br/>
+<br/>
+<section id="push">
 <h2 class="sub-header">
 	<code>/api/push.json</code>
 </h2>
@@ -733,11 +744,12 @@ shortens this array to only one entry. The API also has reverse geocoding and fu
 }</pre>
 <p>When messages arrive the back-end peer, the value
 	"source_type" of every message is replaced with "REMOTE"</p>
-
+</section>
 <!-- ===================================================================== -->
 
-<br id="geojsonpush" />
-<br />
+<br/>
+<br/>
+<section id="geojsonpush">
 <h2 class="sub-header">
 	<code>/api/push/geojson.json</code>
 </h2>
@@ -828,11 +840,12 @@ shortens this array to only one entry. The API also has reverse geocoding and fu
 	<li><a
 		href="http://localhost:9000/api/push/geojson.json?url=mysite.com/mygeojson.json&source_type=IMPORT">http://localhost:9000/api/push/geojson.json?url=mysite.com/mygeojson.json&source_type=IMPORT&map_type=message_name:screen_name,username:user.name,user_shortname:user.screen_name</a></li>
 </ul><br/>
-
+</section>
 <!-- ===================================================================== -->
 
-<br id="custompush" />
-<br />
+<br/>
+<br/>
+<section id="custompush">
 <h2 class="sub-header">
 	<code>/api/push/*.*</code>
 </h2>
@@ -869,10 +882,12 @@ shortens this array to only one entry. The API also has reverse geocoding and fu
 	<div class="tabcol1">&nbsp;=&nbsp;&lt;string&gt;</div>//
 	set to `true` to make the data searchable by other users</li>
 </ul>
+</section>
 <!-- ===================================================================== -->
 
-<br id="import" />
-<br />
+<br/>
+<br/>
+<section id="import">
 <h2 class="sub-header">
 	<code>/api/import.json</code>
 </h2>
@@ -909,9 +924,11 @@ shortens this array to only one entry. The API also has reverse geocoding and fu
 		<div class="tabcol1">&nbsp;=&nbsp;&lt;string&gt;</div>// importer screen_name. Along with source_url this attribute is required to identify the import profile.
 	</li>
 </ul>
+</section>
 <!-- ===================================================================== -->
-<br id="validate" />
-<br />
+<br/>
+<br/>
+<section id="validate">
 <h2 class="sub-header">
 	<code>/api/validate.json</code>
 </h2>
@@ -925,8 +942,10 @@ shortens this array to only one entry. The API also has reverse geocoding and fu
 		<div class="tabcol1">&nbsp;=&nbsp;&lt;string&gt;</div>// indicate the data format to validate against. Some valid values are : FOSSASIA_API, FREIFUNK_NODE, OPENWIFIMAP, etc..
 	</li>
 </ul>
+</section>
 <!-- ===================================================================== -->
-<br id="settings" /></br>
+<br/></br>
+<section id="settings">
 <h2 class="sub-header">
 	<code>/api/settings.json</code>
 </h2>
@@ -963,12 +982,13 @@ shortens this array to only one entry. The API also has reverse geocoding and fu
 <ul class="request">
 	<li><a href="http://localhost:9000/api/settings.json">http://localhost:9000/api/settings.json</a></li>
 </ul><br/>
-
+</section>
 
 <!-- ===================================================================== -->
 
-<br id="account" />
-<br />
+<br/>
+<br/>
+<section id="account">
 <h2 class="sub-header">
 	<code>/api/account.json</code>
 </h2>
@@ -1038,12 +1058,13 @@ shortens this array to only one entry. The API also has reverse geocoding and fu
 		href="http://localhost:9000/api/account.json?action=update&data={%22screen_name%22:%22test%22,%22apps%22:{%22wall%22:{%22type%22:%22horizontal%22}}}">http://localhost:9000/api/account.json?action=update&data={"screen_name":"test","apps":{"wall":{"type":"horizontal"}}}</a></li>
 </ul><br/>
 </p>
-
+</section>
 
 <!-- ===================================================================== -->
 
-<br id="user" />
-<br />
+<br/>
+<br/>
+<section id="user">
 <h2 class="sub-header">
 	<code>/api/user.json</code>
 </h2>
@@ -1150,12 +1171,13 @@ shortens this array to only one entry. The API also has reverse geocoding and fu
     "followers_count" : 9
   }
 }</pre>
-
+</section>
 
 <!-- ===================================================================== -->
 
-<br id="asset" />
-<br />
+<br/>
+<br/>
+<section id="asset">
 <h2 class="sub-header">
 	<code>/api/asset</code>
 </h2>
@@ -1187,11 +1209,12 @@ loklak_messages under the name image0.png</p>
 	<li><a href="http://localhost:9000/api/asset?id_str=608991531941425153&screen_name=loklak_messages&file=image0.png">http://localhost:9000/api/asset?id_str=608991531941425153&screen_name=loklak_messages&file=image0.png</a></li>
 </ul><br/>
 </p>
-
+</section>
 <!-- ===================================================================== -->
 
-<br id="threaddump" />
-<br />
+<br/>
+<br/>
+<section id="threaddump">
 <h2 class="sub-header">
 	<code>/api/threaddump.txt</code>
 </h2>
@@ -1333,11 +1356,12 @@ loklak_messages under the name image0.png</p>
 	Reference Handler
 	main
 </pre>
-
+</section>
 <!-- ===================================================================== -->
 
-<br id="map" />
-<br />
+<br/>
+<br/>
+<section id="map">
 <h2 class="sub-header">
 	<code>/vis/map</code>
 </h2>
@@ -1364,11 +1388,12 @@ loklak_messages under the name image0.png</p>
   json
 }
 </pre>
-
+</section>
 <!-- ===================================================================== -->
 
-<br id="markdown" />
-<br />
+<br/>
+<br/>
+<section id="markdown">
 <h2 class="sub-header">
 	<code>/vis/markdown.png</code>
 </h2>
@@ -1404,7 +1429,7 @@ loklak_messages under the name image0.png</p>
 	<li><a href="http://localhost:9000/vis/markdown.png?text=hello%20world%0Dhello%20universe&color_text=000000&color_background=ffffff&padding=3">http://localhost:9000/vis/markdown.png?text=hello%20world%0Dhello%20universe&color_text=000000&color_background=ffffff&padding=3</a></li>
 </ul><br/>
 </p>
-
+</section>
 <!-- ===================================================================== -->
 <!-- end of left-align formatting of the source code -->
 			</div>

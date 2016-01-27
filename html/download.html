@@ -23,7 +23,7 @@
     <![endif]-->
   </head>
 
-  <body>
+  <body data-spy="scroll" data-target="#navSidebar" data-offset="50">
 
     <nav class="navbar navbar-inverse navbar-fixed-top">
       <div class="container-fluid">
@@ -56,21 +56,24 @@
     <div class="container-fluid">
       <div class="row">
         <div class="col-sm-3 col-md-2 sidebar">
-          <ul class="nav nav-sidebar">
-            <li><a href="#download">Download, Build, Run</span></a></li>
-            <li><a href="#importdump">Import A Message Dump</span></a></li>
-            <li><a href="#recreateindex">Re-Build The Search Index</span></a></li>
-            <li><a href="#kibana">Use Kibana As Search Front-End</span></a></li>
-            <li><a href="#nginxsetup">Use Nginx As Reverse Proxy</span></a></li>
-            <li><a href="#changeconfig">Change Config Parameters</span></a></li>
-          </ul>
+          <div id="navSidebar">
+            <ul class="nav nav-sidebar">
+              <li><a href="#download">Download, Build, Run</a></li>
+              <li><a href="#importdump">Import A Message Dump</a></li>
+              <li><a href="#recreateindex">Re-Build The Search Index</a></li>
+              <li><a href="#kibana">Use Kibana As Search Front-End</a></li>
+              <li><a href="#nginxsetup">Use Nginx As Reverse Proxy</a></li>
+              <li><a href="#changeconfig">Change Config Parameters</a></li>
+            </ul>
+          </div>
         </div>
         <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
           <h1 class="page-header">Download and Installation</h1>
           <p><code>loklak</code> is free software, licensed with LGPL. To install <code>loklak</code>, you need a JDK, git and ant. If you don't know what this is, then <code>loklak</code> is currently not something for you.</p>
         <p>At this time, <code>loklak</code> is not provided in compiled form, you must build it yourself. It's not difficult and done in one minute!</p>
 		  
-		  <br id="download"/><br/>
+		  <br/><br/>
+          <section id="download">
           <h2 class="sub-header">Download, Build, Run</h2>
           <p>The source code is hosted at <a href="https://github.com/loklak/loklak_server">https://github.com/loklak/loklak_server</a>, you can download it and run <code>loklak</code> with:</p>
           <ul class="request">
@@ -136,7 +139,9 @@ https://github.com/loklak/loklak_server.git&nbsp;</li>
   <li>&gt; ant</li>
   <li>&gt; bin/start.sh</li>
 </ul>
-          <br id="importdump"/><br/>
+          </section>
+          <br/><br/>
+          <section id="importdump">
           <h2 class="sub-header">Import A Message Dump</h2>
           <p>To import a message dump (which you get from the <a href="dump/">dump directory</a> of every <code>loklak</code> peer), just move it to the <code>data/dump/import/</code> directory:</p>
             <ul class="request">
@@ -148,8 +153,9 @@ https://github.com/loklak/loklak_server.git&nbsp;</li>
             <li><div class="tabcol2">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lfloor;<i>own</i></div>// dump files which this application creates, accessible at <a href="dump/">/dump/</a></li>
           </ul>
             <p>Imported dumps are not deleted, but moved to the <code>imported</code> directory. Because extracted hashtags, links and user names are not part of the dump, this is done during the import process and written to the elasticsearch index. While imports are running, you can use the <a href="api.html#status">/api/status.json</a> servlet to moniotor the import progress.</p>
-            
-          <br id="recreateindex"/><br/>
+          </section>
+          <br/><br/>
+          <section id="recreateindex">
           <h2 class="sub-header">Re-Build The Search Index</h2>
           <p>In case of application bugs, data structure changes or if you change your set-up for larger indexing shards, you can re-create the search index completely using the index dumps. To delete and re-create the index, do:</p>
             <ul>
@@ -159,8 +165,9 @@ https://github.com/loklak/loklak_server.git&nbsp;</li>
                 <li>start <code>loklak</code> again - this will re-create the index folder</li>
                 <li>the import starts automatically</li>
             </ul>
-            
-          <br id="kibana"/><br/>
+          </section>  
+          <br/><br/>
+          <section id="kibana">
           <h2 class="sub-header">Use Kibana As Search Front-End</h2>
           <p>Kibana is a tool to "explore and visualize your data". It is not actually a search front-end but you can use it as such. Because Kibana is made for elasticsearch, it will instantly fit on <code>loklak</code> without any modification or configuration. Here is what you need to do:</p>
             <ul>
@@ -185,8 +192,9 @@ https://github.com/loklak/loklak_server.git&nbsp;</li>
                 <li>You can click on the field names on the left border to show a field facet. Click on the '+'-sign at the facet item to activate the facet.</li>
             </ul>
           <p>The remote search to twitter with the twitter scraper is not done using the elasticsearch 'river' method to prevent that a user-frontend like Kibana constantly triggers a remote search. Therefore this search method with kibana will not help to enrich your search index with remote search results. This also means that you won't see any results in Kibana until you searched with the <a href="api.html#search">/api/search.json</a> api.</p>
-            
-          <br id="nginxsetup"/><br/>
+          </section>  
+          <br/><br/>
+          <section id="nginxsetup">
           <h2 class="sub-header">Use Nginx As Reverse Proxy</h2>
           <p>If you run <code>loklak</code> behind a nginx reverse proxy, it is important to forward the client IP address through the proxy. If you don't do that, <code>loklak</code> thinks that all requests come from localhost and are therefore all authorized to do anything with maximum access rights. To configure Nginx to forward the client IP address, add the following line to the server section of your config file:</p>
             <pre>proxy_set_header X-Real-IP $remote_addr;</pre>
@@ -203,14 +211,16 @@ https://github.com/loklak/loklak_server.git&nbsp;</li>
   }
 }</pre>
 
-
-          <br id="changeconfig"/><br/>
+          </section>
+          <br/><br/>
+          <section id="changeconfig">
           <h2 class="sub-header">Change Config Parameters</h2>
           <p>The configuration initialization of <code>loklak</code> is in <code>conf/config.properties</code> but that file may be overwritten if you update the application. To make changes to the configuration persistent, there is another file located at <code>data/settings/customized_config.properties</code> which overwrites the settings during startup time.</p>
             <h3>Change Elasticsearch Configuration Properties</h3>
             <p>These properties are included in the <code>loklak</code> properties file and prefixed with the string <code>elasticsearch.</code>. You can add more elasticsearch properties here, all keys with the prefix "elasticsearch." are send to elasticsearch.</p>
             <h3>Change the Back-End Server</h3>
           <p>In the properties, there is a line <code>backend=http://loklak.org</code>. You can change this to your own server. This name is a prefix for the api path, so adding a port to the host name is possible.</p>
+          </section>
         </div>
       </div>
     </div>

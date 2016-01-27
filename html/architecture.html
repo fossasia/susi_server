@@ -23,7 +23,7 @@
     <![endif]-->
   </head>
 
-  <body>
+  <body data-spy="scroll" data-target="#navSidebar" data-offset="50">
 
     <nav class="navbar navbar-inverse navbar-fixed-top">
       <div class="container-fluid">
@@ -56,21 +56,24 @@
     <div class="container-fluid">
       <div class="row">
         <div class="col-sm-3 col-md-2 sidebar">
-          <ul class="nav nav-sidebar">
-            <li><a href="#filesystem">File System Structure</a></li>
-            <li><a href="#socketsandports">Application Sockets and Ports</a></li>
-            <li><a href="#searchprocess">Search Process and Communication to the Back-End</a></li>
-            <li><a href="#topology">Network Topology</a></li>
-            <li><a href="#messagedumpformat">Data Format Of Message Dumps</a></li>
-            <li><a href="#useraccounts">User Accounts and Access Restrictions</a></li>
-          </ul>
+          <div id="navSidebar">
+            <ul class="nav nav-sidebar">
+              <li><a href="#filesystem">File System Structure</a></li>
+              <li><a href="#socketsandports">Application Sockets and Ports</a></li>
+              <li><a href="#searchprocess">Search Process and Communication to the Back-End</a></li>
+              <li><a href="#topology">Network Topology</a></li>
+              <li><a href="#messagedumpformat">Data Format Of Message Dumps</a></li>
+              <li><a href="#useraccounts">User Accounts and Access Restrictions</a></li>
+            </ul>
+          </div>
         </div>
         <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
           <h1 class="page-header">The <code>loklak</code> Architecture</h1>
           <p><code>loklak</code> is a java application which runs a jetty web server for the html interface and an Elasticsearch search server. The application contains a self-documentation which consists of the web pages you are looking at right now. There is also a <a href="javadoc.html">javadoc</a>.</p>
             
 		  
-		  <br id="filesystem"/><br/>
+		  <br/><br/>
+          <section id="filesystem">
           <h2 class="sub-header">The File System Structure</h2>
           <p>The file structure follows a default java application folder naming:</p>
           <ul class="request">
@@ -97,14 +100,16 @@
             <li><div class="tabcol2">&nbsp;&nbsp;&nbsp;&nbsp;&lfloor;README.txt</div>// file&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: you should read this if you are using loklak the first time</li>
             <li><div class="tabcol2">&nbsp;&nbsp;&nbsp;&nbsp;&lfloor;<i>src</i></div>// directory: java sources</li>
           </ul>
-
+          </section>
             
-          <br id="socketsandports"/><br/>
+          <br/><br/>
+          <section id="socketsandports">
           <h2 class="sub-header">Application Sockets and Ports</h2>
           <p>There is only one public port available, port 9100. <code>loklak</code> opens two more ports for Elasticsearch, port 9200 (Elasticsearch HTML api) and 9300 (Elasticsearch Transport API) but they are configured to be unavailable for clients from non-localhost sockets. You can change the port numbers and access rules in conf/config.properties. If you want to run several <code>loklak</code> instances on the same host, you must change three port number (i.e. by increasing all by one).</p>
+          </section>  
             
-            
-          <br id="searchprocess"/><br/>
+          <br/><br/>
+          <section id="searchprocess">
           <h2 class="sub-header">Search Process and Communication to the Back-End</h2>
           <p>Search results are combined from the internal Elasticsearch index and external sources such as Twitter.
             To retrieve the Twitter search results, a web page scraper is used to circumvent the forced OAuth identification of the search users. The search process has three phases:</p>
@@ -121,8 +126,9 @@
             <p>An independent caretaker-process runs every three seconds and looks how many new messages had been placed on the storage queue; if the number exceedes a given limit (i.e. 100) then all messages are stored to the own file system and pushed over the back-end API to the back-end peer.</p>
             <img src="images/architecture_phase3.png" width="720">
             <p>Files pushed on the <a href="dump/">latest message file stack</a> can be downloaded immediately. The same happens at the back-end peer: new messages appear immediately there as well.</p>
-    
-          <br id="topology"/><br/>
+          </section>
+          <br/><br/>
+          <section id="topology">
           <h2 class="sub-header">Network Topology</h2>
           <p>The topology of the <code>loklak</code> depends only on you: using the back-end configuration, you can chain
             peers and data from scraped content flows along the network chain until it reaches a back-end, which has no other back-end.</p>
@@ -135,8 +141,9 @@
             <p>If your peer cannot access Twitter.com or you don't want to load Tweets yourself, you can assign a 'front-peer'
             to do that for your (see config.properties: frontpeers). You can also assign several peers (which will be used round-robin)
             and even peers which have no back-end themself (maybe your own swarm of scrapers).</p>
-    
-          <br id="messagedumpformat"/><br/>
+          </section>
+          <br/><br/>
+          <section id="messagedumpformat">
           <h2 class="sub-header">What's The Data Format Of Message Dumps?</h2>
           <p>The message dumps mentioned above are lists of JSON terms. loklak creates a new dump file for every
             month, but only if loklak is (re-)started. The dump file gets appended with a JSON term whenever a new
@@ -151,10 +158,13 @@
 {"created_at":"2015-03-07T03:31:47.000Z","screen_name":"comprock","text":"I9ve been presenting and working with http://fossasia.org/","link":"https://twitter.com/comprock/status/574049779975655424","id_str":"574049779975655424","source_type":"TWITTER","provider_type":"SCRAPED","retweet_count":1,"favourites_count":0,"user":{"name":"Michael Cannon","screen_name":"comprock","profile_image_url_https":"https://pbs.twimg.com/profile_images/574054683079090176/3-XSsyEh_bigger.jpeg","appearance_first":"2015-03-07T11:02:07.842Z","appearance_latest":"2015-03-07T11:02:07.842Z"}}
 </pre></p>
             <p>These dump files can easily filtered with standard shell script tools - like grep - to produce new input dump files to be imported in new/different loklak instances.</p>
-          <br id="useraccounts"/><br/>
+          </section>
+          <br/><br/>
+          <section id="useraccounts">
           <h2 class="sub-header">User Accounts and Access Restrictions</h2>
           <p>There are no user accounts in <code>loklak</code> and you cannot configure some. There is an exception with the embedded Elasticsearch instance, please refer to the documentation of that library.</p>
           <p>Access restrictions are done by distinguishing accesses frow localhost and from other hosts. While requests to servlets from localhost clients do not have any restrictions, external client accesses may have restrictions. Restricted are i.e. a large depth number for the crawl start and excessive requests to the html interface.</p>
+          </section>
         </div>
       </div>
     </div>
