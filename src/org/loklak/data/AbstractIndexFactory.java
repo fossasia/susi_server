@@ -39,11 +39,11 @@ import org.loklak.tools.CacheSet;
  * curl -g "http://localhost:9000/api/account.json?action=update&data={\"screen_name\":\"test\",\"apps\":{\"wall\":{\"type\":\"vertical\"}}}"
  */
 public abstract class AbstractIndexFactory<Entry extends IndexEntry> implements IndexFactory<Entry> {
-
-
-    private final static VersionType update_version_type = VersionType.FORCE;
-    private final static int MAX_BULK_SIZE =  1500;
-    private final static int MAX_BULK_TIME = 10000;
+    
+    public  final static String      TIMESTAMP_FIELDNAME = "timestamp";
+    private final static VersionType UPDATE_VERSION_TYPE = VersionType.FORCE;
+    private final static int         MAX_BULK_SIZE       =  1500;
+    private final static int         MAX_BULK_TIME       = 10000;
     
     protected final Client elasticsearch_client;
     protected final CacheMap<String, Entry> objectCache;
@@ -131,8 +131,9 @@ public abstract class AbstractIndexFactory<Entry extends IndexEntry> implements 
              *   builder.map(source);
              */
             if (jsonMap != null) {
+                if (!jsonMap.containsKey(TIMESTAMP_FIELDNAME)) jsonMap.put(TIMESTAMP_FIELDNAME, AbstractIndexEntry.utcFormatter.print(System.currentTimeMillis()));
                 elasticsearch_client.prepareIndex(this.index_name, type, id).setSource(jsonMap)
-                    .setVersion(1).setVersionType(update_version_type).execute().actionGet();
+                    .setVersion(1).setVersionType(UPDATE_VERSION_TYPE).execute().actionGet();
                 //System.out.println("writing 1 entry"); // debug
             }
         }
@@ -151,7 +152,7 @@ public abstract class AbstractIndexFactory<Entry extends IndexEntry> implements 
         while (this.bulkCache.size() > 0) {
             BulkEntry be = this.bulkCache.poll();
             if (be == null) break;
-            be.jsonMap.put("_version_type", update_version_type.name()); // set version type as metadata
+            be.jsonMap.put("_version_type", UPDATE_VERSION_TYPE.name()); // set version type as metadata
             // be.jsonMap.put("_version", 1); // cannot change DocValues type from NUMERIC to SORTED_NUMERIC 
             bulkRequest.add(elasticsearch_client.prepareIndex(this.index_name, be.type, be.id).setSource(be.jsonMap));
             count++;
@@ -176,6 +177,7 @@ public abstract class AbstractIndexFactory<Entry extends IndexEntry> implements 
             this.id = id;
             this.type = type;
             this.jsonMap = entry.toMap();
+            if (!this.jsonMap.containsKey(TIMESTAMP_FIELDNAME)) this.jsonMap.put(TIMESTAMP_FIELDNAME, AbstractIndexEntry.utcFormatter.print(System.currentTimeMillis()));
         }
     }
     

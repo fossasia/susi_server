@@ -1,5 +1,8 @@
 {
   "properties":{
+    "timestamp":{
+      "type":"date", "format":"dateOptionalTime", "include_in_all":"false", "index":"not_analyzed"
+    },
     "screen_name":{
       "type":"string", "include_in_all":"false", "index":"not_analyzed"
     },

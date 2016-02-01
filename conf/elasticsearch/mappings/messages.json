@@ -1,7 +1,7 @@
 {
   "properties":{
-    "_timestamp":{
-      "enabled":true
+    "timestamp":{
+      "type":"date", "format":"dateOptionalTime", "include_in_all":"false", "index":"not_analyzed"
     },
     "created_at":{
       "type":"date", "format":"dateOptionalTime", "include_in_all":"false", "index":"not_analyzed"

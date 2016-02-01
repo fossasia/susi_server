@@ -46,7 +46,7 @@ public class MessageEntry extends AbstractIndexEntry implements IndexEntry {
 
     public static final String RICH_TEXT_SEPARATOR = "\n***\n";
     
-    protected Date created_at, on, to; // created_at will allways be set, on means 'valid from' and 'to' means 'valid_until' and may not be set
+    protected Date timestamp, created_at, on, to; // created_at will allways be set, on means 'valid from' and 'to' means 'valid_until' and may not be set
     protected SourceType source_type; // where did the message come from
     protected ProviderType provider_type;  // who created the message
     protected String provider_hash, screen_name, retweet_from, id_str, canonical_id, parent, text;
@@ -68,6 +68,7 @@ public class MessageEntry extends AbstractIndexEntry implements IndexEntry {
     private Map<Context, Classification<String, Category>> classifier;
     
     public MessageEntry() throws MalformedURLException {
+        this.timestamp = new Date();
         this.created_at = new Date();
         this.on = null;
         this.to = null;
@@ -105,6 +106,7 @@ public class MessageEntry extends AbstractIndexEntry implements IndexEntry {
     }
 
     public MessageEntry(JSONObject json) {
+        Object timestamp_obj = lazyGet(json, AbstractIndexFactory.TIMESTAMP_FIELDNAME); this.timestamp = parseDate(timestamp_obj);
         Object created_at_obj = lazyGet(json, "created_at"); this.created_at = parseDate(created_at_obj);
         Object on_obj = lazyGet(json, "on"); this.on = on_obj == null ? null : parseDate(on);
         Object to_obj = lazyGet(json, "to"); this.to = to_obj == null ? null : parseDate(to);
@@ -165,6 +167,7 @@ public class MessageEntry extends AbstractIndexEntry implements IndexEntry {
     }
 
     public MessageEntry(Map<String, Object> map) {
+        Object timestamp_obj =  map.get(AbstractIndexFactory.TIMESTAMP_FIELDNAME); this.timestamp = parseDate(timestamp_obj);
         Object created_at_obj = map.get("created_at"); this.created_at = parseDate(created_at_obj);
         Object on_obj = map.get("on"); this.on = on_obj == null ? null : parseDate(on);
         Object to_obj = map.get("to"); this.to = to_obj == null ? null : parseDate(to);
@@ -225,6 +228,10 @@ public class MessageEntry extends AbstractIndexEntry implements IndexEntry {
         
         // load enriched data
         enrich();
+    }
+    
+    public Date getTimestamp() {
+        return this.timestamp == null ? new Date() : this.timestamp;
     }
     
     public Date getCreatedAt() {
@@ -572,6 +579,7 @@ public class MessageEntry extends AbstractIndexEntry implements IndexEntry {
         Map<String, Object> m = new LinkedHashMap<>();
 
         // tweet data
+        m.put(AbstractIndexFactory.TIMESTAMP_FIELDNAME, utcFormatter.print(getTimestamp().getTime()));
         m.put("created_at", utcFormatter.print(getCreatedAt().getTime()));
         if (this.on != null) m.put("on", utcFormatter.print(this.on.getTime()));
         if (this.to != null) m.put("to", utcFormatter.print(this.to.getTime()));
@@ -650,6 +658,7 @@ public class MessageEntry extends AbstractIndexEntry implements IndexEntry {
         JSONObject json = new JSONObject();
 
         // tweet data
+        json.put(AbstractIndexFactory.TIMESTAMP_FIELDNAME, utcFormatter.print(getTimestamp().getTime()));
         json.put("created_at", utcFormatter.print(getCreatedAt().getTime()));
         if (this.on != null) json.put("on", utcFormatter.print(this.on.getTime()));
         if (this.to != null) json.put("to", utcFormatter.print(this.to.getTime()));
