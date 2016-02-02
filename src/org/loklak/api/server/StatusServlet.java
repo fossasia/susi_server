@@ -37,8 +37,8 @@ import org.elasticsearch.search.sort.SortOrder;
 import org.loklak.Caretaker;
 import org.loklak.api.client.StatusClient;
 import org.loklak.data.DAO;
-import org.loklak.data.QueryEntry;
 import org.loklak.http.RemoteAccess;
+import org.loklak.objects.QueryEntry;
 import org.loklak.tools.OS;
 
 public class StatusServlet extends HttpServlet {

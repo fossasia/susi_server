@@ -22,6 +22,7 @@ package org.loklak.data;
 import java.util.Map;
 
 import org.elasticsearch.client.Client;
+import org.loklak.objects.MessageEntry;
 import org.loklak.tools.json.JSONObject;
 
 public class MessageFactory extends AbstractIndexFactory<MessageEntry> implements IndexFactory<MessageEntry> {

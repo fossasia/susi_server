@@ -16,7 +16,7 @@
  *  along with this program in the file lgpl21.txt
  *  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.loklak.data;
+package org.loklak.objects;
 
 import org.loklak.harvester.HarvestingFrequency;
 import org.loklak.harvester.SourceType;
@@ -28,9 +28,20 @@ import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Logger;
 
 public class ImportProfileEntry extends AbstractIndexEntry implements IndexEntry {
 
+    public static enum EntryStatus {
+        ACTIVE,
+        DELETED
+    }
+
+    public static enum PrivacyStatus {
+        PRIVATE,
+        PUBLIC
+    }
+    
     protected String id;
     protected Date created_at;
 
@@ -74,7 +85,7 @@ public class ImportProfileEntry extends AbstractIndexEntry implements IndexEntry
         try {
             this.source_type = SourceType.valueOf(source_type_string.toUpperCase());
         } catch (IllegalArgumentException e) {
-            DAO.log("Illegal source type value : " + source_type_string);
+            Logger.getLogger("ImportProfileEntry").warning("Illegal source type value : " + source_type_string);
             this.source_type = SourceType.USER;
         }
         this.source_hash = parseLong(map.get("source_hash"));

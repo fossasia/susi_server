@@ -30,6 +30,8 @@ import org.elasticsearch.action.get.GetResponse;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.index.VersionType;
 import org.loklak.harvester.SourceType;
+import org.loklak.objects.AbstractIndexEntry;
+import org.loklak.objects.IndexEntry;
 import org.loklak.tools.CacheMap;
 import org.loklak.tools.CacheSet;
 

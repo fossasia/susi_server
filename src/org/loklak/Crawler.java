@@ -12,8 +12,8 @@ import java.util.concurrent.LinkedBlockingDeque;
 
 import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.loklak.data.DAO;
-import org.loklak.data.Timeline;
-import org.loklak.data.MessageEntry;
+import org.loklak.objects.MessageEntry;
+import org.loklak.objects.Timeline;
 import org.loklak.tools.DateParser;
 
 public class Crawler {

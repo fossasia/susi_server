@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.util.Map;
 
 import org.loklak.harvester.SourceType;
+import org.loklak.objects.IndexEntry;
 
 public interface IndexFactory<Entry extends IndexEntry> {
 

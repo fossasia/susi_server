@@ -3,14 +3,13 @@ package org.loklak.api.server.push;
 import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.elasticsearch.common.xcontent.XContentFactory;
 import org.loklak.data.DAO;
-import org.loklak.data.ImportProfileEntry;
-import org.loklak.data.MessageEntry;
-import org.loklak.data.UserEntry;
-import org.loklak.data.Timeline;
-import org.loklak.data.PrivacyStatus;
 import org.loklak.harvester.HarvestingFrequency;
 import org.loklak.harvester.SourceType;
 import org.loklak.http.RemoteAccess;
+import org.loklak.objects.ImportProfileEntry;
+import org.loklak.objects.MessageEntry;
+import org.loklak.objects.Timeline;
+import org.loklak.objects.UserEntry;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -76,11 +75,11 @@ public class PushServletHelper {
 
         // optional parameter 'public' to
         String public_profile = post.get("public", "");
-        PrivacyStatus privacyStatus;
+        ImportProfileEntry.PrivacyStatus privacyStatus;
         if ("".equals(public_profile) || !"true".equals(public_profile)){
-            privacyStatus = PrivacyStatus.PRIVATE;
+            privacyStatus = ImportProfileEntry.PrivacyStatus.PRIVATE;
         } else {
-            privacyStatus = PrivacyStatus.PUBLIC;
+            privacyStatus = ImportProfileEntry.PrivacyStatus.PUBLIC;
         }
 
         if (!"".equals(harvesting_freq)) {

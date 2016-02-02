@@ -36,12 +36,12 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.elasticsearch.search.sort.SortOrder;
-import org.loklak.data.AbstractIndexEntry;
 import org.loklak.data.DAO;
-import org.loklak.data.QueryEntry;
-import org.loklak.data.ResultList;
 import org.loklak.harvester.SourceType;
 import org.loklak.http.RemoteAccess;
+import org.loklak.objects.AbstractIndexEntry;
+import org.loklak.objects.QueryEntry;
+import org.loklak.objects.ResultList;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 

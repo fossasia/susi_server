@@ -27,8 +27,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.loklak.data.DAO;
-import org.loklak.data.MessageEntry;
 import org.loklak.http.RemoteAccess;
+import org.loklak.objects.MessageEntry;
 
 public class ShortlinkFromTweetServlet extends HttpServlet {
 

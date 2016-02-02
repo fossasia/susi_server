@@ -84,6 +84,14 @@ import org.loklak.harvester.TwitterScraper;
 import org.loklak.http.AccessTracker;
 import org.loklak.http.ClientConnection;
 import org.loklak.http.RemoteAccess;
+import org.loklak.objects.AccountEntry;
+import org.loklak.objects.ImportProfileEntry;
+import org.loklak.objects.MessageEntry;
+import org.loklak.objects.Peers;
+import org.loklak.objects.QueryEntry;
+import org.loklak.objects.ResultList;
+import org.loklak.objects.Timeline;
+import org.loklak.objects.UserEntry;
 import org.loklak.tools.DateParser;
 import org.loklak.tools.OS;
 import org.loklak.tools.storage.JsonDataset;
@@ -918,7 +926,7 @@ public class DAO {
                 .setFrom(0);
 
         BoolQueryBuilder bFilter = QueryBuilders.boolQuery();
-        bFilter.must(QueryBuilders.termQuery("active_status", EntryStatus.ACTIVE.name().toLowerCase()));
+        bFilter.must(QueryBuilders.termQuery("active_status", ImportProfileEntry.EntryStatus.ACTIVE.name().toLowerCase()));
         for (Object o : constraints.entrySet()) {
             @SuppressWarnings("rawtypes")
             Map.Entry entry = (Map.Entry) o;

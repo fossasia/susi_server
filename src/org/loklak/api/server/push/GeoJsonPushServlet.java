@@ -23,13 +23,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 
 import org.loklak.data.DAO;
-import org.loklak.data.MessageEntry;
-import org.loklak.data.ProviderType;
-import org.loklak.data.QueryEntry.PlaceContext;
 import org.loklak.geo.LocationSource;
 import org.loklak.harvester.SourceType;
 import org.loklak.http.ClientConnection;
 import org.loklak.http.RemoteAccess;
+import org.loklak.objects.MessageEntry;
+import org.loklak.objects.QueryEntry.PlaceContext;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -147,7 +146,7 @@ public class GeoJsonPushServlet extends HttpServlet {
             } else {
                 message.put("source_type", SourceType.IMPORT);
             }
-            message.put("provider_type", ProviderType.GEOJSON.name());
+            message.put("provider_type", MessageEntry.ProviderType.GEOJSON.name());
             message.put("provider_hash", remoteHash);
             message.put("location_point", geometry.get("coordinates"));
             message.put("location_mark", geometry.get("coordinates"));

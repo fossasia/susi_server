@@ -38,11 +38,11 @@ import java.util.Set;
 import java.util.TreeSet;
 
 import org.loklak.LoklakServer;
-import org.loklak.data.AbstractIndexEntry;
-import org.loklak.data.AccountEntry;
 import org.loklak.data.DAO;
-import org.loklak.data.UserEntry;
 import org.loklak.geo.GeoMark;
+import org.loklak.objects.AbstractIndexEntry;
+import org.loklak.objects.AccountEntry;
+import org.loklak.objects.UserEntry;
 import org.loklak.tools.DateParser;
 import org.loklak.tools.storage.JsonDataset;
 import org.loklak.tools.storage.JsonFactory;

@@ -34,11 +34,11 @@ import org.loklak.api.client.HelloClient;
 import org.loklak.api.client.PushClient;
 import org.loklak.api.server.SuggestServlet;
 import org.loklak.data.DAO;
-import org.loklak.data.MessageEntry;
-import org.loklak.data.QueryEntry;
-import org.loklak.data.Timeline;
-import org.loklak.data.UserEntry;
 import org.loklak.harvester.TwitterAPI;
+import org.loklak.objects.MessageEntry;
+import org.loklak.objects.QueryEntry;
+import org.loklak.objects.Timeline;
+import org.loklak.objects.UserEntry;
 import org.loklak.tools.DateParser;
 import org.loklak.tools.OS;
 

@@ -27,8 +27,8 @@ import java.util.concurrent.atomic.AtomicLong;
 
 import org.eclipse.jetty.util.log.Log;
 import org.loklak.data.DAO;
-import org.loklak.data.MessageEntry;
-import org.loklak.data.UserEntry;
+import org.loklak.objects.MessageEntry;
+import org.loklak.objects.UserEntry;
 import org.loklak.tools.storage.JsonFactory;
 import org.loklak.tools.storage.JsonReader;
 import org.loklak.tools.storage.JsonStreamReader;

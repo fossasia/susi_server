@@ -17,7 +17,7 @@
  *  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.loklak.data;
+package org.loklak.objects;
 
 import org.elasticsearch.common.Base64;
 import org.loklak.tools.json.JSONException;

@@ -25,9 +25,9 @@ import java.util.List;
 import java.util.Map;
 
 import org.loklak.data.DAO;
-import org.loklak.data.QueryEntry;
-import org.loklak.data.ResultList;
 import org.loklak.http.ClientConnection;
+import org.loklak.objects.QueryEntry;
+import org.loklak.objects.ResultList;
 import org.loklak.tools.DateParser;
 import org.loklak.tools.UTF8;
 

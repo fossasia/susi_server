@@ -36,12 +36,12 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.eclipse.jetty.util.log.Log;
 import org.loklak.data.DAO;
-import org.loklak.data.QueryEntry;
-import org.loklak.data.Timeline;
-import org.loklak.data.MessageEntry;
-import org.loklak.data.UserEntry;
 import org.loklak.harvester.TwitterScraper;
 import org.loklak.http.RemoteAccess;
+import org.loklak.objects.MessageEntry;
+import org.loklak.objects.QueryEntry;
+import org.loklak.objects.Timeline;
+import org.loklak.objects.UserEntry;
 import org.loklak.rss.RSSFeed;
 import org.loklak.rss.RSSMessage;
 import org.loklak.tools.CharacterCoding;

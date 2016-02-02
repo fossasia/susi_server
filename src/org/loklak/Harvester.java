@@ -32,12 +32,12 @@ import org.loklak.api.client.PushClient;
 import org.loklak.api.client.SearchClient;
 import org.loklak.api.client.SuggestClient;
 import org.loklak.data.DAO;
-import org.loklak.data.MessageEntry;
-import org.loklak.data.QueryEntry;
-import org.loklak.data.ResultList;
-import org.loklak.data.Timeline;
-import org.loklak.data.Timeline.Order;
 import org.loklak.harvester.TwitterScraper;
+import org.loklak.objects.MessageEntry;
+import org.loklak.objects.QueryEntry;
+import org.loklak.objects.ResultList;
+import org.loklak.objects.Timeline;
+import org.loklak.objects.Timeline.Order;
 import org.loklak.tools.DateParser;
 
 public class Harvester {

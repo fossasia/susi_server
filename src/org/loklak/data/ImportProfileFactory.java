@@ -19,6 +19,7 @@
 package org.loklak.data;
 
 import org.elasticsearch.client.Client;
+import org.loklak.objects.ImportProfileEntry;
 
 import java.io.IOException;
 import java.util.Map;

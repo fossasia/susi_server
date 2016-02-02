@@ -1,6 +1,6 @@
 /**
- *  ProviderType
- *  Copyright 22.02.2015 by Michael Peter Christen, @0rb1t3r
+ *  Peers
+ *  Copyright 07.01.2016 by Michael Peter Christen, @0rb1t3r
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -17,16 +17,20 @@
  *  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.loklak.data;
+package org.loklak.objects;
 
-public enum ProviderType {
+import java.util.HashMap;
 
-    NOONE,   // value assigned during instantiation phase
-    SCRAPED, // scraped with this peer from a remote service
-    IMPORT,  // external resource imported with special reader
-    GENERIC, // pushed as single message at this peer
-    REMOTE,  // pushed as message bulk from a remote peer
-    GEOJSON, // geojson feature collection provided from remote peer
-    ;
+public class Peers extends HashMap<String, Peer> {
+
+    private static final long serialVersionUID = 2767548867468641625L;
+
+    public Peers() {
+        super();
+    }
+    
+    public void update(Peer peer) {
+        
+    }
     
 }

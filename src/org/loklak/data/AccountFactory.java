@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.util.Map;
 
 import org.elasticsearch.client.Client;
+import org.loklak.objects.AccountEntry;
 
 public class AccountFactory extends AbstractIndexFactory<AccountEntry> implements IndexFactory<AccountEntry> {
     

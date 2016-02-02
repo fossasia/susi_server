@@ -1,6 +1,6 @@
 /**
- *  Peers
- *  Copyright 07.01.2016 by Michael Peter Christen, @0rb1t3r
+ *  IndexEntry
+ *  Copyright 26.04.2015 by Michael Peter Christen, @0rb1t3r
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -8,7 +8,7 @@
  *  version 2.1 of the License, or (at your option) any later version.
  *  
  *  This library is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  but WITHOUT ANY WARRANTY; wo even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  *  Lesser General Public License for more details.
  *  
@@ -17,20 +17,22 @@
  *  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.loklak.data;
+package org.loklak.objects;
 
-import java.util.HashMap;
+import java.util.Map;
 
-public class Peers extends HashMap<String, Peer> {
+import org.loklak.tools.json.JSONObject;
 
-    private static final long serialVersionUID = 2767548867468641625L;
+public interface IndexEntry {
 
-    public Peers() {
-        super();
-    }
+    public String toString();
+
+    @Deprecated
+    public Map<String, Object> toMap();
     
-    public void update(Peer peer) {
-        
-    }
+    // TODO: convert to elasticsearch internal format directly
+    //public XContentBuilder toXContent();
+    
+    public JSONObject toJSON();
     
 }

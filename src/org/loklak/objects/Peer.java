@@ -1,6 +1,6 @@
 /**
- *  IndexEntry
- *  Copyright 26.04.2015 by Michael Peter Christen, @0rb1t3r
+ *  Peer
+ *  Copyright 07.01.2016 by Michael Peter Christen, @0rb1t3r
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -8,7 +8,7 @@
  *  version 2.1 of the License, or (at your option) any later version.
  *  
  *  This library is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; wo even the implied warranty of
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  *  Lesser General Public License for more details.
  *  
@@ -17,22 +17,16 @@
  *  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.loklak.data;
-
-import java.util.Map;
+package org.loklak.objects;
 
 import org.loklak.tools.json.JSONObject;
 
-public interface IndexEntry {
+public class Peer extends JSONObject {
 
-    public String toString();
-
-    @Deprecated
-    public Map<String, Object> toMap();
-    
-    // TODO: convert to elasticsearch internal format directly
-    //public XContentBuilder toXContent();
-    
-    public JSONObject toJSON();
+    public static enum Status {
+        CANDIDATE, // a new peer which was not tested for an open port or a SENIOR which could not be connected
+        JUNIOR,    // a candidate which was tested for an open port unsuccessfully
+        SENIOR;    // a candidate which was tested for an open port successfully
+    }
     
 }

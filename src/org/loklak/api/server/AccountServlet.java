@@ -31,10 +31,10 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.loklak.data.AccountEntry;
 import org.loklak.data.DAO;
-import org.loklak.data.UserEntry;
 import org.loklak.http.RemoteAccess;
+import org.loklak.objects.AccountEntry;
+import org.loklak.objects.UserEntry;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 

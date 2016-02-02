@@ -43,11 +43,10 @@ import java.util.regex.Pattern;
 
 import org.loklak.Caretaker;
 import org.loklak.data.DAO;
-import org.loklak.data.ProviderType;
-import org.loklak.data.Timeline;
-import org.loklak.data.MessageEntry;
-import org.loklak.data.UserEntry;
 import org.loklak.http.ClientConnection;
+import org.loklak.objects.MessageEntry;
+import org.loklak.objects.Timeline;
+import org.loklak.objects.UserEntry;
 
 public class TwitterScraper {
 

@@ -22,10 +22,10 @@ package org.loklak.api.client;
 import java.io.IOException;
 import java.net.URLEncoder;
 
-import org.loklak.data.Timeline;
-import org.loklak.data.MessageEntry;
-import org.loklak.data.UserEntry;
 import org.loklak.http.ClientConnection;
+import org.loklak.objects.MessageEntry;
+import org.loklak.objects.Timeline;
+import org.loklak.objects.UserEntry;
 import org.loklak.tools.UTF8;
 import org.loklak.tools.json.JSONArray;
 import org.loklak.tools.json.JSONObject;

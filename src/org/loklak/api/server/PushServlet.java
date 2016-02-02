@@ -33,13 +33,12 @@ import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.elasticsearch.common.xcontent.XContentFactory;
 import org.loklak.QueuedIndexing;
 import org.loklak.data.DAO;
-import org.loklak.data.ProviderType;
-import org.loklak.data.MessageEntry;
-import org.loklak.data.QueryEntry;
-import org.loklak.data.Timeline;
-import org.loklak.data.Timeline.Order;
-import org.loklak.data.UserEntry;
 import org.loklak.http.RemoteAccess;
+import org.loklak.objects.MessageEntry;
+import org.loklak.objects.QueryEntry;
+import org.loklak.objects.Timeline;
+import org.loklak.objects.UserEntry;
+import org.loklak.objects.Timeline.Order;
 import org.loklak.tools.UTF8;
 
 
@@ -118,7 +117,7 @@ public class PushServlet extends HttpServlet {
                     recordCount++;
                     @SuppressWarnings("unchecked") Map<String, Object> user = (Map<String, Object>) tweet.remove("user");
                     if (user == null) continue;
-                    tweet.put("provider_type", (Object) ProviderType.REMOTE.name());
+                    tweet.put("provider_type", (Object) MessageEntry.ProviderType.REMOTE.name());
                     tweet.put("provider_hash", remoteHash);
                     UserEntry u = new UserEntry(user);
                     MessageEntry t = new MessageEntry(tweet);

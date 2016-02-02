@@ -24,8 +24,8 @@ import java.util.concurrent.BlockingQueue;
 
 import org.eclipse.jetty.util.log.Log;
 import org.loklak.data.DAO;
-import org.loklak.data.MessageEntry;
-import org.loklak.data.Timeline;
+import org.loklak.objects.MessageEntry;
+import org.loklak.objects.Timeline;
 
 public class QueuedIndexing extends Thread {
 

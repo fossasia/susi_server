@@ -17,7 +17,7 @@
  *  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.loklak.data;
+package org.loklak.objects;
 
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -32,17 +32,30 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.loklak.data.Classifier;
+import org.loklak.data.DAO;
 import org.loklak.data.Classifier.Category;
 import org.loklak.data.Classifier.Context;
-import org.loklak.data.QueryEntry.PlaceContext;
 import org.loklak.geo.GeoMark;
 import org.loklak.geo.LocationSource;
 import org.loklak.harvester.SourceType;
+import org.loklak.objects.QueryEntry.PlaceContext;
 import org.loklak.tools.bayes.Classification;
 import org.loklak.tools.json.JSONException;
 import org.loklak.tools.json.JSONObject;
 
 public class MessageEntry extends AbstractIndexEntry implements IndexEntry {
+
+    public static enum ProviderType {
+    
+        NOONE,   // value assigned during instantiation phase
+        SCRAPED, // scraped with this peer from a remote service
+        IMPORT,  // external resource imported with special reader
+        GENERIC, // pushed as single message at this peer
+        REMOTE,  // pushed as message bulk from a remote peer
+        GEOJSON; // geojson feature collection provided from remote peer
+    
+    }
 
     public static final String RICH_TEXT_SEPARATOR = "\n***\n";
     

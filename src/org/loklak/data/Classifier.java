@@ -26,6 +26,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.loklak.objects.MessageEntry;
+import org.loklak.objects.Timeline;
 import org.loklak.tools.bayes.BayesClassifier;
 import org.loklak.tools.bayes.Classification;
 

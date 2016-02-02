@@ -29,10 +29,10 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.loklak.data.DAO;
-import org.loklak.data.UserEntry;
 import org.loklak.harvester.TwitterAPI;
 import org.loklak.http.ClientConnection;
 import org.loklak.http.RemoteAccess;
+import org.loklak.objects.UserEntry;
 import org.loklak.tools.CacheMap;
 
 import twitter4j.TwitterException;

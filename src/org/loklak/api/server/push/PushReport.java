@@ -1,6 +1,6 @@
 package org.loklak.api.server.push;
 
-import org.loklak.data.ImportProfileEntry;
+import org.loklak.objects.ImportProfileEntry;
 
 import java.util.ArrayList;
 import java.util.List;
