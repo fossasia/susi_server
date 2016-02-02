@@ -56,7 +56,7 @@ public class AppsServlet extends HttpServlet {
         
         // generate json
         File apps = new File(DAO.html_dir, "apps");
-        JSONObject json = new JSONObject();
+        JSONObject json = new JSONObject(true);
         JSONArray app_array = new JSONArray();
         json.put("apps", app_array);
         for (String appname: apps.list()) try {

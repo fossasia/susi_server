@@ -224,7 +224,7 @@ public class ImportProfileServlet extends HttpServlet {
         }
         post.setResponse(response, "application/javascript");
 
-        JSONObject m = new JSONObject();
+        JSONObject m = new JSONObject(true);
         JSONObject metadata = new JSONObject();
         metadata.put("count", entries.size());
         metadata.put("client", post.getClientHost());
