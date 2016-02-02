@@ -29,10 +29,10 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentSkipListMap;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 import org.loklak.data.DAO;
-import org.loklak.tools.json.JSONArray;
-import org.loklak.tools.json.JSONException;
-import org.loklak.tools.json.JSONObject;
 
 /**
  * A timeline is a structure which holds tweet for the purpose of presentation

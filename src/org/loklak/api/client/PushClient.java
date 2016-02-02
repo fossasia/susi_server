@@ -23,10 +23,10 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.json.JSONException;
 import org.loklak.http.ClientConnection;
 import org.loklak.objects.Timeline;
 import org.loklak.tools.UTF8;
-import org.loklak.tools.json.JSONException;
 
 public class PushClient {
     

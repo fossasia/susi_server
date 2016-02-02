@@ -30,9 +30,9 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.concurrent.ConcurrentSkipListMap;
 
+import org.json.JSONObject;
 import org.loklak.data.DAO;
 import org.loklak.tools.DateParser;
-import org.loklak.tools.json.JSONObject;
 import org.loklak.tools.storage.JsonRepository;
 
 public class AccessTracker extends Thread {

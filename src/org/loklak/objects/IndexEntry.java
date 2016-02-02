@@ -21,7 +21,7 @@ package org.loklak.objects;
 
 import java.util.Map;
 
-import org.loklak.tools.json.JSONObject;
+import org.json.JSONObject;
 
 public interface IndexEntry {
 

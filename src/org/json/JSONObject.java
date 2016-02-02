@@ -1,4 +1,4 @@
-package org.loklak.tools.json;
+package org.json;
 
 /*
  Copyright (c) 2002 JSON.org

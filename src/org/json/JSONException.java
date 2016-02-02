@@ -1,4 +1,4 @@
-package org.loklak.tools.json;
+package org.json;
 
 /**
  * The JSONException is thrown by the JSON.org classes when things are amiss.

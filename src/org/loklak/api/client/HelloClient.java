@@ -24,11 +24,11 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.eclipse.jetty.util.log.Log;
+import org.json.JSONObject;
 import org.loklak.data.DAO;
 import org.loklak.http.ClientConnection;
 import org.loklak.tools.DateParser;
 import org.loklak.tools.UTF8;
-import org.loklak.tools.json.JSONObject;
 
 public class HelloClient {
 

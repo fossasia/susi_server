@@ -24,8 +24,8 @@ import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+import org.json.JSONObject;
 import org.loklak.harvester.SourceType;
-import org.loklak.tools.json.JSONObject;
 
 public class AccountEntry extends AbstractIndexEntry implements IndexEntry {
 

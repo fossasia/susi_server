@@ -32,10 +32,10 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.eclipse.jetty.util.log.Log;
+import org.json.JSONArray;
+import org.json.JSONObject;
 import org.loklak.data.DAO;
 import org.loklak.http.RemoteAccess;
-import org.loklak.tools.json.JSONArray;
-import org.loklak.tools.json.JSONObject;
 
 public class AppsServlet extends HttpServlet {
 

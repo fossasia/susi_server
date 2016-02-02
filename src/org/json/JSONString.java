@@ -1,4 +1,4 @@
-package org.loklak.tools.json;
+package org.json;
 
 /**
  * The <code>JSONString</code> interface allows a <code>toJSONString()</code>

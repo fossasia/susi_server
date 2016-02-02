@@ -32,6 +32,8 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.json.JSONException;
+import org.json.JSONObject;
 import org.loklak.data.Classifier;
 import org.loklak.data.DAO;
 import org.loklak.data.Classifier.Category;
@@ -41,8 +43,6 @@ import org.loklak.geo.LocationSource;
 import org.loklak.harvester.SourceType;
 import org.loklak.objects.QueryEntry.PlaceContext;
 import org.loklak.tools.bayes.Classification;
-import org.loklak.tools.json.JSONException;
-import org.loklak.tools.json.JSONObject;
 
 public class MessageEntry extends AbstractIndexEntry implements IndexEntry {
 

@@ -34,10 +34,10 @@ import java.util.TimeZone;
 import java.util.TreeSet;
 import java.util.zip.GZIPInputStream;
 
+import org.json.JSONObject;
 import org.loklak.data.DAO;
 import org.loklak.tools.Compression;
 import org.loklak.tools.UTF8;
-import org.loklak.tools.json.JSONObject;
 
 
 public class JsonRepository {

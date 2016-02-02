@@ -19,7 +19,7 @@
 
 package org.loklak.objects;
 
-import org.loklak.tools.json.JSONObject;
+import org.json.JSONObject;
 
 public class Peer extends JSONObject {
 

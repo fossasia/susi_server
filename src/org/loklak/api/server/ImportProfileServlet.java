@@ -24,13 +24,13 @@ import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.elasticsearch.common.xcontent.XContentFactory;
 import org.elasticsearch.common.xcontent.XContentParser;
 import org.elasticsearch.common.xcontent.json.JsonXContent;
+import org.json.JSONArray;
+import org.json.JSONObject;
 import org.loklak.data.DAO;
 import org.loklak.harvester.SourceType;
 import org.loklak.http.RemoteAccess;
 import org.loklak.objects.ImportProfileEntry;
 import org.loklak.objects.Timeline;
-import org.loklak.tools.json.JSONArray;
-import org.loklak.tools.json.JSONObject;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;

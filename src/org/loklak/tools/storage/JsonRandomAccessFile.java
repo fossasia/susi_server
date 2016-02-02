@@ -32,12 +32,12 @@ import junit.framework.TestCase;
 
 import org.eclipse.jetty.util.ConcurrentHashSet;
 import org.eclipse.jetty.util.log.Log;
+import org.json.JSONObject;
 import org.junit.After;
 import org.junit.Before;
 import org.loklak.data.DAO;
 import org.loklak.tools.ASCII;
 import org.loklak.tools.BufferedRandomAccessFile;
-import org.loklak.tools.json.JSONObject;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;

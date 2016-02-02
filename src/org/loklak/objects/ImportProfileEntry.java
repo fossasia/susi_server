@@ -18,9 +18,9 @@
  */
 package org.loklak.objects;
 
+import org.json.JSONObject;
 import org.loklak.harvester.HarvestingFrequency;
 import org.loklak.harvester.SourceType;
-import org.loklak.tools.json.JSONObject;
 
 import java.net.MalformedURLException;
 import java.net.URL;

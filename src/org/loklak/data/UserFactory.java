@@ -22,8 +22,8 @@ package org.loklak.data;
 import java.util.Map;
 
 import org.elasticsearch.client.Client;
+import org.json.JSONObject;
 import org.loklak.objects.UserEntry;
-import org.loklak.tools.json.JSONObject;
 
 public class UserFactory extends AbstractIndexFactory<UserEntry> implements IndexFactory<UserEntry> {
     

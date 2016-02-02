@@ -22,8 +22,8 @@ package org.loklak.data;
 import java.util.Map;
 
 import org.elasticsearch.client.Client;
+import org.json.JSONObject;
 import org.loklak.objects.QueryEntry;
-import org.loklak.tools.json.JSONObject;
 
 public class QueryFactory extends AbstractIndexFactory<QueryEntry> implements IndexFactory<QueryEntry> {
 

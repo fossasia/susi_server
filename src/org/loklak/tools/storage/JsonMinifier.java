@@ -28,10 +28,10 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.zip.Deflater;
 import java.util.zip.GZIPOutputStream;
 
+import org.json.JSONObject;
 import org.loklak.data.DAO;
 import org.loklak.tools.Compression;
 import org.loklak.tools.UTF8;
-import org.loklak.tools.json.JSONObject;
 
 
 public class JsonMinifier {

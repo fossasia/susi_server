@@ -38,14 +38,14 @@ import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.index.query.RangeQueryBuilder;
+import org.json.JSONException;
+import org.json.JSONObject;
 import org.loklak.data.Classifier;
 import org.loklak.data.DAO;
 import org.loklak.geo.GeoLocation;
 import org.loklak.geo.GeoMark;
 import org.loklak.harvester.SourceType;
 import org.loklak.tools.DateParser;
-import org.loklak.tools.json.JSONException;
-import org.loklak.tools.json.JSONObject;
 
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;

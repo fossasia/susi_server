@@ -20,8 +20,8 @@
 package org.loklak.objects;
 
 import org.elasticsearch.common.Base64;
-import org.loklak.tools.json.JSONException;
-import org.loklak.tools.json.JSONObject;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.io.IOException;
 import java.util.Date;

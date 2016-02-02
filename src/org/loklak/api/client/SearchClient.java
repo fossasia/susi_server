@@ -22,13 +22,13 @@ package org.loklak.api.client;
 import java.io.IOException;
 import java.net.URLEncoder;
 
+import org.json.JSONArray;
+import org.json.JSONObject;
 import org.loklak.http.ClientConnection;
 import org.loklak.objects.MessageEntry;
 import org.loklak.objects.Timeline;
 import org.loklak.objects.UserEntry;
 import org.loklak.tools.UTF8;
-import org.loklak.tools.json.JSONArray;
-import org.loklak.tools.json.JSONObject;
 
 public class SearchClient {
 
