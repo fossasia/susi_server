@@ -38,6 +38,8 @@ import com.fasterxml.jackson.databind.ObjectWriter;
 
 public abstract class AbstractIndexEntry implements IndexEntry {
 
+    public  final static String TIMESTAMP_FIELDNAME = "timestamp";
+    
     public AbstractIndexEntry() {
     }
     

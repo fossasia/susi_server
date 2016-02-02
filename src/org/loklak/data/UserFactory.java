@@ -25,16 +25,6 @@ import org.elasticsearch.client.Client;
 import org.loklak.tools.json.JSONObject;
 
 public class UserFactory extends AbstractIndexFactory<UserEntry> implements IndexFactory<UserEntry> {
-
-    public final static String field_screen_name = "screen_name"; // used as id of the record
-    public final static String field_user_id = "user_id"; // to reference the id of the providing service (here: twitter)
-    public final static String field_name = "name";
-    public final static String field_profile_image_url_http = "profile_image_url_http";
-    public final static String field_profile_image_url_https = "profile_image_url_https";
-    public final static String field_profile_image = "profile_image";
-    public final static String field_appearance_first = "appearance_first";
-    public final static String field_appearance_latest = "appearance_latest";
-    
     
     public UserFactory(final Client elasticsearch_client, final String index_name, final int cacheSize, final int existSize) {
         super(elasticsearch_client, index_name, cacheSize, existSize);

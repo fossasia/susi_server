@@ -809,7 +809,7 @@ public class DAO {
         if (user_id == null || user_id.length() == 0) return null;
         // prepare request
         BoolQueryBuilder query = QueryBuilders.boolQuery();
-        query.must(QueryBuilders.termQuery(UserFactory.field_user_id, user_id));
+        query.must(QueryBuilders.termQuery(UserEntry.field_user_id, user_id));
 
         SearchRequestBuilder request = elasticsearch_client.prepareSearch(IndexName.users.name())
                 .setSearchType(SearchType.QUERY_THEN_FETCH)

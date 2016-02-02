@@ -32,25 +32,34 @@ import java.util.Map;
 import com.fasterxml.jackson.core.JsonGenerator;
 
 public class UserEntry extends AbstractIndexEntry implements IndexEntry {
+
+    public final static String field_screen_name = "screen_name"; // used as id of the record
+    public final static String field_user_id = "user_id"; // to reference the id of the providing service (here: twitter)
+    public final static String field_name = "name";
+    public final static String field_profile_image_url_http = "profile_image_url_http";
+    public final static String field_profile_image_url_https = "profile_image_url_https";
+    public final static String field_profile_image = "profile_image";
+    public final static String field_appearance_first = "appearance_first";
+    public final static String field_appearance_latest = "appearance_latest";
     
     private final Map<String, Object> map;
 
     public UserEntry(String user_id, String screen_name_raw, String profile_image_url, String name_raw) {
         this.map =  new LinkedHashMap<>();
-        this.map.put(UserFactory.field_user_id, user_id);
-        this.map.put(UserFactory.field_screen_name, screen_name_raw.replaceAll("</?s>", "").replaceAll("</?b>", "").replaceAll("@", ""));
-        this.map.put(UserFactory.field_name, name_raw);
-        this.map.put(profile_image_url.startsWith("https:") ? UserFactory.field_profile_image_url_https : UserFactory.field_profile_image_url_http, profile_image_url);
+        this.map.put(field_user_id, user_id);
+        this.map.put(field_screen_name, screen_name_raw.replaceAll("</?s>", "").replaceAll("</?b>", "").replaceAll("@", ""));
+        this.map.put(field_name, name_raw);
+        this.map.put(profile_image_url.startsWith("https:") ? field_profile_image_url_https : field_profile_image_url_http, profile_image_url);
         long now = System.currentTimeMillis();
-        this.map.put(UserFactory.field_appearance_first, new Date(now));
-        this.map.put(UserFactory.field_appearance_latest, new Date(now));
+        this.map.put(field_appearance_first, new Date(now));
+        this.map.put(field_appearance_latest, new Date(now));
     }
 
     public UserEntry(final Map<String, Object> map) {
         this.map = map;
         Date now = new Date();
-        map.put(UserFactory.field_appearance_first, parseDate(map.get(UserFactory.field_appearance_first), now));
-        map.put(UserFactory.field_appearance_latest, parseDate(map.get(UserFactory.field_appearance_latest), now));
+        map.put(field_appearance_first, parseDate(map.get(field_appearance_first), now));
+        map.put(field_appearance_latest, parseDate(map.get(field_appearance_latest), now));
     }
 
     public UserEntry(final JSONObject json) {
@@ -64,8 +73,8 @@ public class UserEntry extends AbstractIndexEntry implements IndexEntry {
             } catch (JSONException e) {}
         }
         Date now = new Date();
-        map.put(UserFactory.field_appearance_first, parseDate(map.get(UserFactory.field_appearance_first), now));
-        map.put(UserFactory.field_appearance_latest, parseDate(map.get(UserFactory.field_appearance_latest), now));
+        map.put(field_appearance_first, parseDate(map.get(field_appearance_first), now));
+        map.put(field_appearance_latest, parseDate(map.get(field_appearance_latest), now));
     }
 
     
@@ -83,30 +92,30 @@ public class UserEntry extends AbstractIndexEntry implements IndexEntry {
     }
     
     public String getUserId() {
-        return parseString((String) this.map.get(UserFactory.field_user_id));
+        return parseString((String) this.map.get(field_user_id));
     }
 
     public String getScreenName() {
-        return parseString((String) this.map.get(UserFactory.field_screen_name));
+        return parseString((String) this.map.get(field_screen_name));
     }
 
     public String getName() {
-        return MessageEntry.html2utf8(parseString((String) this.map.get(UserFactory.field_name))); // html2utf8 should not be necessary here since it is already applied in the scraper; however there are old data lines which had not been converted
+        return MessageEntry.html2utf8(parseString((String) this.map.get(field_name))); // html2utf8 should not be necessary here since it is already applied in the scraper; however there are old data lines which had not been converted
     }
 
     public String getProfileImageUrl() {
-        Object url = this.map.get(UserFactory.field_profile_image_url_https);
+        Object url = this.map.get(field_profile_image_url_https);
         if (url != null) return (String) url;
-        return parseString((String) this.map.get(UserFactory.field_profile_image_url_http));
+        return parseString((String) this.map.get(field_profile_image_url_http));
     }
 
     public boolean containsProfileImage() {
-        Object image = this.map.get(UserFactory.field_profile_image);
+        Object image = this.map.get(field_profile_image);
         return image != null && ((String) image).length() > 0;
     }
 
     public byte[] getProfileImage() {
-        Object image = this.map.get(UserFactory.field_profile_image);
+        Object image = this.map.get(field_profile_image);
         if (image == null) return null;
         try {
             return Base64.decode((String) image);
@@ -116,32 +125,32 @@ public class UserEntry extends AbstractIndexEntry implements IndexEntry {
     }
 
     public void setProfileImageUrl(String url) {
-        this.map.put(url.startsWith("https:") ? UserFactory.field_profile_image_url_https : UserFactory.field_profile_image_url_http, url);
+        this.map.put(url.startsWith("https:") ? field_profile_image_url_https : field_profile_image_url_http, url);
     }
     
     public void setProfileImage(byte[] image) {
-        this.map.put(UserFactory.field_profile_image, Base64.encodeBytes(image));
+        this.map.put(field_profile_image, Base64.encodeBytes(image));
     }
 
     public Date getAppearanceFirst() {
-        return parseDate(this.map.get(UserFactory.field_appearance_first));
+        return parseDate(this.map.get(field_appearance_first));
     }
 
     public Date getAppearanceLatest() {
-        return parseDate(this.map.get(UserFactory.field_appearance_latest));
+        return parseDate(this.map.get(field_appearance_latest));
     }
     
     public void toJSON(JsonGenerator json) {
         try {
             json.writeStartObject(); // object name for this should be 'user'
-            json.writeObjectField(UserFactory.field_screen_name, getScreenName());
-            json.writeObjectField(UserFactory.field_user_id, getUserId());
-            json.writeObjectField(UserFactory.field_name, getName());
-            if (this.map.containsKey(UserFactory.field_profile_image_url_http)) json.writeObjectField(UserFactory.field_profile_image_url_http, this.map.get(UserFactory.field_profile_image_url_http));
-            if (this.map.containsKey(UserFactory.field_profile_image_url_https)) json.writeObjectField(UserFactory.field_profile_image_url_https, this.map.get(UserFactory.field_profile_image_url_https));
-            writeDate(json, UserFactory.field_appearance_first, getAppearanceFirst().getTime());
-            writeDate(json, UserFactory.field_appearance_latest, getAppearanceLatest().getTime());
-            if (this.map.containsKey(UserFactory.field_profile_image)) json.writeObjectField(UserFactory.field_profile_image, this.map.get(UserFactory.field_profile_image));
+            json.writeObjectField(field_screen_name, getScreenName());
+            json.writeObjectField(field_user_id, getUserId());
+            json.writeObjectField(field_name, getName());
+            if (this.map.containsKey(field_profile_image_url_http)) json.writeObjectField(field_profile_image_url_http, this.map.get(field_profile_image_url_http));
+            if (this.map.containsKey(field_profile_image_url_https)) json.writeObjectField(field_profile_image_url_https, this.map.get(field_profile_image_url_https));
+            writeDate(json, field_appearance_first, getAppearanceFirst().getTime());
+            writeDate(json, field_appearance_latest, getAppearanceLatest().getTime());
+            if (this.map.containsKey(field_profile_image)) json.writeObjectField(field_profile_image, this.map.get(field_profile_image));
             json.writeEndObject();
         } catch (IOException e) {
         }
@@ -149,27 +158,27 @@ public class UserEntry extends AbstractIndexEntry implements IndexEntry {
     
     public Map<String, Object> toMap() {
         Map<String, Object> m = new LinkedHashMap<>();
-        m.put(UserFactory.field_screen_name, getScreenName());
-        m.put(UserFactory.field_user_id, getUserId());
-        m.put(UserFactory.field_name, getName());
-        if (this.map.containsKey(UserFactory.field_profile_image_url_http)) m.put(UserFactory.field_profile_image_url_http, this.map.get(UserFactory.field_profile_image_url_http));
-        if (this.map.containsKey(UserFactory.field_profile_image_url_https)) m.put(UserFactory.field_profile_image_url_https, this.map.get(UserFactory.field_profile_image_url_https));
-        m.put(UserFactory.field_appearance_first, utcFormatter.print(getAppearanceFirst().getTime()));
-        m.put(UserFactory.field_appearance_latest, utcFormatter.print(getAppearanceLatest().getTime()));
-        if (this.map.containsKey(UserFactory.field_profile_image)) m.put(UserFactory.field_profile_image, this.map.get(UserFactory.field_profile_image));
+        m.put(field_screen_name, getScreenName());
+        m.put(field_user_id, getUserId());
+        m.put(field_name, getName());
+        if (this.map.containsKey(field_profile_image_url_http)) m.put(field_profile_image_url_http, this.map.get(field_profile_image_url_http));
+        if (this.map.containsKey(field_profile_image_url_https)) m.put(field_profile_image_url_https, this.map.get(field_profile_image_url_https));
+        m.put(field_appearance_first, utcFormatter.print(getAppearanceFirst().getTime()));
+        m.put(field_appearance_latest, utcFormatter.print(getAppearanceLatest().getTime()));
+        if (this.map.containsKey(field_profile_image)) m.put(field_profile_image, this.map.get(field_profile_image));
         return m;
     }
     
     public JSONObject toJSON() throws JSONException {
         JSONObject json = new JSONObject();
-        json.put(UserFactory.field_screen_name, getScreenName());
-        json.put(UserFactory.field_user_id, getUserId());
-        json.put(UserFactory.field_name, getName());
-        if (this.map.containsKey(UserFactory.field_profile_image_url_http)) json.put(UserFactory.field_profile_image_url_http, this.map.get(UserFactory.field_profile_image_url_http));
-        if (this.map.containsKey(UserFactory.field_profile_image_url_https)) json.put(UserFactory.field_profile_image_url_https, this.map.get(UserFactory.field_profile_image_url_https));
-        json.put(UserFactory.field_appearance_first, utcFormatter.print(getAppearanceFirst().getTime()));
-        json.put(UserFactory.field_appearance_latest, utcFormatter.print(getAppearanceLatest().getTime()));
-        if (this.map.containsKey(UserFactory.field_profile_image)) json.put(UserFactory.field_profile_image, this.map.get(UserFactory.field_profile_image));
+        json.put(field_screen_name, getScreenName());
+        json.put(field_user_id, getUserId());
+        json.put(field_name, getName());
+        if (this.map.containsKey(field_profile_image_url_http)) json.put(field_profile_image_url_http, this.map.get(field_profile_image_url_http));
+        if (this.map.containsKey(field_profile_image_url_https)) json.put(field_profile_image_url_https, this.map.get(field_profile_image_url_https));
+        json.put(field_appearance_first, utcFormatter.print(getAppearanceFirst().getTime()));
+        json.put(field_appearance_latest, utcFormatter.print(getAppearanceLatest().getTime()));
+        if (this.map.containsKey(field_profile_image)) json.put(field_profile_image, this.map.get(field_profile_image));
         return json;
     }
 

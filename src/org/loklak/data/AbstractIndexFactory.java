@@ -40,7 +40,6 @@ import org.loklak.tools.CacheSet;
  */
 public abstract class AbstractIndexFactory<Entry extends IndexEntry> implements IndexFactory<Entry> {
     
-    public  final static String      TIMESTAMP_FIELDNAME = "timestamp";
     private final static VersionType UPDATE_VERSION_TYPE = VersionType.FORCE;
     private final static int         MAX_BULK_SIZE       =  1500;
     private final static int         MAX_BULK_TIME       = 10000;
@@ -131,7 +130,7 @@ public abstract class AbstractIndexFactory<Entry extends IndexEntry> implements 
              *   builder.map(source);
              */
             if (jsonMap != null) {
-                if (!jsonMap.containsKey(TIMESTAMP_FIELDNAME)) jsonMap.put(TIMESTAMP_FIELDNAME, AbstractIndexEntry.utcFormatter.print(System.currentTimeMillis()));
+                if (!jsonMap.containsKey(AbstractIndexEntry.TIMESTAMP_FIELDNAME)) jsonMap.put(AbstractIndexEntry.TIMESTAMP_FIELDNAME, AbstractIndexEntry.utcFormatter.print(System.currentTimeMillis()));
                 elasticsearch_client.prepareIndex(this.index_name, type, id).setSource(jsonMap)
                     .setVersion(1).setVersionType(UPDATE_VERSION_TYPE).execute().actionGet();
                 //System.out.println("writing 1 entry"); // debug
@@ -177,7 +176,7 @@ public abstract class AbstractIndexFactory<Entry extends IndexEntry> implements 
             this.id = id;
             this.type = type;
             this.jsonMap = entry.toMap();
-            if (!this.jsonMap.containsKey(TIMESTAMP_FIELDNAME)) this.jsonMap.put(TIMESTAMP_FIELDNAME, AbstractIndexEntry.utcFormatter.print(System.currentTimeMillis()));
+            if (!this.jsonMap.containsKey(AbstractIndexEntry.TIMESTAMP_FIELDNAME)) this.jsonMap.put(AbstractIndexEntry.TIMESTAMP_FIELDNAME, AbstractIndexEntry.utcFormatter.print(System.currentTimeMillis()));
         }
     }
     
