@@ -160,6 +160,9 @@ public class JSONObject {
 
     /**
      * Construct an empty JSONObject.
+     * 
+     * @param ordered
+     *            if ordered == true, then the JSONObject keeps the original order of properties
      */
     public JSONObject(boolean ordered) {
         this.map = ordered ? new LinkedHashMap<String, Object>() : new HashMap<String, Object>();
