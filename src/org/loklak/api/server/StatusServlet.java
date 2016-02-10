@@ -137,6 +137,7 @@ public class StatusServlet extends HttpServlet {
         if (jsonp) sos.println(");");
         sos.println();
         post.finalize();
+        FileHandler.setCaching(response, 10); // prevent re-loading of this servlet in the next 10 seconds
     }
 
     
