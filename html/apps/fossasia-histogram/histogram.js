@@ -1,7 +1,7 @@
 var app = angular.module('histogramApp', []);
 
 app.controller("histogram", function($scope, $http) {
-  $http.jsonp('http://loklak.org/api/search.json?callback=JSON_CALLBACK&q=fossasia%20since:2015-12-10&source=cache&count=0&fields=created_at')
+  $http.jsonp('/api/search.json?callback=JSON_CALLBACK&q=fossasia%20since:2015-12-10&source=cache&count=0&fields=created_at')
        .then(function(response) {
          points = [];
          for (var key in response.data.aggregations.created_at) {
