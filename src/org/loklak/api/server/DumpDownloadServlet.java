@@ -56,8 +56,7 @@ public class DumpDownloadServlet extends HttpServlet {
         if (path.length() <= 1) {
             // send directory as html
 
-            response.setDateHeader("Last-Modified", now);
-            response.setDateHeader("Expires", now + 10000);
+            FileHandler.setCaching(response, 60);
             response.setContentType("text/html");
             response.setCharacterEncoding("UTF-8");
             response.setStatus(HttpServletResponse.SC_OK);

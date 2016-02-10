@@ -85,6 +85,7 @@ public class GraphServlet extends HttpServlet {
         if (topology != null) m.put("topology", topology);
         
         // write json
+        FileHandler.setCaching(response, 10);
         response.setCharacterEncoding("UTF-8");
         PrintWriter sos = response.getWriter();
         if (jsonp) sos.print(callback + "(");
@@ -94,25 +95,3 @@ public class GraphServlet extends HttpServlet {
         post.finalize();
     }
 }
-
-/*
- * produce something like that:
-{
-"edges" : "76",
-"maxdepth" : "2",
-"graph" : [{"source":"/en/index.html", "target":"http://fsfe.org/about/basics/freesoftware.en.html", "type":"Outbound", "depthSource":"-1", "depthTarget":"-1"},
-{"source":"/en/index.html", "target":"http://en.wikipedia.org/wiki/Peer-to-peer", "type":"Outbound", "depthSource":"-1", "depthTarget":"-1"},
-{"source":"/en/index.html", "target":"http://www.gnu.org/licenses/gpl-2.0.html", "type":"Outbound", "depthSource":"-1", "depthTarget":"-1"},
-{"source":"/en/index.html", "target":"http://localhost:8090/", "type":"Outbound", "depthSource":"-1", "depthTarget":"-1"},
-{"source":"/en/index.html", "target":"https://www.youtube.com/watch?v=CFwebavBU0s", "type":"Outbound", "depthSource":"-1", "depthTarget":"-1"},
-{"source":"/en/index.html", "target":"http://openjdk.java.net/install/", "type":"Outbound", "depthSource":"-1", "depthTarget":"-1"},
-{"source":"/en/index.html", "target":"https://www.youtube.com/watch?v=iqJuf_EA1UE", "type":"Outbound", "depthSource":"-1", "depthTarget":"-1"},
-{"source":"/en/index.html", "target":"http://www.yacy-websuche.de/wiki/index.php/En:DebianInstall", "type":"Outbound", "depthSource":"-1", "depthTarget":"-1"},
-{"source":"/en/index.html", "target":"https://www.youtube.com/watch?v=XDoVNzOMoIo", "type":"Outbound", "depthSource":"-1", "depthTarget":"-1"},
-{"source":"/en/index.html", "target":"http://suma-ev.de/", "type":"Outbound", "depthSource":"-1", "depthTarget":"-1"},
-{"source":"/en/index.html", "target":"http://loklak.org/", "type":"Outbound", "depthSource":"-1", "depthTarget":"-1"},
-{"source":"/en/index.html", "target":"https://shop.spreadshirt.net/geekstuff/", "type":"Outbound", "depthSource":"-1", "depthTarget":"-1"},
-{"source":"/en/index.html", "target":"https://twitter.com/share", "type":"Outbound", "depthSource":"-1", "depthTarget":"-1"}
-]
-}
-*/

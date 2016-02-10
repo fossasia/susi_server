@@ -144,7 +144,8 @@ public class ThreaddumpServlet extends HttpServlet {
             bufferappend(buffer, "ELASTICSEARCH NODE SETTINGS");
             bufferappend(buffer, DAO.nodeSettings().toString());
         }
-        
+
+        FileHandler.setCaching(response, 10);
         post.setResponse(response, "text/plain");
         response.getOutputStream().write(UTF8.getBytes(buffer.toString()));
         post.finalize();

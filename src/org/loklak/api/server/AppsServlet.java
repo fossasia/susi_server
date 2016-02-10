@@ -76,6 +76,7 @@ public class AppsServlet extends HttpServlet {
         
         // write json
         response.setCharacterEncoding("UTF-8");
+        FileHandler.setCaching(response, 60);
         PrintWriter sos = response.getWriter();
         if (jsonp) sos.print(callback + "(");
         sos.print(json.toString(2));
