@@ -47,7 +47,6 @@ import org.eclipse.jetty.server.handler.DefaultHandler;
 import org.eclipse.jetty.server.handler.ErrorHandler;
 import org.eclipse.jetty.server.handler.HandlerList;
 import org.eclipse.jetty.server.handler.IPAccessHandler;
-import org.eclipse.jetty.server.handler.ResourceHandler;
 import org.eclipse.jetty.servlet.FilterHolder;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
@@ -62,6 +61,7 @@ import org.loklak.api.server.AssetServlet;
 import org.loklak.api.server.CampaignServlet;
 import org.loklak.api.server.CrawlerServlet;
 import org.loklak.api.server.DumpDownloadServlet;
+import org.loklak.api.server.FileHandler;
 import org.loklak.api.server.GeocodeServlet;
 import org.loklak.api.server.HelloServlet;
 import org.loklak.api.server.PeersServlet;
@@ -276,10 +276,10 @@ public class LoklakServer {
         errorHandler.setShowStacks(true);
         servletHandler.setErrorHandler(errorHandler);
         
-        ResourceHandler fileHandler = new ResourceHandler();
+        FileHandler fileHandler = new FileHandler(Integer.parseInt(config.get("www.expires")));
         fileHandler.setDirectoriesListed(true);
         fileHandler.setWelcomeFiles(new String[]{ "index.html" });
-        fileHandler.setResourceBase("html");
+        fileHandler.setResourceBase(config.get("www.path"));
         
         RewriteHandler rewriteHandler = new RewriteHandler();
         rewriteHandler.setRewriteRequestURI(true);
