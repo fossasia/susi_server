@@ -10,6 +10,10 @@ if [[ -n `./apicall.sh index.html | grep "loklak"` ]]; then
   FLAG=1
 fi
 
+if [[ $FLAG -eq '0' && -f ../data/loklak.log && `tail -1 ../data/loklak.log` == *"Waiting for elasticsearch yellow status"* ]]; then
+  FLAG=1
+fi
+
 if [ $FLAG -eq '0' ]; then
   ./stop.sh & sleep 60; kill $!
   ./kill.sh
