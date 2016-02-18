@@ -93,15 +93,6 @@ public class DateParser {
         return - (int) TimeUnit.MILLISECONDS.toMinutes(timeZone.getRawOffset()); // we negate the offset because thats the value which is provided by the browser as well 
     }
     
-    /*
-    public static String toPostDate(Date d, int timezoneOffset) {
-        Calendar cal = Calendar.getInstance(DateParser.UTCtimeZone);
-        org.joda.time.DateTime k = (org.joda.time.DateTime) bucket.getKey();
-        cal.setTime(k.toDate());
-        cal.add(Calendar.MINUTE, -timezoneOffset);
-        
-    }
-    */
     public static void main(String[] args) {
         Calendar calendar = new GregorianCalendar();
         TimeZone timeZone = calendar.getTimeZone();

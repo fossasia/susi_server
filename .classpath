@@ -4,28 +4,28 @@
 	<classpathentry kind="lib" path="lib/joda-time-2.8.2.jar"/>
 	<classpathentry kind="lib" path="lib/jetty-servlet-9.2.6.v20141205.jar"/>
 	<classpathentry kind="lib" path="lib/guava-18.0.jar"/>
-	<classpathentry kind="lib" path="lib/elasticsearch-2.1.1.jar"/>
 	<classpathentry kind="lib" path="lib/jackson-core-2.6.2.jar"/>
 	<classpathentry kind="lib" path="lib/jackson-dataformat-cbor-2.6.2.jar"/>
 	<classpathentry kind="lib" path="lib/jackson-dataformat-smile-2.6.2.jar"/>
 	<classpathentry kind="lib" path="lib/jackson-dataformat-yaml-2.6.2.jar"/>
-	<classpathentry kind="lib" path="lib/lucene-analyzers-common-5.3.1.jar"/>
-	<classpathentry kind="lib" path="lib/lucene-backward-codecs-5.3.1.jar"/>
-	<classpathentry kind="lib" path="lib/lucene-core-5.3.1.jar"/>
-	<classpathentry kind="lib" path="lib/lucene-expressions-5.3.1.jar"/>
-	<classpathentry kind="lib" path="lib/lucene-grouping-5.3.1.jar"/>
-	<classpathentry kind="lib" path="lib/lucene-highlighter-5.3.1.jar"/>
-	<classpathentry kind="lib" path="lib/lucene-join-5.3.1.jar"/>
-	<classpathentry kind="lib" path="lib/lucene-memory-5.3.1.jar"/>
-	<classpathentry kind="lib" path="lib/lucene-misc-5.3.1.jar"/>
-	<classpathentry kind="lib" path="lib/lucene-queries-5.3.1.jar"/>
-	<classpathentry kind="lib" path="lib/lucene-queryparser-5.3.1.jar"/>
-	<classpathentry kind="lib" path="lib/lucene-sandbox-5.3.1.jar"/>
-	<classpathentry kind="lib" path="lib/lucene-spatial-5.3.1.jar"/>
-	<classpathentry kind="lib" path="lib/lucene-spatial3d-5.3.1.jar"/>
-	<classpathentry kind="lib" path="lib/lucene-suggest-5.3.1.jar"/>
 	<classpathentry kind="lib" path="lib/snakeyaml-1.15.jar"/>
 	<classpathentry kind="lib" path="lib/spatial4j-0.5.jar"/>
+	<classpathentry kind="lib" path="lib/elasticsearch-2.2.0.jar"/>
+	<classpathentry kind="lib" path="lib/lucene-analyzers-common-5.4.1.jar"/>
+	<classpathentry kind="lib" path="lib/lucene-backward-codecs-5.4.1.jar"/>
+	<classpathentry kind="lib" path="lib/lucene-core-5.4.1.jar"/>
+	<classpathentry kind="lib" path="lib/lucene-grouping-5.4.1.jar"/>
+	<classpathentry kind="lib" path="lib/lucene-highlighter-5.4.1.jar"/>
+	<classpathentry kind="lib" path="lib/lucene-join-5.4.1.jar"/>
+	<classpathentry kind="lib" path="lib/lucene-memory-5.4.1.jar"/>
+	<classpathentry kind="lib" path="lib/lucene-misc-5.4.1.jar"/>
+	<classpathentry kind="lib" path="lib/lucene-queries-5.4.1.jar"/>
+	<classpathentry kind="lib" path="lib/lucene-queryparser-5.4.1.jar"/>
+	<classpathentry kind="lib" path="lib/lucene-sandbox-5.4.1.jar"/>
+	<classpathentry kind="lib" path="lib/lucene-spatial-5.4.1.jar"/>
+	<classpathentry kind="lib" path="lib/lucene-spatial3d-5.4.1.jar"/>
+	<classpathentry kind="lib" path="lib/lucene-suggest-5.4.1.jar"/>
+	<classpathentry kind="lib" path="lib/securesm-1.0.jar"/>
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.6"/>
 	<classpathentry kind="lib" path="lib/jetty-server-9.2.6.v20141205.jar"/>
