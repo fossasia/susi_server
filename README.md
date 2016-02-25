@@ -1,7 +1,7 @@
 # loklak
 [![Build Status](https://travis-ci.org/loklak/loklak_server.svg?branch=master)](https://travis-ci.org/loklak/loklak_server)
 
-loklak is a server application which is able to collect messages from various sources, including twitter. The server contains a search index and a peer-to-peer index sharing interface. All messages are stored in a elasticsearch index.
+loklak is a server application which is able to collect messages from various sources, including twitter. The server contains a search index and a peer-to-peer index sharing interface. All messages are stored in an elasticsearch index.
 
 'Lok Lak' is also a very tasty Cambodian stir-fry meat dish (usually beef) with a LOT of fresh black pepper. If you ever have the chance to eat Beef Lok Lak, please try it. I hope not to scare vegetarians with this name, currently I am one as well.
 
@@ -16,7 +16,7 @@ If you like to be anonymous when searching things, want to archive tweets or mes
 - share tweets and tweet archives with other loklak users
 - search anonymously on your own search portal
 - create your own tweet search portal or statistical evaluations
-- use Kibana to analyze large amounts of tweets for statistical data.
+- use [Kibana](https://github.com/elastic/kibana) to analyze large amounts of tweets for statistical data.
 
 ## How do I install loklak: Download, Build, Run
 
@@ -38,7 +38,7 @@ A self-upgrading process is available which must be triggered by a shell command
     > bin/upgrade.sh
 
 ### How do I install loklak with Docker?
-To install loklak with Docker please refer to the [loklak Docker installation readme](https://raw.githubusercontent.com/loklak/loklak_server/master/installation_docker.md).
+To install loklak with Docker please refer to the [loklak Docker installation readme](installation_docker.md).
 
 ## How do I configure loklak?
 
@@ -67,28 +67,41 @@ Run elasticsearch-head with:
 
 ## Where can I find more information and documentation?
 
-The application has built-in documentation web pages, you will see them when you opened the application web pages or you can simply open html/index.html or just use http://loklak.org as reference.
+The application has built-in documentation web pages, you will see them when you opened the application web pages or you can simply open `html/index.html` or just use http://loklak.org as reference.
 
 ## How to compile using Gradle?
 - To install Gradle on ubuntu:
-```
-$ sudo add-apt-repository ppa:cwchien/gradle
 
-$ sudo apt-get update
+  ```
+  $ sudo add-apt-repository ppa:cwchien/gradle
 
-$ sudo apt-get install gradle
-```
+  $ sudo apt-get update
+
+  $ sudo apt-get install gradle
+  ```
 - To install Gradle on Mac OS X with homebrew
-```
-brew install gradle
-```
+
+  ```
+  brew install gradle
+  ```
 - To compile, first, create dir necessary for Gradle
-- `./gradle_init.sh`
-- Compile the source to classes and a jar file
-- `gradle assemble`
-- Compiled file can be find in build dir
-- Last, clean up so that we can still build the project using Ant
-- `./gradle_clean.sh`
+
+  ```
+  ./gradle_init.sh
+  ```
+
+  Compile the source to classes and a jar file
+
+  ```
+  gradle assemble
+  ```
+
+  Compiled file can be found in build dir
+  Last, clean up so that we can still build the project using Ant
+
+  ```
+  ./gradle_clean.sh
+  ```
 
 
 ## What is the software license?
@@ -107,11 +120,10 @@ Please see above.
 
 ## Where can I download ready-built releases of loklak?
 
-Nowhere, you must clone the git repository of loklak and built it yourself. Thats easy, just do
+Nowhere, you must clone the git repository of loklak and built it yourself. That's easy, just do
 - `git clone https://github.com/loklak/loklak_server.git`
 - `cd loklak`
 - then see above ("How do I run loklak")
-
 
 ## Where can I get the latest news about loklak?
 
