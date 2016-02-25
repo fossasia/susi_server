@@ -135,6 +135,10 @@ public class LoklakServer {
         // check if a loklak service is already running on configured port
         String httpPortS = config.get("port.http");
         int httpPort = httpPortS == null ? 9000 : Integer.parseInt(httpPortS);
+        Map<String, String> env = System.getenv();
+        if(env.containsKey("PORT")) {
+            httpPort = Integer.parseInt(env.get("PORT"));
+        }
         ServerSocket ss = null;
         try {
             ss = new ServerSocket(httpPort);
