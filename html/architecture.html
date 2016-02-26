@@ -117,7 +117,6 @@
             To retrieve the Twitter search results, a web page scraper is used to circumvent the forced OAuth identification of the search users. The search process has three phases:</p>
             <h3>Dispatching the Search Request</h3>
             <p>This happens when the <a href="api.html#search">search.json</a> api is called: the api servlet concurrently queries a Twitter scraper and the internal Elasticsearch index:</p>
-            <p>This happens when the <a href="api.html#search">search.json</a> api is called: the api servlet concurrently queries a Twitter scraper and the internal Elasticsearch index:</p>
             <img src="images/architecture_phase1.png" width="720">
             <p>As a part of this process, the Twitter scraper also <a href="about.html#deshortener">de-shortens</a> all links embedded in all Tweets from the search result.</p>
             <h3>Merging the Search Results </h3>
