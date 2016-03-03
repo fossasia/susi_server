@@ -21,13 +21,12 @@ package org.loklak.data;
 
 import java.util.Map;
 
-import org.elasticsearch.client.Client;
 import org.json.JSONObject;
 import org.loklak.objects.QueryEntry;
 
 public class QueryFactory extends AbstractIndexFactory<QueryEntry> implements IndexFactory<QueryEntry> {
 
-    public QueryFactory(final Client elasticsearch_client, final String index_name, final int cacheSize, final int existSize) {
+    public QueryFactory(final ElasticsearchClient elasticsearch_client, final String index_name, final int cacheSize, final int existSize) {
         super(elasticsearch_client, index_name, cacheSize, existSize);
     }
 

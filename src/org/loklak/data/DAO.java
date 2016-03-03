@@ -25,12 +25,9 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
+import java.net.InetAddress;
 import java.nio.file.Path;
-import java.util.AbstractMap;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
@@ -51,30 +48,7 @@ import com.github.fge.jackson.JsonLoader;
 import com.google.common.base.Charsets;
 
 import org.eclipse.jetty.util.log.Log;
-import org.elasticsearch.action.admin.cluster.health.ClusterHealthResponse;
-import org.elasticsearch.action.admin.cluster.stats.ClusterStatsResponse;
-import org.elasticsearch.action.admin.cluster.tasks.PendingClusterTasksResponse;
-import org.elasticsearch.action.count.CountResponse;
-import org.elasticsearch.action.search.SearchRequestBuilder;
-import org.elasticsearch.action.search.SearchResponse;
-import org.elasticsearch.action.search.SearchType;
-import org.elasticsearch.client.Client;
-import org.elasticsearch.cluster.health.ClusterHealthStatus;
 import org.elasticsearch.common.settings.Settings;
-import org.elasticsearch.common.unit.Fuzziness;
-import org.elasticsearch.index.query.BoolQueryBuilder;
-import org.elasticsearch.index.query.QueryBuilders;
-import org.elasticsearch.index.query.RangeQueryBuilder;
-import org.elasticsearch.node.Node;
-import org.elasticsearch.node.NodeBuilder;
-import org.elasticsearch.search.SearchHit;
-import org.elasticsearch.search.SearchHits;
-import org.elasticsearch.search.aggregations.AggregationBuilders;
-import org.elasticsearch.search.aggregations.bucket.histogram.DateHistogramInterval;
-import org.elasticsearch.search.aggregations.bucket.histogram.InternalHistogram;
-import org.elasticsearch.search.aggregations.bucket.terms.Terms;
-import org.elasticsearch.search.aggregations.bucket.terms.Terms.Bucket;
-import org.elasticsearch.search.sort.SortBuilders;
 import org.elasticsearch.search.sort.SortOrder;
 import org.loklak.Caretaker;
 import org.loklak.api.client.SearchClient;
@@ -147,8 +121,9 @@ public class DAO {
     public  static JsonDataset user_dump, followers_dump, following_dump;
     public  static AccessTracker access;
     private static File schema_dir, conv_schema_dir;
-    private static Node elasticsearch_node;
-    private static Client elasticsearch_client;
+    private static ElasticsearchClient elasticsearch_client;
+    //private static Node elasticsearch_node;
+    //private static Client elasticsearch_client;
     public static UserFactory users;
     private static AccountFactory accounts;
     public static MessageFactory messages;
@@ -167,31 +142,41 @@ public class DAO {
      * @param datadir the path to the data directory
      */
     public static void init(Map<String, String> configMap, Path dataPath) {
+
+        log("initializing loklak DAO");
+        
         config = configMap;
         conf_dir = new File("conf");
         bin_dir = new File("bin");
         html_dir = new File("html");
         File datadir = dataPath.toFile();
         try {
-
-            // use all config attributes with a key starting with "elasticsearch." to set elasticsearch settings
-            Settings.Builder settings = Settings.builder();
-            for (Map.Entry<String, String> entry: config.entrySet()) {
-                String key = entry.getKey();
-                if (key.startsWith("elasticsearch.")) settings.put(key.substring(14), entry.getValue());
+            // check if elasticsearch shall be accessed as external cluster
+            String transport = configMap.get("elasticsearch_transport.enabled");
+            if (transport != null && "true".equals(transport)) {
+                InetAddress address = InetAddress.getByName(configMap.get("elasticsearch_transport.host"));
+                int port = Integer.parseInt(configMap.get("elasticsearch_transport.port"));
+                String cluster_name = configMap.get("elasticsearch_transport.cluster.name");
+                elasticsearch_client = new ElasticsearchClient(address, port, cluster_name);
+            } else {
+                // use all config attributes with a key starting with "elasticsearch." to set elasticsearch settings
+                Settings.Builder settings = Settings.builder();
+                for (Map.Entry<String, String> entry: config.entrySet()) {
+                    String key = entry.getKey();
+                    if (key.startsWith("elasticsearch.")) settings.put(key.substring(14), entry.getValue());
+                }
+                // patch the home path
+                settings.put("path.home", datadir.getAbsolutePath());
+                settings.put("path.data", datadir.getAbsolutePath());
+                settings.build();
+                
+                // start elasticsearch
+                elasticsearch_client = new ElasticsearchClient(settings);
             }
-            // patch the home path
-            settings.put("path.home", datadir.getAbsolutePath());
-            settings.put("path.data", datadir.getAbsolutePath());
-            settings.build();
             
-            // start elasticsearch
-            elasticsearch_node = NodeBuilder.nodeBuilder().settings(settings).client(false).node();
-            elasticsearch_client = elasticsearch_node.client(); // TransportClient.builder().settings(settings).build();
-
             Path index_dir = dataPath.resolve("index");
             if (index_dir.toFile().exists()) OS.protectPath(index_dir); // no other permissions to this path
-            
+
             // define the index factories
             messages = new MessageFactory(elasticsearch_client, IndexName.messages.name(), CACHE_MAXSIZE, EXIST_MAXSIZE);
             users = new UserFactory(elasticsearch_client, IndexName.users.name(), CACHE_MAXSIZE, EXIST_MAXSIZE);
@@ -201,26 +186,29 @@ public class DAO {
 
             // create indices and set mapping (that shows how 'elastic' elasticsearch is: it's always good to define data types)
             File mappingsDir = new File(new File(conf_dir, "elasticsearch"), "mappings");
+            int shards = Integer.parseInt(configMap.get("elasticsearch.index.number_of_shards"));
+            int replicas = Integer.parseInt(configMap.get("elasticsearch.index.number_of_replicas"));
             for (IndexName index: IndexName.values()) {
+                log("initializing index '" + index.name() + "'...");
             	try {
-            		elasticsearch_client.admin().indices().prepareCreate(index.name()).execute().actionGet();
-                	elasticsearch_client.admin().indices().preparePutMapping(index.name())
-                		.setSource(new String(Files.readAllBytes(new File(mappingsDir, index.name() + ".json").toPath()), StandardCharsets.UTF_8))
-                		.setType("_default_")
-                		.execute()
-                		.actionGet();
+            	    elasticsearch_client.createIndexIfNotExists(index.name(), shards, replicas);
             	} catch (Throwable e) {
             		e.printStackTrace();
             	}
+                try {
+                    elasticsearch_client.setMapping(index.name(), new File(mappingsDir, index.name() + ".json"));
+                } catch (Throwable e) {
+                    e.printStackTrace();
+                }
             }
             // elasticsearch will probably take some time until it is started up. We do some other stuff meanwhile..
-            
+
             // create and document the data dump dir
             assets = new File(datadir, "assets");
             external_data = new File(datadir, "external");
             dictionaries = new File(external_data, "dictionaries");
             dictionaries.mkdirs();
-            
+
             // create message dump dir
             String message_dump_readme =
                 "This directory contains dump files for messages which arrived the platform.\n" +
@@ -261,7 +249,7 @@ public class DAO {
             OS.protectPath(log_dump_dir); // no other permissions to this path
             access = new AccessTracker(log_dump_dir.toFile(), ACCESS_DUMP_FILE_PREFIX, 60000, 3000);
             access.start(); // start monitor
-            
+
 	        import_profile_dump_dir = dataPath.resolve("import-profiles");
             import_profile_dump = new JsonRepository(import_profile_dump_dir.toFile(), IMPORT_PROFILE_FILE_PREFIX, null, JsonRepository.COMPRESSED_MODE, false, Runtime.getRuntime().availableProcessors());
 
@@ -277,30 +265,35 @@ public class DAO {
                 // download this file
                 ClientConnection.download("http://download.geonames.org/export/dump/cities1000.zip", cities1000);
             }
+            
             if (cities1000.exists()) {
                 geoNames = new GeoNames(cities1000, new File(conf_dir, "iso3166.json"), 1);
             } else {
                 geoNames = null;
             }
             
-            // finally wait for healty status of elasticsearch shards
-            ClusterHealthResponse health;
+            // finally wait for healthy status of elasticsearch shards
+            boolean ok;
             do {
                 log("Waiting for elasticsearch yellow status");
-                health = elasticsearch_client.admin().cluster().prepareHealth().setWaitForYellowStatus().execute().actionGet();
-            } while (health.isTimedOut());
+                ok = elasticsearch_client.wait_ready(60000l);
+            } while (!ok);
             /**
             do {
                 log("Waiting for elasticsearch green status");
                 health = elasticsearch_client.admin().cluster().prepareHealth().setWaitForGreenStatus().execute().actionGet();
             } while (health.isTimedOut());
             **/
-            log("elasticsearch has started up! initializing the classifier");
-            
+            log("elasticsearch has started up! initializing the classifier...");
+
             // start the classifier
-            Classifier.init(10000, 1000);
-            log("classifier initialized!");
-            
+            try {
+                Classifier.init(10000, 1000);
+            } catch (Throwable ee) {
+                ee.printStackTrace();
+            }
+            log("classifier initialized! initializing queries...");
+
             // initialize query harvesting
             //if (getConfig("retrieval.queries.enabled", false)) {
                 File harvestingPath = new File(datadir, "queries");
@@ -340,32 +333,27 @@ public class DAO {
                 }
                 queries.bulkCacheFlush();
             //}
+            log("queries initialized.");
         } catch (Throwable e) {
             e.printStackTrace();
         }
-        
+        log("finished startup!");
     }
     
-    private static boolean clusterReadyCache = false;
-    public static boolean clusterReady() {
-        if (clusterReadyCache) return true;
-        ClusterHealthResponse chr = elasticsearch_client.admin().cluster().prepareHealth().get();
-        clusterReadyCache = chr.getStatus() != ClusterHealthStatus.RED;
-        return clusterReadyCache;
+    public static boolean isReady() {
+        return elasticsearch_client.is_ready();
     }
     
     public static String pendingClusterTasks() {
-        PendingClusterTasksResponse r = elasticsearch_client.admin().cluster().preparePendingClusterTasks().get();
-        return r.prettyPrint();
+        return elasticsearch_client.pendingClusterTasks();
     }
     
     public static String clusterStats() {
-        ClusterStatsResponse r = elasticsearch_client.admin().cluster().prepareClusterStats().get();
-        return r.toString();
+        return elasticsearch_client.clusterStats();
     }
 
     public static Map<String, String> nodeSettings() {
-        return elasticsearch_node.settings().getAsMap();
+        return elasticsearch_client.nodeSettings();
     }
     
     public static File getAssetFile(String screen_name, String id_str, String file) {
@@ -440,7 +428,6 @@ public class DAO {
 
         // close the index
         elasticsearch_client.close();
-        elasticsearch_node.close();
         Log.getLog().info("closed DAO");
     }
     
@@ -585,51 +572,25 @@ public class DAO {
         }
         return true;
     }
-
-    public static long countLocalMessages(long millis) {
-        return countLocal(IndexName.messages.name(), millis);
-    }
     
     public static long countLocalMessages(String provider_hash) {
-        return countLocal(IndexName.messages.name(), provider_hash);
+        return elasticsearch_client.countLocal(IndexName.messages.name(), provider_hash);
+    }
+
+    public static long countLocalMessages(long millis) {
+        return elasticsearch_client.count(IndexName.messages.name(), "created_at", millis);
     }
     
     public static long countLocalUsers() {
-        return countLocal(IndexName.users.name(), -1);
+        return elasticsearch_client.count(IndexName.users.name(), "created_at", -1);
     }
 
     public static long countLocalQueries() {
-        return countLocal(IndexName.queries.name(), -1);
+        return elasticsearch_client.count(IndexName.queries.name(), "created_at", -1);
     }
     
     public static long countLocalAccounts() {
-        return countLocal(IndexName.accounts.name(), -1);
-    }
-
-    private static long countLocal(String index, long millis) {
-        try {
-            CountResponse response = elasticsearch_client.prepareCount(index)
-                .setQuery(millis <= 0 ? QueryBuilders.matchAllQuery() : QueryBuilders.rangeQuery("created_at").from(new Date(System.currentTimeMillis() - millis)))
-                .execute()
-                .actionGet();
-            return response.getCount();
-        } catch (Throwable e) {
-            e.printStackTrace();
-            return 0;
-        }
-    }
-    
-    private static long countLocal(String index, String provider_hash) {
-        try {
-            CountResponse response = elasticsearch_client.prepareCount(index)
-                .setQuery(QueryBuilders.matchQuery("provider_hash", provider_hash))
-                .execute()
-                .actionGet();
-            return response.getCount();
-        } catch (Throwable e) {
-            e.printStackTrace();
-            return 0;
-        }
+        return elasticsearch_client.count(IndexName.accounts.name(), "created_at", -1);
     }
 
     public static MessageEntry readMessage(String id) throws IOException {
@@ -659,7 +620,8 @@ public class DAO {
     public static class SearchLocalMessages {
         public Timeline timeline;
         public Map<String, List<Map.Entry<String, Long>>> aggregations;
-
+        public ElasticsearchClient.Query query;
+            
         /**
          * Search the local message cache using a elasticsearch query.
          * @param q - the query, for aggregation this which should include a time frame in the form since:yyyy-MM-dd until:yyyy-MM-dd
@@ -672,41 +634,13 @@ public class DAO {
          */
         public SearchLocalMessages(final String q, Timeline.Order order_field, int timezoneOffset, int resultCount, int aggregationLimit, String... aggregationFields) {
             this.timeline = new Timeline(order_field);
-            // prepare request
             QueryEntry.ElasticsearchQuery sq = new QueryEntry.ElasticsearchQuery(q, timezoneOffset);
-            SearchRequestBuilder request = elasticsearch_client.prepareSearch(IndexName.messages.name())
-                    .setSearchType(SearchType.QUERY_THEN_FETCH)
-                    .setQuery(sq.queryBuilder)
-                    .setFrom(0)
-                    .setSize(resultCount);
-            request.clearRescorers();
-            if (resultCount > 0) {
-                request.addSort(
-                        SortBuilders.fieldSort(order_field.getMessageFieldName())
-                            .unmappedType(order_field.getMessageFieldType())
-                            .order(SortOrder.DESC)
-                        );
-            }
-            boolean addTimeHistogram = false;
             long interval = sq.until.getTime() - sq.since.getTime();
-            DateHistogramInterval dateHistogrammInterval = interval > DateParser.WEEK_MILLIS ? DateHistogramInterval.DAY : interval > DateParser.HOUR_MILLIS * 3 ? DateHistogramInterval.HOUR : DateHistogramInterval.MINUTE;
-            for (String field: aggregationFields) {
-                if (field.equals("created_at")) {
-                    addTimeHistogram = true;
-                    request.addAggregation(AggregationBuilders.dateHistogram("created_at").field("created_at").timeZone("UTC").minDocCount(0).interval(dateHistogrammInterval));
-                } else {
-                    request.addAggregation(AggregationBuilders.terms(field).field(field).minDocCount(1).size(aggregationLimit));
-                }
-            }
-            // get response
-            SearchResponse response = request.execute().actionGet();
-            timeline.setHits((int) response.getHits().getTotalHits());
+            this.query =  elasticsearch_client.query(IndexName.messages.name(), sq.queryBuilder, order_field.getMessageFieldName(), timezoneOffset, resultCount, interval, "created_at", aggregationLimit, aggregationFields);
+            timeline.setHits(query.hitCount);
                     
             // evaluate search result
-            //long totalHitCount = response.getHits().getTotalHits();
-            SearchHit[] hits = response.getHits().getHits();
-            for (SearchHit hit: hits) {
-                Map<String, Object> map = hit.getSource();
+            for (Map<String, Object> map: query.result) {
                 MessageEntry tweet = new MessageEntry(map);
                 try {
                     UserEntry user = users.read(tweet.getScreenName());
@@ -719,85 +653,12 @@ public class DAO {
                     e.printStackTrace();
                 }
             }
-            
-            // evaluate aggregation
-            // collect results: fields
-            this.aggregations = new HashMap<>();
-            for (String field: aggregationFields) {
-                if (field.equals("created_at")) continue; // this has special handling below
-                Terms fieldCounts = response.getAggregations().get(field);
-                List<Bucket> buckets = fieldCounts.getBuckets();
-                // aggregate double-tokens (matching lowercase)
-                Map<String, Long> checkMap = new HashMap<>();
-                for (Bucket bucket: buckets) {
-                    String key = bucket.getKeyAsString().trim();
-                    if (key.length() > 0) {
-                        String k = key.toLowerCase();
-                        Long v = checkMap.get(k);
-                        checkMap.put(k, v == null ? bucket.getDocCount() : v + bucket.getDocCount());
-                    }
-                }
-                ArrayList<Map.Entry<String, Long>> list = new ArrayList<>(buckets.size());
-                for (Bucket bucket: buckets) {
-                    String key = bucket.getKeyAsString().trim();
-                    if (key.length() > 0) {
-                        Long v = checkMap.remove(key.toLowerCase());
-                        if (v == null) continue;
-                        list.add(new AbstractMap.SimpleEntry<String, Long>(key, v));
-                    }
-                }
-                aggregations.put(field, list);
-                //if (field.equals("place_country")) {
-                    // special handling of country aggregation: add the country center as well
-                //}
-            }
-            // date histogram:
-            if (addTimeHistogram) {
-                InternalHistogram<InternalHistogram.Bucket> dateCounts = response.getAggregations().get("created_at");              
-                ArrayList<Map.Entry<String, Long>> list = new ArrayList<>();
-                for (InternalHistogram.Bucket bucket : dateCounts.getBuckets()) {
-                    Calendar cal = Calendar.getInstance(DateParser.UTCtimeZone);
-                    org.joda.time.DateTime k = (org.joda.time.DateTime) bucket.getKey();
-                    cal.setTime(k.toDate());
-                    cal.add(Calendar.MINUTE, -timezoneOffset);
-                    long docCount = bucket.getDocCount();
-                    Map.Entry<String,Long> entry = new AbstractMap.SimpleEntry<String, Long>(
-                        (dateHistogrammInterval == DateHistogramInterval.DAY ?
-                            DateParser.dayDateFormat : DateParser.minuteDateFormat)
-                        .format(cal.getTime()), docCount);
-                    list.add(entry);
-                }
-                aggregations.put("created_at", list);
-                
-            }
+            this.aggregations = query.aggregations;
         }
     }
 
     public static LinkedHashMap<String, Long> FullDateHistogram(int timezoneOffset) {
-        // prepare request
-        SearchRequestBuilder request = elasticsearch_client.prepareSearch(IndexName.messages.name())
-                .setSearchType(SearchType.QUERY_THEN_FETCH)
-                .setQuery(QueryBuilders.matchAllQuery())
-                .setFrom(0)
-                .setSize(0);
-        request.clearRescorers();
-        request.addAggregation(AggregationBuilders.dateHistogram("created_at").field("created_at").timeZone("UTC").minDocCount(1).interval(DateHistogramInterval.DAY));
-         
-        // get response
-        SearchResponse response = request.execute().actionGet();
-                
-        // evaluate date histogram:
-        InternalHistogram<InternalHistogram.Bucket> dateCounts = response.getAggregations().get("created_at");              
-        LinkedHashMap<String, Long> list = new LinkedHashMap<>();
-        for (InternalHistogram.Bucket bucket : dateCounts.getBuckets()) {
-            Calendar cal = Calendar.getInstance(DateParser.UTCtimeZone);
-            org.joda.time.DateTime k = (org.joda.time.DateTime) bucket.getKey();
-            cal.setTime(k.toDate());
-            cal.add(Calendar.MINUTE, -timezoneOffset);
-            long docCount = bucket.getDocCount();
-            list.put(DateParser.dayDateFormat.format(cal.getTime()), docCount);
-        }
-        return list;
+        return elasticsearch_client.fullDateHistogram(IndexName.messages.name(), timezoneOffset, "created_at");
     }
     
     /**
@@ -815,25 +676,8 @@ public class DAO {
 
     public static UserEntry searchLocalUserByUserId(final String user_id) {
         if (user_id == null || user_id.length() == 0) return null;
-        // prepare request
-        BoolQueryBuilder query = QueryBuilders.boolQuery();
-        query.must(QueryBuilders.termQuery(UserEntry.field_user_id, user_id));
-
-        SearchRequestBuilder request = elasticsearch_client.prepareSearch(IndexName.users.name())
-                .setSearchType(SearchType.QUERY_THEN_FETCH)
-                .setQuery(query)
-                .setFrom(0)
-                .setSize(1);
-
-        // get response
-        SearchResponse response = request.execute().actionGet();
-
-        // evaluate search result
-        //long totalHitCount = response.getHits().getTotalHits();
-        SearchHit[] hits = response.getHits().getHits();
-        if (hits.length == 0) return null;
-        assert hits.length == 1;
-        Map<String, Object> map = hits[0].getSource();
+        Map<String, Object> map = elasticsearch_client.query(IndexName.users.name(), UserEntry.field_user_id, user_id);
+        if (map == null) return null;
         return new UserEntry(map);
     }
     
@@ -859,54 +703,11 @@ public class DAO {
      */
     public static ResultList<QueryEntry> SearchLocalQueries(final String q, final int resultCount, final String sort_field, final String default_sort_type, final SortOrder sort_order, final Date since, final Date until, final String range_field) {
         ResultList<QueryEntry> queries = new ResultList<>();
-        
-        // prepare request
-        BoolQueryBuilder suggest = QueryBuilders.boolQuery();
-        if (q != null && q.length() > 0) {
-            suggest.should(QueryBuilders.fuzzyQuery("query", q).fuzziness(Fuzziness.fromEdits(2)));
-            suggest.should(QueryBuilders.moreLikeThisQuery("query").like(q));
-            suggest.should(QueryBuilders.matchPhrasePrefixQuery("query", q));
-            if (q.indexOf('*') >= 0 || q.indexOf('?') >= 0) suggest.should(QueryBuilders.wildcardQuery("query", q));
-            suggest.minimumNumberShouldMatch(1);
-        }
-
-        BoolQueryBuilder query;
-        
-        if (range_field != null && range_field.length() > 0 && (since != null || until != null)) {
-            query = QueryBuilders.boolQuery();
-            if (q.length() > 0) query.must(suggest);
-            RangeQueryBuilder rangeQuery = QueryBuilders.rangeQuery(range_field);
-            if (since != null) rangeQuery.from(since).includeLower(true);
-            if (until != null) rangeQuery.to(until).includeUpper(true);
-            query.must(rangeQuery);
-        } else {
-            query = suggest;
-        }
-        
-        SearchRequestBuilder request = elasticsearch_client.prepareSearch(IndexName.queries.name())
-                .setSearchType(SearchType.QUERY_THEN_FETCH)
-                .setQuery(query)
-                .setFrom(0)
-                .setSize(resultCount)
-                .addSort(
-                        SortBuilders.fieldSort(sort_field)
-                        .unmappedType(default_sort_type)
-                        .order(sort_order));
-
-        // get response
-        SearchResponse response = request.execute().actionGet();
-
-        // evaluate search result
-        //long totalHitCount = response.getHits().getTotalHits();
-        SearchHits rhits = response.getHits();
-        long totalHits = rhits.getTotalHits();
-        queries.setHits(totalHits);
-        SearchHit[] hits = rhits.getHits();
-        for (SearchHit hit: hits) {
-            Map<String, Object> map = hit.getSource();
+        List<Map<String, Object>> result = elasticsearch_client.fuzzyquery(IndexName.queries.name(), "query", q, resultCount, sort_field, default_sort_type, sort_order, since, until, range_field);
+        queries.setHits(result.size()); // that should maybe be corrected
+        for (Map<String, Object> map: result) {
             queries.add(new QueryEntry(map));
         }
-            
         return queries;
     }
 
@@ -921,26 +722,8 @@ public class DAO {
 
     public static Collection<ImportProfileEntry> SearchLocalImportProfilesWithConstraints(final Map<String, String> constraints, boolean latest) throws IOException {
         List<ImportProfileEntry> rawResults = new ArrayList<>();
-        SearchRequestBuilder request = elasticsearch_client.prepareSearch(IndexName.import_profiles.name())
-                .setSearchType(SearchType.QUERY_THEN_FETCH)
-                .setFrom(0);
-
-        BoolQueryBuilder bFilter = QueryBuilders.boolQuery();
-        bFilter.must(QueryBuilders.termQuery("active_status", ImportProfileEntry.EntryStatus.ACTIVE.name().toLowerCase()));
-        for (Object o : constraints.entrySet()) {
-            @SuppressWarnings("rawtypes")
-            Map.Entry entry = (Map.Entry) o;
-            bFilter.must(QueryBuilders.termQuery((String) entry.getKey(), ((String) entry.getValue()).toLowerCase()));
-        }
-        request.setQuery(QueryBuilders.filteredQuery(QueryBuilders.matchAllQuery(), bFilter));
-        DAO.log(QueryBuilders.filteredQuery(QueryBuilders.matchAllQuery(), bFilter).toString());
-        // get response
-        SearchResponse response = request.execute().actionGet();
-
-        // evaluate search result
-        SearchHit[] hits = response.getHits().getHits();
-        for (SearchHit hit: hits) {
-            Map<String, Object> map = hit.getSource();
+        List<Map<String, Object>> result = elasticsearch_client.queryWithConstraints(IndexName.import_profiles.name(), "active_status", ImportProfileEntry.EntryStatus.ACTIVE.name().toLowerCase(), constraints, latest);
+        for (Map<String, Object> map: result) {
             rawResults.add(new ImportProfileEntry(map));
         }
 

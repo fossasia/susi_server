@@ -149,12 +149,14 @@ public class Classifier {
          */
         
         // load a test set
-        DAO.SearchLocalMessages testset = new DAO.SearchLocalMessages("", Timeline.Order.CREATED_AT, 0, initsize, 0);
-        Timeline tl = testset.timeline;
-        for (Context c: Context.values()) {
-            //Set<String> voc = c.vocabulary();
-            for (MessageEntry m: tl) {
-                c.learnPhrase(m.getText(Integer.MAX_VALUE, ""));
+        if (DAO.countLocalMessages(-1) > 0) {
+            DAO.SearchLocalMessages testset = new DAO.SearchLocalMessages("", Timeline.Order.CREATED_AT, 0, initsize, 0);
+            Timeline tl = testset.timeline;
+            for (Context c: Context.values()) {
+                //Set<String> voc = c.vocabulary();
+                for (MessageEntry m: tl) {
+                    c.learnPhrase(m.getText(Integer.MAX_VALUE, ""));
+                }
             }
         }
         /*

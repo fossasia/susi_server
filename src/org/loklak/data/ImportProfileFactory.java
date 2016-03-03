@@ -18,7 +18,6 @@
  */
 package org.loklak.data;
 
-import org.elasticsearch.client.Client;
 import org.loklak.objects.ImportProfileEntry;
 
 import java.io.IOException;
@@ -26,7 +25,7 @@ import java.util.Map;
 
 public class ImportProfileFactory extends AbstractIndexFactory<ImportProfileEntry> implements IndexFactory<ImportProfileEntry> {
 
-    public ImportProfileFactory(Client elasticsearch_client, String index_name, int cacheSize, final int existSize) {
+    public ImportProfileFactory(ElasticsearchClient elasticsearch_client, String index_name, int cacheSize, final int existSize) {
         super(elasticsearch_client, index_name, cacheSize, existSize);
     }
 

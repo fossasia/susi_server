@@ -22,12 +22,11 @@ package org.loklak.data;
 import java.io.IOException;
 import java.util.Map;
 
-import org.elasticsearch.client.Client;
 import org.loklak.objects.AccountEntry;
 
 public class AccountFactory extends AbstractIndexFactory<AccountEntry> implements IndexFactory<AccountEntry> {
     
-    public AccountFactory(final Client elasticsearch_client, final String index_name, final int cacheSize, final int existSize) {
+    public AccountFactory(final ElasticsearchClient elasticsearch_client, final String index_name, final int cacheSize, final int existSize) {
         super(elasticsearch_client, index_name, cacheSize, existSize);
     }
 

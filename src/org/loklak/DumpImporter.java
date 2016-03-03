@@ -62,7 +62,7 @@ public class DumpImporter extends Thread {
             Collection<File> import_dumps = DAO.message_dump.getImportDumps();
 
             // check if we can do anything
-            if (import_dumps == null || import_dumps.size() == 0 || !DAO.clusterReady()) {
+            if (import_dumps == null || import_dumps.size() == 0 || !DAO.isReady()) {
                 try {Thread.sleep(10000);} catch (InterruptedException e) {}
                 continue loop;
             }
@@ -120,9 +120,8 @@ public class DumpImporter extends Thread {
                 Log.getLog().info("imported " + newTweets.get() + " tweets at " + (count * 1000 / runtime) + " tweets per second from " + import_dump.getName());
             }
             
-            // finally flush the caches
-            try {DAO.users.bulkCacheFlush();} catch (IOException e) {}
-            try {DAO.messages.bulkCacheFlush();} catch (IOException e) {}
+            DAO.users.bulkCacheFlush();
+            DAO.messages.bulkCacheFlush();
 
             // catch up the number of processed tweets
             Log.getLog().info("finished import of dump file " + import_dump.getAbsolutePath() + ", " + newTweets.get() + " new tweets");

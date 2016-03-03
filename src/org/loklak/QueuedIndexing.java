@@ -55,7 +55,7 @@ public class QueuedIndexing extends Thread {
         loop: while (this.shallRun) try {
             this.isBusy = false;
             
-            if (receivedFromPushTimeline.isEmpty() || !DAO.clusterReady()) {
+            if (receivedFromPushTimeline.isEmpty() || !DAO.isReady()) {
                 try {Thread.sleep(10000);} catch (InterruptedException e) {}
                 continue loop;
             }
