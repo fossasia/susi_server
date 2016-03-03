@@ -25,7 +25,7 @@
       "type":"string", "include_in_all":"false", "index":"not_analyzed"
     },
     "profile_image":{
-      "type":"binary", "index":"no", "include_in_all":"false", "index":"not_analyzed"
+      "type":"binary", "include_in_all":"false", "index":"no"
     }
   }
 }
