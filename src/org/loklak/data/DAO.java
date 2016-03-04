@@ -578,19 +578,19 @@ public class DAO {
     }
 
     public static long countLocalMessages(long millis) {
-        return elasticsearch_client.count(IndexName.messages.name(), "created_at", millis);
+        return elasticsearch_client.count(IndexName.messages.name(), "timestamp", millis);
     }
     
     public static long countLocalUsers() {
-        return elasticsearch_client.count(IndexName.users.name(), "created_at", -1);
+        return elasticsearch_client.count(IndexName.users.name(), "timestamp", -1);
     }
 
     public static long countLocalQueries() {
-        return elasticsearch_client.count(IndexName.queries.name(), "created_at", -1);
+        return elasticsearch_client.count(IndexName.queries.name(), "timestamp", -1);
     }
     
     public static long countLocalAccounts() {
-        return elasticsearch_client.count(IndexName.accounts.name(), "created_at", -1);
+        return elasticsearch_client.count(IndexName.accounts.name(), "timestamp", -1);
     }
 
     public static MessageEntry readMessage(String id) throws IOException {
