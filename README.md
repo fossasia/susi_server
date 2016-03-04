@@ -54,7 +54,7 @@ The basis configuration file is in ```conf/config.properties```. To customize th
 - open `http://localhost:9000` in your browser
 - to shut down loklak, run `bin/stop.sh`
 
-## How do I analyze data aquired by loklak
+## How do I analyze data acquired by loklak
 
 loklak stores data into an elasticsearch index. There is a front-end
 for the index available in elasticsearch-head. To install this, do:
@@ -130,7 +130,7 @@ Nowhere, you must clone the git repository of loklak and built it yourself. That
 
 ## Where can I get the latest news about loklak?
 
-Hey, this is the tool for that! Just put http://loklak.org/api/search.rss?q=%23loklak into your rss reader. Oh wait.. you will get a lot of information about tasty Cambodian food with that as well. Alternatively you may also read the authors timeline using http://loklak.org/api/search.rss?q=0rb1t3r or just follow @0rb1t3r (thats a zero after the at sign)
+Hey, this is the tool for that! Just put http://loklak.org/api/search.rss?q=%23loklak into your rss reader. Oh wait.. you will get a lot of information about tasty Cambodian food with that as well. Alternatively you may also read the authors timeline using http://loklak.org/api/search.rss?q=0rb1t3r or just follow @0rb1t3r (that's a zero after the at sign)
 
 Have fun!
 @0rb1t3r
