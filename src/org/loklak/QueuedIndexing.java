@@ -26,13 +26,23 @@ import org.eclipse.jetty.util.log.Log;
 import org.loklak.data.DAO;
 import org.loklak.objects.MessageEntry;
 import org.loklak.objects.Timeline;
+import org.loklak.objects.UserEntry;
 
 public class QueuedIndexing extends Thread {
 
     private boolean shallRun = true, isBusy = false;
-    private static BlockingQueue<Timeline> receivedFromPushTimeline = new ArrayBlockingQueue<Timeline>(1000);
+    private static BlockingQueue<MessageWrapper> messageQueue = new ArrayBlockingQueue<MessageWrapper>(100000);
     
     public QueuedIndexing() {
+    }
+    
+    public static class MessageWrapper {
+        public MessageEntry t;
+        public UserEntry u;
+        public MessageWrapper(MessageEntry t, UserEntry u) {
+            this.t = t;
+            this.u = u;
+        }
     }
     
     /**
@@ -55,7 +65,7 @@ public class QueuedIndexing extends Thread {
         loop: while (this.shallRun) try {
             this.isBusy = false;
             
-            if (receivedFromPushTimeline.isEmpty() || !DAO.isReady()) {
+            if (messageQueue.isEmpty() || !DAO.isReady()) {
                 try {Thread.sleep(10000);} catch (InterruptedException e) {}
                 continue loop;
             }
@@ -64,20 +74,18 @@ public class QueuedIndexing extends Thread {
             this.isBusy = true;
             long dumpstart = System.currentTimeMillis();
             int newMessages = 0, knownMessagesCache = 0, knownMessagesIndex = 0;
-            Timeline tl = receivedFromPushTimeline.poll();
-            assert tl != null; // because we tested in the beginning of the loop that it is not empty
-            tlloop: for (MessageEntry me: tl) {
-                boolean stored = false;
-                if (DAO.messages.existsCache(me.getIdStr())) {
-                    knownMessagesCache++;
-                    continue tlloop;
-                }
-                me.enrich(); // we enrich here again because the remote peer may have done this with an outdated version or not at all
-                stored = DAO.writeMessage(me, tl.getUser(me), true, true, true);
-                if (stored) newMessages++; else knownMessagesIndex++;
+            MessageWrapper mw = messageQueue.poll();
+            assert mw != null; // because we tested in the beginning of the loop that it is not empty
+            if (DAO.messages.existsCache(mw.t.getIdStr())) {
+                knownMessagesCache++;
+                continue loop;
             }
+            mw.t.enrich(); // we enrich here again because the remote peer may have done this with an outdated version or not at all
+            boolean stored = DAO.writeMessage(mw.t, mw.u, true, true, true);
+            if (stored) newMessages++; else knownMessagesIndex++;
+           
             long dumpfinish = System.currentTimeMillis();
-            DAO.log("dumped timelines from push api: " + newMessages + " new, " + knownMessagesCache + " known from cache, "  + knownMessagesIndex + " known from index, storage time: " + (dumpfinish - dumpstart) + " ms, remaining timelines: " + receivedFromPushTimeline.size());
+            DAO.log("dumped timelines from push api: " + newMessages + " new, " + knownMessagesCache + " known from cache, "  + knownMessagesIndex + " known from index, storage time: " + (dumpfinish - dumpstart) + " ms, remaining messages: " + messageQueue.size());
 
             this.isBusy = false;
         } catch (Throwable e) {
@@ -87,13 +95,15 @@ public class QueuedIndexing extends Thread {
         Log.getLog().info("QueuedIndexing terminated");
     }
     
-    public static int storeTimelineScheduler(Timeline tl) {
+    public static void addScheduler(Timeline tl) {
+        for (MessageEntry me: tl) addScheduler(me, tl.getUser(me));
+    }
+    
+    public static void addScheduler(MessageEntry t, UserEntry u) {
         try {
-            receivedFromPushTimeline.put(tl);
-            return receivedFromPushTimeline.size();
+            messageQueue.put(new MessageWrapper(t, u));
         } catch (InterruptedException e) {
             e.printStackTrace();
-            return -1;
         }
     }
     
