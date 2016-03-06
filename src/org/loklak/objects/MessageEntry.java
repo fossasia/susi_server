@@ -74,6 +74,7 @@ public class MessageEntry extends AbstractIndexEntry implements IndexEntry {
     protected LocationSource location_source;
     protected PlaceContext place_context;
     protected String place_country;
+    private boolean enriched;
 
     // the following can be computed from the tweet data but is stored in the search index to provide statistical data and ranking attributes
     private int without_l_len, without_lu_len, without_luh_len; // the length of tweets without links, users, hashtags
@@ -116,6 +117,7 @@ public class MessageEntry extends AbstractIndexEntry implements IndexEntry {
         this.mentions = new String[0];
         this.hashtags = new String[0];
         this.classifier = null;
+        this.enriched = false;
     }
 
     public MessageEntry(JSONObject json) {
@@ -174,6 +176,7 @@ public class MessageEntry extends AbstractIndexEntry implements IndexEntry {
             this.location_mark = new double[]{(Double) ((List<?>) location_mark_obj).get(0), (Double) ((List<?>) location_mark_obj).get(1)};
             this.location_source = LocationSource.valueOf((String) location_source_obj);
         }
+        this.enriched = false;
 
         // load enriched data
         enrich();
@@ -238,6 +241,7 @@ public class MessageEntry extends AbstractIndexEntry implements IndexEntry {
             this.location_mark = new double[]{(Double) ((List<?>) location_mark_obj).get(0), (Double) ((List<?>) location_mark_obj).get(1)};
             this.location_source = LocationSource.valueOf((String) location_source_obj);
         }
+        this.enriched = false;
         
         // load enriched data
         enrich();
@@ -490,6 +494,7 @@ public class MessageEntry extends AbstractIndexEntry implements IndexEntry {
      * - count message size without links and without users
      */
     public void enrich() {
+        if (this.enriched) return;
         StringBuilder t = new StringBuilder(this.text);
 
         // extract the links
@@ -568,6 +573,7 @@ public class MessageEntry extends AbstractIndexEntry implements IndexEntry {
                 this.place_country = loc.getISO3166cc();
             }
         }
+        this.enriched = true;
     }
     
     private static List<String> extract(StringBuilder s, Pattern p, int g) {
