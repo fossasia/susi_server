@@ -69,23 +69,23 @@ public class QueuedIndexing extends Thread {
                 try {Thread.sleep(10000);} catch (InterruptedException e) {}
                 continue loop;
             }
-            
-            // dump timelines submitted by the peers
+
+            MessageWrapper mw;
             this.isBusy = true;
             long dumpstart = System.currentTimeMillis();
             int newMessages = 0, knownMessagesCache = 0, knownMessagesIndex = 0;
-            MessageWrapper mw = messageQueue.poll();
-            assert mw != null; // because we tested in the beginning of the loop that it is not empty
-            if (DAO.messages.existsCache(mw.t.getIdStr())) {
-                knownMessagesCache++;
-                continue loop;
+            pollloop: while ((mw = messageQueue.poll()) != null) {
+                if (DAO.messages.existsCache(mw.t.getIdStr())) {
+                     knownMessagesCache++;
+                     continue pollloop;
+                }
+                mw.t.enrich(); // we enrich here again because the remote peer may have done this with an outdated version or not at all
+                boolean stored = DAO.writeMessage(mw.t, mw.u, true, true, true);
+                if (stored) newMessages++; else knownMessagesIndex++;
             }
-            mw.t.enrich(); // we enrich here again because the remote peer may have done this with an outdated version or not at all
-            boolean stored = DAO.writeMessage(mw.t, mw.u, true, true, true);
-            if (stored) newMessages++; else knownMessagesIndex++;
            
             long dumpfinish = System.currentTimeMillis();
-            DAO.log("dumped timelines from push api: " + newMessages + " new, " + knownMessagesCache + " known from cache, "  + knownMessagesIndex + " known from index, storage time: " + (dumpfinish - dumpstart) + " ms, remaining messages: " + messageQueue.size());
+            DAO.log("dumped timelines: " + newMessages + " new, " + knownMessagesCache + " known from cache, "  + knownMessagesIndex + " known from index, storage time: " + (dumpfinish - dumpstart) + " ms, remaining messages: " + messageQueue.size());
 
             this.isBusy = false;
         } catch (Throwable e) {
