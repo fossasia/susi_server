@@ -756,7 +756,9 @@ public class MessageEntry extends AbstractIndexEntry implements IndexEntry {
             e.printStackTrace();
         }
         // remove tags
-        s = s.replaceAll("</a>", "").replaceAll("&quot;", "\"").replaceAll("&amp;", "&");
+        s = A_END_TAG.matcher(s).replaceAll("");
+        s = QUOT_TAG.matcher(s).replaceAll("\"");
+        s = AMP_TAG.matcher(s).replaceAll("&");
         // remove funny symbols
         StringBuilder clean = new StringBuilder(s.length() + 5);
         for (int i = 0; i < s.length(); i++) {
@@ -768,4 +770,8 @@ public class MessageEntry extends AbstractIndexEntry implements IndexEntry {
         // remove double spaces
         return clean.toString().replaceAll("  ", " ");
     }
+
+    private final static Pattern A_END_TAG = Pattern.compile("</a>");
+    private final static Pattern QUOT_TAG = Pattern.compile("&quot;");
+    private final static Pattern AMP_TAG = Pattern.compile("&amp;");
 }
