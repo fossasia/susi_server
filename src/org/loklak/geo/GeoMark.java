@@ -30,7 +30,7 @@ public class GeoMark extends GeoLocation implements GeoPoint {
         this.mlon = mlon;
     }
     
-    public GeoMark(final GeoLocation loc, final int salt) {
+    public GeoMark(final GeoLocation loc, final String salt) {
         super(loc.lat(), loc.lon(), loc.getNames(), loc.getISO3166cc());
         super.setPopulation(loc.getPopulation());
         
@@ -43,7 +43,12 @@ public class GeoMark extends GeoLocation implements GeoPoint {
         double r = Math.sqrt(loc.getPopulation() * 1000000 / 10000 / Math.PI); // meter
         // we don't compute a random number for the actual fuzzy location of the marker
         // to make this reproducible, we use a hash of the name and location
-        int h = Math.abs((loc.getNames().iterator().next() + loc.lat() + loc.lon() + Integer.toString(salt)).hashCode());
+        StringBuilder hs = new StringBuilder(40);
+        hs.append(loc.getNames().iterator().next());
+        hs.append(loc.lat() );
+        hs.append(loc.lon());
+        hs.append(salt);
+        int h = Math.abs(hs.hashCode());
         if (h == Integer.MIN_VALUE) h = 0; // correction of the case that Math.abs is not possible
         // with that hash we compute an actual distance and an angle
         double dist = (h & 0xff) * r / 255.0d / 40000000 * 360; // 40 million meter (the earth) has an angle of 360 degree

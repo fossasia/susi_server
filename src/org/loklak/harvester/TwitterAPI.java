@@ -239,7 +239,7 @@ public class TwitterAPI {
             // sometimes the time zone contains city names! Try that
             String time_zone = (String) map.get("time_zone");
             if (time_zone != null && time_zone.length() > 0) {
-                GeoMark loc = DAO.geoNames.analyse(time_zone, null, 5, 0);
+                GeoMark loc = DAO.geoNames.analyse(time_zone, null, 5, "");
                 // check if the time zone was actually a location name
                 if (loc != null && loc.getNames().contains(time_zone)) {
                     // success! It's just a guess, however...
@@ -265,7 +265,7 @@ public class TwitterAPI {
                 String created_at = (String) map.get("created_at");
                 int salt = created_at == null ? map.hashCode() : created_at.hashCode();
                 // reverse geocode
-                GeoMark loc = DAO.geoNames.analyse(location, null, 5, salt);
+                GeoMark loc = DAO.geoNames.analyse(location, null, 5, Integer.toString(salt));
                 if (loc != null) {
                     String countryCode = loc.getISO3166cc();
                     if (countryCode != null && countryCode.length() > 0) {

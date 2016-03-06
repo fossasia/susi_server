@@ -209,7 +209,7 @@ public class GeoNames {
      * @param salt a salt which is used for fuzzyness of the mark location
      * @return
      */
-    public GeoMark analyse(final String text, final String[] tags, final int maxlength, final int salt) {
+    public GeoMark analyse(final String text, final String[] tags, final int maxlength, final String salt) {
         GeoLocation loc = geocode(text, tags, maxlength);
         if (loc != null) return new GeoMark(loc, salt);
         return reverse_geocode(text);

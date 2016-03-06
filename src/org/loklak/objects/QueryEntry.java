@@ -378,7 +378,7 @@ public class QueryEntry extends AbstractIndexEntry implements IndexEntry {
             if (modifier.containsKey("near")) {
                 // either check coordinates or name
                 String near_name = modifier.get("near").iterator().next();
-                GeoMark loc = DAO.geoNames.analyse(near_name, null, 10, Long.toString(System.currentTimeMillis()).hashCode());
+                GeoMark loc = DAO.geoNames.analyse(near_name, null, 10, Long.toString(System.currentTimeMillis()));
                 if (loc != null) {
                     this.bbox = new double[]{loc.lon() - 1.0, loc.lat() + 1.0, loc.lon() + 1.0, loc.lat() - 1.0};
                 }
@@ -683,7 +683,7 @@ public class QueryEntry extends AbstractIndexEntry implements IndexEntry {
             if (modifier.containsKey("near")) {
                 // either check coordinates or name
                 String near_name = modifier.get("near").iterator().next();
-                GeoMark loc = DAO.geoNames.analyse(near_name, null, 10, Long.toString(System.currentTimeMillis()).hashCode());
+                GeoMark loc = DAO.geoNames.analyse(near_name, null, 10, Long.toString(System.currentTimeMillis()));
                 if (loc == null) {
                     BoolQueryBuilder nearquery = QueryBuilders.boolQuery()
                         .should(QueryBuilders.matchQuery("place_name", near_name))

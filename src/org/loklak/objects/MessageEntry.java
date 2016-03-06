@@ -556,12 +556,12 @@ public class MessageEntry extends AbstractIndexEntry implements IndexEntry {
             GeoMark loc = null;
             if (this.place_name != null && this.place_name.length() > 0 &&
                 (this.location_source == null || this.location_source == LocationSource.ANNOTATION || this.location_source == LocationSource.PLACE)) {
-                loc = DAO.geoNames.analyse(this.place_name, null, 5, this.text.hashCode());
+                loc = DAO.geoNames.analyse(this.place_name, null, 5, Integer.toString(this.text.hashCode()));
                 this.place_context = PlaceContext.FROM;
                 this.location_source = LocationSource.PLACE;
             }
             if (loc == null) {
-                loc = DAO.geoNames.analyse(this.text, this.hashtags, 5, this.text.hashCode());
+                loc = DAO.geoNames.analyse(this.text, this.hashtags, 5, Integer.toString(this.text.hashCode()));
                 this.place_context = PlaceContext.ABOUT;
                 this.location_source = LocationSource.ANNOTATION;
             }
