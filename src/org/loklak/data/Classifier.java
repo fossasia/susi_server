@@ -25,6 +25,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.Pattern;
 
 import org.loklak.objects.MessageEntry;
 import org.loklak.objects.Timeline;
@@ -41,6 +42,9 @@ public class Classifier {
         english, german, french, spanish,
         NONE;
     }
+
+    public final static Pattern NON_WORD_PATTERN = Pattern.compile("\\W");
+    public final static Pattern WHITESPACE_PATTERN = Pattern.compile("\\s");
     
     public enum Context {
         
@@ -110,8 +114,8 @@ public class Classifier {
             return this.bayes.classify(words);
         }
         private List<String> normalize(String phrase) {
-            String cleanphrase = phrase.toLowerCase().replaceAll("\\W", " ");
-            String[] rawtokens = cleanphrase.split("\\s");
+            String cleanphrase = NON_WORD_PATTERN.matcher(phrase.toLowerCase()).replaceAll(" ");
+            String[] rawtokens = WHITESPACE_PATTERN.split(cleanphrase, 0);
             List<String> tokens = new ArrayList<>();
             for (String token: rawtokens) if (token.length() > 2) tokens.add(token);
             return tokens;
