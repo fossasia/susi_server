@@ -308,7 +308,7 @@ public class ElasticsearchClient {
     public long countLocal(final String index, final String provider_hash) {
         try {
             SearchResponse response = elasticsearchClient.prepareSearch(index)
-                    .setSize(0)
+                .setSize(0)
                 .setQuery(QueryBuilders.matchQuery("provider_hash", provider_hash))
                 .execute()
                 .actionGet();
@@ -641,7 +641,7 @@ public class ElasticsearchClient {
                 .setSearchType(SearchType.QUERY_THEN_FETCH)
                 .setQuery(query)
                 .setFrom(0)
-                .setSize(1);
+                .setSize(1).setTerminateAfter(1);
 
         // get response
         SearchResponse response = request.execute().actionGet();
