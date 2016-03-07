@@ -20,21 +20,30 @@
 package org.loklak.api.server;
 
 import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
+import java.lang.Thread.State;
 import java.lang.management.ManagementFactory;
 import java.lang.management.OperatingSystemMXBean;
 import java.lang.management.ThreadInfo;
 import java.lang.management.ThreadMXBean;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.regex.Pattern;
 
 import javax.servlet.ServletException;
+import javax.servlet.ServletOutputStream;
+import javax.servlet.WriteListener;
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -62,6 +71,28 @@ public class ThreaddumpServlet extends HttpServlet {
     @Override
     protected void doGet(final HttpServletRequest request, final HttpServletResponse response) throws ServletException, IOException {
         RemoteAccess.Post post = RemoteAccess.evaluate(request);
+
+        String servlet = post.isLocalhostAccess() ? post.get("servlet", "") : "";
+        if (servlet.length() > 0) {
+            try {
+                final Class<?> servletClass = ClassLoader.getSystemClassLoader().loadClass("org.loklak.api.server." + servlet);
+                final Method getMethod = servletClass.getDeclaredMethod("doGet", HttpServletRequest.class, HttpServletResponse.class);
+                final Thread servletThread = new Thread(new Runnable() {
+                    public void run() {
+                        try {
+                            getMethod.invoke(servletClass.newInstance(), request, new DummyResponse());
+                        } catch (IllegalArgumentException | InvocationTargetException | InstantiationException | IllegalAccessException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                });
+                servletThread.start();
+            } catch (ClassNotFoundException | NoSuchMethodException | SecurityException e) {
+                e.printStackTrace();
+            }
+            long sleep = post.get("sleep", 0L);
+            if (sleep > 0) try {Thread.sleep(sleep);} catch (InterruptedException e) {}
+        }
 
         int multi = post.isLocalhostAccess() ? post.get("multi", 0) : 0;
         final StringBuilder buffer = new StringBuilder(1000);
@@ -259,10 +290,11 @@ public class ThreaddumpServlet extends HttpServlet {
                 final StackTraceElement[] stackTraceElements = entry.getValue();
                 StackTraceElement ste;
                 String tracename = "";
-                if ((stateIn == null || stateIn.equals(thread.getState())) && stackTraceElements.length > 0) {
+                final State threadState = thread.getState();
+                final ThreadInfo info = threadBean.getThreadInfo(thread.getId());
+                if (threadState != null && info != null && (stateIn == null || stateIn.equals(threadState)) && stackTraceElements.length > 0) {
                     final StringBuilder sb = new StringBuilder(3000);
-                    final ThreadInfo info = threadBean.getThreadInfo(thread.getId());
-                    final String threadtitle = tracename + "Thread= " + thread.getName() + " " + (thread.isDaemon()?"daemon":"") + " id=" + thread.getId() + " " + thread.getState().toString() + (info.getLockOwnerId() >= 0 ? " lock owner =" + info.getLockOwnerId() : "");
+                    final String threadtitle = tracename + "Thread= " + thread.getName() + " " + (thread.isDaemon()?"daemon":"") + " id=" + thread.getId() + " " + threadState.toString() + (info.getLockOwnerId() >= 0 ? " lock owner =" + info.getLockOwnerId() : "");
                     String className;
                     boolean cutcore = true;
                     for (int i = 0; i < stackTraceElements.length; i++) {
@@ -301,5 +333,49 @@ public class ThreaddumpServlet extends HttpServlet {
             bufferappend(buffer, "");
         }
 
+    }
+    
+    private static class DummyResponse implements HttpServletResponse {
+        @Override public void flushBuffer() throws IOException {}
+        @Override public int getBufferSize() {return 2048;}
+        @Override public String getCharacterEncoding() {return "UTF-8";}
+        @Override public String getContentType() {return "text/plain";}
+        @Override public Locale getLocale() {return Locale.ENGLISH;}
+        @Override public boolean isCommitted() {return true;}
+        @Override public void reset() {}
+        @Override public void resetBuffer() {}
+        @Override public void setBufferSize(int arg0) {}
+        @Override public void setCharacterEncoding(String arg0) {}
+        @Override public void setContentLength(int arg0) {}
+        @Override public void setContentLengthLong(long arg0) {}
+        @Override public void setContentType(String arg0) {}
+        @Override public void setLocale(Locale arg0) {}
+        @Override public void addCookie(Cookie arg0) {}
+        @Override public void addDateHeader(String arg0, long arg1) {}
+        @Override public void addHeader(String arg0, String arg1) {}
+        @Override public void addIntHeader(String arg0, int arg1) {}
+        @Override public boolean containsHeader(String arg0) {return true;}
+        @Override public String encodeRedirectURL(String arg0) {return arg0;}
+        @Override public String encodeRedirectUrl(String arg0) {return arg0;}
+        @Override public String encodeURL(String arg0) {return arg0;}
+        @Override public String encodeUrl(String arg0) {return arg0;}
+        @Override public String getHeader(String arg0) {return "";}
+        @Override public Collection<String> getHeaderNames() {return new ArrayList<String>(0);}
+        @Override public Collection<String> getHeaders(String arg0) {return new ArrayList<String>(0);}
+        @Override public int getStatus() {return 200;}
+        @Override public void sendError(int arg0) throws IOException {}
+        @Override public void sendError(int arg0, String arg1) throws IOException {}
+        @Override public void sendRedirect(String arg0) throws IOException {}
+        @Override public void setDateHeader(String arg0, long arg1) {}
+        @Override public void setHeader(String arg0, String arg1) {}
+        @Override public void setIntHeader(String arg0, int arg1) {}
+        @Override public void setStatus(int arg0) {}
+        @Override public void setStatus(int arg0, String arg1) {}
+        @Override public PrintWriter getWriter() throws IOException {return new PrintWriter(new OutputStreamWriter(getOutputStream(), "UTF-8"));}
+        @Override public ServletOutputStream getOutputStream() throws IOException {return new ServletOutputStream(){
+            public void write(int aByte) throws IOException {}
+            public boolean isReady() { return true; }
+            public void setWriteListener(WriteListener arg0) {}
+        };}
     }
 }
