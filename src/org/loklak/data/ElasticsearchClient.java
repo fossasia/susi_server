@@ -44,7 +44,6 @@ import org.elasticsearch.action.admin.cluster.tasks.PendingClusterTasksResponse;
 import org.elasticsearch.action.bulk.BulkItemResponse;
 import org.elasticsearch.action.bulk.BulkRequestBuilder;
 import org.elasticsearch.action.bulk.BulkResponse;
-import org.elasticsearch.action.count.CountResponse;
 import org.elasticsearch.action.delete.DeleteRequest;
 import org.elasticsearch.action.get.GetResponse;
 import org.elasticsearch.action.index.IndexResponse;
@@ -292,28 +291,28 @@ public class ElasticsearchClient {
         return response.getHits().getTotalHits();
     }
 
-    @SuppressWarnings("deprecation")
     public long count(final String index, final String histogram_timefield, final long millis) {
         try {
-            CountResponse response = elasticsearchClient.prepareCount(index)
+            SearchResponse response = elasticsearchClient.prepareSearch(index)
+                .setSize(0)
                 .setQuery(millis <= 0 ? QueryBuilders.matchAllQuery() : QueryBuilders.rangeQuery(histogram_timefield).from(new Date(System.currentTimeMillis() - millis)))
                 .execute()
                 .actionGet();
-            return response.getCount();
+            return response.getHits().getTotalHits();
         } catch (Throwable e) {
             e.printStackTrace();
             return 0;
         }
     }
     
-    @SuppressWarnings("deprecation")
     public long countLocal(final String index, final String provider_hash) {
         try {
-            CountResponse response = elasticsearchClient.prepareCount(index)
+            SearchResponse response = elasticsearchClient.prepareSearch(index)
+                    .setSize(0)
                 .setQuery(QueryBuilders.matchQuery("provider_hash", provider_hash))
                 .execute()
                 .actionGet();
-            return response.getCount();
+            return response.getHits().getTotalHits();
         } catch (Throwable e) {
             e.printStackTrace();
             return 0;
@@ -411,6 +410,7 @@ public class ElasticsearchClient {
     public int deleteByQuery(String indexName, final QueryBuilder q, String typeName) {
         List<String> ids = new ArrayList<>();
         // FIXME: deprecated, "will be removed in 3.0, you should do a regular scroll instead, ordered by `_doc`"
+        @SuppressWarnings("deprecation")
         SearchResponse response = elasticsearchClient.prepareSearch(indexName).setSearchType(SearchType.SCAN)
             .setScroll(new TimeValue(60000)).setQuery(q).setSize(100).execute().actionGet();
         while (true) {
