@@ -47,7 +47,6 @@
         <pathelement location="lib/lucene-analyzers-common-5.4.1.jar"/>
         <pathelement location="lib/lucene-backward-codecs-5.4.1.jar"/>
         <pathelement location="lib/lucene-core-5.4.1.jar"/>
-        <pathelement location="lib/lucene-expressions-5.4.1.jar"/>
         <pathelement location="lib/lucene-grouping-5.4.1.jar"/>
         <pathelement location="lib/lucene-highlighter-5.4.1.jar"/>
         <pathelement location="lib/lucene-join-5.4.1.jar"/>

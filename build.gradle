@@ -55,7 +55,6 @@ dependencies {
   compile name: 'lucene-analyzers-common-5.4.1'
   compile name: 'lucene-backward-codecs-5.4.1'
   compile name: 'lucene-core-5.4.1'
-  compile name: 'lucene-expressions-5.4.1'
   compile name: 'lucene-grouping-5.4.1'
   compile name: 'lucene-highlighter-5.4.1'
   compile name: 'lucene-join-5.4.1'
