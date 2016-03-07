@@ -32,7 +32,7 @@ import java.util.concurrent.ConcurrentSkipListMap;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.loklak.data.DAO;
+import org.loklak.QueuedIndexing;
 
 /**
  * A timeline is a structure which holds tweet for the purpose of presentation
@@ -276,11 +276,7 @@ public class Timeline implements Iterable<MessageEntry> {
     }    
     
     public void writeToIndex() {
-        for (MessageEntry t: this) {
-            UserEntry u = getUser(t);
-            assert u != null;
-            DAO.writeMessage(t, u, true, false, false);
-        }
+        QueuedIndexing.addScheduler(this, true, false, false);
     }
     
     public void setHits(int hits) {
