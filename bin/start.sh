@@ -1,6 +1,12 @@
 #!/usr/bin/env sh
 cd `dirname $0`/..
 mkdir -p data
+#to not allow process to overwrite the already running one.
+x=`cat data/loklak.pid 2>/dev/null` && ps -A | egrep "^\ $x" >/dev/null 2>/dev/null
+if [ "$?" -eq 0 ]; then
+	echo "Server is already running, please stop it and then start"
+	exit 0
+fi
 
 DFAULTCONFIG="conf/config.properties"
 CUSTOMCONFIG="data/settings/customized_config.properties"
