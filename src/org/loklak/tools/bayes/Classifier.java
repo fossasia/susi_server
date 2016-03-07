@@ -34,11 +34,11 @@
 package org.loklak.tools.bayes;
 
 import java.util.Collection;
-import java.util.LinkedList;
 import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 /**
  * Abstract base extended by any concrete classifier.  It implements the basic
@@ -111,7 +111,7 @@ public abstract class Classifier<T, K> {
         this.totalCategoryCount =
                 new ConcurrentHashMap<K, Integer>(
                         Classifier.INITIAL_CATEGORY_DICTIONARY_CAPACITY);
-        this.memoryQueue = new LinkedList<Classification<T, K>>();
+        this.memoryQueue = new ConcurrentLinkedQueue<Classification<T, K>>();
     }
 
     /**
