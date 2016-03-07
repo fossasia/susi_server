@@ -2,7 +2,6 @@
 <classpath>
 	<classpathentry kind="lib" path="lib/joda-convert-1.2.jar"/>
 	<classpathentry kind="lib" path="lib/joda-time-2.8.2.jar"/>
-	<classpathentry kind="lib" path="lib/jetty-servlet-9.2.6.v20141205.jar"/>
 	<classpathentry kind="lib" path="lib/guava-18.0.jar"/>
 	<classpathentry kind="lib" path="lib/jackson-core-2.6.2.jar"/>
 	<classpathentry kind="lib" path="lib/jackson-dataformat-cbor-2.6.2.jar"/>
@@ -26,20 +25,21 @@
 	<classpathentry kind="lib" path="lib/lucene-spatial3d-5.4.1.jar"/>
 	<classpathentry kind="lib" path="lib/lucene-suggest-5.4.1.jar"/>
 	<classpathentry kind="lib" path="lib/securesm-1.0.jar"/>
+	<classpathentry kind="lib" path="lib/jetty-http-9.2.15.v20160210.jar"/>
+	<classpathentry kind="lib" path="lib/jetty-io-9.2.15.v20160210.jar"/>
+	<classpathentry kind="lib" path="lib/jetty-rewrite-9.2.15.v20160210.jar"/>
+	<classpathentry kind="lib" path="lib/jetty-security-9.2.15.v20160210.jar"/>
+	<classpathentry kind="lib" path="lib/jetty-server-9.2.15.v20160210.jar"/>
+	<classpathentry kind="lib" path="lib/jetty-servlet-9.2.15.v20160210.jar"/>
+	<classpathentry kind="lib" path="lib/jetty-servlets-9.2.15.v20160210.jar"/>
+	<classpathentry kind="lib" path="lib/jetty-util-9.2.15.v20160210.jar"/>
+	<classpathentry kind="lib" path="lib/jetty-webapp-9.2.15.v20160210.jar"/>
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.6"/>
-	<classpathentry kind="lib" path="lib/jetty-server-9.2.6.v20141205.jar"/>
-	<classpathentry kind="lib" path="lib/jetty-rewrite-9.2.6.v20141205.jar"/>
-	<classpathentry kind="lib" path="lib/jetty-util-9.2.6.v20141205.jar"/>
 	<classpathentry kind="lib" path="lib/javax.servlet-api-3.1.0.jar"/>
-	<classpathentry kind="lib" path="lib/jetty-http-9.2.6.v20141205.jar"/>
-	<classpathentry kind="lib" path="lib/jetty-io-9.2.6.v20141205.jar"/>
-	<classpathentry kind="lib" path="lib/jetty-webapp-9.2.6.v20141205.jar"/>
-	<classpathentry kind="lib" path="lib/jetty-security-9.2.6.v20141205.jar"/>
 	<classpathentry kind="lib" path="lib/antlr-runtime-3.5.jar"/>
 	<classpathentry kind="lib" path="lib/asm-4.1.jar"/>
 	<classpathentry kind="lib" path="lib/asm-commons-4.1.jar"/>
-	<classpathentry kind="lib" path="lib/jetty-servlets-9.2.6.v20141205.jar"/>
 	<classpathentry kind="lib" path="lib/jna-4.1.0.jar"/>
 	<classpathentry kind="lib" path="lib/jts-1.13.jar"/>
 	<classpathentry kind="lib" path="lib/log4j-1.2.17.jar"/>
