@@ -658,7 +658,8 @@ public class MessageEntry extends AbstractIndexEntry implements IndexEntry {
                     assert c.getValue() != null;
                     if (c.getValue().getCategory() == Classifier.Category.NONE) continue; // we don't store non-existing classifications
                     m.put("classifier_" + c.getKey().name(), c.getValue().getCategory());
-                    m.put("classifier_" + c.getKey().name() + "_probability", c.getValue().getProbability());
+                    m.put("classifier_" + c.getKey().name() + "_probability",
+                        c.getValue().getProbability() == Float.POSITIVE_INFINITY ? Float.MAX_VALUE : c.getValue().getProbability());
                 }
             }
             
