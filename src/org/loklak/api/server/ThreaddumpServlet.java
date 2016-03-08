@@ -295,17 +295,17 @@ public class ThreaddumpServlet extends HttpServlet {
                 if (threadState != null && info != null && (stateIn == null || stateIn.equals(threadState)) && stackTraceElements.length > 0) {
                     final StringBuilder sb = new StringBuilder(3000);
                     final String threadtitle = tracename + "Thread= " + thread.getName() + " " + (thread.isDaemon()?"daemon":"") + " id=" + thread.getId() + " " + threadState.toString() + (info.getLockOwnerId() >= 0 ? " lock owner =" + info.getLockOwnerId() : "");
-                    String className;
                     boolean cutcore = true;
                     for (int i = 0; i < stackTraceElements.length; i++) {
                         ste = stackTraceElements[i];
-                        className = ste.getClassName();
+                        String className = ste.getClassName();
+                        String classString = ste.toString();
                         if (cutcore && (className.startsWith("java.") || className.startsWith("sun."))) {
                             sb.setLength(0);
-                            bufferappend(sb, tracename + "at " + CharacterCoding.unicode2html(ste.toString(), true));
+                            bufferappend(sb, tracename + "at " + classString);
                         } else {
                             cutcore = false;
-                            bufferappend(sb, tracename + "at " + CharacterCoding.unicode2html(ste.toString(), true));
+                            bufferappend(sb, tracename + "at " + classString);
                         }
                     }
                     final String threaddump = sb.toString();
