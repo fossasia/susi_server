@@ -51,6 +51,7 @@ import org.eclipse.jetty.servlet.FilterHolder;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
 import org.eclipse.jetty.servlets.GzipFilter;
+import org.eclipse.jetty.servlets.gzip.GzipHandler;
 import org.eclipse.jetty.util.ConcurrentHashSet;
 import org.eclipse.jetty.util.log.Log;
 import org.eclipse.jetty.util.thread.ExecutorThreadPool;
@@ -297,7 +298,9 @@ public class LoklakServer {
         
         HandlerList handlerlist2 = new HandlerList();
         handlerlist2.setHandlers(new Handler[]{fileHandler, rewriteHandler, new DefaultHandler()});
-        LoklakServer.server.setHandler(handlerlist2);
+        GzipHandler gzipHandler = new GzipHandler();
+        gzipHandler.setHandler(handlerlist2);
+        LoklakServer.server.setHandler(gzipHandler);
 
         LoklakServer.server.start();
         LoklakServer.caretaker = new Caretaker();
