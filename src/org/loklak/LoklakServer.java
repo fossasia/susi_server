@@ -86,6 +86,7 @@ import org.loklak.api.server.push.NetmonPushServlet;
 import org.loklak.api.server.ImportProfileServlet;
 import org.loklak.data.DAO;
 import org.loklak.harvester.TwitterScraper;
+import org.loklak.http.RemoteAccess;
 import org.loklak.tools.Browser;
 import org.loklak.tools.OS;
 import org.loklak.vis.server.MapServlet;
@@ -132,6 +133,12 @@ public class LoklakServer {
 
         // load the config file(s);
         Map<String, String> config = readConfig(data);
+        
+        // set localhost pattern
+        String server_localhost = config.getOrDefault("server.localhost", "");
+        if (server_localhost != null && server_localhost.length() > 0) {
+            for (String h: server_localhost.split(",")) RemoteAccess.addLocalhost(h);
+        }
         
         // check if a loklak service is already running on configured port
         String httpPortS = config.get("port.http");

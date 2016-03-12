@@ -272,6 +272,10 @@ public class RemoteAccess {
         //System.out.println(localhostNames);
     }
     
+    public static void addLocalhost(String h) {
+        localhostNames.add(h);
+    }
+    
     public static boolean isLocalhost(String host) {
         return localhostNames.contains(host);
     }
