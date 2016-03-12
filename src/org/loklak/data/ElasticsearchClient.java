@@ -132,23 +132,19 @@ public class ElasticsearchClient {
         return clusterReadyCache;
     }
 
-    public boolean wait_ready(long maxtimemillis) {
+    public boolean wait_ready(long maxtimemillis, ClusterHealthStatus status) {
         // wait for yellow status
         long start = System.currentTimeMillis();
         boolean is_ready;
         do {
-            is_ready = is_ready();
+            // wait for yellow status
+            ClusterHealthResponse health = elasticsearchClient.admin().cluster().prepareHealth().setWaitForStatus(status).execute().actionGet();
+            is_ready = !health.isTimedOut();
             if (!is_ready && System.currentTimeMillis() - start > maxtimemillis) return false; 
         } while (!is_ready);
         return is_ready;
     }
     
-    public boolean is_ready() {
-        // wait for yellow status
-        ClusterHealthResponse health = elasticsearchClient.admin().cluster().prepareHealth().setWaitForYellowStatus().execute().actionGet();
-        return !health.isTimedOut();
-    }
-
     public void createIndexIfNotExists(String indexName, final int shards, final int replicas) {
         // create an index if not existent
         if (!this.elasticsearchClient.admin().indices().prepareExists(indexName).execute().actionGet().isExists()) {

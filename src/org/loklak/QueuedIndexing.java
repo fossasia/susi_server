@@ -69,7 +69,7 @@ public class QueuedIndexing extends Thread {
         loop: while (this.shallRun) try {
             this.isBusy = false;
             
-            if (messageQueue.isEmpty() || !DAO.isReady()) {
+            if (messageQueue.isEmpty() || !DAO.wait_ready(1000)) {
                 try {Thread.sleep(10000);} catch (InterruptedException e) {}
                 continue loop;
             }

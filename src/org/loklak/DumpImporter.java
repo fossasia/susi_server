@@ -62,7 +62,7 @@ public class DumpImporter extends Thread {
             Collection<File> import_dumps = DAO.message_dump.getImportDumps();
 
             // check if we can do anything
-            if (import_dumps == null || import_dumps.size() == 0 || !DAO.isReady()) {
+            if (import_dumps == null || import_dumps.size() == 0 || !DAO.wait_ready(Long.MAX_VALUE)) {
                 try {Thread.sleep(10000);} catch (InterruptedException e) {}
                 continue loop;
             }

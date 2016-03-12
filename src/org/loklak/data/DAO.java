@@ -48,6 +48,7 @@ import com.github.fge.jackson.JsonLoader;
 import com.google.common.base.Charsets;
 
 import org.eclipse.jetty.util.log.Log;
+import org.elasticsearch.cluster.health.ClusterHealthStatus;
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.search.sort.SortOrder;
 import org.loklak.Caretaker;
@@ -273,10 +274,11 @@ public class DAO {
             }
             
             // finally wait for healthy status of elasticsearch shards
+            ClusterHealthStatus required_status = ClusterHealthStatus.fromString(config.get("elasticsearch_requiredClusterHealthStatus"));
             boolean ok;
             do {
-                log("Waiting for elasticsearch yellow status");
-                ok = elasticsearch_client.wait_ready(60000l);
+                log("Waiting for elasticsearch " + required_status.name() + " status");
+                ok = elasticsearch_client.wait_ready(60000l, required_status);
             } while (!ok);
             /**
             do {
@@ -340,8 +342,9 @@ public class DAO {
         log("finished startup!");
     }
     
-    public static boolean isReady() {
-        return elasticsearch_client.is_ready();
+    public static boolean wait_ready(long maxtimemillis) {
+        ClusterHealthStatus required_status = ClusterHealthStatus.fromString(config.get("elasticsearch_requiredClusterHealthStatus"));
+        return elasticsearch_client.wait_ready(maxtimemillis, required_status);
     }
     
     public static String pendingClusterTasks() {
