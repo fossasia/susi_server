@@ -135,7 +135,7 @@ public class LoklakServer {
         Map<String, String> config = readConfig(data);
         
         // set localhost pattern
-        String server_localhost = config.getOrDefault("server.localhost", "");
+        String server_localhost = config.get("server.localhost");
         if (server_localhost != null && server_localhost.length() > 0) {
             for (String h: server_localhost.split(",")) RemoteAccess.addLocalhost(h);
         }
