@@ -37,6 +37,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
+import org.joda.time.DateTime;
 import org.loklak.LoklakServer;
 import org.loklak.data.DAO;
 import org.loklak.geo.GeoMark;
@@ -369,10 +370,15 @@ public class TwitterAPI {
         }
 
         if (mapcapsule != null) {
-            // check if the map is complete
             Map<String, Object> map = mapcapsule.getJson();
+
+            // check date and completeness
             complete = (Boolean) map.get("complete");
-            if (complete) return map; // TODO: check date
+            String retrieval_date_string = (String) map.get("retrieval_date");
+            DateTime retrieval_date = retrieval_date_string == null ? null : AbstractIndexEntry.utcFormatter.parseDateTime(retrieval_date_string);
+            if (complete && System.currentTimeMillis() - retrieval_date.getMillis() < DateParser.DAY_MILLIS) return map;
+            
+            // load networking ids for incomplete retrievals (untested)
             List<Object> fro = (List<Object>) map.get(networkRelation == Networker.FOLLOWERS ? "follower" : "following");
             for (Object f: fro) {
                 networkingIDs.add((Number) f);
