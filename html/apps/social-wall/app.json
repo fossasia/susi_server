@@ -1,0 +1,17 @@
+{
+  "@context":"http://schema.org",
+  "@type":"SoftwareApplication",
+  "name":"social-wall",
+  "headline":"Twitter Social Wall",
+  "alternativeHeadline":"A loklak API based twitter social-wall",
+  "applicationCategory":"Tweet search",
+  "applicationSubCategory":"data aggregation",
+  "operatingSystem":"http://loklak.org",
+  "author":{
+    "@type":"Person",
+    "name":"Sopan Khosla",
+    "email":"khoslasopan@gmail.com",
+    "url":"https://in.linkedin.com/pub/sopan-khosla/99/199/563",
+    "sameAs":"https://github.com/sopu"
+  }
+}
