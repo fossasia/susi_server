@@ -380,9 +380,7 @@ public class TwitterAPI {
             
             // load networking ids for incomplete retrievals (untested)
             List<Object> fro = (List<Object>) map.get(networkRelation == Networker.FOLLOWERS ? "follower" : "following");
-            for (Object f: fro) {
-                networkingIDs.add((Number) f);
-            }
+            if (fro != null) for (Object f: fro) networkingIDs.add((Number) f);
         }
         TwitterFactory tf = getUserTwitterFactory(screen_name);
         if (tf == null) tf = getAppTwitterFactory();
