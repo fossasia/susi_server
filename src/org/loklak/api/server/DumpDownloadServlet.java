@@ -53,6 +53,9 @@ public class DumpDownloadServlet extends HttpServlet {
         String path = request.getPathInfo();
         long now = System.currentTimeMillis();
         
+        boolean disabled = DAO.getConfig("download.disabled", false);
+        String disabled_message = DAO.getConfig("download.disabled.message", "");
+        
         if (path.length() <= 1) {
             // send directory as html
 
@@ -71,23 +74,28 @@ public class DumpDownloadServlet extends HttpServlet {
             writer.write(" <body>\n");
             writer.write("<h1>Index of /dump</h1>\n");
             writer.write("<pre>      Name \n");
-            for (File dump: DAO.getTweetOwnDumps()) {
-                String name = dump.getName();
-                String space = "";
-                for (int i = name.length(); i < 36; i++) space += " ";
-                long length = dump.length();
-                String size = length < 1024 ? Long.toString(length) : length < 1024 * 1024 ? Long.toString(length / 1024) + "K" : Long.toString(length / 1024 / 1024) + "M";
-                while (size.length() < 5) size = " " + size;
-                int d = name.lastIndexOf('.');
-                if (d < 0) writer.write("[   ]"); else {
-                    String ext = name.substring(d + 1);
-                    if (ext.length() > 3) ext = ext.substring(0, 3);
-                    writer.write('[');
-                    writer.write(ext);
-                    for (int i = 0; i < 3 - ext.length(); i++) writer.write(' ');
-                    writer.write(']');
+            
+            if (disabled) {
+                writer.write(disabled_message + "\n");
+            } else {
+                for (File dump: DAO.getTweetOwnDumps()) {
+                    String name = dump.getName();
+                    String space = "";
+                    for (int i = name.length(); i < 36; i++) space += " ";
+                    long length = dump.length();
+                    String size = length < 1024 ? Long.toString(length) : length < 1024 * 1024 ? Long.toString(length / 1024) + "K" : Long.toString(length / 1024 / 1024) + "M";
+                    while (size.length() < 5) size = " " + size;
+                    int d = name.lastIndexOf('.');
+                    if (d < 0) writer.write("[   ]"); else {
+                        String ext = name.substring(d + 1);
+                        if (ext.length() > 3) ext = ext.substring(0, 3);
+                        writer.write('[');
+                        writer.write(ext);
+                        for (int i = 0; i < 3 - ext.length(); i++) writer.write(' ');
+                        writer.write(']');
+                    }
+                    writer.write(" <a href=\"" + name + "\">"+ name +"</a>" + space + new Date(dump.lastModified()).toString() + "  " + size + "\n");
                 }
-                writer.write(" <a href=\"" + name + "\">"+ name +"</a>" + space + new Date(dump.lastModified()).toString() + "  " + size + "\n");
             }
             writer.write("<hr></pre>\n");
             writer.write("<address>this is the message dump download directory</address>\n");
@@ -98,7 +106,12 @@ public class DumpDownloadServlet extends HttpServlet {
             DAO.log(path);
             return;
         }
-
+        
+        if (disabled) {
+            response.sendError(404, request.getContextPath() + " " + disabled_message);
+            return;
+        }
+        
         // download a dump file
         if (path.startsWith("/")) path = path.substring(1);
         Collection<File> ownDumps = DAO.getTweetOwnDumps();
