@@ -97,9 +97,11 @@ public class Classifier {
             try {
                 List<String> words = normalize(phrase);
                 for (Map.Entry<Category, Set<String>> entry: categories.entrySet()) {
+                    Set<String> vs = entry.getValue();
+                    if (vs == null) continue; // what does that mean?
                     for (String word: words) {
                         if (word.length() == 0) continue;
-                        if (entry.getValue().contains(word)) {
+                        if (vs.contains(word)) {
                             bayes.learn(entry.getKey(), words);
                         }
                     }
