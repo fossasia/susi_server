@@ -65,7 +65,8 @@
               <li><a href="#filesystem">File System Structure</a></li>
               <li><a href="#socketsandports">Application Sockets and Ports</a></li>
               <li><a href="#searchprocess">Search Process and Communication to the Back-End</a></li>
-              <li><a href="#topology">Network Topology</a></li>
+              <li><a href="#topology_elasticsearch">Large-Scale Search</a></li>
+              <li><a href="#topology_loklak">Loklak Network Topology</a></li>
               <li><a href="#messagedumpformat">Data Format Of Message Dumps</a></li>
               <li><a href="#useraccounts">User Accounts and Access Restrictions</a></li>
             </ul>
@@ -131,8 +132,18 @@
             <p>Files pushed on the <a href="dump/">latest message file stack</a> can be downloaded immediately. The same happens at the back-end peer: new messages appear immediately there as well.</p>
           </section>
           <br/><br/>
-          <section id="topology">
-          <h2 class="sub-header">Network Topology</h2>
+          <section id="topology_elasticsearch">
+          <h2 class="sub-header">Large-Scale Search Topology</h2>
+          <p>To scale the build-in search to an unlimited index size within a single loklak node, loklak uses the scaling methods as provided by elasticsearch.
+          While loklak comes by default with a deeply embedded elasticsearch node, it is also possible to replace this node with an elasticsearch transport client.
+          This client then may connect to an external elasticsearch node, which can also be a node of a large elasticsearch cluster.</p>
+          <img src="images/architecture_large_scaling.png" width="828" height="677">
+          <p>If the loklak search index is hosted outside of loklak, it is also possible to connect several loklak server to the same elasticsearch cluster.
+          To provide high-availability, it is possible to use several loklak servers for one front-end at the same time using a load-balancer.</p>
+          </section>
+          <br/><br/>
+          <section id="topology_loklak">
+          <h2 class="sub-header">Loklak Network Topology</h2>
           <p>The topology of the <code>loklak</code> depends only on you: using the back-end configuration, you can chain
             peers and data from scraped content flows along the network chain until it reaches a back-end, which has no other back-end.</p>
             <img src="images/architecture_topology.png" width="720">
