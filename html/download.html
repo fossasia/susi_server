@@ -97,54 +97,9 @@
           <ul class="request">
             <li>&gt; bin/upgrade.sh</li>
           </ul>
-           
- <br>
-<span style="font-weight: bold;"></span>
-<h2 class="sub-header">&nbsp;Setup, Build, Run on a
-Virtual Machine in
-Debian</h2>
-<span style="color: white;">You will need to configure a
-SWAP file then have it load at startup, I
-have used a 4 &nbsp;Gb Swap see &nbsp;dd if=/dev/zero
-of=/var/swap.img bs=4096k count=1000 you can try reducing it if you
-want. &nbsp;You will also need Java.</span><br>
-<br>
-<ul class="request">
-&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;
-  <li>&gt; cd /var</li>
-  <li>&gt; touch swap.img</li>
-  <li>&gt; chmod 600 swap.img</li>
-  <li>&gt; dd if=/dev/zero of=/var/swap.img bs=4096k
-count=1000<br>
-  </li>
-  <li>&gt; mkswap /var/swap.img</li>
-  <li>&gt; swapon /var/swap.img</li>
-  <li>&gt; echo "/var/swap.img none swap sw 0 0" /etc/fstab</li>
-  <li>&gt; apt-get install buffer</li>
-  <li>&gt; echo "deb
-http://ppa.launchpad.net/webupd8team/java/ubuntu precise main" | tee
-/etc/apt/sources.list.d/webupd8team-java.list&nbsp; </li>
-  <li>&gt; echo "deb-src
-http://ppa.launchpad.net/webupd8team/java/ubuntu precise main" | tee -a
-/etc/apt/sources.list.d/webupd8team-java.list&nbsp;
-  </li>
-  <li>&gt; apt-key adv --keyserver
-hkp://keyserver.ubuntu.com:80 --recv-keys EEA14886
-  </li>
-  <li>&gt; apt-get update
-  </li>
-  <li>&gt; apt-get install oracle-java7-installer
-  </li>
-  <li>&gt; apt-get install git</li>
-  <li>&gt; apt-get install ant</li>
-  <li>&gt; git clone
-https://github.com/loklak/loklak_server.git&nbsp;</li>
-  <li>&gt;&nbsp;cd loklak_server</li>
-  <li>&gt; ant</li>
-  <li>&gt; bin/start.sh</li>
-</ul>
           </section>
           <br/><br/>
+          
           <section id="importdump">
           <h2 class="sub-header">Import A Message Dump</h2>
           <p>To import a message dump (which you get from the <a href="dump/">dump directory</a> of every <code>loklak</code> peer), just move it to the <code>data/dump/import/</code> directory:</p>
@@ -159,6 +114,7 @@ https://github.com/loklak/loklak_server.git&nbsp;</li>
             <p>Imported dumps are not deleted, but moved to the <code>imported</code> directory. Because extracted hashtags, links and user names are not part of the dump, this is done during the import process and written to the elasticsearch index. While imports are running, you can use the <a href="api.html#status">/api/status.json</a> servlet to moniotor the import progress.</p>
           </section>
           <br/><br/>
+          
           <section id="recreateindex">
           <h2 class="sub-header">Re-Build The Search Index</h2>
           <p>In case of application bugs, data structure changes or if you change your set-up for larger indexing shards, you can re-create the search index completely using the index dumps. To delete and re-create the index, do:</p>
@@ -171,6 +127,7 @@ https://github.com/loklak/loklak_server.git&nbsp;</li>
             </ul>
           </section>  
           <br/><br/>
+          
           <section id="kibana">
           <h2 class="sub-header">Use Kibana As Search Front-End</h2>
           <p>Kibana is a tool to "explore and visualize your data". It is not actually a search front-end but you can use it as such. Because Kibana is made for elasticsearch, it will instantly fit on <code>loklak</code> without any modification or configuration. Here is what you need to do:</p>
@@ -198,6 +155,7 @@ https://github.com/loklak/loklak_server.git&nbsp;</li>
           <p>The remote search to twitter with the twitter scraper is not done using the elasticsearch 'river' method to prevent that a user-frontend like Kibana constantly triggers a remote search. Therefore this search method with kibana will not help to enrich your search index with remote search results. This also means that you won't see any results in Kibana until you searched with the <a href="api.html#search">/api/search.json</a> api.</p>
           </section>  
           <br/><br/>
+          
           <section id="nginxsetup">
           <h2 class="sub-header">Use Nginx As Reverse Proxy</h2>
           <p>If you run <code>loklak</code> behind a nginx reverse proxy, it is important to forward the client IP address through the proxy. If you don't do that, <code>loklak</code> thinks that all requests come from localhost and are therefore all authorized to do anything with maximum access rights. To configure Nginx to forward the client IP address, add the following line to the server section of your config file:</p>
