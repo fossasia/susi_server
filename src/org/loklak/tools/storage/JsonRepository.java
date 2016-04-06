@@ -27,9 +27,11 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Collection;
 import java.util.Date;
+import java.util.Iterator;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Random;
+import java.util.SortedSet;
 import java.util.TimeZone;
 import java.util.TreeSet;
 import java.util.zip.GZIPInputStream;
@@ -178,26 +180,35 @@ public class JsonRepository {
         try {this.json_log.close();} catch (IOException e) {}
     }
     
-    public Collection<File> getOwnDumps() {
-        return getDumps(this.dump_dir_own, this.dump_file_prefix, null);
+    public SortedSet<File> getOwnDumps(int count) {
+        return getDumps(this.dump_dir_own, this.dump_file_prefix, null, count);
     }
     
-    public Collection<File> getImportDumps() {
-        return getDumps(this.dump_dir_import, this.dump_file_prefix, null);
+    public SortedSet<File> getImportDumps(int count) {
+        return getDumps(this.dump_dir_import, this.dump_file_prefix, null, count);
     }
     
-    public Collection<File> getImportedDumps() {
-        return getDumps(this.dump_dir_imported, this.dump_file_prefix, null);
+    public SortedSet<File> getImportedDumps(int count) {
+        return getDumps(this.dump_dir_imported, this.dump_file_prefix, null, count);
     }
     
-    private static Collection<File> getDumps(final File path, final String prefix, final String suffix) {
+    private static SortedSet<File> tailSet(SortedSet<File> set, int count) {
+        if (count >= set.size()) return set;
+        TreeSet<File> t = new TreeSet<File>();
+        Iterator<File> fi = set.iterator();
+        for (int i = 0; i < set.size() - count; i++) fi.next();
+        while (fi.hasNext()) t.add(fi.next());
+        return t;
+    }
+    
+    private static SortedSet<File> getDumps(final File path, final String prefix, final String suffix, int count) {
         String[] list = path.list();
         TreeSet<File> dumps = new TreeSet<File>(); // sort the names with a tree set
         for (String s: list) {
             if ((prefix == null || s.startsWith(prefix)) &&
                 (suffix == null || s.endsWith(suffix))) dumps.add(new File(path, s));
         }
-        return dumps;
+        return tailSet(dumps, count);
     }
 
     /**

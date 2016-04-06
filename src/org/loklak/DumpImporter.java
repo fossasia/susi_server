@@ -36,6 +36,11 @@ import org.loklak.tools.storage.JsonStreamReader;
 public class DumpImporter extends Thread {
 
     private boolean shallRun = true, isBusy = false;
+    private int count = Integer.MAX_VALUE;
+    
+    public DumpImporter(int count) {
+        this.count = count;
+    }
     
     /**
      * ask the thread to shut down
@@ -59,7 +64,7 @@ public class DumpImporter extends Thread {
             this.isBusy = false;
             
             // scan dump input directory to import files
-            Collection<File> import_dumps = DAO.message_dump.getImportDumps();
+            Collection<File> import_dumps = DAO.message_dump.getImportDumps(this.count);
 
             // check if we can do anything
             if (import_dumps == null || import_dumps.size() == 0 || !DAO.wait_ready(Long.MAX_VALUE)) {

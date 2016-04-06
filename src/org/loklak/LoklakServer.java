@@ -314,7 +314,7 @@ public class LoklakServer {
         LoklakServer.caretaker.start();
         LoklakServer.queuedIndexing = new QueuedIndexing();
         LoklakServer.queuedIndexing.start();
-        LoklakServer.dumpImporter = new DumpImporter();
+        LoklakServer.dumpImporter = new DumpImporter(Integer.MAX_VALUE);
         LoklakServer.dumpImporter.start();
         
         

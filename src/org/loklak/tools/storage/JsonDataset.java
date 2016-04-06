@@ -68,7 +68,8 @@ public class JsonDataset {
             File dump_dir, String dump_file_prefix,
             Column[] columns,
             String dateFieldName, String dateFieldFormat,
-            JsonRepository.Mode mode, final boolean dailyDump) throws IOException {
+            JsonRepository.Mode mode, final boolean dailyDump,
+            int count) throws IOException {
         
         // initialize class objects
         int concurrency = Runtime.getRuntime().availableProcessors();
@@ -84,7 +85,7 @@ public class JsonDataset {
         for (Column col: columns) this.index.put(col.key, new JsonFactoryIndex());
 
         // start reading of the JsonDump
-        final Collection<File> dumps = indexDump.getOwnDumps();
+        final Collection<File> dumps = indexDump.getOwnDumps(count);
 
         // for each reader one threqd is started which does Json parsing and indexing
         if (dumps != null) for (final File dump: dumps) {
@@ -232,7 +233,7 @@ public class JsonDataset {
     
         public void test() throws IOException {
             for (JsonRepository.Mode mode: JsonRepository.Mode.values()) try {
-                JsonDataset dtst = new JsonDataset(this.testFile, "idx_", new Column[]{new Column("abc", true), new Column("def", false)}, null, null, mode, false);
+                JsonDataset dtst = new JsonDataset(this.testFile, "idx_", new Column[]{new Column("abc", true), new Column("def", false)}, null, null, mode, false, Integer.MAX_VALUE);
                 
                 Map<String,  Object> map = new HashMap<>();
                 map.put("abc", 1);
@@ -243,7 +244,7 @@ public class JsonDataset {
                 
                 dtst.close();
 
-                dtst = new JsonDataset(this.testFile, "idx_", new Column[]{new Column("abc", true), new Column("def", false)}, null, null, mode, false);
+                dtst = new JsonDataset(this.testFile, "idx_", new Column[]{new Column("abc", true), new Column("def", false)}, null, null, mode, false, Integer.MAX_VALUE);
                 JsonFactoryIndex idx = dtst.index.get("abc");
                 System.out.println(idx.get(1));
                 idx = dtst.index.get("def");

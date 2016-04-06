@@ -233,17 +233,17 @@ public class DAO {
                     user_dump_dir,USER_DUMP_FILE_PREFIX,
                     new JsonDataset.Column[]{new JsonDataset.Column("id_str", false), new JsonDataset.Column("screen_name", true)},
                     "retrieval_date", DateParser.PATTERN_ISO8601MILLIS,
-                    JsonRepository.REWRITABLE_MODE, false);
+                    JsonRepository.REWRITABLE_MODE, false, Integer.MAX_VALUE);
             followers_dump = new JsonDataset(
                     user_dump_dir, FOLLOWERS_DUMP_FILE_PREFIX,
                     new JsonDataset.Column[]{new JsonDataset.Column("screen_name", true)},
                     "retrieval_date", DateParser.PATTERN_ISO8601MILLIS,
-                    JsonRepository.REWRITABLE_MODE, false);
+                    JsonRepository.REWRITABLE_MODE, false, Integer.MAX_VALUE);
             following_dump = new JsonDataset(
                     user_dump_dir, FOLLOWING_DUMP_FILE_PREFIX,
                     new JsonDataset.Column[]{new JsonDataset.Column("screen_name", true)},
                     "retrieval_date", DateParser.PATTERN_ISO8601MILLIS,
-                    JsonRepository.REWRITABLE_MODE, false);
+                    JsonRepository.REWRITABLE_MODE, false, Integer.MAX_VALUE);
             
             Path log_dump_dir = dataPath.resolve("log");
             log_dump_dir.toFile().mkdirs();
@@ -372,12 +372,12 @@ public class DAO {
         return new File(storage_path, id_str + "_" + file); // all assets for one user in one file
     }
     
-    public static Collection<File> getTweetOwnDumps() {
-        return message_dump.getOwnDumps();
+    public static Collection<File> getTweetOwnDumps(int count) {
+        return message_dump.getOwnDumps(count);
     }
 
-    public static void importAccountDumps() throws IOException {
-        Collection<File> dumps = account_dump.getImportDumps();
+    public static void importAccountDumps(int count) throws IOException {
+        Collection<File> dumps = account_dump.getImportDumps(count);
         if (dumps == null || dumps.size() == 0) return;
         for (File dump: dumps) {
             JsonReader reader = account_dump.getDumpReader(dump);

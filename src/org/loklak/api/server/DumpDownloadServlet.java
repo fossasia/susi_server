@@ -53,8 +53,8 @@ public class DumpDownloadServlet extends HttpServlet {
         String path = request.getPathInfo();
         long now = System.currentTimeMillis();
         
-        boolean disabled = DAO.getConfig("download.disabled", false);
-        String disabled_message = DAO.getConfig("download.disabled.message", "");
+        int limited_count = (int) DAO.getConfig("download.limited.count", (long) Integer.MAX_VALUE);
+        String limited_message = DAO.getConfig("download.limited.message", "");
         
         if (path.length() <= 1) {
             // send directory as html
@@ -75,30 +75,27 @@ public class DumpDownloadServlet extends HttpServlet {
             writer.write("<h1>Index of /dump</h1>\n");
             writer.write("<pre>      Name \n");
             
-            if (disabled) {
-                writer.write(disabled_message + "\n");
-            } else {
-                for (File dump: DAO.getTweetOwnDumps()) {
-                    String name = dump.getName();
-                    String space = "";
-                    for (int i = name.length(); i < 36; i++) space += " ";
-                    long length = dump.length();
-                    String size = length < 1024 ? Long.toString(length) : length < 1024 * 1024 ? Long.toString(length / 1024) + "K" : Long.toString(length / 1024 / 1024) + "M";
-                    while (size.length() < 5) size = " " + size;
-                    int d = name.lastIndexOf('.');
-                    if (d < 0) writer.write("[   ]"); else {
-                        String ext = name.substring(d + 1);
-                        if (ext.length() > 3) ext = ext.substring(0, 3);
-                        writer.write('[');
-                        writer.write(ext);
-                        for (int i = 0; i < 3 - ext.length(); i++) writer.write(' ');
-                        writer.write(']');
-                    }
-                    writer.write(" <a href=\"" + name + "\">"+ name +"</a>" + space + new Date(dump.lastModified()).toString() + "  " + size + "\n");
+            for (File dump: DAO.getTweetOwnDumps(limited_count)) {
+                String name = dump.getName();
+                String space = "";
+                for (int i = name.length(); i < 36; i++) space += " ";
+                long length = dump.length();
+                String size = length < 1024 ? Long.toString(length) : length < 1024 * 1024 ? Long.toString(length / 1024) + "K" : Long.toString(length / 1024 / 1024) + "M";
+                while (size.length() < 5) size = " " + size;
+                int d = name.lastIndexOf('.');
+                if (d < 0) writer.write("[   ]"); else {
+                    String ext = name.substring(d + 1);
+                    if (ext.length() > 3) ext = ext.substring(0, 3);
+                    writer.write('[');
+                    writer.write(ext);
+                    for (int i = 0; i < 3 - ext.length(); i++) writer.write(' ');
+                    writer.write(']');
                 }
+                writer.write(" <a href=\"" + name + "\">"+ name +"</a>" + space + new Date(dump.lastModified()).toString() + "  " + size + "\n");
             }
+            if (limited_count != Integer.MAX_VALUE) writer.write(limited_message + "\n");
             writer.write("<hr></pre>\n");
-            writer.write("<address>this is the message dump download directory</address>\n");
+            writer.write("<address>this is the download directory for dumps of the message index</address>\n");
             writer.write("<address>- import these dumps by placing them into your data/dump/import/ directory</address>\n");
             writer.write("<address>- imported dumps will be moved to data/dump/imported/</address>\n");
             writer.write("</body></html>\n");
@@ -107,14 +104,14 @@ public class DumpDownloadServlet extends HttpServlet {
             return;
         }
         
-        if (disabled) {
-            response.sendError(404, request.getContextPath() + " " + disabled_message);
+        if (limited_count == 0) {
+            response.sendError(404, request.getContextPath() + " " + limited_message);
             return;
         }
         
         // download a dump file
         if (path.startsWith("/")) path = path.substring(1);
-        Collection<File> ownDumps = DAO.getTweetOwnDumps();
+        Collection<File> ownDumps = DAO.getTweetOwnDumps(Integer.MAX_VALUE);
         File dump = ownDumps.size() == 0 ? null : new File(ownDumps.iterator().next().getParentFile(), path);
         if (dump == null || !dump.exists()) {
             response.sendError(404, request.getContextPath() + " not available");
