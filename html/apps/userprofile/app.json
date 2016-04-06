@@ -1,0 +1,17 @@
+{
+  "@context":"http://schema.org",
+  "@type":"SoftwareApplication",
+  "name":"Sudheesh Singanamalla",
+  "headline":"User Profile Page",
+  "alternativeHeadline":"A user profile visualization using loklak",
+  "applicationCategory":"Users API",
+  "applicationSubCategory":"Text Retrieval",
+  "operatingSystem":"http://loklak.org",
+  "author":{
+    "@type":"Person",
+    "name":"Sudheesh Singanamalla",
+    "email":"sudheesh95@gmail.com",
+    "url":"https://sudheesh.info/",
+    "sameAs":"https://github.com/sudheesh001"
+  }
+}
