@@ -213,7 +213,7 @@ public class Caretaker extends Thread {
     }
 
     public static boolean acceptQuery4Retrieval(String q) {
-        return q.length() > 1 && q.length() <=16 && q.indexOf(':') < 0;
+        return q.length() > 1 && q.length() <=16 && (q.indexOf(':') < 0 || q.startsWith("from:"));
     }
     
     /**
