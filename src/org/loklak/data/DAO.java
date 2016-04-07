@@ -297,7 +297,7 @@ public class DAO {
                     } catch (Throwable ee) {
                         ee.printStackTrace();
                     }
-                    log("classifier initialized! initializing queries...");
+                    log("classifier initialized!");
                 }
             }.start();
 

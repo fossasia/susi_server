@@ -43,7 +43,7 @@ import org.loklak.tools.DateParser;
 public class Harvester {
 
     private final static int FETCH_RANDOM = 3;
-    private final static int HITS_LIMIT_4_QUERIES = 100;
+    private final static int HITS_LIMIT_4_QUERIES = 20;
     private final static int MAX_PENDING = 200; // this could be much larger but we don't want to cache too many of these
     private final static int MAX_HARVESTED = 10000; // just to prevent a memory leak with possible OOM after a long time we flush that cache after a while
     private final static Random random = new Random(System.currentTimeMillis());
