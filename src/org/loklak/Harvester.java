@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
+import java.util.NoSuchElementException;
 import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
@@ -90,11 +91,12 @@ public class Harvester {
         // load more queries if pendingQueries is empty
         if (pendingQueries.size() == 0) {
             try {
-                ResultList<QueryEntry> rl = SuggestClient.suggest(backend, "", "query", Math.max(FETCH_RANDOM * 30, hitsOnBackend / 10), "asc", "retrieval_next", DateParser.getTimezoneOffset(), null, "now", "retrieval_next", FETCH_RANDOM);
+                ResultList<QueryEntry> rl = SuggestClient.suggest(backend, "", "query", Math.min(1000, Math.max(FETCH_RANDOM * 30, hitsOnBackend / 10)), "asc", "retrieval_next", DateParser.getTimezoneOffset(), null, "now", "retrieval_next", FETCH_RANDOM);
                 for (QueryEntry qe: rl) {
                     pendingQueries.add(qe.getQuery());
                 }
                 hitsOnBackend = (int) rl.getHits();
+                DAO.log("got " + rl.size() + " suggestions for harvesting from " + hitsOnBackend + " in backend");
                 if (hitsOnBackend == 0) {
                     // the backend does not have any new query words for this time.
                     if (pendingContext.size() == 0) {
@@ -115,29 +117,35 @@ public class Harvester {
         if (pendingQueries.size() == 0) return -1;
         
         // take one of the pending queries or pending context and load the tweets
-        String q = pendingQueries.iterator().next();
-        pendingQueries.remove(q);
-        pendingContext.remove(q);
-        harvestedContext.add(q);
-        Timeline tl = TwitterScraper.search(q, Timeline.Order.CREATED_AT, true, false, 400);
-        
-        if (tl == null || tl.size() == 0) {
-            // even if the result is empty, we must push this to the backend to make it possible that the query gets an update
-            if (tl == null) tl = new Timeline(Order.CREATED_AT);
+        String q = "";
+        try {
+            q = pendingQueries.iterator().next();
+            pendingQueries.remove(q);
+            pendingContext.remove(q);
+            harvestedContext.add(q);
+            Timeline tl = TwitterScraper.search(q, Timeline.Order.CREATED_AT, true, false, 400);
+            
+            if (tl == null || tl.size() == 0) {
+                // even if the result is empty, we must push this to the backend to make it possible that the query gets an update
+                if (tl == null) tl = new Timeline(Order.CREATED_AT);
+                tl.setQuery(q);
+                PushThread pushThread = new PushThread(backend, tl);
+                executor.execute(pushThread);
+                return -1;
+            }
+            
+            // find content query strings and store them in the context cache
+            checkContext(tl, true);
+            
+            // if we loaded a pending query, push results to backpeer right now
             tl.setQuery(q);
             PushThread pushThread = new PushThread(backend, tl);
             executor.execute(pushThread);
+            return tl.size();
+        } catch (NoSuchElementException e) {
+            // this is a concurrency glitch. just do nothing.
             return -1;
         }
-        
-        // find content query strings and store them in the context cache
-        checkContext(tl, true);
-        
-        // if we loaded a pending query, push results to backpeer right now
-        tl.setQuery(q);
-        PushThread pushThread = new PushThread(backend, tl);
-        executor.execute(pushThread);
-        return tl.size();
     }
     
     private static class PushThread implements Runnable {
