@@ -712,8 +712,8 @@ public class DAO {
      */
     public static ResultList<QueryEntry> SearchLocalQueries(final String q, final int resultCount, final String sort_field, final String default_sort_type, final SortOrder sort_order, final Date since, final Date until, final String range_field) {
         ResultList<QueryEntry> queries = new ResultList<>();
-        List<Map<String, Object>> result = elasticsearch_client.fuzzyquery(IndexName.queries.name(), "query", q, resultCount, sort_field, default_sort_type, sort_order, since, until, range_field);
-        queries.setHits(result.size()); // that should maybe be corrected
+        ResultList<Map<String, Object>> result = elasticsearch_client.fuzzyquery(IndexName.queries.name(), "query", q, resultCount, sort_field, default_sort_type, sort_order, since, until, range_field);
+        queries.setHits(result.getHits());
         for (Map<String, Object> map: result) {
             queries.add(new QueryEntry(map));
         }

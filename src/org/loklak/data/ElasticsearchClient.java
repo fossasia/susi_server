@@ -78,6 +78,7 @@ import org.elasticsearch.search.sort.SortBuilders;
 import org.elasticsearch.search.sort.SortOrder;
 import org.joda.time.format.DateTimeFormatter;
 import org.joda.time.format.ISODateTimeFormat;
+import org.loklak.objects.ResultList;
 import org.loklak.tools.DateParser;
 
 public class ElasticsearchClient {
@@ -741,7 +742,7 @@ public class ElasticsearchClient {
      * @param sort_field - the field name to sort the result list, i.e. "query_first"
      * @param sort_order - the sort order (you want to use SortOrder.DESC here)
      */
-    public List<Map<String, Object>> fuzzyquery(final String indexName, final String fieldName, final String q, final int resultCount, final String sort_field, final String default_sort_type, final SortOrder sort_order, final Date since, final Date until, final String range_field) {
+    public ResultList<Map<String, Object>> fuzzyquery(final String indexName, final String fieldName, final String q, final int resultCount, final String sort_field, final String default_sort_type, final SortOrder sort_order, final Date since, final Date until, final String range_field) {
         
         // prepare request
         BoolQueryBuilder suggest = QueryBuilders.boolQuery();
@@ -783,12 +784,13 @@ public class ElasticsearchClient {
         //long totalHitCount = response.getHits().getTotalHits();
         SearchHits rhits = response.getHits();
         //long totalHits = rhits.getTotalHits();
-        ArrayList<Map<String, Object>> result = new ArrayList<Map<String, Object>>();
+        ResultList<Map<String, Object>> result = new ResultList<Map<String, Object>>();
         SearchHit[] hits = rhits.getHits();
         for (SearchHit hit: hits) {
             Map<String, Object> map = hit.getSource();
             result.add(map);
         }
+        result.setHits(rhits.getTotalHits());
             
         return result;
     }
