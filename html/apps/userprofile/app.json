@@ -1,7 +1,7 @@
 {
   "@context":"http://schema.org",
   "@type":"SoftwareApplication",
-  "name":"Sudheesh Singanamalla",
+  "name":"userprofile",
   "headline":"User Profile Page",
   "alternativeHeadline":"A user profile visualization using loklak",
   "applicationCategory":"Users API",
