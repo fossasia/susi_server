@@ -21,21 +21,21 @@
                   </span>
                </div>
             </div>
+            <div ng-if="spinner && !leaderboard"><img src="loading.gif" height="400" width="400"/></div>
             <br>
             <br>
             <br>
-            <div>
-               <table >
-                  <tr ng-if="leaderboard">
-                     <th style="text-align: center;">UserName</th>
-                     <th style="text-align: center;">Number of Tweets</th>
-                  </tr>
-                  <tr ng-repeat="value in leaderboard | limitTo:5">
-                     <td>{{value[0]}}</td>
-                     <td>{{value[1]}}</td>
-                  </tr>
-               </table>
-            </div>
+            <table >
+               <tr ng-if="leaderboard">
+                  <th style="text-align: center;">UserName</th>
+                  <th style="text-align: center;">Number of Tweets</th>
+               </tr>
+               <tr ng-repeat="value in leaderboard | limitTo:5">
+                  <td>{{value[0]}}</td>
+                  <td>{{value[1]}}</td>
+               </tr>
+            </table>
+         </div>
          </div>
          </div>
       </center>
@@ -44,7 +44,7 @@
          app.controller('Controller', ['$scope', '$http', '$sce', function($scope, $http, $sce) {
          
              $scope.Search = function() {
-         
+                $scope.spinner=true;
                  var QueryCommand = '/api/search.json?callback=JSON_CALLBACK&q=' + $scope.query;
          
                  $http.jsonp(String(QueryCommand)).success(function(response) {
@@ -69,8 +69,9 @@
                      $scope.leaderboard = countArr; 
                      //console.log(counts); 
                  });
-             }
          
+             }
+              $scope.spinner = false;
          }]);
       </script>
    </body>
