@@ -221,7 +221,8 @@ public class TwitterScraper {
                 continue;
             }
             if ((p = input.indexOf("class=\"TweetTextSize")) > 0) {
-                props.put("tweettext", new prop(input, p, null));
+                prop tweettext = new prop(input, p, null);
+                props.put("tweettext", tweettext);
                 continue;
             }
             if ((p = input.indexOf("class=\"ProfileTweet-actionCount")) > 0) {
@@ -364,7 +365,8 @@ public class TwitterScraper {
     }
     
 
-    final static Pattern timeline_link_pattern = Pattern.compile("<a .*?href=\"(.*?)\".*?data-expanded-url=\"(.*?)\".*?twitter-timeline-link.*title=\"(.*?)\".*?>.*?</a>");
+    final static Pattern hashtag_pattern = Pattern.compile("<a .*?href=\"(.*?)\".*?class=\"twitter-hashtag.*?\".*?><s>#</s><b>(.*?)</b></a>");
+    final static Pattern timeline_link_pattern = Pattern.compile("<a .*?href=\"(.*?)\".*?data-expanded-url=\"(.*?)\".*?twitter-timeline-link.*?title=\"(.*?)\".*?>.*?</a>");
     final static Pattern timeline_embed_pattern = Pattern.compile("<a .*?href=\"(.*?)\".*?twitter-timeline-link.*?>pic.twitter.com/(.*?)</a>");
     final static Pattern emoji_pattern = Pattern.compile("<img .*?class=\"twitter-emoji\".*?alt=\"(.*?)\".*?>");
     final static Pattern doublespace_pattern = Pattern.compile("  ");
@@ -492,6 +494,27 @@ public class TwitterScraper {
     public static String unshorten(String text) {
         while (true) {
             try {
+                Matcher m = emoji_pattern.matcher(text);
+                if (m.find()) {
+                    String emoji = m.group(1);
+                    text = m.replaceFirst(emoji);
+                    continue;
+                }
+            } catch (Throwable e) {
+                e.printStackTrace();
+                break;
+            }
+            try {
+                Matcher m = hashtag_pattern.matcher(text);
+                if (m.find()) {
+                    text = m.replaceFirst(" #" + m.group(2) + " "); // the extra spaces are needed because twitter removes them if the hashtag is followed with a link
+                    continue;
+                }
+            } catch (Throwable e) {
+                e.printStackTrace();
+                break;
+            }
+            try {
                 Matcher m = timeline_link_pattern.matcher(text);
                 if (m.find()) {
                     String expanded = RedirectUnshortener.unShorten(m.group(2));
@@ -507,17 +530,6 @@ public class TwitterScraper {
                 if (m.find()) {
                     String shorturl = RedirectUnshortener.unShorten(m.group(2));
                     text = m.replaceFirst("https://pic.twitter.com/" + shorturl + " ");
-                    continue;
-                }
-            } catch (Throwable e) {
-                e.printStackTrace();
-                break;
-            }
-            try {
-                Matcher m = emoji_pattern.matcher(text);
-                if (m.find()) {
-                    String emoji = m.group(1);
-                    text = m.replaceFirst(emoji);
                     continue;
                 }
             } catch (Throwable e) {
@@ -561,6 +573,7 @@ public class TwitterScraper {
         System.out.println("count: " + all);
         System.exit(0);
     }
+    
 }
 
 
