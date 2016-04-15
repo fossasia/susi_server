@@ -607,7 +607,7 @@ public class DAO {
     }
     
     public static boolean existMessage(String id) {
-        return messages.exists(id);
+        return messages != null && messages.exists(id);
     }
     
     public static boolean existUser(String id) {

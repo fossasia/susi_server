@@ -20,6 +20,8 @@
 package org.loklak.harvester;
 
 import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
@@ -69,12 +71,8 @@ public class TwitterScraper {
         }
         return tl[0];
     }
-    
-    private static Timeline[] search(
-            final String query,
-            final Timeline.Order order,
-            final boolean writeToIndex,
-            final boolean writeToBackend) {
+
+    private static String prepareSearchURL(final String query) {
         // check
         // https://twitter.com/search-advanced for a better syntax
         // https://support.twitter.com/articles/71577-how-to-use-advanced-twitter-search#
@@ -94,6 +92,18 @@ public class TwitterScraper {
             //https://twitter.com/search?f=tweets&vertical=default&q=kaffee&src=typd
             https_url = "https://twitter.com/search?f=tweets&vertical=default&q=" + q + "&src=typd";
         } catch (UnsupportedEncodingException e) {}
+        return https_url;
+    }
+    
+    private static Timeline[] search(
+            final String query,
+            final Timeline.Order order,
+            final boolean writeToIndex,
+            final boolean writeToBackend) {
+        // check
+        // https://twitter.com/search-advanced for a better syntax
+        // https://support.twitter.com/articles/71577-how-to-use-advanced-twitter-search#
+        String https_url = prepareSearchURL(query);
         Timeline[] timelines = null;
         try {
             ClientConnection connection = new ClientConnection(https_url);
@@ -115,12 +125,32 @@ public class TwitterScraper {
         // wait until all messages in the timeline are ready
         if (timelines == null) {
             // timeout occurred
-            if (timelines == null) timelines = new Timeline[]{new Timeline(order), new Timeline(order)};
+            timelines = new Timeline[]{new Timeline(order), new Timeline(order)};
         }
         if (timelines != null) {
             if (timelines[0] != null) timelines[0].setScraperInfo("local");
             if (timelines[1] != null) timelines[1].setScraperInfo("local");
         }
+        return timelines;
+    }
+    
+    private static Timeline[] parse(
+            final File file,
+            final Timeline.Order order,
+            final boolean writeToIndex,
+            final boolean writeToBackend) {
+        Timeline[] timelines = null;
+        try {
+            BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(file), StandardCharsets.UTF_8));
+            timelines = search(br, order, writeToIndex, writeToBackend);
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            if (timelines == null) timelines = new Timeline[]{new Timeline(order), new Timeline(order)};
+        }
+
+        if (timelines[0] != null) timelines[0].setScraperInfo("local");
+        if (timelines[1] != null) timelines[1].setScraperInfo("local");
         return timelines;
     }
     
@@ -144,11 +174,20 @@ public class TwitterScraper {
         Set<String> videos = new LinkedHashSet<>();
         String place_id = "", place_name = "";
         boolean parsing_favourite = false, parsing_retweet = false;
+        int line = 0; // first line is 1, according to emacs which numbers the first line also as 1
+        boolean debuglog = false;
         while ((input = br.readLine()) != null){
+            line++;
             input = input.trim();
-            //System.out.println(input); // uncomment temporary to debug or add new fields
+            if (input.length() == 0) continue;
+            
+            // debug
+            //if (debuglog) System.out.println(line + ": " + input);            
+            //if (input.indexOf("ProfileTweet-actionCount") > 0) System.out.println(input);
+
+            // parse
             int p;
-            if ((p = input.indexOf("class=\"account-group")) > 0) {
+            if ((p = input.indexOf("=\"account-group")) > 0) {
                 props.put("userid", new prop(input, p, "data-user-id"));
                 continue;
             }
@@ -187,7 +226,8 @@ public class TwitterScraper {
             }
             if ((p = input.indexOf("class=\"ProfileTweet-actionCount")) > 0) {
                 if (parsing_retweet) {
-                    props.put("tweetretweetcount", new prop(input, p, "data-tweet-stat-count"));
+                    prop tweetretweetcount = new prop(input, p, "data-tweet-stat-count");
+                    props.put("tweetretweetcount", tweetretweetcount);
                     parsing_retweet = false;
                 }
                 if (parsing_favourite) {
@@ -225,24 +265,32 @@ public class TwitterScraper {
                 place_id = place_id_prop.value;
                 continue;
             }
-            if (props.size() == 10) {
+            if (props.size() == 10 || (debuglog  && props.size() > 4 && input.indexOf("stream-item") > 0 /* li class="js-stream-item" starts a new tweet */)) {
                 // the tweet is complete, evaluate the result
+                if (debuglog) System.out.println("*** line " + line + " propss.size() = " + props.size());
+                prop userid = props.get("userid"); if (userid == null) {if (debuglog) System.out.println("*** line " + line + " MISSING value userid"); continue;}
+                prop usernickname = props.get("usernickname"); if (usernickname == null) {if (debuglog) System.out.println("*** line " + line + " MISSING value usernickname"); continue;}
+                prop useravatarurl = props.get("useravatarurl"); if (useravatarurl == null) {if (debuglog) System.out.println("*** line " + line + " MISSING value useravatarurl"); continue;}
+                prop userfullname = props.get("userfullname"); if (userfullname == null) {if (debuglog) System.out.println("*** line " + line + " MISSING value userfullname"); continue;}
                 UserEntry user = new UserEntry(
-                        props.get("userid").value,
-                        props.get("usernickname").value,
-                        props.get("useravatarurl").value,
-                        MessageEntry.html2utf8(props.get("userfullname").value)
+                        userid.value,
+                        usernickname.value,
+                        useravatarurl.value,
+                        MessageEntry.html2utf8(userfullname.value)
                         );
                 ArrayList<String> imgs = new ArrayList<String>(images.size()); imgs.addAll(images);
                 ArrayList<String> vids = new ArrayList<String>(videos.size()); vids.addAll(videos);
+                prop tweettimems = props.get("tweettimems"); if (tweettimems == null) {if (debuglog) System.out.println("*** line " + line + " MISSING value tweettimems"); continue;}
+                prop tweetretweetcount = props.get("tweetretweetcount"); if (tweetretweetcount == null) {if (debuglog) System.out.println("*** line " + line + " MISSING value tweetretweetcount"); continue;}
+                prop tweetfavouritecount = props.get("tweetfavouritecount"); if (tweetfavouritecount == null) {if (debuglog) System.out.println("*** line " + line + " MISSING value tweetfavouritecount"); continue;}
                 TwitterTweet tweet = new TwitterTweet(
                         user.getScreenName(),
-                        Long.parseLong(props.get("tweettimems").value),
+                        Long.parseLong(tweettimems.value),
                         props.get("tweettimename").value,
                         props.get("tweetstatusurl").value,
                         props.get("tweettext").value,
-                        Long.parseLong(props.get("tweetretweetcount").value),
-                        Long.parseLong(props.get("tweetfavouritecount").value),
+                        Long.parseLong(tweetretweetcount.value),
+                        Long.parseLong(tweetfavouritecount.value),
                         imgs, vids, place_name, place_id,
                         user, writeToIndex,  writeToBackend
                         );
@@ -493,15 +541,24 @@ public class TwitterScraper {
     public static void main(String[] args) {
         //wget --no-check-certificate "https://twitter.com/search?q=eifel&src=typd&f=realtime"
         
-         Timeline[] result = TwitterScraper.search(args[0], Timeline.Order.CREATED_AT, true, true);
+        Timeline[] result = null;
+        if (args[0].startsWith("/"))
+            result = parse(new File(args[0]),Timeline.Order.CREATED_AT, true, true);
+        else
+            result = TwitterScraper.search(args[0], Timeline.Order.CREATED_AT, true, true);
+        int all = 0;
         for (int x = 0; x < 2; x++) {
+            if (x == 0) System.out.println("Timeline[0] - finished to be used:");
+            if (x == 1) System.out.println("Timeline[1] - messages which are in postprocessing");
+            all += result[x].size();
             for (MessageEntry tweet : result[x]) {
                 if (tweet instanceof TwitterTweet) {
                     ((TwitterTweet) tweet).waitReady(10000);
                 }
-                System.out.println("@" + tweet.getScreenName() + " - " + tweet.getText(Integer.MAX_VALUE, ""));
+                System.out.println(tweet.getCreatedAt().toString() + " from @" + tweet.getScreenName() + " - " + tweet.getText(Integer.MAX_VALUE, ""));
             }
         }
+        System.out.println("count: " + all);
         System.exit(0);
     }
 }
