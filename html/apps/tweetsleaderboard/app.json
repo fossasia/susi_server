@@ -1,0 +1,17 @@
+{
+  "@context":"http://schema.org",
+  "@type":"SoftwareApplication",
+  "name":"tweetsleaderboard",
+  "headline":"Leaderboard",
+  "alternativeHeadline":"A Leaderboard based on the number of tweets",
+  "applicationCategory":"Users API",
+  "applicationSubCategory":"Text Retrieval",
+  "operatingSystem":"http://loklak.org",
+  "author":{
+    "@type":"Person",
+    "name":"Damini Satya",
+    "email":"daminisatya@gmail.com",
+    "url":"https://github.com/daminisatya",
+    "sameAs":"https://github.com/daminisatya"
+  }
+}

@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html>
+   <head>
+      <title>Leaderboard</title>
+      <link href="style.css" rel="stylesheet"/>
+      <link href="https://bootswatch.com/cosmo/bootstrap.min.css" rel="stylesheet"/>
+      <script src="/js/angular.min.js"></script>
+      <script src="/js/jquery.min.js"></script>
+   </head>
+   <body>
+      <center>
+         <h1>LEADERBOARD</h1>
+         <h3>Know who tweeted the most!</h3>
+         <br>
+         <div ng-app="TweetSearch" ng-controller="Controller">
+            <div class="form-group">
+               <div class="input-group" id="searchBar">
+                  <input type="text" id="query" class="form-control" ng-model="query" placeholder="Search tweet from Loklak">
+                  <span class="input-group-btn">
+                  <button href='#' class="btn btn-default" type="button" id="button" ng-click="Search()">Search</button>
+                  </span>
+               </div>
+            </div>
+            <div ng-if="spinner && !leaderboard"><img src="loading.gif" height="400" width="400"/></div>
+            <br>
+            <br>
+            <br>
+            <table >
+               <tr ng-if="leaderboard">
+                  <th style="text-align: center;">UserName</th>
+                  <th style="text-align: center;">Number of Tweets</th>
+               </tr>
+               <tr ng-repeat="value in leaderboard | limitTo:5">
+                  <td>{{value[0]}}</td>
+                  <td>{{value[1]}}</td>
+               </tr>
+            </table>
+         </div>
+         </div>
+         </div>
+      </center>
+      <script>
+         var app = angular.module('TweetSearch', []);
+         app.controller('Controller', ['$scope', '$http', '$sce', function($scope, $http, $sce) {
+         
+             $scope.Search = function() {
+                $scope.spinner=true;
+                 var QueryCommand = '/api/search.json?callback=JSON_CALLBACK&q=' + $scope.query;
+         
+                 $http.jsonp(String(QueryCommand)).success(function(response) {
+                     
+                     var data = response; 
+                     var statuses = data.statuses;
+                     var users = [];
+                     for (var i=0; i<statuses.length; i++) {
+                         user = statuses[i].screen_name; 
+                         users.push(user);
+                     }
+                     var counts = {};
+                     for(var i = 0; i< users.length; i++) {
+                         var num = users[i];
+                         counts[num] = counts[num] ? counts[num]+1 : 1;
+                     }
+                     var countArr = [];
+                     for (obj in counts){
+                         countArr.push([obj,counts[obj]])
+                     } 
+                     countArr.sort(function(a,b){return b[1] - a[1]});
+                     $scope.leaderboard = countArr; 
+                     //console.log(counts); 
+                 });
+         
+             }
+              $scope.spinner = false;
+         }]);
+      </script>
+   </body>
+</html>
