@@ -31,9 +31,8 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.elasticsearch.common.xcontent.XContentBuilder;
-import org.elasticsearch.common.xcontent.XContentFactory;
 import org.elasticsearch.search.sort.SortOrder;
+import org.json.JSONObject;
 import org.loklak.Caretaker;
 import org.loklak.api.client.StatusClient;
 import org.loklak.data.DAO;
@@ -78,65 +77,80 @@ public class StatusServlet extends HttpServlet {
         post.setResponse(response, "application/javascript");
         
         // generate json
-        XContentBuilder json = XContentFactory.jsonBuilder().prettyPrint().lfAtEnd();
-        json.startObject();
-
         Runtime runtime = Runtime.getRuntime();
-        json.field("system");
-        json.startObject();
-        json.field("assigned_memory", runtime.maxMemory());
-        json.field("used_memory", runtime.totalMemory() - runtime.freeMemory());
-        json.field("available_memory", runtime.maxMemory() - runtime.totalMemory() + runtime.freeMemory());
-        json.field("cores", runtime.availableProcessors());
-        json.field("threads", Thread.activeCount());
-        json.field("runtime", System.currentTimeMillis() - Caretaker.startupTime);
-        json.field("time_to_restart", Caretaker.upgradeTime - System.currentTimeMillis());
-        json.field("load_system_average", OS.getSystemLoadAverage());
-        json.field("load_system_cpu", OS.getSystemCpuLoad());
-        json.field("load_process_cpu", OS.getProcessCpuLoad());
-        json.endObject(); // of system
-        
-        json.field("index_sizes");
-        json.startObject();
-        json.field("messages", local_messages + backend_messages);
-        json.field("messages_local", local_messages);
-        json.field("messages_backend", backend_messages);
-        json.field("mps", Math.max(DAO.countLocalMessages(86400000) / 86400, DAO.countLocalMessages(600000) / 600)); // best of 24h and 10m
-        json.field("users", local_users + backend_users);
-        json.field("users_local", local_users);
-        json.field("users_backend", backend_users);
-        json.field("queries", DAO.countLocalQueries());
-        json.field("accounts", DAO.countLocalAccounts());
-        json.field("user", DAO.user_dump.size());
-        json.field("followers", DAO.followers_dump.size());
-        json.field("following", DAO.following_dump.size());
+        JSONObject json = new JSONObject(true);
+        JSONObject system = new JSONObject(true);
+        system.put("assigned_memory", runtime.maxMemory());
+        system.put("used_memory", runtime.totalMemory() - runtime.freeMemory());
+        system.put("available_memory", runtime.maxMemory() - runtime.totalMemory() + runtime.freeMemory());
+        system.put("cores", runtime.availableProcessors());
+        system.put("threads", Thread.activeCount());
+        system.put("runtime", System.currentTimeMillis() - Caretaker.startupTime);
+        system.put("time_to_restart", Caretaker.upgradeTime - System.currentTimeMillis());
+        system.put("load_system_average", OS.getSystemLoadAverage());
+        system.put("load_system_cpu", OS.getSystemCpuLoad());
+        system.put("load_process_cpu", OS.getProcessCpuLoad());
+
+        JSONObject index = new JSONObject(true);
+        index.put("mps", Math.max(DAO.countLocalMessages(86400000) / 86400, DAO.countLocalMessages(600000) / 600)); // best of 24h and 10m
+        JSONObject messages = new JSONObject(true);
+        messages.put("size", local_messages + backend_messages);
+        messages.put("size_local", local_messages);
+        messages.put("size_backend", backend_messages);
+        messages.put("stats", DAO.messages.getStats());
+        JSONObject users = new JSONObject(true);
+        users.put("size", local_users + backend_users);
+        users.put("size_local", local_users);
+        users.put("size_backend", backend_users);
+        users.put("stats", DAO.users.getStats());
+        JSONObject queries = new JSONObject(true);
+        queries.put("size", DAO.countLocalQueries());
+        queries.put("stats", DAO.queries.getStats());
+        JSONObject accounts = new JSONObject(true);
+        accounts.put("size", DAO.countLocalAccounts());
+        JSONObject user = new JSONObject(true);
+        user.put("size", DAO.user_dump.size());
+        JSONObject followers = new JSONObject(true);
+        followers.put("size", DAO.followers_dump.size());
+        JSONObject following = new JSONObject(true);
+        following.put("size", DAO.following_dump.size());
+        index.put("messages", messages);
+        index.put("users", users);
+        index.put("queries", queries);
+        index.put("accounts", accounts);
+        index.put("user", user);
+        index.put("followers", followers);
+        index.put("following", following);
         if (DAO.getConfig("retrieval.queries.enabled", false)) {
             List<QueryEntry> queryList = DAO.SearchLocalQueries("", 1000, "retrieval_next", "date", SortOrder.ASC, null, new Date(), "retrieval_next");
-            json.field("queries_pending", queryList.size());
+            index.put("queries_pending", queryList.size());
         }
-        json.endObject(); // of index_sizes
         
-        json.field("client_info");
-        json.startObject();
-        json.field("RemoteHost", post.getClientHost());
-        json.field("IsLocalhost", post.isLocalhostAccess() ? "true" : "false");
+        JSONObject client_info = new JSONObject(true);
+        client_info.put("RemoteHost", post.getClientHost());
+        client_info.put("IsLocalhost", post.isLocalhostAccess() ? "true" : "false");
+
+        JSONObject request_header = new JSONObject(true);
         Enumeration<String> he = request.getHeaderNames();
         while (he.hasMoreElements()) {
             String h = he.nextElement();
-            json.field(h, request.getHeader(h));
+            request_header.put(h, request.getHeader(h));
         }
-        json.endObject(); // of client_info
+        client_info.put("request_header", request_header);
         
-        json.endObject(); // of root object
+        json.put("system", system);
+        json.put("index", index);
+        json.put("client_info", client_info);
 
         // write json
         response.setCharacterEncoding("UTF-8");
+        FileHandler.setCaching(response, 60);
         PrintWriter sos = response.getWriter();
         if (jsonp) sos.print(callback + "(");
-        sos.print(json.string());
+        sos.print(json.toString(2));
         if (jsonp) sos.println(");");
         sos.println();
-        post.finalize();
+    
         FileHandler.setCaching(response, 10); // prevent re-loading of this servlet in the next 10 seconds
     }
 

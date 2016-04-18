@@ -26,11 +26,13 @@ import java.util.Map;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 
+import org.json.JSONObject;
 import org.loklak.harvester.SourceType;
 import org.loklak.objects.AbstractIndexEntry;
 import org.loklak.objects.IndexEntry;
 import org.loklak.tools.CacheMap;
 import org.loklak.tools.CacheSet;
+import org.loklak.tools.CacheStats;
 
 /**
  * test calls:
@@ -57,16 +59,35 @@ public abstract class AbstractIndexFactory<Entry extends IndexEntry> implements 
         this.lastBulkWrite = System.currentTimeMillis();
     }
     
+    public CacheStats getObjectStats() {
+        return this.objectCache.getStats();
+    }
+    
+    public CacheStats getExistStats() {
+        return this.existCache.getStats();
+    }
+    
+    public JSONObject getStats() {
+        JSONObject json = new JSONObject(true);
+        json.put("name", index_name);
+        json.put("object_cache", this.objectCache.getStatsJson());
+        json.put("exist_cache", this.existCache.getStatsJson());
+        return json;
+    }
+    
     public Entry read(String id) throws IOException {
         assert id != null;
         if (id == null) return null;
-        Entry entry = objectCache.get(id);
-        if (entry != null) return entry;
+        Entry entry = this.objectCache.get(id);
+        if (entry != null) {
+            this.existCache.add(id);
+            return entry;
+        }
         Map<String, Object> map = readMap(id);
         if (map == null) return null;
         entry = init(map);
-        objectCache.put(id, entry);
-        existCache.add(id);
+        this.objectCache.put(id, entry);
+        this.existCache.add(id);
         return entry;
     }
     
@@ -80,7 +101,7 @@ public abstract class AbstractIndexFactory<Entry extends IndexEntry> implements 
 
     @Override
     public boolean existsCache(String id) {
-        return (this.objectCache.exist(id) || this.existCache.contains(id));
+        return this.objectCache.exist(id) || this.existCache.contains(id);
     }
     
     @Override

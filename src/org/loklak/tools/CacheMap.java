@@ -22,18 +22,36 @@ package org.loklak.tools;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 
+import org.json.JSONObject;
+
 public class CacheMap<K,V> {
 
     private int maxSize;
     private LinkedHashMap<K, V> map;
+    private CacheStats stats;
     
     public CacheMap(int maxSize) {
         this.maxSize = maxSize;
         this.map = new LinkedHashMap<K, V>();
+        this.stats = new CacheStats();
     }
 
     public void clear() {
         this.map.clear();
+        this.stats.clear();
+    }
+    
+    public CacheStats getStats() {
+        return this.stats;
+    }
+    
+    public JSONObject getStatsJson() {
+        JSONObject json = this.stats.getJSON();
+        synchronized (this) {
+            json.put("size", this.map.size());
+            json.put("maxsize", this.maxSize);
+        }
+        return json;
     }
     
     private void checkSize() {
@@ -48,6 +66,7 @@ public class CacheMap<K,V> {
     }
     
     public V put(K key, V value) {
+        this.stats.update();
         V oldval;
         synchronized (this.map) {
             // make room; this may remove entries from the beginning of the list
@@ -69,11 +88,15 @@ public class CacheMap<K,V> {
             value = this.map.remove(key);
             
             // in case that the entry does not exist we are ready here
-            if (value == null) return null;
+            if (value == null) {
+                this.stats.miss();
+                return null;
+            }
             
             // the old value gets to the end of the list
             this.map.put(key, value);
         }
+        this.stats.hit();
         return value;
     }
     
@@ -84,9 +107,12 @@ public class CacheMap<K,V> {
     }
     
     public boolean exist(K key) {
+        boolean exist = false;
         synchronized (this.map) {
-            return this.map.containsKey(key);
+            exist = this.map.containsKey(key);
         }
+        if (exist) this.stats.hit(); else this.stats.miss();
+        return exist;
     }
     
 }
