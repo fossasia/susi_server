@@ -21,6 +21,7 @@ package org.loklak;
 
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.eclipse.jetty.util.log.Log;
 import org.loklak.data.DAO;
@@ -29,9 +30,24 @@ import org.loklak.objects.Timeline;
 import org.loklak.objects.UserEntry;
 
 public class QueuedIndexing extends Thread {
-
+    
+    private final static int MESSAGE_QUEUE_MAXSIZE = 100000;
     private boolean shallRun = true, isBusy = false;
-    private static BlockingQueue<MessageWrapper> messageQueue = new ArrayBlockingQueue<MessageWrapper>(100000);
+    private static BlockingQueue<MessageWrapper> messageQueue = new ArrayBlockingQueue<MessageWrapper>(MESSAGE_QUEUE_MAXSIZE);
+    private static AtomicInteger queueClients = new AtomicInteger(0);
+    
+    
+    public static int getMessageQueueSize() {
+        return messageQueue.size();
+    }
+    
+    public static int getMessageQueueMaxSize() {
+        return MESSAGE_QUEUE_MAXSIZE;
+    }
+    
+    public static int getMessageQueueClients() {
+        return queueClients.get();
+    }
     
     public QueuedIndexing() {
     }
@@ -100,7 +116,9 @@ public class QueuedIndexing extends Thread {
     }
     
     public static void addScheduler(Timeline tl, final boolean dump, final boolean overwriteUser, final boolean bulk) {
+        queueClients.incrementAndGet();
         for (MessageEntry me: tl) addScheduler(me, tl.getUser(me), dump, overwriteUser, bulk);
+        queueClients.decrementAndGet();
     }
     
     public static void addScheduler(final MessageEntry t, final UserEntry u, final boolean dump, final boolean overwriteUser, final boolean bulk) {

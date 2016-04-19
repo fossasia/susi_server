@@ -34,6 +34,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.elasticsearch.search.sort.SortOrder;
 import org.json.JSONObject;
 import org.loklak.Caretaker;
+import org.loklak.QueuedIndexing;
 import org.loklak.api.client.StatusClient;
 import org.loklak.data.DAO;
 import org.loklak.http.RemoteAccess;
@@ -98,6 +99,11 @@ public class StatusServlet extends HttpServlet {
         messages.put("size_local", local_messages);
         messages.put("size_backend", backend_messages);
         messages.put("stats", DAO.messages.getStats());
+        JSONObject queue = new JSONObject(true);
+        queue.put("size", QueuedIndexing.getMessageQueueSize());
+        queue.put("maxSize", QueuedIndexing.getMessageQueueMaxSize());
+        queue.put("clients", QueuedIndexing.getMessageQueueClients());   
+        messages.put("queue", queue);
         JSONObject users = new JSONObject(true);
         users.put("size", local_users + backend_users);
         users.put("size_local", local_users);
@@ -124,7 +130,7 @@ public class StatusServlet extends HttpServlet {
         if (DAO.getConfig("retrieval.queries.enabled", false)) {
             List<QueryEntry> queryList = DAO.SearchLocalQueries("", 1000, "retrieval_next", "date", SortOrder.ASC, null, new Date(), "retrieval_next");
             index.put("queries_pending", queryList.size());
-        }
+        } 
         
         JSONObject client_info = new JSONObject(true);
         client_info.put("RemoteHost", post.getClientHost());
