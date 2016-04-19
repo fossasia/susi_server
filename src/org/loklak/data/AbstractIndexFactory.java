@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.atomic.AtomicLong;
 
 import org.json.JSONObject;
 import org.loklak.harvester.SourceType;
@@ -49,6 +50,7 @@ public abstract class AbstractIndexFactory<Entry extends IndexEntry> implements 
     private CacheSet<String> existCache;
     protected final String index_name;
     private long lastBulkWrite;
+    private AtomicLong indexWrite, indexExist, indexGet;
     
     
     public AbstractIndexFactory(final ElasticsearchClient elasticsearch_client, final String index_name, final int cacheSize, final int existSize) {
@@ -57,6 +59,9 @@ public abstract class AbstractIndexFactory<Entry extends IndexEntry> implements 
         this.objectCache = new CacheMap<>(cacheSize);
         this.existCache = new CacheSet<>(existSize);
         this.lastBulkWrite = System.currentTimeMillis();
+        this.indexWrite = new AtomicLong(0);
+        this.indexExist = new AtomicLong(0);
+        this.indexGet = new AtomicLong(0);
     }
     
     public CacheStats getObjectStats() {
@@ -72,6 +77,11 @@ public abstract class AbstractIndexFactory<Entry extends IndexEntry> implements 
         json.put("name", index_name);
         json.put("object_cache", this.objectCache.getStatsJson());
         json.put("exist_cache", this.existCache.getStatsJson());
+        JSONObject index = new JSONObject();
+        index.put("write", this.indexWrite.get());
+        index.put("exist", this.indexExist.get());
+        index.put("get", this.indexGet.get());
+        json.put("index", index);
         return json;
     }
     
@@ -95,6 +105,7 @@ public abstract class AbstractIndexFactory<Entry extends IndexEntry> implements 
     public boolean exists(String id) {
         if (existsCache(id)) return true;
         boolean exist = elasticsearch_client.exist(index_name, id, null);
+        this.indexExist.incrementAndGet();
         if (exist) this.existCache.add(id);
         return exist;
     }
@@ -115,6 +126,7 @@ public abstract class AbstractIndexFactory<Entry extends IndexEntry> implements 
     public Map<String, Object> readMap(String id) {
         Map<String, Object> json = elasticsearch_client.readMap(index_name, id);
         if (json != null) this.existCache.add(id);
+        this.indexGet.incrementAndGet();
         return json;
     }
     
@@ -143,6 +155,7 @@ public abstract class AbstractIndexFactory<Entry extends IndexEntry> implements 
             if (jsonMap != null) {
                 if (!jsonMap.containsKey(AbstractIndexEntry.TIMESTAMP_FIELDNAME)) jsonMap.put(AbstractIndexEntry.TIMESTAMP_FIELDNAME, AbstractIndexEntry.utcFormatter.print(System.currentTimeMillis()));
                 elasticsearch_client.writeMap(this.index_name, jsonMap, id, type);
+                this.indexWrite.incrementAndGet();
                 //System.out.println("writing 1 entry"); // debug
             }
         }
@@ -167,7 +180,7 @@ public abstract class AbstractIndexFactory<Entry extends IndexEntry> implements 
         }
         if (count == 0) return new ArrayList<Map.Entry<String, String>>(0);
         List<Map.Entry<String, String>> errors = elasticsearch_client.writeMapBulk(this.index_name, jsonMapList);
-            
+        this.indexWrite.addAndGet(jsonMapList.size());
         return errors;
     }
     
