@@ -19,6 +19,8 @@
 
 package org.loklak;
 
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -28,14 +30,17 @@ import org.loklak.data.DAO;
 import org.loklak.objects.MessageEntry;
 import org.loklak.objects.Timeline;
 import org.loklak.objects.UserEntry;
+import org.loklak.tools.storage.JsonRepository;
 
 public class QueuedIndexing extends Thread {
     
     private final static int MESSAGE_QUEUE_MAXSIZE = 100000;
-    private boolean shallRun = true, isBusy = false;
+    private final static int bufferLimit = MESSAGE_QUEUE_MAXSIZE * 3 / 4;
     private static BlockingQueue<MessageWrapper> messageQueue = new ArrayBlockingQueue<MessageWrapper>(MESSAGE_QUEUE_MAXSIZE);
     private static AtomicInteger queueClients = new AtomicInteger(0);
-    
+
+    private boolean shallRun = true, isBusy = false;
+    private JsonRepository jsonBufferHandler;
     
     public static int getMessageQueueSize() {
         return messageQueue.size();
@@ -49,7 +54,8 @@ public class QueuedIndexing extends Thread {
         return queueClients.get();
     }
     
-    public QueuedIndexing() {
+    public QueuedIndexing(JsonRepository jsonBufferHandler) {
+        this.jsonBufferHandler = jsonBufferHandler;
     }
     
     public static class MessageWrapper {
@@ -85,6 +91,12 @@ public class QueuedIndexing extends Thread {
             this.isBusy = false;
             
             if (messageQueue.isEmpty() || !DAO.wait_ready(1000)) {
+                // in case that the queue is empty, try to fill it with previously pushed content
+                //List<Map<String, Object>> shard = this.jsonBufferHandler.getBufferShard();
+                // if the shard has content, turn this into messages again
+                
+                
+                // if such content does not exist, simply sleep a while
                 try {Thread.sleep(10000);} catch (InterruptedException e) {}
                 continue loop;
             }
@@ -98,6 +110,17 @@ public class QueuedIndexing extends Thread {
                      knownMessagesCache++;
                      continue pollloop;
                 }
+                
+                // in case that the message queue is too large, dump the queue into a file here
+                // to make room that clients can continue to push without blocking
+                /*
+                if (messageQueue.size() > bufferLimit) {
+                    this.jsonBufferHandler.buffer(mw.t.getCreatedAt(), mw.t.toMap(mw.u, false, Integer.MAX_VALUE, ""));
+                    continue pollloop;
+                }
+                */
+                
+                // if there is time enough to finish this, contine to write into the index
                 mw.t.enrich(); // we enrich here again because the remote peer may have done this with an outdated version or not at all
                 boolean stored = DAO.writeMessage(mw.t, mw.u, mw.dump, mw.overwriteUser, true);
                 if (stored) newMessages++; else knownMessagesIndex++;
