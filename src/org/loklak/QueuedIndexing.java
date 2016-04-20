@@ -61,12 +61,11 @@ public class QueuedIndexing extends Thread {
     public static class MessageWrapper {
         public MessageEntry t;
         public UserEntry u;
-        public boolean dump, overwriteUser;
-        public MessageWrapper(MessageEntry t, UserEntry u, boolean dump, boolean overwriteUser) {
+        public boolean dump;
+        public MessageWrapper(MessageEntry t, UserEntry u, boolean dump) {
             this.t = t;
             this.u = u;
             this.dump = dump;
-            this.overwriteUser = overwriteUser;
         }
     }
     
@@ -122,7 +121,7 @@ public class QueuedIndexing extends Thread {
                 
                 // if there is time enough to finish this, contine to write into the index
                 mw.t.enrich(); // we enrich here again because the remote peer may have done this with an outdated version or not at all
-                boolean stored = DAO.writeMessage(mw.t, mw.u, mw.dump, mw.overwriteUser, true);
+                boolean stored = DAO.writeMessage(mw.t, mw.u, mw.dump, true);
                 if (stored) newMessages++; else knownMessagesIndex++;
             }
            
@@ -137,15 +136,15 @@ public class QueuedIndexing extends Thread {
         Log.getLog().info("QueuedIndexing terminated");
     }
     
-    public static void addScheduler(Timeline tl, final boolean dump, final boolean overwriteUser) {
+    public static void addScheduler(Timeline tl, final boolean dump) {
         queueClients.incrementAndGet();
-        for (MessageEntry me: tl) addScheduler(me, tl.getUser(me), dump, overwriteUser);
+        for (MessageEntry me: tl) addScheduler(me, tl.getUser(me), dump);
         queueClients.decrementAndGet();
     }
     
-    public static void addScheduler(final MessageEntry t, final UserEntry u, final boolean dump, final boolean overwriteUser) {
+    public static void addScheduler(final MessageEntry t, final UserEntry u, final boolean dump) {
         try {
-            messageQueue.put(new MessageWrapper(t, u, dump, overwriteUser));
+            messageQueue.put(new MessageWrapper(t, u, dump));
         } catch (InterruptedException e) {
             e.printStackTrace();
         }

@@ -505,7 +505,7 @@ public class DAO {
      * @param u a user
      * @return true if the record was stored because it did not exist, false if it was not stored because the record existed already
      */
-    public static boolean writeMessage(MessageEntry t, UserEntry u, boolean dump, boolean overwriteUser, boolean bulk) {
+    public static boolean writeMessage(MessageEntry t, UserEntry u, boolean dump, boolean bulk) {
         if (t == null) {
             return false;
         }
@@ -514,19 +514,8 @@ public class DAO {
             if (dump && messages.exists(t.getIdStr())) return false; // we omit writing this again
     
             synchronized (DAO.class) {
-                // check if user exists in index
-                if (overwriteUser) {
-                    UserEntry oldUser = users.read(u.getScreenName());
-                    if (oldUser == null || !oldUser.equals(u)) {
-                        // record user into search index
-                        users.writeEntry(u.getScreenName(), t.getSourceType().name(), u, bulk);
-                    }
-                } else {
-                    if (!users.exists(u.getScreenName())) {
-                        // record user into search index
-                        users.writeEntry(u.getScreenName(), t.getSourceType().name(), u, bulk);
-                    } 
-                }
+                // write the user into the index
+                users.writeEntry(u.getScreenName(), t.getSourceType().name(), u, bulk);
     
                 // record tweet into search index
                 messages.writeEntry(t.getIdStr(), t.getSourceType().name(), t, bulk);

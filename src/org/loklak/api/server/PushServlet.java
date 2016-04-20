@@ -124,7 +124,7 @@ public class PushServlet extends HttpServlet {
                     //boolean newtweet = DAO.writeMessage(t, u, true, true, true);
                     //if (newtweet) newCount++; else knownCount++;
                 }
-                QueuedIndexing.addScheduler(tl, true, true);
+                QueuedIndexing.addScheduler(tl, true);
                 //try {DAO.users.bulkCacheFlush();} catch (IOException e) {}
                 //try {DAO.messages.bulkCacheFlush();} catch (IOException e) {}
 
