@@ -62,8 +62,8 @@
         <h1><code>loklak</code></h1>
         <h2>Distributed Tweet Search Server</h2>
         <span style="font-weight: bold;" ng-controller="status" >
-          This is the Search Server for the <a style="font-weight: bold;" href="http://loklak.net" target="_self">Loklak Webclient</a> {{(index_sizes.messages > 0) ? " hosting " + (index_sizes.messages | number : fractionSize) + " messages for " + (index_sizes.users | number : fractionSize) + " users."  : ""}}&nbsp;<br>
-          {{(index_sizes.messages > 0 && index_sizes.mps > 0) ? "Collection Speed: " + index_sizes.mps + " message" + (index_sizes.mps > 1 ? "s" : "") + " per second; " + ((index_sizes.mps * 86400) | number : fractionSize) + " messages per day."  : ""}}
+          This is the Search Server for the <a style="font-weight: bold;" href="http://loklak.net" target="_self">Loklak Webclient</a> {{(index.messages.size > 0) ? " hosting " + (index.messages.size | number : fractionSize) + " messages for " + (index.users.size | number : fractionSize) + " users."  : ""}}&nbsp;<br>
+          {{(index.messages.size > 0 && index.mps > 0) ? "Collection Speed: " + index.mps + " message" + (index.mps > 1 ? "s" : "") + " per second; " + ((index.mps * 86400) | number : fractionSize) + " messages per day."  : ""}}
         </span>&nbsp;<br><br>
           
       <div class="row">
