@@ -55,6 +55,7 @@ import org.eclipse.jetty.servlets.gzip.GzipHandler;
 import org.eclipse.jetty.util.ConcurrentHashSet;
 import org.eclipse.jetty.util.log.Log;
 import org.eclipse.jetty.util.thread.ExecutorThreadPool;
+import org.eclipse.jetty.util.thread.QueuedThreadPool;
 import org.eclipse.jetty.webapp.WebAppContext;
 import org.loklak.api.server.AccessServlet;
 import org.loklak.api.server.AppsServlet;
@@ -195,10 +196,8 @@ public class LoklakServer {
         /// https
         
         // init the http server
-        
-        
-        LinkedBlockingQueue<Runnable> queue = new LinkedBlockingQueue<Runnable>(300);
-        ExecutorThreadPool pool = new ExecutorThreadPool(10, 80, 20000, TimeUnit.MILLISECONDS, queue);;
+        QueuedThreadPool pool = new QueuedThreadPool();
+        pool.setMaxThreads(500);
         LoklakServer.server = new Server(pool);
         LoklakServer.server.setStopAtShutdown(true);
         ServerConnector connector = new ServerConnector(LoklakServer.server);
@@ -312,7 +311,7 @@ public class LoklakServer {
         LoklakServer.server.start();
         LoklakServer.caretaker = new Caretaker();
         LoklakServer.caretaker.start();
-        LoklakServer.queuedIndexing = new QueuedIndexing();
+        LoklakServer.queuedIndexing = new QueuedIndexing(DAO.message_dump);
         LoklakServer.queuedIndexing.start();
         LoklakServer.dumpImporter = new DumpImporter(Integer.MAX_VALUE);
         LoklakServer.dumpImporter.start();
