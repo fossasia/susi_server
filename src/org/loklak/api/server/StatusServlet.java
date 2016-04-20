@@ -34,6 +34,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.elasticsearch.search.sort.SortOrder;
 import org.json.JSONObject;
 import org.loklak.Caretaker;
+import org.loklak.LoklakServer;
 import org.loklak.api.client.StatusClient;
 import org.loklak.data.DAO;
 import org.loklak.http.RemoteAccess;
@@ -90,6 +91,7 @@ public class StatusServlet extends HttpServlet {
         system.put("load_system_average", OS.getSystemLoadAverage());
         system.put("load_system_cpu", OS.getSystemCpuLoad());
         system.put("load_process_cpu", OS.getProcessCpuLoad());
+        system.put("server_threads", LoklakServer.getServerThreads());
 
         JSONObject index = new JSONObject(true);
         index.put("mps", Math.max(DAO.countLocalMessages(86400000) / 86400, DAO.countLocalMessages(600000) / 600)); // best of 24h and 10m
