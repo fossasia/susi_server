@@ -25,14 +25,15 @@ import java.io.FileInputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
-import java.util.Collection;
 import java.util.Date;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Random;
 import java.util.SortedSet;
 import java.util.TimeZone;
+import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.zip.GZIPInputStream;
 
@@ -52,17 +53,30 @@ public class JsonRepository {
     
     public static final Mode COMPRESSED_MODE = Mode.COMPRESSED;
     public static final Mode REWRITABLE_MODE = Mode.REWRITABLE;
+
+
+    private final static SimpleDateFormat dateFomatMonthly = new SimpleDateFormat("yyyyMM", Locale.US);
+    private final static SimpleDateFormat dateFomatDaily = new SimpleDateFormat("yyyyMMdd", Locale.US);
+    private final static SimpleDateFormat dateFomatHourly = new SimpleDateFormat("yyyyMMddHH", Locale.US);
+    private final static SimpleDateFormat dateFomatMinutely = new SimpleDateFormat("yyyyMMddHHmm", Locale.US);
+    
+    static {
+        dateFomatMonthly.setTimeZone(TimeZone.getTimeZone("GMT"));
+        dateFomatDaily.setTimeZone(TimeZone.getTimeZone("GMT"));
+        dateFomatHourly.setTimeZone(TimeZone.getTimeZone("GMT"));
+    }
     
     public static enum Mode {
         COMPRESSED, // dump files are compressed but cannot be re-written. All data is cached in RAM.
         REWRITABLE; // dump files are not compressed but can be re-written. Data is only indexed in RAM and retrieved from file.
     }
    
-    final File dump_dir, dump_dir_own, dump_dir_import, dump_dir_imported;
+    final File dump_dir, dump_dir_own, dump_dir_import, dump_dir_imported, dump_dir_buffer;
     final String dump_file_prefix;
     final JsonRandomAccessFile json_log;
     final Mode mode;
     final int concurrency;
+    final Map<String, JsonRandomAccessFile> buffers;
     
     public JsonRepository(File dump_dir, String dump_file_prefix, String readme, final Mode mode, final boolean dailyDump, final int concurrency) throws IOException {
         this.dump_dir = dump_dir;
@@ -70,10 +84,12 @@ public class JsonRepository {
         this.dump_dir_own = new File(this.dump_dir, "own");
         this.dump_dir_import = new File(this.dump_dir, "import");
         this.dump_dir_imported = new File(this.dump_dir, "imported");
+        this.dump_dir_buffer = new File(this.dump_dir, "buffer");
         this.dump_dir.mkdirs();
         this.dump_dir_own.mkdirs();
         this.dump_dir_import.mkdirs();
         this.dump_dir_imported.mkdirs();
+        this.dump_dir_buffer.mkdirs();
         this.mode = mode;
         this.concurrency = concurrency;
         if (readme != null) {
@@ -85,16 +101,23 @@ public class JsonRepository {
             }
         }
         this.json_log = new JsonRandomAccessFile(getCurrentDump(dump_dir_own, this.dump_file_prefix, mode, dailyDump), this.concurrency);
+        this.buffers = new TreeMap<>();
+    }
+    
+    public File getDumpDir() {
+        return this.dump_dir;
     }
     
     public Mode getMode() {
         return this.mode;
     }
+
+    private static String dateSuffix(final boolean dailyDump, final Date d) {
+        return (dailyDump ? dateFomatDaily : dateFomatMonthly).format(d);
+    }
     
     private static File getCurrentDump(File path, String prefix, final Mode mode, final boolean dailyDump) {
-        SimpleDateFormat dateFomat = new SimpleDateFormat(dailyDump ? "yyyyMMdd" : "yyyyMM", Locale.US);
-        dateFomat.setTimeZone(TimeZone.getTimeZone("GMT"));
-        String currentDatePart = dateFomat.format(new Date());
+        String currentDatePart = dateSuffix(dailyDump, new Date());
         
         // if there is already a dump, use it
         String[] existingDumps = path.list();
@@ -164,6 +187,7 @@ public class JsonRepository {
         jf = this.json_log.getJsonFactory(seekpos, b.length);
         return jf;
     }
+    
     public JsonFactory write(Map<String, Object> map, char opkey) throws IOException {
         String line = new JSONObject(map).toString(); // new ObjectMapper().writer().writeValueAsString(map);
         JsonFactory jf = null;
@@ -174,6 +198,23 @@ public class JsonRepository {
         long seekpos = this.json_log.appendLine(b);
         jf = this.json_log.getJsonFactory(seekpos, b.length);
         return jf;
+    }
+    
+    public void buffer(Date created_at, Map<String, Object> map) throws IOException {
+        // compute a buffer name from the created_at date
+        String bufferName = dateSuffix(true, created_at);
+        
+        synchronized (this.buffers) {
+            this.buffers.get(bufferName);
+        }
+    }
+    
+    public List<Map<String, Object>> getBufferShard() {
+        return null;
+    }
+    
+    public int getBufferShardCount() {
+        return 0;
     }
     
     public void close() {

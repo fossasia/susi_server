@@ -93,8 +93,8 @@ public class Caretaker extends Thread {
             
             // check ping
             if (System.currentTimeMillis() - helloPeriod > helloTime) {
-                HelloClient.propagate(remote);
                 helloTime = System.currentTimeMillis();
+                HelloClient.propagate(remote);
             }
             
             // clear caches

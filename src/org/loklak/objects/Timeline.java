@@ -276,7 +276,7 @@ public class Timeline implements Iterable<MessageEntry> {
     }    
     
     public void writeToIndex() {
-        QueuedIndexing.addScheduler(this, true, false, false);
+        QueuedIndexing.addScheduler(this, true);
     }
     
     public void setHits(int hits) {

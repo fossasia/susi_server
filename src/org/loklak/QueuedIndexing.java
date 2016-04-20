@@ -19,33 +19,53 @@
 
 package org.loklak;
 
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.eclipse.jetty.util.log.Log;
 import org.loklak.data.DAO;
 import org.loklak.objects.MessageEntry;
 import org.loklak.objects.Timeline;
 import org.loklak.objects.UserEntry;
+import org.loklak.tools.storage.JsonRepository;
 
 public class QueuedIndexing extends Thread {
+    
+    private final static int MESSAGE_QUEUE_MAXSIZE = 100000;
+    private final static int bufferLimit = MESSAGE_QUEUE_MAXSIZE * 3 / 4;
+    private static BlockingQueue<MessageWrapper> messageQueue = new ArrayBlockingQueue<MessageWrapper>(MESSAGE_QUEUE_MAXSIZE);
+    private static AtomicInteger queueClients = new AtomicInteger(0);
 
     private boolean shallRun = true, isBusy = false;
-    private static BlockingQueue<MessageWrapper> messageQueue = new ArrayBlockingQueue<MessageWrapper>(100000);
+    private JsonRepository jsonBufferHandler;
     
-    public QueuedIndexing() {
+    public static int getMessageQueueSize() {
+        return messageQueue.size();
+    }
+    
+    public static int getMessageQueueMaxSize() {
+        return MESSAGE_QUEUE_MAXSIZE;
+    }
+    
+    public static int getMessageQueueClients() {
+        return queueClients.get();
+    }
+    
+    public QueuedIndexing(JsonRepository jsonBufferHandler) {
+        this.jsonBufferHandler = jsonBufferHandler;
     }
     
     public static class MessageWrapper {
         public MessageEntry t;
         public UserEntry u;
-        public boolean dump, overwriteUser, bulk;
-        public MessageWrapper(MessageEntry t, UserEntry u, boolean dump, boolean overwriteUser, boolean bulk) {
+        public boolean dump;
+        public MessageWrapper(MessageEntry t, UserEntry u, boolean dump) {
             this.t = t;
             this.u = u;
             this.dump = dump;
-            this.overwriteUser = overwriteUser;
-            this.bulk = bulk;
         }
     }
     
@@ -70,6 +90,12 @@ public class QueuedIndexing extends Thread {
             this.isBusy = false;
             
             if (messageQueue.isEmpty() || !DAO.wait_ready(1000)) {
+                // in case that the queue is empty, try to fill it with previously pushed content
+                //List<Map<String, Object>> shard = this.jsonBufferHandler.getBufferShard();
+                // if the shard has content, turn this into messages again
+                
+                
+                // if such content does not exist, simply sleep a while
                 try {Thread.sleep(10000);} catch (InterruptedException e) {}
                 continue loop;
             }
@@ -83,8 +109,19 @@ public class QueuedIndexing extends Thread {
                      knownMessagesCache++;
                      continue pollloop;
                 }
+                
+                // in case that the message queue is too large, dump the queue into a file here
+                // to make room that clients can continue to push without blocking
+                /*
+                if (messageQueue.size() > bufferLimit) {
+                    this.jsonBufferHandler.buffer(mw.t.getCreatedAt(), mw.t.toMap(mw.u, false, Integer.MAX_VALUE, ""));
+                    continue pollloop;
+                }
+                */
+                
+                // if there is time enough to finish this, contine to write into the index
                 mw.t.enrich(); // we enrich here again because the remote peer may have done this with an outdated version or not at all
-                boolean stored = DAO.writeMessage(mw.t, mw.u, mw.dump, mw.overwriteUser, mw.bulk);
+                boolean stored = DAO.writeMessage(mw.t, mw.u, mw.dump, true);
                 if (stored) newMessages++; else knownMessagesIndex++;
             }
            
@@ -99,13 +136,15 @@ public class QueuedIndexing extends Thread {
         Log.getLog().info("QueuedIndexing terminated");
     }
     
-    public static void addScheduler(Timeline tl, final boolean dump, final boolean overwriteUser, final boolean bulk) {
-        for (MessageEntry me: tl) addScheduler(me, tl.getUser(me), dump, overwriteUser, bulk);
+    public static void addScheduler(Timeline tl, final boolean dump) {
+        queueClients.incrementAndGet();
+        for (MessageEntry me: tl) addScheduler(me, tl.getUser(me), dump);
+        queueClients.decrementAndGet();
     }
     
-    public static void addScheduler(final MessageEntry t, final UserEntry u, final boolean dump, final boolean overwriteUser, final boolean bulk) {
+    public static void addScheduler(final MessageEntry t, final UserEntry u, final boolean dump) {
         try {
-            messageQueue.put(new MessageWrapper(t, u, dump, overwriteUser, bulk));
+            messageQueue.put(new MessageWrapper(t, u, dump));
         } catch (InterruptedException e) {
             e.printStackTrace();
         }

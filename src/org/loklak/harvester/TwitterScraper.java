@@ -295,7 +295,9 @@ public class TwitterScraper {
                         imgs, vids, place_name, place_id,
                         user, writeToIndex,  writeToBackend
                         );
-                if (!tweet.exist()) {
+                if (!DAO.messages.existsCache(tweet.getIdStr())) {
+                    // checking against the exist cache is incomplete. A false negative would just cause that a tweet is
+                    // indexed again.
                     if (tweet.willBeTimeConsuming()) {
                         executor.execute(tweet);
                         //new Thread(tweet).start();
@@ -380,7 +382,6 @@ public class TwitterScraper {
     public static class TwitterTweet extends MessageEntry implements Runnable {
 
         private final Semaphore ready;
-        private Boolean exists = null;
         private UserEntry user;
         private boolean writeToIndex, writeToBackend;
         
@@ -454,7 +455,7 @@ public class TwitterScraper {
                 //DAO.log("TwitterTweet [" + this.id_str + "] unshorten after " + (System.currentTimeMillis() - start) + "ms");
                 this.enrich();
                 //DAO.log("TwitterTweet [" + this.id_str + "] enrich    after " + (System.currentTimeMillis() - start) + "ms");
-                if (this.writeToIndex) QueuedIndexing.addScheduler(this, this.user, true, true, true);
+                if (this.writeToIndex) QueuedIndexing.addScheduler(this, this.user, true);
                 //DAO.log("TwitterTweet [" + this.id_str + "] write     after " + (System.currentTimeMillis() - start) + "ms");
                 if (this.writeToBackend) Caretaker.transmitMessage(this, this.user);
                 //DAO.log("TwitterTweet [" + this.id_str + "] transmit  after " + (System.currentTimeMillis() - start) + "ms");
@@ -478,15 +479,6 @@ public class TwitterScraper {
             } catch (InterruptedException e) {
                 return false;
             }
-        }
-        
-        /**
-         * the exist method has a 3-value boolean logic: false, true and NULL for: don't know
-         * @return
-         */
-        public Boolean exist() {
-            if (this.exists == null) this.exists = new Boolean(DAO.existMessage(this.getIdStr()));
-            return this.exists;
         }
         
     }

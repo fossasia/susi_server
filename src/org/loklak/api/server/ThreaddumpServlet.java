@@ -35,9 +35,10 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.SortedSet;
+import java.util.TreeSet;
 import java.util.regex.Pattern;
 
 import javax.servlet.ServletException;
@@ -51,7 +52,6 @@ import javax.servlet.http.HttpServletResponse;
 import org.loklak.Caretaker;
 import org.loklak.data.DAO;
 import org.loklak.http.RemoteAccess;
-import org.loklak.tools.CharacterCoding;
 import org.loklak.tools.UTF8;
 
 public class ThreaddumpServlet extends HttpServlet {
@@ -62,6 +62,10 @@ public class ThreaddumpServlet extends HttpServlet {
     private static final Pattern multiDumpFilterPattern = Pattern.compile(multiDumpFilter);
     private static ThreadMXBean threadBean = ManagementFactory.getThreadMXBean();
     private static OperatingSystemMXBean osBean = ManagementFactory.getOperatingSystemMXBean();
+    
+    private static final Thread.State[] ORDERED_STATES = new Thread.State[]{
+        Thread.State.BLOCKED, Thread.State.RUNNABLE, Thread.State.TIMED_WAITING,
+        Thread.State.WAITING, Thread.State.NEW, Thread.State.TERMINATED};
     
     @Override
     protected void doPost(final HttpServletRequest request, final HttpServletResponse response) throws ServletException, IOException {
@@ -132,24 +136,38 @@ public class ThreaddumpServlet extends HttpServlet {
         bufferappend(buffer, "");
 
         if (multi > 0) {
-            final ArrayList<Map<Thread,StackTraceElement[]>> traces = new ArrayList<Map<Thread,StackTraceElement[]>>();
+            // generate multiple dumps
+            final Map<String, Integer> dumps = new HashMap<String, Integer>();
             for (int i = 0; i < multi; i++) {
                 try {
-                    traces.add(ThreadDump.getAllStackTraces());
+                    ThreadDump dump = new ThreadDump(ThreadDump.getAllStackTraces(), Thread.State.RUNNABLE);
+                    for (final Map.Entry<StackTrace, SortedSet<String>> e: dump.entrySet()) {
+                        if (multiDumpFilterPattern.matcher(e.getKey().text).matches()) continue;
+                        Integer c = dumps.get(e.getKey().text);
+                        if (c == null) dumps.put(e.getKey().text, Integer.valueOf(e.getValue().size()));
+                        else {
+                            c = Integer.valueOf(c.intValue() + e.getValue().size());
+                            dumps.put(e.getKey().text, c);
+                        }
+                    }
                 } catch (final OutOfMemoryError e) {
                     break;
                 }
             }
-            appendStackTraceStats(buffer, traces);
+            
+            // write dumps
+            while (!dumps.isEmpty()) {
+                final Map.Entry<String, Integer> e = removeMax(dumps);
+                bufferappend(buffer, "Occurrences: " + e.getValue());
+                bufferappend(buffer, e.getKey());
+                bufferappend(buffer, "");
+            }
+            bufferappend(buffer, "");
         } else {
             // generate a single thread dump
-            final Map<Thread,StackTraceElement[]> stackTraces = ThreadDump.getAllStackTraces();
-            new ThreadDump(stackTraces, Thread.State.BLOCKED).appendStackTraces(buffer, Thread.State.BLOCKED);
-            new ThreadDump(stackTraces, Thread.State.RUNNABLE).appendStackTraces(buffer, Thread.State.RUNNABLE);
-            new ThreadDump(stackTraces, Thread.State.TIMED_WAITING).appendStackTraces(buffer, Thread.State.TIMED_WAITING);
-            new ThreadDump(stackTraces, Thread.State.WAITING).appendStackTraces(buffer, Thread.State.WAITING);
-            new ThreadDump(stackTraces, Thread.State.NEW).appendStackTraces(buffer, Thread.State.NEW);
-            new ThreadDump(stackTraces, Thread.State.TERMINATED).appendStackTraces(buffer, Thread.State.TERMINATED);
+            final Map<Thread, StackTraceElement[]> stackTraces = ThreadDump.getAllStackTraces();
+            // write those ordered into the stackTrace list
+            for (Thread.State state: ORDERED_STATES) new ThreadDump(stackTraces, state).appendStackTraces(buffer, state);
         }
 
         ThreadMXBean threadbean = ManagementFactory.getThreadMXBean();
@@ -201,36 +219,6 @@ public class ThreaddumpServlet extends HttpServlet {
         }
     }
     
-    private static void appendStackTraceStats(
-            final StringBuilder buffer,
-            final List<Map<Thread, StackTraceElement[]>> stackTraces) {
-
-        // collect single dumps
-        final Map<String, Integer> dumps = new HashMap<String, Integer>();
-        ThreadDump x;
-        for (final Map<Thread, StackTraceElement[]> trace: stackTraces) {
-            x = new ThreadDump(trace, Thread.State.RUNNABLE);
-            for (final Map.Entry<StackTrace, List<String>> e: x.entrySet()) {
-                if (multiDumpFilterPattern.matcher(e.getKey().text).matches()) continue;
-                Integer c = dumps.get(e.getKey().text);
-                if (c == null) dumps.put(e.getKey().text, Integer.valueOf(1));
-                else {
-                    c = Integer.valueOf(c.intValue() + 1);
-                    dumps.put(e.getKey().text, c);
-                }
-            }
-        }
-
-        // write dumps
-        while (!dumps.isEmpty()) {
-            final Map.Entry<String, Integer> e = removeMax(dumps);
-            bufferappend(buffer, "Occurrences: " + e.getValue());
-            bufferappend(buffer, e.getKey());
-            bufferappend(buffer, "");
-        }
-        bufferappend(buffer, "");
-    }
-
     private static Map.Entry<String, Integer> removeMax(final Map<String, Integer> result) {
         Map.Entry<String, Integer> max = null;
         for (final Map.Entry<String, Integer> e: result.entrySet()) {
@@ -270,7 +258,7 @@ public class ThreaddumpServlet extends HttpServlet {
         buffer.append('\n');
     }
     
-    private static class ThreadDump extends HashMap<StackTrace, List<String>> implements Map<StackTrace, List<String>> {
+    private static class ThreadDump extends HashMap<StackTrace, SortedSet<String>> implements Map<StackTrace, SortedSet<String>> {
 
         private static final long serialVersionUID = -5587850671040354397L;
 
@@ -294,7 +282,7 @@ public class ThreaddumpServlet extends HttpServlet {
                 final ThreadInfo info = threadBean.getThreadInfo(thread.getId());
                 if (threadState != null && info != null && (stateIn == null || stateIn.equals(threadState)) && stackTraceElements.length > 0) {
                     final StringBuilder sb = new StringBuilder(3000);
-                    final String threadtitle = tracename + "Thread= " + thread.getName() + " " + (thread.isDaemon()?"daemon":"") + " id=" + thread.getId() + " " + threadState.toString() + (info.getLockOwnerId() >= 0 ? " lock owner =" + info.getLockOwnerId() : "");
+                    final String threadtitle = tracename + "THREAD: " + thread.getName() + " " + (thread.isDaemon()?"daemon":"") + " id=" + thread.getId() + " " + threadState.toString() + (info.getLockOwnerId() >= 0 ? " lock owner =" + info.getLockOwnerId() : "");
                     boolean cutcore = true;
                     for (int i = 0; i < stackTraceElements.length; i++) {
                         ste = stackTraceElements[i];
@@ -308,11 +296,13 @@ public class ThreaddumpServlet extends HttpServlet {
                             bufferappend(sb, tracename + "at " + classString);
                         }
                     }
-                    final String threaddump = sb.toString();
-                    List<String> threads = get(threaddump);
-                    if (threads == null) threads = new ArrayList<String>();
+                    final StackTrace stackTrace = new StackTrace(sb.toString());
+                    SortedSet<String> threads = get(stackTrace);
+                    if (threads == null) {
+                        threads = new TreeSet<String>();
+                        put(stackTrace, threads);
+                    }
                     threads.add(threadtitle);
-                    put(new StackTrace(threaddump), threads);
                 }
             }
         }
@@ -324,8 +314,8 @@ public class ThreaddumpServlet extends HttpServlet {
             bufferappend(buffer, "");
 
             // write dumps
-            for (final Map.Entry<StackTrace, List<String>> entry: entrySet()) {
-                final List<String> threads = entry.getValue();
+            for (final Map.Entry<StackTrace, SortedSet<String>> entry: entrySet()) {
+                final SortedSet<String> threads = entry.getValue();
                 for (final String t: threads) bufferappend(buffer, t);
                 bufferappend(buffer, entry.getKey().text);
                 bufferappend(buffer, "");

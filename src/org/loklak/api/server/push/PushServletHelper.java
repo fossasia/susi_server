@@ -35,15 +35,15 @@ public class PushServletHelper {
         List<String> importedMsgIds = new ArrayList<>();
         for (Map<String, Object> message : messages) {
             message.put("screen_name", screenName);
+            @SuppressWarnings("unchecked")
             Map<String, Object> user = (Map<String, Object>) message.remove("user");
-            if (user != null)
-                user.put("screen_name", screenName);
+            if (user != null) user.put("screen_name", screenName);
             MessageEntry messageEntry = new MessageEntry(message);
             UserEntry userEntry = new UserEntry(user != null ? user : new HashMap<String, Object>());
             boolean successful;
             report.incrementRecordCount();
             try {
-                successful = DAO.writeMessage(messageEntry, userEntry, true, false, false);
+                successful = DAO.writeMessage(messageEntry, userEntry, true, false);
             } catch (Exception e) {
                 e.printStackTrace();
                 report.incrementErrorCount();
