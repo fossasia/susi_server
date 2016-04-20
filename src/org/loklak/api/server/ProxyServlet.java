@@ -119,7 +119,7 @@ public class ProxyServlet extends HttpServlet {
                     user.setProfileImage(buffer);
                     try {
                         // record user into search index
-                        DAO.users.writeEntry(user.getScreenName(), user.getType(), user, false);
+                        DAO.users.writeEntry(user.getScreenName(), user.getType(), user);
                     } catch (IOException e) {
                         e.printStackTrace();
                     }

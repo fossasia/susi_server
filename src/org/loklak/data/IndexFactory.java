@@ -39,7 +39,9 @@ public interface IndexFactory<Entry extends IndexEntry> {
     
     public Map<String, Object> readMap(String id);
 
-    public void writeEntry(String id, String type, Entry entry, boolean bulk) throws IOException;
+    public boolean writeEntry(String id, String type, Entry entry) throws IOException;
+    
+    public void writeEntryBulk(String id, String type, Entry entry) throws IOException;
     
     public void close();
     

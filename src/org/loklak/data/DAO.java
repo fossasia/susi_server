@@ -324,11 +324,10 @@ public class DAO {
                             // write line into query database
                             if (!existQuery(line)) {
                                 try {
-                                    queries.writeEntry(
+                                    queries.writeEntryBulk(
                                             line,
                                             SourceType.TWITTER.name(),
-                                            new QueryEntry(line, 0, 60000, SourceType.TWITTER, false),
-                                            true);
+                                            new QueryEntry(line, 0, 60000, SourceType.TWITTER, false));
                                 } catch (IOException e) {
                                     e.printStackTrace();
                                 }
@@ -508,25 +507,39 @@ public class DAO {
     public static boolean writeMessage(MessageEntry t, UserEntry u, boolean dump, boolean bulk) {
         if (t == null) {
             return false;
-        }
-        try {
-            // check if tweet exists in index
-            if (dump && messages.exists(t.getIdStr())) return false; // we omit writing this again
-    
-            synchronized (DAO.class) {
-                // write the user into the index
-                users.writeEntry(u.getScreenName(), t.getSourceType().name(), u, bulk);
-    
-                // record tweet into search index
-                messages.writeEntry(t.getIdStr(), t.getSourceType().name(), t, bulk);
-                 
-                // record tweet into text file
-                if (dump) message_dump.write(t.toMap(u, false, Integer.MAX_VALUE, ""));
-    
-             }
+        } try {
+            if (bulk) {
+                // check if tweet exists in index
+                if (dump && messages.exists(t.getIdStr())) return false; // we omit writing this again
+        
+                synchronized (DAO.class) {
+                    // write the user into the index
+                    users.writeEntryBulk(u.getScreenName(), t.getSourceType().name(), u);
+        
+                    // record tweet into search index
+                    messages.writeEntryBulk(t.getIdStr(), t.getSourceType().name(), t);
+                     
+                    // record tweet into text file
+                    if (dump) message_dump.write(t.toMap(u, false, Integer.MAX_VALUE, ""));
+                 }
+            } else {
+                synchronized (DAO.class) {
+                    // record tweet into search index and check if this is a new entry
+                    boolean exists = messages.writeEntry(t.getIdStr(), t.getSourceType().name(), t);
+
+                    // check if tweet exists in index
+                    if (exists) return false; // we don't need to write the user and also not to the message dump
+
+                    // write the user into the index
+                    users.writeEntry(u.getScreenName(), t.getSourceType().name(), u);
+
+                    // record tweet into text file
+                    if (dump) message_dump.write(t.toMap(u, false, Integer.MAX_VALUE, ""));
+                 }
+            }
             
-             // teach the classifier
-             Classifier.learnPhrase(t.getText(Integer.MAX_VALUE, ""));
+            // teach the classifier
+            Classifier.learnPhrase(t.getText(Integer.MAX_VALUE, ""));
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -546,7 +559,7 @@ public class DAO {
             if (dump) account_dump.write(a.toMap(null));
 
             // record account into search index
-            accounts.writeEntry(a.getScreenName(), a.getSourceType().name(), a, false);
+            accounts.writeEntry(a.getScreenName(), a.getSourceType().name(), a);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -564,7 +577,7 @@ public class DAO {
             // record import profile into text file
             if (dump) import_profile_dump.write(i.toMap());
             // record import profile into search index
-            importProfiles.writeEntry(i.getId(), i.getSourceType().name(), i, false);
+            importProfiles.writeEntry(i.getId(), i.getSourceType().name(), i);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -789,7 +802,7 @@ public class DAO {
                 qe.update(tl.period(), byUserQuery);
             }
             try {
-                queries.writeEntry(q, qe.source_type == null ? SourceType.TWITTER.name() : qe.source_type.name(), qe, false);
+                queries.writeEntry(q, qe.source_type == null ? SourceType.TWITTER.name() : qe.source_type.name(), qe);
             } catch (IOException e) {
                 e.printStackTrace();
             }
