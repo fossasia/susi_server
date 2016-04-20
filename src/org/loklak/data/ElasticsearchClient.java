@@ -499,8 +499,9 @@ public class ElasticsearchClient {
      *            the name of the index
      * @param typeName
      *            the type of the index
+     * @return true if the document with given id did not exist before, false if it existed and was overwritten
      */
-    public void writeMap(String indexName, final Map<String, Object> jsonMap, String id, String typeName) {
+    public boolean writeMap(String indexName, final Map<String, Object> jsonMap, String id, String typeName) {
         // get the version number out of the json, if any is given
         Long version = (Long) jsonMap.remove("_version");
         // put this to the index
@@ -513,6 +514,7 @@ public class ElasticsearchClient {
         // documentation about the versioning is available at
         // https://www.elastic.co/blog/elasticsearch-versioning-support
         // TODO: error handling
+        return r.isCreated();
     }
 
     /**
@@ -538,12 +540,10 @@ public class ElasticsearchClient {
                 .setVersionType(be.version == null ? VersionType.FORCE : VersionType.EXTERNAL));
         }
         BulkResponse bulkResponse = bulkRequest.get();
-
         List<Map.Entry<String, String>> errors = new ArrayList<>();
-        if (bulkResponse.hasFailures()) {
-            for (BulkItemResponse r: bulkResponse.getItems()) {
-                String err = r.getFailureMessage();
-                if (err == null) continue;
+        for (BulkItemResponse r: bulkResponse.getItems()) {
+            String err = r.getFailureMessage();
+            if (err != null) {
                 String id = r.getId();
                 errors.add(new AbstractMap.SimpleEntry<String, String>(id, err));
             }
