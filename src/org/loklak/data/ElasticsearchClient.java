@@ -341,9 +341,9 @@ public class ElasticsearchClient {
      * @return the document, if it exists or null otherwise;
      */
     public boolean exist(String indexName, final String id, String typeName) {
-        GetResponse getResponse = elasticsearchClient.prepareGet(indexName, typeName, id).execute().actionGet();
+        GetResponse getResponse = elasticsearchClient.prepareGet(indexName, typeName, id).setFields(new String[]{}).execute().actionGet();
         return getResponse.isExists();
-    }
+    }    
     
     /**
      * Get the type name of a document or null if the document does not exist.
