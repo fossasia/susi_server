@@ -332,16 +332,21 @@ public class ElasticsearchClient {
      *   ...
      * }
      * 
-     * @param id
-     *            the unique identifier of a document
      * @param indexName
      *            the name of the index
      * @param typeName
      *            the type name, can be set to NULL for all types (see also: getType())
+     * @param id
+     *            the unique identifier of a document
      * @return the document, if it exists or null otherwise;
      */
-    public boolean exist(String indexName, final String id, String typeName) {
-        GetResponse getResponse = elasticsearchClient.prepareGet(indexName, typeName, id).setFields(new String[]{}).execute().actionGet();
+    public boolean exist(String indexName, String typeName, final String id) {
+        GetResponse getResponse = elasticsearchClient
+                .prepareGet(indexName, typeName, id)
+                .setOperationThreaded(false)
+                .setFields(new String[]{})
+                .execute()
+                .actionGet();
         return getResponse.isExists();
     }    
     
@@ -350,10 +355,10 @@ public class ElasticsearchClient {
      * This is a replacement of the exist() method which does exactly the same as exist()
      * but is able to return the type name in case that exist is successful.
      * Please read the comment to exist() for details.
-     * @param id
-     *            the unique identifier of a document
      * @param indexName
      *            the name of the index
+     * @param id
+     *            the unique identifier of a document
      * @return the type name of the document if it exists, null otherwise
      */
     public String getType(String indexName, final String id) {
@@ -373,7 +378,7 @@ public class ElasticsearchClient {
      *            the unique identifier of a document
      * @return true if the document existed and was deleted, false otherwise
      */
-    public boolean delete(String indexName, final String id, String typeName) {
+    public boolean delete(String indexName, String typeName, final String id) {
         return elasticsearchClient.prepareDelete(indexName, typeName, id).execute().actionGet().isFound();
     }
 
@@ -385,7 +390,7 @@ public class ElasticsearchClient {
      *            a collection of the unique identifier of a document
      * @return the number of deleted documents
      */
-    public int deleteBulk(String indexName, Collection<String> ids, String typeName) {
+    public int deleteBulk(String indexName, String typeName, Collection<String> ids) {
         // bulk-delete the ids
         BulkRequestBuilder bulkRequest = elasticsearchClient.prepareBulk();
         for (String id : ids) {
@@ -404,7 +409,7 @@ public class ElasticsearchClient {
      * @param q
      * @return delete document count
      */
-    public int deleteByQuery(String indexName, final QueryBuilder q, String typeName) {
+    public int deleteByQuery(String indexName, String typeName, final QueryBuilder q) {
         List<String> ids = new ArrayList<>();
         // FIXME: deprecated, "will be removed in 3.0, you should do a regular scroll instead, ordered by `_doc`"
         @SuppressWarnings("deprecation")
@@ -422,7 +427,7 @@ public class ElasticsearchClient {
             if (response.getHits().getHits().length == 0)
                 break;
         }
-        return deleteBulk(indexName, ids, typeName);
+        return deleteBulk(indexName, typeName, ids);
     }
 
     /**
@@ -491,17 +496,17 @@ public class ElasticsearchClient {
      * This id should be unique for the json. The best way to calculate this id is, to use an existing
      * field from the jsonMap which contains a unique identifier for the jsonMap.
      * 
-     * @param jsonMap
-     *            the json document to be indexed in elasticsearch
-     * @param id
-     *            the unique identifier of a document
      * @param indexName
      *            the name of the index
+     * @param jsonMap
+     *            the json document to be indexed in elasticsearch
      * @param typeName
      *            the type of the index
+     * @param id
+     *            the unique identifier of a document
      * @return true if the document with given id did not exist before, false if it existed and was overwritten
      */
-    public boolean writeMap(String indexName, final Map<String, Object> jsonMap, String id, String typeName) {
+    public boolean writeMap(String indexName, final Map<String, Object> jsonMap, String typeName, String id) {
         // get the version number out of the json, if any is given
         Long version = (Long) jsonMap.remove("_version");
         // put this to the index

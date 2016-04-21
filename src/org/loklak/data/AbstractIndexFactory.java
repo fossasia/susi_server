@@ -104,7 +104,7 @@ public abstract class AbstractIndexFactory<Entry extends IndexEntry> implements 
     @Override
     public boolean exists(String id) {
         if (existsCache(id)) return true;
-        boolean exist = elasticsearch_client.exist(index_name, id, null);
+        boolean exist = elasticsearch_client.exist(index_name, null, id);
         this.indexExist.incrementAndGet();
         if (exist) this.existCache.add(id);
         return exist;
@@ -119,7 +119,7 @@ public abstract class AbstractIndexFactory<Entry extends IndexEntry> implements 
     public boolean delete(String id, SourceType sourceType) {
         this.objectCache.remove(id);
         this.existCache.remove(id);
-        return elasticsearch_client.delete(index_name, id, sourceType.name());
+        return elasticsearch_client.delete(index_name, sourceType.name(), id);
     }
 
     @Override
@@ -145,7 +145,7 @@ public abstract class AbstractIndexFactory<Entry extends IndexEntry> implements 
          *   builder.map(source);
          */
         if (!jsonMap.containsKey(AbstractIndexEntry.TIMESTAMP_FIELDNAME)) jsonMap.put(AbstractIndexEntry.TIMESTAMP_FIELDNAME, AbstractIndexEntry.utcFormatter.print(System.currentTimeMillis()));
-        boolean newDoc = elasticsearch_client.writeMap(this.index_name, jsonMap, id, type);
+        boolean newDoc = elasticsearch_client.writeMap(this.index_name, jsonMap, type, id);
         this.indexWrite.incrementAndGet();
         return newDoc;
     }
