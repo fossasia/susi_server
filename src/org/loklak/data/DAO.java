@@ -111,7 +111,7 @@ public class DAO {
     private static final String IMPORT_PROFILE_FILE_PREFIX = "profile_";
     
     public final static int CACHE_MAXSIZE =   10000;
-    public final static int EXIST_MAXSIZE = 2000000;
+    public final static int EXIST_MAXSIZE = 3000000;
     
     public  static File conf_dir, bin_dir, html_dir;
     private static File external_data, assets, dictionaries;
