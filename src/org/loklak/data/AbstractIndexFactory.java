@@ -129,36 +129,39 @@ public abstract class AbstractIndexFactory<Entry extends IndexEntry> implements 
         this.indexGet.incrementAndGet();
         return json;
     }
-    
-    public void writeEntry(String id, String type, Entry entry, boolean bulk) throws IOException {
+
+    public boolean writeEntry(String id, String type, Entry entry) throws IOException {
         this.objectCache.put(id, entry);
         this.existCache.add(id);
-        if (bulk) {
-            ElasticsearchClient.BulkEntry be = new ElasticsearchClient.BulkEntry(id, type, AbstractIndexEntry.TIMESTAMP_FIELDNAME, null, entry.toMap());
-            if (be.jsonMap != null) try {
-                bulkCache.put(be);
-            } catch (InterruptedException e) {
-                throw new IOException(e.getMessage());
-            }
-            if (bulkCacheSize() >= MAX_BULK_SIZE || this.lastBulkWrite + MAX_BULK_TIME < System.currentTimeMillis()) bulkCacheFlush(); // protect against OOM
-        } else {
-            bulkCacheFlush();
-            // record user into search index
-            Map<String, Object> jsonMap = entry.toMap();
-            
-            /*
-             * best data format here would be XContentBuilder because the data is converted into
-             * this format always; in this case with these lines
-             *   XContentBuilder builder = XContentFactory.contentBuilder(XContentType.JSON);
-             *   builder.map(source);
-             */
-            if (jsonMap != null) {
-                if (!jsonMap.containsKey(AbstractIndexEntry.TIMESTAMP_FIELDNAME)) jsonMap.put(AbstractIndexEntry.TIMESTAMP_FIELDNAME, AbstractIndexEntry.utcFormatter.print(System.currentTimeMillis()));
-                elasticsearch_client.writeMap(this.index_name, jsonMap, id, type);
-                this.indexWrite.incrementAndGet();
-                //System.out.println("writing 1 entry"); // debug
-            }
+        bulkCacheFlush();
+        // record user into search index
+        Map<String, Object> jsonMap = entry.toMap();
+        if (jsonMap == null) return false;
+        
+        /*
+         * best data format here would be XContentBuilder because the data is converted into
+         * this format always; in this case with these lines
+         *   XContentBuilder builder = XContentFactory.contentBuilder(XContentType.JSON);
+         *   builder.map(source);
+         */
+        if (!jsonMap.containsKey(AbstractIndexEntry.TIMESTAMP_FIELDNAME)) jsonMap.put(AbstractIndexEntry.TIMESTAMP_FIELDNAME, AbstractIndexEntry.utcFormatter.print(System.currentTimeMillis()));
+        boolean newDoc = elasticsearch_client.writeMap(this.index_name, jsonMap, id, type);
+        this.indexWrite.incrementAndGet();
+        return newDoc;
+    }
+
+    public void writeEntryBulk(String id, String type, Entry entry) throws IOException {
+        this.objectCache.put(id, entry);
+        this.existCache.add(id);
+        Map<String, Object> jsonMap = entry.toMap();
+        if (jsonMap == null) return;
+        ElasticsearchClient.BulkEntry be = new ElasticsearchClient.BulkEntry(id, type, AbstractIndexEntry.TIMESTAMP_FIELDNAME, null, jsonMap);
+        if (be.jsonMap != null) try {
+            bulkCache.put(be);
+        } catch (InterruptedException e) {
+            throw new IOException(e.getMessage());
         }
+        if (bulkCacheSize() >= MAX_BULK_SIZE || this.lastBulkWrite + MAX_BULK_TIME < System.currentTimeMillis()) bulkCacheFlush(); // protect against OOM
     }
     
     public int bulkCacheSize() {

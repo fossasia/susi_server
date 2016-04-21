@@ -124,6 +124,10 @@ public class LoklakServer {
         return config;
     }
     
+    public static int getServerThreads() {
+        return server.getThreadPool().getThreads() - server.getThreadPool().getIdleThreads();
+    }
+    
     public static void main(String[] args) throws Exception {
         System.setProperty("java.awt.headless", "true"); // no awt used here so we can switch off that stuff
         
