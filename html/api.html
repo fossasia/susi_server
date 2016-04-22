@@ -163,21 +163,127 @@
 	client_info.</p>
 
 <pre>{
-  "index_sizes" : {
-    "messages" : 127111,
-    "users" : 56341,
-    "queries" : 94
+  "system": {
+    "assigned_memory": 2138046464,
+    "used_memory": 1483733632,
+    "available_memory": 654312832,
+    "cores": 8,
+    "threads": 66,
+    "runtime": 9771988,
+    "time_to_restart": 76628012,
+    "load_system_average": 3.41,
+    "load_system_cpu": 0.15860576435689824,
+    "load_process_cpu": 0.06938855268126196,
+    "server_threads": 6
   },
-  "client_info" : {
-    "RemoteHost" : "109.91.39.64",
-    "Accept-Language" : "de-DE,de;q=0.8,en-US;q=0.6,en;q=0.4",
-    "Host" : "loklak.org",
-    "Accept-Encoding" : "gzip, deflate, sdch",
-    "X-Forwarded-For" : "109.91.39.64",
-    "X-Real-IP" : "109.91.39.64",
-    "User-Agent" : "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2272.76 Safari/537.36",
-    "Accept" : "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
-    "Connection" : "close"
+  "index": {
+    "mps": 145,
+    "messages": {
+      "size": 817015033,
+      "size_local": 817015033,
+      "size_backend": 0,
+      "stats": {
+        "name": "messages",
+        "object_cache": {
+          "update": 1681695,
+          "hit": 68974,
+          "miss": 5093840,
+          "size": 10001,
+          "maxsize": 10000
+        },
+        "exist_cache": {
+          "update": 2047729,
+          "hit": 633027,
+          "miss": 4460813,
+          "size": 2047695,
+          "maxsize": 3000000
+        },
+        "index": {
+          "get": 0,
+          "write": 1681217,
+          "exist": 2047772
+        }
+      },
+      "queue": {
+        "size": 98790,
+        "maxSize": 100000,
+        "clients": 0
+      }
+    },
+    "users": {
+      "size": 57390340,
+      "size_local": 57390340,
+      "size_backend": 0,
+      "stats": {
+        "name": "users",
+        "object_cache": {
+          "update": 1687190,
+          "hit": 39660,
+          "miss": 5495,
+          "size": 10000,
+          "maxsize": 10000
+        },
+        "exist_cache": {
+          "update": 1732345,
+          "hit": 0,
+          "miss": 0,
+          "size": 378658,
+          "maxsize": 3000000
+        },
+        "index": {
+          "get": 5495,
+          "write": 1681420,
+          "exist": 0
+        }
+      }
+    },
+    "queries": {
+      "size": 3958,
+      "stats": {
+        "name": "queries",
+        "object_cache": {
+          "update": 4648,
+          "hit": 3166,
+          "miss": 3868,
+          "size": 741,
+          "maxsize": 10000
+        },
+        "exist_cache": {
+          "update": 11514,
+          "hit": 162,
+          "miss": 2959,
+          "size": 3096,
+          "maxsize": 3000000
+        },
+        "index": {
+          "get": 747,
+          "write": 3907,
+          "exist": 2959
+        }
+      }
+    },
+    "accounts": {"size": 94},
+    "user": {"size": 688251},
+    "followers": {"size": 141},
+    "following": {"size": 129}
+  },
+  "client_info": {
+    "RemoteHost": "14.139.85.203",
+    "IsLocalhost": "false",
+    "request_header": {
+      "Upgrade-Insecure-Requests": "1",
+      "Accept-Language": "en-US,en;q=0.8",
+      "Host": "loklak.org",
+      "Accept-Encoding": "gzip, deflate, sdch",
+      "X-Forwarded-Proto": "http",
+      "X-Forwarded-For": "172.30.107.104, 14.139.85.203",
+      "X-Real-IP": "14.139.85.203",
+      "Via": "1.1 proxy17.nitw (squid/3.1.8)",
+      "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/49.0.2623.112 Safari/537.36",
+      "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
+      "Connection": "close",
+      "Cache-Control": "max-age=259200"
+    }
   }
 }</pre>
 </section>
