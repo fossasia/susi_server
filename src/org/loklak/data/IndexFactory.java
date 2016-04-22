@@ -20,7 +20,9 @@
 package org.loklak.data;
 
 import java.io.IOException;
+import java.util.Collection;
 import java.util.Map;
+import java.util.Set;
 
 import org.loklak.harvester.SourceType;
 import org.loklak.objects.IndexEntry;
@@ -34,6 +36,8 @@ public interface IndexFactory<Entry extends IndexEntry> {
     public boolean exists(String id);
     
     public boolean existsCache(String id);
+    
+    public Set<String> existsBulk(Collection<String> ids);
     
     public boolean delete(String id, SourceType sourceType);
     

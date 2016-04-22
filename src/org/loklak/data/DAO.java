@@ -498,52 +498,104 @@ public class DAO {
         return config.keySet();
     }
 
+    public static class MessageWrapper {
+        public MessageEntry t;
+        public UserEntry u;
+        public boolean dump;
+        public MessageWrapper(MessageEntry t, UserEntry u, boolean dump) {
+            this.t = t;
+            this.u = u;
+            this.dump = dump;
+        }
+    }
+    
     /**
      * Store a message together with a user into the search index
-     * @param t a tweet
-     * @param u a user
+     * @param mw a message wrapper
      * @return true if the record was stored because it did not exist, false if it was not stored because the record existed already
      */
-    public static boolean writeMessage(MessageEntry t, UserEntry u, boolean dump, boolean bulk) {
-        if (t == null) {
-            return false;
-        } try {
-            if (bulk) {
+    public static boolean writeMessage(MessageWrapper mw) {
+        if (mw.t == null) return false;
+        try {
+            synchronized (DAO.class) {
+                // record tweet into search index and check if this is a new entry
+                boolean exists = messages.writeEntry(mw.t.getIdStr(), mw.t.getSourceType().name(), mw.t);
+
                 // check if tweet exists in index
-                if (dump && messages.exists(t.getIdStr())) return false; // we omit writing this again
-        
-                synchronized (DAO.class) {
-                    // write the user into the index
-                    users.writeEntryBulk(u.getScreenName(), t.getSourceType().name(), u);
-        
-                    // record tweet into search index
-                    messages.writeEntryBulk(t.getIdStr(), t.getSourceType().name(), t);
-                     
-                    // record tweet into text file
-                    if (dump) message_dump.write(t.toMap(u, false, Integer.MAX_VALUE, ""));
-                 }
-            } else {
-                synchronized (DAO.class) {
-                    // record tweet into search index and check if this is a new entry
-                    boolean exists = messages.writeEntry(t.getIdStr(), t.getSourceType().name(), t);
+                if (exists) return false; // we don't need to write the user and also not to the message dump
 
-                    // check if tweet exists in index
-                    if (exists) return false; // we don't need to write the user and also not to the message dump
+                // write the user into the index
+                users.writeEntry(mw.u.getScreenName(), mw.t.getSourceType().name(), mw.u);
 
-                    // write the user into the index
-                    users.writeEntry(u.getScreenName(), t.getSourceType().name(), u);
-
-                    // record tweet into text file
-                    if (dump) message_dump.write(t.toMap(u, false, Integer.MAX_VALUE, ""));
-                 }
-            }
+                // record tweet into text file
+                if (mw.dump) message_dump.write(mw.t.toMap(mw.u, false, Integer.MAX_VALUE, ""));
+             }
             
             // teach the classifier
-            Classifier.learnPhrase(t.getText(Integer.MAX_VALUE, ""));
+            Classifier.learnPhrase(mw.t.getText(Integer.MAX_VALUE, ""));
         } catch (IOException e) {
             e.printStackTrace();
         }
         return true;
+    }
+
+    public static void writeMessageBulk(Collection<MessageWrapper> mws) {
+        List<MessageWrapper> noDump = new ArrayList<>();
+        List<MessageWrapper> dump = new ArrayList<>();
+        for (MessageWrapper mw: mws) {
+            if (mw.t == null) continue;
+            if (mw.dump) dump.add(mw); else noDump.add(mw);
+        }
+        writeMessageBulkNoDump(noDump);
+        writeMessageBulkDump(dump);
+    }
+
+
+    private static void writeMessageBulkNoDump(Collection<MessageWrapper> mws) {
+        for (MessageWrapper mw: mws) try {
+            synchronized (DAO.class) {
+                // write the user into the index
+                users.writeEntryBulk(mw.u.getScreenName(), mw.t.getSourceType().name(), mw.u);
+    
+                // record tweet into search index
+                messages.writeEntryBulk(mw.t.getIdStr(), mw.t.getSourceType().name(), mw.t);
+             }
+                
+            // teach the classifier
+            Classifier.learnPhrase(mw.t.getText(Integer.MAX_VALUE, ""));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+    
+    private static void writeMessageBulkDump(Collection<MessageWrapper> mws) {
+        // make a bulk exist request
+        List<String> ids = new ArrayList<>();
+        for (MessageWrapper mw: mws) {
+            ids.add(mw.t.getIdStr());
+        }
+        Set<String> exists = messages.existsBulk(ids);
+        //System.out.println("*** " + mws.size() + " tested, " + exists.size() + " exists");
+        
+        for (MessageWrapper mw: mws) try {
+            // check if tweet exists in index
+            if (exists.contains(mw.t.getIdStr())) continue; // we omit writing this again
+            synchronized (DAO.class) {
+                // write the user into the index
+                users.writeEntryBulk(mw.u.getScreenName(), mw.t.getSourceType().name(), mw.u);
+    
+                // record tweet into search index
+                messages.writeEntryBulk(mw.t.getIdStr(), mw.t.getSourceType().name(), mw.t);
+                 
+                // record tweet into text file
+                message_dump.write(mw.t.toMap(mw.u, false, Integer.MAX_VALUE, ""));
+             }
+                
+            // teach the classifier
+            Classifier.learnPhrase(mw.t.getText(Integer.MAX_VALUE, ""));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
     
     /**

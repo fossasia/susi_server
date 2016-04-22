@@ -19,8 +19,8 @@
 
 package org.loklak;
 
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -36,7 +36,7 @@ public class QueuedIndexing extends Thread {
     
     private final static int MESSAGE_QUEUE_MAXSIZE = 100000;
     private final static int bufferLimit = MESSAGE_QUEUE_MAXSIZE * 3 / 4;
-    private static BlockingQueue<MessageWrapper> messageQueue = new ArrayBlockingQueue<MessageWrapper>(MESSAGE_QUEUE_MAXSIZE);
+    private static BlockingQueue<DAO.MessageWrapper> messageQueue = new ArrayBlockingQueue<DAO.MessageWrapper>(MESSAGE_QUEUE_MAXSIZE);
     private static AtomicInteger queueClients = new AtomicInteger(0);
 
     private boolean shallRun = true, isBusy = false;
@@ -58,16 +58,6 @@ public class QueuedIndexing extends Thread {
         this.jsonBufferHandler = jsonBufferHandler;
     }
     
-    public static class MessageWrapper {
-        public MessageEntry t;
-        public UserEntry u;
-        public boolean dump;
-        public MessageWrapper(MessageEntry t, UserEntry u, boolean dump) {
-            this.t = t;
-            this.u = u;
-            this.dump = dump;
-        }
-    }
     
     /**
      * ask the thread to shut down
@@ -100,16 +90,18 @@ public class QueuedIndexing extends Thread {
                 continue loop;
             }
 
-            MessageWrapper mw;
+            DAO.MessageWrapper mw;
             this.isBusy = true;
             long dumpstart = System.currentTimeMillis();
-            int newMessages = 0, knownMessagesCache = 0, knownMessagesIndex = 0;
+            int candMessages = 0, knownMessagesCache = 0;
+            int maxBulkSize = 100;
+            List<DAO.MessageWrapper> bulk = new ArrayList<>();
             pollloop: while ((mw = messageQueue.poll()) != null) {
                 if (DAO.messages.existsCache(mw.t.getIdStr())) {
                      knownMessagesCache++;
                      continue pollloop;
                 }
-                
+
                 // in case that the message queue is too large, dump the queue into a file here
                 // to make room that clients can continue to push without blocking
                 /*
@@ -118,15 +110,23 @@ public class QueuedIndexing extends Thread {
                     continue pollloop;
                 }
                 */
+                // if there is time enough to finish this, continue to write into the index
                 
-                // if there is time enough to finish this, contine to write into the index
                 mw.t.enrich(); // we enrich here again because the remote peer may have done this with an outdated version or not at all
-                boolean stored = DAO.writeMessage(mw.t, mw.u, mw.dump, true);
-                if (stored) newMessages++; else knownMessagesIndex++;
+                bulk.add(mw);
+                if (bulk.size() >= maxBulkSize) {
+                    DAO.writeMessageBulk(bulk);
+                    bulk.clear();
+                }
+                candMessages++;
+            }
+            if (bulk.size() >= 0) {
+                DAO.writeMessageBulk(bulk);
+                bulk.clear();
             }
            
             long dumpfinish = System.currentTimeMillis();
-            DAO.log("dumped timelines: " + newMessages + " new, " + knownMessagesCache + " known from cache, "  + knownMessagesIndex + " known from index, storage time: " + (dumpfinish - dumpstart) + " ms, remaining messages: " + messageQueue.size());
+            DAO.log("dumped timelines: " + candMessages + " possibly new (not checked against index), " + knownMessagesCache + " known from cache, storage time: " + (dumpfinish - dumpstart) + " ms, remaining messages: " + messageQueue.size());
 
             this.isBusy = false;
         } catch (Throwable e) {
@@ -144,7 +144,7 @@ public class QueuedIndexing extends Thread {
     
     public static void addScheduler(final MessageEntry t, final UserEntry u, final boolean dump) {
         try {
-            messageQueue.put(new MessageWrapper(t, u, dump));
+            messageQueue.put(new DAO.MessageWrapper(t, u, dump));
         } catch (InterruptedException e) {
             e.printStackTrace();
         }

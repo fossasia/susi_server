@@ -30,9 +30,11 @@ import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.elasticsearch.action.admin.cluster.health.ClusterHealthResponse;
 import org.elasticsearch.action.admin.cluster.stats.ClusterStatsAction;
@@ -46,6 +48,8 @@ import org.elasticsearch.action.bulk.BulkRequestBuilder;
 import org.elasticsearch.action.bulk.BulkResponse;
 import org.elasticsearch.action.delete.DeleteRequest;
 import org.elasticsearch.action.get.GetResponse;
+import org.elasticsearch.action.get.MultiGetItemResponse;
+import org.elasticsearch.action.get.MultiGetResponse;
 import org.elasticsearch.action.index.IndexResponse;
 import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
@@ -348,6 +352,20 @@ public class ElasticsearchClient {
                 .execute()
                 .actionGet();
         return getResponse.isExists();
+    }    
+
+    public Set<String> existBulk(String indexName, String typeName, final Collection<String> ids) {
+        MultiGetResponse multiGetItemResponses = elasticsearchClient.prepareMultiGet()
+                .add(indexName, typeName, ids)
+                .get();
+        Set<String> er = new HashSet<>();
+        for (MultiGetItemResponse itemResponse : multiGetItemResponses) { 
+            GetResponse response = itemResponse.getResponse();
+            if (response.isExists()) {                      
+                er.add(response.getId());
+            }
+        }
+        return er;
     }    
     
     /**

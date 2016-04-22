@@ -21,8 +21,11 @@ package org.loklak.data;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.atomic.AtomicLong;
@@ -108,6 +111,23 @@ public abstract class AbstractIndexFactory<Entry extends IndexEntry> implements 
         this.indexExist.incrementAndGet();
         if (exist) this.existCache.add(id);
         return exist;
+    }
+
+    @Override
+    public Set<String> existsBulk(Collection<String> ids) {
+        Set<String> result = new HashSet<>();
+        List<String> check = new ArrayList<>(ids.size());
+        for (String id: ids) {
+            if (existsCache(id)) result.add(id); else check.add(id);
+        }
+        this.indexExist.addAndGet(ids.size());
+        Set<String> test = this.elasticsearch_client.existBulk(this.index_name, (String) null, check);
+        for (String id: test) {
+            this.existCache.add(id);
+            result.add(id);
+            //assert elasticsearch_client.exist(index_name, null, id); // uncomment for production
+        }
+        return result;
     }
 
     @Override
