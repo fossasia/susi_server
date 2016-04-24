@@ -737,14 +737,15 @@ network, then simply the field <code>backend</code> in the configuration must be
 <p>
 This servlet provides geocoding of place names to location coordinates and also
 reverse geocoding of location coordinates to place names.
-Additionally to th
-
-added geocoding servlet: you can geocode place names into locations with
+Additionally to the added geocoding servlet: you can geocode place names into locations with
 this. To render markers, use the 'mark' location (they have an applied
 fuzziness). location coordinates are given as [lon,lat]
 Example usage:
-http://localhost:9000/api/geocode.json?data={%22places%22:[%22Frankfurt%20am%20Main%22,%22New%20York%22,%22Singapore%22]}
-
+</p>
+<ul class="request">
+<li> http://localhost:9000/api/geocode.json?data={%22places%22:[%22Frankfurt%20am%20Main%22,%22New%20York%22,%22Singapore%22]}</li>
+</ul>
+<p>
 upgrade to geocode location detection: now recognizes also all
 alternative (different languages) place names. The geocode servlet shows
 all those alternative names in a string array. The minified version
@@ -762,8 +763,18 @@ shortens this array to only one entry. The API also has reverse geocoding and fu
 		<div class="tabcol1">&nbsp;=&nbsp;&lt;json&gt;</div>// the json must contain a 'places' property with an array of place name strings. This is an alernative to the 'places' property.</li>
 </ul><br/>
 <p>Result-Description</p>
-<pre>{
-  json
+<pre>
+{
+  "locations" : {
+    "Singapore" : {
+      "place" : [ "Singapore", "SIN", "Sin-ka-po", "Singapore City", "Singapour", "Singapur", "Singapura", "Sinkapoure", "Sîn-kâ-po", "Tumasik", "cinkappur", "prathes singkhpor", "shingaporu", "sigapura", "sing-gapol", "sing-gapoleu", "singapura", "singkh por", "sngapwr", "snghafwrt", "syngpwr", "xin jia po", "xing jia po", "Σιγκαπούρη", "Сингапур", "Сінгапур", "סינגפור", "سنغافورة", "سنگاپور", "सिंगापुर", "सिंगापूर", "ਸਿੰਗਾਪੁਰ", "சிங்கப்பூர்", "ประเทศสิงคโปร์", "สิงค์โปร", "ປະເທດສງກະໂປ", "ປະເທດສິງກະໂປ", "စငကာပနငင", "စင်ကာပူနိုင်ငံ", "សងហបរ", "សិង្ហបុរី", "シンガポール", "新加坡", "星架坡", "싱가포르", "싱가폴" ],
+      "population" : 3547809,
+      "country_code" : "SG",
+      "country" : "Singapore",
+      "location" : [ 103.85006683126556, 1.2896698812440377 ],
+      "mark" : [ 103.86065693202819, 1.2871885668277656 ]
+    }
+  }
 }
 </pre>
 </section>
