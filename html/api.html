@@ -1229,21 +1229,24 @@ shortens this array to only one entry. The API also has reverse geocoding and fu
    </ul><br/>
 </p>
 <pre>{
+  "search_metadata" : {
+    "client" : "122.175.88.165"
+  },
   "user" : {
-    "retrieval_date" : "2015-07-20T13:41:53.097Z",
+    "retrieval_date" : "2016-04-24T09:18:18.699Z",
     "location" : "",
     "default_profile" : true,
+    "statuses_count" : 174,
     "profile_background_tile" : false,
-    "statuses_count" : 16,
     "lang" : "en",
     "profile_link_color" : "0084B4",
     "id" : 3090229939,
     "following" : false,
+    "favourites_count" : 321,
     "profile_location" : null,
-    "favourites_count" : 7,
     "protected" : false,
     "profile_text_color" : "333333",
-    "description" : "We do large-scale distibuted message collection and analysis with free and open source software from http://t.co/D8XmZwuU2Y #freedom of information",
+    "description" : "Large-scale distibuted tweet harvesting and analysis with free and open source software from http://t.co/D8XmZwuU2Y; maybe next-gen twitter alternative",
     "verified" : false,
     "contributors_enabled" : false,
     "profile_sidebar_border_color" : "C0DEED",
@@ -1252,19 +1255,18 @@ shortens this array to only one entry. The API also has reverse geocoding and fu
     "created_at" : "Mon Mar 16 16:48:17 +0000 2015",
     "is_translation_enabled" : false,
     "default_profile_image" : false,
-    "followers_count" : 9,
-    "profile_image_url_https" : "https://pbs.twimg.com/profile_images/577512240640733184/fizL4YIn_normal.png",
-    "has_extended_profile" : false,
+    "followers_count" : 46,
     "geo_enabled" : false,
+    "has_extended_profile" : false,
+    "profile_image_url_https" : "https://pbs.twimg.com/profile_images/577512240640733184/fizL4YIn_normal.png",
     "profile_background_image_url" : "http://abs.twimg.com/images/themes/theme1/bg.png",
     "profile_background_image_url_https" : "https://abs.twimg.com/images/themes/theme1/bg.png",
     "needs_phone_verification" : false,
-    "follow_request_sent" : false,
     "entities" : {
       "description" : {
         "urls" : [ {
           "expanded_url" : "http://loklak.org",
-          "indices" : [ 101, 123 ],
+          "indices" : [ 93, 115 ],
           "display_url" : "loklak.org",
           "url" : "http://t.co/D8XmZwuU2Y"
         } ]
@@ -1272,25 +1274,36 @@ shortens this array to only one entry. The API also has reverse geocoding and fu
       "url" : {
         "urls" : [ {
           "expanded_url" : "http://loklak.org",
-          "indices" : [ 0, 22 ],
+          "indices" : [ 0, 23 ],
           "display_url" : "loklak.org",
-          "url" : "http://t.co/D8XmZwuU2Y"
+          "url" : "https://t.co/D8XmZwdjbq"
         } ]
       }
     },
+    "follow_request_sent" : false,
+    "url" : "https://t.co/D8XmZwdjbq",
     "suspended" : false,
-    "url" : "http://t.co/D8XmZwuU2Y",
     "utc_offset" : -39600,
     "time_zone" : "International Date Line West",
     "notifications" : false,
+    "friends_count" : 14,
     "profile_use_background_image" : true,
-    "friends_count" : 8,
     "profile_sidebar_fill_color" : "DDEEF6",
     "screen_name" : "loklak_app",
     "id_str" : "3090229939",
     "profile_image_url" : "http://pbs.twimg.com/profile_images/577512240640733184/fizL4YIn_normal.png",
-    "listed_count" : 1,
-    "is_translator" : false
+    "is_translator" : false,
+    "listed_count" : 9
+  },
+  "topology" : {
+    "following" : [ ],
+    "followers" : [ ],
+    "unfollowing_count" : 0,
+    "unfollowers" : [ ],
+    "unfollowers_count" : 0,
+    "following_count" : 0,
+    "unfollowing" : [ ],
+    "followers_count" : 0
   }
 }
 </pre>
@@ -1306,10 +1319,20 @@ shortens this array to only one entry. The API also has reverse geocoding and fu
 </p>
 
 <pre>{
+  "search_metadata" : {
+    (client) 
+  }
   "user" : {
     (user data)
   },
   "topology" : {
+    "following" : [{
+      (user's friend's data)
+    }, {
+      (user's friend's data)
+    },
+    ...
+    ],
     "followers" : [ {
       (user's follower data)
     }, {
@@ -1317,13 +1340,18 @@ shortens this array to only one entry. The API also has reverse geocoding and fu
     },
     ...
     ],
-    "retrieval_date" : "2015-07-23T18:21:55.743Z",
+    "retrieval_date" : "2016-04-24T09:21:22.060Z",
     "unfollowers" : [ ],
+    "unfollowing_count" : 0,
     "complete" : true,
     "unfollowers_count" : 0,
-    "followers_count" : 9
+    "following_count" : 10,
+    "unfollowing" : [ ],
+    "followers_count" : 33,
+    "$P" : "I"
   }
-}</pre>
+}
+</pre>
 </section>
 
 <!-- ===================================================================== -->
