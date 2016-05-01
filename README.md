@@ -43,6 +43,9 @@ To install loklak with Docker please refer to the [loklak Docker installation re
 ### How do I deploy loklak with Heroku?
 To install loklak with Heroku please refer to the [loklak Heroku installation readme](installation_heroku.md).
 
+### How do I deploy loklak with cloud9?
+To install loklak with cloud9 please refer to the [loklak cloud9 installation readme](installation_cloud9.md).
+
 ## How do I configure loklak?
 
 The basis configuration file is in ```conf/config.properties```. To customize these settings place a file ```customized_config.properties``` to the path ```data/settings/```
