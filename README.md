@@ -1,7 +1,7 @@
 # loklak
 [![Build Status](https://travis-ci.org/loklak/loklak_server.svg?branch=master)](https://travis-ci.org/loklak/loklak_server)
-
 [![Deploy](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy)
+[![Deploy on Scalingo](https://cdn.scalingo.com/deploy/button.svg)](https://my.scalingo.com/deploy?source=https://github.com/loklak/loklak_server)
 
 loklak is a server application which is able to collect messages from various sources, including twitter. The server contains a search index and a peer-to-peer index sharing interface. All messages are stored in an elasticsearch index.
 
@@ -43,7 +43,9 @@ A self-upgrading process is available which must be triggered by a shell command
 To install loklak with Docker please refer to the [loklak Docker installation readme](installation_docker.md).
 
 ### How do I deploy loklak with Heroku?
-To install loklak with Heroku please refer to the [loklak Heroku installation readme](installation_heroku.md).
+You can easily deploy to Heroku by clicking the Deploy to Heroku button above.
+
+To install loklak using Heroku Toolbelt, please refer to the [loklak Heroku installation readme](installation_heroku.md).
 
 ### How do I deploy loklak with cloud9?
 To install loklak with cloud9 please refer to the [loklak cloud9 installation readme](installation_cloud9.md).
