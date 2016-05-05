@@ -56,7 +56,7 @@ cf ic login   (No credentials are necessary of you logged in to bluemix before
 
 12. Create docker group with: (the XXXX must be unique, play around to found a free name)
    ```
-   cf ic group create --name loklak --desired 2 -m 1024 -n XXXX -d mybluemix.net -p 80 registry.ng.bluemix.net/<namespace>/loklak
+   cf ic group create --name loklak --auto --desired 2 -m 1024 -n XXXX -d mybluemix.net -p 80 registry.ng.bluemix.net/<namespace>/loklak
    ```
 13. Check if your group is running either with pressing Dashboard in the browser or:
    ```
