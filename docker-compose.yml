@@ -1,0 +1,5 @@
+web:
+  name: "loklak"
+  build: .
+  ports:
+  - ":80"
