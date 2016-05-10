@@ -46,6 +46,7 @@ import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.server.handler.DefaultHandler;
 import org.eclipse.jetty.server.handler.ErrorHandler;
+import org.eclipse.jetty.server.handler.HandlerCollection;
 import org.eclipse.jetty.server.handler.HandlerList;
 import org.eclipse.jetty.server.handler.IPAccessHandler;
 import org.eclipse.jetty.servlet.FilterHolder;
@@ -58,11 +59,14 @@ import org.eclipse.jetty.util.log.Log;
 import org.eclipse.jetty.util.thread.ExecutorThreadPool;
 import org.eclipse.jetty.util.thread.QueuedThreadPool;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
+import org.eclipse.jetty.util.security.Constraint;
 import org.eclipse.jetty.webapp.WebAppContext;
 import org.eclipse.jetty.server.HttpConfiguration;
 import org.eclipse.jetty.server.SecureRequestCustomizer;
 import org.eclipse.jetty.server.HttpConnectionFactory;
 import org.eclipse.jetty.server.SslConnectionFactory;
+import org.eclipse.jetty.security.ConstraintMapping;
+import org.eclipse.jetty.security.ConstraintSecurityHandler;
 import org.loklak.api.server.AccessServlet;
 import org.loklak.api.server.AppsServlet;
 import org.loklak.api.server.AssetServlet;
@@ -174,21 +178,29 @@ public class LoklakServer {
         }
         
         //https-new
+        
+        // check for redirect to https
+        String httpsMode = config.get("https.mode");
+        boolean redirect = httpsMode.equals("redirect");
+        boolean useHttps = redirect || httpsMode.equals("on");
+        
         String httpsPortS = config.get("port.https");
         int httpsPort = httpsPortS == null ? 9443 : Integer.parseInt(httpsPortS);
-        ServerSocket sss = null;
-        try {
-            sss = new ServerSocket(httpsPort);
-            sss.setReuseAddress(true);
-            sss.setReceiveBufferSize(65536);
-        } catch (IOException e) {
-            // the socket is already occupied by another service
-            Log.getLog().info("port " + httpsPort + " is already occupied by another service, maybe another loklak is running on this port already. exit.");
-            Browser.openBrowser("https://localhost:" + httpsPort + "/");
-            System.exit(-1);
-        } finally {
-            // close the socket again
-            if (sss != null) {try {sss.close();} catch (IOException e) {}}
+        if(useHttps){
+	        ServerSocket sss = null;
+	        try {
+	            sss = new ServerSocket(httpsPort);
+	            sss.setReuseAddress(true);
+	            sss.setReceiveBufferSize(65536);
+	        } catch (IOException e) {
+	            // the socket is already occupied by another service
+	            Log.getLog().info("port " + httpsPort + " is already occupied by another service, maybe another loklak is running on this port already. exit.");
+	            Browser.openBrowser("https://localhost:" + httpsPort + "/");
+	            System.exit(-1);
+	        } finally {
+	            // close the socket again
+	            if (sss != null) {try {sss.close();} catch (IOException e) {}}
+	        }
         }
         //https-new
         
@@ -200,78 +212,77 @@ public class LoklakServer {
         DAO.init(config, data);
         
         /// https
-        // keytool -genkey -alias sitename -keyalg RSA -keystore keystore.jks -keysize 2048
-/*
-        Server server = new Server();
-        ServerConnector connector = new ServerConnector(server);
-        connector.setPort(9999);
-         
-        HttpConfiguration https = new HttpConfiguration();
-        https.addCustomizer(new SecureRequestCustomizer());
-         
-        SslContextFactory sslContextFactory = new SslContextFactory();
-        File keystore = new File(DAO.conf_dir, DAO.getConfig("keystore.name", "keystore.jks"));
-        sslContextFactory.setKeyStorePath(keystore.getAbsolutePath());
-        sslContextFactory.setKeyStorePassword(DAO.getConfig("keystore.password", ""));
-        sslContextFactory.setKeyManagerPassword(DAO.getConfig("keystore.password", ""));
         
-        ServerConnector sslConnector = new ServerConnector(server,
-                new SslConnectionFactory(sslContextFactory, "http/1.1"),
-                new HttpConnectionFactory(https));
-        sslConnector.setPort(9998);
-        
-        server.setConnectors(new Connector[] { connector, sslConnector });
-*/
-        /// https
         
         // init the http server
         QueuedThreadPool pool = new QueuedThreadPool();
         pool.setMaxThreads(500);
         LoklakServer.server = new Server(pool);
         LoklakServer.server.setStopAtShutdown(true);
+        HandlerCollection handlerCollection = new HandlerCollection();
         
         //http
+        HttpConfiguration http_config = new HttpConfiguration();
+        if(redirect) {
+        	http_config.addCustomizer(new SecureRequestCustomizer());
+        	http_config.setSecureScheme("https");
+        	http_config.setSecurePort(httpsPort);
+        }
         
         ServerConnector connector = new ServerConnector(LoklakServer.server);
+        connector.addConnectionFactory(new HttpConnectionFactory(http_config));
         connector.setPort(httpPort);
         connector.setName("httpd:" + httpPort);
         connector.setIdleTimeout(20000); // timout in ms when no bytes send / received
         LoklakServer.server.addConnector(connector);
         
-        //http
+        //https
+        //keytool -genkey -alias sitename -keyalg RSA -keystore keystore.jks -keysize 2048
+        //uncommented lines for http2 (jetty 9.3 / java 8)        
+        if(useHttps){
+        	HttpConfiguration https_config = new HttpConfiguration();
+	        https_config.addCustomizer(new SecureRequestCustomizer());
+	        
+	        HttpConnectionFactory http1 = new HttpConnectionFactory(https_config);
+	        //HTTP2ServerConnectionFactory http2 = new HTTP2ServerConnectionFactory(https_config);
+	        
+	        //NegotiatingServerConnectionFactory.checkProtocolNegotiationAvailable();
+	        //ALPNServerConnectionFactory alpn = new ALPNServerConnectionFactory();
+	        //alpn.setDefaultProtocol(http1.getProtocol());
+	         
+	        SslContextFactory sslContextFactory = new SslContextFactory();
+	        File keystore = new File(DAO.conf_dir, DAO.getConfig("keystore.name", "keystore.jks"));
+	        sslContextFactory.setKeyStorePath(keystore.getAbsolutePath());
+	        sslContextFactory.setKeyStorePassword(DAO.getConfig("keystore.password", ""));
+	        sslContextFactory.setKeyManagerPassword(DAO.getConfig("keystore.password", ""));
+	        //sslContextFactory.setCipherComparator(HTTP2Cipher.COMPARATOR);
+	        //sslContextFactory.setUseCipherSuitesOrder(true);
+	        
+	        //SslConnectionFactory ssl = new SslConnectionFactory(sslContextFactory, alpn.getProtocol());
+	        SslConnectionFactory ssl = new SslConnectionFactory(sslContextFactory, "http/1.1");
+	        
+	        //ServerConnector sslConnector = new ServerConnector(LoklakServer.server, ssl, alpn, http2, http1);
+	        ServerConnector sslConnector = new ServerConnector(LoklakServer.server, ssl, http1);
+	        sslConnector.setPort(httpsPort);
+	        sslConnector.setName("httpd:" + httpsPort);
+	        sslConnector.setIdleTimeout(20000); // timout in ms when no bytes send / received
+	        LoklakServer.server.addConnector(sslConnector);
+        }
         
-        //https-new - uncommented lines for http2 (jetty 9.3 / java 8)
-        
-        HttpConfiguration https_config = new HttpConfiguration();
-        https_config.addCustomizer(new SecureRequestCustomizer());
-        
-        HttpConnectionFactory http1 = new HttpConnectionFactory(https_config);
-        //HTTP2ServerConnectionFactory http2 = new HTTP2ServerConnectionFactory(https_config);
-        
-        //NegotiatingServerConnectionFactory.checkProtocolNegotiationAvailable();
-        //ALPNServerConnectionFactory alpn = new ALPNServerConnectionFactory();
-        //alpn.setDefaultProtocol(http1.getProtocol());
-         
-        SslContextFactory sslContextFactory = new SslContextFactory();
-        File keystore = new File(DAO.conf_dir, DAO.getConfig("keystore.name", "keystore.jks"));
-        sslContextFactory.setKeyStorePath(keystore.getAbsolutePath());
-        sslContextFactory.setKeyStorePassword(DAO.getConfig("keystore.password", ""));
-        sslContextFactory.setKeyManagerPassword(DAO.getConfig("keystore.password", ""));
-        //sslContextFactory.setCipherComparator(HTTP2Cipher.COMPARATOR);
-        //sslContextFactory.setUseCipherSuitesOrder(true);
-        
-        //SslConnectionFactory ssl = new SslConnectionFactory(sslContextFactory, alpn.getProtocol());
-        SslConnectionFactory ssl = new SslConnectionFactory(sslContextFactory, "http/1.1");
-        
-        //ServerConnector sslConnector = new ServerConnector(LoklakServer.server, ssl, alpn, http2, http1);
-        ServerConnector sslConnector = new ServerConnector(LoklakServer.server, ssl, http1);
-        sslConnector.setPort(httpsPort);
-        sslConnector.setName("httpd:" + httpsPort);
-        sslConnector.setIdleTimeout(20000); // timout in ms when no bytes send / received
-        LoklakServer.server.addConnector(sslConnector);
-        
-        //https-new
+        ConstraintSecurityHandler securityHandler = new ConstraintSecurityHandler();
+        if(redirect){
+        	
+        	Constraint constraint = new Constraint();
+        	constraint.setDataConstraint(Constraint.DC_CONFIDENTIAL);
+        	
+        	//makes the constraint apply to all uri paths        
+        	ConstraintMapping mapping = new ConstraintMapping();
+        	mapping.setPathSpec( "/*" );
+        	mapping.setConstraint(constraint);
 
+        	securityHandler.addConstraintMapping(mapping);
+        }
+        
         // Setup IPAccessHandler for blacklists
         String blacklist = config.get("server.blacklist");
         if (blacklist != null && blacklist.length() > 0) try {
@@ -372,8 +383,10 @@ public class LoklakServer {
         handlerlist2.setHandlers(new Handler[]{fileHandler, rewriteHandler, new DefaultHandler()});
         GzipHandler gzipHandler = new GzipHandler();
         gzipHandler.setHandler(handlerlist2);
-        LoklakServer.server.setHandler(gzipHandler);
-
+        securityHandler.setHandler(gzipHandler);
+        
+        LoklakServer.server.setHandler(securityHandler);
+        
         LoklakServer.server.start();
         LoklakServer.caretaker = new Caretaker();
         LoklakServer.caretaker.start();
