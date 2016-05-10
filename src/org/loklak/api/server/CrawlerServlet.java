@@ -27,8 +27,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.elasticsearch.common.xcontent.XContentBuilder;
-import org.elasticsearch.common.xcontent.XContentFactory;
+import org.json.JSONObject;
 import org.loklak.Crawler;
 import org.loklak.data.DAO;
 import org.loklak.http.RemoteAccess;
@@ -60,22 +59,19 @@ public class CrawlerServlet extends HttpServlet {
         post.setResponse(response, "application/javascript");
         
         // generate json
-        XContentBuilder json = XContentFactory.jsonBuilder().prettyPrint().lfAtEnd();
-        json.startObject();
-        if (incubation == null || incubation.length == 0) json.field("_hint", "start a crawl: start=<terms, comma-separated>, depth=<crawl depth> (dflt: 0), hashtags=<true|false> (dflt: true), users=<true|false> (dflt: true)");
-        if (!localhost) json.field("_hint", "you are connecting from a non-localhost client " + post.getClientHost() + " , depth is limited to 1");
-        json.field("index_sizes");
-        json.startObject();
-        json.field("messages", DAO.countLocalMessages(-1));
-        json.field("users", DAO.countLocalUsers());
-        json.endObject();
-        json.field("crawler_status"); Crawler.toJSON(json);
-        json.endObject();
+        JSONObject json = new JSONObject(true);
+        if (incubation == null || incubation.length == 0) json.put("_hint", "start a crawl: start=<terms, comma-separated>, depth=<crawl depth> (dflt: 0), hashtags=<true|false> (dflt: true), users=<true|false> (dflt: true)");
+        if (!localhost) json.put("_hint", "you are connecting from a non-localhost client " + post.getClientHost() + " , depth is limited to 1");
+        JSONObject index_sizes = new JSONObject(true);
+        json.put("index_sizes", index_sizes);
+        index_sizes.put("messages", DAO.countLocalMessages(-1));
+        index_sizes.put("users", DAO.countLocalUsers());
+        json.put("crawler_status", Crawler.toJSON());
 
         // write json
         ServletOutputStream sos = response.getOutputStream();
         if (jsonp) sos.print(callback + "(");
-        sos.print(json.string());
+        sos.print(json.toString(2));
         if (jsonp) sos.println(");");
         sos.println();
         post.finalize();

@@ -31,7 +31,6 @@ public interface IndexEntry {
     public Map<String, Object> toMap();
     
     // TODO: convert to elasticsearch internal format directly
-    //public XContentBuilder toXContent();
     
     public JSONObject toJSON();
     

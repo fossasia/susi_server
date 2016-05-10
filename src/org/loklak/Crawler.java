@@ -1,6 +1,5 @@
 package org.loklak;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -10,7 +9,7 @@ import java.util.concurrent.BlockingDeque;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.LinkedBlockingDeque;
 
-import org.elasticsearch.common.xcontent.XContentBuilder;
+import org.json.JSONObject;
 import org.loklak.data.DAO;
 import org.loklak.objects.MessageEntry;
 import org.loklak.objects.Timeline;
@@ -88,22 +87,18 @@ public class Crawler {
         // return the number of new terms on the crawl stack
         return count;
     }
-
-    public static void toJSON(XContentBuilder m) {
+    
+    public static JSONObject toJSON() {
         ArrayList<String> pendingQueries = new ArrayList<String>();
         Set<String> processedQueries = new HashSet<String>(); processedQueries.addAll(stacked.keySet());
         for (Term t: pending) {pendingQueries.add(t.query); processedQueries.remove(t.query);}
+        JSONObject m = new JSONObject(true);
+        m.put("pending_size", pending.size());
+        m.put("stacked_size", stacked.size());
+        m.put("processed_size", processedQueries.size());
         
-        try {
-            m.startObject();
-            m.field("pending_size", pending.size());
-            m.field("stacked_size", stacked.size());
-            m.field("processed_size", processedQueries.size());
-            
-            m.field("pending", pendingQueries.toArray(new String[pendingQueries.size()]));
-            m.field("processed", processedQueries.toArray(new String[processedQueries.size()]));
-            m.endObject();
-        } catch (IOException e) {
-        }
+        m.put("pending", pendingQueries.toArray(new String[pendingQueries.size()]));
+        m.put("processed", processedQueries.toArray(new String[processedQueries.size()]));
+        return m;
     }
 }

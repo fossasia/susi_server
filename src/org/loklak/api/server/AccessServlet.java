@@ -29,8 +29,8 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.elasticsearch.common.xcontent.XContentBuilder;
-import org.elasticsearch.common.xcontent.XContentFactory;
+import org.json.JSONArray;
+import org.json.JSONObject;
 import org.loklak.data.DAO;
 import org.loklak.http.RemoteAccess;
 import org.loklak.http.AccessTracker.Track;
@@ -58,30 +58,28 @@ public class AccessServlet extends HttpServlet {
         Collection<Track> tracks = DAO.access.getTrack();
         
         // generate json
-        XContentBuilder json = XContentFactory.jsonBuilder().prettyPrint().lfAtEnd();
-        json.startObject();
-        json.field("access").startArray();
+        JSONObject json = new JSONObject(true);
+        JSONArray access = new JSONArray();
+        json.put("access", access);
         int maxcount = anonymize ? 100 : 1000;
         for (Track track: tracks) {
             if (anonymize && !track.get("class").equals("SearchServlet")) continue;
-            json.startObject();
+            JSONObject a = new JSONObject(true);
             for (Map.Entry<String, Object> entry: track.entrySet()) {
                 if (anonymize && "host".equals(entry.getKey())) {
-                    json.field("host-anonymized", Integer.toHexString(Math.abs(entry.getValue().hashCode())));
+                    a.put("host-anonymized", Integer.toHexString(Math.abs(entry.getValue().hashCode())));
                 } else {
-                    json.field(entry.getKey(), entry.getValue());
+                    a.put(entry.getKey(), entry.getValue());
                 }
             }
-            json.endObject();
+            access.put(a);
             if (maxcount-- <= 0) break;
         }
-        json.endArray();
-        json.endObject(); // of root
 
         // write json
         PrintWriter sos = response.getWriter();
         if (jsonp) sos.print(callback + "(");
-        sos.print(json.string());
+        sos.print(json.toString(2));
         if (jsonp) sos.println(");");
         sos.println();
         post.finalize();

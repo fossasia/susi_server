@@ -18,10 +18,6 @@
  */
 package org.loklak.api.server;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-
-import org.elasticsearch.common.xcontent.XContentBuilder;
-import org.elasticsearch.common.xcontent.XContentFactory;
 import org.elasticsearch.common.xcontent.XContentParser;
 import org.elasticsearch.common.xcontent.json.JsonXContent;
 import org.json.JSONArray;
@@ -39,8 +35,6 @@ import javax.servlet.http.HttpServletResponse;
 
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Date;
@@ -125,17 +119,15 @@ public class ImportProfileServlet extends HttpServlet {
         }
 
         post.setResponse(response, "application/javascript");
-        XContentBuilder json = XContentFactory.jsonBuilder().prettyPrint().lfAtEnd();
-        json.startObject();
-        json.field("status", "ok");
-        json.field("records", success ? 1 : 0);
-        json.field("message", "updated");
-        json.endObject();
+        JSONObject json = new JSONObject(true);
+        json.put("status", "ok");
+        json.put("records", success ? 1 : 0);
+        json.put("message", "updated");
         // write json
         response.setCharacterEncoding("UTF-8");
         PrintWriter sos = response.getWriter();
         if (jsonp) sos.print(callback + "(");
-        sos.print(json.string());
+        sos.print(json.toString(2));
         if (jsonp) sos.println(");");
         sos.println();
         post.finalize();
@@ -169,17 +161,15 @@ public class ImportProfileServlet extends HttpServlet {
             throw new IOException("Unable to delete import profile : " + entry.getId());
         }
         post.setResponse(response, "application/javascript");
-        XContentBuilder json = XContentFactory.jsonBuilder().prettyPrint().lfAtEnd();
-        json.startObject();
-        json.field("status", "ok");
-        json.field("records", sharerExists && successful ? 1 : 0);
-        json.field("message", "deleted");
-        json.endObject();
+        JSONObject json = new JSONObject(true);
+        json.put("status", "ok");
+        json.put("records", sharerExists && successful ? 1 : 0);
+        json.put("message", "deleted");
         // write json
         response.setCharacterEncoding("UTF-8");
         PrintWriter sos = response.getWriter();
         if (jsonp) sos.print(callback + "(");
-        sos.print(json.string());
+        sos.print(json.toString());
         if (jsonp) sos.println(");");
         sos.println();
     }

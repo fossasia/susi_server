@@ -373,6 +373,11 @@ public class JSONObject {
         }
     }
 
+    
+    public void putAll(JSONObject other) {
+        this.map.putAll(other.map);
+    }
+    
     /**
      * Accumulate values under a key. It is similar to the put method except
      * that if there is already an object stored under the key then a JSONArray

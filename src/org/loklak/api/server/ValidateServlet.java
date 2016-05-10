@@ -21,8 +21,7 @@ package org.loklak.api.server;
 
 import com.github.fge.jsonschema.core.report.ProcessingReport;
 
-import org.elasticsearch.common.xcontent.XContentBuilder;
-import org.elasticsearch.common.xcontent.XContentFactory;
+import org.json.JSONObject;
 import org.loklak.data.DAO;
 import org.loklak.harvester.JsonValidator;
 import org.loklak.harvester.SourceType;
@@ -144,20 +143,16 @@ public class ValidateServlet extends HttpServlet {
         post.setResponse(response, "application/javascript");
 
         // generate json
-        XContentBuilder json = XContentFactory.jsonBuilder().prettyPrint().lfAtEnd();
-        json.startObject();
-        json.field("status", status.name());
-        if (!(message.length() == 0))
-            json.field("details", message);
-        if (contentToStr != null)
-            json.field("content", contentToStr);
-        json.endObject();
+        JSONObject json = new JSONObject(true);
+        json.put("status", status.name());
+        if (!(message.length() == 0)) json.put("details", message);
+        if (contentToStr != null) json.put("content", contentToStr);
 
         // write json
         response.setCharacterEncoding("UTF-8");
         PrintWriter sos = response.getWriter();
         if (jsonp) sos.print(callback + "(");
-        sos.print(json.string());
+        sos.print(json.toString(2));
         if (jsonp) sos.println(");");
         sos.println();
 

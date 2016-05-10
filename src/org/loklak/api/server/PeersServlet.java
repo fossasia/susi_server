@@ -30,8 +30,8 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.elasticsearch.common.xcontent.XContentBuilder;
-import org.elasticsearch.common.xcontent.XContentFactory;
+import org.json.JSONArray;
+import org.json.JSONObject;
 import org.loklak.http.RemoteAccess;
 
 public class PeersServlet extends HttpServlet {
@@ -63,36 +63,34 @@ public class PeersServlet extends HttpServlet {
         post.setResponse(response, "application/javascript");
         
         // generate json
-        XContentBuilder json = XContentFactory.jsonBuilder().prettyPrint().lfAtEnd();
-        json.startObject();
+        JSONObject json = new JSONObject(true);
+        JSONArray peers = new JSONArray();
+        json.put("peers", peers);
         int count = 0;
-        json.field("peers").startArray();
         for (Map.Entry<String, Map<String, RemoteAccess>> hmap: RemoteAccess.history.entrySet()) {
             if (classcheck.contains(hmap.getKey())) {
+                JSONObject p = new JSONObject(true);
                 for (Map.Entry<String, RemoteAccess> peer: hmap.getValue().entrySet()) {
-                    json.startObject();
-                    json.field("class", hmap.getKey());
-                    json.field("host", peer.getKey());
+                    p.put("class", hmap.getKey());
+                    p.put("host", peer.getKey());
                     RemoteAccess remoteAccess = peer.getValue();
-                    json.field("port.http", remoteAccess.getLocalHTTPPort());
-                    json.field("port.https", remoteAccess.getLocalHTTPSPort());
-                    json.field("lastSeen", remoteAccess.getAccessTime());
-                    json.field("lastPath", remoteAccess.getLocalPath());
-                    json.field("peername", remoteAccess.getPeername());
-                    json.endObject();
+                    p.put("port.http", remoteAccess.getLocalHTTPPort());
+                    p.put("port.https", remoteAccess.getLocalHTTPSPort());
+                    p.put("lastSeen", remoteAccess.getAccessTime());
+                    p.put("lastPath", remoteAccess.getLocalPath());
+                    p.put("peername", remoteAccess.getPeername());
+                    peers.put(p);
                     count++;
                 }
             }
         }
-        json.endArray();
-        json.field("count", count);
-        json.endObject(); // of root
+        json.put("count", count);
 
         // write json
         response.setCharacterEncoding("UTF-8");
         PrintWriter sos = response.getWriter();
         if (jsonp) sos.print(callback + "(");
-        sos.print(json.string());
+        sos.print(json.toString(2));
         if (jsonp) sos.println(");");
         sos.println();
 

@@ -29,8 +29,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.elasticsearch.common.xcontent.XContentBuilder;
-import org.elasticsearch.common.xcontent.XContentFactory;
+import org.json.JSONObject;
 import org.loklak.QueuedIndexing;
 import org.loklak.data.DAO;
 import org.loklak.http.RemoteAccess;
@@ -165,21 +164,19 @@ public class PushServlet extends HttpServlet {
         post.setResponse(response, "application/javascript");
         
         // generate json
-        XContentBuilder json = XContentFactory.jsonBuilder().prettyPrint().lfAtEnd();
-        json.startObject();
-        json.field("status", "ok");
-        json.field("records", recordCount);
-        if (remoteHashFromPeerId) json.field("contribution_message_count", messages_from_client);
+        JSONObject json = new JSONObject(true);
+        json.put("status", "ok");
+        json.put("records", recordCount);
+        if (remoteHashFromPeerId) json.put("contribution_message_count", messages_from_client);
         //json.field("new", newCount);
         //json.field("known", knownCount);
-        json.field("message", "pushed");
-        json.endObject(); // of root
+        json.put("message", "pushed");
 
         // write json
         response.setCharacterEncoding("UTF-8");
         PrintWriter sos = response.getWriter();
         if (jsonp) sos.print(callback + "(");
-        sos.print(json.string());
+        sos.print(json.toString(2));
         if (jsonp) sos.println(");");
         sos.println();
 

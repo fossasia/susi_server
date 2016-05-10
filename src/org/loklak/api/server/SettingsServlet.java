@@ -27,8 +27,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.elasticsearch.common.xcontent.XContentBuilder;
-import org.elasticsearch.common.xcontent.XContentFactory;
+import org.json.JSONObject;
 import org.loklak.data.DAO;
 import org.loklak.http.RemoteAccess;
 
@@ -53,17 +52,15 @@ public class SettingsServlet extends HttpServlet {
         post.setResponse(response, "application/javascript");
         
         // generate json: NO jsonp here on purpose!
-        XContentBuilder json = XContentFactory.jsonBuilder().prettyPrint().lfAtEnd();
-        json.startObject();
+        JSONObject json = new JSONObject(true);
         for (String key: DAO.getConfigKeys()) {
-            if (key.startsWith("client.")) json.field(key.substring(7), DAO.getConfig(key, ""));
+            if (key.startsWith("client.")) json.put(key.substring(7), DAO.getConfig(key, ""));
         }
-        json.endObject();
 
         // write json
         response.setCharacterEncoding("UTF-8");
         PrintWriter sos = response.getWriter();
-        sos.print(json.string());
+        sos.print(json.toString(2));
         sos.println();
 
         post.finalize();

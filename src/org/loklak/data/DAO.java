@@ -539,7 +539,7 @@ public class DAO {
         return true;
     }
 
-    public static void writeMessageBulk(Collection<MessageWrapper> mws) {
+    public static Set<String> writeMessageBulk(Collection<MessageWrapper> mws) {
         List<MessageWrapper> noDump = new ArrayList<>();
         List<MessageWrapper> dump = new ArrayList<>();
         for (MessageWrapper mw: mws) {
@@ -547,7 +547,7 @@ public class DAO {
             if (mw.dump) dump.add(mw); else noDump.add(mw);
         }
         writeMessageBulkNoDump(noDump);
-        writeMessageBulkDump(dump);
+        return writeMessageBulkDump(dump);
     }
 
 
@@ -568,7 +568,7 @@ public class DAO {
         }
     }
     
-    private static void writeMessageBulkDump(Collection<MessageWrapper> mws) {
+    private static Set<String> writeMessageBulkDump(Collection<MessageWrapper> mws) {
         // make a bulk exist request
         List<String> ids = new ArrayList<>();
         for (MessageWrapper mw: mws) {
@@ -596,6 +596,7 @@ public class DAO {
         } catch (IOException e) {
             e.printStackTrace();
         }
+        return exists;
     }
     
     /**

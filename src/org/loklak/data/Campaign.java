@@ -19,34 +19,39 @@
 
 package org.loklak.data;
 
-import java.io.IOException;
 import java.text.ParseException;
 import java.util.Comparator;
 import java.util.Date;
-import java.util.LinkedHashMap;
 import java.util.Map;
 
-import org.elasticsearch.common.xcontent.XContentBuilder;
-import org.elasticsearch.common.xcontent.XContentFactory;
+import org.json.JSONObject;
 import org.loklak.tools.DateParser;
 
 public class Campaign implements Comparator<Campaign>, Comparable<Campaign> {
     
-    private LinkedHashMap<String, Object> map; // we use a linked hashmap to preserve the order of the entries for better representation in saved lists
+    private JSONObject map;
     private long start_time, end_time;
     private String id;
     
     public Campaign() {
-        this.map = new LinkedHashMap<>();
+        this.map = new JSONObject(true);
     }
 
     /**
      * create an campaign with a dumped map
      * @param campaignMap
      */
-    public Campaign(Map<String, Object> campaignMap) {
+    public Campaign(JSONObject campaignMap) {
         this();
         this.map.putAll(campaignMap);
+        this.start_time = ((Date) this.map.get("start_date")).getTime();
+        this.end_time = ((Date) this.map.get("end_date")).getTime();
+        this.id = DateParser.minuteDateFormat.format((Date) this.map.get("start_date")).replace(' ', '_') + "-" + DateParser.minuteDateFormat.format((Date) this.map.get("end_date")).replace(' ', '_') + "-" + Math.abs(((String) this.map.get("query")).hashCode()) + "-" + Math.abs(((String) this.map.get("name")).hashCode());
+    }
+    
+    public Campaign(Map<String, Object> campaignMap) {
+        this();
+        for (Map.Entry<String, Object> entry: campaignMap.entrySet()) this.map.put(entry.getKey(), entry.getValue());
         this.start_time = ((Date) this.map.get("start_date")).getTime();
         this.end_time = ((Date) this.map.get("end_date")).getTime();
         this.id = DateParser.minuteDateFormat.format((Date) this.map.get("start_date")).replace(' ', '_') + "-" + DateParser.minuteDateFormat.format((Date) this.map.get("end_date")).replace(' ', '_') + "-" + Math.abs(((String) this.map.get("query")).hashCode()) + "-" + Math.abs(((String) this.map.get("name")).hashCode());
@@ -147,25 +152,12 @@ public class Campaign implements Comparator<Campaign>, Comparable<Campaign> {
         return c;
     }
 
-    public void toJSON(XContentBuilder m) {
-        try {
-            m.map(this.map);
-        } catch (IOException e) {
-        }
-    }
-    
-    public XContentBuilder toJSON() {
-        try {
-            XContentBuilder m = XContentFactory.jsonBuilder();
-            toJSON(m);
-            return m;
-        } catch (IOException e) {
-            return null;
-        }
+    public JSONObject toJSON() {
+        return this.map;
     }
     
     public String toString() {
-        return toJSON().bytes().toUtf8();
+        return toJSON().toString();
     }
     
     public static void main(String args[]) {

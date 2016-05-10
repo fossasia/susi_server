@@ -1,7 +1,6 @@
 package org.loklak.api.server.push;
 
-import org.elasticsearch.common.xcontent.XContentBuilder;
-import org.elasticsearch.common.xcontent.XContentFactory;
+import org.json.JSONObject;
 import org.loklak.data.DAO;
 import org.loklak.harvester.HarvestingFrequency;
 import org.loklak.harvester.SourceType;
@@ -135,26 +134,23 @@ public class PushServletHelper {
     public static String buildJSONResponse(String callback, PushReport pushReport) throws IOException {
 
         // generate json
-        XContentBuilder json = XContentFactory.jsonBuilder().prettyPrint().lfAtEnd();
-        json.startObject();
-        json.field("status", "ok");
-        json.field("records", pushReport.getRecordCount());
-        json.field("new", pushReport.getNewCount());
-        json.field("known", pushReport.getKnownCount());
-        json.field("knownIds", pushReport.getKnownMessageIds());
-        json.field("error", pushReport.getErrorCount());
+        JSONObject json = new JSONObject(true);
+        json.put("status", "ok");
+        json.put("records", pushReport.getRecordCount());
+        json.put("new", pushReport.getNewCount());
+        json.put("known", pushReport.getKnownCount());
+        json.put("knownIds", pushReport.getKnownMessageIds());
+        json.put("error", pushReport.getErrorCount());
         ImportProfileEntry importProfile = pushReport.getImportProfile();
-        if (importProfile != null)
-            json.field("importProfile", importProfile.toMap());
-        json.field("message", "pushed");
-        json.endObject();
+        if (importProfile != null) json.put("importProfile", importProfile.toMap());
+        json.put("message", "pushed");
 
 
         // build result
         String result = "";
         boolean jsonp = callback != null && callback.length() > 0;
         if (jsonp) result += callback + "(";
-        result += json.string();
+        result += json.toString(2);
         if (jsonp) result += ");";
 
         return result;

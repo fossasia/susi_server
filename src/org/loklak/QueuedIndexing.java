@@ -92,15 +92,16 @@ public class QueuedIndexing extends Thread {
 
             DAO.MessageWrapper mw;
             this.isBusy = true;
-            long dumpstart = System.currentTimeMillis();
-            int candMessages = 0, knownMessagesCache = 0;
-            int maxBulkSize = 100;
+            AtomicInteger candMessages = new AtomicInteger();
+            AtomicInteger knownMessagesCache = new AtomicInteger();
+            int maxBulkSize = 200;
             List<DAO.MessageWrapper> bulk = new ArrayList<>();
             pollloop: while ((mw = messageQueue.poll()) != null) {
                 if (DAO.messages.existsCache(mw.t.getIdStr())) {
-                     knownMessagesCache++;
+                     knownMessagesCache.incrementAndGet();
                      continue pollloop;
                 }
+                candMessages.incrementAndGet();
 
                 // in case that the message queue is too large, dump the queue into a file here
                 // to make room that clients can continue to push without blocking
@@ -111,23 +112,16 @@ public class QueuedIndexing extends Thread {
                 }
                 */
                 // if there is time enough to finish this, continue to write into the index
-                
+
                 mw.t.enrich(); // we enrich here again because the remote peer may have done this with an outdated version or not at all
                 bulk.add(mw);
                 if (bulk.size() >= maxBulkSize) {
-                    DAO.writeMessageBulk(bulk);
-                    bulk.clear();
+                    dumpbulk(bulk, candMessages, knownMessagesCache);
                 }
-                candMessages++;
             }
             if (bulk.size() >= 0) {
-                DAO.writeMessageBulk(bulk);
-                bulk.clear();
+                dumpbulk(bulk, candMessages, knownMessagesCache);
             }
-           
-            long dumpfinish = System.currentTimeMillis();
-            DAO.log("dumped timelines: " + candMessages + " possibly new (not checked against index), " + knownMessagesCache + " known from cache, storage time: " + (dumpfinish - dumpstart) + " ms, remaining messages: " + messageQueue.size());
-
             this.isBusy = false;
         } catch (Throwable e) {
             e.printStackTrace();
@@ -135,6 +129,18 @@ public class QueuedIndexing extends Thread {
         }
 
         Log.getLog().info("QueuedIndexing terminated");
+    }
+    
+    private void dumpbulk(List<DAO.MessageWrapper> bulk, AtomicInteger candMessages, AtomicInteger knownMessagesCache) {
+        long dumpstart = System.currentTimeMillis();
+        int notWrittenDouble = DAO.writeMessageBulk(bulk).size();
+        knownMessagesCache.addAndGet(notWrittenDouble);
+        candMessages.addAndGet(-notWrittenDouble);
+        long dumpfinish = System.currentTimeMillis();
+        DAO.log("dumped timelines: " + candMessages + " new " + knownMessagesCache + " known from cache, storage time: " + (dumpfinish - dumpstart) + " ms, remaining messages: " + messageQueue.size());
+        candMessages.set(0);
+        knownMessagesCache.set(0);
+        bulk.clear();
     }
     
     public static void addScheduler(Timeline tl, final boolean dump) {
