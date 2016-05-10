@@ -38,6 +38,7 @@ import java.util.concurrent.TimeUnit;
 import javax.servlet.DispatcherType;
 import javax.servlet.MultipartConfigElement;
 
+import org.apache.http.HttpVersion;
 import org.eclipse.jetty.rewrite.handler.RewriteHandler;
 import org.eclipse.jetty.rewrite.handler.RewriteRegexRule;
 import org.eclipse.jetty.server.Handler;
@@ -56,7 +57,12 @@ import org.eclipse.jetty.util.ConcurrentHashSet;
 import org.eclipse.jetty.util.log.Log;
 import org.eclipse.jetty.util.thread.ExecutorThreadPool;
 import org.eclipse.jetty.util.thread.QueuedThreadPool;
+import org.eclipse.jetty.util.ssl.SslContextFactory;
 import org.eclipse.jetty.webapp.WebAppContext;
+import org.eclipse.jetty.server.HttpConfiguration;
+import org.eclipse.jetty.server.SecureRequestCustomizer;
+import org.eclipse.jetty.server.HttpConnectionFactory;
+import org.eclipse.jetty.server.SslConnectionFactory;
 import org.loklak.api.server.AccessServlet;
 import org.loklak.api.server.AppsServlet;
 import org.loklak.api.server.AssetServlet;
@@ -167,6 +173,25 @@ public class LoklakServer {
             if (ss != null) {try {ss.close();} catch (IOException e) {}}
         }
         
+        //https-new
+        String httpsPortS = config.get("port.http");
+        int httpsPort = httpsPortS == null ? 9443 : Integer.parseInt(httpsPortS);
+        ServerSocket sss = null;
+        try {
+            sss = new ServerSocket(httpsPort);
+            sss.setReuseAddress(true);
+            sss.setReceiveBufferSize(65536);
+        } catch (IOException e) {
+            // the socket is already occupied by another service
+            Log.getLog().info("port " + httpsPort + " is already occupied by another service, maybe another loklak is running on this port already. exit.");
+            Browser.openBrowser("https://localhost:" + httpsPort + "/");
+            System.exit(-1);
+        } finally {
+            // close the socket again
+            if (sss != null) {try {sss.close();} catch (IOException e) {}}
+        }
+        //https-new
+        
         // prepare shutdown signal
         File pid = new File(dataFile, "loklak.pid");
         if (pid.exists()) pid.deleteOnExit(); // thats a signal for the stop.sh script that loklak has terminated
@@ -209,6 +234,39 @@ public class LoklakServer {
         connector.setName("httpd:" + httpPort);
         connector.setIdleTimeout(20000); // timout in ms when no bytes send / received
         LoklakServer.server.addConnector(connector);
+        
+        //https-new - uncommented lines for http2 (jetty 9.3 / java 8)
+        
+        HttpConfiguration https_config = new HttpConfiguration();
+        https_config.addCustomizer(new SecureRequestCustomizer());
+        
+        
+        HttpConnectionFactory http1 = new HttpConnectionFactory(https_config);
+        //HTTP2ServerConnectionFactory http2 = new HTTP2ServerConnectionFactory(https_config);
+        
+        /*NegotiatingServerConnectionFactory.checkProtocolNegotiationAvailable();
+        ALPNServerConnectionFactory alpn = new ALPNServerConnectionFactory();
+        alpn.setDefaultProtocol(http1.getProtocol());*/
+         
+        SslContextFactory sslContextFactory = new SslContextFactory();
+        File keystore = new File(DAO.conf_dir, DAO.getConfig("keystore.name", "keystore.jks"));
+        sslContextFactory.setKeyStorePath(keystore.getAbsolutePath());
+        sslContextFactory.setKeyStorePassword(DAO.getConfig("keystore.password", ""));
+        sslContextFactory.setKeyManagerPassword(DAO.getConfig("keystore.password", ""));
+        /*sslContextFactory.setCipherComparator(HTTP2Cipher.COMPARATOR);
+        sslContextFactory.setUseCipherSuitesOrder(true);*/
+        
+        //SslConnectionFactory ssl = new SslConnectionFactory(sslContextFactory, alpn.getProtocol());
+        SslConnectionFactory ssl = new SslConnectionFactory(sslContextFactory, "http/1.1");
+        
+        //ServerConnector sslConnector = new ServerConnector(LoklakServer.server, ssl, alpn, http2, http1);
+        ServerConnector sslConnector = new ServerConnector(LoklakServer.server, ssl, http1);
+        sslConnector.setPort(httpsPort);
+        sslConnector.setName("httpd:" + httpsPort);
+        sslConnector.setIdleTimeout(20000); // timout in ms when no bytes send / received
+        LoklakServer.server.addConnector(sslConnector);
+        
+        //https-new
 
         // Setup IPAccessHandler for blacklists
         String blacklist = config.get("server.blacklist");
