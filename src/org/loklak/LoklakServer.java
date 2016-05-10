@@ -174,7 +174,7 @@ public class LoklakServer {
         }
         
         //https-new
-        String httpsPortS = config.get("port.http");
+        String httpsPortS = config.get("port.https");
         int httpsPort = httpsPortS == null ? 9443 : Integer.parseInt(httpsPortS);
         ServerSocket sss = null;
         try {
@@ -229,32 +229,36 @@ public class LoklakServer {
         pool.setMaxThreads(500);
         LoklakServer.server = new Server(pool);
         LoklakServer.server.setStopAtShutdown(true);
+        
+        //http
+        
         ServerConnector connector = new ServerConnector(LoklakServer.server);
         connector.setPort(httpPort);
         connector.setName("httpd:" + httpPort);
         connector.setIdleTimeout(20000); // timout in ms when no bytes send / received
         LoklakServer.server.addConnector(connector);
         
+        //http
+        
         //https-new - uncommented lines for http2 (jetty 9.3 / java 8)
         
         HttpConfiguration https_config = new HttpConfiguration();
         https_config.addCustomizer(new SecureRequestCustomizer());
         
-        
         HttpConnectionFactory http1 = new HttpConnectionFactory(https_config);
         //HTTP2ServerConnectionFactory http2 = new HTTP2ServerConnectionFactory(https_config);
         
-        /*NegotiatingServerConnectionFactory.checkProtocolNegotiationAvailable();
-        ALPNServerConnectionFactory alpn = new ALPNServerConnectionFactory();
-        alpn.setDefaultProtocol(http1.getProtocol());*/
+        //NegotiatingServerConnectionFactory.checkProtocolNegotiationAvailable();
+        //ALPNServerConnectionFactory alpn = new ALPNServerConnectionFactory();
+        //alpn.setDefaultProtocol(http1.getProtocol());
          
         SslContextFactory sslContextFactory = new SslContextFactory();
         File keystore = new File(DAO.conf_dir, DAO.getConfig("keystore.name", "keystore.jks"));
         sslContextFactory.setKeyStorePath(keystore.getAbsolutePath());
         sslContextFactory.setKeyStorePassword(DAO.getConfig("keystore.password", ""));
         sslContextFactory.setKeyManagerPassword(DAO.getConfig("keystore.password", ""));
-        /*sslContextFactory.setCipherComparator(HTTP2Cipher.COMPARATOR);
-        sslContextFactory.setUseCipherSuitesOrder(true);*/
+        //sslContextFactory.setCipherComparator(HTTP2Cipher.COMPARATOR);
+        //sslContextFactory.setUseCipherSuitesOrder(true);
         
         //SslConnectionFactory ssl = new SslConnectionFactory(sslContextFactory, alpn.getProtocol());
         SslConnectionFactory ssl = new SslConnectionFactory(sslContextFactory, "http/1.1");
