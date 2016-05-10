@@ -3,3 +3,4 @@ web:
   image: mariobehling/loklak
   ports:
     - "80"
+    - "443"
