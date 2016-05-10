@@ -219,7 +219,6 @@ public class LoklakServer {
         pool.setMaxThreads(500);
         LoklakServer.server = new Server(pool);
         LoklakServer.server.setStopAtShutdown(true);
-        HandlerCollection handlerCollection = new HandlerCollection();
         
         //http
         HttpConfiguration http_config = new HttpConfiguration();
