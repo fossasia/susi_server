@@ -26,7 +26,6 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.nio.file.FileSystems;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.EnumSet;
 import java.util.HashMap;
@@ -273,8 +272,10 @@ public class LoklakServer {
         		//temporary keystore files
         		String pkcs12_temp = DAO.conf_dir.getAbsolutePath() + "/keystore_temp.pkcs12";
         		keystorePath = DAO.conf_dir.getAbsolutePath() + "/keystore_temp.jks";
-        		Files.delete((new File(pkcs12_temp)).toPath());
-        		Files.delete((new File(keystorePath)).toPath());
+        		File temp = new File(pkcs12_temp);
+        		if(temp.exists()) temp.delete();
+        		temp = new File(keystorePath);
+        		if(temp.exists()) temp.delete();
         		
         		//create temporary pkcs12 file from key and cert
         		Runtime rt = Runtime.getRuntime();
@@ -305,8 +306,13 @@ public class LoklakServer {
     	            System.exit(-1);
         		}
         		finally{
-        			Files.delete((new File(pkcs12_temp)).toPath());
+        			temp = new File(pkcs12_temp);
+        			if (temp.exists()) temp.delete();
         		}
+        		
+        		File keystore = new File(keystorePath);
+        		if (keystore.exists()) keystore.deleteOnExit();
+        		
         		
         		Log.getLog().info("Successfully imported keystore from key/cert files");
         	}
