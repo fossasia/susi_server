@@ -336,9 +336,11 @@ public class LoklakServer {
 	        
 	        sslContextFactory.setKeyStorePath(keystorePath);
 	        sslContextFactory.setKeyStorePassword(keystorePass);
+	        keystorePass = null;
 	        sslContextFactory.setKeyManagerPassword(keystoreManagerPass);
 	        //sslContextFactory.setCipherComparator(HTTP2Cipher.COMPARATOR);
 	        //sslContextFactory.setUseCipherSuitesOrder(true);
+	        
 	        
 	        //SslConnectionFactory ssl = new SslConnectionFactory(sslContextFactory, alpn.getProtocol());
 	        SslConnectionFactory ssl = new SslConnectionFactory(sslContextFactory, "http/1.1");
