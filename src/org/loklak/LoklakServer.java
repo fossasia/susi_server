@@ -26,11 +26,13 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.nio.file.FileSystems;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Random;
 import java.util.Set;
 
 import javax.servlet.DispatcherType;
@@ -172,8 +174,6 @@ public class LoklakServer {
             if (ss != null) {try {ss.close();} catch (IOException e) {}}
         }
         
-        //https-new
-        
         // check for redirect to https
         String httpsMode = config.get("https.mode");
         boolean redirect = httpsMode.equals("redirect");
@@ -197,7 +197,6 @@ public class LoklakServer {
 	            if (sss != null) {try {sss.close();} catch (IOException e) {}}
 	        }
         }
-        //https-new
         
         // prepare shutdown signal
         File pid = new File(dataFile, "loklak.pid");
@@ -205,9 +204,6 @@ public class LoklakServer {
         
         // initialize all data        
         DAO.init(config, data);
-        
-        /// https
-        
         
         // init the http server
         QueuedThreadPool pool = new QueuedThreadPool();
@@ -234,6 +230,92 @@ public class LoklakServer {
         //keytool -genkey -alias sitename -keyalg RSA -keystore keystore.jks -keysize 2048
         //uncommented lines for http2 (jetty 9.3 / java 8)        
         if(useHttps){
+        	
+        	String keySource = DAO.getConfig("https.keysource", "keystore");
+        	String keystorePath = null;
+        	String keystorePass = null;
+        	String keystoreManagerPass = null;
+        	
+        	if(keySource.equals("keystore")){
+        		File keystore = new File(DAO.conf_dir, DAO.getConfig("keystore.name", "keystore.jks"));
+        		if(!keystore.exists() || !keystore.isFile() || !keystore.canRead()){
+        			Log.getLog().info("Could not find keystore");
+    	            System.exit(-1);
+        		}
+        		keystorePath = keystore.getAbsolutePath();
+        		keystorePass = DAO.getConfig("keystore.password", "");
+        		keystoreManagerPass = DAO.getConfig("keystore.password", "");
+        	}
+        	else if (keySource.equals("key-cert")){
+        		File key = new File(DAO.getConfig("https.key", ""));
+        		if(!key.exists() || !key.isFile() || !key.canRead()){
+        			Log.getLog().info("Could not find key file");
+    	            System.exit(-1);
+        		}
+        		File cert = new File(DAO.getConfig("https.cert", ""));
+        		if(!cert.exists() || !cert.isFile() || !cert.canRead()){
+        			Log.getLog().info("Could not find cert file");
+    	            System.exit(-1);
+        		}
+        		
+        		
+        		//generate random password
+        		char[] chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789".toCharArray();
+        		StringBuilder sb = new StringBuilder();
+        		Random random = new Random();
+        		for (int i = 0; i < 20; i++) {
+        		    char c = chars[random.nextInt(chars.length)];
+        		    sb.append(c);
+        		}
+        		keystorePass = keystoreManagerPass = sb.toString();
+        		
+        		
+        		//temporary keystore files
+        		String pkcs12_temp = DAO.conf_dir.getAbsolutePath() + "/keystore_temp.pkcs12";
+        		keystorePath = DAO.conf_dir.getAbsolutePath() + "/keystore_temp.jks";
+        		Files.delete((new File(pkcs12_temp)).toPath());
+        		Files.delete((new File(keystorePath)).toPath());
+        		
+        		//create temporary pkcs12 file from key and cert
+        		Runtime rt = Runtime.getRuntime();
+        		try{
+        			Process p = rt.exec("openssl pkcs12 -export -out " + pkcs12_temp
+        					+ " -in " + cert.getAbsolutePath()
+        					+ " -inkey " + key.getAbsolutePath()
+        					+ " -passout pass:" + keystorePass);
+        			p.waitFor();
+        		}
+        		catch(IOException e){
+        			Log.getLog().info("Key/Cert conversion failed");
+    	            System.exit(-1);
+        		}
+        		
+        		//import pkcs12 file into keystore
+        		try{
+        			Process p = rt.exec("keytool -importkeystore -noprompt" 
+        					+ " -srckeystore " + pkcs12_temp
+        					+ " -srcstorepass " + keystorePass
+        					+ " -srcstoretype PKCS12"
+        					+ " -destkeystore " + keystorePath
+        					+ " -storepass " + keystorePass);
+        			p.waitFor();
+        		}
+        		catch(IOException e){
+        			Log.getLog().info("Import of temporary pkcs12 file failed");
+    	            System.exit(-1);
+        		}
+        		finally{
+        			Files.delete((new File(pkcs12_temp)).toPath());
+        		}
+        		
+        		Log.getLog().info("Successfully imported keystore from key/cert files");
+        	}
+        	else{
+        		Log.getLog().info("Invalid option for https.keysource");
+	            System.exit(-1);
+        	}
+        	        	
+        	
         	HttpConfiguration https_config = new HttpConfiguration();
 	        https_config.addCustomizer(new SecureRequestCustomizer());
 	        
@@ -245,10 +327,10 @@ public class LoklakServer {
 	        //alpn.setDefaultProtocol(http1.getProtocol());
 	         
 	        SslContextFactory sslContextFactory = new SslContextFactory();
-	        File keystore = new File(DAO.conf_dir, DAO.getConfig("keystore.name", "keystore.jks"));
-	        sslContextFactory.setKeyStorePath(keystore.getAbsolutePath());
-	        sslContextFactory.setKeyStorePassword(DAO.getConfig("keystore.password", ""));
-	        sslContextFactory.setKeyManagerPassword(DAO.getConfig("keystore.password", ""));
+	        
+	        sslContextFactory.setKeyStorePath(keystorePath);
+	        sslContextFactory.setKeyStorePassword(keystorePass);
+	        sslContextFactory.setKeyManagerPassword(keystoreManagerPass);
 	        //sslContextFactory.setCipherComparator(HTTP2Cipher.COMPARATOR);
 	        //sslContextFactory.setUseCipherSuitesOrder(true);
 	        
