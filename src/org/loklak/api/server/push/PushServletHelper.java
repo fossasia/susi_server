@@ -67,7 +67,7 @@ public class PushServletHelper {
 
     protected static ImportProfileEntry saveImportProfile(int fileHash, RemoteAccess.Post post, SourceType sourceType, String screenName, List<String> importedMsgIds) throws IOException {
         ImportProfileEntry importProfileEntry ;
-        Map<String, Object> profile = new HashMap<>();
+        JSONObject profile = new JSONObject();
         profile.put("client_host", post.getClientHost());
         profile.put("imported", importedMsgIds);
         profile.put("importer", screenName);
@@ -142,7 +142,7 @@ public class PushServletHelper {
         json.put("knownIds", pushReport.getKnownMessageIds());
         json.put("error", pushReport.getErrorCount());
         ImportProfileEntry importProfile = pushReport.getImportProfile();
-        if (importProfile != null) json.put("importProfile", importProfile.toMap());
+        if (importProfile != null) json.put("importProfile", importProfile.toJSON());
         json.put("message", "pushed");
 
 
@@ -156,7 +156,7 @@ public class PushServletHelper {
         return result;
     }
 
-    private static String computeImportProfileId(Map<String, Object> importProfile, int fileHash) {
+    private static String computeImportProfileId(JSONObject importProfile, int fileHash) {
         String importer = (String) importProfile.get("importer");
         String source_url = (String) importProfile.get("source_url");
         return source_url + "_" + importer + "_" + fileHash;
@@ -174,7 +174,7 @@ public class PushServletHelper {
         Iterator it = search.timeline.iterator();
         while (it.hasNext()) {
             MessageEntry messageEntry = (MessageEntry) it.next();
-            if (compareMessage(messageEntry.toMap(), message)) {
+            if (compareMessage(messageEntry.toJSON().toMap(), message)) {
                 return messageEntry.getIdStr();
             }
         }

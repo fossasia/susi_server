@@ -19,8 +19,6 @@
 
 package org.loklak.data;
 
-import java.util.Map;
-
 import org.json.JSONObject;
 import org.loklak.objects.UserEntry;
 
@@ -31,11 +29,6 @@ public class UserFactory extends AbstractIndexFactory<UserEntry> implements Inde
     }
 
     @Override
-    public UserEntry init(Map<String, Object> map) {
-        return new UserEntry(map);
-    }
-
-    //@Override
     public UserEntry init(JSONObject json) {
         return new UserEntry(json);
     }

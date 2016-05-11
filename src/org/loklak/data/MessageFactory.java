@@ -19,8 +19,6 @@
 
 package org.loklak.data;
 
-import java.util.Map;
-
 import org.json.JSONObject;
 import org.loklak.objects.MessageEntry;
 
@@ -31,11 +29,6 @@ public class MessageFactory extends AbstractIndexFactory<MessageEntry> implement
     }
 
     @Override
-    public MessageEntry init(Map<String, Object> map) {
-        return new MessageEntry(map);
-    }
-
-    //@Override
     public MessageEntry init(JSONObject json) {
         return new MessageEntry(json);
     }

@@ -585,11 +585,6 @@ public class MessageEntry extends AbstractIndexEntry implements IndexEntry {
     }
     
     @Override
-    public Map<String, Object> toMap() {
-        return toMap(null, true, Integer.MAX_VALUE, ""); // very important to include calculated data here because that is written into the index using the abstract index factory
-    }
-    
-    @Override
     public JSONObject toJSON() {
         return toJSON(null, true, Integer.MAX_VALUE, ""); // very important to include calculated data here because that is written into the index using the abstract index factory
     }

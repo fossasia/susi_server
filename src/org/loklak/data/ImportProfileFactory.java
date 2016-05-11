@@ -18,6 +18,7 @@
  */
 package org.loklak.data;
 
+import org.json.JSONObject;
 import org.loklak.objects.ImportProfileEntry;
 
 import java.io.IOException;
@@ -30,7 +31,7 @@ public class ImportProfileFactory extends AbstractIndexFactory<ImportProfileEntr
     }
 
     @Override
-    public ImportProfileEntry init(Map<String, Object> map) throws IOException {
+    public ImportProfileEntry init(JSONObject map) throws IOException {
         return new ImportProfileEntry(map);
     }
 }

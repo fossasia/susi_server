@@ -44,13 +44,7 @@ public abstract class AbstractIndexEntry implements IndexEntry {
     }
     
     public String toString() {
-        try {
-            ObjectWriter ow = new ObjectMapper().writerWithDefaultPrettyPrinter();
-            return ow.writeValueAsString(this.toMap());
-        } catch (JsonProcessingException e) {
-            e.printStackTrace();
-            return "";
-        }
+        return this.toJSON().toString();
     }
 
     public byte[] toJSONBytes() {
@@ -99,6 +93,7 @@ public abstract class AbstractIndexEntry implements IndexEntry {
         if (d == null) return dflt;
         if (d instanceof Long) return new Date(((Long) d).longValue());
         if (d instanceof String) return ISODateTimeFormat.dateOptionalTimeParser().parseDateTime((String) d).toDate();
+        if (d instanceof Date) return (Date) d;
         assert false;
         return dflt;
     }

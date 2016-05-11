@@ -39,53 +39,53 @@ public class AccountEntry extends AbstractIndexEntry implements IndexEntry {
         apps;
     }
     
-    private final Map<String, Object> map;
+    private final JSONObject json;
 
     private AccountEntry() {
-        this.map = new LinkedHashMap<>();
+        this.json = new JSONObject(true);
     }
     
-    public AccountEntry(final Map<String, Object> map) throws IOException {
+    public AccountEntry(final JSONObject map) throws IOException {
         this();
         this.init(map);
     }
     
-    public void init(final Map<String, Object> extmap) throws IOException {
-        this.map.putAll(extmap);
+    public void init(final JSONObject extmap) throws IOException {
+        this.json.putAll(extmap);
         Date now = new Date();
-        this.map.put(Field.authentication_first.name(), parseDate(this.map.get(Field.authentication_first.name()), now));
-        this.map.put(Field.authentication_latest.name(), parseDate(this.map.get(Field.authentication_latest.name()), now));
-        boolean containsAuth = this.map.containsKey(Field.oauth_token.name()) && this.map.containsKey(Field.oauth_token_secret.name());
-        if (this.map.containsKey(Field.source_type.name())) {
+        this.json.put(Field.authentication_first.name(), this.json.has(Field.authentication_first.name()) ? parseDate(this.json.get(Field.authentication_first.name()), now) : now);
+        this.json.put(Field.authentication_latest.name(), this.json.has(Field.authentication_latest.name()) ? parseDate(this.json.get(Field.authentication_latest.name()), now) : now);
+        boolean containsAuth = this.json.has(Field.oauth_token.name()) && this.json.has(Field.oauth_token_secret.name());
+        if (this.json.has(Field.source_type.name())) {
             // verify the type
             try {
-                SourceType st = SourceType.valueOf((String) this.map.get(Field.source_type.name()));
-                this.map.put(Field.source_type.name(), st.toString());
+                SourceType st = SourceType.valueOf((String) this.json.get(Field.source_type.name()));
+                this.json.put(Field.source_type.name(), st.toString());
             } catch (IllegalArgumentException e) {
-                throw new IOException(Field.source_type.name() + " contains unknown type " + (String) this.map.get(Field.source_type.name()));
+                throw new IOException(Field.source_type.name() + " contains unknown type " + (String) this.json.get(Field.source_type.name()));
             }
         } else {
-            this.map.put(Field.source_type.name(), SourceType.TWITTER);
+            this.json.put(Field.source_type.name(), SourceType.TWITTER);
         }
-        if (!this.map.containsKey(Field.apps.name()) && !containsAuth) {
+        if (!this.json.has(Field.apps.name()) && !containsAuth) {
             throw new IOException("account data must either contain authentication details or an apps setting");
         }
     }
     
     public String getScreenName() {
-        return parseString((String) this.map.get(Field.screen_name.name()));
+        return parseString((String) this.json.get(Field.screen_name.name()));
     }
 
     public Date getAuthenticationFirst() {
-        return parseDate(this.map.get(Field.authentication_first.name()));
+        return parseDate(this.json.get(Field.authentication_first.name()));
     }
 
     public Date getAuthenticationLatest() {
-        return parseDate(this.map.get(Field.authentication_latest.name()));
+        return parseDate(this.json.get(Field.authentication_latest.name()));
     }
 
     public SourceType getSourceType() {
-        Object st = this.map.get(Field.source_type.name());
+        Object st = this.json.get(Field.source_type.name());
         if (st == null) return SourceType.TWITTER;
         if (st instanceof SourceType) return (SourceType) st;
         if (st instanceof String) return SourceType.valueOf((String) st);
@@ -93,41 +93,20 @@ public class AccountEntry extends AbstractIndexEntry implements IndexEntry {
     }
 
     public String getOauthToken () {
-        return (String) this.map.get(Field.oauth_token.name());
+        return (String) this.json.get(Field.oauth_token.name());
     }
 
     public String getOauthTokenSecret () {
-        return (String) this.map.get(Field.oauth_token_secret.name());
+        return (String) this.json.get(Field.oauth_token_secret.name());
     }
 
     public String getApps() {
-        return (String) this.map.get(Field.apps.name());
-    }
-
-    @Override
-    public Map<String, Object> toMap() {
-        return toMap(null);
+        return (String) this.json.get(Field.apps.name());
     }
     
     @Override
     public JSONObject toJSON() {
         return toJSON(null);
-    }
-    
-    public Map<String, Object> toMap(UserEntry user) {
-        Map<String, Object> m = new LinkedHashMap<>();
-        m.put(Field.authentication_latest.name(), utcFormatter.print(getAuthenticationLatest().getTime()));
-        m.put(Field.authentication_first.name(), utcFormatter.print(getAuthenticationFirst().getTime()));
-        m.put(Field.source_type.name(), getSourceType().toString());
-        m.put(Field.screen_name.name(), getScreenName());
-        if (this.map.containsKey(Field.oauth_token.name())) m.put(Field.oauth_token.name(), this.map.get(Field.oauth_token.name()));
-        if (this.map.containsKey(Field.oauth_token_secret.name())) m.put(Field.oauth_token_secret.name(), this.map.get(Field.oauth_token_secret.name()));
-        if (this.map.containsKey(Field.apps.name())) {
-            m.put(Field.apps.name(), this.map.get(Field.apps.name()));
-        }
-        // add user
-        if (user != null) m.put("user", user.toMap());
-        return m;
     }
     
     public JSONObject toJSON(UserEntry user) {
@@ -136,17 +115,17 @@ public class AccountEntry extends AbstractIndexEntry implements IndexEntry {
         m.put(Field.authentication_first.name(), utcFormatter.print(getAuthenticationFirst().getTime()));
         m.put(Field.source_type.name(), getSourceType().toString());
         m.put(Field.screen_name.name(), getScreenName());
-        if (this.map.containsKey(Field.oauth_token.name())) m.put(Field.oauth_token.name(), this.map.get(Field.oauth_token.name()));
-        if (this.map.containsKey(Field.oauth_token_secret.name())) m.put(Field.oauth_token_secret.name(), this.map.get(Field.oauth_token_secret.name()));
-        if (this.map.containsKey(Field.apps.name())) {
-            m.put(Field.apps.name(), this.map.get(Field.apps.name()));
+        if (this.json.has(Field.oauth_token.name())) m.put(Field.oauth_token.name(), this.json.get(Field.oauth_token.name()));
+        if (this.json.has(Field.oauth_token_secret.name())) m.put(Field.oauth_token_secret.name(), this.json.get(Field.oauth_token_secret.name()));
+        if (this.json.has(Field.apps.name())) {
+            m.put(Field.apps.name(), this.json.get(Field.apps.name()));
         }
         // add user
         if (user != null) m.put("user", user.toJSON());
         return m;
     }
     
-    public static Map<String, Object> toEmptyAccount(UserEntry user) {
+    public static Map<String, Object> toEmptyAccountMap(UserEntry user) {
         assert user != null;
         Map<String, Object> m = new LinkedHashMap<>();
         if (user != null) m.put("user", user.toMap());

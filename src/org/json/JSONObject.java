@@ -27,16 +27,19 @@ package org.json;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.io.Writer;
+import java.lang.reflect.Array;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -1850,6 +1853,53 @@ public class JSONObject {
             return writer;
         } catch (IOException exception) {
             throw new JSONException(exception);
+        }
+    }
+    
+    public Map<String, Object> toMap() throws JSONException {
+        Iterator<String> keys = this.keys();
+        Map<String, Object> map = this.map instanceof LinkedHashMap ? new LinkedHashMap<String, Object>() : new HashMap<String, Object>();
+        while (keys.hasNext()) {
+            Object key = keys.next();
+            map.put(key.toString(), toObject(this.map.get(key)));
+        }
+        return map;
+    }
+
+    static final Object toObject(Object value) throws JSONException {
+        if (value == null || value.equals(null)) {
+            return null;
+        } else if (value instanceof JSONObject) {
+            return ((JSONObject) value).toMap();
+        } else if (value instanceof JSONArray) {
+            List<Object> list = new ArrayList<Object>();
+            for (Object o: (JSONArray) value) list.add(toObject(o));
+            return list;
+        } else if (value instanceof Map) {
+            Map<String, Object> map = value instanceof LinkedHashMap ? new LinkedHashMap<String, Object>() : new HashMap<String, Object>();
+            for (Map.Entry<?, ?> entry: ((Map<?, ?>) value).entrySet()) {
+                map.put(entry.getKey().toString(), toObject(entry.getValue()));
+            }
+            return map;
+        } else if (value instanceof Collection) {
+            List<Object> list = new ArrayList<Object>();
+            for (Object o: (Collection<?>) value) list.add(toObject(o));
+            return list;
+        } else if (value.getClass().isArray()) {
+            List<Object> list = new ArrayList<Object>();
+            int length = Array.getLength(value);
+            for (int i = 0; i < length; i += 1) {
+                list.add(JSONObject.wrap(Array.get(value, i)));
+            }
+            return list;
+        } else if (value instanceof Number) {
+            return value;
+        } else if (value instanceof Boolean) {
+            return value;
+        } else if (value instanceof JSONString) {
+            return ((JSONString) value).toJSONString().toString();
+        } else {
+            return value;
         }
     }
 }

@@ -180,7 +180,11 @@ public class JsonRepository {
     }
 
     public JsonFactory write(Map<String, Object> map) throws IOException {
-        String line = new JSONObject(map).toString(); // new ObjectMapper().writer().writeValueAsString(map);
+        return write(new JSONObject(map));
+    }
+    
+    public JsonFactory write(JSONObject json) throws IOException {
+        String line = json.toString(); // new ObjectMapper().writer().writeValueAsString(map);
         JsonFactory jf = null;
         byte[] b = UTF8.getBytes(line);
         long seekpos = this.json_log.appendLine(b);

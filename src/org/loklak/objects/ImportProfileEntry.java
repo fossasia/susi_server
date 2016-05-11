@@ -24,10 +24,9 @@ import org.loklak.harvester.SourceType;
 
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Date;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.logging.Logger;
 
 public class ImportProfileEntry extends AbstractIndexEntry implements IndexEntry {
@@ -74,13 +73,13 @@ public class ImportProfileEntry extends AbstractIndexEntry implements IndexEntry
 
 
     @SuppressWarnings("unchecked")
-    public ImportProfileEntry(Map<String, Object> map) {
+    public ImportProfileEntry(JSONObject json) {
         try {
-            this.source_url = new URL((String) map.get("source_url"));
+            this.source_url = new URL(json.getString("source_url"));
         } catch (MalformedURLException e) {
             this.source_url = null;
         }
-        String source_type_string = (String) map.get("source_type");
+        String source_type_string = json.getString("source_type");
         if (source_type_string == null) source_type_string = SourceType.USER.name();
         try {
             this.source_type = SourceType.valueOf(source_type_string.toUpperCase());
@@ -88,31 +87,33 @@ public class ImportProfileEntry extends AbstractIndexEntry implements IndexEntry
             Logger.getLogger("ImportProfileEntry").warning("Illegal source type value : " + source_type_string);
             this.source_type = SourceType.USER;
         }
-        this.source_hash = parseLong(map.get("source_hash"));
-        this.created_at = parseDate(map.get("created_at"));
-        this.last_modified = parseDate(map.get("last_modified"));
-        this.last_harvested = parseDate(map.get("last_harvested"));
-        this.importer = (String) map.get("importer");
-        this.client_host = (String) map.get("client_host");
+        this.source_hash = json.getLong("source_hash");
+        this.created_at = parseDate(json.getString("created_at"));
+        this.last_modified = parseDate(json.getString("last_modified"));
+        this.last_harvested = parseDate(json.getString("last_harvested"));
+        this.importer = json.getString("importer");
+        this.client_host = json.getString("client_host");
 
         try {
-            this.harvesting_freq = HarvestingFrequency.valueOf((int) parseLong(map.get("harvesting_freq")));
+            this.harvesting_freq = HarvestingFrequency.valueOf((int) json.getLong("harvesting_freq"));
         } catch (IllegalArgumentException e) {
-            throw new IllegalArgumentException("harvesting_freq value not permitted : " + map.get("harvesting_freq"));
+            throw new IllegalArgumentException("harvesting_freq value not permitted : " + json.getLong("harvesting_freq"));
         }
-        this.lifetime = parseLong(map.get("lifetime"));
-        this.imported = (List<String>) map.get("imported");
-        this.sharers = (List<String>) map.get("sharers");
-        this.id = (String) map.get("id_str");
+        this.lifetime = json.getLong("lifetime");
+        this.imported = new ArrayList<>();
+        for (Object o: json.getJSONArray("imported")) this.imported.add((String) o);
+        this.sharers = new ArrayList<>();
+        for (Object o: json.getJSONArray("sharers")) this.sharers.add((String) o);
+        this.id = json.getString("id_str");
 
         // profile should be active in the beginning
         try {
-            this.activeStatus = EntryStatus.valueOf((String) map.get("active_status"));
+            this.activeStatus = EntryStatus.valueOf(json.getString("active_status"));
         } catch (IllegalArgumentException|NullPointerException e) {
             this.activeStatus = EntryStatus.ACTIVE;
         }
         try {
-            this.privacyStatus = PrivacyStatus.valueOf((String) map.get("privacy_status"));
+            this.privacyStatus = PrivacyStatus.valueOf(json.getString("privacy_status"));
         } catch (IllegalArgumentException|NullPointerException e) {
             this.privacyStatus = PrivacyStatus.PRIVATE;
         }
@@ -236,28 +237,6 @@ public class ImportProfileEntry extends AbstractIndexEntry implements IndexEntry
 
     public void setPrivacyStatus(PrivacyStatus privacyStatus) {
         this.privacyStatus = privacyStatus;
-    }
-
-
-    @Override
-    public Map<String, Object> toMap() {
-        Map<String, Object> m = new LinkedHashMap<>();
-        m.put("id_str", this.id);
-        m.put("created_at", utcFormatter.print(this.created_at.getTime()));
-        m.put("last_modified", utcFormatter.print(this.last_modified.getTime()));
-        m.put("last_harvested", utcFormatter.print(this.last_harvested.getTime()));
-        m.put("importer", this.importer);
-        m.put("client_host", this.client_host);
-        m.put("source_url", this.source_url.toString());
-        m.put("source_hash", this.source_hash);
-        m.put("source_type", this.source_type.name());
-        m.put("harvesting_freq", this.harvesting_freq.getFrequency());
-        m.put("lifetime", this.lifetime);
-        m.put("imported", this.imported);
-        m.put("sharers", this.sharers);
-        m.put("active_status", this.activeStatus.name());
-        m.put("privacy_status", this.privacyStatus.name());
-        return m;
     }
     
     public JSONObject toJSON() {

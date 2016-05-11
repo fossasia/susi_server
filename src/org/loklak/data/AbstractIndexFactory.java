@@ -98,7 +98,7 @@ public abstract class AbstractIndexFactory<Entry extends IndexEntry> implements 
         }
         Map<String, Object> map = readMap(id);
         if (map == null) return null;
-        entry = init(map);
+        entry = init(new JSONObject(map));
         this.objectCache.put(id, entry);
         this.existCache.add(id);
         return entry;
@@ -149,14 +149,19 @@ public abstract class AbstractIndexFactory<Entry extends IndexEntry> implements 
         this.indexGet.incrementAndGet();
         return json;
     }
+    
+    @Override
+    public JSONObject readJSON(String id) {
+        return new JSONObject(readMap(id));
+    }
 
     public boolean writeEntry(String id, String type, Entry entry) throws IOException {
         this.objectCache.put(id, entry);
         this.existCache.add(id);
         bulkCacheFlush();
         // record user into search index
-        Map<String, Object> jsonMap = entry.toMap();
-        if (jsonMap == null) return false;
+        JSONObject json = entry.toJSON();
+        if (json == null) return false;
         
         /*
          * best data format here would be XContentBuilder because the data is converted into
@@ -164,8 +169,8 @@ public abstract class AbstractIndexFactory<Entry extends IndexEntry> implements 
          *   XContentBuilder builder = XContentFactory.contentBuilder(XContentType.JSON);
          *   builder.map(source);
          */
-        if (!jsonMap.containsKey(AbstractIndexEntry.TIMESTAMP_FIELDNAME)) jsonMap.put(AbstractIndexEntry.TIMESTAMP_FIELDNAME, AbstractIndexEntry.utcFormatter.print(System.currentTimeMillis()));
-        boolean newDoc = elasticsearch_client.writeMap(this.index_name, jsonMap, type, id);
+        if (!json.has(AbstractIndexEntry.TIMESTAMP_FIELDNAME)) json.put(AbstractIndexEntry.TIMESTAMP_FIELDNAME, AbstractIndexEntry.utcFormatter.print(System.currentTimeMillis()));
+        boolean newDoc = elasticsearch_client.writeMap(this.index_name, json.toMap(), type, id);
         this.indexWrite.incrementAndGet();
         return newDoc;
     }
@@ -173,7 +178,7 @@ public abstract class AbstractIndexFactory<Entry extends IndexEntry> implements 
     public void writeEntryBulk(String id, String type, Entry entry) throws IOException {
         this.objectCache.put(id, entry);
         this.existCache.add(id);
-        Map<String, Object> jsonMap = entry.toMap();
+        Map<String, Object> jsonMap = entry.toJSON().toMap();
         if (jsonMap == null) return;
         ElasticsearchClient.BulkEntry be = new ElasticsearchClient.BulkEntry(id, type, AbstractIndexEntry.TIMESTAMP_FIELDNAME, null, jsonMap);
         if (be.jsonMap != null) try {

@@ -51,6 +51,7 @@ import org.eclipse.jetty.util.log.Log;
 import org.elasticsearch.cluster.health.ClusterHealthStatus;
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.search.sort.SortOrder;
+import org.json.JSONObject;
 import org.loklak.Caretaker;
 import org.loklak.api.client.SearchClient;
 import org.loklak.geo.GeoNames;
@@ -390,7 +391,7 @@ public class DAO {
                             while ((accountEntry = dumpReader.take()) != JsonStreamReader.POISON_JSON_MAP) {
                                 try {
                                     Map<String, Object> json = accountEntry.getJson();
-                                    AccountEntry a = new AccountEntry(json);
+                                    AccountEntry a = new AccountEntry(new JSONObject(json));
                                     DAO.writeAccount(a, false);
                                 } catch (IOException e) {
                                     e.printStackTrace();
@@ -609,7 +610,7 @@ public class DAO {
     public static boolean writeAccount(AccountEntry a, boolean dump) {
         try {
             // record account into text file
-            if (dump) account_dump.write(a.toMap(null));
+            if (dump) account_dump.write(a.toJSON(null));
 
             // record account into search index
             accounts.writeEntry(a.getScreenName(), a.getSourceType().name(), a);
@@ -628,7 +629,7 @@ public class DAO {
     public static boolean writeImportProfile(ImportProfileEntry i, boolean dump) {
         try {
             // record import profile into text file
-            if (dump) import_profile_dump.write(i.toMap());
+            if (dump) import_profile_dump.write(i.toJSON());
             // record import profile into search index
             importProfiles.writeEntry(i.getId(), i.getSourceType().name(), i);
         } catch (IOException e) {
@@ -788,7 +789,7 @@ public class DAO {
         List<ImportProfileEntry> rawResults = new ArrayList<>();
         List<Map<String, Object>> result = elasticsearch_client.queryWithConstraints(IndexName.import_profiles.name(), "active_status", ImportProfileEntry.EntryStatus.ACTIVE.name().toLowerCase(), constraints, latest);
         for (Map<String, Object> map: result) {
-            rawResults.add(new ImportProfileEntry(map));
+            rawResults.add(new ImportProfileEntry(new JSONObject(map)));
         }
 
         if (!latest) {

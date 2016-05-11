@@ -24,12 +24,13 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
 
+import org.json.JSONObject;
 import org.loklak.harvester.SourceType;
 import org.loklak.objects.IndexEntry;
 
 public interface IndexFactory<Entry extends IndexEntry> {
 
-    public Entry init(Map<String, Object> map) throws IOException;
+    public Entry init(JSONObject map) throws IOException;
     
     //public Entry init(JSONObject json) throws IOException;
 
@@ -40,8 +41,10 @@ public interface IndexFactory<Entry extends IndexEntry> {
     public Set<String> existsBulk(Collection<String> ids);
     
     public boolean delete(String id, SourceType sourceType);
-    
+
     public Map<String, Object> readMap(String id);
+    
+    public JSONObject readJSON(String id);
 
     public boolean writeEntry(String id, String type, Entry entry) throws IOException;
     

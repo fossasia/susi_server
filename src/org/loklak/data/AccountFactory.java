@@ -20,8 +20,8 @@
 package org.loklak.data;
 
 import java.io.IOException;
-import java.util.Map;
 
+import org.json.JSONObject;
 import org.loklak.objects.AccountEntry;
 
 public class AccountFactory extends AbstractIndexFactory<AccountEntry> implements IndexFactory<AccountEntry> {
@@ -31,7 +31,7 @@ public class AccountFactory extends AbstractIndexFactory<AccountEntry> implement
     }
 
     @Override
-    public AccountEntry init(Map<String, Object> map) throws IOException {
+    public AccountEntry init(JSONObject map) throws IOException {
         return new AccountEntry(map);
     }
     

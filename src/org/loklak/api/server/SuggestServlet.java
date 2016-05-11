@@ -124,7 +124,7 @@ public class SuggestServlet extends HttpServlet {
             post.setResponse(response, "application/javascript");
 
             List<Object> queries = new ArrayList<>();
-            if (queryList != null) for (QueryEntry t: queryList) queries.add(t.toMap());
+            if (queryList != null) for (QueryEntry t: queryList) queries.add(t.toJSON().toMap());
 
             int random = post.get("random", -1);
             if (random > 0 && random < queries.size()) {

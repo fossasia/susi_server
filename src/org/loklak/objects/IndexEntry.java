@@ -19,16 +19,11 @@
 
 package org.loklak.objects;
 
-import java.util.Map;
-
 import org.json.JSONObject;
 
 public interface IndexEntry {
 
     public String toString();
-
-    @Deprecated
-    public Map<String, Object> toMap();
     
     // TODO: convert to elasticsearch internal format directly
     

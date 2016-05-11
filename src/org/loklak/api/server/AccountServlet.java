@@ -31,6 +31,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.json.JSONObject;
 import org.loklak.data.DAO;
 import org.loklak.http.RemoteAccess;
 import org.loklak.objects.AccountEntry;
@@ -90,7 +91,7 @@ public class AccountServlet extends HttpServlet {
                 for (Map<String, Object> account: accounts) {
                     if (account == null) continue;
                     try {
-                        AccountEntry a = new AccountEntry(account);
+                        AccountEntry a = new AccountEntry(new JSONObject(account));
                         DAO.writeAccount(a, true);
                     } catch (IOException e) {
                         response.sendError(400, "submitted data is not well-formed: " + e.getMessage());
@@ -121,9 +122,9 @@ public class AccountServlet extends HttpServlet {
         // create a list of accounts. Why a list? Because the same user may have accounts for several services.
         List<Object> accounts = new ArrayList<>();
         if (accountEntry == null) {
-            if (userEntry != null) accounts.add(AccountEntry.toEmptyAccount(userEntry));
+            if (userEntry != null) accounts.add(AccountEntry.toEmptyAccountMap(userEntry));
         } else {
-            accounts.add(accountEntry.toMap(userEntry));
+            accounts.add(accountEntry.toJSON(userEntry).toMap());
         }
         m.put("accounts", accounts);
         

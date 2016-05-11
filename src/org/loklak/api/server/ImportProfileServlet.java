@@ -21,6 +21,7 @@ package org.loklak.api.server;
 import org.elasticsearch.common.xcontent.XContentParser;
 import org.elasticsearch.common.xcontent.json.JsonXContent;
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 import org.loklak.data.DAO;
 import org.loklak.harvester.SourceType;
@@ -91,21 +92,24 @@ public class ImportProfileServlet extends HttpServlet {
         boolean success;
 
         try {
-            XContentParser parser = JsonXContent.jsonXContent.createParser(data);
-            Map<String, Object> map = parser.map();
-            if (map.get("id_str") == null) {
+            JSONObject json = null;
+            try {json = new JSONObject(data);} catch (JSONException e) {}
+            if (json == null) {
+                throw new IOException("cannot parse json");
+            }
+            if (!json.has("id_str")) {
                 throw new IOException("id_str field missing");
             }
-            if (map.get("source_type") == null) {
+            if (!json.has("source_type")) {
                 throw new IOException("source_type field missing");
             }
-            ImportProfileEntry i = DAO.SearchLocalImportProfiles((String) map.get("id_str"));
+            ImportProfileEntry i = DAO.SearchLocalImportProfiles(json.getString("id_str"));
             if (i == null) {
-                throw new IOException("import profile id_str field '" + map.get("id_str") + "' not found");
+                throw new IOException("import profile id_str field '" + json.getString("id_str") + "' not found");
             }
             ImportProfileEntry importProfileEntry;
             try {
-                importProfileEntry = new ImportProfileEntry(map);
+                importProfileEntry = new ImportProfileEntry(json);
             } catch (IllegalArgumentException e) {
                 response.sendError(400, "Error updating import profile : " + e.getMessage());
                 return;

@@ -19,8 +19,6 @@
 
 package org.loklak.data;
 
-import java.util.Map;
-
 import org.json.JSONObject;
 import org.loklak.objects.QueryEntry;
 
@@ -31,11 +29,6 @@ public class QueryFactory extends AbstractIndexFactory<QueryEntry> implements In
     }
 
     @Override
-    public QueryEntry init(Map<String, Object> map) {
-        return new QueryEntry(map);
-    }
-
-    //@Override
     public QueryEntry init(JSONObject json) {
         return new QueryEntry(json);
     }
