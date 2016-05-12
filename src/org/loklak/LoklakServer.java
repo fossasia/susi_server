@@ -175,8 +175,8 @@ public class LoklakServer {
         
         // check for redirect to https
         String httpsMode = config.get("https.mode");
-        boolean redirect = httpsMode.equals("redirect");
-        boolean useHttps = redirect || httpsMode.equals("on");
+        boolean redirect = "redirect".equals(httpsMode);
+        boolean useHttps = redirect || "on".equals(httpsMode);
         
         String httpsPortS = config.get("port.https");
         int httpsPort = httpsPortS == null ? 9443 : Integer.parseInt(httpsPortS);
@@ -235,7 +235,7 @@ public class LoklakServer {
         	String keystorePass = null;
         	String keystoreManagerPass = null;
         	
-        	if(keySource.equals("keystore")){
+        	if("keystore".equals(keySource)){
         		File keystore = new File(DAO.conf_dir, DAO.getConfig("keystore.name", "keystore.jks"));
         		if(!keystore.exists() || !keystore.isFile() || !keystore.canRead()){
         			Log.getLog().info("Could not find keystore");
@@ -245,7 +245,7 @@ public class LoklakServer {
         		keystorePass = DAO.getConfig("keystore.password", "");
         		keystoreManagerPass = DAO.getConfig("keystore.password", "");
         	}
-        	else if (keySource.equals("key-cert")){
+        	else if ("key-cert".equals(keySource)){
         		File key = new File(DAO.getConfig("https.key", ""));
         		if(!key.exists() || !key.isFile() || !key.canRead()){
         			Log.getLog().info("Could not find key file");
