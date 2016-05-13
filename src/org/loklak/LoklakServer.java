@@ -31,7 +31,9 @@ import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Random;
 import java.util.Set;
+
 import javax.servlet.DispatcherType;
 import javax.servlet.MultipartConfigElement;
 
@@ -52,7 +54,15 @@ import org.eclipse.jetty.servlets.gzip.GzipHandler;
 import org.eclipse.jetty.util.ConcurrentHashSet;
 import org.eclipse.jetty.util.log.Log;
 import org.eclipse.jetty.util.thread.QueuedThreadPool;
+import org.eclipse.jetty.util.ssl.SslContextFactory;
+import org.eclipse.jetty.util.security.Constraint;
 import org.eclipse.jetty.webapp.WebAppContext;
+import org.eclipse.jetty.server.HttpConfiguration;
+import org.eclipse.jetty.server.SecureRequestCustomizer;
+import org.eclipse.jetty.server.HttpConnectionFactory;
+import org.eclipse.jetty.server.SslConnectionFactory;
+import org.eclipse.jetty.security.ConstraintMapping;
+import org.eclipse.jetty.security.ConstraintSecurityHandler;
 import org.loklak.api.server.AccessServlet;
 import org.loklak.api.server.AppsServlet;
 import org.loklak.api.server.AssetServlet;
@@ -163,6 +173,30 @@ public class LoklakServer {
             if (ss != null) {try {ss.close();} catch (IOException e) {}}
         }
         
+        // check for redirect to https
+        String httpsMode = config.get("https.mode");
+        boolean redirect = "redirect".equals(httpsMode);
+        boolean useHttps = redirect || "on".equals(httpsMode);
+        
+        String httpsPortS = config.get("port.https");
+        int httpsPort = httpsPortS == null ? 9443 : Integer.parseInt(httpsPortS);
+        if(useHttps){
+	        ServerSocket sss = null;
+	        try {
+	            sss = new ServerSocket(httpsPort);
+	            sss.setReuseAddress(true);
+	            sss.setReceiveBufferSize(65536);
+	        } catch (IOException e) {
+	            // the socket is already occupied by another service
+	            Log.getLog().info("port " + httpsPort + " is already occupied by another service, maybe another loklak is running on this port already. exit.");
+	            Browser.openBrowser("https://localhost:" + httpsPort + "/");
+	            System.exit(-1);
+	        } finally {
+	            // close the socket again
+	            if (sss != null) {try {sss.close();} catch (IOException e) {}}
+	        }
+        }
+        
         // prepare shutdown signal
         File pid = new File(dataFile, "loklak.pid");
         if (pid.exists()) pid.deleteOnExit(); // thats a signal for the stop.sh script that loklak has terminated
@@ -170,42 +204,169 @@ public class LoklakServer {
         // initialize all data        
         DAO.init(config, data);
         
-        /// https
-        // keytool -genkey -alias sitename -keyalg RSA -keystore keystore.jks -keysize 2048
-/*
-        Server server = new Server();
-        ServerConnector connector = new ServerConnector(server);
-        connector.setPort(9999);
-         
-        HttpConfiguration https = new HttpConfiguration();
-        https.addCustomizer(new SecureRequestCustomizer());
-         
-        SslContextFactory sslContextFactory = new SslContextFactory();
-        File keystore = new File(DAO.conf_dir, DAO.getConfig("keystore.name", "keystore.jks"));
-        sslContextFactory.setKeyStorePath(keystore.getAbsolutePath());
-        sslContextFactory.setKeyStorePassword(DAO.getConfig("keystore.password", ""));
-        sslContextFactory.setKeyManagerPassword(DAO.getConfig("keystore.password", ""));
-        
-        ServerConnector sslConnector = new ServerConnector(server,
-                new SslConnectionFactory(sslContextFactory, "http/1.1"),
-                new HttpConnectionFactory(https));
-        sslConnector.setPort(9998);
-        
-        server.setConnectors(new Connector[] { connector, sslConnector });
-*/
-        /// https
-        
         // init the http server
         QueuedThreadPool pool = new QueuedThreadPool();
         pool.setMaxThreads(500);
         LoklakServer.server = new Server(pool);
         LoklakServer.server.setStopAtShutdown(true);
+        
+        //http
+        HttpConfiguration http_config = new HttpConfiguration();
+        if(redirect) {
+        	http_config.addCustomizer(new SecureRequestCustomizer());
+        	http_config.setSecureScheme("https");
+        	http_config.setSecurePort(httpsPort);
+        }
+        
         ServerConnector connector = new ServerConnector(LoklakServer.server);
+        connector.addConnectionFactory(new HttpConnectionFactory(http_config));
         connector.setPort(httpPort);
         connector.setName("httpd:" + httpPort);
         connector.setIdleTimeout(20000); // timout in ms when no bytes send / received
         LoklakServer.server.addConnector(connector);
+        
+        //https
+        //keytool -genkey -alias sitename -keyalg RSA -keystore keystore.jks -keysize 2048
+        //uncommented lines for http2 (jetty 9.3 / java 8)        
+        if(useHttps){
+        	
+        	String keySource = DAO.getConfig("https.keysource", "keystore");
+        	String keystorePath = null;
+        	String keystorePass = null;
+        	String keystoreManagerPass = null;
+        	
+        	if("keystore".equals(keySource)){
+        		File keystore = new File(DAO.conf_dir, DAO.getConfig("keystore.name", "keystore.jks"));
+        		if(!keystore.exists() || !keystore.isFile() || !keystore.canRead()){
+        			Log.getLog().info("Could not find keystore");
+    	            System.exit(-1);
+        		}
+        		keystorePath = keystore.getAbsolutePath();
+        		keystorePass = DAO.getConfig("keystore.password", "");
+        		keystoreManagerPass = DAO.getConfig("keystore.password", "");
+        	}
+        	else if ("key-cert".equals(keySource)){
+        		File key = new File(DAO.getConfig("https.key", ""));
+        		if(!key.exists() || !key.isFile() || !key.canRead()){
+        			Log.getLog().info("Could not find key file");
+    	            System.exit(-1);
+        		}
+        		File cert = new File(DAO.getConfig("https.cert", ""));
+        		if(!cert.exists() || !cert.isFile() || !cert.canRead()){
+        			Log.getLog().info("Could not find cert file");
+    	            System.exit(-1);
+        		}
+        		
+        		
+        		//generate random password
+        		char[] chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789".toCharArray();
+        		StringBuilder sb = new StringBuilder();
+        		Random random = new Random();
+        		for (int i = 0; i < 20; i++) {
+        		    char c = chars[random.nextInt(chars.length)];
+        		    sb.append(c);
+        		}
+        		keystorePass = keystoreManagerPass = sb.toString();
+        		
+        		
+        		//temporary keystore files
+        		String pkcs12_temp = DAO.conf_dir.getAbsolutePath() + "/keystore_temp.pkcs12";
+        		keystorePath = DAO.conf_dir.getAbsolutePath() + "/keystore_temp.jks";
+        		File temp = new File(pkcs12_temp);
+        		if(temp.exists()) temp.delete();
+        		temp = new File(keystorePath);
+        		if(temp.exists()) temp.delete();
+        		
+        		//create temporary pkcs12 file from key and cert
+        		Runtime rt = Runtime.getRuntime();
+        		try{
+        			Process p = rt.exec("openssl pkcs12 -export -out " + pkcs12_temp
+        					+ " -in " + cert.getAbsolutePath()
+        					+ " -inkey " + key.getAbsolutePath()
+        					+ " -passout pass:" + keystorePass);
+        			p.waitFor();
+        		}
+        		catch(IOException e){
+        			Log.getLog().info("Key/Cert conversion failed");
+    	            System.exit(-1);
+        		}
+        		
+        		//import pkcs12 file into keystore
+        		try{
+        			Process p = rt.exec("keytool -importkeystore -noprompt" 
+        					+ " -srckeystore " + pkcs12_temp
+        					+ " -srcstorepass " + keystorePass
+        					+ " -srcstoretype PKCS12"
+        					+ " -destkeystore " + keystorePath
+        					+ " -storepass " + keystorePass);
+        			p.waitFor();
+        		}
+        		catch(IOException e){
+        			Log.getLog().info("Import of temporary pkcs12 file failed");
+    	            System.exit(-1);
+        		}
+        		finally{
+        			temp = new File(pkcs12_temp);
+        			if (temp.exists()) temp.delete();
+        		}
+        		
+        		File keystore = new File(keystorePath);
+        		if (keystore.exists()) keystore.deleteOnExit();
+        		
+        		
+        		Log.getLog().info("Successfully imported keystore from key/cert files");
+        	}
+        	else{
+        		Log.getLog().info("Invalid option for https.keysource");
+	            System.exit(-1);
+        	}
+        	        	
+        	
+        	HttpConfiguration https_config = new HttpConfiguration();
+	        https_config.addCustomizer(new SecureRequestCustomizer());
+	        
+	        HttpConnectionFactory http1 = new HttpConnectionFactory(https_config);
+	        //HTTP2ServerConnectionFactory http2 = new HTTP2ServerConnectionFactory(https_config);
+	        
+	        //NegotiatingServerConnectionFactory.checkProtocolNegotiationAvailable();
+	        //ALPNServerConnectionFactory alpn = new ALPNServerConnectionFactory();
+	        //alpn.setDefaultProtocol(http1.getProtocol());
+	         
+	        SslContextFactory sslContextFactory = new SslContextFactory();
+	        
+	        sslContextFactory.setKeyStorePath(keystorePath);
+	        sslContextFactory.setKeyStorePassword(keystorePass);
+	        keystorePass = null;
+	        sslContextFactory.setKeyManagerPassword(keystoreManagerPass);
+	        //sslContextFactory.setCipherComparator(HTTP2Cipher.COMPARATOR);
+	        //sslContextFactory.setUseCipherSuitesOrder(true);
+	        
+	        
+	        //SslConnectionFactory ssl = new SslConnectionFactory(sslContextFactory, alpn.getProtocol());
+	        SslConnectionFactory ssl = new SslConnectionFactory(sslContextFactory, "http/1.1");
+	        
+	        //ServerConnector sslConnector = new ServerConnector(LoklakServer.server, ssl, alpn, http2, http1);
+	        ServerConnector sslConnector = new ServerConnector(LoklakServer.server, ssl, http1);
+	        sslConnector.setPort(httpsPort);
+	        sslConnector.setName("httpd:" + httpsPort);
+	        sslConnector.setIdleTimeout(20000); // timout in ms when no bytes send / received
+	        LoklakServer.server.addConnector(sslConnector);
+        }
+        
+        ConstraintSecurityHandler securityHandler = new ConstraintSecurityHandler();
+        if(redirect){
+        	
+        	Constraint constraint = new Constraint();
+        	constraint.setDataConstraint(Constraint.DC_CONFIDENTIAL);
+        	
+        	//makes the constraint apply to all uri paths        
+        	ConstraintMapping mapping = new ConstraintMapping();
+        	mapping.setPathSpec( "/*" );
+        	mapping.setConstraint(constraint);
 
+        	securityHandler.addConstraintMapping(mapping);
+        }
+        
         // Setup IPAccessHandler for blacklists
         String blacklist = config.get("server.blacklist");
         if (blacklist != null && blacklist.length() > 0) try {
@@ -306,8 +467,10 @@ public class LoklakServer {
         handlerlist2.setHandlers(new Handler[]{fileHandler, rewriteHandler, new DefaultHandler()});
         GzipHandler gzipHandler = new GzipHandler();
         gzipHandler.setHandler(handlerlist2);
-        LoklakServer.server.setHandler(gzipHandler);
-
+        securityHandler.setHandler(gzipHandler);
+        
+        LoklakServer.server.setHandler(securityHandler);
+        
         LoklakServer.server.start();
         LoklakServer.caretaker = new Caretaker();
         LoklakServer.caretaker.start();
