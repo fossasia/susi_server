@@ -71,7 +71,7 @@ public class AccessTracker extends Thread {
         this.finishedQueue = new ConcurrentSkipListMap<>();
     }
     
-    public Collection<Track> getTrack() {
+    public Collection<Track> getTracks() {
         List<Track> tracks = new ArrayList<>();
         for (Track track: this.pendingQueue.descendingMap().values()) tracks.add(track);
         for (Track track: this.finishedQueue.descendingMap().values()) tracks.add(track);
@@ -85,7 +85,7 @@ public class AccessTracker extends Thread {
                 Map.Entry<Date, Track> t = this.pendingQueue.firstEntry();
                 if (t == null) break timeoutcheck;
                 boolean timeout = t.getKey().getTime() + AccessTracker.this.track_timeout < System.currentTimeMillis();
-                if (timeout || t.getValue().containsKey(FINISH_DATE_KEY)) {
+                if (timeout || t.getValue().has(FINISH_DATE_KEY)) {
                     try {
                         writeToHistory(t.getValue(), null);
                         this.pendingQueue.remove(t.getKey());
@@ -127,14 +127,12 @@ public class AccessTracker extends Thread {
         }
     }
     
-    public class Track extends LinkedHashMap<String, Object> {
+    public class Track extends JSONObject {
         
         public String getClientHost() {
             return clientHost;
         }
 
-        private static final long serialVersionUID = 596856231605794024L;
-        
         private Date accessTime;
         private String clientHost;
         private long time_since_last_access;
@@ -160,7 +158,7 @@ public class AccessTracker extends Thread {
         
         public Track(String serialized) {
             try {
-                Map<String, Object> json = DAO.jsonMapper.readValue(serialized, DAO.jsonTypeRef);
+                JSONObject json = new JSONObject(serialized);
                 this.putAll(json);
             } catch (Throwable e) {
                 DAO.log("cannot parse \"" + serialized + "\"");

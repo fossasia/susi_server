@@ -201,7 +201,7 @@ public class JSONObject {
      *             duplicated key.
      */
     public JSONObject(JSONTokener x) throws JSONException {
-        this();
+        this(true);
         char c;
         String key;
 

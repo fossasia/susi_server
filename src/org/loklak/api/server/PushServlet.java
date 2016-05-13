@@ -21,7 +21,7 @@ package org.loklak.api.server;
 
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.List;
+import java.nio.charset.StandardCharsets;
 import java.util.Map;
 
 import javax.servlet.ServletException;
@@ -29,6 +29,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.json.JSONArray;
 import org.json.JSONObject;
 import org.loklak.QueuedIndexing;
 import org.loklak.data.DAO;
@@ -89,73 +90,69 @@ public class PushServlet extends HttpServlet {
         int recordCount = 0;//, newCount = 0, knownCount = 0;
         String query = null;
         long timeParsing = 0, timeTimelineStorage = 0, timeQueryStorage = 0;
-        try {
-            Map<String, Object> map = DAO.jsonMapper.readValue(data, DAO.jsonTypeRef);
+        String jsonString = new String(data, StandardCharsets.UTF_8);
+        JSONObject map = new JSONObject(jsonString);
 
-            timeParsing = System.currentTimeMillis();
-            
-            // read metadata
-            Object metadata_obj = map.get("search_metadata");
-            @SuppressWarnings("unchecked") Map<String, Object> metadata = metadata_obj instanceof Map<?, ?> ? (Map<String, Object>) metadata_obj : null;
-            // read peer id if they submitted one
-            if (metadata != null) {
-                String peerid = (String) metadata.get("peerid");
-                if (peerid != null && peerid.length() > 3 && peerid.charAt(2) == '_') {
-                    remoteHash = peerid;
-                    remoteHashFromPeerId = true;
-                }
+        timeParsing = System.currentTimeMillis();
+        
+        // read metadata
+        JSONObject metadata = map.has("search_metadata") ? (JSONObject) map.get("search_metadata") : null;
+        // read peer id if they submitted one
+        if (metadata != null) {
+            String peerid = (String) metadata.get("peerid");
+            if (peerid != null && peerid.length() > 3 && peerid.charAt(2) == '_') {
+                remoteHash = peerid;
+                remoteHashFromPeerId = true;
             }
-            
-            // read statuses
-            Object statuses_obj = map.get("statuses");
-            @SuppressWarnings("unchecked") List<Map<String, Object>> statuses = statuses_obj instanceof List<?> ? (List<Map<String, Object>>) statuses_obj : null;
-            if (statuses != null) {
-                Timeline tl = new Timeline(Order.CREATED_AT);
-                for (Map<String, Object> tweet: statuses) {
-                    recordCount++;
-                    @SuppressWarnings("unchecked") Map<String, Object> user = (Map<String, Object>) tweet.remove("user");
-                    if (user == null) continue;
-                    tweet.put("provider_type", (Object) MessageEntry.ProviderType.REMOTE.name());
-                    tweet.put("provider_hash", remoteHash);
-                    UserEntry u = new UserEntry(user);
-                    MessageEntry t = new MessageEntry(tweet);
-                    tl.add(t, u);
-                    //boolean newtweet = DAO.writeMessage(t, u, true, true, true);
-                    //if (newtweet) newCount++; else knownCount++;
-                }
-                QueuedIndexing.addScheduler(tl, true);
-                //try {DAO.users.bulkCacheFlush();} catch (IOException e) {}
-                //try {DAO.messages.bulkCacheFlush();} catch (IOException e) {}
+        }
+        
+        // read statuses
+        JSONArray statuses = map.has("statuses") ? map.getJSONArray("statuses") : null;
+        if (statuses != null) {
+            Timeline tl = new Timeline(Order.CREATED_AT);
+            for (Object tweet_obj: statuses) {
+                JSONObject tweet = (JSONObject) tweet_obj;
+                recordCount++;
+                JSONObject user = (JSONObject) tweet.remove("user");
+                if (user == null) continue;
+                tweet.put("provider_type", MessageEntry.ProviderType.REMOTE.name());
+                tweet.put("provider_hash", remoteHash);
+                UserEntry u = new UserEntry(user);
+                MessageEntry t = new MessageEntry(tweet);
+                tl.add(t, u);
+                //boolean newtweet = DAO.writeMessage(t, u, true, true, true);
+                //if (newtweet) newCount++; else knownCount++;
+            }
+            QueuedIndexing.addScheduler(tl, true);
+            //try {DAO.users.bulkCacheFlush();} catch (IOException e) {}
+            //try {DAO.messages.bulkCacheFlush();} catch (IOException e) {}
 
-                timeTimelineStorage = System.currentTimeMillis();
-                
-                // update query database if query was given in the result list
-                if (metadata != null) {
-                    query = (String) metadata.get("query");
-                    if (query != null) {
-                        // update query database
-                        QueryEntry qe = null;
+            timeTimelineStorage = System.currentTimeMillis();
+            
+            // update query database if query was given in the result list
+            if (metadata != null) {
+                query = (String) metadata.get("query");
+                if (query != null) {
+                    // update query database
+                    QueryEntry qe = null;
+                    try {
+                        qe = DAO.queries.read(query);
+                    } catch (IOException e1) {
+                        e1.printStackTrace();
+                    }
+                    if (qe != null) {
+                        // existing queries are updated
+                        qe.update(tl.period(), false);
                         try {
-                            qe = DAO.queries.read(query);
-                        } catch (IOException e1) {
-                            e1.printStackTrace();
-                        }
-                        if (qe != null) {
-                            // existing queries are updated
-                            qe.update(tl.period(), false);
-                            try {
-                                DAO.queries.writeEntry(query, qe.getSourceType().name(), qe);
-                            } catch (IOException e) {
-                                e.printStackTrace();
-                            }
+                            DAO.queries.writeEntry(query, qe.getSourceType().name(), qe);
+                        } catch (IOException e) {
+                            e.printStackTrace();
                         }
                     }
                 }
-
-                timeQueryStorage = System.currentTimeMillis();
             }
-        } catch (IOException e) {
-            e.printStackTrace();
+
+            timeQueryStorage = System.currentTimeMillis();
         }
         
         // in case that a peer submitted their peer id, we return also some statistics for that peer

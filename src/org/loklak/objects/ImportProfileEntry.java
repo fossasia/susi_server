@@ -71,8 +71,6 @@ public class ImportProfileEntry extends AbstractIndexEntry implements IndexEntry
 
     protected PrivacyStatus privacyStatus;
 
-
-    @SuppressWarnings("unchecked")
     public ImportProfileEntry(JSONObject json) {
         try {
             this.source_url = new URL(json.getString("source_url"));

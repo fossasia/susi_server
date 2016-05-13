@@ -21,9 +21,6 @@ package org.loklak.objects;
 
 import java.io.IOException;
 import java.util.Date;
-import java.util.LinkedHashMap;
-import java.util.Map;
-
 import org.json.JSONObject;
 import org.loklak.harvester.SourceType;
 
@@ -125,10 +122,10 @@ public class AccountEntry extends AbstractIndexEntry implements IndexEntry {
         return m;
     }
     
-    public static Map<String, Object> toEmptyAccountMap(UserEntry user) {
+    public static JSONObject toEmptyAccountJson(UserEntry user) {
         assert user != null;
-        Map<String, Object> m = new LinkedHashMap<>();
-        if (user != null) m.put("user", user.toMap());
+        JSONObject m = new JSONObject();
+        if (user != null) m.put("user", user.toJSON());
         return m;
     }
     

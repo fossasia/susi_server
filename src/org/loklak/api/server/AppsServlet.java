@@ -22,8 +22,9 @@ package org.loklak.api.server;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
 
 import javax.servlet.ServletException;
@@ -67,8 +68,8 @@ public class AppsServlet extends HttpServlet {
             if (!files.contains("index.html")) continue;
             if (!files.contains("app.json")) continue;
             File json_ld_file = new File(apppath, "app.json");
-            Map<String, Object> json_ld_map = DAO.jsonMapper.readValue(json_ld_file, DAO.jsonTypeRef);
-            JSONObject json_ld = new JSONObject(json_ld_map);
+            String jsonString = new String(Files.readAllBytes(json_ld_file.toPath()), StandardCharsets.UTF_8);
+            JSONObject json_ld = new JSONObject(jsonString);
             app_array.put(json_ld);
         } catch (Throwable e) {
             Log.getLog().warn(e);

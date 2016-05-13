@@ -21,23 +21,17 @@ package org.loklak.api.server;
 
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.json.JSONArray;
 import org.json.JSONObject;
 import org.loklak.data.DAO;
 import org.loklak.http.RemoteAccess;
 import org.loklak.objects.AccountEntry;
 import org.loklak.objects.UserEntry;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class AccountServlet extends HttpServlet {
    
@@ -60,7 +54,6 @@ public class AccountServlet extends HttpServlet {
         process(request, response, post);
     }
     
-    @SuppressWarnings("unchecked")
     protected void process(HttpServletRequest request, HttpServletResponse response, RemoteAccess.Post post) throws ServletException, IOException {
 
         // parameters
@@ -79,19 +72,19 @@ public class AccountServlet extends HttpServlet {
         
             // parse the json data
             try {
-                Map<String, Object> map = DAO.jsonMapper.readValue(data, DAO.jsonTypeRef);
-                Object accounts_obj = map.get("accounts");
-                List<Map<String, Object>> accounts;
-                if (accounts_obj instanceof List<?>) {
-                    accounts = (List<Map<String, Object>>) accounts_obj;
+                JSONObject json = new JSONObject(data);
+                Object accounts_obj = json.has("accounts") ? json.get("accounts") : null;
+                JSONArray accounts;
+                if (accounts_obj != null && accounts_obj instanceof JSONArray) {
+                    accounts = (JSONArray) accounts_obj;
                 } else {
-                    accounts = new ArrayList<Map<String, Object>>(1);
-                    accounts.add(map);
+                    accounts = new JSONArray(1);
+                    accounts.put(json);
                 }
-                for (Map<String, Object> account: accounts) {
-                    if (account == null) continue;
+                for (Object account_obj: accounts) {
+                    if (account_obj == null) continue;
                     try {
-                        AccountEntry a = new AccountEntry(new JSONObject(account));
+                        AccountEntry a = new AccountEntry((JSONObject) account_obj);
                         DAO.writeAccount(a, true);
                     } catch (IOException e) {
                         response.sendError(400, "submitted data is not well-formed: " + e.getMessage());
@@ -99,8 +92,8 @@ public class AccountServlet extends HttpServlet {
                         return;
                     }
                 }
-                if (accounts.size() == 1) {
-                    screen_name = (String) accounts.iterator().next().get("screen_name");
+                if (accounts.length() == 1) {
+                    screen_name = (String) ((JSONObject) accounts.iterator().next()).get("screen_name");
                 }
             } catch (IOException e) {
                 e.printStackTrace();
@@ -113,25 +106,25 @@ public class AccountServlet extends HttpServlet {
         post.setResponse(response, "application/javascript");
         
         // generate json
-        Map<String, Object> m = new LinkedHashMap<>();
-        Map<String, Object> metadata = new LinkedHashMap<>();
+        JSONObject m = new JSONObject(true);
+        JSONObject metadata = new JSONObject(true);
         metadata.put("count", userEntry == null ? "0" : "1");
         metadata.put("client", post.getClientHost());
         m.put("search_metadata", metadata);
 
         // create a list of accounts. Why a list? Because the same user may have accounts for several services.
-        List<Object> accounts = new ArrayList<>();
+        JSONArray accounts = new JSONArray();
         if (accountEntry == null) {
-            if (userEntry != null) accounts.add(AccountEntry.toEmptyAccountMap(userEntry));
+            if (userEntry != null) accounts.put(AccountEntry.toEmptyAccountJson(userEntry));
         } else {
-            accounts.add(accountEntry.toJSON(userEntry).toMap());
+            accounts.put(accountEntry.toJSON(userEntry));
         }
         m.put("accounts", accounts);
         
         // write json
         PrintWriter sos = response.getWriter();
         if (jsonp) sos.print(callback + "(");
-        sos.print((minified ? new ObjectMapper().writer() : new ObjectMapper().writerWithDefaultPrettyPrinter()).writeValueAsString(m));
+        sos.print(m.toString(minified ? 0 : 2));
         if (jsonp) sos.println(");");
         sos.println();
         post.finalize();

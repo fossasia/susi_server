@@ -21,20 +21,17 @@ package org.loklak.api.server;
 
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
-
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.json.JSONArray;
+import org.json.JSONObject;
 import org.loklak.data.DAO;
 import org.loklak.geo.GeoMark;
 import org.loklak.http.RemoteAccess;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
  * geocoding of places into locations
@@ -74,8 +71,8 @@ public class GeocodeServlet extends HttpServlet {
         } else {
             // parse the json data
             try {
-                Map<String, Object> map = DAO.jsonMapper.readValue(data, DAO.jsonTypeRef);
-                Object places_obj = map.get("places");
+                JSONObject json = new JSONObject(data);
+                Object places_obj = json.get("places");
                 if (places_obj instanceof List<?>) {
                     List<Object> p = (List<Object>) places_obj;
                     place = new String[p.size()];
@@ -90,17 +87,17 @@ public class GeocodeServlet extends HttpServlet {
         }
         
         // find locations for places
-        Map<String, Object> locations = new LinkedHashMap<>();
+        JSONObject locations = new JSONObject(true);
         for (String p: place) {
             GeoMark loc = DAO.geoNames.analyse(p, null, 5, Long.toString(System.currentTimeMillis()));
-            Map<String, Object> location = new LinkedHashMap<>();
+            JSONObject location = new JSONObject(true);
             if (loc != null) {
-                location.put("place", minified ? new String[]{loc.getNames().iterator().next()} : loc.getNames());
+                location.put("place", minified ? new JSONArray(new String[]{loc.getNames().iterator().next()}) : new JSONArray(loc.getNames()));
                 location.put("population", loc.getPopulation());
                 location.put("country_code", loc.getISO3166cc());
                 location.put("country", DAO.geoNames.getCountryName(loc.getISO3166cc()));
-                location.put("location", new double[]{loc.lon(), loc.lat()});
-                location.put("mark", new double[]{loc.mlon(), loc.mlat()});
+                location.put("location", new JSONArray(new double[]{loc.lon(), loc.lat()}));
+                location.put("mark", new JSONArray(new double[]{loc.mlon(), loc.mlat()}));
             }
             locations.put(p, location);
         }
@@ -108,14 +105,14 @@ public class GeocodeServlet extends HttpServlet {
         post.setResponse(response, "application/javascript");
 
         // generate json
-        Map<String, Object> m = new LinkedHashMap<>();
+        JSONObject m = new JSONObject(true);
         m.put("locations", locations);
         
         // write json
         response.setCharacterEncoding("UTF-8");
         PrintWriter sos = response.getWriter();
         if (jsonp) sos.print(callback + "(");
-        sos.print((minified ? new ObjectMapper().writer() : new ObjectMapper().writerWithDefaultPrettyPrinter()).writeValueAsString(m));
+        sos.print(m.toString(minified ? 0 : 2));
         if (jsonp) sos.println(");");
         sos.println();
         post.finalize();

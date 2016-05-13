@@ -23,6 +23,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.github.fge.jsonschema.core.report.ProcessingReport;
 
+import org.json.JSONArray;
+import org.json.JSONObject;
 import org.loklak.data.DAO;
 import org.loklak.geo.LocationSource;
 import org.loklak.harvester.JsonFieldConverter;
@@ -39,10 +41,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
+import java.nio.charset.StandardCharsets;
 
 public abstract class AbstractPushServlet extends HttpServlet {
 
@@ -71,7 +70,6 @@ public abstract class AbstractPushServlet extends HttpServlet {
         this.doGet(request, response);
     }
 
-    @SuppressWarnings("unchecked")
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         RemoteAccess.Post post = RemoteAccess.evaluate(request);
@@ -94,18 +92,18 @@ public abstract class AbstractPushServlet extends HttpServlet {
             return;
         }
 
-        Map<String, Object> map;
-        byte[] jsonText;
+        JSONObject map;
+        String jsonString = "";
         try {
-            jsonText = ClientConnection.download(url);
-            map = DAO.jsonMapper.readValue(jsonText, DAO.jsonTypeRef);
+            jsonString = new String(ClientConnection.download(url), StandardCharsets.UTF_8);
+            map = new JSONObject(jsonString);
         } catch (Exception e) {
             response.sendError(400, "error reading json file from url");
             return;
         }
 
         // validation phase
-        ProcessingReport report = this.validator.validate(new String(jsonText));
+        ProcessingReport report = this.validator.validate(jsonString);
         if (!report.isSuccess()) {
             response.sendError(400, "json does not conform to schema : " + this.getValidatorSchema().name() + "\n" + report);
             return;
@@ -113,22 +111,22 @@ public abstract class AbstractPushServlet extends HttpServlet {
 
         // conversion phase
         Object extractResults = extractMessages(map);
-        List<Map<String, Object>> messages;
-        if (extractResults instanceof List) {
-            messages = (List<Map<String, Object>>) extractResults;
-        } else if (extractResults instanceof Map) {
-            messages = new ArrayList<>();
-            messages.add((Map<String, Object>) extractResults);
+        JSONArray messages;
+        if (extractResults instanceof JSONArray) {
+            messages = (JSONArray) extractResults;
+        } else if (extractResults instanceof JSONObject) {
+            messages = new JSONArray();
+            messages.put((JSONObject) extractResults);
         } else {
             throw new IOException("extractMessages must return either a List or a Map. Get " + (extractResults == null ? "null" : extractResults.getClass().getCanonicalName()) + " instead");
         }
-        List<Map<String, Object>> convertedMessages = this.converter.convert(messages);
+        JSONArray convertedMessages = this.converter.convert(messages);
 
         PushReport nodePushReport = new PushReport();
         ObjectWriter ow = new ObjectMapper().writerWithDefaultPrettyPrinter();
         // custom treatment for each message
-        for (int i = 0; i < messages.size(); i++) {
-            Map<String, Object> message = convertedMessages.get(i);
+        for (int i = 0; i < messages.length(); i++) {
+            JSONObject message = (JSONObject) convertedMessages.get(i);
             message.put("source_type", this.getSourceType().name());
             message.put("location_source", LocationSource.USER.name());
             message.put("place_context", PlaceContext.ABOUT.name());
@@ -160,7 +158,7 @@ public abstract class AbstractPushServlet extends HttpServlet {
             }
         }
         try {
-            PushReport savingReport = PushServletHelper.saveMessagesAndImportProfile(convertedMessages, Arrays.hashCode(jsonText), post, getSourceType(), screen_name);
+            PushReport savingReport = PushServletHelper.saveMessagesAndImportProfile(convertedMessages, jsonString.hashCode(), post, getSourceType(), screen_name);
             nodePushReport.combine(savingReport);
         } catch (IOException e) {
             response.sendError(404, e.getMessage());
@@ -185,7 +183,7 @@ public abstract class AbstractPushServlet extends HttpServlet {
     protected abstract JsonFieldConverter.JsonConversionSchemaEnum getConversionSchema();
 
     // return either a list or a map of <String,Object>
-    protected abstract Object extractMessages(Map<String, Object> data);
+    protected abstract JSONArray extractMessages(JSONObject data);
 
-    protected abstract void customProcessing(Map<String, Object> message);
+    protected abstract void customProcessing(JSONObject message);
 }

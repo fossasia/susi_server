@@ -207,25 +207,6 @@ public class Timeline implements Iterable<MessageEntry> {
         //return new ObjectMapper().writer().writeValueAsString(toMap(true));
     }
     
-    /*
-    public Map<String, Object> toMap(boolean withEnrichedData) {
-        Map<String, Object> m = new LinkedHashMap<>();
-        Map<String, Object> metadata = new LinkedHashMap<>();
-        metadata.put("count", Integer.toString(this.tweets.size()));
-        if (this.query != null) metadata.put("query", this.query);
-        if (this.hits >= 0) metadata.put("hits", Math.max(this.hits, this.size()));
-        if (this.scraperInfo.length() > 0) metadata.put("scraperInfo", this.scraperInfo);
-        m.put("search_metadata", metadata);
-        List<Object> statuses = new ArrayList<>();
-        for (MessageEntry t: this) {
-            UserEntry u = this.users.get(t.getScreenName());
-            statuses.add(t.toMap(u, withEnrichedData, Integer.MAX_VALUE, ""));
-        }
-        m.put("statuses", statuses);
-        return m;
-    }
-     */
-    
     public JSONObject toJSON(boolean withEnrichedData) throws JSONException {
         JSONObject json = new JSONObject();
         JSONObject metadata = new JSONObject();

@@ -24,7 +24,6 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
-import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -32,7 +31,6 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.json.JSONException;
 import org.json.JSONObject;
 import org.loklak.data.Classifier;
 import org.loklak.data.DAO;
@@ -127,7 +125,7 @@ public class MessageEntry extends AbstractIndexEntry implements IndexEntry {
         Object to_obj = lazyGet(json, "to"); this.to = to_obj == null ? null : parseDate(to);
         String source_type_string = (String) lazyGet(json, "source_type");
         try {
-            this.source_type = SourceType.valueOf(source_type_string);
+            this.source_type = source_type_string == null ? SourceType.USER : SourceType.valueOf(source_type_string);
         } catch (IllegalArgumentException e) {
             this.source_type = SourceType.USER;
         }
@@ -178,71 +176,6 @@ public class MessageEntry extends AbstractIndexEntry implements IndexEntry {
         }
         this.enriched = false;
 
-        // load enriched data
-        enrich();
-    }
-
-    public MessageEntry(Map<String, Object> map) {
-        Object timestamp_obj =  map.get(AbstractIndexEntry.TIMESTAMP_FIELDNAME); this.timestamp = parseDate(timestamp_obj);
-        Object created_at_obj = map.get("created_at"); this.created_at = parseDate(created_at_obj);
-        Object on_obj = map.get("on"); this.on = on_obj == null ? null : parseDate(on);
-        Object to_obj = map.get("to"); this.to = to_obj == null ? null : parseDate(to);
-        String source_type_string = (String) map.get("source_type");
-        if (source_type_string == null) source_type_string = SourceType.USER.name();
-        try {
-            this.source_type = SourceType.valueOf(source_type_string);
-        } catch (IllegalArgumentException e) {
-            this.source_type = SourceType.USER;
-        }
-        String provider_type_string = (String) map.get("provider_type");
-        if (provider_type_string == null) provider_type_string = ProviderType.GENERIC.name();
-        try {
-            this.provider_type = ProviderType.valueOf(provider_type_string);
-        } catch (IllegalArgumentException e) {
-            this.provider_type = ProviderType.GENERIC;
-        }
-        this.provider_hash = (String) map.get("provider_hash");
-        this.screen_name = (String) map.get("screen_name");
-        this.retweet_from = (String) map.get("retweet_from");
-        this.id_str = (String) map.get("id_str");
-        this.text = (String) map.get("text");
-        try {
-            this.status_id_url = new URL((String) map.get("link"));
-        } catch (MalformedURLException e) {
-            this.status_id_url = null;
-        }
-        this.retweet_count = parseLong((Number) map.get("retweet_count"));
-        this.favourites_count = parseLong((Number) map.get("favourites_count"));
-        this.images = parseArrayList(map.get("images"));
-        this.audio = parseArrayList(map.get("audio"));
-        this.videos = parseArrayList(map.get("videos"));
-        this.place_id = parseString((String) map.get("place_id"));
-        this.place_name = parseString((String) map.get("place_name"));
-        Object place_context_obj = map.get("place_context");
-        this.place_context = place_context_obj == null ? null : PlaceContext.valueOf((String) place_context_obj);
-        this.place_country = parseString((String) map.get("place_country"));
-        if (this.place_country != null && this.place_country.length() != 2) this.place_country = null;
-        
-        // optional location
-        Object location_point_obj = map.get("location_point");
-        Object location_radius_obj = map.get("location_radius");
-        Object location_mark_obj = map.get("location_mark");
-        Object location_source_obj = map.get("location_source");
-        if (location_point_obj == null || location_mark_obj == null ||
-            !(location_point_obj instanceof List<?>) ||
-            !(location_mark_obj instanceof List<?>)) {
-            this.location_point = null;
-            this.location_radius = 0;
-            this.location_mark = null;
-            this.location_source = null;
-        } else {
-            this.location_point = new double[]{(Double) ((List<?>) location_point_obj).get(0), (Double) ((List<?>) location_point_obj).get(1)};
-            this.location_radius = (int) parseLong((Number) location_radius_obj);
-            this.location_mark = new double[]{(Double) ((List<?>) location_mark_obj).get(0), (Double) ((List<?>) location_mark_obj).get(1)};
-            this.location_source = LocationSource.valueOf((String) location_source_obj);
-        }
-        this.enriched = false;
-        
         // load enriched data
         enrich();
     }
@@ -589,8 +522,8 @@ public class MessageEntry extends AbstractIndexEntry implements IndexEntry {
         return toJSON(null, true, Integer.MAX_VALUE, ""); // very important to include calculated data here because that is written into the index using the abstract index factory
     }
     
-    public Map<String, Object> toMap(final UserEntry user, final boolean calculatedData, final int iflinkexceedslength, final String urlstub) {
-        Map<String, Object> m = new LinkedHashMap<>();
+    public JSONObject toJSON(final UserEntry user, final boolean calculatedData, final int iflinkexceedslength, final String urlstub) {
+        JSONObject m = new JSONObject(true);
 
         // tweet data
         m.put(AbstractIndexEntry.TIMESTAMP_FIELDNAME, utcFormatter.print(getTimestamp().getTime()));
@@ -665,66 +598,8 @@ public class MessageEntry extends AbstractIndexEntry implements IndexEntry {
         }
         
         // add user
-        if (user != null) m.put("user", user.toMap());
+        if (user != null) m.put("user", user.toJSON());
         return m;
-    }
-    
-    public JSONObject toJSON(final UserEntry user, final boolean calculatedData, final int iflinkexceedslength, final String urlstub) throws JSONException {
-        JSONObject json = new JSONObject();
-
-        // tweet data
-        json.put(AbstractIndexEntry.TIMESTAMP_FIELDNAME, utcFormatter.print(getTimestamp().getTime()));
-        json.put("created_at", utcFormatter.print(getCreatedAt().getTime()));
-        if (this.on != null) json.put("on", utcFormatter.print(this.on.getTime()));
-        if (this.to != null) json.put("to", utcFormatter.print(this.to.getTime()));
-        json.put("screen_name", this.screen_name);
-        if (this.retweet_from != null && this.retweet_from.length() > 0) json.put("retweet_from", this.retweet_from);
-        json.put("text", this.getText(iflinkexceedslength, urlstub)); // the tweet; the cleanup is a helper function which cleans mistakes from the past in scraping
-        if (this.status_id_url != null) json.put("link", this.status_id_url.toExternalForm());
-        json.put("id_str", this.id_str);
-        if (this.canonical_id != null) json.put("canonical_id", this.canonical_id);
-        if (this.parent != null) json.put("parent", this.parent);
-        if (this.provider_hash != null && this.provider_hash.length() > 0) json.put("provider_hash", this.provider_hash);
-        json.put("retweet_count", this.retweet_count);
-        json.put("favourites_count", this.favourites_count); // there is a slight inconsistency here in the plural naming but thats how it is noted in the twitter api
-        json.put("images", this.images);
-        json.put("images_count", this.images.size());
-        json.put("audio", this.audio);
-        json.put("audio_count", this.audio.size());
-        json.put("videos", this.videos);
-        json.put("videos_count", this.videos.size());
-        json.put("place_name", this.place_name);
-        json.put("place_id", this.place_id);
-
-        // add statistic/calculated data
-        if (calculatedData) {
-            // location data
-            if (this.place_country != null && this.place_country.length() == 2) {
-                json.put("place_country_code", this.place_country);
-            }
-
-            // add optional location data. This is written even if calculatedData == false if the source is from REPORT to prevent that it is lost
-            if (this.location_point != null && this.location_point.length == 2 && this.location_mark != null && this.location_mark.length == 2) {
-                // reference for this format: https://www.elastic.co/guide/en/elasticsearch/reference/current/mapping-geo-point-type.html#_lat_lon_as_array_5
-                json.put("location_point", this.location_point); // [longitude, latitude]
-                json.put("location_radius", this.location_radius);
-                json.put("location_mark", this.location_mark);
-            }
-
-            // redundant data for enhanced navigation with aggregations
-            json.put("hosts", this.hosts);
-            json.put("hosts_count", this.hosts.length);
-            json.put("links", this.links);
-            json.put("links_count", this.links.length);
-            json.put("mentions", this.mentions);
-            json.put("mentions_count", this.mentions.length);
-            json.put("hashtags", this.hashtags);
-            json.put("hashtags_count", this.hashtags.length);
-        }
-
-        // add user
-        if (user != null) json.put("user", user.toJSON());
-        return json;
     }
     
     public static String html2utf8(String s) {

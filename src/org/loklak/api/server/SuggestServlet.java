@@ -23,7 +23,6 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -36,14 +35,13 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.elasticsearch.search.sort.SortOrder;
+import org.json.JSONObject;
 import org.loklak.data.DAO;
 import org.loklak.harvester.SourceType;
 import org.loklak.http.RemoteAccess;
 import org.loklak.objects.AbstractIndexEntry;
 import org.loklak.objects.QueryEntry;
 import org.loklak.objects.ResultList;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 /*
  * - test suggestions -
@@ -59,7 +57,7 @@ public class SuggestServlet extends HttpServlet {
    
     private static final long serialVersionUID = 8578478303032749879L;
 
-    public static Map<Integer, Map<String, Object>> cache = new ConcurrentHashMap<>();
+    public static Map<Integer, JSONObject> cache = new ConcurrentHashMap<>();
     
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
@@ -78,7 +76,7 @@ public class SuggestServlet extends HttpServlet {
         boolean minified = post.get("minified", false);
         
         int requestkey = post.hashCode();
-        Map<String, Object> m = post.isDoS_servicereduction() ? cache.get(requestkey) : null;
+        JSONObject m = post.isDoS_servicereduction() ? cache.get(requestkey) : null;
         if (m == null) {
             boolean local = post.isLocalhostAccess();
             boolean delete = post.get("delete", false);
@@ -140,8 +138,8 @@ public class SuggestServlet extends HttpServlet {
             }
             
             // generate json
-            m = new LinkedHashMap<String, Object>();
-            Map<String, Object> metadata = new LinkedHashMap<String, Object>();
+            m = new JSONObject(true);
+            JSONObject metadata = new JSONObject(true);
             metadata.put("count", queryList == null ? "0" : Integer.toString(queries.size()));
             metadata.put("hits", queryList.getHits());
             metadata.put("query", query);
@@ -161,7 +159,7 @@ public class SuggestServlet extends HttpServlet {
         response.setCharacterEncoding("UTF-8");
         PrintWriter sos = response.getWriter();
         if (jsonp) sos.print(callback + "(");
-        sos.print(minified ? new ObjectMapper().writer().writeValueAsString(m) : new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(m));
+        sos.print(m.toString(minified ? 0 : 2));
         if (jsonp) sos.println(");");
         sos.println();
         post.finalize();

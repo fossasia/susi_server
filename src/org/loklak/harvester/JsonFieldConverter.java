@@ -20,6 +20,8 @@
 
 package org.loklak.harvester;
 
+import org.json.JSONArray;
+import org.json.JSONObject;
 import org.loklak.data.DAO;
 
 import java.io.IOException;
@@ -46,10 +48,10 @@ public class JsonFieldConverter {
     private Map<String, List<String>> conversionRules;
 
     public JsonFieldConverter(JsonConversionSchemaEnum conversionSchema) throws IOException {
-        final Map<String, Object> convSchema = DAO.getConversionSchema(conversionSchema.getFilename());
-        List<List> convRules = (List<List>) convSchema.get("rules");
+        final JSONObject convSchema = DAO.getConversionSchema(conversionSchema.getFilename());
+        List<List<?>> convRules = (List<List<?>>) convSchema.get("rules");
         this.conversionRules = new HashMap<>();
-        for (List rule : convRules) {
+        for (List<?> rule : convRules) {
             List<String> toInsert = new ArrayList<>();
             this.conversionRules.put((String) rule.get(0), toInsert);
 
@@ -65,16 +67,15 @@ public class JsonFieldConverter {
         }
     }
 
-    public List<Map<String, Object>> convert(List<Map<String, Object>> initialJson)
-    throws IOException {
-        List<Map<String, Object>> result = new ArrayList<>();
-        for (Map<String, Object> o : initialJson) {
-            result.add(this.convert(o));
+    public JSONArray convert(JSONArray initialJson) throws IOException {
+        JSONArray result = new JSONArray();
+        for (Object o : initialJson) {
+            result.put(this.convert((JSONObject) o));
         }
         return result;
     }
 
-    public Map<String, Object> convert(Map<String, Object> initialJson) throws IOException {
+    public JSONObject convert(JSONObject initialJson) throws IOException {
         Iterator<Map.Entry<String, List<String>>> it = this.conversionRules.entrySet().iterator();
         while (it.hasNext()) {
             Map.Entry<String, List<String>> entry = (Map.Entry<String, List<String>>) it.next();
@@ -90,10 +91,10 @@ public class JsonFieldConverter {
         return initialJson;
     }
 
-    private static Object getFieldValue(Map<String, Object> object, String key) {
+    private static Object getFieldValue(JSONObject object, String key) {
         if (key.contains(".")) {
             String[] deepFields = key.split(Pattern.quote("."));
-            Map<String, Object> currentLevel = object;
+            JSONObject currentLevel = object;
             for (int lvl = 0; lvl < deepFields.length; lvl++) {
                 if (lvl == deepFields.length - 1) {
                     return currentLevel.get(deepFields[lvl]);
@@ -101,7 +102,7 @@ public class JsonFieldConverter {
                     if (currentLevel.get(deepFields[lvl]) == null) {
                         return null;
                     }
-                    currentLevel = (Map<String, Object>) currentLevel.get(deepFields[lvl]);
+                    currentLevel = (JSONObject) currentLevel.get(deepFields[lvl]);
                 }
             }
         } else {
@@ -111,10 +112,10 @@ public class JsonFieldConverter {
         return null;
     }
 
-    private static void putToField(Map<String, Object> object, String key, Object value) {
+    private static void putToField(JSONObject object, String key, Object value) {
         if (key.contains(".")) {
             String[] deepFields = key.split(Pattern.quote("."));
-            Map<String, Object> currentLevel = object;
+            JSONObject currentLevel = object;
             for (int lvl = 0; lvl < deepFields.length; lvl++) {
                 if (lvl == deepFields.length - 1) {
                     currentLevel.put(deepFields[lvl], value);
@@ -122,7 +123,7 @@ public class JsonFieldConverter {
                     if (currentLevel.get(deepFields[lvl]) == null) {
                         currentLevel.put(deepFields[lvl], new HashMap<>());
                     }
-                    currentLevel = (Map<String, Object>) currentLevel.get(deepFields[lvl]);
+                    currentLevel = (JSONObject) currentLevel.get(deepFields[lvl]);
                 }
             }
         } else {

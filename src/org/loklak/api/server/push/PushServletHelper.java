@@ -1,5 +1,6 @@
 package org.loklak.api.server.push;
 
+import org.json.JSONArray;
 import org.json.JSONObject;
 import org.loklak.data.DAO;
 import org.loklak.harvester.HarvestingFrequency;
@@ -11,9 +12,7 @@ import org.loklak.objects.Timeline;
 import org.loklak.objects.UserEntry;
 
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Iterator;
@@ -28,17 +27,17 @@ public class PushServletHelper {
     };
 
     public static PushReport saveMessagesAndImportProfile(
-            List<Map<String, Object>> messages, int fileHash, RemoteAccess.Post post,
+            JSONArray messages, int fileHash, RemoteAccess.Post post,
             SourceType sourceType, String screenName) throws IOException {
         PushReport report = new PushReport();
         List<String> importedMsgIds = new ArrayList<>();
-        for (Map<String, Object> message : messages) {
+        for (Object message_obj : messages) {
+            JSONObject message = (JSONObject) message_obj;
             message.put("screen_name", screenName);
-            @SuppressWarnings("unchecked")
-            Map<String, Object> user = (Map<String, Object>) message.remove("user");
+            JSONObject user = (JSONObject) message.remove("user");
             if (user != null) user.put("screen_name", screenName);
             MessageEntry messageEntry = new MessageEntry(message);
-            UserEntry userEntry = new UserEntry(user != null ? user : new HashMap<String, Object>());
+            UserEntry userEntry = new UserEntry(user != null ? user : new JSONObject());
             boolean successful;
             report.incrementRecordCount();
             try {
@@ -162,38 +161,36 @@ public class PushServletHelper {
         return source_url + "_" + importer + "_" + fileHash;
     }
 
-    @SuppressWarnings("unchecked")
-    public static String checkMessageExistence(Map<String, Object> message) {
+    public static String checkMessageExistence(JSONObject message) {
         String source_type = (String) message.get("source_type");
-        List<Double> location_point = (List<Double>) message.get("location_point");
-        Double latitude = location_point.get(0);
-        Double longitude = location_point.get(1);
+        JSONArray location_point = message.getJSONArray("location_point");
+        Double latitude = (Double) location_point.get(0);
+        Double longitude = (Double) location_point.get(1);
         String query = "/source_type=" + source_type + " /location=" + latitude + "," + longitude;
         // search only latest message
         DAO.SearchLocalMessages search = new DAO.SearchLocalMessages(query, Timeline.Order.CREATED_AT, 0, 1, 0);
-        Iterator it = search.timeline.iterator();
+        Iterator<MessageEntry> it = search.timeline.iterator();
         while (it.hasNext()) {
-            MessageEntry messageEntry = (MessageEntry) it.next();
-            if (compareMessage(messageEntry.toJSON().toMap(), message)) {
+            MessageEntry messageEntry = it.next();
+            if (compareMessage(messageEntry.toJSON(), message)) {
                 return messageEntry.getIdStr();
             }
         }
         return null;
     }
 
-    private static boolean compareMessage(Map<String, Object> m1, Map<String, Object> m2) {
+    private static boolean compareMessage(JSONObject m1, JSONObject m2) {
         for (String field : FIELDS_TO_COMPARE) {
-            if ((m1.get(field) == null && m2.get(field) != null)
-            || (m1.get(field) != null && m2.get(field) == null)
-            || !m1.get(field).equals(m2.get(field))) {
-                return false;
-            }
+            if (!m1.has(field) && m2.has(field)) return false;
+            if (m1.has(field) && !m2.has(field)) return false;
+            if (!m1.has(field) && !m2.has(field)) continue;
+            if (!m1.get(field).equals(m2.get(field))) return false;
         }
         return true;
     }
 
-    public static String computeMessageId(Map<String, Object> message, SourceType sourceType) throws Exception {
-        List<Object> location = (List<Object>) message.get("location_point");
+    public static String computeMessageId(JSONObject message, SourceType sourceType) throws Exception {
+        JSONArray location = message.getJSONArray("location_point");
         if (location == null) {
             throw new Exception("location_point not found");
         }

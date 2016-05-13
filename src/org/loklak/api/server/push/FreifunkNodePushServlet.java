@@ -18,12 +18,11 @@
  */
 package org.loklak.api.server.push;
 
+import org.json.JSONArray;
+import org.json.JSONObject;
 import org.loklak.harvester.JsonFieldConverter;
 import org.loklak.harvester.JsonValidator;
 import org.loklak.harvester.SourceType;
-
-import java.util.List;
-import java.util.Map;
 
 public class FreifunkNodePushServlet extends AbstractPushServlet {
 
@@ -44,12 +43,11 @@ public class FreifunkNodePushServlet extends AbstractPushServlet {
         return JsonFieldConverter.JsonConversionSchemaEnum.FREIFUNK_NODE;
     }
 
-    @SuppressWarnings("unchecked")
     @Override
-    protected List<Map<String, Object>> extractMessages(Map<String, Object> data) {
-        return (List<Map<String, Object>>) data.get("nodes");
+    protected JSONArray extractMessages(JSONObject data) {
+        return data.getJSONArray("nodes");
     }
 
     @Override
-    protected void customProcessing(Map<String, Object> message) {}
+    protected void customProcessing(JSONObject message) {}
 }

@@ -34,11 +34,12 @@ import java.nio.charset.StandardCharsets;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.zip.GZIPInputStream;
+
+import org.json.JSONObject;
 
 public class Campaigns {
     
@@ -131,8 +132,7 @@ public class Campaigns {
                 if (dumpFile.getName().endsWith(".gz")) is = new GZIPInputStream(is);
                 br = new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8));
                 while ((line = br.readLine()) != null) {
-                    Map<String, Object> campaign = DAO.jsonMapper.readValue(line, DAO.jsonTypeRef);
-                    if (campaign == null) continue;
+                    JSONObject campaign = new JSONObject(line);
                     Campaign e = new Campaign(campaign);
                     campaigns.add(e);
                 }

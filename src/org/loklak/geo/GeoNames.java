@@ -76,6 +76,7 @@ public class GeoNames {
         // load iso3166 info
         this.iso3166toCountry = new HashMap<>();
         try {
+            //String jsonString = new String(Files.readAllBytes(iso3166json.toPath()), StandardCharsets.UTF_8);
             ObjectMapper jsonMapper = new ObjectMapper(DAO.jsonFactory);
             JsonNode j = jsonMapper.readTree(iso3166json);
             for (JsonNode n: j) {

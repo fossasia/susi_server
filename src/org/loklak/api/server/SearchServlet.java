@@ -21,10 +21,8 @@ package org.loklak.api.server;
 
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.ArrayList;
 import java.util.ConcurrentModificationException;
 import java.util.Date;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -35,6 +33,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.eclipse.jetty.util.log.Log;
+import org.json.JSONArray;
+import org.json.JSONObject;
 import org.loklak.data.DAO;
 import org.loklak.harvester.TwitterScraper;
 import org.loklak.http.RemoteAccess;
@@ -46,8 +46,6 @@ import org.loklak.rss.RSSFeed;
 import org.loklak.rss.RSSMessage;
 import org.loklak.tools.CharacterCoding;
 import org.loklak.tools.UTF8;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
  * The search servlet. we provide opensearch/rss and twitter-like JSON as result.
@@ -207,8 +205,8 @@ public class SearchServlet extends HttpServlet {
         if (jsonExt) {
             post.setResponse(response, jsonp ? "application/javascript": "application/json");
             // generate json
-            Map<String, Object> m = new LinkedHashMap<String, Object>();
-            Map<String, Object> metadata = new LinkedHashMap<String, Object>();
+            JSONObject m = new JSONObject(true);
+            JSONObject metadata = new JSONObject(true);
             if (!minified) {
                 m.put("readme_0", "THIS JSON IS THE RESULT OF YOUR SEARCH QUERY - THERE IS NO WEB PAGE WHICH SHOWS THE RESULT!");
                 m.put("readme_1", "loklak.org is the framework for a message search system, not the portal, read: http://loklak.org/about.html#notasearchportal");
@@ -229,12 +227,12 @@ public class SearchServlet extends HttpServlet {
             metadata.put("servicereduction", post.isDoS_servicereduction() ? "true" : "false");
             if (tl.getScraperInfo().length() > 0) metadata.put("scraperInfo", tl.getScraperInfo());
             m.put("search_metadata", metadata);
-            List<Object> statuses = new ArrayList<>();
+            JSONArray statuses = new JSONArray();
             try {
                 for (MessageEntry t: tl) {
                     UserEntry u = tl.getUser(t);
                     if (DAO.getConfig("flag.fixunshorten", false)) t.setText(TwitterScraper.unshorten(t.getText(shortlink_iflinkexceedslength, shortlink_urlstub)));
-                    statuses.add(t.toMap(u, true, shortlink_iflinkexceedslength, shortlink_urlstub));
+                    statuses.put(t.toJSON(u, true, shortlink_iflinkexceedslength, shortlink_urlstub));
                 }
             } catch (ConcurrentModificationException e) {
                 // late incoming messages from concurrent peer retrieval may cause this
@@ -243,10 +241,10 @@ public class SearchServlet extends HttpServlet {
             m.put("statuses", statuses);
             
             // aggregations
-            Map<String, Object> agg = new LinkedHashMap<String, Object>();
+            JSONObject agg = new JSONObject(true);
             if (aggregations != null) {
                 for (Map.Entry<String, List<Map.Entry<String, Long>>> aggregation: aggregations.entrySet()) {
-                    Map<String, Object> facet = new LinkedHashMap<>();
+                    JSONObject facet = new JSONObject(true);
                     for (Map.Entry<String, Long> a: aggregation.getValue()) {
                         if (a.getValue().equals(query)) continue; // we omit obvious terms that cannot be used for faceting, like search for "#abc" -> most hashtag is "#abc"
                         facet.put(a.getKey(), a.getValue());
@@ -260,7 +258,7 @@ public class SearchServlet extends HttpServlet {
             response.setCharacterEncoding("UTF-8");
             PrintWriter sos = response.getWriter();
             if (jsonp) sos.print(callback + "(");
-            sos.print(minified ? new ObjectMapper().writer().writeValueAsString(m) : new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(m));
+            sos.print(m.toString(minified ? 0 : 2));
             if (jsonp) sos.println(");");
             sos.println();
         } else if (rssExt) {
@@ -311,7 +309,7 @@ public class SearchServlet extends HttpServlet {
         }
         post.recordEvent("result_count", tl.size());
         post.recordEvent("postprocessing_time", System.currentTimeMillis() - start);
-        Map<String, Object> hits = new LinkedHashMap<>();
+        JSONObject hits = new JSONObject(true);
         hits.put("count_twitter_all", count_twitter_all.get());
         hits.put("count_twitter_new", count_twitter_new.get());
         hits.put("count_backend", count_backend.get());

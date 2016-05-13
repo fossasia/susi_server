@@ -20,14 +20,13 @@
 package org.loklak.api.server;
 
 import java.io.IOException;
-import java.util.Map;
-
 import javax.servlet.ServletException;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.json.JSONObject;
 import org.loklak.data.DAO;
 import org.loklak.harvester.TwitterAPI;
 import org.loklak.http.ClientConnection;
@@ -103,9 +102,9 @@ public class ProxyServlet extends HttpServlet {
             if (buffer == null) {
                 // ask the Twitter API for new user data
                 try {
-                    Map<String, Object> usermap = TwitterAPI.getUser(screen_name, true);
-                    newUrl = (String) usermap.get("profile_image_url");
-                    if (newUrl != null && newUrl.length() > 0 && !newUrl.startsWith("http:"))  newUrl = (String) usermap.get("profile_image_url_https");
+                    JSONObject usermap = TwitterAPI.getUser(screen_name, true);
+                    newUrl = usermap.has("profile_image_url") ? (String) usermap.get("profile_image_url") : null;
+                    if (newUrl != null && newUrl.length() > 0 && !newUrl.startsWith("http:") && usermap.has("profile_image_url_https")) newUrl = (String) usermap.get("profile_image_url_https");
                     if (newUrl != null && newUrl.length() > 0) buffer = ClientConnection.download(newUrl);
                     if (buffer != null) DAO.log("PROXY: downloaded url=" + url + " from recently downloaded user setting successfully!");
                 } catch (TwitterException e) {

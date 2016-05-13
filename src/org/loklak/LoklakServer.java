@@ -32,9 +32,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.TimeUnit;
-
 import javax.servlet.DispatcherType;
 import javax.servlet.MultipartConfigElement;
 
@@ -54,7 +51,6 @@ import org.eclipse.jetty.servlets.GzipFilter;
 import org.eclipse.jetty.servlets.gzip.GzipHandler;
 import org.eclipse.jetty.util.ConcurrentHashSet;
 import org.eclipse.jetty.util.log.Log;
-import org.eclipse.jetty.util.thread.ExecutorThreadPool;
 import org.eclipse.jetty.util.thread.QueuedThreadPool;
 import org.eclipse.jetty.webapp.WebAppContext;
 import org.loklak.api.server.AccessServlet;

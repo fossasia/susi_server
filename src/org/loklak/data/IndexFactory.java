@@ -21,7 +21,6 @@ package org.loklak.data;
 
 import java.io.IOException;
 import java.util.Collection;
-import java.util.Map;
 import java.util.Set;
 
 import org.json.JSONObject;
@@ -42,8 +41,6 @@ public interface IndexFactory<Entry extends IndexEntry> {
     
     public boolean delete(String id, SourceType sourceType);
 
-    public Map<String, Object> readMap(String id);
-    
     public JSONObject readJSON(String id);
 
     public boolean writeEntry(String id, String type, Entry entry) throws IOException;

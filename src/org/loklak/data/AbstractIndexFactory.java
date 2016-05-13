@@ -96,9 +96,9 @@ public abstract class AbstractIndexFactory<Entry extends IndexEntry> implements 
             this.existCache.add(id);
             return entry;
         }
-        Map<String, Object> map = readMap(id);
-        if (map == null) return null;
-        entry = init(new JSONObject(map));
+        JSONObject json = readJSON(id);
+        if (json == null) return null;
+        entry = init(json);
         this.objectCache.put(id, entry);
         this.existCache.add(id);
         return entry;
@@ -143,16 +143,12 @@ public abstract class AbstractIndexFactory<Entry extends IndexEntry> implements 
     }
 
     @Override
-    public Map<String, Object> readMap(String id) {
-        Map<String, Object> json = elasticsearch_client.readMap(index_name, id);
-        if (json != null) this.existCache.add(id);
-        this.indexGet.incrementAndGet();
-        return json;
-    }
-    
-    @Override
     public JSONObject readJSON(String id) {
-        return new JSONObject(readMap(id));
+        Map<String, Object> map = elasticsearch_client.readMap(index_name, id);
+        this.indexGet.incrementAndGet();
+        if (map == null) return null;
+        this.existCache.add(id);
+        return new JSONObject(map);
     }
 
     public boolean writeEntry(String id, String type, Entry entry) throws IOException {

@@ -26,10 +26,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
-import java.util.Map;
 import java.util.concurrent.ArrayBlockingQueue;
 
-import org.loklak.data.DAO;
+import org.json.JSONObject;
 
 public class JsonStreamReader implements JsonReader {
 
@@ -58,13 +57,13 @@ public class JsonStreamReader implements JsonReader {
     }
     
     public static class WrapperJsonFactory implements JsonFactory {
-        Map<String, Object> json;
-        public WrapperJsonFactory(final Map<String, Object> json) {
+        JSONObject json;
+        public WrapperJsonFactory(final JSONObject json) {
             this.json = json;
         }
         
         @Override
-        public Map<String, Object> getJson() throws IOException {
+        public JSONObject getJSON() throws IOException {
             return this.json;
         }
     }
@@ -76,8 +75,7 @@ public class JsonStreamReader implements JsonReader {
             br = new BufferedReader(new InputStreamReader(inputStream, StandardCharsets.UTF_8));
             while ((line = br.readLine()) != null) {
                 try {
-                    Map<String, Object> json = DAO.jsonMapper.readValue(line, DAO.jsonTypeRef);
-                    if (json == null) continue;
+                    JSONObject json = new JSONObject(line);
                     this.jsonline.put(new WrapperJsonFactory(json));
                 } catch (Throwable e) {
                     e.printStackTrace();

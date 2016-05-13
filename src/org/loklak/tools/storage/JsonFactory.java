@@ -20,10 +20,11 @@
 package org.loklak.tools.storage;
 
 import java.io.IOException;
-import java.util.Map;
+
+import org.json.JSONObject;
 
 public interface JsonFactory {
-    
-    public Map<String, Object> getJson() throws IOException;
+
+    public JSONObject getJSON() throws IOException;
     
 }

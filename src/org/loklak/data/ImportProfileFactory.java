@@ -22,7 +22,6 @@ import org.json.JSONObject;
 import org.loklak.objects.ImportProfileEntry;
 
 import java.io.IOException;
-import java.util.Map;
 
 public class ImportProfileFactory extends AbstractIndexFactory<ImportProfileEntry> implements IndexFactory<ImportProfileEntry> {
 

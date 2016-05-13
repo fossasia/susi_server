@@ -21,22 +21,17 @@ package org.loklak.api.server;
 
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.json.JSONArray;
+import org.json.JSONObject;
 import org.loklak.harvester.TwitterAPI;
 import org.loklak.http.RemoteAccess;
 
 import twitter4j.TwitterException;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class UserServlet extends HttpServlet {
    
@@ -64,36 +59,36 @@ public class UserServlet extends HttpServlet {
         int maxFollowers = Integer.parseInt(followers);
         int maxFollowing = Integer.parseInt(following);
         
-        List<Map<String, Object>> twitterUserEntries = new ArrayList<>();
+        JSONArray twitterUserEntries = new JSONArray();
         for (String screen_name: screen_names) {
             try {
-                Map<String, Object> twitterUserEntry = TwitterAPI.getUser(screen_name, false);
+                JSONObject twitterUserEntry = TwitterAPI.getUser(screen_name, false);
                 if (twitterUserEntry != null) {
                     TwitterAPI.enrichLocation(twitterUserEntry);
-                    twitterUserEntries.add(twitterUserEntry);
+                    twitterUserEntries.put(twitterUserEntry);
                 }
             } catch (TwitterException e) {}
         }
-        Map<String, Object> topology = null;
+        JSONObject topology = null;
         try {topology = TwitterAPI.getNetwork(screen_names[0], maxFollowers, maxFollowing);} catch (TwitterException e) {}
         
         post.setResponse(response, "application/javascript");
         
         // generate json
-        Map<String, Object> m = new LinkedHashMap<>();
-        Map<String, Object> metadata = new LinkedHashMap<>();
+        JSONObject m = new JSONObject(true);
+        JSONObject metadata = new JSONObject(true);
         metadata.put("client", post.getClientHost());
         m.put("search_metadata", metadata);
 
-        if (twitterUserEntries.size() == 1) m.put("user", twitterUserEntries.iterator().next());
-        if (twitterUserEntries.size() > 1) m.put("users", twitterUserEntries);
+        if (twitterUserEntries.length() == 1) m.put("user", twitterUserEntries.iterator().next());
+        if (twitterUserEntries.length() > 1) m.put("users", twitterUserEntries);
         if (topology != null) m.put("topology", topology);
         
         // write json
         response.setCharacterEncoding("UTF-8");
         PrintWriter sos = response.getWriter();
         if (jsonp) sos.print(callback + "(");
-        sos.print((minified ? new ObjectMapper().writer() : new ObjectMapper().writerWithDefaultPrettyPrinter()).writeValueAsString(m));
+        sos.print(m.toString(minified ? 0 : 2));
         if (jsonp) sos.println(");");
         sos.println();
         sos.flush(); sos.close();

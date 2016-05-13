@@ -24,8 +24,6 @@ import java.io.PrintWriter;
 import java.util.Date;
 import java.util.Enumeration;
 import java.util.List;
-import java.util.Map;
-
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -51,7 +49,6 @@ public class StatusServlet extends HttpServlet {
         doGet(request, response);
     }
     
-    @SuppressWarnings("unchecked")
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         RemoteAccess.Post post = RemoteAccess.evaluate(request);
@@ -65,11 +62,11 @@ public class StatusServlet extends HttpServlet {
         
         final String backend = DAO.getConfig("backend", "");
         final boolean backend_push = DAO.getConfig("backend.push.enabled", false);
-        Map<String, Object> backend_status = null;
-        Map<String, Object> backend_status_index_sizes = null;
+        JSONObject backend_status = null;
+        JSONObject backend_status_index_sizes = null;
         if (backend.length() > 0 && !backend_push) {
             backend_status = StatusClient.status(backend);
-            backend_status_index_sizes = backend_status == null ? null : (Map<String, Object>) backend_status.get("index_sizes");
+            backend_status_index_sizes = backend_status == null ? null : (JSONObject) backend_status.get("index_sizes");
         }
         long backend_messages = backend_status_index_sizes == null ? 0 : ((Number) backend_status_index_sizes.get("messages")).longValue();
         long backend_users = backend_status_index_sizes == null ? 0 : ((Number) backend_status_index_sizes.get("users")).longValue();

@@ -27,7 +27,6 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -103,30 +102,6 @@ public class QueryEntry extends AbstractIndexEntry implements IndexEntry {
         this.score_suggest = 0;
         update(message_period, byUserQuery);
         this.query_first = retrieval_last;
-    }
-
-    public QueryEntry(Map<String, Object> map) throws IllegalArgumentException {
-        init(map);
-    }
-    
-    public void init(Map<String, Object> map) throws IllegalArgumentException {
-        this.query = (String) map.get("query");
-        this.query_length = (int) parseLong((Number) map.get("query_length"));
-        String source_type_string = (String) map.get("source_type"); if (source_type_string == null) source_type_string = SourceType.USER.name();
-        this.source_type = SourceType.valueOf(source_type_string);
-        this.timezoneOffset = (int) parseLong((Number) map.get("timezoneOffset"));
-        Date now = new Date();
-        this.query_first = parseDate(map.get("query_first"), now);
-        this.query_last = parseDate(map.get("query_last"), now);
-        this.retrieval_last = parseDate(map.get("retrieval_last"), now);
-        this.retrieval_next = parseDate(map.get("retrieval_next"), now);
-        this.expected_next = parseDate(map.get("expected_next"), now);
-        this.query_count = (int) parseLong((Number) map.get("query_count"));
-        this.retrieval_count = (int) parseLong((Number) map.get("retrieval_count"));
-        this.message_period = parseLong((Number) map.get("message_period"));
-        this.messages_per_day = (int) parseLong((Number) map.get("messages_per_day"));
-        this.score_retrieval = (int) parseLong((Number) map.get("score_retrieval"));
-        this.score_suggest = (int) parseLong((Number) map.get("score_suggest"));
     }
 
     public QueryEntry(JSONObject json) throws IllegalArgumentException, JSONException {

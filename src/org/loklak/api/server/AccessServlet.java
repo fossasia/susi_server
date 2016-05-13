@@ -22,8 +22,6 @@ package org.loklak.api.server;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.Collection;
-import java.util.Map;
-
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -55,7 +53,7 @@ public class AccessServlet extends HttpServlet {
         boolean jsonp = callback != null && callback.length() > 0;
         
         post.setResponse(response, "application/javascript");
-        Collection<Track> tracks = DAO.access.getTrack();
+        Collection<Track> tracks = DAO.access.getTracks();
         
         // generate json
         JSONObject json = new JSONObject(true);
@@ -65,11 +63,12 @@ public class AccessServlet extends HttpServlet {
         for (Track track: tracks) {
             if (anonymize && !track.get("class").equals("SearchServlet")) continue;
             JSONObject a = new JSONObject(true);
-            for (Map.Entry<String, Object> entry: track.entrySet()) {
-                if (anonymize && "host".equals(entry.getKey())) {
-                    a.put("host-anonymized", Integer.toHexString(Math.abs(entry.getValue().hashCode())));
+            for (String key: track.keySet()) {
+                Object value = track.get(key);
+                if (anonymize && "host".equals(key)) {
+                    a.put("host-anonymized", Integer.toHexString(Math.abs(value.hashCode())));
                 } else {
-                    a.put(entry.getKey(), entry.getValue());
+                    a.put(key, value);
                 }
             }
             access.put(a);

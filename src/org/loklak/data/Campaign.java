@@ -22,8 +22,6 @@ package org.loklak.data;
 import java.text.ParseException;
 import java.util.Comparator;
 import java.util.Date;
-import java.util.Map;
-
 import org.json.JSONObject;
 import org.loklak.tools.DateParser;
 
@@ -44,14 +42,6 @@ public class Campaign implements Comparator<Campaign>, Comparable<Campaign> {
     public Campaign(JSONObject campaignMap) {
         this();
         this.map.putAll(campaignMap);
-        this.start_time = ((Date) this.map.get("start_date")).getTime();
-        this.end_time = ((Date) this.map.get("end_date")).getTime();
-        this.id = DateParser.minuteDateFormat.format((Date) this.map.get("start_date")).replace(' ', '_') + "-" + DateParser.minuteDateFormat.format((Date) this.map.get("end_date")).replace(' ', '_') + "-" + Math.abs(((String) this.map.get("query")).hashCode()) + "-" + Math.abs(((String) this.map.get("name")).hashCode());
-    }
-    
-    public Campaign(Map<String, Object> campaignMap) {
-        this();
-        for (Map.Entry<String, Object> entry: campaignMap.entrySet()) this.map.put(entry.getKey(), entry.getValue());
         this.start_time = ((Date) this.map.get("start_date")).getTime();
         this.end_time = ((Date) this.map.get("end_date")).getTime();
         this.id = DateParser.minuteDateFormat.format((Date) this.map.get("start_date")).replace(' ', '_') + "-" + DateParser.minuteDateFormat.format((Date) this.map.get("end_date")).replace(' ', '_') + "-" + Math.abs(((String) this.map.get("query")).hashCode()) + "-" + Math.abs(((String) this.map.get("name")).hashCode());

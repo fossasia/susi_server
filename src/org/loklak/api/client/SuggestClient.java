@@ -21,9 +21,10 @@ package org.loklak.api.client;
 
 import java.io.IOException;
 import java.net.URLEncoder;
-import java.util.List;
 import java.util.Map;
 
+import org.json.JSONArray;
+import org.json.JSONObject;
 import org.loklak.data.DAO;
 import org.loklak.http.ClientConnection;
 import org.loklak.objects.QueryEntry;
@@ -65,23 +66,20 @@ public class SuggestClient {
                 "&port.https=" + httpsport +
                 "&peername=" + peername;
         byte[] response = ClientConnection.download(urlstring);
-        byte[] json = response;
-        if (json == null || json.length == 0) return rl;
-        Map<String, Object> map = DAO.jsonMapper.readValue(json, DAO.jsonTypeRef);
-        Object queries_obj = map.get("queries");
-        @SuppressWarnings("unchecked") List<Map<String, Object>> queries = queries_obj instanceof List<?> ? (List<Map<String, Object>>) queries_obj : null;
+        if (response == null || response.length == 0) return rl;
+        JSONObject json = new JSONObject(UTF8.String(response));
+        JSONArray queries = json.has("queries") ? json.getJSONArray("queries") : null;
         if (queries != null) {
-            for (Map<String, Object> query: queries) {
-                if (query == null) continue;
-                QueryEntry qe = new QueryEntry(query);
+            for (Object query_obj: queries) {
+                if (query_obj == null) continue;
+                QueryEntry qe = new QueryEntry((JSONObject) query_obj);
                 rl.add(qe);
             }
         }
         
-        Object metadata_obj = map.get("search_metadata");
+        Object metadata_obj = json.get("search_metadata");
         if (metadata_obj != null && metadata_obj instanceof Map<?,?>) {
-            @SuppressWarnings("unchecked")
-            Integer hits = (Integer) ((Map<String, Object>) metadata_obj).get("hits");
+            Integer hits = (Integer) ((JSONObject) metadata_obj).get("hits");
             if (hits != null) rl.setHits(hits.longValue());
         }
         return rl;

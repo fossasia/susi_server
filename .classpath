@@ -35,6 +35,7 @@
 	<classpathentry kind="lib" path="lib/jetty-util-9.2.15.v20160210.jar"/>
 	<classpathentry kind="lib" path="lib/jetty-webapp-9.2.15.v20160210.jar"/>
 	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="src" path="test"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.6"/>
 	<classpathentry kind="lib" path="lib/javax.servlet-api-3.1.0.jar"/>
 	<classpathentry kind="lib" path="lib/antlr-runtime-3.5.jar"/>

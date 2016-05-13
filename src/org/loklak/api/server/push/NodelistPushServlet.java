@@ -18,14 +18,14 @@
  */
 package org.loklak.api.server.push;
 
+import org.json.JSONArray;
+import org.json.JSONObject;
 import org.loklak.harvester.JsonFieldConverter;
 import org.loklak.harvester.JsonValidator;
 import org.loklak.harvester.SourceType;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 public class NodelistPushServlet extends AbstractPushServlet {
 
@@ -46,16 +46,14 @@ public class NodelistPushServlet extends AbstractPushServlet {
         return JsonFieldConverter.JsonConversionSchemaEnum.NODELIST_NODE;
     }
 
-    @SuppressWarnings("unchecked")
     @Override
-    protected List<Map<String, Object>> extractMessages(Map<String, Object> data) {
-        return (List<Map<String, Object>>) data.get("nodes");
+    protected JSONArray extractMessages(JSONObject data) {
+        return data.getJSONArray("nodes");
     }
 
-    @SuppressWarnings("unchecked")
     @Override
-    protected void customProcessing(Map<String, Object> message) {
-        Map<String, Object> location = (Map<String, Object>) message.get("position");
+    protected void customProcessing(JSONObject message) {
+        JSONObject location = (JSONObject) message.get("position");
 
         final Double longitude = Double.parseDouble((String) location.get("long"));
         final Double latitude = Double.parseDouble((String) location.get("lat"));
@@ -65,7 +63,7 @@ public class NodelistPushServlet extends AbstractPushServlet {
         message.put("location_point", location_point);
         message.put("location_mark", location_point);
 
-        Map<String, Object> user = new HashMap<>();
+        JSONObject user = new JSONObject(true);
         user.put("screen_name", "freifunk_" + message.get("name"));
         user.put("name", message.get("name"));
         message.put("user", user);

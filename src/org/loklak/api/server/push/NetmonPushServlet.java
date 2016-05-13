@@ -18,6 +18,8 @@
  */
 package org.loklak.api.server.push;
 
+import org.json.JSONArray;
+import org.json.JSONObject;
 import org.loklak.data.DAO;
 import org.loklak.geo.LocationSource;
 import org.loklak.harvester.JsonFieldConverter;
@@ -39,9 +41,7 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import java.io.IOException;
 import java.io.StringReader;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Arrays;
 
 public class NetmonPushServlet extends HttpServlet {
@@ -71,7 +71,7 @@ public class NetmonPushServlet extends HttpServlet {
             return;
         }
 
-        List<Map<String, Object>> nodesList = new ArrayList<>();
+        JSONArray nodesList = new JSONArray();
         byte[] xmlText;
         try {
             xmlText = ClientConnection.download(url);
@@ -79,9 +79,9 @@ public class NetmonPushServlet extends HttpServlet {
             Document document = builder.parse(new InputSource(new StringReader(new String(xmlText))));
             NodeList routerList = document.getElementsByTagName("router");
             for (int i = 0; i < routerList.getLength(); i++) {
-                Map<String, Object> node = convertDOMNodeToMap(routerList.item(i));
+                JSONObject node = convertDOMNodeToMap(routerList.item(i));
                 if (node != null)
-                    nodesList.add(node);
+                    nodesList.put(node);
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -90,15 +90,16 @@ public class NetmonPushServlet extends HttpServlet {
         }
 
         JsonFieldConverter converter = new JsonFieldConverter(JsonFieldConverter.JsonConversionSchemaEnum.NETMON_NODE);
-        List<Map<String, Object>> nodes = converter.convert(nodesList);
+        JSONArray nodes = converter.convert(nodesList);
 
-        for (Map<String, Object> node : nodes) {
-            if (node.get("text") == null) {
+        for (Object node_obj : nodes) {
+            JSONObject node = (JSONObject) node_obj;
+            if (!node.has("text")) {
                 node.put("text", "");
             }
             node.put("source_type", SourceType.NETMON.name());
-            if (node.get("user") == null) {
-                node.put("user", new HashMap<String, Object>());
+            if (!node.has("user")) {
+                node.put("user", new JSONObject());
             }
 
             List<Object> location_point = new ArrayList<>();
@@ -114,7 +115,7 @@ public class NetmonPushServlet extends HttpServlet {
                 continue;
             }
             try {
-                Map<String, Object> user = (Map<String, Object>) node.get("user");
+                JSONObject user = (JSONObject) node.get("user");
                 user.put("screen_name", computeUserId(user.get("update_date"), user.get("id"), SourceType.NETMON));
             } catch (Exception e) {
                 DAO.log("Problem computing user id : " + e.getMessage());
@@ -131,12 +132,12 @@ public class NetmonPushServlet extends HttpServlet {
 
     }
 
-    private static Map<String, Object> convertDOMNodeToMap(Node node) {
+    private static JSONObject convertDOMNodeToMap(Node node) {
         Node directChild = node.getFirstChild();
         if (directChild == null) {
             return null;
         }
-        Map<String, Object> result = new HashMap<>();
+        JSONObject result = new JSONObject(true);
         while (directChild != null) {
             if (directChild.getChildNodes().getLength() == 1
             && directChild.getChildNodes().item(0).getNodeType() == Node.TEXT_NODE) {

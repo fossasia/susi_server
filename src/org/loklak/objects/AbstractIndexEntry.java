@@ -32,9 +32,6 @@ import org.json.JSONObject;
 import org.loklak.tools.UTF8;
 
 import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.ObjectWriter;
 
 public abstract class AbstractIndexEntry implements IndexEntry {
 

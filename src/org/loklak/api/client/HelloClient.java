@@ -41,15 +41,15 @@ public class HelloClient {
         // retrieve some simple statistics from the index
         final String backend = DAO.getConfig("backend", "");
         final boolean backend_push = DAO.getConfig("backend.push.enabled", false);
-        Map<String, Object> backend_status = null;
-        Map<String, Object> backend_status_index_sizes = null;
+        JSONObject backend_status = null;
+        JSONObject backend_status_index_sizes = null;
         if (backend.length() > 0 && !backend_push) {
             try {
                 backend_status = StatusClient.status(backend);
             } catch (IOException e) {
                 e.printStackTrace();
             }
-            backend_status_index_sizes = backend_status == null ? null : (Map<String, Object>) backend_status.get("index_sizes");
+            backend_status_index_sizes = backend_status == null ? null : (JSONObject) backend_status.get("index_sizes");
         }
         long backend_messages = backend_status_index_sizes == null ? 0 : ((Number) backend_status_index_sizes.get("messages")).longValue();
         long backend_users = backend_status_index_sizes == null ? 0 : ((Number) backend_status_index_sizes.get("users")).longValue();

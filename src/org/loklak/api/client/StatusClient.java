@@ -20,27 +20,25 @@
 package org.loklak.api.client;
 
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
 
-import org.loklak.data.DAO;
+import org.json.JSONObject;
 import org.loklak.http.ClientConnection;
+import org.loklak.tools.UTF8;
 
 public class StatusClient {
 
-    public static Map<String, Object> status(final String protocolhostportstub) throws IOException {
+    public static JSONObject status(final String protocolhostportstub) throws IOException {
         final String urlstring = protocolhostportstub + "/api/status.json";
         byte[] response = ClientConnection.download(urlstring);
-        byte[] json = response;
-        if (json == null || json.length == 0) return new HashMap<>();
-        Map<String, Object> map = DAO.jsonMapper.readValue(json, DAO.jsonTypeRef);
-        return map;
+        if (response == null || response.length == 0) return new JSONObject();
+        JSONObject json = new JSONObject(UTF8.String(response));
+        return json;
     }
     
     public static void main(String[] args) {
         try {
-            Map<String, Object> json = status("http://loklak.org");
-            Map<String, Object> index_sizs = (Map<String, Object>) json.get("index_sizes");
+            JSONObject json = status("http://loklak.org");
+            JSONObject index_sizs = (JSONObject) json.get("index_sizes");
             System.out.println(json.toString());
             System.out.println(index_sizs.toString());
         } catch (IOException e) {

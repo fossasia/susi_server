@@ -22,10 +22,10 @@ package org.loklak;
 import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
-import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
 
 import org.eclipse.jetty.util.log.Log;
+import org.json.JSONObject;
 import org.loklak.data.DAO;
 import org.loklak.objects.MessageEntry;
 import org.loklak.objects.UserEntry;
@@ -88,8 +88,8 @@ public class DumpImporter extends Thread {
                         try {
                             while ((tweet = dumpReader.take()) != JsonStreamReader.POISON_JSON_MAP) {
                                 try {
-                                    Map<String, Object> json = tweet.getJson();
-                                    @SuppressWarnings("unchecked") Map<String, Object> user = (Map<String, Object>) json.remove("user");
+                                    JSONObject json = tweet.getJSON();
+                                    JSONObject user = (JSONObject) json.remove("user");
                                     if (user == null) continue;
                                     UserEntry u = new UserEntry(user);
                                     MessageEntry t = new MessageEntry(json);

@@ -19,13 +19,11 @@
 
 package org.loklak.api.server.push;
 
+import org.json.JSONArray;
+import org.json.JSONObject;
 import org.loklak.harvester.JsonFieldConverter;
 import org.loklak.harvester.JsonValidator;
 import org.loklak.harvester.SourceType;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
 
 public class FossasiaPushServlet extends AbstractPushServlet {
 
@@ -47,23 +45,24 @@ public class FossasiaPushServlet extends AbstractPushServlet {
     }
 
     @Override
-    protected Map<String, Object> extractMessages(Map<String, Object> data) {
+    protected JSONArray extractMessages(JSONObject data) {
         // each fossasia api file contains only 1 message
-        return data;
+        JSONArray array = new JSONArray();
+        array.put(data);
+        return array;
     }
 
-    @SuppressWarnings("unchecked")
     @Override
-    protected void customProcessing(Map<String, Object> message) {
+    protected void customProcessing(JSONObject message) {
 
-        Map<String, Object> location = (Map<String, Object>) message.get("location");
+        JSONObject location = (JSONObject) message.get("location");
 
         final Double longitude = (Double) location.get("lon");
         final Double latitude = (Double) location.get("lat");
 
-        List<Double> location_point = new ArrayList<>();
-        location_point.add(longitude);
-        location_point.add(latitude);
+        JSONArray location_point = new JSONArray();
+        location_point.put(longitude);
+        location_point.put(latitude);
         message.put("location_point", location_point);
         message.put("location_mark", location_point);
     }

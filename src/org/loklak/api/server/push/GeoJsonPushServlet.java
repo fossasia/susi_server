@@ -22,6 +22,8 @@ package org.loklak.api.server.push;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 
+import org.json.JSONArray;
+import org.json.JSONObject;
 import org.loklak.data.DAO;
 import org.loklak.geo.LocationSource;
 import org.loklak.harvester.SourceType;
@@ -36,6 +38,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.regex.Pattern;
 /*
@@ -78,13 +81,12 @@ public class GeoJsonPushServlet extends HttpServlet {
             return;
         }
         // parse json retrieved from url
-        final List<Map<String, Object>> features;
+        final JSONArray features;
         byte[] jsonText;
         try {
             jsonText = ClientConnection.download(url);
-            Map<String, Object> map = DAO.jsonMapper.readValue(jsonText, DAO.jsonTypeRef);
-            Object features_obj = map.get("features");
-            features = features_obj instanceof List<?> ? (List<Map<String, Object>>) features_obj : null;
+            JSONObject map = new JSONObject(new String(jsonText, StandardCharsets.UTF_8));
+            features = map.getJSONArray("features");
         } catch (Exception e) {
             response.sendError(400, "error reading json file from url");
             return;
@@ -117,28 +119,17 @@ public class GeoJsonPushServlet extends HttpServlet {
             }
         }
 
-        List<Map<String, Object>> rawMessages = new ArrayList<>();
+        JSONArray rawMessages = new JSONArray();
         ObjectWriter ow = new ObjectMapper().writerWithDefaultPrettyPrinter();
         PushReport nodePushReport = new PushReport();
-        for (Map<String, Object> feature : features) {
-            Object properties_obj = feature.get("properties");
-            @SuppressWarnings("unchecked")
-            Map<String, Object> properties = properties_obj instanceof Map<?, ?> ? (Map<String, Object>) properties_obj : null;
-            Object geometry_obj = feature.get("geometry");
-            @SuppressWarnings("unchecked")
-            Map<String, Object> geometry = geometry_obj instanceof Map<?, ?> ? (Map<String, Object>) geometry_obj : null;
-
-            if (properties == null) {
-                properties = new HashMap<>();
-            }
-            if (geometry == null) {
-                geometry = new HashMap<>();
-            }
-
-            Map<String, Object> message = new HashMap<>();
+        for (Object feature_obj : features) {
+            JSONObject feature = (JSONObject) feature_obj;
+            JSONObject properties = feature.has("properties") ? (JSONObject) feature.get("properties") : new JSONObject();
+            JSONObject geometry = feature.has("geometry") ? (JSONObject) feature.get("geometry") : new JSONObject();
+            JSONObject message = new JSONObject(true);
 
             // add mapped properties
-            Map<String, Object> mappedProperties = convertMapRulesProperties(mapRules, properties);
+            JSONObject mappedProperties = convertMapRulesProperties(mapRules, properties);
             message.putAll(mappedProperties);
 
             if (!"".equals(sourceType)) {
@@ -178,7 +169,7 @@ public class GeoJsonPushServlet extends HttpServlet {
                 nodePushReport.incrementErrorCount();
             }
 
-            rawMessages.add(message);
+            rawMessages.put(message);
         }
 
         PushReport report = PushServletHelper.saveMessagesAndImportProfile(rawMessages, Arrays.hashCode(jsonText), post, sourceType, screen_name);
@@ -202,30 +193,27 @@ public class GeoJsonPushServlet extends HttpServlet {
      * @param properties
      * @return mappedProperties
      */
-    private Map<String, Object> convertMapRulesProperties(Map<String, List<String>> mapRules, Map<String, Object> properties) {
-        Map<String, Object> root = new HashMap<>();
-        Iterator<Map.Entry<String, Object>> it = properties.entrySet().iterator();
-        while (it.hasNext()) {
-            Map.Entry<String, Object> pair = it.next();
-            String key = pair.getKey();
+    private JSONObject convertMapRulesProperties(Map<String, List<String>> mapRules, JSONObject properties) {
+        JSONObject root = new JSONObject(true);
+        for (String key: properties.keySet()) {
             if (mapRules.containsKey(key)) {
                 for (String newField : mapRules.get(key)) {
                     if (newField.contains(".")) {
                         String[] deepFields = newField.split(Pattern.quote("."));
-                        Map<String, Object> currentLevel = root;
+                        JSONObject currentLevel = root;
                         for (int lvl = 0; lvl < deepFields.length; lvl++) {
                             if (lvl == deepFields.length - 1) {
-                                currentLevel.put(deepFields[lvl], pair.getValue());
+                                currentLevel.put(deepFields[lvl], properties.get(key));
                             } else {
                                 if (currentLevel.get(deepFields[lvl]) == null) {
-                                    Map<String, Object> tmp = new HashMap<>();
+                                    JSONObject tmp = new JSONObject();
                                     currentLevel.put(deepFields[lvl], tmp);
                                 }
-                                currentLevel = (Map<String, Object>) currentLevel.get(deepFields[lvl]);
+                                currentLevel = (JSONObject) currentLevel.get(deepFields[lvl]);
                             }
                         }
                     } else {
-                        root.put(newField, pair.getValue());
+                        root.put(newField, properties.get(key));
                     }
                 }
             }

@@ -27,7 +27,6 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Random;
@@ -37,6 +36,7 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.zip.GZIPInputStream;
 
+import org.json.JSONArray;
 import org.json.JSONObject;
 import org.loklak.data.DAO;
 import org.loklak.tools.Compression;
@@ -178,10 +178,6 @@ public class JsonRepository {
         String random = (Long.toString(Math.abs(new Random(System.currentTimeMillis()).nextLong())) + "00000000").substring(0, 8);
         return new File(path, prefix + currentDatePart + "_" + random + ".txt");
     }
-
-    public JsonFactory write(Map<String, Object> map) throws IOException {
-        return write(new JSONObject(map));
-    }
     
     public JsonFactory write(JSONObject json) throws IOException {
         String line = json.toString(); // new ObjectMapper().writer().writeValueAsString(map);
@@ -192,8 +188,8 @@ public class JsonRepository {
         return jf;
     }
     
-    public JsonFactory write(Map<String, Object> map, char opkey) throws IOException {
-        String line = new JSONObject(map).toString(); // new ObjectMapper().writer().writeValueAsString(map);
+    public JsonFactory write(JSONObject json, char opkey) throws IOException {
+        String line = json.toString(); // new ObjectMapper().writer().writeValueAsString(map);
         JsonFactory jf = null;
         StringBuilder sb = new StringBuilder();
         sb.append('{').append('\"').append(UTF8.String(OPERATION_KEY)).append('\"').append(':').append('\"').append(opkey).append('\"').append(',');
@@ -211,9 +207,10 @@ public class JsonRepository {
         synchronized (this.buffers) {
             this.buffers.get(bufferName);
         }
+        // TODO: THIS IS INCOMPLETE!
     }
     
-    public List<Map<String, Object>> getBufferShard() {
+    public JSONArray getBufferShard() {
         return null;
     }
     

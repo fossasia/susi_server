@@ -18,8 +18,6 @@
  */
 package org.loklak.api.server;
 
-import org.elasticsearch.common.xcontent.XContentParser;
-import org.elasticsearch.common.xcontent.json.JsonXContent;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
