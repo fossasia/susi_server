@@ -24,7 +24,7 @@ CLASSPATH=".:./classes/:$CLASSPATH"
 
 cmdline="java";
 
-if [ -n "$ENVXmx" ] ; then cmdline="cmdline -Xmx $ENVXmx";
+if [ -n "$ENVXmx" ] ; then cmdline="$cmdline -Xmx$ENVXmx";
 elif [ -n "$CUSTOMXmx" ]; then cmdline="$cmdline -Xmx$CUSTOMXmx";
 elif [ -n "$DFAULTXmx" ]; then cmdline="$cmdline -Xmx$DFAULTXmx";
 fi
