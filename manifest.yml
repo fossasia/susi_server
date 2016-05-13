@@ -1,6 +1,7 @@
 --- 
+applications:
 - name: "Loklak Server"
-  buildpack: "https://github.com/aneeshd16/heroku-buildpack-ant-loklak.git"
+  buildpack: "https://github.com/leonmak/bluemix-buildpack-ant-loklak.git"
   description: "Distributed Tweet Search Server"
   image: "mariobehling/loklak"
   logo: "https://raw.githubusercontent.com/loklak/loklak_server/master/html/images/loklak_anonymous.png"
