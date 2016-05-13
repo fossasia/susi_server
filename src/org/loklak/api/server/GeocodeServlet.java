@@ -72,10 +72,9 @@ public class GeocodeServlet extends HttpServlet {
             // parse the json data
             try {
                 JSONObject json = new JSONObject(data);
-                Object places_obj = json.get("places");
-                if (places_obj instanceof List<?>) {
-                    List<Object> p = (List<Object>) places_obj;
-                    place = new String[p.size()];
+                if (json.has("places") && json.get("places") instanceof JSONArray) {
+                    JSONArray p = json.getJSONArray("places");
+                    place = new String[p.length()];
                     int i = 0; for (Object o: p) place[i++] = (String) o; 
                 } else {
                     response.sendError(400, "submitted data is not well-formed: expected a list of strings");

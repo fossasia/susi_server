@@ -78,7 +78,7 @@ public class AccountServlet extends HttpServlet {
                 if (accounts_obj != null && accounts_obj instanceof JSONArray) {
                     accounts = (JSONArray) accounts_obj;
                 } else {
-                    accounts = new JSONArray(1);
+                    accounts = new JSONArray();
                     accounts.put(json);
                 }
                 for (Object account_obj: accounts) {
