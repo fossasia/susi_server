@@ -555,13 +555,14 @@ public class ElasticsearchClient {
      */
     public List<Map.Entry<String, String>> writeMapBulk(final String indexName, final List<BulkEntry> jsonMapList) {
         BulkRequestBuilder bulkRequest = elasticsearchClient.prepareBulk();
-        for (int i = 0; i < jsonMapList.size(); i++) {
-            BulkEntry be = jsonMapList.get(i);
+        for (BulkEntry be: jsonMapList) {
             if (be.id == null) continue;
-            bulkRequest.add(elasticsearchClient.prepareIndex(indexName, be.type, be.id).setSource(be.jsonMap)
-                .setVersion(be.version == null ? 1 : be.version.longValue())
-                .setVersionType(be.version == null ? VersionType.FORCE : VersionType.EXTERNAL));
+            bulkRequest.add(
+                    elasticsearchClient.prepareIndex(indexName, be.type, be.id).setSource(be.jsonMap)
+                        .setVersion(be.version == null ? 1 : be.version.longValue())
+                        .setVersionType(be.version == null ? VersionType.FORCE : VersionType.EXTERNAL));
         }
+        //System.out.println("*** elastic bulk: " + jsonMapList.size() + " entries");
         BulkResponse bulkResponse = bulkRequest.get();
         List<Map.Entry<String, String>> errors = new ArrayList<>();
         for (BulkItemResponse r: bulkResponse.getItems()) {

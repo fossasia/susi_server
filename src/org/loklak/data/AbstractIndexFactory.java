@@ -45,23 +45,20 @@ import org.loklak.tools.CacheStats;
  */
 public abstract class AbstractIndexFactory<Entry extends IndexEntry> implements IndexFactory<Entry> {
     
-    private final static int         MAX_BULK_SIZE       =  1500;
-    private final static int         MAX_BULK_TIME       = 10000;
+    private final static int MAX_BULK_SIZE = 1500;
     
     protected final ElasticsearchClient elasticsearch_client;
     protected final CacheMap<String, Entry> objectCache;
     private CacheSet<String> existCache;
     protected final String index_name;
-    private long lastBulkWrite;
-    private AtomicLong indexWrite, indexExist, indexGet;
-    
-    
+    private AtomicLong indexWrite, indexExist, indexGet;    
+    private BlockingQueue<ElasticsearchClient.BulkEntry> bulkCache = new ArrayBlockingQueue<>(2 * MAX_BULK_SIZE);
+
     public AbstractIndexFactory(final ElasticsearchClient elasticsearch_client, final String index_name, final int cacheSize, final int existSize) {
         this.elasticsearch_client = elasticsearch_client;
         this.index_name = index_name;
         this.objectCache = new CacheMap<>(cacheSize);
         this.existCache = new CacheSet<>(existSize);
-        this.lastBulkWrite = System.currentTimeMillis();
         this.indexWrite = new AtomicLong(0);
         this.indexExist = new AtomicLong(0);
         this.indexGet = new AtomicLong(0);
@@ -175,14 +172,16 @@ public abstract class AbstractIndexFactory<Entry extends IndexEntry> implements 
         this.objectCache.put(id, entry);
         this.existCache.add(id);
         Map<String, Object> jsonMap = entry.toJSON().toMap();
+        assert jsonMap != null;
         if (jsonMap == null) return;
         ElasticsearchClient.BulkEntry be = new ElasticsearchClient.BulkEntry(id, type, AbstractIndexEntry.TIMESTAMP_FIELDNAME, null, jsonMap);
-        if (be.jsonMap != null) try {
+        try {
             bulkCache.put(be);
         } catch (InterruptedException e) {
             throw new IOException(e.getMessage());
+        } finally {
+            if (bulkCacheSize() >= MAX_BULK_SIZE) bulkCacheFlush(); // protect against OOM
         }
-        if (bulkCacheSize() >= MAX_BULK_SIZE || this.lastBulkWrite + MAX_BULK_TIME < System.currentTimeMillis()) bulkCacheFlush(); // protect against OOM
     }
     
     public int bulkCacheSize() {
@@ -190,7 +189,6 @@ public abstract class AbstractIndexFactory<Entry extends IndexEntry> implements 
     }
 
     public List<Map.Entry<String, String>> bulkCacheFlush() {
-        this.lastBulkWrite = System.currentTimeMillis();
         if (this.bulkCache.size() == 0) return new ArrayList<Map.Entry<String, String>>(0);
         
         int count = 0;
@@ -207,8 +205,6 @@ public abstract class AbstractIndexFactory<Entry extends IndexEntry> implements 
         this.indexWrite.addAndGet(jsonMapList.size());
         return errors;
     }
-    
-    private BlockingQueue<ElasticsearchClient.BulkEntry> bulkCache = new ArrayBlockingQueue<>(2 * MAX_BULK_SIZE);
     
     public void close() {
         this.bulkCacheFlush();

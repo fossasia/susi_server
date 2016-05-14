@@ -30,7 +30,6 @@ import org.loklak.data.DAO;
 import org.loklak.objects.MessageEntry;
 import org.loklak.objects.Timeline;
 import org.loklak.objects.UserEntry;
-import org.loklak.tools.storage.JsonRepository;
 
 public class QueuedIndexing extends Thread {
     
@@ -40,7 +39,6 @@ public class QueuedIndexing extends Thread {
     private static AtomicInteger queueClients = new AtomicInteger(0);
 
     private boolean shallRun = true, isBusy = false;
-    private JsonRepository jsonBufferHandler;
     
     public static int getMessageQueueSize() {
         return messageQueue.size();
@@ -54,8 +52,7 @@ public class QueuedIndexing extends Thread {
         return queueClients.get();
     }
     
-    public QueuedIndexing(JsonRepository jsonBufferHandler) {
-        this.jsonBufferHandler = jsonBufferHandler;
+    public QueuedIndexing() {
     }
     
     
@@ -117,10 +114,12 @@ public class QueuedIndexing extends Thread {
                 bulk.add(mw);
                 if (bulk.size() >= maxBulkSize) {
                     dumpbulk(bulk, candMessages, knownMessagesCache);
+                    bulk.clear();
                 }
             }
             if (bulk.size() >= 0) {
                 dumpbulk(bulk, candMessages, knownMessagesCache);
+                bulk.clear();
             }
             this.isBusy = false;
         } catch (Throwable e) {
@@ -140,7 +139,6 @@ public class QueuedIndexing extends Thread {
         DAO.log("dumped timelines: " + candMessages + " new " + knownMessagesCache + " known from cache, storage time: " + (dumpfinish - dumpstart) + " ms, remaining messages: " + messageQueue.size());
         candMessages.set(0);
         knownMessagesCache.set(0);
-        bulk.clear();
     }
     
     public static void addScheduler(Timeline tl, final boolean dump) {

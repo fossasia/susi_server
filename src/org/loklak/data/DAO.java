@@ -596,6 +596,9 @@ public class DAO {
         } catch (IOException e) {
             e.printStackTrace();
         }
+        // flush bulk cache to make results available in search immediately
+        users.bulkCacheFlush();
+        messages.bulkCacheFlush();
         return exists;
     }
     

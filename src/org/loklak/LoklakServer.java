@@ -474,7 +474,7 @@ public class LoklakServer {
         LoklakServer.server.start();
         LoklakServer.caretaker = new Caretaker();
         LoklakServer.caretaker.start();
-        LoklakServer.queuedIndexing = new QueuedIndexing(DAO.message_dump);
+        LoklakServer.queuedIndexing = new QueuedIndexing();
         LoklakServer.queuedIndexing.start();
         LoklakServer.dumpImporter = new DumpImporter(Integer.MAX_VALUE);
         LoklakServer.dumpImporter.start();
