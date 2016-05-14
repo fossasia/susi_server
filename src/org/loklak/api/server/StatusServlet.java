@@ -91,9 +91,14 @@ public class StatusServlet extends HttpServlet {
         system.put("load_system_cpu", OS.getSystemCpuLoad());
         system.put("load_process_cpu", OS.getProcessCpuLoad());
         system.put("server_threads", LoklakServer.getServerThreads());
+        system.put("server_uri", LoklakServer.getServerURI());
 
         JSONObject index = new JSONObject(true);
-        index.put("mps", Math.max(DAO.countLocalMessages(86400000) / 86400, DAO.countLocalMessages(600000) / 600)); // best of 24h and 10m
+        int mps24h = (int) (DAO.countLocalMessages(86400000) / 86400L);
+        int mps10m = (int) (DAO.countLocalMessages(600000) / 600L);
+        index.put("mps24h", mps24h);
+        index.put("mps10m", mps10m);
+        index.put("mps", Math.max(mps24h, mps10m)); // best of 24h and 10m
         JSONObject messages = new JSONObject(true);
         messages.put("size", local_messages + backend_messages);
         messages.put("size_local", local_messages);

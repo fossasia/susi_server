@@ -32,8 +32,6 @@ import java.util.Set;
 
 public class RSSFeed implements Iterable<RSSMessage> {
 
-    public static final int DEFAULT_MAXSIZE = 10000;
-
     // class variables
     private RSSMessage channel;
     private String imageURL;
