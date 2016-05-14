@@ -53,7 +53,7 @@ dependencies {
   compile name: 'junit-4.12'
   compile name: 'log4j-1.2.17'
   compile name: 'lucene-analyzers-common-5.5.0'
-  compile name: 'lucene-backward-codecs-5.5.0.'
+  compile name: 'lucene-backward-codecs-5.5.0'
   compile name: 'lucene-core-5.5.0'
   compile name: 'lucene-grouping-5.5.0'
   compile name: 'lucene-highlighter-5.5.0'
