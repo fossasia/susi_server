@@ -118,7 +118,7 @@ public class QueuedIndexing extends Thread {
                     long dumpTime = System.currentTimeMillis() - startDump;
                     if (dumpTime > 1000) {
                         Log.getLog().warn("long response time for dump write (" + dumpTime + "ms), doing dynamic throttling");
-                        try {Thread.sleep(dumpTime * 2);} catch (InterruptedException e) {}
+                        try {Thread.sleep(dumpTime / 2);} catch (InterruptedException e) {}
                     }
                     bulk.clear();
                 }
