@@ -113,7 +113,13 @@ public class QueuedIndexing extends Thread {
                 mw.t.enrich(); // we enrich here again because the remote peer may have done this with an outdated version or not at all
                 bulk.add(mw);
                 if (bulk.size() >= maxBulkSize) {
+                    long startDump = System.currentTimeMillis();
                     dumpbulk(bulk, candMessages, knownMessagesCache);
+                    long dumpTime = System.currentTimeMillis() - startDump;
+                    if (dumpTime > 1000) {
+                        Log.getLog().warn("long response time for dump write (" + dumpTime + "ms), doing dynamic throttling");
+                        try {Thread.sleep(dumpTime * 2);} catch (InterruptedException e) {}
+                    }
                     bulk.clear();
                 }
             }
