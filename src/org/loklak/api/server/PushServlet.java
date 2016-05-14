@@ -99,7 +99,7 @@ public class PushServlet extends HttpServlet {
         JSONObject metadata = map.has("search_metadata") ? (JSONObject) map.get("search_metadata") : null;
         // read peer id if they submitted one
         if (metadata != null) {
-            String peerid = (String) metadata.get("peerid");
+            String peerid = metadata.has("peerid") ? (String) metadata.get("peerid") : null;
             if (peerid != null && peerid.length() > 3 && peerid.charAt(2) == '_') {
                 remoteHash = peerid;
                 remoteHashFromPeerId = true;
