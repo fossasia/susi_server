@@ -131,7 +131,7 @@ public class PushServlet extends HttpServlet {
             
             // update query database if query was given in the result list
             if (metadata != null) {
-                query = (String) metadata.get("query");
+                query = metadata.has("query") ? (String) metadata.get("query") : null;
                 if (query != null) {
                     // update query database
                     QueryEntry qe = null;
