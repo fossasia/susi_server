@@ -88,6 +88,10 @@ import org.loklak.tools.DateParser;
 
 public class ElasticsearchClient {
 
+    private static long throttling_time_threshold = 2000L; // update time
+    private static long throttling_ops_threshold = 1000L; // messages per second
+    private static double throttling_factor = 1.0d;
+    
     private Node elasticsearchNode;
     private Client elasticsearchClient;
 
@@ -540,7 +544,13 @@ public class ElasticsearchClient {
         // https://www.elastic.co/blog/elasticsearch-versioning-support
         // TODO: error handling
         boolean successful = r.isCreated();
-        Log.getLog().info("elastic write entry to index " + indexName + ": " + (successful ? "successful":"error") + ", " + (System.currentTimeMillis() - start) + " milliseconds");
+        long duration = System.currentTimeMillis() - start;
+        long regulator = 0;
+        if (duration > throttling_time_threshold) {
+            regulator = (long) (throttling_factor * duration);
+            try {Thread.sleep(regulator);} catch (InterruptedException e) {}
+        }
+        Log.getLog().info("elastic write entry to index " + indexName + ": " + (successful ? "successful":"error") + ", " + duration + " ms" + (regulator == 0 ? "" : ", throttled with " + regulator + " ms"));
         return successful;
     }
 
@@ -576,7 +586,14 @@ public class ElasticsearchClient {
                 errors.add(new AbstractMap.SimpleEntry<String, String>(id, err));
             }
         }
-        Log.getLog().info("elastic write bulk to index " + indexName + ": " + jsonMapList.size() + " entries, " + errors.size() + " errors, " + (System.currentTimeMillis() - start) + " milliseconds");
+        long duration = System.currentTimeMillis() - start;
+        long regulator = 0;
+        long ops = jsonMapList.size() * 1000 / duration;
+        if (duration > throttling_time_threshold && ops > throttling_ops_threshold) {
+            regulator = (long) (throttling_factor * duration);
+            try {Thread.sleep(regulator);} catch (InterruptedException e) {}
+        }
+        Log.getLog().info("elastic write bulk to index " + indexName + ": " + jsonMapList.size() + " entries, " + errors.size() + " errors, " + duration + " ms" + (regulator == 0 ? "" : ", throttled with " + regulator + " ms") + ", " + ops + " objects/second");
         return errors;
     }
 
