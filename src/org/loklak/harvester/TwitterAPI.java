@@ -240,7 +240,7 @@ public class TwitterAPI {
         // in case that no location is given, we try to hack that information out of the context
         if (location == null || location.length() == 0) {
             // sometimes the time zone contains city names! Try that
-            String time_zone = map.has("time_zone") ? (String) map.get("time_zone") : null;
+            String time_zone = map.has("time_zone") && map.get("time_zone") != JSONObject.NULL ? (String) map.get("time_zone") : null;
             if (time_zone != null && time_zone.length() > 0) {
                 GeoMark loc = DAO.geoNames.analyse(time_zone, null, 5, "");
                 // check if the time zone was actually a location name
