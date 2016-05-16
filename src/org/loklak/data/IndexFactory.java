@@ -21,8 +21,6 @@ package org.loklak.data;
 
 import java.io.IOException;
 import java.util.Collection;
-import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import org.json.JSONObject;
@@ -60,7 +58,7 @@ public interface IndexFactory<Entry extends IndexEntry> {
      * write all entries written with writeEntryBulk to the search index as an elasticsearch bulk request
      * @return
      */
-    public List<Map.Entry<String, String>> bulkCacheFlush();
+    public ElasticsearchClient.BulkWriteResult bulkCacheFlush();
     
     public void close();
     

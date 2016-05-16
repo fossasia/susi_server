@@ -188,8 +188,8 @@ public abstract class AbstractIndexFactory<Entry extends IndexEntry> implements 
         return this.bulkCache.size();
     }
 
-    public List<Map.Entry<String, String>> bulkCacheFlush() {
-        if (this.bulkCache.size() == 0) return new ArrayList<Map.Entry<String, String>>(0);
+    public ElasticsearchClient.BulkWriteResult bulkCacheFlush() {
+        if (this.bulkCache.size() == 0) return ElasticsearchClient.EMPTY_BULK_RESULT;
         
         int count = 0;
         List<ElasticsearchClient.BulkEntry> jsonMapList = new ArrayList<ElasticsearchClient.BulkEntry>();
@@ -200,10 +200,10 @@ public abstract class AbstractIndexFactory<Entry extends IndexEntry> implements 
             count++;
             if (count >= MAX_BULK_SIZE) break; // protect against OOM, the cache can be filled concurrently
         }
-        if (count == 0) return new ArrayList<Map.Entry<String, String>>(0);
-        List<Map.Entry<String, String>> errors = elasticsearch_client.writeMapBulk(this.index_name, jsonMapList);
+        if (count == 0) return ElasticsearchClient.EMPTY_BULK_RESULT;
+        ElasticsearchClient.BulkWriteResult result = elasticsearch_client.writeMapBulk(this.index_name, jsonMapList);
         this.indexWrite.addAndGet(jsonMapList.size());
-        return errors;
+        return result;
     }
     
     public void close() {

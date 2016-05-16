@@ -32,11 +32,13 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import org.eclipse.jetty.util.log.Log;
+import org.elasticsearch.action.ActionWriteResponse;
 import org.elasticsearch.action.admin.cluster.health.ClusterHealthResponse;
 import org.elasticsearch.action.admin.cluster.stats.ClusterStatsAction;
 import org.elasticsearch.action.admin.cluster.stats.ClusterStatsNodes;
@@ -91,6 +93,8 @@ public class ElasticsearchClient {
     private static long throttling_time_threshold = 2000L; // update time high limit
     private static long throttling_ops_threshold = 1000L; // messages per second low limit
     private static double throttling_factor = 1.0d; // factor applied on update duration if both thresholds are passed
+    
+    public final static BulkWriteResult EMPTY_BULK_RESULT = new BulkWriteResult();
     
     private Node elasticsearchNode;
     private Client elasticsearchClient;
@@ -543,15 +547,15 @@ public class ElasticsearchClient {
         // documentation about the versioning is available at
         // https://www.elastic.co/blog/elasticsearch-versioning-support
         // TODO: error handling
-        boolean successful = r.isCreated();
-        long duration = System.currentTimeMillis() - start;
+        boolean created = r.isCreated(); // true means created, false means updated
+        long duration = Math.max(1, System.currentTimeMillis() - start);
         long regulator = 0;
         if (duration > throttling_time_threshold) {
             regulator = (long) (throttling_factor * duration);
             try {Thread.sleep(regulator);} catch (InterruptedException e) {}
         }
-        Log.getLog().info("elastic write entry to index " + indexName + ": " + (successful ? "successful":"error") + ", " + duration + " ms" + (regulator == 0 ? "" : ", throttled with " + regulator + " ms"));
-        return successful;
+        Log.getLog().info("elastic write entry to index " + indexName + ": " + (created ? "created":"updated") + ", " + duration + " ms" + (regulator == 0 ? "" : ", throttled with " + regulator + " ms"));
+        return created;
     }
 
     /**
@@ -567,7 +571,7 @@ public class ElasticsearchClient {
      *            The method was only successful if this list is empty.
      *            This must be a list, because keys may appear several times.
      */
-    public List<Map.Entry<String, String>> writeMapBulk(final String indexName, final List<BulkEntry> jsonMapList) {
+    public BulkWriteResult writeMapBulk(final String indexName, final List<BulkEntry> jsonMapList) {
         long start = System.currentTimeMillis();
         BulkRequestBuilder bulkRequest = elasticsearchClient.prepareBulk();
         for (BulkEntry be: jsonMapList) {
@@ -578,23 +582,42 @@ public class ElasticsearchClient {
                         .setVersionType(be.version == null ? VersionType.FORCE : VersionType.EXTERNAL));
         }
         BulkResponse bulkResponse = bulkRequest.get();
-        List<Map.Entry<String, String>> errors = new ArrayList<>();
+        BulkWriteResult result = new BulkWriteResult();
         for (BulkItemResponse r: bulkResponse.getItems()) {
+            String id = r.getId();
+            ActionWriteResponse response = r.getResponse();
+            if (response instanceof IndexResponse) {
+                if (((IndexResponse) response).isCreated()) result.created.add(id);
+            }
             String err = r.getFailureMessage();
             if (err != null) {
-                String id = r.getId();
-                errors.add(new AbstractMap.SimpleEntry<String, String>(id, err));
+                result.errors.put(id, err);
             }
         }
-        long duration = System.currentTimeMillis() - start;
+        long duration = Math.max(1, System.currentTimeMillis() - start);
         long regulator = 0;
-        long ops = jsonMapList.size() * 1000 / duration;
+        long ops = result.created.size() * 1000 / duration;
         if (duration > throttling_time_threshold && ops < throttling_ops_threshold) {
             regulator = (long) (throttling_factor * duration);
             try {Thread.sleep(regulator);} catch (InterruptedException e) {}
         }
-        Log.getLog().info("elastic write bulk to index " + indexName + ": " + jsonMapList.size() + " entries, " + errors.size() + " errors, " + duration + " ms" + (regulator == 0 ? "" : ", throttled with " + regulator + " ms") + ", " + ops + " objects/second");
-        return errors;
+        Log.getLog().info("elastic write bulk to index " + indexName + ": " + jsonMapList.size() + " entries, " + result.created.size() + " created, " + result.errors.size() + " errors, " + duration + " ms" + (regulator == 0 ? "" : ", throttled with " + regulator + " ms") + ", " + ops + " objects/second");
+        return result;
+    }
+    
+    public static class BulkWriteResult {
+        private Map<String, String> errors;
+        private Set<String> created;
+        public BulkWriteResult() {
+            this.errors = new LinkedHashMap<>();
+            this.created = new LinkedHashSet<>();
+        }
+        public Map<String, String> getErrors() {
+            return this.errors;
+        }
+        public Set<String> getCreated() {
+            return this.created;
+        }
     }
 
     private final static DateTimeFormatter utcFormatter = ISODateTimeFormat.dateTime().withZoneUTC();
@@ -604,12 +627,21 @@ public class ElasticsearchClient {
         private String type;
         private Long version;
         public Map<String, Object> jsonMap;
+        
+        /**
+         * initialize entry for bulk writes
+         * @param id the id of the entry
+         * @param type the type name
+         * @param timestamp_fieldname the name of the timestamp field, null for unused. If a name is given here, then this field is filled with the current time
+         * @param version the version number >= 0 for external versioning or null for forced updates without versioning
+         * @param jsonMap the payload object
+         */
         public BulkEntry(final String id, final String type, final String timestamp_fieldname, final Long version, final Map<String, Object> jsonMap) {
             this.id = id;
             this.type = type;
             this.version = version;
             this.jsonMap = jsonMap;
-            if (!this.jsonMap.containsKey(timestamp_fieldname)) this.jsonMap.put(timestamp_fieldname, utcFormatter.print(System.currentTimeMillis()));
+            if (timestamp_fieldname != null && !this.jsonMap.containsKey(timestamp_fieldname)) this.jsonMap.put(timestamp_fieldname, utcFormatter.print(System.currentTimeMillis()));
         }
     }
 
