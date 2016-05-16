@@ -21,6 +21,7 @@ package org.loklak.data;
 
 import java.io.IOException;
 import java.util.Collection;
+import java.util.List;
 import java.util.Set;
 
 import org.json.JSONObject;
@@ -41,24 +42,9 @@ public interface IndexFactory<Entry extends ObjectEntry> {
 
     public JSONObject readJSON(String id);
 
-    public boolean writeEntry(String id, String type, Entry entry) throws IOException;
+    public boolean writeEntry(IndexEntry<Entry> entry) throws IOException;
     
-    /**
-     * Writing bulk entries are efficient because it does not actually do an index update.
-     * All written entries are only written if bulkCacheFlush is called.
-     * Users of this method must take care to call bulkCacheFlush themself, it is not done automatically.
-     * @param id
-     * @param type
-     * @param entry
-     * @throws IOException
-     */
-    public void writeEntryBulk(String id, String type, Entry entry) throws IOException;
-    
-    /**
-     * write all entries written with writeEntryBulk to the search index as an elasticsearch bulk request
-     * @return
-     */
-    public ElasticsearchClient.BulkWriteResult bulkCacheFlush();
+    public ElasticsearchClient.BulkWriteResult writeEntries(Collection<IndexEntry<Entry>> entries) throws IOException;
     
     public void close();
     

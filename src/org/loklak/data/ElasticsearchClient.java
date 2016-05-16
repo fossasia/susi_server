@@ -364,6 +364,7 @@ public class ElasticsearchClient {
     }    
 
     public Set<String> existBulk(String indexName, String typeName, final Collection<String> ids) {
+        if (ids == null || ids.size() == 0) return new HashSet<>();
         MultiGetResponse multiGetItemResponses = elasticsearchClient.prepareMultiGet()
                 .add(indexName, typeName, ids)
                 .get();

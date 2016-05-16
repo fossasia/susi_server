@@ -1,5 +1,5 @@
 /**
- *  IndexEntry
+ *  ObjectEntry
  *  Copyright 26.04.2015 by Michael Peter Christen, @0rb1t3r
  *
  *  This library is free software; you can redistribute it and/or

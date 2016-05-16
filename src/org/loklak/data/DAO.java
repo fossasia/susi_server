@@ -302,44 +302,44 @@ public class DAO {
             }.start();
 
             log("initializing queries...");
-            // initialize query harvesting
-            //if (getConfig("retrieval.queries.enabled", false)) {
-                File harvestingPath = new File(datadir, "queries");
-                if (!harvestingPath.exists()) harvestingPath.mkdirs();
-                String[] list = harvestingPath.list();
-                for (String queryfile: list) {
-                    if (queryfile.startsWith(".") || queryfile.endsWith("~")) continue;
-                    try {
-                        BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(new File(harvestingPath, queryfile))));
-                        String line;
-                        while ((line = reader.readLine()) != null) {
-                            line = line.trim().toLowerCase();
-                            if (line.length() == 0) continue;
-                            if (line.charAt(0) <= '9') {
-                                // truncate statistic
-                                int p = line.indexOf(' ');
-                                if (p < 0) continue;
-                                line = line.substring(p + 1).trim();
-                            }
-                            // write line into query database
-                            if (!existQuery(line)) {
-                                try {
-                                    queries.writeEntryBulk(
-                                            line,
-                                            SourceType.TWITTER.name(),
-                                            new QueryEntry(line, 0, 60000, SourceType.TWITTER, false));
-                                } catch (IOException e) {
-                                    e.printStackTrace();
-                                }
-                            }
+            File harvestingPath = new File(datadir, "queries");
+            if (!harvestingPath.exists()) harvestingPath.mkdirs();
+            String[] list = harvestingPath.list();
+            for (String queryfile: list) {
+                if (queryfile.startsWith(".") || queryfile.endsWith("~")) continue;
+                try {
+                    BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(new File(harvestingPath, queryfile))));
+                    String line;
+                    List<IndexEntry<QueryEntry>> bulkEntries = new ArrayList<>();
+                    while ((line = reader.readLine()) != null) {
+                        line = line.trim().toLowerCase();
+                        if (line.length() == 0) continue;
+                        if (line.charAt(0) <= '9') {
+                            // truncate statistic
+                            int p = line.indexOf(' ');
+                            if (p < 0) continue;
+                            line = line.substring(p + 1).trim();
                         }
-                        reader.close();
-                    } catch (IOException e) {
-                        e.printStackTrace();
+                        // write line into query database
+                        if (!existQuery(line)) {
+                            bulkEntries.add(
+                                new IndexEntry<QueryEntry>(
+                                    line,
+                                    SourceType.TWITTER.name(),
+                                    new QueryEntry(line, 0, 60000, SourceType.TWITTER, false))
+                            );
+                        }
+                        if (bulkEntries.size() > 1000) {
+                            queries.writeEntries(bulkEntries);
+                            bulkEntries.clear();
+                        }
                     }
+                    queries.writeEntries(bulkEntries);
+                    reader.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
                 }
-                queries.bulkCacheFlush();
-            //}
+            }
             log("queries initialized.");
         } catch (Throwable e) {
             e.printStackTrace();
@@ -519,13 +519,13 @@ public class DAO {
         try {
             synchronized (DAO.class) {
                 // record tweet into search index and check if this is a new entry
-                boolean exists = messages.writeEntry(mw.t.getIdStr(), mw.t.getSourceType().name(), mw.t);
+                boolean exists = messages.writeEntry(new IndexEntry<MessageEntry>(mw.t.getIdStr(), mw.t.getSourceType().name(), mw.t));
 
                 // check if tweet exists in index
                 if (exists) return false; // we don't need to write the user and also not to the message dump
 
                 // write the user into the index
-                users.writeEntry(mw.u.getScreenName(), mw.t.getSourceType().name(), mw.u);
+                users.writeEntry(new IndexEntry<UserEntry>(mw.u.getScreenName(), mw.t.getSourceType().name(), mw.u));
 
                 // record tweet into text file
                 if (mw.dump) message_dump.write(mw.t.toJSON(mw.u, false, Integer.MAX_VALUE, ""));
@@ -552,23 +552,30 @@ public class DAO {
 
 
     private static void writeMessageBulkNoDump(Collection<MessageWrapper> mws) {
-        for (MessageWrapper mw: mws) try {
+        List<IndexEntry<UserEntry>> userBulk = new ArrayList<>();
+        List<IndexEntry<MessageEntry>> messageBulk = new ArrayList<>();
+        for (MessageWrapper mw: mws) {
             synchronized (DAO.class) {
                 // write the user into the index
-                users.writeEntryBulk(mw.u.getScreenName(), mw.t.getSourceType().name(), mw.u);
+                userBulk.add(new IndexEntry<UserEntry>(mw.u.getScreenName(), mw.t.getSourceType().name(), mw.u));
     
                 // record tweet into search index
-                messages.writeEntryBulk(mw.t.getIdStr(), mw.t.getSourceType().name(), mw.t);
+                messageBulk.add(new IndexEntry<MessageEntry>(mw.t.getIdStr(), mw.t.getSourceType().name(), mw.t));
              }
                 
             // teach the classifier
             Classifier.learnPhrase(mw.t.getText(Integer.MAX_VALUE, ""));
+        }
+        try {
+            messages.writeEntries(messageBulk);
+            users.writeEntries(userBulk);
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
     
     private static Set<String> writeMessageBulkDump(Collection<MessageWrapper> mws) {
+        if (mws.size() == 0) return new HashSet<>();
         // make a bulk exist request
         List<String> ids = new ArrayList<>();
         for (MessageWrapper mw: mws) {
@@ -576,16 +583,19 @@ public class DAO {
         }
         Set<String> exists = messages.existsBulk(ids);
         //System.out.println("*** " + mws.size() + " tested, " + exists.size() + " exists");
+
+        List<IndexEntry<UserEntry>> userBulk = new ArrayList<>();
+        List<IndexEntry<MessageEntry>> messageBulk = new ArrayList<>();
         
         for (MessageWrapper mw: mws) try {
             // check if tweet exists in index
             if (exists.contains(mw.t.getIdStr())) continue; // we omit writing this again
             synchronized (DAO.class) {
                 // write the user into the index
-                users.writeEntryBulk(mw.u.getScreenName(), mw.t.getSourceType().name(), mw.u);
+                userBulk.add(new IndexEntry<UserEntry>(mw.u.getScreenName(), mw.t.getSourceType().name(), mw.u));
     
                 // record tweet into search index
-                messages.writeEntryBulk(mw.t.getIdStr(), mw.t.getSourceType().name(), mw.t);
+                messageBulk.add(new IndexEntry<MessageEntry>(mw.t.getIdStr(), mw.t.getSourceType().name(), mw.t));
                  
                 // record tweet into text file
                 message_dump.write(mw.t.toJSON(mw.u, false, Integer.MAX_VALUE, ""));
@@ -596,9 +606,12 @@ public class DAO {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        // flush bulk cache to make results available in search immediately
-        users.bulkCacheFlush();
-        messages.bulkCacheFlush();
+        try {
+            messages.writeEntries(messageBulk);
+            users.writeEntries(userBulk);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         return exists;
     }
     
@@ -615,7 +628,7 @@ public class DAO {
             if (dump) account_dump.write(a.toJSON(null));
 
             // record account into search index
-            accounts.writeEntry(a.getScreenName(), a.getSourceType().name(), a);
+            accounts.writeEntry(new IndexEntry<AccountEntry>(a.getScreenName(), a.getSourceType().name(), a));
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -633,7 +646,7 @@ public class DAO {
             // record import profile into text file
             if (dump) import_profile_dump.write(i.toJSON());
             // record import profile into search index
-            importProfiles.writeEntry(i.getId(), i.getSourceType().name(), i);
+            importProfiles.writeEntry(new IndexEntry<ImportProfileEntry>(i.getId(), i.getSourceType().name(), i));
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -858,7 +871,7 @@ public class DAO {
                 qe.update(tl.period(), byUserQuery);
             }
             try {
-                queries.writeEntry(q, qe.source_type == null ? SourceType.TWITTER.name() : qe.source_type.name(), qe);
+                queries.writeEntry(new IndexEntry<QueryEntry>(q, qe.source_type == null ? SourceType.TWITTER.name() : qe.source_type.name(), qe));
             } catch (IOException e) {
                 e.printStackTrace();
             }

@@ -33,6 +33,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.loklak.QueuedIndexing;
 import org.loklak.data.DAO;
+import org.loklak.data.IndexEntry;
 import org.loklak.http.RemoteAccess;
 import org.loklak.objects.MessageEntry;
 import org.loklak.objects.QueryEntry;
@@ -144,7 +145,7 @@ public class PushServlet extends HttpServlet {
                         // existing queries are updated
                         qe.update(tl.period(), false);
                         try {
-                            DAO.queries.writeEntry(query, qe.getSourceType().name(), qe);
+                            DAO.queries.writeEntry(new IndexEntry<QueryEntry>(query, qe.getSourceType().name(), qe));
                         } catch (IOException e) {
                             e.printStackTrace();
                         }

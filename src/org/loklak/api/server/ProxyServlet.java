@@ -20,6 +20,7 @@
 package org.loklak.api.server;
 
 import java.io.IOException;
+
 import javax.servlet.ServletException;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServlet;
@@ -28,6 +29,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.json.JSONObject;
 import org.loklak.data.DAO;
+import org.loklak.data.IndexEntry;
 import org.loklak.harvester.TwitterAPI;
 import org.loklak.http.ClientConnection;
 import org.loklak.http.RemoteAccess;
@@ -118,7 +120,7 @@ public class ProxyServlet extends HttpServlet {
                     user.setProfileImage(buffer);
                     try {
                         // record user into search index
-                        DAO.users.writeEntry(user.getScreenName(), user.getType(), user);
+                        DAO.users.writeEntry(new IndexEntry<UserEntry>(user.getScreenName(), user.getType(), user));
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
