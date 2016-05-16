@@ -39,7 +39,7 @@ import org.json.JSONObject;
 import org.loklak.data.DAO;
 import org.loklak.harvester.SourceType;
 import org.loklak.http.RemoteAccess;
-import org.loklak.objects.AbstractIndexEntry;
+import org.loklak.objects.AbstractObjectEntry;
 import org.loklak.objects.QueryEntry;
 import org.loklak.objects.ResultList;
 
@@ -145,8 +145,8 @@ public class SuggestServlet extends HttpServlet {
             metadata.put("query", query);
             metadata.put("order", orders);
             metadata.put("orderby", orderby);
-            if (since != null) metadata.put("since", AbstractIndexEntry.utcFormatter.print(since.getTime()));
-            if (until != null) metadata.put("until", AbstractIndexEntry.utcFormatter.print(until.getTime()));
+            if (since != null) metadata.put("since", AbstractObjectEntry.utcFormatter.print(since.getTime()));
+            if (until != null) metadata.put("until", AbstractObjectEntry.utcFormatter.print(until.getTime()));
             if (since != null || until != null) metadata.put("selectby", selectby);
             metadata.put("client", post.getClientHost());
             m.put("search_metadata", metadata);

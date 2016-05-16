@@ -24,7 +24,7 @@ import java.util.Date;
 import org.json.JSONObject;
 import org.loklak.harvester.SourceType;
 
-public class AccountEntry extends AbstractIndexEntry implements IndexEntry {
+public class AccountEntry extends AbstractObjectEntry implements ObjectEntry {
 
     public enum Field {
         screen_name,

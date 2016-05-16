@@ -25,9 +25,9 @@ import java.util.Set;
 
 import org.json.JSONObject;
 import org.loklak.harvester.SourceType;
-import org.loklak.objects.IndexEntry;
+import org.loklak.objects.ObjectEntry;
 
-public interface IndexFactory<Entry extends IndexEntry> {
+public interface IndexFactory<Entry extends ObjectEntry> {
 
     public Entry init(JSONObject json) throws IOException;
 

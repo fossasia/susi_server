@@ -31,7 +31,7 @@ import java.util.Map;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 
-public class UserEntry extends AbstractIndexEntry implements IndexEntry {
+public class UserEntry extends AbstractObjectEntry implements ObjectEntry {
 
     public final static String field_screen_name = "screen_name"; // used as id of the record
     public final static String field_user_id = "user_id"; // to reference the id of the providing service (here: twitter)

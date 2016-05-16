@@ -29,7 +29,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.logging.Logger;
 
-public class ImportProfileEntry extends AbstractIndexEntry implements IndexEntry {
+public class ImportProfileEntry extends AbstractObjectEntry implements ObjectEntry {
 
     public static enum EntryStatus {
         ACTIVE,

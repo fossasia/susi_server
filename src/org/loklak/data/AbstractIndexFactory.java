@@ -32,8 +32,8 @@ import java.util.concurrent.atomic.AtomicLong;
 
 import org.json.JSONObject;
 import org.loklak.harvester.SourceType;
-import org.loklak.objects.AbstractIndexEntry;
-import org.loklak.objects.IndexEntry;
+import org.loklak.objects.AbstractObjectEntry;
+import org.loklak.objects.ObjectEntry;
 import org.loklak.tools.CacheMap;
 import org.loklak.tools.CacheSet;
 import org.loklak.tools.CacheStats;
@@ -43,7 +43,7 @@ import org.loklak.tools.CacheStats;
  * curl "http://localhost:9000/api/account.json?screen_name=test"
  * curl -g "http://localhost:9000/api/account.json?action=update&data={\"screen_name\":\"test\",\"apps\":{\"wall\":{\"type\":\"vertical\"}}}"
  */
-public abstract class AbstractIndexFactory<Entry extends IndexEntry> implements IndexFactory<Entry> {
+public abstract class AbstractIndexFactory<Entry extends ObjectEntry> implements IndexFactory<Entry> {
     
     private final static int MAX_BULK_SIZE = 1500;
     
@@ -162,7 +162,7 @@ public abstract class AbstractIndexFactory<Entry extends IndexEntry> implements 
          *   XContentBuilder builder = XContentFactory.contentBuilder(XContentType.JSON);
          *   builder.map(source);
          */
-        if (!json.has(AbstractIndexEntry.TIMESTAMP_FIELDNAME)) json.put(AbstractIndexEntry.TIMESTAMP_FIELDNAME, AbstractIndexEntry.utcFormatter.print(System.currentTimeMillis()));
+        if (!json.has(AbstractObjectEntry.TIMESTAMP_FIELDNAME)) json.put(AbstractObjectEntry.TIMESTAMP_FIELDNAME, AbstractObjectEntry.utcFormatter.print(System.currentTimeMillis()));
         boolean newDoc = elasticsearch_client.writeMap(this.index_name, json.toMap(), type, id);
         this.indexWrite.incrementAndGet();
         return newDoc;
@@ -174,7 +174,7 @@ public abstract class AbstractIndexFactory<Entry extends IndexEntry> implements 
         Map<String, Object> jsonMap = entry.toJSON().toMap();
         assert jsonMap != null;
         if (jsonMap == null) return;
-        ElasticsearchClient.BulkEntry be = new ElasticsearchClient.BulkEntry(id, type, AbstractIndexEntry.TIMESTAMP_FIELDNAME, null, jsonMap);
+        ElasticsearchClient.BulkEntry be = new ElasticsearchClient.BulkEntry(id, type, AbstractObjectEntry.TIMESTAMP_FIELDNAME, null, jsonMap);
         try {
             bulkCache.put(be);
         } catch (InterruptedException e) {

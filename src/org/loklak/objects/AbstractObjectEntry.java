@@ -33,11 +33,11 @@ import org.loklak.tools.UTF8;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 
-public abstract class AbstractIndexEntry implements IndexEntry {
+public abstract class AbstractObjectEntry implements ObjectEntry {
 
     public  final static String TIMESTAMP_FIELDNAME = "timestamp";
     
-    public AbstractIndexEntry() {
+    public AbstractObjectEntry() {
     }
     
     public String toString() {

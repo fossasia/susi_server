@@ -43,7 +43,7 @@ import org.json.JSONObject;
 import org.loklak.LoklakServer;
 import org.loklak.data.DAO;
 import org.loklak.geo.GeoMark;
-import org.loklak.objects.AbstractIndexEntry;
+import org.loklak.objects.AbstractObjectEntry;
 import org.loklak.objects.AccountEntry;
 import org.loklak.objects.UserEntry;
 import org.loklak.tools.DateParser;
@@ -222,7 +222,7 @@ public class TwitterAPI {
     public static JSONObject user2json(User user) throws IOException {
         String jsonstring = TwitterObjectFactory.getRawJSON(user);
         JSONObject json = new JSONObject(jsonstring);
-        json.put("retrieval_date", AbstractIndexEntry.utcFormatter.print(System.currentTimeMillis()));
+        json.put("retrieval_date", AbstractObjectEntry.utcFormatter.print(System.currentTimeMillis()));
         Object status = json.remove("status"); // we don't need to store the latest status update in the user dump
         // TODO: store the latest status in our message database
         return json;
@@ -377,7 +377,7 @@ public class TwitterAPI {
             // check date and completeness
             complete = json.has("complete") ? (Boolean) json.get("complete") : Boolean.FALSE;
             String retrieval_date_string = json.has("retrieval_date") ? (String) json.get("retrieval_date") : null;
-            DateTime retrieval_date = retrieval_date_string == null ? null : AbstractIndexEntry.utcFormatter.parseDateTime(retrieval_date_string);
+            DateTime retrieval_date = retrieval_date_string == null ? null : AbstractObjectEntry.utcFormatter.parseDateTime(retrieval_date_string);
             if (complete && System.currentTimeMillis() - retrieval_date.getMillis() < DateParser.DAY_MILLIS) return json;
             
             // load networking ids for incomplete retrievals (untested)
@@ -428,7 +428,7 @@ public class TwitterAPI {
         // create result
         JSONObject json = new JSONObject(true);
         json.put("screen_name", screen_name);
-        json.put("retrieval_date", AbstractIndexEntry.utcFormatter.print(System.currentTimeMillis()));
+        json.put("retrieval_date", AbstractObjectEntry.utcFormatter.print(System.currentTimeMillis()));
         json.put("complete", complete);
         Map<String, Number> networking = getScreenName(networkingIDs, max_count, true);
         Map<String, Number> unnetworking = getScreenName(unnetworkingIDs, max_count, true);

@@ -61,7 +61,7 @@ import com.google.common.collect.Multimap;
  * to protect the privacy of the users; TO CODE EVALUATORS: please look for yourself that this
  * code does not contain any user-related information (like IP, user agent etc.).
  */
-public class QueryEntry extends AbstractIndexEntry implements IndexEntry {
+public class QueryEntry extends AbstractObjectEntry implements ObjectEntry {
     
     private final static long DAY_MILLIS = 1000L * 60L * 60L * 24L;
     private final static int RETRIEVAL_CONSTANT = 20; // the number of messages that we get with each retrieval at maximum

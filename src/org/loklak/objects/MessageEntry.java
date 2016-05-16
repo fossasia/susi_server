@@ -42,7 +42,7 @@ import org.loklak.harvester.SourceType;
 import org.loklak.objects.QueryEntry.PlaceContext;
 import org.loklak.tools.bayes.Classification;
 
-public class MessageEntry extends AbstractIndexEntry implements IndexEntry {
+public class MessageEntry extends AbstractObjectEntry implements ObjectEntry {
 
     public static enum ProviderType {
     
@@ -119,7 +119,7 @@ public class MessageEntry extends AbstractIndexEntry implements IndexEntry {
     }
 
     public MessageEntry(JSONObject json) {
-        Object timestamp_obj = lazyGet(json, AbstractIndexEntry.TIMESTAMP_FIELDNAME); this.timestamp = parseDate(timestamp_obj);
+        Object timestamp_obj = lazyGet(json, AbstractObjectEntry.TIMESTAMP_FIELDNAME); this.timestamp = parseDate(timestamp_obj);
         Object created_at_obj = lazyGet(json, "created_at"); this.created_at = parseDate(created_at_obj);
         Object on_obj = lazyGet(json, "on"); this.on = on_obj == null ? null : parseDate(on);
         Object to_obj = lazyGet(json, "to"); this.to = to_obj == null ? null : parseDate(to);
@@ -526,7 +526,7 @@ public class MessageEntry extends AbstractIndexEntry implements IndexEntry {
         JSONObject m = new JSONObject(true);
 
         // tweet data
-        m.put(AbstractIndexEntry.TIMESTAMP_FIELDNAME, utcFormatter.print(getTimestamp().getTime()));
+        m.put(AbstractObjectEntry.TIMESTAMP_FIELDNAME, utcFormatter.print(getTimestamp().getTime()));
         m.put("created_at", utcFormatter.print(getCreatedAt().getTime()));
         if (this.on != null) m.put("on", utcFormatter.print(this.on.getTime()));
         if (this.to != null) m.put("to", utcFormatter.print(this.to.getTime()));

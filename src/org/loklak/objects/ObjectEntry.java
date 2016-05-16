@@ -21,7 +21,7 @@ package org.loklak.objects;
 
 import org.json.JSONObject;
 
-public interface IndexEntry {
+public interface ObjectEntry {
 
     public String toString();
     
