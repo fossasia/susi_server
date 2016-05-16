@@ -550,11 +550,17 @@ public class DAO {
         return writeMessageBulkDump(dump);
     }
 
-
-    private static void writeMessageBulkNoDump(Collection<MessageWrapper> mws) {
+    /**
+     * write messages without writing them to the dump file
+     * @param mws a collection of message wrappers
+     * @return a set of message IDs which had been created with this bulk write.
+     */
+    private static Set<String> writeMessageBulkNoDump(Collection<MessageWrapper> mws) {
+        if (mws.size() == 0) return new HashSet<>();
         List<IndexEntry<UserEntry>> userBulk = new ArrayList<>();
         List<IndexEntry<MessageEntry>> messageBulk = new ArrayList<>();
         for (MessageWrapper mw: mws) {
+            if (messages.existsCache(mw.t.getIdStr())) continue; // we omit writing this again
             synchronized (DAO.class) {
                 // write the user into the index
                 userBulk.add(new IndexEntry<UserEntry>(mw.u.getScreenName(), mw.t.getSourceType().name(), mw.u));
@@ -566,37 +572,23 @@ public class DAO {
             // teach the classifier
             Classifier.learnPhrase(mw.t.getText(Integer.MAX_VALUE, ""));
         }
+        ElasticsearchClient.BulkWriteResult result = null;
         try {
-            messages.writeEntries(messageBulk);
+            result = messages.writeEntries(messageBulk);
             users.writeEntries(userBulk);
         } catch (IOException e) {
             e.printStackTrace();
         }
+        if (result == null) return new HashSet<String>();
+        return result.getCreated();
     }
     
     private static Set<String> writeMessageBulkDump(Collection<MessageWrapper> mws) {
-        if (mws.size() == 0) return new HashSet<>();
-        // make a bulk exist request
-        List<String> ids = new ArrayList<>();
-        for (MessageWrapper mw: mws) {
-            ids.add(mw.t.getIdStr());
-        }
-        Set<String> exists = messages.existsBulk(ids);
-        //System.out.println("*** " + mws.size() + " tested, " + exists.size() + " exists");
+        Set<String> created = writeMessageBulkNoDump(mws);
 
-        List<IndexEntry<UserEntry>> userBulk = new ArrayList<>();
-        List<IndexEntry<MessageEntry>> messageBulk = new ArrayList<>();
-        
         for (MessageWrapper mw: mws) try {
-            // check if tweet exists in index
-            if (exists.contains(mw.t.getIdStr())) continue; // we omit writing this again
+            if (!created.contains(mw.t.getIdStr())) continue;
             synchronized (DAO.class) {
-                // write the user into the index
-                userBulk.add(new IndexEntry<UserEntry>(mw.u.getScreenName(), mw.t.getSourceType().name(), mw.u));
-    
-                // record tweet into search index
-                messageBulk.add(new IndexEntry<MessageEntry>(mw.t.getIdStr(), mw.t.getSourceType().name(), mw.t));
-                 
                 // record tweet into text file
                 message_dump.write(mw.t.toJSON(mw.u, false, Integer.MAX_VALUE, ""));
              }
@@ -606,13 +598,8 @@ public class DAO {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        try {
-            messages.writeEntries(messageBulk);
-            users.writeEntries(userBulk);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return exists;
+        
+        return created;
     }
     
     /**
