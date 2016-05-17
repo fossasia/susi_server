@@ -21,6 +21,7 @@ package org.loklak.api.server;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -30,6 +31,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.loklak.harvester.TwitterAPI;
 import org.loklak.http.RemoteAccess;
+import org.loklak.server.FileHandler;
 
 import twitter4j.TwitterException;
 

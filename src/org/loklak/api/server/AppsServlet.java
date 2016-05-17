@@ -37,6 +37,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.loklak.data.DAO;
 import org.loklak.http.RemoteAccess;
+import org.loklak.server.FileHandler;
 
 public class AppsServlet extends HttpServlet {
 

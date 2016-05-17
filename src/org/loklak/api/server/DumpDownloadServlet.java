@@ -30,6 +30,7 @@ import java.io.OutputStreamWriter;
 import java.nio.charset.StandardCharsets;
 import java.util.Collection;
 import java.util.Date;
+
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -37,6 +38,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.loklak.data.DAO;
 import org.loklak.http.RemoteAccess;
+import org.loklak.server.FileHandler;
 
 public class DumpDownloadServlet extends HttpServlet {
 

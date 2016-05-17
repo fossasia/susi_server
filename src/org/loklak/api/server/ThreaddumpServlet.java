@@ -52,6 +52,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.loklak.Caretaker;
 import org.loklak.data.DAO;
 import org.loklak.http.RemoteAccess;
+import org.loklak.server.FileHandler;
 import org.loklak.tools.UTF8;
 
 public class ThreaddumpServlet extends HttpServlet {
