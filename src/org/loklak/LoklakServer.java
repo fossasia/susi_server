@@ -44,6 +44,7 @@ import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.server.handler.DefaultHandler;
 import org.eclipse.jetty.server.handler.ErrorHandler;
+import org.eclipse.jetty.server.handler.HandlerCollection;
 import org.eclipse.jetty.server.handler.HandlerList;
 import org.eclipse.jetty.server.handler.IPAccessHandler;
 import org.eclipse.jetty.servlet.FilterHolder;
@@ -63,6 +64,9 @@ import org.eclipse.jetty.server.HttpConnectionFactory;
 import org.eclipse.jetty.server.SslConnectionFactory;
 import org.eclipse.jetty.security.ConstraintMapping;
 import org.eclipse.jetty.security.ConstraintSecurityHandler;
+import org.eclipse.jetty.security.HashLoginService;
+import org.eclipse.jetty.security.LoginService;
+import org.eclipse.jetty.security.authentication.BasicAuthenticator;
 import org.loklak.api.server.AccessServlet;
 import org.loklak.api.server.AppsServlet;
 import org.loklak.api.server.AssetServlet;
@@ -98,6 +102,7 @@ import org.loklak.tools.Browser;
 import org.loklak.tools.OS;
 import org.loklak.vis.server.MapServlet;
 import org.loklak.vis.server.MarkdownServlet;
+
 
 public class LoklakServer {
 	
@@ -220,7 +225,7 @@ public class LoklakServer {
 			Log.getLog().warn(e.getMessage());
 			System.exit(-1);
 		}
-        setServerHandler(config, dataFile);
+        setServerHandler(dataFile);
         
         
         LoklakServer.server.start();
@@ -421,13 +426,28 @@ public class LoklakServer {
         }
     }
     
-    private static void setServerHandler(Map<String, String> config, File dataFile){
-    	// create security handler
+    private static void setServerHandler(File dataFile){
+    	
+    	
+    	// create security handler for http auth and http-to-https redirects
         ConstraintSecurityHandler securityHandler = new ConstraintSecurityHandler();
-        if(httpsMode.equals(HttpsMode.REDIRECT)){ // redirect
+        
+        boolean redirect = httpsMode.equals(HttpsMode.REDIRECT);
+        boolean auth = "true".equals(DAO.getConfig("http.auth", "false"));
+        
+        if(redirect || auth){
+        	
+        	LoginService loginService = new HashLoginService("LoklakRealm", 
+        			DAO.conf_dir.getAbsolutePath() + "/http_auth");
+        	if(auth) LoklakServer.server.addBean(loginService);
         	
         	Constraint constraint = new Constraint();
-        	constraint.setDataConstraint(Constraint.DC_CONFIDENTIAL);
+        	if(redirect) constraint.setDataConstraint(Constraint.DC_CONFIDENTIAL);
+        	if(auth){
+	        	constraint.setAuthenticate(true);
+	            constraint.setRoles(new String[] { "user", "admin" });
+        	}
+        	
         	
         	//makes the constraint apply to all uri paths        
         	ConstraintMapping mapping = new ConstraintMapping();
@@ -435,10 +455,18 @@ public class LoklakServer {
         	mapping.setConstraint(constraint);
 
         	securityHandler.addConstraintMapping(mapping);
+        	
+        	if(auth){
+	        	securityHandler.setAuthenticator(new BasicAuthenticator());
+	            securityHandler.setLoginService(loginService);
+        	}
+        	
+        	if(redirect) Log.getLog().info("Activated http-to-https redirect");
+        	if(auth) Log.getLog().info("Activated basic http auth");
         }
         
         // Setup IPAccessHandler for blacklists
-        String blacklist = config.get("server.blacklist");
+        String blacklist = DAO.getConfig("server.blacklist", "");
         if (blacklist != null && blacklist.length() > 0) try {
             IPAccessHandler ipaccess = new IPAccessHandler();
             String[] bx = blacklist.split(",");
@@ -518,10 +546,10 @@ public class LoklakServer {
         errorHandler.setShowStacks(true);
         servletHandler.setErrorHandler(errorHandler);
         
-        FileHandler fileHandler = new FileHandler(Integer.parseInt(config.get("www.expires")));
+        FileHandler fileHandler = new FileHandler(Integer.parseInt(DAO.getConfig("www.expires","600")));
         fileHandler.setDirectoriesListed(true);
         fileHandler.setWelcomeFiles(new String[]{ "index.html" });
-        fileHandler.setResourceBase(config.get("www.path"));
+        fileHandler.setResourceBase(DAO.getConfig("www.path","html"));
         
         RewriteHandler rewriteHandler = new RewriteHandler();
         rewriteHandler.setRewriteRequestURI(true);
@@ -537,7 +565,14 @@ public class LoklakServer {
         handlerlist2.setHandlers(new Handler[]{fileHandler, rewriteHandler, new DefaultHandler()});
         GzipHandler gzipHandler = new GzipHandler();
         gzipHandler.setHandler(handlerlist2);
+        
+        
         securityHandler.setHandler(gzipHandler);
+        //securityHandlerHttps.setHandler(securityHandlerHttpAuth);
+        
+        //HandlerCollection handlerCollection = new HandlerCollection();
+        //handlerCollection.setHandlers(new Handler[] {securityHandlerHttps, securityHandlerHttpAuth});
+
         
         LoklakServer.server.setHandler(securityHandler);
     }
