@@ -1,0 +1,77 @@
+@font-face {
+  font-family: 'Lato';
+  font-style: normal;
+  font-weight: 400;
+  src: local('Lato Regular'), local('Lato-Regular'), url(http://themes.googleusercontent.com/static/fonts/lato/v7/qIIYRU-oROkIk8vfvxw6QvesZW2xOQ-xsNqO47m55DA.woff) format('woff');
+}
+
+body {
+	background: #448ed3;
+	font-family: 'Lato';
+}
+img{
+    width:15%;
+    height: 15%;
+    display: block;
+    margin: 0 auto;
+}
+p {
+	font-family: 'Lato';
+	font-size: 35px;
+	color: #fff;
+}
+.form {
+	width:375px;
+	height: auto;
+	margin: auto;
+}
+
+.form input {
+	border: none;
+	background: #fff;
+  	font-family: 'Lato';
+  	font-weight:400;
+	display: block;
+	font-size: 15px;
+	outline: none;
+	width: calc(100% - 24px);
+	margin: auto;
+	padding: 24px 12px 24px 12px;
+}
+.bar {
+	width: 100%;
+	height: 1px;
+	background: #fff ;
+}
+.bar i {
+	width: 95%;
+	margin: auto;
+	height: 1px;
+	display: block;
+	background: #d1d1d1;
+}
+.form input[type="text"] {
+	border-radius: 7px 7px 0 0;
+}
+.form input[name = "pass"] {
+	border-radius: 0 0 0 0;
+}
+.form input[name = "confirmpass"] {
+	border-radius: 0 0 7px 7px;
+}
+
+.form button {
+	width: 100%;
+	border-radius: 7px;
+	background: #b6ee65;
+	text-decoration: center;
+	border: none;
+	color: #51771a;
+  	margin-top:-5px;
+	padding-top: 14px;
+	padding-bottom: 14px;
+	outline: none;
+	font-size: 13px;	
+	border-bottom: 3px solid #307d63;
+	cursor: pointer;
+}
