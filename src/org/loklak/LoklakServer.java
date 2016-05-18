@@ -44,7 +44,6 @@ import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.server.handler.DefaultHandler;
 import org.eclipse.jetty.server.handler.ErrorHandler;
-import org.eclipse.jetty.server.handler.HandlerCollection;
 import org.eclipse.jetty.server.handler.HandlerList;
 import org.eclipse.jetty.server.handler.IPAccessHandler;
 import org.eclipse.jetty.servlet.FilterHolder;
@@ -566,13 +565,7 @@ public class LoklakServer {
         GzipHandler gzipHandler = new GzipHandler();
         gzipHandler.setHandler(handlerlist2);
         
-        
         securityHandler.setHandler(gzipHandler);
-        //securityHandlerHttps.setHandler(securityHandlerHttpAuth);
-        
-        //HandlerCollection handlerCollection = new HandlerCollection();
-        //handlerCollection.setHandlers(new Handler[] {securityHandlerHttps, securityHandlerHttpAuth});
-
         
         LoklakServer.server.setHandler(securityHandler);
     }
