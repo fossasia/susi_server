@@ -20,6 +20,6 @@
 
 package org.loklak.server;
 
-public class HTTPAccount {
+public class Authorization {
 
 }

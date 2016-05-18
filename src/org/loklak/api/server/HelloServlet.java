@@ -19,56 +19,35 @@
 
 package org.loklak.api.server;
 
-import java.io.IOException;
-import java.io.PrintWriter;
-
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
 import org.json.JSONObject;
-import org.loklak.http.RemoteAccess;
+import org.loklak.server.APIHandler;
+import org.loklak.server.APIServiceLevel;
+import org.loklak.server.AbstractAPIHandler;
+import org.loklak.server.Authorization;
 
 /**
  * Servlet to span the message peer-to-peer network.
  * This servlet is called to announce the existence of the remote peer.
  */
-public class HelloServlet extends HttpServlet {
+public class HelloServlet extends AbstractAPIHandler implements APIHandler {
     
     private static final long serialVersionUID = 1839868262296635665L;
 
     @Override
-    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        doGet(request, response);
+    public APIServiceLevel getDefaultServiceLevel() {
+        return APIServiceLevel.PUBLIC;
+    }
+
+    @Override
+    public APIServiceLevel getCustomServiceLevel(Authorization auth) {
+        return APIServiceLevel.PUBLIC;
     }
     
     @Override
-    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        RemoteAccess.Post post = RemoteAccess.evaluate(request);
-        
-        // manage DoS
-        if (post.isDoS_blackout()) {response.sendError(503, "your request frequency is too high"); return;}
-        
-        String callback = post.get("callback", "");
-        boolean jsonp = callback != null && callback.length() > 0;
-        // String pingback = qm == null ? request.getParameter("pingback") : qm.get("pingback");
-        // pingback may be either filled with nothing, the term 'now' or the term 'later'
-
-        post.setResponse(response, "application/javascript");
-        
-        // generate json
+    public JSONObject service(JSONObject call) {
         JSONObject json = new JSONObject(true);
         json.put("status", "ok");
-
-        // write json
-        response.setCharacterEncoding("UTF-8");
-        PrintWriter sos = response.getWriter();
-        if (jsonp) sos.print(callback + "(");
-        sos.print(json.toString(2));
-        if (jsonp) sos.println(");");
-        sos.println();
-        post.finalize();
+        return json;
     }
     
 }

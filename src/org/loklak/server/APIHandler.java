@@ -27,8 +27,8 @@ public interface APIHandler {
     
     public APIServiceLevel getDefaultServiceLevel();
     
-    public APIServiceLevel getCustomServiceLevel(HTTPAccount httpaccount);
+    public APIServiceLevel getCustomServiceLevel(Authorization httpaccount);
     
-    public JSONObject Service(JSONObject call);
+    public JSONObject service(JSONObject call);
     
 }

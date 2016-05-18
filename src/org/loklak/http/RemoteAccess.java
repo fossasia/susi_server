@@ -191,6 +191,9 @@ public class RemoteAccess {
                 return dflt;
             }
         }
+        public Set<String> getKeys() {
+            return request.getParameterMap().keySet();
+        }
         public void setResponse(final HttpServletResponse response, final String mime) {
             long access_time = this.getAccessTime();
             response.setDateHeader("Last-Modified", access_time);
