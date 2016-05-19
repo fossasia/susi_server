@@ -347,9 +347,9 @@ public class ThreaddumpServlet extends HttpServlet {
         @Override public void addIntHeader(String arg0, int arg1) {}
         @Override public boolean containsHeader(String arg0) {return true;}
         @Override public String encodeRedirectURL(String arg0) {return arg0;}
-        @Override public String encodeRedirectUrl(String arg0) {return arg0;}
+        @Deprecated @Override public String encodeRedirectUrl(String arg0) {return arg0;}
         @Override public String encodeURL(String arg0) {return arg0;}
-        @Override public String encodeUrl(String arg0) {return arg0;}
+        @Deprecated @Override public String encodeUrl(String arg0) {return arg0;}
         @Override public String getHeader(String arg0) {return "";}
         @Override public Collection<String> getHeaderNames() {return new ArrayList<String>(0);}
         @Override public Collection<String> getHeaders(String arg0) {return new ArrayList<String>(0);}
@@ -361,7 +361,7 @@ public class ThreaddumpServlet extends HttpServlet {
         @Override public void setHeader(String arg0, String arg1) {}
         @Override public void setIntHeader(String arg0, int arg1) {}
         @Override public void setStatus(int arg0) {}
-        @Override public void setStatus(int arg0, String arg1) {}
+        @Deprecated @Override public void setStatus(int arg0, String arg1) {}
         @Override public PrintWriter getWriter() throws IOException {return new PrintWriter(new OutputStreamWriter(getOutputStream(), "UTF-8"));}
         @Override public ServletOutputStream getOutputStream() throws IOException {return new ServletOutputStream(){
             public void write(int aByte) throws IOException {}
