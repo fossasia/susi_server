@@ -27,16 +27,12 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.UnknownHostException;
-import java.security.KeyManagementException;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
-import java.security.SecureRandom;
-import java.security.cert.CertificateException;
-import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import javax.net.ssl.HostnameVerifier;
 
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
@@ -48,23 +44,13 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.conn.routing.HttpRoute;
-import org.apache.http.conn.ssl.AllowAllHostnameVerifier;
-import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
-import org.apache.http.conn.ssl.TrustSelfSignedStrategy;
 import org.apache.http.entity.mime.HttpMultipartMode;
 import org.apache.http.entity.mime.MultipartEntityBuilder;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
-import org.apache.http.ssl.SSLContextBuilder;
-import org.apache.http.ssl.TrustStrategy;
 import org.apache.http.util.EntityUtils;
-
-import javax.net.ssl.HostnameVerifier;
-import javax.net.ssl.HttpsURLConnection;
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.TrustManager;
-import javax.net.ssl.X509TrustManager;
+import org.loklak.data.DAO;
 
 /**
  * Helper class to provide BufferedReader Objects for get and post connections
@@ -85,9 +71,8 @@ public class ClientConnection {
             .setConnectionRequestTimeout(60000)
             .setContentCompressionEnabled(true)
             .build();
-    private static SSLConnectionSocketFactory trustSelfSignedSocketFactory;
-    private static HostnameVerifier trustAllHostsVerifier;
-    private static SSLContext trustAllContext;
+	private static HostnameVerifier trustAllHostsnameVerifier = new TrustAllHostNameVerifier();
+	private boolean trustAllCerts = "true".equals(DAO.getConfig("httpsclient.trustall", "true"));
     
     private int status;
     public BufferedInputStream inputStream;
@@ -102,31 +87,6 @@ public class ClientConnection {
         cm.setDefaultMaxPerRoute(20);
         HttpHost twitter = new HttpHost("twitter.com", 443);
         cm.setMaxPerRoute(new HttpRoute(twitter), 50);
-        // patch the trust manager to accept all ssl certificates. This will enable us
-    	// to tunnel through http proxies with ssl endpoints (often seen inside company
-    	// intranets and evil environments where someone sniffs on your ssl connecetions).
-    	// With this patch we get out of that no-ssl cage.
-    	// In other environments: don't use that code.
-        try {
-	        trustSelfSignedSocketFactory = new SSLConnectionSocketFactory(
-	        		new SSLContextBuilder().loadTrustMaterial(null, new TrustSelfSignedStrategy()).build(),
-	                new String[] {"TLSv1"},
-	                null,
-	                SSLConnectionSocketFactory.BROWSER_COMPATIBLE_HOSTNAME_VERIFIER);
-	        trustAllHostsVerifier = new AllowAllHostnameVerifier();
-	        trustAllContext = new SSLContextBuilder().loadTrustMaterial(null, new TrustStrategy() {
-                public boolean isTrusted(X509Certificate[] arg0, String arg1) throws CertificateException { return true;}
-            }).build();
-	        // Install the all-trusting trust manager
-	        TrustManager[] trustAllCerts = new TrustManager[]{new X509TrustManager(){
-	            public X509Certificate[] getAcceptedIssuers(){return null;}
-	            public void checkClientTrusted(X509Certificate[] certs, String authType){}
-	            public void checkServerTrusted(X509Certificate[] certs, String authType){}
-	        }};
-	        SSLContext sc = SSLContext.getInstance("TLS");
-	        sc.init(null, trustAllCerts, new SecureRandom());
-	        HttpsURLConnection.setDefaultSSLSocketFactory(sc.getSocketFactory());
-		} catch (NoSuchAlgorithmException | KeyStoreException | KeyManagementException e) {}
     }
     
     /**
@@ -135,13 +95,18 @@ public class ClientConnection {
      * @throws IOException
      */
     public ClientConnection(String urlstring) throws IOException {
-        this.httpClient = HttpClients.custom()
-	        	.setConnectionManager(cm)
-	        	.setDefaultRequestConfig(defaultRequestConfig)
-        		.setSSLSocketFactory(trustSelfSignedSocketFactory)
-        		.setSSLHostnameVerifier(trustAllHostsVerifier)
-        		.setSSLContext(trustAllContext)
-	        	.build();
+    	this.httpClient = trustAllCerts ? 
+			HttpClients.custom()
+			.useSystemProperties()
+			.setConnectionManager(cm)
+			.setDefaultRequestConfig(defaultRequestConfig)
+			.setSSLHostnameVerifier(trustAllHostsnameVerifier)
+			.build():
+			HttpClients.custom()
+			.useSystemProperties()
+			.setConnectionManager(cm)
+			.setDefaultRequestConfig(defaultRequestConfig)
+			.build();
         this.request = new HttpGet(urlstring);
         this.request.setHeader("User-Agent", USER_AGENT);
         this.init();
@@ -155,13 +120,18 @@ public class ClientConnection {
      * @throws IOException
      */
     public ClientConnection(String urlstring, Map<String, byte[]> map) throws ClientProtocolException, IOException {
-        this.httpClient = HttpClients.custom()
-        		.setConnectionManager(cm)
-        		.setDefaultRequestConfig(defaultRequestConfig)
-        		.setSSLSocketFactory(trustSelfSignedSocketFactory)
-        		.setSSLHostnameVerifier(trustAllHostsVerifier)
-        		.setSSLContext(trustAllContext)
-        		.build();
+    	this.httpClient = trustAllCerts ? 
+			HttpClients.custom()
+			.useSystemProperties()
+			.setConnectionManager(cm)
+			.setDefaultRequestConfig(defaultRequestConfig)
+			.setSSLHostnameVerifier(trustAllHostsnameVerifier)
+			.build():
+			HttpClients.custom()
+			.useSystemProperties()
+			.setConnectionManager(cm)
+			.setDefaultRequestConfig(defaultRequestConfig)
+			.build();
         this.request = new HttpPost(urlstring);        
         MultipartEntityBuilder entityBuilder = MultipartEntityBuilder.create();
         entityBuilder.setMode(HttpMultipartMode.BROWSER_COMPATIBLE);
