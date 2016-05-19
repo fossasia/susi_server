@@ -849,7 +849,7 @@ public class DAO {
             e1.printStackTrace();
         }
         
-        if (qe != null || (recordQuery && Caretaker.acceptQuery4Retrieval(q))) {
+        if (recordQuery && Caretaker.acceptQuery4Retrieval(q)) {
             if (qe == null) {
                 // a new query occurred
                 qe = new QueryEntry(q, timezoneOffset, tl.period(), SourceType.TWITTER, byUserQuery);
