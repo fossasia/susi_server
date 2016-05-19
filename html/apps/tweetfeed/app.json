@@ -1,0 +1,16 @@
+{
+  "@context":"http://schema.org",
+  "@type":"SoftwareApplication",
+  "name":"tweetfeed",
+  "headline":"Tweetfeed",
+  "alternativeHeadline":"Twitter feed using poll and diff, infinite scroll",
+  "applicationCategory":"Demo",
+  "applicationSubCategory":"front-end app",
+  "operatingSystem":"http://loklak.org",
+  "author":{
+    "@type":"Person",
+    "name":"Leon Mak",
+    "url":"http://leonmak.me",
+    "sameAs":"https://github.com/leonmak"
+  }
+}
