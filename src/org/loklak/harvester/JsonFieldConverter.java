@@ -47,9 +47,10 @@ public class JsonFieldConverter {
 
     private Map<String, List<String>> conversionRules;
 
-    public JsonFieldConverter(JsonConversionSchemaEnum conversionSchema) throws IOException {
+    @SuppressWarnings("unchecked")
+	public JsonFieldConverter(JsonConversionSchemaEnum conversionSchema) throws IOException {
         final JSONObject convSchema = DAO.getConversionSchema(conversionSchema.getFilename());
-        List<List<?>> convRules = (List<List<?>>) convSchema.get("rules");
+		List<List<?>> convRules = (List<List<?>>) convSchema.get("rules");
         this.conversionRules = new HashMap<>();
         for (List<?> rule : convRules) {
             List<String> toInsert = new ArrayList<>();

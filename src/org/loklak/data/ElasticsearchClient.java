@@ -886,8 +886,9 @@ public class ElasticsearchClient {
             Map.Entry entry = (Map.Entry) o;
             bFilter.must(QueryBuilders.termQuery((String) entry.getKey(), ((String) entry.getValue()).toLowerCase()));
         }
-        request.setQuery(QueryBuilders.filteredQuery(QueryBuilders.matchAllQuery(), bFilter));
-        DAO.log(QueryBuilders.filteredQuery(QueryBuilders.matchAllQuery(), bFilter).toString());
+        request.setQuery(QueryBuilders.boolQuery().must(QueryBuilders.matchAllQuery()).filter(bFilter));
+        DAO.log(QueryBuilders.boolQuery().must(QueryBuilders.matchAllQuery()).filter(bFilter).toString());
+        
         // get response
         SearchResponse response = request.execute().actionGet();
 
