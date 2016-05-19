@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="Content-Language" content="en, english"/>
+    <meta name="author" content="leon"> <!-- CHANGE THIS -->
+    <link rel="icon" type="image/png" href="/artwork/favicon.png">
+    <title>loklak.org - Apps </title> <!-- CHANGE THIS -->
+    
+    <!-- ngMaterial -->
+    <link rel="stylesheet" href="css/angular-material.min.css">
+    <link href="css/style.css" rel="stylesheet"> 
+  
+    <link href="/css/bootstrap.min.css" rel="stylesheet">
+    <!-- <link href="/css/dashboard.css" rel="stylesheet"> -->
+    <link href="/css/loklak.css" rel="stylesheet"> 
+    
+    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+      <script src="/js/html5shiv.min.js"></script>
+      <script src="/js/respond.min.js"></script>
+    <![endif]-->
+    
+    <!-- Angular deps, ngMaterial, ngMessages, localStorage, angulargrid, linkify, imgfallback -->
+    <script src="js/angular.min.js"></script>
+    <script src="js/angular-sanitize.min.js"></script>
+    <script src="js/angular-aria.min.js"></script>
+    <script src="js/angular-animate.min.js"></script>
+    <script src="js/angular-material.min.js"></script>
+    <script src="js/ngStorage.min.js"></script>
+    <script src="js/angular-messages.min.js"></script>
+    <script src='js/angulargrid.min.js'></script>
+    <script src="js/angular.dcb-img-fallback.min.js"></script>
+
+    <script src="app.js"></script>
+  </head>
+
+  <body ng-app="myApp" >
+      <nav class="navbar navbar-inverse navbar-fixed-top">
+          <div class="container-fluid">
+              <div class="navbar-header">
+                  <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+                      <span class="sr-only">Toggle navigation</span>
+                      <span class="icon-bar"></span>
+                      <span class="icon-bar"></span>
+                      <span class="icon-bar"></span>
+                  </button>
+                  <a class="navbar-brand" href="http://loklak.org"><img src="/images/loklak_org.png" height="24" style="float:left;">: App Boilerplate</a>
+              </div>
+              <div id="navbar" class="navbar-collapse collapse">
+                  <ul class="nav navbar-nav navbar-right">
+                      <li><a href="/index.html">Home</a></li>
+                      <li><a href="/about.html">About</a></li>
+                      <li><a href="/architecture.html">Architecture</a></li>
+                      <li><a href="/download.html">Download</a></li>
+                      <li><a href="/api.html">API</a></li>
+                      <li><a href="/dump.html">Dumps</a></li>
+                      <li><a href="/apps/">Apps</a></li>
+                  </ul>
+              </div>
+          </div>
+      </nav>
+      
+      <!-- Fancy Form -->
+      <div ng-controller="MainCtrl as vm" ng-cloak="">
+          
+          <form ng-submit="poll(query.type, query.term, query.interval)" 
+              class="layout-margin layout-fill" name="queryForm">
+              <!-- form name for ng-messages -->
+              
+              <md-content md-theme="docs-dark" layout-gt-sm="row" layout-xs="column" layout-padding>
+                  <div flex="10" ></div>
+                  <md-input-container  class="md-block" flex-gt-sm>
+                      <label>Query Type</label>
+                      <md-select ng-model="query.type">
+                          <md-option ng-repeat="api in apis" value="{{api.type}}">
+                              {{api.type}}
+                          </md-option>
+                      </md-select>
+                  </md-input-container>
+                  <md-input-container class="md-block" flex-gt-sm>
+                      <label>Query String</label>
+                      <input ng-model="query.term">
+                  </md-input-container>
+                  <md-input-container class="md-block" flex-gt-sm>
+                      <label>Query Rate /min</label>
+                      <input type="number" step="1" name="interval" 
+                      ng-model="query.interval" min="1"
+                      max="30" ng-pattern="/^\d+$/" />
+                      <div ng-messages="queryForm.interval.$error" multiple md-auto-hide="false">
+                          <div ng-message="min">
+                              Minimum 1 min
+                          </div>
+                          <div ng-message="max">
+                              Maximum 15 min
+                          </div>
+                      </div>
+                  </md-input-container>
+                  <!-- submit when enter, calls ng-submit -->
+                  <md-button type='submit' md-no-ink class="md-primary"
+                      ng-click="poll(query.type, query.term, query.interval)">
+                      Submit
+                  </md-button>
+                  <div flex="10" ></div>
+
+              </md-content>
+          </form>
+          
+          <!-- Pinterest-like grid -->
+          <md-content class="layout-padding" id="content-scroller">
+              <div>
+                  <div
+                  class="cards-wrap"
+                  angular-grid="vm.wallTweets"
+                  ag-grid-width="300"
+                  ag-gutter-size="12"
+                  ag-id="tweets"
+                  ag-infinite-scroll="vm.loadMoreTweets()"
+                  >
+                  
+                  <div class="card"  ng-repeat="tweet in vm.wallTweets track by $index">
+                      <!-- Images are not being scraped properly for now 19/5/2016 -->
+                      <!-- <div ng-if="tweet.images_count" class="img" 
+                          style="background-image: url({{::tweet.images[0]}});">      
+                      </div> -->
+                      <div class="inside">
+                          <md-card-header layout="row">
+                              <md-card-avatar>
+                                  <img class="md-user-avatar" ng-src="{{tweet.user.profile_image_url_https}}"
+                                  fallback-src ='profile_fallback.png'/>
+                              </md-card-avatar>
+                              <md-card-header-text layout="column">
+                                  <div class="card-title" ng-bind-html="rmvSpan(tweet.user.name)"></div>
+                                  <div class="card-subhead" ng-bind-html="handlify(tweet.user.screen_name)"></div>
+                              </md-card-header-text>
+                          </md-card-header>
+                          <div class="description" ng-bind-html="tweetify(tweet.text)"></div>
+                          <div class="description favs" layout="row" layout-align="end end">
+                              <div>{{tweet.favourites_count}}</div>
+                              <md-icon aria-hidden="true">
+                                  <svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" viewBox="0 0 24 24" fit="" preserveAspectRatio="xMidYMid meet" focusable="false">
+                                      <path d="M0 0h24v24h-24z" fill="none"></path>
+                                      <path d="M12 21.35l-1.45-1.32c-5.15-4.67-8.55-7.75-8.55-11.53 0-3.08 2.42-5.5 5.5-5.5 1.74 0 3.41.81 4.5 2.09 1.09-1.28 2.76-2.09 4.5-2.09 3.08 0 5.5 2.42 5.5 5.5 0 3.78-3.4 6.86-8.55 11.54l-1.45 1.31z"></path>
+                                  </svg>
+                              </md-icon>                              
+                              <div>&nbsp;{{tweet.retweet_count}}</div>
+                              <md-icon>  
+                                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 5 75 72">
+                                      <path d="M70.676 36.644C70.166 35.636 69.13 35 68 35h-7V19c0-2.21-1.79-4-4-4H34c-2.21 0-4 1.79-4 4s1.79 4 4 4h18c.552 0 .998.446 1 .998V35h-7c-1.13 0-2.165.636-2.676 1.644-.51 1.01-.412 2.22.257 3.13l11 15C55.148 55.545 56.046 56 57 56s1.855-.455 2.42-1.226l11-15c.668-.912.767-2.122.256-3.13zM40 48H22c-.54 0-.97-.427-.992-.96L21 36h7c1.13 0 2.166-.636 2.677-1.644.51-1.01.412-2.22-.257-3.13l-11-15C18.854 15.455 17.956 15 17 15s-1.854.455-2.42 1.226l-11 15c-.667.912-.767 2.122-.255 3.13C3.835 35.365 4.87 36 6 36h7l.012 16.003c.002 2.208 1.792 3.997 4 3.997h22.99c2.208 0 4-1.79 4-4s-1.792-4-4-4z"/>
+                                  </svg>
+                              </md-icon>
+                          </div>
+                      </div>
+                  </div>
+                  
+                  </div>
+                  <div class="loading-more-indicator" ng-show="vm.loadingMore">
+                      <md-progress-circular md-mode="indeterminate" md-diameter="64" class="progress-swatch"></md-progress-circular>
+                  </div>
+              </div>
+          </md-content>
+          
+      </div>
+
+    <!-- Bootstrap core JavaScript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+    <script src="/js/jquery.min.js"></script>
+    <script src="/js/bootstrap.min.js"></script>
+    <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
+    <script src="/js/ie10-viewport-bug-workaround.js"></script>
+  </body>
+</html>
