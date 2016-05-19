@@ -1,22 +1,7 @@
-@font-face {
-  font-family: 'Lato';
-  font-style: normal;
-  font-weight: 400;
-  src: local('Lato Regular'), local('Lato-Regular'), url(http://themes.googleusercontent.com/static/fonts/lato/v7/qIIYRU-oROkIk8vfvxw6QvesZW2xOQ-xsNqO47m55DA.woff) format('woff');
-}
-
 body {
-	background: #448ed3;
-	font-family: 'Lato';
-}
-img{
-    width:15%;
-    height: 15%;
-    display: block;
-    margin: 0 auto;
+	background: #000;
 }
 p {
-	font-family: 'Lato';
 	font-size: 35px;
 	color: #fff;
 }
@@ -29,19 +14,19 @@ p {
 .form input {
 	border: none;
 	background: #fff;
-  	font-family: 'Lato';
   	font-weight:400;
 	display: block;
+	color: #000;
 	font-size: 15px;
 	outline: none;
-	width: calc(100% - 24px);
+	width: 100%;
 	margin: auto;
 	padding: 24px 12px 24px 12px;
 }
 .bar {
 	width: 100%;
 	height: 1px;
-	background: #fff ;
+	background: #fff;
 }
 .bar i {
 	width: 95%;
