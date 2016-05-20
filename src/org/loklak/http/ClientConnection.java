@@ -70,12 +70,6 @@ import org.loklak.data.DAO;
  */
 public class ClientConnection {
     
-	private static class TrustAllHostNameVerifier implements HostnameVerifier {
-		public boolean verify(String hostname, SSLSession session) {
-			return true;
-		}
-	}
-	
     public static String USER_AGENT = "Mozilla/5.0 (Macintosh; U; Intel Mac OS X 10.4; en-US; rv:1.9.2.2) Gecko/20100316 Firefox/3.6.2";
     
     public  static final String CHARSET = "UTF-8";
@@ -98,6 +92,11 @@ public class ClientConnection {
     private HttpRequestBase request;
     private HttpResponse httpResponse;
     
+    private static class TrustAllHostNameVerifier implements HostnameVerifier {
+		public boolean verify(String hostname, SSLSession session) {
+			return true;
+		}
+	}
     
     static {
     	// patch the connection manager to accept all ssl certificates. This will enable us
@@ -230,7 +229,7 @@ public class ClientConnection {
         if (httpEntity != null) {
             if (httpResponse.getStatusLine().getStatusCode() == 301) {
                 for (Header header: httpResponse.getAllHeaders()) {
-                    if (header.getName().toLowerCase().equals("location")) {
+                    if (header.getName().equalsIgnoreCase("location")) {
                         EntityUtils.consumeQuietly(httpEntity);
                         return header.getValue();
                     }
