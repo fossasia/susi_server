@@ -27,12 +27,16 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.UnknownHostException;
+import java.security.KeyManagementException;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import javax.net.ssl.HostnameVerifier;
+import javax.net.ssl.SSLSession;
 
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
@@ -43,12 +47,18 @@ import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpRequestBase;
+import org.apache.http.config.Registry;
+import org.apache.http.config.RegistryBuilder;
 import org.apache.http.conn.routing.HttpRoute;
+import org.apache.http.conn.socket.ConnectionSocketFactory;
+import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
+import org.apache.http.conn.ssl.TrustSelfSignedStrategy;
 import org.apache.http.entity.mime.HttpMultipartMode;
 import org.apache.http.entity.mime.MultipartEntityBuilder;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
+import org.apache.http.ssl.SSLContextBuilder;
 import org.apache.http.util.EntityUtils;
 import org.loklak.data.DAO;
 
@@ -57,6 +67,12 @@ import org.loklak.data.DAO;
  */
 public class ClientConnection {
     
+	private static class TrustAllHostNameVerifier implements HostnameVerifier {
+		public boolean verify(String hostname, SSLSession session) {
+			return true;
+		}
+	}
+	
     public static String USER_AGENT = "Mozilla/5.0 (Macintosh; U; Intel Mac OS X 10.4; en-US; rv:1.9.2.2) Gecko/20100316 Firefox/3.6.2";
     
     public  static final String CHARSET = "UTF-8";
@@ -64,15 +80,13 @@ public class ClientConnection {
     private static final byte CR = 13;
     public static final byte[] CRLF = {CR, LF};
 
-    public static PoolingHttpClientConnectionManager cm = new PoolingHttpClientConnectionManager();
+    public static PoolingHttpClientConnectionManager cm;
     private static RequestConfig defaultRequestConfig = RequestConfig.custom()
             .setSocketTimeout(60000)
             .setConnectTimeout(60000)
             .setConnectionRequestTimeout(60000)
             .setContentCompressionEnabled(true)
             .build();
-	private static HostnameVerifier trustAllHostsnameVerifier = new TrustAllHostNameVerifier();
-	private boolean trustAllCerts = "true".equals(DAO.getConfig("httpsclient.trustall", "true"));
     
     private int status;
     public BufferedInputStream inputStream;
@@ -83,6 +97,32 @@ public class ClientConnection {
     
     
     static {
+    	// patch the connection manager to accept all ssl certificates. This will enable us
+    	// to tunnel through http proxies with ssl endpoints (often seen inside company
+    	// intranets and evil environments where someone sniffs on your ssl connecetions).
+    	// With this patch we get out of that no-ssl cage.
+    	// In other environments: don't use that code.
+        
+    	boolean trustAllCerts = "true".equals(DAO.getConfig("httpsclient.trustall", "false"));
+    	
+    	Registry<ConnectionSocketFactory> socketFactoryRegistry = null;
+    	if(trustAllCerts){
+	    	try {
+	    		SSLConnectionSocketFactory trustSelfSignedSocketFactory = new SSLConnectionSocketFactory(
+				    		new SSLContextBuilder().loadTrustMaterial(null, new TrustSelfSignedStrategy()).build(),
+				            new TrustAllHostNameVerifier());
+				socketFactoryRegistry = RegistryBuilder
+		                .<ConnectionSocketFactory> create().register("https", trustSelfSignedSocketFactory)
+		                .build();
+			} catch (KeyManagementException | NoSuchAlgorithmException | KeyStoreException e) {
+				e.printStackTrace();
+			}
+    	}
+        
+        cm = (trustAllCerts && socketFactoryRegistry != null) ? 
+        		new PoolingHttpClientConnectionManager(socketFactoryRegistry):
+        		new PoolingHttpClientConnectionManager();
+    	
         cm.setMaxTotal(200);
         cm.setDefaultMaxPerRoute(20);
         HttpHost twitter = new HttpHost("twitter.com", 443);
@@ -95,14 +135,7 @@ public class ClientConnection {
      * @throws IOException
      */
     public ClientConnection(String urlstring) throws IOException {
-    	this.httpClient = trustAllCerts ? 
-			HttpClients.custom()
-			.useSystemProperties()
-			.setConnectionManager(cm)
-			.setDefaultRequestConfig(defaultRequestConfig)
-			.setSSLHostnameVerifier(trustAllHostsnameVerifier)
-			.build():
-			HttpClients.custom()
+    	this.httpClient = HttpClients.custom()
 			.useSystemProperties()
 			.setConnectionManager(cm)
 			.setDefaultRequestConfig(defaultRequestConfig)
@@ -120,14 +153,7 @@ public class ClientConnection {
      * @throws IOException
      */
     public ClientConnection(String urlstring, Map<String, byte[]> map) throws ClientProtocolException, IOException {
-    	this.httpClient = trustAllCerts ? 
-			HttpClients.custom()
-			.useSystemProperties()
-			.setConnectionManager(cm)
-			.setDefaultRequestConfig(defaultRequestConfig)
-			.setSSLHostnameVerifier(trustAllHostsnameVerifier)
-			.build():
-			HttpClients.custom()
+    	this.httpClient = HttpClients.custom()
 			.useSystemProperties()
 			.setConnectionManager(cm)
 			.setDefaultRequestConfig(defaultRequestConfig)
