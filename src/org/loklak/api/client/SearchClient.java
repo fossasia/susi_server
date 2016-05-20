@@ -41,7 +41,7 @@ public class SearchClient {
         String urlstring = "";
         try {
             urlstring = protocolhostportstub + "/api/search.json?q=" + URLEncoder.encode(query.replace(' ', '+'), "UTF-8") + "&timezoneOffset=" + timezoneOffset + "&maximumRecords=" + count + "&source=" + (source == null ? "all" : source) + "&minified=true&timeout=" + timeout;
-            byte[] jsonb = ClientConnection.download(urlstring);
+            byte[] jsonb = ClientConnection.downloadPeer(urlstring);
             if (jsonb == null || jsonb.length == 0) throw new IOException("empty content from " + protocolhostportstub);
             String jsons = UTF8.String(jsonb);
             JSONObject json = new JSONObject(jsons);

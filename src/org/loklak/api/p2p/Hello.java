@@ -118,7 +118,7 @@ public class Hello extends AbstractAPIHandler implements APIHandler {
                         "&firstCount=" + firstCount +
                         "&lastDay=" + lastDay +
                         "&lastCount=" + lastCount;
-                byte[] jsonb = ClientConnection.download(urlstring);
+                byte[] jsonb = ClientConnection.downloadPeer(urlstring);
                 if (jsonb == null || jsonb.length == 0) throw new IOException("empty content from " + hoststub);
                 String jsons = UTF8.String(jsonb);
                 JSONObject json = new JSONObject(jsons);
