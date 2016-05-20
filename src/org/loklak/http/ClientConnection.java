@@ -26,6 +26,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.net.SocketTimeoutException;
 import java.net.UnknownHostException;
 import java.security.KeyManagementException;
 import java.security.KeyStoreException;
@@ -51,6 +52,7 @@ import org.apache.http.config.Registry;
 import org.apache.http.config.RegistryBuilder;
 import org.apache.http.conn.routing.HttpRoute;
 import org.apache.http.conn.socket.ConnectionSocketFactory;
+import org.apache.http.conn.socket.PlainConnectionSocketFactory;
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.conn.ssl.TrustSelfSignedStrategy;
 import org.apache.http.entity.mime.HttpMultipartMode;
@@ -60,6 +62,7 @@ import org.apache.http.impl.client.HttpClients;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.apache.http.ssl.SSLContextBuilder;
 import org.apache.http.util.EntityUtils;
+import org.eclipse.jetty.util.log.Log;
 import org.loklak.data.DAO;
 
 /**
@@ -112,7 +115,9 @@ public class ClientConnection {
 				    		new SSLContextBuilder().loadTrustMaterial(null, new TrustSelfSignedStrategy()).build(),
 				            new TrustAllHostNameVerifier());
 				socketFactoryRegistry = RegistryBuilder
-		                .<ConnectionSocketFactory> create().register("https", trustSelfSignedSocketFactory)
+		                .<ConnectionSocketFactory> create()
+		                .register("http", new PlainConnectionSocketFactory())
+		                .register("https", trustSelfSignedSocketFactory)
 		                .build();
 			} catch (KeyManagementException | NoSuchAlgorithmException | KeyStoreException e) {
 				e.printStackTrace();
@@ -174,7 +179,12 @@ public class ClientConnection {
         this.httpResponse = null;
         try {
             this.httpResponse = httpClient.execute(this.request);
-        } catch (UnknownHostException e) {
+        } catch (SocketTimeoutException e){
+        	Log.getLog().info("client connection timeout for request: " + this.request.getURI());
+        	this.request.releaseConnection();
+        	return;
+        }
+        catch (UnknownHostException e) {
             this.request.releaseConnection();
             throw new IOException(e.getMessage());
         }
