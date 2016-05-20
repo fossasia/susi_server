@@ -29,7 +29,7 @@ public class StatusClient {
 
     public static JSONObject status(final String protocolhostportstub) throws IOException {
         final String urlstring = protocolhostportstub + "/api/status.json";
-        byte[] response = ClientConnection.download(urlstring);
+        byte[] response = ClientConnection.downloadPeer(urlstring);
         if (response == null || response.length == 0) return new JSONObject();
         JSONObject json = new JSONObject(UTF8.String(response));
         return json;
