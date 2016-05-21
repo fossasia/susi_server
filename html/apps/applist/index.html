@@ -6,27 +6,24 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="Content-Language" content="en, english"/>
-    <meta name="author" content="@0rb1t3r"> <!-- CHANGE THIS -->
+    <meta name="author" content="@0rb1t3r">
+    <!-- CHANGE THIS -->
     <link rel="icon" type="image/png" href="/artwork/favicon.png">
-    <title>loklak.org - App List</title> <!-- CHANGE THIS -->
-    
+    <title>loklak.org - App List</title>
+    <!-- CHANGE THIS -->
     <link href="../../css/bootstrap.min.css" rel="stylesheet">
     <link href="../../css/dashboard.css" rel="stylesheet">
     <link href="../../css/loklak.css" rel="stylesheet">
-
-
+    <link href="style.css" rel="stylesheet"/>
     <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
     <!--[if lt IE 9]>
-      <script src="../../js/html5shiv.min.js"></script>
-      <script src="../../js/respond.min.js"></script>
-    <![endif]-->
-
+<script src="../../js/html5shiv.min.js"></script>
+<script src="../../js/respond.min.js"></script>
+<![endif]-->
     <script src="../../js/angular.min.js"></script>
     <script src="app_list.js"></script>
   </head>
-
   <body>
-
     <nav class="navbar navbar-inverse navbar-fixed-top">
       <div class="container-fluid">
         <div class="navbar-header">
@@ -36,7 +33,9 @@
             <span class="icon-bar"></span>
             <span class="icon-bar"></span>
           </button>
-          <a class="navbar-brand" href="http://loklak.org"><img src="../../images/loklak_org.png" height="24" style="float:left;">: App List</a>
+          <a class="navbar-brand" href="http://loklak.org">
+            <img src="../../images/loklak_org.png" height="24" style="float:left;">: App List
+          </a>
         </div>
         <div id="navbar" class="navbar-collapse collapse">
           <ul class="nav navbar-nav navbar-right">
@@ -53,35 +52,45 @@
         </div>
       </div>
     </nav>
-  
-  
-   <div class="container-fluid">
+    <div class="container-fluid">
       <div class="row">
         <div class="col-sm-3 col-md-2 sidebar">
           <h4>Front-End contributions.</h4>
-          <p>Read the <a href="https://github.com/loklak/loklak_server/blob/master/html/apps/apps.md">loklak app primer</a> to learn how you can contribute a loklak app!</p>
+          <p>Read the 
+            <a href="https://github.com/loklak/loklak_server/blob/master/html/apps/apps.md">loklak app primer</a> to learn how you can contribute a loklak app!</p>
         </div>
         <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
           <div ng-controller="app_list">
-            <h1><code>loklak Apps</code></h1>
-            <div class="panel panel-primary" ng-repeat="app in apps track by $index">
-            <div class="panel-heading"><a href='../../apps/{{ app.name }}'>{{ app.headline }}</a></div>
-            <div class="panel-body">
-              <p>{{ app.alternativeHeadline }}</p>
-                 Author: <a href='{{ app.author.url }}'>{{ app.author.name }}</a>
+            <h1>
+              <code>loklak Apps</code>
+            </h1>
+            <div class="content" ng-repeat="app in apps track by $index">
+              <div class="span2">
+                <div class="reveal">
+                  <img src="../{{app.name}}/screenshot.png" />
+                  <div class="hidden">
+                    <div class="caption">
+                      <div class="centered">
+                        <p>{{ app.alternativeHeadline }}</p>
+                        <p>-------------------------</p>
+                        <p>Author: <a href='{{ app.author.url }}'>{{ app.author.name }}</a></p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <!--<p>{{ app.alternativeHeadline }}</p>
+Author: <a href='{{ app.author.url }}'>{{ app.author.name }}</a> -->
+              </div>
             </div>
           </div>
         </div>
       </div>
-    </div>
-   </div>
-    
-    <!-- Bootstrap core JavaScript
-    ================================================== -->
-    <!-- Placed at the end of the document so the pages load faster -->
-    <script src="/js/jquery.min.js"></script>
-    <script src="/js/bootstrap.min.js"></script>
-    <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
-    <script src="/js/ie10-viewport-bug-workaround.js"></script>
-  </body>
-</html>
+      <!-- Bootstrap core JavaScript
+================================================== -->
+      <!-- Placed at the end of the document so the pages load faster -->
+      <script src="/js/jquery.min.js"></script>
+      <script src="/js/bootstrap.min.js"></script>
+      <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
+      <script src="/js/ie10-viewport-bug-workaround.js"></script>
+      </body>
+    </html>
