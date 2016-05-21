@@ -13,11 +13,12 @@ These front-ends are called 'apps' and must be placed here.
 
 2. Create your app
   - make a subdirectory in your own ```loklak_server/html/apps/``` folder
-  - add at least two files into this folder, named ```index.html``` and ```app.json```.
+  - add at least three files into this folder, named ```index.html```, ```app.json``` and ```screenshot.png```.
     For an easy quick-start, use and copy the app boilerplate from
     https://github.com/loklak/loklak_server/tree/master/html/apps/boilerplate
   - all libraries, css files, javascript and fonts must be either already existent
-    in loklak or you must add this to your app path as well
+    in loklak or you must add this to your app path as well. 
+  - The screenshot must be cropped into 640 x 640 pixels and in .png format.
   - the file ```index.html``` is the landing page of your app.
     Use ```/js/angular.min.js``` from the loklak root path for your application.
     The app should make use of the json libraries in ```html/js```.
