@@ -697,13 +697,13 @@ public class QueryEntry extends AbstractObjectEntry implements ObjectEntry {
             for (String text: text_positive_filter) {
                 filters.add(QueryBuilders.termsQuery("text", text));
             }
-            for (String text: text_negative_filter) filters.add(QueryBuilders.notQuery(QueryBuilders.termsQuery("text", text)));
+            for (String text: text_negative_filter) filters.add(QueryBuilders.boolQuery().mustNot(QueryBuilders.termsQuery("text", text)));
             for (Constraint c: Constraint.values()) {
                 if (constraints_positive.contains(c.name())) {
                     filters.add(QueryBuilders.existsQuery(c.field_name));
                 }
                 if (constraints_negative.contains(c.name())) {
-                    filters.add(QueryBuilders.notQuery(QueryBuilders.existsQuery(c.field_name)));
+                    filters.add(QueryBuilders.boolQuery().mustNot(QueryBuilders.existsQuery(c.field_name)));
                 }
             }
             if (constraints_positive.contains("location")) {
@@ -756,13 +756,18 @@ public class QueryEntry extends AbstractObjectEntry implements ObjectEntry {
                 if (cs.startsWith(Constraint.source_type.name() + "=")) {
                     String regexp = cs.substring(Constraint.source_type.name().length() + 1);
                     if (SourceType.hasValue(regexp)) {
-                        filters.add(QueryBuilders.notQuery(QueryBuilders.termQuery("_type", regexp)));
+                        filters.add(QueryBuilders.boolQuery().mustNot(QueryBuilders.termQuery("_type", regexp)));
                     }
 
                 }
             }
 
-            QueryBuilder cquery = filters.size() == 0 ? bquery : QueryBuilders.filteredQuery(bquery, QueryBuilders.andQuery(filters.toArray(new QueryBuilder[filters.size()])));
+            BoolQueryBuilder queryFilter = QueryBuilders.boolQuery();
+            for(QueryBuilder filter : filters){
+            	queryFilter.must(filter);
+            }
+            
+            QueryBuilder cquery = filters.size() == 0 ? bquery : QueryBuilders.boolQuery().must(bquery).filter(queryFilter);
             return cquery;
         }
     }

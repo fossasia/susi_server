@@ -30,7 +30,8 @@ CLASSPATH=".:./classes/:$CLASSPATH"
 
 cmdline="java";
 
-if [ -n "$CUSTOMXmx" ]; then cmdline="$cmdline -Xmx$CUSTOMXmx";
+if [ -n "$ENVXmx" ] ; then cmdline="$cmdline -Xmx$ENVXmx";
+elif [ -n "$CUSTOMXmx" ]; then cmdline="$cmdline -Xmx$CUSTOMXmx";
 elif [ -n "$DFAULTXmx" ]; then cmdline="$cmdline -Xmx$DFAULTXmx";
 fi
 
@@ -41,4 +42,8 @@ cmdline="$cmdline -server -classpath $CLASSPATH org.loklak.LoklakServer >> data/
 eval $cmdline
 #echo $cmdline;
 
-echo "loklak server started at port 9000, open your browser at http://localhost:9000"
+CUSTOMPORT=$(grep -iw 'port.http' conf/config.properties | sed 's/^[^=]*=//' );
+LOCALHOST=$(grep -iw 'shortlink.urlstub' conf/config.properties | sed 's/^[^=]*=//');
+echo "loklak server started at port $CUSTOMPORT, open your browser at $LOCALHOST"
+
+

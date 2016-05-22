@@ -565,13 +565,7 @@ public class LoklakServer {
         GzipHandler gzipHandler = new GzipHandler();
         gzipHandler.setHandler(handlerlist2);
         
-        
         securityHandler.setHandler(gzipHandler);
-        //securityHandlerHttps.setHandler(securityHandlerHttpAuth);
-        
-        //HandlerCollection handlerCollection = new HandlerCollection();
-        //handlerCollection.setHandlers(new Handler[] {securityHandlerHttps, securityHandlerHttpAuth});
-
         
         LoklakServer.server.setHandler(securityHandler);
     }
