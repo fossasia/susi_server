@@ -31,8 +31,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.eclipse.jetty.util.log.Log;
 import org.elasticsearch.search.sort.SortOrder;
-import org.loklak.api.client.HelloClient;
 import org.loklak.api.client.PushClient;
+import org.loklak.api.p2p.Hello;
 import org.loklak.api.server.SuggestServlet;
 import org.loklak.data.DAO;
 import org.loklak.harvester.TwitterAPI;
@@ -94,7 +94,7 @@ public class Caretaker extends Thread {
             // check ping
             if (System.currentTimeMillis() - helloPeriod > helloTime) {
                 helloTime = System.currentTimeMillis();
-                HelloClient.propagate(remote);
+                Hello.propagate(remote);
             }
             
             // clear caches

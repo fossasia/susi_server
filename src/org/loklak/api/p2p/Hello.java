@@ -1,5 +1,5 @@
 /**
- *  HelloClient
+ *  HelloServlet
  *  Copyright 22.02.2015 by Michael Peter Christen, @0rb1t3r
  *
  *  This library is free software; you can redistribute it and/or
@@ -17,7 +17,7 @@
  *  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.loklak.api.client;
+package org.loklak.api.p2p;
 
 import java.io.IOException;
 import java.util.LinkedHashMap;
@@ -25,12 +25,41 @@ import java.util.Map;
 
 import org.eclipse.jetty.util.log.Log;
 import org.json.JSONObject;
+import org.loklak.api.client.StatusClient;
 import org.loklak.data.DAO;
 import org.loklak.http.ClientConnection;
+import org.loklak.server.APIHandler;
+import org.loklak.server.APIServiceLevel;
+import org.loklak.server.AbstractAPIHandler;
+import org.loklak.server.Authorization;
+import org.loklak.server.Query;
 import org.loklak.tools.DateParser;
 import org.loklak.tools.UTF8;
 
-public class HelloClient {
+/**
+ * Servlet to span the message peer-to-peer network.
+ * This servlet is called to announce the existence of the remote peer.
+ */
+public class Hello extends AbstractAPIHandler implements APIHandler {
+    
+    private static final long serialVersionUID = 1839868262296635665L;
+
+
+    @Override
+    public APIServiceLevel getDefaultServiceLevel() {
+        return APIServiceLevel.PUBLIC;
+    }
+
+    @Override
+    public APIServiceLevel getCustomServiceLevel(Authorization auth) {
+        return APIServiceLevel.PUBLIC;
+    }
+
+    @Override
+    public String getAPIPath() {
+        return "/api/hello.json";
+    }
+    
 
     public static void propagate(final String[] hoststubs) {
         // get some configuration
@@ -98,5 +127,12 @@ public class HelloClient {
             }
         }
     }
-
+    
+    @Override
+    public JSONObject serviceImpl(Query call, Authorization rights) {
+        JSONObject json = new JSONObject(true);
+        json.put("status", "ok");
+        return json;
+    }
+    
 }
