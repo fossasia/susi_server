@@ -42,8 +42,8 @@ cmdline="$cmdline -server -classpath $CLASSPATH org.loklak.LoklakServer >> data/
 eval $cmdline
 #echo $cmdline;
 
-CUSTOMPORT=$(grep -iw 'port.http' conf/config.properties | sed -r 's/.{10}//' );
-LOCALHOST=$(grep -iw 'shortlink.urlstub' conf/config.properties | sed -r 's/.{18}//');
+CUSTOMPORT=$(grep -iw 'port.http' conf/config.properties | sed 's/^[^=]*=//' );
+LOCALHOST=$(grep -iw 'shortlink.urlstub' conf/config.properties | sed 's/^[^=]*=//');
 echo "loklak server started at port $CUSTOMPORT, open your browser at $LOCALHOST"
 
 
