@@ -26,6 +26,7 @@ import org.loklak.harvester.SourceType;
 import org.loklak.http.RemoteAccess;
 import org.loklak.objects.ImportProfileEntry;
 import org.loklak.objects.Timeline;
+import org.loklak.server.Query;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -54,7 +55,7 @@ public class ImportProfileServlet extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        RemoteAccess.Post post = RemoteAccess.evaluate(request);
+        Query post = RemoteAccess.evaluate(request);
 
         // manage DoS
         if (post.isDoS_blackout()) {response.sendError(503, "your request frequency is too high"); return;}
@@ -77,7 +78,7 @@ public class ImportProfileServlet extends HttpServlet {
         }
     }
 
-    private void doUpdate(RemoteAccess.Post post, HttpServletResponse response) throws IOException {
+    private void doUpdate(Query post, HttpServletResponse response) throws IOException {
         String callback = post.get("callback", null);
         boolean jsonp = callback != null && callback.length() > 0;
         String data = post.get("data", "");
@@ -135,7 +136,7 @@ public class ImportProfileServlet extends HttpServlet {
         post.finalize();
     }
 
-    private void doDelete(RemoteAccess.Post post, HttpServletResponse response) throws IOException {
+    private void doDelete(Query post, HttpServletResponse response) throws IOException {
 
         String callback = post.get("callback", null);
         boolean jsonp = callback != null && callback.length() > 0;
@@ -177,7 +178,7 @@ public class ImportProfileServlet extends HttpServlet {
     }
 
 
-    private void doSearch(RemoteAccess.Post post, HttpServletResponse response) throws IOException {
+    private void doSearch(Query post, HttpServletResponse response) throws IOException {
         String callback = post.get("callback", "");
         boolean minified = post.get("minified", false);
         boolean jsonp = callback != null && callback.length() > 0;

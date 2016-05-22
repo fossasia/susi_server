@@ -28,7 +28,9 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.json.JSONObject;
+import org.loklak.http.ClientConnection;
 import org.loklak.http.RemoteAccess;
+import org.loklak.tools.UTF8;
 
 @SuppressWarnings("serial")
 public abstract class AbstractAPIHandler extends HttpServlet implements APIHandler {
@@ -53,41 +55,86 @@ public abstract class AbstractAPIHandler extends HttpServlet implements APIHandl
 
     @Override
     public abstract APIServiceLevel getCustomServiceLevel(Authorization auth);
-    
-    @Override
-    public abstract JSONObject service(JSONObject call);
 
     @Override
-    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        doGet(request, response);
+    public JSONObject[] service(Query call, Authorization rights) throws APIException {
+
+        // make call to the embedded api
+        if (this.serverProtocolHostStub == null) return new JSONObject[]{serviceImpl(call, rights)};
+        
+        // make call(s) to a remote api(s)
+        JSONObject[] results = new JSONObject[this.serverProtocolHostStub.length];
+        for (int rc = 0; rc < results.length; rc++) {
+            try {
+                StringBuilder urlquery = new StringBuilder();
+                for (String key: call.getKeys()) {
+                    urlquery.append(urlquery.length() == 0 ? '?' : '&').append(key).append('=').append(call.get(key, ""));
+                }
+                String urlstring = this.serverProtocolHostStub[rc] + this.getAPIPath() + urlquery.toString();
+                byte[] jsonb = ClientConnection.download(urlstring);
+                if (jsonb == null || jsonb.length == 0) throw new IOException("empty content from " + urlstring);
+                String jsons = UTF8.String(jsonb);
+                JSONObject json = new JSONObject(jsons);
+                if (json == null || json.length() == 0) {
+                    results[rc] = null;
+                    continue;
+                };
+                results[rc] = json;
+            } catch (Throwable e) {
+                e.printStackTrace();
+            }
+        }
+        return results;
+    }
+    
+    public abstract JSONObject serviceImpl(Query call, Authorization rights) throws APIException;
+
+    @Override
+    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        Query post = RemoteAccess.evaluate(request);
+        APIServiceLevel serviceLevel = getDefaultServiceLevel();
+        if (post.isDoS_blackout()) {response.sendError(503, "your request frequency is too high"); return;} // DoS protection
+        if (serviceLevel == APIServiceLevel.ADMIN && !post.isLocalhostAccess()) {response.sendError(503, "access only allowed from localhost, your request comes from " + post.getClientHost()); return;} // danger! do not remove this!
+        process(request, response, post);
     }
     
     @Override
-    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        RemoteAccess.Post post = RemoteAccess.evaluate(request);
-        
-        // manage DoS
-        if (post.isDoS_blackout()) {response.sendError(503, "your request frequency is too high"); return;}
+    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        Query post = RemoteAccess.evaluate(request);
+        APIServiceLevel serviceLevel = getDefaultServiceLevel();
+        if (post.isDoS_blackout()) {response.sendError(503, "your request frequency is too high"); return;} // DoS protection
+        if (serviceLevel == APIServiceLevel.ADMIN && !post.isLocalhostAccess()) {response.sendError(503, "access only allowed from localhost, your request comes from " + post.getClientHost()); return;} // danger! do not remove this!
+        post.initPOST(RemoteAccess.getPostMap(request));
+        process(request, response, post);
+    }
+    
+    private void process(HttpServletRequest request, HttpServletResponse response, Query post) throws ServletException, IOException {
         
         String callback = post.get("callback", "");
-        boolean jsonp = callback != null && callback.length() > 0;
+        boolean jsonp = callback.length() > 0;
+        boolean minified = post.get("minified", false);
         
-        post.setResponse(response, "application/javascript");
+        Authorization rights = new Authorization(); // dummy value TODO: read from account database
         
-        // transform keys to JSONObject
-        JSONObject args = new JSONObject();
-        for (String key: post.getKeys()) args.put(key, post.get(key, "")); // all object values are string
-        
-        // generate json
-        JSONObject json = service(args);
-
-        // write json
-        response.setCharacterEncoding("UTF-8");
-        PrintWriter sos = response.getWriter();
-        if (jsonp) sos.print(callback + "(");
-        sos.print(json.toString(2));
-        if (jsonp) sos.println(");");
-        sos.println();
-        post.finalize();
+        try {
+            JSONObject json = serviceImpl(post, rights);
+            if  (json == null) {
+                response.sendError(400, "your request does not contain the required data");
+                return;
+             }
+    
+            // write json
+            post.setResponse(response, "application/javascript");
+            response.setCharacterEncoding("UTF-8");
+            PrintWriter sos = response.getWriter();
+            if (jsonp) sos.print(callback + "(");
+            sos.print(json.toString(minified ? 0 : 2));
+            if (jsonp) sos.println(");");
+            sos.println();
+            post.finalize();
+        } catch (APIException e) {
+            response.sendError(e.getStatusCode(), e.getMessage());
+            return;
+        }
     }
 }

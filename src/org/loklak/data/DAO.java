@@ -67,6 +67,7 @@ import org.loklak.objects.QueryEntry;
 import org.loklak.objects.ResultList;
 import org.loklak.objects.Timeline;
 import org.loklak.objects.UserEntry;
+import org.loklak.server.Query;
 import org.loklak.tools.DateParser;
 import org.loklak.tools.OS;
 import org.loklak.tools.storage.JsonDataset;
@@ -818,7 +819,7 @@ public class DAO {
         return latests.values();
     }
     
-    public static Timeline scrapeTwitter(final RemoteAccess.Post post, final String q, final Timeline.Order order, final int timezoneOffset, boolean byUserQuery, long timeout, boolean recordQuery) {
+    public static Timeline scrapeTwitter(final Query post, final String q, final Timeline.Order order, final int timezoneOffset, boolean byUserQuery, long timeout, boolean recordQuery) {
         // retrieve messages from remote server
         ArrayList<String> remote = DAO.getFrontPeers();
         Timeline tl;

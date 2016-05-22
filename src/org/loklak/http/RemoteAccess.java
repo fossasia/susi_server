@@ -26,8 +26,6 @@ import java.io.UnsupportedEncodingException;
 import java.net.InetAddress;
 import java.net.URLDecoder;
 import java.net.UnknownHostException;
-import java.text.ParseException;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -42,9 +40,8 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.Part;
 
 import org.elasticsearch.common.Base64;
-import org.loklak.LoklakServer;
 import org.loklak.data.DAO;
-import org.loklak.tools.DateParser;
+import org.loklak.server.Query;
 import org.loklak.tools.UTF8;
 import org.loklak.visualization.graphics.RasterPlotter;
 
@@ -57,10 +54,10 @@ public class RemoteAccess {
 
     public static Map<String, Map<String, RemoteAccess>> history = new ConcurrentHashMap<String, Map<String, RemoteAccess>>();
     
-    public static Post evaluate(final HttpServletRequest request) {
+    public static Query evaluate(final HttpServletRequest request) {
         String path = request.getServletPath();
         Map<String, String> qm = getQueryMap(request.getQueryString());
-        Post post = new Post(request);
+        Query post = new Query(request);
         post.initGET(qm);
         String httpports = qm == null ? request.getParameter("port.http") : qm.get("port.http");
         Integer httpport = httpports == null ? null : Integer.parseInt(httpports);
@@ -99,129 +96,6 @@ public class RemoteAccess {
     
     public static String hostHash(String remoteHost) {
         return Integer.toHexString(Math.abs(remoteHost.hashCode()));
-    }
-    
-    public static class Post {
-        private HttpServletRequest request;
-        private Map<String, String> qm;
-        private AccessTracker.Track track;
-        public Post(final HttpServletRequest request) {
-            this.qm = new HashMap<>();
-            for (Map.Entry<String, String[]> entry: request.getParameterMap().entrySet()) {
-                this.qm.put(entry.getKey(), entry.getValue()[0]);
-            }
-            this.request = request;
-            
-            // discover remote host
-            String clientHost = request.getRemoteHost();
-            String XRealIP = request.getHeader("X-Real-IP");
-            if (XRealIP != null && XRealIP.length() > 0) clientHost = XRealIP; // get IP through nginx config "proxy_set_header X-Real-IP $remote_addr;"
-            
-            // start tracking: get calling thread and start tracking for that
-            StackTraceElement[] stackTraceElements = Thread.currentThread().getStackTrace();
-            StackTraceElement caller = stackTraceElements[3];
-            this.track = DAO.access.startTracking(caller.getClassName(), clientHost);
-            
-            this.track.setTimeSinceLastAccess(this.track.getDate().getTime() - RemoteAccess.latestVisit(this.track.getClassName(), clientHost));
-            //System.out.println("*** this.time_since_last_access = " + this.time_since_last_access);
-            this.track.setDoSBlackout(LoklakServer.blacklistedHosts.contains(clientHost) || (!this.track.isLocalhostAccess() && (this.track.getTimeSinceLastAccess() < DAO.getConfig("DoS.blackout", 100) || sleeping4clients.contains(clientHost))));
-            this.track.setDoSServicereduction(!this.track.isLocalhostAccess() && (this.track.getTimeSinceLastAccess() < DAO.getConfig("DoS.servicereduction", 1000) || sleeping4clients.contains(clientHost)));
-        }
-        public void finalize() {
-            this.track.finalize();
-        }
-        public void initGET(final Map<String, String> qm) {
-            this.qm = qm;
-            this.track.setQuery(qm);
-        }
-        public void initPOST(final Map<String, byte[]> map) {
-            this.qm = new HashMap<>();
-            for (Map.Entry<String, byte[]> entry: map.entrySet()) this.qm.put(entry.getKey(), UTF8.String(entry.getValue()));
-        }
-        public String getClientHost() {
-            return this.track.getClientHost();
-        }
-        public boolean isLocalhostAccess() {
-            return this.track.isLocalhostAccess();
-        }
-        public long getAccessTime() {
-            return this.track.getDate().getTime();
-        }
-        public long getTimeSinceLastAccess() {
-            return this.track.getTimeSinceLastAccess();
-        }
-        public boolean isDoS_blackout() {
-            return this.track.isDoSBlackout();
-        }
-        public boolean isDoS_servicereduction() {
-            return this.track.isDoSServicereduction();
-        }
-        public void recordEvent(String eventName, Object eventValue) {
-            this.track.put(AccessTracker.EVENT_PREFIX + eventName, eventValue);
-        }
-        public String get(String key, String dflt) {
-            String val = qm == null ? request.getParameter(key) : qm.get(key);
-            return val == null ? dflt : val;
-        }
-        public String[] get(String key, String[] dflt, String delim) {
-            String val = qm == null ? request.getParameter(key) : qm.get(key);
-            return val == null || val.length() == 0 ? dflt : val.split(delim);
-        }
-        public int get(String key, int dflt) {
-            String val = qm == null ? request.getParameter(key) : qm.get(key);
-            return val == null || val.length() == 0 ? dflt : Integer.parseInt(val);
-        }
-        public long get(String key, long dflt) {
-            String val = qm == null ? request.getParameter(key) : qm.get(key);
-            return val == null || val.length() == 0 ? dflt : Long.parseLong(val);
-        }
-        public double get(String key, double dflt) {
-            String val = qm == null ? request.getParameter(key) : qm.get(key);
-            return val == null || val.length() == 0 ? dflt : Double.parseDouble(val);
-        }
-        public boolean get(String key, boolean dflt) {
-            String val = qm == null ? request.getParameter(key) : qm.get(key);
-            return val == null ? dflt : "true".equals(val) || "1".equals(val);
-        }
-        public Date get(String key, Date dflt, int timezoneOffset) {
-            String val = qm == null ? request.getParameter(key) : qm.get(key);
-            try {
-                return val == null || val.length() == 0 ? dflt : DateParser.parse(val, timezoneOffset).getTime();
-            } catch (ParseException e) {
-                return dflt;
-            }
-        }
-        public Set<String> getKeys() {
-            return request.getParameterMap().keySet();
-        }
-        public void setResponse(final HttpServletResponse response, final String mime) {
-            long access_time = this.getAccessTime();
-            response.setDateHeader("Last-Modified", access_time);
-            response.setDateHeader("Expires", access_time + 2 * DAO.getConfig("DoS.servicereduction", 1000));
-            response.setContentType(mime);
-            response.setHeader("X-Robots-Tag",  "noindex,noarchive,nofollow,nosnippet");
-            response.setCharacterEncoding("UTF-8");
-            response.setStatus(HttpServletResponse.SC_OK);
-        }
-        public int hashCode() {
-            return qm.hashCode();
-        }
-    }
-    
-    private static HashSet<String> sleeping4clients = new HashSet<>();
-    
-    public static void sleep(String host, long time) {
-        try {
-            sleeping4clients.add(host);
-            Thread.sleep(time);
-        } catch (InterruptedException e) {
-        } finally {
-            sleeping4clients.remove(host);
-        }
-    }
-    
-    public static boolean isSleepingForClient(String host) {
-        return sleeping4clients.contains(host);
     }
     
     private String remoteHost, localPath, peername;
@@ -350,7 +224,7 @@ public class RemoteAccess {
         return new FileTypeEncoding(FileType.UNKNOWN);
     }
     
-    public static void writeImage(final FileTypeEncoding fileType, final HttpServletResponse response, Post post, final RasterPlotter matrix) throws IOException {
+    public static void writeImage(final FileTypeEncoding fileType, final HttpServletResponse response, Query post, final RasterPlotter matrix) throws IOException {
         // write image
         ServletOutputStream sos = response.getOutputStream();
         if (fileType.fileType == FileType.PNG) {

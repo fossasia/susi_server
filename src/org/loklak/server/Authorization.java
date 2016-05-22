@@ -17,7 +17,6 @@
  *  If not, see <http://www.gnu.org/licenses/>.
  */
 
-
 package org.loklak.server;
 
 public class Authorization {

@@ -29,6 +29,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.loklak.data.DAO;
 import org.loklak.http.RemoteAccess;
 import org.loklak.objects.MessageEntry;
+import org.loklak.server.Query;
 
 public class ShortlinkFromTweetServlet extends HttpServlet {
 
@@ -41,7 +42,7 @@ public class ShortlinkFromTweetServlet extends HttpServlet {
     
     @Override
     protected void doGet(final HttpServletRequest request, final HttpServletResponse response) throws ServletException, IOException {
-        final RemoteAccess.Post post = RemoteAccess.evaluate(request);
+        final Query post = RemoteAccess.evaluate(request);
         String id = post.get("id", "");
         if (id.length() == 0) {response.sendError(503, "bad request (id missing)"); return;}
         

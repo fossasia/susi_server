@@ -30,6 +30,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.json.JSONObject;
 import org.loklak.data.DAO;
 import org.loklak.http.RemoteAccess;
+import org.loklak.server.Query;
 
 /**
  * submit all setting values where the settings key starts with "client."
@@ -45,7 +46,7 @@ public class SettingsServlet extends HttpServlet {
     
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        RemoteAccess.Post post = RemoteAccess.evaluate(request);
+        Query post = RemoteAccess.evaluate(request);
         if (post.isDoS_blackout()) {response.sendError(503, "your request frequency is too high"); return;}
         if (!post.isLocalhostAccess()) {response.sendError(503, "access only allowed from localhost, your request comes from " + post.getClientHost()); return;}
         

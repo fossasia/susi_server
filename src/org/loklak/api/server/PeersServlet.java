@@ -33,6 +33,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.loklak.http.RemoteAccess;
+import org.loklak.server.Query;
 
 public class PeersServlet extends HttpServlet {
 
@@ -45,7 +46,7 @@ public class PeersServlet extends HttpServlet {
     
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        RemoteAccess.Post post = RemoteAccess.evaluate(request);
+        Query post = RemoteAccess.evaluate(request);
         
         // manage DoS
         String path = request.getServletPath();

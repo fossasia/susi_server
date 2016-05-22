@@ -24,6 +24,7 @@ import org.loklak.server.APIHandler;
 import org.loklak.server.APIServiceLevel;
 import org.loklak.server.AbstractAPIHandler;
 import org.loklak.server.Authorization;
+import org.loklak.server.Query;
 
 /**
  * Servlet to span the message peer-to-peer network.
@@ -32,6 +33,7 @@ import org.loklak.server.Authorization;
 public class HelloServlet extends AbstractAPIHandler implements APIHandler {
     
     private static final long serialVersionUID = 1839868262296635665L;
+
 
     @Override
     public APIServiceLevel getDefaultServiceLevel() {
@@ -42,9 +44,14 @@ public class HelloServlet extends AbstractAPIHandler implements APIHandler {
     public APIServiceLevel getCustomServiceLevel(Authorization auth) {
         return APIServiceLevel.PUBLIC;
     }
+
+    @Override
+    public String getAPIPath() {
+        return "/api/hello.json";
+    }
     
     @Override
-    public JSONObject service(JSONObject call) {
+    public JSONObject serviceImpl(Query call, Authorization rights) {
         JSONObject json = new JSONObject(true);
         json.put("status", "ok");
         return json;

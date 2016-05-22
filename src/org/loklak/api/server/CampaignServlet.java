@@ -33,6 +33,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.json.JSONObject;
 import org.loklak.data.Campaign;
 import org.loklak.http.RemoteAccess;
+import org.loklak.server.Query;
 import org.loklak.tools.DateParser;
 
 public class CampaignServlet extends HttpServlet {
@@ -46,7 +47,7 @@ public class CampaignServlet extends HttpServlet {
     
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        RemoteAccess.Post post = RemoteAccess.evaluate(request);
+        Query post = RemoteAccess.evaluate(request);
         
         boolean localhost = post.isLocalhostAccess();
         if (!localhost) {response.sendError(400, "campaigns can only be started by calls from localhost"); return;}

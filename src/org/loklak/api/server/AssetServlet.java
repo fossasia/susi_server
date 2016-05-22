@@ -36,6 +36,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.loklak.data.DAO;
 import org.loklak.http.RemoteAccess;
+import org.loklak.server.Query;
 import org.loklak.tools.UTF8;
 
 public class AssetServlet extends HttpServlet {
@@ -44,7 +45,7 @@ public class AssetServlet extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        RemoteAccess.Post post = RemoteAccess.evaluate(request);
+        Query post = RemoteAccess.evaluate(request);
         if (post.isDoS_blackout()) {response.sendError(503, "your request frequency is too high"); return;} // DoS protection
         
         // parse arguments
@@ -77,7 +78,7 @@ public class AssetServlet extends HttpServlet {
     
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        RemoteAccess.Post post = RemoteAccess.evaluate(request);
+        Query post = RemoteAccess.evaluate(request);
                 
         // manage DoS
         if (post.isDoS_blackout()) {response.sendError(503, "your request frequency is too high"); return;}

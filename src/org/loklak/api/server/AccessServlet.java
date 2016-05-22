@@ -22,6 +22,7 @@ package org.loklak.api.server;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.Collection;
+
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -32,6 +33,7 @@ import org.json.JSONObject;
 import org.loklak.data.DAO;
 import org.loklak.http.RemoteAccess;
 import org.loklak.http.AccessTracker.Track;
+import org.loklak.server.Query;
 
 public class AccessServlet extends HttpServlet {
 
@@ -44,7 +46,7 @@ public class AccessServlet extends HttpServlet {
     
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        RemoteAccess.Post post = RemoteAccess.evaluate(request);
+        Query post = RemoteAccess.evaluate(request);
         if (post.isDoS_servicereduction() || post.isDoS_blackout()) {response.sendError(503, "your request frequency is too high"); return;} // DoS protection
         
         boolean anonymize = !post.isLocalhostAccess();

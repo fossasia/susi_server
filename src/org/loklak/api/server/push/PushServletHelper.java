@@ -5,11 +5,11 @@ import org.json.JSONObject;
 import org.loklak.data.DAO;
 import org.loklak.harvester.HarvestingFrequency;
 import org.loklak.harvester.SourceType;
-import org.loklak.http.RemoteAccess;
 import org.loklak.objects.ImportProfileEntry;
 import org.loklak.objects.MessageEntry;
 import org.loklak.objects.Timeline;
 import org.loklak.objects.UserEntry;
+import org.loklak.server.Query;
 
 import java.io.IOException;
 import java.util.List;
@@ -27,7 +27,7 @@ public class PushServletHelper {
     };
 
     public static PushReport saveMessagesAndImportProfile(
-            JSONArray messages, int fileHash, RemoteAccess.Post post,
+            JSONArray messages, int fileHash, Query post,
             SourceType sourceType, String screenName) throws IOException {
         PushReport report = new PushReport();
         List<String> importedMsgIds = new ArrayList<>();
@@ -64,7 +64,7 @@ public class PushServletHelper {
         return report;
     }
 
-    protected static ImportProfileEntry saveImportProfile(int fileHash, RemoteAccess.Post post, SourceType sourceType, String screenName, List<String> importedMsgIds) throws IOException {
+    protected static ImportProfileEntry saveImportProfile(int fileHash, Query post, SourceType sourceType, String screenName, List<String> importedMsgIds) throws IOException {
         ImportProfileEntry importProfileEntry ;
         JSONObject profile = new JSONObject();
         profile.put("client_host", post.getClientHost());

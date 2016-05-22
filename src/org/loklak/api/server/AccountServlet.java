@@ -20,90 +20,76 @@
 package org.loklak.api.server;
 
 import java.io.IOException;
-import java.io.PrintWriter;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.loklak.data.DAO;
-import org.loklak.http.RemoteAccess;
 import org.loklak.objects.AccountEntry;
 import org.loklak.objects.UserEntry;
+import org.loklak.server.APIException;
+import org.loklak.server.APIHandler;
+import org.loklak.server.APIServiceLevel;
+import org.loklak.server.AbstractAPIHandler;
+import org.loklak.server.Authorization;
+import org.loklak.server.Query;
 
-public class AccountServlet extends HttpServlet {
+public class AccountServlet extends AbstractAPIHandler implements APIHandler {
    
     private static final long serialVersionUID = 8578478303032749879L;
-    
+
     @Override
-    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        RemoteAccess.Post post = RemoteAccess.evaluate(request);
-        if (post.isDoS_blackout()) {response.sendError(503, "your request frequency is too high"); return;} // DoS protection
-        if (!post.isLocalhostAccess()) {response.sendError(503, "access only allowed from localhost, your request comes from " + post.getClientHost()); return;} // danger! do not remove this!
-        process(request, response, post);
+    public APIServiceLevel getDefaultServiceLevel() {
+        return APIServiceLevel.ADMIN;
+    }
+
+    @Override
+    public APIServiceLevel getCustomServiceLevel(Authorization rights) {
+        return APIServiceLevel.ADMIN;
+    }
+
+    public String getAPIPath() {
+        return "/api/account.json";
     }
     
     @Override
-    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        RemoteAccess.Post post = RemoteAccess.evaluate(request);
-        if (post.isDoS_blackout()) {response.sendError(503, "your request frequency is too high"); return;} // DoS protection
-        if (!post.isLocalhostAccess()) {response.sendError(503, "access only allowed from localhost, your request comes from " + post.getClientHost()); return;} // danger! do not remove this!
-        post.initPOST(RemoteAccess.getPostMap(request));
-        process(request, response, post);
-    }
-    
-    protected void process(HttpServletRequest request, HttpServletResponse response, RemoteAccess.Post post) throws ServletException, IOException {
+    public JSONObject serviceImpl(Query post, Authorization rights) throws APIException {
 
         // parameters
-        String callback = post.get("callback", "");
-        boolean jsonp = callback != null && callback.length() > 0;
-        boolean minified = post.get("minified", false);
         boolean update = "update".equals(post.get("action", ""));
         String screen_name = post.get("screen_name", "");
         
         String data = post.get("data", "");
         if (update) {
             if  (data == null || data.length() == 0) {
-                response.sendError(400, "your request does not contain a data object.");
-                return;
+                throw new APIException(400, "your request does not contain a data object.");
              }
         
-            // parse the json data
-            try {
-                JSONObject json = new JSONObject(data);
-                Object accounts_obj = json.has("accounts") ? json.get("accounts") : null;
-                JSONArray accounts;
-                if (accounts_obj != null && accounts_obj instanceof JSONArray) {
-                    accounts = (JSONArray) accounts_obj;
-                } else {
-                    accounts = new JSONArray();
-                    accounts.put(json);
+            JSONObject json = new JSONObject(data);
+            Object accounts_obj = json.has("accounts") ? json.get("accounts") : null;
+            JSONArray accounts;
+            if (accounts_obj != null && accounts_obj instanceof JSONArray) {
+                accounts = (JSONArray) accounts_obj;
+            } else {
+                accounts = new JSONArray();
+                accounts.put(json);
+            }
+            for (Object account_obj: accounts) {
+                if (account_obj == null) continue;
+                try {
+                    AccountEntry a = new AccountEntry((JSONObject) account_obj);
+                    DAO.writeAccount(a, true);
+                } catch (IOException e) {
+                    throw new APIException(400, "submitted data is not well-formed: " + e.getMessage());
                 }
-                for (Object account_obj: accounts) {
-                    if (account_obj == null) continue;
-                    try {
-                        AccountEntry a = new AccountEntry((JSONObject) account_obj);
-                        DAO.writeAccount(a, true);
-                    } catch (IOException e) {
-                        response.sendError(400, "submitted data is not well-formed: " + e.getMessage());
-                        e.printStackTrace();
-                        return;
-                    }
-                }
-                if (accounts.length() == 1) {
-                    screen_name = (String) ((JSONObject) accounts.iterator().next()).get("screen_name");
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
+            }
+            if (accounts.length() == 1) {
+                screen_name = (String) ((JSONObject) accounts.iterator().next()).get("screen_name");
             }
         }
 
         UserEntry userEntry = DAO.searchLocalUserByScreenName(screen_name);
         AccountEntry accountEntry = DAO.searchLocalAccount(screen_name);
         
-        post.setResponse(response, "application/javascript");
         
         // generate json
         JSONObject m = new JSONObject(true);
@@ -121,13 +107,7 @@ public class AccountServlet extends HttpServlet {
         }
         m.put("accounts", accounts);
         
-        // write json
-        PrintWriter sos = response.getWriter();
-        if (jsonp) sos.print(callback + "(");
-        sos.print(m.toString(minified ? 0 : 2));
-        if (jsonp) sos.println(");");
-        sos.println();
-        post.finalize();
+        return m;
     }
     
 }

@@ -39,6 +39,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.loklak.data.DAO;
 import org.loklak.http.RemoteAccess;
 import org.loklak.server.FileHandler;
+import org.loklak.server.Query;
 
 public class DumpDownloadServlet extends HttpServlet {
 
@@ -51,7 +52,7 @@ public class DumpDownloadServlet extends HttpServlet {
     
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        RemoteAccess.Post post = RemoteAccess.evaluate(request);
+        Query post = RemoteAccess.evaluate(request);
         String path = request.getPathInfo();
         long now = System.currentTimeMillis();
         

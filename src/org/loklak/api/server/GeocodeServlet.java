@@ -21,6 +21,7 @@ package org.loklak.api.server;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -31,6 +32,7 @@ import org.json.JSONObject;
 import org.loklak.data.DAO;
 import org.loklak.geo.GeoMark;
 import org.loklak.http.RemoteAccess;
+import org.loklak.server.Query;
 
 /**
  * geocoding of places into locations
@@ -50,7 +52,7 @@ public class GeocodeServlet extends HttpServlet {
     
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        RemoteAccess.Post post = RemoteAccess.evaluate(request);
+        Query post = RemoteAccess.evaluate(request);
      
         // manage DoS
         if (post.isDoS_blackout()) {response.sendError(503, "your request frequency is too high"); return;}

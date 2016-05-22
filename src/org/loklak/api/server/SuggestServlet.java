@@ -42,6 +42,7 @@ import org.loklak.http.RemoteAccess;
 import org.loklak.objects.AbstractObjectEntry;
 import org.loklak.objects.QueryEntry;
 import org.loklak.objects.ResultList;
+import org.loklak.server.Query;
 
 /*
  * - test suggestions -
@@ -66,7 +67,7 @@ public class SuggestServlet extends HttpServlet {
     
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        RemoteAccess.Post post = RemoteAccess.evaluate(request);
+        Query post = RemoteAccess.evaluate(request);
      
         // manage DoS
         if (post.isDoS_blackout()) {response.sendError(503, "your request frequency is too high"); return;}

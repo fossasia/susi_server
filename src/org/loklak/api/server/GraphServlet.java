@@ -32,6 +32,7 @@ import org.json.JSONObject;
 import org.loklak.harvester.TwitterAPI;
 import org.loklak.http.RemoteAccess;
 import org.loklak.server.FileHandler;
+import org.loklak.server.Query;
 
 import twitter4j.TwitterException;
 
@@ -46,7 +47,7 @@ public class GraphServlet extends HttpServlet {
     
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        RemoteAccess.Post post = RemoteAccess.evaluate(request);
+        Query post = RemoteAccess.evaluate(request);
      
         // manage DoS
         if (post.isDoS_blackout()) {response.sendError(503, "your request frequency is too high"); return;}

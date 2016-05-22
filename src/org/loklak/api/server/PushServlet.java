@@ -40,6 +40,7 @@ import org.loklak.objects.QueryEntry;
 import org.loklak.objects.Timeline;
 import org.loklak.objects.UserEntry;
 import org.loklak.objects.Timeline.Order;
+import org.loklak.server.Query;
 import org.loklak.tools.UTF8;
 
 
@@ -71,7 +72,7 @@ public class PushServlet extends HttpServlet {
 
         long timeStart = System.currentTimeMillis();
         
-        RemoteAccess.Post post = RemoteAccess.evaluate(request);
+        Query post = RemoteAccess.evaluate(request);
         String remoteHash = Integer.toHexString(Math.abs(post.getClientHost().hashCode()));
         boolean remoteHashFromPeerId = false;
                 

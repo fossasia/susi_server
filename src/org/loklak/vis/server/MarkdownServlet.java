@@ -32,6 +32,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.loklak.data.DAO;
 import org.loklak.http.RemoteAccess;
 import org.loklak.http.RemoteAccess.FileTypeEncoding;
+import org.loklak.server.Query;
 import org.loklak.visualization.graphics.PrintTool;
 import org.loklak.visualization.graphics.RasterPlotter;
 import org.loklak.visualization.graphics.RasterPlotter.DrawMode;
@@ -42,14 +43,14 @@ public class MarkdownServlet extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        RemoteAccess.Post post = RemoteAccess.evaluate(request);
+        Query post = RemoteAccess.evaluate(request);
         if (post.isDoS_blackout()) {response.sendError(503, "your request frequency is too high"); return;} // DoS protection
         process(request, response, post);
     }
     
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        RemoteAccess.Post post = RemoteAccess.evaluate(request);
+        Query post = RemoteAccess.evaluate(request);
         if (post.isDoS_blackout()) {response.sendError(503, "your request frequency is too high"); return;} // DoS protection
         post.initPOST(RemoteAccess.getPostMap(request));
         process(request, response, post);
@@ -60,7 +61,7 @@ public class MarkdownServlet extends HttpServlet {
     // http://localhost:9000/vis/markdown.png?text=line+one%0Aline+two%0Aline+three%0A%C2%A0%0Avery+long+line+very+long+line+very+long+line+very+long+line+very+long+line+very+long+line+very+long+line+very+long+line+very+long+line+very+long+line+very+long+line+very+long+line+very+long+line+very+long+line+very+long+line+very+long+line+very+long+line+very+long+line
     // http://localhost:9000/vis/markdown.png?text=%23+This+is+a+Test-Text+for+large+attachment+texts.%0A%C2%A0%0A%23+The+largest+heading+%28an+%3Ch1%3E+tag%29%0A%23%23+The+second+largest+heading+%28an+%3Ch2%3E+tag%29%0A%E2%80%A6%0A%23%23%23%23%23%23+The+6th+largest+heading+%28an+%3Ch6%3E+tag%29%0A%C2%A0%0AIn+the+words+of+Abraham+Lincoln%3A%0A%C2%A0%0A%3E+Pardon+my+french%0A%C2%A0%0A*This+text+will+be+italic*%0A**This+text+will+be+bold**%0A%C2%A0%0A*+Item%0A*+Item%0A*+Item%0A%C2%A0%0A1.+Item+1%0A2.+Item+2%0A3.+Item+3%0A%C2%A0%0AHere%27s+an+idea%3A+why+don%27t+we+take+%60SuperiorProject%60+and+turn+it+into+%60**Reasonable**Project%60.%0A%C2%A0%0ACheck+out+this+neat+program+I+wrote%3A%0A%C2%A0%0A%60%60%60%0Ax+%3D+0%0Ax+%3D+2+%2B+2%0Awhat+is+x%0A%60%60%60%0A%C2%A0%0AIf+you+like+this%2C+check+the+loklak+project+at%0A++http%3A%2F%2Floklak.org+%28for+the+server%29+and%0A++http%3A%2F%2Floklak.net+%28for+the+webclient%29%0A++%0ATo+get+latest+news%2C+check+%400rb1t3r
     
-    protected void process(HttpServletRequest request, HttpServletResponse response, RemoteAccess.Post post) throws ServletException, IOException {
+    protected void process(HttpServletRequest request, HttpServletResponse response, Query post) throws ServletException, IOException {
         // parse arguments
         String text = post.get("text", "");
         DAO.log("MARKDOWN-TEXT: " + URLEncoder.encode(text, "UTF-8"));

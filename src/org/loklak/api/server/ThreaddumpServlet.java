@@ -53,6 +53,7 @@ import org.loklak.Caretaker;
 import org.loklak.data.DAO;
 import org.loklak.http.RemoteAccess;
 import org.loklak.server.FileHandler;
+import org.loklak.server.Query;
 import org.loklak.tools.UTF8;
 
 public class ThreaddumpServlet extends HttpServlet {
@@ -75,7 +76,7 @@ public class ThreaddumpServlet extends HttpServlet {
 
     @Override
     protected void doGet(final HttpServletRequest request, final HttpServletResponse response) throws ServletException, IOException {
-        RemoteAccess.Post post = RemoteAccess.evaluate(request);
+        Query post = RemoteAccess.evaluate(request);
 
         String servlet = post.isLocalhostAccess() ? post.get("servlet", "") : "";
         if (servlet.length() > 0) {

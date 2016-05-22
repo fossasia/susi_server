@@ -32,6 +32,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.loklak.geo.OSMTile;
 import org.loklak.http.RemoteAccess;
 import org.loklak.http.RemoteAccess.FileTypeEncoding;
+import org.loklak.server.Query;
 import org.loklak.visualization.graphics.PrintTool;
 import org.loklak.visualization.graphics.RasterPlotter;
 import org.loklak.visualization.graphics.RasterPlotter.DrawMode;
@@ -43,14 +44,14 @@ public class MapServlet extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        RemoteAccess.Post post = RemoteAccess.evaluate(request);
+        Query post = RemoteAccess.evaluate(request);
         if (post.isDoS_blackout()) {response.sendError(503, "your request frequency is too high"); return;} // DoS protection
         process(request, response, post);
     }
     
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        RemoteAccess.Post post = RemoteAccess.evaluate(request);
+        Query post = RemoteAccess.evaluate(request);
         if (post.isDoS_blackout()) {response.sendError(503, "your request frequency is too high"); return;} // DoS protection
         post.initPOST(RemoteAccess.getPostMap(request));
         process(request, response, post);
@@ -58,7 +59,7 @@ public class MapServlet extends HttpServlet {
     
     // http://localhost:9000/vis/map.png?text=Test&mlat=1.28373&mlon=103.84379&zoom=18
 
-    protected void process(HttpServletRequest request, HttpServletResponse response, RemoteAccess.Post post) throws ServletException, IOException {
+    protected void process(HttpServletRequest request, HttpServletResponse response, Query post) throws ServletException, IOException {
         // parse arguments
         String text = post.get("text", "");
         boolean uppercase = post.get("uppercase", true);

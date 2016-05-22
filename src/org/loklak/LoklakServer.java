@@ -44,7 +44,6 @@ import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.server.handler.DefaultHandler;
 import org.eclipse.jetty.server.handler.ErrorHandler;
-import org.eclipse.jetty.server.handler.HandlerCollection;
 import org.eclipse.jetty.server.handler.HandlerList;
 import org.eclipse.jetty.server.handler.IPAccessHandler;
 import org.eclipse.jetty.servlet.FilterHolder;
@@ -493,7 +492,7 @@ public class LoklakServer {
         servletHandler.addServlet(AccessServlet.class, "/api/access.html");
         servletHandler.addServlet(AccessServlet.class, "/api/access.txt");
         servletHandler.addServlet(AppsServlet.class, "/api/apps.json");
-        servletHandler.addServlet(HelloServlet.class, "/api/hello.json");
+        servletHandler.addServlet(HelloServlet.class, new HelloServlet().getAPIPath() /*"/api/hello.json"*/);
         servletHandler.addServlet(PeersServlet.class, "/api/peers.json");
         servletHandler.addServlet(CrawlerServlet.class, "/api/crawler.json");
         servletHandler.addServlet(StatusServlet.class, "/api/status.json");

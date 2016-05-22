@@ -34,6 +34,7 @@ import org.loklak.harvester.TwitterAPI;
 import org.loklak.http.ClientConnection;
 import org.loklak.http.RemoteAccess;
 import org.loklak.objects.UserEntry;
+import org.loklak.server.Query;
 import org.loklak.tools.CacheMap;
 
 import twitter4j.TwitterException;
@@ -46,14 +47,14 @@ public class ProxyServlet extends HttpServlet {
     
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        RemoteAccess.Post post = RemoteAccess.evaluate(request);
+        Query post = RemoteAccess.evaluate(request);
         if (post.isDoS_blackout()) {response.sendError(503, "your request frequency is too high"); return;} // DoS protection
         process(request, response, post);
     }
     
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        RemoteAccess.Post post = RemoteAccess.evaluate(request);
+        Query post = RemoteAccess.evaluate(request);
         if (post.isDoS_blackout()) {response.sendError(503, "your request frequency is too high"); return;} // DoS protection
         post.initPOST(RemoteAccess.getPostMap(request));
         process(request, response, post);
@@ -61,7 +62,7 @@ public class ProxyServlet extends HttpServlet {
     
     // http://localhost:9000/api/proxy.png?screen_name=loklak_app&url=https://pbs.twimg.com/profile_images/577512240640733184/fizL4YIn_bigger.png
     
-    protected void process(HttpServletRequest request, HttpServletResponse response, RemoteAccess.Post post) throws ServletException, IOException {
+    protected void process(HttpServletRequest request, HttpServletResponse response, Query post) throws ServletException, IOException {
         
         // parse arguments
         String url = post.get("url", "");

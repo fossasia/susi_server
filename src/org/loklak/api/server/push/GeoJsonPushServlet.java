@@ -31,6 +31,7 @@ import org.loklak.http.ClientConnection;
 import org.loklak.http.RemoteAccess;
 import org.loklak.objects.MessageEntry;
 import org.loklak.objects.QueryEntry.PlaceContext;
+import org.loklak.server.Query;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -59,7 +60,7 @@ public class GeoJsonPushServlet extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        RemoteAccess.Post post = RemoteAccess.evaluate(request);
+        Query post = RemoteAccess.evaluate(request);
         String remoteHash = Integer.toHexString(Math.abs(post.getClientHost().hashCode()));
 
         // manage DoS

@@ -44,6 +44,7 @@ import org.loklak.objects.Timeline;
 import org.loklak.objects.UserEntry;
 import org.loklak.rss.RSSFeed;
 import org.loklak.rss.RSSMessage;
+import org.loklak.server.Query;
 import org.loklak.tools.CharacterCoding;
 import org.loklak.tools.UTF8;
 
@@ -61,7 +62,7 @@ public class SearchServlet extends HttpServlet {
     
     @Override
     protected void doGet(final HttpServletRequest request, final HttpServletResponse response) throws ServletException, IOException {
-        final RemoteAccess.Post post = RemoteAccess.evaluate(request);
+        final Query post = RemoteAccess.evaluate(request);
         try {
         
         // manage DoS
@@ -193,11 +194,7 @@ public class SearchServlet extends HttpServlet {
         DAO.announceNewUserId(tl);
         
         // reduce the list to the wanted number of results if we have more
-        tl.reduceToMaxsize(count);        
-
-        if (post.isDoS_servicereduction() && !RemoteAccess.isSleepingForClient(post.getClientHost())) {
-            RemoteAccess.sleep(post.getClientHost(), 2000);
-        }
+        tl.reduceToMaxsize(count);
         
         // create json or xml according to path extension
         int shortlink_iflinkexceedslength = (int) DAO.getConfig("shortlink.iflinkexceedslength", 500L);

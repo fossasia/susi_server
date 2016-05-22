@@ -1,6 +1,6 @@
 /**
- *  APIHandler
- *  Copyright 17.05.2016 by Michael Peter Christen, @0rb1t3r
+ *  APIException
+ *  Copyright 19.05.2016 by Michael Peter Christen, @0rb1t3r
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -19,18 +19,17 @@
 
 package org.loklak.server;
 
-import org.json.JSONObject;
+public class APIException extends Exception {
 
-public interface APIHandler {
-
-    public String[] getServerProtocolHostStub();
-
-    public APIServiceLevel getDefaultServiceLevel();
+    private static final long serialVersionUID = -6974553774866005875L;
+    private int statusCode = -1;
     
-    public String getAPIPath();
+    public APIException(int statusCode, String message) {
+        super(message);
+        this.statusCode = statusCode;
+    }
     
-    public APIServiceLevel getCustomServiceLevel(Authorization httpaccount);
-
-    public JSONObject[] service(Query call, Authorization rights) throws APIException;
-    
+    public int getStatusCode() {
+        return this.statusCode;
+    }
 }

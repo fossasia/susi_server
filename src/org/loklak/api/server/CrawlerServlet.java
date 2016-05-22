@@ -31,6 +31,7 @@ import org.json.JSONObject;
 import org.loklak.Crawler;
 import org.loklak.data.DAO;
 import org.loklak.http.RemoteAccess;
+import org.loklak.server.Query;
 
 public class CrawlerServlet extends HttpServlet {
    
@@ -43,7 +44,7 @@ public class CrawlerServlet extends HttpServlet {
     
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        RemoteAccess.Post post = RemoteAccess.evaluate(request);
+        Query post = RemoteAccess.evaluate(request);
         
         boolean localhost = post.isLocalhostAccess();
         String callback = post.get("callback", "");
