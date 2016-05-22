@@ -528,7 +528,7 @@ public class LoklakServer {
         assetServletHolder.getRegistration().setMultipartConfig(new MultipartConfigElement(tmp.getAbsolutePath()));
         servletHandler.addServlet(assetServletHolder, "/api/asset");
         servletHandler.addServlet(ThreaddumpServlet.class, "/api/threaddump.txt");
-        servletHandler.addServlet(TopMenu.class, "/cms/topmenu.json");
+        servletHandler.addServlet(TopMenu.class, new TopMenu().getAPIPath());
         servletHandler.addServlet(MarkdownServlet.class, "/vis/markdown.gif");
         servletHandler.addServlet(MarkdownServlet.class, "/vis/markdown.gif.base64");
         servletHandler.addServlet(MarkdownServlet.class, "/vis/markdown.png");

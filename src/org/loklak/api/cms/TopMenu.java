@@ -25,7 +25,7 @@ public class TopMenu extends AbstractAPIHandler implements APIHandler {
 
     @Override
     public String getAPIPath() {
-        return "/api/topmenu.json";
+        return "/cms/topmenu.json";
     }
     
     @Override
