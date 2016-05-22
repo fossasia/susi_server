@@ -66,6 +66,7 @@ import org.eclipse.jetty.security.ConstraintSecurityHandler;
 import org.eclipse.jetty.security.HashLoginService;
 import org.eclipse.jetty.security.LoginService;
 import org.eclipse.jetty.security.authentication.BasicAuthenticator;
+import org.loklak.api.cms.TopMenu;
 import org.loklak.api.p2p.Hello;
 import org.loklak.api.server.AccessServlet;
 import org.loklak.api.server.AppsServlet;
@@ -527,6 +528,7 @@ public class LoklakServer {
         assetServletHolder.getRegistration().setMultipartConfig(new MultipartConfigElement(tmp.getAbsolutePath()));
         servletHandler.addServlet(assetServletHolder, "/api/asset");
         servletHandler.addServlet(ThreaddumpServlet.class, "/api/threaddump.txt");
+        servletHandler.addServlet(TopMenu.class, "/cms/topmenu.json");
         servletHandler.addServlet(MarkdownServlet.class, "/vis/markdown.gif");
         servletHandler.addServlet(MarkdownServlet.class, "/vis/markdown.gif.base64");
         servletHandler.addServlet(MarkdownServlet.class, "/vis/markdown.png");
