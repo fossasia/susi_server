@@ -131,7 +131,7 @@ public class ElasticsearchClient {
                 .build();
         for (String address: addresses) {
             String a = address.trim();
-            int p = a.indexOf('.');
+            int p = a.indexOf(':');
             if (p >= 0) try {
                 InetAddress i = InetAddress.getByName(a.substring(0, p));
                 int port = Integer.parseInt(a.substring(p + 1));
