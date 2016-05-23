@@ -151,6 +151,7 @@ public class DumpImporter extends Thread {
                     
         } catch (Throwable e) {
             Log.getLog().warn("DumpImporter THREAD", e);
+            try {Thread.sleep(10000);} catch (InterruptedException e1) {}
         }
 
         Log.getLog().info("DumpImporter terminated");
