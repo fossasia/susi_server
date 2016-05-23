@@ -102,23 +102,9 @@ public class ElasticsearchClient {
 
     /**
      * create a elasticsearch transport client (remote elasticsearch)
-     * @param address
-     * @param port
+     * @param addresses an array of host:port addresses
      * @param clusterName
      */
-    public ElasticsearchClient(final InetAddress address, final int port, final String clusterName) {
-        // create default settings and add cluster name
-        Settings.Builder settings = Settings.builder()
-                .put("cluster.name", clusterName)
-                .put("cluster.routing.allocation.enable", "all")
-                .put("cluster.routing.allocation.allow_rebalance", "true");
-        // create a client
-        this.elasticsearchClient = TransportClient.builder()
-                .settings(settings.build())
-                .build()
-                .addTransportAddress(new InetSocketTransportAddress(address, port));
-    }
-    
     public ElasticsearchClient(final String[] addresses, final String clusterName) {
         // create default settings and add cluster name
         Settings.Builder settings = Settings.builder()

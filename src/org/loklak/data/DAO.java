@@ -25,7 +25,6 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.net.InetAddress;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -161,10 +160,6 @@ public class DAO {
                 if (transport_addresses_string != null && transport_addresses_string.length() > 0) {
                     String[] transport_addresses = transport_addresses_string.split(",");
                     elasticsearch_client = new ElasticsearchClient(transport_addresses, cluster_name);
-                } else {
-                    InetAddress address = InetAddress.getByName(configMap.get("elasticsearch_transport.host"));
-                    int port = Integer.parseInt(configMap.get("elasticsearch_transport.port"));
-                    elasticsearch_client = new ElasticsearchClient(address, port, cluster_name);
                 }
             } else {
                 // use all config attributes with a key starting with "elasticsearch." to set elasticsearch settings
