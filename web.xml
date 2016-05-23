@@ -1,0 +1,4 @@
+<error-page>
+  <error-code>404</error-code>
+  <location>/html/ERROR/404</location>
+</error-page>
