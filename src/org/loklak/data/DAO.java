@@ -156,10 +156,16 @@ public class DAO {
             // check if elasticsearch shall be accessed as external cluster
             String transport = configMap.get("elasticsearch_transport.enabled");
             if (transport != null && "true".equals(transport)) {
-                InetAddress address = InetAddress.getByName(configMap.get("elasticsearch_transport.host"));
-                int port = Integer.parseInt(configMap.get("elasticsearch_transport.port"));
                 String cluster_name = configMap.get("elasticsearch_transport.cluster.name");
-                elasticsearch_client = new ElasticsearchClient(address, port, cluster_name);
+                String transport_addresses_string = configMap.get("elasticsearch_transport.addresses");
+                if (transport_addresses_string != null && transport_addresses_string.length() > 0) {
+                    String[] transport_addresses = transport_addresses_string.split(",");
+                    elasticsearch_client = new ElasticsearchClient(transport_addresses, cluster_name);
+                } else {
+                    InetAddress address = InetAddress.getByName(configMap.get("elasticsearch_transport.host"));
+                    int port = Integer.parseInt(configMap.get("elasticsearch_transport.port"));
+                    elasticsearch_client = new ElasticsearchClient(address, port, cluster_name);
+                }
             } else {
                 // use all config attributes with a key starting with "elasticsearch." to set elasticsearch settings
                 Settings.Builder settings = Settings.builder();

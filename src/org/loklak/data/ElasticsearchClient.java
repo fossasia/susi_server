@@ -22,6 +22,7 @@ package org.loklak.data;
 import java.io.File;
 import java.io.IOException;
 import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.AbstractMap;
@@ -116,6 +117,30 @@ public class ElasticsearchClient {
                 .settings(settings.build())
                 .build()
                 .addTransportAddress(new InetSocketTransportAddress(address, port));
+    }
+    
+    public ElasticsearchClient(final String[] addresses, final String clusterName) {
+        // create default settings and add cluster name
+        Settings.Builder settings = Settings.builder()
+                .put("cluster.name", clusterName)
+                .put("cluster.routing.allocation.enable", "all")
+                .put("cluster.routing.allocation.allow_rebalance", "true");
+        // create a client
+        TransportClient tc = TransportClient.builder()
+                .settings(settings.build())
+                .build();
+        for (String address: addresses) {
+            String a = address.trim();
+            int p = a.indexOf('.');
+            if (p >= 0) try {
+                InetAddress i = InetAddress.getByName(a.substring(0, p));
+                int port = Integer.parseInt(a.substring(p + 1));
+                tc.addTransportAddress(new InetSocketTransportAddress(i, port));
+            } catch (UnknownHostException e) {
+                e.printStackTrace();
+            }
+        }
+        this.elasticsearchClient = tc;
     }
     
     /**
