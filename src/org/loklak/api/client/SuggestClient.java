@@ -65,7 +65,7 @@ public class SuggestClient {
                 "&port.http=" + httpport +
                 "&port.https=" + httpsport +
                 "&peername=" + peername;
-        byte[] response = ClientConnection.download(urlstring);
+        byte[] response = ClientConnection.downloadPeer(urlstring);
         if (response == null || response.length == 0) return rl;
         JSONObject json = new JSONObject(UTF8.String(response));
         JSONArray queries = json.has("queries") ? json.getJSONArray("queries") : null;

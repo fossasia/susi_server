@@ -26,17 +26,19 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.net.SocketTimeoutException;
 import java.net.UnknownHostException;
 import java.security.KeyManagementException;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
-import java.security.SecureRandom;
-import java.security.cert.CertificateException;
-import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import javax.net.ssl.HostnameVerifier;
+import javax.net.ssl.SSLHandshakeException;
+import javax.net.ssl.SSLSession;
 
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
@@ -47,8 +49,11 @@ import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpRequestBase;
+import org.apache.http.config.Registry;
+import org.apache.http.config.RegistryBuilder;
 import org.apache.http.conn.routing.HttpRoute;
-import org.apache.http.conn.ssl.AllowAllHostnameVerifier;
+import org.apache.http.conn.socket.ConnectionSocketFactory;
+import org.apache.http.conn.socket.PlainConnectionSocketFactory;
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.conn.ssl.TrustSelfSignedStrategy;
 import org.apache.http.entity.mime.HttpMultipartMode;
@@ -57,14 +62,9 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.apache.http.ssl.SSLContextBuilder;
-import org.apache.http.ssl.TrustStrategy;
 import org.apache.http.util.EntityUtils;
-
-import javax.net.ssl.HostnameVerifier;
-import javax.net.ssl.HttpsURLConnection;
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.TrustManager;
-import javax.net.ssl.X509TrustManager;
+import org.eclipse.jetty.util.log.Log;
+import org.loklak.data.DAO;
 
 /**
  * Helper class to provide BufferedReader Objects for get and post connections
@@ -78,16 +78,13 @@ public class ClientConnection {
     private static final byte CR = 13;
     public static final byte[] CRLF = {CR, LF};
 
-    public static PoolingHttpClientConnectionManager cm = new PoolingHttpClientConnectionManager();
+    public static PoolingHttpClientConnectionManager cm;
     private static RequestConfig defaultRequestConfig = RequestConfig.custom()
             .setSocketTimeout(60000)
             .setConnectTimeout(60000)
             .setConnectionRequestTimeout(60000)
             .setContentCompressionEnabled(true)
             .build();
-    private static SSLConnectionSocketFactory trustSelfSignedSocketFactory;
-    private static HostnameVerifier trustAllHostsVerifier;
-    private static SSLContext trustAllContext;
     
     private int status;
     public BufferedInputStream inputStream;
@@ -96,37 +93,27 @@ public class ClientConnection {
     private HttpRequestBase request;
     private HttpResponse httpResponse;
     
-    
-    static {
-        cm.setMaxTotal(200);
-        cm.setDefaultMaxPerRoute(20);
-        HttpHost twitter = new HttpHost("twitter.com", 443);
-        cm.setMaxPerRoute(new HttpRoute(twitter), 50);
-        // patch the trust manager to accept all ssl certificates. This will enable us
-    	// to tunnel through http proxies with ssl endpoints (often seen inside company
-    	// intranets and evil environments where someone sniffs on your ssl connecetions).
-    	// With this patch we get out of that no-ssl cage.
-    	// In other environments: don't use that code.
-        try {
-	        trustSelfSignedSocketFactory = new SSLConnectionSocketFactory(
-	        		new SSLContextBuilder().loadTrustMaterial(null, new TrustSelfSignedStrategy()).build(),
-	                new String[] {"TLSv1"},
-	                null,
-	                SSLConnectionSocketFactory.BROWSER_COMPATIBLE_HOSTNAME_VERIFIER);
-	        trustAllHostsVerifier = new AllowAllHostnameVerifier();
-	        trustAllContext = new SSLContextBuilder().loadTrustMaterial(null, new TrustStrategy() {
-                public boolean isTrusted(X509Certificate[] arg0, String arg1) throws CertificateException { return true;}
-            }).build();
-	        // Install the all-trusting trust manager
-	        TrustManager[] trustAllCerts = new TrustManager[]{new X509TrustManager(){
-	            public X509Certificate[] getAcceptedIssuers(){return null;}
-	            public void checkClientTrusted(X509Certificate[] certs, String authType){}
-	            public void checkServerTrusted(X509Certificate[] certs, String authType){}
-	        }};
-	        SSLContext sc = SSLContext.getInstance("TLS");
-	        sc.init(null, trustAllCerts, new SecureRandom());
-	        HttpsURLConnection.setDefaultSSLSocketFactory(sc.getSocketFactory());
-		} catch (NoSuchAlgorithmException | KeyStoreException | KeyManagementException e) {}
+    private static class TrustAllHostNameVerifier implements HostnameVerifier {
+		public boolean verify(String hostname, SSLSession session) {
+			return true;
+		}
+	}
+
+	/**
+     * GET request
+     * @param urlstring
+     * @param useAuthentication
+     * @throws IOException
+     */
+    public ClientConnection(String urlstring, boolean useAuthentication) throws IOException {
+    	this.httpClient = HttpClients.custom()
+			.useSystemProperties()
+			.setConnectionManager(getConnctionManager(useAuthentication))
+			.setDefaultRequestConfig(defaultRequestConfig)
+			.build();
+        this.request = new HttpGet(urlstring);
+        this.request.setHeader("User-Agent", USER_AGENT);
+        this.init();
     }
     
     /**
@@ -135,33 +122,23 @@ public class ClientConnection {
      * @throws IOException
      */
     public ClientConnection(String urlstring) throws IOException {
-        this.httpClient = HttpClients.custom()
-	        	.setConnectionManager(cm)
-	        	.setDefaultRequestConfig(defaultRequestConfig)
-        		.setSSLSocketFactory(trustSelfSignedSocketFactory)
-        		.setSSLHostnameVerifier(trustAllHostsVerifier)
-        		.setSSLContext(trustAllContext)
-	        	.build();
-        this.request = new HttpGet(urlstring);
-        this.request.setHeader("User-Agent", USER_AGENT);
-        this.init();
+    	this(urlstring, true);
     }
     
     /**
      * POST request
      * @param urlstring
      * @param map
+     * @param useAuthentication
      * @throws ClientProtocolException 
      * @throws IOException
      */
-    public ClientConnection(String urlstring, Map<String, byte[]> map) throws ClientProtocolException, IOException {
-        this.httpClient = HttpClients.custom()
-        		.setConnectionManager(cm)
-        		.setDefaultRequestConfig(defaultRequestConfig)
-        		.setSSLSocketFactory(trustSelfSignedSocketFactory)
-        		.setSSLHostnameVerifier(trustAllHostsVerifier)
-        		.setSSLContext(trustAllContext)
-        		.build();
+    public ClientConnection(String urlstring, Map<String, byte[]> map, boolean useAuthentication) throws ClientProtocolException, IOException {
+    	this.httpClient = HttpClients.custom()
+			.useSystemProperties()
+			.setConnectionManager(getConnctionManager(useAuthentication))
+			.setDefaultRequestConfig(defaultRequestConfig)
+			.build();
         this.request = new HttpPost(urlstring);        
         MultipartEntityBuilder entityBuilder = MultipartEntityBuilder.create();
         entityBuilder.setMode(HttpMultipartMode.BROWSER_COMPATIBLE);
@@ -172,6 +149,53 @@ public class ClientConnection {
         this.request.setHeader("User-Agent", USER_AGENT);
         this.init();
     }
+    
+    /**
+     * POST request
+     * @param urlstring
+     * @param map
+     * @throws ClientProtocolException
+     * @throws IOException
+     */
+    public ClientConnection(String urlstring, Map<String, byte[]> map) throws ClientProtocolException, IOException {
+    	this(urlstring, map, true);
+    }
+    
+    private static PoolingHttpClientConnectionManager getConnctionManager(boolean useAuthentication){
+        
+    	// allow opportunistic encryption if needed
+    	
+    	boolean trustAllCerts = !"none".equals(DAO.getConfig("httpsclient.trustselfsignedcerts", "peers"))
+    			&& (!useAuthentication || "all".equals(DAO.getConfig("httpsclient.trustselfsignedcerts", "peers")));
+    	
+    	Registry<ConnectionSocketFactory> socketFactoryRegistry = null;
+    	if(trustAllCerts){
+	    	try {
+	    		SSLConnectionSocketFactory trustSelfSignedSocketFactory = new SSLConnectionSocketFactory(
+				    		new SSLContextBuilder().loadTrustMaterial(null, new TrustSelfSignedStrategy()).build(),
+				            new TrustAllHostNameVerifier());
+				socketFactoryRegistry = RegistryBuilder
+		                .<ConnectionSocketFactory> create()
+		                .register("http", new PlainConnectionSocketFactory())
+		                .register("https", trustSelfSignedSocketFactory)
+		                .build();
+			} catch (KeyManagementException | NoSuchAlgorithmException | KeyStoreException e) {
+				e.printStackTrace();
+			}
+    	}
+        
+    	PoolingHttpClientConnectionManager cm = (trustAllCerts && socketFactoryRegistry != null) ? 
+        		new PoolingHttpClientConnectionManager(socketFactoryRegistry):
+        		new PoolingHttpClientConnectionManager();
+    	
+        // twitter specific options
+        cm.setMaxTotal(200);
+        cm.setDefaultMaxPerRoute(20);
+        HttpHost twitter = new HttpHost("twitter.com", 443);
+        cm.setMaxPerRoute(new HttpRoute(twitter), 50);
+        
+        return cm;
+    }
 
     private void init() throws IOException {
     	
@@ -180,7 +204,13 @@ public class ClientConnection {
             this.httpResponse = httpClient.execute(this.request);
         } catch (UnknownHostException e) {
             this.request.releaseConnection();
-            throw new IOException(e.getMessage());
+            throw new IOException("client connection failed: unknown host " + this.request.getURI().getHost());
+        } catch (SocketTimeoutException e){
+        	this.request.releaseConnection();
+        	throw new IOException("client connection timeout for request: " + this.request.getURI());
+        } catch (SSLHandshakeException e){
+        	this.request.releaseConnection();
+        	throw new IOException("client connection handshake error for domain " + this.request.getURI().getHost() + ": " + e.getMessage());
         }
         HttpEntity httpEntity = this.httpResponse.getEntity();
         if (httpEntity != null) {
@@ -211,20 +241,24 @@ public class ClientConnection {
      * get a redirect for an url: this method shall be called if it is expected that a url
      * is redirected to another url. This method then discovers the redirect.
      * @param urlstring
+     * @param useAuthentication
      * @return the redirect url for the given urlstring
      * @throws IOException if the url is not redirected
      */
-    public static String getRedirect(String urlstring) throws IOException {
+    public static String getRedirect(String urlstring, boolean useAuthentication) throws IOException {
         HttpGet get = new HttpGet(urlstring);
         get.setConfig(RequestConfig.custom().setRedirectsEnabled(false).build());
         get.setHeader("User-Agent", USER_AGENT);
-        CloseableHttpClient httpClient = HttpClients.custom().setConnectionManager(cm).setDefaultRequestConfig(defaultRequestConfig).build();
+        CloseableHttpClient httpClient = HttpClients.custom()
+        		.setConnectionManager(getConnctionManager(useAuthentication))
+        		.setDefaultRequestConfig(defaultRequestConfig)
+        		.build();
         HttpResponse httpResponse = httpClient.execute(get);
         HttpEntity httpEntity = httpResponse.getEntity();
         if (httpEntity != null) {
             if (httpResponse.getStatusLine().getStatusCode() == 301) {
                 for (Header header: httpResponse.getAllHeaders()) {
-                    if (header.getName().toLowerCase().equals("location")) {
+                    if (header.getName().equalsIgnoreCase("location")) {
                         EntityUtils.consumeQuietly(httpEntity);
                         return header.getValue();
                     }
@@ -240,6 +274,17 @@ public class ClientConnection {
         }
     }
     
+    /**
+     * get a redirect for an url: this method shall be called if it is expected that a url
+     * is redirected to another url. This method then discovers the redirect.
+     * @param urlstring
+     * @return
+     * @throws IOException
+     */
+    public static String getRedirect(String urlstring) throws IOException {
+    	return getRedirect(urlstring, true);
+    }
+    
     public void close() {
         HttpEntity httpEntity = this.httpResponse.getEntity();
         if (httpEntity != null) EntityUtils.consumeQuietly(httpEntity);
@@ -250,9 +295,9 @@ public class ClientConnection {
         }
     }
     
-    public static void download(String source_url, File target_file) {
+    public static void download(String source_url, File target_file, boolean useAuthentication) {
         try {
-            ClientConnection connection = new ClientConnection(source_url);
+            ClientConnection connection = new ClientConnection(source_url, useAuthentication);
             try {
                 OutputStream os = new BufferedOutputStream(new FileOutputStream(target_file));
                 int count;
@@ -270,11 +315,19 @@ public class ClientConnection {
                 connection.close();
             }
         } catch (IOException e) {
-            e.printStackTrace();
+        	Log.getLog().warn(e.getMessage());
         }
     }
     
-    public static byte[] download(String source_url) throws IOException {
+    public static void download(String source_url, File target_file) {
+    	download(source_url, target_file, true);
+    }
+    
+    public static void downloadPeer(String source_url, File target_file) {
+    	download(source_url, target_file, !"peers".equals(DAO.getConfig("httpsclient.trustselfsignedcerts", "peers")));
+    }
+    
+    public static byte[] download(String source_url, boolean useAuthentication) throws IOException {
         try {
             ClientConnection connection = new ClientConnection(source_url);
             if (connection.inputStream == null) return null;
@@ -293,5 +346,13 @@ public class ClientConnection {
             e.printStackTrace();
             return null;
         }
+    }
+    
+    public static byte[] download(String source_url) throws IOException {
+    	return download(source_url, true);
+    }
+    
+    public static byte[] downloadPeer(String source_url) throws IOException {
+    	return download(source_url, !"peers".equals(DAO.getConfig("httpsclient.trustselfsignedcerts", "peers")));
     }
 }
