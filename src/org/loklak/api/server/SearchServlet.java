@@ -26,6 +26,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -55,6 +56,15 @@ public class SearchServlet extends HttpServlet {
 
     private static final long serialVersionUID = 563533152152063908L;
 
+    private final static int SEARCH_LOW_COUNT = 10;
+    private final static int SEARCH_DEFAULT_COUNT = 100;
+    private final static int SEARCH_MAX_PUBLIC_COUNT = 1000;
+    private final static int SEARCH_MAX_LOCALHOST_COUNT = 10000;
+
+    private final static int SEARCH_CACHE_THREASHOLD_TIME = 3000;
+    
+    private final static AtomicLong last_cache_search_time = new AtomicLong(10L);
+    
     @Override
     protected void doPost(final HttpServletRequest request, final HttpServletResponse response) throws ServletException, IOException {
         doGet(request, response);
@@ -81,9 +91,9 @@ public class SearchServlet extends HttpServlet {
         if (query == null || query.length() == 0) query = post.get("query", "");
         query = CharacterCoding.html2unicode(query).replaceAll("\\+", " ");
         final long timeout = (long) post.get("timeout", DAO.getConfig("search.timeout", 2000));
-        final int count = post.isDoS_servicereduction() ? 10 : Math.min(post.get("count", post.get("maximumRecords", 100)), post.isLocalhostAccess() ? 10000 : 1000);
+        final int count = post.isDoS_servicereduction() ? SEARCH_LOW_COUNT : Math.min(post.get("count", post.get("maximumRecords", SEARCH_DEFAULT_COUNT)), post.isLocalhostAccess() ? SEARCH_MAX_LOCALHOST_COUNT : SEARCH_MAX_PUBLIC_COUNT);
         String source = post.isDoS_servicereduction() ? "cache" : post.get("source", "all"); // possible values: cache, backend, twitter, all
-        int limit = post.get("limit", 100);
+        int agregation_limit = post.get("limit", 100);
         String[] fields = post.get("fields", new String[0], ",");
         int timezoneOffset = post.get("timezoneOffset", 0);
         if (query.indexOf("id:") >= 0 && ("all".equals(source) || "twitter".equals(source))) source = "cache"; // id's cannot be retrieved from twitter with the scrape-api (yet), only from the cache
@@ -121,8 +131,10 @@ public class SearchServlet extends HttpServlet {
             // start a local search
             Thread localThread = queryf == null || queryf.length() == 0 ? null : new Thread() {
                 public void run() {
-                    DAO.SearchLocalMessages localSearchResult = new DAO.SearchLocalMessages(queryf, order, timezoneOffsetf, count, 0);
-                    post.recordEvent("cache_time", System.currentTimeMillis() - start);
+                    DAO.SearchLocalMessages localSearchResult = new DAO.SearchLocalMessages(queryf, order, timezoneOffsetf, last_cache_search_time.get() > SEARCH_CACHE_THREASHOLD_TIME ? SEARCH_LOW_COUNT : count, 0);
+                    long time = System.currentTimeMillis() - start;
+                    last_cache_search_time.set(time);
+                    post.recordEvent("cache_time", time);
                     cache_hits.set(localSearchResult.timeline.getHits());
                     tl.putAll(localSearchResult.timeline);
                 }
@@ -170,11 +182,13 @@ public class SearchServlet extends HttpServlet {
         
         } else if ("cache".equals(source)) {
             final long start = System.currentTimeMillis();
-            DAO.SearchLocalMessages localSearchResult = new DAO.SearchLocalMessages(query, order, timezoneOffset, count, limit, fields);
+            DAO.SearchLocalMessages localSearchResult = new DAO.SearchLocalMessages(query, order, timezoneOffset, last_cache_search_time.get() > SEARCH_CACHE_THREASHOLD_TIME ? SEARCH_LOW_COUNT : count, agregation_limit, fields);
             cache_hits.set(localSearchResult.timeline.getHits());
             tl.putAll(localSearchResult.timeline);
             aggregations = localSearchResult.aggregations;
-            post.recordEvent("cache_time", System.currentTimeMillis() - start);
+            long time = System.currentTimeMillis() - start;
+            last_cache_search_time.set(time);
+            post.recordEvent("cache_time", time);
             
         } else if ("backend".equals(source) && query.length() > 0) {
             final long start = System.currentTimeMillis();
