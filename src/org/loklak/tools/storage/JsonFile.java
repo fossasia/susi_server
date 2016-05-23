@@ -1,4 +1,4 @@
-package org.loklak.tools;
+package org.loklak.tools.storage;
 
 import java.io.File;
 import java.io.FileReader;
@@ -15,11 +15,11 @@ import org.json.JSONTokener;
  * This extends JSONObject to be a file which gets loaded and written to disk
  *
  */
-public class JSONFile extends JSONObject {
+public class JsonFile extends JSONObject {
 	
 	private File file;
 
-	public JSONFile(File file) throws IOException{
+	public JsonFile(File file) throws IOException{
 		super();
 		this.file = file;
 		if(this.file.exists()){
