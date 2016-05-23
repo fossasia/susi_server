@@ -29,6 +29,7 @@ public class JSONFile extends JSONObject {
 		}
 		else{
 			this.file.createNewFile();
+			writeFile();
 		}
 	}
 	
