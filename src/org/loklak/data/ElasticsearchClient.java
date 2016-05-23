@@ -284,7 +284,7 @@ public class ElasticsearchClient {
      * @return the count of all documents in the index
      */
     public long count(String indexName) {
-        return count(QueryBuilders.matchAllQuery(), indexName);
+        return count(QueryBuilders.constantScoreQuery(QueryBuilders.matchAllQuery()), indexName);
     }
 
 
@@ -305,7 +305,7 @@ public class ElasticsearchClient {
         try {
             SearchResponse response = elasticsearchClient.prepareSearch(index)
                 .setSize(0)
-                .setQuery(millis <= 0 ? QueryBuilders.matchAllQuery() : QueryBuilders.rangeQuery(histogram_timefield).from(new Date(System.currentTimeMillis() - millis)))
+                .setQuery(millis <= 0 ? QueryBuilders.constantScoreQuery(QueryBuilders.matchAllQuery()) : QueryBuilders.rangeQuery(histogram_timefield).from(new Date(System.currentTimeMillis() - millis)))
                 .execute()
                 .actionGet();
             return response.getHits().getTotalHits();
@@ -906,7 +906,7 @@ public class ElasticsearchClient {
         // prepare request
         SearchRequestBuilder request = elasticsearchClient.prepareSearch(indexName)
                 .setSearchType(SearchType.QUERY_THEN_FETCH)
-                .setQuery(QueryBuilders.matchAllQuery())
+                .setQuery(QueryBuilders.constantScoreQuery(QueryBuilders.matchAllQuery()))
                 .setFrom(0)
                 .setSize(0);
         request.clearRescorers();

@@ -482,7 +482,7 @@ public class QueryEntry extends AbstractObjectEntry implements ObjectEntry {
             // detect usage of OR connector usage.
             q = q.replaceAll(" AND ", " "); // AND is default
             List<String> terms = splitIntoORGroups(q); // OR binds stronger than AND
-            if (terms.size() == 0) return QueryBuilders.matchAllQuery();
+            if (terms.size() == 0) return QueryBuilders.constantScoreQuery(QueryBuilders.matchAllQuery());
             
             // special handling
             if (terms.size() == 1) return parse(terms.get(0), timezoneOffset);
