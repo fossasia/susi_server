@@ -45,56 +45,56 @@ public class JSONFile extends JSONObject {
 
 	@Override
 	public JSONObject put(String key, boolean value) throws JSONException {
-		put(key, value);
+		super.put(key, value);
 		writeFile();
 		return this;
 	}
 	
 	@Override
 	public JSONObject put(String key, double value) throws JSONException {
-		put(key, value);
+		super.put(key, value);
 		writeFile();
 		return this;
 	}
 	
 	@Override
 	public JSONObject put(String key, Collection<?> value) throws JSONException {
-		put(key, value);
+		super.put(key, value);
 		writeFile();
 		return this;
 	}
 	
 	@Override
 	public JSONObject put(String key, int value) throws JSONException {
-		put(key, value);
+		super.put(key, value);
 		writeFile();
 		return this;
 	}
 	
 	@Override
 	public JSONObject put(String key, long value) throws JSONException {
-		put(key, value);
+		super.put(key, value);
 		writeFile();
 		return this;
 	}
 	
 	@Override
 	public JSONObject put(String key, Map<?, ?> value) throws JSONException {
-		put(key, value);
+		super.put(key, value);
 		writeFile();
 		return this;
 	}
 	
 	@Override
 	public JSONObject put(String key, Object value) throws JSONException {
-		put(key, value);
+		super.put(key, value);
 		writeFile();
 		return this;
 	}
 	
 	@Override
 	public Object remove(String key) {
-		remove(key);
+		super.remove(key);
 		writeFile();
 		return this;
 	}
