@@ -684,7 +684,7 @@ public class ElasticsearchClient {
         if (field_value == null || field_value.length() == 0) return null;
         // prepare request
         BoolQueryBuilder query = QueryBuilders.boolQuery();
-        query.must(QueryBuilders.termQuery(field_name, field_value));
+        query.filter(QueryBuilders.constantScoreQuery(QueryBuilders.termQuery(field_name, field_value)));
 
         SearchRequestBuilder request = elasticsearchClient.prepareSearch(indexName)
                 .setSearchType(SearchType.QUERY_THEN_FETCH)
@@ -837,11 +837,11 @@ public class ElasticsearchClient {
         
         if (range_field != null && range_field.length() > 0 && (since != null || until != null)) {
             query = QueryBuilders.boolQuery();
-            if (q.length() > 0) query.must(suggest);
+            if (q.length() > 0) query.filter(suggest);
             RangeQueryBuilder rangeQuery = QueryBuilders.rangeQuery(range_field);
             if (since != null) rangeQuery.from(since).includeLower(true);
             if (until != null) rangeQuery.to(until).includeUpper(true);
-            query.must(rangeQuery);
+            query.filter(rangeQuery);
         } else {
             query = suggest;
         }
@@ -880,14 +880,13 @@ public class ElasticsearchClient {
                 .setFrom(0);
 
         BoolQueryBuilder bFilter = QueryBuilders.boolQuery();
-        bFilter.must(QueryBuilders.termQuery(fieldName, fieldValue));
+        bFilter.filter(QueryBuilders.constantScoreQuery(QueryBuilders.constantScoreQuery(QueryBuilders.termQuery(fieldName, fieldValue))));
         for (Object o : constraints.entrySet()) {
             @SuppressWarnings("rawtypes")
             Map.Entry entry = (Map.Entry) o;
-            bFilter.must(QueryBuilders.termQuery((String) entry.getKey(), ((String) entry.getValue()).toLowerCase()));
+            bFilter.filter(QueryBuilders.constantScoreQuery(QueryBuilders.termQuery((String) entry.getKey(), ((String) entry.getValue()).toLowerCase())));
         }
-        request.setQuery(QueryBuilders.boolQuery().must(QueryBuilders.matchAllQuery()).filter(bFilter));
-        DAO.log(QueryBuilders.boolQuery().must(QueryBuilders.matchAllQuery()).filter(bFilter).toString());
+        request.setQuery(bFilter);
         
         // get response
         SearchResponse response = request.execute().actionGet();
