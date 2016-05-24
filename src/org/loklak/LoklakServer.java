@@ -543,7 +543,7 @@ public class LoklakServer {
         servletHandler.addServlet(MapServlet.class, "/vis/map.jpg.base64");
         servletHandler.setMaxFormContentSize(10 * 1024 * 1024); // 10 MB
 
-        ErrorHandler errorHandler = new ErrorHandler();
+        ErrorHandler errorHandler = new LoklakErrorHandler();
         errorHandler.setShowStacks(true);
         servletHandler.setErrorHandler(errorHandler);
         
