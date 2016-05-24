@@ -25,9 +25,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.attribute.PosixFilePermission;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
@@ -159,10 +157,7 @@ public class DAO {
 			public_settings = new JsonFile(new File("data/settings/public.settings.json"));
 			File private_file = new File("data/settings/private.settings.json");
 			private_settings = new JsonFile(private_file);
-			Set<PosixFilePermission> perms = new HashSet<PosixFilePermission>();
-			perms.add(PosixFilePermission.OWNER_READ);
-			perms.add(PosixFilePermission.OWNER_WRITE);
-			Files.setPosixFilePermissions(private_file.toPath(), perms);
+			OS.protectPath(private_file.toPath());
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
