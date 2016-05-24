@@ -70,7 +70,7 @@ import org.loklak.objects.Timeline;
 import org.loklak.objects.UserEntry;
 import org.loklak.server.Query;
 import org.loklak.tools.DateParser;
-import org.loklak.tools.JSONFile;
+import org.loklak.tools.JsonFile;
 import org.loklak.tools.OS;
 import org.loklak.tools.storage.JsonDataset;
 import org.loklak.tools.storage.JsonReader;
@@ -118,7 +118,7 @@ public class DAO {
     
     public  static File conf_dir, bin_dir, html_dir;
     private static File external_data, assets, dictionaries;
-    public static JSONFile public_settings, private_settings;
+    public static JsonFile public_settings, private_settings;
     private static Path message_dump_dir, account_dump_dir, import_profile_dump_dir;
     public static JsonRepository message_dump;
     private static JsonRepository account_dump;
