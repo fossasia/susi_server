@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <link rel="icon" type="image/png" href="../../artwork/favicon.png">
+    <title>PeersDeployGame</title>
+    <link href="style.css" rel="stylesheet"/>
+    <link href="https://bootswatch.com/cosmo/bootstrap.min.css" rel="stylesheet"/>
+    <script src="/js/angular.min.js"></script>
+    <script src="/js/jquery.min.js"></script>
+    <script src="app.js"></script>
+  </head>
+  <body>
+    <center>
+      <h1>Peers Deploy</h1>
+      <h3>Have your own loklak peers with these one click deploy buttons</h3>
+      <div ng-app="PeersCount" ng-controller="getPeersCount">
+      <h4>{{data}}</h4>
+      </div>
+      <br>
+      <div>
+          </center>
+          <div class="left">
+<div class="panel panel-default cardResize">
+  <div class="panel-heading">Heroku Deployment</div>
+  <div class="panel-body">
+    <a href="https://www.heroku.com/deploy/?template=https://github.com/loklak/loklak_server">
+     <img src="https://www.herokucdn.com/deploy/button.svg" alt="Deploy">
+</a>
+  </div>
+    </div>
+    <div class="panel panel-default cardResize">
+  <div class="panel-heading">Scalingo Deployment</div>
+  <div class="panel-body">
+    <a href="https://my.scalingo.com/deploy?source=https://github.com/loklak/loklak_server">
+          <img src="https://cdn.scalingo.com/deploy/button.svg" alt="Deploy on Scalingo" data-canonical-src="https://cdn.scalingo.com/deploy/button.svg" style="max-width:100%;">
+        </a>
+  </div>
+    </div>
+    <div class="panel panel-default cardResize">
+  <div class="panel-heading">Bluemix deployment</div>
+  <div class="panel-body">
+    <a href="https://bluemix.net/deploy?repository=https://github.com/loklak/loklak_server"> 
+          <img src="https://bluemix.net/deploy/button.png" alt="Deploy to Bluemix">
+        </a>
+  </div>
+    </div>
+    <div class="panel panel-default cardResize">
+  <div class="panel-heading">Docker Deployment</div>
+  <div class="panel-body">
+    <a href="https://cloud.docker.com/stack/deploy/?repo=https://github.com/loklak/loklak_server">
+          <img src="https://files.cloud.docker.com/images/deploy-to-dockercloud.svg" alt="Deploy to Docker Cloud">
+        </a>
+  </div>
+    </div>
+</div>
+</div>
+  </body>
+</html>
