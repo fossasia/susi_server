@@ -1,8 +1,12 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" ng-app="loklak">
 <head>
 	<meta charset="UTF-8">
 	<link href="/css/bootstrap.min.css" rel="stylesheet">
+	<script src="../../js/angular.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.2.0rc1/angular-route.min.js"></script>
+    <script src="../../js/loklak.js"></script>
+    <link rel="icon" type="image/png" href="../../artwork/favicon.png">
 	<title>Oops Not Found | Loklak</title>
 </head>
 <body data-spy="scroll" data-target="#navSidebar" data-offset="50">
@@ -17,19 +21,11 @@
 				</button>
 				<a class="navbar-brand" href="http://loklak.org"><img src="/images/loklak_org.png" height="24" style="float:left;">: Error 404</a>
 			</div>
-			<div id="navbar" class="navbar-collapse collapse">
-				<ul class="nav navbar-nav navbar-right">
-					<li><a href="/index.html">Home</a></li>
-					<li><a href="/about.html">About</a></li>
-					<li><a href="/showcase.html">Showcase</a></li>
-					<li><a href="/architecture.html">Architecture</a></li>
-					<li><a href="/download.html">Download</a></li>
-					<li><a href="/tutorials.html">Tutorials</a></li>
-					<li><a href="/api.html">API</a></li>
-					<li><a href="/dump.html">Dumps</a></li>
-					<li><a href="/apps/">Apps</a></li>
+			<div id="navbar" class="navbar-collapse collapse" ng-controller="topmenu">
+				<ul class="nav navbar-nav navbar-right" ng-repeat="item in results | reverse">
+					<li ng-repeat="(key, val) in item" ng-class="{active: $route.current.activetab == key}"><a ng-href="/{{val}}">{{key}}</a></li>
 				</ul>
-		    </div>
+			</div>
 		</div>
 	</nav>
 	<div class="container" style="margin-top:10%;">
