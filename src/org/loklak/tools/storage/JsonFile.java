@@ -48,11 +48,17 @@ public class JsonFile extends JSONObject {
 		}
 		else{
 			this.file.createNewFile();
-			writeFile();
+			commit();
 		}
 	}
 	
-	private void writeFile() throws JSONException{
+	/**
+	 * Write changes to file. It is not required that the user calls this method,
+	 * however, if sub-objects of existing objects are modified, the user must handle
+	 * file writings themself.
+	 * @throws JSONException
+	 */
+	public void commit() throws JSONException {
 		FileWriter writer;
 		try {
 			writer = new FileWriter(file);
@@ -66,56 +72,56 @@ public class JsonFile extends JSONObject {
 	@Override
 	public JSONObject put(String key, boolean value) throws JSONException {
 		super.put(key, value);
-		writeFile();
+		commit();
 		return this;
 	}
 	
 	@Override
 	public JSONObject put(String key, double value) throws JSONException {
 		super.put(key, value);
-		writeFile();
+		commit();
 		return this;
 	}
 	
 	@Override
 	public JSONObject put(String key, Collection<?> value) throws JSONException {
 		super.put(key, value);
-		writeFile();
+		commit();
 		return this;
 	}
 	
 	@Override
 	public JSONObject put(String key, int value) throws JSONException {
 		super.put(key, value);
-		writeFile();
+		commit();
 		return this;
 	}
 	
 	@Override
 	public JSONObject put(String key, long value) throws JSONException {
 		super.put(key, value);
-		writeFile();
+		commit();
 		return this;
 	}
 	
 	@Override
 	public JSONObject put(String key, Map<?, ?> value) throws JSONException {
 		super.put(key, value);
-		writeFile();
+		commit();
 		return this;
 	}
 	
 	@Override
 	public JSONObject put(String key, Object value) throws JSONException {
 		super.put(key, value);
-		writeFile();
+		commit();
 		return this;
 	}
 	
 	@Override
 	public Object remove(String key) {
 		super.remove(key);
-		writeFile();
+		commit();
 		return this;
 	}
 }
