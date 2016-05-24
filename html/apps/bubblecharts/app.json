@@ -1,0 +1,16 @@
+{
+  "@context":"http://schema.org",
+  "@type":"SoftwareApplication",
+  "name":"bubblecharts",
+  "headline":"Bubble Charts",
+  "alternativeHeadline":"Using D3 pack layout",
+  "applicationCategory":"Demo",
+  "applicationSubCategory":"Hello World",
+  "operatingSystem":"http://loklak.org",
+  "author":{
+    "@type":"Person",
+    "name":"Leon",
+    "url":"http://leonmak.me",
+    "sameAs":"https://github.com/leonmak"
+  }
+}

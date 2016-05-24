@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="Content-Language" content="en, english"/>
+    <meta name="author" content="leon"> <!-- CHANGE THIS -->
+    <link rel="icon" type="image/png" href="/artwork/favicon.png">
+    <title>loklak.org - Apps </title> <!-- CHANGE THIS -->
+    
+    <!-- ngMaterial -->
+    <link rel="stylesheet" href="css/angular-material.min.css">
+    <link href="css/style.css" rel="stylesheet"> 
+  
+    <link href="/css/bootstrap.min.css" rel="stylesheet">
+    <!-- <link href="/css/dashboard.css" rel="stylesheet"> -->
+    <link href="/css/loklak.css" rel="stylesheet"> 
+    
+    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+      <script src="/js/html5shiv.min.js"></script>
+      <script src="/js/respond.min.js"></script>
+    <![endif]-->
+    
+  </head>
+
+  <body ng-app="myApp" >
+      <nav class="navbar navbar-inverse navbar-fixed-top">
+          <div class="container-fluid">
+              <div class="navbar-header">
+                  <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+                      <span class="sr-only">Toggle navigation</span>
+                      <span class="icon-bar"></span>
+                      <span class="icon-bar"></span>
+                      <span class="icon-bar"></span>
+                  </button>
+                  <a class="navbar-brand" href="http://loklak.org"><img src="/images/loklak_org.png" height="24" style="float:left;">: App Boilerplate</a>
+              </div>
+              <div id="navbar" class="navbar-collapse collapse">
+                  <ul class="nav navbar-nav navbar-right">
+                      <li><a href="/index.html">Home</a></li>
+                      <li><a href="/about.html">About</a></li>
+                      <li><a href="/architecture.html">Architecture</a></li>
+                      <li><a href="/download.html">Download</a></li>
+                      <li><a href="/api.html">API</a></li>
+                      <li><a href="/dump.html">Dumps</a></li>
+                      <li><a href="/apps/">Apps</a></li>
+                  </ul>
+              </div>
+          </div>
+      </nav>
+      
+      <!-- Fancy Form -->
+      <div ng-controller="MainCtrl as main" ng-cloak="">
+          
+          <form ng-submit="poll(query.type, query.term, query.interval, query.dateFrom, query.dateTo, query.maxHashtags)" 
+              class="layout-margin layout-fill" name="queryForm">
+              <!-- form name for ng-messages -->
+              
+              <md-content md-theme="docs-dark" layout-gt-sm="row" layout-xs="column" layout-padding layout="center center">
+                  <div flex="10" ></div>
+                  
+                  <md-input-container  class="md-block" flex-gt-sm>
+                      <label>Query Type</label>
+                      <md-select ng-model="query.type">
+                          <md-option ng-repeat="api in apis" value="{{api.type}}">
+                              {{api.type}}
+                          </md-option>
+                      </md-select>
+                  </md-input-container>
+                  <md-input-container class="md-block" flex-gt-sm>
+                      <label>Query String</label>
+                      <input ng-model="query.term">
+                  </md-input-container>
+                  <md-input-container class="md-block" flex-gt-sm>
+                      <label>Query Rate /min</label>
+                      <input type="number" step="1" name="interval" 
+                      ng-model="query.interval" min="1"
+                      max="30" ng-pattern="/^\d+$/" />
+                      <div ng-messages="queryForm.interval.$error" multiple md-auto-hide="false">
+                          <div ng-message="min">
+                              Minimum 1 min
+                          </div>
+                          <div ng-message="max">
+                              Maximum 15 min
+                          </div>
+                      </div>
+                  </md-input-container>
+                  <md-input-container class="md-block" flex-gt-sm>
+                      <label>Max Num of Hashtags /day</label>
+                      <input type="number" step="1" name="interval" 
+                      ng-model="query.maxHashtags" min="3"
+                      max="10" ng-pattern="/^\d+$/" />
+                      <div ng-messages="queryForm.interval.$error" multiple md-auto-hide="false">
+                          <div ng-message="min">
+                              Minimum 3 hashtags
+                          </div>
+                          <div ng-message="max">
+                              Maximum 10 hashtags
+                          </div>
+                      </div>
+                  </md-input-container>
+                  
+                  <!-- Date picker -->
+                  <div layout="column" style="margin-top:10px; margin-bottom:10px">
+                      <md-checkbox ng-model="checkedDate" aria-label="Set Date Range" style="margin-left:15px">
+                            Set Date Range
+                      </md-checkbox>
+                      <md-datepicker md-max-date="maxDate" ng-model="query.dateFrom" md-placeholder="From:" ng-disabled="!checkedDate"></md-datepicker>
+                      <md-datepicker md-max-date="maxDate" ng-model="query.dateTo" md-placeholder="To:" ng-disabled="!checkedDate"></md-datepicker>
+                  </div>
+
+
+                  <!-- submit when enter, calls ng-submit -->
+                  <md-button type='submit' md-no-ink class="md-primary">
+                      <!-- ng-click="poll(query.type, query.term, query.interval)"> -->
+                      Submit
+                  </md-button>
+                  <!-- <md-button ng-click="$storage.$reset()">
+                      Clear localStorage
+                      <br>Tweet storage length:
+                      {{$storage.tweets.length}}
+                      <br>
+                      {{Object.keys($storage.wordFreq).length}}
+
+                  </md-button> -->
+                  <div flex="10" ></div>
+
+              </md-content>
+          </form>
+              
+              <div ng-controller='barChartCtrl' layout="row" layout-align="center center">
+                  <!-- pass max from form -->
+                  <bar-chart 
+                      data="$storage.hashtagDateFreq" 
+                      max="query.maxHashtags" 
+                      title="Top Hashtags by day" >
+                  </bar-chart>
+              </div>
+              <!-- <div ng-controller='bubbleCloudCtrl' layout="row" layout-align="center center">
+                  <bubble-cloud data="$storage.mentionFreq" min ="1" title="Most Mentions"></bubble-cloud>
+                  <bubble-cloud data="$storage.wordFreq" min="2" title="Word Frequency"></bubble-cloud>     
+              </div> -->
+          
+      </div>
+      
+      <!-- Angular deps, ngMaterial, ngMessages, localStorage, angulargrid, imgfallback -->
+      <script src="../../js/angular-modules/angular.min.js"></script>
+      <script src="../../js/angular-modules/angular-sanitize.min.js"></script>
+      <script src="../../js/angular-modules/angular-aria.min.js"></script>
+      <script src="../../js/angular-modules/angular-animate.min.js"></script>
+      <script src="../../js/angular-modules/angular-material.min.js"></script>
+      <script src="../../js/angular-modules/ngStorage.min.js"></script>
+      <script src="../../js/angular-modules/angular-messages.min.js"></script>
+      <script src="../../js/moment.min.js"></script>
+      <script src="../../js/underscore-min.js"></script>
+
+      <script src="../../js/angular-modules/angular-momentjs.min.js"></script>
+      <script src="app.js"></script>
+      
+
+      <!-- Services -->
+      <script src="services/dataService.js"></script>
+      <script src="services/analyticService.js"></script>
+      <script src="services/queryService.js"></script>
+      
+      <!-- Chart Ctrl & Directives -->
+      <script src="charts/bubbleCloud.js"></script>
+      <script src="charts/barChart.js"></script>
+    
+
+      <!-- d3  -->
+      <script src="../../js/d3.min.js" charset="utf-8"></script>
+      <script src="../../js/d3-tip.min.js" charset="utf-8"></script>
+
+    <!-- Bootstrap core JavaScript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+    <script src="/js/jquery.min.js"></script>
+    <script src="/js/bootstrap.min.js"></script>
+    <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
+    <script src="/js/ie10-viewport-bug-workaround.js"></script>
+  </body>
+</html>
