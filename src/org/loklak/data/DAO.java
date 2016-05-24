@@ -70,9 +70,9 @@ import org.loklak.objects.Timeline;
 import org.loklak.objects.UserEntry;
 import org.loklak.server.Query;
 import org.loklak.tools.DateParser;
-import org.loklak.tools.JsonFile;
 import org.loklak.tools.OS;
 import org.loklak.tools.storage.JsonDataset;
+import org.loklak.tools.storage.JsonFile;
 import org.loklak.tools.storage.JsonReader;
 import org.loklak.tools.storage.JsonRepository;
 import org.loklak.tools.storage.JsonStreamReader;
@@ -156,9 +156,9 @@ public class DAO {
         html_dir = new File("html");
         
         try {
-			public_settings = new JSONFile(new File("data/settings/public.settings.json"));
+			public_settings = new JsonFile(new File("data/settings/public.settings.json"));
 			File private_file = new File("data/settings/private.settings.json");
-			private_settings = new JSONFile(private_file);
+			private_settings = new JsonFile(private_file);
 			Set<PosixFilePermission> perms = new HashSet<PosixFilePermission>();
 			perms.add(PosixFilePermission.OWNER_READ);
 			perms.add(PosixFilePermission.OWNER_WRITE);
