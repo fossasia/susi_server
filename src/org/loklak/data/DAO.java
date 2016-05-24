@@ -25,7 +25,9 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.attribute.PosixFilePermission;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
@@ -70,6 +72,7 @@ import org.loklak.server.Query;
 import org.loklak.tools.DateParser;
 import org.loklak.tools.OS;
 import org.loklak.tools.storage.JsonDataset;
+import org.loklak.tools.storage.JsonFile;
 import org.loklak.tools.storage.JsonReader;
 import org.loklak.tools.storage.JsonRepository;
 import org.loklak.tools.storage.JsonStreamReader;
@@ -115,6 +118,7 @@ public class DAO {
     
     public  static File conf_dir, bin_dir, html_dir;
     private static File external_data, assets, dictionaries;
+    public static JsonFile public_settings, private_settings;
     private static Path message_dump_dir, account_dump_dir, import_profile_dump_dir;
     public static JsonRepository message_dump;
     private static JsonRepository account_dump;
@@ -150,6 +154,19 @@ public class DAO {
         conf_dir = new File("conf");
         bin_dir = new File("bin");
         html_dir = new File("html");
+        
+        try {
+			public_settings = new JsonFile(new File("data/settings/public.settings.json"));
+			File private_file = new File("data/settings/private.settings.json");
+			private_settings = new JsonFile(private_file);
+			Set<PosixFilePermission> perms = new HashSet<PosixFilePermission>();
+			perms.add(PosixFilePermission.OWNER_READ);
+			perms.add(PosixFilePermission.OWNER_WRITE);
+			Files.setPosixFilePermissions(private_file.toPath(), perms);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+        
         File datadir = dataPath.toFile();
         try {
             // check if elasticsearch shall be accessed as external cluster
