@@ -23,19 +23,7 @@
       <script src="/js/html5shiv.min.js"></script>
       <script src="/js/respond.min.js"></script>
     <![endif]-->
-    
-    <!-- Angular deps, ngMaterial, ngMessages, localStorage, angulargrid, linkify, imgfallback -->
-    <script src="js/angular.min.js"></script>
-    <script src="js/angular-sanitize.min.js"></script>
-    <script src="js/angular-aria.min.js"></script>
-    <script src="js/angular-animate.min.js"></script>
-    <script src="js/angular-material.min.js"></script>
-    <script src="js/ngStorage.min.js"></script>
-    <script src="js/angular-messages.min.js"></script>
-    <script src='js/angulargrid.min.js'></script>
-    <script src="js/angular.dcb-img-fallback.min.js"></script>
 
-    <script src="app.js"></script>
   </head>
 
   <body ng-app="myApp" >
@@ -100,8 +88,8 @@
                       </div>
                   </md-input-container>
                   <!-- submit when enter, calls ng-submit -->
-                  <md-button type='submit' md-no-ink class="md-primary"
-                      ng-click="poll(query.type, query.term, query.interval)">
+                  <md-button type='submit' md-no-ink class="md-primary">
+                      <!-- ng-click="poll(query.type, query.term, query.interval)"> -->
                       Submit
                   </md-button>
                   <div flex="10" ></div>
@@ -164,7 +152,25 @@
           </md-content>
           
       </div>
+      
+      <!-- Angular deps, ngMaterial, ngMessages, localStorage, angulargrid, imgfallback -->
+      <script src="../../js/angular-modules/angular.min.js"></script>
+      <script src="../../js/angular-modules/angular-sanitize.min.js"></script>
+      <script src="../../js/angular-modules/angular-aria.min.js"></script>
+      <script src="../../js/angular-modules/angular-animate.min.js"></script>
+      <script src="../../js/angular-modules/angular-material.min.js"></script>
+      <script src="../../js/angular-modules/ngStorage.min.js"></script>
+      <script src="../../js/angular-modules/angular-messages.min.js"></script>
+      <script src='../../js/angular-modules/angulargrid.min.js'></script>
+      <script src="../../js/angular-modules/angular.dcb-img-fallback.min.js"></script>
+      
+      <script src="app.js"></script>
 
+      <!-- Services -->
+      <script src="services/dataService.js"></script>
+      <script src="services/analyticService.js"></script>
+      <script src="services/queryService.js"></script>
+      
     <!-- Bootstrap core JavaScript
     ================================================== -->
     <!-- Placed at the end of the document so the pages load faster -->

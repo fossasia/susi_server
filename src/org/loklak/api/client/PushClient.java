@@ -24,6 +24,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.json.JSONException;
+import org.loklak.data.DAO;
 import org.loklak.http.ClientConnection;
 import org.loklak.objects.Timeline;
 import org.loklak.tools.UTF8;
@@ -34,9 +35,10 @@ public class PushClient {
      * transmit the timeline to several hosts
      * @param timeline
      * @param hoststubs a list of host stubs, i.e. ["http://remoteserver.eu"]
+     * @param peerMessage if message is send to a peer
      * @return true if the data was transmitted to at least one target peer
      */
-    public static boolean push(String[] hoststubs, Timeline timeline) {
+    public static boolean push(String[] hoststubs, Timeline timeline, boolean peerMessage) {
         // transmit the timeline        
         try {
             String data = timeline.toJSON(false).toString();
@@ -48,7 +50,7 @@ public class PushClient {
                 post.put("data", UTF8.getBytes(data)); // optionally implement a gzipped form here
                 ClientConnection connection = null;
                 try {
-                    connection = new ClientConnection(hoststub + "/api/push.json", post);
+                    connection = new ClientConnection(hoststub + "/api/push.json", post, !"peers".equals(DAO.getConfig("httpsclient.trustselfsignedcerts", "peers")));
                     transmittedToAtLeastOnePeer = true;
                 } catch (IOException e) {
                     //e.printStackTrace();
@@ -61,5 +63,9 @@ public class PushClient {
             e.printStackTrace();
             return false;
         }
+    }
+    
+    public static boolean push(String[] hoststubs, Timeline timeline) {
+    	return push(hoststubs, timeline, true);
     }
 }

@@ -1,4 +1,23 @@
-package org.loklak.tools;
+/**
+ *  JsonFile
+ *  Copyright 22.02.2015 by Robert Mader, @treba123
+ *
+ *  This library is free software; you can redistribute it and/or
+ *  modify it under the terms of the GNU Lesser General Public
+ *  License as published by the Free Software Foundation; either
+ *  version 2.1 of the License, or (at your option) any later version.
+ *  
+ *  This library is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ *  Lesser General Public License for more details.
+ *  
+ *  You should have received a copy of the GNU Lesser General Public License
+ *  along with this program in the file lgpl21.txt
+ *  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+package org.loklak.tools.storage;
 
 import java.io.File;
 import java.io.FileReader;
@@ -15,11 +34,11 @@ import org.json.JSONTokener;
  * This extends JSONObject to be a file which gets loaded and written to disk
  *
  */
-public class JSONFile extends JSONObject {
+public class JsonFile extends JSONObject {
 	
 	private File file;
 
-	public JSONFile(File file) throws IOException{
+	public JsonFile(File file) throws IOException{
 		super();
 		this.file = file;
 		if(this.file.exists()){
