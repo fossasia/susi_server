@@ -542,7 +542,7 @@ public class TwitterAPI {
                 e.printStackTrace();
             }
             DAO.close();
-        } catch (IOException e1) {
+        } catch (Exception e1) {
             e1.printStackTrace();
         }
         System.exit(0);

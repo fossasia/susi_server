@@ -216,7 +216,13 @@ public class LoklakServer {
         if (pid.exists()) pid.deleteOnExit(); // thats a signal for the stop.sh script that loklak has terminated
         
         // initialize all data        
-        DAO.init(config, data);
+        try{
+        	DAO.init(config, data);
+        } catch(Exception e){
+        	Log.getLog().warn(e.getMessage());
+        	Log.getLog().warn("Could not initialize DAO. Exiting.");
+        	System.exit(-1);
+        }
         
         // init the http server
         try {
