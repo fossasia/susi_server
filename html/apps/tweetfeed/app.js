@@ -1,4 +1,4 @@
-angular.module('myApp', ['ngStorage', 'ngMaterial', 'ngMessages', 'angularGrid' ,'ngSanitize','dcbImgFallback'])
+angular.module('myApp', ['ngStorage', 'ngMaterial', 'ngMessages', 'angularGrid' ,'ngSanitize','dcbImgFallback', 'loklak'])
 
 
 // dataservice.polltweets(@querytype, @queryterm) -> polls & adds to $localStorage
