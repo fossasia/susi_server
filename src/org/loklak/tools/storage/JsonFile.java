@@ -52,6 +52,10 @@ public class JsonFile extends JSONObject {
 		}
 	}
 	
+	public File getFile() {
+	    return this.file;
+	}
+	
 	/**
 	 * Write changes to file. It is not required that the user calls this method,
 	 * however, if sub-objects of existing objects are modified, the user must handle

@@ -1,5 +1,5 @@
 /**
- *  HTTPAccount
+ *  Authorization
  *  Copyright 17.05.2016 by Michael Peter Christen, @0rb1t3r
  *
  *  This library is free software; you can redistribute it and/or
@@ -19,6 +19,57 @@
 
 package org.loklak.server;
 
-public class Authorization {
+import org.json.JSONObject;
+
+/**
+ * Authorization asks: what is the user allowed to do? This class holds user rights.
+ * An object instance of this class is handed to each serivce call to enable that
+ * service to work according to granted service level.
+ * One part of authorization decisions is the history of the past user action.
+ * Therefore an authorization object has the attachment of an Accounting object;  
+ */
+public class Authorization extends JSONObject {
+
+    private Accounting accounting;
+    
+    public Authorization() {
+        super();
+        this.accounting = null;
+    }
+    
+    public Accounting setAccounting(Accounting accounting) {
+        this.accounting = accounting;
+        return this.accounting;
+    }
+    
+    public Accounting getAccounting() {
+        return this.accounting;
+    }
+    
+    public Authorization setAdmin() {
+        this.put("admin", true);
+        return this;
+    }
+    
+    boolean isAdmin() {
+        if (!this.has("admin")) return false;
+        return this.getBoolean("admin");
+    }
+    
+    public Authorization setRequestFrequency(String path, int reqPerHour) {
+        if (!this.has("frequency")) {
+            this.put("frequency", new JSONObject());
+        }
+        JSONObject paths = this.getJSONObject("frequency");
+        paths.put(path, reqPerHour);
+        return this;
+    }
+    
+    public int getRequestFrequency(String path) {
+        if (!this.has("frequency")) return -1;
+        JSONObject paths = this.getJSONObject("frequency");
+        if (!paths.has(path)) return -1;
+        return paths.getInt(path);
+    }
 
 }

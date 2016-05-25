@@ -66,6 +66,7 @@ import org.loklak.objects.QueryEntry;
 import org.loklak.objects.ResultList;
 import org.loklak.objects.Timeline;
 import org.loklak.objects.UserEntry;
+import org.loklak.server.Accounting;
 import org.loklak.server.Query;
 import org.loklak.tools.DateParser;
 import org.loklak.tools.OS;
@@ -74,6 +75,7 @@ import org.loklak.tools.storage.JsonReader;
 import org.loklak.tools.storage.JsonRepository;
 import org.loklak.tools.storage.JsonStreamReader;
 import org.loklak.tools.storage.JsonFactory;
+import org.loklak.tools.storage.JsonFile;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
@@ -134,6 +136,11 @@ public class DAO {
     public  static GeoNames geoNames;
     public static Peers peers = new Peers();
     
+    // AAA Schema for server usage
+    private static Map<String, Accounting> accounting = new HashMap<>();
+    public static JsonFile authentication;
+    public static JsonFile authorization;
+    
     public static enum IndexName {
     	queries, messages, users, accounts, import_profiles;
     }
@@ -177,6 +184,17 @@ public class DAO {
                 elasticsearch_client = new ElasticsearchClient(settings);
             }
             
+            // open AAA storage
+            Path settings_dir = dataPath.resolve("settings");
+            settings_dir.toFile().mkdirs();
+            Path authentication_path = settings_dir.resolve("authentication.json");
+            authentication = new JsonFile(authentication_path.toFile());
+            OS.protectPath(authentication_path);
+            Path authorization_path = settings_dir.resolve("authorization.json");
+            authorization = new JsonFile(authorization_path.toFile());
+            OS.protectPath(authorization_path);
+            
+            // open index
             Path index_dir = dataPath.resolve("index");
             if (index_dir.toFile().exists()) OS.protectPath(index_dir); // no other permissions to this path
 
