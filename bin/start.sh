@@ -43,7 +43,7 @@ cmdline="$cmdline -server -classpath $CLASSPATH org.loklak.LoklakServer >> data/
 
 eval $cmdline
 while [ -f $STARTUPFILE ]; do 
-	if [ `cat $STARTUPFILE` == 'done' ]; then
+	if [ `cat $STARTUPFILE` = 'done' ]; then
 		break
 	else
 		sleep 1
