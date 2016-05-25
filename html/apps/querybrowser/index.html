@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" ng-app='loklak'>
   <head>
     <meta charset="utf-8">
     <meta http-equiv="content-type" content="text/html; charset=utf-8" />
@@ -21,8 +21,9 @@
       <script src="js/html5shiv.min.js"></script>
       <script src="js/respond.min.js"></script>
     <![endif]-->
-    
-    <script src="/js/angular.min.js"></script>
+    <script src="../../js/angular.min.js"></script>
+    <script src="../../js/angular-route.min.js"></script>
+    <script src="../../js/loklak.js"></script>
   </head>
 
   <body>
@@ -38,19 +39,10 @@
           </button>
           <a class="navbar-brand" href="http://loklak.org"><img src="/images/loklak_org.png" height="24" style="float:left;">: Query Browser</a>
         </div>
-        <div id="navbar" class="navbar-collapse collapse">
-          <ul class="nav navbar-nav navbar-right">
-            <li><a href="/index.html">Home</a></li>
-            <li><a href="/about.html">About</a></li>
-            <li><a href="/architecture.html">Architecture</a></li>
-            <li><a href="/download.html">Download</a></li>
-            <li><a href="/api.html">API</a></li>
-            <li><a href="/dump.html">Dumps</a></li>
-            <li><a href="/apps/">Apps</a></li>
+        <div id="navbar" class="navbar-collapse collapse" ng-controller="topmenu">
+          <ul class="nav navbar-nav navbar-right" ng-repeat="item in results | reverse">
+            <li ng-repeat="(key, val) in item" ng-class="{active: $route.current.activetab == key}"><a ng-href="../../{{val}}">{{key}}</a></li>
           </ul>
-          <!-- <form action="/api/search.json" class="navbar-form navbar-right">
-            <input name="q" id="query" type="text" class="form-control" placeholder="Search Tweets...">
-          </form> -->
         </div>
       </div>
     </nav>

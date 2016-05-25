@@ -76,7 +76,7 @@ angular.module("loklak")
         activetab: "Dumps"
 
     }).
-    when("/apps/", {
+    when("/apps", {
         controller: "widgetsController",
         activetab: "Apps"
     });

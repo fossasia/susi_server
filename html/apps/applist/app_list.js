@@ -1,4 +1,4 @@
-var app = angular.module('appListApp', []);
+var app = angular.module('appListApp', ['loklak']);
 
 app.controller("app_list", function($scope, $http) {
   $scope.apps = [];

@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html ng-app='loklak'>
 
 <head>
     <link rel="icon" type="image/png" href="../../artwork/favicon.png">
@@ -9,6 +9,10 @@
 	<script src="/js/angular.min.js"></script>
 	<script src="/js/jquery.min.js"></script>
 	<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/bootcards/1.0.0/css/bootcards-desktop.min.css">
+    
+    <script src="../../js/angular.min.js"></script>
+    <script src="../../js/angular-route.min.js"></script>
+    <script src="../../js/loklak.js"></script>
 	<style>
 	table, th, td {
 	   border: 1px solid black;
@@ -28,15 +32,9 @@
           </button>
           <a class="navbar-brand" href="http://loklak.org"><img src="/images/loklak_org.png" height="24" style="float:left;">: User Profile</a>
         </div>
-        <div id="navbar" class="navbar-collapse collapse">
-          <ul class="nav navbar-nav navbar-right">
-            <li><a href="/index.html">Home</a></li>
-            <li><a href="/about.html">About</a></li>
-            <li><a href="/architecture.html">Architecture</a></li>
-            <li><a href="/download.html">Download</a></li>
-            <li><a href="/api.html">API</a></li>
-            <li><a href="/dump.html">Dumps</a></li>
-            <li><a href="/apps/">Apps</a></li>
+        <div id="navbar" class="navbar-collapse collapse" ng-controller="topmenu">
+          <ul class="nav navbar-nav navbar-right" ng-repeat="item in results | reverse">
+            <li ng-repeat="(key, val) in item" ng-class="{active: $route.current.activetab == key}"><a ng-href="../../{{val}}">{{key}}</a></li>
           </ul>
         </div>
       </div>
