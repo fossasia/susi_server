@@ -3,7 +3,7 @@ cd `dirname $0`/..
 mkdir -p data
 #to not allow process to overwrite the already running one.
 x=`cat data/loklak.pid 2>/dev/null` && ps -A | egrep "^\ $x" >/dev/null 2>/dev/null
-if [ "$?" -eq 0 ]; then
+if [ "$x" != "" ]; then
 	echo "Server is already running, please stop it and then start"
 	exit 0
 fi
@@ -51,10 +51,10 @@ while [ -f $STARTUPFILE ]; do
 done
 
 if [ -f $STARTUPFILE ]; then
-	rm $STARTUPFILE
 	CUSTOMPORT=$(grep -iw 'port.http' conf/config.properties | sed 's/^[^=]*=//' );
 	LOCALHOST=$(grep -iw 'shortlink.urlstub' conf/config.properties | sed 's/^[^=]*=//');
 	echo "loklak server started at port $CUSTOMPORT, open your browser at $LOCALHOST"
+	rm $STARTUPFILE
 else
 	echo "loklak server failed to start. See data/loklag.log for details"
 fi
