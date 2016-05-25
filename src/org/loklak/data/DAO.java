@@ -368,7 +368,7 @@ public class DAO {
         }
         log("queries initialized.");
         
-        log("finished startup!");
+        log("finished DAO initialization");
     }
     
     public static boolean wait_ready(long maxtimemillis) {
