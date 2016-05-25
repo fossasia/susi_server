@@ -165,13 +165,22 @@ public class LoklakServer {
     }
     
     public static void main(String[] args) throws Exception {
-        System.setProperty("java.awt.headless", "true"); // no awt used here so we can switch off that stuff
+    	System.setProperty("java.awt.headless", "true"); // no awt used here so we can switch off that stuff
         
         // init config, log and elasticsearch
         Path data = FileSystems.getDefault().getPath("data");
         File dataFile = data.toFile();
         if (!dataFile.exists()) dataFile.mkdirs(); // should already be there since the start.sh script creates it
 
+        // prepare signal for startup script
+        File startup = new File(dataFile, "startup.tmp");
+        if (!startup.exists()) startup.createNewFile();
+        startup.deleteOnExit();
+        FileWriter writer = new FileWriter(startup);
+		writer.write("startup".toString());
+		writer.close();
+        
+		
         // load the config file(s);
         Map<String, String> config = readConfig(data);
         
@@ -227,7 +236,6 @@ public class LoklakServer {
 		}
         setServerHandler(dataFile);
         
-        
         LoklakServer.server.start();
         LoklakServer.caretaker = new Caretaker();
         LoklakServer.caretaker.start();
@@ -242,6 +250,13 @@ public class LoklakServer {
         
         // if this is not headless, we can open a browser automatically
         Browser.openBrowser("http://localhost:" + httpPort + "/");
+        
+        Log.getLog().info("finished startup!");
+        
+        // signal to startup script
+        writer = new FileWriter(startup);
+		writer.write("done".toString());
+		writer.close();
         
         // ** services are now running **
         

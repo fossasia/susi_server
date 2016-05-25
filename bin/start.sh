@@ -10,6 +10,7 @@ fi
 
 DFAULTCONFIG="conf/config.properties"
 CUSTOMCONFIG="data/settings/customized_config.properties"
+STARTUPFILE="data/startup.tmp"
 DFAULTXmx="-Xmx800m";
 CUSTOMXmx=""
 if [ -f $DFAULTCONFIG ]; then
@@ -36,14 +37,26 @@ elif [ -n "$DFAULTXmx" ]; then cmdline="$cmdline -Xmx$DFAULTXmx";
 fi
 
 echo "starting loklak"
+echo "startup" > $STARTUPFILE
 
 cmdline="$cmdline -server -classpath $CLASSPATH org.loklak.LoklakServer >> data/loklak.log 2>&1 & echo \$! > data/loklak.pid &";
 
 eval $cmdline
-#echo $cmdline;
+while [ -f $STARTUPFILE ]; do 
+	if [ `cat $STARTUPFILE` = 'done' ]; then
+		break
+	else
+		sleep 1
+	fi
+done
 
-CUSTOMPORT=$(grep -iw 'port.http' conf/config.properties | sed 's/^[^=]*=//' );
-LOCALHOST=$(grep -iw 'shortlink.urlstub' conf/config.properties | sed 's/^[^=]*=//');
-echo "loklak server started at port $CUSTOMPORT, open your browser at $LOCALHOST"
+if [ -f $STARTUPFILE ]; then
+	rm $STARTUPFILE
+	CUSTOMPORT=$(grep -iw 'port.http' conf/config.properties | sed 's/^[^=]*=//' );
+	LOCALHOST=$(grep -iw 'shortlink.urlstub' conf/config.properties | sed 's/^[^=]*=//');
+	echo "loklak server started at port $CUSTOMPORT, open your browser at $LOCALHOST"
+else
+	echo "loklak server failed to start. See data/loklag.log for details"
+fi
 
 
