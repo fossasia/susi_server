@@ -481,16 +481,16 @@ public class LoklakServer {
         }
         
         // Setup IPAccessHandler for blacklists
+        IPAccessHandler ipaccess = new IPAccessHandler();
         String blacklist = DAO.getConfig("server.blacklist", "");
         if (blacklist != null && blacklist.length() > 0) try {
-            IPAccessHandler ipaccess = new IPAccessHandler();
+            ipaccess = new IPAccessHandler();
             String[] bx = blacklist.split(",");
             ipaccess.setBlack(bx);
             for (String b: bx) {
                 int p = b.indexOf('|');
                 blacklistedHosts.add(p < 0 ? b : b.substring(0, p));
             }
-            LoklakServer.server.setHandler(ipaccess);
         } catch (IllegalArgumentException e) {
             Log.getLog().warn("bad blacklist:" + blacklist, e);
         }
@@ -583,8 +583,9 @@ public class LoklakServer {
         gzipHandler.setHandler(handlerlist2);
         
         securityHandler.setHandler(gzipHandler);
+        ipaccess.setHandler(securityHandler);
         
-        LoklakServer.server.setHandler(securityHandler);
+        LoklakServer.server.setHandler(ipaccess);
     }
     
     private static void checkServerPorts(int httpPort, int httpsPort) throws IOException{
