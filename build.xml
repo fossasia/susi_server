@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <project basedir="." default="build" name="loklak">
     <property environment="env"/>
-    <property name="target" value="1.7"/>
-    <property name="source" value="1.7"/>
+    <property name="target" value="1.8"/>
+    <property name="source" value="1.8"/>
     <path id="loklak.classpath">
         <pathelement location="classes"/>
         <pathelement location="lib/antlr-runtime-3.5.jar"/>
@@ -27,15 +27,15 @@
         <pathelement location="lib/jackson-dataformat-smile-2.6.2.jar"/>
         <pathelement location="lib/jackson-dataformat-yaml-2.6.2.jar"/>
         <pathelement location="lib/javax.servlet-api-3.1.0.jar"/>
-        <pathelement location="lib/jetty-http-9.2.15.v20160210.jar"/>
-        <pathelement location="lib/jetty-io-9.2.15.v20160210.jar"/>
-        <pathelement location="lib/jetty-rewrite-9.2.15.v20160210.jar"/>
-        <pathelement location="lib/jetty-security-9.2.15.v20160210.jar"/>
-        <pathelement location="lib/jetty-server-9.2.15.v20160210.jar"/>
-        <pathelement location="lib/jetty-servlet-9.2.15.v20160210.jar"/>
-        <pathelement location="lib/jetty-servlets-9.2.15.v20160210.jar"/>
-        <pathelement location="lib/jetty-util-9.2.15.v20160210.jar"/>
-        <pathelement location="lib/jetty-webapp-9.2.15.v20160210.jar"/>
+        <pathelement location="lib/jetty-http-9.3.9.v20160517.jar"/>
+        <pathelement location="lib/jetty-io-9.3.9.v20160517.jar"/>
+        <pathelement location="lib/jetty-rewrite-9.3.9.v20160517.jar"/>
+        <pathelement location="lib/jetty-security-9.3.9.v20160517.jar"/>
+        <pathelement location="lib/jetty-server-9.3.9.v20160517.jar"/>
+        <pathelement location="lib/jetty-servlet-9.3.9.v20160517.jar"/>
+        <pathelement location="lib/jetty-servlets-9.3.9.v20160517.jar"/>
+        <pathelement location="lib/jetty-util-9.3.9.v20160517.jar"/>
+        <pathelement location="lib/jetty-webapp-9.3.9.v20160517.jar"/>
         <pathelement location="lib/jna-4.1.0.jar"/>
         <pathelement location="lib/joda-convert-1.2.jar"/>
         <pathelement location="lib/joda-time-2.8.2.jar"/>
