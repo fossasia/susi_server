@@ -55,8 +55,8 @@ if [ -f $STARTUPFILE ]; then
 	LOCALHOST=$(grep -iw 'shortlink.urlstub' conf/config.properties | sed 's/^[^=]*=//');
 	echo "loklak server started at port $CUSTOMPORT, open your browser at $LOCALHOST"
 	rm $STARTUPFILE
+	exit 0
 else
 	echo "loklak server failed to start. See data/loklag.log for details"
+	exit 1
 fi
-
-
