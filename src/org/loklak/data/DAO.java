@@ -376,7 +376,7 @@ public class DAO {
         } catch (Throwable e) {
             e.printStackTrace();
         }
-        log("finished DAO initialization");
+        log("finished startup!");
     }
     
     public static boolean wait_ready(long maxtimemillis) {
