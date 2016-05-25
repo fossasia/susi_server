@@ -24,31 +24,32 @@ CLASSPATH=".:./classes/:$CLASSPATH"
 
 cmdline="java";
 
-if [ -n "$CUSTOMXmx" ]; then cmdline="$cmdline -Xmx$CUSTOMXmx";
+if [ -n "$ENVXmx" ] ; then cmdline="$cmdline -Xmx$ENVXmx";
+elif [ -n "$CUSTOMXmx" ]; then cmdline="$cmdline -Xmx$CUSTOMXmx";
 elif [ -n "$DFAULTXmx" ]; then cmdline="$cmdline -Xmx$DFAULTXmx";
 fi
 
 
-#jdk7
+#jdk8
 
-JAVA_DIST="openjdk1.7.0_21"
-JDK7_URL="https://s3.amazonaws.com/heroku-jdk/${JAVA_DIST}.tar.gz"
+JAVA_DIST="openjdk-1.8.0_51"
+JDK8_URL="https://download.run.pivotal.io/openjdk/lucid/x86_64/${JAVA_DIST}.tar.gz"
 
-if [ -d .jdk7 ]; then
-  echo "-----> .jdk7 folder found, moving along."
+if [ -d .jdk8 ]; then
+  echo "-----> .jdk8 folder found, moving along."
 
 else
-  echo -n "-----> .jdk7 folder not found! "
-  if [[ -d "$PWD/.jdk7" ]]; then
+  echo -n "-----> .jdk8 folder not found! "
+  if [[ -d "$PWD/.jdk8" ]]; then
     echo -n "Copying jdk from cache to app... "
-    cp -r "$PWD/.jdk7" "$PWD"
+    cp -r "$PWD/.jdk8" "$PWD"
     echo "Done!"
 
   else
-    echo -n "-----> Installing ${JAVA_DIST} build (to .jdk7)....."
-    mkdir "$PWD/.jdk7"
-    cd "$PWD/.jdk7"
-    curl --max-time 180 --location "$JDK7_URL" | tar xz
+    echo -n "-----> Installing ${JAVA_DIST} build (to .jdk8)....."
+    mkdir "$PWD/.jdk8"
+    cd "$PWD/.jdk8"
+    curl --max-time 180 --location "$JDK8_URL" | tar xz
     cd "$PWD"
     echo "Done!"
   fi
@@ -56,7 +57,7 @@ fi
 
 cd $PWD
 
-export JAVA_HOME="$PWD/.jdk7"
+export JAVA_HOME="$PWD/.jdk8"
 export PATH="$JAVA_HOME/bin:$PATH"
 
 
