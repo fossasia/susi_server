@@ -23,6 +23,7 @@
     <![endif]-->
     
     <script src="js/angular.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.2.0rc1/angular-route.min.js"></script>
     <script src="js/loklak.js"></script>
   </head>
 
@@ -39,17 +40,9 @@
           </button>
           <a class="navbar-brand" href="#"></a>
         </div>
-        <div id="navbar" class="navbar-collapse collapse">
-          <ul class="nav navbar-nav navbar-right">
-            <li class="active"><a href="index.html">Home</a></li>
-            <li><a href="about.html">About</a></li>
-            <li><a href="showcase.html">Showcase</a></li>
-            <li><a href="architecture.html">Architecture</a></li>
-            <li><a href="download.html">Download</a></li>
-            <li><a href="tutorials.html">Tutorials</a></li>
-            <li><a href="api.html">API</a></li>
-            <li><a href="dump.html">Dumps</a></li>
-            <li><a href="apps/">Apps</a></li>
+        <div id="navbar" class="navbar-collapse collapse" ng-controller="topmenu">
+          <ul class="nav navbar-nav navbar-right" ng-repeat="item in results | reverse">
+            <li ng-repeat="(key, val) in item" ng-class="{active: $route.current.activetab == key}"><a ng-href="{{val}}">{{key}}</a></li>
           </ul>
         </div>
       </div>
