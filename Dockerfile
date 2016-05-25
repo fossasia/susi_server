@@ -7,7 +7,7 @@ RUN apt-get update
 RUN apt-get upgrade -y
 
 # add packages
-RUN apt-get install -y git ant openjdk-7-jdk
+RUN apt-get install -y git ant openjdk-8-jdk
 
 # clone the github repo
 RUN git clone https://github.com/loklak/loklak_server.git
