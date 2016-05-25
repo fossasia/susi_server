@@ -172,6 +172,10 @@ public class LoklakServer {
         File dataFile = data.toFile();
         if (!dataFile.exists()) dataFile.mkdirs(); // should already be there since the start.sh script creates it
 
+        // prepare shutdown signal
+        File pid = new File(dataFile, "loklak.pid");
+        if (pid.exists()) pid.deleteOnExit(); // thats a signal for the stop.sh script that loklak has terminated
+        
         // prepare signal for startup script
         File startup = new File(dataFile, "startup.tmp");
         if (!startup.exists()) startup.createNewFile();
@@ -218,11 +222,6 @@ public class LoklakServer {
         	Log.getLog().warn(e.getMessage());
 			System.exit(-1);
         }
-        
-        
-        // prepare shutdown signal
-        File pid = new File(dataFile, "loklak.pid");
-        if (pid.exists()) pid.deleteOnExit(); // thats a signal for the stop.sh script that loklak has terminated
         
         // initialize all data        
         try{

@@ -51,10 +51,10 @@ while [ -f $STARTUPFILE ]; do
 done
 
 if [ -f $STARTUPFILE ]; then
-	rm $STARTUPFILE
 	CUSTOMPORT=$(grep -iw 'port.http' conf/config.properties | sed 's/^[^=]*=//' );
 	LOCALHOST=$(grep -iw 'shortlink.urlstub' conf/config.properties | sed 's/^[^=]*=//');
 	echo "loklak server started at port $CUSTOMPORT, open your browser at $LOCALHOST"
+	rm $STARTUPFILE
 else
 	echo "loklak server failed to start. See data/loklag.log for details"
 fi
