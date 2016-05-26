@@ -222,10 +222,6 @@ public class Timeline implements Iterable<MessageEntry> {
             statuses.put(t.toJSON(u, withEnrichedData, Integer.MAX_VALUE, ""));
         }
         json.put("statuses", statuses);
-        json.put("peer_hash", DAO.public_settings.getPeerHash());
-        json.put("peer_hash_algorithm", DAO.public_settings.getPeerHashAlgorithm());
-        json.put("public_key",DAO.public_settings.getPublicKeyAsString());
-        json.put("key_algorithm", DAO.public_settings.getKeyAlgorithm());
         return json;
     }
     
