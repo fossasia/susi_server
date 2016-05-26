@@ -120,7 +120,7 @@ public class DAO {
     
     public  static File conf_dir, bin_dir, html_dir;
     private static File external_data, assets, dictionaries;
-    public static JsonFile public_settings, private_settings;
+    public static Settings public_settings, private_settings;
     private static Path message_dump_dir, account_dump_dir, import_profile_dump_dir;
     public static JsonRepository message_dump;
     private static JsonRepository account_dump;
@@ -164,9 +164,9 @@ public class DAO {
         html_dir = new File("html");
         
         // initialize public and private keys
-		public_settings = new JsonFile(new File("data/settings/public.settings.json"));
+		public_settings = new Settings(new File("data/settings/public.settings.json"));
 		File private_file = new File("data/settings/private.settings.json");
-		private_settings = new JsonFile(private_file);
+		private_settings = new Settings(private_file);
 		OS.protectPath(private_file.toPath());
 		
 		if(!private_settings.loadPrivateKey() || !public_settings.loadPublicKey()){
