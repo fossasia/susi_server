@@ -5,6 +5,7 @@ p {
 	font-size: 35px;
 	color: #fff;
 }
+
 .form {
 	width:375px;
 	height: auto;
@@ -39,9 +40,6 @@ p {
 	border-radius: 7px 7px 0 0;
 }
 .form input[name = "pass"] {
-	border-radius: 0 0 0 0;
-}
-.form input[name = "confirmpass"] {
 	border-radius: 0 0 7px 7px;
 }
 
@@ -59,4 +57,8 @@ p {
 	font-size: 13px;	
 	border-bottom: 3px solid #307d63;
 	cursor: pointer;
+}
+.form p:hover{
+	color:GreenYellow;
+	transition: color 0.8s;
 }
