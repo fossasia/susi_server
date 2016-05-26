@@ -27,14 +27,12 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.nio.file.FileSystems;
 import java.nio.file.Path;
-import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Random;
 import java.util.Set;
 
-import javax.servlet.DispatcherType;
 import javax.servlet.MultipartConfigElement;
 
 import org.eclipse.jetty.rewrite.handler.RewriteHandler;
@@ -46,11 +44,9 @@ import org.eclipse.jetty.server.handler.DefaultHandler;
 import org.eclipse.jetty.server.handler.ErrorHandler;
 import org.eclipse.jetty.server.handler.HandlerList;
 import org.eclipse.jetty.server.handler.IPAccessHandler;
-import org.eclipse.jetty.servlet.FilterHolder;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
-import org.eclipse.jetty.servlets.GzipFilter;
-import org.eclipse.jetty.servlets.gzip.GzipHandler;
+import org.eclipse.jetty.server.handler.gzip.GzipHandler;
 import org.eclipse.jetty.util.ConcurrentHashSet;
 import org.eclipse.jetty.util.log.Log;
 import org.eclipse.jetty.util.thread.QueuedThreadPool;
@@ -423,12 +419,11 @@ public class LoklakServer {
 	        //NegotiatingServerConnectionFactory.checkProtocolNegotiationAvailable();
 	        //ALPNServerConnectionFactory alpn = new ALPNServerConnectionFactory();
 	        //alpn.setDefaultProtocol(http1.getProtocol());
-	         
+
 	        SslContextFactory sslContextFactory = new SslContextFactory();
 	        
 	        sslContextFactory.setKeyStorePath(keystorePath);
 	        sslContextFactory.setKeyStorePassword(keystorePass);
-	        keystorePass = null;
 	        sslContextFactory.setKeyManagerPassword(keystoreManagerPass);
 	        //sslContextFactory.setCipherComparator(HTTP2Cipher.COMPARATOR);
 	        //sslContextFactory.setUseCipherSuitesOrder(true);
@@ -505,8 +500,6 @@ public class LoklakServer {
 
         File tmp = new File(dataFile, "tmp");
         ServletContextHandler servletHandler = new ServletContextHandler();
-        FilterHolder filter = servletHandler.addFilter(GzipFilter.class, "/*", EnumSet.allOf(DispatcherType.class));
-        filter.setInitParameter("mimeTypes", "text/plain");
         servletHandler.addServlet(DumpDownloadServlet.class, "/dump/*");
         servletHandler.addServlet(ShortlinkFromTweetServlet.class, "/x");
         servletHandler.addServlet(AccessServlet.class, "/api/access.json");
@@ -585,6 +578,7 @@ public class LoklakServer {
         HandlerList handlerlist2 = new HandlerList();
         handlerlist2.setHandlers(new Handler[]{fileHandler, rewriteHandler, new DefaultHandler()});
         GzipHandler gzipHandler = new GzipHandler();
+        gzipHandler.setIncludedMimeTypes("text/html,text/plain,text/xml,text/css,application/javascript,text/javascript,application/json");
         gzipHandler.setHandler(handlerlist2);
         
         securityHandler.setHandler(gzipHandler);
