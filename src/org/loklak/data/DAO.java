@@ -26,6 +26,9 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.file.Path;
+import java.security.KeyPair;
+import java.security.KeyPairGenerator;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
@@ -160,10 +163,32 @@ public class DAO {
         bin_dir = new File("bin");
         html_dir = new File("html");
         
+        // initialize public and private keys
 		public_settings = new JsonFile(new File("data/settings/public.settings.json"));
 		File private_file = new File("data/settings/private.settings.json");
 		private_settings = new JsonFile(private_file);
 		OS.protectPath(private_file.toPath());
+		
+		if(!private_settings.loadPrivateKey() || !public_settings.loadPublicKey()){
+        	log("Can't load key pair. Creating new one");
+        	
+        	// create new key pair
+        	KeyPairGenerator keyGen;
+			try {
+				String algorithm = "RSA";
+				keyGen = KeyPairGenerator.getInstance(algorithm);
+				keyGen.initialize(2048);
+				KeyPair keyPair = keyGen.genKeyPair();
+				private_settings.setPrivateKey(keyPair.getPrivate(), algorithm);
+				public_settings.setPublicKey(keyPair.getPublic(), algorithm);
+			} catch (NoSuchAlgorithmException e) {
+				e.printStackTrace();
+			}
+			log("Key creation finished. Peer hash: " + public_settings.getPeerHash());
+        }
+        else{
+        	log("Key pair loaded from file. Peer hash: " + public_settings.getPeerHash());
+        }
         
         File datadir = dataPath.toFile();
         // check if elasticsearch shall be accessed as external cluster
