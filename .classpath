@@ -10,15 +10,6 @@
 	<classpathentry kind="lib" path="lib/snakeyaml-1.15.jar"/>
 	<classpathentry kind="lib" path="lib/spatial4j-0.5.jar"/>
 	<classpathentry kind="lib" path="lib/securesm-1.0.jar"/>
-	<classpathentry kind="lib" path="lib/jetty-http-9.2.15.v20160210.jar"/>
-	<classpathentry kind="lib" path="lib/jetty-io-9.2.15.v20160210.jar"/>
-	<classpathentry kind="lib" path="lib/jetty-rewrite-9.2.15.v20160210.jar"/>
-	<classpathentry kind="lib" path="lib/jetty-security-9.2.15.v20160210.jar"/>
-	<classpathentry kind="lib" path="lib/jetty-server-9.2.15.v20160210.jar"/>
-	<classpathentry kind="lib" path="lib/jetty-servlet-9.2.15.v20160210.jar"/>
-	<classpathentry kind="lib" path="lib/jetty-servlets-9.2.15.v20160210.jar"/>
-	<classpathentry kind="lib" path="lib/jetty-util-9.2.15.v20160210.jar"/>
-	<classpathentry kind="lib" path="lib/jetty-webapp-9.2.15.v20160210.jar"/>
 	<classpathentry kind="lib" path="lib/elasticsearch-2.3.2.jar"/>
 	<classpathentry kind="lib" path="lib/lucene-analyzers-common-5.5.0.jar"/>
 	<classpathentry kind="lib" path="lib/lucene-backward-codecs-5.5.0.jar"/>
@@ -34,6 +25,15 @@
 	<classpathentry kind="lib" path="lib/lucene-spatial-5.5.0.jar"/>
 	<classpathentry kind="lib" path="lib/lucene-spatial3d-5.5.0.jar"/>
 	<classpathentry kind="lib" path="lib/lucene-suggest-5.5.0.jar"/>
+	<classpathentry kind="lib" path="lib/jetty-http-9.3.9.v20160517.jar"/>
+	<classpathentry kind="lib" path="lib/jetty-io-9.3.9.v20160517.jar"/>
+	<classpathentry kind="lib" path="lib/jetty-rewrite-9.3.9.v20160517.jar"/>
+	<classpathentry kind="lib" path="lib/jetty-security-9.3.9.v20160517.jar"/>
+	<classpathentry kind="lib" path="lib/jetty-server-9.3.9.v20160517.jar"/>
+	<classpathentry kind="lib" path="lib/jetty-servlet-9.3.9.v20160517.jar"/>
+	<classpathentry kind="lib" path="lib/jetty-servlets-9.3.9.v20160517.jar"/>
+	<classpathentry kind="lib" path="lib/jetty-util-9.3.9.v20160517.jar"/>
+	<classpathentry kind="lib" path="lib/jetty-webapp-9.3.9.v20160517.jar"/>
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="src" path="test"/>
 	<classpathentry kind="lib" path="lib/javax.servlet-api-3.1.0.jar"/>
