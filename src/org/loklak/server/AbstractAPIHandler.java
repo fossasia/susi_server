@@ -21,12 +21,17 @@ package org.loklak.server;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.util.Base64;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 
+import org.json.JSONException;
 import org.json.JSONObject;
 import org.loklak.data.DAO;
 import org.loklak.http.ClientConnection;
@@ -152,4 +157,73 @@ public abstract class AbstractAPIHandler extends HttpServlet implements APIHandl
             return;
         }
     }
+    
+    /**
+     * Checks a request for valid login data, send via cookie or parameters
+     * @param request
+     * @return authentication_obj if login was succesfull, null otherwise
+     */
+    public JSONObject getAuthenticationObject(HttpServletRequest request){
+
+    	if(request.getSession() != null){ // check if session exists
+    		if("true".equals(request.getParameter("logout"))){
+    			HttpSession session=request.getSession();  
+    			session.invalidate();  
+    		}
+    		if(request.getSession().getAttribute("user_id") != null){
+    			String user_id = request.getSession().getAttribute("user_id").toString();
+        		return DAO.authentication.has(user_id) ? DAO.authorization.getJSONObject(user_id) : null;
+    		}
+    	}
+    	else if (request.getParameter("userid") != null && request.getParameter("password") != null ){ // check if login parameters are set
+    		String user_id = request.getParameter("userid");
+    		String password = request.getParameter("password");
+    		
+    		// check if password is valid
+    		if(DAO.authentication.has(user_id)){
+    			try{
+    				String passwordHash = DAO.authentication.getJSONObject(user_id).getString("password");
+    				String salt = DAO.authentication.getJSONObject(user_id).getString("salt");
+        			if(getHash(password, salt) != passwordHash){
+        				return null;
+        			}
+    			} catch(JSONException e){
+    				return null;
+    			}
+    		}
+    		else{
+    			return null;
+    		}
+    		
+    		// only create a session if requested (by login page)
+    		if("true".equals(request.getParameter("request_session"))){
+    			HttpSession session=request.getSession();
+    			session.setAttribute("user_id",user_id);  
+    			
+    			if("true".equals(request.getParameter("requestCookie"))){
+	    			// TODO: set a cookie
+	    		}
+    		}
+    		return DAO.authorization.getJSONObject(user_id);
+    	}
+    	
+    	return null;
+    }
+    
+    /**
+     * Create a hash for an input an salt
+     * @param input
+     * @param salt
+     * @return String hash
+     */
+    public static String getHash(String input, String salt){
+		try {
+			MessageDigest md = MessageDigest.getInstance("SHA-256");
+			md.update((salt + input).getBytes());
+			return Base64.getEncoder().encodeToString(md.digest());
+		} catch (NoSuchAlgorithmException e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
 }
