@@ -20,18 +20,37 @@
 package org.loklak.server;
 
 import org.json.JSONObject;
+import org.loklak.tools.storage.JsonFile;
 
 /**
  * Authentication asks: who is the user. This class holds user identification details
  */
-public class Authentication extends JSONObject {
+public class Authentication {
 
-    public Authentication() {
-        super();
+    private JsonFile parent;
+    private JSONObject json;
+
+    /**
+     * create a new authentication object. The given json object must be taken
+     * as value from a parent json. If the parent json is a JsonFile, then that
+     * file can be handed over as well to enable persistency.
+     * @param json object for storage of the authorization
+     * @param parent the parent file or null if there is no parent file (no persistency)
+     */
+    public Authentication(JSONObject json, JsonFile parent) {
+        this.json = json;
+        this.parent = parent;
     }
     
-    public Authentication(JSONObject json) {
-        super(json);
+    public Authentication setIdentity(Identity id) {
+        this.json.put("id", id.toString());
+        if (this.parent != null) this.parent.commit();
+        return this;
+    }
+    
+    public Identity getIdentity() {
+        if (this.json.has("id")) return new Identity(this.json.getString("id"));
+        return null;
     }
 
 }

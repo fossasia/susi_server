@@ -20,6 +20,7 @@
 package org.loklak.server;
 
 import org.json.JSONObject;
+import org.loklak.tools.storage.JsonFile;
 
 /**
  * Authorization asks: what is the user allowed to do? This class holds user rights.
@@ -28,17 +29,22 @@ import org.json.JSONObject;
  * One part of authorization decisions is the history of the past user action.
  * Therefore an authorization object has the attachment of an Accounting object;  
  */
-public class Authorization extends JSONObject {
+public class Authorization {
 
+    private JsonFile parent;
+    private JSONObject json;
     private Accounting accounting;
-
-    public Authorization() {
-        super();
-        this.accounting = null;
-    }
     
-    public Authorization(JSONObject json) {
-        super(json);
+    /**
+     * create a new authorization object. The given json object must be taken
+     * as value from a parent json. If the parent json is a JsonFile, then that
+     * file can be handed over as well to enable persistency.
+     * @param json object for storage of the authorization
+     * @param parent the parent file or null if there is no parent file (no persistency)
+     */
+    public Authorization(final JSONObject json, JsonFile parent) {
+        this.json = json;
+        this.parent = parent;
         this.accounting = null;
     }
     
@@ -52,27 +58,29 @@ public class Authorization extends JSONObject {
     }
     
     public Authorization setAdmin() {
-        this.put("admin", true);
+        this.json.put("admin", true);
+        if (parent != null) parent.commit();
         return this;
     }
     
     boolean isAdmin() {
-        if (!this.has("admin")) return false;
-        return this.getBoolean("admin");
+        if (!this.json.has("admin")) return false;
+        return this.json.getBoolean("admin");
     }
     
     public Authorization setRequestFrequency(String path, int reqPerHour) {
-        if (!this.has("frequency")) {
-            this.put("frequency", new JSONObject());
+        if (!this.json.has("frequency")) {
+            this.json.put("frequency", new JSONObject());
         }
-        JSONObject paths = this.getJSONObject("frequency");
+        JSONObject paths = this.json.getJSONObject("frequency");
         paths.put(path, reqPerHour);
+        if (parent != null) parent.commit();
         return this;
     }
     
     public int getRequestFrequency(String path) {
-        if (!this.has("frequency")) return -1;
-        JSONObject paths = this.getJSONObject("frequency");
+        if (!this.json.has("frequency")) return -1;
+        JSONObject paths = this.json.getJSONObject("frequency");
         if (!paths.has(path)) return -1;
         return paths.getInt(path);
     }

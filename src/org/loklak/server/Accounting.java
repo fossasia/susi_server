@@ -22,6 +22,7 @@ package org.loklak.server;
 import java.util.TreeMap;
 
 import org.json.JSONObject;
+import org.loklak.tools.storage.JsonFile;
 
 /**
  * Accounting asks: what has the user done. This class holds user activities.
