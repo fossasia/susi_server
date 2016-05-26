@@ -33,7 +33,6 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.loklak.QueuedIndexing;
-import org.loklak.data.DAO;
 
 /**
  * A timeline is a structure which holds tweet for the purpose of presentation
