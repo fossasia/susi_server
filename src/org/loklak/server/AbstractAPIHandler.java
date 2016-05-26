@@ -222,7 +222,7 @@ public abstract class AbstractAPIHandler extends HttpServlet implements APIHandl
     			HttpSession session=request.getSession();
     			session.setAttribute("user_id",user_id);  
     			
-    			if("true".equals(request.getParameter("requestCookie"))){
+    			if("true".equals(request.getParameter("request_cookie"))){
 	    			// TODO: set a cookie
 	    		}
     		}
