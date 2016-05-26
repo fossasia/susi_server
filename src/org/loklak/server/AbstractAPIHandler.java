@@ -125,6 +125,7 @@ public abstract class AbstractAPIHandler extends HttpServlet implements APIHandl
         }
         Authentication authentication = new Authentication(authentication_obj, DAO.authentication);
         Identity identity = authentication.getIdentity();
+        if (identity == null) identity = new Identity(Identity.Type.host, host);
         
         // user authorization: we use the identification of the user to get the assigned authorization
         JSONObject authorization_obj = null;
