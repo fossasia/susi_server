@@ -177,7 +177,7 @@ public class DAO {
 			try {
 				String algorithm = "RSA";
 				keyGen = KeyPairGenerator.getInstance(algorithm);
-				keyGen.initialize(4096);
+				keyGen.initialize(2048);
 				KeyPair keyPair = keyGen.genKeyPair();
 				private_settings.setPrivateKey(keyPair.getPrivate(), algorithm);
 				public_settings.setPublicKey(keyPair.getPublic(), algorithm);
