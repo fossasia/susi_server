@@ -49,7 +49,6 @@ import com.google.common.base.Charsets;
 
 import org.eclipse.jetty.util.log.Log;
 import org.elasticsearch.cluster.health.ClusterHealthStatus;
-import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.search.sort.SortOrder;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -71,6 +70,7 @@ import org.loklak.objects.Timeline;
 import org.loklak.objects.UserEntry;
 import org.loklak.server.Accounting;
 import org.loklak.server.Query;
+import org.loklak.server.Settings;
 import org.loklak.tools.DateParser;
 import org.loklak.tools.OS;
 import org.loklak.tools.storage.JsonDataset;
@@ -202,7 +202,8 @@ public class DAO {
             }
         } else {
             // use all config attributes with a key starting with "elasticsearch." to set elasticsearch settings
-            Settings.Builder settings = Settings.builder();
+
+            org.elasticsearch.common.settings.Settings.Builder settings = org.elasticsearch.common.settings.Settings.builder();
             for (Map.Entry<String, String> entry: config.entrySet()) {
                 String key = entry.getKey();
                 if (key.startsWith("elasticsearch.")) settings.put(key.substring(14), entry.getValue());
