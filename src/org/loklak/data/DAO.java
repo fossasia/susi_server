@@ -184,10 +184,10 @@ public class DAO {
 			} catch (NoSuchAlgorithmException e) {
 				e.printStackTrace();
 			}
-			log("Key creation finished. Peer hash: " + public_settings.getPeerHash());
+			log("Key creation finished. Peer hash: " + public_settings.getPeerHashAlgorithm() + " " + public_settings.getPeerHash());
         }
         else{
-        	log("Key pair loaded from file. Peer hash: " + public_settings.getPeerHash());
+        	log("Key pair loaded from file. Peer hash: " + public_settings.getPeerHashAlgorithm() + " " + public_settings.getPeerHash());
         }
         
         File datadir = dataPath.toFile();
