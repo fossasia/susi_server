@@ -33,6 +33,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.loklak.QueuedIndexing;
+import org.loklak.data.DAO;
 
 /**
  * A timeline is a structure which holds tweet for the purpose of presentation
@@ -221,6 +222,8 @@ public class Timeline implements Iterable<MessageEntry> {
             statuses.put(t.toJSON(u, withEnrichedData, Integer.MAX_VALUE, ""));
         }
         json.put("statuses", statuses);
+        json.put("peer_hash", DAO.public_settings.getPeerHash());
+        json.put("peer_hash_algorithm", DAO.public_settings.getPeerHashAlgorithm());
         return json;
     }
     
