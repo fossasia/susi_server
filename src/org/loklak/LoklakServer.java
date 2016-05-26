@@ -165,13 +165,26 @@ public class LoklakServer {
     }
     
     public static void main(String[] args) throws Exception {
-        System.setProperty("java.awt.headless", "true"); // no awt used here so we can switch off that stuff
+    	System.setProperty("java.awt.headless", "true"); // no awt used here so we can switch off that stuff
         
         // init config, log and elasticsearch
         Path data = FileSystems.getDefault().getPath("data");
         File dataFile = data.toFile();
         if (!dataFile.exists()) dataFile.mkdirs(); // should already be there since the start.sh script creates it
 
+        // prepare shutdown signal
+        File pid = new File(dataFile, "loklak.pid");
+        if (pid.exists()) pid.deleteOnExit(); // thats a signal for the stop.sh script that loklak has terminated
+        
+        // prepare signal for startup script
+        File startup = new File(dataFile, "startup.tmp");
+        if (!startup.exists()) startup.createNewFile();
+        startup.deleteOnExit();
+        FileWriter writer = new FileWriter(startup);
+		writer.write("startup".toString());
+		writer.close();
+        
+		
         // load the config file(s);
         Map<String, String> config = readConfig(data);
         
@@ -210,13 +223,14 @@ public class LoklakServer {
 			System.exit(-1);
         }
         
-        
-        // prepare shutdown signal
-        File pid = new File(dataFile, "loklak.pid");
-        if (pid.exists()) pid.deleteOnExit(); // thats a signal for the stop.sh script that loklak has terminated
-        
         // initialize all data        
-        DAO.init(config, data);
+        try{
+        	DAO.init(config, data);
+        } catch(Exception e){
+        	Log.getLog().warn(e.getMessage());
+        	Log.getLog().warn("Could not initialize DAO. Exiting.");
+        	System.exit(-1);
+        }
         
         // init the http server
         try {
@@ -226,7 +240,6 @@ public class LoklakServer {
 			System.exit(-1);
 		}
         setServerHandler(dataFile);
-        
         
         LoklakServer.server.start();
         LoklakServer.caretaker = new Caretaker();
@@ -242,6 +255,13 @@ public class LoklakServer {
         
         // if this is not headless, we can open a browser automatically
         Browser.openBrowser("http://localhost:" + httpPort + "/");
+        
+        Log.getLog().info("finished startup!");
+        
+        // signal to startup script
+        writer = new FileWriter(startup);
+		writer.write("done".toString());
+		writer.close();
         
         // ** services are now running **
         
@@ -466,16 +486,16 @@ public class LoklakServer {
         }
         
         // Setup IPAccessHandler for blacklists
+        IPAccessHandler ipaccess = new IPAccessHandler();
         String blacklist = DAO.getConfig("server.blacklist", "");
         if (blacklist != null && blacklist.length() > 0) try {
-            IPAccessHandler ipaccess = new IPAccessHandler();
+            ipaccess = new IPAccessHandler();
             String[] bx = blacklist.split(",");
             ipaccess.setBlack(bx);
             for (String b: bx) {
                 int p = b.indexOf('|');
                 blacklistedHosts.add(p < 0 ? b : b.substring(0, p));
             }
-            LoklakServer.server.setHandler(ipaccess);
         } catch (IllegalArgumentException e) {
             Log.getLog().warn("bad blacklist:" + blacklist, e);
         }
@@ -568,8 +588,9 @@ public class LoklakServer {
         gzipHandler.setHandler(handlerlist2);
         
         securityHandler.setHandler(gzipHandler);
+        ipaccess.setHandler(securityHandler);
         
-        LoklakServer.server.setHandler(securityHandler);
+        LoklakServer.server.setHandler(ipaccess);
     }
     
     private static void checkServerPorts(int httpPort, int httpsPort) throws IOException{

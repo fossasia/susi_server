@@ -76,7 +76,6 @@ import org.loklak.tools.storage.JsonReader;
 import org.loklak.tools.storage.JsonRepository;
 import org.loklak.tools.storage.JsonStreamReader;
 import org.loklak.tools.storage.JsonFactory;
-import org.loklak.tools.storage.JsonFile;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
@@ -152,7 +151,7 @@ public class DAO {
      * initialize the DAO
      * @param datadir the path to the data directory
      */
-    public static void init(Map<String, String> configMap, Path dataPath) {
+    public static void init(Map<String, String> configMap, Path dataPath) throws Exception{
 
         log("initializing loklak DAO");
         
@@ -161,226 +160,216 @@ public class DAO {
         bin_dir = new File("bin");
         html_dir = new File("html");
         
-        try {
-			public_settings = new JsonFile(new File("data/settings/public.settings.json"));
-			File private_file = new File("data/settings/private.settings.json");
-			private_settings = new JsonFile(private_file);
-			OS.protectPath(private_file.toPath());
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+		public_settings = new JsonFile(new File("data/settings/public.settings.json"));
+		File private_file = new File("data/settings/private.settings.json");
+		private_settings = new JsonFile(private_file);
+		OS.protectPath(private_file.toPath());
         
         File datadir = dataPath.toFile();
-        try {
-            // check if elasticsearch shall be accessed as external cluster
-            String transport = configMap.get("elasticsearch_transport.enabled");
-            if (transport != null && "true".equals(transport)) {
-                String cluster_name = configMap.get("elasticsearch_transport.cluster.name");
-                String transport_addresses_string = configMap.get("elasticsearch_transport.addresses");
-                if (transport_addresses_string != null && transport_addresses_string.length() > 0) {
-                    String[] transport_addresses = transport_addresses_string.split(",");
-                    elasticsearch_client = new ElasticsearchClient(transport_addresses, cluster_name);
-                }
-            } else {
-                // use all config attributes with a key starting with "elasticsearch." to set elasticsearch settings
-                Settings.Builder settings = Settings.builder();
-                for (Map.Entry<String, String> entry: config.entrySet()) {
-                    String key = entry.getKey();
-                    if (key.startsWith("elasticsearch.")) settings.put(key.substring(14), entry.getValue());
-                }
-                // patch the home path
-                settings.put("path.home", datadir.getAbsolutePath());
-                settings.put("path.data", datadir.getAbsolutePath());
-                settings.build();
-                
-                // start elasticsearch
-                elasticsearch_client = new ElasticsearchClient(settings);
+        // check if elasticsearch shall be accessed as external cluster
+        String transport = configMap.get("elasticsearch_transport.enabled");
+        if (transport != null && "true".equals(transport)) {
+            String cluster_name = configMap.get("elasticsearch_transport.cluster.name");
+            String transport_addresses_string = configMap.get("elasticsearch_transport.addresses");
+            if (transport_addresses_string != null && transport_addresses_string.length() > 0) {
+                String[] transport_addresses = transport_addresses_string.split(",");
+                elasticsearch_client = new ElasticsearchClient(transport_addresses, cluster_name);
             }
-            
-            // open AAA storage
-            Path settings_dir = dataPath.resolve("settings");
-            settings_dir.toFile().mkdirs();
-            Path authentication_path = settings_dir.resolve("authentication.json");
-            authentication = new JsonFile(authentication_path.toFile());
-            OS.protectPath(authentication_path);
-            Path authorization_path = settings_dir.resolve("authorization.json");
-            authorization = new JsonFile(authorization_path.toFile());
-            OS.protectPath(authorization_path);
-            Path accounting_path = settings_dir.resolve("accounting.json");
-            accounting_persistent = new JsonFile(accounting_path.toFile());
-            OS.protectPath(accounting_path);
-            
-            // open index
-            Path index_dir = dataPath.resolve("index");
-            if (index_dir.toFile().exists()) OS.protectPath(index_dir); // no other permissions to this path
-
-            // define the index factories
-            messages = new MessageFactory(elasticsearch_client, IndexName.messages.name(), CACHE_MAXSIZE, EXIST_MAXSIZE);
-            users = new UserFactory(elasticsearch_client, IndexName.users.name(), CACHE_MAXSIZE, EXIST_MAXSIZE);
-            accounts = new AccountFactory(elasticsearch_client, IndexName.accounts.name(), CACHE_MAXSIZE, EXIST_MAXSIZE);
-            queries = new QueryFactory(elasticsearch_client, IndexName.queries.name(), CACHE_MAXSIZE, EXIST_MAXSIZE);
-            importProfiles = new ImportProfileFactory(elasticsearch_client, IndexName.import_profiles.name(), CACHE_MAXSIZE, EXIST_MAXSIZE);
-
-            // create indices and set mapping (that shows how 'elastic' elasticsearch is: it's always good to define data types)
-            File mappingsDir = new File(new File(conf_dir, "elasticsearch"), "mappings");
-            int shards = Integer.parseInt(configMap.get("elasticsearch.index.number_of_shards"));
-            int replicas = Integer.parseInt(configMap.get("elasticsearch.index.number_of_replicas"));
-            for (IndexName index: IndexName.values()) {
-                log("initializing index '" + index.name() + "'...");
-            	try {
-            	    elasticsearch_client.createIndexIfNotExists(index.name(), shards, replicas);
-            	} catch (Throwable e) {
-            		e.printStackTrace();
-            	}
-                try {
-                    elasticsearch_client.setMapping(index.name(), new File(mappingsDir, index.name() + ".json"));
-                } catch (Throwable e) {
-                    e.printStackTrace();
-                }
+        } else {
+            // use all config attributes with a key starting with "elasticsearch." to set elasticsearch settings
+            Settings.Builder settings = Settings.builder();
+            for (Map.Entry<String, String> entry: config.entrySet()) {
+                String key = entry.getKey();
+                if (key.startsWith("elasticsearch.")) settings.put(key.substring(14), entry.getValue());
             }
-            // elasticsearch will probably take some time until it is started up. We do some other stuff meanwhile..
-
-            // create and document the data dump dir
-            assets = new File(datadir, "assets");
-            external_data = new File(datadir, "external");
-            dictionaries = new File(external_data, "dictionaries");
-            dictionaries.mkdirs();
-
-            // create message dump dir
-            String message_dump_readme =
-                "This directory contains dump files for messages which arrived the platform.\n" +
-                "There are three subdirectories for dump files:\n" +
-                "- own:      for messages received with this peer. There is one file for each month.\n" +
-                "- import:   hand-over directory for message dumps to be imported. Drop dumps here and they are imported.\n" +
-                "- imported: dump files which had been processed from the import directory are moved here.\n" +
-                "You can import dump files from other peers by dropping them into the import directory.\n" +
-                "Each dump file must start with the prefix '" + MESSAGE_DUMP_FILE_PREFIX + "' to be recognized.\n";
-            message_dump_dir = dataPath.resolve("dump");
-            message_dump = new JsonRepository(message_dump_dir.toFile(), MESSAGE_DUMP_FILE_PREFIX, message_dump_readme, JsonRepository.COMPRESSED_MODE, true, Runtime.getRuntime().availableProcessors());
+            // patch the home path
+            settings.put("path.home", datadir.getAbsolutePath());
+            settings.put("path.data", datadir.getAbsolutePath());
+            settings.build();
             
-            account_dump_dir = dataPath.resolve("accounts");
-            account_dump_dir.toFile().mkdirs();
-            OS.protectPath(account_dump_dir); // no other permissions to this path
-            account_dump = new JsonRepository(account_dump_dir.toFile(), ACCOUNT_DUMP_FILE_PREFIX, null, JsonRepository.REWRITABLE_MODE, false, Runtime.getRuntime().availableProcessors());
-
-            File user_dump_dir = new File(datadir, "accounts");
-            user_dump_dir.mkdirs();
-            user_dump = new JsonDataset(
-                    user_dump_dir,USER_DUMP_FILE_PREFIX,
-                    new JsonDataset.Column[]{new JsonDataset.Column("id_str", false), new JsonDataset.Column("screen_name", true)},
-                    "retrieval_date", DateParser.PATTERN_ISO8601MILLIS,
-                    JsonRepository.REWRITABLE_MODE, false, Integer.MAX_VALUE);
-            followers_dump = new JsonDataset(
-                    user_dump_dir, FOLLOWERS_DUMP_FILE_PREFIX,
-                    new JsonDataset.Column[]{new JsonDataset.Column("screen_name", true)},
-                    "retrieval_date", DateParser.PATTERN_ISO8601MILLIS,
-                    JsonRepository.REWRITABLE_MODE, false, Integer.MAX_VALUE);
-            following_dump = new JsonDataset(
-                    user_dump_dir, FOLLOWING_DUMP_FILE_PREFIX,
-                    new JsonDataset.Column[]{new JsonDataset.Column("screen_name", true)},
-                    "retrieval_date", DateParser.PATTERN_ISO8601MILLIS,
-                    JsonRepository.REWRITABLE_MODE, false, Integer.MAX_VALUE);
-            
-            Path log_dump_dir = dataPath.resolve("log");
-            log_dump_dir.toFile().mkdirs();
-            OS.protectPath(log_dump_dir); // no other permissions to this path
-            access = new AccessTracker(log_dump_dir.toFile(), ACCESS_DUMP_FILE_PREFIX, 60000, 3000);
-            access.start(); // start monitor
-
-	        import_profile_dump_dir = dataPath.resolve("import-profiles");
-            import_profile_dump = new JsonRepository(import_profile_dump_dir.toFile(), IMPORT_PROFILE_FILE_PREFIX, null, JsonRepository.COMPRESSED_MODE, false, Runtime.getRuntime().availableProcessors());
-
-            // load schema folder
-            conv_schema_dir = new File("conf/conversion");
-            schema_dir = new File("conf/schema");            
-
-            // load dictionaries if they are embedded here
-            // read the file allCountries.zip from http://download.geonames.org/export/dump/allCountries.zip
-            //File allCountries = new File(dictionaries, "allCountries.zip");
-            File cities1000 = new File(dictionaries, "cities1000.zip");
-            if (!cities1000.exists()) {
-                // download this file
-                ClientConnection.download("http://download.geonames.org/export/dump/cities1000.zip", cities1000);
-            }
-            
-            if (cities1000.exists()) {
-                geoNames = new GeoNames(cities1000, new File(conf_dir, "iso3166.json"), 1);
-            } else {
-                geoNames = null;
-            }
-            
-            // finally wait for healthy status of elasticsearch shards
-            ClusterHealthStatus required_status = ClusterHealthStatus.fromString(config.get("elasticsearch_requiredClusterHealthStatus"));
-            boolean ok;
-            do {
-                log("Waiting for elasticsearch " + required_status.name() + " status");
-                ok = elasticsearch_client.wait_ready(60000l, required_status);
-            } while (!ok);
-            /**
-            do {
-                log("Waiting for elasticsearch green status");
-                health = elasticsearch_client.admin().cluster().prepareHealth().setWaitForGreenStatus().execute().actionGet();
-            } while (health.isTimedOut());
-            **/
-            log("elasticsearch has started up!");
-
-            // start the classifier
-            new Thread(){
-                public void run() {
-                    log("initializing the classifier...");
-                    try {
-                        Classifier.init(10000, 1000);
-                    } catch (Throwable ee) {
-                        ee.printStackTrace();
-                    }
-                    log("classifier initialized!");
-                }
-            }.start();
-
-            log("initializing queries...");
-            File harvestingPath = new File(datadir, "queries");
-            if (!harvestingPath.exists()) harvestingPath.mkdirs();
-            String[] list = harvestingPath.list();
-            for (String queryfile: list) {
-                if (queryfile.startsWith(".") || queryfile.endsWith("~")) continue;
-                try {
-                    BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(new File(harvestingPath, queryfile))));
-                    String line;
-                    List<IndexEntry<QueryEntry>> bulkEntries = new ArrayList<>();
-                    while ((line = reader.readLine()) != null) {
-                        line = line.trim().toLowerCase();
-                        if (line.length() == 0) continue;
-                        if (line.charAt(0) <= '9') {
-                            // truncate statistic
-                            int p = line.indexOf(' ');
-                            if (p < 0) continue;
-                            line = line.substring(p + 1).trim();
-                        }
-                        // write line into query database
-                        if (!existQuery(line)) {
-                            bulkEntries.add(
-                                new IndexEntry<QueryEntry>(
-                                    line,
-                                    SourceType.TWITTER.name(),
-                                    new QueryEntry(line, 0, 60000, SourceType.TWITTER, false))
-                            );
-                        }
-                        if (bulkEntries.size() > 1000) {
-                            queries.writeEntries(bulkEntries);
-                            bulkEntries.clear();
-                        }
-                    }
-                    queries.writeEntries(bulkEntries);
-                    reader.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-            log("queries initialized.");
-        } catch (Throwable e) {
-            e.printStackTrace();
+            // start elasticsearch
+            elasticsearch_client = new ElasticsearchClient(settings);
         }
-        log("finished startup!");
+        
+        // open AAA storage
+        Path settings_dir = dataPath.resolve("settings");
+        settings_dir.toFile().mkdirs();
+        Path authentication_path = settings_dir.resolve("authentication.json");
+        authentication = new JsonFile(authentication_path.toFile());
+        OS.protectPath(authentication_path);
+        Path authorization_path = settings_dir.resolve("authorization.json");
+        authorization = new JsonFile(authorization_path.toFile());
+        OS.protectPath(authorization_path);
+        
+        // open index
+        Path index_dir = dataPath.resolve("index");
+        if (index_dir.toFile().exists()) OS.protectPath(index_dir); // no other permissions to this path
+
+        // define the index factories
+        messages = new MessageFactory(elasticsearch_client, IndexName.messages.name(), CACHE_MAXSIZE, EXIST_MAXSIZE);
+        users = new UserFactory(elasticsearch_client, IndexName.users.name(), CACHE_MAXSIZE, EXIST_MAXSIZE);
+        accounts = new AccountFactory(elasticsearch_client, IndexName.accounts.name(), CACHE_MAXSIZE, EXIST_MAXSIZE);
+        queries = new QueryFactory(elasticsearch_client, IndexName.queries.name(), CACHE_MAXSIZE, EXIST_MAXSIZE);
+        importProfiles = new ImportProfileFactory(elasticsearch_client, IndexName.import_profiles.name(), CACHE_MAXSIZE, EXIST_MAXSIZE);
+
+        // create indices and set mapping (that shows how 'elastic' elasticsearch is: it's always good to define data types)
+        File mappingsDir = new File(new File(conf_dir, "elasticsearch"), "mappings");
+        int shards = Integer.parseInt(configMap.get("elasticsearch.index.number_of_shards"));
+        int replicas = Integer.parseInt(configMap.get("elasticsearch.index.number_of_replicas"));
+        for (IndexName index: IndexName.values()) {
+            log("initializing index '" + index.name() + "'...");
+        	try {
+        	    elasticsearch_client.createIndexIfNotExists(index.name(), shards, replicas);
+        	} catch (Throwable e) {
+        		e.printStackTrace();
+        	}
+            try {
+                elasticsearch_client.setMapping(index.name(), new File(mappingsDir, index.name() + ".json"));
+            } catch (Throwable e) {
+                e.printStackTrace();
+            }
+        }
+        // elasticsearch will probably take some time until it is started up. We do some other stuff meanwhile..
+
+        // create and document the data dump dir
+        assets = new File(datadir, "assets");
+        external_data = new File(datadir, "external");
+        dictionaries = new File(external_data, "dictionaries");
+        dictionaries.mkdirs();
+
+        // create message dump dir
+        String message_dump_readme =
+            "This directory contains dump files for messages which arrived the platform.\n" +
+            "There are three subdirectories for dump files:\n" +
+            "- own:      for messages received with this peer. There is one file for each month.\n" +
+            "- import:   hand-over directory for message dumps to be imported. Drop dumps here and they are imported.\n" +
+            "- imported: dump files which had been processed from the import directory are moved here.\n" +
+            "You can import dump files from other peers by dropping them into the import directory.\n" +
+            "Each dump file must start with the prefix '" + MESSAGE_DUMP_FILE_PREFIX + "' to be recognized.\n";
+        message_dump_dir = dataPath.resolve("dump");
+        message_dump = new JsonRepository(message_dump_dir.toFile(), MESSAGE_DUMP_FILE_PREFIX, message_dump_readme, JsonRepository.COMPRESSED_MODE, true, Runtime.getRuntime().availableProcessors());
+        
+        account_dump_dir = dataPath.resolve("accounts");
+        account_dump_dir.toFile().mkdirs();
+        OS.protectPath(account_dump_dir); // no other permissions to this path
+        account_dump = new JsonRepository(account_dump_dir.toFile(), ACCOUNT_DUMP_FILE_PREFIX, null, JsonRepository.REWRITABLE_MODE, false, Runtime.getRuntime().availableProcessors());
+
+        File user_dump_dir = new File(datadir, "accounts");
+        user_dump_dir.mkdirs();
+        user_dump = new JsonDataset(
+                user_dump_dir,USER_DUMP_FILE_PREFIX,
+                new JsonDataset.Column[]{new JsonDataset.Column("id_str", false), new JsonDataset.Column("screen_name", true)},
+                "retrieval_date", DateParser.PATTERN_ISO8601MILLIS,
+                JsonRepository.REWRITABLE_MODE, false, Integer.MAX_VALUE);
+        followers_dump = new JsonDataset(
+                user_dump_dir, FOLLOWERS_DUMP_FILE_PREFIX,
+                new JsonDataset.Column[]{new JsonDataset.Column("screen_name", true)},
+                "retrieval_date", DateParser.PATTERN_ISO8601MILLIS,
+                JsonRepository.REWRITABLE_MODE, false, Integer.MAX_VALUE);
+        following_dump = new JsonDataset(
+                user_dump_dir, FOLLOWING_DUMP_FILE_PREFIX,
+                new JsonDataset.Column[]{new JsonDataset.Column("screen_name", true)},
+                "retrieval_date", DateParser.PATTERN_ISO8601MILLIS,
+                JsonRepository.REWRITABLE_MODE, false, Integer.MAX_VALUE);
+        
+        Path log_dump_dir = dataPath.resolve("log");
+        log_dump_dir.toFile().mkdirs();
+        OS.protectPath(log_dump_dir); // no other permissions to this path
+        access = new AccessTracker(log_dump_dir.toFile(), ACCESS_DUMP_FILE_PREFIX, 60000, 3000);
+        access.start(); // start monitor
+
+        import_profile_dump_dir = dataPath.resolve("import-profiles");
+        import_profile_dump = new JsonRepository(import_profile_dump_dir.toFile(), IMPORT_PROFILE_FILE_PREFIX, null, JsonRepository.COMPRESSED_MODE, false, Runtime.getRuntime().availableProcessors());
+
+        // load schema folder
+        conv_schema_dir = new File("conf/conversion");
+        schema_dir = new File("conf/schema");            
+
+        // load dictionaries if they are embedded here
+        // read the file allCountries.zip from http://download.geonames.org/export/dump/allCountries.zip
+        //File allCountries = new File(dictionaries, "allCountries.zip");
+        File cities1000 = new File(dictionaries, "cities1000.zip");
+        if (!cities1000.exists()) {
+            // download this file
+            ClientConnection.download("http://download.geonames.org/export/dump/cities1000.zip", cities1000);
+        }
+        
+        if (cities1000.exists()) {
+            geoNames = new GeoNames(cities1000, new File(conf_dir, "iso3166.json"), 1);
+        } else {
+            geoNames = null;
+        }
+        
+        // finally wait for healthy status of elasticsearch shards
+        ClusterHealthStatus required_status = ClusterHealthStatus.fromString(config.get("elasticsearch_requiredClusterHealthStatus"));
+        boolean ok;
+        do {
+            log("Waiting for elasticsearch " + required_status.name() + " status");
+            ok = elasticsearch_client.wait_ready(60000l, required_status);
+        } while (!ok);
+        /**
+        do {
+            log("Waiting for elasticsearch green status");
+            health = elasticsearch_client.admin().cluster().prepareHealth().setWaitForGreenStatus().execute().actionGet();
+        } while (health.isTimedOut());
+        **/
+        log("elasticsearch has started up!");
+
+        // start the classifier
+        new Thread(){
+            public void run() {
+                log("initializing the classifier...");
+                try {
+                    Classifier.init(10000, 1000);
+                } catch (Throwable ee) {
+                    ee.printStackTrace();
+                }
+                log("classifier initialized!");
+            }
+        }.start();
+
+        log("initializing queries...");
+        File harvestingPath = new File(datadir, "queries");
+        if (!harvestingPath.exists()) harvestingPath.mkdirs();
+        String[] list = harvestingPath.list();
+        for (String queryfile: list) {
+            if (queryfile.startsWith(".") || queryfile.endsWith("~")) continue;
+            try {
+                BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(new File(harvestingPath, queryfile))));
+                String line;
+                List<IndexEntry<QueryEntry>> bulkEntries = new ArrayList<>();
+                while ((line = reader.readLine()) != null) {
+                    line = line.trim().toLowerCase();
+                    if (line.length() == 0) continue;
+                    if (line.charAt(0) <= '9') {
+                        // truncate statistic
+                        int p = line.indexOf(' ');
+                        if (p < 0) continue;
+                        line = line.substring(p + 1).trim();
+                    }
+                    // write line into query database
+                    if (!existQuery(line)) {
+                        bulkEntries.add(
+                            new IndexEntry<QueryEntry>(
+                                line,
+                                SourceType.TWITTER.name(),
+                                new QueryEntry(line, 0, 60000, SourceType.TWITTER, false))
+                        );
+                    }
+                    if (bulkEntries.size() > 1000) {
+                        queries.writeEntries(bulkEntries);
+                        bulkEntries.clear();
+                    }
+                }
+                queries.writeEntries(bulkEntries);
+                reader.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        log("queries initialized.");
+        
+        log("finished DAO initialization");
     }
     
     public static boolean wait_ready(long maxtimemillis) {
