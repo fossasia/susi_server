@@ -119,7 +119,7 @@ public abstract class AbstractAPIHandler extends HttpServlet implements APIHandl
         
         JSONObject authorization_obj = DAO.authorization.has(user_id) ? DAO.authorization.getJSONObject(user_id) : DAO.authorization.put(user_id, new JSONObject()).getJSONObject(user_id);
 
-        JSONObject accounting_persistent_obj = DAO.accounting_persistent.has(user_id) ? DAO.accounting_persistent.getJSONObject(anon_id) : DAO.accounting_persistent.put(user_id, new JSONObject()).getJSONObject(user_id);
+        //JSONObject accounting_persistent_obj = DAO.accounting_persistent.has(user_id) ? DAO.accounting_persistent.getJSONObject(anon_id) : DAO.accounting_persistent.put(user_id, new JSONObject()).getJSONObject(user_id);
         Accounting accounting_temporary = DAO.accounting_temporary.get(user_id);
         if (accounting_temporary == null) {accounting_temporary = new Accounting(); DAO.accounting_temporary.put(user_id, accounting_temporary);}
         
