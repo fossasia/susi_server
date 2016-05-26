@@ -31,9 +31,14 @@ import org.json.JSONObject;
 public class Authorization extends JSONObject {
 
     private Accounting accounting;
-    
+
     public Authorization() {
         super();
+        this.accounting = null;
+    }
+    
+    public Authorization(JSONObject json) {
+        super(json);
         this.accounting = null;
     }
     

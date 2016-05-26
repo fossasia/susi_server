@@ -139,9 +139,10 @@ public class DAO {
     public static Peers peers = new Peers();
     
     // AAA Schema for server usage
-    private static Map<String, Accounting> accounting = new HashMap<>();
     public static JsonFile authentication;
     public static JsonFile authorization;
+    public static JsonFile accounting_persistent;
+    public static Map<String, Accounting> accounting_temporary = new HashMap<>();
     
     public static enum IndexName {
     	queries, messages, users, accounts, import_profiles;
@@ -205,6 +206,9 @@ public class DAO {
             Path authorization_path = settings_dir.resolve("authorization.json");
             authorization = new JsonFile(authorization_path.toFile());
             OS.protectPath(authorization_path);
+            Path accounting_path = settings_dir.resolve("accounting.json");
+            accounting_persistent = new JsonFile(accounting_path.toFile());
+            OS.protectPath(accounting_path);
             
             // open index
             Path index_dir = dataPath.resolve("index");

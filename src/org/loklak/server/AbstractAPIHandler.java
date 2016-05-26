@@ -28,6 +28,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.json.JSONObject;
+import org.loklak.data.DAO;
 import org.loklak.http.ClientConnection;
 import org.loklak.http.RemoteAccess;
 import org.loklak.tools.UTF8;
@@ -92,46 +93,60 @@ public abstract class AbstractAPIHandler extends HttpServlet implements APIHandl
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         Query post = RemoteAccess.evaluate(request);
-        APIServiceLevel serviceLevel = getDefaultServiceLevel();
-        if (post.isDoS_blackout()) {response.sendError(503, "your request frequency is too high"); return;} // DoS protection
-        if (serviceLevel == APIServiceLevel.ADMIN && !post.isLocalhostAccess()) {response.sendError(503, "access only allowed from localhost, your request comes from " + post.getClientHost()); return;} // danger! do not remove this!
         process(request, response, post);
     }
     
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        Query post = RemoteAccess.evaluate(request);
-        APIServiceLevel serviceLevel = getDefaultServiceLevel();
-        if (post.isDoS_blackout()) {response.sendError(503, "your request frequency is too high"); return;} // DoS protection
-        if (serviceLevel == APIServiceLevel.ADMIN && !post.isLocalhostAccess()) {response.sendError(503, "access only allowed from localhost, your request comes from " + post.getClientHost()); return;} // danger! do not remove this!
-        post.initPOST(RemoteAccess.getPostMap(request));
-        process(request, response, post);
+        Query query = RemoteAccess.evaluate(request);
+        query.initPOST(RemoteAccess.getPostMap(request));
+        process(request, response, query);
     }
     
-    private void process(HttpServletRequest request, HttpServletResponse response, Query post) throws ServletException, IOException {
+    private void process(HttpServletRequest request, HttpServletResponse response, Query query) throws ServletException, IOException {
         
-        String callback = post.get("callback", "");
+        // basic protection
+        APIServiceLevel serviceLevel = getDefaultServiceLevel();
+        if (query.isDoS_blackout()) {response.sendError(503, "your request frequency is too high"); return;} // DoS protection
+        if (serviceLevel == APIServiceLevel.ADMIN && !query.isLocalhostAccess()) {response.sendError(503, "access only allowed from localhost, your request comes from " + query.getClientHost()); return;} // danger! do not remove this!
+         
+        // user authentication
+        String host = request.getRemoteHost();
+        String anon_id = "host:" + host;
+        
+        JSONObject authentication_obj = DAO.authentication.has(anon_id) ? DAO.authentication.getJSONObject(anon_id) : DAO.authentication.put(anon_id, new JSONObject()).getJSONObject(anon_id);
+        String user_id = authentication_obj.has("id") ? authentication_obj.getString("id") : authentication_obj.put("id", "anon@" + host).getString("id");
+        
+        JSONObject authorization_obj = DAO.authorization.has(user_id) ? DAO.authorization.getJSONObject(user_id) : DAO.authorization.put(user_id, new JSONObject()).getJSONObject(user_id);
+
+        JSONObject accounting_persistent_obj = DAO.accounting_persistent.has(user_id) ? DAO.accounting_persistent.getJSONObject(anon_id) : DAO.accounting_persistent.put(user_id, new JSONObject()).getJSONObject(user_id);
+        Accounting accounting_temporary = DAO.accounting_temporary.get(user_id);
+        if (accounting_temporary == null) {accounting_temporary = new Accounting(); DAO.accounting_temporary.put(user_id, accounting_temporary);}
+        
+        // extract standard query attributes
+        String callback = query.get("callback", "");
         boolean jsonp = callback.length() > 0;
-        boolean minified = post.get("minified", false);
+        boolean minified = query.get("minified", false);
         
-        Authorization rights = new Authorization(); // dummy value TODO: read from account database
+        Authorization rights = new Authorization(authorization_obj);
+        rights.setAccounting(accounting_temporary);
         
         try {
-            JSONObject json = serviceImpl(post, rights);
+            JSONObject json = serviceImpl(query, rights);
             if  (json == null) {
                 response.sendError(400, "your request does not contain the required data");
                 return;
              }
     
             // write json
-            post.setResponse(response, "application/javascript");
+            query.setResponse(response, "application/javascript");
             response.setCharacterEncoding("UTF-8");
             PrintWriter sos = response.getWriter();
             if (jsonp) sos.print(callback + "(");
             sos.print(json.toString(minified ? 0 : 2));
             if (jsonp) sos.println(");");
             sos.println();
-            post.finalize();
+            query.finalize();
         } catch (APIException e) {
             response.sendError(e.getStatusCode(), e.getMessage());
             return;

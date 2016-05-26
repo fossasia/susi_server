@@ -29,5 +29,9 @@ public class Authentication extends JSONObject {
     public Authentication() {
         super();
     }
+    
+    public Authentication(JSONObject json) {
+        super(json);
+    }
 
 }
