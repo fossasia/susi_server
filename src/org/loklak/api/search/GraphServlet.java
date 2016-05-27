@@ -1,6 +1,6 @@
 /**
- *  PeersServlet
- *  Copyright 22.02.2015 by Michael Peter Christen, @0rb1t3r
+ *  GraphServlet
+ *  Copyright 14.10.2015 by Michael Peter Christen, @0rb1t3r
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -17,13 +17,10 @@
  *  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.loklak.api.server;
+package org.loklak.api.search;
 
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -32,12 +29,16 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.loklak.harvester.TwitterAPI;
 import org.loklak.http.RemoteAccess;
+import org.loklak.server.FileHandler;
 import org.loklak.server.Query;
 
-public class PeersServlet extends HttpServlet {
+import twitter4j.TwitterException;
 
-    private static final long serialVersionUID = -2577184683745091648L;
+public class GraphServlet extends HttpServlet {
+    
+    private static final long serialVersionUID = 8578478303032749879L;
 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
@@ -47,55 +48,48 @@ public class PeersServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         Query post = RemoteAccess.evaluate(request);
-        
+     
         // manage DoS
-        String path = request.getServletPath();
         if (post.isDoS_blackout()) {response.sendError(503, "your request frequency is too high"); return;}
-        String[] classes = post.get("classes", new String[0], ",");
-        if (classes.length == 0) classes = new String[]{"HelloServlet","SuggestServlet"};
-        Set<String> classcheck = new HashSet<>();
-        for (String c: classes) classcheck.add(c);
         
+        // parameters
         String callback = post.get("callback", "");
         boolean jsonp = callback != null && callback.length() > 0;
-        // String pingback = qm == null ? request.getParameter("pingback") : qm.get("pingback");
-        // pingback may be either filled with nothing, the term 'now' or the term 'later'
-
+        boolean minified = post.get("minified", false);
+        String[] screen_names = post.get("screen_name", "").split(",");
+        String followers = screen_names.length == 1 ? post.get("followers", "0") : "0";
+        String following = screen_names.length == 1 ? post.get("following", "0") : "0";
+        int maxFollowers = Integer.parseInt(followers);
+        int maxFollowing = Integer.parseInt(following);
+        
+        JSONArray twitterUserEntries = new JSONArray();
+        for (String screen_name: screen_names) {
+            try {
+                JSONObject twitterUserEntry = TwitterAPI.getUser(screen_name, false);
+                if (twitterUserEntry != null) twitterUserEntries.put(twitterUserEntry);
+            } catch (TwitterException e) {}
+        }
+        JSONObject topology = null;
+        try {topology = TwitterAPI.getNetwork(screen_names[0], maxFollowers, maxFollowing);} catch (TwitterException e) {}
+        
         post.setResponse(response, "application/javascript");
         
         // generate json
-        JSONObject json = new JSONObject(true);
-        JSONArray peers = new JSONArray();
-        json.put("peers", peers);
-        int count = 0;
-        for (Map.Entry<String, Map<String, RemoteAccess>> hmap: RemoteAccess.history.entrySet()) {
-            if (classcheck.contains(hmap.getKey())) {
-                JSONObject p = new JSONObject(true);
-                for (Map.Entry<String, RemoteAccess> peer: hmap.getValue().entrySet()) {
-                    p.put("class", hmap.getKey());
-                    p.put("host", peer.getKey());
-                    RemoteAccess remoteAccess = peer.getValue();
-                    p.put("port.http", remoteAccess.getLocalHTTPPort());
-                    p.put("port.https", remoteAccess.getLocalHTTPSPort());
-                    p.put("lastSeen", remoteAccess.getAccessTime());
-                    p.put("lastPath", remoteAccess.getLocalPath());
-                    p.put("peername", remoteAccess.getPeername());
-                    peers.put(p);
-                    count++;
-                }
-            }
-        }
-        json.put("count", count);
+        JSONObject m = new JSONObject(true);
+        m.put("edges", post.getClientHost());
 
+        if (twitterUserEntries.length() == 1) m.put("user", twitterUserEntries.iterator().next());
+        if (twitterUserEntries.length() > 1) m.put("users", twitterUserEntries);
+        if (topology != null) m.put("topology", topology);
+        
         // write json
+        FileHandler.setCaching(response, 10);
         response.setCharacterEncoding("UTF-8");
         PrintWriter sos = response.getWriter();
         if (jsonp) sos.print(callback + "(");
-        sos.print(json.toString(2));
+        sos.print(m.toString(minified ? 0 : 2));
         if (jsonp) sos.println(");");
         sos.println();
-
         post.finalize();
     }
-    
 }

@@ -16,7 +16,7 @@
  * along with this program in the file lgpl21.txt
  * If not, see <http://www.gnu.org/licenses/>.
  */
-package org.loklak.api.server.push;
+package org.loklak.api.iot;
 
 import org.json.JSONArray;
 import org.json.JSONObject;

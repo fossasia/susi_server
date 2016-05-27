@@ -17,7 +17,7 @@
  *  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.loklak.api.server;
+package org.loklak.api.admin;
 
 import java.io.IOException;
 

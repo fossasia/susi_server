@@ -1,4 +1,4 @@
-package org.loklak.api.server.push;
+package org.loklak.api.iot;
 
 import org.json.JSONArray;
 import org.json.JSONObject;

@@ -1,5 +1,5 @@
 /**
- * NodelistPushServlet
+ * OpenWifiMapPushServlet
  * Copyright 16.07.2015 by Dang Hai An, @zyzo
  * <p/>
  * This library is free software; you can redistribute it and/or
@@ -16,7 +16,8 @@
  * along with this program in the file lgpl21.txt
  * If not, see <http://www.gnu.org/licenses/>.
  */
-package org.loklak.api.server.push;
+
+package org.loklak.api.iot;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -24,48 +25,30 @@ import org.loklak.harvester.JsonFieldConverter;
 import org.loklak.harvester.JsonValidator;
 import org.loklak.objects.SourceType;
 
-import java.util.ArrayList;
-import java.util.List;
+public class OpenWifiMapPushServlet extends AbstractPushServlet {
 
-public class NodelistPushServlet extends AbstractPushServlet {
-
-    private static final long serialVersionUID = -7526015654376919340L;
+    private static final long serialVersionUID = -5983742254182146642L;
 
     @Override
     protected SourceType getSourceType() {
-        return SourceType.NODELIST;
+        return SourceType.OPENWIFIMAP;
     }
 
     @Override
     protected JsonValidator.JsonSchemaEnum getValidatorSchema() {
-        return JsonValidator.JsonSchemaEnum.NODELIST;
+        return JsonValidator.JsonSchemaEnum.OPENWIFIMAP;
     }
 
     @Override
     protected JsonFieldConverter.JsonConversionSchemaEnum getConversionSchema() {
-        return JsonFieldConverter.JsonConversionSchemaEnum.NODELIST_NODE;
+        return JsonFieldConverter.JsonConversionSchemaEnum.OPENWIFIMAP;
     }
 
     @Override
     protected JSONArray extractMessages(JSONObject data) {
-        return data.getJSONArray("nodes");
+        return data.getJSONArray("rows");
     }
 
     @Override
-    protected void customProcessing(JSONObject message) {
-        JSONObject location = (JSONObject) message.get("position");
-
-        final Double longitude = Double.parseDouble((String) location.get("long"));
-        final Double latitude = Double.parseDouble((String) location.get("lat"));
-        List<Double> location_point = new ArrayList<>();
-        location_point.add(longitude);
-        location_point.add(latitude);
-        message.put("location_point", location_point);
-        message.put("location_mark", location_point);
-
-        JSONObject user = new JSONObject(true);
-        user.put("screen_name", "freifunk_" + message.get("name"));
-        user.put("name", message.get("name"));
-        message.put("user", user);
-    }
+    protected void customProcessing(JSONObject message) {}
 }

@@ -33,7 +33,7 @@ import org.eclipse.jetty.util.log.Log;
 import org.elasticsearch.search.sort.SortOrder;
 import org.loklak.api.client.PushClient;
 import org.loklak.api.p2p.Hello;
-import org.loklak.api.server.SuggestServlet;
+import org.loklak.api.search.SuggestServlet;
 import org.loklak.data.DAO;
 import org.loklak.harvester.TwitterAPI;
 import org.loklak.objects.MessageEntry;
