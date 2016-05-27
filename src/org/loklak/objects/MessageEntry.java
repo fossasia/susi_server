@@ -406,7 +406,7 @@ public class MessageEntry extends AbstractObjectEntry implements ObjectEntry {
     }
     
     final static Pattern SPACEX_PATTERN = Pattern.compile("  +"); // two or more
-    final static Pattern URL_PATTERN = Pattern.compile("(?:\\b|^)(https?://.*?)(?:[) ]|$)"); // right boundary must be space since others may appear in urls
+    final static Pattern URL_PATTERN = Pattern.compile("(?:\\b|^)(https?://[-A-Za-z0-9+&@#/%?=~_()|!:,.;]*[-A-Za-z0-9+&@#/%=~_()|])"); // right boundary must be space or ) since others may appear in urls
     final static Pattern USER_PATTERN = Pattern.compile("(?:[ (]|^)(@..*?)(?:\\b|$)"); // left boundary must be space since the @ is itself a boundary
     final static Pattern HASHTAG_PATTERN = Pattern.compile("(?:[ (]|^)(#..*?)(?:\\b|$)"); // left boundary must be a space since the # is itself a boundary
 

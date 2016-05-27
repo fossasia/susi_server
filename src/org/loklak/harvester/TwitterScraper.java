@@ -223,6 +223,10 @@ public class TwitterScraper {
                 continue;
             }
             if ((p = input.indexOf("class=\"TweetTextSize")) > 0) {
+                // read until closing p tag to account for new lines in tweets
+                while (input.lastIndexOf("</p>") == -1){
+                  input = input + ' ' + br.readLine();
+                }
                 prop tweettext = new prop(input, p, null);
                 props.put("tweettext", tweettext);
                 continue;
@@ -369,10 +373,10 @@ public class TwitterScraper {
     }
     
 
-    final static Pattern hashtag_pattern = Pattern.compile("<a .*?href=\"(.*?)\".*?class=\"twitter-hashtag.*?\".*?><s>#</s><b>(.*?)</b></a>");
-    final static Pattern timeline_link_pattern = Pattern.compile("<a .*?href=\"(.*?)\".*?data-expanded-url=\"(.*?)\".*?twitter-timeline-link.*?title=\"(.*?)\".*?>.*?</a>");
-    final static Pattern timeline_embed_pattern = Pattern.compile("<a .*?href=\"(.*?)\".*?twitter-timeline-link.*?>pic.twitter.com/(.*?)</a>");
-    final static Pattern emoji_pattern = Pattern.compile("<img .*?class=\"twitter-emoji\".*?alt=\"(.*?)\".*?>");
+    final static Pattern hashtag_pattern = Pattern.compile("<a href=\"/hashtag/.*?\".*?class=\"twitter-hashtag.*?\".*?><s>#</s><b>(.*?)</b></a>");
+    final static Pattern timeline_link_pattern = Pattern.compile("<a href=\"https://(.*?)\".*? data-expanded-url=\"(.*?)\".*?twitter-timeline-link.*?title=\"(.*?)\".*?>.*?</a>");
+    final static Pattern timeline_embed_pattern = Pattern.compile("<a href=\"(https://t.co/\\w+)\" class=\"twitter-timeline-link.*?>pic.twitter.com/(.*?)</a>");
+    final static Pattern emoji_pattern = Pattern.compile("<img .*?class=\"Emoji Emoji--forText\".*?alt=\"(.*?)\".*?>");
     final static Pattern doublespace_pattern = Pattern.compile("  ");
     final static Pattern cleanup_pattern = Pattern.compile(
         "</?(s|b|strong)>|" +
@@ -501,7 +505,7 @@ public class TwitterScraper {
             try {
                 Matcher m = hashtag_pattern.matcher(text);
                 if (m.find()) {
-                    text = m.replaceFirst(" #" + m.group(2) + " "); // the extra spaces are needed because twitter removes them if the hashtag is followed with a link
+                    text = m.replaceFirst(" #" + m.group(1) + " "); // the extra spaces are needed because twitter removes them if the hashtag is followed with a link
                     continue;
                 }
             } catch (Throwable e) {
@@ -512,7 +516,7 @@ public class TwitterScraper {
                 Matcher m = timeline_link_pattern.matcher(text);
                 if (m.find()) {
                     String expanded = RedirectUnshortener.unShorten(m.group(2));
-                    text = m.replaceFirst(expanded);
+                    text = m.replaceFirst(" " + expanded);
                     continue;
                 }
             } catch (Throwable e) {
@@ -523,7 +527,7 @@ public class TwitterScraper {
                 Matcher m = timeline_embed_pattern.matcher(text);
                 if (m.find()) {
                     String shorturl = RedirectUnshortener.unShorten(m.group(2));
-                    text = m.replaceFirst("https://pic.twitter.com/" + shorturl + " ");
+                    text = m.replaceFirst(" https://pic.twitter.com/" + shorturl + " ");
                     continue;
                 }
             } catch (Throwable e) {
