@@ -20,7 +20,6 @@ package org.loklak.objects;
 
 import org.json.JSONObject;
 import org.loklak.harvester.HarvestingFrequency;
-import org.loklak.harvester.SourceType;
 
 import java.net.MalformedURLException;
 import java.net.URL;

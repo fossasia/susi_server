@@ -22,7 +22,6 @@ package org.loklak.objects;
 import java.io.IOException;
 import java.util.Date;
 import org.json.JSONObject;
-import org.loklak.harvester.SourceType;
 
 public class AccountEntry extends AbstractObjectEntry implements ObjectEntry {
 

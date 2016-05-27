@@ -22,9 +22,9 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.loklak.data.DAO;
-import org.loklak.harvester.SourceType;
 import org.loklak.http.RemoteAccess;
 import org.loklak.objects.ImportProfileEntry;
+import org.loklak.objects.SourceType;
 import org.loklak.objects.Timeline;
 import org.loklak.server.Query;
 

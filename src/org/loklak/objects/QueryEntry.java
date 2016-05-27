@@ -42,7 +42,6 @@ import org.loklak.data.Classifier;
 import org.loklak.data.DAO;
 import org.loklak.geo.GeoLocation;
 import org.loklak.geo.GeoMark;
-import org.loklak.harvester.SourceType;
 import org.loklak.tools.DateParser;
 
 import com.google.common.collect.HashMultimap;

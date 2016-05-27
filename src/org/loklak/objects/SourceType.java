@@ -17,7 +17,7 @@
  *  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.loklak.harvester;
+package org.loklak.objects;
 
 public enum SourceType {
 

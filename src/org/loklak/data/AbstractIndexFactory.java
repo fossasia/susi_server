@@ -29,9 +29,9 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
 
 import org.json.JSONObject;
-import org.loklak.harvester.SourceType;
 import org.loklak.objects.AbstractObjectEntry;
 import org.loklak.objects.ObjectEntry;
+import org.loklak.objects.SourceType;
 import org.loklak.tools.CacheMap;
 import org.loklak.tools.CacheSet;
 import org.loklak.tools.CacheStats;

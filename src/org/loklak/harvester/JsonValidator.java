@@ -27,6 +27,7 @@ import com.github.fge.jsonschema.core.report.ProcessingReport;
 import com.github.fge.jsonschema.main.JsonSchema;
 import com.github.fge.jsonschema.main.JsonSchemaFactory;
 import org.loklak.data.DAO;
+import org.loklak.objects.SourceType;
 
 import java.io.IOException;
 

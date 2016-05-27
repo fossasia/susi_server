@@ -24,9 +24,9 @@ import com.github.fge.jsonschema.core.report.ProcessingReport;
 import org.json.JSONObject;
 import org.loklak.data.DAO;
 import org.loklak.harvester.JsonValidator;
-import org.loklak.harvester.SourceType;
 import org.loklak.http.ClientConnection;
 import org.loklak.http.RemoteAccess;
+import org.loklak.objects.SourceType;
 import org.loklak.server.Query;
 
 import javax.servlet.ServletException;

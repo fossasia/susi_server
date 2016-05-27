@@ -37,11 +37,11 @@ import javax.servlet.http.HttpServletResponse;
 import org.elasticsearch.search.sort.SortOrder;
 import org.json.JSONObject;
 import org.loklak.data.DAO;
-import org.loklak.harvester.SourceType;
 import org.loklak.http.RemoteAccess;
 import org.loklak.objects.AbstractObjectEntry;
 import org.loklak.objects.QueryEntry;
 import org.loklak.objects.ResultList;
+import org.loklak.objects.SourceType;
 import org.loklak.server.Query;
 
 /*

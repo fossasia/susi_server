@@ -38,7 +38,6 @@ import org.loklak.data.Classifier.Category;
 import org.loklak.data.Classifier.Context;
 import org.loklak.geo.GeoMark;
 import org.loklak.geo.LocationSource;
-import org.loklak.harvester.SourceType;
 import org.loklak.objects.QueryEntry.PlaceContext;
 import org.loklak.tools.bayes.Classification;
 

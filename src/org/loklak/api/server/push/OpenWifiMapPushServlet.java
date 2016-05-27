@@ -23,7 +23,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.loklak.harvester.JsonFieldConverter;
 import org.loklak.harvester.JsonValidator;
-import org.loklak.harvester.SourceType;
+import org.loklak.objects.SourceType;
 
 public class OpenWifiMapPushServlet extends AbstractPushServlet {
 

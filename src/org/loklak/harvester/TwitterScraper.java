@@ -48,6 +48,7 @@ import org.loklak.QueuedIndexing;
 import org.loklak.data.DAO;
 import org.loklak.http.ClientConnection;
 import org.loklak.objects.MessageEntry;
+import org.loklak.objects.SourceType;
 import org.loklak.objects.Timeline;
 import org.loklak.objects.UserEntry;
 

@@ -24,8 +24,8 @@ import java.util.Collection;
 import java.util.Set;
 
 import org.json.JSONObject;
-import org.loklak.harvester.SourceType;
 import org.loklak.objects.ObjectEntry;
+import org.loklak.objects.SourceType;
 
 public interface IndexFactory<Entry extends ObjectEntry> {
 
