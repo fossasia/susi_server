@@ -2,6 +2,7 @@ package org.loklak.api.cms;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.loklak.data.DAO;
 import org.loklak.server.APIHandler;
 import org.loklak.server.APIServiceLevel;
 import org.loklak.server.AbstractAPIHandler;
@@ -30,19 +31,24 @@ public class TopMenu extends AbstractAPIHandler implements APIHandler {
     
     @Override
     public JSONObject serviceImpl(Query call, Authorization rights) {
-        JSONObject json = new JSONObject(true)
-        .put("items", new JSONArray()
+        
+        int limited_count = (int) DAO.getConfig("download.limited.count", (long) Integer.MAX_VALUE);
+    
+        JSONObject json = new JSONObject(true);
+        JSONArray topmenu = new JSONArray()
             .put(new JSONObject().put("Home", "index.html"))
             .put(new JSONObject().put("About", "about.html"))
             .put(new JSONObject().put("Showcase", "showcase.html"))
             .put(new JSONObject().put("Architecture", "architecture.html"))
             .put(new JSONObject().put("Download", "download.html"))
             .put(new JSONObject().put("Tutorials", "tutorials.html"))
-            .put(new JSONObject().put("API", "api.html"))
-            .put(new JSONObject().put("Dumps", "dump.html"))
-            .put(new JSONObject().put("Apps", "apps/"))
-        );
+            .put(new JSONObject().put("API", "api.html"));
+        if (limited_count > 0) topmenu.put(new JSONObject().put("Dumps", "dump.html"));
+        topmenu.put(new JSONObject().put("Apps", "apps/"));
+        json.put("items", topmenu);
         
+        // modify caching
+        json.put("$EXPIRES", 600);
         return json;
     }
     
