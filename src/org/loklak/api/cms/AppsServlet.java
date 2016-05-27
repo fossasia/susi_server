@@ -24,7 +24,12 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import javax.servlet.ServletException;
@@ -56,12 +61,15 @@ public class AppsServlet extends HttpServlet {
         String callback = post.get("callback", "");
         boolean jsonp = callback != null && callback.length() > 0;
         post.setResponse(response, "application/javascript");
+
+        String categorySelection = post.get("category", "");
         
         // generate json
         File apps = new File(DAO.html_dir, "apps");
         JSONObject json = new JSONObject(true);
         JSONArray app_array = new JSONArray();
         json.put("apps", app_array);
+        JSONObject categories = new JSONObject(true);
         for (String appname: apps.list()) try {
             File apppath = new File(apps, appname);
             if (!apppath.isDirectory()) continue;
@@ -72,10 +80,20 @@ public class AppsServlet extends HttpServlet {
             File json_ld_file = new File(apppath, "app.json");
             String jsonString = new String(Files.readAllBytes(json_ld_file.toPath()), StandardCharsets.UTF_8);
             JSONObject json_ld = new JSONObject(jsonString);
-            app_array.put(json_ld);
+            if (json_ld.has("applicationCategory") && json_ld.has("name")) {
+                String cname = json_ld.getString("applicationCategory");
+                if (categorySelection.length() == 0 || categorySelection.equals(cname)) app_array.put(json_ld);
+                String aname = json_ld.getString("name");
+                if (!categories.has(cname)) categories.put(cname, new JSONArray());
+                JSONArray appnames = categories.getJSONArray(cname);
+                appnames.put(aname);
+            }
         } catch (Throwable e) {
             Log.getLog().warn(e);
         }
+        // write categories
+        json.put("categories", categories.keySet().toArray(new String[categories.length()]));
+        json.put("category", categories);
         
         // write json
         response.setCharacterEncoding("UTF-8");
