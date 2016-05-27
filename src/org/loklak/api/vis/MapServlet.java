@@ -17,7 +17,7 @@
  *  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.loklak.vis.server;
+package org.loklak.api.vis;
 
 import java.awt.image.BufferedImage;
 import java.io.IOException;
@@ -30,13 +30,13 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.loklak.geo.OSMTile;
+import org.loklak.graphics.PrintTool;
+import org.loklak.graphics.RasterPlotter;
+import org.loklak.graphics.RasterPlotter.DrawMode;
+import org.loklak.graphics.RasterPlotter.FilterMode;
 import org.loklak.http.RemoteAccess;
 import org.loklak.http.RemoteAccess.FileTypeEncoding;
 import org.loklak.server.Query;
-import org.loklak.visualization.graphics.PrintTool;
-import org.loklak.visualization.graphics.RasterPlotter;
-import org.loklak.visualization.graphics.RasterPlotter.DrawMode;
-import org.loklak.visualization.graphics.RasterPlotter.FilterMode;
 
 public class MapServlet extends HttpServlet {
 

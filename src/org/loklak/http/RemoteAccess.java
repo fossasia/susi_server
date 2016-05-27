@@ -41,9 +41,9 @@ import javax.servlet.http.Part;
 
 import org.elasticsearch.common.Base64;
 import org.loklak.data.DAO;
+import org.loklak.graphics.RasterPlotter;
 import org.loklak.server.Query;
 import org.loklak.tools.UTF8;
-import org.loklak.visualization.graphics.RasterPlotter;
 
 /**
  * Storage of a peer list which can be used for peer-to-peer communication.

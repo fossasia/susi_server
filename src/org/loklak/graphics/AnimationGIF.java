@@ -18,7 +18,7 @@
  *  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.loklak.visualization.graphics;
+package org.loklak.graphics;
 
 import java.awt.Color;
 import java.awt.Graphics;

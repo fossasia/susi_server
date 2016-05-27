@@ -86,6 +86,8 @@ import org.loklak.api.server.ThreaddumpServlet;
 import org.loklak.api.server.ValidateServlet;
 import org.loklak.api.server.push.FossasiaPushServlet;
 import org.loklak.api.server.push.OpenWifiMapPushServlet;
+import org.loklak.api.vis.MapServlet;
+import org.loklak.api.vis.MarkdownServlet;
 import org.loklak.api.server.push.NodelistPushServlet;
 import org.loklak.api.server.push.FreifunkNodePushServlet;
 import org.loklak.api.server.push.NetmonPushServlet;
@@ -96,8 +98,6 @@ import org.loklak.http.RemoteAccess;
 import org.loklak.server.FileHandler;
 import org.loklak.tools.Browser;
 import org.loklak.tools.OS;
-import org.loklak.vis.server.MapServlet;
-import org.loklak.vis.server.MarkdownServlet;
 
 
 public class LoklakServer {

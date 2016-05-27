@@ -17,7 +17,7 @@
  *  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.loklak.vis.server;
+package org.loklak.api.vis;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -30,12 +30,12 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.loklak.data.DAO;
+import org.loklak.graphics.PrintTool;
+import org.loklak.graphics.RasterPlotter;
+import org.loklak.graphics.RasterPlotter.DrawMode;
 import org.loklak.http.RemoteAccess;
 import org.loklak.http.RemoteAccess.FileTypeEncoding;
 import org.loklak.server.Query;
-import org.loklak.visualization.graphics.PrintTool;
-import org.loklak.visualization.graphics.RasterPlotter;
-import org.loklak.visualization.graphics.RasterPlotter.DrawMode;
 
 public class MarkdownServlet extends HttpServlet {
 

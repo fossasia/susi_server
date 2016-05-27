@@ -38,7 +38,7 @@ import java.util.List;
 import javax.imageio.ImageIO;
 
 import org.loklak.data.DAO;
-import org.loklak.visualization.graphics.RasterPlotter;
+import org.loklak.graphics.RasterPlotter;
 
 
 public class OSMTile {
