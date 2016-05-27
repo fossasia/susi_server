@@ -5,26 +5,62 @@ p {
 	font-size: 35px;
 	color: #fff;
 }
+
+label.error{
+	color: red !important;
+}
+input.error{
+	border: 2px solid red !important;
+}
+
+label.success{
+	color: GreenYellow !important;
+}
+input.success{
+	border: 2px solid GreenYellow !important;
+}
+
 .form {
-	width:375px;
+	width:540px;
 	height: auto;
 	margin: auto;
 }
 
-.form input {
+.fields {
+	width: auto;
+	height: auto;
+}
+
+.fields input {
 	border: none;
 	background: #fff;
   	font-weight:400;
-	display: block;
 	color: #000;
 	font-size: 15px;
 	outline: none;
-	width: 100%;
+	width: 70%;
 	margin: auto;
 	padding: 24px 12px 24px 12px;
 }
+
+.fields label {
+	font-size: 15px;
+	float: right;
+	margin-top: 5%;
+}
+
+.fields input[id = "email"] {
+	border-radius: 7px 7px 0 0;
+}
+.fields input[id = "pass"] {
+	border-radius: 0 0 0 0;
+}
+.fields input[id = "confirmpass"] {
+	border-radius: 0 0 7px 7px;
+}
+
 .bar {
-	width: 100%;
+	width: 70%;
 	height: 1px;
 	background: #fff;
 }
@@ -35,24 +71,14 @@ p {
 	display: block;
 	background: #d1d1d1;
 }
-.form input[type="text"] {
-	border-radius: 7px 7px 0 0;
-}
-.form input[name = "pass"] {
-	border-radius: 0 0 0 0;
-}
-.form input[name = "confirmpass"] {
-	border-radius: 0 0 7px 7px;
-}
 
 .form button {
-	width: 100%;
+	width: 70%;
 	border-radius: 7px;
 	background: GreenYellow;
 	text-decoration: center;
 	border: none;
 	color: #51771a;
-  	margin-top:-5px;
 	padding-top: 14px;
 	padding-bottom: 14px;
 	outline: none;

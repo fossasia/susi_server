@@ -49,24 +49,37 @@
       </div>
     </nav>
     <br><br><br>
-    <p align="center">Sign up on Loklak!</p>
+    
     <br>
     <div class = "form">
-      <input type = "text" id="email" placeholder="Email" required>
-      <div class="bar">
-          <i></i>
-      </div>
-      <input name="pass" id="pass" type="password" placeholder="Password" required>
-      <div class="bar">
-          <i></i>
-      </div>
-      <input name="confirmpass" id="confirmpass" type="password" placeholder="Confirm Password" required>
-      <br>
-      <a href = "#"><button>Sign Up</button></a>
+      <p>Sign up on Loklak!</p>
       <br><br>
-      <p id = "passtrength" style="font-size:15px;"></p>
-      <br>
-      <p id = "matching" style="font-size:15px;"></p>
+      <div class = "fields">
+        <input type = "text" id="email" placeholder="Email" required>
+        <label id = "valid"></label>
+      </div>
+
+      <div class="bar">
+          <i></i>
+      </div>
+
+      <div class = "fields">
+        <input name = "pass" id="pass" type="password" placeholder="Password" required>
+        <label id = "passtrength"></label>
+      </div>
+
+      <div class="bar">
+          <i></i>
+      </div>
+
+      <div class = "fields">
+        <input name="confirmpass" id="confirmpass" type="password" placeholder="Confirm Password" required>
+        <label id = "matching"></label>
+      </div>
+
+      <br><br>
+      <a href = "#"><button id = "signup">Sign Up</button></a>
+      
     </div>
 
     <!-- Bootstrap core JavaScript
