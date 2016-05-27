@@ -24,6 +24,8 @@
     <script src="../../js/angular.min.js"></script>
     <script src="../../js/angular-route.min.js"></script>
     <script src="../../js/loklak.js"></script>
+    <script src="../../js/jquery.min.js"></script>
+    <script src="js/signup.js"></script>
   </head>
 
   <body>
@@ -50,17 +52,21 @@
     <p align="center">Sign up on Loklak!</p>
     <br>
     <div class = "form">
-      <input type = "text" placeholder="Email" required>
+      <input type = "text" id="email" placeholder="Email" required>
       <div class="bar">
           <i></i>
       </div>
-      <input name="pass" type="password" placeholder="Password" required>
+      <input name="pass" id="pass" type="password" placeholder="Password" required>
       <div class="bar">
           <i></i>
       </div>
-      <input name="confirmpass" type="password" placeholder="Confirm Password" required>
+      <input name="confirmpass" id="confirmpass" type="password" placeholder="Confirm Password" required>
       <br>
       <a href = "#"><button>Sign Up</button></a>
+      <br><br>
+      <p id = "passtrength" style="font-size:15px;"></p>
+      <br>
+      <p id = "matching" style="font-size:15px;"></p>
     </div>
 
     <!-- Bootstrap core JavaScript
