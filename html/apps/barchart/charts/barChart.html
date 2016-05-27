@@ -1,0 +1,8 @@
+<div ng-controller='barChartCtrl' layout="row" layout-align="center center">
+    <!-- pass max from form -->
+    <bar-chart 
+        data="$storage.hashtagDateFreq" 
+        max="query.maxHashtags" 
+        title="Top Hashtags by day" >
+    </bar-chart>
+</div>
