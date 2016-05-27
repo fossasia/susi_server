@@ -16,14 +16,14 @@
   <style>
     <style>
     .node {
-      fill: #ccc;
-      stroke: #fff;
-      stroke-width: 2px;
-    }
-    .link {
-      stroke: #777;
-      stroke-width: 2px;
-    }
+    stroke: #fff;
+  stroke-width: 1.5px;
+}
+
+.link {
+  stroke: #999;
+  stroke-opacity: .6;
+}
   </style>
   </style>
 <body>
@@ -87,11 +87,11 @@
   <script>
     var width = 640,
         height = 480;
+    var color = d3.scale.category20();
     /* Initialize tooltip */
     tip = d3.tip().attr('class', 'd3-tip').html(function(d) {
       return d.name;
-    }
-                                               );
+    });
     var url = 'http://localhost:9000/apps/oneClickDeploy/test.json';
     function getRandomInt(min, max) {
       return Math.floor(Math.random() * (max - min)) + min;
@@ -142,6 +142,7 @@
       .enter().append('circle')
       .attr('class', 'node')
       .attr("r", 4.5)
+      .style("fill", function (d) { return color(d.class); })
       .on('mouseover', tip.show)
       .on('mouseout', tip.hide)
       .call(force.drag);
