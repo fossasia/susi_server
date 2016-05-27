@@ -53,7 +53,8 @@
       <!-- Fancy Form -->
       <div ng-controller="MainCtrl as main" ng-cloak="">
           
-          <form ng-submit="poll(query.type, query.term, query.interval, query.dateFrom, query.dateTo, query.maxHashtags)" 
+          <div layout="column">
+          <form ng-submit="poll(query.type, query.term, query.interval, query.dateFrom, query.dateTo, query.maxHashtags, query.count)" 
               class="layout-margin layout-fill" name="queryForm">
               <!-- form name for ng-messages -->
               
@@ -87,11 +88,25 @@
                       </div>
                   </md-input-container>
                   <md-input-container class="md-block" flex-gt-sm>
+                      <label>Num. of tweets /query</label>
+                      <input type="number" step="100" name="count" 
+                      ng-model="query.count" min="0"
+                      max="1000" ng-pattern="/^\d+$/" />
+                      <div ng-messages="queryForm.count.$error" multiple md-auto-hide="false">
+                          <div ng-message="min">
+                              Minimum 0
+                          </div>
+                          <div ng-message="max">
+                              Maximum 1000
+                          </div>
+                      </div>
+                  </md-input-container>
+                  <md-input-container class="md-block" flex-gt-sm>
                       <label>Max Num of Hashtags /day</label>
-                      <input type="number" step="1" name="interval" 
+                      <input type="number" step="1" name="hashtagF" 
                       ng-model="query.maxHashtags" min="3"
                       max="10" ng-pattern="/^\d+$/" />
-                      <div ng-messages="queryForm.interval.$error" multiple md-auto-hide="false">
+                      <div ng-messages="queryForm.hashtagF.$error" multiple md-auto-hide="false">
                           <div ng-message="min">
                               Minimum 3 hashtags
                           </div>
@@ -128,20 +143,17 @@
 
               </md-content>
           </form>
-              
-              <div ng-controller='barChartCtrl' layout="row" layout-align="center center">
-                  <!-- pass max from form -->
-                  <bar-chart 
-                      data="$storage.hashtagDateFreq" 
-                      max="query.maxHashtags" 
-                      title="Top Hashtags by day" >
-                  </bar-chart>
-              </div>
-              <!-- <div ng-controller='bubbleCloudCtrl' layout="row" layout-align="center center">
-                  <bubble-cloud data="$storage.mentionFreq" min ="1" title="Most Mentions"></bubble-cloud>
-                  <bubble-cloud data="$storage.wordFreq" min="2" title="Word Frequency"></bubble-cloud>     
-              </div> -->
           
+              <!-- Tabs to select chart -->
+              <md-tabs md-center-tabs="true" md-stretch-tabs md-selected="selectedIndex">
+                  <md-tab label="Stacked Bar Charts"></md-tab> 
+                  <md-tab label="Bubble Charts"></md-tab>
+              </md-tabs>
+              
+          </div>
+          <!-- Load charts directives as partials using UI Router -->
+          <div ui-view ng-class="transition"></div>
+
       </div>
       
       <!-- Angular deps, ngMaterial, ngMessages, localStorage, angulargrid, imgfallback -->
@@ -153,7 +165,7 @@
       <script src="../../js/angular-modules/angular-messages.min.js"></script>
       <script src="../../js/moment.min.js"></script>
       <script src="../../js/underscore-min.js"></script>
-
+      <script src="../../js/angular-modules/angular-ui-router.min.js"></script>
       <script src="../../js/angular-modules/angular-momentjs.min.js"></script>
       <script src="app.js"></script>
       

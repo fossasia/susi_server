@@ -2,6 +2,14 @@ body, html {
   background-color: gray !important;
 }
 
+.layout-margin>*{
+  margin:0;
+}
+
+
+md-tabs .md-tab.md-active{
+  color: black;
+}
 md-content.md-default-theme, md-content {
     color: rgba(0,0,0,0.87);
     background-color: rgb(66, 66, 66);
@@ -170,10 +178,7 @@ md-toolbar button.md-button.md-icon-button:first-child md-icon {
   visibility: visible;
   opacity: 1;
 }
-.bubbles { 
-  fill: #45B29D; 
-  background: #45B29D;
-}
+
 .d3-tip {
   line-height: 1;
   font-weight: bold;

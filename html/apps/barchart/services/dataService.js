@@ -8,11 +8,12 @@
             getTweets: getTweets
         }
         
-        function getTweets(queryType, queryTerm, dateFrom, dateTo){
+        function getTweets(queryType, queryTerm, dateFrom, dateTo, count){
             
             // user's tweets latest first
             var defaultUri = "/api/search.json?q=loklak";
             var uri = "";
+            var qCount = "&count=" + count;
             if(queryType === "search"){
                 console.log(queryTerm);
                 if(typeof(dateFrom) !== "undefined" || typeof(dateTo) !== "undefined"){
@@ -27,6 +28,8 @@
             } else {
                 uri = defaultUri;
             }
+            uri += qCount;
+            console.log(uri);
             
             var promise = $http.get(uri)
             .then(searchCompleted)

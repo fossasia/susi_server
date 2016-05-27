@@ -17,13 +17,17 @@ angular.module('myApp')
 .directive('bubbleCloud', [ 
 
   function () {
+      
+    var diameter = 500,
+    length = 100,
+    color = d3.scale.linear().domain([1,length])
+    .interpolate(d3.interpolateHcl)
+    .range([d3.rgb("#FFFFFF"), d3.rgb('#17becf')]);
+
 
     var link = function ($scope, $el, $attrs) {
         
-        var diameter = 500;
-
         var id = '#bubbleCloud_'+$scope.$id;
-
         
         var svg = d3.select($el[0]).append('svg')
             .attr('width', diameter)
@@ -40,10 +44,41 @@ angular.module('myApp')
             .sort(function(a, b) { // biggest in the middle
                 return -(a.value - b.value);
             }) 
-            .padding(3);
+            .padding(5);
         
         // remember to set to true to watch values, if not $watch will not run as reference same
         $scope.$watch('data', update, true);
+        
+        
+        // clip text while if zoom
+        function clipText (d, t, scale) {
+            if (d.r < 20/scale) {
+                return "";
+            }
+            console.log(scale)
+            var name = t.substring(0, d.r/scale);
+            if (name.length < t.length) {
+                name = name.substring (0, name.length - Math.min(4, name.length)) + "...";
+            }
+            return name;
+        }
+        
+        // Setup zooming
+        function zoomed() {
+        var scale=d3.event.scale;
+        var fontsize = 10;
+        console.log('fontsize/scale')
+        console.log(fontsize/scale)
+          chart.attr("transform", "translate(" + d3.event.translate + ")scale(" + d3.event.scale + ")");
+          chart.selectAll('.nodeTextToClip')
+          .style('font-size', function(d){ return d.r/scale/2.4})
+          .text(function(d){return clipText(d, d.name,fontsize/scale/2.5 );})
+        }
+
+        var zoom = d3.behavior.zoom()
+        .scaleExtent([-10, 50])
+        .on("zoom", zoomed);
+        zoom(svg);
         
         function update(mentionFreq) {
             // console.log("updating");
@@ -87,9 +122,9 @@ angular.module('myApp')
             // filter out the outer bubble for pack layout
             // console.log(nodes);
             
+            // input data
             var vis = chart.selectAll('.bubble')
             .data(nodes);
-            
             // console.log(vis);
             
             // add attr to each entered group consisting of <circle> and <text>
@@ -99,13 +134,31 @@ angular.module('myApp')
             enter.append('circle')
             .attr('r', function(d) { return d.r; })
             .attr('class', function(d) { return d.className; })
+            .attr('fill', function(d){                 
+                return color(d.r+10); })
             
-            enter.append("text")
+            // Add bubble text
+            var text = enter.append("text")
             .attr("dy", ".1em")
             .style("text-anchor", "middle")
-            .text(function (d) { return d.name; });
-
-            // transition the selected groups
+            
+            text.append("tspan")
+            .attr("class", "nodeTextToClip")
+            .attr("x", "0")
+            .attr("dy", "0")
+            .style("font-size", function(d){ return d.r/2.5 ;})
+            .text(function(d) { return clipText(d, d.name, 4); });
+            
+            text.append("tspan")
+            .attr("x", "0")
+            .attr("dy", function(d){return d.r/2})
+            .style("font-weight", "100")
+            .style("font-size", function(d){ return d.r/2.5 ;})
+            .text(function(d) {
+                return d.value;
+            });
+            
+            // Transition the selected groups
             vis.transition().duration(1000)
             .attr("transform", function (d) { 
                 return "translate(" + d.x + "," + d.y + ")";
@@ -120,7 +173,7 @@ angular.module('myApp')
         // }
         
         // $scope.$on('windowResize',resize);
-
+        
     };
     return {
       template:'<div layout="column"><h2 style="text-align:center">{{title}}</h2><div id="bubbleCloud_{{$id}}"</div></div>',
@@ -129,7 +182,7 @@ angular.module('myApp')
       scope:{
           // 2 way bind the data, literals for min & title
           data: '=',
-          min: '@',
+          min: '=',
           title: '@'
       }
     };
