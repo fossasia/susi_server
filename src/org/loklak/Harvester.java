@@ -111,6 +111,7 @@ public class Harvester {
                 }
             } catch (IOException e) {
                 e.printStackTrace();
+                try {Thread.sleep(10000);} catch (InterruptedException e1) {} // if the remote peer is down, throttle down
             }
         }
         
