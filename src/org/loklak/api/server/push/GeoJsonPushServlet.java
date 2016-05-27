@@ -29,6 +29,7 @@ import org.loklak.geo.LocationSource;
 import org.loklak.http.ClientConnection;
 import org.loklak.http.RemoteAccess;
 import org.loklak.objects.MessageEntry;
+import org.loklak.objects.ProviderType;
 import org.loklak.objects.SourceType;
 import org.loklak.objects.QueryEntry.PlaceContext;
 import org.loklak.server.Query;
@@ -138,7 +139,7 @@ public class GeoJsonPushServlet extends HttpServlet {
             } else {
                 message.put("source_type", SourceType.IMPORT);
             }
-            message.put("provider_type", MessageEntry.ProviderType.GEOJSON.name());
+            message.put("provider_type", ProviderType.GEOJSON.name());
             message.put("provider_hash", remoteHash);
             message.put("location_point", geometry.get("coordinates"));
             message.put("location_mark", geometry.get("coordinates"));

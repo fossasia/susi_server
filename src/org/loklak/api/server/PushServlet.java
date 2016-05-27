@@ -36,6 +36,7 @@ import org.loklak.data.DAO;
 import org.loklak.data.IndexEntry;
 import org.loklak.http.RemoteAccess;
 import org.loklak.objects.MessageEntry;
+import org.loklak.objects.ProviderType;
 import org.loklak.objects.QueryEntry;
 import org.loklak.objects.Timeline;
 import org.loklak.objects.UserEntry;
@@ -117,7 +118,7 @@ public class PushServlet extends HttpServlet {
                 recordCount++;
                 JSONObject user = (JSONObject) tweet.remove("user");
                 if (user == null) continue;
-                tweet.put("provider_type", MessageEntry.ProviderType.REMOTE.name());
+                tweet.put("provider_type", ProviderType.REMOTE.name());
                 tweet.put("provider_hash", remoteHash);
                 UserEntry u = new UserEntry(user);
                 MessageEntry t = new MessageEntry(tweet);
