@@ -1,0 +1,17 @@
+{
+  "@context":"http://schema.org",
+  "@type":"SoftwareApplication",
+  "name":"LQL",
+  "headline":"Loklak Query Language",
+  "alternativeHeadline":"Advanced Search Tool for Loklak",
+  "applicationCategory":"About project",
+  "applicationSubCategory":"Apps listing",
+  "operatingSystem":"http://loklak.org",
+  "author":{
+    "@type":"Person",
+    "name":"Sudheesh Singanamalla",
+    "email":"sudheesh95@gmail.com",
+    "url":"https://github.com/sudheesh001",
+    "sameAs":"https://github.com/sudheesh001"
+  }
+}
