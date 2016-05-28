@@ -24,9 +24,9 @@
       <script src="js/html5shiv.min.js"></script>
       <script src="js/respond.min.js"></script>
     <![endif]-->
-  <script src="js/angular.min.js"></script>
-  <script src="js/angular-route.min.js"></script>
-  <script src="js/loklak.js"></script>
+	<script src="js/angular.min.js"></script>
+	<script src="js/angular-route.min.js"></script>	
+	<script src="js/loklak.js"></script>
 </head>
 
 <body data-spy="scroll" data-target="#navSidebar" data-offset="50">
@@ -44,11 +44,11 @@
 					src="images/loklak_org.png" height="24" style="float: left;">:
 					API</a>
 			</div>
-        <div id="navbar" class="navbar-collapse collapse" ng-controller="topmenu">
-          <ul class="nav navbar-nav navbar-right" ng-repeat="item in results | reverse">
-            <li ng-repeat="(key, val) in item" ng-class="{active: $route.current.activetab == key}"><a ng-href="{{val}}">{{key}}</a></li>
-          </ul>
-        </div>
+			<div id="navbar" class="navbar-collapse collapse" ng-controller="topmenu">
+				<ul class="nav navbar-nav navbar-right" ng-repeat="item in results | reverse">
+					<li ng-repeat="(key, val) in item" ng-class="{active: $route.current.activetab == key}"><a ng-href="{{val}}">{{key}}</a></li>
+				</ul>
+			</div>
 		</div>
 	</nav>
 
@@ -73,6 +73,7 @@
 						<li><a href="#settings">/api/settings.json</a></li>
 						<li><a href="#account">/api/account.json</a></li>
 						<li><a href="#user">/api/user.json</a></li>
+						<li><a href="#apps">/api/apps.json</a></li>
 						<li><a href="#asset">/api/asset</a></li>
 						<li><a href="#threaddump">/api/threaddump.txt</a></li>
 						<li><a href="#map">/vis/map.png</a></li>
@@ -1352,6 +1353,47 @@ shortens this array to only one entry. The API also has reverse geocoding and fu
     "$P" : "I"
   }
 }
+</pre>
+</section>
+
+<!-- ===================================================================== -->
+
+<br/>
+<br/>
+<section id="apps">
+<h2 class="sub-header">
+	<code>/api/apps.json</code>
+</h2>
+<div class="alert alert-success" role="alert">This API is open and can be accessed without any restrictions!</div>
+	<p>the json of <code>/api/apps.json</code> now contains two more objects:</p>
+	<ul>
+		<li><p>"categories" with a list of category names</p></li>
+		<li><p>"category" with an object which holds a list of the application names for each category.</p></li>
+	</ul>
+	<br/>
+	<p>Furthermore, the servlet can now be called with an 'category' property, like:</p>
+	<ul class="request">
+		<li><a href="http://localhost:9000/api/apps.json?category=Demo">http://localhost:9000/api/apps.json?category=Demo</a></li>
+	</ul>
+  <br/>
+  <p>This will reduce the app list to the sub-list which contains only apps from that category.</p>
+<pre>
+  {
+    "@context": "http://schema.org",
+    "@type": "SoftwareApplication",
+    "name": "boilerplate",
+    "headline": "Boilerplate for loklak apps",
+    "alternativeHeadline": "the 'hello world' app that you want to copy-paste for your own app",
+    "applicationCategory": "Demo",
+    "applicationSubCategory": "Hello World",
+    "operatingSystem": "http://loklak.org",
+    "author": {
+      "@type": "Person",
+      "name": "Michael Christen",
+      "url": "http://yacy.net",
+      "sameAs": "https://github.com/orbiter"
+    }
+  }
 </pre>
 </section>
 
