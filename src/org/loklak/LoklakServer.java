@@ -508,6 +508,7 @@ public class LoklakServer {
         servletHandler.addServlet(AppsServlet.class, "/api/apps.json");
         servletHandler.addServlet(Hello.class, new Hello().getAPIPath() /*"/api/hello.json"*/);
         servletHandler.addServlet(PeersServlet.class, "/api/peers.json");
+        servletHandler.addServlet(PeersServlet.class, "/api/peers.csv");
         servletHandler.addServlet(CrawlerServlet.class, "/api/crawler.json");
         servletHandler.addServlet(StatusServlet.class, "/api/status.json");
         servletHandler.addServlet(SearchServlet.class, "/api/search.rss");
