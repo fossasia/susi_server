@@ -4,13 +4,14 @@
 }
 .span2 { 
 	width: 23%; 
-	padding: 8px; 
-	margin: 8px; 
+	padding: 0px;
+	margin-right: 16px;
+	margin-bottom: 16px;
 	float: left;
 }
 .span2 img { 
 	max-width: 100%; 
-	border: 5px solid #adff30
+	border: 1px solid #adff30
 }
 p { 
 	margin: 0.5em 0; 
