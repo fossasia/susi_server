@@ -160,6 +160,11 @@ angular.module('myApp')
                 var res = [];
                 // console.log(groupedByDate);
                 groupedByDate.forEach(function(obj){ 
+                    console.log(obj);
+                    
+                    if (obj.hasOwnProperty("key") && obj["key"] === "undefined") {
+                        return;
+                    }
                     var topNThisDate = {};
                     // key refers to dayDiff
                     topNThisDate["day"] = obj["key"];
@@ -179,7 +184,9 @@ angular.module('myApp')
             // compare by date only, and not time
             .key(function(d){  
                 var currentM = $moment(d.created_at).set('hour',0).set('minute',0).set('second',0);
-                return latestDateM.diff(currentM, 'days');
+                var dayDiff = latestDateM.diff(currentM, 'days');
+                // don't display day diff >= 40
+                if(dayDiff<40) return dayDiff
             })
             // set latest day at idx 0 (as dayDiff = 0)
             .sortKeys(function(a,b){ return b-a;}) 

@@ -6,10 +6,7 @@ angular.module('myApp')
   function ($scope, $window, $localStorage) {
       
       $scope.$storage = $localStorage;
-    //   $window.addEventListener('resize', function () {
-    //       $scope.$broadcast('windowResize');
-    //   });
-    
+
   }
 ])
 
@@ -18,7 +15,7 @@ angular.module('myApp')
 
   function () {
       
-    var diameter = 500,
+    var diameter = 600,
     length = 100,
     color = d3.scale.linear().domain([1,length])
     .interpolate(d3.interpolateHcl)
@@ -26,11 +23,9 @@ angular.module('myApp')
 
 
     var link = function ($scope, $el, $attrs) {
-        
-        var id = '#bubbleCloud_'+$scope.$id;
-        
+        $attrs.$set('width', '100%');
         var svg = d3.select($el[0]).append('svg')
-            .attr('width', diameter)
+            .attr('width', "100%")
             .attr('height', diameter);
             
         var chart = svg.append("g");
@@ -45,7 +40,7 @@ angular.module('myApp')
                 return -(a.value - b.value);
             }) 
             .padding(5);
-        
+            
         // remember to set to true to watch values, if not $watch will not run as reference same
         $scope.$watch('data', update, true);
         
@@ -55,7 +50,6 @@ angular.module('myApp')
             if (d.r < 20/scale) {
                 return "";
             }
-            console.log(scale)
             var name = t.substring(0, d.r/scale);
             if (name.length < t.length) {
                 name = name.substring (0, name.length - Math.min(4, name.length)) + "...";
@@ -67,8 +61,8 @@ angular.module('myApp')
         function zoomed() {
         var scale=d3.event.scale;
         var fontsize = 10;
-        console.log('fontsize/scale')
-        console.log(fontsize/scale)
+        // console.log('fontsize/scale')
+        // console.log(fontsize/scale)
           chart.attr("transform", "translate(" + d3.event.translate + ")scale(" + d3.event.scale + ")");
           chart.selectAll('.nodeTextToClip')
           .style('font-size', function(d){ return d.r/scale/2.4})
@@ -135,7 +129,9 @@ angular.module('myApp')
             .attr('r', function(d) { return d.r; })
             .attr('class', function(d) { return d.className; })
             .attr('fill', function(d){                 
-                return color(d.r+10); })
+                return color(d.r+10); 
+            })
+
             
             // Add bubble text
             var text = enter.append("text")
@@ -163,26 +159,19 @@ angular.module('myApp')
             .attr("transform", function (d) { 
                 return "translate(" + d.x + "," + d.y + ")";
             });
-                        
-            // resize();
+                
         };
 
-        // function resize() {
-        //     svg.attr("width", $el[0].clientWidth);
-        //     svg.attr("height", $el[0].clientWidth); 
-        // }
-        
-        // $scope.$on('windowResize',resize);
         
     };
     return {
-      template:'<div layout="column"><h2 style="text-align:center">{{title}}</h2><div id="bubbleCloud_{{$id}}"</div></div>',
+      template:'<div layout="column"><h2 style="text-align:center">{{title}}</h2></div>',
       link: link, 
       restrict: 'E',
       scope:{
           // 2 way bind the data, literals for min & title
           data: '=',
-          min: '=',
+          min: '@',
           title: '@'
       }
     };

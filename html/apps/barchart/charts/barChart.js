@@ -15,23 +15,27 @@
         var link = function ($scope, $el, $attrs) {
             
             // svg setup
-            var margin = {top: 20, right: 50, bottom: 60, left: 0},
-            width = 600 - margin.left - margin.right,
-            height = 500 - margin.top - margin.bottom,
-            padding = 100;
-            
-            var x = d3.scale.ordinal().rangeRoundBands([0, width], .3);
+            var margin = {top: 20, right: 100, bottom: 60, left: 0},
+                width = 1000 - margin.left - margin.right,
+                height = 500 - margin.top - margin.bottom,
+                padding = 100;
+                
+            var svg = d3.select($el[0]).append("svg")
+                .attr("preserveAspectRatio", "xMinYMin meet")
+                .attr("viewBox", "0 0 960 500")
+                .attr("width", width + margin.left + margin.right)
+                .attr("height", height + margin.top + margin.bottom)
+                .attr("style", "width: 100%")
+                .attr("flex", "grow")
+                .append("g")
+                .attr("transform", "translate(" + margin.left + "," + margin.top + ")")
+
+            var x = d3.scale.ordinal().rangeRoundBands([0, width], .2);
             var y = d3.scale.linear().rangeRound([height, 0]);
             var color = d3.scale.category20();
             var xAxis = d3.svg.axis().scale(x).orient("bottom");
             // whole number y axis ticks
             var yAxis = d3.svg.axis().scale(y).orient("right").tickFormat(d3.format("d"));
-            
-            var svg = d3.select($el[0]).append("svg")
-            .attr("width", width + margin.left + margin.right)
-            .attr("height", height + margin.top + margin.bottom)
-            .append("g")
-            .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
             
             // setup tooltip
             var tip = d3.tip()
@@ -60,7 +64,7 @@
                     
                     // select all stacks, remove data then remove dom nodes                        
                     window.setTimeout(function(){
-                        svg.selectAll('.stack').data([])
+                        svg.selectAll('.stack rect').data([])
                         .exit().remove();
                     },501);
                     
@@ -154,7 +158,7 @@
                 // append and transition axes in 
                 svg.append("g")
                 .attr("transform", "translate(0," + height + ")")
-                .attr("class", "xxis")
+                .attr("class", "xaxis")
                 .style("opacity", 1e-6)
                 .transition().duration(500)
                 .style("opacity", 1)
@@ -167,12 +171,6 @@
                 .attr("transform", "translate(" + width + ",0)")
                 .call(yAxis);
                 
-                // axis labels
-                svg.selectAll(".xaxis text")  // select all the text elements for the xaxis
-                .attr("transform", function(d) {
-                    return "translate(" + this.getBBox().height*-2 + "," + this.getBBox().height + ")";
-                });
-                
                 // now add titles to the axes
                 svg.append("text")
                 .attr("text-anchor", "middle")  // this makes it easy to centre the text as the transform is applied to the anchor
@@ -183,9 +181,7 @@
                 .attr("text-anchor", "middle")  // this makes it easy to centre the text as the transform is applied to the anchor
                 .attr("transform", "translate("+ (width/2) +","+(height+(padding/3))+")")  // centre below axis
                 .text("Days before Today");
-                
-                
-            }    
+            }   
         };
         
         return {

@@ -91,7 +91,7 @@
                       <label>Num. of tweets /query</label>
                       <input type="number" step="100" name="count" 
                       ng-model="query.count" min="0"
-                      max="1000" ng-pattern="/^\d+$/" />
+                      max="500" ng-pattern="/^\d+$/" />
                       <div ng-messages="queryForm.count.$error" multiple md-auto-hide="false">
                           <div ng-message="min">
                               Minimum 0
