@@ -65,16 +65,14 @@
                   <div class="hidden">
                     <div class="caption">
                       <div class="centered">
-                        <p><a href='../../apps/{{ app.name }}'>{{ app.headline }}</a></p>
+                        <p><a href='../../apps/{{ app.name }}'>{{ app.headline | uppercase}}</a></p>
                         <p>{{ app.alternativeHeadline }}</p>
-                        <p>-------------------------</p>
-                        <p>Author: <a href='{{ app.author.url }}'>{{ app.author.name }}</a></p>
+                        <br/>
+                        <p>Author: <a href='{{ app.author.url }}'>{{ app.author.name | uppercase }}</a></p>
                       </div>
                     </div>
                   </div>
                 </div>
-                <!--<p>{{ app.alternativeHeadline }}</p>
-Author: <a href='{{ app.author.url }}'>{{ app.author.name }}</a> -->
               </div>
             </div>
           </div>
