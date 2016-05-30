@@ -51,7 +51,7 @@ public class Settings extends JsonFile {
      * Get the private key as PrivateKey
      * @return PrivateKey private_key
      */
-    public PrivateKey getPrivateKey(){
+    public synchronized PrivateKey getPrivateKey(){
         return private_key;
     }
     
@@ -59,7 +59,7 @@ public class Settings extends JsonFile {
      * Get the private key as String
      * @return String representation of the private key
      */
-    public String getPrivateKeyAsString(){
+    public synchronized String getPrivateKeyAsString(){
         return getKeyAsString(private_key);
     }
     
@@ -67,7 +67,7 @@ public class Settings extends JsonFile {
      * Get the public key as PublicKey
      * @return PublicKey public_key
      */
-    public PublicKey getPublicKey(){
+    public synchronized PublicKey getPublicKey(){
         return public_key;
     }
     
@@ -75,7 +75,7 @@ public class Settings extends JsonFile {
      * Get the public key as String
      * @return String representation of the public key
      */
-    public String getPublicKeyAsString(){
+    public synchronized String getPublicKeyAsString(){
         return getKeyAsString(public_key);
     }
     
@@ -83,7 +83,7 @@ public class Settings extends JsonFile {
      * Get the key algorithm e.g. RSA
      * @return String algorithm
      */
-    public String getKeyAlgorithm(){
+    public synchronized String getKeyAlgorithm(){
         return new String(key_algorithm);
     }
     
@@ -91,7 +91,7 @@ public class Settings extends JsonFile {
      * Get the hash of the public key
      * @return String hash
      */
-    public String getPeerHash(){
+    public synchronized String getPeerHash(){
         return new String(peer_hash);
     }
     
@@ -99,7 +99,7 @@ public class Settings extends JsonFile {
      * Get the hash algorithm for the public key
      * @return String hash_algorithm
      */
-    public String getPeerHashAlgorithm(){
+    public synchronized String getPeerHashAlgorithm(){
         return new String(hash_algorithm);
     }
     
@@ -108,14 +108,14 @@ public class Settings extends JsonFile {
      * @param key
      * @return String representation of a key
      */
-    public String getKeyAsString(Key key){
+    public synchronized String getKeyAsString(Key key){
         return Base64.getEncoder().encodeToString(key.getEncoded());
     }
     
     /**
      * Calculate the hash of the public key
      */
-    private void setPeerHash(){
+    private synchronized void setPeerHash(){
         hash_algorithm = "SHA-256";
         peer_hash = getKeyHash(public_key, hash_algorithm);
         put("peer_hash",peer_hash);
@@ -129,7 +129,7 @@ public class Settings extends JsonFile {
      * @param algorithm
      * @return String hash
      */
-    public static String getKeyHash(PublicKey pubkey, String algorithm){
+    public synchronized static String getKeyHash(PublicKey pubkey, String algorithm){
         try {
             MessageDigest md = MessageDigest.getInstance(algorithm);
             md.update(pubkey.getEncoded());
@@ -144,7 +144,7 @@ public class Settings extends JsonFile {
      * Load private key from file
      * @return true if a valid key is found in file
      */
-    public boolean loadPrivateKey(){
+    public synchronized boolean loadPrivateKey(){
         if(!has("private_key") || !has("key_algorithm")) return false;
         
         String encodedKey = getString("private_key");
@@ -167,7 +167,7 @@ public class Settings extends JsonFile {
      * Load public key from file
      * @return true if a valid key is found in file
      */
-    public boolean loadPublicKey(){
+    public synchronized boolean loadPublicKey(){
         if(!has("public_key") || !has("key_algorithm")) return false;
         
         String encodedKey = getString("public_key");
@@ -188,7 +188,7 @@ public class Settings extends JsonFile {
      * @param key
      * @param algorithm
      */
-    public void setPrivateKey(PrivateKey key, String algorithm){
+    public synchronized void setPrivateKey(PrivateKey key, String algorithm){
         put("private_key", getKeyAsString(key));
         private_key = key;
         put("key_algorithm",algorithm);
@@ -200,7 +200,7 @@ public class Settings extends JsonFile {
      * @param key
      * @param algorithm
      */
-    public void setPublicKey(PublicKey key, String algorithm){
+    public synchronized void setPublicKey(PublicKey key, String algorithm){
         put("public_key", getKeyAsString(key));
         public_key = key;
         put("key_algorithm",algorithm);
@@ -214,7 +214,7 @@ public class Settings extends JsonFile {
      * @param algorithm
      * @return PublicKey public_key
      */
-    public static PublicKey decodePublicKey(String encodedKey, String algorithm){
+    public synchronized static PublicKey decodePublicKey(String encodedKey, String algorithm){
         try{
             X509EncodedKeySpec keySpec = new X509EncodedKeySpec(Base64.getDecoder().decode(encodedKey));
             PublicKey pub = KeyFactory.getInstance(algorithm).generatePublic(keySpec);
