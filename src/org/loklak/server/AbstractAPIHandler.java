@@ -108,7 +108,7 @@ public abstract class AbstractAPIHandler extends HttpServlet implements APIHandl
         process(request, response, query);
     }
     
-    private void process(HttpServletRequest request, HttpServletResponse response, Query query) throws ServletException, IOException {
+private void process(HttpServletRequest request, HttpServletResponse response, Query query) throws ServletException, IOException {
         
         // basic protection
         APIServiceLevel serviceLevel = getDefaultServiceLevel();
@@ -164,6 +164,13 @@ public abstract class AbstractAPIHandler extends HttpServlet implements APIHandl
                 return;
              }
     
+            // evaluate special fields
+            if (json.has("$EXPIRES")) {
+                int expires = json.getInt("$EXPIRES");
+                FileHandler.setCaching(response, expires);
+                json.remove("$EXPIRES");
+            }
+        
             // write json
             query.setResponse(response, "application/javascript");
             response.setCharacterEncoding("UTF-8");
