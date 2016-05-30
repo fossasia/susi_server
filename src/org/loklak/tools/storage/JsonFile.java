@@ -66,11 +66,15 @@ public class JsonFile extends JSONObject {
 	 * @throws JSONException
 	 */
 	public synchronized void commit() throws JSONException {
-		FileWriter writer;
-		try {
-			writer = new FileWriter(file);
+	    File tmpFile0 = new File(this.file.getParentFile(), this.file.getName() + "." + System.currentTimeMillis());
+	    File tmpFile1 = new File(tmpFile0.getParentFile(), tmpFile0.getName() + "1");
+        try {
+		    FileWriter writer = new FileWriter(tmpFile0);
 			writer.write(this.toString());
 			writer.close();
+            this.file.renameTo(tmpFile1);
+            tmpFile0.renameTo(this.file);
+            tmpFile1.delete();
 		} catch (IOException e) {
 			throw new JSONException(e.getMessage());
 		}
