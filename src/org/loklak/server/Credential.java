@@ -1,5 +1,5 @@
 /**
- *  Identity
+ *  Credential
  *  Copyright 24.05.2016 by Michael Peter Christen, @0rb1t3r
  *
  *  This library is free software; you can redistribute it and/or
@@ -20,8 +20,7 @@
 package org.loklak.server;
 
 /**
- * an identity is only a string which contains details sufficient enough to
- * identify a user and to send data to that user
+ * A credential is used as key in DAO.authentication
  */
 public class Credential {
 
