@@ -47,6 +47,9 @@ import org.eclipse.jetty.server.handler.IPAccessHandler;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
 import org.eclipse.jetty.server.handler.gzip.GzipHandler;
+import org.eclipse.jetty.server.session.HashSessionIdManager;
+import org.eclipse.jetty.server.session.HashSessionManager;
+import org.eclipse.jetty.server.session.SessionHandler;
 import org.eclipse.jetty.util.ConcurrentHashSet;
 import org.eclipse.jetty.util.log.Log;
 import org.eclipse.jetty.util.thread.QueuedThreadPool;
@@ -586,10 +589,16 @@ public class LoklakServer {
         gzipHandler.setIncludedMimeTypes("text/html,text/plain,text/xml,text/css,application/javascript,text/javascript,application/json");
         gzipHandler.setHandler(handlerlist2);
         
-        securityHandler.setHandler(gzipHandler);
+        HashSessionIdManager idmanager = new HashSessionIdManager();
+        LoklakServer.server.setSessionIdManager(idmanager);
+        SessionHandler sessions = new SessionHandler(new HashSessionManager());
+        sessions.setHandler(gzipHandler);
+        securityHandler.setHandler(sessions);
         ipaccess.setHandler(securityHandler);
         
         LoklakServer.server.setHandler(ipaccess);
+        
+        
     }
     
     private static void checkServerPorts(int httpPort, int httpsPort) throws IOException{
