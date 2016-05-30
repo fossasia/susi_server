@@ -117,16 +117,15 @@ public abstract class AbstractAPIHandler extends HttpServlet implements APIHandl
         
         // user identification
         String host = request.getRemoteHost();
-        String credential = "host:" + host; // default identity - anonymous
-        // ** TODO: add here more credential methods (HTTP-Authentify, Cookies etc...)
+        Credential credential = getCredential(request);
 
         // user authentication: find the user using the credentials given in http request entities
         JSONObject authentication_obj = null;
-        if (DAO.authentication.has(credential)) {
-            authentication_obj = DAO.authentication.getJSONObject(credential);
+        if (DAO.authentication.has(credential.toString())) {
+            authentication_obj = DAO.authentication.getJSONObject(credential.toString());
         }  else {
             authentication_obj = new JSONObject();
-            DAO.authentication.put(credential, authentication_obj);
+            DAO.authentication.put(credential.toString(), authentication_obj);
         }
         Authentication authentication = new Authentication(authentication_obj, DAO.authentication);
         Identity identity = authentication.getIdentity();
@@ -183,38 +182,44 @@ public abstract class AbstractAPIHandler extends HttpServlet implements APIHandl
     /**
      * Checks a request for valid login data, send via cookie or parameters
      * @param request
-     * @return authentication_obj if login was succesfull, null otherwise
+     * @return email credential, login token or hostname
      */
-    public JSONObject getAuthenticationObject(HttpServletRequest request){
-
+    private Credential getCredential(HttpServletRequest request){
+    	
     	if(request.getSession() != null){ // check if session exists
     		if("true".equals(request.getParameter("logout"))){
     			HttpSession session=request.getSession();  
     			session.invalidate();  
     		}
-    		if(request.getSession().getAttribute("user_id") != null){
+    		else if(request.getSession().getAttribute("user_id") != null){
     			String user_id = request.getSession().getAttribute("user_id").toString();
-        		return DAO.authentication.has(user_id) ? DAO.authorization.getJSONObject(user_id) : null;
+    			
+    			Credential credential = new Credential(Credential.Type.email, user_id);
+    			if(DAO.authentication.has(credential.toString())) return credential;
     		}
     	}
-    	else if (request.getParameter("userid") != null && request.getParameter("password") != null ){ // check if login parameters are set
-    		String user_id = request.getParameter("userid");
+    	else if (request.getParameter("user_id") != null && request.getParameter("password") != null ){ // check if login parameters are set
+    		String user_id = request.getParameter("user_id");
     		String password = request.getParameter("password");
     		
+    		Credential credential = new Credential(Credential.Type.email, user_id);
+    		
     		// check if password is valid
-    		if(DAO.authentication.has(user_id)){
+    		if(DAO.authentication.has(credential.toString())){
+    			JSONObject authentication_obj = DAO.authentication.getJSONObject(credential.toString());
+    			
     			try{
-    				String passwordHash = DAO.authentication.getJSONObject(user_id).getString("password");
-    				String salt = DAO.authentication.getJSONObject(user_id).getString("salt");
+    				String passwordHash = authentication_obj.getString("password");
+    				String salt = authentication_obj.getString("salt");
         			if(getHash(password, salt) != passwordHash){
-        				return null;
+        				return getHostCredential(request);
         			}
     			} catch(JSONException e){
-    				return null;
+    				return getHostCredential(request);
     			}
     		}
     		else{
-    			return null;
+    			return getHostCredential(request);
     		}
     		
     		// only create a session if requested (by login page)
@@ -226,10 +231,24 @@ public abstract class AbstractAPIHandler extends HttpServlet implements APIHandl
 	    			// TODO: set a cookie
 	    		}
     		}
-    		return DAO.authorization.getJSONObject(user_id);
+    		return credential;
+    	}
+    	else if (request.getParameter("login_token") != null){
+    		return new Credential(Credential.Type.login_token, request.getParameter("login_token"));
     	}
     	
-    	return null;
+    	
+    	return getHostCredential(request);
+    }
+    
+    /**
+     * Returns a simple host credential
+     * @param request
+     * @return credential with host ip
+     */
+    private Credential getHostCredential(HttpServletRequest request){
+    	Credential credential = new Credential(Credential.Type.host, request.getRemoteHost());
+    	return credential;
     }
     
     /**

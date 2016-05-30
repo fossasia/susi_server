@@ -60,7 +60,7 @@ public class Identity {
     }
     
     public boolean isAnonymous() {
-        return this.id.startsWith(Type.host.prefix);
+        return this.id.startsWith(Type.host.prefix());
     }
     
     public Type getType() {
