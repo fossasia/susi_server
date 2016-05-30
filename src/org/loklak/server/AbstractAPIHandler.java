@@ -21,12 +21,17 @@ package org.loklak.server;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.util.Base64;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 
+import org.json.JSONException;
 import org.json.JSONObject;
 import org.loklak.data.DAO;
 import org.loklak.http.ClientConnection;
@@ -112,16 +117,15 @@ public abstract class AbstractAPIHandler extends HttpServlet implements APIHandl
         
         // user identification
         String host = request.getRemoteHost();
-        String credential = "host:" + host; // default identity - anonymous
-        // ** TODO: add here more credential methods (HTTP-Authentify, Cookies etc...)
+        Credential credential = getCredential(request);
 
         // user authentication: find the user using the credentials given in http request entities
         JSONObject authentication_obj = null;
-        if (DAO.authentication.has(credential)) {
-            authentication_obj = DAO.authentication.getJSONObject(credential);
+        if (DAO.authentication.has(credential.toString())) {
+            authentication_obj = DAO.authentication.getJSONObject(credential.toString());
         }  else {
             authentication_obj = new JSONObject();
-            DAO.authentication.put(credential, authentication_obj);
+            DAO.authentication.put(credential.toString(), authentication_obj);
         }
         Authentication authentication = new Authentication(authentication_obj, DAO.authentication);
         Identity identity = authentication.getIdentity();
@@ -181,4 +185,93 @@ public abstract class AbstractAPIHandler extends HttpServlet implements APIHandl
             return;
         }
     }
+    
+    /**
+     * Checks a request for valid login data, send via cookie or parameters
+     * @param request
+     * @return email credential, login token or hostname
+     */
+    private Credential getCredential(HttpServletRequest request){
+    	
+    	if(request.getSession() != null){ // check if session exists
+    		if("true".equals(request.getParameter("logout"))){
+    			HttpSession session=request.getSession();  
+    			session.invalidate();  
+    		}
+    		else if(request.getSession().getAttribute("user_id") != null){
+    			String user_id = request.getSession().getAttribute("user_id").toString();
+    			
+    			Credential credential = new Credential(Credential.Type.email, user_id);
+    			if(DAO.authentication.has(credential.toString())) return credential;
+    		}
+    	}
+    	else if (request.getParameter("user_id") != null && request.getParameter("password") != null ){ // check if login parameters are set
+    		String user_id = request.getParameter("user_id");
+    		String password = request.getParameter("password");
+    		
+    		Credential credential = new Credential(Credential.Type.email, user_id);
+    		
+    		// check if password is valid
+    		if(DAO.authentication.has(credential.toString())){
+    			JSONObject authentication_obj = DAO.authentication.getJSONObject(credential.toString());
+    			
+    			try{
+    				String passwordHash = authentication_obj.getString("password");
+    				String salt = authentication_obj.getString("salt");
+        			if(getHash(password, salt) != passwordHash){
+        				return getHostCredential(request);
+        			}
+    			} catch(JSONException e){
+    				return getHostCredential(request);
+    			}
+    		}
+    		else{
+    			return getHostCredential(request);
+    		}
+    		
+    		// only create a session if requested (by login page)
+    		if("true".equals(request.getParameter("request_session"))){
+    			HttpSession session=request.getSession();
+    			session.setAttribute("user_id",user_id);  
+    			
+    			if("true".equals(request.getParameter("request_cookie"))){
+	    			// TODO: set a cookie
+	    		}
+    		}
+    		return credential;
+    	}
+    	else if (request.getParameter("login_token") != null){
+    		return new Credential(Credential.Type.login_token, request.getParameter("login_token"));
+    	}
+    	
+    	
+    	return getHostCredential(request);
+    }
+    
+    /**
+     * Returns a simple host credential
+     * @param request
+     * @return credential with host ip
+     */
+    private Credential getHostCredential(HttpServletRequest request){
+    	Credential credential = new Credential(Credential.Type.host, request.getRemoteHost());
+    	return credential;
+    }
+    
+    /**
+     * Create a hash for an input an salt
+     * @param input
+     * @param salt
+     * @return String hash
+     */
+    public static String getHash(String input, String salt){
+		try {
+			MessageDigest md = MessageDigest.getInstance("SHA-256");
+			md.update((salt + input).getBytes());
+			return Base64.getEncoder().encodeToString(md.digest());
+		} catch (NoSuchAlgorithmException e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
 }
