@@ -92,6 +92,7 @@ import org.loklak.api.server.AccessServlet;
 import org.loklak.api.server.CampaignServlet;
 import org.loklak.api.server.UserServlet;
 import org.loklak.api.server.SettingsServlet;
+import org.loklak.api.server.SignUpServlet;
 import org.loklak.api.server.AccountServlet;
 import org.loklak.api.vis.MapServlet;
 import org.loklak.api.vis.MarkdownServlet;
@@ -522,6 +523,9 @@ public class LoklakServer {
         accountServletHolder.getRegistration().setMultipartConfig(new MultipartConfigElement(tmp.getAbsolutePath()));
         servletHandler.addServlet(accountServletHolder, "/api/account.json");
         servletHandler.addServlet(UserServlet.class, "/api/user.json");
+        ServletHolder signUpServletHolder = new ServletHolder(SignUpServlet.class);
+        signUpServletHolder.getRegistration().setMultipartConfig(new MultipartConfigElement(tmp.getAbsolutePath()));
+        servletHandler.addServlet(signUpServletHolder, "/api/signup.json");
         servletHandler.addServlet(CampaignServlet.class, "/api/campaign.json");
         servletHandler.addServlet(ImportProfileServlet.class, "/api/import.json");
         servletHandler.addServlet(SettingsServlet.class, "/api/settings.json");
