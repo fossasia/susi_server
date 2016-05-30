@@ -108,7 +108,7 @@ public abstract class AbstractAPIHandler extends HttpServlet implements APIHandl
         process(request, response, query);
     }
     
-private void process(HttpServletRequest request, HttpServletResponse response, Query query) throws ServletException, IOException {
+    private void process(HttpServletRequest request, HttpServletResponse response, Query query) throws ServletException, IOException {
         
         // basic protection
         APIServiceLevel serviceLevel = getDefaultServiceLevel();
