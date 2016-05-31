@@ -82,7 +82,7 @@ $(document).ready(function()
             alert("One or more fields are wrong / empty. Please correct");
         } else{
             var mail = $('#email').val();
-            var pwd = $('#pass').val();
+            var pwd = base64($('#pass').val());
             var posting = $.post( "/api/signup.json", { email: mail, pass: pwd }, function(data) {
                 console.log(data.status);
                 console.log(data.reason);
@@ -140,6 +140,12 @@ $(document).ready(function()
         }    
 
     }
+
+    function base64(str) {
+	    return btoa(encodeURIComponent(str).replace(/%([0-9A-F]{2})/g, function(match, p1) {
+	        return String.fromCharCode('0x' + p1);
+	    }));
+	}
 
     function checkEmpty(){
         var emailval = $('#email').val();
