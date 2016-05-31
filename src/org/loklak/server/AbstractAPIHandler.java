@@ -42,7 +42,8 @@ import org.loklak.tools.UTF8;
 public abstract class AbstractAPIHandler extends HttpServlet implements APIHandler {
 
     private String[] serverProtocolHostStub = null;
-    private HttpServletRequest currentRequest;
+    private HttpServletRequest currentRequest = null;
+    protected Identity identity = null;
 
     public AbstractAPIHandler() {
         this.serverProtocolHostStub = null;
@@ -119,7 +120,7 @@ public abstract class AbstractAPIHandler extends HttpServlet implements APIHandl
         
         // user identification
         currentRequest = request;
-        Identity identity = getIdentity();
+        identity = getIdentity();
         
         // user authorization: we use the identification of the user to get the assigned authorization
         JSONObject authorization_obj = null;
@@ -204,8 +205,6 @@ public abstract class AbstractAPIHandler extends HttpServlet implements APIHandl
     			
     			JSONObject authentication_obj = DAO.authentication.getJSONObject(credential.toString());
     			
-    			Log.getLog().info("Authentication object: " + authentication_obj.toString());
-    			
     			if(authentication_obj.has("password") && authentication_obj.has("salt")){
     				Log.getLog().info("testing passwd");
 					String passwordHash = authentication_obj.getString("password");
@@ -221,11 +220,12 @@ public abstract class AbstractAPIHandler extends HttpServlet implements APIHandl
 	            		if("true".equals(currentRequest.getParameter("request_session"))){
 	            			Log.getLog().info("session requested");
 	            			
-	            			currentRequest.getSession().setAttribute("identity",identity);  
+	            			setSessionIdentity(identity);
 	            			
 	            			if("true".equals(currentRequest.getParameter("request_cookie"))){
 	            				Log.getLog().info("cookie requested");
-	        	    			// TODO: set a cookie
+	        	    			
+	            				setCookie();
 	        	    		}
 	            		}
 	            		
@@ -258,6 +258,18 @@ public abstract class AbstractAPIHandler extends HttpServlet implements APIHandl
     		return (Identity) currentRequest.getSession().getAttribute("identity");
     	}
     	return null;
+    }
+    
+    private void setSessionIdentity(Identity identity){
+    	currentRequest.getSession().setAttribute("identity",identity);
+    }
+    
+    protected void setSessionIdentity(){
+    	setSessionIdentity(identity);
+    }
+    
+    protected void setCookie(){
+    	// TODO: set a cookie
     }
     
     /**

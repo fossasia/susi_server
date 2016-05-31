@@ -72,7 +72,7 @@ public class SignUpServlet extends AbstractAPIHandler implements APIHandler {
     	String salt = createRandomSalt();
     	user_obj.put("salt", salt);
     	user_obj.put("password", getHash(new String(Base64.getDecoder().decode(post.get("pass", null))), salt));
-    	Identity identity = new Identity(Identity.Type.user, credential.getPayload());
+    	Identity identity = new Identity(Identity.Type.email, credential.getPayload());
     	user_obj.put("id",identity.toString());
         DAO.authentication.put(credential.toString(), user_obj);
     	
