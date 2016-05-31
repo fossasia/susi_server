@@ -90,6 +90,7 @@ import org.loklak.api.search.ShortlinkFromTweetServlet;
 import org.loklak.api.search.SuggestServlet;
 import org.loklak.api.server.AccessServlet;
 import org.loklak.api.server.CampaignServlet;
+import org.loklak.api.server.LoginServlet;
 import org.loklak.api.server.LoginTestServlet;
 import org.loklak.api.server.UserServlet;
 import org.loklak.api.server.SettingsServlet;
@@ -525,6 +526,7 @@ public class LoklakServer {
         servletHandler.addServlet(accountServletHolder, "/api/account.json");
         servletHandler.addServlet(UserServlet.class, "/api/user.json");
         servletHandler.addServlet(SignUpServlet.class, "/api/signup.json");
+        servletHandler.addServlet(LoginServlet.class, "/api/login.json");
         servletHandler.addServlet(LoginTestServlet.class, "/api/logintest.json");
         servletHandler.addServlet(CampaignServlet.class, "/api/campaign.json");
         servletHandler.addServlet(ImportProfileServlet.class, "/api/import.json");

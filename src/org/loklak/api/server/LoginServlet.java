@@ -1,5 +1,5 @@
 /**
- *  LoginTestServlet
+ *  LoginServlet
  *  Copyright 27.05.2015 by Robert Mader, @treba13
  *
  *  This library is free software; you can redistribute it and/or
@@ -25,9 +25,10 @@ import org.loklak.server.APIHandler;
 import org.loklak.server.APIServiceLevel;
 import org.loklak.server.AbstractAPIHandler;
 import org.loklak.server.Authorization;
+import org.loklak.server.Identity;
 import org.loklak.server.Query;
 
-public class LoginTestServlet extends AbstractAPIHandler implements APIHandler {
+public class LoginServlet extends AbstractAPIHandler implements APIHandler {
    
     private static final long serialVersionUID = 8578478303032749879L;
 
@@ -42,7 +43,7 @@ public class LoginTestServlet extends AbstractAPIHandler implements APIHandler {
     }
 
     public String getAPIPath() {
-        return "/api/logintest.json";
+        return "/api/login.json";
     }
     
     @Override
@@ -50,9 +51,14 @@ public class LoginTestServlet extends AbstractAPIHandler implements APIHandler {
 
     	JSONObject result = new JSONObject();
     	
-    	result.put("identity from session", getSessionIdentity() != null ? getSessionIdentity().toString() : null);
-    	
-    	result.put("final identity", identity.toString());
+    	if(identity.getType() == Identity.Type.email){
+    		result.put("status", "ok");
+    		result.put("reason", "ok");
+    	}
+    	else{
+    		result.put("status", "error");
+    		result.put("reason", "Wrong login credentials");
+    	}
     	
 		return result;
     }
