@@ -208,7 +208,7 @@ public abstract class AbstractAPIHandler extends HttpServlet implements APIHandl
     	}
     	else if (request.getParameter("user_id") != null && request.getParameter("password") != null ){ // check if login parameters are set
     		String user_id = request.getParameter("user_id");
-    		String password = request.getParameter("password");
+    		String password = Base64.getDecoder().decode(request.getParameter("password")).toString();
     		
     		Credential credential = new Credential(Credential.Type.email, user_id);
     		
