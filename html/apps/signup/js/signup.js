@@ -81,10 +81,15 @@ $(document).ready(function()
         if(total){
             alert("One or more fields are wrong / empty. Please correct");
         } else{
-            alert("Success, send to Database");
-            //TODO: Send to Database
+            var mail = $('#email').val();
+            var pwd = $('#pass').val();
+            var posting = $.post( "/api/signup.json", { email: mail, pass: pwd }, function(data) {
+                console.log(data.status);
+                console.log(data.reason);
+                alert(data.status + ", " + data.reason);
+            }, "json" );
         }
-    })
+    });
 
     function strengthlvl(pass){
 
