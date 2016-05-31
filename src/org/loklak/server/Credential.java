@@ -27,7 +27,7 @@ public class Credential {
     public final static char SEPARATOR = ':';
     
     public enum Type {
-        email,
+        passwdLogin,
         login_token,
         host;
         private String prefix;
@@ -53,10 +53,11 @@ public class Credential {
     
     public Credential(Type type, String untypedId) {
         this.id = type.name() + SEPARATOR + untypedId;
+        this.separatorPos = this.id.indexOf(SEPARATOR);
     }
     
-    public boolean isEmail() {
-        return this.id.startsWith(Type.email.prefix());
+    public boolean isPasswdLogin() {
+        return this.id.startsWith(Type.passwdLogin.prefix());
     }
     
     public boolean isToken() {

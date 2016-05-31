@@ -28,7 +28,7 @@ public class Identity {
     public final static char SEPARATOR = ':';
     
     public enum Type {
-        email, // non-anonymous identity using the email address
+        user, // non-anonymous identity
         host; // anonymous identity users which do not authentify; they are identified by their host name
         private String prefix;
         private Type() {
@@ -53,10 +53,11 @@ public class Identity {
     
     public Identity(Type type, String untypedId) {
         this.id = type.name() + SEPARATOR + untypedId;
+        this.separatorPos = this.id.indexOf(SEPARATOR);
     }
     
-    public boolean isEmail() {
-        return this.id.startsWith(Type.email.prefix());
+    public boolean isUser() {
+        return this.id.startsWith(Type.user.prefix());
     }
     
     public boolean isAnonymous() {

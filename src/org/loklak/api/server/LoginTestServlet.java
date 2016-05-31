@@ -19,20 +19,15 @@
 
 package org.loklak.api.server;
 
-import java.util.Base64;
-
 import org.json.JSONObject;
-import org.loklak.data.DAO;
 import org.loklak.server.APIException;
 import org.loklak.server.APIHandler;
 import org.loklak.server.APIServiceLevel;
 import org.loklak.server.AbstractAPIHandler;
 import org.loklak.server.Authorization;
-import org.loklak.server.Credential;
-import org.loklak.server.Identity;
 import org.loklak.server.Query;
 
-public class SignUpServlet extends AbstractAPIHandler implements APIHandler {
+public class LoginTestServlet extends AbstractAPIHandler implements APIHandler {
    
     private static final long serialVersionUID = 8578478303032749879L;
 
@@ -47,7 +42,7 @@ public class SignUpServlet extends AbstractAPIHandler implements APIHandler {
     }
 
     public String getAPIPath() {
-        return "/api/signup.json";
+        return "/api/logintest.json";
     }
     
     @Override
@@ -55,29 +50,8 @@ public class SignUpServlet extends AbstractAPIHandler implements APIHandler {
 
     	JSONObject result = new JSONObject();
     	
-    	if(post.get("email",null) == null || post.get("pass", null) == null){
-    		result.put("status", "error");
-    		result.put("reason", "email or password empty");
-    		return result;
-    	}
+    	result.put("identity from session", getSessionIdentity() != null ? getSessionIdentity().toString() : null);
     	
-    	Credential credential = new Credential(Credential.Type.passwdLogin, post.get("email",null));
-    	if (DAO.authentication.has(credential.toString())) {
-    		result.put("status", "error");
-    		result.put("reason", "email already taken");
-    		return result;
-    	}
-    	
-    	JSONObject user_obj = new JSONObject();
-    	String salt = createRandomSalt();
-    	user_obj.put("salt", salt);
-    	user_obj.put("password", getHash(new String(Base64.getDecoder().decode(post.get("pass", null))), salt));
-    	Identity identity = new Identity(Identity.Type.user, credential.getPayload());
-    	user_obj.put("id",identity.toString());
-        DAO.authentication.put(credential.toString(), user_obj);
-    	
-    	result.put("status", "ok");
-		result.put("reason", "ok");
 		return result;
     }
     
