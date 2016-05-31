@@ -19,6 +19,8 @@
 
 package org.loklak.api.server;
 
+import java.util.Base64;
+
 import org.json.JSONObject;
 import org.loklak.data.DAO;
 import org.loklak.server.APIException;
@@ -68,7 +70,7 @@ public class SignUpServlet extends AbstractAPIHandler implements APIHandler {
     	JSONObject user_obj = new JSONObject();
     	String salt = createRandomSalt();
     	user_obj.put("salt", salt);
-    	user_obj.put("password", getHash(post.get("pass", null), salt));
+    	user_obj.put("password", getHash(Base64.getDecoder().decode(post.get("pass", null)).toString(), salt));
         DAO.authentication.put(credential.toString(), user_obj);
     	
     	result.put("status", "ok");
