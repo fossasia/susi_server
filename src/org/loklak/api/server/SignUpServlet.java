@@ -62,9 +62,9 @@ public class SignUpServlet extends AbstractAPIHandler implements APIHandler {
     		return result;
     	}
     	
-    	if(post.get("email",null) == null || post.get("pass", null) == null){
+    	if(post.get("signup",null) == null || post.get("password", null) == null){
     		result.put("status", "error");
-    		result.put("reason", "email or password empty");
+    		result.put("reason", "signup or password empty");
     		return result;
     	}
     	
@@ -77,6 +77,7 @@ public class SignUpServlet extends AbstractAPIHandler implements APIHandler {
     		result.put("reason", "malformed query");
     		return result;
 		}
+    	
     	
     	Credential credential = new Credential(Credential.Type.passwdLogin, signup);
     	if (DAO.authentication.has(credential.toString())) {

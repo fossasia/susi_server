@@ -199,7 +199,7 @@ public abstract class AbstractAPIHandler extends HttpServlet implements APIHandl
 				login = URLDecoder.decode(request.getParameter("login"),"UTF-8");
 				password = URLDecoder.decode(request.getParameter("password"),"UTF-8");
 			} catch (UnsupportedEncodingException e) {}
-    		
+
     		Credential credential = new Credential(Credential.Type.passwdLogin, login);
     		
     		// check if password is valid
