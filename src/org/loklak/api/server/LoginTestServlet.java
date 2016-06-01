@@ -50,9 +50,7 @@ public class LoginTestServlet extends AbstractAPIHandler implements APIHandler {
 
     	JSONObject result = new JSONObject();
     	
-    	result.put("identity from session", getSessionIdentity() != null ? getSessionIdentity().toString() : null);
-    	
-    	result.put("final identity", identity.toString());
+    	result.put("identity", rights.getIdentity().toString());
     	
 		return result;
     }
