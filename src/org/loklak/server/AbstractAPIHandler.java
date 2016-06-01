@@ -29,6 +29,7 @@ import java.util.Base64;
 import java.util.Random;
 
 import javax.servlet.ServletException;
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -119,7 +120,7 @@ public abstract class AbstractAPIHandler extends HttpServlet implements APIHandl
         
         
         // user identification
-        Identity identity = getIdentity(request);
+        Identity identity = getIdentity(request, response);
         
         // user authorization: we use the identification of the user to get the assigned authorization
         JSONObject authorization_obj = null;
@@ -185,17 +186,40 @@ public abstract class AbstractAPIHandler extends HttpServlet implements APIHandl
      * Checks a request for valid login data, send via cookie or parameters
      * @return user identity if some login is active, anonymous identity otherwise
      */
-    private Identity getIdentity(HttpServletRequest request){
+    private Identity getIdentity(HttpServletRequest request, HttpServletResponse response){
     	
     	// check for login information
 		if("true".equals(request.getParameter("logout"))){
 			request.getSession().invalidate();
 		}
-		else if(request.getSession().getAttribute("identity") != null){
+		if(request.getSession().getAttribute("identity") != null){
 			Log.getLog().info("login via session");
 			return (Identity) request.getSession().getAttribute("identity");
 		}
-    	else if (request.getParameter("login") != null && request.getParameter("password") != null ){ // check if login parameters are set
+		if(request.getCookies() != null){
+			for(Cookie cookie : request.getCookies()){
+				if("login".equals(cookie.getName())){
+					
+					Log.getLog().info("login cookie found");
+					Credential credential = new Credential(Credential.Type.cookie, cookie.getValue());
+					
+					if(DAO.authentication.has(credential.toString())){
+						Log.getLog().info("cookie valid");
+						
+						Authentication authentication = new Authentication(DAO.authentication.getJSONObject(credential.toString()), DAO.authentication);
+						Identity identity = authentication.getIdentity();
+						
+						if(identity != null){
+							request.getSession().setAttribute("identity",identity);
+							//TODO: set validity time up again
+							return identity;
+						}
+					}
+					break;
+				}
+			}
+		}
+    	if (request.getParameter("login") != null && request.getParameter("password") != null ){ // check if login parameters are set
     		Log.getLog().info("login via passwd");
     		
     		String login = null;
@@ -205,7 +229,7 @@ public abstract class AbstractAPIHandler extends HttpServlet implements APIHandl
 				password = URLDecoder.decode(request.getParameter("password"),"UTF-8");
 			} catch (UnsupportedEncodingException e) {}
 
-    		Credential credential = new Credential(Credential.Type.passwdLogin, login);
+    		Credential credential = new Credential(Credential.Type.passwd_login, login);
     		
     		// check if password is valid
     		if(DAO.authentication.has(credential.toString())){
@@ -232,8 +256,19 @@ public abstract class AbstractAPIHandler extends HttpServlet implements APIHandl
 	            			
 	            			if("true".equals(request.getParameter("request_cookie"))){
 	            				Log.getLog().info("cookie requested");
+	            				
+	            				String loginToken = createRandomString(30);
+	            				
+	            				Cookie loginCookie = new Cookie("login", loginToken);
+	            				loginCookie.setPath("/");
+	            				loginCookie.setMaxAge(60 * 60 * 24 * 7);
+	            				
+	            				Credential cookieCredential = new Credential(Credential.Type.cookie, loginToken);
+	            				JSONObject user_obj = new JSONObject();
+	            				user_obj.put("id",identity.toString());
+	            				DAO.authentication.put(cookieCredential.toString(), user_obj);
 	        	    			
-	            				// TODO: set a cookie
+	            				response.addCookie(loginCookie);
 	        	    		}
 	            		}
 	            		

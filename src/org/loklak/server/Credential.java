@@ -27,7 +27,8 @@ public class Credential {
     public final static char SEPARATOR = ':';
     
     public enum Type {
-        passwdLogin,
+    	passwd_login,
+        cookie,
         login_token,
         host;
         private String prefix;
@@ -57,7 +58,11 @@ public class Credential {
     }
     
     public boolean isPasswdLogin() {
-        return this.id.startsWith(Type.passwdLogin.prefix());
+        return this.id.startsWith(Type.passwd_login.prefix());
+    }
+    
+    public boolean isCookie() {
+        return this.id.startsWith(Type.cookie.prefix());
     }
     
     public boolean isToken() {
