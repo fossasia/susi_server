@@ -21,6 +21,8 @@ package org.loklak.server;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Base64;
@@ -191,9 +193,13 @@ public abstract class AbstractAPIHandler extends HttpServlet implements APIHandl
     	else if (request.getParameter("login") != null && request.getParameter("password") != null ){ // check if login parameters are set
     		Log.getLog().info("login via passwd");
     		
-    		String login = request.getParameter("login");
-    		String password = new String(Base64.getDecoder().decode(request.getParameter("password")));
-    		
+    		String login = null;
+    		String password = null;
+			try {
+				login = URLDecoder.decode(request.getParameter("login"),"UTF-8");
+				password = URLDecoder.decode(request.getParameter("password"),"UTF-8");
+			} catch (UnsupportedEncodingException e) {}
+
     		Credential credential = new Credential(Credential.Type.passwdLogin, login);
     		
     		// check if password is valid
@@ -276,11 +282,11 @@ public abstract class AbstractAPIHandler extends HttpServlet implements APIHandl
 		return null;
 	}
     
-    public static String createRandomSalt(){
+    public static String createRandomString(Integer length){
     	char[] chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789".toCharArray();
     	StringBuilder sb = new StringBuilder();
     	Random random = new Random();
-    	for (int i = 0; i < 20; i++) {
+    	for (int i = 0; i < length; i++) {
     	    char c = chars[random.nextInt(chars.length)];
     	    sb.append(c);
     	}
