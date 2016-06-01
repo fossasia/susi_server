@@ -19,7 +19,8 @@
 
 package org.loklak.api.server;
 
-import java.util.Base64;
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
 
 import org.json.JSONObject;
 import org.loklak.data.DAO;
@@ -67,7 +68,17 @@ public class SignUpServlet extends AbstractAPIHandler implements APIHandler {
     		return result;
     	}
     	
-    	Credential credential = new Credential(Credential.Type.passwdLogin, post.get("email",null));
+    	String signup, password;
+    	try {
+    		signup = URLDecoder.decode(post.get("signup",null),"UTF-8");
+			password = URLDecoder.decode(post.get("password",null),"UTF-8");
+		} catch (UnsupportedEncodingException e) {
+			result.put("status", "error");
+    		result.put("reason", "malformed query");
+    		return result;
+		}
+    	
+    	Credential credential = new Credential(Credential.Type.passwdLogin, signup);
     	if (DAO.authentication.has(credential.toString())) {
     		result.put("status", "error");
     		result.put("reason", "email already taken");
@@ -75,9 +86,9 @@ public class SignUpServlet extends AbstractAPIHandler implements APIHandler {
     	}
     	
     	JSONObject user_obj = new JSONObject();
-    	String salt = createRandomSalt();
+    	String salt = createRandomString(20);
     	user_obj.put("salt", salt);
-    	user_obj.put("passwordHash", getHash(new String(Base64.getDecoder().decode(post.get("pass", null))), salt));
+    	user_obj.put("passwordHash", getHash(password, salt));
     	Identity identity = new Identity(Identity.Type.email, credential.getPayload());
     	user_obj.put("id",identity.toString());
         DAO.authentication.put(credential.toString(), user_obj);
