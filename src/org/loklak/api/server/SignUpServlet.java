@@ -55,7 +55,7 @@ public class SignUpServlet extends AbstractAPIHandler implements APIHandler {
 
     	JSONObject result = new JSONObject();
     	
-    	if("false".equals(DAO.getConfig("users.public.signup", "false"))){
+    	if(!rights.isAdmin() && !"true".equals(DAO.getConfig("users.public.signup", "false"))){
     		result.put("status", "error");
     		result.put("reason", "Public signup disabled");
     		return result;

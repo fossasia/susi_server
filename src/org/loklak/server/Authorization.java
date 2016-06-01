@@ -65,7 +65,7 @@ public class Authorization {
         return this;
     }
     
-    boolean isAdmin() {
+    public boolean isAdmin() {
         if (!this.json.has("admin")) return false;
         return this.json.getBoolean("admin");
     }
