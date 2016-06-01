@@ -34,6 +34,7 @@ public class Authorization {
     private JsonFile parent;
     private JSONObject json;
     private Accounting accounting;
+    private Identity identity;
     
     /**
      * create a new authorization object. The given json object must be taken
@@ -42,10 +43,11 @@ public class Authorization {
      * @param json object for storage of the authorization
      * @param parent the parent file or null if there is no parent file (no persistency)
      */
-    public Authorization(final JSONObject json, JsonFile parent) {
+    public Authorization(final JSONObject json, JsonFile parent, Identity identity) {
         this.json = json;
         this.parent = parent;
         this.accounting = null;
+        this.identity = identity;
     }
     
     public Accounting setAccounting(Accounting accounting) {
@@ -83,6 +85,10 @@ public class Authorization {
         JSONObject paths = this.json.getJSONObject("frequency");
         if (!paths.has(path)) return -1;
         return paths.getInt(path);
+    }
+    
+    public Identity getIdentity() {
+        return identity;
     }
 
 }

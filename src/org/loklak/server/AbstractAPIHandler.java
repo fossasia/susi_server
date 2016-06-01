@@ -42,8 +42,6 @@ import org.loklak.tools.UTF8;
 public abstract class AbstractAPIHandler extends HttpServlet implements APIHandler {
 
     private String[] serverProtocolHostStub = null;
-    private HttpServletRequest currentRequest = null;
-    protected Identity identity = null;
 
     public AbstractAPIHandler() {
         this.serverProtocolHostStub = null;
@@ -119,8 +117,7 @@ public abstract class AbstractAPIHandler extends HttpServlet implements APIHandl
         
         
         // user identification
-        currentRequest = request;
-        identity = getIdentity();
+        Identity identity = getIdentity(request);
         
         // user authorization: we use the identification of the user to get the assigned authorization
         JSONObject authorization_obj = null;
@@ -130,7 +127,7 @@ public abstract class AbstractAPIHandler extends HttpServlet implements APIHandl
             authorization_obj = new JSONObject();
             DAO.authorization.put(identity.toString(), authorization_obj);
         }
-        Authorization authorization = new Authorization(authorization_obj, DAO.authorization);
+        Authorization authorization = new Authorization(authorization_obj, DAO.authorization, identity);
 
         // user accounting: we maintain static and persistent user data; we again search the accounts using the usder identity string
         //JSONObject accounting_persistent_obj = DAO.accounting_persistent.has(user_id) ? DAO.accounting_persistent.getJSONObject(anon_id) : DAO.accounting_persistent.put(user_id, new JSONObject()).getJSONObject(user_id);
@@ -181,21 +178,21 @@ public abstract class AbstractAPIHandler extends HttpServlet implements APIHandl
      * Checks a request for valid login data, send via cookie or parameters
      * @return user identity if some login is active, anonymous identity otherwise
      */
-    private Identity getIdentity(){
+    private Identity getIdentity(HttpServletRequest request){
     	
     	// check for login information
-		if("true".equals(currentRequest.getParameter("identity"))){
-			currentRequest.getSession().invalidate();
+		if("true".equals(request.getParameter("logout"))){
+			request.getSession().invalidate();
 		}
-		else if(getSessionIdentity() != null){
+		else if(request.getSession().getAttribute("identity") != null){
 			Log.getLog().info("login via session");
-			return getSessionIdentity();
+			return (Identity) request.getSession().getAttribute("identity");
 		}
-    	else if (currentRequest.getParameter("login") != null && currentRequest.getParameter("password") != null ){ // check if login parameters are set
+    	else if (request.getParameter("login") != null && request.getParameter("password") != null ){ // check if login parameters are set
     		Log.getLog().info("login via passwd");
     		
-    		String login = currentRequest.getParameter("login");
-    		String password = new String(Base64.getDecoder().decode(currentRequest.getParameter("password")));
+    		String login = request.getParameter("login");
+    		String password = new String(Base64.getDecoder().decode(request.getParameter("password")));
     		
     		Credential credential = new Credential(Credential.Type.passwdLogin, login);
     		
@@ -205,9 +202,9 @@ public abstract class AbstractAPIHandler extends HttpServlet implements APIHandl
     			
     			JSONObject authentication_obj = DAO.authentication.getJSONObject(credential.toString());
     			
-    			if(authentication_obj.has("password") && authentication_obj.has("salt")){
+    			if(authentication_obj.has("passwordHash") && authentication_obj.has("salt")){
     				Log.getLog().info("testing passwd");
-					String passwordHash = authentication_obj.getString("password");
+					String passwordHash = authentication_obj.getString("passwordHash");
 					String salt = authentication_obj.getString("salt");
 					
 	    			if(getHash(password, salt).equals(passwordHash)){
@@ -217,15 +214,15 @@ public abstract class AbstractAPIHandler extends HttpServlet implements APIHandl
 	    				Identity identity = authentication.getIdentity();
 	    				
 	    				// only create a session if requested (by login page)
-	            		if("true".equals(currentRequest.getParameter("request_session"))){
+	            		if("true".equals(request.getParameter("request_session"))){
 	            			Log.getLog().info("session requested");
 	            			
-	            			setSessionIdentity(identity);
+	            			request.getSession().setAttribute("identity",identity);
 	            			
-	            			if("true".equals(currentRequest.getParameter("request_cookie"))){
+	            			if("true".equals(request.getParameter("request_cookie"))){
 	            				Log.getLog().info("cookie requested");
 	        	    			
-	            				setCookie();
+	            				// TODO: set a cookie
 	        	    		}
 	            		}
 	            		
@@ -238,46 +235,23 @@ public abstract class AbstractAPIHandler extends HttpServlet implements APIHandl
     			Log.getLog().info("user not found");
     		}
     	}
-    	else if (currentRequest.getParameter("login_token") != null){
-    		Credential credential = new Credential(Credential.Type.login_token, currentRequest.getParameter("login_token"));
+    	else if (request.getParameter("login_token") != null){
+    		Credential credential = new Credential(Credential.Type.login_token, request.getParameter("login_token"));
     		if(DAO.authentication.has(credential.toString())){
     			Authentication authentication = new Authentication(DAO.authentication.getJSONObject(credential.toString()), DAO.authentication);
 				return authentication.getIdentity();
     		}
     	}
     	
-        return getAnonymousIdentity();
-    }
-    
-    /**
-     * Check if the session holds a identity
-     * @return
-     */
-    protected Identity getSessionIdentity(){
-    	if(currentRequest.getSession().getAttribute("identity") != null){
-    		return (Identity) currentRequest.getSession().getAttribute("identity");
-    	}
-    	return null;
-    }
-    
-    private void setSessionIdentity(Identity identity){
-    	currentRequest.getSession().setAttribute("identity",identity);
-    }
-    
-    protected void setSessionIdentity(){
-    	setSessionIdentity(identity);
-    }
-    
-    protected void setCookie(){
-    	// TODO: set a cookie
+        return getAnonymousIdentity(request);
     }
     
     /**
      * Create or get a anonymous identity
      * @return
      */
-    private Identity getAnonymousIdentity(){
-    	Credential credential = new Credential(Credential.Type.host, currentRequest.getRemoteHost());
+    private Identity getAnonymousIdentity(HttpServletRequest request){
+    	Credential credential = new Credential(Credential.Type.host, request.getRemoteHost());
     	
         if (!DAO.authentication.has(credential.toString())) {
             DAO.authentication.put(credential.toString(), new JSONObject());

@@ -51,7 +51,7 @@ public class LoginServlet extends AbstractAPIHandler implements APIHandler {
 
     	JSONObject result = new JSONObject();
     	
-    	if(identity.getType() == Identity.Type.email){
+    	if(rights.getIdentity().getType() == Identity.Type.email){
     		result.put("status", "ok");
     		result.put("reason", "ok");
     	}

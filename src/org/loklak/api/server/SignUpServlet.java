@@ -55,6 +55,12 @@ public class SignUpServlet extends AbstractAPIHandler implements APIHandler {
 
     	JSONObject result = new JSONObject();
     	
+    	if("false".equals(DAO.getConfig("users.public.signup", "false"))){
+    		result.put("status", "error");
+    		result.put("reason", "Public signup disabled");
+    		return result;
+    	}
+    	
     	if(post.get("email",null) == null || post.get("pass", null) == null){
     		result.put("status", "error");
     		result.put("reason", "email or password empty");
@@ -71,7 +77,7 @@ public class SignUpServlet extends AbstractAPIHandler implements APIHandler {
     	JSONObject user_obj = new JSONObject();
     	String salt = createRandomSalt();
     	user_obj.put("salt", salt);
-    	user_obj.put("password", getHash(new String(Base64.getDecoder().decode(post.get("pass", null))), salt));
+    	user_obj.put("passwordHash", getHash(new String(Base64.getDecoder().decode(post.get("pass", null))), salt));
     	Identity identity = new Identity(Identity.Type.email, credential.getPayload());
     	user_obj.put("id",identity.toString());
         DAO.authentication.put(credential.toString(), user_obj);
