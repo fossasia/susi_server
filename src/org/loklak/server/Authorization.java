@@ -19,6 +19,8 @@
 
 package org.loklak.server;
 
+import java.time.Instant;
+
 import org.json.JSONObject;
 import org.loklak.tools.storage.JsonFile;
 
@@ -91,4 +93,13 @@ public class Authorization {
         return identity;
     }
 
+    public void setExpireTime(long time){
+    	this.json.put("expires_on", Instant.now().getEpochSecond() + time);
+    	if (this.parent != null) this.parent.commit();
+    }
+    
+    public boolean checkExpireTime(){
+    	if(this.json.has("expires_on") && this.json.getLong("expires_on") > Instant.now().getEpochSecond()) return true;
+    	return false;
+    }
 }
