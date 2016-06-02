@@ -50,7 +50,7 @@
       <div class="row">
         <div class="col-sm-3 col-md-2 sidebar">
           <div id="navSidebar">
-          <div><h4>Categories</h4></div>
+          <div><h4><center>CATEGORIES</center></h4></div>
             <ul class="nav nav-sidebar">
                 <li ng-repeat="category in categoryKeys track by $index"><a href="#{{category | nospace}}"  ng-click="categoryFilter($event)" id="{{category | nospace}}">{{category}}</a></li>
               </ul>
@@ -61,10 +61,10 @@
         <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
           <div>
             <h1>
-              <code>loklak Apps</code>
+              <code id="categoryName">Loklak Apps</code>
             </h1>
             <div class="content class" ng-repeat="app in apps track by $index">
-              <div class="span2" id="{{app.applicationCategory | nospace}}">
+              <div class="span2 swing" id="{{app.applicationCategory | nospace}}">
                 <div class="reveal">
                   <img ng-src="../{{ app.name }}/screenshot.png" />
                   <div class="hidden">
