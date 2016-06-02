@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en" ng-app='loklak'>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="Content-Language" content="en, english"/>
+    <meta name="author" content="@shivenmian"> 
+    <link rel="icon" type="image/png" href="../../artwork/favicon.png">
+    <title>Login</title> 
+      
+    <link href="../../css/bootstrap.min.css" rel="stylesheet" type="text/css">
+    <link href="../../css/dashboard.css" rel="stylesheet" type="text/css">
+    <link href="../../css/loklak.css" rel="stylesheet" type="text/css">
+    <link href="css/style.css" rel="stylesheet" type="text/css">
+
+    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+      <script src="../../js/html5shiv.min.js"></script>
+      <script src="../../js/respond.min.js"></script>
+    <![endif]-->
+    
+    <script src="../../js/angular.min.js"></script>
+    <script src="../../js/angular-route.min.js"></script>
+    <script src="../../js/loklak.js"></script>
+    <script src="../../js/jquery.min.js"></script>
+    <script src="js/loginpage.js"></script>
+  </head>
+
+  <body>
+
+    <nav class="navbar navbar-inverse navbar-fixed-top">
+      <div class="container-fluid">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand" href="http://loklak.org"><img src="../../images/loklak_org.png" height="24" style="float:left;"></a>
+        </div>
+        <div id="navbar" class="navbar-collapse collapse" ng-controller="topmenu">
+          <ul class="nav navbar-nav navbar-right" ng-repeat="item in results | reverse">
+            <li ng-repeat="(key, val) in item" ng-class="{active: $route.current.activetab == key}"><a ng-href="../../{{val}}">{{key}}</a></li>
+          </ul>
+        </div>
+      </div>
+    </nav>
+    <br><br><br>
+    <br>
+    <p style="margin-left:30%;">Log in to Loklak!</p>
+    <div class = "form"> 
+      <br><br>
+      <div class = "fields">
+        <input type = "text" id="email" placeholder="Email" required>
+        <label id = "emailfield"></label>
+      </div>
+
+      <div class="bar">
+          <i></i>
+      </div>
+
+      <div class = "fields">
+        <input name = "pass" id="pass" type="password" placeholder="Password" required>
+        <label id = "passfield"></label>
+      </div>
+      <br>
+      <div class = "options">
+        <input type = "checkbox" id = "remember">
+        <label for = "remember" id = "rememberme">Remember me</label>
+        <a href="../signup/index.html"><p id = "signupopt">Sign Up</p></a>
+      </div>
+      <br><br>
+      <a href = "#"><button id = "login">Login</button></a>
+      <br><br>
+      <p style="font-size:15px; margin-left:24%;">Forgot Password?</p>  
+    </div>
+
+    <!-- Bootstrap core JavaScript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+    <script src="../../js/jquery.min.js"></script>
+    <script src="../../js/bootstrap.min.js"></script>
+    <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
+    <script src="../../js/ie10-viewport-bug-workaround.js"></script>
+  </body>
+</html>
