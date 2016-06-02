@@ -22,7 +22,6 @@ $(document).ready(function()
         } else{
             var mail = encodeURIComponent($('#email').val());
             var pwd = encodeURIComponent($('#pass').val());
-            console.log(mail + "\n" + pwd + "\n" + checked + "\n" + session);
             var posting = $.post( "/api/login.json", { login: mail, password: pwd, request_cookie: checked, request_session: session }, function(data) {
                 console.log(data.status);
                 console.log(data.reason);
