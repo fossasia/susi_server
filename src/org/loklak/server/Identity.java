@@ -79,7 +79,7 @@ public class Identity {
     }
     
     public JSONObject toJSON() {
-        JSONObject json = new JSONObject();
+        JSONObject json = new JSONObject(true);
         json.put("type", getType().name());
         json.put("name", this.getName());
         return json;

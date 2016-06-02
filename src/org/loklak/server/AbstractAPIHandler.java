@@ -161,6 +161,12 @@ public abstract class AbstractAPIHandler extends HttpServlet implements APIHandl
                 json.remove("$EXPIRES");
             }
         
+            // add session information
+            JSONObject session = new JSONObject(true);
+            session.put("identity", identity.toJSON());
+            session.put("anonymous", identity.isAnonymous());
+            json.put("session", session);
+            
             // write json
             query.setResponse(response, "application/javascript");
             response.setCharacterEncoding("UTF-8");

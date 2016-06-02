@@ -34,7 +34,6 @@ import org.loklak.server.APIHandler;
 import org.loklak.server.APIServiceLevel;
 import org.loklak.server.AbstractAPIHandler;
 import org.loklak.server.Authorization;
-import org.loklak.server.Identity;
 import org.loklak.server.Query;
 
 public class AppsService extends AbstractAPIHandler implements APIHandler {
@@ -91,13 +90,6 @@ public class AppsService extends AbstractAPIHandler implements APIHandler {
         // write categories
         json.put("categories", categories.keySet().toArray(new String[categories.length()]));
         json.put("category", categories);
-        
-        // write user identity, if user is logged in
-        JSONObject session = new JSONObject(true);
-        Identity identity = auth.getIdentity();
-        session.put("identity", identity.toJSON());
-        session.put("anonymous", identity.isAnonymous());
-        json.put("session", session);
 
         return json;
     }
