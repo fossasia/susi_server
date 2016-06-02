@@ -96,6 +96,7 @@ public class AppsService extends AbstractAPIHandler implements APIHandler {
         JSONObject session = new JSONObject(true);
         Identity identity = auth.getIdentity();
         session.put("identity", identity.toJSON());
+        session.put("anonymous", identity.isAnonymous());
         json.put("session", session);
 
         return json;
