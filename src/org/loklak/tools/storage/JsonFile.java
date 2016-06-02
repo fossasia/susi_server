@@ -70,7 +70,7 @@ public class JsonFile extends JSONObject {
 	    File tmpFile1 = new File(tmpFile0.getParentFile(), tmpFile0.getName() + "1");
         try {
 		    FileWriter writer = new FileWriter(tmpFile0);
-			writer.write(this.toString());
+			writer.write(this.toString(2));
 			writer.close();
             this.file.renameTo(tmpFile1);
             tmpFile0.renameTo(this.file);
