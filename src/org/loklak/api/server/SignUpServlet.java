@@ -79,7 +79,7 @@ public class SignUpServlet extends AbstractAPIHandler implements APIHandler {
 		}
     	
     	
-    	Credential credential = new Credential(Credential.Type.passwdLogin, signup);
+    	Credential credential = new Credential(Credential.Type.passwd_login, signup);
     	if (DAO.authentication.has(credential.toString())) {
     		result.put("status", "error");
     		result.put("reason", "email already taken");
