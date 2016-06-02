@@ -14,7 +14,8 @@
     <link href="../../css/bootstrap.min.css" rel="stylesheet">
     <link href="../../css/dashboard.css" rel="stylesheet">
     <link href="../../css/loklak.css" rel="stylesheet">
-    <link href="style.css" rel="stylesheet"/>
+    <link href="css/style.css" rel="stylesheet"/>
+    <link href="css/animate.css" rel="stylesheet"/>
     <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
     <!--[if lt IE 9]>
 <script src="../../js/html5shiv.min.js"></script>
@@ -52,7 +53,7 @@
           <div id="navSidebar">
           <div><h4><center>CATEGORIES</center></h4></div>
             <ul class="nav nav-sidebar">
-                <li ng-repeat="category in categoryKeys track by $index"><a href="#{{category | nospace}}"  ng-click="categoryFilter($event)" id="{{category | nospace}}">{{category}}</a></li>
+                <li ng-repeat="category in categoryKeys track by $index"><a href="#{{category | nospace}}" ng-click="categoryFilter($event)" id="{{category | nospace}}">{{category}}</a></li>
               </ul>
           </div>
             <p>Read the 
@@ -64,7 +65,7 @@
               <code id="categoryName">Loklak Apps</code>
             </h1>
             <div class="content class" ng-repeat="app in apps track by $index">
-              <div class="span2 swing" id="{{app.applicationCategory | nospace}}">
+              <div class="span2 animated swing" id="{{app.applicationCategory | nospace}}">
                 <div class="reveal">
                   <img ng-src="../{{ app.name }}/screenshot.png" />
                   <div class="hidden">
