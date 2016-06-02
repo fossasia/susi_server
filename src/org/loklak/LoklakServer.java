@@ -68,7 +68,7 @@ import org.eclipse.jetty.security.authentication.BasicAuthenticator;
 import org.loklak.api.admin.CrawlerServlet;
 import org.loklak.api.admin.StatusServlet;
 import org.loklak.api.admin.ThreaddumpServlet;
-import org.loklak.api.cms.AppsServlet;
+import org.loklak.api.cms.AppsService;
 import org.loklak.api.cms.AssetServlet;
 import org.loklak.api.cms.DumpDownloadServlet;
 import org.loklak.api.cms.ProxyServlet;
@@ -511,7 +511,7 @@ public class LoklakServer {
         servletHandler.addServlet(AccessServlet.class, "/api/access.json");
         servletHandler.addServlet(AccessServlet.class, "/api/access.html");
         servletHandler.addServlet(AccessServlet.class, "/api/access.txt");
-        servletHandler.addServlet(AppsServlet.class, "/api/apps.json");
+        servletHandler.addServlet(AppsService.class, new AppsService().getAPIPath());
         servletHandler.addServlet(Hello.class, new Hello().getAPIPath() /*"/api/hello.json"*/);
         servletHandler.addServlet(PeersServlet.class, "/api/peers.json");
         servletHandler.addServlet(PeersServlet.class, "/api/peers.csv");

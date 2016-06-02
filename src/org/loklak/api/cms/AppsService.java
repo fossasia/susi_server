@@ -20,49 +20,46 @@
 package org.loklak.api.cms;
 
 import java.io.File;
-import java.io.IOException;
-import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
-import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
 import java.util.Set;
-
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 
 import org.eclipse.jetty.util.log.Log;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.loklak.data.DAO;
-import org.loklak.http.RemoteAccess;
-import org.loklak.server.FileHandler;
+import org.loklak.server.APIException;
+import org.loklak.server.APIHandler;
+import org.loklak.server.APIServiceLevel;
+import org.loklak.server.AbstractAPIHandler;
+import org.loklak.server.Authorization;
+import org.loklak.server.Identity;
 import org.loklak.server.Query;
 
-public class AppsServlet extends HttpServlet {
+public class AppsService extends AbstractAPIHandler implements APIHandler {
 
     private static final long serialVersionUID = -2577184683745091648L;
 
     @Override
-    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        doGet(request, response);
+    public String getAPIPath() {
+        return "/api/apps.json";
     }
-    
+
     @Override
-    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        Query post = RemoteAccess.evaluate(request);
+    public APIServiceLevel getDefaultServiceLevel() {
+        return APIServiceLevel.PUBLIC;
+    }
 
-        String callback = post.get("callback", "");
-        boolean jsonp = callback != null && callback.length() > 0;
-        post.setResponse(response, "application/javascript");
+    @Override
+    public APIServiceLevel getCustomServiceLevel(Authorization auth) {
+        return APIServiceLevel.PUBLIC;
+    }
 
-        String categorySelection = post.get("category", "");
+    @Override
+    public JSONObject serviceImpl(Query query, Authorization auth) throws APIException {
+
+        String categorySelection = query.get("category", "");
         
         // generate json
         File apps = new File(DAO.html_dir, "apps");
@@ -95,16 +92,13 @@ public class AppsServlet extends HttpServlet {
         json.put("categories", categories.keySet().toArray(new String[categories.length()]));
         json.put("category", categories);
         
-        // write json
-        response.setCharacterEncoding("UTF-8");
-        FileHandler.setCaching(response, 60);
-        PrintWriter sos = response.getWriter();
-        if (jsonp) sos.print(callback + "(");
-        sos.print(json.toString(2));
-        if (jsonp) sos.println(");");
-        sos.println();
+        // write user identity, if user is logged in
+        JSONObject session = new JSONObject(true);
+        Identity identity = auth.getIdentity();
+        session.put("identity", identity.toJSON());
+        json.put("session", session);
 
-        post.finalize();
+        return json;
     }
     
 }

@@ -19,6 +19,8 @@
 
 package org.loklak.server;
 
+import org.json.JSONObject;
+
 /**
  * an identity is only a string which contains details sufficient enough to
  * identify a user and to send data to that user
@@ -68,11 +70,18 @@ public class Identity {
         return Type.valueOf(id.substring(0, this.separatorPos));
     }
     
-    public String getPayload() {
+    public String getName() {
         return this.id.substring(this.separatorPos + 1);
     }
     
     public String toString() {
         return this.id;
+    }
+    
+    public JSONObject toJSON() {
+        JSONObject json = new JSONObject();
+        json.put("type", getType().name());
+        json.put("name", this.getName());
+        return json;
     }
 }
