@@ -19,8 +19,7 @@
 
 package org.loklak.server;
 
-import java.time.Instant;
-
+import org.json.JSONArray;
 import org.json.JSONObject;
 import org.loklak.tools.storage.JsonFile;
 
@@ -87,6 +86,24 @@ public class Authorization {
         JSONObject paths = this.json.getJSONObject("frequency");
         if (!paths.has(path)) return -1;
         return paths.getInt(path);
+    }
+    
+    public Authorization addService(ClientService service) {
+        if (!this.json.has("services")) this.json.put("services", new JSONObject());
+        JSONObject services = this.json.getJSONObject("services");
+        services.put(service.toString(), service.toJSON().getJSONObject("meta"));
+        parent.commit();
+        return this;
+    }
+    
+    public ClientService getService(String serviceId) {
+        if (!this.json.has("services")) this.json.put("services", new JSONObject());
+        JSONObject services = this.json.getJSONObject("services");
+        if (!services.has(serviceId)) return null;
+        JSONObject s = services.getJSONObject(serviceId);
+        ClientService service = new ClientService(serviceId);
+        service.setMetadata(s.getJSONObject("meta"));
+        return service;
     }
     
     public ClientIdentity getIdentity() {
