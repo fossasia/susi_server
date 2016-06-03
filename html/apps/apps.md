@@ -26,6 +26,10 @@ These front-ends are called 'apps' and must be placed here.
   - the file ```app.json``` must be in json-ld format (see http://json-ld.org/)
     and must contain the ```SoftwareApplication``` object from schema.org:
     https://schema.org/SoftwareApplication -- just copy-paste an existing ```app.json``` from another app to start you own file
+  - modify the field ```"permissions"``` in ```app.json```: it must contain a comma-separated list of all api paths,
+    that the app calls. This is used to apply authorization markers to the app, so it becomes visible if the app
+    is actually usable for the user. Examples:
+    ```"permissions":"/api/suggest.json"```, or ```"permissions":"/api/settings.json,/api/account.json"```
 
 3. Check quality of your app
   - do a json-ld validation: use https://developers.google.com/structured-data/testing-tool/ to check your ```app.json```
