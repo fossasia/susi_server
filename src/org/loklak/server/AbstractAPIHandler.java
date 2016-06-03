@@ -134,7 +134,6 @@ public abstract class AbstractAPIHandler extends HttpServlet implements APIHandl
             DAO.authorization.put(identity.toString(), authorization_obj);
         }
         Authorization authorization = new Authorization(authorization_obj, DAO.authorization, identity);
-        if(identity.isAnonymous()) authorization.setExpireTime(defaultAnonymousTime);
 
         // user accounting: we maintain static and persistent user data; we again search the accounts using the usder identity string
         //JSONObject accounting_persistent_obj = DAO.accounting_persistent.has(user_id) ? DAO.accounting_persistent.getJSONObject(anon_id) : DAO.accounting_persistent.put(user_id, new JSONObject()).getJSONObject(user_id);
