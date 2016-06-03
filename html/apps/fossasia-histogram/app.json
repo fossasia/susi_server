@@ -1,6 +1,7 @@
 {
   "@context":"http://schema.org",
   "@type":"SoftwareApplication",
+  "permissions":"/api/search.json",
   "name":"fossasia-histogram",
   "headline":"loklak tweets histogram about Fossasia",
   "alternativeHeadline":"work from GCI task",

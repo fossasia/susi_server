@@ -1,6 +1,7 @@
 {
   "@context":"http://schema.org",
   "@type":"SoftwareApplication",
+  "permissions":"/api/search.json,/api/suggest.json",
   "name":"barchart",
   "headline":"Stacked Bar Chart",
   "alternativeHeadline":"Using D3 stack layout",

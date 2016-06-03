@@ -1,6 +1,7 @@
 {
   "@context":"http://schema.org",
   "@type":"SoftwareApplication",
+  "permissions":"/api/login.json",
   "name":"loginpage",
   "headline":"Log In to Loklak",
   "alternativeHeadline":"Login",

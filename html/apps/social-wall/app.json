@@ -1,6 +1,7 @@
 {
   "@context":"http://schema.org",
   "@type":"SoftwareApplication",
+  "permissions":"/api/search.json",
   "name":"social-wall",
   "headline":"Twitter Social Wall",
   "alternativeHeadline":"A loklak API based twitter social-wall",

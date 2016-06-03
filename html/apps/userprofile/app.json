@@ -1,6 +1,7 @@
 {
   "@context":"http://schema.org",
   "@type":"SoftwareApplication",
+  "permissions":"/api/search.json,/api/user.json",
   "name":"userprofile",
   "headline":"User Profile Page",
   "alternativeHeadline":"A user profile visualization using loklak",

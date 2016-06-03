@@ -1,6 +1,7 @@
 {
   "@context":"http://schema.org",
   "@type":"SoftwareApplication",
+  "permissions":"/api/suggest.json",
   "name":"querybrowser",
   "headline":"Query Browser",
   "alternativeHeadline":"list all queries made in loklak",

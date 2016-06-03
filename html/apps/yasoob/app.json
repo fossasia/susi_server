@@ -1,6 +1,7 @@
 {
   "@context":"http://schema.org",
   "@type":"SoftwareApplication",
+  "permissions":"/api/search.json",
   "name":"yasoob",
   "headline":"loklak search page",
   "alternativeHeadline":"work from GCI task",

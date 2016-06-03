@@ -1,6 +1,7 @@
 {
   "@context":"http://schema.org",
   "@type":"SoftwareApplication",
+  "permissions":"/api/search.json",
   "name":"tweetsleaderboard",
   "headline":"Leaderboard",
   "alternativeHeadline":"A Leaderboard based on the number of tweets",

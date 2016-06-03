@@ -1,6 +1,7 @@
 {
   "@context":"http://schema.org",
   "@type":"SoftwareApplication",
+  "permissions":"/api/search.json,/api/suggest.json",
   "name":"tweetfeed",
   "headline":"Tweetfeed",
   "alternativeHeadline":"Twitter feed using poll and diff, infinite scroll",

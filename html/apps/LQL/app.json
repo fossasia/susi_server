@@ -1,6 +1,7 @@
 {
   "@context":"http://schema.org",
   "@type":"SoftwareApplication",
+  "permissions":"/api/status.json,/api/suggest.json,/api/search.json,/api/peers.json,/api/hello.json,/api/settings.json,/api/threaddump.txt",
   "name":"LQL",
   "headline":"Loklak Query Language",
   "alternativeHeadline":"Advanced Search Tool for Loklak",

@@ -1,6 +1,7 @@
 {
   "@context":"http://schema.org",
   "@type":"SoftwareApplication",
+  "permissions":"/api/search.json",
   "name":"ducphanduy",
   "headline":"Loklak search page",
   "alternativeHeadline":"A loklak tweet search page using Angular.js",

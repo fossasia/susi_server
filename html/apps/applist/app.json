@@ -1,6 +1,7 @@
 {
   "@context":"http://schema.org",
   "@type":"SoftwareApplication",
+  "permissions":"/api/apps.json",
   "name":"applist",
   "headline":"loklak app list",
   "alternativeHeadline":"work from GCI task",

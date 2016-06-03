@@ -1,6 +1,7 @@
 {
   "@context":"http://schema.org",
   "@type":"SoftwareApplication",
+  "permissions":"/api/peers.json",
   "name":"oneClickDeploy",
   "headline":"One Click Deploy",
   "alternativeHeadline":"Increase Loklak peers",

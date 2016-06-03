@@ -111,7 +111,7 @@
                     }
                 });
 
-                var userQueryCommand = 'http://loklak.org/api/user.json?callback=JSON_CALLBACK&screen_name=' + $scope.query;
+                var userQueryCommand = '/api/user.json?callback=JSON_CALLBACK&screen_name=' + $scope.query;
 
                 $http.jsonp(String(userQueryCommand)).success(function(response) {
                 	$scope.userData = response.user;

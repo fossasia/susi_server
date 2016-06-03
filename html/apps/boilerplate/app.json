@@ -1,6 +1,7 @@
 {
   "@context":"http://schema.org",
   "@type":"SoftwareApplication",
+  "permissions":"",
   "name":"boilerplate",
   "headline":"Boilerplate for loklak apps",
   "alternativeHeadline":"the 'hello world' app that you want to copy-paste for your own app",

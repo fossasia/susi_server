@@ -1,6 +1,7 @@
 {
   "@context":"http://schema.org",
   "@type":"SoftwareApplication",
+  "permissions":"/api/signup.json",
   "name":"signup",
   "headline":"Sign Up to Loklak",
   "alternativeHeadline":"Sign Up",

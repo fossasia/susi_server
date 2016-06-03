@@ -1,6 +1,7 @@
 {
   "@context":"http://schema.org",
   "@type":"SoftwareApplication",
+  "permissions":"/api/search.json",
   "name":"histogram",
   "headline":"Tweet Histogram Plotter",
   "alternativeHeadline":"work from GCI task",

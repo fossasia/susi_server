@@ -1,6 +1,7 @@
 {
   "@context":"http://schema.org",
   "@type":"SoftwareApplication",
+  "permissions":"/api/search.json,/api/suggest.json",
   "name":"bubblecharts",
   "headline":"Bubble Charts",
   "alternativeHeadline":"Using D3 pack layout",
