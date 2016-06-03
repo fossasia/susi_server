@@ -25,64 +25,36 @@ import org.json.JSONObject;
  * an identity is only a string which contains details sufficient enough to
  * identify a user and to send data to that user
  */
-public class Identity {
-
-    public final static char SEPARATOR = ':';
+public class ClientIdentity extends Client {
     
     public enum Type {
         email, // non-anonymous identity
         host; // anonymous identity users which do not authentify; they are identified by their host name
-        private String prefix;
-        private Type() {
-            this.prefix = name() + SEPARATOR;
-        }
-        public String prefix() {
-            return this.prefix;
-        }
-        public int prefixLength() {
-            return this.prefix.length();
-        }
     }
     
-    private String id;
-    private int separatorPos;
-
-    public Identity(String rawIdString) {
-        this.separatorPos = rawIdString.indexOf(SEPARATOR);
-        assert this.separatorPos >= 0;
-        this.id = rawIdString;
+    public ClientIdentity(String rawIdString) {
+        super(rawIdString);
     }
     
-    public Identity(Type type, String untypedId) {
-        this.id = type.name() + SEPARATOR + untypedId;
-        this.separatorPos = this.id.indexOf(SEPARATOR);
+    public ClientIdentity(Type type, String untypedId) {
+        super(type.name(), untypedId);
     }
     
     public boolean isEmail() {
-        return this.id.startsWith(Type.email.prefix());
+        return this.getKey().equals(Type.email.name());
     }
     
     public boolean isAnonymous() {
-        return this.id.startsWith(Type.host.prefix());
+        return this.getKey().equals(Type.host.name());
     }
     
     public Type getType() {
-        return Type.valueOf(id.substring(0, this.separatorPos));
-    }
-    
-    public String getName() {
-        return this.id.substring(this.separatorPos + 1);
-    }
-    
-    public String toString() {
-        return this.id;
+        return Type.valueOf(this.getKey());
     }
     
     public JSONObject toJSON() {
-        JSONObject json = new JSONObject(true);
+        JSONObject json = super.toJSON();
         json.put("anonymous", this.isAnonymous());
-        json.put("type", getType().name());
-        json.put("name", this.getName());
         return json;
     }
 }

@@ -36,7 +36,7 @@ public class Authorization {
     private JsonFile parent;
     private JSONObject json;
     private Accounting accounting;
-    private Identity identity;
+    private ClientIdentity identity;
     
     /**
      * create a new authorization object. The given json object must be taken
@@ -45,7 +45,7 @@ public class Authorization {
      * @param json object for storage of the authorization
      * @param parent the parent file or null if there is no parent file (no persistency)
      */
-    public Authorization(final JSONObject json, JsonFile parent, Identity identity) {
+    public Authorization(final JSONObject json, JsonFile parent, ClientIdentity identity) {
         this.json = json;
         this.parent = parent;
         this.accounting = null;
@@ -89,7 +89,7 @@ public class Authorization {
         return paths.getInt(path);
     }
     
-    public Identity getIdentity() {
+    public ClientIdentity getIdentity() {
         return identity;
     }
 

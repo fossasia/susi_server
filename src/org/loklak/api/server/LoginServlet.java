@@ -25,7 +25,7 @@ import org.loklak.server.APIHandler;
 import org.loklak.server.APIServiceLevel;
 import org.loklak.server.AbstractAPIHandler;
 import org.loklak.server.Authorization;
-import org.loklak.server.Identity;
+import org.loklak.server.ClientIdentity;
 import org.loklak.server.Query;
 
 public class LoginServlet extends AbstractAPIHandler implements APIHandler {
@@ -51,7 +51,7 @@ public class LoginServlet extends AbstractAPIHandler implements APIHandler {
 
     	JSONObject result = new JSONObject();
     	
-    	if(rights.getIdentity().getType() == Identity.Type.email){
+    	if(rights.getIdentity().getType() == ClientIdentity.Type.email){
     		result.put("status", "ok");
     		result.put("reason", "ok");
     	}

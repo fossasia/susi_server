@@ -44,14 +44,14 @@ public class Authentication {
         this.parent = parent;
     }
     
-    public Authentication setIdentity(Identity id) {
+    public Authentication setIdentity(ClientIdentity id) {
         this.json.put("id", id.toString());
         if (this.parent != null) this.parent.commit();
         return this;
     }
     
-    public Identity getIdentity() {
-        if (this.json.has("id")) return new Identity(this.json.getString("id"));
+    public ClientIdentity getIdentity() {
+        if (this.json.has("id")) return new ClientIdentity(this.json.getString("id"));
         return null;
     }
 

@@ -22,66 +22,41 @@ package org.loklak.server;
 /**
  * A credential is used as key in DAO.authentication
  */
-public class Credential {
-
-    public final static char SEPARATOR = ':';
+public class ClientCredential extends Client {
     
     public enum Type {
     	passwd_login,
         cookie,
         login_token,
         host;
-        private String prefix;
-        private Type() {
-            this.prefix = name() + SEPARATOR;
-        }
-        public String prefix() {
-            return this.prefix;
-        }
-        public int prefixLength() {
-            return this.prefix.length();
-        }
     }
-    
-    private String id;
-    private int separatorPos;
 
-    public Credential(String rawIdString) {
-        this.separatorPos = rawIdString.indexOf(SEPARATOR);
-        assert this.separatorPos >= 0;
-        this.id = rawIdString;
+    public ClientCredential(String rawIdString) {
+        super(rawIdString);
     }
     
-    public Credential(Type type, String untypedId) {
-        this.id = type.name() + SEPARATOR + untypedId;
-        this.separatorPos = this.id.indexOf(SEPARATOR);
+    public ClientCredential(Type type, String untypedId) {
+        super(type.name(), untypedId);
     }
     
     public boolean isPasswdLogin() {
-        return this.id.startsWith(Type.passwd_login.prefix());
+        return this.getKey().equals(Type.passwd_login.name());
     }
     
     public boolean isCookie() {
-        return this.id.startsWith(Type.cookie.prefix());
+        return this.getKey().equals(Type.cookie.name());
     }
     
     public boolean isToken() {
-        return this.id.startsWith(Type.login_token.prefix());
+        return this.getKey().equals(Type.login_token.name());
     }
     
     public boolean isAnonymous() {
-        return this.id.startsWith(Type.host.prefix());
+        return this.getKey().equals(Type.host.name());
     }
     
     public Type getType() {
-        return Type.valueOf(id.substring(0, this.separatorPos));
+        return Type.valueOf(this.getKey());
     }
     
-    public String getPayload() {
-        return this.id.substring(this.separatorPos + 1);
-    }
-    
-    public String toString() {
-        return this.id;
-    }
 }

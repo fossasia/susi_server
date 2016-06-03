@@ -29,8 +29,8 @@ import org.loklak.server.APIHandler;
 import org.loklak.server.APIServiceLevel;
 import org.loklak.server.AbstractAPIHandler;
 import org.loklak.server.Authorization;
-import org.loklak.server.Credential;
-import org.loklak.server.Identity;
+import org.loklak.server.ClientCredential;
+import org.loklak.server.ClientIdentity;
 import org.loklak.server.Query;
 
 public class SignUpServlet extends AbstractAPIHandler implements APIHandler {
@@ -79,7 +79,7 @@ public class SignUpServlet extends AbstractAPIHandler implements APIHandler {
 		}
     	
     	
-    	Credential credential = new Credential(Credential.Type.passwd_login, signup);
+    	ClientCredential credential = new ClientCredential(ClientCredential.Type.passwd_login, signup);
     	if (DAO.authentication.has(credential.toString())) {
     		result.put("status", "error");
     		result.put("reason", "email already taken");
@@ -90,7 +90,7 @@ public class SignUpServlet extends AbstractAPIHandler implements APIHandler {
     	String salt = createRandomString(20);
     	user_obj.put("salt", salt);
     	user_obj.put("passwordHash", getHash(password, salt));
-    	Identity identity = new Identity(Identity.Type.email, credential.getPayload());
+    	ClientIdentity identity = new ClientIdentity(ClientIdentity.Type.email, credential.getName());
     	user_obj.put("id",identity.toString());
         DAO.authentication.put(credential.toString(), user_obj);
     	

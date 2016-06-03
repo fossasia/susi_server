@@ -123,7 +123,7 @@ public abstract class AbstractAPIHandler extends HttpServlet implements APIHandl
         
         
         // user identification
-        Identity identity = getIdentity(request, response);
+        ClientIdentity identity = getIdentity(request, response);
         
         // user authorization: we use the identification of the user to get the assigned authorization
         JSONObject authorization_obj = null;
@@ -190,7 +190,7 @@ public abstract class AbstractAPIHandler extends HttpServlet implements APIHandl
      * Checks a request for valid login data, send via cookie or parameters
      * @return user identity if some login is active, anonymous identity otherwise
      */
-    private Identity getIdentity(HttpServletRequest request, HttpServletResponse response){
+    private ClientIdentity getIdentity(HttpServletRequest request, HttpServletResponse response){
     	
     	// check for login information
 		if("true".equals(request.getParameter("logout"))){	// logout if requested
@@ -205,12 +205,12 @@ public abstract class AbstractAPIHandler extends HttpServlet implements APIHandl
 			
 			Cookie loginCookie = getLoginCookie(request);
 			
-			Credential credential = new Credential(Credential.Type.cookie, loginCookie.getValue());
+			ClientCredential credential = new ClientCredential(ClientCredential.Type.cookie, loginCookie.getValue());
 			
 			if(DAO.authentication.has(credential.toString())){
 
 				Authentication authentication = new Authentication(DAO.authentication.getJSONObject(credential.toString()), DAO.authentication);
-				Identity identity = authentication.getIdentity();
+				ClientIdentity identity = authentication.getIdentity();
 				
 				if(authentication.checkExpireTime() && identity != null){
 					
@@ -237,7 +237,7 @@ public abstract class AbstractAPIHandler extends HttpServlet implements APIHandl
 			}
 		}
 		else if(request.getSession().getAttribute("identity") != null){ // if identity is registered for session			
-			return (Identity) request.getSession().getAttribute("identity");
+			return (ClientIdentity) request.getSession().getAttribute("identity");
 		}
 		else if (request.getParameter("login") != null && request.getParameter("password") != null ){ // check if login parameters are set
     		
@@ -249,7 +249,7 @@ public abstract class AbstractAPIHandler extends HttpServlet implements APIHandl
 				password = URLDecoder.decode(request.getParameter("password"),"UTF-8");
 			} catch (UnsupportedEncodingException e) {}
 
-    		Credential credential = new Credential(Credential.Type.passwd_login, login);
+    		ClientCredential credential = new ClientCredential(ClientCredential.Type.passwd_login, login);
     		
     		// check if password is valid
     		if(DAO.authentication.has(credential.toString())){
@@ -262,7 +262,7 @@ public abstract class AbstractAPIHandler extends HttpServlet implements APIHandl
 					String salt = authentication_obj.getString("salt");
 					
 					Authentication authentication = new Authentication(authentication_obj, DAO.authentication);
-    				Identity identity = authentication.getIdentity();
+    				ClientIdentity identity = authentication.getIdentity();
 					
 	    			if(getHash(password, salt).equals(passwordHash)){
 	    				
@@ -281,7 +281,7 @@ public abstract class AbstractAPIHandler extends HttpServlet implements APIHandl
 	            				loginCookie.setMaxAge(defaultCookieTime.intValue());
 	            				
 	            				// write cookie to database
-	            				Credential cookieCredential = new Credential(Credential.Type.cookie, loginToken);
+	            				ClientCredential cookieCredential = new ClientCredential(ClientCredential.Type.cookie, loginToken);
 	            				JSONObject user_obj = new JSONObject();
 	            				user_obj.put("id",identity.toString());
 	            				user_obj.put("expires_on", Instant.now().getEpochSecond() + defaultCookieTime);
@@ -302,16 +302,16 @@ public abstract class AbstractAPIHandler extends HttpServlet implements APIHandl
     			}
     		}
     		else{
-    			Log.getLog().info("Invalid login try for unknown user: " + credential.getPayload() + " via passwd from host: " + request.getRemoteHost());
+    			Log.getLog().info("Invalid login try for unknown user: " + credential.getName() + " via passwd from host: " + request.getRemoteHost());
     		}
     	}
     	else if (request.getParameter("login_token") != null){
-    		Credential credential = new Credential(Credential.Type.login_token, request.getParameter("login_token"));
+    		ClientCredential credential = new ClientCredential(ClientCredential.Type.login_token, request.getParameter("login_token"));
     		
     		// check if login_token is valid
     		if(DAO.authentication.has(credential.toString())){
     			Authentication authentication = new Authentication(DAO.authentication.getJSONObject(credential.toString()), DAO.authentication);
-    			Identity identity = authentication.getIdentity();
+    			ClientIdentity identity = authentication.getIdentity();
     			
     			if(authentication.checkExpireTime() && identity != null){
     				Log.getLog().info("login for user: " + identity.getName() + " via token from host: " + request.getRemoteHost());
@@ -328,8 +328,8 @@ public abstract class AbstractAPIHandler extends HttpServlet implements APIHandl
      * Create or get a anonymous identity
      * @return
      */
-    private Identity getAnonymousIdentity(HttpServletRequest request){
-    	Credential credential = new Credential(Credential.Type.host, request.getRemoteHost());
+    private ClientIdentity getAnonymousIdentity(HttpServletRequest request){
+    	ClientCredential credential = new ClientCredential(ClientCredential.Type.host, request.getRemoteHost());
     	
     	JSONObject authentication_obj = null;
         if (DAO.authentication.has(credential.toString())) {
@@ -341,7 +341,7 @@ public abstract class AbstractAPIHandler extends HttpServlet implements APIHandl
         authentication_obj.put("expires_on", Instant.now().getEpochSecond() + defaultAnonymousTime);
     	
         DAO.authentication.put(credential.toString(), authentication_obj);
-        return new Identity(credential.toString());
+        return new ClientIdentity(credential.toString());
     }
     
     /**
