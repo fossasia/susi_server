@@ -29,8 +29,7 @@ These front-ends are called 'apps' and must be placed here.
   - modify the field ```"permissions"``` in ```app.json```: it must contain a comma-separated list of all api paths,
     that the app calls. This is used to apply authorization markers to the app, so it becomes visible if the app
     is actually usable for the user. Examples:
-    ```"permissions":"/api/suggest.json"```, or 
-    ```"permissions":"/api/settings.json,/api/account.json"```
+    ```"permissions":"/api/suggest.json"```, or ```"permissions":"/api/settings.json,/api/account.json"```
 
 3. Check quality of your app
   - do a json-ld validation: use https://developers.google.com/structured-data/testing-tool/ to check your ```app.json```
