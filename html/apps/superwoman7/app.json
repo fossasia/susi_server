@@ -1,0 +1,17 @@
+{
+  "@context":"http://schema.org",
+  "@type":"SoftwareApplication",
+  "permissions":"/api/search.json",
+  "name":"superwoman7",
+  "headline":"Tweet Search Timeline",
+  "alternativeHeadline":"A vertical message timeline",
+  "applicationCategory":"Demo",
+  "applicationSubCategory":"Hello World",
+  "operatingSystem":"http://loklak.org",
+  "author":{
+    "@type":"Person",
+    "name":"Ruthvik Vijayakumar",
+    "url":"",
+    "sameAs":"https://github.com/codeRuth"
+  }
+}
