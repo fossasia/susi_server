@@ -8,7 +8,7 @@
     <meta name="Content-Language" content="en, english"/>
     <meta name="author" content="@shivenmian"> 
     <link rel="icon" type="image/png" href="../../artwork/favicon.png">
-    <title>Login</title> 
+    <title>Password Recovery</title> 
       
     <link href="../../css/bootstrap.min.css" rel="stylesheet" type="text/css">
     <link href="../../css/dashboard.css" rel="stylesheet" type="text/css">
@@ -25,7 +25,7 @@
     <script src="../../js/angular-route.min.js"></script>
     <script src="../../js/loklak.js"></script>
     <script src="../../js/jquery.min.js"></script>
-    <script src="js/loginpage.js"></script>
+    <script src="js/passwordrecovery.js"></script>
   </head>
 
   <body>
@@ -50,32 +50,18 @@
     </nav>
     <br><br><br>
     <br>
-    <p style="margin-left:30%;">Log in to Loklak!</p>
+    <p style="margin-left:30%;">Recover Password</p>
+    <br>
     <div class = "form"> 
-      <br><br>
+      <p style="font-size:15px">Enter Email ID</p>
+      <br>
       <div class = "fields">
         <input type = "text" id="email" placeholder="Email" required>
         <label id = "emailfield"></label>
       </div>
-
-      <div class="bar">
-          <i></i>
-      </div>
-
-      <div class = "fields">
-        <input name = "pass" id="pass" type="password" placeholder="Password" required>
-        <label id = "passfield"></label>
-      </div>
       <br>
-      <div class = "options">
-        <input type = "checkbox" id = "remember">
-        <label for = "remember" id = "rememberme">Remember me</label>
-        <a href="../signup/index.html" style="text-decoration:none"><p id = "signupopt">Sign Up</p></a>
-      </div>
-      <br><br>
-      <a href = "#"><button id = "login">Login</button></a>
-      <br><br>
-      <a href="../forgotpassword/index.html" style="text-decoration:none"><p style="font-size:15px; margin-left:24%;">Forgot Password?</p></a>
+      <a href = "#"><button id = "submit">Submit</button></a>
+
     </div>
 
     <!-- Bootstrap core JavaScript
