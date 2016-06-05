@@ -63,7 +63,7 @@ public class Authorization {
     
     public Authorization setAdmin() {
         this.json.put("admin", true);
-        if (parent != null) parent.commit();
+        if (parent != null && getIdentity().isPersistent()) parent.commit();
         return this;
     }
     
@@ -78,7 +78,7 @@ public class Authorization {
         }
         JSONObject paths = this.json.getJSONObject("frequency");
         paths.put(path, reqPerHour);
-        if (parent != null) parent.commit();
+        if (parent != null && getIdentity().isPersistent()) parent.commit();
         return this;
     }
     
@@ -93,7 +93,7 @@ public class Authorization {
         if (!this.json.has("services")) this.json.put("services", new JSONObject());
         JSONObject services = this.json.getJSONObject("services");
         services.put(service.toString(), service.toJSON().getJSONObject("meta"));
-        parent.commit();
+        if (parent != null && getIdentity().isPersistent()) parent.commit();
         return this;
     }
     

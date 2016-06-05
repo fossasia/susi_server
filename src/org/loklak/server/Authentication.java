@@ -46,7 +46,7 @@ public class Authentication {
     
     public Authentication setIdentity(ClientIdentity id) {
         this.json.put("id", id.toString());
-        if (this.parent != null) this.parent.commit();
+        if (this.parent != null && id.isPersistent()) this.parent.commit();
         return this;
     }
     
@@ -57,7 +57,7 @@ public class Authentication {
 
     public void setExpireTime(long time){
     	this.json.put("expires_on", Instant.now().getEpochSecond() + time);
-    	if (this.parent != null) this.parent.commit();
+    	if (this.parent != null && getIdentity().isPersistent()) this.parent.commit();
     }
     
     public boolean checkExpireTime(){
