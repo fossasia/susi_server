@@ -1,6 +1,7 @@
 {
   "@context":"http://schema.org",
   "@type":"SoftwareApplication",
+  "permissions":"/api/search.json",
   "name":"knowTheDiff",
   "headline":"Search Vs Aggregations",
   "alternativeHeadline":"Know more about Search aggregations",
