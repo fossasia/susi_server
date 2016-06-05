@@ -67,6 +67,7 @@ public class AppsService extends AbstractAPIHandler implements APIHandler {
         json.put("apps", app_array);
         JSONObject categories = new JSONObject(true);
         for (String appname: apps.list()) try {
+            // read app and verify the structure of the app
             File apppath = new File(apps, appname);
             if (!apppath.isDirectory()) continue;
             Set<String> files = new HashSet<>();
@@ -76,6 +77,17 @@ public class AppsService extends AbstractAPIHandler implements APIHandler {
             File json_ld_file = new File(apppath, "app.json");
             String jsonString = new String(Files.readAllBytes(json_ld_file.toPath()), StandardCharsets.UTF_8);
             JSONObject json_ld = new JSONObject(jsonString);
+            
+            // translate permissions
+            if (json_ld.has("permissions")) {
+                String p = json_ld.getString("permissions");
+                String[] ps = p.split(",");
+                JSONArray a = new JSONArray();
+                for (String s: ps) a.put(s);
+                json_ld.put("permissions", a);
+            }
+            
+            // check category
             if (json_ld.has("applicationCategory") && json_ld.has("name")) {
                 String cname = json_ld.getString("applicationCategory");
                 if (categorySelection.length() == 0 || categorySelection.equals(cname)) app_array.put(json_ld);
