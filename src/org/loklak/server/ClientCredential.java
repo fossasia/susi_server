@@ -25,18 +25,33 @@ package org.loklak.server;
 public class ClientCredential extends Client {
     
     public enum Type {
-    	passwd_login,
-        cookie,
-        login_token,
-        host;
+    	passwd_login(true),
+        cookie(false),
+        login_token(false),
+        host(false);
+        private final boolean persistent;
+        Type(final boolean persistent) {
+            this.persistent = persistent;
+        }
+        public boolean isPersistent() {
+            return this.persistent;
+        }
     }
+    
+    private final boolean persistent;
 
     public ClientCredential(String rawIdString) {
         super(rawIdString);
+        this.persistent = Type.valueOf(super.getKey()).isPersistent();
     }
     
     public ClientCredential(Type type, String untypedId) {
         super(type.name(), untypedId);
+        this.persistent = type.isPersistent();
+    }
+
+    public boolean isPersistent() {
+        return this.persistent;
     }
     
     public boolean isPasswdLogin() {

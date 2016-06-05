@@ -22,14 +22,14 @@ package org.loklak.server;
 import java.time.Instant;
 
 import org.json.JSONObject;
-import org.loklak.tools.storage.JsonFile;
+import org.loklak.tools.storage.JsonTray;
 
 /**
  * Authentication asks: who is the user. This class holds user identification details
  */
 public class Authentication {
 
-    private JsonFile parent;
+    private JsonTray parent;
     private JSONObject json;
 
     /**
@@ -39,7 +39,7 @@ public class Authentication {
      * @param json object for storage of the authorization
      * @param parent the parent file or null if there is no parent file (no persistency)
      */
-    public Authentication(JSONObject json, JsonFile parent) {
+    public Authentication(JSONObject json, JsonTray parent) {
         this.json = json;
         this.parent = parent;
     }

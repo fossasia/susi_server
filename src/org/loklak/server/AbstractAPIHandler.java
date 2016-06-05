@@ -131,7 +131,7 @@ public abstract class AbstractAPIHandler extends HttpServlet implements APIHandl
             authorization_obj = DAO.authorization.getJSONObject(identity.toString());
         } else {
             authorization_obj = new JSONObject();
-            DAO.authorization.put(identity.toString(), authorization_obj);
+            DAO.authorization.put(identity.toString(), authorization_obj, identity.isPersistent());
         }
         Authorization authorization = new Authorization(authorization_obj, DAO.authorization, identity);
 
@@ -284,7 +284,7 @@ public abstract class AbstractAPIHandler extends HttpServlet implements APIHandl
 	            				JSONObject user_obj = new JSONObject();
 	            				user_obj.put("id",identity.toString());
 	            				user_obj.put("expires_on", Instant.now().getEpochSecond() + defaultCookieTime);
-	            				DAO.authentication.put(cookieCredential.toString(), user_obj);
+	            				DAO.authentication.put(cookieCredential.toString(), user_obj, cookieCredential.isPersistent());
 	        	    			
 	            				response.addCookie(loginCookie);
 	        	    		}
@@ -339,7 +339,7 @@ public abstract class AbstractAPIHandler extends HttpServlet implements APIHandl
         }
         authentication_obj.put("expires_on", Instant.now().getEpochSecond() + defaultAnonymousTime);
     	
-        DAO.authentication.put(credential.toString(), authentication_obj);
+        DAO.authentication.put(credential.toString(), authentication_obj, credential.isPersistent());
         return new ClientIdentity(credential.toString());
     }
     

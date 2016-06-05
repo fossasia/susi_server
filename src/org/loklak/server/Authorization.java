@@ -22,6 +22,7 @@ package org.loklak.server;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.loklak.tools.storage.JsonFile;
+import org.loklak.tools.storage.JsonTray;
 
 /**
  * Authorization asks: what is the user allowed to do? This class holds user rights.
@@ -32,7 +33,7 @@ import org.loklak.tools.storage.JsonFile;
  */
 public class Authorization {
 
-    private JsonFile parent;
+    private JsonTray parent;
     private JSONObject json;
     private Accounting accounting;
     private ClientIdentity identity;
@@ -44,7 +45,7 @@ public class Authorization {
      * @param json object for storage of the authorization
      * @param parent the parent file or null if there is no parent file (no persistency)
      */
-    public Authorization(final JSONObject json, JsonFile parent, ClientIdentity identity) {
+    public Authorization(final JSONObject json, JsonTray parent, ClientIdentity identity) {
         this.json = json;
         this.parent = parent;
         this.accounting = null;
