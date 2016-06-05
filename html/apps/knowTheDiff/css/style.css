@@ -1,0 +1,107 @@
+#searchBar
+{
+    width:500px;
+}
+table {
+    border-collapse: collapse;
+    width: 70%;
+}
+
+th, td {
+    padding: 8px;
+    text-align: center;
+    border-bottom: 1px solid #ddd;
+}
+
+html, body {
+    height: 85%;
+    margin: 0;
+    padding: 0;
+    width: 100%;
+}
+
+body {
+    display: table;
+}
+
+.my-block {
+    text-align: center;
+    display: table-cell;
+    vertical-align: middle;
+}
+
+.clearfix:before,
+.clearfix:after {
+    content: " "; /* 1 */
+    display: table; /* 2 */
+}
+
+.clearfix:after {
+    clear: both;
+}
+.clearfix {
+    *zoom: 1;
+}
+
+.wrapper {
+	width: 680px;
+	margin: 50px auto 100px;
+}
+.main, .sidebar {
+	float: left;
+	padding: 20px;
+}
+.main {
+	width: 400px;
+	background-color: LightSlateGrey;
+}
+.sidebar {
+	width: 200px;
+	background-color: Tomato;
+}
+
+.faux .container {
+	background-color: Tomato;
+}
+.faux .sidebar {
+	background-color: inherit;
+}
+
+.table .container {
+	display: table;
+}
+.table .main {
+	float: none;
+	display: table-cell;
+	vertical-align: top;
+}
+.table .sidebar {
+	float: none;
+	display: table-cell;
+}
+
+
+#tourbtn {
+  position: fixed;
+  right: 15px;
+  bottom: 35px;
+}
+#tourbtn a {
+  background: #bac081;
+  padding: 8px 15px;
+  font-size: 12px;
+  line-height: 22px;
+  font-weight: bold;
+  color: #454a50;
+  text-decoration: none;
+  -webkit-border-radius: 4px;
+  -moz-border-radius: 4px;
+  border-radius: 4px;
+}
+#tourbtn a:hover {
+  background: #cacf96;
+}
+
+.introjs-helperLayer {
+  background-color: rgba(255,255,255,.5) !important;
+}

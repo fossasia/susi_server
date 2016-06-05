@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<link rel="icon" type="image/png" href="../../artwork/favicon.png">
+		<title>KnowTheDiff</title>
+		<link href="css/style.css" rel="stylesheet"/>
+		<link href="https://bootswatch.com/cosmo/bootstrap.min.css" rel="stylesheet"/>
+		<link rel="stylesheet" href="css/introjs.css"/>
+		<script src="/js/angular.min.js"></script>
+		<script src="/js/jquery.min.js"></script>
+		<script src="js/intro.js"></script>
+		<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+	</head>
+	<body>
+		<div class="my-block">
+			<h1>Search vs Aggregations</h1>
+			<h3>View the difference in the search result</h3>
+			<br>
+			<div class="btn-group">
+				<a href="#" class="btn btn-default search">Search</a>
+				<a href="#" class="btn btn-default agg">Aggregations</a>
+			</div>
+		</div>
+		<script type="text/javascript">
+		$(function(){
+			var introguide = introJs();
+			introguide.setOptions({
+				steps: [
+				{
+					element: '.search',
+					intro: 'This feature gives you the results from your own peer.<br><br>Use the arrow keys for navigation or hit ESC to exit the tour immediately.',
+					position: 'bottom'
+				},
+				{
+					element: '.agg',
+					intro: 'This feature helps you to get the count results in a better by scaling up the search result. <br> This will not consider the remote search results',
+					position: 'bottom'
+				}
+				]
+			});
+			introguide.start();
+		});
+		</script>
+	</body>
+</html>
