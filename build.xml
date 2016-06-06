@@ -44,7 +44,8 @@
         <pathelement location="lib/jsr166e-1.1.0.jar"/>
         <pathelement location="lib/jts-1.13.jar"/>
         <pathelement location="lib/junit-4.12.jar"/>
-        <pathelement location="lib/log4j-1.2.17.jar"/>
+        <pathelement location="lib/log4j-core-2.6.jar"/>
+        <pathelement location="lib/log4j-slf4j-impl-2.6.jar"/>
         <pathelement location="lib/lucene-analyzers-common-5.5.0.jar"/>
         <pathelement location="lib/lucene-backward-codecs-5.5.0.jar"/>
         <pathelement location="lib/lucene-core-5.5.0.jar"/>
@@ -62,6 +63,7 @@
         <pathelement location="lib/netty-3.10.5.Final.jar"/>
         <pathelement location="lib/securesm-1.0.jar"/>
         <pathelement location="lib/snakeyaml-1.15.jar"/>
+        <pathelement location="lib/slf4j-api-1.7.21"/>
         <pathelement location="lib/spatial4j-0.5.jar"/>
         <pathelement location="lib/t-digest-3.0.jar"/>
         <pathelement location="lib/twitter4j-core-4.0.2.jar"/>

@@ -39,7 +39,7 @@ fi
 echo "starting loklak"
 echo "startup" > $STARTUPFILE
 
-cmdline="$cmdline -server -classpath $CLASSPATH org.loklak.LoklakServer >> data/loklak.log 2>&1 & echo \$! > data/loklak.pid &";
+cmdline="$cmdline -server -classpath $CLASSPATH -Dlog4j.configurationFile=./conf/log4j2.properties org.loklak.LoklakServer >> data/loklak.log 2>&1 & echo \$! > data/loklak.pid &";
 
 eval $cmdline
 while [ -f $STARTUPFILE ]; do 
