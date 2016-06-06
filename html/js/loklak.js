@@ -22,11 +22,19 @@ app.controller("search", function($scope, $http) {
   }
 });
 
-app.controller("topmenu", function($scope, $http) {
+app.controller("topmenu", function($scope, $http, $location) {
   $http.get("/cms/topmenu.json").
     success(function(data, status, headers, config){
-        $scope.results = data.items;
+      $scope.results = data.items;
     });
+    $scope.isActive = function (viewLocation) {
+      var active = (viewLocation === $location.path());
+      winLocation = window.location.href;
+      if (winLocation.indexOf(viewLocation) != -1) {
+        active = true;
+      }
+      return active;
+    };
 });
 
 app.filter("reverse", function() {
