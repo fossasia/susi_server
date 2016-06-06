@@ -40,7 +40,7 @@
           </div>
           <div id="navbar" class="navbar-collapse collapse" ng-controller="topmenu">
             <ul class="nav navbar-nav navbar-right" ng-repeat="item in results | reverse">
-              <li ng-repeat="(key, val) in item" ng-class="{active: $route.current.activetab == key}"><a ng-href="../../{{val}}">{{key}}</a></li>
+              <li ng-repeat="(key, val) in item" ng-class="{ active: isActive('{{val}}') }"><a ng-href="../../{{val}}">{{key}}</a></li>
             </ul>
           </div>
         </div>
