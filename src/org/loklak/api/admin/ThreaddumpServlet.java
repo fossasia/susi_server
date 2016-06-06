@@ -100,7 +100,7 @@ public class ThreaddumpServlet extends HttpServlet {
             if (sleep > 0) try {Thread.sleep(sleep);} catch (InterruptedException e) {}
         }
 
-        int multi = post.isLocalhostAccess() ? post.get("multi", 0) : 0;
+        int multi = post.isLocalhostAccess() ? post.get("multi", post.get("count", 0)) : 0;
         final StringBuilder buffer = new StringBuilder(1000);
 
         // Thread dump
