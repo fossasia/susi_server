@@ -25,7 +25,7 @@ import java.util.Map;
 
 import org.eclipse.jetty.util.log.Log;
 import org.json.JSONObject;
-import org.loklak.api.client.StatusClient;
+import org.loklak.api.admin.StatusServlet;
 import org.loklak.data.DAO;
 import org.loklak.http.ClientConnection;
 import org.loklak.server.APIHandler;
@@ -74,7 +74,7 @@ public class Hello extends AbstractAPIHandler implements APIHandler {
         JSONObject backend_status_index_sizes = null;
         if (backend.length() > 0 && !backend_push) {
             try {
-                backend_status = StatusClient.status(backend);
+                backend_status = StatusServlet.status(backend);
             } catch (IOException e) {
                 e.printStackTrace();
             }

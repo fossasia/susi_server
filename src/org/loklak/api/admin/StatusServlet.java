@@ -35,18 +35,27 @@ import org.json.JSONObject;
 import org.loklak.Caretaker;
 import org.loklak.LoklakServer;
 import org.loklak.QueuedIndexing;
-import org.loklak.api.client.StatusClient;
 import org.loklak.data.DAO;
+import org.loklak.http.ClientConnection;
 import org.loklak.http.RemoteAccess;
 import org.loklak.objects.QueryEntry;
 import org.loklak.server.FileHandler;
 import org.loklak.server.Query;
 import org.loklak.tools.OS;
+import org.loklak.tools.UTF8;
 
 public class StatusServlet extends HttpServlet {
    
     private static final long serialVersionUID = 8578478303032749879L;
 
+    public static JSONObject status(final String protocolhostportstub) throws IOException {
+        final String urlstring = protocolhostportstub + "/api/status.json";
+        byte[] response = ClientConnection.downloadPeer(urlstring);
+        if (response == null || response.length == 0) return new JSONObject();
+        JSONObject json = new JSONObject(UTF8.String(response));
+        return json;
+    }
+    
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         doGet(request, response);
@@ -68,7 +77,7 @@ public class StatusServlet extends HttpServlet {
         JSONObject backend_status = null;
         JSONObject backend_status_index_sizes = null;
         if (backend.length() > 0 && !backend_push) {
-            backend_status = StatusClient.status(backend);
+            backend_status = StatusServlet.status(backend);
             backend_status_index_sizes = backend_status == null ? null : (JSONObject) backend_status.get("index_sizes");
         }
         long backend_messages = backend_status_index_sizes == null ? 0 : ((Number) backend_status_index_sizes.get("messages")).longValue();
@@ -167,4 +176,16 @@ public class StatusServlet extends HttpServlet {
         FileHandler.setCaching(response, 10); // prevent re-loading of this servlet in the next 10 seconds
     }
 
+    public static void main(String[] args) {
+        try {
+            JSONObject json = status("http://loklak.org");
+            JSONObject index_sizs = (JSONObject) json.get("index_sizes");
+            System.out.println(json.toString());
+            System.out.println(index_sizs.toString());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        
+    }
+    
 }

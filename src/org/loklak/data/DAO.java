@@ -53,7 +53,7 @@ import org.elasticsearch.search.sort.SortOrder;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.loklak.Caretaker;
-import org.loklak.api.client.SearchClient;
+import org.loklak.api.search.SearchServlet;
 import org.loklak.geo.GeoNames;
 import org.loklak.harvester.TwitterScraper;
 import org.loklak.http.AccessTracker;
@@ -875,7 +875,7 @@ public class DAO {
         Timeline tl;
         if (remote.size() > 0 && (peerLatency.get(remote.get(0)) == null || peerLatency.get(remote.get(0)).longValue() < 3000)) {
             long start = System.currentTimeMillis();
-            tl = searchOnOtherPeers(remote, q, order, 100, timezoneOffset, "all", SearchClient.frontpeer_hash, timeout); // all must be selected here to catch up missing tweets between intervals
+            tl = searchOnOtherPeers(remote, q, order, 100, timezoneOffset, "all", SearchServlet.frontpeer_hash, timeout); // all must be selected here to catch up missing tweets between intervals
             // at this point the remote list can be empty as a side-effect of the remote search attempt
             if (post != null && remote.size() > 0 && tl != null) post.recordEvent("remote_scraper_on_" + remote.get(0), System.currentTimeMillis() - start);
             if (tl == null || tl.size() == 0) {
@@ -994,7 +994,7 @@ public class DAO {
         List<String> remote = getBackendPeers();
         
         if (remote.size() > 0 /*&& (peerLatency.get(remote.get(0)) == null || peerLatency.get(remote.get(0)) < 3000)*/) { // condition deactivated because we need always at least one peer
-            Timeline tt = searchOnOtherPeers(remote, q, order, count, timezoneOffset, where, SearchClient.backend_hash, timeout);
+            Timeline tt = searchOnOtherPeers(remote, q, order, count, timezoneOffset, where, SearchServlet.backend_hash, timeout);
             if (tt != null) tt.writeToIndex();
             return tt;
         }
@@ -1010,7 +1010,7 @@ public class DAO {
             String peer = remote.get(pick);
             long start = System.currentTimeMillis();
             try {
-                Timeline tl = SearchClient.search(peer, q, order, source, count, timezoneOffset, provider_hash, timeout);
+                Timeline tl = SearchServlet.search(peer, q, order, source, count, timezoneOffset, provider_hash, timeout);
                 peerLatency.put(peer, System.currentTimeMillis() - start);
                 // to show which peer was used for the retrieval, we move the picked peer to the front of the list
                 if (pick != 0) remote.add(0, remote.remove(pick));
