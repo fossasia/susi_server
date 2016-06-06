@@ -113,12 +113,15 @@
             Jan:"01", Feb:"02", Mar:"03", Apr:"04", May:"05", Jun:"06",
             Jul:"07", Aug:"08", Sep:"09", Oct:"10", Nov:"11", Dec:"12"
           };
-          date = ($scope.until + "").split(" ");
-          var until = [ date[3], mnths[date[1]], date[2] ].join("-");
-          date2 = ($scope.since + "").split(" ");
-          var since = [ date2[3], mnths[date2[1]], date2[2] ].join("-");
+          if($scope.until && $scope.since){
+            date = ($scope.until + "").split(" ");
+            var until = [ date[3], mnths[date[1]], date[2] ].join("-");
+            date2 = ($scope.since + "").split(" ");
+            var since = [ date2[3], mnths[date2[1]], date2[2] ].join("-");
+            var QueryCommand = 'http://loklak.org/api/search.json?callback=JSON_CALLBACK&q=' + $scope.query + ' since:'+ since + ' until:' + until + '&source=cache&count=0&fields=mentions';
+          }
+           var QueryCommand = 'http://loklak.org/api/search.json?callback=JSON_CALLBACK&q=' + $scope.query + '&source=cache&count=0&fields=mentions';
           $scope.spinner=true;
-          var QueryCommand = 'http://loklak.org/api/search.json?callback=JSON_CALLBACK&q=' + $scope.query + ' since:'+ since + ' until:' + until + '&source=cache&count=0&fields=mentions';
           $http.jsonp(String(QueryCommand)).success(function(response) {
             var data = response;
             var hashtag = data.aggregations.mentions;
