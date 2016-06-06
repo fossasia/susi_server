@@ -113,7 +113,7 @@ public class SuggestServlet extends HttpServlet {
                 if (suggestions.size() < count && query.length() > 2) suggestions.addAll(DAO.geoNames.suggest(query, count, 1));
                 if (suggestions.size() < count && query.length() > 5) suggestions.addAll(DAO.geoNames.suggest(query, count, 2));
                 for (String s: suggestions) {
-                    QueryEntry qe = new QueryEntry(s, 0, Long.MAX_VALUE, SourceType.IMPORT, false);
+                    QueryEntry qe = new QueryEntry(s, 0, Long.MAX_VALUE, SourceType.TWITTER, false);
                     queryList.add(qe);
                 }
                 post.recordEvent("suggestionsquery_time", System.currentTimeMillis() - start);

@@ -111,7 +111,7 @@ public class QueryEntry extends AbstractObjectEntry implements ObjectEntry {
         this.query = (String) json.get("query");
         this.query_length = (int) parseLong((Number) json.get("query_length"));
         String source_type_string = (String) json.get("source_type");
-        if (source_type_string == null) source_type_string = SourceType.USER.toString();
+        if (source_type_string == null) source_type_string = SourceType.TWITTER.toString();
         this.source_type = new SourceType(source_type_string);
         this.timezoneOffset = (int) parseLong((Number) json.get("timezoneOffset"));
         Date now = new Date();

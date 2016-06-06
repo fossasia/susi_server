@@ -72,7 +72,7 @@ public class GeoJsonPushServlet extends HttpServlet {
         String source_type_str = post.get("source_type", "");
         if ("".equals(source_type_str) || !SourceType.isValid(source_type_str)) {
             DAO.log("invalid or missing source_type value : " + source_type_str);
-            source_type_str = SourceType.IMPORT.toString();
+            source_type_str = SourceType.GEOJSON.toString();
         }
         SourceType sourceType = new SourceType(source_type_str);
 
@@ -137,9 +137,9 @@ public class GeoJsonPushServlet extends HttpServlet {
             if (!"".equals(sourceType)) {
                 message.put("source_type", sourceType);
             } else {
-                message.put("source_type", SourceType.IMPORT);
+                message.put("source_type", SourceType.GEOJSON);
             }
-            message.put("provider_type", ProviderType.GEOJSON.name());
+            message.put("provider_type", ProviderType.IMPORT.name());
             message.put("provider_hash", remoteHash);
             message.put("location_point", geometry.get("coordinates"));
             message.put("location_mark", geometry.get("coordinates"));

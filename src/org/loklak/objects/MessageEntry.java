@@ -74,7 +74,7 @@ public class MessageEntry extends AbstractObjectEntry implements ObjectEntry {
         this.created_at = new Date();
         this.on = null;
         this.to = null;
-        this.source_type = SourceType.USER;
+        this.source_type = SourceType.TWITTER;
         this.provider_type = ProviderType.NOONE;
         this.provider_hash = "";
         this.screen_name = "";
@@ -115,9 +115,9 @@ public class MessageEntry extends AbstractObjectEntry implements ObjectEntry {
         Object to_obj = lazyGet(json, "to"); this.to = to_obj == null ? null : parseDate(to);
         String source_type_string = (String) lazyGet(json, "source_type");
         try {
-            this.source_type = source_type_string == null ? SourceType.USER : new SourceType(source_type_string);
+            this.source_type = source_type_string == null ? SourceType.TWITTER : new SourceType(source_type_string);
         } catch (IllegalArgumentException e) {
-            this.source_type = SourceType.USER;
+            this.source_type = SourceType.TWITTER;
         }
         String provider_type_string = (String) lazyGet(json, "provider_type");
         if (provider_type_string == null) provider_type_string = ProviderType.GENERIC.name();
