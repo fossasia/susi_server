@@ -94,7 +94,7 @@ public class Classifier {
             }
         }
         public void learnPhrase(String phrase) {
-            try {
+            synchronized (this) {try {
                 List<String> words = normalize(phrase);
                 for (Map.Entry<Category, Set<String>> entry: categories.entrySet()) {
                     Set<String> vs = entry.getValue();
@@ -109,7 +109,7 @@ public class Classifier {
                 bayes.learn(NEGATIVE_FEATURE, words);
             } catch (Throwable t) {
                 t.printStackTrace();
-            }
+            }}
         }
         public Classification<String, Category> classify(String phrase) {
             List<String> words = normalize(phrase);
