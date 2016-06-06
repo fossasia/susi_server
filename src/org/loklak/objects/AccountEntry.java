@@ -55,7 +55,7 @@ public class AccountEntry extends AbstractObjectEntry implements ObjectEntry {
         if (this.json.has(Field.source_type.name())) {
             // verify the type
             try {
-                SourceType st = SourceType.valueOf((String) this.json.get(Field.source_type.name()));
+                SourceType st = new SourceType((String) this.json.get(Field.source_type.name()));
                 this.json.put(Field.source_type.name(), st.toString());
             } catch (IllegalArgumentException e) {
                 throw new IOException(Field.source_type.name() + " contains unknown type " + (String) this.json.get(Field.source_type.name()));
@@ -84,7 +84,7 @@ public class AccountEntry extends AbstractObjectEntry implements ObjectEntry {
         Object st = this.json.get(Field.source_type.name());
         if (st == null) return SourceType.TWITTER;
         if (st instanceof SourceType) return (SourceType) st;
-        if (st instanceof String) return SourceType.valueOf((String) st);
+        if (st instanceof String) return new SourceType((String) st);
         return SourceType.TWITTER;
     }
 

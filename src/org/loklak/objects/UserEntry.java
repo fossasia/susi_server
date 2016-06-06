@@ -71,8 +71,13 @@ public class UserEntry extends AbstractObjectEntry implements ObjectEntry {
     }
 
     
-    public String getType() {
-        return parseString((String) this.map.get("$type"));
+    public SourceType getType() {
+        try {
+            return new SourceType(parseString((String) this.map.get("$type")));
+        } catch (RuntimeException e) {
+            e.printStackTrace();
+            return null;
+        }
     }
     
     public Number getUser() {

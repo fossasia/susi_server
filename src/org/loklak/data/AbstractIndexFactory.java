@@ -131,7 +131,7 @@ public abstract class AbstractIndexFactory<IndexObject extends ObjectEntry> impl
     public boolean delete(String id, SourceType sourceType) {
         this.objectCache.remove(id);
         this.existCache.remove(id);
-        return elasticsearch_client.delete(index_name, sourceType.name(), id);
+        return elasticsearch_client.delete(index_name, sourceType.toString(), id);
     }
 
     @Override
@@ -158,7 +158,7 @@ public abstract class AbstractIndexFactory<IndexObject extends ObjectEntry> impl
          *   builder.map(source);
          */
         if (!json.has(AbstractObjectEntry.TIMESTAMP_FIELDNAME)) json.put(AbstractObjectEntry.TIMESTAMP_FIELDNAME, AbstractObjectEntry.utcFormatter.print(System.currentTimeMillis()));
-        boolean newDoc = elasticsearch_client.writeMap(this.index_name, json.toMap(), entry.getType(), entry.getId());
+        boolean newDoc = elasticsearch_client.writeMap(this.index_name, json.toMap(), entry.getType().toString(), entry.getId());
         this.indexWrite.incrementAndGet();
         return newDoc;
     }
@@ -175,7 +175,7 @@ public abstract class AbstractIndexFactory<IndexObject extends ObjectEntry> impl
             Map<String, Object> jsonMap = entry.getObject().toJSON().toMap();
             assert jsonMap != null;
             if (jsonMap == null) continue;
-            ElasticsearchClient.BulkEntry be = new ElasticsearchClient.BulkEntry(entry.getId(), entry.getType(), AbstractObjectEntry.TIMESTAMP_FIELDNAME, null, jsonMap);
+            ElasticsearchClient.BulkEntry be = new ElasticsearchClient.BulkEntry(entry.getId(), entry.getType().toString(), AbstractObjectEntry.TIMESTAMP_FIELDNAME, null, jsonMap);
 
             jsonMapList.add(be);
         }

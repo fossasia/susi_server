@@ -378,7 +378,7 @@ public class DAO {
                         bulkEntries.add(
                             new IndexEntry<QueryEntry>(
                                 line,
-                                SourceType.TWITTER.name(),
+                                SourceType.TWITTER,
                                 new QueryEntry(line, 0, 60000, SourceType.TWITTER, false))
                         );
                     }
@@ -570,13 +570,13 @@ public class DAO {
         try {
             synchronized (DAO.class) {
                 // record tweet into search index and check if this is a new entry
-                boolean exists = messages.writeEntry(new IndexEntry<MessageEntry>(mw.t.getIdStr(), mw.t.getSourceType().name(), mw.t));
+                boolean exists = messages.writeEntry(new IndexEntry<MessageEntry>(mw.t.getIdStr(), mw.t.getSourceType(), mw.t));
 
                 // check if tweet exists in index
                 if (exists) return false; // we don't need to write the user and also not to the message dump
 
                 // write the user into the index
-                users.writeEntry(new IndexEntry<UserEntry>(mw.u.getScreenName(), mw.t.getSourceType().name(), mw.u));
+                users.writeEntry(new IndexEntry<UserEntry>(mw.u.getScreenName(), mw.t.getSourceType(), mw.u));
 
                 // record tweet into text file
                 if (mw.dump) message_dump.write(mw.t.toJSON(mw.u, false, Integer.MAX_VALUE, ""));
@@ -614,10 +614,10 @@ public class DAO {
             if (messages.existsCache(mw.t.getIdStr())) continue; // we omit writing this again
             synchronized (DAO.class) {
                 // write the user into the index
-                userBulk.add(new IndexEntry<UserEntry>(mw.u.getScreenName(), mw.t.getSourceType().name(), mw.u));
+                userBulk.add(new IndexEntry<UserEntry>(mw.u.getScreenName(), mw.t.getSourceType(), mw.u));
     
                 // record tweet into search index
-                messageBulk.add(new IndexEntry<MessageEntry>(mw.t.getIdStr(), mw.t.getSourceType().name(), mw.t));
+                messageBulk.add(new IndexEntry<MessageEntry>(mw.t.getIdStr(), mw.t.getSourceType(), mw.t));
              }
                 
             // teach the classifier
@@ -666,7 +666,7 @@ public class DAO {
             if (dump) account_dump.write(a.toJSON(null));
 
             // record account into search index
-            accounts.writeEntry(new IndexEntry<AccountEntry>(a.getScreenName(), a.getSourceType().name(), a));
+            accounts.writeEntry(new IndexEntry<AccountEntry>(a.getScreenName(), a.getSourceType(), a));
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -684,7 +684,7 @@ public class DAO {
             // record import profile into text file
             if (dump) import_profile_dump.write(i.toJSON());
             // record import profile into search index
-            importProfiles.writeEntry(new IndexEntry<ImportProfileEntry>(i.getId(), i.getSourceType().name(), i));
+            importProfiles.writeEntry(new IndexEntry<ImportProfileEntry>(i.getId(), i.getSourceType(), i));
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -909,7 +909,7 @@ public class DAO {
                 qe.update(tl.period(), byUserQuery);
             }
             try {
-                queries.writeEntry(new IndexEntry<QueryEntry>(q, qe.source_type == null ? SourceType.TWITTER.name() : qe.source_type.name(), qe));
+                queries.writeEntry(new IndexEntry<QueryEntry>(q, qe.source_type == null ? SourceType.TWITTER : qe.source_type, qe));
             } catch (IOException e) {
                 e.printStackTrace();
             }

@@ -128,7 +128,7 @@ public abstract class AbstractPushServlet extends HttpServlet {
         // custom treatment for each message
         for (int i = 0; i < messages.length(); i++) {
             JSONObject message = (JSONObject) convertedMessages.get(i);
-            message.put("source_type", this.getSourceType().name());
+            message.put("source_type", this.getSourceType().toString());
             message.put("location_source", LocationSource.USER.name());
             message.put("place_context", PlaceContext.ABOUT.name());
             if (message.get("text") == null) {

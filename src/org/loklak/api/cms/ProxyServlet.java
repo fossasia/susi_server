@@ -116,7 +116,7 @@ public class ProxyServlet extends HttpServlet {
             }
             if (buffer != null) {
                 // write the buffer
-                if (user != null && user.getType().length() > 0) {
+                if (user != null) {
                     user.setProfileImageUrl(newUrl);
                     user.setProfileImage(buffer);
                     try {

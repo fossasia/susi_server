@@ -79,7 +79,7 @@ public class ValidateServlet extends HttpServlet {
         // treat geojson as a special source_type
         if (!source_type_str.toUpperCase().equals("GEOJSON")) {
             try {
-                sourceType = SourceType.valueOf(source_type_str.toUpperCase());
+                sourceType = new SourceType(source_type_str.toUpperCase());
             } catch (IllegalArgumentException e) {
                 response.sendError(400, "Invalid source_type parameter : " + source_type_str);
                 return;

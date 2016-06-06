@@ -77,9 +77,9 @@ public class ImportProfileEntry extends AbstractObjectEntry implements ObjectEnt
             this.source_url = null;
         }
         String source_type_string = json.getString("source_type");
-        if (source_type_string == null) source_type_string = SourceType.USER.name();
+        if (source_type_string == null) source_type_string = SourceType.USER.toString();
         try {
-            this.source_type = SourceType.valueOf(source_type_string.toUpperCase());
+            this.source_type = new SourceType(source_type_string.toUpperCase());
         } catch (IllegalArgumentException e) {
             Logger.getLogger("ImportProfileEntry").warning("Illegal source type value : " + source_type_string);
             this.source_type = SourceType.USER;
@@ -246,7 +246,7 @@ public class ImportProfileEntry extends AbstractObjectEntry implements ObjectEnt
         json.put("client_host", this.client_host);
         json.put("source_url", this.source_url.toString());
         json.put("source_hash", this.source_hash);
-        json.put("source_type", this.source_type.name());
+        json.put("source_type", this.source_type.toString());
         json.put("harvesting_freq", this.harvesting_freq.getFrequency());
         json.put("lifetime", this.lifetime);
         json.put("imported", this.imported);

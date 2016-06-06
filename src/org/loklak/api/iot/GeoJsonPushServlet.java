@@ -70,11 +70,11 @@ public class GeoJsonPushServlet extends HttpServlet {
         String url = post.get("url", "");
         String map_type = post.get("map_type", "");
         String source_type_str = post.get("source_type", "");
-        if ("".equals(source_type_str) || !SourceType.hasValue(source_type_str)) {
+        if ("".equals(source_type_str) || !SourceType.isValid(source_type_str)) {
             DAO.log("invalid or missing source_type value : " + source_type_str);
-            source_type_str = SourceType.IMPORT.name();
+            source_type_str = SourceType.IMPORT.toString();
         }
-        SourceType sourceType = SourceType.valueOf(source_type_str);
+        SourceType sourceType = new SourceType(source_type_str);
 
         if (url == null || url.length() == 0) {response.sendError(400, "your request does not contain an url to your data object"); return;}
         String screen_name = post.get("screen_name", "");
@@ -135,7 +135,7 @@ public class GeoJsonPushServlet extends HttpServlet {
             message.putAll(mappedProperties);
 
             if (!"".equals(sourceType)) {
-                message.put("source_type", sourceType.name());
+                message.put("source_type", sourceType);
             } else {
                 message.put("source_type", SourceType.IMPORT);
             }

@@ -147,7 +147,7 @@ public class PushServlet extends HttpServlet {
                         // existing queries are updated
                         qe.update(tl.period(), false);
                         try {
-                            DAO.queries.writeEntry(new IndexEntry<QueryEntry>(query, qe.getSourceType().name(), qe));
+                            DAO.queries.writeEntry(new IndexEntry<QueryEntry>(query, qe.getSourceType(), qe));
                         } catch (IOException e) {
                             e.printStackTrace();
                         }

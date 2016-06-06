@@ -20,29 +20,30 @@
 package org.loklak.data;
 
 import org.loklak.objects.ObjectEntry;
+import org.loklak.objects.SourceType;
 
 public class IndexEntry<IndexObject extends ObjectEntry> {
     
     private final String id;
-    private final String type;
+    private final SourceType type;
     private final IndexObject obj;
     
-    public IndexEntry(String id, String type, IndexObject obj) {
+    public IndexEntry(String id, SourceType type, IndexObject obj) {
         this.id = id;
         this.type = type;
         this.obj = obj;
     }
     
     public String getId() {
-        return id;
+        return this.id;
     }
 
-    public String getType() {
-        return type;
+    public SourceType getType() {
+        return this.type;
     }
 
     public IndexObject getObject() {
-        return obj;
+        return this.obj;
     }
 
 }

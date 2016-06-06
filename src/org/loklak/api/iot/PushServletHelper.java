@@ -105,7 +105,7 @@ public class PushServletHelper {
             profile.put("lifetime", Integer.MAX_VALUE);
         }
         profile.put("source_url", post.get("url", ""));
-        profile.put("source_type", sourceType.name());
+        profile.put("source_type", sourceType.toString());
         profile.put("source_hash", fileHash);
         profile.put("id_str", computeImportProfileId(profile, fileHash));
         Date currentDate = new Date();
@@ -214,7 +214,7 @@ public class PushServletHelper {
         }
 
         // Id format : <source_type>_<lat>_<lon>_<mtime>
-        return sourceType.name() + "_" + latitude + "_" + longitude + "_" + mtime;
+        return sourceType.toString() + "_" + latitude + "_" + longitude + "_" + mtime;
     }
 
 }

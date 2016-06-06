@@ -98,7 +98,7 @@ public class NetmonPushServlet extends HttpServlet {
             if (!node.has("text")) {
                 node.put("text", "");
             }
-            node.put("source_type", SourceType.NETMON.name());
+            node.put("source_type", SourceType.NETMON.toString());
             if (!node.has("user")) {
                 node.put("user", new JSONObject());
             }
@@ -156,6 +156,6 @@ public class NetmonPushServlet extends HttpServlet {
             throw new Exception("mtime field is missing");
         }
         boolean hasId = initialId != null && !initialId.equals("");
-        return sourceType.name() + "_" + (hasId ? initialId + "_" : "") + mtime;
+        return sourceType.toString() + "_" + (hasId ? initialId + "_" : "") + mtime;
     }
 }

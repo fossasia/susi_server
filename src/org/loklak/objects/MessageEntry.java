@@ -115,7 +115,7 @@ public class MessageEntry extends AbstractObjectEntry implements ObjectEntry {
         Object to_obj = lazyGet(json, "to"); this.to = to_obj == null ? null : parseDate(to);
         String source_type_string = (String) lazyGet(json, "source_type");
         try {
-            this.source_type = source_type_string == null ? SourceType.USER : SourceType.valueOf(source_type_string);
+            this.source_type = source_type_string == null ? SourceType.USER : new SourceType(source_type_string);
         } catch (IllegalArgumentException e) {
             this.source_type = SourceType.USER;
         }
@@ -527,7 +527,7 @@ public class MessageEntry extends AbstractObjectEntry implements ObjectEntry {
         m.put("id_str", this.id_str);
         if (this.canonical_id != null) m.put("canonical_id", this.canonical_id);
         if (this.parent != null) m.put("parent", this.parent);
-        m.put("source_type", this.source_type.name());
+        m.put("source_type", this.source_type.toString());
         m.put("provider_type", this.provider_type.name());
         if (this.provider_hash != null && this.provider_hash.length() > 0) m.put("provider_hash", this.provider_hash);
         m.put("retweet_count", this.retweet_count);
