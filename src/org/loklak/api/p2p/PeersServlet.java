@@ -21,6 +21,7 @@ package org.loklak.api.p2p;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.nio.charset.StandardCharsets;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -32,15 +33,42 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.loklak.http.ClientConnection;
 import org.loklak.http.RemoteAccess;
+import org.loklak.objects.MessageEntry;
+import org.loklak.objects.ProviderType;
+import org.loklak.objects.Timeline;
+import org.loklak.objects.UserEntry;
 import org.loklak.server.Query;
-import org.loklak.tools.CharacterCoding;
-import org.loklak.tools.UTF8;
 
 public class PeersServlet extends HttpServlet {
 
     private static final long serialVersionUID = -2577184683745091648L;
 
+    public static Timeline peers(final String protocolhostportstub, final String query, final Timeline.Order order, final String source, final int count, final int timezoneOffset, final String provider_hash) throws IOException {
+        Timeline tl = new Timeline(order);
+        String urlstring = "";
+        urlstring = protocolhostportstub + "/api/peers.json";
+        byte[] response = ClientConnection.download(urlstring);
+        if (response == null || response.length == 0) return tl;
+        JSONObject json = new JSONObject(new String(response, StandardCharsets.UTF_8));
+        JSONArray statuses = json.has("statuses") ? json.getJSONArray("statuses") : null;
+        if (statuses != null) {
+            for (Object tweet_obj: statuses) {
+                JSONObject tweet = (JSONObject) tweet_obj;
+                JSONObject user = tweet.has("user") ? (JSONObject) tweet.remove("user") : null;
+                if (user == null) continue;
+                tweet.put("provider_type", (Object) ProviderType.REMOTE.name());
+                tweet.put("provider_hash", provider_hash);
+                UserEntry u = new UserEntry(user);
+                MessageEntry t = new MessageEntry(tweet);
+                tl.add(t, u);
+            }
+        }
+        //System.out.println(parser.text());
+        return tl;
+    }
+    
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         doGet(request, response);
