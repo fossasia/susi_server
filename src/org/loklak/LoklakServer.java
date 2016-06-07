@@ -154,6 +154,8 @@ public class LoklakServer {
         Path data = FileSystems.getDefault().getPath("data");
         File dataFile = data.toFile();
         if (!dataFile.exists()) dataFile.mkdirs(); // should already be there since the start.sh script creates it
+        
+        Log.getLog().info("Starting loklak initialization");
 
         // prepare shutdown signal
         File pid = new File(dataFile, "loklak.pid");
@@ -161,11 +163,12 @@ public class LoklakServer {
         
         // prepare signal for startup script
         File startup = new File(dataFile, "startup.tmp");
-        if (!startup.exists()) startup.createNewFile();
-        startup.deleteOnExit();
-        FileWriter writer = new FileWriter(startup);
-		writer.write("startup".toString());
-		writer.close();
+        if (startup.exists()){
+	        startup.deleteOnExit();
+	        FileWriter writer = new FileWriter(startup);
+			writer.write("startup".toString());
+			writer.close();
+        }
         
 		
         // load the config file(s);
@@ -242,9 +245,11 @@ public class LoklakServer {
         Log.getLog().info("finished startup!");
         
         // signal to startup script
-        writer = new FileWriter(startup);
-		writer.write("done".toString());
-		writer.close();
+        if (startup.exists()){
+        	FileWriter writer = new FileWriter(startup);
+			writer.write("done".toString());
+			writer.close();
+        }
         
         // ** services are now running **
         

@@ -4,6 +4,7 @@ mkdir -p data
 
 DFAULTCONFIG="conf/config.properties"
 CUSTOMCONFIG="data/settings/customized_config.properties"
+LOGCONFIG="conf/logs/log-to-console.properties"
 DFAULTXmx="-Xmx800m";
 CUSTOMXmx=""
 if [ -f $DFAULTCONFIG ]; then
@@ -63,7 +64,7 @@ export PATH="$JAVA_HOME/bin:$PATH"
 
 echo "starting loklak"
 
-cmdline="$cmdline -server -classpath $CLASSPATH org.loklak.LoklakServer";
+cmdline="$cmdline -server -classpath $CLASSPATH -Dlog4j.configurationFile=$LOGCONFIG org.loklak.LoklakServer";
 
 eval $cmdline
 #echo $cmdline;
