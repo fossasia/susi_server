@@ -7,11 +7,11 @@
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="description" content="Twitter Scraper">
+    <meta name="description" content="Collect, search, download and visualize message from various sources: tweets, youtube descriptions and from more social media sources.">
     <meta name="author" content="Michael Peter Christen">
-    <link rel="icon" type="image/png" href="artwork/favicon.png">
+    <link rel="icon" type="image/png" href="/artwork/favicon.png">
 
-    <title>loklak: Distributed Tweet Search Server</title>
+    <title>loklak: Distributed Message Search Server</title>
 
     <link href="css/bootstrap.min.css" rel="stylesheet">
     <link href="css/loklak.css" rel="stylesheet">
@@ -25,6 +25,23 @@
     <script src="js/angular.min.js"></script>
     <script src="js/angular-route.min.js"></script>
     <script src="js/loklak.js"></script>
+    <script type="application/ld+json">
+{
+  "@context": "http://schema.org",
+  "@type": "Organization",
+  "name": "loklak: Distributed Message Search Server",
+  "alternateName": "Collect, search, download and visualize message from various sources: tweets, youtube descriptions and from more social media sources.",
+  "url": "http://loklak.org",
+  "logo": "http://loklak.org/artwork/loklak_org_sticker.png",
+  "sameAs": [
+    "https://twitter.com/loklak_app",
+    "https://twitter.com/lklknt",
+    "https://www.facebook.com/loklakmessages/",
+    "https://www.youtube.com/channel/UCzlERcAMNubMu6Q6OujAPbg"
+  ]
+}
+    </script>
+    
   </head>
 
   <body style="position: relative; margin: 0; padding-bottom: 6rem; min-height: 100%;"> <!-- style woodoo is for footer line -->
@@ -53,8 +70,11 @@
     <div class="jumbotron">
       <div class="container">
         <h1><code>loklak</code></h1>
-        <h2>Distributed Tweet Search Server</h2>
-        <span style="font-weight: bold;" ng-controller="status" >
+        <h2>Distributed Message Search Server</h2>
+        <span style="font-weight: bold;">
+          Collect, search, download and visualize message from various sources: tweets, youtube descriptions and from more social media sources.
+        </span>&nbsp;<br>
+        <span ng-controller="status" >
           This is the Search Server for the <a style="font-weight: bold;" href="http://loklak.net" target="_self">Loklak Webclient</a> {{(index.messages.size > 0) ? " hosting " + (index.messages.size | number : fractionSize) + " messages for " + (index.users.size | number : fractionSize) + " users."  : ""}}&nbsp;<br>
           {{(index.messages.size > 0 && index.mps > 0) ? "Collection Speed: " + index.mps + " message" + (index.mps > 1 ? "s" : "") + " per second; " + ((index.mps * 86400) | number : fractionSize) + " messages per day."  : ""}}
         </span>&nbsp;<br><br>
@@ -62,7 +82,7 @@
       <div class="row">
         <div class="col-md-4" style="text-align:center;">
             <img src="images/loklak_collect.png" width="320">
-            <h4>Collect, dump and index tweet search results.</h4>
+            <h4>Collect, index and store social media messages.</h4>
         </div>
         <div class="col-md-4" style="text-align:center;">
             <img src="images/loklak_anonymous.png" width="320">
@@ -70,7 +90,7 @@
         </div>
         <div class="col-md-4" style="text-align:center;">
             <img src="images/loklak_share.png" width="320">
-            <h4>Peer-to-peer message routing and tweet dump sharing.</h4>
+            <h4>Peer-to-peer message routing and sharing.</h4>
         </div>
       </div>
         <br>
