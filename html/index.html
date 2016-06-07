@@ -10,8 +10,21 @@
     <meta name="description" content="Collect, search, download and visualize message from various sources: tweets, youtube descriptions and from more social media sources.">
     <meta name="author" content="Michael Peter Christen">
     <link rel="icon" type="image/png" href="/artwork/favicon.png">
+    <link rel="canonical" href="http://loklak.org" />
 
-    <title>loklak: Distributed Message Search Server</title>
+    <title>loklak: Distributed Social Media Message Search Server</title>
+
+<meta property="og:title" content="loklak: Distributed Social Media Message Search Server">
+<meta property="og:type" content="Website">
+<meta property="og:url" content="http://loklak.org">
+<meta property="og:image" content="http://loklak.org/artwork/loklak_org_sticker.png">
+<meta property="og:description" content="Collect, search, download and visualize message from various sources: tweets, youtube descriptions and from more social media sources.">
+
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="loklak: Distributed Social Media Message Search Server">
+<meta name="twitter:url" content="http://loklak.org">
+<meta name="twitter:description" content="Collect, search, download and visualize message from various sources: tweets, youtube descriptions and from more social media sources.">
+<meta name="twitter:image" content="http://loklak.org/artwork/loklak_org_sticker.png">
 
     <link href="css/bootstrap.min.css" rel="stylesheet">
     <link href="css/loklak.css" rel="stylesheet">
@@ -29,7 +42,7 @@
 {
   "@context": "http://schema.org",
   "@type": "Organization",
-  "name": "loklak: Distributed Message Search Server",
+  "name": "loklak: Distributed Social Media Message Search Server",
   "alternateName": "Collect, search, download and visualize message from various sources: tweets, youtube descriptions and from more social media sources.",
   "url": "http://loklak.org",
   "logo": "http://loklak.org/artwork/loklak_org_sticker.png",
@@ -37,9 +50,14 @@
     "https://twitter.com/loklak_app",
     "https://twitter.com/lklknt",
     "https://www.facebook.com/loklakmessages/",
-    "https://www.youtube.com/channel/UCzlERcAMNubMu6Q6OujAPbg"
-  ]
-}
+    "https://www.youtube.com/channel/UCzlERcAMNubMu6Q6OujAPbg",
+    "https://loklaknet.wordpress.com/"
+  ],
+  "potentialAction": {
+    "@type": "SearchAction",
+    "target": "http://loklak.org/api/search.json?q={query}",
+    "query-input": "required"
+  }
     </script>
     
   </head>
@@ -65,12 +83,12 @@
       </div>
     </nav>
 
-<a href="https://github.com/loklak/loklak_server.git"><img style="position:absolute; top:20; right:0; border:0;" src="images/forkme_right_green_007200.png" alt="Fork me on GitHub"></a>
+<a href="https://github.com/loklak/loklak_server.git"><img style="position:absolute; top:20; right:0; border:0;" src="images/forkme_right_green_007200.png" alt="Fork me on GitHub" title="loklak server source code on github"></a>
     
     <div class="jumbotron">
       <div class="container">
         <h1><code>loklak</code></h1>
-        <h2>Distributed Message Search Server</h2>
+        <h2>Distributed Social Media Message Search Server</h2>
         <span style="font-weight: bold;">
           Collect, search, download and visualize message from various sources: tweets, youtube descriptions and from more social media sources.
         </span>&nbsp;<br>
@@ -81,16 +99,16 @@
           
       <div class="row">
         <div class="col-md-4" style="text-align:center;">
-            <img src="images/loklak_collect.png" width="320">
-            <h4>Collect, index and store social media messages.</h4>
+            <img src="images/loklak_collect.png" width="320" height="240" alt="collection" title="Collect, index and store social media messages.">
+            <h3>Collect, index and store social media messages.</h3>
         </div>
         <div class="col-md-4" style="text-align:center;">
-            <img src="images/loklak_anonymous.png" width="320">
-            <h4>Anonymous search API. No user accounts, no authorization.</h4>
+            <img src="images/loklak_anonymous.png" width="320" height="240" alt="anonymous" title="Anonymous search API. No authorization required.">
+            <h3>Anonymous search API. No authorization required.</h3>
         </div>
         <div class="col-md-4" style="text-align:center;">
-            <img src="images/loklak_share.png" width="320">
-            <h4>Peer-to-peer message routing and sharing.</h4>
+            <img src="images/loklak_share.png" width="320" height="240" alt="share" title="Peer-to-peer message routing and sharing.">
+            <h3>Peer-to-peer message routing and sharing.</h3>
         </div>
       </div>
         <br>
