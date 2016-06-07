@@ -1,0 +1,14 @@
+#searchBar
+{
+    width:500px;
+}
+table {
+    border-collapse: collapse;
+    width: 70%;
+}
+
+th, td {
+    padding: 8px;
+    text-align: center;
+    border-bottom: 1px solid #ddd;
+}
