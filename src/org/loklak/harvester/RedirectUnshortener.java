@@ -155,7 +155,7 @@ public class RedirectUnshortener {
                 "http://ow.ly/JtOPA",
                 "http://tiny.cc/60ohux",
                 "http://bit.do/ZwrT",
-                "http://amzn.to/MO51If"                
+                "http://amzn.to/MO51If"
         };
         for (String t: test) {
             try {
