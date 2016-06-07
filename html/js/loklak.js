@@ -36,17 +36,20 @@ angular.element(document).ready(function () {
   var winLocation = window.location.href;
   $.getJSON("/cms/topmenu.json", function(data) {
     navItems = data.items;
+    navItems = navItems.reverse();
+    var count = 0;
     $.each( navItems, function(index, itemData) {
       name = Object.keys(itemData);
       link = itemData[name];
       // Now construct the li items
       liItem = "<li>";
-      if (winLocation.indexOf(link) != -1) {
+      if (winLocation.indexOf(link) != -1 && count != 1) {
         liItem = "<li class='active'>";
+        count = count + 1;
       }
-      liItem += "<a href='"+link+"'>"+name+"</a></li>";
+      liItem += "<a href='\/"+link+"'>"+name+"</a></li>";
       liItem = $(liItem);
-      $('#navbar > ul').append(liItem);
+      $('#navbar > ul').prepend(liItem);
     });
   });
 });
