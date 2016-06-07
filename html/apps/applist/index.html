@@ -24,10 +24,11 @@
     <script src="../../js/jquery.min.js"></script>
     <script src="../../js/angular.min.js"></script>
     <script src="../../js/angular-route.min.js"></script>
+    <script src="../../js/angular-touch.min.js"></script>
     <script src="../../js/loklak.js"></script>
     <script src="app_list.js"></script>
   </head>
-  <body>
+  <body data-spy="scroll" data-target="#navSidebar" data-offset="50">
     <nav class="navbar navbar-inverse navbar-fixed-top">
       <div class="container-fluid">
         <div class="navbar-header">
@@ -54,7 +55,7 @@
           <div id="navSidebar">
           <div><h4><center>CATEGORIES</center></h4></div>
             <ul class="nav nav-sidebar" isolateClick>
-                <li ng-repeat="category in categoryKeys track by $index"><a href="#{{category | nospace}}" ng-click="categoryFilter($event)" id="{{category | nospace}}">{{category}}</a></li>
+                <li ng-repeat="category in categoryKeys track by $index" class=""><a href="#{{category | nospace}}" ng-click="categoryFilter($event)" id="{{category | nospace}}">{{category}}</a></li>
               </ul>
           </div>
             <p>Read the 
