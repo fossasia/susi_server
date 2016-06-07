@@ -1,4 +1,4 @@
-var app = angular.module('appListApp', ['loklak']);
+var app = angular.module('appListApp', ['loklak', 'ngTouch']);
 
 app.controller("app_list", function($scope, $http) {
     $scope.apps = [];
@@ -18,6 +18,7 @@ app.controller("app_list", function($scope, $http) {
             $('div.span2').hide();
             qConstruct = 'div.span2#'+item;
             $(qConstruct).show();
+            event.stopPropogation();
         }
         else {
             $('#categoryName')[0].innerHTML = 'Loklak Apps';
