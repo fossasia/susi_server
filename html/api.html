@@ -7,13 +7,12 @@
 <meta http-equiv="content-type" content="text/html; charset=utf-8" />
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="description" content="loklak.org - Architecture">
+<meta name="description" content="Create your own social media search engine using the public and open message API.">
 <meta name="Content-Language" content="en, english" />
-<meta name="keywords" lang="en-us"
-  content="search,search engine,twitter,messages,microblogging,elasticsearch,json,api,kibana,loklak" />
-<meta name="author" content="@0rb1t3r">
-<link rel="icon" type="image/png" href="artwork/favicon.png">
-<title>loklak.org - API</title>
+<meta name="author" content="Michael Peter Christen, @0rb1t3r">
+<link rel="icon" type="image/png" href="/artwork/favicon.png">
+<link rel="canonical" href="http://loklak.org/api.html" />
+<title>loklak.org - Open JSON API to search, collect and evaluate messages.</title>
 
 <link href="css/bootstrap.min.css" rel="stylesheet">
 <link href="css/dashboard.css" rel="stylesheet">
@@ -41,9 +40,7 @@
             class="icon-bar"></span> <span class="icon-bar"></span> <span
             class="icon-bar"></span>
         </button>
-        <a class="navbar-brand" href="http://loklak.org"><img
-          src="images/loklak_org.png" height="24" style="float: left;">:
-          API</a>
+        <a class="navbar-brand" href="http://loklak.org"><img src="/images/loklak_org.png" height="24" style="float: left;" alt="loklak.org" title="loklak.org message server">:API</a>
       </div>
       <div id="navbar" class="navbar-collapse collapse">
         <ul class="nav navbar-nav navbar-right">
@@ -90,22 +87,21 @@
 
 <h1 class="page-header">APIs</h1>
 <p>
-  This is the loklak API running on an HTTP protocol. Every servlet
-  can be called with a POST request, all but
-  <code>push.json</code>
-  can be called with a PUT request.
+  This API can be used to create your own social media search engine using the public and open message API.
+  Every servlet can be called with a POST request, all but
+  <code>push.json</code> can be called with a PUT request.
 
 <h3>Client Authentication</h3>
 <p>
   You can access the API <b>without any authentication</b>. This
-  service has <b>no user management on purpose</b>. Excessive usage
-  of APIs is restricted with DoS protection. Some servlets can only
-  be called from localhost to protect user data submitted to the
+  service can be use without subscription, however, there is a user management to grant users administration rights</b>.
+  Excessive usage of APIs is restricted with DoS protection. Some servlets can only
+  be called from localhost or administration rights to protect user data submitted to the
   server. There are three classes for access rights:
   <ul class="list-group">
     <li class="list-group-item list-group-item-success">open: access without any restrictions for all clients from any IP</li>
-    <li class="list-group-item list-group-item-warning">limited: localhost clients are granted more data than public clients</li>
-    <li class="list-group-item list-group-item-danger">restricted: only localhost clients are granted access</li>
+    <li class="list-group-item list-group-item-warning">limited: localhost clients or administration users are granted more data than public clients</li>
+    <li class="list-group-item list-group-item-danger">restricted: only localhost clients or administration users are granted access</li>
     </ul>
 </p>
 <h3>Cross-Origin Resource Sharing</h3>

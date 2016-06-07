@@ -8,23 +8,23 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="description" content="Collect, search, download and visualize message from various sources: tweets, youtube descriptions and from more social media sources.">
-    <meta name="author" content="Michael Peter Christen">
+    <meta name="Content-Language" content="en, english" />
+    <meta name="author" content="Michael Peter Christen, @0rb1t3r">
     <link rel="icon" type="image/png" href="/artwork/favicon.png">
     <link rel="canonical" href="http://loklak.org" />
+    <title>loklak.org - Distributed Social Media Message Search Server</title>
 
-    <title>loklak: Distributed Social Media Message Search Server</title>
+    <meta property="og:title" content="loklak.org - Distributed Social Media Message Search Server">
+    <meta property="og:type" content="Website">
+    <meta property="og:url" content="http://loklak.org">
+    <meta property="og:image" content="http://loklak.org/artwork/loklak_org_sticker.png">
+    <meta property="og:description" content="Collect, search, download and visualize message from various sources: tweets, youtube descriptions and from more social media sources.">
 
-<meta property="og:title" content="loklak: Distributed Social Media Message Search Server">
-<meta property="og:type" content="Website">
-<meta property="og:url" content="http://loklak.org">
-<meta property="og:image" content="http://loklak.org/artwork/loklak_org_sticker.png">
-<meta property="og:description" content="Collect, search, download and visualize message from various sources: tweets, youtube descriptions and from more social media sources.">
-
-<meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="loklak: Distributed Social Media Message Search Server">
-<meta name="twitter:url" content="http://loklak.org">
-<meta name="twitter:description" content="Collect, search, download and visualize message from various sources: tweets, youtube descriptions and from more social media sources.">
-<meta name="twitter:image" content="http://loklak.org/artwork/loklak_org_sticker.png">
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="loklak.org - Distributed Social Media Message Search Server">
+    <meta name="twitter:url" content="http://loklak.org">
+    <meta name="twitter:description" content="Collect, search, download and visualize message from various sources: tweets, youtube descriptions and from more social media sources.">
+    <meta name="twitter:image" content="http://loklak.org/artwork/loklak_org_sticker.png">
 
     <link href="css/bootstrap.min.css" rel="stylesheet">
     <link href="css/loklak.css" rel="stylesheet">
@@ -42,7 +42,7 @@
 {
   "@context": "http://schema.org",
   "@type": "Organization",
-  "name": "loklak: Distributed Social Media Message Search Server",
+  "name": "loklak.org - Distributed Social Media Message Search Server",
   "alternateName": "Collect, search, download and visualize message from various sources: tweets, youtube descriptions and from more social media sources.",
   "url": "http://loklak.org",
   "logo": "http://loklak.org/artwork/loklak_org_sticker.png",
@@ -83,7 +83,7 @@
       </div>
     </nav>
 
-<a href="https://github.com/loklak/loklak_server.git"><img style="position:absolute; top:20; right:0; border:0;" src="images/forkme_right_green_007200.png" alt="Fork me on GitHub" title="loklak server source code on github"></a>
+    <a href="https://github.com/loklak/loklak_server.git"><img style="position:absolute; top:20; right:0; border:0;" src="images/forkme_right_green_007200.png" alt="Fork me on GitHub" title="loklak server source code on github"></a>
     
     <div class="jumbotron">
       <div class="container">
@@ -104,7 +104,7 @@
         </div>
         <div class="col-md-4" style="text-align:center;">
             <img src="images/loklak_anonymous.png" width="320" height="240" alt="anonymous" title="Anonymous search API. No authorization required.">
-            <h3>Anonymous search API. No authorization required.</h3>
+            <h3>Anonymous search API. No subscription required.</h3>
         </div>
         <div class="col-md-4" style="text-align:center;">
             <img src="images/loklak_share.png" width="320" height="240" alt="share" title="Peer-to-peer message routing and sharing.">
@@ -114,7 +114,8 @@
         <br>
         <br>
           <form action="#" class="col-lg-12 hidden-xs">
-            <input id="timezoneOffset" type="hidden" name="timezoneOffset" value=""><script>document.getElementById("timezoneOffset").value = new Date().getTimezoneOffset();</script>
+            <input id="timezoneOffset0" type="hidden" name="timezoneOffset" value="">
+            <script>document.getElementById("timezoneOffset0").value = new Date().getTimezoneOffset();</script>
             <div class="input-group input-group-lg col-sm-8" style="float:left">
               <input name="q" id="query" type="text" class="center-block form-control input-lg" title="Search Twitter and the loklak network" placeholder="Search Twitter and the loklak network">
               <span class="input-group-btn"><button class="btn btn-lg btn-primary" type="submit" target="_blank" onclick="form.target='_blank'; form.action='/api/search.json?q=' + document.getElementById('query').value;">Get JSON Data</button></span>
@@ -126,8 +127,8 @@
           </form>
 
           <form class="col-lg-12 hidden-lg hidden-md hidden-sm row">
-            <input id="timezoneOffset" type="hidden" name="timezoneOffset" value="">
-            <script>document.getElementById("timezoneOffset").value = new Date().getTimezoneOffset();</script>
+            <input id="timezoneOffset1" type="hidden" name="timezoneOffset" value="">
+            <script>document.getElementById("timezoneOffset1").value = new Date().getTimezoneOffset();</script>
             <input name="q" id="query" type="text" class="center-block form-control input-lg" title="Search Twitter and the loklak network" placeholder="Search Twitter & the loklak network" style="border-bottom-width: 5px;padding-right: 12px;">
             <div class="input-group input-group-lg row col-sm-12" style="float:left">
               <span class="input-group-btn"><button class="btn btn-lg btn-primary" type="submit" target="_blank" onclick="form.target='_blank'; form.action='/api/search.json?q=' + document.getElementById('query').value;">Get JSON Data</button>
