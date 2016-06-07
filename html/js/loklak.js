@@ -44,7 +44,7 @@ angular.element(document).ready(function () {
       if (winLocation.indexOf(link) != -1) {
         liItem = "<li class='active'>";
       }
-      liItem += "<a href='"+link+"'>"+name+"</a></li>";
+      liItem += "<a href='\/"+link+"'>"+name+"</a></li>";
       liItem = $(liItem);
       $('#navbar > ul').append(liItem);
     });
