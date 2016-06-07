@@ -22,6 +22,7 @@
       <script src="js/html5shiv.min.js"></script>
       <script src="js/respond.min.js"></script>
     <![endif]-->
+    <script src="js/jquery.min.js"></script>
     <script src="js/angular.min.js"></script>
     <script src="js/angular-route.min.js"></script>
     <script src="js/loklak.js"></script>
@@ -40,9 +41,9 @@
           </button>
           <a class="navbar-brand" href="http://loklak.org"><img src="images/loklak_org.png" height="24" style="float:left;">: Dump</a>
         </div>
-        <div id="navbar" class="navbar-collapse collapse" ng-controller="topmenu">
-          <ul class="nav navbar-nav navbar-right" ng-repeat="item in results | reverse">
-            <li ng-repeat="(key, val) in item" ng-class="{ active: isActive('{{val}}') }"><a ng-href="{{val}}">{{key}}</a></li>
+        <div id="navbar" class="navbar-collapse collapse">
+          <ul class="nav navbar-nav navbar-right">
+            <!-- This will get populated -->
           </ul>
         </div>
       </div>

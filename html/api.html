@@ -24,6 +24,7 @@
       <script src="js/html5shiv.min.js"></script>
       <script src="js/respond.min.js"></script>
     <![endif]-->
+  <script src="js/jquery.min.js"></script>
   <script src="js/angular.min.js"></script>
   <script src="js/angular-route.min.js"></script> 
   <script src="js/loklak.js"></script>
@@ -44,9 +45,9 @@
           src="images/loklak_org.png" height="24" style="float: left;">:
           API</a>
       </div>
-      <div id="navbar" class="navbar-collapse collapse" ng-controller="topmenu">
-        <ul class="nav navbar-nav navbar-right" ng-repeat="item in results | reverse">
-          <li ng-repeat="(key, val) in item" ng-class="{ active: isActive('{{val}}') }"><a ng-href="{{val}}">{{key}}</a></li>
+      <div id="navbar" class="navbar-collapse collapse">
+        <ul class="nav navbar-nav navbar-right">
+          <!-- This will get populated -->
         </ul>
       </div>
     </div>
@@ -79,6 +80,7 @@
             <li><a href="#map">/vis/map.png</a></li>
             <li><a href="#markdown">/vis/markdown.png</a></li>
             <li><a href="#programmingLanguages">Installable APIs</a></li>
+            <li><a href="#xml2json">/api/xml2json.json</a></li>
           </ul>
         </div>
       </div>
@@ -1709,6 +1711,333 @@ loklak_messages under the name image0.png</p>
   </ul>
 </section>
 <!-- End programming languages API Endpoints section -->
+
+<!-- XML2JSON API Endpoint -->
+<section id="xml2json">
+  <h2 class="sub-header">
+    <code>/api/xml2json.json</code>
+  </h2>
+  <p>Any well formed XML data source can be converted to JSON using the loklak's `xml2json.json` API endpoint. This servlet provides the ability to send data to loklak's API as XML and receive a JSON response.</p>
+  <ul class="request">
+    <li>
+      <div class="tabcol1">data</div>
+      <div class="tabcol2">&nbsp;=&nbsp;The XML Data to be converted to JSON</div>
+      // This is the field which takes data=&lt;XML&gt;
+    </li>
+  </ul>
+  <p>You send this this information as a GET / POST request. Here's a sample XML</p>
+  <pre>
+&lt;?xml version="1.0" encoding="UTF-8" standalone="no"?&gt;
+&lt;project basedir="." default="build" name="loklak"&gt;
+    &lt;property environment="env"/&gt;
+    &lt;property name="target" value="1.8"/&gt;
+    &lt;property name="source" value="1.8"/&gt;
+    &lt;path id="loklak.classpath"&gt;
+        &lt;pathelement location="classes"/&gt;
+        &lt;pathelement location="lib/antlr-runtime-3.5.jar"/&gt;
+        &lt;pathelement location="lib/apache-log4j-extras-1.2.17.jar"/&gt;
+        &lt;pathelement location="lib/asm-4.1.jar"/&gt;
+        &lt;pathelement location="lib/asm-commons-4.1.jar"/&gt;
+        &lt;pathelement location="lib/commons-cli-1.3.1.jar"/&gt;
+        &lt;pathelement location="lib/commons-logging-1.2.jar"/&gt;
+        &lt;pathelement location="lib/compiler-0.8.13.jar"/&gt;
+        &lt;pathelement location="lib/compress-lzf-1.0.2.jar"/&gt;
+        &lt;pathelement location="lib/elasticsearch-2.3.2.jar"/&gt;
+        &lt;pathelement location="lib/groovy-all-2.4.4.jar"/&gt;
+        &lt;pathelement location="lib/guava-18.0.jar"/&gt;
+        &lt;pathelement location="lib/hamcrest-core-1.3.jar"/&gt;
+        &lt;pathelement location="lib/HdrHistogram-2.1.6.jar"/&gt;
+        &lt;pathelement location="lib/hppc-0.7.1.jar"/&gt;
+        &lt;pathelement location="lib/httpclient-4.5.1.jar"/&gt;
+        &lt;pathelement location="lib/httpcore-4.4.3.jar"/&gt;
+        &lt;pathelement location="lib/httpmime-4.5.1.jar"/&gt;
+        &lt;pathelement location="lib/jackson-core-2.6.2.jar"/&gt;
+        &lt;pathelement location="lib/jackson-dataformat-cbor-2.6.2.jar"/&gt;
+        &lt;pathelement location="lib/jackson-dataformat-smile-2.6.2.jar"/&gt;
+        &lt;pathelement location="lib/jackson-dataformat-yaml-2.6.2.jar"/&gt;
+        &lt;pathelement location="lib/javax.servlet-api-3.1.0.jar"/&gt;
+        &lt;pathelement location="lib/javax.mail-1.5.5.jar"/&gt;
+        &lt;pathelement location="lib/jetty-http-9.3.9.v20160517.jar"/&gt;
+        &lt;pathelement location="lib/jetty-io-9.3.9.v20160517.jar"/&gt;
+        &lt;pathelement location="lib/jetty-rewrite-9.3.9.v20160517.jar"/&gt;
+        &lt;pathelement location="lib/jetty-security-9.3.9.v20160517.jar"/&gt;
+        &lt;pathelement location="lib/jetty-server-9.3.9.v20160517.jar"/&gt;
+        &lt;pathelement location="lib/jetty-servlet-9.3.9.v20160517.jar"/&gt;
+        &lt;pathelement location="lib/jetty-servlets-9.3.9.v20160517.jar"/&gt;
+        &lt;pathelement location="lib/jetty-util-9.3.9.v20160517.jar"/&gt;
+        &lt;pathelement location="lib/jetty-webapp-9.3.9.v20160517.jar"/&gt;
+        &lt;pathelement location="lib/jna-4.1.0.jar"/&gt;
+        &lt;pathelement location="lib/joda-convert-1.2.jar"/&gt;
+        &lt;pathelement location="lib/joda-time-2.8.2.jar"/&gt;
+        &lt;pathelement location="lib/json-schema-validator-2.2.6-lib.jar"/&gt;
+        &lt;pathelement location="lib/jsr166e-1.1.0.jar"/&gt;
+        &lt;pathelement location="lib/jts-1.13.jar"/&gt;
+        &lt;pathelement location="lib/junit-4.12.jar"/&gt;
+        &lt;pathelement location="lib/log4j-1.2.17.jar"/&gt;
+        &lt;pathelement location="lib/lucene-analyzers-common-5.5.0.jar"/&gt;
+        &lt;pathelement location="lib/lucene-backward-codecs-5.5.0.jar"/&gt;
+        &lt;pathelement location="lib/lucene-core-5.5.0.jar"/&gt;
+        &lt;pathelement location="lib/lucene-grouping-5.5.0.jar"/&gt;
+        &lt;pathelement location="lib/lucene-highlighter-5.5.0.jar"/&gt;
+        &lt;pathelement location="lib/lucene-join-5.5.0.jar"/&gt;
+        &lt;pathelement location="lib/lucene-memory-5.5.0.jar"/&gt;
+        &lt;pathelement location="lib/lucene-misc-5.5.0.jar"/&gt;
+        &lt;pathelement location="lib/lucene-queries-5.5.0.jar"/&gt;
+        &lt;pathelement location="lib/lucene-queryparser-5.5.0.jar"/&gt;
+        &lt;pathelement location="lib/lucene-sandbox-5.5.0.jar"/&gt;
+        &lt;pathelement location="lib/lucene-spatial-5.5.0.jar"/&gt;
+        &lt;pathelement location="lib/lucene-spatial3d-5.5.0.jar"/&gt;
+        &lt;pathelement location="lib/lucene-suggest-5.5.0.jar"/&gt;
+        &lt;pathelement location="lib/netty-3.10.5.Final.jar"/&gt;
+        &lt;pathelement location="lib/securesm-1.0.jar"/&gt;
+        &lt;pathelement location="lib/snakeyaml-1.15.jar"/&gt;
+        &lt;pathelement location="lib/spatial4j-0.5.jar"/&gt;
+        &lt;pathelement location="lib/t-digest-3.0.jar"/&gt;
+        &lt;pathelement location="lib/twitter4j-core-4.0.2.jar"/&gt;
+        &lt;pathelement location="lib/twitter4j-stream-4.0.2.jar"/&gt;
+    &lt;/path&gt;
+
+    &lt;target name="init"&gt;
+        &lt;copy includeemptydirs="false" todir="classes"&gt;
+            &lt;fileset dir="src"&gt;
+                &lt;exclude name="**/*.launch"/&gt;
+                &lt;exclude name="**/*.java"/&gt;
+            &lt;/fileset&gt;
+        &lt;/copy&gt;
+    &lt;/target&gt;
+
+    &lt;target name="clean"&gt;
+        &lt;delete dir="classes"/&gt;
+        &lt;delete dir="html/javadoc"/&gt;
+    &lt;/target&gt;
+
+    &lt;target depends="init" name="build"&gt;
+        &lt;delete dir="classes"/&gt;
+        &lt;mkdir dir="classes"/&gt;
+        &lt;echo message="${ant.project.name}: ${ant.file}"/&gt;
+        &lt;javac debug="true" destdir="classes" includeantruntime="false" source="${source}" target="${target}"&gt;
+            &lt;src path="src"/&gt;
+            &lt;classpath refid="loklak.classpath"/&gt;
+        &lt;/javac&gt;
+    &lt;/target&gt;
+
+    &lt;target name="javadoc" depends="init" description="make javadoc"&gt;
+        &lt;delete dir="html/javadoc"/&gt;
+        &lt;javadoc destdir="html/javadoc" windowtitle="loklak javadoc" encoding="UTF-8" charset="UTF-8" access="private"&gt;
+            &lt;classpath refid="loklak.classpath"/&gt;
+            &lt;fileset dir="src"&gt;
+                &lt;include name="**/*.java"/&gt;
+            &lt;/fileset&gt;
+        &lt;/javadoc&gt;
+    &lt;/target&gt;
+
+    &lt;target depends="build,javadoc" name="all"/&gt;
+
+    &lt;target name="start"&gt;
+        &lt;java classname="org.loklak.Main" failonerror="true" fork="yes"&gt;
+            &lt;jvmarg line="-ea"/&gt;
+            &lt;classpath refid="loklak.classpath"/&gt;
+        &lt;/java&gt;
+    &lt;/target&gt;
+
+    &lt;target name="jar" depends="build"&gt;
+        &lt;mkdir dir="dist"/&gt;
+        &lt;manifestclasspath property="jar.classpath" jarfile="dist/loklak.jar"&gt;
+            &lt;classpath refid="loklak.classpath" /&gt;
+        &lt;/manifestclasspath&gt;
+        &lt;jar destfile="dist/loklak.jar" basedir="classes/"&gt;
+            &lt;manifest&gt;
+                &lt;attribute name="Class-Path" value="${jar.classpath}" /&gt;
+                &lt;attribute name="Main-Class" value="org.loklak.LoklakServer" /&gt;
+            &lt;/manifest&gt;
+        &lt;/jar&gt;
+    &lt;/target&gt;
+&lt;/project&gt;
+</pre>
+<li>Query String: <a>http://localhost:9000/api/xml2json.json?data=&lt;xml&gt;</a></li>
+<p>Resulting JSON
+<pre>
+  {"project": {
+  "basedir": ".",
+  "path": {
+    "pathelement": [
+      {"location": "classes"},
+      {"location": "lib/antlr-runtime-3.5.jar"},
+      {"location": "lib/apache-log4j-extras-1.2.17.jar"},
+      {"location": "lib/asm-4.1.jar"},
+      {"location": "lib/asm-commons-4.1.jar"},
+      {"location": "lib/commons-cli-1.3.1.jar"},
+      {"location": "lib/commons-logging-1.2.jar"},
+      {"location": "lib/compiler-0.8.13.jar"},
+      {"location": "lib/compress-lzf-1.0.2.jar"},
+      {"location": "lib/elasticsearch-2.3.2.jar"},
+      {"location": "lib/groovy-all-2.4.4.jar"},
+      {"location": "lib/guava-18.0.jar"},
+      {"location": "lib/hamcrest-core-1.3.jar"},
+      {"location": "lib/HdrHistogram-2.1.6.jar"},
+      {"location": "lib/hppc-0.7.1.jar"},
+      {"location": "lib/httpclient-4.5.1.jar"},
+      {"location": "lib/httpcore-4.4.3.jar"},
+      {"location": "lib/httpmime-4.5.1.jar"},
+      {"location": "lib/jackson-core-2.6.2.jar"},
+      {"location": "lib/jackson-dataformat-cbor-2.6.2.jar"},
+      {"location": "lib/jackson-dataformat-smile-2.6.2.jar"},
+      {"location": "lib/jackson-dataformat-yaml-2.6.2.jar"},
+      {"location": "lib/javax.servlet-api-3.1.0.jar"},
+      {"location": "lib/javax.mail-1.5.5.jar"},
+      {"location": "lib/jetty-http-9.3.9.v20160517.jar"},
+      {"location": "lib/jetty-io-9.3.9.v20160517.jar"},
+      {"location": "lib/jetty-rewrite-9.3.9.v20160517.jar"},
+      {"location": "lib/jetty-security-9.3.9.v20160517.jar"},
+      {"location": "lib/jetty-server-9.3.9.v20160517.jar"},
+      {"location": "lib/jetty-servlet-9.3.9.v20160517.jar"},
+      {"location": "lib/jetty-servlets-9.3.9.v20160517.jar"},
+      {"location": "lib/jetty-util-9.3.9.v20160517.jar"},
+      {"location": "lib/jetty-webapp-9.3.9.v20160517.jar"},
+      {"location": "lib/jna-4.1.0.jar"},
+      {"location": "lib/joda-convert-1.2.jar"},
+      {"location": "lib/joda-time-2.8.2.jar"},
+      {"location": "lib/json-schema-validator-2.2.6-lib.jar"},
+      {"location": "lib/jsr166e-1.1.0.jar"},
+      {"location": "lib/jts-1.13.jar"},
+      {"location": "lib/junit-4.12.jar"},
+      {"location": "lib/log4j-1.2.17.jar"},
+      {"location": "lib/lucene-analyzers-common-5.5.0.jar"},
+      {"location": "lib/lucene-backward-codecs-5.5.0.jar"},
+      {"location": "lib/lucene-core-5.5.0.jar"},
+      {"location": "lib/lucene-grouping-5.5.0.jar"},
+      {"location": "lib/lucene-highlighter-5.5.0.jar"},
+      {"location": "lib/lucene-join-5.5.0.jar"},
+      {"location": "lib/lucene-memory-5.5.0.jar"},
+      {"location": "lib/lucene-misc-5.5.0.jar"},
+      {"location": "lib/lucene-queries-5.5.0.jar"},
+      {"location": "lib/lucene-queryparser-5.5.0.jar"},
+      {"location": "lib/lucene-sandbox-5.5.0.jar"},
+      {"location": "lib/lucene-spatial-5.5.0.jar"},
+      {"location": "lib/lucene-spatial3d-5.5.0.jar"},
+      {"location": "lib/lucene-suggest-5.5.0.jar"},
+      {"location": "lib/netty-3.10.5.Final.jar"},
+      {"location": "lib/securesm-1.0.jar"},
+      {"location": "lib/snakeyaml-1.15.jar"},
+      {"location": "lib/spatial4j-0.5.jar"},
+      {"location": "lib/t-digest-3.0.jar"},
+      {"location": "lib/twitter4j-core-4.0.2.jar"},
+      {"location": "lib/twitter4j-stream-4.0.2.jar"}
+    ],
+    "id": "loklak.classpath"
+  },
+  "default": "build",
+  "name": "loklak",
+  "property": [
+    {"environment": "env"},
+    {
+      "name": "target",
+      "value": 1.8
+    },
+    {
+      "name": "source",
+      "value": 1.8
+    }
+  ],
+  "target": [
+    {
+      "name": "init",
+      "copy": {
+        "includeemptydirs": false,
+        "todir": "classes",
+        "fileset": {
+          "exclude": [
+            {"name": "**/*.launch"},
+            {"name": "**/*.java"}
+          ],
+          "dir": "src"
+        }
+      }
+    },
+    {
+      "name": "clean",
+      "delete": [
+        {"dir": "classes"},
+        {"dir": "html/javadoc"}
+      ]
+    },
+    {
+      "javac": {
+        "includeantruntime": false,
+        "debug": true,
+        "src": {"path": "src"},
+        "classpath": {"refid": "loklak.classpath"},
+        "destdir": "classes",
+        "source": "${source}",
+        "target": "${target}"
+      },
+      "depends": "init",
+      "name": "build",
+      "echo": {"message": "${ant.project.name}: ${ant.file}"},
+      "delete": {"dir": "classes"},
+      "mkdir": {"dir": "classes"}
+    },
+    {
+      "javadoc": {
+        "charset": "UTF-8",
+        "access": "private",
+        "classpath": {"refid": "loklak.classpath"},
+        "destdir": "html/javadoc",
+        "windowtitle": "loklak javadoc",
+        "encoding": "UTF-8",
+        "fileset": {
+          "include": {"name": "**/*.java"},
+          "dir": "src"
+        }
+      },
+      "depends": "init",
+      "name": "javadoc",
+      "description": "make javadoc",
+      "delete": {"dir": "html/javadoc"}
+    },
+    {
+      "depends": "build,javadoc",
+      "name": "all"
+    },
+    {
+      "java": {
+        "fork": "yes",
+        "classname": "org.loklak.Main",
+        "classpath": {"refid": "loklak.classpath"},
+        "jvmarg": {"line": "-ea"},
+        "failonerror": true
+      },
+      "name": "start"
+    },
+    {
+      "manifestclasspath": {
+        "classpath": {"refid": "loklak.classpath"},
+        "jarfile": "dist/loklak.jar",
+        "property": "jar.classpath"
+      },
+      "depends": "build",
+      "name": "jar",
+      "jar": {
+        "basedir": "classes/",
+        "destfile": "dist/loklak.jar",
+        "manifest": {"attribute": [
+          {
+            "name": "Class-Path",
+            "value": "${jar.classpath}"
+          },
+          {
+            "name": "Main-Class",
+            "value": "org.loklak.LoklakServer"
+          }
+        ]}
+      },
+      "mkdir": {"dir": "dist"}
+    }
+  ]
+}}
+</pre>
+</p>
+</section>
 <!-- end of left-align formatting of the source code -->
       </div>
     </div>
