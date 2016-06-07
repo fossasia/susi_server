@@ -7,12 +7,12 @@
     <meta http-equiv="content-type" content="text/html; charset=utf-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="description" content="loklak.org - Architecture">
+    <meta name="description" content="loklak is a java application which runs a jetty web server for the html interface and an Elasticsearch search server.">
     <meta name="Content-Language" content="en, english"/>
-    <meta name="keywords" lang="en-us" content="search,search engine,twitter,messages,microblogging,elasticsearch,json,api,kibana,loklak"/>
-    <meta name="author" content="@0rb1t3r">
-    <link rel="icon" type="image/png" href="artwork/favicon.png">
-    <title>loklak.org - Architecture</title>
+    <meta name="author" content="Michael Peter Christen, @0rb1t3r">
+    <link rel="icon" type="image/png" href="/artwork/favicon.png">
+    <link rel="canonical" href="http://loklak.org/tutorials.html" />
+    <title>loklak.org - Peer-to-Peer Message Search Engine Architecture</title>
       
     <link href="css/bootstrap.min.css" rel="stylesheet">
     <link href="css/dashboard.css" rel="stylesheet">
@@ -40,7 +40,7 @@
             <span class="icon-bar"></span>
             <span class="icon-bar"></span>
           </button>
-          <a class="navbar-brand" href="http://loklak.org"><img src="images/loklak_org.png" height="24" style="float:left;">: Architecture</a>
+          <a class="navbar-brand" href="http://loklak.org"><img src="/images/loklak_org.png" height="24" style="float: left;" alt="loklak.org" title="loklak.org message server">: Architecture</a>
         </div>
         <div id="navbar" class="navbar-collapse collapse">
           <ul class="nav navbar-nav navbar-right">
@@ -67,8 +67,11 @@
         </div>
         <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
           <h1 class="page-header">The <code>loklak</code> Architecture</h1>
-          <p><code>loklak</code> is a java application which runs a jetty web server for the html interface and an Elasticsearch search server. The application contains a self-documentation which consists of the web pages you are looking at right now. There is also a <a href="javadoc.html">javadoc</a>.</p>
-            
+          <p>
+          <code>loklak</code> is a java application which runs a jetty web server for the html interface and an Elasticsearch search server.
+          The application contains a self-documentation which consists of the web pages you are looking at right now.
+          There is also a <a href="javadoc.html">javadoc</a>.
+          </p>
 		  
 		  <br/><br/>
           <section id="filesystem">
@@ -104,7 +107,7 @@
           <section id="socketsandports">
           <h2 class="sub-header">Application Sockets and Ports</h2>
           <p>There is only one public port available, port 9000. <code>loklak</code> opens two more ports for Elasticsearch, port 9200 (Elasticsearch HTML api) and 9300 (Elasticsearch Transport API) but they are configured to be unavailable for clients from non-localhost sockets. You can change the port numbers and access rules in conf/config.properties. If you want to run several <code>loklak</code> instances on the same host, you must change three port number (i.e. by increasing all by one).</p>
-          </section>  
+          </section>
             
           <br/><br/>
           <section id="searchprocess">
@@ -113,15 +116,15 @@
             To retrieve the Twitter search results, a web page scraper is used to circumvent the forced OAuth identification of the search users. The search process has three phases:</p>
             <h3>Dispatching the Search Request</h3>
             <p>This happens when the <a href="api.html#search">search.json</a> api is called: the api servlet concurrently queries a Twitter scraper and the internal Elasticsearch index:</p>
-            <img src="images/architecture_phase1.png" width="720" height="252">
+            <img src="images/architecture_phase1.png" width="720" height="252" alt="software architecture phase 1" title="Dispatching the Search Request">
             <p>As a part of this process, the Twitter scraper also <a href="about.html#deshortener">de-shortens</a> all links embedded in all Tweets from the search result.</p>
-            <h3>Merging the Search Results </h3>
+            <h3>Merging the Search Results</h3>
             <p>The search result is merged into one message list. Merging is easily done because all messages have an identifier and the messages are simply ordered by their date:</p>
-            <img src="images/architecture_phase2.png" width="720" height="252">
+            <img src="images/architecture_phase2.png" width="720" height="252" alt="software architecture phase 2" title="Merging the Search Results">
             <p>As part of the merge process, all new, previously unknown messages can be identified. These are pushed on a storage list for future processing.</p>
             <h3>Distribution of Messages</h3>
             <p>An independent caretaker-process runs every three seconds and looks how many new messages had been placed on the storage queue; if the number exceedes a given limit (i.e. 100) then all messages are stored to the own file system and pushed over the back-end API to the back-end peer.</p>
-            <img src="images/architecture_phase3.png" width="720" height="252">
+            <img src="images/architecture_phase3.png" width="720" height="252" alt="software architecture phase 3" title="Distribution of Messages">
             <p>Files pushed on the <a href="dump/">latest message file stack</a> can be downloaded immediately. The same happens at the back-end peer: new messages appear immediately there as well.</p>
           </section>
           <br/><br/>
@@ -130,7 +133,7 @@
           <p>To scale the build-in search to an unlimited index size within a single loklak node, loklak uses the scaling methods as provided by elasticsearch.
           While loklak comes by default with a deeply embedded elasticsearch node, it is also possible to replace this node with an elasticsearch transport client.
           This client then may connect to an external elasticsearch node, which can also be a node of a large elasticsearch cluster.</p>
-          <img src="images/architecture_large_scaling.png" width="828" height="677">
+          <img src="images/architecture_large_scaling.png" width="828" height="677" alt="large-scale software architecture" title="Large-Scale Search Topology">
           <p>If the loklak search index is hosted outside of loklak, it is also possible to connect several loklak server to the same elasticsearch cluster.
           To provide high-availability, it is possible to use several loklak servers for one front-end at the same time using a load-balancer.</p>
           </section>
@@ -139,7 +142,7 @@
           <h2 class="sub-header">Loklak Network Topology</h2>
           <p>The topology of the <code>loklak</code> depends only on you: using the back-end configuration, you can chain
             peers and data from scraped content flows along the network chain until it reaches a back-end, which has no other back-end.</p>
-            <img src="images/architecture_topology.png" width="720">
+            <img src="images/architecture_topology.png" width="720" alt="software achtitecture topology" title="Loklak Network Topology">
             <h3>Organic Growth</h3>
             <p>If you install loklak, you may keep the assigned back-end peer (see config.properties: backend property),
             or assign another one. If you tell people about <code>loklak</code>, tell them to assign your peer as backend.

@@ -7,12 +7,12 @@
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="description" content="loklak.org - Architecture">
+    <meta name="description" content="This is a server application which is able to collect messages from various sources, including Twitter.">
     <meta name="Content-Language" content="en, english"/>
-    <meta name="keywords" lang="en-us" content="search,search engine,twitter,messages,microblogging,elasticsearch,json,api,kibana,loklak"/>
-    <meta name="author" content="@0rb1t3r">
-    <link rel="icon" type="image/png" href="artwork/favicon.png">
-    <title>About loklak</title>
+    <meta name="author" content="Michael Peter Christen, @0rb1t3r">
+    <link rel="icon" type="image/png" href="/artwork/favicon.png">
+    <link rel="canonical" href="http://loklak.org/about.html" />
+    <title>loklak.org - We scrape messages from social media - you create a search portal with that data</title>
 
     <link href="css/bootstrap.min.css" rel="stylesheet">
     <link href="css/dashboard.css" rel="stylesheet">
@@ -40,7 +40,7 @@
             <span class="icon-bar"></span>
             <span class="icon-bar"></span>
           </button>
-          <a class="navbar-brand" href="http://loklak.org"><img src="images/loklak_org.png" height="24" style="float:left;">: About</a>
+          <a class="navbar-brand" href="http://loklak.org"><img src="/images/loklak_org.png" height="24" style="float: left;" alt="loklak.org" title="loklak.org message server">: About</a>
         </div>
         <div id="navbar" class="navbar-collapse collapse">
           <ul class="nav navbar-nav navbar-right">
@@ -87,22 +87,22 @@
           <section  id="scrape">
           <h2 class="sub-header">We Capture Messages With Distributed Scrapers</h2>
           <p>If you want to create an alternative Twitter search portal, the only way would be to use the official Twitter API to retrieve Tweets. But that interface needs an OAuth account and it makes your search portal completely dependent on Twitter's goodwill. The alternative is, to scrape the Tweets from the Twitter HTML search result pages, but Twitter may still lock you out on your IP address. To circumvent this, you need many clients accessing Twitter to scrape search results. This makes it necessary to create a distributed peer-to-peer network of Twitter scrapers which can all organize, store and index Tweets. This solution was created with <code>Loklak</code>.</p>
-            <p>Best of all: we made this very generic to integrate different microblogging services, so this may be the incubator for an independent short message or Twitter-like platform.</p>
+          <p>Best of all: we made this very generic to integrate different microblogging services, so this may be the incubator for an independent short message or Twitter-like platform.</p>
           </section>
 		  <br/><br/>
 		  <section  id="notasearchportal">
-          <h2 class="sub-header">Not A Search Portal</h2>
+          <h2 class="sub-header">Not a Search Portal</h2>
           <p>Search portals consist of many components, the most prominent parts are content harvesters to acquire searchable content, a search index which provides fast and efficient access to the data and a search front-end containing the user webpages and result display servlets:</p>
-<img src="images/concept_searchengine.png" width="553">
-            <p>Most search portals differ in the way how they display search results but have the almost same back-end to create the search index. We want to support the creation of message/Twitter search portals but the necessary and most generic part needs to be coded only once, even if we want several or even many different search front-ends:</p>
-<img src="images/concept_messagesearch.png" width="553">
-            <p>So it's on you to create a message search portal, but the very hard part for this was already done by us. However, the front-end may also instantly be there (i.e. you can just use <a href="download.html#kibana">Kibana</a>).</p>
-            </section>
+          <img src="images/concept_searchengine.png" width="553" alt="search engine concept" title="Not a Search Portal">
+          <p>Most search portals differ in the way how they display search results but have the almost same back-end to create the search index. We want to support the creation of message/Twitter search portals but the necessary and most generic part needs to be coded only once, even if we want several or even many different search front-ends:</p>
+          <img src="images/concept_messagesearch.png" width="553" alt="message search concept" title="Message Search Portal">
+          <p>So it's on you to create a message search portal, but the very hard part for this was already done by us. However, the front-end may also instantly be there (i.e. you can just use <a href="download.html#kibana">Kibana</a>).</p>
+          </section>
 		  <br/><br/>
 		  <section id="collect">
           <h2 class="sub-header">Collect Messages</h2>
           <p>Collected messages are processed to two storage targets: an elasticsearch search index and a backup- and transfer dump.</p>
-<img src="images/concept_messagesearchdetail.png" width="553">
+          <img src="images/concept_messagesearchdetail.png" width="553" alt="concept message search" title="Collect Messages">
 		  </section>
           <br/><br/>
           <section id="deshortener">
@@ -121,11 +121,11 @@
             <li>The <code>loklak</code> server does not record client IP-adresses when a search is done, therefore <code>loklak.org</code>, running <code>loklak</code> does also not record or log IP addresses from searchers.</li>
             <li>You can run <code>loklak</code> yourself which gives you complete control over logged things (where no IP addresses are, but whatever).</li>
 			<li>Using a scraper, it is possible to break out of Twitter's 'OAuth-Prison', as you don't need an account to harvest Tweets.</li>
-            <img src="images/component_contentharvester.png" height="96">
+            <img src="images/component_contentharvester.png" height="96" alt="component content harvester" title="Anonymity is provided with different methods">
           </ul>
           <ul>
 			<li>If you don't want to search on <code>loklak.org</code> and also don't want to scrape data from Twitter, you can still search in your own index and feed this index with import files from other <code>loklak</code> peers. (Look out for the <a href="dump.html">'Dumps' menu item</a> in the top right corner.)</li>
-              <img src="images/component_searchindex.png" height="96">
+              <img src="images/component_searchindex.png" height="96" alt="component search index" title="Message Search Index">
           </ul>
           <ul>
 			<li>The built-in short-link de-shortener protects you from tracking by short-link services, including Twitter and bit.ly.</li>
@@ -137,7 +137,7 @@
           <p><code>Loklak</code> instances can be connected to each other. If you download <code>loklak</code> and run it unchanged, it connects to loklak.org by default as a back-end peer. You can change this if you want to. This is how connected peers work:</p>
           <ul>
               <li>Whenever a peer aquires new Tweets, it reports these to the back-end for storage. This means that fresh Tweets are stored at four locations: your own Elasticsearch index, your own message dump file and in the remote back-end-peer in the Elasticsearch index and dump file. This causes that all messages that you find are available for download for other users at the back-end which is by default loklak.org.</li>
-              <img src="images/component_jsonlistp2p.png" height="96">
+              <img src="images/component_jsonlistp2p.png" height="96" alt="" title="">
               <li>Whenever a peer starts up, it calls the back-end to announce it's existence. This fills a peer-table in the back-end which everyone can use to retrieve the list of active peers. Therefore everyone can identify peers which may provide message-lists for download.</li>
               <li>Any topology can be achieved when the user changes the host name of the back-end. You can create your own message-sharing network easily.</li>
           </ul>
