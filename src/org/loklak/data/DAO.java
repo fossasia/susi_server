@@ -182,7 +182,7 @@ public class DAO {
 				private_settings.setPrivateKey(keyPair.getPrivate(), algorithm);
 				public_settings.setPublicKey(keyPair.getPublic(), algorithm);
 			} catch (NoSuchAlgorithmException e) {
-				e.printStackTrace();
+				throw e;
 			}
 			log("Key creation finished. Peer hash: " + public_settings.getPeerHashAlgorithm() + " " + public_settings.getPeerHash());
         }
@@ -247,12 +247,12 @@ public class DAO {
         	try {
         	    elasticsearch_client.createIndexIfNotExists(index.name(), shards, replicas);
         	} catch (Throwable e) {
-        		e.printStackTrace();
+        		Log.getLog().warn(e.getMessage());
         	}
             try {
                 elasticsearch_client.setMapping(index.name(), new File(mappingsDir, index.name() + ".json"));
             } catch (Throwable e) {
-                e.printStackTrace();
+            	Log.getLog().warn(e.getMessage());
             }
         }
         // elasticsearch will probably take some time until it is started up. We do some other stuff meanwhile..
@@ -347,8 +347,8 @@ public class DAO {
                 log("initializing the classifier...");
                 try {
                     Classifier.init(10000, 1000);
-                } catch (Throwable ee) {
-                    ee.printStackTrace();
+                } catch (Throwable e) {
+                	Log.getLog().warn(e.getMessage());
                 }
                 log("classifier initialized!");
             }
@@ -390,7 +390,7 @@ public class DAO {
                 queries.writeEntries(bulkEntries);
                 reader.close();
             } catch (IOException e) {
-                e.printStackTrace();
+            	Log.getLog().warn(e.getMessage());
             }
         }
         log("queries initialized.");
@@ -444,11 +444,11 @@ public class DAO {
                                     AccountEntry a = new AccountEntry(json);
                                     DAO.writeAccount(a, false);
                                 } catch (IOException e) {
-                                    e.printStackTrace();
+                                	Log.getLog().warn(e.getMessage());
                                 }
                             }
                         } catch (InterruptedException e) {
-                            e.printStackTrace();
+                        	Log.getLog().warn(e.getMessage());
                         }
                     }
                 };
@@ -585,7 +585,7 @@ public class DAO {
             // teach the classifier
             Classifier.learnPhrase(mw.t.getText(Integer.MAX_VALUE, ""));
         } catch (IOException e) {
-            e.printStackTrace();
+        	Log.getLog().warn(e.getMessage());
         }
         return true;
     }
@@ -628,7 +628,7 @@ public class DAO {
             result = messages.writeEntries(messageBulk);
             users.writeEntries(userBulk);
         } catch (IOException e) {
-            e.printStackTrace();
+        	Log.getLog().warn(e.getMessage());
         }
         if (result == null) return new HashSet<String>();
         return result.getCreated();
@@ -647,7 +647,7 @@ public class DAO {
             // teach the classifier
             Classifier.learnPhrase(mw.t.getText(Integer.MAX_VALUE, ""));
         } catch (IOException e) {
-            e.printStackTrace();
+        	Log.getLog().warn(e.getMessage());
         }
         
         return created;
@@ -668,7 +668,7 @@ public class DAO {
             // record account into search index
             accounts.writeEntry(new IndexEntry<AccountEntry>(a.getScreenName(), a.getSourceType(), a));
         } catch (IOException e) {
-            e.printStackTrace();
+        	Log.getLog().warn(e.getMessage());
         }
         return true;
     }
@@ -686,7 +686,7 @@ public class DAO {
             // record import profile into search index
             importProfiles.writeEntry(new IndexEntry<ImportProfileEntry>(i.getId(), i.getSourceType(), i));
         } catch (IOException e) {
-            e.printStackTrace();
+        	Log.getLog().warn(e.getMessage());
         }
         return true;
     }
@@ -767,8 +767,7 @@ public class DAO {
                         timeline.add(tweet, user);
                     }
                 } catch (IOException e) {
-                    // TODO Auto-generated catch block
-                    e.printStackTrace();
+                	Log.getLog().warn(e.getMessage());
                 }
             }
             this.aggregations = query.aggregations;
@@ -787,7 +786,7 @@ public class DAO {
         try {
             return users.read(screen_name);
         } catch (IOException e) {
-            e.printStackTrace();
+        	Log.getLog().warn(e.getMessage());
             return null;
         }
     }
@@ -807,7 +806,7 @@ public class DAO {
         try {
             return accounts.read(screen_name);
         } catch (IOException e) {
-            e.printStackTrace();
+        	Log.getLog().warn(e.getMessage());
             return null;
         }
     }
@@ -833,7 +832,7 @@ public class DAO {
         try {
             return importProfiles.read(id);
         } catch (IOException e) {
-            e.printStackTrace();
+        	Log.getLog().warn(e.getMessage());
             return null;
         }
     }
@@ -896,8 +895,8 @@ public class DAO {
         QueryEntry qe = null;
         try {
             qe = queries.read(q);
-        } catch (IOException | JSONException e1) {
-            e1.printStackTrace();
+        } catch (IOException | JSONException e) {
+        	Log.getLog().warn(e.getMessage());
         }
         
         if (recordQuery && Caretaker.acceptQuery4Retrieval(q)) {
@@ -911,7 +910,7 @@ public class DAO {
             try {
                 queries.writeEntry(new IndexEntry<QueryEntry>(q, qe.source_type == null ? SourceType.TWITTER : qe.source_type, qe));
             } catch (IOException e) {
-                e.printStackTrace();
+            	Log.getLog().warn(e.getMessage());
             }
         } else {
             // accept rules may change, we want to delete the query then in the index
