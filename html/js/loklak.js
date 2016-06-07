@@ -1,4 +1,4 @@
-var app = angular.module("loklak", ["ngRoute"]);
+var app = angular.module("loklak", ['ngRoute']);
 app.controller("status", function($scope, $http) {
   $http.get("api/status.json").
     success(function(data, status, headers, config) {
@@ -22,21 +22,6 @@ app.controller("search", function($scope, $http) {
   }
 });
 
-app.controller("topmenu", function($scope, $http, $location) {
-  $http.get("/cms/topmenu.json").
-    success(function(data, status, headers, config){
-      $scope.results = data.items;
-    });
-    $scope.isActive = function (viewLocation) {
-      var active = (viewLocation === $location.path());
-      winLocation = window.location.href;
-      if (winLocation.indexOf(viewLocation) != -1) {
-        active = true;
-      }
-      return active;
-    };
-});
-
 app.filter("reverse", function() {
   return function(items) {
     if (!items || !items.length) {
@@ -46,50 +31,22 @@ app.filter("reverse", function() {
   };
 });
 
-angular.module("loklak")
-.config(function ($routeProvider) {
-    $routeProvider.
-    when("/index", {
-        controller: "widgetsController",
-        activetab: "Home"
-    }).
-    when("/about", {
-        controller: "widgetsController",
-        activetab: "About"
-    }).
-    when("/showcase", {
-        controller: "widgetsController",
-        activetab: "Showcase"
-    }).
-    when("/architecture", {
-        controller: "widgetsController",
-        activetab: "Architecture"
-
-    }).
-    when("/download", {
-        controller: "widgetsController",
-        activetab: "Download"
-    }).
-    when("/tutorials", {
-        controller: "widgetsController",
-        activetab: "Tutorials"
-
-    }).
-    when("/api", {
-        controller: "widgetsController",
-        activetab: "API"
-    }).
-    when("/dump", {
-        controller: "widgetsController",
-        activetab: "Dumps"
-
-    }).
-    when("/apps", {
-        controller: "widgetsController",
-        activetab: "Apps"
+angular.element(document).ready(function () {
+  var navString = "";
+  var winLocation = window.location.href;
+  $.getJSON("/cms/topmenu.json", function(data) {
+    navItems = data.items;
+    $.each( navItems, function(index, itemData) {
+      name = Object.keys(itemData);
+      link = itemData[name];
+      // Now construct the li items
+      liItem = "<li>";
+      if (winLocation.indexOf(link) != -1) {
+        liItem = "<li class='active'>";
+      }
+      liItem += "<a href='"+link+"'>"+name+"</a></li>";
+      liItem = $(liItem);
+      $('#navbar > ul').append(liItem);
     });
+  });
 });
-
-function widgetsController($scope, $route) {
-    $scope.$route = $route;
-}

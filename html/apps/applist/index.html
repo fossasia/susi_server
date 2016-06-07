@@ -21,6 +21,7 @@
 <script src="../../js/html5shiv.min.js"></script>
 <script src="../../js/respond.min.js"></script>
 <![endif]-->
+    <script src="../../js/jquery.min.js"></script>
     <script src="../../js/angular.min.js"></script>
     <script src="../../js/angular-route.min.js"></script>
     <script src="../../js/loklak.js"></script>
@@ -40,9 +41,9 @@
             <img src="../../images/loklak_org.png" height="24" style="float:left;">: App List
           </a>
         </div>
-        <div id="navbar" class="navbar-collapse collapse" ng-controller="topmenu">
-          <ul class="nav navbar-nav navbar-right" ng-repeat="item in results | reverse">
-            <li ng-repeat="(key, val) in item" ng-class="{ active: isActive('{{val}}') }"><a ng-href="../../{{val}}">{{key}}</a></li>
+        <div id="navbar" class="navbar-collapse collapse">
+          <ul class="nav navbar-nav navbar-right">
+            <!-- This will get populated -->
           </ul>
         </div>
       </div>
@@ -52,7 +53,7 @@
         <div class="col-sm-3 col-md-2 sidebar">
           <div id="navSidebar">
           <div><h4><center>CATEGORIES</center></h4></div>
-            <ul class="nav nav-sidebar">
+            <ul class="nav nav-sidebar" isolateClick>
                 <li ng-repeat="category in categoryKeys track by $index"><a href="#{{category | nospace}}" ng-click="categoryFilter($event)" id="{{category | nospace}}">{{category}}</a></li>
               </ul>
           </div>
