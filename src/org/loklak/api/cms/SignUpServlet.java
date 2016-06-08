@@ -28,6 +28,7 @@ import org.loklak.server.APIException;
 import org.loklak.server.APIHandler;
 import org.loklak.server.APIServiceLevel;
 import org.loklak.server.AbstractAPIHandler;
+import org.loklak.server.Authentication;
 import org.loklak.server.Authorization;
 import org.loklak.server.ClientCredential;
 import org.loklak.server.ClientIdentity;
@@ -56,10 +57,22 @@ public class SignUpServlet extends AbstractAPIHandler implements APIHandler {
 
     	JSONObject result = new JSONObject();
     	
-    	if(!rights.isAdmin() && !"true".equals(DAO.getConfig("users.public.signup", "false"))){
-    		result.put("status", "error");
-    		result.put("reason", "Public signup disabled");
-    		return result;
+    	boolean activated = true;
+    	boolean sendEmail = false;
+    	
+    	if(!rights.isAdmin()){
+    		switch(DAO.getConfig("users.public.signup", "false")){
+    			case "false":
+    				result.put("status", "error");
+    	    		result.put("reason", "Public signup disabled");
+    	    		return result;
+    			case "admin":
+    				activated = false;
+    				break;
+    			case "email":
+    				activated = false;
+    				sendEmail = true;
+    		}
     	}
     	
     	if(post.get("signup",null) == null || post.get("password", null) == null){
@@ -80,20 +93,32 @@ public class SignUpServlet extends AbstractAPIHandler implements APIHandler {
     	
     	
     	ClientCredential credential = new ClientCredential(ClientCredential.Type.passwd_login, signup);
-    	if (DAO.authentication.has(credential.toString())) {
+    	Authentication authentication = new Authentication(credential, DAO.authentication);
+    	
+    	if (authentication.getIdentity() != null) {
     		result.put("status", "error");
     		result.put("reason", "email already taken");
     		return result;
     	}
     	
-    	JSONObject user_obj = new JSONObject();
-    	String salt = createRandomString(20);
-    	user_obj.put("salt", salt);
-    	user_obj.put("passwordHash", getHash(password, salt));
     	ClientIdentity identity = new ClientIdentity(ClientIdentity.Type.email, credential.getName());
-    	user_obj.put("id",identity.toString());
-        DAO.authentication.put(credential.toString(), user_obj, credential.isPersistent());
+    	authentication.setIdentity(identity);
     	
+    	String salt = createRandomString(20);
+    	authentication.put("salt", salt);
+    	authentication.put("passwordHash", getHash(password, salt));
+    	authentication.put("activated", activated);
+        
+        if(sendEmail){
+	        String token = createRandomString(30);
+	        ClientCredential loginToken = new ClientCredential(ClientCredential.Type.login_token, token);
+	        Authentication tokenAuthentication = new Authentication(loginToken, DAO.authentication);
+	        tokenAuthentication.setIdentity(identity); // persistency is wierd
+	        tokenAuthentication.setExpireTime(7 * 24 * 60 * 60);
+	        
+	        // TODO: send email
+        }
+
     	result.put("status", "ok");
 		result.put("reason", "ok");
 		return result;

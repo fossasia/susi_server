@@ -126,14 +126,7 @@ public abstract class AbstractAPIHandler extends HttpServlet implements APIHandl
         ClientIdentity identity = getIdentity(request, response);
         
         // user authorization: we use the identification of the user to get the assigned authorization
-        JSONObject authorization_obj = null;
-        if (DAO.authorization.has(identity.toString())) {
-            authorization_obj = DAO.authorization.getJSONObject(identity.toString());
-        } else {
-            authorization_obj = new JSONObject();
-            DAO.authorization.put(identity.toString(), authorization_obj, identity.isPersistent());
-        }
-        Authorization authorization = new Authorization(authorization_obj, DAO.authorization, identity);
+        Authorization authorization = new Authorization(identity, DAO.authorization);
 
         // user accounting: we maintain static and persistent user data; we again search the accounts using the usder identity string
         //JSONObject accounting_persistent_obj = DAO.accounting_persistent.has(user_id) ? DAO.accounting_persistent.getJSONObject(anon_id) : DAO.accounting_persistent.put(user_id, new JSONObject()).getJSONObject(user_id);
@@ -205,13 +198,11 @@ public abstract class AbstractAPIHandler extends HttpServlet implements APIHandl
 			Cookie loginCookie = getLoginCookie(request);
 			
 			ClientCredential credential = new ClientCredential(ClientCredential.Type.cookie, loginCookie.getValue());
+			Authentication authentication = new Authentication(credential, DAO.authentication);
 			
-			if(DAO.authentication.has(credential.toString())){
-
-				Authentication authentication = new Authentication(DAO.authentication.getJSONObject(credential.toString()), DAO.authentication);
-				ClientIdentity identity = authentication.getIdentity();
+			if(authentication.getIdentity() != null){
 				
-				if(authentication.checkExpireTime() && identity != null){
+				if(authentication.checkExpireTime()){
 					
 					//reset cookie validity time
 					authentication.setExpireTime(defaultCookieTime);
@@ -219,7 +210,7 @@ public abstract class AbstractAPIHandler extends HttpServlet implements APIHandl
 					loginCookie.setPath("/"); // bug. The path gets reset
 					response.addCookie(loginCookie);
 						
-					return identity;
+					return authentication.getIdentity();
 				}
 				else{
 					// delete cookie if set
@@ -249,53 +240,47 @@ public abstract class AbstractAPIHandler extends HttpServlet implements APIHandl
 			} catch (UnsupportedEncodingException e) {}
 
     		ClientCredential credential = new ClientCredential(ClientCredential.Type.passwd_login, login);
+    		Authentication authentication = new Authentication(credential, DAO.authentication);
     		
     		// check if password is valid
-    		if(DAO.authentication.has(credential.toString())){
+    		if(authentication.getIdentity() != null){
     			
-    			JSONObject authentication_obj = DAO.authentication.getJSONObject(credential.toString());
-    			
-    			if(authentication_obj.has("passwordHash") && authentication_obj.has("salt")){
+    			if(authentication.has("passwordHash") && authentication.has("salt")){
     				
-					String passwordHash = authentication_obj.getString("passwordHash");
-					String salt = authentication_obj.getString("salt");
+					String passwordHash = authentication.getString("passwordHash");
+					String salt = authentication.getString("salt");
 					
-					Authentication authentication = new Authentication(authentication_obj, DAO.authentication);
     				ClientIdentity identity = authentication.getIdentity();
 					
 	    			if(getHash(password, salt).equals(passwordHash)){
 	    				
-	    				// identity can be null
-	    				if(identity != null){
+	    				// only create a cookie or session if requested (by login page)
+	    				if("true".equals(request.getParameter("request_cookie"))){
+            				
+            				// create random string as token
+            				String loginToken = createRandomString(30);
+            				
+            				// create cookie
+            				Cookie loginCookie = new Cookie("login", loginToken);
+            				loginCookie.setPath("/");
+            				loginCookie.setMaxAge(defaultCookieTime.intValue());
+            				
+            				// write cookie to database
+            				ClientCredential cookieCredential = new ClientCredential(ClientCredential.Type.cookie, loginToken);
+            				JSONObject user_obj = new JSONObject();
+            				user_obj.put("id",identity.toString());
+            				user_obj.put("expires_on", Instant.now().getEpochSecond() + defaultCookieTime);
+            				DAO.authentication.put(cookieCredential.toString(), user_obj, cookieCredential.isPersistent());
+        	    			
+            				response.addCookie(loginCookie);
+        	    		}
+	    				else if("true".equals(request.getParameter("request_session"))){
+	            			request.getSession().setAttribute("identity",identity);
+	            		}
 	    				
-		    				// only create a cookie or session if requested (by login page)
-		    				if("true".equals(request.getParameter("request_cookie"))){
-	            				
-	            				// create random string as token
-	            				String loginToken = createRandomString(30);
-	            				
-	            				// create cookie
-	            				Cookie loginCookie = new Cookie("login", loginToken);
-	            				loginCookie.setPath("/");
-	            				loginCookie.setMaxAge(defaultCookieTime.intValue());
-	            				
-	            				// write cookie to database
-	            				ClientCredential cookieCredential = new ClientCredential(ClientCredential.Type.cookie, loginToken);
-	            				JSONObject user_obj = new JSONObject();
-	            				user_obj.put("id",identity.toString());
-	            				user_obj.put("expires_on", Instant.now().getEpochSecond() + defaultCookieTime);
-	            				DAO.authentication.put(cookieCredential.toString(), user_obj, cookieCredential.isPersistent());
-	        	    			
-	            				response.addCookie(loginCookie);
-	        	    		}
-		    				else if("true".equals(request.getParameter("request_session"))){
-		            			request.getSession().setAttribute("identity",identity);
-		            		}
-		    				
-		    				Log.getLog().info("login for user: " + identity.getName() + " via passwd from host: " + request.getRemoteHost());
-		            		
-		            		return identity;
-	    				}
+	    				Log.getLog().info("login for user: " + identity.getName() + " via passwd from host: " + request.getRemoteHost());
+	            		
+	            		return identity;
 	    			}
 	    			Log.getLog().info("Invalid login try for user: " + identity.getName() + " via passwd from host: " + request.getRemoteHost());
     			}
@@ -306,13 +291,14 @@ public abstract class AbstractAPIHandler extends HttpServlet implements APIHandl
     	}
     	else if (request.getParameter("login_token") != null){
     		ClientCredential credential = new ClientCredential(ClientCredential.Type.login_token, request.getParameter("login_token"));
+    		Authentication authentication = new Authentication(credential, DAO.authentication);
+			
     		
     		// check if login_token is valid
-    		if(DAO.authentication.has(credential.toString())){
-    			Authentication authentication = new Authentication(DAO.authentication.getJSONObject(credential.toString()), DAO.authentication);
+    		if(authentication.getIdentity() != null){
     			ClientIdentity identity = authentication.getIdentity();
     			
-    			if(authentication.checkExpireTime() && identity != null){
+    			if(authentication.checkExpireTime()){
     				Log.getLog().info("login for user: " + identity.getName() + " via token from host: " + request.getRemoteHost());
     				return identity;
     			}

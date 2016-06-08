@@ -19,9 +19,7 @@
 
 package org.loklak.server;
 
-import org.json.JSONArray;
 import org.json.JSONObject;
-import org.loklak.tools.storage.JsonFile;
 import org.loklak.tools.storage.JsonTray;
 
 /**
@@ -45,8 +43,13 @@ public class Authorization {
      * @param json object for storage of the authorization
      * @param parent the parent file or null if there is no parent file (no persistency)
      */
-    public Authorization(final JSONObject json, JsonTray parent, ClientIdentity identity) {
-        this.json = json;
+    public Authorization(ClientIdentity identity, JsonTray parent) {
+    	if (parent.has(identity.toString())) {
+    		this.json = parent.getJSONObject(identity.toString());
+        } else {
+            parent.put(identity.toString(), new JSONObject(), identity.isPersistent());
+            this.json = parent.getJSONObject(identity.toString());
+        }
         this.parent = parent;
         this.accounting = null;
         this.identity = identity;
