@@ -101,7 +101,7 @@ public class SearchServlet extends HttpServlet {
                 if (scraperInfo != null) tl.setScraperInfo(scraperInfo);
             }
         } catch (Throwable e) {
-        	Log.getLog().warn(e);
+        	//Log.getLog().warn(e);
             throw new IOException(e.getMessage());
         }
         //System.out.println(parser.text());
