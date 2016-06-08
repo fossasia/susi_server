@@ -137,7 +137,7 @@ public class DAO {
     public static QueryFactory queries;
     private static ImportProfileFactory importProfiles;
     private static Map<String, String> config = new HashMap<>();
-    public  static GeoNames geoNames;
+    public  static GeoNames geoNames = null;
     public static Peers peers = new Peers();
     
     // AAA Schema for server usage
@@ -320,11 +320,15 @@ public class DAO {
             ClientConnection.download("http://download.geonames.org/export/dump/cities1000.zip", cities1000);
         }
         
-        if (cities1000.exists()) {
-            geoNames = new GeoNames(cities1000, new File(conf_dir, "iso3166.json"), 1);
-        } else {
-            geoNames = null;
-        }
+        if(cities1000.exists()){
+	        try{
+	        	geoNames = new GeoNames(cities1000, new File(conf_dir, "iso3166.json"), 1);
+	        }catch(IOException e){
+	        	Log.getLog().warn(e.getMessage());
+	        	cities1000.delete();
+	        	geoNames = null;
+	        }
+    	}
         
         // finally wait for healthy status of elasticsearch shards
         ClusterHealthStatus required_status = ClusterHealthStatus.fromString(config.get("elasticsearch_requiredClusterHealthStatus"));
