@@ -76,7 +76,7 @@ public class JsonRandomAccessFile extends BufferedRandomAccessFile implements Js
                 }
             }
         } catch (IOException e) {
-            e.printStackTrace();
+        	Log.getLog().warn(e);
         } finally {
             for (int i = 0; i < this.concurrency; i++) {
                 try {this.jsonline.put(JsonReader.POISON_JSON_MAP);} catch (InterruptedException e) {}
@@ -144,7 +144,7 @@ public class JsonRandomAccessFile extends BufferedRandomAccessFile implements Js
             try {
                 return this.getJSON().toString();
             } catch (IOException e) {
-                e.printStackTrace();
+            	Log.getLog().warn(e);
                 return "";
             }
         }

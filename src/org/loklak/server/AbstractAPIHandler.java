@@ -93,7 +93,7 @@ public abstract class AbstractAPIHandler extends HttpServlet implements APIHandl
                 };
                 results[rc] = json;
             } catch (Throwable e) {
-                e.printStackTrace();
+            	Log.getLog().warn(e);
             }
         }
         return results;
@@ -355,7 +355,7 @@ public abstract class AbstractAPIHandler extends HttpServlet implements APIHandl
 			md.update((salt + input).getBytes());
 			return Base64.getEncoder().encodeToString(md.digest());
 		} catch (NoSuchAlgorithmException e) {
-			e.printStackTrace();
+			Log.getLog().warn(e);
 		}
 		return null;
 	}

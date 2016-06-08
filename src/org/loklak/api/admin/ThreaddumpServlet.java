@@ -49,6 +49,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.eclipse.jetty.util.log.Log;
 import org.loklak.Caretaker;
 import org.loklak.data.DAO;
 import org.loklak.http.RemoteAccess;
@@ -88,13 +89,13 @@ public class ThreaddumpServlet extends HttpServlet {
                         try {
                             getMethod.invoke(servletClass.newInstance(), request, new DummyResponse());
                         } catch (IllegalArgumentException | InvocationTargetException | InstantiationException | IllegalAccessException e) {
-                            e.printStackTrace();
+                        	Log.getLog().warn(e);
                         }
                     }
                 });
                 servletThread.start();
             } catch (ClassNotFoundException | NoSuchMethodException | SecurityException e) {
-                e.printStackTrace();
+            	Log.getLog().warn(e);
             }
             long sleep = post.get("sleep", 0L);
             if (sleep > 0) try {Thread.sleep(sleep);} catch (InterruptedException e) {}

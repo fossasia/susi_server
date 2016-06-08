@@ -247,12 +247,12 @@ public class DAO {
         	try {
         	    elasticsearch_client.createIndexIfNotExists(index.name(), shards, replicas);
         	} catch (Throwable e) {
-        		Log.getLog().warn(e.getMessage());
+        		Log.getLog().warn(e);
         	}
             try {
                 elasticsearch_client.setMapping(index.name(), new File(mappingsDir, index.name() + ".json"));
             } catch (Throwable e) {
-            	Log.getLog().warn(e.getMessage());
+            	Log.getLog().warn(e);
             }
         }
         // elasticsearch will probably take some time until it is started up. We do some other stuff meanwhile..
@@ -348,7 +348,7 @@ public class DAO {
                 try {
                     Classifier.init(10000, 1000);
                 } catch (Throwable e) {
-                	Log.getLog().warn(e.getMessage());
+                	Log.getLog().warn(e);
                 }
                 log("classifier initialized!");
             }
@@ -390,7 +390,7 @@ public class DAO {
                 queries.writeEntries(bulkEntries);
                 reader.close();
             } catch (IOException e) {
-            	Log.getLog().warn(e.getMessage());
+            	Log.getLog().warn(e);
             }
         }
         log("queries initialized.");
@@ -444,11 +444,11 @@ public class DAO {
                                     AccountEntry a = new AccountEntry(json);
                                     DAO.writeAccount(a, false);
                                 } catch (IOException e) {
-                                	Log.getLog().warn(e.getMessage());
+                                	Log.getLog().warn(e);
                                 }
                             }
                         } catch (InterruptedException e) {
-                        	Log.getLog().warn(e.getMessage());
+                        	Log.getLog().warn(e);
                         }
                     }
                 };
@@ -585,7 +585,7 @@ public class DAO {
             // teach the classifier
             Classifier.learnPhrase(mw.t.getText(Integer.MAX_VALUE, ""));
         } catch (IOException e) {
-        	Log.getLog().warn(e.getMessage());
+        	Log.getLog().warn(e);
         }
         return true;
     }
@@ -628,7 +628,7 @@ public class DAO {
             result = messages.writeEntries(messageBulk);
             users.writeEntries(userBulk);
         } catch (IOException e) {
-        	Log.getLog().warn(e.getMessage());
+        	Log.getLog().warn(e);
         }
         if (result == null) return new HashSet<String>();
         return result.getCreated();
@@ -647,7 +647,7 @@ public class DAO {
             // teach the classifier
             Classifier.learnPhrase(mw.t.getText(Integer.MAX_VALUE, ""));
         } catch (IOException e) {
-        	Log.getLog().warn(e.getMessage());
+        	Log.getLog().warn(e);
         }
         
         return created;
@@ -668,7 +668,7 @@ public class DAO {
             // record account into search index
             accounts.writeEntry(new IndexEntry<AccountEntry>(a.getScreenName(), a.getSourceType(), a));
         } catch (IOException e) {
-        	Log.getLog().warn(e.getMessage());
+        	Log.getLog().warn(e);
         }
         return true;
     }
@@ -686,7 +686,7 @@ public class DAO {
             // record import profile into search index
             importProfiles.writeEntry(new IndexEntry<ImportProfileEntry>(i.getId(), i.getSourceType(), i));
         } catch (IOException e) {
-        	Log.getLog().warn(e.getMessage());
+        	Log.getLog().warn(e);
         }
         return true;
     }
@@ -767,7 +767,7 @@ public class DAO {
                         timeline.add(tweet, user);
                     }
                 } catch (IOException e) {
-                	Log.getLog().warn(e.getMessage());
+                	Log.getLog().warn(e);
                 }
             }
             this.aggregations = query.aggregations;
@@ -786,7 +786,7 @@ public class DAO {
         try {
             return users.read(screen_name);
         } catch (IOException e) {
-        	Log.getLog().warn(e.getMessage());
+        	Log.getLog().warn(e);
             return null;
         }
     }
@@ -806,7 +806,7 @@ public class DAO {
         try {
             return accounts.read(screen_name);
         } catch (IOException e) {
-        	Log.getLog().warn(e.getMessage());
+        	Log.getLog().warn(e);
             return null;
         }
     }
@@ -832,7 +832,7 @@ public class DAO {
         try {
             return importProfiles.read(id);
         } catch (IOException e) {
-        	Log.getLog().warn(e.getMessage());
+        	Log.getLog().warn(e);
             return null;
         }
     }
@@ -896,7 +896,7 @@ public class DAO {
         try {
             qe = queries.read(q);
         } catch (IOException | JSONException e) {
-        	Log.getLog().warn(e.getMessage());
+        	Log.getLog().warn(e);
         }
         
         if (recordQuery && Caretaker.acceptQuery4Retrieval(q)) {
@@ -910,7 +910,7 @@ public class DAO {
             try {
                 queries.writeEntry(new IndexEntry<QueryEntry>(q, qe.source_type == null ? SourceType.TWITTER : qe.source_type, qe));
             } catch (IOException e) {
-            	Log.getLog().warn(e.getMessage());
+            	Log.getLog().warn(e);
             }
         } else {
             // accept rules may change, we want to delete the query then in the index

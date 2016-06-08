@@ -29,6 +29,8 @@ import java.util.Map;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 
+import org.eclipse.jetty.util.log.Log;
+
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonFactory;
@@ -76,13 +78,13 @@ public class GeoJsonReader implements Runnable {
                         try {
                             this.featureQueue.put(feature);
                         } catch (InterruptedException e) {
-                            e.printStackTrace();
+                        	Log.getLog().warn(e);
                         }
                     }
                 }
             }
         } catch (IOException e) {
-            e.printStackTrace();
+        	Log.getLog().warn(e);
         } finally {
             for (int i = 0; i < this.concurrency; i++) {
                 try {this.featureQueue.put(POISON_FEATURE);} catch (InterruptedException e) {}
