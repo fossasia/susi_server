@@ -111,7 +111,7 @@ public class Harvester {
                     if (pendingContext.size() == 0) try {Thread.sleep(10000);} catch (InterruptedException e) {}
                 }
             } catch (IOException e) {
-            	Log.getLog().warn(e);
+            	Log.getLog().warn(e.getMessage());
                 try {Thread.sleep(10000);} catch (InterruptedException e1) {} // if the remote peer is down, throttle down
             }
         }
