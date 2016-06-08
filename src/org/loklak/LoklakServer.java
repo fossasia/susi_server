@@ -181,11 +181,12 @@ public class LoklakServer {
         }
         
         // check for https modus
-        String httpsString = config.get("https.mode");
-        httpsMode = HttpsMode.OFF;
-        if("on".equals(httpsString)) httpsMode = HttpsMode.ON;
-        else if("redirect".equals(httpsString)) httpsMode = HttpsMode.REDIRECT;
-        else if("only".equals(httpsString)) httpsMode = HttpsMode.ONLY;
+        switch(config.get("https.mode")){
+        	case "on": httpsMode = HttpsMode.ON; break;
+        	case "redirect": httpsMode = HttpsMode.REDIRECT; break;
+        	case "only": httpsMode = HttpsMode.ONLY; break;
+        	default: httpsMode = HttpsMode.OFF;
+        }
         
         // get server ports
         Map<String, String> env = System.getenv();

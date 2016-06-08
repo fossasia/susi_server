@@ -43,7 +43,6 @@ import java.util.TreeMap;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
-import org.eclipse.jetty.util.log.Log;
 import org.loklak.data.DAO;
 import org.loklak.tools.CommonPattern;
 
@@ -72,7 +71,7 @@ public class GeoNames {
         return this.iso3166toCountry.get(iso3166cc.toUpperCase());
     }
     
-    public GeoNames(final File cities1000_zip, final File iso3166json, long minPopulation) {
+    public GeoNames(final File cities1000_zip, final File iso3166json, long minPopulation) throws IOException{
 
         // load iso3166 info
         this.iso3166toCountry = new HashMap<>();
@@ -99,8 +98,7 @@ public class GeoNames {
         Map<String, CountryBounds> countryBounds = new HashMap<>();
 
         if ( cities1000_zip == null || !cities1000_zip.exists() ) {
-            DAO.log("GeoNames: cities1000.zip file does not exist!");
-            return;
+        	throw new IOException("GeoNames: file does not exist!");
         }
         ZipFile zf = null;
         BufferedReader reader = null;
@@ -112,8 +110,7 @@ public class GeoNames {
             final InputStream is = zf.getInputStream(ze);
             reader = new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8));
         } catch (final IOException e ) {
-            Log.getLog().warn("GeoNames: Error when decompressing cities1000.zip!", e);
-            return;
+        	throw new IOException("GeoNames: Error when decompressing cities1000.zip!", e);
         }
 
 /* parse this fields:
