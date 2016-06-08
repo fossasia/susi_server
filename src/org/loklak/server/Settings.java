@@ -32,6 +32,7 @@ import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
 import java.util.Base64;
 
+import org.eclipse.jetty.util.log.Log;
 import org.loklak.tools.storage.JsonFile;
 
 public class Settings extends JsonFile {
@@ -135,7 +136,7 @@ public class Settings extends JsonFile {
             md.update(pubkey.getEncoded());
             return Base64.getEncoder().encodeToString(md.digest());
         } catch (NoSuchAlgorithmException e) {
-            e.printStackTrace();
+        	Log.getLog().warn(e);
         }
         return null;
     }
@@ -158,7 +159,7 @@ public class Settings extends JsonFile {
             return true;
         }
         catch(NoSuchAlgorithmException | InvalidKeySpecException e){
-            e.printStackTrace();
+        	Log.getLog().warn(e);
         }
         return false;
     }
@@ -221,7 +222,7 @@ public class Settings extends JsonFile {
             return pub;
         }
         catch(NoSuchAlgorithmException | InvalidKeySpecException e){
-            e.printStackTrace();
+        	Log.getLog().warn(e);
         }
         return null;
     }

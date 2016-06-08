@@ -123,7 +123,6 @@ public class QueuedIndexing extends Thread {
             }
             this.isBusy = false;
         } catch (Throwable e) {
-            e.printStackTrace();
             Log.getLog().warn("QueuedIndexing THREAD", e);
         }
 
@@ -151,7 +150,7 @@ public class QueuedIndexing extends Thread {
         try {
             messageQueue.put(new DAO.MessageWrapper(t, u, dump));
         } catch (InterruptedException e) {
-            e.printStackTrace();
+        	Log.getLog().warn(e);
         }
     }
     

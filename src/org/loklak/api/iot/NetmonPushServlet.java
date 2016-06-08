@@ -18,6 +18,7 @@
  */
 package org.loklak.api.iot;
 
+import org.eclipse.jetty.util.log.Log;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.loklak.data.DAO;
@@ -85,7 +86,7 @@ public class NetmonPushServlet extends HttpServlet {
                     nodesList.put(node);
             }
         } catch (Exception e) {
-            e.printStackTrace();
+        	Log.getLog().warn(e);
             response.sendError(400, "error reading json file from url");
             return;
         }

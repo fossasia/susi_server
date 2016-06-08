@@ -30,6 +30,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.eclipse.jetty.util.log.Log;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -74,14 +75,14 @@ public class PushServlet extends HttpServlet {
                     connection = new ClientConnection(hoststub + "/api/push.json", post, !"peers".equals(DAO.getConfig("httpsclient.trustselfsignedcerts", "peers")));
                     transmittedToAtLeastOnePeer = true;
                 } catch (IOException e) {
-                    //e.printStackTrace();
+                    //Log.getLog().warn(e);
                 } finally {
                     if (connection != null) connection.close();
                 }
             }
             return transmittedToAtLeastOnePeer;
         } catch (JSONException e) {
-            e.printStackTrace();
+        	Log.getLog().warn(e);
             return false;
         }
     }
@@ -190,7 +191,7 @@ public class PushServlet extends HttpServlet {
                         try {
                             DAO.queries.writeEntry(new IndexEntry<QueryEntry>(query, qe.getSourceType(), qe));
                         } catch (IOException e) {
-                            e.printStackTrace();
+                        	Log.getLog().warn(e);
                         }
                     }
                 }

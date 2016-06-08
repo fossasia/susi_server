@@ -42,6 +42,7 @@ import javax.imageio.metadata.IIOMetadataNode;
 import javax.imageio.stream.ImageOutputStream;
 import javax.imageio.stream.MemoryCacheImageOutputStream;
 
+import org.eclipse.jetty.util.log.Log;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
@@ -208,7 +209,7 @@ public class AnimationGIF {
             fos.write(generator.get());
             fos.close();
         } catch (final IOException e) {
-            e.printStackTrace();
+        	Log.getLog().warn(e);
         }
     }
 }

@@ -43,6 +43,7 @@ import java.util.TreeMap;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
+import org.eclipse.jetty.util.log.Log;
 import org.loklak.data.DAO;
 import org.loklak.tools.CommonPattern;
 
@@ -111,8 +112,7 @@ public class GeoNames {
             final InputStream is = zf.getInputStream(ze);
             reader = new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8));
         } catch (final IOException e ) {
-            DAO.log("GeoNames: Error when decompressing cities1000.zip!");
-            e.printStackTrace();
+            Log.getLog().warn("GeoNames: Error when decompressing cities1000.zip!", e);
             return;
         }
 

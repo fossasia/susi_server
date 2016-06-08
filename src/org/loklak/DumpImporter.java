@@ -109,7 +109,7 @@ public class DumpImporter extends Thread {
                                     }
                                     newTweets.incrementAndGet();
                                 } catch (IOException e) {
-                                    e.printStackTrace();
+                                	Log.getLog().warn(e);
                                 }
                                 if (LoklakServer.queuedIndexing.isBusy()) try {Thread.sleep(200);} catch (InterruptedException e) {}
                             }
@@ -117,10 +117,10 @@ public class DumpImporter extends Thread {
                                 DAO.users.writeEntries(userBulk);
                                 DAO.messages.writeEntries(messageBulk);
                             } catch (IOException e) {
-                                e.printStackTrace();
+                            	Log.getLog().warn(e);
                             }
                         } catch (InterruptedException e) {
-                            e.printStackTrace();
+                        	Log.getLog().warn(e);
                         }
                     }
                 };

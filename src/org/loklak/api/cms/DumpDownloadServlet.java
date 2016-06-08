@@ -36,6 +36,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.eclipse.jetty.util.log.Log;
 import org.loklak.data.DAO;
 import org.loklak.http.RemoteAccess;
 import org.loklak.server.FileHandler;
@@ -133,7 +134,7 @@ public class DumpDownloadServlet extends HttpServlet {
             while ((c = fis.read(buffer)) > 0) response.getOutputStream().write(buffer, 0, c);
             fis.close();
         } catch (Throwable e) {
-            e.printStackTrace();
+        	Log.getLog().warn(e);
         }
         post.finalize();
     }

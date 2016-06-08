@@ -76,7 +76,7 @@ public class Hello extends AbstractAPIHandler implements APIHandler {
             try {
                 backend_status = StatusServlet.status(backend);
             } catch (IOException e) {
-                e.printStackTrace();
+            	Log.getLog().warn(e);
             }
             backend_status_index_sizes = backend_status == null ? null : (JSONObject) backend_status.get("index_sizes");
         }

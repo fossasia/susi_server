@@ -39,6 +39,7 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.zip.GZIPInputStream;
 
+import org.eclipse.jetty.util.log.Log;
 import org.json.JSONObject;
 
 public class Campaigns {
@@ -137,16 +138,16 @@ public class Campaigns {
                     campaigns.add(e);
                 }
             } catch (IOException e) {
-                e.printStackTrace();
+            	Log.getLog().warn(e);
             } finally {
                 try {
                     if (br != null) br.close();
                 } catch (IOException e) {
-                    e.printStackTrace();
+                	Log.getLog().warn(e);
                 }
             }
         } catch (FileNotFoundException e) {
-            e.printStackTrace();
+        	Log.getLog().warn(e);
         }
         return campaigns;
     }
@@ -162,16 +163,16 @@ public class Campaigns {
                     bw.write('\n');
                 }
             } catch (IOException e) {
-                e.printStackTrace();
+            	Log.getLog().warn(e);
             } finally {
                 try {
                     if (bw != null) bw.close();
                 } catch (IOException e) {
-                    e.printStackTrace();
+                	Log.getLog().warn(e);
                 }
             }
         } catch (FileNotFoundException e) {
-            e.printStackTrace();
+        	Log.getLog().warn(e);
         }
     }
 }
