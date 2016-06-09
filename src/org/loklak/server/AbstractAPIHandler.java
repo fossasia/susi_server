@@ -213,6 +213,8 @@ public abstract class AbstractAPIHandler extends HttpServlet implements APIHandl
 					return authentication.getIdentity();
 				}
 				else{
+					authentication.delete();
+					
 					// delete cookie if set
 					deleteLoginCookie(response);
 					
@@ -220,6 +222,8 @@ public abstract class AbstractAPIHandler extends HttpServlet implements APIHandl
 				}
 			}
 			else{
+				authentication.delete();
+				
 				// delete cookie if set
 				deleteLoginCookie(response);
 				
@@ -291,6 +295,7 @@ public abstract class AbstractAPIHandler extends HttpServlet implements APIHandl
     			Log.getLog().info("Invalid login try for user: " + credential.getName() + " from host: " + request.getRemoteHost() + " : user not activated yet");
     		}
     		else{
+    			authentication.delete();
     			Log.getLog().info("Invalid login try for unknown user: " + credential.getName() + " via passwd from host: " + request.getRemoteHost());
     		}
     	}
@@ -316,6 +321,8 @@ public abstract class AbstractAPIHandler extends HttpServlet implements APIHandl
     			}
     			Log.getLog().info("Invalid login try for user: " + identity.getName() + " via token from host: " + request.getRemoteHost());
     		}
+    		Log.getLog().info("Invalid login token from host: " + request.getRemoteHost());
+    		authentication.delete();
     	}
     	
         return getAnonymousIdentity(request);
@@ -327,18 +334,11 @@ public abstract class AbstractAPIHandler extends HttpServlet implements APIHandl
      */
     private ClientIdentity getAnonymousIdentity(HttpServletRequest request){
     	ClientCredential credential = new ClientCredential(ClientCredential.Type.host, request.getRemoteHost());
+    	Authentication authentication = new Authentication(credential, DAO.authentication);
     	
-    	JSONObject authentication_obj = null;
-        if (DAO.authentication.has(credential.toString())) {
-        	authentication_obj = DAO.authentication.getJSONObject(credential.toString());
-        }
-        else{
-        	authentication_obj = new JSONObject();
-        }
-        authentication_obj.put("expires_on", Instant.now().getEpochSecond() + defaultAnonymousTime);
+    	authentication.setExpireTime(Instant.now().getEpochSecond() + defaultAnonymousTime);
     	
-        DAO.authentication.put(credential.toString(), authentication_obj, credential.isPersistent());
-        return new ClientIdentity(credential.toString());
+        return authentication.getIdentity();
     }
     
     /**
