@@ -13,6 +13,7 @@ stages:
     build_type: ant
     script: |-
       #!/bin/bash
+      export JAVA_HOME=/opt/IBM/java8
       ant
 - name: Deploy Stage
   inputs:
