@@ -8,8 +8,11 @@ $(document).ready(function()
             alert("Please fill email");
         } else{
             var mail = encodeURIComponent($('#email').val());
-            alert("Email: " + mail + "\nSuccess, write post function");
-            //post function
+            var posting = $.post( "/api/email.json", { forgotemail: mail }, function(data) {
+                console.log(data.status);
+                console.log(data.reason);
+                alert(data.status + ", " + data.reason);
+            }, "json" );
         }
     });
 

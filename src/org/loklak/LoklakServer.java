@@ -74,6 +74,7 @@ import org.loklak.api.admin.ThreaddumpServlet;
 import org.loklak.api.cms.AppsService;
 import org.loklak.api.cms.AssetServlet;
 import org.loklak.api.cms.DumpDownloadServlet;
+import org.loklak.api.cms.PasswordRecoveryServlet;
 import org.loklak.api.cms.LoginServlet;
 import org.loklak.api.cms.ProxyServlet;
 import org.loklak.api.cms.SignUpServlet;
@@ -515,6 +516,7 @@ public class LoklakServer {
         servletHandler.addServlet(UserServlet.class, "/api/user.json");
         servletHandler.addServlet(SignUpServlet.class, "/api/signup.json");
         servletHandler.addServlet(LoginServlet.class, "/api/login.json");
+        servletHandler.addServlet(PasswordRecoveryServlet.class, "/api/recoverpassword.json");
         servletHandler.addServlet(CampaignServlet.class, "/api/campaign.json");
         servletHandler.addServlet(ImportProfileServlet.class, "/api/import.json");
         servletHandler.addServlet(SettingsServlet.class, "/api/settings.json");
