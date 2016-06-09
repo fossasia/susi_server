@@ -23,6 +23,7 @@ package org.loklak.tools.storage;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.LinkedHashMap;
 
 import org.json.JSONObject;
 import org.loklak.tools.CacheMap;
@@ -61,6 +62,19 @@ public class JsonTray {
         return this;
     }
     
+    public JsonTray remove(String key){
+    	synchronized(this.vol) {
+            if (this.vol.exist(key)){
+            	this.vol.remove(key);
+            	return this;
+            }
+        }
+    	if(this.per.has(key)){
+    		this.per.remove(key);
+    	}
+    	return this;
+    }
+    
     public JsonTray commit() {
         this.per.commit();
         return this;
@@ -72,5 +86,26 @@ public class JsonTray {
             if (value != null) return value;
         }
         return this.per.getJSONObject(key);
+    }
+    
+    // for debug reasons
+    public JSONObject getPersistent(){
+    	JSONObject res = new JSONObject();
+    	for(String key : this.per.keySet()){
+    		res.put(key, this.per.get(key));
+    	}
+    	return res;
+    }
+    
+ // for debug reasons
+    public JSONObject getVolatile(){
+    	JSONObject res = new JSONObject();
+    	synchronized(this.vol) {
+    		LinkedHashMap<String,JSONObject> map = this.vol.getMap();
+	    	for(String key : map.keySet()){
+	    		res.put(key, map.get(key));
+	    	}
+    	}
+    	return res;
     }
 }

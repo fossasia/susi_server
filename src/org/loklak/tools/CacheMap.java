@@ -115,4 +115,8 @@ public class CacheMap<K,V> {
         return exist;
     }
     
+    public LinkedHashMap<K,V> getMap(){
+    	return map;
+    }
+    
 }
