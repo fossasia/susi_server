@@ -31,7 +31,7 @@ public class Authentication {
 
     private JsonTray parent;
     private JSONObject json;
-    private String parentKey;
+    private ClientCredential credential;
 
     /**
      * create a new authentication object. The given json object must be taken
@@ -41,18 +41,18 @@ public class Authentication {
      * @param parent the parent file or null if there is no parent file (no persistency)
      */
     public Authentication(ClientCredential credential, JsonTray parent) {
-    	parentKey = credential.toString();
     	if(parent != null){
-	    	if(parent.has(parentKey)){
-	        	this.json = parent.getJSONObject(parentKey);
+	    	if(parent.has(credential.toString())){
+	        	this.json = parent.getJSONObject(credential.toString());
 	        }
 	        else{
-	        	parent.put(parentKey, new JSONObject(), credential.isPersistent());
-	        	this.json = parent.getJSONObject(parentKey);
+	        	parent.put(credential.toString(), new JSONObject(), credential.isPersistent());
+	        	this.json = parent.getJSONObject(credential.toString());
 	        }
     	}
     	else this.json = new JSONObject();
         this.parent = parent;
+        this.credential = credential;
     }
     
     public Authentication setIdentity(ClientIdentity id) {
@@ -68,7 +68,7 @@ public class Authentication {
 
     public void setExpireTime(long time){
     	this.json.put("expires_on", Instant.now().getEpochSecond() + time);
-    	if (this.parent != null && getIdentity().isPersistent()) this.parent.commit();
+    	if (this.parent != null && this.credential.isPersistent()) this.parent.commit();
     }
     
     public boolean checkExpireTime(){
@@ -94,16 +94,16 @@ public class Authentication {
     
     public void put(String key, Object value){
     	this.json.put(key, value);
-    	if (this.parent != null && getIdentity().isPersistent()) this.parent.commit();
+    	if (this.parent != null && this.credential.isPersistent()) this.parent.commit();
     }
     
     public void remove(String key){
     	this.json.remove(key);
-    	if (this.parent != null && getIdentity().isPersistent()) this.parent.commit();
+    	if (this.parent != null && this.credential.isPersistent()) this.parent.commit();
     }
     
     public void delete(){
-    	this.parent.remove(parentKey);
+    	this.parent.remove(this.credential.toString());
     	parent = null;
     }
 }

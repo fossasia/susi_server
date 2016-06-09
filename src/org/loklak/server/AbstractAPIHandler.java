@@ -338,7 +338,7 @@ public abstract class AbstractAPIHandler extends HttpServlet implements APIHandl
     	
     	authentication.setExpireTime(Instant.now().getEpochSecond() + defaultAnonymousTime);
     	
-        return authentication.getIdentity();
+        return new ClientIdentity(credential.toString());
     }
     
     /**
