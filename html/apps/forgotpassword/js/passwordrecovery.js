@@ -8,7 +8,7 @@ $(document).ready(function()
             alert("Please fill email");
         } else{
             var mail = encodeURIComponent($('#email').val());
-            var posting = $.post( "/api/email.json", { forgotemail: mail }, function(data) {
+            var posting = $.post( "/api/recoverpassword.json", { forgotemail: mail }, function(data) {
                 console.log(data.status);
                 console.log(data.reason);
                 alert(data.status + ", " + data.reason);
