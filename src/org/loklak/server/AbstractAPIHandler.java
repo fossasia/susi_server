@@ -245,45 +245,50 @@ public abstract class AbstractAPIHandler extends HttpServlet implements APIHandl
     		// check if password is valid
     		if(authentication.getIdentity() != null){
     			
-    			if(authentication.has("passwordHash") && authentication.has("salt")){
-    				
-					String passwordHash = authentication.getString("passwordHash");
-					String salt = authentication.getString("salt");
-					
-    				ClientIdentity identity = authentication.getIdentity();
-					
-	    			if(getHash(password, salt).equals(passwordHash)){
+    			if(authentication.has("activated") && !authentication.getBoolean("activated")){
+    			
+	    			if(authentication.has("passwordHash") && authentication.has("salt")){
 	    				
-	    				// only create a cookie or session if requested (by login page)
-	    				if("true".equals(request.getParameter("request_cookie"))){
-            				
-            				// create random string as token
-            				String loginToken = createRandomString(30);
-            				
-            				// create cookie
-            				Cookie loginCookie = new Cookie("login", loginToken);
-            				loginCookie.setPath("/");
-            				loginCookie.setMaxAge(defaultCookieTime.intValue());
-            				
-            				// write cookie to database
-            				ClientCredential cookieCredential = new ClientCredential(ClientCredential.Type.cookie, loginToken);
-            				JSONObject user_obj = new JSONObject();
-            				user_obj.put("id",identity.toString());
-            				user_obj.put("expires_on", Instant.now().getEpochSecond() + defaultCookieTime);
-            				DAO.authentication.put(cookieCredential.toString(), user_obj, cookieCredential.isPersistent());
-        	    			
-            				response.addCookie(loginCookie);
-        	    		}
-	    				else if("true".equals(request.getParameter("request_session"))){
-	            			request.getSession().setAttribute("identity",identity);
-	            		}
-	    				
-	    				Log.getLog().info("login for user: " + identity.getName() + " via passwd from host: " + request.getRemoteHost());
-	            		
-	            		return identity;
+						String passwordHash = authentication.getString("passwordHash");
+						String salt = authentication.getString("salt");
+						
+	    				ClientIdentity identity = authentication.getIdentity();
+						
+		    			if(getHash(password, salt).equals(passwordHash)){
+		    				
+		    				// only create a cookie or session if requested (by login page)
+		    				if("true".equals(request.getParameter("request_cookie"))){
+	            				
+	            				// create random string as token
+	            				String loginToken = createRandomString(30);
+	            				
+	            				// create cookie
+	            				Cookie loginCookie = new Cookie("login", loginToken);
+	            				loginCookie.setPath("/");
+	            				loginCookie.setMaxAge(defaultCookieTime.intValue());
+	            				
+	            				// write cookie to database
+	            				ClientCredential cookieCredential = new ClientCredential(ClientCredential.Type.cookie, loginToken);
+	            				JSONObject user_obj = new JSONObject();
+	            				user_obj.put("id",identity.toString());
+	            				user_obj.put("expires_on", Instant.now().getEpochSecond() + defaultCookieTime);
+	            				DAO.authentication.put(cookieCredential.toString(), user_obj, cookieCredential.isPersistent());
+	        	    			
+	            				response.addCookie(loginCookie);
+	        	    		}
+		    				else if("true".equals(request.getParameter("request_session"))){
+		            			request.getSession().setAttribute("identity",identity);
+		            		}
+		    				
+		    				Log.getLog().info("login for user: " + identity.getName() + " via passwd from host: " + request.getRemoteHost());
+		            		
+		            		return identity;
+		    			}
+		    			Log.getLog().info("Invalid login try for user: " + identity.getName() + " via passwd from host: " + request.getRemoteHost());
 	    			}
-	    			Log.getLog().info("Invalid login try for user: " + identity.getName() + " via passwd from host: " + request.getRemoteHost());
+	    			Log.getLog().info("Invalid login try for user: " + credential.getName() + " from host: " + request.getRemoteHost() + " : password or salt missing in database");
     			}
+    			Log.getLog().info("Invalid login try for user: " + credential.getName() + " from host: " + request.getRemoteHost() + " : user not activated yet");
     		}
     		else{
     			Log.getLog().info("Invalid login try for unknown user: " + credential.getName() + " via passwd from host: " + request.getRemoteHost());
@@ -300,6 +305,13 @@ public abstract class AbstractAPIHandler extends HttpServlet implements APIHandl
     			
     			if(authentication.checkExpireTime()){
     				Log.getLog().info("login for user: " + identity.getName() + " via token from host: " + request.getRemoteHost());
+    				
+    				if("true".equals(request.getParameter("request_session"))){
+            			request.getSession().setAttribute("identity",identity);
+            		}
+    				if(authentication.has("one_time") && authentication.getBoolean("one_time")){
+    					authentication.delete();
+    				}
     				return identity;
     			}
     			Log.getLog().info("Invalid login try for user: " + identity.getName() + " via token from host: " + request.getRemoteHost());

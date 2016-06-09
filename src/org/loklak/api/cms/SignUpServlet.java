@@ -22,6 +22,7 @@ package org.loklak.api.cms;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 
+import org.eclipse.jetty.util.log.Log;
 import org.json.JSONObject;
 import org.loklak.data.DAO;
 import org.loklak.server.APIException;
@@ -45,7 +46,12 @@ public class SignUpServlet extends AbstractAPIHandler implements APIHandler {
 
     @Override
     public APIServiceLevel getCustomServiceLevel(Authorization rights) {
-        return APIServiceLevel.ADMIN;
+        if(rights.isAdmin()){
+        	return APIServiceLevel.ADMIN;
+        } else if(rights.getIdentity() != null){
+        	return APIServiceLevel.LIMITED;
+        }
+        return APIServiceLevel.PUBLIC;
     }
 
     public String getAPIPath() {
@@ -55,12 +61,26 @@ public class SignUpServlet extends AbstractAPIHandler implements APIHandler {
     @Override
     public JSONObject serviceImpl(Query post, Authorization rights) throws APIException {
 
+    	APIServiceLevel serviceLevel = getCustomServiceLevel(rights);
+    	
     	JSONObject result = new JSONObject();
+    	
+    	// check for verification
+    	if(post.get("validateEmail", false) && serviceLevel == APIServiceLevel.LIMITED){
+    		ClientCredential credential = new ClientCredential(ClientCredential.Type.passwd_login, rights.getIdentity().getName());
+    		Authentication authentication = new Authentication(credential, DAO.authentication);
+    		if(authentication.has("activated")){
+    			authentication.put("activated", true);
+    		}
+    		result.put("status", "ok");
+    		result.put("reason", "ok");
+    		return result;
+    	}
     	
     	boolean activated = true;
     	boolean sendEmail = false;
     	
-    	if(!rights.isAdmin()){
+    	if(serviceLevel != APIServiceLevel.ADMIN){
     		switch(DAO.getConfig("users.public.signup", "false")){
     			case "false":
     				result.put("status", "error");
@@ -113,11 +133,17 @@ public class SignUpServlet extends AbstractAPIHandler implements APIHandler {
 	        String token = createRandomString(30);
 	        ClientCredential loginToken = new ClientCredential(ClientCredential.Type.login_token, token);
 	        Authentication tokenAuthentication = new Authentication(loginToken, DAO.authentication);
-	        tokenAuthentication.setIdentity(identity); // persistency is wierd
+	        tokenAuthentication.setIdentity(identity);
 	        tokenAuthentication.setExpireTime(7 * 24 * 60 * 60);
+	        tokenAuthentication.put("one_time", true);
 	        
-	        // TODO: send email
+	        // TODO: send email with token
+	        Log.getLog().info("verfication link: http://localhost:9000/api/signup.json?login_token="+token+"&validateEmail=true&request_session=true");
         }
+        
+        //Log.getLog().info(DAO.authentication.getVolatile().toString());
+    	//Log.getLog().info(DAO.authentication.getPersistent().toString());
+    	
 
     	result.put("status", "ok");
 		result.put("reason", "ok");

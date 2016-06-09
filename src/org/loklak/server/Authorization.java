@@ -44,12 +44,15 @@ public class Authorization {
      * @param parent the parent file or null if there is no parent file (no persistency)
      */
     public Authorization(ClientIdentity identity, JsonTray parent) {
-    	if (parent.has(identity.toString())) {
-    		this.json = parent.getJSONObject(identity.toString());
-        } else {
-            parent.put(identity.toString(), new JSONObject(), identity.isPersistent());
-            this.json = parent.getJSONObject(identity.toString());
-        }
+    	if(parent != null){
+	    	if (parent.has(identity.toString())) {
+	    		this.json = parent.getJSONObject(identity.toString());
+	        } else {
+	            parent.put(identity.toString(), new JSONObject(), identity.isPersistent());
+	            this.json = parent.getJSONObject(identity.toString());
+	        }
+    	}
+    	else this.json = new JSONObject();
         this.parent = parent;
         this.accounting = null;
         this.identity = identity;
