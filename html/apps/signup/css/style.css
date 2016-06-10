@@ -11,6 +11,7 @@ label.error{
 }
 input.error{
 	border: 2px solid red !important;
+	width: 250px;
 }
 
 label.success{
@@ -21,7 +22,7 @@ input.success{
 }
 
 .form {
-	width:540px;
+	width:700px;
 	height: auto;
 	margin: auto;
 }
@@ -38,7 +39,7 @@ input.success{
 	color: #000;
 	font-size: 15px;
 	outline: none;
-	width: 70%;
+	width: 65%;
 	margin: auto;
 	padding: 24px 12px 24px 12px;
 }
@@ -60,7 +61,7 @@ input.success{
 }
 
 .bar {
-	width: 70%;
+	width: 65%;
 	height: 1px;
 	background: #fff;
 }
@@ -73,7 +74,7 @@ input.success{
 }
 
 .form button {
-	width: 70%;
+	width: 65%;
 	border-radius: 7px;
 	background: GreenYellow;
 	text-decoration: center;
