@@ -158,6 +158,17 @@ public final class ByteBuffer extends OutputStream {
         return -1;
     }
 
+    public static int indexOf(final byte[] b, final byte[] pattern, final int start) {
+        if (pattern.length == 0) return 0;
+        loop: for (int i = start; i < b.length - pattern.length + 1; i++) {
+            for (int j = 0; j < pattern.length; j++) {
+                if (b[i + j] != pattern[j]) continue loop;
+            }
+            return i;
+        }
+        return -1;
+    }
+    
     public boolean startsWith(final byte[] bs, final int start) {
         if (this.length - start < bs.length) return false;
         for (int i = 0; i < bs.length; i++) {

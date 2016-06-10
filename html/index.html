@@ -1,16 +1,9 @@
 <!DOCTYPE html>
 <html lang="en" ng-app="loklak">
   <head>
-    <meta charset="utf-8">
-    <meta name="robots" content="index,follow">
-    <meta http-equiv="cache-control" content="public">
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!--#include file="../ssi/common_head_front.include" -->
     <meta name="description" content="Collect, search, download and visualize messages from various sources: tweets, youtube descriptions and from more social media sources.">
-    <meta name="Content-Language" content="en, english" />
     <meta name="author" content="Michael Peter Christen, @0rb1t3r">
-    <link rel="icon" type="image/png" href="/artwork/favicon.png">
     <link rel="canonical" href="http://loklak.org" />
     <title>loklak.org - Distributed Social Media Message Search Server</title>
 
@@ -26,18 +19,6 @@
     <meta name="twitter:description" content="Collect, search, download and visualize messages from various sources: tweets, youtube descriptions and from more social media sources.">
     <meta name="twitter:image" content="http://loklak.org/artwork/loklak_org_sticker.png">
 
-    <link href="css/bootstrap.min.css" rel="stylesheet">
-    <link href="css/loklak.css" rel="stylesheet">
-
-    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
-    <!--[if lt IE 9]>
-      <script src="js/html5shiv.min.js"></script>
-      <script src="js/respond.min.js"></script>
-    <![endif]-->
-    <script src="js/jquery.min.js"></script>
-    <script src="js/angular.min.js"></script>
-    <script src="js/angular-route.min.js"></script>
-    <script src="js/loklak.js"></script>
     <script type="application/ld+json">
 {
   "@context": "http://schema.org",
@@ -60,11 +41,13 @@
   }
 }
     </script>
-    
+    <!--#include file="../ssi/common_head_back.include" -->
+    <!--#include file="../data/ssi/custom_head.include" -->
   </head>
 
   <body style="position: relative; margin: 0; padding-bottom: 6rem; min-height: 100%;"> <!-- style woodoo is for footer line -->
-
+    <!--#include file="../data/ssi/custom_body_front.include" -->
+    <!--#include file="../ssi/common_body_front.include" -->
     <nav class="navbar navbar-inverse navbar-fixed-top">
       <div class="container-fluid">
         <div class="navbar-header">
@@ -175,9 +158,7 @@
       </footer>
     </div> <!-- /container -->
 
-    <script src="js/jquery.min.js" async></script>
-    <script src="js/bootstrap.min.js" async></script>
-    <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
-    <script src="js/ie10-viewport-bug-workaround.js" async></script>
+    <!--#include file="../ssi/common_body_back.include" -->
+    <!--#include file="../data/ssi/custom_body_back.include" -->
   </body>
 </html>

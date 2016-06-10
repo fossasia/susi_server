@@ -28,6 +28,8 @@ import java.net.URL;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.file.Files;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -42,10 +44,13 @@ import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.server.handler.ResourceHandler;
 import org.eclipse.jetty.util.resource.PathResource;
 import org.eclipse.jetty.util.resource.Resource;
+import org.loklak.tools.ByteBuffer;
+import org.loklak.tools.UTF8;
+
 
 public class FileHandler extends ResourceHandler implements Handler {
     
-    private final long CACHE_LIMIT = 1024L * 1024L;
+    private final long CACHE_LIMIT = 128L * 1024L;
     private int expiresSeconds = 0;
     
     /**
@@ -102,10 +107,10 @@ public class FileHandler extends ResourceHandler implements Handler {
         if (!(resource instanceof PathResource) || !resource.exists()) return resource;
         try {
             File f = resource.getFile();
-            if (f.isDirectory()) return resource;
+            if (f.isDirectory() && !path.equals("/")) return resource;
             CacheResource cache = resourceCache.get(f);
             if (cache != null) return cache;
-            if (f.length() < CACHE_LIMIT || f.getName().endsWith(".html")) {
+            if (f.length() < CACHE_LIMIT || f.getName().endsWith(".html") || path.equals("/")) {
                 cache = new CacheResource((PathResource) resource);
                 resourceCache.put(f, cache);
                 return cache;
@@ -117,22 +122,63 @@ public class FileHandler extends ResourceHandler implements Handler {
     }
 
     private final Map<File, CacheResource> resourceCache = new ConcurrentHashMap<>();
-
+    private final static byte[] SSI_START = "<!--#include file=\"".getBytes();
+    private final static byte[] SSI_END   = "\" -->".getBytes();
+    
     private static class CacheResource extends Resource {
 
         private byte[] buffer;
         private long lastModified;
         private File file;
+        private List<File> includes;
         
         public CacheResource(PathResource pathResource) throws IOException {
             this.file = pathResource.getFile();
-            initCache(false);
+            if (this.file.isDirectory()) this.file = new File(this.file, "index.html");
+            this.includes = new ArrayList<>(8);
+            initCache(System.currentTimeMillis());
             pathResource.close();
+            
         }
         
-        private void initCache(boolean trueLastModified) throws IOException {
+        private void initCache(long nextLastModified) throws IOException {
             this.buffer = Files.readAllBytes(this.file.toPath());
-            this.lastModified = trueLastModified ? this.file.lastModified() : System.currentTimeMillis();
+            if (this.file.getName().endsWith(".html")) this.buffer = insertSSI(this.buffer);
+            this.lastModified = nextLastModified;
+        }
+        
+        private byte[] insertSSI(byte[] b) throws IOException {
+            this.includes.clear();
+            for (int p = findSSI_start(b, 0); p >= 0; p = findSSI_start(b, p)) {
+                int q = findSSI_end(b, p);
+                if (q < 0) break;
+                byte[] f = new byte[q - p - SSI_START.length];
+                System.arraycopy(b, p + SSI_START.length, f, 0, f.length);
+                File ff = new File(this.file.getParent(), UTF8.String(f)).getCanonicalFile();
+                if (!ff.exists()) {
+                    byte[] b0 = new byte[b.length - (q - p) - SSI_END.length];
+                    System.arraycopy(b, 0, b0, 0, p);
+                    System.arraycopy(b, q + SSI_END.length, b0, p, b.length - q - SSI_END.length);
+                    b = b0;
+                    continue;
+                }
+                this.includes.add(ff);
+                byte[] i = Files.readAllBytes(ff.toPath());
+                byte[] b0 = new byte[b.length - (q - p) - SSI_END.length + i.length];
+                System.arraycopy(b, 0, b0, 0, p);
+                System.arraycopy(i, 0, b0, p, i.length);
+                System.arraycopy(b, q + SSI_END.length, b0, p + i.length, b.length - q - SSI_END.length);
+                b = b0;
+            }
+            return b;
+        }
+
+        private int findSSI_start(byte[] b, int p) {
+            return ByteBuffer.indexOf(b, SSI_START, p);
+        }
+        
+        private int findSSI_end(byte[] b, int p) {
+            return ByteBuffer.indexOf(b, SSI_END, p);
         }
 
         @Override
@@ -145,9 +191,17 @@ public class FileHandler extends ResourceHandler implements Handler {
             return false;
         }
 
+        private long actualLastModified() {
+            long l = this.file.lastModified();
+            for (File d: this.includes) l = Math.max(l, d.lastModified());
+            return l;
+        }
+        
         @Override
         public long lastModified() {
-            if (this.file.lastModified() > this.lastModified) try {initCache(true);} catch (IOException e) {}
+            long l = actualLastModified();
+            if (actualLastModified() > this.lastModified) try {initCache(l);} catch (IOException e) {}
+            this.lastModified = l;
             return this.lastModified;
         }
 
@@ -158,7 +212,8 @@ public class FileHandler extends ResourceHandler implements Handler {
 
         @Override
         public InputStream getInputStream() throws IOException {
-            if (this.file.lastModified() > this.lastModified) initCache(true);
+            long l = actualLastModified();
+            if (actualLastModified() > this.lastModified) initCache(l);
             return new ByteArrayInputStream(this.buffer);
         }
 
