@@ -27,6 +27,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.eclipse.jetty.util.log.Log;
 import org.json.JSONObject;
 import org.loklak.data.DAO;
 import org.loklak.data.IndexEntry;
@@ -123,7 +124,7 @@ public class ProxyServlet extends HttpServlet {
                         // record user into search index
                         DAO.users.writeEntry(new IndexEntry<UserEntry>(user.getScreenName(), user.getType(), user));
                     } catch (IOException e) {
-                        e.printStackTrace();
+                    	Log.getLog().warn(e);
                     }
                     if (!cache.full()) cache.put(url, buffer);
                 } else {

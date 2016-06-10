@@ -180,7 +180,7 @@ public class ClientConnection {
 		                .register("https", trustSelfSignedSocketFactory)
 		                .build();
 			} catch (KeyManagementException | NoSuchAlgorithmException | KeyStoreException e) {
-				e.printStackTrace();
+				Log.getLog().warn(e);
 			}
     	}
         
@@ -305,12 +305,12 @@ public class ClientConnection {
                 try {
                     while ((count = connection.inputStream.read(buffer)) > 0) os.write(buffer, 0, count);
                 } catch (IOException e) {
-                    e.printStackTrace();
+                	Log.getLog().warn(e.getMessage());
                 } finally {
                     os.close();
                 }
             } catch (IOException e) {
-                e.printStackTrace();
+            	Log.getLog().warn(e.getMessage());
             } finally {
                 connection.close();
             }
@@ -337,13 +337,13 @@ public class ClientConnection {
             try {
                 while ((count = connection.inputStream.read(buffer)) > 0) baos.write(buffer, 0, count);
             } catch (IOException e) {
-                e.printStackTrace();
+            	Log.getLog().warn(e.getMessage());
             } finally {
                 connection.close();
             }
             return baos.toByteArray();
         } catch (IOException e) {
-            e.printStackTrace();
+        	Log.getLog().warn(e.getMessage());
             return null;
         }
     }

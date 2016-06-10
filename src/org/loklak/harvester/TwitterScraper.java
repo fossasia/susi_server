@@ -43,6 +43,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.eclipse.jetty.util.log.Log;
 import org.loklak.Caretaker;
 import org.loklak.QueuedIndexing;
 import org.loklak.data.DAO;
@@ -114,13 +115,13 @@ public class TwitterScraper {
                 BufferedReader br = new BufferedReader(new InputStreamReader(connection.inputStream, StandardCharsets.UTF_8));
                 timelines = search(br, order, writeToIndex, writeToBackend);
             } catch (IOException e) {
-               e.printStackTrace();
+            	Log.getLog().warn(e);
             } finally {
                 connection.close();
             }
         } catch (IOException e) {
             // this could mean that twitter rejected the connection (DoS protection?) or we are offline (we should be silent then)
-            // e.printStackTrace();
+            // Log.getLog().warn(e);
             if (timelines == null) timelines = new Timeline[]{new Timeline(order), new Timeline(order)};
         };
 
@@ -146,7 +147,7 @@ public class TwitterScraper {
             BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(file), StandardCharsets.UTF_8));
             timelines = search(br, order, writeToIndex, writeToBackend);
         } catch (IOException e) {
-            e.printStackTrace();
+        	Log.getLog().warn(e);
         } finally {
             if (timelines == null) timelines = new Timeline[]{new Timeline(order), new Timeline(order)};
         }
@@ -466,7 +467,7 @@ public class TwitterScraper {
                 if (this.writeToBackend) Caretaker.transmitMessage(this, this.user);
                 //DAO.log("TwitterTweet [" + this.id_str + "] transmit  after " + (System.currentTimeMillis() - start) + "ms");
             } catch (Throwable e) {
-                e.printStackTrace();
+            	Log.getLog().warn(e);
             } finally {
                 this.ready.release(1000);
             }
@@ -499,7 +500,7 @@ public class TwitterScraper {
                     continue;
                 }
             } catch (Throwable e) {
-                e.printStackTrace();
+            	Log.getLog().warn(e);
                 break;
             }
             try {
@@ -509,7 +510,7 @@ public class TwitterScraper {
                     continue;
                 }
             } catch (Throwable e) {
-                e.printStackTrace();
+            	Log.getLog().warn(e);
                 break;
             }
             try {
@@ -520,7 +521,7 @@ public class TwitterScraper {
                     continue;
                 }
             } catch (Throwable e) {
-                e.printStackTrace();
+            	Log.getLog().warn(e);
                 break;
             }
             try {
@@ -531,7 +532,7 @@ public class TwitterScraper {
                     continue;
                 }
             } catch (Throwable e) {
-                e.printStackTrace();
+            	Log.getLog().warn(e);
                 break;
             }
             break;

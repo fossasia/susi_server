@@ -101,7 +101,7 @@ public class SearchServlet extends HttpServlet {
                 if (scraperInfo != null) tl.setScraperInfo(scraperInfo);
             }
         } catch (Throwable e) {
-            e.printStackTrace();
+        	//Log.getLog().warn(e);
             throw new IOException(e.getMessage());
         }
         //System.out.println(parser.text());
@@ -373,7 +373,7 @@ public class SearchServlet extends HttpServlet {
         post.finalize();
         } catch (Throwable e) {
             Log.getLog().warn(e.getMessage(), e);
-            //e.printStackTrace();
+            //Log.getLog().warn(e);
         }
     }
 
@@ -382,7 +382,7 @@ public class SearchServlet extends HttpServlet {
             Timeline tl = search("http://loklak.org", "beer", Timeline.Order.CREATED_AT, "cache", 20, -120, backend_hash, 10000);
             System.out.println(tl.toJSON(false).toString(2));
         } catch (IOException e) {
-            e.printStackTrace();
+        	Log.getLog().warn(e);
         }
     }
 }

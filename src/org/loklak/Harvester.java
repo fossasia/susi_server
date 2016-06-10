@@ -29,6 +29,7 @@ import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import org.eclipse.jetty.util.log.Log;
 import org.loklak.api.p2p.PushServlet;
 import org.loklak.api.search.SearchServlet;
 import org.loklak.api.search.SuggestServlet;
@@ -110,7 +111,7 @@ public class Harvester {
                     if (pendingContext.size() == 0) try {Thread.sleep(10000);} catch (InterruptedException e) {}
                 }
             } catch (IOException e) {
-                e.printStackTrace();
+            	Log.getLog().warn(e.getMessage());
                 try {Thread.sleep(10000);} catch (InterruptedException e1) {} // if the remote peer is down, throttle down
             }
         }
@@ -168,7 +169,6 @@ public class Harvester {
                         return;
                     }
                 } catch (Throwable e) {
-                    //e.printStackTrace();
                     DAO.log("failed synchronous push to backend, attempt " + i);
                     try {Thread.sleep((i + 1) * 3000);} catch (InterruptedException e1) {}
                 }

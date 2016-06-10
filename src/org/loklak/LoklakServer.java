@@ -74,6 +74,7 @@ import org.loklak.api.admin.ThreaddumpServlet;
 import org.loklak.api.cms.AppsService;
 import org.loklak.api.cms.AssetServlet;
 import org.loklak.api.cms.DumpDownloadServlet;
+import org.loklak.api.cms.PasswordRecoveryServlet;
 import org.loklak.api.cms.LoginServlet;
 import org.loklak.api.cms.ProxyServlet;
 import org.loklak.api.cms.SignUpServlet;
@@ -181,11 +182,12 @@ public class LoklakServer {
         }
         
         // check for https modus
-        String httpsString = config.get("https.mode");
-        httpsMode = HttpsMode.OFF;
-        if("on".equals(httpsString)) httpsMode = HttpsMode.ON;
-        else if("redirect".equals(httpsString)) httpsMode = HttpsMode.REDIRECT;
-        else if("only".equals(httpsString)) httpsMode = HttpsMode.ONLY;
+        switch(config.get("https.mode")){
+        	case "on": httpsMode = HttpsMode.ON; break;
+        	case "redirect": httpsMode = HttpsMode.REDIRECT; break;
+        	case "only": httpsMode = HttpsMode.ONLY; break;
+        	default: httpsMode = HttpsMode.OFF;
+        }
         
         // get server ports
         Map<String, String> env = System.getenv();
@@ -516,6 +518,7 @@ public class LoklakServer {
         servletHandler.addServlet(UserServlet.class, "/api/user.json");
         servletHandler.addServlet(SignUpServlet.class, "/api/signup.json");
         servletHandler.addServlet(LoginServlet.class, "/api/login.json");
+        servletHandler.addServlet(PasswordRecoveryServlet.class, "/api/recoverpassword.json");
         servletHandler.addServlet(CampaignServlet.class, "/api/campaign.json");
         servletHandler.addServlet(ImportProfileServlet.class, "/api/import.json");
         servletHandler.addServlet(SettingsServlet.class, "/api/settings.json");

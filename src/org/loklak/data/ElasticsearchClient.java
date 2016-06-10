@@ -123,7 +123,7 @@ public class ElasticsearchClient {
                 int port = Integer.parseInt(a.substring(p + 1));
                 tc.addTransportAddress(new InetSocketTransportAddress(i, port));
             } catch (UnknownHostException e) {
-                e.printStackTrace();
+            	Log.getLog().warn(e);
             }
         }
         this.elasticsearchClient = tc;
@@ -192,7 +192,7 @@ public class ElasticsearchClient {
                 .setUpdateAllTypes(true)
                 .setType("_default_").execute().actionGet();
         } catch (Throwable e) {
-            e.printStackTrace();
+        	Log.getLog().warn(e);
         };
     }
 
@@ -203,7 +203,7 @@ public class ElasticsearchClient {
                 .setUpdateAllTypes(true)
                 .setType("_default_").execute().actionGet();
         } catch (Throwable e) {
-            e.printStackTrace();
+        	Log.getLog().warn(e);
         };
     }
 
@@ -214,7 +214,7 @@ public class ElasticsearchClient {
                 .setUpdateAllTypes(true)
                 .setType("_default_").execute().actionGet();
         } catch (Throwable e) {
-            e.printStackTrace();
+        	Log.getLog().warn(e);
         };
     }
 
@@ -227,7 +227,7 @@ public class ElasticsearchClient {
                 .execute()
                 .actionGet();
         } catch (Throwable e) {
-            e.printStackTrace();
+        	Log.getLog().warn(e);
         };
     }
 
@@ -321,7 +321,7 @@ public class ElasticsearchClient {
                 .actionGet();
             return response.getHits().getTotalHits();
         } catch (Throwable e) {
-            e.printStackTrace();
+        	Log.getLog().warn(e);
             return 0;
         }
     }
@@ -335,7 +335,7 @@ public class ElasticsearchClient {
                 .actionGet();
             return response.getHits().getTotalHits();
         } catch (Throwable e) {
-            e.printStackTrace();
+        	Log.getLog().warn(e);
             return 0;
         }
     }

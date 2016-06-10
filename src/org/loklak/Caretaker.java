@@ -226,8 +226,7 @@ public class Caretaker extends Thread {
             List<String> rsp = OS.execSynchronous(upgradeScript.getAbsolutePath());
             for (String s: rsp) DAO.log("UPGRADE: " + s);
         } catch (IOException e) {
-            DAO.log("UPGRADE failed: " + e.getMessage());
-            e.printStackTrace();
+        	Log.getLog().warn("UPGRADE failed: " + e.getMessage(), e);
         }
     }
     
