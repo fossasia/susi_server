@@ -87,6 +87,9 @@ $(document).ready(function()
                 console.log(data.status);
                 console.log(data.reason);
                 alert(data.status + ", " + data.reason);
+                if(data.status=="ok" && data.reason=="ok"){
+                    window.location = '/apps/applist/index.html';
+                }
             }, "json" );
         }
     });
