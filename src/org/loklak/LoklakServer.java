@@ -491,6 +491,8 @@ public class LoklakServer {
         htrootContext.setContextPath("/");
 
         File tmp = new File(dataFile, "tmp");
+        MultipartConfigElement multipartConfigDefault = new MultipartConfigElement(tmp.getAbsolutePath());
+        MultipartConfigElement multipartConfig = new MultipartConfigElement(tmp.getAbsolutePath(), multipartConfigDefault.getMaxFileSize(), multipartConfigDefault.getMaxRequestSize(), 1024 * 1024); // reduce IO using a non-zero fileSizeThreshold
         ServletContextHandler servletHandler = new ServletContextHandler();
         servletHandler.addServlet(DumpDownloadServlet.class, "/dump/*");
         servletHandler.addServlet(ShortlinkFromTweetServlet.class, "/x");
@@ -509,7 +511,7 @@ public class LoklakServer {
         servletHandler.addServlet(SuggestServlet.class, "/api/suggest.json");
         servletHandler.addServlet(XMLServlet.class, "/api/xml2json.json");
         ServletHolder accountServletHolder = new ServletHolder(AccountServlet.class);
-        accountServletHolder.getRegistration().setMultipartConfig(new MultipartConfigElement(tmp.getAbsolutePath()));
+        accountServletHolder.getRegistration().setMultipartConfig(multipartConfig);
         servletHandler.addServlet(accountServletHolder, "/api/account.json");
         servletHandler.addServlet(UserServlet.class, "/api/user.json");
         servletHandler.addServlet(SignUpServlet.class, "/api/signup.json");
@@ -523,10 +525,10 @@ public class LoklakServer {
         servletHandler.addServlet(ProxyServlet.class, "/api/proxy.jpg");
         servletHandler.addServlet(ValidateServlet.class, "/api/validate.json");
         ServletHolder pushServletHolder = new ServletHolder(PushServlet.class);
-        pushServletHolder.getRegistration().setMultipartConfig(new MultipartConfigElement(tmp.getAbsolutePath()));
+        pushServletHolder.getRegistration().setMultipartConfig(multipartConfig);
         servletHandler.addServlet(pushServletHolder, "/api/push.json");
         ServletHolder geojsonPushServletHolder = new ServletHolder(GeoJsonPushServlet.class);
-        geojsonPushServletHolder.getRegistration().setMultipartConfig(new MultipartConfigElement(tmp.getAbsolutePath()));
+        geojsonPushServletHolder.getRegistration().setMultipartConfig(multipartConfig);
         servletHandler.addServlet(geojsonPushServletHolder, "/api/push/geojson.json");
         servletHandler.addServlet(FossasiaPushServlet.class, "/api/push/fossasia.json");
         servletHandler.addServlet(OpenWifiMapPushServlet.class, "/api/push/openwifimap.json");
@@ -534,7 +536,7 @@ public class LoklakServer {
         servletHandler.addServlet(FreifunkNodePushServlet.class, "/api/push/freifunknode.json");
         servletHandler.addServlet(NetmonPushServlet.class, "/api/push/netmon.xml");
         ServletHolder assetServletHolder = new ServletHolder(AssetServlet.class);
-        assetServletHolder.getRegistration().setMultipartConfig(new MultipartConfigElement(tmp.getAbsolutePath()));
+        assetServletHolder.getRegistration().setMultipartConfig(multipartConfig);
         servletHandler.addServlet(assetServletHolder, "/api/asset");
         servletHandler.addServlet(ThreaddumpServlet.class, "/api/threaddump.txt");
         servletHandler.addServlet(TopMenu.class, new TopMenu().getAPIPath());
