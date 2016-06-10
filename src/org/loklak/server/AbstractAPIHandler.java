@@ -249,7 +249,7 @@ public abstract class AbstractAPIHandler extends HttpServlet implements APIHandl
     		// check if password is valid
     		if(authentication.getIdentity() != null){
     			
-    			if(authentication.has("activated") && !authentication.getBoolean("activated")){
+    			if(authentication.has("activated") && authentication.getBoolean("activated")){
     			
 	    			if(authentication.has("passwordHash") && authentication.has("salt")){
 	    				
@@ -336,9 +336,10 @@ public abstract class AbstractAPIHandler extends HttpServlet implements APIHandl
     	ClientCredential credential = new ClientCredential(ClientCredential.Type.host, request.getRemoteHost());
     	Authentication authentication = new Authentication(credential, DAO.authentication);
     	
+    	if(authentication.getIdentity() == null) authentication.setIdentity(new ClientIdentity(credential.toString()));
     	authentication.setExpireTime(Instant.now().getEpochSecond() + defaultAnonymousTime);
     	
-        return new ClientIdentity(credential.toString());
+        return authentication.getIdentity();
     }
     
     /**
