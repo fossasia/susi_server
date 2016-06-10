@@ -11,7 +11,6 @@ label.error{
 }
 input.error{
 	border: 2px solid red !important;
-	width: 250px;
 }
 
 label.success{
@@ -22,7 +21,7 @@ input.success{
 }
 
 .form {
-	width:700px;
+	width:650px;
 	height: auto;
 	margin: auto;
 }
