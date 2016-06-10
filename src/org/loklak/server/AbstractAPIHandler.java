@@ -336,9 +336,10 @@ public abstract class AbstractAPIHandler extends HttpServlet implements APIHandl
     	ClientCredential credential = new ClientCredential(ClientCredential.Type.host, request.getRemoteHost());
     	Authentication authentication = new Authentication(credential, DAO.authentication);
     	
+    	if(authentication.getIdentity() == null) authentication.setIdentity(new ClientIdentity(credential.toString()));
     	authentication.setExpireTime(Instant.now().getEpochSecond() + defaultAnonymousTime);
     	
-        return new ClientIdentity(credential.toString());
+        return authentication.getIdentity();
     }
     
     /**

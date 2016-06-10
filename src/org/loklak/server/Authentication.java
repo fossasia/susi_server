@@ -46,18 +46,19 @@ public class Authentication {
 	        	this.json = parent.getJSONObject(credential.toString());
 	        }
 	        else{
-	        	parent.put(credential.toString(), new JSONObject(), credential.isPersistent());
-	        	this.json = parent.getJSONObject(credential.toString());
+	        	this.json = new JSONObject();
+	        	parent.put(credential.toString(), this.json, credential.isPersistent());
 	        }
     	}
     	else this.json = new JSONObject();
+    	
         this.parent = parent;
         this.credential = credential;
     }
     
     public Authentication setIdentity(ClientIdentity id) {
         this.json.put("id", id.toString());
-        if (this.parent != null && id.isPersistent()) this.parent.commit();
+        if (this.parent != null && this.credential.isPersistent()) this.parent.commit();
         return this;
     }
     

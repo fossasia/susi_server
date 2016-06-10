@@ -1,7 +1,23 @@
 $(document).ready(function()
 {
-    $('#pass').tooltip({'trigger':'focus', 'placement': 'left', 'title': 'Enter a combination of atleast six letters, numbers and alphanumerics'});
+	// get password parameters
+	var regex;
+    
+    var xhttp = new XMLHttpRequest();
+	$.holdReady(true);
+	xhttp.onreadystatechange = function() {
+		if (xhttp.readyState == 4 && xhttp.status == 200) {
+			regex = JSON.parse(xhttp.responseText).regex;
+			var regexTooltip = JSON.parse(xhttp.responseText).regexTooltip;
+			$('#pass').tooltip({'trigger':'focus', 'placement': 'left', 'title': regexTooltip});
+			$.holdReady(false);
+		}
+	};
+	xhttp.open("GET", "/api/signup.json?getRegex=true", true);
+	xhttp.send();
+	
     var emailerr = false, passerr = false, confirmerr = false;
+    
     $('#pass').keyup(function(){
         $('#passtrength').text(strengthlvl($('#pass').val()));
     });
@@ -101,11 +117,12 @@ $(document).ready(function()
         if(pass.length == 0){
             return "";
         }
-        if(pass.length < 6){
-            $('#passtrength').addClass("error");
+        if(!pass.match(regex)){
+			$('#passtrength').addClass("error");
             passerr = true;
-            return "Too short";
-        }
+            return "Insufficient password";
+		}
+        
         if (pass.length >=7) { //sufficient length
             strength += 1;
         }

@@ -48,11 +48,12 @@ public class Authorization {
 	    	if (parent.has(identity.toString())) {
 	    		this.json = parent.getJSONObject(identity.toString());
 	        } else {
-	            parent.put(identity.toString(), new JSONObject(), identity.isPersistent());
-	            this.json = parent.getJSONObject(identity.toString());
+	        	this.json = new JSONObject();
+	        	parent.put(identity.toString(), this.json, identity.isPersistent());
 	        }
     	}
     	else this.json = new JSONObject();
+    	
         this.parent = parent;
         this.accounting = null;
         this.identity = identity;
