@@ -249,7 +249,7 @@ public abstract class AbstractAPIHandler extends HttpServlet implements APIHandl
     		// check if password is valid
     		if(authentication.getIdentity() != null){
     			
-    			if(authentication.has("activated") && !authentication.getBoolean("activated")){
+    			if(authentication.has("activated") && authentication.getBoolean("activated")){
     			
 	    			if(authentication.has("passwordHash") && authentication.has("salt")){
 	    				
