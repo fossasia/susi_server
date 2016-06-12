@@ -17,7 +17,11 @@
         <link href="css/starter-template.css" rel="stylesheet">
         <script src="/js/jquery.min.js"></script>
         <script src="/js/angular.min.js"></script>
-        <script src="/js/jquery.min.js"></script>
+        <script src="js/d3.js"></script>
+        <script src="js/nv.d3.js"></script>
+        <script src="https://code.highcharts.com/highcharts.js"></script>
+        <script src="https://code.highcharts.com/modules/exporting.js"></script>
+
         <style>
             .post-wrapper:first-child .post-inner {
             border-top-color: rgba(0, 0, 0, 0.1);
@@ -106,6 +110,9 @@
             <br></br>
             <h1>Emotion and Data Visualization for: {{query}}</h1>
         <center><div ng-if="spinner && !tweetsStatus"><img src="loading.gif" height="400" width="400"/></div></center>
+        <div>
+        <div class="pie-chart"></div>
+</div>
             <div ng-if="tweetsStatus">
             <div class="row" ng-repeat="value in tweetsStatus | limitTo:10">
                 <div class="post-wrapper">
@@ -119,7 +126,7 @@
         </div>
     </body>
     <script>
-         var app = angular.module('TweetSearch', []);
+         var app = angular.module('TweetSearch', ['nvd3ChartDirectives']);
          app.controller('Controller', ['$scope', '$http', '$sce', function($scope, $http, $sce) {
          
              $scope.Search = function() {
@@ -133,18 +140,77 @@
                      var users = [];
                      var emotion = [];
                      var text = [];
+                     var count = [];
+                     var emotions_array = [];
                      for (var i=0; i<statuses.length; i++) {
                         if(statuses[i].classifier_emotion){
                             user = statuses[i].screen_name; 
                             emotion = statuses[i].classifier_emotion;
+                            emotions_array.push(emotion);
                             text = statuses[i].text;
                             users.push([user, emotion, text]);
                         }
                      }
+                     emotions_array.sort();
+                        var current = null;
+                        var em_count = 0;
+                        var emotions_name = [];
+                        var key;
+                        var y;
+                        for (var i = 0; i <= emotions_array.length; i++) {
+                            var emotionsObj =  {};
+                            if (emotions_array[i] != current) {
+                                if (em_count > 0) {
+                                    emotionsObj['name'] = current;
+                                    emotionsObj['y'] = em_count;
+                                    emotions_name.push(emotionsObj);
+                                }
+                                current = emotions_array[i];
+                                em_count = 1;
+                                } else {
+                                em_count++;
+                            }
+                        }
+                     console.log(emotions_array);
+                     console.log(emotions_name);
                      $scope.tweetsStatus = users;
+                     $scope.emotions = emotions_name;
+                     $('.pie-chart').highcharts({
+                        chart: {
+                            plotBackgroundColor: null,
+                            plotBorderWidth: null,
+                            plotShadow: false,
+                            type: 'pie'
+                        },
+                        title: {
+                            text: $scope.query
+                        },
+                        tooltip: {
+                            pointFormat: '{series.name}: <b>{point.percentage:.1f}%</b>'
+                        },
+                        plotOptions: {
+                            pie: {
+                                allowPointSelect: true,
+                                cursor: 'pointer',
+                                dataLabels: {
+                                    enabled: true,
+                                    format : '',
+                                    style: {
+                                        color: (Highcharts.theme && Highcharts.theme.contrastTextColor) || 'black'
+                                    }
+                                }
+                            }
+                        },
+                        series: [{
+                            name: $scope.query,
+                            colorByPoint: true,
+                            data: $scope.emotions
+                        }]
+                    });
                  });
              }
-              $scope.spinner = false;
+             $scope.spinner = false;
          }]);
+        
       </script>
 </html>
