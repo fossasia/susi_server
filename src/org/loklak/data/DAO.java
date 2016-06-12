@@ -49,6 +49,8 @@ import com.google.common.base.Charsets;
 
 import org.eclipse.jetty.util.log.Log;
 import org.elasticsearch.cluster.health.ClusterHealthStatus;
+import org.elasticsearch.common.logging.ESLoggerFactory;
+import org.elasticsearch.common.logging.slf4j.Slf4jESLoggerFactory;
 import org.elasticsearch.search.sort.SortOrder;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -202,7 +204,8 @@ public class DAO {
             }
         } else {
             // use all config attributes with a key starting with "elasticsearch." to set elasticsearch settings
-
+        	
+        	ESLoggerFactory.setDefaultFactory(new Slf4jESLoggerFactory());
             org.elasticsearch.common.settings.Settings.Builder settings = org.elasticsearch.common.settings.Settings.builder();
             for (Map.Entry<String, String> entry: config.entrySet()) {
                 String key = entry.getKey();
