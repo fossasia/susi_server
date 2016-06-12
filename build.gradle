@@ -52,7 +52,6 @@ dependencies {
   compile name: 'jsr166e-1.1.0'
   compile name: 'jts-1.13'
   compile name: 'junit-4.12'
-  compile name: 'log4j-1.2.17'
   compile name: 'log4j-core-2.6'
   compile name: 'log4j-slf4j-impl-2.6'
   compile name: 'lucene-analyzers-common-5.5.0'
