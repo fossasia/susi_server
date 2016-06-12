@@ -19,8 +19,9 @@
         <script src="/js/angular.min.js"></script>
         <script src="js/d3.js"></script>
         <script src="js/nv.d3.js"></script>
-        <script src="js/angularjs-nvd3-directives.js"></script>
-        <link rel="stylesheet" href="css/nv.d3.css"/>
+        <script src="https://code.highcharts.com/highcharts.js"></script>
+        <script src="https://code.highcharts.com/modules/exporting.js"></script>
+
         <style>
             .post-wrapper:first-child .post-inner {
             border-top-color: rgba(0, 0, 0, 0.1);
@@ -110,16 +111,7 @@
             <h1>Emotion and Data Visualization for: {{query}}</h1>
         <center><div ng-if="spinner && !tweetsStatus"><img src="loading.gif" height="400" width="400"/></div></center>
         <div>
-    <nvd3-pie-chart
-        data="emotions"
-        id="exampleId"
-        width="550"
-        height="350"
-        x="xFunction()"
-        y="yFunction()"
-        showLabels="true">
-        <svg></svg>
-    </nvd3-pie-chart>
+        <div class="pie-chart"></div>
 </div>
             <div ng-if="tweetsStatus">
             <div class="row" ng-repeat="value in tweetsStatus | limitTo:10">
@@ -169,9 +161,8 @@
                             var emotionsObj =  {};
                             if (emotions_array[i] != current) {
                                 if (em_count > 0) {
-                                    //document.write(current + ' --> ' + em_count + ' times<br>');
-                                    emotionsObj[key] = current;
-                                    emotionsObj[y] = em_count
+                                    emotionsObj['name'] = current;
+                                    emotionsObj['y'] = em_count;
                                     emotions_name.push(emotionsObj);
                                 }
                                 current = emotions_array[i];
@@ -184,9 +175,42 @@
                      console.log(emotions_name);
                      $scope.tweetsStatus = users;
                      $scope.emotions = emotions_name;
+                     $('.pie-chart').highcharts({
+                        chart: {
+                            plotBackgroundColor: null,
+                            plotBorderWidth: null,
+                            plotShadow: false,
+                            type: 'pie'
+                        },
+                        title: {
+                            text: $scope.query
+                        },
+                        tooltip: {
+                            pointFormat: '{series.name}: <b>{point.percentage:.1f}%</b>'
+                        },
+                        plotOptions: {
+                            pie: {
+                                allowPointSelect: true,
+                                cursor: 'pointer',
+                                dataLabels: {
+                                    enabled: true,
+                                    format : '',
+                                    style: {
+                                        color: (Highcharts.theme && Highcharts.theme.contrastTextColor) || 'black'
+                                    }
+                                }
+                            }
+                        },
+                        series: [{
+                            name: $scope.query,
+                            colorByPoint: true,
+                            data: $scope.emotions
+                        }]
+                    });
                  });
              }
-              $scope.spinner = false;
+             $scope.spinner = false;
          }]);
+        
       </script>
 </html>
