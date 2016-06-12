@@ -42,7 +42,6 @@
 	<classpathentry kind="lib" path="lib/asm-commons-4.1.jar"/>
 	<classpathentry kind="lib" path="lib/jna-4.1.0.jar"/>
 	<classpathentry kind="lib" path="lib/jts-1.13.jar"/>
-	<classpathentry kind="lib" path="lib/log4j-1.2.17.jar"/>
 	<classpathentry kind="lib" path="lib/twitter4j-core-4.0.2.jar"/>
 	<classpathentry kind="lib" path="lib/twitter4j-stream-4.0.2.jar"/>
 	<classpathentry kind="lib" path="lib/json-schema-validator-2.2.6-lib.jar" sourcepath="lib/json-schema-validator-2.2.6-lib.jar"/>
