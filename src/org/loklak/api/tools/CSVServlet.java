@@ -17,7 +17,7 @@
  *  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.loklak.api.search;
+package org.loklak.api.tools;
 
 import java.io.IOException;
 import java.io.PrintWriter;

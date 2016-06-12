@@ -9,7 +9,7 @@ import org.loklak.server.AbstractAPIHandler;
 import org.loklak.server.Authorization;
 import org.loklak.server.Query;
 
-public class TopMenu extends AbstractAPIHandler implements APIHandler {
+public class TopMenuService extends AbstractAPIHandler implements APIHandler {
     
     private static final long serialVersionUID = 1839868262296635665L;
 

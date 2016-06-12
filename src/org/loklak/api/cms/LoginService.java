@@ -28,7 +28,7 @@ import org.loklak.server.Authorization;
 import org.loklak.server.ClientIdentity;
 import org.loklak.server.Query;
 
-public class LoginServlet extends AbstractAPIHandler implements APIHandler {
+public class LoginService extends AbstractAPIHandler implements APIHandler {
    
     private static final long serialVersionUID = 8578478303032749879L;
 

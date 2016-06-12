@@ -17,7 +17,7 @@
  *  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.loklak.api.search;
+package org.loklak.api.cms;
 
 import java.io.IOException;
 
@@ -33,7 +33,7 @@ import org.loklak.server.AbstractAPIHandler;
 import org.loklak.server.Authorization;
 import org.loklak.server.Query;
 
-public class AccountServlet extends AbstractAPIHandler implements APIHandler {
+public class AccountService extends AbstractAPIHandler implements APIHandler {
    
     private static final long serialVersionUID = 8578478303032749879L;
 

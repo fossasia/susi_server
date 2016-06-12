@@ -37,7 +37,7 @@ import org.loklak.server.ClientCredential;
 import org.loklak.server.ClientIdentity;
 import org.loklak.server.Query;
 
-public class SignUpServlet extends AbstractAPIHandler implements APIHandler {
+public class SignUpService extends AbstractAPIHandler implements APIHandler {
    
     private static final long serialVersionUID = 8578478303032749879L;
 

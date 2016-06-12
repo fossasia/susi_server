@@ -31,7 +31,7 @@ import org.loklak.server.Authorization;
 
 import org.loklak.server.Query;
 
-public class PasswordRecoveryServlet extends AbstractAPIHandler implements APIHandler {
+public class PasswordRecoveryService extends AbstractAPIHandler implements APIHandler {
 
 	private static final long serialVersionUID = 3515757746392011162L;
 

@@ -40,7 +40,7 @@ import org.loklak.tools.UTF8;
  * Servlet to span the message peer-to-peer network.
  * This servlet is called to announce the existence of the remote peer.
  */
-public class Hello extends AbstractAPIHandler implements APIHandler {
+public class HelloService extends AbstractAPIHandler implements APIHandler {
     
     private static final long serialVersionUID = 1839868262296635665L;
 

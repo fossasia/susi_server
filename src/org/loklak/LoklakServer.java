@@ -62,8 +62,6 @@ import org.eclipse.jetty.server.HttpConnectionFactory;
 import org.eclipse.jetty.server.SslConnectionFactory;
 import org.eclipse.jetty.security.ConstraintMapping;
 import org.eclipse.jetty.security.ConstraintSecurityHandler;
-import org.eclipse.jetty.security.HashLoginService;
-import org.eclipse.jetty.security.LoginService;
 import org.eclipse.jetty.security.authentication.BasicAuthenticator;
 import org.loklak.api.admin.AccessServlet;
 import org.loklak.api.admin.CampaignServlet;
@@ -71,14 +69,15 @@ import org.loklak.api.admin.CrawlerServlet;
 import org.loklak.api.admin.SettingsServlet;
 import org.loklak.api.admin.StatusServlet;
 import org.loklak.api.admin.ThreaddumpServlet;
+import org.loklak.api.cms.AccountService;
 import org.loklak.api.cms.AppsService;
 import org.loklak.api.cms.AssetServlet;
 import org.loklak.api.cms.DumpDownloadServlet;
-import org.loklak.api.cms.PasswordRecoveryServlet;
-import org.loklak.api.cms.LoginServlet;
+import org.loklak.api.cms.PasswordRecoveryService;
+import org.loklak.api.cms.LoginService;
 import org.loklak.api.cms.ProxyServlet;
-import org.loklak.api.cms.SignUpServlet;
-import org.loklak.api.cms.TopMenu;
+import org.loklak.api.cms.SignUpService;
+import org.loklak.api.cms.TopMenuService;
 import org.loklak.api.geo.GeocodeServlet;
 import org.loklak.api.iot.FossasiaPushServlet;
 import org.loklak.api.iot.FreifunkNodePushServlet;
@@ -88,16 +87,15 @@ import org.loklak.api.iot.NetmonPushServlet;
 import org.loklak.api.iot.NodelistPushServlet;
 import org.loklak.api.iot.OpenWifiMapPushServlet;
 import org.loklak.api.iot.ValidateServlet;
-import org.loklak.api.p2p.Hello;
+import org.loklak.api.p2p.HelloService;
 import org.loklak.api.p2p.PeersServlet;
 import org.loklak.api.p2p.PushServlet;
-import org.loklak.api.search.AccountServlet;
 import org.loklak.api.search.SearchServlet;
 import org.loklak.api.search.ShortlinkFromTweetServlet;
 import org.loklak.api.search.SuggestServlet;
 import org.loklak.api.search.UserServlet;
-import org.loklak.api.search.XMLServlet;
-import org.loklak.api.search.CSVServlet;
+import org.loklak.api.tools.CSVServlet;
+import org.loklak.api.tools.XMLServlet;
 import org.loklak.api.vis.MapServlet;
 import org.loklak.api.vis.MarkdownServlet;
 import org.loklak.data.DAO;
@@ -447,8 +445,7 @@ public class LoklakServer {
         
         if(redirect || auth){
         	
-        	LoginService loginService = new HashLoginService("LoklakRealm", 
-        			DAO.conf_dir.getAbsolutePath() + "/http_auth");
+            org.eclipse.jetty.security.LoginService loginService = new org.eclipse.jetty.security.HashLoginService("LoklakRealm", DAO.conf_dir.getAbsolutePath() + "/http_auth");
         	if(auth) LoklakServer.server.addBean(loginService);
         	
         	Constraint constraint = new Constraint();
@@ -503,7 +500,7 @@ public class LoklakServer {
         servletHandler.addServlet(AccessServlet.class, "/api/access.html");
         servletHandler.addServlet(AccessServlet.class, "/api/access.txt");
         servletHandler.addServlet(AppsService.class, new AppsService().getAPIPath());
-        servletHandler.addServlet(Hello.class, new Hello().getAPIPath() /*"/api/hello.json"*/);
+        servletHandler.addServlet(HelloService.class, new HelloService().getAPIPath() /*"/api/hello.json"*/);
         servletHandler.addServlet(PeersServlet.class, "/api/peers.json");
         servletHandler.addServlet(PeersServlet.class, "/api/peers.csv");
         servletHandler.addServlet(CrawlerServlet.class, "/api/crawler.json");
@@ -514,13 +511,13 @@ public class LoklakServer {
         servletHandler.addServlet(SuggestServlet.class, "/api/suggest.json");
         servletHandler.addServlet(XMLServlet.class, "/api/xml2json.json");
         servletHandler.addServlet(CSVServlet.class, "/api/csv2json.json");
-        ServletHolder accountServletHolder = new ServletHolder(AccountServlet.class);
+        ServletHolder accountServletHolder = new ServletHolder(AccountService.class);
         accountServletHolder.getRegistration().setMultipartConfig(multipartConfig);
         servletHandler.addServlet(accountServletHolder, "/api/account.json");
         servletHandler.addServlet(UserServlet.class, "/api/user.json");
-        servletHandler.addServlet(SignUpServlet.class, "/api/signup.json");
-        servletHandler.addServlet(LoginServlet.class, "/api/login.json");
-        servletHandler.addServlet(PasswordRecoveryServlet.class, "/api/recoverpassword.json");
+        servletHandler.addServlet(SignUpService.class, "/api/signup.json");
+        servletHandler.addServlet(LoginService.class, "/api/login.json");
+        servletHandler.addServlet(PasswordRecoveryService.class, "/api/recoverpassword.json");
         servletHandler.addServlet(CampaignServlet.class, "/api/campaign.json");
         servletHandler.addServlet(ImportProfileServlet.class, "/api/import.json");
         servletHandler.addServlet(SettingsServlet.class, "/api/settings.json");
@@ -544,7 +541,7 @@ public class LoklakServer {
         assetServletHolder.getRegistration().setMultipartConfig(multipartConfig);
         servletHandler.addServlet(assetServletHolder, "/api/asset");
         servletHandler.addServlet(ThreaddumpServlet.class, "/api/threaddump.txt");
-        servletHandler.addServlet(TopMenu.class, new TopMenu().getAPIPath());
+        servletHandler.addServlet(TopMenuService.class, new TopMenuService().getAPIPath());
         servletHandler.addServlet(MarkdownServlet.class, "/vis/markdown.gif");
         servletHandler.addServlet(MarkdownServlet.class, "/vis/markdown.gif.base64");
         servletHandler.addServlet(MarkdownServlet.class, "/vis/markdown.png");
