@@ -126,7 +126,7 @@
         </div>
     </body>
     <script>
-         var app = angular.module('TweetSearch', ['nvd3ChartDirectives']);
+         var app = angular.module('TweetSearch', []);
          app.controller('Controller', ['$scope', '$http', '$sce', function($scope, $http, $sce) {
          
              $scope.Search = function() {
@@ -171,8 +171,6 @@
                                 em_count++;
                             }
                         }
-                     console.log(emotions_array);
-                     console.log(emotions_name);
                      $scope.tweetsStatus = users;
                      $scope.emotions = emotions_name;
                      $('.pie-chart').highcharts({
