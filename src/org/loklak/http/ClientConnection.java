@@ -45,6 +45,7 @@ import org.apache.http.HttpEntity;
 import org.apache.http.HttpHost;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.ClientProtocolException;
+import org.apache.http.client.config.CookieSpecs;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
@@ -84,6 +85,7 @@ public class ClientConnection {
             .setConnectTimeout(60000)
             .setConnectionRequestTimeout(60000)
             .setContentCompressionEnabled(true)
+            .setCookieSpec(CookieSpecs.IGNORE_COOKIES)
             .build();
     
     private int status;
