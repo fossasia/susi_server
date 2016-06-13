@@ -93,6 +93,7 @@ import org.loklak.api.p2p.PushServlet;
 import org.loklak.api.search.SearchServlet;
 import org.loklak.api.search.ShortlinkFromTweetServlet;
 import org.loklak.api.search.SuggestServlet;
+import org.loklak.api.search.TableService;
 import org.loklak.api.search.UserServlet;
 import org.loklak.api.tools.CSVServlet;
 import org.loklak.api.tools.XMLServlet;
@@ -509,6 +510,7 @@ public class LoklakServer {
         servletHandler.addServlet(SearchServlet.class, "/api/search.json");
         servletHandler.addServlet(SearchServlet.class, "/api/search.txt");
         servletHandler.addServlet(SuggestServlet.class, "/api/suggest.json");
+        servletHandler.addServlet(TableService.class, new TableService().getAPIPath());
         servletHandler.addServlet(XMLServlet.class, "/api/xml2json.json");
         servletHandler.addServlet(CSVServlet.class, "/api/csv2json.json");
         ServletHolder accountServletHolder = new ServletHolder(AccountService.class);
