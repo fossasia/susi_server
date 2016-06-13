@@ -28,9 +28,10 @@ import javax.mail.Session;
 import javax.mail.Transport;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
+import javax.naming.ConfigurationException;
+
 import org.eclipse.jetty.util.log.Log;
 import org.loklak.data.DAO;
-import org.loklak.server.Authorization;
 import org.loklak.server.ClientCredential;
 
 public class LoklakEmailHandler {
@@ -39,11 +40,10 @@ public class LoklakEmailHandler {
 	public static final String EMAIL_PATTERN = "^[_A-Za-z0-9-\\+]+(\\.[_A-Za-z0-9-]+)*@"
 			+ "[A-Za-z0-9-]+(\\.[A-Za-z0-9]+)*(\\.[A-Za-z]{2,})$";
 
-	public static void sendEmail(String addressTo, String subject, String text, Authorization rights)
-			throws Exception {
+	public static void sendEmail(String addressTo, String subject, String text) throws Exception {
 		
-		if (!rights.isAdmin() && !"true".equals(DAO.getConfig("smtp.mails.enabled", "false"))) {
-			throw new Exception("Mail sending disabled");
+		if (!"true".equals(DAO.getConfig("smtp.mails.enabled", "false"))) {
+			throw new ConfigurationException("Mail sending disabled");
 		}
 		
 		pattern = Pattern.compile(EMAIL_PATTERN);

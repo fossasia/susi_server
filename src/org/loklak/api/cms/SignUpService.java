@@ -19,9 +19,12 @@
 
 package org.loklak.api.cms;
 
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.util.regex.Pattern;
+
+import javax.naming.ConfigurationException;
 
 import org.eclipse.jetty.util.log.Log;
 import org.json.JSONObject;
@@ -36,10 +39,12 @@ import org.loklak.server.Authorization;
 import org.loklak.server.ClientCredential;
 import org.loklak.server.ClientIdentity;
 import org.loklak.server.Query;
+import org.loklak.tools.IO;
 
 public class SignUpService extends AbstractAPIHandler implements APIHandler {
    
     private static final long serialVersionUID = 8578478303032749879L;
+    private static String verificationLinkPlaceholder = "%VERIFICATION-LINK%";
 
     @Override
     public APIServiceLevel getDefaultServiceLevel() {
@@ -138,7 +143,6 @@ public class SignUpService extends AbstractAPIHandler implements APIHandler {
     	
     	// check password pattern
     	String passwordPattern = DAO.getConfig("users.password.regex", "^(?=.*\\d).{6,64}$");
-    	Log.getLog().info("password regex: " + passwordPattern);
     	
     	pattern = Pattern.compile(passwordPattern);
     	
@@ -177,17 +181,47 @@ public class SignUpService extends AbstractAPIHandler implements APIHandler {
 	        tokenAuthentication.setExpireTime(7 * 24 * 60 * 60);
 	        tokenAuthentication.put("one_time", true);
 	        
-	        // TODO: send email with token
-	        Log.getLog().info("verfication link: http://localhost:9000/api/signup.json?login_token="+token+"&validateEmail=true&request_session=true");
+	        try {
+				LoklakEmailHandler.sendEmail(signup, "Loklak verification", getVerificationMailContent(token));
+				
+				result.put("reason", "You successfully signed-up! An email with a verification link was send to your address.");
+			
+	        } 
+	        catch(ConfigurationException e){
+				result.put("reason", "You successfully signed-up, but no email was sent as it's disabled by the server.");
+			} 
+	        catch (Exception e) {
+	        	result.put("reason", "You successfully signed-up, but an error occurred while sending the verification mail.");
+			}
         }
-        
-        //Log.getLog().info(DAO.authentication.getVolatile().toString());
-    	//Log.getLog().info(DAO.authentication.getPersistent().toString());
-    	
+        else{
+        	result.put("reason", "You successfully signed-up!");
+        }
 
     	result.put("status", "ok");
-		result.put("reason", "ok");
+		
 		return result;
     }
     
+    /**
+     * Read Email template and insert variables
+     * @param token - login token
+     * @return Email String
+     */
+    private String getVerificationMailContent(String token){
+    	
+    	String verificationLink = DAO.getConfig("host.name", "http://localhost:9000") + "/api/signup.json?login_token="+token+"&validateEmail=true&request_session=true";
+    	
+    	// get template file
+    	String result;
+    	try{
+    		result = IO.readFile(DAO.conf_dir + "/templates/verification-mail.txt");
+    	} catch(IOException e){
+    		result = "";
+    	}
+    	
+    	result = result.contains(verificationLinkPlaceholder) ? result.replace(verificationLinkPlaceholder, verificationLink) : verificationLink;
+    	
+    	return result;
+    }
 }
