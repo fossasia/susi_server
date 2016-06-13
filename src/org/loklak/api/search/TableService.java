@@ -20,6 +20,7 @@
 package org.loklak.api.search;
 
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.regex.Matcher;
@@ -56,20 +57,38 @@ public class TableService extends AbstractAPIHandler implements APIHandler {
     public String getAPIPath() {
         return "/api/table.json";
     }
+
+    private static LinkedHashMap<String, String> parseColumns(String columnString) {
+        String[] column_list = columnString.trim().split(",");
+        if (column_list.length == 1 && column_list[0].equals("*")) return null;
+        LinkedHashMap<String, String> columns = new LinkedHashMap<>();
+        for (String column: column_list) {
+            String c = column.trim();
+            int p = column.indexOf(" AS ");
+            if (p < 0) {
+                columns.put(c, c);
+            } else {
+                String c0 = c.substring(0,  p).trim();
+                String c1 = c.substring(p + 4).trim();
+                if (c1.startsWith("\'")) c1 = c1.substring(1);
+                if (c1.endsWith("\'")) c1 = c1.substring(0, c1.length() - 1);
+                columns.put(c0, c1);
+            }
+        }
+        return columns;
+    }
     
     private final static Map<Pattern, Function<Matcher, JSONArray>> pattern = new HashMap<>();
     static {
         pattern.put(Pattern.compile("SELECT\\h+?(.*?)\\h+?FROM\\h+?messages\\h+?WHERE\\h+?id\\h??=\\h??'(.*?)'\\h??;??"), matcher -> {
-            String columns = matcher.group(1);
             String id = matcher.group(2);
-            boolean all = columns.equals("*");
-            String[] columns_list = all ? new String[0] : columns.split(",");
-            if (!all && columns_list.length == 0) return null;
+            LinkedHashMap<String, String> columns = parseColumns(matcher.group(1));
+            if (columns != null && columns.size() == 0) return null;
             JSONObject message = DAO.messages.readJSON(id);
             if (message == null) return null;
-            if (all) return (new JSONArray()).put(message);
+            if (columns == null) return (new JSONArray()).put(message);
             JSONObject json = new JSONObject(true);
-            for (String c: columns_list) if (message.has(c)) json.put(c, message.get(c));
+            for (Map.Entry<String, String> c: columns.entrySet()) if (message.has(c.getKey())) json.put(c.getValue(), message.get(c.getKey()));
             return (new JSONArray()).put(json);
         });
     }
