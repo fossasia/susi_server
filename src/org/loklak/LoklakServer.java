@@ -34,6 +34,7 @@ import java.util.Random;
 import java.util.Set;
 
 import javax.servlet.MultipartConfigElement;
+import javax.servlet.Servlet;
 
 import org.eclipse.jetty.rewrite.handler.RewriteHandler;
 import org.eclipse.jetty.rewrite.handler.RewriteRegexRule;
@@ -102,6 +103,7 @@ import org.loklak.api.vis.MarkdownServlet;
 import org.loklak.data.DAO;
 import org.loklak.harvester.TwitterScraper;
 import org.loklak.http.RemoteAccess;
+import org.loklak.server.APIHandler;
 import org.loklak.server.FileHandler;
 import org.loklak.server.HttpsMode;
 import org.loklak.tools.Browser;
@@ -495,13 +497,30 @@ public class LoklakServer {
         MultipartConfigElement multipartConfigDefault = new MultipartConfigElement(tmp.getAbsolutePath());
         MultipartConfigElement multipartConfig = new MultipartConfigElement(tmp.getAbsolutePath(), multipartConfigDefault.getMaxFileSize(), multipartConfigDefault.getMaxRequestSize(), 1024 * 1024); // reduce IO using a non-zero fileSizeThreshold
         ServletContextHandler servletHandler = new ServletContextHandler();
+
+        // add services
+        @SuppressWarnings("unchecked")
+        Class<? extends Servlet>[] services = new Class[]{
+                AppsService.class,
+                HelloService.class,
+                TableService.class,
+                SignUpService.class,
+                LoginService.class,
+                PasswordRecoveryService.class,
+                TopMenuService.class};
+        for (Class<? extends Servlet> service: services)
+            try {
+                servletHandler.addServlet(service, ((APIHandler) (service.newInstance())).getAPIPath());
+            } catch (InstantiationException | IllegalAccessException e) {
+                e.printStackTrace();
+            }
+        
+        // add servlets        
         servletHandler.addServlet(DumpDownloadServlet.class, "/dump/*");
         servletHandler.addServlet(ShortlinkFromTweetServlet.class, "/x");
         servletHandler.addServlet(AccessServlet.class, "/api/access.json");
         servletHandler.addServlet(AccessServlet.class, "/api/access.html");
         servletHandler.addServlet(AccessServlet.class, "/api/access.txt");
-        servletHandler.addServlet(AppsService.class, new AppsService().getAPIPath());
-        servletHandler.addServlet(HelloService.class, new HelloService().getAPIPath() /*"/api/hello.json"*/);
         servletHandler.addServlet(PeersServlet.class, "/api/peers.json");
         servletHandler.addServlet(PeersServlet.class, "/api/peers.csv");
         servletHandler.addServlet(CrawlerServlet.class, "/api/crawler.json");
@@ -510,16 +529,12 @@ public class LoklakServer {
         servletHandler.addServlet(SearchServlet.class, "/api/search.json");
         servletHandler.addServlet(SearchServlet.class, "/api/search.txt");
         servletHandler.addServlet(SuggestServlet.class, "/api/suggest.json");
-        servletHandler.addServlet(TableService.class, new TableService().getAPIPath());
         servletHandler.addServlet(XMLServlet.class, "/api/xml2json.json");
         servletHandler.addServlet(CSVServlet.class, "/api/csv2json.json");
         ServletHolder accountServletHolder = new ServletHolder(AccountService.class);
         accountServletHolder.getRegistration().setMultipartConfig(multipartConfig);
         servletHandler.addServlet(accountServletHolder, "/api/account.json");
         servletHandler.addServlet(UserServlet.class, "/api/user.json");
-        servletHandler.addServlet(SignUpService.class, "/api/signup.json");
-        servletHandler.addServlet(LoginService.class, "/api/login.json");
-        servletHandler.addServlet(PasswordRecoveryService.class, "/api/recoverpassword.json");
         servletHandler.addServlet(CampaignServlet.class, "/api/campaign.json");
         servletHandler.addServlet(ImportProfileServlet.class, "/api/import.json");
         servletHandler.addServlet(SettingsServlet.class, "/api/settings.json");
@@ -543,7 +558,6 @@ public class LoklakServer {
         assetServletHolder.getRegistration().setMultipartConfig(multipartConfig);
         servletHandler.addServlet(assetServletHolder, "/api/asset");
         servletHandler.addServlet(ThreaddumpServlet.class, "/api/threaddump.txt");
-        servletHandler.addServlet(TopMenuService.class, new TopMenuService().getAPIPath());
         servletHandler.addServlet(MarkdownServlet.class, "/vis/markdown.gif");
         servletHandler.addServlet(MarkdownServlet.class, "/vis/markdown.gif.base64");
         servletHandler.addServlet(MarkdownServlet.class, "/vis/markdown.png");
