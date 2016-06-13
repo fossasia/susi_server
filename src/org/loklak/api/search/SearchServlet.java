@@ -380,7 +380,7 @@ public class SearchServlet extends HttpServlet {
     public static void main(String[] args) {
         try {
             Timeline tl = search("http://loklak.org", "beer", Timeline.Order.CREATED_AT, "cache", 20, -120, backend_hash, 10000);
-            System.out.println(tl.toJSON(false).toString(2));
+            System.out.println(tl.toJSON(false, "search_metadata", "statuses").toString(2));
         } catch (IOException e) {
         	Log.getLog().warn(e);
         }

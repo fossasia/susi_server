@@ -212,7 +212,7 @@ public class ImportProfileServlet extends HttpServlet {
                     query += "id:" + msgId + " ";
                 }
                 DAO.SearchLocalMessages search = new DAO.SearchLocalMessages(query, Timeline.Order.CREATED_AT, 0, 1000, 0);
-                entry_to_map.put("imported", search.timeline.toJSON(false).get("statuses"));
+                entry_to_map.put("imported", search.timeline.toJSON(false, "search_metadata", "statuses").get("statuses"));
             }
             entries_to_map.put(entry_to_map);
         }

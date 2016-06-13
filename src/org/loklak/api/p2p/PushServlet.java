@@ -63,7 +63,7 @@ public class PushServlet extends HttpServlet {
     public static boolean push(String[] hoststubs, Timeline timeline, boolean peerMessage) {
         // transmit the timeline        
         try {
-            String data = timeline.toJSON(false).toString();
+            String data = timeline.toJSON(false, "search_metadata", "statuses").toString();
             assert data != null;
             boolean transmittedToAtLeastOnePeer = false;
             for (String hoststub: hoststubs) {
