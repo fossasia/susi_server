@@ -222,7 +222,6 @@ public class SignUpService extends AbstractAPIHandler implements APIHandler {
     	
     	result = result.contains(verificationLinkPlaceholder) ? result.replace(verificationLinkPlaceholder, verificationLink) : verificationLink;
     	
-    	Log.getLog().info("verfication mail: \n" + result);
     	return result;
     }
 }
