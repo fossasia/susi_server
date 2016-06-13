@@ -66,7 +66,7 @@ public class PasswordRecoveryService extends AbstractAPIHandler implements APIHa
 		String subject = "Password Recovery";
 		String body = "Recover password using this link";
 		try {
-			LoklakEmailHandler.sendEmail(usermail, subject, body, rights);
+			LoklakEmailHandler.sendEmail(usermail, subject, body);
 			result.put("status", "ok");
 			result.put("reason", "ok");
 		} catch(Exception e){
