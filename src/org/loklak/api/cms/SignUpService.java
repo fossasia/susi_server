@@ -22,11 +22,11 @@ package org.loklak.api.cms;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
+import java.nio.file.Paths;
 import java.util.regex.Pattern;
 
 import javax.naming.ConfigurationException;
 
-import org.eclipse.jetty.util.log.Log;
 import org.json.JSONObject;
 import org.loklak.LoklakEmailHandler;
 import org.loklak.data.DAO;
@@ -215,7 +215,7 @@ public class SignUpService extends AbstractAPIHandler implements APIHandler {
     	// get template file
     	String result;
     	try{
-    		result = IO.readFile(DAO.conf_dir + "/templates/verification-mail.txt");
+    		result = IO.readFileCached(Paths.get(DAO.conf_dir + "/templates/verification-mail.txt"));
     	} catch(IOException e){
     		result = "";
     	}
