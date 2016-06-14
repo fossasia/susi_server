@@ -62,6 +62,7 @@
             <li><a href="#markdown">/vis/markdown.png</a></li>
             <li><a href="#programmingLanguages">Installable APIs</a></li>
             <li><a href="#xml2json">/api/xml2json.json</a></li>
+            <li><a href="#csv2json">/api/csv2json.json</a></li>
           </ul>
         </div>
       </div>
@@ -2018,6 +2019,45 @@ loklak_messages under the name image0.png</p>
 </pre>
 </p>
 </section>
+
+<!-- CSV2JSON API Endpoint -->
+<section id="csv2json">
+  <h2 class="sub-header">
+    <code>/api/csv2json.json</code>
+  </h2>
+  <p>Any well formed CSV data source can be converted to JSON using the loklak's `csv2json.json` API endpoint. This servlet provides the ability to send data to loklak's API as CSV and receive a JSON response. To do this, every CSV line ending with <code>\n</code> needs to be encoded as <code>%0A</code>. Then pass this information as a value to <code>data</code> and you'll get a response.</p>
+  <ul class="request">
+    <li>
+      <div class="tabcol1">data</div>
+      <div class="tabcol2">&nbsp;=&nbsp;The CSV Data to be converted to JSON</div>
+      // This is the field which takes data=&lt;CSV,CSV,CSV%0ACSV,CSV,CSV&gt;
+    </li>
+  </ul>
+  <li>Query String: <a>http://localhost:9000/api/xml2json.json?data=&lt;csv&gt;</a></li>
+  <pre>
+  twittername,name,org
+  0rb1t3r, Michael Peter Christen, FOSSASIA
+  sudheesh001, Sudheesh Singanamalla, FOSSASIA
+  </pre>
+  <p>Sample Query: <a href="http://localhost:9000/api/csv2json.json?data=twittername,name,org%0A0rb1t3r,Michael%20Peter%20Christen,FOSSASIA%0Asudheesh001,Sudheesh%20Singanamalla,FOSSASIA%0A">http://localhost:9000/api/csv2json.json?data=twittername,name,org%0A0rb1t3r,Michael%20Peter%20Christen,FOSSASIA%0Asudheesh001,Sudheesh%20Singanamalla,FOSSASIA%0A</a></p>
+  <p>Output
+  <pre>
+[
+  {
+    "org": "FOSSASIA",
+    "name": "Michael Peter Christen",
+    "twittername": "0rb1t3r"
+  },
+  {
+    "org": "FOSSASIA",
+    "name": "Sudheesh Singanamalla",
+    "twittername": "sudheesh001"
+  }
+]
+  </pre></p>
+</section>
+<!-- -->
+
 <!-- end of left-align formatting of the source code -->
       </div>
     </div>
