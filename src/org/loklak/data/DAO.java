@@ -779,6 +779,20 @@ public class DAO {
             }
             this.aggregations = query.aggregations;
         }
+        
+        public JSONObject getAggregations() {
+            JSONObject json = new JSONObject(true);
+            if (aggregations == null) return json;
+            for (Map.Entry<String, List<Map.Entry<String, Long>>> aggregation: aggregations.entrySet()) {
+                JSONObject facet = new JSONObject(true);
+                for (Map.Entry<String, Long> a: aggregation.getValue()) {
+                    if (a.getValue().equals(query)) continue; // we omit obvious terms that cannot be used for faceting, like search for "#abc" -> most hashtag is "#abc"
+                    facet.put(a.getKey(), a.getValue());
+                }
+                json.put(aggregation.getKey(), facet);
+            }
+            return json;
+        }
     }
 
     public static LinkedHashMap<String, Long> FullDateHistogram(int timezoneOffset) {

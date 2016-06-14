@@ -94,7 +94,7 @@ import org.loklak.api.p2p.PushServlet;
 import org.loklak.api.search.SearchServlet;
 import org.loklak.api.search.ShortlinkFromTweetServlet;
 import org.loklak.api.search.SuggestServlet;
-import org.loklak.api.search.TableService;
+import org.loklak.api.search.ConsoleService;
 import org.loklak.api.search.UserServlet;
 import org.loklak.api.tools.CSVServlet;
 import org.loklak.api.tools.XMLServlet;
@@ -503,7 +503,7 @@ public class LoklakServer {
         Class<? extends Servlet>[] services = new Class[]{
                 AppsService.class,
                 HelloService.class,
-                TableService.class,
+                ConsoleService.class,
                 SignUpService.class,
                 LoginService.class,
                 PasswordRecoveryService.class,

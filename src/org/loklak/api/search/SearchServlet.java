@@ -24,8 +24,6 @@ import java.io.PrintWriter;
 import java.net.URLEncoder;
 import java.util.ConcurrentModificationException;
 import java.util.Date;
-import java.util.List;
-import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -145,7 +143,7 @@ public class SearchServlet extends HttpServlet {
         
         // create tweet timeline
         final Timeline tl = new Timeline(order);
-        Map<String, List<Map.Entry<String, Long>>> aggregations = null;
+        JSONObject aggregations = null;
         final QueryEntry.Tokens tokens = new QueryEntry.Tokens(query);
         
         final AtomicInteger cache_hits = new AtomicInteger(0), count_backend = new AtomicInteger(0), count_twitter_all = new AtomicInteger(0), count_twitter_new = new AtomicInteger(0);
@@ -228,7 +226,7 @@ public class SearchServlet extends HttpServlet {
             DAO.SearchLocalMessages localSearchResult = new DAO.SearchLocalMessages(query, order, timezoneOffset, last_cache_search_time.get() > SEARCH_CACHE_THREASHOLD_TIME ? SEARCH_LOW_COUNT : count, agregation_limit, fields);
             cache_hits.set(localSearchResult.timeline.getHits());
             tl.putAll(localSearchResult.timeline);
-            aggregations = localSearchResult.aggregations;
+            aggregations = localSearchResult.getAggregations();
             long time = System.currentTimeMillis() - start;
             last_cache_search_time.set(time);
             post.recordEvent("cache_time", time);
@@ -295,18 +293,7 @@ public class SearchServlet extends HttpServlet {
             m.put("statuses", statuses);
             
             // aggregations
-            JSONObject agg = new JSONObject(true);
-            if (aggregations != null) {
-                for (Map.Entry<String, List<Map.Entry<String, Long>>> aggregation: aggregations.entrySet()) {
-                    JSONObject facet = new JSONObject(true);
-                    for (Map.Entry<String, Long> a: aggregation.getValue()) {
-                        if (a.getValue().equals(query)) continue; // we omit obvious terms that cannot be used for faceting, like search for "#abc" -> most hashtag is "#abc"
-                        facet.put(a.getKey(), a.getValue());
-                    }
-                    agg.put(aggregation.getKey(), facet);
-                }
-            }
-            m.put("aggregations", agg);
+            m.put("aggregations", aggregations);
             
             // write json
             response.setCharacterEncoding("UTF-8");

@@ -38,10 +38,11 @@ import org.loklak.server.Authorization;
 import org.loklak.server.Query;
 
 /* examples:
- * http://localhost:9000/api/table.json?q=SELECT%20*%20FROM%20messages%20WHERE%20id=%27742384468560912386%27;
- * http://localhost:9000/api/table.json?q=SELECT%20link,screen_name%20FROM%20messages%20WHERE%20id=%27742384468560912386%27;
+ * http://localhost:9000/api/console.json?q=SELECT%20*%20FROM%20messages%20WHERE%20id=%27742384468560912386%27;
+ * http://localhost:9000/api/console.json?q=SELECT%20link,screen_name%20FROM%20messages%20WHERE%20id=%27742384468560912386%27;
+ * http://localhost:9000/api/console.json?q=SELECT%20*%20FROM%20messages%20WHERE%20query=%27loklak%27%20GROUP%20BY%20screen_name;
  */
-public class TableService extends AbstractAPIHandler implements APIHandler {
+public class ConsoleService extends AbstractAPIHandler implements APIHandler {
    
     private static final long serialVersionUID = 8578478303032749879L;
 
@@ -56,7 +57,7 @@ public class TableService extends AbstractAPIHandler implements APIHandler {
     }
 
     public String getAPIPath() {
-        return "/api/table.json";
+        return "/api/console.json";
     }
 
     private static class Columns {
@@ -97,7 +98,7 @@ public class TableService extends AbstractAPIHandler implements APIHandler {
         }
     }
     
-    private final static Map<Pattern, Function<Matcher, JSONObject>> pattern = new HashMap<>();
+    private final static LinkedHashMap<Pattern, Function<Matcher, JSONObject>> pattern = new LinkedHashMap<>();
     static {
         pattern.put(Pattern.compile("SELECT\\h+?(.*?)\\h+?FROM\\h+?messages\\h+?WHERE\\h+?id\\h??=\\h??'(.*?)'\\h??;??"), matcher -> {
             Columns columns = new Columns(matcher.group(1));
@@ -105,6 +106,16 @@ public class TableService extends AbstractAPIHandler implements APIHandler {
             return message == null ? null : new JSONObject()
                     .put("metadata", new JSONObject().put("offset", 0).put("hits", 1).put("count", 1))
                     .put("data", (new JSONArray()).put(columns.extract(message)));
+        });
+        pattern.put(Pattern.compile("SELECT\\h+?(.*?)\\h+?FROM\\h+?messages\\h+?WHERE\\h+?query\\h??=\\h??'(.*?)'\\h?+GROUP\\h?+BY\\h?+(.*?)\\h??;"), matcher -> {
+            Columns columns = new Columns(matcher.group(1));
+            DAO.SearchLocalMessages messages = new DAO.SearchLocalMessages(matcher.group(2), Timeline.Order.CREATED_AT, 0, 0, 10, matcher.group(3));
+            JSONArray array = new JSONArray();
+            JSONObject aggregation = messages.getAggregations().getJSONObject(matcher.group(3));
+            for (String key: aggregation.keySet()) array.put(new JSONObject().put(key, aggregation.get(key)));
+            JSONObject json = messages.timeline.toJSON(true, "metadata", "data");
+            json.put("data", columns.extract(array));
+            return json;
         });
         pattern.put(Pattern.compile("SELECT\\h+?(.*?)\\h+?FROM\\h+?messages\\h+?WHERE\\h+?query\\h??=\\h??'(.*?)'\\h??;??"), matcher -> {
             Columns columns = new Columns(matcher.group(1));
