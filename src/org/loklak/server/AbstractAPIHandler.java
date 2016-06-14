@@ -139,7 +139,7 @@ public abstract class AbstractAPIHandler extends HttpServlet implements APIHandl
         	response.sendError(401, "Unauthorized");
 			return;
         }
-        
+
         // user accounting: we maintain static and persistent user data; we again search the accounts using the usder identity string
         //JSONObject accounting_persistent_obj = DAO.accounting_persistent.has(user_id) ? DAO.accounting_persistent.getJSONObject(anon_id) : DAO.accounting_persistent.put(user_id, new JSONObject()).getJSONObject(user_id);
         Accounting accounting_temporary = DAO.accounting_temporary.get(identity.toString());
@@ -267,11 +267,11 @@ public abstract class AbstractAPIHandler extends HttpServlet implements APIHandl
 	    				
 						String passwordHash = authentication.getString("passwordHash");
 						String salt = authentication.getString("salt");
-						
-	    				ClientIdentity identity = authentication.getIdentity();
-						
+
 		    			if(getHash(password, salt).equals(passwordHash)){
 		    				
+		    				ClientIdentity identity = authentication.getIdentity();
+
 		    				// only create a cookie or session if requested (by login page)
 		    				if("true".equals(request.getParameter("request_cookie"))){
 	            				
@@ -296,11 +296,11 @@ public abstract class AbstractAPIHandler extends HttpServlet implements APIHandl
 		            			request.getSession().setAttribute("identity",identity);
 		            		}
 		    				
-		    				Log.getLog().info("login for user: " + identity.getName() + " via passwd from host: " + request.getRemoteHost());
+		    				Log.getLog().info("login for user: " + credential.getName() + " via passwd from host: " + request.getRemoteHost());
 		            		
 		            		return identity;
 		    			}
-		    			Log.getLog().info("Invalid login try for user: " + identity.getName() + " via passwd from host: " + request.getRemoteHost());
+		    			Log.getLog().info("Invalid login try for user: " + credential.getName() + " via passwd from host: " + request.getRemoteHost());
 		    			throw new LoginException("Invalid credentials");
 	    			}
 	    			Log.getLog().info("Invalid login try for user: " + credential.getName() + " from host: " + request.getRemoteHost() + " : password or salt missing in database");
