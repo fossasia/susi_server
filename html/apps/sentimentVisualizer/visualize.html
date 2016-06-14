@@ -110,9 +110,10 @@
             <br></br>
             <h1>Emotion and Data Visualization for: {{query}}</h1>
         <center><div ng-if="spinner && !tweetsStatus"><img src="loading.gif" height="400" width="400"/></div></center>
-        <div>
-        <div class="pie-chart"></div>
-</div>
+        <div style="width: 100%;margin: 0 auto;">
+            <div style="width: 50%;min-height: 400px;float: left;" class="pie-chart2"></div>
+            <div style="width: 50%;min-height: 400px;float: left;" class="pie-chart"></div>
+        </div>
             <div ng-if="tweetsStatus">
             <div class="row" ng-repeat="value in tweetsStatus | limitTo:10">
                 <div class="post-wrapper">
@@ -142,6 +143,7 @@
                      var text = [];
                      var count = [];
                      var emotions_array = [];
+                     var language_array = [];
                      for (var i=0; i<statuses.length; i++) {
                         if(statuses[i].classifier_emotion){
                             user = statuses[i].screen_name; 
@@ -149,6 +151,10 @@
                             emotions_array.push(emotion);
                             text = statuses[i].text;
                             users.push([user, emotion, text]);
+                        }
+                        if(statuses[i].classifier_language){
+                            lang = statuses[i].classifier_language;
+                            language_array.push(lang);
                         }
                      }
                      emotions_array.sort();
@@ -171,8 +177,25 @@
                                 em_count++;
                             }
                         }
+                    language_array.sort();
+                    var lang_name = [];
+                    for (var i = 0; i <= language_array.length; i++) {
+                            var languageObj =  {};
+                            if (language_array[i] != current) {
+                                if (em_count > 0) {
+                                    languageObj['name'] = current;
+                                    languageObj['y'] = em_count;
+                                    lang_name.push(languageObj);
+                                }
+                                current = language_array[i];
+                                em_count = 1;
+                                } else {
+                                em_count++;
+                            }
+                        }
                      $scope.tweetsStatus = users;
                      $scope.emotions = emotions_name;
+                     $scope.languages = lang_name;
                      $('.pie-chart').highcharts({
                         chart: {
                             plotBackgroundColor: null,
@@ -203,6 +226,38 @@
                             name: $scope.query,
                             colorByPoint: true,
                             data: $scope.emotions
+                        }]
+                    });
+                     $('.pie-chart2').highcharts({
+                        chart: {
+                            plotBackgroundColor: null,
+                            plotBorderWidth: null,
+                            plotShadow: false,
+                            type: 'pie'
+                        },
+                        title: {
+                            text: $scope.query
+                        },
+                        tooltip: {
+                            pointFormat: '{series.name}: <b>{point.percentage:.1f}%</b>'
+                        },
+                        plotOptions: {
+                            pie: {
+                                allowPointSelect: true,
+                                cursor: 'pointer',
+                                dataLabels: {
+                                    enabled: true,
+                                    format : '',
+                                    style: {
+                                        color: (Highcharts.theme && Highcharts.theme.contrastTextColor) || 'black'
+                                    }
+                                }
+                            }
+                        },
+                        series: [{
+                            name: $scope.query,
+                            colorByPoint: true,
+                            data: $scope.languages
                         }]
                     });
                  });
