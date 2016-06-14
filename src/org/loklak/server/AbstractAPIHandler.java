@@ -256,9 +256,9 @@ public abstract class AbstractAPIHandler extends HttpServlet implements APIHandl
 						String passwordHash = authentication.getString("passwordHash");
 						String salt = authentication.getString("salt");
 						
-	    				ClientIdentity identity = authentication.getIdentity();
-						
 		    			if(getHash(password, salt).equals(passwordHash)){
+		    				
+		    				ClientIdentity identity = authentication.getIdentity();
 		    				
 		    				// only create a cookie or session if requested (by login page)
 		    				if("true".equals(request.getParameter("request_cookie"))){
@@ -284,11 +284,11 @@ public abstract class AbstractAPIHandler extends HttpServlet implements APIHandl
 		            			request.getSession().setAttribute("identity",identity);
 		            		}
 		    				
-		    				Log.getLog().info("login for user: " + identity.getName() + " via passwd from host: " + request.getRemoteHost());
+		    				Log.getLog().info("login for user: " + credential.getName() + " via passwd from host: " + request.getRemoteHost());
 		            		
 		            		return identity;
 		    			}
-		    			Log.getLog().info("Invalid login try for user: " + identity.getName() + " via passwd from host: " + request.getRemoteHost());
+		    			Log.getLog().info("Invalid login try for user: " + credential.getName() + " via passwd from host: " + request.getRemoteHost());
 	    			}
 	    			Log.getLog().info("Invalid login try for user: " + credential.getName() + " from host: " + request.getRemoteHost() + " : password or salt missing in database");
     			}
