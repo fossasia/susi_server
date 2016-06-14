@@ -36,6 +36,10 @@
 	<classpathentry kind="lib" path="lib/jetty-webapp-9.3.9.v20160517.jar"/>
 	<classpathentry kind="lib" path="lib/javax.mail-1.5.5.jar"/>
 	<classpathentry kind="lib" path="lib/slf4j-api-1.7.21.jar"/>
+	<classpathentry kind="lib" path="lib/log4j-slf4j-impl-2.6.jar"/>
+	<classpathentry kind="lib" path="lib/log4j-core-2.6.jar"/>
+	<classpathentry kind="lib" path="lib/log4j-api-2.6.jar"/>
+	<classpathentry kind="lib" path="lib/log4j-1.2-api-2.6.jar"/>
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="src" path="test"/>
 	<classpathentry kind="lib" path="lib/javax.servlet-api-3.1.0.jar"/>
@@ -63,5 +67,6 @@
 	<classpathentry kind="lib" path="lib/netty-3.10.5.Final.jar"/>
 	<classpathentry kind="lib" path="lib/t-digest-3.0.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="lib" path="conf/logs"/>
 	<classpathentry kind="output" path="classes"/>
 </classpath>

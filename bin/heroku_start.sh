@@ -4,7 +4,7 @@ mkdir -p data
 
 DFAULTCONFIG="conf/config.properties"
 CUSTOMCONFIG="data/settings/customized_config.properties"
-LOGCONFIG="conf/logs/log-to-console.properties"
+LOGCONFIG="conf/logs/log4j2.properties"
 DFAULTXmx="-Xmx800m";
 CUSTOMXmx=""
 if [ -f $DFAULTCONFIG ]; then
