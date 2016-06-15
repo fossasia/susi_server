@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.URLEncoder;
 import java.util.*;
+import java.io.*;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -68,31 +69,42 @@ public class GenericScraper extends HttpServlet {
 		List<String> linkHref = new ArrayList<String>();
 		List<String> linkText = new ArrayList<String>();
 		List<String> src = new ArrayList<String>();
+		List<String> image = new ArrayList<String>();
 		Elements links = page.getElementsByTag("a");
 		Elements links2 = page.getElementsByTag("link");
 		Elements srciptLinks =page.getElementsByTag("script");
+		Elements imageLinks =page.getElementsByTag("img");
+		Elements taglang = page.getElementsByTag("html");
+		String language = taglang.attr("lang");
 		for (Element link : links) {
-			if(link.attr("href") != null){
+			if(link.attr("href") != null && link.attr("href").length() != 0){
 				linkHref.add(link.attr("href"));
 			}
-			if(link.text() != null){
+			if(link.text() != null && link.text().length() != 0){
 				linkText.add(link.text());
 			}
 		}
 		for (Element link : links2) {
-			if(link.attr("href") != null){
+			if(link.attr("href") != null && link.attr("href").length() != 0){
 				linkHref.add(link.attr("href"));
 			}
 		}
 		for (Element link : srciptLinks) {
-			if(link.attr("href") != null){
+			if(link.attr("src") != null && link.attr("src").length() != 0){
 				src.add(link.attr("src"));
 			}
 		}
+		for (Element link : imageLinks) {
+			if(link.attr("src") != null && link.attr("src").length() != 0){
+				image.add(link.attr("src"));
+			}
+		}
 		obj.put("title", title);
+		obj.put("language", language);
 		obj.put("Links", new JSONArray(linkHref));
 		obj.put("Text in Links", new JSONArray(linkText));
 		obj.put("source files", new JSONArray(src));
+		obj.put("Image files", new JSONArray(image));
 
 		//print JSON 
 		response.setCharacterEncoding("UTF-8");
