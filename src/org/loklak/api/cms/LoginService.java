@@ -51,14 +51,12 @@ public class LoginService extends AbstractAPIHandler implements APIHandler {
 
     	JSONObject result = new JSONObject();
     	
-    	if(rights.getIdentity().getType() == ClientIdentity.Type.email){
-    		result.put("status", "ok");
-    		result.put("reason", "ok");
-    	}
-    	else{
-    		result.put("status", "error");
-    		result.put("reason", "Wrong login credentials");
-    	}
+    	if(rights.getIdentity().getType() != ClientIdentity.Type.host){
+			result.put("loggedIn", true);
+			result.put("message", "You are logged in as " + rights.getIdentity().getName());
+		}else {
+			result.put("loggedIn", false);
+		}
     	
 		return result;
     }

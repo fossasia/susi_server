@@ -29,6 +29,7 @@ import java.time.Instant;
 import java.util.Base64;
 import java.util.Random;
 
+import javax.security.auth.login.LoginException;
 import javax.servlet.ServletException;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServlet;
@@ -123,7 +124,13 @@ public abstract class AbstractAPIHandler extends HttpServlet implements APIHandl
         
         
         // user identification
-        ClientIdentity identity = getIdentity(request, response);
+        ClientIdentity identity;
+		try {
+			identity = getIdentity(request, response);
+		} catch (LoginException e) {
+			response.sendError(422, e.getMessage());
+			return;
+		}
         
         // user authorization: we use the identification of the user to get the assigned authorization
         Authorization authorization = new Authorization(identity, DAO.authorization);
@@ -182,7 +189,7 @@ public abstract class AbstractAPIHandler extends HttpServlet implements APIHandl
      * Checks a request for valid login data, send via cookie or parameters
      * @return user identity if some login is active, anonymous identity otherwise
      */
-    private ClientIdentity getIdentity(HttpServletRequest request, HttpServletResponse response){
+    private ClientIdentity getIdentity(HttpServletRequest request, HttpServletResponse response) throws LoginException{
     	
     	// check for login information
 		if("true".equals(request.getParameter("logout"))){	// logout if requested
@@ -289,14 +296,18 @@ public abstract class AbstractAPIHandler extends HttpServlet implements APIHandl
 		            		return identity;
 		    			}
 		    			Log.getLog().info("Invalid login try for user: " + identity.getName() + " via passwd from host: " + request.getRemoteHost());
+		    			throw new LoginException("Invalid credentials");
 	    			}
 	    			Log.getLog().info("Invalid login try for user: " + credential.getName() + " from host: " + request.getRemoteHost() + " : password or salt missing in database");
+	    			throw new LoginException("Invalid credentials");
     			}
     			Log.getLog().info("Invalid login try for user: " + credential.getName() + " from host: " + request.getRemoteHost() + " : user not activated yet");
+    			throw new LoginException("User not yet activated");
     		}
     		else{
     			authentication.delete();
     			Log.getLog().info("Invalid login try for unknown user: " + credential.getName() + " via passwd from host: " + request.getRemoteHost());
+    			throw new LoginException("Invalid credentials");
     		}
     	}
     	else if (request.getParameter("login_token") != null){
@@ -320,9 +331,11 @@ public abstract class AbstractAPIHandler extends HttpServlet implements APIHandl
     				return identity;
     			}
     			Log.getLog().info("Invalid login try for user: " + identity.getName() + " via token from host: " + request.getRemoteHost());
+    			return null;
     		}
     		Log.getLog().info("Invalid login token from host: " + request.getRemoteHost());
     		authentication.delete();
+    		return null;
     	}
     	
         return getAnonymousIdentity(request);
