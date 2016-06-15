@@ -16,7 +16,7 @@ $(document).ready(function(){
         	$("#searchOptions").show();
         	$('div#inputFields').hide();
         }
-        else if (this.value == 'xml2json.json') {
+        else if (this.value == 'xml2json.json' || this.value == 'csv2json.json') {
         	constructQuery();
         	$('div#inputFields').show();
         	$("#searchOptions").hide();
@@ -132,7 +132,7 @@ function constructQuery() {
 		serviceURL = $(location).attr('href').split('apps/LQL/')[0];
 		var constructedURL = serviceURL;
 		constructedURL += 'api/' + selectedAPI;
-		if (selectedAPI == 'xml2json.json') {
+		if (selectedAPI == 'xml2json.json' || selectedAPI == 'csv2json.json') {
 			if (ipField != '') {
 				constructedURL += '?data='+ipField;
 			}
