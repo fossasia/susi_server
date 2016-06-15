@@ -48,6 +48,7 @@ dependencies {
   compile name: 'joda-convert-1.2'
   compile name: 'joda-time-2.8.2'
   compile name: 'json-schema-validator-2.2.6-lib'
+  compile name: 'jsoup-1.9.2'
   compile name: 'jsr166e-1.1.0'
   compile name: 'jts-1.13'
   compile name: 'junit-4.12'

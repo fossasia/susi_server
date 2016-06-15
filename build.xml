@@ -40,6 +40,7 @@
         <pathelement location="lib/joda-convert-1.2.jar"/>
         <pathelement location="lib/joda-time-2.8.2.jar"/>
         <pathelement location="lib/json-schema-validator-2.2.6-lib.jar"/>
+        <pathelement location="lib/jsoup-1.9.2.jar"/>
         <pathelement location="lib/jsr166e-1.1.0.jar"/>
         <pathelement location="lib/jts-1.13.jar"/>
         <pathelement location="lib/junit-4.12.jar"/>
