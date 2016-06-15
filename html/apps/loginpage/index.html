@@ -51,7 +51,9 @@
     <br>
     <p style="margin-left:30%;">Log in to Loklak!</p>
     <div class = "form"> 
-      <br><br>
+      <br>
+      <div id = "status-box"></div>
+      <br>
       <div class = "fields">
         <input type = "text" id="email" placeholder="Email" required>
         <label id = "emailfield"></label>
@@ -69,12 +71,12 @@
       <div class = "options">
         <input type = "checkbox" id = "remember">
         <label for = "remember" id = "rememberme">Remember me</label>
-        <a href="../signup/index.html" style="text-decoration:none"><p id = "signupopt">Sign Up</p></a>
+        <a id = "signup" href="../signup/index.html" style="text-decoration:none"><p id = "signupopt">Sign Up</p></a>
       </div>
       <br><br>
       <a href = "#"><button id = "login">Login</button></a>
       <br><br>
-      <a href="../forgotpassword/index.html" style="text-decoration:none"><p style="font-size:15px; margin-left:24%;">Forgot Password?</p></a>
+      <a id = "forgot-password" href="../forgotpassword/index.html" style="text-decoration:none"><p style="font-size:15px; margin-left:24%;">Forgot Password?</p></a>
     </div>
 
     <!-- Bootstrap core JavaScript
