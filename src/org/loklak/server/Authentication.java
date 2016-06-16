@@ -73,8 +73,11 @@ public class Authentication {
     }
     
     public boolean checkExpireTime(){
-    	if(this.json.has("expires_on") && this.json.getLong("expires_on") > Instant.now().getEpochSecond()) return true;
-    	return false;
+    	if(this.json.has("expires_on")){
+    		if(this.json.getLong("expires_on") > Instant.now().getEpochSecond()) return true;
+    		return false;
+    	}
+    	return true;
     }
     
     public Object get(String key){

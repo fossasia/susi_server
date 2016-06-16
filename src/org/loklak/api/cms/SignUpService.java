@@ -182,8 +182,8 @@ public class SignUpService extends AbstractAPIHandler implements APIHandler {
         
         if(sendEmail){
 	        String token = createRandomString(30);
-	        ClientCredential loginToken = new ClientCredential(ClientCredential.Type.login_token, token);
-	        Authentication tokenAuthentication = new Authentication(loginToken, DAO.authentication);
+	        ClientCredential access_token = new ClientCredential(ClientCredential.Type.access_token, token);
+	        Authentication tokenAuthentication = new Authentication(access_token, DAO.authentication);
 	        tokenAuthentication.setIdentity(identity);
 	        tokenAuthentication.setExpireTime(7 * 24 * 60 * 60);
 	        tokenAuthentication.put("one_time", true);
@@ -217,7 +217,7 @@ public class SignUpService extends AbstractAPIHandler implements APIHandler {
      */
     private String getVerificationMailContent(String token){
     	
-    	String verificationLink = DAO.getConfig("host.name", "http://localhost:9000") + "/api/signup.json?login_token="+token+"&validateEmail=true&request_session=true";
+    	String verificationLink = DAO.getConfig("host.name", "http://localhost:9000") + "/api/signup.json?access_token="+token+"&validateEmail=true&request_session=true";
     	
     	// get template file
     	String result;
