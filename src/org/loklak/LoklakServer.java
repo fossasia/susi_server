@@ -78,6 +78,7 @@ import org.loklak.api.cms.PasswordRecoveryService;
 import org.loklak.api.cms.LoginService;
 import org.loklak.api.cms.ProxyServlet;
 import org.loklak.api.cms.SignUpService;
+import org.loklak.api.cms.Sitemap;
 import org.loklak.api.cms.TopMenuService;
 import org.loklak.api.geo.GeocodeServlet;
 import org.loklak.api.iot.FossasiaPushServlet;
@@ -559,6 +560,7 @@ public class LoklakServer {
         ServletHolder assetServletHolder = new ServletHolder(AssetServlet.class);
         assetServletHolder.getRegistration().setMultipartConfig(multipartConfig);
         servletHandler.addServlet(assetServletHolder, "/api/asset");
+        servletHandler.addServlet(Sitemap.class, "/api/sitemap.xml");
         servletHandler.addServlet(ThreaddumpServlet.class, "/api/threaddump.txt");
         servletHandler.addServlet(MarkdownServlet.class, "/vis/markdown.gif");
         servletHandler.addServlet(MarkdownServlet.class, "/vis/markdown.gif.base64");
