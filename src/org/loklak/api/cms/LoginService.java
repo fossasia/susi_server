@@ -39,7 +39,7 @@ public class LoginService extends AbstractAPIHandler implements APIHandler {
 
     @Override
     public APIServiceLevel getCustomServiceLevel(Authorization rights) {
-        return APIServiceLevel.ADMIN;
+    	return APIServiceLevel.PUBLIC;
     }
 
     public String getAPIPath() {
