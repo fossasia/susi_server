@@ -8,14 +8,18 @@ $(document).ready(function()
 			data: { getParameters: true },
 			dataType: 'json',
 			success: function (response) {
-				if(!response.success){
-					$('#status-box').text(response.message);
-					$('#status-box').addClass("error");
-				}
-				else{
+				if(response.success){
 					regex = response.regex;
 					var regexTooltip = response.regexTooltip;
 					$('#pass').tooltip({'trigger':'focus', 'placement': 'left', 'title': regexTooltip});
+				}
+				else{
+					$('#status-box').text(response.message);
+					$('#status-box').addClass("error");
+					$('#email').prop( "disabled", true );
+					$('#pass').prop( "disabled", true );
+					$('#confirmpass').prop( "disabled", true );
+					$('#signup').prop( "disabled", true );
 				}
 			},
 			error: function (xhr, ajaxOptions, thrownError) {
