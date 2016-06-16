@@ -91,7 +91,7 @@ public class ClientHandshake extends AbstractAPIHandler implements APIHandler {
     		result.put("valid_seconds", valid_seconds);
     	}
         
-        result.put("access-token", token);
+        result.put("access_token", token);
     	
 		return result;
     }
