@@ -310,17 +310,17 @@ public abstract class AbstractAPIHandler extends HttpServlet implements APIHandl
     			throw new LoginException("Invalid credentials");
     		}
     	}
-    	else if (request.getParameter("login_token") != null){
-    		ClientCredential credential = new ClientCredential(ClientCredential.Type.login_token, request.getParameter("login_token"));
+    	else if (request.getParameter("access_token") != null){
+    		ClientCredential credential = new ClientCredential(ClientCredential.Type.access_token, request.getParameter("access_token"));
     		Authentication authentication = new Authentication(credential, DAO.authentication);
 			
     		
-    		// check if login_token is valid
+    		// check if access_token is valid
     		if(authentication.getIdentity() != null){
     			ClientIdentity identity = authentication.getIdentity();
     			
     			if(authentication.checkExpireTime()){
-    				Log.getLog().info("login for user: " + identity.getName() + " via token from host: " + request.getRemoteHost());
+    				Log.getLog().info("login for user: " + identity.getName() + " via access token from host: " + request.getRemoteHost());
     				
     				if("true".equals(request.getParameter("request_session"))){
             			request.getSession().setAttribute("identity",identity);
@@ -330,12 +330,13 @@ public abstract class AbstractAPIHandler extends HttpServlet implements APIHandl
     				}
     				return identity;
     			}
-    			Log.getLog().info("Invalid login try for user: " + identity.getName() + " via token from host: " + request.getRemoteHost());
-    			return null;
+    			Log.getLog().info("Invalid login try for user: " + identity.getName() + " via expired access token from host: " + request.getRemoteHost());
+    			authentication.delete();
+    			throw new LoginException("Invalid access token");
     		}
-    		Log.getLog().info("Invalid login token from host: " + request.getRemoteHost());
+    		Log.getLog().info("Invalid access token from host: " + request.getRemoteHost());
     		authentication.delete();
-    		return null;
+    		throw new LoginException("Invalid access token");
     	}
     	
         return getAnonymousIdentity(request);

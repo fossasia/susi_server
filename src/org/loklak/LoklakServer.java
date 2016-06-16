@@ -80,6 +80,7 @@ import org.loklak.api.cms.ProxyServlet;
 import org.loklak.api.cms.SignUpService;
 import org.loklak.api.cms.TopMenuService;
 import org.loklak.api.geo.GeocodeServlet;
+import org.loklak.api.handshake.ClientHandshake;
 import org.loklak.api.iot.FossasiaPushServlet;
 import org.loklak.api.iot.FreifunkNodePushServlet;
 import org.loklak.api.iot.GeoJsonPushServlet;
@@ -508,7 +509,8 @@ public class LoklakServer {
                 SignUpService.class,
                 LoginService.class,
                 PasswordRecoveryService.class,
-                TopMenuService.class};
+                TopMenuService.class,
+        		ClientHandshake.class};
         for (Class<? extends Servlet> service: services)
             try {
                 servletHandler.addServlet(service, ((APIHandler) (service.newInstance())).getAPIPath());
