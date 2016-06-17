@@ -91,7 +91,7 @@ public class SignUpService extends AbstractAPIHandler implements APIHandler {
     	}
     	
     	// is this a verification?
-    	if(post.get("validateEmail", false) && serviceLevel == APIServiceLevel.LIMITED){
+    	if(post.get("validateEmail", false) && serviceLevel.isGreaterThan(APIServiceLevel.PUBLIC)){
     		ClientCredential credential = new ClientCredential(ClientCredential.Type.passwd_login, rights.getIdentity().getName());
     		Authentication authentication = new Authentication(credential, DAO.authentication);
     		
