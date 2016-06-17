@@ -48,6 +48,8 @@ import org.jsoup.select.Elements;
 
 public class GenericScraper extends HttpServlet {
 
+	private static final long serialVersionUID = 4653635987712691127L;
+
 	@Override
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		doGet(request, response);
