@@ -146,6 +146,7 @@ public class DAO {
     public static JsonTray authentication;
     public static JsonTray authorization;
     public static JsonTray accounting;
+    public static JsonTray userRoles;
     public static Map<String, Accounting> accounting_temporary = new HashMap<>();
     
     public static enum IndexName {
@@ -229,6 +230,12 @@ public class DAO {
         Path authorization_path = settings_dir.resolve("authorization.json");
         authorization = new JsonTray(authorization_path.toFile(), 10000);
         OS.protectPath(authorization_path);
+        Path accounting_path = settings_dir.resolve("accounting.json");
+        accounting = new JsonTray(accounting_path.toFile(), 10000);
+        OS.protectPath(accounting_path);
+        Path userRoles_path = settings_dir.resolve("userRoles.json");
+        userRoles = new JsonTray(userRoles_path.toFile(), 10000);
+        OS.protectPath(userRoles_path);
         
         // open index
         Path index_dir = dataPath.resolve("index");

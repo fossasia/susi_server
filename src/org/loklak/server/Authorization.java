@@ -35,6 +35,8 @@ public class Authorization {
     private JSONObject json;
     private Accounting accounting;
     private ClientIdentity identity;
+    private APIServiceLevel userRole;
+    private String className;
     
     /**
      * create a new authorization object. The given json object must be taken
@@ -53,6 +55,15 @@ public class Authorization {
 	        }
     	}
     	else this.json = new JSONObject();
+    	
+    	if(this.json.has("userRole")){
+    		try{
+    			userRole = APIServiceLevel.valueOf(this.json.getString("userRole"));
+    		} catch(Exception e){
+    			userRole = APIServiceLevel.ANONYMOUS;
+    		}
+    	}
+    	else userRole = APIServiceLevel.ANONYMOUS;
     	
         this.parent = parent;
         this.accounting = null;
@@ -116,6 +127,14 @@ public class Authorization {
     
     public ClientIdentity getIdentity() {
         return identity;
+    }
+    
+    public APIServiceLevel getUserRole(){
+    	return userRole;
+    }
+    
+    public void setClass(String name){
+    	this.className = name;
     }
 
 }

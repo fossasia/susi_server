@@ -22,9 +22,11 @@ package org.loklak.server;
 
 public enum APIServiceLevel {
 
-    ADMIN,      // functions that modify the behavior of the server and the server's services
-    LIMITED,    // functions that are available in the public, but are limited in some way
-    PRODUCT,    // limited functions which can be unlimited if the user is granted that (by any way)
-    PUBLIC      // functions that are public and unlimited
+    ADMIN,				// is allowed to do everything (currently: localhost access), including assignment of rights
+    MODERATOR,			// has rights to use all services and to assign user rights, up to moderation rights
+    SERVICE_MANAGER,	// has right to use all services and change service level settings, also for specific users
+    USER,				// has rights as assigned
+    WHITELIST_ONLY,		// has rights like ANONYMOUS, but can be assigned individual rights
+    ANONYMOUS			// has lowest rights, public
     
 }

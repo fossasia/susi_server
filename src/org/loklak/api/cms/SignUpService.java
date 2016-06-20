@@ -48,7 +48,7 @@ public class SignUpService extends AbstractAPIHandler implements APIHandler {
 
     @Override
     public APIServiceLevel getDefaultServiceLevel() {
-        return APIServiceLevel.PUBLIC;
+        return APIServiceLevel.ANONYMOUS;
     }
 
     @Override
@@ -56,9 +56,9 @@ public class SignUpService extends AbstractAPIHandler implements APIHandler {
         if(rights.isAdmin()){
         	return APIServiceLevel.ADMIN;
         } else if(rights.getIdentity() != null){
-        	return APIServiceLevel.LIMITED;
+        	return APIServiceLevel.USER;
         }
-        return APIServiceLevel.PUBLIC;
+        return APIServiceLevel.ANONYMOUS;
     }
 
     public String getAPIPath() {
@@ -84,7 +84,7 @@ public class SignUpService extends AbstractAPIHandler implements APIHandler {
     	}
     	
     	// is this a verification?
-    	if(post.get("validateEmail", false) && serviceLevel == APIServiceLevel.LIMITED){
+    	if(post.get("validateEmail", false) && serviceLevel == APIServiceLevel.USER){
     		ClientCredential credential = new ClientCredential(ClientCredential.Type.passwd_login, rights.getIdentity().getName());
     		Authentication authentication = new Authentication(credential, DAO.authentication);
     		
@@ -224,4 +224,10 @@ public class SignUpService extends AbstractAPIHandler implements APIHandler {
     	
     	return result;
     }
+
+	@Override
+	public JSONObject getDefaultUserRights(APIServiceLevel serviceLevel) {
+		// TODO Auto-generated method stub
+		return null;
+	}
 }

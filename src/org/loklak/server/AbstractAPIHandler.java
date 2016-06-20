@@ -67,6 +67,9 @@ public abstract class AbstractAPIHandler extends HttpServlet implements APIHandl
 
     @Override
     public abstract APIServiceLevel getCustomServiceLevel(Authorization auth);
+    
+    @Override
+    public abstract JSONObject getDefaultUserRights(APIServiceLevel serviceLevel);
 
     @Override
     public JSONObject[] service(Query call, Authorization rights) throws APIException {
@@ -127,8 +130,10 @@ public abstract class AbstractAPIHandler extends HttpServlet implements APIHandl
         
         // user authorization: we use the identification of the user to get the assigned authorization
         Authorization authorization = new Authorization(identity, DAO.authorization);
+        
+        authorization.setClass(this.getClass().getCanonicalName());
 
-        // user accounting: we maintain static and persistent user data; we again search the accounts using the usder identity string
+        // user accounting: we maintain static and persistent user data; we again search the accounts using the user identity string
         //JSONObject accounting_persistent_obj = DAO.accounting_persistent.has(user_id) ? DAO.accounting_persistent.getJSONObject(anon_id) : DAO.accounting_persistent.put(user_id, new JSONObject()).getJSONObject(user_id);
         Accounting accounting_temporary = DAO.accounting_temporary.get(identity.toString());
         if (accounting_temporary == null) {

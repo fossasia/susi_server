@@ -52,12 +52,12 @@ public class ConsoleService extends AbstractAPIHandler implements APIHandler {
 
     @Override
     public APIServiceLevel getDefaultServiceLevel() {
-        return APIServiceLevel.PUBLIC;
+        return APIServiceLevel.ANONYMOUS;
     }
 
     @Override
     public APIServiceLevel getCustomServiceLevel(Authorization rights) {
-        return APIServiceLevel.PUBLIC;
+        return APIServiceLevel.ANONYMOUS;
     }
 
     public String getAPIPath() {
@@ -232,5 +232,11 @@ public class ConsoleService extends AbstractAPIHandler implements APIHandler {
         
         return console(q);
     }
+
+	@Override
+	public JSONObject getDefaultUserRights(APIServiceLevel serviceLevel) {
+		// TODO Auto-generated method stub
+		return null;
+	}
     
 }

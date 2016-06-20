@@ -42,7 +42,7 @@ public class PasswordRecoveryService extends AbstractAPIHandler implements APIHa
 
 	@Override
 	public APIServiceLevel getDefaultServiceLevel() {
-		return APIServiceLevel.PUBLIC;
+		return APIServiceLevel.ANONYMOUS;
 	}
 
 	@Override
@@ -74,6 +74,12 @@ public class PasswordRecoveryService extends AbstractAPIHandler implements APIHa
 			result.put("reason", e.toString());
 		}
 		return result;
+	}
+
+	@Override
+	public JSONObject getDefaultUserRights(APIServiceLevel serviceLevel) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 }

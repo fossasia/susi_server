@@ -27,6 +27,8 @@ public interface APIHandler {
 
     public APIServiceLevel getDefaultServiceLevel();
     
+    public JSONObject getDefaultUserRights(APIServiceLevel serviceLevel);
+    
     public String getAPIPath();
     
     public APIServiceLevel getCustomServiceLevel(Authorization httpaccount);
