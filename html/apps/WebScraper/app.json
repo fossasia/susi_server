@@ -1,0 +1,18 @@
+{
+  "@context":"http://schema.org",
+  "@type":"SoftwareApplication",
+  "permissions":"/api/genericscraper.json",
+  "name":"WebScraper",
+  "headline":"WebScraper",
+  "alternativeHeadline":"Application which converts web pages into structured data",
+  "applicationCategory":"Generic Scraper API",
+  "applicationSubCategory":"JSON Object Retrieval",
+  "operatingSystem":"http://loklak.org",
+  "author":{
+    "@type":"Person",
+    "name":"Damini Satya",
+    "email":"daminisatya@gmail.com",
+    "url":"https://github.com/daminisatya",
+    "sameAs":"https://github.com/daminisatya"
+  }
+}

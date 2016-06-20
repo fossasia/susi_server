@@ -35,9 +35,9 @@ import org.loklak.server.Query;
 
 public class XMLServlet extends HttpServlet {
 
-	private static final long serialVersionUID = 8578478303032749879L;
-
-	@Override
+    private static final long serialVersionUID = 8578478303032749879L;
+	
+    @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         doGet(request, response);
     }

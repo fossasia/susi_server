@@ -79,8 +79,10 @@ import org.loklak.api.cms.PasswordRecoveryService;
 import org.loklak.api.cms.LoginService;
 import org.loklak.api.cms.ProxyServlet;
 import org.loklak.api.cms.SignUpService;
+import org.loklak.api.cms.Sitemap;
 import org.loklak.api.cms.TopMenuService;
 import org.loklak.api.geo.GeocodeServlet;
+import org.loklak.api.handshake.ClientHandshake;
 import org.loklak.api.iot.FossasiaPushServlet;
 import org.loklak.api.iot.FreifunkNodePushServlet;
 import org.loklak.api.iot.GeoJsonPushServlet;
@@ -97,6 +99,7 @@ import org.loklak.api.search.ShortlinkFromTweetServlet;
 import org.loklak.api.search.SuggestServlet;
 import org.loklak.api.search.ConsoleService;
 import org.loklak.api.search.UserServlet;
+import org.loklak.api.search.GenericScraper;
 import org.loklak.api.tools.CSVServlet;
 import org.loklak.api.tools.XMLServlet;
 import org.loklak.api.vis.MapServlet;
@@ -509,7 +512,8 @@ public class LoklakServer {
                 SignUpService.class,
                 LoginService.class,
                 PasswordRecoveryService.class,
-                TopMenuService.class};
+                TopMenuService.class,
+        		ClientHandshake.class};
         for (Class<? extends Servlet> service: services)
             try {
                 servletHandler.addServlet(service, ((APIHandler) (service.newInstance())).getAPIPath());
@@ -545,6 +549,7 @@ public class LoklakServer {
         servletHandler.addServlet(ProxyServlet.class, "/api/proxy.png");
         servletHandler.addServlet(ProxyServlet.class, "/api/proxy.jpg");
         servletHandler.addServlet(ValidateServlet.class, "/api/validate.json");
+        servletHandler.addServlet(GenericScraper.class, "/api/genericscraper.json");
         ServletHolder pushServletHolder = new ServletHolder(PushServlet.class);
         pushServletHolder.getRegistration().setMultipartConfig(multipartConfig);
         servletHandler.addServlet(pushServletHolder, "/api/push.json");
@@ -559,6 +564,7 @@ public class LoklakServer {
         ServletHolder assetServletHolder = new ServletHolder(AssetServlet.class);
         assetServletHolder.getRegistration().setMultipartConfig(multipartConfig);
         servletHandler.addServlet(assetServletHolder, "/api/asset");
+        servletHandler.addServlet(Sitemap.class, "/api/sitemap.xml");
         servletHandler.addServlet(ThreaddumpServlet.class, "/api/threaddump.txt");
         servletHandler.addServlet(MarkdownServlet.class, "/vis/markdown.gif");
         servletHandler.addServlet(MarkdownServlet.class, "/vis/markdown.gif.base64");

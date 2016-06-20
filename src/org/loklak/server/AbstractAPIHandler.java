@@ -29,6 +29,7 @@ import java.time.Instant;
 import java.util.Base64;
 import java.util.Random;
 
+import javax.security.auth.login.LoginException;
 import javax.servlet.ServletException;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServlet;
@@ -67,9 +68,6 @@ public abstract class AbstractAPIHandler extends HttpServlet implements APIHandl
 
     @Override
     public abstract APIServiceLevel getCustomServiceLevel(Authorization auth);
-    
-    @Override
-    public abstract JSONObject getDefaultUserRights(APIServiceLevel serviceLevel);
 
     @Override
     public JSONObject[] service(Query call, Authorization rights) throws APIException {
@@ -126,14 +124,23 @@ public abstract class AbstractAPIHandler extends HttpServlet implements APIHandl
         
         
         // user identification
-        ClientIdentity identity = getIdentity(request, response);
+        ClientIdentity identity;
+		try {
+			identity = getIdentity(request, response);
+		} catch (LoginException e) {
+			response.sendError(422, e.getMessage());
+			return;
+		}
         
         // user authorization: we use the identification of the user to get the assigned authorization
         Authorization authorization = new Authorization(identity, DAO.authorization);
-        
-        authorization.setClass(this.getClass().getCanonicalName());
 
-        // user accounting: we maintain static and persistent user data; we again search the accounts using the user identity string
+        if(getCustomServiceLevel(authorization).isSmallerThan(serviceLevel)){
+        	response.sendError(401, "Unauthorized");
+			return;
+        }
+        
+        // user accounting: we maintain static and persistent user data; we again search the accounts using the usder identity string
         //JSONObject accounting_persistent_obj = DAO.accounting_persistent.has(user_id) ? DAO.accounting_persistent.getJSONObject(anon_id) : DAO.accounting_persistent.put(user_id, new JSONObject()).getJSONObject(user_id);
         Accounting accounting_temporary = DAO.accounting_temporary.get(identity.toString());
         if (accounting_temporary == null) {
@@ -187,7 +194,7 @@ public abstract class AbstractAPIHandler extends HttpServlet implements APIHandl
      * Checks a request for valid login data, send via cookie or parameters
      * @return user identity if some login is active, anonymous identity otherwise
      */
-    private ClientIdentity getIdentity(HttpServletRequest request, HttpServletResponse response){
+    private ClientIdentity getIdentity(HttpServletRequest request, HttpServletResponse response) throws LoginException{
     	
     	// check for login information
 		if("true".equals(request.getParameter("logout"))){	// logout if requested
@@ -261,9 +268,9 @@ public abstract class AbstractAPIHandler extends HttpServlet implements APIHandl
 						String passwordHash = authentication.getString("passwordHash");
 						String salt = authentication.getString("salt");
 						
+	    				ClientIdentity identity = authentication.getIdentity();
+						
 		    			if(getHash(password, salt).equals(passwordHash)){
-		    				
-		    				ClientIdentity identity = authentication.getIdentity();
 		    				
 		    				// only create a cookie or session if requested (by login page)
 		    				if("true".equals(request.getParameter("request_cookie"))){
@@ -289,32 +296,36 @@ public abstract class AbstractAPIHandler extends HttpServlet implements APIHandl
 		            			request.getSession().setAttribute("identity",identity);
 		            		}
 		    				
-		    				Log.getLog().info("login for user: " + credential.getName() + " via passwd from host: " + request.getRemoteHost());
+		    				Log.getLog().info("login for user: " + identity.getName() + " via passwd from host: " + request.getRemoteHost());
 		            		
 		            		return identity;
 		    			}
-		    			Log.getLog().info("Invalid login try for user: " + credential.getName() + " via passwd from host: " + request.getRemoteHost());
+		    			Log.getLog().info("Invalid login try for user: " + identity.getName() + " via passwd from host: " + request.getRemoteHost());
+		    			throw new LoginException("Invalid credentials");
 	    			}
 	    			Log.getLog().info("Invalid login try for user: " + credential.getName() + " from host: " + request.getRemoteHost() + " : password or salt missing in database");
+	    			throw new LoginException("Invalid credentials");
     			}
     			Log.getLog().info("Invalid login try for user: " + credential.getName() + " from host: " + request.getRemoteHost() + " : user not activated yet");
+    			throw new LoginException("User not yet activated");
     		}
     		else{
     			authentication.delete();
     			Log.getLog().info("Invalid login try for unknown user: " + credential.getName() + " via passwd from host: " + request.getRemoteHost());
+    			throw new LoginException("Invalid credentials");
     		}
     	}
-    	else if (request.getParameter("login_token") != null){
-    		ClientCredential credential = new ClientCredential(ClientCredential.Type.login_token, request.getParameter("login_token"));
+    	else if (request.getParameter("access_token") != null){
+    		ClientCredential credential = new ClientCredential(ClientCredential.Type.access_token, request.getParameter("access_token"));
     		Authentication authentication = new Authentication(credential, DAO.authentication);
 			
     		
-    		// check if login_token is valid
+    		// check if access_token is valid
     		if(authentication.getIdentity() != null){
     			ClientIdentity identity = authentication.getIdentity();
     			
     			if(authentication.checkExpireTime()){
-    				Log.getLog().info("login for user: " + identity.getName() + " via token from host: " + request.getRemoteHost());
+    				Log.getLog().info("login for user: " + identity.getName() + " via access token from host: " + request.getRemoteHost());
     				
     				if("true".equals(request.getParameter("request_session"))){
             			request.getSession().setAttribute("identity",identity);
@@ -324,10 +335,13 @@ public abstract class AbstractAPIHandler extends HttpServlet implements APIHandl
     				}
     				return identity;
     			}
-    			Log.getLog().info("Invalid login try for user: " + identity.getName() + " via token from host: " + request.getRemoteHost());
+    			Log.getLog().info("Invalid login try for user: " + identity.getName() + " via expired access token from host: " + request.getRemoteHost());
+    			authentication.delete();
+    			throw new LoginException("Invalid access token");
     		}
-    		Log.getLog().info("Invalid login token from host: " + request.getRemoteHost());
+    		Log.getLog().info("Invalid access token from host: " + request.getRemoteHost());
     		authentication.delete();
+    		throw new LoginException("Invalid access token");
     	}
     	
         return getAnonymousIdentity(request);
