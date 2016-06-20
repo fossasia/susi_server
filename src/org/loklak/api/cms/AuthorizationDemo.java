@@ -20,44 +20,25 @@
 package org.loklak.api.cms;
 
 import org.json.JSONObject;
-import org.loklak.server.APIException;
-import org.loklak.server.APIHandler;
-import org.loklak.server.APIServiceLevel;
-import org.loklak.server.AbstractAPIHandler;
-import org.loklak.server.Authorization;
-import org.loklak.server.Query;
+import org.loklak.server.*;
+import org.loklak.server.BaseUserRole;
 
 public class AuthorizationDemo extends AbstractAPIHandler implements APIHandler {
    
     private static final long serialVersionUID = 8678478303032749879L;
 
     @Override
-    public APIServiceLevel getDefaultServiceLevel() {
-        return APIServiceLevel.ANONYMOUS;
-    }
-
-    @Override
-    public APIServiceLevel getCustomServiceLevel(Authorization rights) {
-        if(rights.isAdmin()){
-        	return APIServiceLevel.ADMIN;
-        } else if(rights.getIdentity() != null){
-        	return APIServiceLevel.USER;
-        }
-        return APIServiceLevel.ANONYMOUS;
-    }
+    public BaseUserRole getMinimalBaseUserRole() { return BaseUserRole.ANONYMOUS; }
 
     public String getAPIPath() {
         return "/api/authorization-demo.json";
     }
-    
-    @Override
-    public JSONObject getDefaultUserRights(APIServiceLevel serviceLevel){
+
+    public JSONObject getDefaultUserRights(BaseUserRole serviceLevel){
     	JSONObject result = new JSONObject();
     	
     	switch(serviceLevel){
     		case ADMIN:
-    		case MODERATOR:
-    		case SERVICE_MANAGER:
     		case USER:
     			result.put("download_allowed", true);
     			break;

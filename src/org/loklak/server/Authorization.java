@@ -35,14 +35,14 @@ public class Authorization {
     private JSONObject json;
     private Accounting accounting;
     private ClientIdentity identity;
-    private APIServiceLevel userRole;
+    private BaseUserRole baseUserRole;
     private String className;
     
     /**
      * create a new authorization object. The given json object must be taken
      * as value from a parent json. If the parent json is a JsonFile, then that
      * file can be handed over as well to enable persistency.
-     * @param json object for storage of the authorization
+     * @param identity
      * @param parent the parent file or null if there is no parent file (no persistency)
      */
     public Authorization(ClientIdentity identity, JsonTray parent) {
@@ -58,12 +58,12 @@ public class Authorization {
     	
     	if(this.json.has("userRole")){
     		try{
-    			userRole = APIServiceLevel.valueOf(this.json.getString("userRole"));
+    			baseUserRole = BaseUserRole.valueOf(this.json.getString("userRole"));
     		} catch(Exception e){
-    			userRole = APIServiceLevel.ANONYMOUS;
+    			baseUserRole = BaseUserRole.ANONYMOUS;
     		}
     	}
-    	else userRole = APIServiceLevel.ANONYMOUS;
+    	else baseUserRole = BaseUserRole.ANONYMOUS;
     	
         this.parent = parent;
         this.accounting = null;
@@ -129,8 +129,8 @@ public class Authorization {
         return identity;
     }
     
-    public APIServiceLevel getUserRole(){
-    	return userRole;
+    public BaseUserRole getBaseUserRole(){
+    	return baseUserRole;
     }
     
     public void setClass(String name){

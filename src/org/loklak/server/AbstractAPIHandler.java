@@ -64,10 +64,7 @@ public abstract class AbstractAPIHandler extends HttpServlet implements APIHandl
     }
 
     @Override
-    public abstract APIServiceLevel getDefaultServiceLevel();
-
-    @Override
-    public abstract APIServiceLevel getCustomServiceLevel(Authorization auth);
+    public abstract BaseUserRole getMinimalBaseUserRole();
 
     @Override
     public JSONObject[] service(Query call, Authorization rights) throws APIException {
@@ -118,9 +115,9 @@ public abstract class AbstractAPIHandler extends HttpServlet implements APIHandl
     private void process(HttpServletRequest request, HttpServletResponse response, Query query) throws ServletException, IOException {
         
         // basic protection
-        APIServiceLevel serviceLevel = getDefaultServiceLevel();
+        BaseUserRole serviceLevel = getMinimalBaseUserRole();
         if (query.isDoS_blackout()) {response.sendError(503, "your request frequency is too high"); return;} // DoS protection
-        if (serviceLevel == APIServiceLevel.ADMIN && !query.isLocalhostAccess()) {response.sendError(503, "access only allowed from localhost, your request comes from " + query.getClientHost()); return;} // danger! do not remove this!
+        if (serviceLevel == BaseUserRole.ADMIN && !query.isLocalhostAccess()) {response.sendError(503, "access only allowed from localhost, your request comes from " + query.getClientHost()); return;} // danger! do not remove this!
         
         
         // user identification
@@ -135,7 +132,7 @@ public abstract class AbstractAPIHandler extends HttpServlet implements APIHandl
         // user authorization: we use the identification of the user to get the assigned authorization
         Authorization authorization = new Authorization(identity, DAO.authorization);
 
-        if(getCustomServiceLevel(authorization).isSmallerThan(serviceLevel)){
+        if(authorization.getBaseUserRole().ordinal() < serviceLevel.ordinal()){
         	response.sendError(401, "Unauthorized");
 			return;
         }
