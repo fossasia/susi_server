@@ -25,10 +25,9 @@ import org.json.JSONObject;
 import org.loklak.LoklakEmailHandler;
 import org.loklak.server.APIException;
 import org.loklak.server.APIHandler;
-import org.loklak.server.APIServiceLevel;
 import org.loklak.server.AbstractAPIHandler;
 import org.loklak.server.Authorization;
-
+import org.loklak.server.BaseUserRole;
 import org.loklak.server.Query;
 
 public class PasswordRecoveryService extends AbstractAPIHandler implements APIHandler {
@@ -41,14 +40,7 @@ public class PasswordRecoveryService extends AbstractAPIHandler implements APIHa
 	}
 
 	@Override
-	public APIServiceLevel getDefaultServiceLevel() {
-		return APIServiceLevel.ANONYMOUS;
-	}
-
-	@Override
-	public APIServiceLevel getCustomServiceLevel(Authorization auth) {
-		return APIServiceLevel.ADMIN;
-	}
+	public BaseUserRole getMinimalBaseUserRole() { return BaseUserRole.ANONYMOUS; }
 
 	@Override
 	public JSONObject serviceImpl(Query call, Authorization rights) throws APIException {
@@ -75,11 +67,4 @@ public class PasswordRecoveryService extends AbstractAPIHandler implements APIHa
 		}
 		return result;
 	}
-
-	@Override
-	public JSONObject getDefaultUserRights(APIServiceLevel serviceLevel) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
 }
