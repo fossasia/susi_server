@@ -1,6 +1,6 @@
 You just signed up for Loklak!
 
-To finish the process, you have to verificate you email address by clicking on the following link:
+To finish the process, you have to verify you email address by clicking on the following link:
 
 %VERIFICATION-LINK%
 

@@ -19,21 +19,28 @@
 
 package org.loklak.api.cms;
 
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
+import java.nio.file.Paths;
 import org.json.JSONObject;
 import org.loklak.LoklakEmailHandler;
+import org.loklak.data.DAO;
 import org.loklak.server.APIException;
 import org.loklak.server.APIHandler;
 import org.loklak.server.APIServiceLevel;
 import org.loklak.server.AbstractAPIHandler;
+import org.loklak.server.Authentication;
 import org.loklak.server.Authorization;
-
+import org.loklak.server.ClientCredential;
+import org.loklak.server.ClientIdentity;
 import org.loklak.server.Query;
+import org.loklak.tools.IO;
 
 public class PasswordRecoveryService extends AbstractAPIHandler implements APIHandler {
 
 	private static final long serialVersionUID = 3515757746392011162L;
+	private static String resetLinkPlaceholder = "%RESET-LINK%";
 
 	@Override
 	public String getAPIPath() {
@@ -54,6 +61,28 @@ public class PasswordRecoveryService extends AbstractAPIHandler implements APIHa
 	public JSONObject serviceImpl(Query call, Authorization rights) throws APIException {
 		JSONObject result = new JSONObject();
 
+		// check if token exists
+
+		if (call.get("getParameters", false) && call.get("token", null) != null) {
+			ClientCredential credentialcheck = new ClientCredential(ClientCredential.Type.resetpass_token,
+					call.get("token", null));
+			if (DAO.passwordreset.has(credentialcheck.toString())) {
+				Authentication authentication = new Authentication(credentialcheck, DAO.passwordreset);
+				if (authentication.checkExpireTime()) {
+					result.put("status", "success");
+					result.put("reason", authentication.getIdentity().getName());
+					return result;
+				}
+				result.put("status", "error");
+				result.put("reason", "Expired token");
+				authentication.delete();
+				return result;
+			}
+			result.put("status", "error");
+			result.put("reason", "Invalid token");
+			return result;
+		}
+
 		String usermail;
 		try {
 			usermail = URLDecoder.decode(call.get("forgotemail", null), "UTF-8");
@@ -62,17 +91,49 @@ public class PasswordRecoveryService extends AbstractAPIHandler implements APIHa
 			result.put("reason", "malformed query");
 			return result;
 		}
-		
+
+		ClientCredential credential = new ClientCredential(ClientCredential.Type.passwd_login, usermail);
+		ClientIdentity identity = new ClientIdentity(ClientIdentity.Type.email, credential.getName());
+
+		if (!DAO.authentication.has(credential.toString())) {
+			result.put("status", "error");
+			result.put("reason", "email does not exist");
+			return result;
+		}
+
+		String token = createRandomString(30);
+		ClientCredential tokenkey = new ClientCredential(ClientCredential.Type.resetpass_token, token);
+		Authentication resetauth = new Authentication(tokenkey, DAO.passwordreset);
+		resetauth.setIdentity(identity);
+		resetauth.setExpireTime(7 * 24 * 60 * 60);
+		resetauth.put("one_time", true);
+
 		String subject = "Password Recovery";
-		String body = "Recover password using this link";
 		try {
-			LoklakEmailHandler.sendEmail(usermail, subject, body);
+			LoklakEmailHandler.sendEmail(usermail, subject, getVerificationMailContent(token));
 			result.put("status", "ok");
 			result.put("reason", "ok");
-		} catch(Exception e){
+		} catch (Exception e) {
 			result.put("status", "error");
 			result.put("reason", e.toString());
 		}
+		return result;
+	}
+
+	private String getVerificationMailContent(String token) {
+
+		String verificationLink = DAO.getConfig("host.name", "http://localhost:9000") + "/apps/resetpass/index.html?token="
+				+ token;
+		String result;
+		try {
+			result = IO.readFileCached(Paths.get(DAO.conf_dir + "/templates/reset-mail.txt"));
+		} catch (IOException e) {
+			result = "";
+		}
+
+		result = result.contains(resetLinkPlaceholder) ? result.replace(resetLinkPlaceholder, verificationLink)
+				: verificationLink;
+
 		return result;
 	}
 

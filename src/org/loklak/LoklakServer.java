@@ -75,6 +75,7 @@ import org.loklak.api.cms.AppsService;
 import org.loklak.api.cms.AssetServlet;
 import org.loklak.api.cms.DumpDownloadServlet;
 import org.loklak.api.cms.PasswordRecoveryService;
+import org.loklak.api.cms.PasswordResetService;
 import org.loklak.api.cms.LoginService;
 import org.loklak.api.cms.ProxyServlet;
 import org.loklak.api.cms.SignUpService;
@@ -511,7 +512,8 @@ public class LoklakServer {
                 LoginService.class,
                 PasswordRecoveryService.class,
                 TopMenuService.class,
-        		ClientHandshake.class};
+        		ClientHandshake.class,
+        		PasswordResetService.class};
         for (Class<? extends Servlet> service: services)
             try {
                 servletHandler.addServlet(service, ((APIHandler) (service.newInstance())).getAPIPath());
