@@ -70,17 +70,10 @@ import org.loklak.objects.ResultList;
 import org.loklak.objects.SourceType;
 import org.loklak.objects.Timeline;
 import org.loklak.objects.UserEntry;
-import org.loklak.server.Accounting;
-import org.loklak.server.Query;
-import org.loklak.server.Settings;
+import org.loklak.server.*;
 import org.loklak.tools.DateParser;
 import org.loklak.tools.OS;
-import org.loklak.tools.storage.JsonDataset;
-import org.loklak.tools.storage.JsonReader;
-import org.loklak.tools.storage.JsonRepository;
-import org.loklak.tools.storage.JsonStreamReader;
-import org.loklak.tools.storage.JsonTray;
-import org.loklak.tools.storage.JsonFactory;
+import org.loklak.tools.storage.*;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
@@ -146,7 +139,7 @@ public class DAO {
     public static JsonTray authentication;
     public static JsonTray authorization;
     public static JsonTray accounting;
-    public static JsonTray userRoles;
+    public static UserRoles userRoles;
     public static Map<String, Accounting> accounting_temporary = new HashMap<>();
     
     public static enum IndexName {
@@ -155,7 +148,8 @@ public class DAO {
     
     /**
      * initialize the DAO
-     * @param datadir the path to the data directory
+     * @param configMap
+     * @param dataPath the path to the data directory
      */
     public static void init(Map<String, String> configMap, Path dataPath) throws Exception{
 
@@ -234,8 +228,10 @@ public class DAO {
         accounting = new JsonTray(accounting_path.toFile(), 10000);
         OS.protectPath(accounting_path);
         Path userRoles_path = settings_dir.resolve("userRoles.json");
-        userRoles = new JsonTray(userRoles_path.toFile(), 10000);
+        JsonFile userRolesStorage = new JsonFile(userRoles_path.toFile());
         OS.protectPath(userRoles_path);
+
+        userRoles = new UserRoles(userRolesStorage);
         
         // open index
         Path index_dir = dataPath.resolve("index");
@@ -671,7 +667,7 @@ public class DAO {
      * Store an account together with a user into the search index
      * This method is synchronized to prevent concurrent IO caused by this call.
      * @param a an account 
-     * @param u a user
+     * @param dump
      * @return true if the record was stored because it did not exist, false if it was not stored because the record existed already
      */
     public static boolean writeAccount(AccountEntry a, boolean dump) {
@@ -760,7 +756,6 @@ public class DAO {
          * @param order_field - the field to order the results, i.e. Timeline.Order.CREATED_AT
          * @param timezoneOffset - an offset in minutes that is applied on dates given in the query of the form since:date until:date
          * @param resultCount - the number of messages in the result; can be zero if only aggregations are wanted
-         * @param dateHistogrammInterval - the date aggregation interval or null, if no aggregation wanted
          * @param aggregationLimit - the maximum count of facet entities, not search results
          * @param aggregationFields - names of the aggregation fields. If no aggregation is wanted, pass no (zero) field(s)
          */

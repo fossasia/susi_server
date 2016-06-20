@@ -22,6 +22,8 @@ package org.loklak.server;
 import org.json.JSONObject;
 import org.loklak.tools.storage.JsonTray;
 
+import javax.annotation.Nonnull;
+
 /**
  * Authorization asks: what is the user allowed to do? This class holds user rights.
  * An object instance of this class is handed to each serivce call to enable that
@@ -36,7 +38,6 @@ public class Authorization {
     private Accounting accounting;
     private ClientIdentity identity;
     private BaseUserRole baseUserRole;
-    private String className;
     
     /**
      * create a new authorization object. The given json object must be taken
@@ -45,7 +46,7 @@ public class Authorization {
      * @param identity
      * @param parent the parent file or null if there is no parent file (no persistency)
      */
-    public Authorization(ClientIdentity identity, JsonTray parent) {
+    public Authorization(@Nonnull ClientIdentity identity, JsonTray parent) {
     	if(parent != null){
 	    	if (parent.has(identity.toString())) {
 	    		this.json = parent.getJSONObject(identity.toString());
@@ -132,9 +133,4 @@ public class Authorization {
     public BaseUserRole getBaseUserRole(){
     	return baseUserRole;
     }
-    
-    public void setClass(String name){
-    	this.className = name;
-    }
-
 }
