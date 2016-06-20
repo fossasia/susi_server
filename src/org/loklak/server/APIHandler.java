@@ -29,6 +29,8 @@ public interface APIHandler {
 
     public JSONObject getDefaultPermissions(BaseUserRole baseUserRole);
     
+    public JSONObject getDefaultUserRights(APIServiceLevel serviceLevel);
+    
     public String getAPIPath();
 
     public JSONObject[] service(Query call, Authorization rights) throws APIException;
