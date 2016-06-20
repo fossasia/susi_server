@@ -109,5 +109,11 @@ public class AccountService extends AbstractAPIHandler implements APIHandler {
         
         return m;
     }
+
+	@Override
+	public JSONObject getDefaultUserRights(APIServiceLevel serviceLevel) {
+		// TODO Auto-generated method stub
+		return null;
+	}
     
 }

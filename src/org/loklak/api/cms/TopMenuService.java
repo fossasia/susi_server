@@ -16,12 +16,12 @@ public class TopMenuService extends AbstractAPIHandler implements APIHandler {
 
     @Override
     public APIServiceLevel getDefaultServiceLevel() {
-        return APIServiceLevel.PUBLIC;
+        return APIServiceLevel.ANONYMOUS;
     }
 
     @Override
     public APIServiceLevel getCustomServiceLevel(Authorization auth) {
-        return APIServiceLevel.PUBLIC;
+        return APIServiceLevel.ANONYMOUS;
     }
 
     @Override
@@ -51,5 +51,11 @@ public class TopMenuService extends AbstractAPIHandler implements APIHandler {
         json.put("$EXPIRES", 600);
         return json;
     }
+
+	@Override
+	public JSONObject getDefaultUserRights(APIServiceLevel serviceLevel) {
+		// TODO Auto-generated method stub
+		return null;
+	}
     
 }

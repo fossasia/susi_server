@@ -147,6 +147,7 @@ public class DAO {
     public static JsonTray authorization;
     public static JsonTray accounting;
     public static JsonTray passwordreset;
+    public static JsonTray userRoles;
     public static Map<String, Accounting> accounting_temporary = new HashMap<>();
     
     public static enum IndexName {
@@ -233,6 +234,13 @@ public class DAO {
         Path passwordreset_path = settings_dir.resolve("passwordreset.json");
         passwordreset = new JsonTray(passwordreset_path.toFile(), 10000);
         OS.protectPath(passwordreset_path);
+        Path accounting_path = settings_dir.resolve("accounting.json");
+        accounting = new JsonTray(accounting_path.toFile(), 10000);
+        OS.protectPath(accounting_path);
+        Path userRoles_path = settings_dir.resolve("userRoles.json");
+        userRoles = new JsonTray(userRoles_path.toFile(), 10000);
+        OS.protectPath(userRoles_path);
+
         // open index
         Path index_dir = dataPath.resolve("index");
         if (index_dir.toFile().exists()) OS.protectPath(index_dir); // no other permissions to this path

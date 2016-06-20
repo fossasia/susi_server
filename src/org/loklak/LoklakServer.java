@@ -73,6 +73,7 @@ import org.loklak.api.admin.ThreaddumpServlet;
 import org.loklak.api.cms.AccountService;
 import org.loklak.api.cms.AppsService;
 import org.loklak.api.cms.AssetServlet;
+import org.loklak.api.cms.AuthorizationDemo;
 import org.loklak.api.cms.DumpDownloadServlet;
 import org.loklak.api.cms.PasswordRecoveryService;
 import org.loklak.api.cms.PasswordResetService;
@@ -506,6 +507,7 @@ public class LoklakServer {
         @SuppressWarnings("unchecked")
         Class<? extends Servlet>[] services = new Class[]{
                 AppsService.class,
+                AuthorizationDemo.class,
                 HelloService.class,
                 ConsoleService.class,
                 SignUpService.class,
