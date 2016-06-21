@@ -19,6 +19,7 @@
 
 package org.loklak.server;
 
+import org.eclipse.jetty.util.log.Log;
 import org.json.JSONObject;
 import org.loklak.tools.storage.JsonTray;
 
@@ -37,7 +38,8 @@ public class Authorization {
     private JSONObject json;
     private Accounting accounting;
     private ClientIdentity identity;
-    private BaseUserRole baseUserRole;
+    private UserRole userRole;
+    private UserRoles userRoles;
     
     /**
      * create a new authorization object. The given json object must be taken
@@ -46,29 +48,29 @@ public class Authorization {
      * @param identity
      * @param parent the parent file or null if there is no parent file (no persistency)
      */
-    public Authorization(@Nonnull ClientIdentity identity, JsonTray parent) {
-    	if(parent != null){
-	    	if (parent.has(identity.toString())) {
-	    		this.json = parent.getJSONObject(identity.toString());
-	        } else {
-	        	this.json = new JSONObject();
-	        	parent.put(identity.toString(), this.json, identity.isPersistent());
-	        }
-    	}
-    	else this.json = new JSONObject();
-    	
-    	if(this.json.has("userRole")){
-    		try{
-    			baseUserRole = BaseUserRole.valueOf(this.json.getString("userRole"));
-    		} catch(Exception e){
-    			baseUserRole = BaseUserRole.ANONYMOUS;
-    		}
-    	}
-    	else baseUserRole = BaseUserRole.ANONYMOUS;
-    	
+    public Authorization(@Nonnull ClientIdentity identity, JsonTray parent, @Nonnull UserRoles urs) {
         this.parent = parent;
         this.accounting = null;
         this.identity = identity;
+        this.userRoles = urs;
+
+        if(parent != null){
+	    	if (parent.has(identity.toString())) {
+	    		json = parent.getJSONObject(identity.toString());
+	        } else {
+	        	json = new JSONObject();
+	        	parent.put(identity.toString(), json, identity.isPersistent());
+	        }
+    	}
+    	else json = new JSONObject();
+    	
+    	if(json.has("userRole") && userRoles.has(json.getString("userRole"))){
+    		userRole = userRoles.getUserRoleFromString(json.getString("userRole"));
+    	}
+    	else{
+            userRole = userRoles.getDefaultUserRole(BaseUserRole.ANONYMOUS);
+            json.put("userRole", userRole.getName());
+        }
     }
     
     public Accounting setAccounting(Accounting accounting) {
@@ -131,6 +133,17 @@ public class Authorization {
     }
     
     public BaseUserRole getBaseUserRole(){
-    	return baseUserRole;
+    	return userRole.getBaseUserRole();
+    }
+
+    public UserRole getUserRole(){
+        return userRole;
+    }
+
+    public Authorization setUserRole(UserRole ur){
+        userRole = ur;
+        json.put("userRole", userRole.getName());
+        if (parent != null && getIdentity().isPersistent()) parent.commit();
+        return this;
     }
 }
