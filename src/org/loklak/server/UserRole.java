@@ -21,40 +21,61 @@
 package org.loklak.server;
 
 import org.json.JSONObject;
-import org.loklak.tools.storage.JsonTray;
-
 import javax.annotation.Nonnull;
 
 public class UserRole {
 
     private String name;
-    private JsonTray storage;
     private JSONObject json;
     private UserRole parent;
     private BaseUserRole baseUserRole;
 
-    public UserRole(@Nonnull String userRoleName, JsonTray storage, UserRole parent, @Nonnull BaseUserRole baseUserRole){
-        if(storage != null){
-            if (storage.has(userRoleName)) {
-                this.json = storage.getJSONObject(userRoleName);
-            } else {
-                this.json = new JSONObject();
-                storage.put(userRoleName, this.json, true);
-            }
-        }
-        else this.json = new JSONObject();
-
-        this.name = userRoleName;
-        this.parent = parent;
-        this.storage = storage;
+    /**
+     *
+     * @param name          the key in the sourceObject
+     * @param baseUserRole
+     * @param parent        if a parent user role exists
+     * @param sourceObject  JSONObject in some storage file. Write changes here if exist
+     */
+    public UserRole(@Nonnull String name, @Nonnull BaseUserRole baseUserRole, UserRole parent, JSONObject sourceObject){
         this.baseUserRole = baseUserRole;
+        this.name = name;
+
+        if(sourceObject != null) json = sourceObject;
+        else json = new JSONObject();
+
+        if(!json.has("display-name")) json.put("display-name", name);
+        if(!json.has("permissions")) json.put("permissions", new JSONObject());
+
+        setParent(parent);
     }
+
 
     public BaseUserRole getBaseUserRole(){
         return this.baseUserRole;
     }
 
-    public String getName(){
+    public String getUserRoleName(){
         return this.name;
+    }
+
+    public String getDisplayName() { return json.getString("display-name"); }
+
+    public UserRole getParent(){
+        return parent;
+    }
+
+    public void setParent(UserRole parent){
+        if(parent == null){
+            json.put("parent", baseUserRole.name());
+        }
+        else{
+            json.put("parent", parent.getUserRoleName());
+        }
+        this.parent = parent;
+    }
+
+    public void setDisplayName(String name){
+        json.put("display-name", name);
     }
 }

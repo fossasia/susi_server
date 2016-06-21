@@ -24,6 +24,6 @@ public enum BaseUserRole {
 
     ANONYMOUS,
     USER,
+    PRIVILEGED,
     ADMIN
-
 }
