@@ -227,12 +227,14 @@ public class DAO {
         Path accounting_path = settings_dir.resolve("accounting.json");
         accounting = new JsonTray(accounting_path.toFile(), 10000);
         OS.protectPath(accounting_path);
-        Path userRoles_path = settings_dir.resolve("userRoles.json");
-        JsonFile userRolesStorage = new JsonFile(userRoles_path.toFile());
-        OS.protectPath(userRoles_path);
+
 
         Log.getLog().info("Initializing user roles");
-        userRoles = new UserRoles(userRolesStorage);
+
+        Path userRoles_path = settings_dir.resolve("userRoles.json");
+        userRoles = new UserRoles(new JsonFile(userRoles_path.toFile()));
+        OS.protectPath(userRoles_path);
+
         try{
             userRoles.loadUserRolesFromObject();
             Log.getLog().info("Loaded user roles from file");

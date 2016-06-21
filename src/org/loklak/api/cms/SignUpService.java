@@ -168,14 +168,18 @@ public class SignUpService extends AbstractAPIHandler implements APIHandler {
     	}
     	
     	// create new id
-    	
     	ClientIdentity identity = new ClientIdentity(ClientIdentity.Type.email, credential.getName());
     	authentication.setIdentity(identity);
-    	
+
+		// set authentication details
     	String salt = createRandomString(20);
     	authentication.put("salt", salt);
     	authentication.put("passwordHash", getHash(password, salt));
     	authentication.put("activated", activated);
+
+		// set authorization details
+        Authorization authorization = new Authorization(identity, DAO.authorization, DAO.userRoles);
+        authorization.setUserRole(DAO.userRoles.getDefaultUserRole(BaseUserRole.USER));
         
         if(sendEmail){
 	        String token = createRandomString(30);

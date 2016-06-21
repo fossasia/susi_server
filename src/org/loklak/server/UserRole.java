@@ -55,7 +55,7 @@ public class UserRole {
         return this.baseUserRole;
     }
 
-    public String getUserRoleName(){
+    public String getName(){
         return this.name;
     }
 
@@ -70,7 +70,7 @@ public class UserRole {
             json.put("parent", baseUserRole.name());
         }
         else{
-            json.put("parent", parent.getUserRoleName());
+            json.put("parent", parent.getName());
         }
         this.parent = parent;
     }

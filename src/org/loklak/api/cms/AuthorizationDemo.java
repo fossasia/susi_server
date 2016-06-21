@@ -54,7 +54,10 @@ public class AuthorizationDemo extends AbstractAPIHandler implements APIHandler 
     public JSONObject serviceImpl(Query post, Authorization rights) throws APIException {
     	
     	JSONObject result = new JSONObject();
-    	
+
+		result.put("user", rights.getIdentity().getName());
+        result.put("user role", rights.getUserRole().getName());
+        result.put("base user role", rights.getBaseUserRole().name());
 		
 		return result;
     }

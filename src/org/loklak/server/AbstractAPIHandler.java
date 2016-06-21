@@ -115,9 +115,9 @@ public abstract class AbstractAPIHandler extends HttpServlet implements APIHandl
     private void process(HttpServletRequest request, HttpServletResponse response, Query query) throws ServletException, IOException {
         
         // basic protection
-        BaseUserRole serviceLevel = getMinimalBaseUserRole();
+        BaseUserRole minimalBaseUserRole = getMinimalBaseUserRole();
         if (query.isDoS_blackout()) {response.sendError(503, "your request frequency is too high"); return;} // DoS protection
-        if (serviceLevel == BaseUserRole.ADMIN && !query.isLocalhostAccess()) {response.sendError(503, "access only allowed from localhost, your request comes from " + query.getClientHost()); return;} // danger! do not remove this!
+        if (minimalBaseUserRole == BaseUserRole.ADMIN && !query.isLocalhostAccess()) {response.sendError(503, "access only allowed from localhost, your request comes from " + query.getClientHost()); return;} // danger! do not remove this!
         
         
         // user identification
@@ -130,9 +130,9 @@ public abstract class AbstractAPIHandler extends HttpServlet implements APIHandl
 		}
         
         // user authorization: we use the identification of the user to get the assigned authorization
-        Authorization authorization = new Authorization(identity, DAO.authorization);
+        Authorization authorization = new Authorization(identity, DAO.authorization, DAO.userRoles);
 
-        if(authorization.getBaseUserRole().ordinal() < serviceLevel.ordinal()){
+        if(authorization.getBaseUserRole().ordinal() < minimalBaseUserRole.ordinal()){
         	response.sendError(401, "Unauthorized");
 			return;
         }
