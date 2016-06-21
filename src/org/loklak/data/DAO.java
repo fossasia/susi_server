@@ -236,7 +236,15 @@ public class DAO {
         JsonFile userRolesStorage = new JsonFile(userRoles_path.toFile());
         OS.protectPath(userRoles_path);
 
+        Log.getLog().info("Initializing user roles");
         userRoles = new UserRoles(userRolesStorage);
+        try{
+            userRoles.loadUserRolesFromObject();
+            Log.getLog().info("Loaded user roles from file");
+        }catch (IllegalArgumentException e){
+            Log.getLog().info("Load default user roles");
+            userRoles.loadDefaultUserRoles();
+        }
 
         // open index
         Path index_dir = dataPath.resolve("index");
