@@ -25,16 +25,14 @@ import java.net.URLDecoder;
 import java.nio.file.Paths;
 import org.json.JSONObject;
 import org.loklak.LoklakEmailHandler;
-import org.loklak.server.APIException;
-import org.loklak.server.APIHandler;
-import org.loklak.server.AbstractAPIHandler;
-import org.loklak.server.Authorization;
-import org.loklak.server.BaseUserRole;
-import org.loklak.server.Query;
+import org.loklak.data.DAO;
+import org.loklak.server.*;
+import org.loklak.tools.IO;
 
 public class PasswordRecoveryService extends AbstractAPIHandler implements APIHandler {
 
 	private static final long serialVersionUID = 3515757746392011162L;
+	private static String resetLinkPlaceholder = "%RESET-LINK%";
 
 	@Override
 	public String getAPIPath() {
