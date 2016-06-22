@@ -4,24 +4,21 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.loklak.data.DAO;
 import org.loklak.server.APIHandler;
-import org.loklak.server.APIServiceLevel;
 import org.loklak.server.AbstractAPIHandler;
 import org.loklak.server.Authorization;
+import org.loklak.server.BaseUserRole;
 import org.loklak.server.Query;
 
 public class TopMenuService extends AbstractAPIHandler implements APIHandler {
     
     private static final long serialVersionUID = 1839868262296635665L;
 
+    @Override
+    public BaseUserRole getMinimalBaseUserRole() { return BaseUserRole.ANONYMOUS; }
 
     @Override
-    public APIServiceLevel getDefaultServiceLevel() {
-        return APIServiceLevel.PUBLIC;
-    }
-
-    @Override
-    public APIServiceLevel getCustomServiceLevel(Authorization auth) {
-        return APIServiceLevel.PUBLIC;
+    public JSONObject getDefaultPermissions(BaseUserRole baseUserRole) {
+        return null;
     }
 
     @Override
@@ -51,5 +48,4 @@ public class TopMenuService extends AbstractAPIHandler implements APIHandler {
         json.put("$EXPIRES", 600);
         return json;
     }
-    
 }

@@ -32,10 +32,10 @@ import org.loklak.LoklakEmailHandler;
 import org.loklak.data.DAO;
 import org.loklak.server.APIException;
 import org.loklak.server.APIHandler;
-import org.loklak.server.APIServiceLevel;
 import org.loklak.server.AbstractAPIHandler;
 import org.loklak.server.Authentication;
 import org.loklak.server.Authorization;
+import org.loklak.server.BaseUserRole;
 import org.loklak.server.ClientCredential;
 import org.loklak.server.ClientIdentity;
 import org.loklak.server.Query;
@@ -46,19 +46,21 @@ public class SignUpService extends AbstractAPIHandler implements APIHandler {
     private static final long serialVersionUID = 8578478303032749879L;
     private static String verificationLinkPlaceholder = "%VERIFICATION-LINK%";
 
-    @Override
-    public APIServiceLevel getDefaultServiceLevel() {
-        return APIServiceLevel.PUBLIC;
-    }
+	@Override
+	public BaseUserRole getMinimalBaseUserRole() { return BaseUserRole.ANONYMOUS; }
 
-    @Override
-    public APIServiceLevel getCustomServiceLevel(Authorization rights) {
+	@Override
+	public JSONObject getDefaultPermissions(BaseUserRole baseUserRole) {
+		return null;
+	}
+
+	public BaseUserRole getCustomServiceLevel(Authorization rights) {
         if(rights.isAdmin()){
-        	return APIServiceLevel.ADMIN;
+        	return BaseUserRole.ADMIN;
         } else if(rights.getIdentity() != null){
-        	return APIServiceLevel.LIMITED;
+        	return BaseUserRole.USER;
         }
-        return APIServiceLevel.PUBLIC;
+        return BaseUserRole.ANONYMOUS;
     }
 
     public String getAPIPath() {
@@ -68,7 +70,7 @@ public class SignUpService extends AbstractAPIHandler implements APIHandler {
     @Override
     public JSONObject serviceImpl(Query post, Authorization rights) throws APIException {
 
-    	APIServiceLevel serviceLevel = getCustomServiceLevel(rights);
+    	BaseUserRole serviceLevel = getCustomServiceLevel(rights);
     	
     	JSONObject result = new JSONObject();
     	
@@ -91,7 +93,7 @@ public class SignUpService extends AbstractAPIHandler implements APIHandler {
     	}
     	
     	// is this a verification?
-    	if(post.get("validateEmail", false) && serviceLevel.isGreaterThan(APIServiceLevel.PUBLIC)){
+    	if(post.get("validateEmail", false) && serviceLevel.ordinal() > BaseUserRole.ANONYMOUS.ordinal()){
     		ClientCredential credential = new ClientCredential(ClientCredential.Type.passwd_login, rights.getIdentity().getName());
     		Authentication authentication = new Authentication(credential, DAO.authentication);
     		
@@ -108,7 +110,7 @@ public class SignUpService extends AbstractAPIHandler implements APIHandler {
     	boolean activated = true;
     	boolean sendEmail = false;
     	
-    	if(serviceLevel != APIServiceLevel.ADMIN){
+    	if(serviceLevel != BaseUserRole.ADMIN){
     		switch(DAO.getConfig("users.public.signup", "false")){
     			case "false":
     				result.put("success", false);
@@ -171,14 +173,18 @@ public class SignUpService extends AbstractAPIHandler implements APIHandler {
     	}
     	
     	// create new id
-    	
     	ClientIdentity identity = new ClientIdentity(ClientIdentity.Type.email, credential.getName());
     	authentication.setIdentity(identity);
-    	
+
+		// set authentication details
     	String salt = createRandomString(20);
     	authentication.put("salt", salt);
     	authentication.put("passwordHash", getHash(password, salt));
     	authentication.put("activated", activated);
+
+		// set authorization details
+        Authorization authorization = new Authorization(identity, DAO.authorization, DAO.userRoles);
+        authorization.setUserRole(DAO.userRoles.getDefaultUserRole(BaseUserRole.USER));
         
         if(sendEmail){
 	        String token = createRandomString(30);

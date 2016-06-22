@@ -1,5 +1,5 @@
 /**
- *  APIHandler
+ *  BaseUserRole
  *  Copyright 17.05.2016 by Michael Peter Christen, @0rb1t3r
  *
  *  This library is free software; you can redistribute it and/or
@@ -17,20 +17,13 @@
  *  If not, see <http://www.gnu.org/licenses/>.
  */
 
+
 package org.loklak.server;
 
-import org.json.JSONObject;
+public enum BaseUserRole {
 
-public interface APIHandler {
-
-    public String[] getServerProtocolHostStub();
-
-    public BaseUserRole getMinimalBaseUserRole();
-
-    public JSONObject getDefaultPermissions(BaseUserRole baseUserRole);
-    
-    public String getAPIPath();
-
-    public JSONObject[] service(Query call, Authorization rights) throws APIException;
-    
+    ANONYMOUS,
+    USER,
+    PRIVILEGED,
+    ADMIN
 }

@@ -23,10 +23,10 @@ import org.json.JSONObject;
 import org.loklak.data.DAO;
 import org.loklak.server.APIException;
 import org.loklak.server.APIHandler;
-import org.loklak.server.APIServiceLevel;
 import org.loklak.server.AbstractAPIHandler;
 import org.loklak.server.Authentication;
 import org.loklak.server.Authorization;
+import org.loklak.server.BaseUserRole;
 import org.loklak.server.ClientCredential;
 import org.loklak.server.ClientIdentity;
 import org.loklak.server.Query;
@@ -37,18 +37,11 @@ public class ClientHandshake extends AbstractAPIHandler implements APIHandler {
     private static long defaultExpireTime = 7 * 24 * 60 * 60;
 
     @Override
-    public APIServiceLevel getDefaultServiceLevel() {
-        return APIServiceLevel.LIMITED;
-    }
+    public BaseUserRole getMinimalBaseUserRole() { return BaseUserRole.USER; }
 
     @Override
-    public APIServiceLevel getCustomServiceLevel(Authorization rights) {
-    	if(rights.isAdmin()){
-        	return APIServiceLevel.ADMIN;
-        } else if(rights.getIdentity() != null){
-        	return APIServiceLevel.LIMITED;
-        }
-        return APIServiceLevel.PUBLIC;
+    public JSONObject getDefaultPermissions(BaseUserRole baseUserRole) {
+        return null;
     }
 
     public String getAPIPath() {

@@ -23,14 +23,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import org.json.JSONObject;
 import org.loklak.data.DAO;
-import org.loklak.server.APIException;
-import org.loklak.server.APIHandler;
-import org.loklak.server.APIServiceLevel;
-import org.loklak.server.AbstractAPIHandler;
-import org.loklak.server.Authentication;
-import org.loklak.server.Authorization;
-import org.loklak.server.ClientCredential;
-import org.loklak.server.Query;
+import org.loklak.server.*;
 
 public class PasswordResetService extends AbstractAPIHandler implements APIHandler {
 
@@ -42,15 +35,11 @@ public class PasswordResetService extends AbstractAPIHandler implements APIHandl
 	}
 
 	@Override
-	public APIServiceLevel getDefaultServiceLevel() {
-
-		return APIServiceLevel.PUBLIC;
-	}
+	public BaseUserRole getMinimalBaseUserRole() { return BaseUserRole.ANONYMOUS; }
 
 	@Override
-	public APIServiceLevel getCustomServiceLevel(Authorization auth) {
-
-		return APIServiceLevel.ADMIN;
+	public JSONObject getDefaultPermissions(BaseUserRole baseUserRole) {
+		return null;
 	}
 
 	@Override

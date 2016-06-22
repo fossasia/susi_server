@@ -19,8 +19,11 @@
 
 package org.loklak.server;
 
+import org.eclipse.jetty.util.log.Log;
 import org.json.JSONObject;
 import org.loklak.tools.storage.JsonTray;
+
+import javax.annotation.Nonnull;
 
 /**
  * Authorization asks: what is the user allowed to do? This class holds user rights.
@@ -33,30 +36,52 @@ public class Authorization {
 
     private JsonTray parent;
     private JSONObject json;
+    private JSONObject permissions;
     private Accounting accounting;
     private ClientIdentity identity;
+    private UserRole userRole;
+    private UserRoles userRoles;
     
     /**
      * create a new authorization object. The given json object must be taken
      * as value from a parent json. If the parent json is a JsonFile, then that
      * file can be handed over as well to enable persistency.
-     * @param json object for storage of the authorization
+     * @param identity
      * @param parent the parent file or null if there is no parent file (no persistency)
      */
-    public Authorization(ClientIdentity identity, JsonTray parent) {
-    	if(parent != null){
-	    	if (parent.has(identity.toString())) {
-	    		this.json = parent.getJSONObject(identity.toString());
-	        } else {
-	        	this.json = new JSONObject();
-	        	parent.put(identity.toString(), this.json, identity.isPersistent());
-	        }
-    	}
-    	else this.json = new JSONObject();
-    	
+    public Authorization(@Nonnull ClientIdentity identity, JsonTray parent, @Nonnull UserRoles urs) {
+
+        Log.getLog().debug("new authorization");
+
         this.parent = parent;
         this.accounting = null;
         this.identity = identity;
+        this.userRoles = urs;
+
+        if(parent != null){
+	    	if (parent.has(identity.toString())) {
+	    		json = parent.getJSONObject(identity.toString());
+	        } else {
+	        	json = new JSONObject();
+	        	parent.put(identity.toString(), json, identity.isPersistent());
+	        }
+    	}
+    	else json = new JSONObject();
+    	
+    	if(json.has("userRole") && userRoles.has(json.getString("userRole"))){
+            Log.getLog().debug("user role " + json.getString("userRole") + " valid");
+    		userRole = userRoles.getUserRoleFromString(json.getString("userRole"));
+            Log.getLog().debug("user role: " + userRole.getName());
+    	}
+    	else{
+            Log.getLog().debug("user role invalid");
+            userRole = userRoles.getDefaultUserRole(BaseUserRole.ANONYMOUS);
+            json.put("userRole", userRole.getName());
+            Log.getLog().debug("user role: " + userRole.getName());
+        }
+
+        if(!json.has("permissions")) json.put("permissions", new JSONObject());
+        permissions = json.getJSONObject("permissions");
     }
     
     public Accounting setAccounting(Accounting accounting) {
@@ -117,5 +142,42 @@ public class Authorization {
     public ClientIdentity getIdentity() {
         return identity;
     }
+    
+    public BaseUserRole getBaseUserRole(){
+    	return userRole.getBaseUserRole();
+    }
 
+    public UserRole getUserRole(){
+        return userRole;
+    }
+
+    public Authorization setUserRole(UserRole ur){
+        userRole = ur;
+        json.put("userRole", userRole.getName());
+        if (parent != null && getIdentity().isPersistent()) parent.commit();
+        return this;
+    }
+
+    public JSONObject getPermissions(APIHandler servlet){
+
+        // get upstream permissions
+        JSONObject permissions =  userRole.getPermissions(servlet);
+
+        // override of permissions
+        if(this.permissions.has(servlet.getClass().getCanonicalName())){
+            permissions.putAll(this.permissions.getJSONObject(servlet.getClass().getCanonicalName()));
+        }
+
+        return permissions;
+    }
+
+    public void setPermission(String servletCanonicalName, String key, JSONObject value){
+        if(!permissions.has(servletCanonicalName)) permissions.put(servletCanonicalName, new JSONObject());
+
+        permissions.getJSONObject(servletCanonicalName).put(key, value);
+    }
+
+    public void setPermission(APIHandler servlet, String key, JSONObject value){
+        setPermission(servlet.getClass().getCanonicalName(), key, value);
+    }
 }

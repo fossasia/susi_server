@@ -26,15 +26,7 @@ import java.nio.file.Paths;
 import org.json.JSONObject;
 import org.loklak.LoklakEmailHandler;
 import org.loklak.data.DAO;
-import org.loklak.server.APIException;
-import org.loklak.server.APIHandler;
-import org.loklak.server.APIServiceLevel;
-import org.loklak.server.AbstractAPIHandler;
-import org.loklak.server.Authentication;
-import org.loklak.server.Authorization;
-import org.loklak.server.ClientCredential;
-import org.loklak.server.ClientIdentity;
-import org.loklak.server.Query;
+import org.loklak.server.*;
 import org.loklak.tools.IO;
 
 public class PasswordRecoveryService extends AbstractAPIHandler implements APIHandler {
@@ -48,13 +40,11 @@ public class PasswordRecoveryService extends AbstractAPIHandler implements APIHa
 	}
 
 	@Override
-	public APIServiceLevel getDefaultServiceLevel() {
-		return APIServiceLevel.PUBLIC;
-	}
+	public BaseUserRole getMinimalBaseUserRole() { return BaseUserRole.ANONYMOUS; }
 
 	@Override
-	public APIServiceLevel getCustomServiceLevel(Authorization auth) {
-		return APIServiceLevel.ADMIN;
+	public JSONObject getDefaultPermissions(BaseUserRole baseUserRole) {
+		return null;
 	}
 
 	@Override

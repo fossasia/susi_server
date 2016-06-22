@@ -31,9 +31,9 @@ import org.json.JSONObject;
 import org.loklak.data.DAO;
 import org.loklak.server.APIException;
 import org.loklak.server.APIHandler;
-import org.loklak.server.APIServiceLevel;
 import org.loklak.server.AbstractAPIHandler;
 import org.loklak.server.Authorization;
+import org.loklak.server.BaseUserRole;
 import org.loklak.server.Query;
 
 public class AppsService extends AbstractAPIHandler implements APIHandler {
@@ -46,13 +46,11 @@ public class AppsService extends AbstractAPIHandler implements APIHandler {
     }
 
     @Override
-    public APIServiceLevel getDefaultServiceLevel() {
-        return APIServiceLevel.PUBLIC;
-    }
+    public BaseUserRole getMinimalBaseUserRole() { return BaseUserRole.ANONYMOUS; }
 
     @Override
-    public APIServiceLevel getCustomServiceLevel(Authorization auth) {
-        return APIServiceLevel.PUBLIC;
+    public JSONObject getDefaultPermissions(BaseUserRole baseUserRole) {
+        return null;
     }
 
     @Override
@@ -105,5 +103,4 @@ public class AppsService extends AbstractAPIHandler implements APIHandler {
 
         return json;
     }
-    
 }
