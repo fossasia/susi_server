@@ -49,6 +49,11 @@ public class HelloService extends AbstractAPIHandler implements APIHandler {
     public BaseUserRole getMinimalBaseUserRole() { return BaseUserRole.ANONYMOUS; }
 
     @Override
+    public JSONObject getDefaultPermissions(BaseUserRole baseUserRole) {
+        return null;
+    }
+
+    @Override
     public String getAPIPath() {
         return "/api/hello.json";
     }

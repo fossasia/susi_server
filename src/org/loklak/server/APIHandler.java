@@ -26,6 +26,8 @@ public interface APIHandler {
     public String[] getServerProtocolHostStub();
 
     public BaseUserRole getMinimalBaseUserRole();
+
+    public JSONObject getDefaultPermissions(BaseUserRole baseUserRole);
     
     public String getAPIPath();
 

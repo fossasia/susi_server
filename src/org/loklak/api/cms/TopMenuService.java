@@ -17,6 +17,11 @@ public class TopMenuService extends AbstractAPIHandler implements APIHandler {
     public BaseUserRole getMinimalBaseUserRole() { return BaseUserRole.ANONYMOUS; }
 
     @Override
+    public JSONObject getDefaultPermissions(BaseUserRole baseUserRole) {
+        return null;
+    }
+
+    @Override
     public String getAPIPath() {
         return "/cms/topmenu.json";
     }

@@ -1,6 +1,6 @@
 /**
- *  SignUpServlet
- *  Copyright 27.05.2015 by Robert Mader, @treba13
+ *  AuthorizationDemo
+ *  Copyright 22.06.2015 by Robert Mader, @treba13
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -24,40 +24,51 @@ import org.loklak.server.*;
 import org.loklak.server.BaseUserRole;
 
 public class AuthorizationDemo extends AbstractAPIHandler implements APIHandler {
-   
+
     private static final long serialVersionUID = 8678478303032749879L;
 
     @Override
     public BaseUserRole getMinimalBaseUserRole() { return BaseUserRole.ANONYMOUS; }
 
-    public String getAPIPath() {
+	@Override
+	public JSONObject getDefaultPermissions(BaseUserRole baseUserRole) {
+		JSONObject result = new JSONObject();
+
+		switch(baseUserRole){
+			case ADMIN:
+				result.put("download_limit", -1);
+				break;
+			case PRIVILEGED:
+				result.put("download_limit", 1000);
+				break;
+			case USER:
+				result.put("download_limit", 100);
+				break;
+			case ANONYMOUS:
+				result.put("download_limit", 10);
+				break;
+			default:
+				result.put("download_limit", 0);
+				break;
+		}
+
+		return result;
+	}
+
+	@Override
+	public String getAPIPath() {
         return "/api/authorization-demo.json";
     }
 
-    public JSONObject getDefaultUserRights(BaseUserRole serviceLevel){
-    	JSONObject result = new JSONObject();
-    	
-    	switch(serviceLevel){
-    		case ADMIN:
-    		case USER:
-    			result.put("download_allowed", true);
-    			break;
-    		default:
-    			result.put("download_allowed", false);
-    			break;
-    	}
-    	
-    	return result;
-    }
-    
     @Override
     public JSONObject serviceImpl(Query post, Authorization rights) throws APIException {
     	
     	JSONObject result = new JSONObject();
 
 		result.put("user", rights.getIdentity().getName());
-        result.put("user role", rights.getUserRole().getName());
+        result.put("user role", rights.getUserRole().getDisplayName());
         result.put("base user role", rights.getBaseUserRole().name());
+		result.put("permissions",rights.getPermissions(this));
 		
 		return result;
     }

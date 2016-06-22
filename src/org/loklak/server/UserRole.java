@@ -27,6 +27,7 @@ public class UserRole {
 
     private String name;
     private JSONObject json;
+    private JSONObject permissions;
     private UserRole parent;
     private BaseUserRole baseUserRole;
 
@@ -47,6 +48,7 @@ public class UserRole {
         if(!json.has("display-name")) json.put("display-name", name);
         if(!json.has("permissions")) json.put("permissions", new JSONObject());
 
+        permissions = json.getJSONObject("permissions");
         setParent(parent);
     }
 
@@ -60,6 +62,8 @@ public class UserRole {
     }
 
     public String getDisplayName() { return json.getString("display-name"); }
+
+    public void setDisplayName(String name) { json.put("display-name", name); }
 
     public UserRole getParent(){
         return parent;
@@ -75,7 +79,45 @@ public class UserRole {
         this.parent = parent;
     }
 
-    public void setDisplayName(String name){
-        json.put("display-name", name);
+    public JSONObject getPermissions(APIHandler servlet){
+        JSONObject permissions;
+
+        // get upstream permission from default values or from parent
+        if(parent == null){
+            permissions = servlet.getDefaultPermissions(baseUserRole);
+        }
+        else{
+            permissions =  parent.getPermissions(servlet);
+        }
+
+        // override of permissions
+        if(this.permissions.has(servlet.getClass().getCanonicalName())){
+            permissions.putAll(this.permissions.getJSONObject(servlet.getClass().getCanonicalName()));
+        }
+
+        return permissions;
+    }
+
+    public JSONObject getPermissionOverrides(){
+        return permissions;
+    }
+
+    public JSONObject getPermissionOverrides(String servletCanonicalName){
+        if(permissions.has(servletCanonicalName)) return permissions.getJSONObject(servletCanonicalName);
+        return null;
+    }
+
+    public JSONObject getPermissionOverrides(APIHandler servlet){
+        return getPermissionOverrides(servlet.getClass().getCanonicalName());
+    }
+
+    public void setPermission(String servletCanonicalName, String key, JSONObject value){
+        if(!permissions.has(servletCanonicalName)) permissions.put(servletCanonicalName, new JSONObject());
+
+        permissions.getJSONObject(servletCanonicalName).put(key, value);
+    }
+
+    public void setPermission(APIHandler servlet, String key, JSONObject value){
+        setPermission(servlet.getClass().getCanonicalName(), key, value);
     }
 }

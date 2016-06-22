@@ -39,6 +39,11 @@ public class ClientHandshake extends AbstractAPIHandler implements APIHandler {
     @Override
     public BaseUserRole getMinimalBaseUserRole() { return BaseUserRole.USER; }
 
+    @Override
+    public JSONObject getDefaultPermissions(BaseUserRole baseUserRole) {
+        return null;
+    }
+
     public String getAPIPath() {
         return "/api/handshake-client.json";
     }

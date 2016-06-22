@@ -46,13 +46,18 @@ public class UserRoles {
         roles = new HashMap<>();
 
         for(BaseUserRole bur : BaseUserRole.values()){
-            JSONObject obj = new JSONObject();
-
-            UserRole userRole = new UserRole(bur.name(), bur, null, obj);
-            setDefaultUserRole(bur, userRole);
-
-            json.put(bur.name(), obj); // this order of putting this at the end currently prevents a race condition in JsonFile -> should fix jsonfile
+            createDefaultUserRole(bur);
         }
+    }
+
+    private void createDefaultUserRole(BaseUserRole bur){
+        JSONObject obj = new JSONObject();
+
+        UserRole userRole = new UserRole(bur.name().toLowerCase(), bur, null, obj);
+        setDefaultUserRole(bur, userRole);
+        roles.put(userRole.getName(), userRole);
+
+        json.put(userRole.getName(), obj); // this order of putting this at the end currently prevents a race condition in JsonFile !?
     }
 
     public void loadUserRolesFromObject() throws IllegalArgumentException{
@@ -63,23 +68,23 @@ public class UserRoles {
             ArrayList<String> queue = new ArrayList<>();
 
             // get all user roles based on BaseUserRole. Add all other into a queue.
-            for (String key : json.keySet()) {
-                Log.getLog().debug("searching for key " + key);
-                JSONObject obj = json.getJSONObject(key);
+            for (String name : json.keySet()) {
+                Log.getLog().debug("searching for key " + name);
+                JSONObject obj = json.getJSONObject(name);
                 if (hasMandatoryFields(obj)) {
-                    Log.getLog().debug(key + " has mandatory fields");
+                    Log.getLog().debug(name + " has mandatory fields");
                     Log.getLog().debug("parent value is: " + obj.getString("parent"));
                     BaseUserRole bur;
                     try {
                         bur = BaseUserRole.valueOf(obj.getString("parent"));
                     } catch (IllegalArgumentException e) {
-                        queue.add(key);
+                        queue.add(name);
                         Log.getLog().debug("no bur, adding to queue");
                         continue;
                     }
                     Log.getLog().debug("successfully created bur from parent");
-                    UserRole userRole = new UserRole(key, bur, null, obj);
-                    roles.put(key, userRole);
+                    UserRole userRole = new UserRole(name, bur, null, obj);
+                    roles.put(name, userRole);
                 }
             }
 
@@ -104,9 +109,14 @@ public class UserRoles {
             // get default roles
             JSONObject defaults = json.getJSONObject("defaults");
             for (BaseUserRole bur : BaseUserRole.values()) {
-                defaultRoles.put(bur.name(), roles.get(defaults.getString(bur.name())));
-                Log.getLog().debug("load " + defaults.getString(bur.name()) + " from defaults");
-                Log.getLog().debug("got " + roles.get(defaults.getString(bur.name())).getName());
+                if(defaults.has(bur.name()) && roles.containsKey(defaults.getString(bur.name()))) {
+                    Log.getLog().debug("found default role for " + bur.name() + ": " + roles.get(defaults.getString(bur.name())).getDisplayName());
+                    setDefaultUserRole(bur, roles.get(defaults.getString(bur.name())));
+                }
+                else{
+                    Log.getLog().info("could not find default role for " + bur.name() + ", creating default role" );
+                    createDefaultUserRole(bur);
+                }
             }
         } catch(Exception e){
             defaultRoles = null;

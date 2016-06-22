@@ -49,6 +49,11 @@ public class SignUpService extends AbstractAPIHandler implements APIHandler {
 	@Override
 	public BaseUserRole getMinimalBaseUserRole() { return BaseUserRole.ANONYMOUS; }
 
+	@Override
+	public JSONObject getDefaultPermissions(BaseUserRole baseUserRole) {
+		return null;
+	}
+
 	public BaseUserRole getCustomServiceLevel(Authorization rights) {
         if(rights.isAdmin()){
         	return BaseUserRole.ADMIN;
