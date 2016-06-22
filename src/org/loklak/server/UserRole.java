@@ -85,6 +85,7 @@ public class UserRole {
         // get upstream permission from default values or from parent
         if(parent == null){
             permissions = servlet.getDefaultPermissions(baseUserRole);
+            if(permissions == null) permissions = new JSONObject();
         }
         else{
             permissions =  parent.getPermissions(servlet);
