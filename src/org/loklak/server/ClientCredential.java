@@ -28,6 +28,7 @@ public class ClientCredential extends Client {
     	passwd_login(true),
         cookie(false),
         access_token(false),
+        resetpass_token(false),
         host(false);
         private final boolean persistent;
         Type(final boolean persistent) {

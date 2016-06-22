@@ -1,0 +1,7 @@
+You just requested for a password reset for your loklak account.
+
+To do so, click on the following link:
+
+%RESET-LINK%
+
+If you didn't ask for a password reset, please ignore this email.
