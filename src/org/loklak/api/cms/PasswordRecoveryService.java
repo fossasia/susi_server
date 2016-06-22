@@ -55,30 +55,35 @@ public class PasswordRecoveryService extends AbstractAPIHandler implements APIHa
 
 		// check if token exists
 
-		if (call.get("getParameters", false) && call.get("token", null) != null) {
-			ClientCredential credentialcheck = new ClientCredential(ClientCredential.Type.resetpass_token,
-					call.get("token", null));
-			if (DAO.passwordreset.has(credentialcheck.toString())) {
-				Authentication authentication = new Authentication(credentialcheck, DAO.passwordreset);
-				if (authentication.checkExpireTime()) {
-					String passwordPattern = DAO.getConfig("users.password.regex", "^(?=.*\\d).{6,64}$");
-					String passwordPatternTooltip = DAO.getConfig("users.password.regex.tooltip",
-							"Enter a combination of atleast six characters");
-					result.put("reason", authentication.getIdentity().getName());
-					result.put("success", true);
-					result.put("message", "");
-					result.put("regex", passwordPattern);
-					result.put("regexTooltip", passwordPatternTooltip);
+		if (call.get("getParameters", false)) {
+			if (call.get("token", null) != null && !call.get("token", null).isEmpty()) {
+				ClientCredential credentialcheck = new ClientCredential(ClientCredential.Type.resetpass_token,
+						call.get("token", null));
+				if (DAO.passwordreset.has(credentialcheck.toString())) {
+					Authentication authentication = new Authentication(credentialcheck, DAO.passwordreset);
+					if (authentication.checkExpireTime()) {
+						String passwordPattern = DAO.getConfig("users.password.regex", "^(?=.*\\d).{6,64}$");
+						String passwordPatternTooltip = DAO.getConfig("users.password.regex.tooltip",
+								"Enter a combination of atleast six characters");
+						result.put("message", "Email ID: " + authentication.getIdentity().getName());
+						result.put("success", true);
+						result.put("regex", passwordPattern);
+						result.put("regexTooltip", passwordPatternTooltip);
+						return result;
+					}
+					result.put("success", false);
+					result.put("message", "Expired token");
+					authentication.delete();
 					return result;
 				}
-				result.put("status", "error");
-				result.put("reason", "Expired token");
-				authentication.delete();
+				result.put("success", false);
+				result.put("message", "Invalid token");
+				return result;
+			} else {
+				result.put("success", false);
+				result.put("message", "No token specified");
 				return result;
 			}
-			result.put("status", "error");
-			result.put("reason", "Invalid token");
-			return result;
 		}
 
 		String usermail;
