@@ -21,6 +21,8 @@ package org.loklak.api.cms;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
+import java.util.regex.Pattern;
+
 import org.json.JSONObject;
 import org.loklak.data.DAO;
 import org.loklak.server.*;
@@ -35,7 +37,9 @@ public class PasswordResetService extends AbstractAPIHandler implements APIHandl
 	}
 
 	@Override
-	public BaseUserRole getMinimalBaseUserRole() { return BaseUserRole.ANONYMOUS; }
+	public BaseUserRole getMinimalBaseUserRole() {
+		return BaseUserRole.ANONYMOUS;
+	}
 
 	@Override
 	public JSONObject getDefaultPermissions(BaseUserRole baseUserRole) {
@@ -54,13 +58,24 @@ public class PasswordResetService extends AbstractAPIHandler implements APIHandl
 			result.put("reason", "malformed query");
 			return result;
 		}
+
 		ClientCredential credential = new ClientCredential(ClientCredential.Type.resetpass_token,
 				call.get("token", null));
 		Authentication authentication = new Authentication(credential, DAO.passwordreset);
 		ClientCredential emailcred = new ClientCredential(ClientCredential.Type.passwd_login,
 				authentication.getIdentity().getName());
-		
-		if(DAO.authentication.has(emailcred.toString())){
+
+		String passwordPattern = DAO.getConfig("users.password.regex", "^(?=.*\\d).{6,64}$");
+
+		Pattern pattern = Pattern.compile(passwordPattern);
+
+		if ((authentication.getIdentity().getName()).equals(newpass) || !pattern.matcher(newpass).matches()) {
+			result.put("success", false);
+			result.put("message", "invalid password");
+			return result;
+		}
+
+		if (DAO.authentication.has(emailcred.toString())) {
 			Authentication emailauth = new Authentication(emailcred, DAO.authentication);
 			String salt = createRandomString(20);
 			emailauth.remove("salt");
