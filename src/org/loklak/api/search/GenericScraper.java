@@ -70,13 +70,19 @@ public class GenericScraper extends HttpServlet {
 		String title = page.title();
 		List<String> linkHref = new ArrayList<String>();
 		List<String> linkText = new ArrayList<String>();
-		List<String> src = new ArrayList<String>();
+		List<String> articleTags = new ArrayList<String>();
+		List<String> preTags = new ArrayList<String>();
+		List<String> codeTags = new ArrayList<String>();
 		List<String> image = new ArrayList<String>();
+		List<String> src = new ArrayList<String>();
 		Elements links = page.getElementsByTag("a");
 		Elements links2 = page.getElementsByTag("link");
-		Elements srciptLinks =page.getElementsByTag("script");
-		Elements imageLinks =page.getElementsByTag("img");
+		Elements srciptLinks = page.getElementsByTag("script");
+		Elements imageLinks = page.getElementsByTag("img");
 		Elements taglang = page.getElementsByTag("html");
+		Elements articles = page.getElementsByTag("article");
+		Elements pres = page.getElementsByTag("pre");
+		Elements codes = page.getElementsByTag("code");
 		String language = taglang.attr("lang");
 		for (Element link : links) {
 			if(link.attr("href") != null && link.attr("href").length() != 0){
@@ -101,12 +107,30 @@ public class GenericScraper extends HttpServlet {
 				image.add(link.attr("src"));
 			}
 		}
+		for (Element article : articles){
+			if(article.text() != null && article.text().length() != 0){
+				articleTags.add(article.text());
+			}
+		}
+		for (Element pre : pres){
+			if(pre.text() != null && pre.text().length() != 0){
+				preTags.add(pre.text());
+			}
+		}
+		for (Element code : codes){
+			if(code.text() != null && code.text().length() != 0){
+				codeTags.add(code.text());
+			}
+		}
 		obj.put("title", title);
 		obj.put("language", language);
 		obj.put("Links", new JSONArray(linkHref));
 		obj.put("Text in Links", new JSONArray(linkText));
 		obj.put("source files", new JSONArray(src));
 		obj.put("Image files", new JSONArray(image));
+		obj.put("Articles", new JSONArray(articleTags));
+		obj.put("Pre", new JSONArray(preTags));
+		obj.put("Code", new JSONArray(codeTags));
 
 		//print JSON 
 		response.setCharacterEncoding("UTF-8");
