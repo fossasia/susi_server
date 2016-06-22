@@ -49,6 +49,11 @@ public class AppsService extends AbstractAPIHandler implements APIHandler {
     public BaseUserRole getMinimalBaseUserRole() { return BaseUserRole.ANONYMOUS; }
 
     @Override
+    public JSONObject getDefaultPermissions(BaseUserRole baseUserRole) {
+        return null;
+    }
+
+    @Override
     public JSONObject serviceImpl(Query query, Authorization auth) throws APIException {
 
         String categorySelection = query.get("category", "");

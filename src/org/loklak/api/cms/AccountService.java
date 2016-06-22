@@ -41,6 +41,11 @@ public class AccountService extends AbstractAPIHandler implements APIHandler {
     public BaseUserRole getMinimalBaseUserRole() { return BaseUserRole.ADMIN; }
 
     @Override
+    public JSONObject getDefaultPermissions(BaseUserRole baseUserRole) {
+        return null;
+    }
+
+    @Override
     public String getAPIPath() {
         return "/api/account.json";
     }

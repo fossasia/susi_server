@@ -53,6 +53,11 @@ public class ConsoleService extends AbstractAPIHandler implements APIHandler {
     @Override
     public BaseUserRole getMinimalBaseUserRole() { return BaseUserRole.ANONYMOUS; }
 
+    @Override
+    public JSONObject getDefaultPermissions(BaseUserRole baseUserRole) {
+        return null;
+    }
+
     public String getAPIPath() {
         return "/api/console.json";
     }

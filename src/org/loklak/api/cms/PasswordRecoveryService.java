@@ -58,6 +58,11 @@ public class PasswordRecoveryService extends AbstractAPIHandler implements APIHa
 	}
 
 	@Override
+	public JSONObject getDefaultPermissions(BaseUserRole baseUserRole) {
+		return null;
+	}
+
+	@Override
 	public JSONObject serviceImpl(Query call, Authorization rights) throws APIException {
 		JSONObject result = new JSONObject();
 
