@@ -40,7 +40,9 @@ public class PasswordRecoveryService extends AbstractAPIHandler implements APIHa
 	}
 
 	@Override
-	public BaseUserRole getMinimalBaseUserRole() { return BaseUserRole.ANONYMOUS; }
+	public BaseUserRole getMinimalBaseUserRole() {
+		return BaseUserRole.ANONYMOUS;
+	}
 
 	@Override
 	public JSONObject getDefaultPermissions(BaseUserRole baseUserRole) {
@@ -59,8 +61,14 @@ public class PasswordRecoveryService extends AbstractAPIHandler implements APIHa
 			if (DAO.passwordreset.has(credentialcheck.toString())) {
 				Authentication authentication = new Authentication(credentialcheck, DAO.passwordreset);
 				if (authentication.checkExpireTime()) {
-					result.put("status", "success");
+					String passwordPattern = DAO.getConfig("users.password.regex", "^(?=.*\\d).{6,64}$");
+					String passwordPatternTooltip = DAO.getConfig("users.password.regex.tooltip",
+							"Enter a combination of atleast six characters");
 					result.put("reason", authentication.getIdentity().getName());
+					result.put("success", true);
+					result.put("message", "");
+					result.put("regex", passwordPattern);
+					result.put("regexTooltip", passwordPatternTooltip);
 					return result;
 				}
 				result.put("status", "error");
@@ -112,8 +120,8 @@ public class PasswordRecoveryService extends AbstractAPIHandler implements APIHa
 
 	private String getVerificationMailContent(String token) {
 
-		String verificationLink = DAO.getConfig("host.name", "http://localhost:9000") + "/apps/resetpass/index.html?token="
-				+ token;
+		String verificationLink = DAO.getConfig("host.name", "http://localhost:9000")
+				+ "/apps/resetpass/index.html?token=" + token;
 		String result;
 		try {
 			result = IO.readFileCached(Paths.get(DAO.conf_dir + "/templates/reset-mail.txt"));
