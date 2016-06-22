@@ -70,18 +70,7 @@ import org.loklak.api.admin.CrawlerServlet;
 import org.loklak.api.admin.SettingsServlet;
 import org.loklak.api.admin.StatusServlet;
 import org.loklak.api.admin.ThreaddumpServlet;
-import org.loklak.api.cms.AccountService;
-import org.loklak.api.cms.AppsService;
-import org.loklak.api.cms.AssetServlet;
-import org.loklak.api.cms.AuthorizationDemo;
-import org.loklak.api.cms.DumpDownloadServlet;
-import org.loklak.api.cms.PasswordRecoveryService;
-import org.loklak.api.cms.PasswordResetService;
-import org.loklak.api.cms.LoginService;
-import org.loklak.api.cms.ProxyServlet;
-import org.loklak.api.cms.SignUpService;
-import org.loklak.api.cms.Sitemap;
-import org.loklak.api.cms.TopMenuService;
+import org.loklak.api.cms.*;
 import org.loklak.api.geo.GeocodeServlet;
 import org.loklak.api.handshake.ClientHandshake;
 import org.loklak.api.iot.FossasiaPushServlet;
@@ -515,7 +504,9 @@ public class LoklakServer {
                 PasswordRecoveryService.class,
                 TopMenuService.class,
         		ClientHandshake.class,
-        		PasswordResetService.class};
+        		PasswordResetService.class,
+                ChangeUserRole.class
+        };
         for (Class<? extends Servlet> service: services)
             try {
                 servletHandler.addServlet(service, ((APIHandler) (service.newInstance())).getAPIPath());

@@ -121,15 +121,15 @@ public abstract class AbstractAPIHandler extends HttpServlet implements APIHandl
         BaseUserRole minimalBaseUserRole = getMinimalBaseUserRole() != null ? getMinimalBaseUserRole() : BaseUserRole.ANONYMOUS;
 
         if (query.isDoS_blackout()) {response.sendError(503, "your request frequency is too high"); return;} // DoS protection
-        if (minimalBaseUserRole == BaseUserRole.ADMIN && !query.isLocalhostAccess()) {response.sendError(503, "access only allowed from localhost, your request comes from " + query.getClientHost()); return;} // danger! do not remove this!
+        if (DAO.getConfig("users.admin.localonly", true) && minimalBaseUserRole == BaseUserRole.ADMIN && !query.isLocalhostAccess()) {response.sendError(503, "access only allowed from localhost, your request comes from " + query.getClientHost()); return;} // danger! do not remove this!
         
         
         // user identification
         ClientIdentity identity;
 		try {
 			identity = getIdentity(request, response);
-		} catch (LoginException e) {
-			response.sendError(422, e.getMessage());
+		} catch (APIException e) {
+			response.sendError(e.getStatusCode(), e.getMessage());
 			return;
 		}
         
@@ -137,7 +137,7 @@ public abstract class AbstractAPIHandler extends HttpServlet implements APIHandl
         Authorization authorization = new Authorization(identity, DAO.authorization, DAO.userRoles);
 
         if(authorization.getBaseUserRole().ordinal() < minimalBaseUserRole.ordinal()){
-        	response.sendError(401, "Unauthorized");
+        	response.sendError(401, "Base user role not sufficient. Your base user role is '" + authorization.getBaseUserRole().name() + "', your user role is '" + authorization.getUserRole().getDisplayName() + "'");
 			return;
         }
 
@@ -195,7 +195,7 @@ public abstract class AbstractAPIHandler extends HttpServlet implements APIHandl
      * Checks a request for valid login data, send via cookie or parameters
      * @return user identity if some login is active, anonymous identity otherwise
      */
-    private ClientIdentity getIdentity(HttpServletRequest request, HttpServletResponse response) throws LoginException{
+    private ClientIdentity getIdentity(HttpServletRequest request, HttpServletResponse response) throws APIException{
     	
     	// check for login information
 		if("true".equals(request.getParameter("logout"))){	// logout if requested
@@ -302,18 +302,18 @@ public abstract class AbstractAPIHandler extends HttpServlet implements APIHandl
 		            		return identity;
 		    			}
 		    			Log.getLog().info("Invalid login try for user: " + credential.getName() + " via passwd from host: " + request.getRemoteHost());
-		    			throw new LoginException("Invalid credentials");
+		    			throw new APIException(422, "Invalid credentials");
 	    			}
 	    			Log.getLog().info("Invalid login try for user: " + credential.getName() + " from host: " + request.getRemoteHost() + " : password or salt missing in database");
-	    			throw new LoginException("Invalid credentials");
+	    			throw new APIException(422, "Invalid credentials");
     			}
     			Log.getLog().info("Invalid login try for user: " + credential.getName() + " from host: " + request.getRemoteHost() + " : user not activated yet");
-    			throw new LoginException("User not yet activated");
+    			throw new APIException(422, "User not yet activated");
     		}
     		else{
     			authentication.delete();
     			Log.getLog().info("Invalid login try for unknown user: " + credential.getName() + " via passwd from host: " + request.getRemoteHost());
-    			throw new LoginException("Invalid credentials");
+    			throw new APIException(422, "Invalid credentials");
     		}
     	}
     	else if (request.getParameter("access_token") != null){
@@ -338,11 +338,11 @@ public abstract class AbstractAPIHandler extends HttpServlet implements APIHandl
     			}
     			Log.getLog().info("Invalid login try for user: " + identity.getName() + " via expired access token from host: " + request.getRemoteHost());
     			authentication.delete();
-    			throw new LoginException("Invalid access token");
+    			throw new APIException(422, "Invalid access token");
     		}
     		Log.getLog().info("Invalid access token from host: " + request.getRemoteHost());
     		authentication.delete();
-    		throw new LoginException("Invalid access token");
+    		throw new APIException(422, "Invalid access token");
     	}
     	
         return getAnonymousIdentity(request);
