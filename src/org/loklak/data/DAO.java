@@ -141,7 +141,6 @@ public class DAO {
     public static JsonTray accounting;
     public static UserRoles userRoles;
     public static JsonTray passwordreset;
-    public static JsonTray userRoles;
     public static Map<String, Accounting> accounting_temporary = new HashMap<>();
     
     public static enum IndexName {
