@@ -118,7 +118,8 @@ public abstract class AbstractAPIHandler extends HttpServlet implements APIHandl
     private void process(HttpServletRequest request, HttpServletResponse response, Query query) throws ServletException, IOException {
         
         // basic protection
-        BaseUserRole minimalBaseUserRole = getMinimalBaseUserRole();
+        BaseUserRole minimalBaseUserRole = getMinimalBaseUserRole() != null ? getMinimalBaseUserRole() : BaseUserRole.ANONYMOUS;
+
         if (query.isDoS_blackout()) {response.sendError(503, "your request frequency is too high"); return;} // DoS protection
         if (minimalBaseUserRole == BaseUserRole.ADMIN && !query.isLocalhostAccess()) {response.sendError(503, "access only allowed from localhost, your request comes from " + query.getClientHost()); return;} // danger! do not remove this!
         
