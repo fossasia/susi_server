@@ -1,6 +1,6 @@
 /**
  *  GenericScraper
- *  Copyright 22.02.2015 by Damini Satya, @daminisatya
+ *  Copyright 16.06.2016 by Damini Satya, @daminisatya
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
