@@ -40,6 +40,7 @@ import org.loklak.server.ClientCredential;
 import org.loklak.server.ClientIdentity;
 import org.loklak.server.Query;
 import org.loklak.tools.IO;
+import org.loklak.tools.storage.JSONObjectWithDefault;
 
 public class SignUpService extends AbstractAPIHandler implements APIHandler {
    
@@ -68,7 +69,7 @@ public class SignUpService extends AbstractAPIHandler implements APIHandler {
     }
     
     @Override
-    public JSONObject serviceImpl(Query post, Authorization rights) throws APIException {
+    public JSONObject serviceImpl(Query post, Authorization rights, final JSONObjectWithDefault permissions) throws APIException {
 
     	BaseUserRole serviceLevel = getCustomServiceLevel(rights);
     	

@@ -28,6 +28,7 @@ import org.loklak.LoklakEmailHandler;
 import org.loklak.data.DAO;
 import org.loklak.server.*;
 import org.loklak.tools.IO;
+import org.loklak.tools.storage.JSONObjectWithDefault;
 
 public class PasswordRecoveryService extends AbstractAPIHandler implements APIHandler {
 
@@ -50,7 +51,7 @@ public class PasswordRecoveryService extends AbstractAPIHandler implements APIHa
 	}
 
 	@Override
-	public JSONObject serviceImpl(Query call, Authorization rights) throws APIException {
+	public JSONObject serviceImpl(Query call, Authorization rights, final JSONObjectWithDefault permissions) throws APIException {
 		JSONObject result = new JSONObject();
 
 		// check if token exists

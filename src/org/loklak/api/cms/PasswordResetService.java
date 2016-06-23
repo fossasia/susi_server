@@ -26,6 +26,7 @@ import java.util.regex.Pattern;
 import org.json.JSONObject;
 import org.loklak.data.DAO;
 import org.loklak.server.*;
+import org.loklak.tools.storage.JSONObjectWithDefault;
 
 public class PasswordResetService extends AbstractAPIHandler implements APIHandler {
 
@@ -47,7 +48,7 @@ public class PasswordResetService extends AbstractAPIHandler implements APIHandl
 	}
 
 	@Override
-	public JSONObject serviceImpl(Query call, Authorization rights) throws APIException {
+	public JSONObject serviceImpl(Query call, Authorization rights, final JSONObjectWithDefault permissions) throws APIException {
 		JSONObject result = new JSONObject();
 
 		String newpass;

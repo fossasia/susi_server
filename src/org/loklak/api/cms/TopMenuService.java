@@ -8,6 +8,7 @@ import org.loklak.server.AbstractAPIHandler;
 import org.loklak.server.Authorization;
 import org.loklak.server.BaseUserRole;
 import org.loklak.server.Query;
+import org.loklak.tools.storage.JSONObjectWithDefault;
 
 public class TopMenuService extends AbstractAPIHandler implements APIHandler {
     
@@ -27,7 +28,7 @@ public class TopMenuService extends AbstractAPIHandler implements APIHandler {
     }
     
     @Override
-    public JSONObject serviceImpl(Query call, Authorization rights) {
+    public JSONObject serviceImpl(Query call, Authorization rights, final JSONObjectWithDefault permissions) {
         
         int limited_count = (int) DAO.getConfig("download.limited.count", (long) Integer.MAX_VALUE);
     
