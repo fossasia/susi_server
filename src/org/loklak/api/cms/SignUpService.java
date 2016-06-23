@@ -42,12 +42,14 @@ import org.loklak.server.Query;
 import org.loklak.tools.IO;
 
 public class SignUpService extends AbstractAPIHandler implements APIHandler {
-   
-    private static final long serialVersionUID = 8578478303032749879L;
-    private static String verificationLinkPlaceholder = "%VERIFICATION-LINK%";
+
+	private static final long serialVersionUID = 8578478303032749879L;
+	private static String verificationLinkPlaceholder = "%VERIFICATION-LINK%";
 
 	@Override
-	public BaseUserRole getMinimalBaseUserRole() { return BaseUserRole.ANONYMOUS; }
+	public BaseUserRole getMinimalBaseUserRole() {
+		return BaseUserRole.ANONYMOUS;
+	}
 
 	@Override
 	public JSONObject getDefaultPermissions(BaseUserRole baseUserRole) {
@@ -55,186 +57,191 @@ public class SignUpService extends AbstractAPIHandler implements APIHandler {
 	}
 
 	public BaseUserRole getCustomServiceLevel(Authorization rights) {
-        if(rights.isAdmin()){
-        	return BaseUserRole.ADMIN;
-        } else if(rights.getIdentity() != null){
-        	return BaseUserRole.USER;
-        }
-        return BaseUserRole.ANONYMOUS;
-    }
+		if (rights.isAdmin()) {
+			return BaseUserRole.ADMIN;
+		} else if (rights.getIdentity() != null) {
+			return BaseUserRole.USER;
+		}
+		return BaseUserRole.ANONYMOUS;
+	}
 
-    public String getAPIPath() {
-        return "/api/signup.json";
-    }
-    
-    @Override
-    public JSONObject serviceImpl(Query post, Authorization rights) throws APIException {
+	public String getAPIPath() {
+		return "/api/signup.json";
+	}
 
-    	BaseUserRole serviceLevel = getCustomServiceLevel(rights);
-    	
-    	JSONObject result = new JSONObject();
-    	
-    	// if regex is requested
-    	if(post.get("getParameters", false)){
-    		String passwordPattern = DAO.getConfig("users.password.regex", "^(?=.*\\d).{6,64}$");
-    		String passwordPatternTooltip = DAO.getConfig("users.password.regex.tooltip", "Enter a combination of atleast six characters");
-    		if("false".equals(DAO.getConfig("users.public.signup", "false"))){
-    			result.put("success", false);
-        		result.put("message", "Public signup disabled");
-        		return result;
-    		}
-    		
-    		result.put("success", true);
-    		result.put("message", "");
-    		result.put("regex", passwordPattern);
-    		result.put("regexTooltip", passwordPatternTooltip);
-    		
-    		return result;
-    	}
-    	
-    	// is this a verification?
-    	if(post.get("validateEmail", false) && serviceLevel.ordinal() > BaseUserRole.ANONYMOUS.ordinal()){
-    		ClientCredential credential = new ClientCredential(ClientCredential.Type.passwd_login, rights.getIdentity().getName());
-    		Authentication authentication = new Authentication(credential, DAO.authentication);
-    		
-    		authentication.put("activated", true);
-    		
-    		result.put("success", true);
-    		result.put("message", "You successfully verified your account!");
-    		return result;
-    	}
-    	
-    	
-    	
-    	// check if this is done by admin or public and if verification is needed
-    	boolean activated = true;
-    	boolean sendEmail = false;
-    	
-    	if(serviceLevel != BaseUserRole.ADMIN){
-    		switch(DAO.getConfig("users.public.signup", "false")){
-    			case "false":
-    				result.put("success", false);
-    	    		result.put("message", "Public signup disabled");
-    	    		return result;
-    			case "admin":
-    				activated = false;
-    				break;
-    			case "email":
-    				activated = false;
-    				sendEmail = true;
-    		}
-    	}
-    	
-    	if(post.get("signup",null) == null || post.get("password", null) == null){
-    		result.put("success", false);
-    		result.put("message", "signup or password empty");
-    		return result;
-    	}
-    	
-    	// get credentials
-    	String signup, password;
-    	try {
-    		signup = URLDecoder.decode(post.get("signup",null),"UTF-8");
-			password = URLDecoder.decode(post.get("password",null),"UTF-8");
+	@Override
+	public JSONObject serviceImpl(Query post, Authorization rights) throws APIException {
+
+		BaseUserRole serviceLevel = getCustomServiceLevel(rights);
+
+		JSONObject result = new JSONObject();
+
+		// if regex is requested
+		if (post.get("getParameters", false)) {
+			String passwordPattern = DAO.getConfig("users.password.regex", "^(?=.*\\d).{6,64}$");
+			String passwordPatternTooltip = DAO.getConfig("users.password.regex.tooltip",
+					"Enter a combination of atleast six characters");
+			if ("false".equals(DAO.getConfig("users.public.signup", "false"))) {
+				result.put("success", false);
+				result.put("message", "Public signup disabled");
+				return result;
+			}
+
+			result.put("success", true);
+			result.put("message", "");
+			result.put("regex", passwordPattern);
+			result.put("regexTooltip", passwordPatternTooltip);
+
+			return result;
+		}
+
+		// is this a verification?
+		if (post.get("validateEmail", false) && serviceLevel.ordinal() > BaseUserRole.ANONYMOUS.ordinal()) {
+			ClientCredential credential = new ClientCredential(ClientCredential.Type.passwd_login,
+					rights.getIdentity().getName());
+			Authentication authentication = new Authentication(credential, DAO.authentication);
+
+			authentication.put("activated", true);
+
+			result.put("success", true);
+			result.put("message", "You successfully verified your account!");
+			return result;
+		}
+
+		// check if this is done by admin or public and if verification is
+		// needed
+		boolean activated = true;
+		boolean sendEmail = false;
+
+		if (serviceLevel != BaseUserRole.ADMIN) {
+			switch (DAO.getConfig("users.public.signup", "false")) {
+			case "false":
+				result.put("success", false);
+				result.put("message", "Public signup disabled");
+				return result;
+			case "admin":
+				activated = false;
+				break;
+			case "email":
+				activated = false;
+				sendEmail = true;
+			}
+		}
+
+		if (post.get("signup", null) == null || post.get("password", null) == null) {
+			result.put("success", false);
+			result.put("message", "signup or password empty");
+			return result;
+		}
+
+		// get credentials
+		String signup, password;
+		try {
+			signup = URLDecoder.decode(post.get("signup", null), "UTF-8");
+			password = URLDecoder.decode(post.get("password", null), "UTF-8");
 		} catch (UnsupportedEncodingException e) {
 			result.put("success", false);
-    		result.put("message", "malformed query");
-    		return result;
+			result.put("message", "malformed query");
+			return result;
 		}
-    	
-    	// check email pattern
-    	Pattern pattern = Pattern.compile(LoklakEmailHandler.EMAIL_PATTERN);
-    	if(!pattern.matcher(signup).matches()){
-    		result.put("success", false);
-    		result.put("message", "no valid email address");
-    		return result;
-    	}
-    	
-    	// check password pattern
-    	String passwordPattern = DAO.getConfig("users.password.regex", "^(?=.*\\d).{6,64}$");
-    	
-    	pattern = Pattern.compile(passwordPattern);
-    	
-    	if(signup.equals(password) || !pattern.matcher(password).matches()){
-    		result.put("success", false);
-    		result.put("message", "invalid password");
-    		return result;
-    	}
-    	
-    	// check if id exists already
-    	
-    	ClientCredential credential = new ClientCredential(ClientCredential.Type.passwd_login, signup);
-    	Authentication authentication = new Authentication(credential, DAO.authentication);
-    	
-    	if (authentication.getIdentity() != null) {
-    		result.put("success", false);
-    		result.put("message", "email already taken");
-    		return result;
-    	}
-    	
-    	// create new id
-    	ClientIdentity identity = new ClientIdentity(ClientIdentity.Type.email, credential.getName());
-    	authentication.setIdentity(identity);
+
+		// check email pattern
+		Pattern pattern = Pattern.compile(LoklakEmailHandler.EMAIL_PATTERN);
+		if (!pattern.matcher(signup).matches()) {
+			result.put("success", false);
+			result.put("message", "no valid email address");
+			return result;
+		}
+
+		// check password pattern
+		String passwordPattern = DAO.getConfig("users.password.regex", "^(?=.*\\d).{6,64}$");
+
+		pattern = Pattern.compile(passwordPattern);
+
+		if (signup.equals(password) || !pattern.matcher(password).matches()) {
+			result.put("success", false);
+			result.put("message", "invalid password");
+			return result;
+		}
+
+		// check if id exists already
+
+		ClientCredential credential = new ClientCredential(ClientCredential.Type.passwd_login, signup);
+		Authentication authentication = new Authentication(credential, DAO.authentication);
+
+		if (authentication.getIdentity() != null) {
+			result.put("success", false);
+			result.put("message", "email already taken");
+			return result;
+		}
+
+		// create new id
+		ClientIdentity identity = new ClientIdentity(ClientIdentity.Type.email, credential.getName());
+		authentication.setIdentity(identity);
 
 		// set authentication details
-    	String salt = createRandomString(20);
-    	authentication.put("salt", salt);
-    	authentication.put("passwordHash", getHash(password, salt));
-    	authentication.put("activated", activated);
+		String salt = createRandomString(20);
+		authentication.put("salt", salt);
+		authentication.put("passwordHash", getHash(password, salt));
+		authentication.put("activated", activated);
 
 		// set authorization details
-        Authorization authorization = new Authorization(identity, DAO.authorization, DAO.userRoles);
-        authorization.setUserRole(DAO.userRoles.getDefaultUserRole(BaseUserRole.USER));
-        
-        if(sendEmail){
-	        String token = createRandomString(30);
-	        ClientCredential access_token = new ClientCredential(ClientCredential.Type.access_token, token);
-	        Authentication tokenAuthentication = new Authentication(access_token, DAO.authentication);
-	        tokenAuthentication.setIdentity(identity);
-	        tokenAuthentication.setExpireTime(7 * 24 * 60 * 60);
-	        tokenAuthentication.put("one_time", true);
-	        
-	        try {
-				LoklakEmailHandler.sendEmail(signup, "Loklak verification", getVerificationMailContent(token));
-				
-				result.put("message", "You successfully signed-up! An email with a verification link was send to your address.");
-			
-	        } 
-	        catch(ConfigurationException e){
-				result.put("message", "You successfully signed-up, but no email was sent as it's disabled by the server.");
-			} 
-	        catch (Exception e) {
-	        	result.put("message", "You successfully signed-up, but an error occurred while sending the verification mail.");
-			}
-        }
-        else{
-        	result.put("message", "You successfully signed-up!");
-        }
+		Authorization authorization = new Authorization(identity, DAO.authorization, DAO.userRoles);
+		authorization.setUserRole(DAO.userRoles.getDefaultUserRole(BaseUserRole.USER));
 
-    	result.put("success", true);
-		
+		if (sendEmail) {
+			String token = createRandomString(30);
+			ClientCredential access_token = new ClientCredential(ClientCredential.Type.access_token, token);
+			Authentication tokenAuthentication = new Authentication(access_token, DAO.authentication);
+			tokenAuthentication.setIdentity(identity);
+			tokenAuthentication.setExpireTime(7 * 24 * 60 * 60);
+			tokenAuthentication.put("one_time", true);
+
+			try {
+				LoklakEmailHandler.sendEmail(signup, "Loklak verification", getVerificationMailContent(token));
+
+				result.put("message",
+						"You successfully signed-up! An email with a verification link was send to your address.");
+
+			} catch (ConfigurationException e) {
+				result.put("message",
+						"You successfully signed-up, but no email was sent as it's disabled by the server.");
+			} catch (Exception e) {
+				result.put("message",
+						"You successfully signed-up, but an error occurred while sending the verification mail.");
+			}
+		} else {
+			result.put("message", "You successfully signed-up!");
+		}
+
+		result.put("success", true);
+
 		return result;
-    }
-    
-    /**
-     * Read Email template and insert variables
-     * @param token - login token
-     * @return Email String
-     */
-    private String getVerificationMailContent(String token){
-    	
-    	String verificationLink = DAO.getConfig("host.name", "http://localhost:9000") + "/api/signup.json?access_token="+token+"&validateEmail=true&request_session=true";
-    	
-    	// get template file
-    	String result;
-    	try{
-    		result = IO.readFileCached(Paths.get(DAO.conf_dir + "/templates/verification-mail.txt"));
-    	} catch(IOException e){
-    		result = "";
-    	}
-    	
-    	result = result.contains(verificationLinkPlaceholder) ? result.replace(verificationLinkPlaceholder, verificationLink) : verificationLink;
-    	
-    	return result;
-    }
+	}
+
+	/**
+	 * Read Email template and insert variables
+	 * 
+	 * @param token
+	 *            - login token
+	 * @return Email String
+	 */
+	private String getVerificationMailContent(String token) {
+
+		String verificationLink = DAO.getConfig("host.name", "http://localhost:9000") + "/api/signup.json?access_token="
+				+ token + "&validateEmail=true&request_session=true";
+
+		// get template file
+		String result;
+		try {
+			result = IO.readFileCached(Paths.get(DAO.conf_dir + "/templates/verification-mail.txt"));
+		} catch (IOException e) {
+			result = "";
+		}
+
+		result = result.contains(verificationLinkPlaceholder)
+				? result.replace(verificationLinkPlaceholder, verificationLink) : verificationLink;
+
+		return result;
+	}
 }

@@ -29,33 +29,35 @@ import org.loklak.server.ClientIdentity;
 import org.loklak.server.Query;
 
 public class LoginService extends AbstractAPIHandler implements APIHandler {
-   
-    private static final long serialVersionUID = 8578478303032749879L;
 
-    @Override
-    public BaseUserRole getMinimalBaseUserRole() { return BaseUserRole.ANONYMOUS; }
+	private static final long serialVersionUID = 8578478303032749879L;
 
-    @Override
-    public JSONObject getDefaultPermissions(BaseUserRole baseUserRole) {
-        return null;
-    }
+	@Override
+	public BaseUserRole getMinimalBaseUserRole() {
+		return BaseUserRole.ANONYMOUS;
+	}
 
-    public String getAPIPath() {
-        return "/api/login.json";
-    }
-    
-    @Override
-    public JSONObject serviceImpl(Query post, Authorization rights) throws APIException {
+	@Override
+	public JSONObject getDefaultPermissions(BaseUserRole baseUserRole) {
+		return null;
+	}
 
-    	JSONObject result = new JSONObject();
-    	
-    	if(rights.getIdentity().getType() != ClientIdentity.Type.host){
+	public String getAPIPath() {
+		return "/api/login.json";
+	}
+
+	@Override
+	public JSONObject serviceImpl(Query post, Authorization rights) throws APIException {
+
+		JSONObject result = new JSONObject();
+
+		if (rights.getIdentity().getType() != ClientIdentity.Type.host) {
 			result.put("loggedIn", true);
 			result.put("message", "You are logged in as " + rights.getIdentity().getName());
-		}else {
+		} else {
 			result.put("loggedIn", false);
 		}
-    	
+
 		return result;
-    }
+	}
 }

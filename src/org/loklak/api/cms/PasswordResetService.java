@@ -54,8 +54,8 @@ public class PasswordResetService extends AbstractAPIHandler implements APIHandl
 		try {
 			newpass = URLDecoder.decode(call.get("newpass", null), "UTF-8");
 		} catch (UnsupportedEncodingException e) {
-			result.put("status", "error");
-			result.put("reason", "malformed query");
+			result.put("success", false);
+			result.put("message", "malformed query");
 			return result;
 		}
 
@@ -70,8 +70,9 @@ public class PasswordResetService extends AbstractAPIHandler implements APIHandl
 		Pattern pattern = Pattern.compile(passwordPattern);
 
 		if ((authentication.getIdentity().getName()).equals(newpass) || !pattern.matcher(newpass).matches()) {
+			// password can't equal email and regex should match
 			result.put("success", false);
-			result.put("message", "invalid password");
+			result.put("message", "Invalid Password");
 			return result;
 		}
 
@@ -87,8 +88,8 @@ public class PasswordResetService extends AbstractAPIHandler implements APIHandl
 		if (authentication.has("one_time") && authentication.getBoolean("one_time")) {
 			authentication.delete();
 		}
-		result.put("status", "ok");
-		result.put("reason", "password changed");
+		result.put("success", true);
+		result.put("message", "Your password has been changed!");
 		return result;
 	}
 
