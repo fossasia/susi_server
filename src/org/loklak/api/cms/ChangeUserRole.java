@@ -53,17 +53,14 @@ public class ChangeUserRole extends AbstractAPIHandler implements APIHandler {
             UserRole userRole = DAO.userRoles.getUserRoleFromString(userRoleName);
             if(userRole != null){
                 auth.setUserRole(userRole);
-                result.put("success",true);
                 result.put("message","user now has user-role: " + userRole.getDisplayName());
             }
             else{
-                result.put("success",false);
-                result.put("message","unknown user-role");
+                throw new APIException(400, "unknown user-role");
             }
         }
         else{
-            result.put("success",false);
-            result.put("message","no user-role specified");
+            throw new APIException(400, "no user-role specified");
         }
 
         return result;
