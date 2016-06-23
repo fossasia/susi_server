@@ -39,6 +39,7 @@ import org.loklak.server.Authorization;
 import org.loklak.server.Query;
 
 import com.google.common.util.concurrent.AtomicDouble;
+import org.loklak.tools.storage.JSONObjectWithDefault;
 
 /* examples:
  * http://localhost:9000/api/console.json?q=SELECT%20*%20FROM%20messages%20WHERE%20id=%27742384468560912386%27;
@@ -222,7 +223,7 @@ public class ConsoleService extends AbstractAPIHandler implements APIHandler {
     }
     
     @Override
-    public JSONObject serviceImpl(Query post, Authorization rights) throws APIException {
+    public JSONObject serviceImpl(Query post, Authorization rights, final JSONObjectWithDefault permissions) throws APIException {
 
         // parameters
         String q = post.get("q", "");

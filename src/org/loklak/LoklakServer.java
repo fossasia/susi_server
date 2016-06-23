@@ -505,7 +505,8 @@ public class LoklakServer {
                 TopMenuService.class,
         		ClientHandshake.class,
         		PasswordResetService.class,
-                ChangeUserRole.class
+                ChangeUserRole.class,
+                UserManagement.class
         };
         for (Class<? extends Servlet> service: services)
             try {

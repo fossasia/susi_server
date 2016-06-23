@@ -24,6 +24,7 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Map;
 
 public class UserRoles {
 
@@ -57,7 +58,10 @@ public class UserRoles {
         setDefaultUserRole(bur, userRole);
         roles.put(userRole.getName(), userRole);
 
-        json.put(userRole.getName(), obj); // this order of putting this at the end currently prevents a race condition in JsonFile !?
+        /* this order of putting this at the end makes sure all content
+        from the role gets written to the file. grrr
+         */
+        json.put(userRole.getName(), obj);
     }
 
     public void loadUserRolesFromObject() throws IllegalArgumentException{
@@ -148,5 +152,9 @@ public class UserRoles {
             return roles.get(ur);
         }
         return null;
+    }
+
+    public Map<String, UserRole> getUserRoles(){
+        return roles;
     }
 }
