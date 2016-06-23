@@ -68,6 +68,7 @@ public class GenericScraper extends HttpServlet {
 		//loading the data from the URL
 		Document page = Jsoup.connect(url).get();
 		String title = page.title();
+
 		List<String> linkHref = new ArrayList<String>();
 		List<String> linkText = new ArrayList<String>();
 		List<String> articleTags = new ArrayList<String>();
@@ -75,6 +76,9 @@ public class GenericScraper extends HttpServlet {
 		List<String> codeTags = new ArrayList<String>();
 		List<String> image = new ArrayList<String>();
 		List<String> src = new ArrayList<String>();
+		List<String> audio = new ArrayList<String>();
+		List<String> video = new ArrayList<String>();
+
 		Elements links = page.getElementsByTag("a");
 		Elements links2 = page.getElementsByTag("link");
 		Elements srciptLinks = page.getElementsByTag("script");
@@ -83,6 +87,12 @@ public class GenericScraper extends HttpServlet {
 		Elements articles = page.getElementsByTag("article");
 		Elements pres = page.getElementsByTag("pre");
 		Elements codes = page.getElementsByTag("code");
+		Elements audios = page.getElementsByTag("audio");
+		Elements videos = page.getElementsByTag("video");
+		Elements videos2 = page.getElementsByTag("iframe");
+		Elements videos3 = page.getElementsByTag("object");
+		Elements videos4 = page.getElementsByTag("embed");
+
 		String language = taglang.attr("lang");
 		for (Element link : links) {
 			if(link.attr("href") != null && link.attr("href").length() != 0){
@@ -122,6 +132,47 @@ public class GenericScraper extends HttpServlet {
 				codeTags.add(code.text());
 			}
 		}
+		for (Element link : audios) {
+			Elements audioSources = link.getElementsByTag("source");
+			if(!(audioSources.isEmpty())){
+				for(Element audioLink : audioSources){
+					if(audioLink.attr("src") != null && audioLink.attr("src").length() != 0){
+						audio.add(audioLink.attr("src"));
+					}
+				}
+			}
+			if(link.attr("src") != null && link.attr("src").length() != 0){
+				audio.add(link.attr("src"));
+			}
+		}
+		for (Element link : videos) {
+			Elements videoSources = link.getElementsByTag("source");
+			if(!(videoSources.isEmpty())){
+				for(Element videoLink : videoSources){
+					if(videoLink.attr("src") != null && videoLink.attr("src").length() != 0){
+						video.add(videoLink.attr("src"));
+					}
+				}
+			}
+			if(link.attr("src") != null && link.attr("src").length() != 0){
+				video.add(link.attr("src"));
+			}
+		}
+		for (Element link : videos2) {
+			if(link.attr("src") != null && link.attr("src").length() != 0){
+				video.add(link.attr("src"));
+			}
+		}
+		for (Element link : videos3) {
+			if(link.attr("src") != null && link.attr("src").length() != 0){
+				video.add(link.attr("src"));
+			}
+		}
+		for (Element link : videos4) {
+			if(link.attr("src") != null && link.attr("src").length() != 0){
+				video.add(link.attr("src"));
+			}
+		}
 		obj.put("title", title);
 		obj.put("language", language);
 		obj.put("Links", new JSONArray(linkHref));
@@ -129,8 +180,10 @@ public class GenericScraper extends HttpServlet {
 		obj.put("source files", new JSONArray(src));
 		obj.put("Image files", new JSONArray(image));
 		obj.put("Articles", new JSONArray(articleTags));
-		obj.put("Pre", new JSONArray(preTags));
+		obj.put("Preformatted Text", new JSONArray(preTags));
 		obj.put("Code", new JSONArray(codeTags));
+		obj.put("Audio", new JSONArray(audio));
+		obj.put("Video", new JSONArray(video));
 
 		//print JSON 
 		response.setCharacterEncoding("UTF-8");
