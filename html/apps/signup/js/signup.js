@@ -8,22 +8,17 @@ $(document).ready(function()
 			data: { getParameters: true },
 			dataType: 'json',
 			success: function (response) {
-				if(response.success){
-					regex = response.regex;
-					var regexTooltip = response.regexTooltip;
-					$('#pass').tooltip({'trigger':'focus', 'placement': 'left', 'title': regexTooltip});
-				}
-				else{
-					$('#status-box').text(response.message);
-					$('#status-box').addClass("error");
-					$('#email').prop( "disabled", true );
-					$('#pass').prop( "disabled", true );
-					$('#confirmpass').prop( "disabled", true );
-					$('#signup').prop( "disabled", true );
-				}
+                regex = response.regex;
+                var regexTooltip = response.regexTooltip;
+                $('#pass').tooltip({'trigger':'focus', 'placement': 'left', 'title': regexTooltip});
 			},
 			error: function (xhr, ajaxOptions, thrownError) {
-				console.log(thrownError);
+			    $('#status-box').text(thrownError);
+                $('#status-box').addClass("error");
+                $('#email').prop( "disabled", true );
+                $('#pass').prop( "disabled", true );
+                $('#confirmpass').prop( "disabled", true );
+                $('#signup').prop( "disabled", true );
 			},
 	});
 
@@ -111,13 +106,8 @@ $(document).ready(function()
 					data: { signup: mail, password: pwd },
 					dataType: 'json',
 					success: function (response) {
+					    resetFields();
 						$('#status-box').text(response.message);
-						if(!response.success){
-							$('#status-box').addClass("error");
-						}
-						else{
-							$('#status-box').removeClass();
-						}
 					},
 					error: function (xhr, ajaxOptions, thrownError) {
 						$('#status-box').text(thrownError);
@@ -126,6 +116,23 @@ $(document).ready(function()
 			});
         }
     });
+
+    function resetFields(){
+        $('#status-box').text("");
+        $('#status-box').removeClass();
+        $('#email').val("");
+        $('#email').removeClass();
+        $('#pass').val("");
+        $('#pass').removeClass();
+        $('#confirmpass').val("");
+        $('#confirmpass').removeClass();
+        $('#valid').text("");
+        $('#valid').removeClass();
+        $('#matching').text("");
+        $('#matching').removeClass();
+        $('#passtrength').text("");
+        $('#passtrength').removeClass();
+    }
 
     function strengthlvl(pass){
 
@@ -159,6 +166,7 @@ $(document).ready(function()
 
         passerr = false;
         $('#pass').removeClass();
+        $('#pass').addClass("success");
         $('#passtrength').removeClass();
         if (strength < 2 )
         {
