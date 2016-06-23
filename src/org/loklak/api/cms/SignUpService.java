@@ -79,13 +79,8 @@ public class SignUpService extends AbstractAPIHandler implements APIHandler {
     		String passwordPattern = DAO.getConfig("users.password.regex", "^(?=.*\\d).{6,64}$");
     		String passwordPatternTooltip = DAO.getConfig("users.password.regex.tooltip", "Enter a combination of atleast six characters");
     		if("false".equals(DAO.getConfig("users.public.signup", "false"))){
-    			result.put("success", false);
-        		result.put("message", "Public signup disabled");
-        		return result;
+				throw new APIException(403, "Public signup disabled");
     		}
-    		
-    		result.put("success", true);
-    		result.put("message", "");
     		result.put("regex", passwordPattern);
     		result.put("regexTooltip", passwordPatternTooltip);
     		
@@ -98,8 +93,7 @@ public class SignUpService extends AbstractAPIHandler implements APIHandler {
     		Authentication authentication = new Authentication(credential, DAO.authentication);
     		
     		authentication.put("activated", true);
-    		
-    		result.put("success", true);
+
     		result.put("message", "You successfully verified your account!");
     		return result;
     	}
@@ -113,9 +107,7 @@ public class SignUpService extends AbstractAPIHandler implements APIHandler {
     	if(serviceLevel != BaseUserRole.ADMIN){
     		switch(DAO.getConfig("users.public.signup", "false")){
     			case "false":
-    				result.put("success", false);
-    	    		result.put("message", "Public signup disabled");
-    	    		return result;
+                    throw new APIException(403, "Public signup disabled");
     			case "admin":
     				activated = false;
     				break;
@@ -126,9 +118,7 @@ public class SignUpService extends AbstractAPIHandler implements APIHandler {
     	}
     	
     	if(post.get("signup",null) == null || post.get("password", null) == null){
-    		result.put("success", false);
-    		result.put("message", "signup or password empty");
-    		return result;
+            throw new APIException(400, "signup or password empty");
     	}
     	
     	// get credentials
@@ -137,17 +127,13 @@ public class SignUpService extends AbstractAPIHandler implements APIHandler {
     		signup = URLDecoder.decode(post.get("signup",null),"UTF-8");
 			password = URLDecoder.decode(post.get("password",null),"UTF-8");
 		} catch (UnsupportedEncodingException e) {
-			result.put("success", false);
-    		result.put("message", "malformed query");
-    		return result;
+            throw new APIException(400, "malformed query");
 		}
     	
     	// check email pattern
     	Pattern pattern = Pattern.compile(LoklakEmailHandler.EMAIL_PATTERN);
     	if(!pattern.matcher(signup).matches()){
-    		result.put("success", false);
-    		result.put("message", "no valid email address");
-    		return result;
+            throw new APIException(400, "no valid email address");
     	}
     	
     	// check password pattern
@@ -156,9 +142,7 @@ public class SignUpService extends AbstractAPIHandler implements APIHandler {
     	pattern = Pattern.compile(passwordPattern);
     	
     	if(signup.equals(password) || !pattern.matcher(password).matches()){
-    		result.put("success", false);
-    		result.put("message", "invalid password");
-    		return result;
+            throw new APIException(400, "invalid password");
     	}
     	
     	// check if id exists already
@@ -167,9 +151,7 @@ public class SignUpService extends AbstractAPIHandler implements APIHandler {
     	Authentication authentication = new Authentication(credential, DAO.authentication);
     	
     	if (authentication.getIdentity() != null) {
-    		result.put("success", false);
-    		result.put("message", "email already taken");
-    		return result;
+            throw new APIException(422, "email already taken");
     	}
     	
     	// create new id
@@ -210,8 +192,6 @@ public class SignUpService extends AbstractAPIHandler implements APIHandler {
         else{
         	result.put("message", "You successfully signed-up!");
         }
-
-    	result.put("success", true);
 		
 		return result;
     }
