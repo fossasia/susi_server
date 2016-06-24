@@ -1,5 +1,5 @@
 /**
- *  APIServiceLevel
+ *  BaseUserRole
  *  Copyright 17.05.2016 by Michael Peter Christen, @0rb1t3r
  *
  *  This library is free software; you can redistribute it and/or
@@ -20,11 +20,10 @@
 
 package org.loklak.server;
 
-public enum APIServiceLevel {
+public enum BaseUserRole {
 
-    ADMIN,      // functions that modify the behavior of the server and the server's services
-    LIMITED,    // functions that are available in the public, but are limited in some way
-    PRODUCT,    // limited functions which can be unlimited if the user is granted that (by any way)
-    PUBLIC      // functions that are public and unlimited
-    
+    ANONYMOUS,
+    USER,
+    PRIVILEGED,
+    ADMIN
 }

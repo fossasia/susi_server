@@ -1,23 +1,27 @@
 $(document).ready(function()
 {
+  var emailerr = false, passerr = false, confirmerr = false;
+
 	// get password parameters
 	var regex;
-    
-    var xhttp = new XMLHttpRequest();
-	$.holdReady(true);
-	xhttp.onreadystatechange = function() {
-		if (xhttp.readyState == 4 && xhttp.status == 200) {
-			regex = JSON.parse(xhttp.responseText).regex;
-			var regexTooltip = JSON.parse(xhttp.responseText).regexTooltip;
-			$('#pass').tooltip({'trigger':'focus', 'placement': 'left', 'title': regexTooltip});
-			$.holdReady(false);
-		}
-	};
-	xhttp.open("GET", "/api/signup.json?getRegex=true", true);
-	xhttp.send();
-	
-    var emailerr = false, passerr = false, confirmerr = false;
-    
+	$.ajax(	"/api/signup.json", {
+			data: { getParameters: true },
+			dataType: 'json',
+			success: function (response) {
+                regex = response.regex;
+                var regexTooltip = response.regexTooltip;
+                $('#pass').tooltip({'trigger':'focus', 'placement': 'left', 'title': regexTooltip});
+			},
+			error: function (xhr, ajaxOptions, thrownError) {
+			    $('#status-box').text(thrownError);
+                $('#status-box').addClass("error");
+                $('#email').prop( "disabled", true );
+                $('#pass').prop( "disabled", true );
+                $('#confirmpass').prop( "disabled", true );
+                $('#signup').prop( "disabled", true );
+			},
+	});
+
     $('#pass').keyup(function(){
         $('#passtrength').text(strengthlvl($('#pass').val()));
     });
@@ -30,7 +34,7 @@ $(document).ready(function()
             $('#valid').removeClass();
             if(regex.test(emailval)){
                 $('#valid').text("Email valid!");
-                $('#email').addClass("success");      
+                $('#email').addClass("success");
                 $('#valid').addClass("success");
                 emailerr = false;
             }
@@ -84,7 +88,7 @@ $(document).ready(function()
                 $(this).addClass("error");
                 $('#matching').text("");
                 confirmerr = true;
-            } 
+            }
         } else {
                 $(this).removeClass();
                 $('#matching').text("");
@@ -94,21 +98,41 @@ $(document).ready(function()
     $('#signup').click(function(){
         checkEmpty();
         var total = passerr || confirmerr || emailerr;
-        if(total){
-            alert("One or more fields are wrong / empty. Please correct");
-        } else{
+        if(!total){
             var mail = encodeURIComponent($('#email').val());
             var pwd = encodeURIComponent($('#pass').val());
-            var posting = $.post( "/api/signup.json", { signup: mail, password: pwd }, function(data) {
-                console.log(data.status);
-                console.log(data.reason);
-                alert(data.status + ", " + data.reason);
-                if(data.status=="ok" && data.reason=="ok"){
-                    window.location = '/apps/applist/index.html';
-                }
-            }, "json" );
+
+            $.ajax(	"/api/signup.json", {
+					data: { signup: mail, password: pwd },
+					dataType: 'json',
+					success: function (response) {
+					    resetFields();
+						$('#status-box').text(response.message);
+					},
+					error: function (xhr, ajaxOptions, thrownError) {
+						$('#status-box').text(thrownError);
+						$('#status-box').addClass("error");
+					},
+			});
         }
     });
+
+    function resetFields(){
+        $('#status-box').text("");
+        $('#status-box').removeClass();
+        $('#email').val("");
+        $('#email').removeClass();
+        $('#pass').val("");
+        $('#pass').removeClass();
+        $('#confirmpass').val("");
+        $('#confirmpass').removeClass();
+        $('#valid').text("");
+        $('#valid').removeClass();
+        $('#matching').text("");
+        $('#matching').removeClass();
+        $('#passtrength').text("");
+        $('#passtrength').removeClass();
+    }
 
     function strengthlvl(pass){
 
@@ -122,7 +146,7 @@ $(document).ready(function()
             passerr = true;
             return "Insufficient password";
 		}
-        
+
         if (pass.length >=7) { //sufficient length
             strength += 1;
         }
@@ -130,7 +154,7 @@ $(document).ready(function()
             strength += 1;
         }
         if (pass.match(/([a-zA-Z])/) && pass.match(/([0-9])/)){ //both letters and nums
-            strength += 1; 
+            strength += 1;
         }
         if (pass.match(/([^a-zA-Z0-9])/)){ //alphanumeric
             strength += 1;
@@ -142,22 +166,23 @@ $(document).ready(function()
 
         passerr = false;
         $('#pass').removeClass();
+        $('#pass').addClass("success");
         $('#passtrength').removeClass();
         if (strength < 2 )
-        {  
+        {
             $('#passtrength').css('color', 'orange'); // color changes
-            return "Weak";           
+            return "Weak";
         }
         else if (strength >= 2 && strength < 4)
         {
             $('#passtrength').css('color', 'LightGreen');
-            return "Good";       
+            return "Good";
         }
-        else 
+        else
         {
             $('#passtrength').css('color', 'GreenYellow');
             return "Strong";
-        }    
+        }
 
     }
 
@@ -172,7 +197,7 @@ $(document).ready(function()
             $('#email').addClass("error");
             $('#valid').addClass("error");
             emailerr = true;
-        } 
+        }
         if(!passval && !($('#pass').is(":focus"))){
             $('#passtrength').text("Required field!");
             $('#pass').removeClass();

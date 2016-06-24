@@ -29,12 +29,13 @@ import org.loklak.api.admin.StatusServlet;
 import org.loklak.data.DAO;
 import org.loklak.http.ClientConnection;
 import org.loklak.server.APIHandler;
-import org.loklak.server.APIServiceLevel;
 import org.loklak.server.AbstractAPIHandler;
 import org.loklak.server.Authorization;
+import org.loklak.server.BaseUserRole;
 import org.loklak.server.Query;
 import org.loklak.tools.DateParser;
 import org.loklak.tools.UTF8;
+import org.loklak.tools.storage.JSONObjectWithDefault;
 
 /**
  * Servlet to span the message peer-to-peer network.
@@ -46,13 +47,11 @@ public class HelloService extends AbstractAPIHandler implements APIHandler {
 
 
     @Override
-    public APIServiceLevel getDefaultServiceLevel() {
-        return APIServiceLevel.PUBLIC;
-    }
+    public BaseUserRole getMinimalBaseUserRole() { return BaseUserRole.ANONYMOUS; }
 
     @Override
-    public APIServiceLevel getCustomServiceLevel(Authorization auth) {
-        return APIServiceLevel.PUBLIC;
+    public JSONObject getDefaultPermissions(BaseUserRole baseUserRole) {
+        return null;
     }
 
     @Override
@@ -129,10 +128,9 @@ public class HelloService extends AbstractAPIHandler implements APIHandler {
     }
     
     @Override
-    public JSONObject serviceImpl(Query call, Authorization rights) {
+    public JSONObject serviceImpl(Query call, Authorization rights, final JSONObjectWithDefault permissions) {
     	JSONObject res = DAO.public_settings.toJSONObject();
     	res.put("status", "ok");
     	return res;
     }
-    
 }

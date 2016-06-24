@@ -31,10 +31,11 @@ import org.json.JSONObject;
 import org.loklak.data.DAO;
 import org.loklak.server.APIException;
 import org.loklak.server.APIHandler;
-import org.loklak.server.APIServiceLevel;
 import org.loklak.server.AbstractAPIHandler;
 import org.loklak.server.Authorization;
+import org.loklak.server.BaseUserRole;
 import org.loklak.server.Query;
+import org.loklak.tools.storage.JSONObjectWithDefault;
 
 public class AppsService extends AbstractAPIHandler implements APIHandler {
 
@@ -46,17 +47,15 @@ public class AppsService extends AbstractAPIHandler implements APIHandler {
     }
 
     @Override
-    public APIServiceLevel getDefaultServiceLevel() {
-        return APIServiceLevel.PUBLIC;
+    public BaseUserRole getMinimalBaseUserRole() { return BaseUserRole.ANONYMOUS; }
+
+    @Override
+    public JSONObject getDefaultPermissions(BaseUserRole baseUserRole) {
+        return null;
     }
 
     @Override
-    public APIServiceLevel getCustomServiceLevel(Authorization auth) {
-        return APIServiceLevel.PUBLIC;
-    }
-
-    @Override
-    public JSONObject serviceImpl(Query query, Authorization auth) throws APIException {
+    public JSONObject serviceImpl(Query query, Authorization auth, final JSONObjectWithDefault permissions) throws APIException {
 
         String categorySelection = query.get("category", "");
         
@@ -105,5 +104,4 @@ public class AppsService extends AbstractAPIHandler implements APIHandler {
 
         return json;
     }
-    
 }

@@ -1,3 +1,2 @@
 User-agent: *
-Disallow: /api/
-Disallow: /dump/
+Sitemap: http://loklak.org/api/sitemap.xml

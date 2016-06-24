@@ -11,3 +11,7 @@ script:
   - bin/start.sh
 
 install: true
+
+branches:
+  only:
+    - "master"

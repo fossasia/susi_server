@@ -6,11 +6,18 @@ p {
 	color: #fff;
 }
 
+.hidden{
+	display: none;
+}
+
 label.error{
 	color: red !important;
 }
 input.error{
 	border: 2px solid red !important;
+}
+div.error{
+	color: red !important;
 }
 
 .form {

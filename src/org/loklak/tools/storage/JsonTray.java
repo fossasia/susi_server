@@ -97,7 +97,7 @@ public class JsonTray {
     	return res;
     }
     
- // for debug reasons
+    // for debug reasons
     public JSONObject getVolatile(){
     	JSONObject res = new JSONObject();
     	synchronized(this.vol) {

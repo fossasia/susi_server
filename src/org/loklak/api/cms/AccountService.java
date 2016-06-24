@@ -28,31 +28,31 @@ import org.loklak.objects.AccountEntry;
 import org.loklak.objects.UserEntry;
 import org.loklak.server.APIException;
 import org.loklak.server.APIHandler;
-import org.loklak.server.APIServiceLevel;
 import org.loklak.server.AbstractAPIHandler;
 import org.loklak.server.Authorization;
+import org.loklak.server.BaseUserRole;
 import org.loklak.server.Query;
+import org.loklak.tools.storage.JSONObjectWithDefault;
 
 public class AccountService extends AbstractAPIHandler implements APIHandler {
    
     private static final long serialVersionUID = 8578478303032749879L;
 
     @Override
-    public APIServiceLevel getDefaultServiceLevel() {
-        return APIServiceLevel.ADMIN;
+    public BaseUserRole getMinimalBaseUserRole() { return BaseUserRole.ADMIN; }
+
+    @Override
+    public JSONObject getDefaultPermissions(BaseUserRole baseUserRole) {
+        return null;
     }
 
     @Override
-    public APIServiceLevel getCustomServiceLevel(Authorization rights) {
-        return APIServiceLevel.ADMIN;
-    }
-
     public String getAPIPath() {
         return "/api/account.json";
     }
     
     @Override
-    public JSONObject serviceImpl(Query post, Authorization rights) throws APIException {
+    public JSONObject serviceImpl(Query post, Authorization rights, final JSONObjectWithDefault permissions) throws APIException {
 
         // parameters
         boolean update = "update".equals(post.get("action", ""));
@@ -109,5 +109,4 @@ public class AccountService extends AbstractAPIHandler implements APIHandler {
         
         return m;
     }
-    
 }

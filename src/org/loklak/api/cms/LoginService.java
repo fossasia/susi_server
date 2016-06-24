@@ -22,45 +22,43 @@ package org.loklak.api.cms;
 import org.json.JSONObject;
 import org.loklak.server.APIException;
 import org.loklak.server.APIHandler;
-import org.loklak.server.APIServiceLevel;
 import org.loklak.server.AbstractAPIHandler;
 import org.loklak.server.Authorization;
+import org.loklak.server.BaseUserRole;
 import org.loklak.server.ClientIdentity;
 import org.loklak.server.Query;
+import org.loklak.tools.storage.JSONObjectWithDefault;
 
 public class LoginService extends AbstractAPIHandler implements APIHandler {
-   
-    private static final long serialVersionUID = 8578478303032749879L;
 
-    @Override
-    public APIServiceLevel getDefaultServiceLevel() {
-        return APIServiceLevel.PUBLIC;
-    }
+	private static final long serialVersionUID = 8578478303032749879L;
 
-    @Override
-    public APIServiceLevel getCustomServiceLevel(Authorization rights) {
-        return APIServiceLevel.ADMIN;
-    }
+	@Override
+	public BaseUserRole getMinimalBaseUserRole() {
+		return BaseUserRole.ANONYMOUS;
+	}
 
-    public String getAPIPath() {
-        return "/api/login.json";
-    }
-    
-    @Override
-    public JSONObject serviceImpl(Query post, Authorization rights) throws APIException {
+	@Override
+	public JSONObject getDefaultPermissions(BaseUserRole baseUserRole) {
+		return null;
+	}
 
-    	JSONObject result = new JSONObject();
-    	
-    	if(rights.getIdentity().getType() == ClientIdentity.Type.email){
-    		result.put("status", "ok");
-    		result.put("reason", "ok");
-    	}
-    	else{
-    		result.put("status", "error");
-    		result.put("reason", "Wrong login credentials");
-    	}
-    	
+	public String getAPIPath() {
+		return "/api/login.json";
+	}
+
+	@Override
+	public JSONObject serviceImpl(Query post, Authorization rights, final JSONObjectWithDefault permissions) throws APIException {
+
+		JSONObject result = new JSONObject();
+
+		if (rights.getIdentity().getType() != ClientIdentity.Type.host) {
+			result.put("loggedIn", true);
+			result.put("message", "You are logged in as " + rights.getIdentity().getName());
+		} else {
+			result.put("loggedIn", false);
+		}
+
 		return result;
-    }
-    
+	}
 }

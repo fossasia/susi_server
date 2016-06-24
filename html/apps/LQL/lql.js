@@ -4,6 +4,9 @@ var tzOffset = document.getElementsByName('timezoneoffset');
 tzOffset[0].value = currentTimeZoneOffset;
 tzOffset[0].disabled = true;
 
+// Input fields for data as POST explicitly hidden
+$('div#inputFields').hide();
+
 // jQuery radio button handler to show and hide required fields
 // depending on the API Chosen.
 $(document).ready(function(){
@@ -11,10 +14,17 @@ $(document).ready(function(){
         if (this.value == 'search.json' || this.value == 'true' || this.value == 'false') {
         	constructQuery();
         	$("#searchOptions").show();
+        	$('div#inputFields').hide();
+        }
+        else if (this.value == 'xml2json.json' || this.value == 'csv2json.json') {
+        	constructQuery();
+        	$('div#inputFields').show();
+        	$("#searchOptions").hide();
         }
         else {
         	constructQuery();
         	$("#searchOptions").hide();
+        	$('div#inputFields').hide();
         }
     });
 
@@ -53,6 +63,10 @@ $(document).ready(function(){
     });
 
     $('#limit').bind('input', function() {
+    	constructQuery();
+    });
+
+    $('#inputFieldArea').bind('input', function() {
     	constructQuery();
     });
 });
@@ -111,11 +125,18 @@ function constructQuery() {
 	// Minified type contains value True/False
 	var aggregationsCheckboxObject = document.getElementsByName('aggregations');
 	var aggregations = getCheckedCheckboxValue(aggregationsCheckboxObject);
+	// Data input for data=
+	var ipField = $('#inputFieldArea').val();
 
 	if (selectedAPI != 'search.json') {
 		serviceURL = $(location).attr('href').split('apps/LQL/')[0];
 		var constructedURL = serviceURL;
 		constructedURL += 'api/' + selectedAPI;
+		if (selectedAPI == 'xml2json.json' || selectedAPI == 'csv2json.json') {
+			if (ipField != '') {
+				constructedURL += '?data='+ipField;
+			}
+		}
 		$('#queryGenerated').val(constructedURL);
 	}
 	else {

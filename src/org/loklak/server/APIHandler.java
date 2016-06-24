@@ -25,11 +25,11 @@ public interface APIHandler {
 
     public String[] getServerProtocolHostStub();
 
-    public APIServiceLevel getDefaultServiceLevel();
+    public BaseUserRole getMinimalBaseUserRole();
+
+    public JSONObject getDefaultPermissions(BaseUserRole baseUserRole);
     
     public String getAPIPath();
-    
-    public APIServiceLevel getCustomServiceLevel(Authorization httpaccount);
 
     public JSONObject[] service(Query call, Authorization rights) throws APIException;
     

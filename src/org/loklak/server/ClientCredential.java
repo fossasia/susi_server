@@ -27,7 +27,8 @@ public class ClientCredential extends Client {
     public enum Type {
     	passwd_login(true),
         cookie(false),
-        login_token(false),
+        access_token(false),
+        resetpass_token(false),
         host(false);
         private final boolean persistent;
         Type(final boolean persistent) {
@@ -63,7 +64,7 @@ public class ClientCredential extends Client {
     }
     
     public boolean isToken() {
-        return this.getKey().equals(Type.login_token.name());
+        return this.getKey().equals(Type.access_token.name());
     }
     
     public boolean isAnonymous() {

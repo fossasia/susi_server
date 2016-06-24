@@ -33,12 +33,13 @@ import org.loklak.data.DAO;
 import org.loklak.objects.Timeline;
 import org.loklak.server.APIException;
 import org.loklak.server.APIHandler;
-import org.loklak.server.APIServiceLevel;
+import org.loklak.server.BaseUserRole;
 import org.loklak.server.AbstractAPIHandler;
 import org.loklak.server.Authorization;
 import org.loklak.server.Query;
 
 import com.google.common.util.concurrent.AtomicDouble;
+import org.loklak.tools.storage.JSONObjectWithDefault;
 
 /* examples:
  * http://localhost:9000/api/console.json?q=SELECT%20*%20FROM%20messages%20WHERE%20id=%27742384468560912386%27;
@@ -51,13 +52,11 @@ public class ConsoleService extends AbstractAPIHandler implements APIHandler {
     private static final long serialVersionUID = 8578478303032749879L;
 
     @Override
-    public APIServiceLevel getDefaultServiceLevel() {
-        return APIServiceLevel.PUBLIC;
-    }
+    public BaseUserRole getMinimalBaseUserRole() { return BaseUserRole.ANONYMOUS; }
 
     @Override
-    public APIServiceLevel getCustomServiceLevel(Authorization rights) {
-        return APIServiceLevel.PUBLIC;
+    public JSONObject getDefaultPermissions(BaseUserRole baseUserRole) {
+        return null;
     }
 
     public String getAPIPath() {
@@ -224,7 +223,7 @@ public class ConsoleService extends AbstractAPIHandler implements APIHandler {
     }
     
     @Override
-    public JSONObject serviceImpl(Query post, Authorization rights) throws APIException {
+    public JSONObject serviceImpl(Query post, Authorization rights, final JSONObjectWithDefault permissions) throws APIException {
 
         // parameters
         String q = post.get("q", "");
