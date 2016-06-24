@@ -90,6 +90,7 @@ import org.loklak.api.search.SuggestServlet;
 import org.loklak.api.search.ConsoleService;
 import org.loklak.api.search.UserServlet;
 import org.loklak.api.search.GenericScraper;
+import org.loklak.api.search.RSSReader;
 import org.loklak.api.tools.CSVServlet;
 import org.loklak.api.tools.XMLServlet;
 import org.loklak.api.vis.MapServlet;
@@ -544,6 +545,7 @@ public class LoklakServer {
         servletHandler.addServlet(ProxyServlet.class, "/api/proxy.jpg");
         servletHandler.addServlet(ValidateServlet.class, "/api/validate.json");
         servletHandler.addServlet(GenericScraper.class, "/api/genericscraper.json");
+        servletHandler.addServlet(RSSReader.class, "/api/rssreader.json");
         ServletHolder pushServletHolder = new ServletHolder(PushServlet.class);
         pushServletHolder.getRegistration().setMultipartConfig(multipartConfig);
         servletHandler.addServlet(pushServletHolder, "/api/push.json");
