@@ -113,6 +113,9 @@ public class StatusServlet extends HttpServlet {
         JSONObject messages = new JSONObject(true);
         messages.put("size", local_messages + backend_messages);
         messages.put("size_local", local_messages);
+        messages.put("size_local_hour", DAO.countLocalHourMessages(-1));
+        messages.put("size_local_day", DAO.countLocalDayMessages(-1));
+        messages.put("size_local_week", DAO.countLocalWeekMessages(-1));
         messages.put("size_backend", backend_messages);
         messages.put("stats", DAO.messages.getStats());
         JSONObject queue = new JSONObject(true);

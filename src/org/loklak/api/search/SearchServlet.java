@@ -36,6 +36,7 @@ import org.eclipse.jetty.util.log.Log;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.loklak.data.DAO;
+import org.loklak.data.DAO.IndexName;
 import org.loklak.harvester.TwitterScraper;
 import org.loklak.http.ClientConnection;
 import org.loklak.http.RemoteAccess;
@@ -134,7 +135,7 @@ public class SearchServlet extends HttpServlet {
         final long timeout = (long) post.get("timeout", DAO.getConfig("search.timeout", 2000));
         final int count = post.isDoS_servicereduction() ? SEARCH_LOW_COUNT : Math.min(post.get("count", post.get("maximumRecords", SEARCH_DEFAULT_COUNT)), post.isLocalhostAccess() ? SEARCH_MAX_LOCALHOST_COUNT : SEARCH_MAX_PUBLIC_COUNT);
         String source = post.isDoS_servicereduction() ? "cache" : post.get("source", "all"); // possible values: cache, backend, twitter, all
-        int agregation_limit = post.get("limit", 100);
+        int agregation_limit = post.get("limit", 10);
         String[] fields = post.get("fields", new String[0], ",");
         int timezoneOffset = post.get("timezoneOffset", 0);
         if (query.indexOf("id:") >= 0 && ("all".equals(source) || "twitter".equals(source))) source = "cache"; // id's cannot be retrieved from twitter with the scrape-api (yet), only from the cache
@@ -148,7 +149,7 @@ public class SearchServlet extends HttpServlet {
         
         final AtomicInteger cache_hits = new AtomicInteger(0), count_backend = new AtomicInteger(0), count_twitter_all = new AtomicInteger(0), count_twitter_new = new AtomicInteger(0);
         final boolean backend_push = DAO.getConfig("backend.push.enabled", false);
-
+        
         if ("all".equals(source)) {
             // start all targets for search concurrently
             final int timezoneOffsetf = timezoneOffset;
@@ -178,6 +179,7 @@ public class SearchServlet extends HttpServlet {
                     post.recordEvent("cache_time", time);
                     cache_hits.set(localSearchResult.timeline.getHits());
                     tl.putAll(localSearchResult.timeline);
+                    tl.setResultIndex(localSearchResult.timeline.getResultIndex());
                 }
             };
             if (localThread != null) localThread.start();
@@ -226,6 +228,7 @@ public class SearchServlet extends HttpServlet {
             DAO.SearchLocalMessages localSearchResult = new DAO.SearchLocalMessages(query, order, timezoneOffset, last_cache_search_time.get() > SEARCH_CACHE_THREASHOLD_TIME ? SEARCH_LOW_COUNT : count, agregation_limit, fields);
             cache_hits.set(localSearchResult.timeline.getHits());
             tl.putAll(localSearchResult.timeline);
+            tl.setResultIndex(localSearchResult.timeline.getResultIndex());
             aggregations = localSearchResult.getAggregations();
             long time = System.currentTimeMillis() - start;
             last_cache_search_time.set(time);
@@ -278,6 +281,7 @@ public class SearchServlet extends HttpServlet {
             metadata.put("time", System.currentTimeMillis() - post.getAccessTime());
             metadata.put("servicereduction", post.isDoS_servicereduction() ? "true" : "false");
             if (tl.getScraperInfo().length() > 0) metadata.put("scraperInfo", tl.getScraperInfo());
+            if (tl.getResultIndex() != null) metadata.put("index", tl.getResultIndex());
             m.put("search_metadata", metadata);
             JSONArray statuses = new JSONArray();
             try {

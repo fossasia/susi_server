@@ -92,6 +92,18 @@ public class DateParser {
         TimeZone timeZone = calendar.getTimeZone();
         return - (int) TimeUnit.MILLISECONDS.toMinutes(timeZone.getRawOffset()); // we negate the offset because thats the value which is provided by the browser as well 
     }
+
+    public static Date oneHourAgo() {
+        return new Date(System.currentTimeMillis() - HOUR_MILLIS);
+    }
+    
+    public static Date oneDayAgo() {
+        return new Date(System.currentTimeMillis() - DAY_MILLIS);
+    }
+
+    public static Date oneWeekAgo() {
+        return new Date(System.currentTimeMillis() - WEEK_MILLIS);
+    }
     
     public static void main(String[] args) {
         Calendar calendar = new GregorianCalendar();
