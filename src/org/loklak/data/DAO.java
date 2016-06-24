@@ -52,6 +52,8 @@ import org.eclipse.jetty.util.log.Log;
 import org.elasticsearch.cluster.health.ClusterHealthStatus;
 import org.elasticsearch.common.logging.ESLoggerFactory;
 import org.elasticsearch.common.logging.slf4j.Slf4jESLoggerFactory;
+import org.elasticsearch.index.query.QueryBuilders;
+import org.elasticsearch.index.query.RangeQueryBuilder;
 import org.elasticsearch.search.sort.SortOrder;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -822,8 +824,13 @@ public class DAO {
         return queries.delete(id, sourceType);
     }
 
-    public  static boolean deleteImportProfile(String id, SourceType sourceType) {
+    public static boolean deleteImportProfile(String id, SourceType sourceType) {
         return importProfiles.delete(id, sourceType);
+    }
+    
+    public static int deleteOld(IndexName indexName, Date createDateLimit) {
+        RangeQueryBuilder rangeQuery = QueryBuilders.rangeQuery("created_at").to(createDateLimit);
+        return elasticsearch_client.deleteByQuery(indexName.name(), rangeQuery);
     }
     
     public static class SearchLocalMessages {

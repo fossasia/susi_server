@@ -37,6 +37,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 
 import org.eclipse.jetty.util.log.Log;
 import org.elasticsearch.action.ActionWriteResponse;
@@ -426,16 +427,18 @@ public class ElasticsearchClient {
      * ATTENTION: read about the time-out of version number checking in the method above.
      * 
      * @param ids
-     *            a collection of the unique identifier of a document
+     *            a map from the unique identifier of a document to the document type
      * @return the number of deleted documents
      */
-    public int deleteBulk(String indexName, String typeName, Collection<String> ids) {
+    public int deleteBulk(String indexName, Map<String, String> ids) {
         // bulk-delete the ids
+        if (ids == null || ids.size() == 0) return 0;
         BulkRequestBuilder bulkRequest = elasticsearchClient.prepareBulk();
-        for (String id : ids) {
-            bulkRequest.add(new DeleteRequest().id(id).index(indexName).type(typeName));
+        for (Map.Entry<String, String> id : ids.entrySet()) {
+            bulkRequest.add(new DeleteRequest().id(id.getKey()).index(indexName).type(id.getValue()));
         }
-        return bulkRequest.execute().actionGet().contextSize();
+        bulkRequest.execute().actionGet();
+        return ids.size();
     }
     
     /**
@@ -448,8 +451,8 @@ public class ElasticsearchClient {
      * @param q
      * @return delete document count
      */
-    public int deleteByQuery(String indexName, String typeName, final QueryBuilder q) {
-        List<String> ids = new ArrayList<>();
+    public int deleteByQuery(String indexName, final QueryBuilder q) {
+        Map<String, String> ids = new TreeMap<>();
         // FIXME: deprecated, "will be removed in 3.0, you should do a regular scroll instead, ordered by `_doc`"
         @SuppressWarnings("deprecation")
         SearchResponse response = elasticsearchClient.prepareSearch(indexName).setSearchType(SearchType.SCAN)
@@ -458,7 +461,7 @@ public class ElasticsearchClient {
             // accumulate the ids here, don't delete them right now to prevent an interference of the delete with the
             // scroll
             for (SearchHit hit : response.getHits().getHits()) {
-                ids.add(hit.getId());
+                ids.put(hit.getId(), hit.getType());
             }
             response = elasticsearchClient.prepareSearchScroll(response.getScrollId()).setScroll(new TimeValue(600000))
                 .execute().actionGet();
@@ -466,7 +469,7 @@ public class ElasticsearchClient {
             if (response.getHits().getHits().length == 0)
                 break;
         }
-        return deleteBulk(indexName, typeName, ids);
+        return deleteBulk(indexName, ids);
     }
 
     /**

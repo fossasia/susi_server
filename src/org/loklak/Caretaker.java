@@ -35,6 +35,7 @@ import org.loklak.api.p2p.HelloService;
 import org.loklak.api.p2p.PushServlet;
 import org.loklak.api.search.SuggestServlet;
 import org.loklak.data.DAO;
+import org.loklak.data.DAO.IndexName;
 import org.loklak.harvester.TwitterAPI;
 import org.loklak.objects.MessageEntry;
 import org.loklak.objects.QueryEntry;
@@ -205,6 +206,11 @@ public class Caretaker extends Thread {
             
             // heal the latency to give peers with out-dated information a new chance
             DAO.healLatency(0.95f);
+            
+            // delete messages out of time frames
+            DAO.log("Deleted " + DAO.deleteOld(IndexName.messages_hour, DateParser.oneHourAgo()) + " outdated(hour) messages");
+            DAO.log("Deleted " + DAO.deleteOld(IndexName.messages_day, DateParser.oneDayAgo()) + " outdated(day) messages");
+            DAO.log("Deleted " + DAO.deleteOld(IndexName.messages_week, DateParser.oneWeekAgo()) + " outdated(week) messages");
         } catch (Throwable e) {
             Log.getLog().warn("CARETAKER THREAD", e);
         }
