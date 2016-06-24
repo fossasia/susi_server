@@ -66,7 +66,10 @@ public class DateParser {
      */
     public static Calendar parse(String dateString, final int timezoneOffset) throws ParseException {
         Calendar cal = Calendar.getInstance(UTCtimeZone);
-        if ("now".equals(dateString)) return cal; 
+        if ("now".equals(dateString)) return cal;
+        if ("hour".equals(dateString)) {cal.setTime(oneHourAgo()); return cal;}
+        if ("day".equals(dateString)) {cal.setTime(oneDayAgo()); return cal;}
+        if ("week".equals(dateString)) {cal.setTime(oneWeekAgo()); return cal;}
         dateString = dateString.replaceAll("_", " ");
         int p = -1;
         if ((p = dateString.indexOf(':')) > 0) {

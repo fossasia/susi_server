@@ -36,7 +36,6 @@ import org.eclipse.jetty.util.log.Log;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.loklak.data.DAO;
-import org.loklak.data.DAO.IndexName;
 import org.loklak.harvester.TwitterScraper;
 import org.loklak.http.ClientConnection;
 import org.loklak.http.RemoteAccess;

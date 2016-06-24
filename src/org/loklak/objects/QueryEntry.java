@@ -339,8 +339,9 @@ public class QueryEntry extends AbstractObjectEntry implements ObjectEntry {
         
         public String translate4scraper() {
             // check if a location constraint was given
+            String dateclean = this.raw.replace(" since:hour", "").replace(" since:day", "").replace(" since:week", "");
             if (this.bbox == null || this.original.indexOf("near:") > 0) {
-                return this.raw;
+                return dateclean;
             }
             // find place within the bbox
             double lon_west  = this.bbox[0];
@@ -358,7 +359,7 @@ public class QueryEntry extends AbstractObjectEntry implements ObjectEntry {
             GeoLocation largestCity = DAO.geoNames.getLargestCity(lon_west + lon_border, lat_south + lat_border, lon_east - lon_border, lat_north - lat_border);
             if (largestCity == null) largestCity = DAO.geoNames.getLargestCity(lon_west, lat_south, lon_east, lat_north);
             if (largestCity == null) largestCity = DAO.geoNames.cityNear((lat_north + lat_south) / 2.0, (lon_east + lon_west) / 2.0);
-            String q = this.raw + " near:\"" + largestCity.getNames().iterator().next() + "\" within:" + ((int) (within_km / 1.609344)) + "mi"; // stupid imperial units are stupid
+            String q = dateclean + " near:\"" + largestCity.getNames().iterator().next() + "\" within:" + ((int) (within_km / 1.609344)) + "mi"; // stupid imperial units are stupid
             return q;
         }
     }
