@@ -70,6 +70,8 @@
         <pathelement location="lib/t-digest-3.0.jar"/>
         <pathelement location="lib/twitter4j-core-4.0.2.jar"/>
         <pathelement location="lib/twitter4j-stream-4.0.2.jar"/>
+    	<pathelement location="lib/jdom-1.1.3.jar"/>
+    	<pathelement location="lib/rome-1.0.jar"/>
     </path>
     
     <target name="init">

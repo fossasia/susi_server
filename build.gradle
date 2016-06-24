@@ -78,4 +78,6 @@ dependencies {
   compile name: 't-digest-3.0'
   compile name: 'twitter4j-core-4.0.2'
   compile name: 'twitter4j-stream-4.0.2'
+  compile name: 'jdom-1.1.3'
+  compile name: 'rome-1.0'
 }
