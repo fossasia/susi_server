@@ -12,9 +12,19 @@ label.error{
 input.error{
 	border: 2px solid red !important;
 }
+div.error{
+	color: red !important;
+}
+
+label.success{
+	color: GreenYellow !important;
+}
+input.success{
+	border: 2px solid GreenYellow !important;
+}
 
 .form {
-	width:540px;
+	width:650px;
 	height: auto;
 	margin: auto;
 }
@@ -31,7 +41,7 @@ input.error{
 	color: #000;
 	font-size: 15px;
 	outline: none;
-	width: 70%;
+	width: 65%;
 	margin: auto;
 	padding: 24px 12px 24px 12px;
 }
@@ -47,7 +57,7 @@ input.error{
 }
 
 .form button {
-	width: 70%;
+	width: 65%;
 	border-radius: 7px;
 	background: GreenYellow;
 	text-decoration: center;

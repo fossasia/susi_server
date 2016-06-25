@@ -5,22 +5,22 @@ $(document).ready(function()
 	// get password parameters
 	var regex;
 	$.ajax(	"/api/signup.json", {
-			data: { getParameters: true },
-			dataType: 'json',
-			success: function (response) {
-                regex = response.regex;
-                var regexTooltip = response.regexTooltip;
-                $('#pass').tooltip({'trigger':'focus', 'placement': 'left', 'title': regexTooltip});
-			},
-			error: function (xhr, ajaxOptions, thrownError) {
-			    $('#status-box').text(thrownError);
-                $('#status-box').addClass("error");
-                $('#email').prop( "disabled", true );
-                $('#pass').prop( "disabled", true );
-                $('#confirmpass').prop( "disabled", true );
-                $('#signup').prop( "disabled", true );
-			},
-	});
+       data: { getParameters: true },
+       dataType: 'json',
+       success: function (response) {
+        regex = response.regex;
+        var regexTooltip = response.regexTooltip;
+        $('#pass').tooltip({'trigger':'focus', 'placement': 'left', 'title': regexTooltip});
+    },
+    error: function (xhr, ajaxOptions, thrownError) {
+       $('#status-box').text(thrownError);
+       $('#status-box').addClass("error");
+       $('#email').prop( "disabled", true );
+       $('#pass').prop( "disabled", true );
+       $('#confirmpass').prop( "disabled", true );
+       $('#signup').prop( "disabled", true );
+   },
+});
 
     $('#pass').keyup(function(){
         $('#passtrength').text(strengthlvl($('#pass').val()));
@@ -46,10 +46,10 @@ $(document).ready(function()
             }
         }
         else{
-                $('#valid').text("Required field!");
-                $('#email').addClass("error");
-                $('#valid').addClass("error");
-                emailerr = true;
+            $('#valid').text("Required field!");
+            $('#email').addClass("error");
+            $('#valid').addClass("error");
+            emailerr = true;
         }
     })
 
@@ -90,8 +90,8 @@ $(document).ready(function()
                 confirmerr = true;
             }
         } else {
-                $(this).removeClass();
-                $('#matching').text("");
+            $(this).removeClass();
+            $('#matching').text("");
         }
     });
 
@@ -103,17 +103,17 @@ $(document).ready(function()
             var pwd = encodeURIComponent($('#pass').val());
 
             $.ajax(	"/api/signup.json", {
-					data: { signup: mail, password: pwd },
-					dataType: 'json',
-					success: function (response) {
-					    resetFields();
-						$('#status-box').text(response.message);
-					},
-					error: function (xhr, ajaxOptions, thrownError) {
-						$('#status-box').text(thrownError);
-						$('#status-box').addClass("error");
-					},
-			});
+             data: { signup: mail, password: pwd },
+             dataType: 'json',
+             success: function (response) {
+                 resetFields();
+                 $('#status-box').text(response.message);
+             },
+             error: function (xhr, ajaxOptions, thrownError) {
+              $('#status-box').text(thrownError);
+              $('#status-box').addClass("error");
+          },
+      });
         }
     });
 
@@ -142,10 +142,10 @@ $(document).ready(function()
             return "";
         }
         if(!pass.match(regex)){
-			$('#passtrength').addClass("error");
-            passerr = true;
-            return "Insufficient password";
-		}
+           $('#passtrength').addClass("error");
+           passerr = true;
+           return "Insufficient password";
+       }
 
         if (pass.length >=7) { //sufficient length
             strength += 1;

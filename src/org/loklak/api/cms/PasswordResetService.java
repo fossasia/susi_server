@@ -25,7 +25,14 @@ import java.util.regex.Pattern;
 
 import org.json.JSONObject;
 import org.loklak.data.DAO;
-import org.loklak.server.*;
+import org.loklak.server.APIException;
+import org.loklak.server.APIHandler;
+import org.loklak.server.AbstractAPIHandler;
+import org.loklak.server.Authentication;
+import org.loklak.server.Authorization;
+import org.loklak.server.BaseUserRole;
+import org.loklak.server.ClientCredential;
+import org.loklak.server.Query;
 import org.loklak.tools.storage.JSONObjectWithDefault;
 
 public class PasswordResetService extends AbstractAPIHandler implements APIHandler {
@@ -48,16 +55,15 @@ public class PasswordResetService extends AbstractAPIHandler implements APIHandl
 	}
 
 	@Override
-	public JSONObject serviceImpl(Query call, Authorization rights, final JSONObjectWithDefault permissions) throws APIException {
+	public JSONObject serviceImpl(Query call, Authorization rights, final JSONObjectWithDefault permissions)
+			throws APIException {
 		JSONObject result = new JSONObject();
 
 		String newpass;
 		try {
 			newpass = URLDecoder.decode(call.get("newpass", null), "UTF-8");
 		} catch (UnsupportedEncodingException e) {
-			result.put("success", false);
-			result.put("message", "malformed query");
-			return result;
+			throw new APIException(400, "malformed query");
 		}
 
 		ClientCredential credential = new ClientCredential(ClientCredential.Type.resetpass_token,
@@ -72,9 +78,7 @@ public class PasswordResetService extends AbstractAPIHandler implements APIHandl
 
 		if ((authentication.getIdentity().getName()).equals(newpass) || !pattern.matcher(newpass).matches()) {
 			// password can't equal email and regex should match
-			result.put("success", false);
-			result.put("message", "Invalid Password");
-			return result;
+			throw new APIException(400, "invalid password");
 		}
 
 		if (DAO.authentication.has(emailcred.toString())) {
@@ -89,7 +93,6 @@ public class PasswordResetService extends AbstractAPIHandler implements APIHandl
 		if (authentication.has("one_time") && authentication.getBoolean("one_time")) {
 			authentication.delete();
 		}
-		result.put("success", true);
 		result.put("message", "Your password has been changed!");
 		return result;
 	}
