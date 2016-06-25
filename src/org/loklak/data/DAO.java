@@ -683,21 +683,31 @@ public class DAO {
         }
         ElasticsearchClient.BulkWriteResult result = null;
         try {
-            result = messages.writeEntries(messageBulk);
             final Date limitDate = new Date();
             List<IndexEntry<MessageEntry>> macc;
-            
-            limitDate.setTime(DateParser.oneWeekAgo().getTime());
-            macc = messageBulk.stream().filter(i -> i.getObject().getCreatedAt().after(limitDate)).collect(Collectors.toList());
-            messages_week.writeEntries(macc);
-            
-            limitDate.setTime(DateParser.oneDayAgo().getTime());
-            macc = messageBulk.stream().filter(i -> i.getObject().getCreatedAt().after(limitDate)).collect(Collectors.toList());
-            messages_day.writeEntries(macc);
+            final Set<String> existed = new HashSet<>();
             
             limitDate.setTime(DateParser.oneHourAgo().getTime());
             macc = messageBulk.stream().filter(i -> i.getObject().getCreatedAt().after(limitDate)).collect(Collectors.toList());
-            messages_hour.writeEntries(macc);
+            DAO.log("***DEBUG messages for HOUR: " + macc.size());
+            result = messages_hour.writeEntries(macc);
+            for (IndexEntry<MessageEntry> i: messageBulk) if (!(result.getCreated().contains(i.getObject().getIdStr()))) existed.add(i.getObject().getIdStr());
+            
+            limitDate.setTime(DateParser.oneDayAgo().getTime());
+            macc = messageBulk.stream().filter(i -> !(existed.contains(i.getObject().getIdStr())) && i.getObject().getCreatedAt().after(limitDate)).collect(Collectors.toList());
+            DAO.log("***DEBUG messages for DAY : " + macc.size());
+            result = messages_day.writeEntries(macc);
+            for (IndexEntry<MessageEntry> i: messageBulk) if (!(result.getCreated().contains(i.getObject().getIdStr()))) existed.add(i.getObject().getIdStr());
+            
+            limitDate.setTime(DateParser.oneWeekAgo().getTime());
+            macc = messageBulk.stream().filter(i -> !(existed.contains(i.getObject().getIdStr())) && i.getObject().getCreatedAt().after(limitDate)).collect(Collectors.toList());
+            DAO.log("***DEBUG messages for WEEK: " + macc.size());
+            result = messages_week.writeEntries(macc);
+            for (IndexEntry<MessageEntry> i: messageBulk) if (!(result.getCreated().contains(i.getObject().getIdStr()))) existed.add(i.getObject().getIdStr());
+            
+            macc = messageBulk.stream().filter(i -> !(existed.contains(i.getObject().getIdStr()))).collect(Collectors.toList());
+            DAO.log("***DEBUG messages for ALL : " + macc.size());
+            result = messages.writeEntries(macc);
             
             users.writeEntries(userBulk);
             
