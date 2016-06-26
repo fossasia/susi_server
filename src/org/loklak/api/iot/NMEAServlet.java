@@ -78,7 +78,52 @@ public class NMEAServlet extends HttpServlet {
 		return med;
 	}
 
+	// Parsers for different type of GPS record sentences.
+	class GPGGA implements SentenceParser {
+		public boolean parse(String [] tokens, GPSPosition position) {
+			position.time = Float.parseFloat(tokens[1]);
+			position.lat = Latitude2Decimal(tokens[2], tokens[3]);
+			position.lon = Longitude2Decimal(tokens[4], tokens[5]);
+			position.quality = Integer.parseInt(tokens[6]);
+			position.altitude = Float.parseFloat(tokens[9]);
+			return true;
+		}
+	}
 	
+	class GPGGL implements SentenceParser {
+		public boolean parse(String [] tokens, GPSPosition position) {
+			position.lat = Latitude2Decimal(tokens[1], tokens[2]);
+			position.lon = Longitude2Decimal(tokens[3], tokens[4]);
+			position.time = Float.parseFloat(tokens[5]);
+			return true;
+		}
+	}
+	
+	class GPRMC implements SentenceParser {
+		public boolean parse(String [] tokens, GPSPosition position) {
+			position.time = Float.parseFloat(tokens[1]);
+			position.lat = Latitude2Decimal(tokens[3], tokens[4]);
+			position.lon = Longitude2Decimal(tokens[5], tokens[6]);
+			position.velocity = Float.parseFloat(tokens[7]);
+			position.dir = Float.parseFloat(tokens[8]);
+			return true;
+		}
+	}
+	
+	class GPVTG implements SentenceParser {
+		public boolean parse(String [] tokens, GPSPosition position) {
+			position.dir = Float.parseFloat(tokens[3]);
+			return true;
+		}
+	}
+	
+	class GPRMZ implements SentenceParser {
+		public boolean parse(String [] tokens, GPSPosition position) {
+			position.altitude = Float.parseFloat(tokens[1]);
+			return true;
+		}
+	}
+
 	// Add a new parser format here.
 	
 	public class GPSPosition {
@@ -116,7 +161,6 @@ public class NMEAServlet extends HttpServlet {
 		
 		if(line.startsWith("$")) {
 			String nmea = line.substring(1);
-			String[] tokens = nmea.split(",");
 			String type = tokens[0];
 			//TODO check crc
 			if(sentenceParsers.containsKey(type)) {
