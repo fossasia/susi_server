@@ -116,7 +116,7 @@ public class PasswordRecoveryService extends AbstractAPIHandler implements APIHa
 			LoklakEmailHandler.sendEmail(usermail, subject, getVerificationMailContent(token));
 			result.put("message", "Recovery email sent to your email ID. Please check");
 		} catch (Exception e) {
-			result.put("message", e.toString());
+			result.put("message", e.getMessage());
 		}
 		return result;
 	}
