@@ -10,25 +10,19 @@ $(document).ready(function()
 		data: { getParameters: true, token: urltoken },
 		dataType: 'json',
 		success: function (response) {
-			if(response.success){
-				regex = response.regex;
-				var regexTooltip = response.regexTooltip;
-				$('#pass').tooltip({'trigger':'focus', 'placement': 'left', 'title': regexTooltip});
-				$('#status-box').text(response.message);
-				tokenerr = false;
-			}
-			else{
-				$('#status-box').text(response.message);
-				$('#status-box').addClass("error");
-				$('#pass').prop( "disabled", true );
-				$('#confirmpass').prop( "disabled", true );
-				$('#resetbut').prop( "disabled", true );
-				tokenerr = true;
-			}
+			regex = response.regex;
+			var regexTooltip = response.regexTooltip;
+			$('#pass').tooltip({'trigger':'focus', 'placement': 'left', 'title': regexTooltip});
+			$('#status-box').text(response.message);
+			tokenerr = false;
 		},
 		error: function (xhr, ajaxOptions, thrownError) {
+			$('#status-box').text(thrownError);
+			$('#status-box').addClass("error");
+			$('#pass').prop( "disabled", true );
+			$('#confirmpass').prop( "disabled", true );
+			$('#resetbut').prop( "disabled", true );
 			tokenerr = true;
-			console.log(thrownError);
 		},
 	});
 
@@ -83,13 +77,8 @@ $(document).ready(function()
 				data: { token: urltoken, newpass: pwd },
 				dataType: 'json',
 				success: function (response) {
+					resetFields();
 					$('#status-box').text(response.message);
-					if(!response.success){
-						$('#status-box').addClass("error");
-					}
-					else{
-						$('#status-box').removeClass();
-					}
 				},
 				error: function (xhr, ajaxOptions, thrownError) {
 					$('#status-box').text(thrownError);
@@ -98,6 +87,19 @@ $(document).ready(function()
 			});
 		}
 	});
+
+	function resetFields(){
+		$('#status-box').text("");
+		$('#status-box').removeClass();
+		$('#pass').val("");
+		$('#pass').removeClass();
+		$('#confirmpass').val("");
+		$('#confirmpass').removeClass();
+		$('#matching').text("");
+		$('#matching').removeClass();
+		$('#passtrength').text("");
+		$('#passtrength').removeClass();
+	}
 
 	function strengthlvl(pass){
 

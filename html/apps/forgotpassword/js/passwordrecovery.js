@@ -5,16 +5,32 @@ $(document).ready(function()
     $('#submit').click(function(){
         checkEmpty();
         if(emailerr){
-            alert("Please fill email");
+            $('#status-box').text("Please fill email");
         } else{
             var mail = encodeURIComponent($('#email').val());
-            var posting = $.post( "/api/recoverpassword.json", { forgotemail: mail }, function(data) {
-                console.log(data.status);
-                console.log(data.reason);
-                alert(data.status + ", " + data.reason);
-            }, "json" );
+            $.ajax( "/api/recoverpassword.json", {
+                data: { forgotemail: mail },
+                dataType: 'json',
+                success: function (response) {
+                    resetFields();
+                    $('#status-box').text(response.message);
+                },
+                error: function (xhr, ajaxOptions, thrownError) {
+                    $('#status-box').text(thrownError);
+                    $('#status-box').addClass("error");
+                },
+            });
         }
     });
+
+    function resetFields(){
+        $('#status-box').text("");
+        $('#status-box').removeClass();
+        $('#email').val("");
+        $('#email').removeClass();
+        $('#emailfield').text("");
+        $('#emailfield').removeClass();
+    }
 
     function checkEmpty(){
         var emailval = $('#email').val();

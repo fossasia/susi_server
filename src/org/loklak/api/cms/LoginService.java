@@ -48,7 +48,8 @@ public class LoginService extends AbstractAPIHandler implements APIHandler {
 	}
 
 	@Override
-	public JSONObject serviceImpl(Query post, Authorization rights, final JSONObjectWithDefault permissions) throws APIException {
+	public JSONObject serviceImpl(Query post, Authorization rights, final JSONObjectWithDefault permissions)
+			throws APIException {
 
 		JSONObject result = new JSONObject();
 

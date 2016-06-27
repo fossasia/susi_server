@@ -23,10 +23,19 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.nio.file.Paths;
+
 import org.json.JSONObject;
 import org.loklak.LoklakEmailHandler;
 import org.loklak.data.DAO;
-import org.loklak.server.*;
+import org.loklak.server.APIException;
+import org.loklak.server.APIHandler;
+import org.loklak.server.AbstractAPIHandler;
+import org.loklak.server.Authentication;
+import org.loklak.server.Authorization;
+import org.loklak.server.BaseUserRole;
+import org.loklak.server.ClientCredential;
+import org.loklak.server.ClientIdentity;
+import org.loklak.server.Query;
 import org.loklak.tools.IO;
 import org.loklak.tools.storage.JSONObjectWithDefault;
 
@@ -51,7 +60,8 @@ public class PasswordRecoveryService extends AbstractAPIHandler implements APIHa
 	}
 
 	@Override
-	public JSONObject serviceImpl(Query call, Authorization rights, final JSONObjectWithDefault permissions) throws APIException {
+	public JSONObject serviceImpl(Query call, Authorization rights, final JSONObjectWithDefault permissions)
+			throws APIException {
 		JSONObject result = new JSONObject();
 
 		// check if token exists
@@ -67,23 +77,16 @@ public class PasswordRecoveryService extends AbstractAPIHandler implements APIHa
 						String passwordPatternTooltip = DAO.getConfig("users.password.regex.tooltip",
 								"Enter a combination of atleast six characters");
 						result.put("message", "Email ID: " + authentication.getIdentity().getName());
-						result.put("success", true);
 						result.put("regex", passwordPattern);
 						result.put("regexTooltip", passwordPatternTooltip);
 						return result;
 					}
-					result.put("success", false);
-					result.put("message", "Expired token");
 					authentication.delete();
-					return result;
+					throw new APIException(422, "Expired token");
 				}
-				result.put("success", false);
-				result.put("message", "Invalid token");
-				return result;
+				throw new APIException(422, "Invalid token");
 			} else {
-				result.put("success", false);
-				result.put("message", "No token specified");
-				return result;
+				throw new APIException(422, "No token specified");
 			}
 		}
 
@@ -91,18 +94,14 @@ public class PasswordRecoveryService extends AbstractAPIHandler implements APIHa
 		try {
 			usermail = URLDecoder.decode(call.get("forgotemail", null), "UTF-8");
 		} catch (UnsupportedEncodingException e) {
-			result.put("status", "error");
-			result.put("reason", "malformed query");
-			return result;
+			throw new APIException(400, "malformed query");
 		}
 
 		ClientCredential credential = new ClientCredential(ClientCredential.Type.passwd_login, usermail);
 		ClientIdentity identity = new ClientIdentity(ClientIdentity.Type.email, credential.getName());
 
 		if (!DAO.authentication.has(credential.toString())) {
-			result.put("status", "error");
-			result.put("reason", "email does not exist");
-			return result;
+			throw new APIException(422, "email does not exist");
 		}
 
 		String token = createRandomString(30);
@@ -115,11 +114,9 @@ public class PasswordRecoveryService extends AbstractAPIHandler implements APIHa
 		String subject = "Password Recovery";
 		try {
 			LoklakEmailHandler.sendEmail(usermail, subject, getVerificationMailContent(token));
-			result.put("status", "ok");
-			result.put("reason", "ok");
+			result.put("message", "Recovery email sent to your email ID. Please check");
 		} catch (Exception e) {
-			result.put("status", "error");
-			result.put("reason", e.toString());
+			result.put("message", e.toString());
 		}
 		return result;
 	}
