@@ -31,7 +31,7 @@ public class JSONObjectWithDefault extends JSONObject {
 
     public JSONObjectWithDefault(JSONObject src){
         this();
-        putAll(src);
+        if(src != null) putAll(src);
     }
 
     public boolean getBoolean(String key, boolean dftval){
