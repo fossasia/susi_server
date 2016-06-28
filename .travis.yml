@@ -3,6 +3,11 @@ language: java
 jdk:
   - oraclejdk8
 
+env:
+  global:
+  - secure: "DbveaxDMtEP+/Er6ktKCP+P42uDU8xXWRBlVGaqVNU3muaRmmZtj8ngAARxfzY0f9amlJlCavqkEIAumQl9BYKPWIra28ylsLNbzAoCIi8alf9WLgddKwVWsTcZo9+UYocuY6UivJVkofycfFJ1blw/83dWMG0/TiW6s/SrwoDw="
+
+
 script:
   - ./gradle_init.sh
   - gradle assemble
@@ -15,3 +20,6 @@ install: true
 branches:
   only:
     - "master"
+
+after_success:
+- sh .utility/push-javadoc-to-gh-pages.sh
