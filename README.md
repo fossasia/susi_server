@@ -146,9 +146,15 @@ Nowhere, you must clone the git repository of loklak and built it yourself. That
 - `cd loklak`
 - then see above ("How do I run loklak")
 
+
 ## Where can I get the latest news about loklak?
 
 Hey, this is the tool for that! Just put http://loklak.org/api/search.rss?q=%23loklak into your rss reader. Oh wait.. you will get a lot of information about tasty Cambodian food with that as well. Alternatively you may also read the authors timeline using http://loklak.org/api/search.rss?q=0rb1t3r or just follow @0rb1t3r (that's a zero after the at sign)
+
+
+## Where do I find the documentation/javadocs?
+
+At http://loklak.github.io/loklak_server/ or by building them via 'ant javadoc'
 
 Have fun!
 @0rb1t3r
