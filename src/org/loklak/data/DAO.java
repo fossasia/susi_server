@@ -74,6 +74,7 @@ import org.loklak.objects.SourceType;
 import org.loklak.objects.Timeline;
 import org.loklak.objects.UserEntry;
 import org.loklak.server.*;
+import org.loklak.susi.SusiMemory;
 import org.loklak.tools.DateParser;
 import org.loklak.tools.OS;
 import org.loklak.tools.storage.*;
@@ -149,6 +150,9 @@ public class DAO {
     public static JsonTray passwordreset;
     public static Map<String, Accounting> accounting_temporary = new HashMap<>();
     
+    // built-in artificial intelligence
+    public static SusiMemory susi;
+    
     public static enum IndexName {
     	messages_hour("messages.json"), messages_day("messages.json"), messages_week("messages.json"), messages, queries, users, accounts, import_profiles;
         private String schemaFileName;
@@ -176,6 +180,10 @@ public class DAO {
         conf_dir = new File("conf");
         bin_dir = new File("bin");
         html_dir = new File("html");
+        
+        // wake up susi
+        susi = new SusiMemory();
+        susi.add(new File(new File(conf_dir, "susi"), "susi_cognition_000.json"));
         
         // initialize public and private keys
 		public_settings = new Settings(new File("data/settings/public.settings.json"));
@@ -687,7 +695,7 @@ public class DAO {
             List<IndexEntry<MessageEntry>> macc;
             final Set<String> existed = new HashSet<>();
 
-            DAO.log("***DEBUG messages full chunk size: " + messageBulk.size());
+            DAO.log("***DEBUG messages     INIT: " + messageBulk.size());
             
             limitDate.setTime(DateParser.oneHourAgo().getTime());
             macc = messageBulk.stream().filter(i -> i.getObject().getCreatedAt().after(limitDate)).collect(Collectors.toList());
@@ -717,6 +725,7 @@ public class DAO {
             DAO.log("***DEBUG messages for  ALL : " + macc.size());
             result = messages.writeEntries(macc);
             DAO.log("***DEBUG messages for  ALL: " + result.getCreated().size() + "  created");
+            for (IndexEntry<MessageEntry> i: macc) if (!(result.getCreated().contains(i.getId()))) existed.add(i.getId());
             DAO.log("***DEBUG messages for  ALL: " + existed.size()  + "  existed");
             
             users.writeEntries(userBulk);

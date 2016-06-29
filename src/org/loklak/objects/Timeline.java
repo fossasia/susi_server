@@ -35,6 +35,7 @@ import org.json.JSONObject;
 import org.loklak.QueuedIndexing;
 import org.loklak.data.DAO;
 import org.loklak.data.DAO.IndexName;
+import org.loklak.susi.SusiData;
 
 /**
  * A timeline is a structure which holds tweet for the purpose of presentation
@@ -218,23 +219,35 @@ public class Timeline implements Iterable<MessageEntry> {
         return toJSON(true, "search_metadata", "statuses").toString();
         //return new ObjectMapper().writer().writeValueAsString(toMap(true));
     }
-    
+
     public JSONObject toJSON(boolean withEnrichedData, String metadata_field_name, String statuses_field_name) throws JSONException {
-        JSONObject json = new JSONObject();
-        JSONObject metadata = new JSONObject();
-        metadata.put("count", Integer.toString(this.tweets.size()));
-        if (this.query != null) metadata.put("query", this.query);
-        if (this.hits >= 0) metadata.put("hits", Math.max(this.hits, this.size()));
-        if (this.scraperInfo.length() > 0) metadata.put("scraperInfo", this.scraperInfo);
-        json.put(metadata_field_name, metadata);
+        JSONObject json = toSusi(withEnrichedData, metadata_field_name, statuses_field_name);
+        json.getJSONObject(metadata_field_name).put("count", Integer.toString(this.tweets.size()));
+        json.put("peer_hash", DAO.public_settings.getPeerHash());
+        json.put("peer_hash_algorithm", DAO.public_settings.getPeerHashAlgorithm());
+        return json;
+    }
+    
+    public SusiData toSusi(boolean withEnrichedData, String metadata_field_name, String statuses_field_name) throws JSONException {
+        return toSusi(withEnrichedData, new SusiData(metadata_field_name, statuses_field_name));
+    }
+
+    public SusiData toSusi(boolean withEnrichedData) throws JSONException {
+        return toSusi(withEnrichedData, new SusiData());
+    }
+    
+    private SusiData toSusi(boolean withEnrichedData, SusiData json) throws JSONException {
+        json
+            .setCount(this.tweets.size())
+            .setQuery(this.query)
+            .setCount(Math.max(this.hits, this.size()));
+        if (this.scraperInfo.length() > 0) json.setScraperInfo(this.scraperInfo);
         JSONArray statuses = new JSONArray();
         for (MessageEntry t: this) {
             UserEntry u = this.users.get(t.getScreenName());
             statuses.put(t.toJSON(u, withEnrichedData, Integer.MAX_VALUE, ""));
         }
-        json.put(statuses_field_name, statuses);
-        json.put("peer_hash", DAO.public_settings.getPeerHash());
-        json.put("peer_hash_algorithm", DAO.public_settings.getPeerHashAlgorithm());
+        json.setData(statuses);
         return json;
     }
     

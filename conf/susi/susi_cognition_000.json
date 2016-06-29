@@ -1,0 +1,90 @@
+{
+	"synonyms":{
+		"don't":["dont"],
+		"can't":["cant"],
+		"won't":["wont"],
+		"remember":["recollect","recall"],
+		"dreamed":["dreamt"],
+		"dream":["dreams"],
+		"perhaps":["maybe"],
+		"yes":["certainly","true"],
+		"computer":["machine","machines","computers"],
+		"was":["were"],
+		"you are":["you're"],
+		"i am":["i'm"],
+		"alike":["same","identical","equivalent"]
+	},
+	"filler":["actually","so","well","look","like","#"],
+	"categories":{
+		"euro2016":["euro2016", "Euro 2016"],
+		"be": ["am", "is", "are", "was"],
+		"belief": ["feel", "think", "believe", "wish"],
+		"cannot": ["can't"],
+		"desire": ["want", "need"],
+		"everyone": ["everybody", "nobody", "noone"],
+		"family": ["mother", "mom", "father", "dad", "sister", "brother", "wife", "children", "child"],
+		"happy": ["elated", "glad", "better"],
+		"sad": ["unhappy", "depressed", "sick"]
+	},
+	"multi":{
+		"intro":["There might be several right answers..."],
+		"within":["As an alternative answer I would suggest..."],
+	},
+	"rules":[
+		{
+			"keys"   :["*"],
+			"score"  :0,
+			"comment":"this is the catch-all rule which fires if no other rule applies",
+			"phrases":[	{"type":"pattern", "expression":"*"} ],
+			"process":[],
+			"actions":[	{"type":"answer", "select":"random", "phrases":[
+							"Oh sorry, I don't understand what you say. Please ask something else!",
+							"You can ask me anything, but not that :)"
+					  ]}]
+		},
+		{
+			"keys"   :["sorry"],
+			"score"  :1,
+			"phrases":[	{"type":"pattern", "expression":"*sorry*"} ],
+			"process":[],
+			"actions":[	{"type":"answer", "select":"random", "phrases":[
+							"Please don't apologise.",
+   		  					"Apologies are not necessary.",
+ 						    "It did not bother me. Please continue."
+					  ]}]
+		},
+		{
+			"keys"   :["hello"],
+			"score"  :1,
+			"phrases":[	{"type":"pattern", "expression":"*hello*"} ],
+			"process":[],
+			"actions":[	{"type":"answer", "select":"random", "phrases":[
+							"Hi, I'm Susi",
+							"Hello!"
+					  ]}]
+		},
+		{
+			"keys"   :["belief"],
+			"score"  :1,
+			"phrases":[	{"type":"pattern", "expression":"*I feel *"} ],
+			"process":[],
+			"actions":[	{"type":"answer", "select":"random", "phrases":[
+							"Why do you feel $2$?"
+					  ]}]
+		},
+		{
+			"keys"   :["euro2016","soccer"],
+			"score"  :100,
+			"comment":"a statistical app which tries to predict euro2016",
+			"phrases":[	{"type":"regex", "expression":"Who (?:will win|wins) #euro2016.*"},
+						{"type":"regex", "expression":"Who will (?:be|become) european soccer champion 2016.*"}
+					  ],
+			"process":[	{"type":"console", "expression":"SELECT PERCENT(count) AS percent, hashtag AS country FROM (SELECT COUNT(*) AS count, hashtags AS hashtag FROM messages WHERE query='euro2016' GROUP BY hashtags) WHERE hashtag IN ('england','france','portugal','germany','belgium','italia','ireland’);"}],
+			"actions":[	{"type":"answer", "select":"random", "phrases":[
+							"I can calculate a likelihood, here is my guess:",
+							"I am not good at football, but here is what other people say:"
+						]},
+						{"type":"piechart", "total":100, "key": "country", "value":"percent", "unit":"%"}]
+		}
+	]
+}

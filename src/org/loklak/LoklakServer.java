@@ -87,6 +87,7 @@ import org.loklak.api.p2p.PushServlet;
 import org.loklak.api.search.SearchServlet;
 import org.loklak.api.search.ShortlinkFromTweetServlet;
 import org.loklak.api.search.SuggestServlet;
+import org.loklak.api.search.SusiService;
 import org.loklak.api.search.ConsoleService;
 import org.loklak.api.search.EventbriteCrawler;
 import org.loklak.api.search.UserServlet;
@@ -497,6 +498,7 @@ public class LoklakServer {
         // add services
         @SuppressWarnings("unchecked")
         Class<? extends Servlet>[] services = new Class[]{
+                SusiService.class,
                 AppsService.class,
                 AuthorizationDemo.class,
                 HelloService.class,
