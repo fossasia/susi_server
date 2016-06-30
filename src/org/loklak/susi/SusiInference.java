@@ -1,5 +1,5 @@
 /**
- *  SusiProcess
+ *  SusiInference
  *  Copyright 29.06.2016 by Michael Peter Christen, @0rb1t3r
  *
  *  This library is free software; you can redistribute it and/or
@@ -22,13 +22,13 @@ package org.loklak.susi;
 import org.json.JSONObject;
 import org.loklak.api.search.ConsoleService;
 
-public class SusiProcess {
+public class SusiInference {
     
     public static enum Type {console;}
     
     private JSONObject json;
 
-    public SusiProcess(JSONObject json) {
+    public SusiInference(JSONObject json) {
         this.json = json;
     }
     public Type getType() {
@@ -37,15 +37,15 @@ public class SusiProcess {
     public String getExpression() {
         return this.json.has("expression") ? this.json.getString("expression") : "";
     }
-    public SusiData apply(SusiData json) {
-        Type type = this.getType();
-        if (type == Type.console) {
-            String expression = this.getExpression();
-            expression = SusiAction.insertData(expression, json);
-            json = ConsoleService.console(expression);
-            return json;
-        }
 
-        return json;
+    public SusiThought applyon(SusiArgument argument) {
+        Type type = this.getType();
+        if (type == SusiInference.Type.console) {
+            String expression = this.getExpression();
+            expression = argument.unify(expression);
+            return ConsoleService.console(expression);
+        }
+        // maybe the argument is not applicable, then the latest mindstate is empty application
+        return argument.mindstate();
     }
 }

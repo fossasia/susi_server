@@ -124,24 +124,6 @@ public class SusiMemory {
         return mrules;
     }
 
-    public List<SusiData> apply(String query, List<SusiRule> rules) {
-        return rules.stream().map(rule -> apply(query, rule)).collect(Collectors.toList());
-    }
-    
-    public SusiData apply(String query, SusiRule rule) {
-        SusiData data = new SusiData(rule.matcher(query));
-        for (SusiProcess process: rule.getProcess()) {
-            data = process.apply(data);
-        }
-        // add actions of rule
-        List<SusiAction> actions = new ArrayList<>();
-        for (SusiAction action: rule.getActions()) {
-            actions.add(action.apply(data));
-        }
-        data.setActions(actions);
-        return data;
-    }
-    
     private List<String> token(String query) {
         List<String> t = new ArrayList<>();
         query = query.replaceAll("\\?", " ?").replaceAll("\\!", " !").replaceAll("\\.", " .").replaceAll("\\,", " ,").replaceAll("\\;", " ;").replaceAll("\\:", " :").replaceAll("  ", " ");
@@ -158,18 +140,15 @@ public class SusiMemory {
         return t;
     }
     
-    public List<SusiData> answer(String query, int maxcount) {
-        query = query.toLowerCase();
+    public List<SusiArgument> answer(final String query, int maxcount) {
         List<SusiRule> rules = getRules(query, maxcount);
-        List<SusiData> datalist = apply(query, rules);
-        // replace data entities in answers
-        return datalist;
+        return rules.stream().map(rule -> rule.consideration(query)).collect(Collectors.toList());
     }
     
     public String answer(String query) {
-        List<SusiData> datalist = answer(query, 1);
-        SusiData data = datalist.get(0);
-        return data.getActions().get(0).apply(data).getStringAttr("expression");
+        List<SusiArgument> datalist = answer(query, 1);
+        SusiArgument bestargument = datalist.get(0);
+        return bestargument.mindstate().getActions().get(0).apply(bestargument).getStringAttr("expression");
     }
     
     public static void main(String[] args) {

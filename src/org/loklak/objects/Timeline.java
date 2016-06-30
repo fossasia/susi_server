@@ -35,7 +35,7 @@ import org.json.JSONObject;
 import org.loklak.QueuedIndexing;
 import org.loklak.data.DAO;
 import org.loklak.data.DAO.IndexName;
-import org.loklak.susi.SusiData;
+import org.loklak.susi.SusiThought;
 
 /**
  * A timeline is a structure which holds tweet for the purpose of presentation
@@ -228,15 +228,15 @@ public class Timeline implements Iterable<MessageEntry> {
         return json;
     }
     
-    public SusiData toSusi(boolean withEnrichedData, String metadata_field_name, String statuses_field_name) throws JSONException {
-        return toSusi(withEnrichedData, new SusiData(metadata_field_name, statuses_field_name));
+    public SusiThought toSusi(boolean withEnrichedData, String metadata_field_name, String statuses_field_name) throws JSONException {
+        return toSusi(withEnrichedData, new SusiThought(metadata_field_name, statuses_field_name));
     }
 
-    public SusiData toSusi(boolean withEnrichedData) throws JSONException {
-        return toSusi(withEnrichedData, new SusiData());
+    public SusiThought toSusi(boolean withEnrichedData) throws JSONException {
+        return toSusi(withEnrichedData, new SusiThought());
     }
     
-    private SusiData toSusi(boolean withEnrichedData, SusiData json) throws JSONException {
+    private SusiThought toSusi(boolean withEnrichedData, SusiThought json) throws JSONException {
         json
             .setCount(this.tweets.size())
             .setQuery(this.query)

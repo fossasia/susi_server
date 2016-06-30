@@ -30,8 +30,7 @@ import org.loklak.server.BaseUserRole;
 import org.loklak.server.AbstractAPIHandler;
 import org.loklak.server.Authorization;
 import org.loklak.server.Query;
-import org.loklak.susi.SusiData;
-
+import org.loklak.susi.SusiArgument;
 import org.loklak.tools.storage.JSONObjectWithDefault;
 
 public class SusiService extends AbstractAPIHandler implements APIHandler {
@@ -50,7 +49,7 @@ public class SusiService extends AbstractAPIHandler implements APIHandler {
         return "/api/susi.json";
     }
     
-    public static List<SusiData> susi(String query, int maxcount) {
+    public static List<SusiArgument> susi(String query, int maxcount) {
         return DAO.susi.answer(query, maxcount);
     }
     
@@ -61,11 +60,11 @@ public class SusiService extends AbstractAPIHandler implements APIHandler {
         String q = post.get("q", "");
         int count = post.get("count", 1);
         
-        List<SusiData> answerList = susi(q, count);
+        List<SusiArgument> dispute = susi(q, count);
         JSONObject json = new JSONObject();
         json.put("count", count);
         JSONArray answers = new JSONArray();
-        answerList.forEach(answer -> answers.put(answer));
+        dispute.forEach(answer -> answers.put(answer.mindstate()));
         json.put("answers", answers);
         return json;
     }

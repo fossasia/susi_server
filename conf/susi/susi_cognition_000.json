@@ -88,7 +88,7 @@
 			"phrases":[	{"type":"regex", "expression":"Who (?:will win|wins) #euro2016.*"},
 						{"type":"regex", "expression":"Who will (?:be|become) european soccer champion 2016.*"}
 					  ],
-			"process":[	{"type":"console", "expression":"SELECT PERCENT(count) AS percent, hashtag AS country FROM (SELECT COUNT(*) AS count, hashtags AS hashtag FROM messages WHERE query='euro2016' GROUP BY hashtags) WHERE hashtag IN ('england','france','portugal','germany','belgium','italia','ireland’);"}],
+			"process":[	{"type":"console", "expression":"SELECT PERCENT(count) AS percent, hashtag AS country FROM (SELECT COUNT(*) AS count, hashtags AS hashtag FROM messages WHERE query='euro2016' GROUP BY hashtags) WHERE hashtag IN ('france','portugal','germany','belgium','italia','ireland’);"}],
 			"actions":[	{"type":"answer", "select":"random", "phrases":[
 							"I believe the winner will be $country$ with a likelihood of $percent$ percent but I a not sure. Here is even more:",
 							"I can calculate a likelihood, here is my guess:",

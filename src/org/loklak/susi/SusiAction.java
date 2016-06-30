@@ -22,7 +22,6 @@ package org.loklak.susi;
 import java.util.ArrayList;
 import java.util.Random;
 
-import org.json.JSONArray;
 import org.json.JSONObject;
 
 public class SusiAction {
@@ -52,28 +51,14 @@ public class SusiAction {
     public int getIntAttr(String attr) {
         return this.json.has(attr) ? this.json.getInt(attr) : 0;
     }
-    public SusiAction apply(SusiData data) {
+    public SusiAction apply(SusiArgument thoughts) {
         if (this.getType() == ActionType.answer && this.json.has("phrases")) {
             // transform the answer according to the data
             ArrayList<String> a = getPhrases();
             String phrase = a.get(random.nextInt(a.size()));
-            this.json.put("expression", insertData(phrase, data));
+            this.json.put("expression", thoughts.unify(phrase));
         }
         return this;
-    }
-    
-    public static String insertData(String s, SusiData data) {
-        JSONArray table = data.getData();
-        if (table != null && table.length() > 0) {
-            JSONObject row = table.getJSONObject(0);
-            for (String key: row.keySet()) {
-                int i = s.indexOf("$" + key + "$");
-                if (i >= 0) {
-                    s = s.substring(0, i) + row.get(key).toString() + s.substring(i + key.length() + 2);
-                }
-            }
-        }
-        return s;
     }
     public JSONObject toJSON() {
         JSONObject j = new JSONObject();

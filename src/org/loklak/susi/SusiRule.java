@@ -33,7 +33,7 @@ public class SusiRule {
 
     private JSONObject json;
     private List<SusiPhrase> phrases;
-    private List<SusiProcess> process;
+    private List<SusiInference> inferences;
     private List<SusiAction> actions;
 
     public SusiRule(JSONObject json) throws PatternSyntaxException {
@@ -45,11 +45,11 @@ public class SusiRule {
         this.phrases = new ArrayList<>(p.length());
         p.forEach(q -> this.phrases.add(new SusiPhrase((JSONObject) q)));
 
-        // extract the phrases
+        // extract the inferences
         if (!this.json.has("process")) throw new PatternSyntaxException("process missing", "", 0);
         p = (JSONArray) this.json.remove("process");
-        this.process = new ArrayList<>(p.length());
-        p.forEach(q -> this.process.add(new SusiProcess((JSONObject) q)));
+        this.inferences = new ArrayList<>(p.length());
+        p.forEach(q -> this.inferences.add(new SusiInference((JSONObject) q)));
         
         // extract the actions
         if (!this.json.has("actions")) throw new PatternSyntaxException("actions missing", "", 0);
@@ -76,8 +76,8 @@ public class SusiRule {
         return this.phrases;
     }
     
-    public List<SusiProcess> getProcess() {
-        return this.process;
+    public List<SusiInference> getInferences() {
+        return this.inferences;
     }
 
     public List<SusiAction> getActions() {
@@ -85,6 +85,7 @@ public class SusiRule {
     }
 
     public Matcher matcher(String s) {
+        s = s.toLowerCase();
         for (SusiPhrase p: this.phrases) {
             Matcher m = p.pattern.matcher(s);
             if (m.find()) return m;
@@ -92,4 +93,24 @@ public class SusiRule {
         return null;
     }
 
+    public SusiArgument consideration(final String query) {
+        
+        // we start with an empty argument
+        final SusiArgument argument = new SusiArgument();
+        
+        // that argument is filled with an idea which consist of the query where we extract the identified data entities
+        SusiThought idea = new SusiThought(this.matcher(query));
+        argument.think(idea);
+        
+        // lets apply the rules that belong to this specific consideration
+        this.getInferences().forEach(inference -> argument.deducewith(inference));
+        
+        // we deduced thoughts from the inferences in the rules. Now apply the actions of rule to produce results
+        List<SusiAction> actions = new ArrayList<>();
+        for (SusiAction action: this.getActions()) {
+            actions.add(action.apply(argument));
+        }
+        argument.mindstate().setActions(actions);
+        return argument;
+    }
 }
