@@ -69,17 +69,20 @@ public class SusiAction {
             for (String key: row.keySet()) {
                 int i = p.indexOf("$" + key + "$");
                 if (i >= 0) {
-                    p = p.substring(0, i) + row.getString(key) + p.substring(i + key.length() + 2);
+                    p = p.substring(0, i) + row.get(key).toString() + p.substring(i + key.length() + 2);
                 }
             }
         }
         return p;
     }
     public JSONObject toJSON() {
-        if (this.json.has("expression")) {
-            this.json.remove("phrases");
-            this.json.remove("select");
+        JSONObject j = new JSONObject();
+        this.json.keySet().forEach(key -> j.put(key, this.json.get(key))); // make a clone
+        if (j.has("expression")) {
+            j.remove("phrases");
+            j.remove("select");
+            this.json.remove("expression"); // thats a bad hack, TODO: better concurrency
         }
-        return json;
+        return j;
     }
 }
