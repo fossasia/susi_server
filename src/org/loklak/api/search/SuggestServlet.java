@@ -96,7 +96,12 @@ public class SuggestServlet extends HttpServlet {
                 "&peername=" + peername;
         byte[] response = ClientConnection.downloadPeer(urlstring);
         if (response == null || response.length == 0) return rl;
-        JSONObject json = new JSONObject(UTF8.String(response));
+        String responseString = UTF8.String(response);
+        if (responseString == null || responseString.length() == 0 || responseString.startsWith("<")) {
+            // fail
+            return rl;
+        }
+        JSONObject json = new JSONObject(responseString);
         JSONArray queries = json.has("queries") ? json.getJSONArray("queries") : null;
         if (queries != null) {
             for (Object query_obj: queries) {
