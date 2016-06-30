@@ -40,7 +40,9 @@ public class SusiProcess {
     public SusiData apply(SusiData json) {
         Type type = this.getType();
         if (type == Type.console) {
-            json = ConsoleService.console(this.getExpression());
+            String expression = this.getExpression();
+            expression = SusiAction.insertData(expression, json);
+            json = ConsoleService.console(expression);
             return json;
         }
 

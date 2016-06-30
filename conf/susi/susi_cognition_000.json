@@ -95,6 +95,19 @@
 							"I am not good at football, but here is what other people say:"
 						]},
 						{"type":"piechart", "total":100, "key": "country", "value":"percent", "unit":"%"}]
-		}
+		},
+		{
+			"keys"   :["who"],
+			"score"  :100,
+			"phrases":[	{"type":"pattern", "expression":"Who tweeted most about *"}
+					  ],
+			"process":[	{"type":"console", "expression":"SELECT COUNT(*) AS count, screen_name FROM messages WHERE query='$1$ since:day' GROUP BY screen_name;"}],
+			"actions":[	{"type":"answer", "select":"random", "phrases":[
+							"In the last 24 hours $screen_name$ tweeted most, $count$ times"
+						]}]
+		},
+		
+		
+		
 	]
 }
