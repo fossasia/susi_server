@@ -106,6 +106,16 @@
 							"In the last 24 hours $screen_name$ tweeted most, $count$ times"
 						]}]
 		},
+		{
+			"keys"   :["who", "count", "how", "many", "times"],
+			"score"  :100,
+			"phrases":[	{"type":"pattern", "expression":"how many times was * tweeted in the last 24 hours"}
+					  ],
+			"process":[	{"type":"console", "expression":"SELECT COUNT(*) AS count FROM messages WHERE query='$1$ since:day';"}],
+			"actions":[	{"type":"answer", "select":"random", "phrases":[
+							"Here you go, $count$ times!"
+						]}]
+		},
 		
 		
 		
