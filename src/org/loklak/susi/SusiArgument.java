@@ -25,21 +25,23 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 /**
- * An Argument is a series of thoughts, also known as a 'proof' in automated reasoning
+ * An Argument is a series of thoughts, also known as a 'proof' in automated reasoning.
+ * Within the Susi AI infrastructure this may be considered as the representation of
+ * the short-time memory of thinking inside Susi.
  */
 public class SusiArgument {
 
     private final ArrayList<SusiThought> recall;
     
     /**
-     * create an empty argument
+     * Create an empty argument
      */
     public SusiArgument() {
         this.recall = new ArrayList<>();
     }
     
     /**
-     * get an impression of time which elapsed since the start of reasoning in this argument
+     * Get an impression of time which elapsed since the start of reasoning in this argument
      * @return the number of thoughts
      */
     public int times() {
