@@ -20,6 +20,7 @@
 package org.loklak.susi;
 
 import java.util.ArrayList;
+import java.util.regex.Pattern;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -77,6 +78,8 @@ public class SusiArgument {
         return this;
     }
     
+    private static final Pattern variable_pattern = Pattern.compile("\\$.*?\\$");
+    
     /**
      * Unification applies a piece of memory wihtin the current argument to a statement
      * which creates an instantiated statement
@@ -84,14 +87,17 @@ public class SusiArgument {
      * @return the instantiated statement with elements of the argument applied
      */
     public String unify(String statement) {
-        JSONArray table = this.mindstate().getData();
-        if (table != null && table.length() > 0) {
-            JSONObject row = table.getJSONObject(0);
-            for (String key: row.keySet()) {
-                int i = statement.indexOf("$" + key + "$");
-                if (i >= 0) {
-                    statement = statement.substring(0, i) + row.get(key).toString() + statement.substring(i + key.length() + 2);
+        remember: for (int mindstate_count = this.recall.size() - 1; mindstate_count >= 0; mindstate_count--) {
+            JSONArray table = this.recall.get(mindstate_count).getData();
+            if (table != null && table.length() > 0) {
+                JSONObject row = table.getJSONObject(0);
+                for (String key: row.keySet()) {
+                    int i = statement.indexOf("$" + key + "$");
+                    if (i >= 0) {
+                        statement = statement.substring(0, i) + row.get(key).toString() + statement.substring(i + key.length() + 2);
+                    }
                 }
+                if (!variable_pattern.matcher(statement).find()) break remember;
             }
         }
         return statement;
