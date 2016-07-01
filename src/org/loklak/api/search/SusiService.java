@@ -19,6 +19,7 @@
 
 package org.loklak.api.search;
 
+import java.io.IOException;
 import java.util.List;
 
 import org.json.JSONArray;
@@ -50,6 +51,11 @@ public class SusiService extends AbstractAPIHandler implements APIHandler {
     }
     
     public static List<SusiArgument> susi(String query, int maxcount) {
+        try {
+            DAO.susi.observe(); // get a database update
+        } catch (IOException e) {
+            DAO.log(e.getMessage());
+        }
         return DAO.susi.answer(query, maxcount);
     }
     

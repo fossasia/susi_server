@@ -47,6 +47,7 @@ import org.eclipse.jetty.util.ConcurrentHashSet;
 
 import com.github.fge.jackson.JsonLoader;
 import com.google.common.base.Charsets;
+import com.google.common.io.Files;
 
 import org.eclipse.jetty.util.log.Log;
 import org.elasticsearch.cluster.health.ClusterHealthStatus;
@@ -182,8 +183,12 @@ public class DAO {
         html_dir = new File("html");
         
         // wake up susi
-        susi = new SusiMemory();
+        File watchpath = new File(new File("data"), "susi");
+        susi = new SusiMemory(watchpath);
         susi.add(new File(new File(conf_dir, "susi"), "susi_cognition_000.json"));
+        String susi_boilerplate_name = "susi_cognition_boilerplate.json";
+        File susi_boilerplate_file = new File(watchpath, susi_boilerplate_name);
+        if (!susi_boilerplate_file.exists()) Files.copy(new File(conf_dir, "susi/" + susi_boilerplate_name + ".example"), susi_boilerplate_file);
         
         // initialize public and private keys
 		public_settings = new Settings(new File("data/settings/public.settings.json"));
