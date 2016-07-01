@@ -107,7 +107,7 @@
 						]}]
 		},
 		{
-			"keys"   :["who", "count", "how", "many", "times"],
+			"keys"   :["who"],
 			"score"  :100,
 			"phrases":[	{"type":"pattern", "expression":"how many times was * tweeted in the last 24 hours"}
 					  ],
