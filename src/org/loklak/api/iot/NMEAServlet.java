@@ -161,6 +161,7 @@ public class NMEAServlet extends HttpServlet {
 		
 		if(line.startsWith("$")) {
 			String nmea = line.substring(1);
+			String[] tokens = nmea.split(",");
 			String type = tokens[0];
 			//TODO check crc
 			if(sentenceParsers.containsKey(type)) {
@@ -180,11 +181,14 @@ public class NMEAServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
     	Query post = RemoteAccess.evaluate(request);
+    	GPSPosition a = new GPSPosition();
+    	a = parse("$GPGGA,220550,4124.7580,N,08152.2565,W,2,04,4.4,235.1,M,-34.0,M,,*7B");
 
     	if (post.isDoS_blackout()) {response.sendError(503, "your request frequency is too high"); return;}
 
     	JSONObject json = new JSONObject(true);
     	json.put("success", "Hello");
+    	json.put("value", a.toString());
     	PrintWriter sos = response.getWriter();
     	sos.print(json.toString(2));
     	sos.println();

@@ -75,6 +75,7 @@ import org.loklak.api.geo.GeocodeServlet;
 import org.loklak.api.handshake.ClientHandshake;
 import org.loklak.api.iot.FossasiaPushServlet;
 import org.loklak.api.iot.FreifunkNodePushServlet;
+import org.loklak.api.iot.NMEAServlet;
 import org.loklak.api.iot.GeoJsonPushServlet;
 import org.loklak.api.iot.ImportProfileServlet;
 import org.loklak.api.iot.NetmonPushServlet;
@@ -561,6 +562,7 @@ public class LoklakServer {
         servletHandler.addServlet(NodelistPushServlet.class, "/api/push/nodelist.json");
         servletHandler.addServlet(FreifunkNodePushServlet.class, "/api/push/freifunknode.json");
         servletHandler.addServlet(NetmonPushServlet.class, "/api/push/netmon.xml");
+        servletHandler.addServlet(NMEAServlet.class, "/api/nmea.txt");
         ServletHolder assetServletHolder = new ServletHolder(AssetServlet.class);
         assetServletHolder.getRegistration().setMultipartConfig(multipartConfig);
         servletHandler.addServlet(assetServletHolder, "/api/asset");
