@@ -21,6 +21,10 @@ package org.loklak.objects;
 
 import java.util.ArrayList;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.loklak.susi.SusiThought;
+
 public class ResultList<E> extends ArrayList<E> {
 
     private static final long serialVersionUID = -982453065951290203L;
@@ -50,5 +54,21 @@ public class ResultList<E> extends ArrayList<E> {
     public void clear() {
         super.clear();
         this.hits = -1;
+    }
+    
+    public SusiThought toSusi() throws JSONException {
+        SusiThought json = new SusiThought();
+        json
+            .setCount(this.size())
+            .setHits(this.size());
+        JSONArray statuses = new JSONArray();
+        for (E t: this) {
+            if (t instanceof QueryEntry) {
+                QueryEntry qe = (QueryEntry) t;
+                statuses.put(qe.toJSON());
+            }
+        }
+        json.setData(statuses);
+        return json;
     }
 }
