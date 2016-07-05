@@ -339,7 +339,7 @@ public class QueryEntry extends AbstractObjectEntry implements ObjectEntry {
         
         public String translate4scraper() {
             // check if a location constraint was given
-            String dateclean = this.raw.replace(" since:hour", "").replace(" since:day", "").replace(" since:week", "");
+            String dateclean = this.raw.replace(" since:hour", "").replace(" since:day", "").replace(" since:week", "").replace(" since:all", "").replace(" since:alltime", "").replace(" since:wholetime", "");
             if (this.bbox == null || this.original.indexOf("near:") > 0) {
                 return dateclean;
             }
