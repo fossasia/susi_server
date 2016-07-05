@@ -32,6 +32,7 @@ import org.elasticsearch.search.sort.SortOrder;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.loklak.data.DAO;
+import org.loklak.objects.AccountEntry;
 import org.loklak.objects.QueryEntry;
 import org.loklak.objects.ResultList;
 import org.loklak.objects.Timeline;
@@ -223,9 +224,21 @@ public class ConsoleService extends AbstractAPIHandler implements APIHandler {
             SusiThought json = new SusiThought();
             json.setQuery(matcher.group(2));
             if (user_entry == null) {
-                json.setHits(0).setCount(0);
+                json.setHits(0).setCount(0).setData(new JSONArray());
             } else {
                 json.setHits(1).setCount(1).setData(new JSONArray().put(user_entry.toJSON()));
+            }
+            return json.setData(columns.extractTable(json.getJSONArray("data")));
+        });
+        pattern.put(Pattern.compile("SELECT\\h+?(.*?)\\h+?FROM\\h+?accounts\\h+?WHERE\\h+?screen_name\\h??=\\h??'(.*?)'\\h??;"), matcher -> {
+            Columns columns = new Columns(matcher.group(1));
+            AccountEntry account_entry = DAO.searchLocalAccount(matcher.group(2));
+            SusiThought json = new SusiThought();
+            json.setQuery(matcher.group(2));
+            if (account_entry == null) {
+                json.setHits(0).setCount(0).setData(new JSONArray());
+            } else {
+                json.setHits(1).setCount(1).setData(new JSONArray().put(account_entry.toJSON()));
             }
             return json.setData(columns.extractTable(json.getJSONArray("data")));
         });
