@@ -35,6 +35,7 @@ import org.loklak.data.DAO;
 import org.loklak.objects.QueryEntry;
 import org.loklak.objects.ResultList;
 import org.loklak.objects.Timeline;
+import org.loklak.objects.UserEntry;
 import org.loklak.server.APIException;
 import org.loklak.server.APIHandler;
 import org.loklak.server.BaseUserRole;
@@ -52,6 +53,7 @@ import org.loklak.tools.storage.JSONObjectWithDefault;
  * http://localhost:9000/api/console.json?q=SELECT%20COUNT(*)%20AS%20count,%20screen_name%20AS%20twitterer%20FROM%20messages%20WHERE%20query=%27loklak%27%20GROUP%20BY%20screen_name;
  * http://localhost:9000/api/console.json?q=SELECT%20PERCENT(count)%20AS%20percent,%20screen_name%20FROM%20(SELECT%20COUNT(*)%20AS%20count,%20screen_name%20FROM%20messages%20WHERE%20query=%27loklak%27%20GROUP%20BY%20screen_name)%20WHERE%20screen_name%20IN%20(%27leonmakk%27,%27Daminisatya%27,%27sudheesh001%27,%27shiven_mian%27);
  * http://localhost:9000/api/console.json?q=SELECT%20query,%20query_count%20AS%20count%20FROM%20queries%20WHERE%20query=%27auto%27;
+ * http://localhost:9000/api/console.json?q=SELECT%20*%20FROM%20users%20WHERE%20screen_name=%270rb1t3r%27;
  */
 public class ConsoleService extends AbstractAPIHandler implements APIHandler {
    
@@ -213,6 +215,18 @@ public class ConsoleService extends AbstractAPIHandler implements APIHandler {
             ResultList<QueryEntry> queries = DAO.SearchLocalQueries(matcher.group(2), 100, "retrieval_next", "date", SortOrder.ASC, null, new Date(), "retrieval_next");
             SusiThought json = queries.toSusi();
             json.setQuery(matcher.group(2));
+            return json.setData(columns.extractTable(json.getJSONArray("data")));
+        });
+        pattern.put(Pattern.compile("SELECT\\h+?(.*?)\\h+?FROM\\h+?users\\h+?WHERE\\h+?screen_name\\h??=\\h??'(.*?)'\\h??;"), matcher -> {
+            Columns columns = new Columns(matcher.group(1));
+            UserEntry user_entry = DAO.searchLocalUserByScreenName(matcher.group(2));
+            SusiThought json = new SusiThought();
+            json.setQuery(matcher.group(2));
+            if (user_entry == null) {
+                json.setHits(0).setCount(0);
+            } else {
+                json.setHits(1).setCount(1).setData(new JSONArray().put(user_entry.toJSON()));
+            }
             return json.setData(columns.extractTable(json.getJSONArray("data")));
         });
     }
