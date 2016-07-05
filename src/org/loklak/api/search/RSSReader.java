@@ -21,7 +21,6 @@ package org.loklak.api.search;
 
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.net.URL;
 import java.util.List;
 
 import javax.servlet.ServletException;
@@ -31,6 +30,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.loklak.http.ClientConnection;
 import org.loklak.http.RemoteAccess;
 import org.loklak.server.Query;
 
@@ -62,19 +62,13 @@ public class RSSReader extends HttpServlet {
 		}
 
 		String url = post.get("url", "");
-
-		URL feedUrl = null;
-		try {
-			feedUrl = new URL(url);
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-
 		SyndFeedInput input = new SyndFeedInput();
-
 		SyndFeed feed = null;
+        
 		try {
-			feed = input.build(new XmlReader(feedUrl));
+            ClientConnection connection = new ClientConnection(url);
+		    XmlReader xmlreader = new XmlReader(connection.inputStream);
+			feed = input.build(xmlreader);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -95,10 +89,9 @@ public class RSSReader extends HttpServlet {
 			jsonObject.put("Link", entry.getLink().toString());
 			jsonObject.put("URI", entry.getUri().toString());
 			jsonObject.put("Hash-Code", Integer.toString(entry.hashCode()));
-			jsonObject.put("Published-Date", entry.getPublishedDate().toString());
-			jsonObject.put("Updated-Date",
-					(entry.getUpdatedDate() == null) ? ("null") : (entry.getUpdatedDate().toString()));
-			jsonObject.put("Description", entry.getDescription().toString());
+			if (entry.getPublishedDate() != null) jsonObject.put("Published-Date", entry.getPublishedDate().toString());
+			if (entry.getUpdatedDate() != null) jsonObject.put("Updated-Date", entry.getUpdatedDate().toString());
+			if (entry.getDescription() != null) jsonObject.put("Description", entry.getDescription().toString());
 
 			jsonArray.put(i, jsonObject);
 
