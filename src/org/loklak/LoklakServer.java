@@ -91,6 +91,7 @@ import org.loklak.api.search.SusiService;
 import org.loklak.api.search.ConsoleService;
 import org.loklak.api.search.EventbriteCrawler;
 import org.loklak.api.search.UserServlet;
+import org.loklak.api.search.WordpressCrawler;
 import org.loklak.api.search.GenericScraper;
 import org.loklak.api.search.RSSReader;
 import org.loklak.api.tools.CSVServlet;
@@ -550,6 +551,7 @@ public class LoklakServer {
         servletHandler.addServlet(GenericScraper.class, "/api/genericscraper.json");
         servletHandler.addServlet(RSSReader.class, "/api/rssreader.json");
         servletHandler.addServlet(EventbriteCrawler.class, "/api/eventbritecrawler.json");
+        servletHandler.addServlet(WordpressCrawler.class, "/api/wordpresscrawler.json");
         ServletHolder pushServletHolder = new ServletHolder(PushServlet.class);
         pushServletHolder.getRegistration().setMultipartConfig(multipartConfig);
         servletHandler.addServlet(pushServletHolder, "/api/push.json");
