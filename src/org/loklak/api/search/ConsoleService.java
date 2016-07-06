@@ -32,6 +32,7 @@ import org.elasticsearch.search.sort.SortOrder;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.loklak.data.DAO;
+import org.loklak.geo.GeoMark;
 import org.loklak.objects.AccountEntry;
 import org.loklak.objects.QueryEntry;
 import org.loklak.objects.ResultList;
@@ -49,12 +50,15 @@ import com.google.common.util.concurrent.AtomicDouble;
 import org.loklak.tools.storage.JSONObjectWithDefault;
 
 /* examples:
+ * http://localhost:9000/api/console.json?q=SELECT%20text,%20screen_name,%20user.name%20AS%20user%20FROM%20messages%20WHERE%20query=%271%27;
  * http://localhost:9000/api/console.json?q=SELECT%20*%20FROM%20messages%20WHERE%20id=%27742384468560912386%27;
  * http://localhost:9000/api/console.json?q=SELECT%20link,screen_name%20FROM%20messages%20WHERE%20id=%27742384468560912386%27;
  * http://localhost:9000/api/console.json?q=SELECT%20COUNT(*)%20AS%20count,%20screen_name%20AS%20twitterer%20FROM%20messages%20WHERE%20query=%27loklak%27%20GROUP%20BY%20screen_name;
  * http://localhost:9000/api/console.json?q=SELECT%20PERCENT(count)%20AS%20percent,%20screen_name%20FROM%20(SELECT%20COUNT(*)%20AS%20count,%20screen_name%20FROM%20messages%20WHERE%20query=%27loklak%27%20GROUP%20BY%20screen_name)%20WHERE%20screen_name%20IN%20(%27leonmakk%27,%27Daminisatya%27,%27sudheesh001%27,%27shiven_mian%27);
  * http://localhost:9000/api/console.json?q=SELECT%20query,%20query_count%20AS%20count%20FROM%20queries%20WHERE%20query=%27auto%27;
  * http://localhost:9000/api/console.json?q=SELECT%20*%20FROM%20users%20WHERE%20screen_name=%270rb1t3r%27;
+ * http://localhost:9000/api/console.json?q=SELECT%20place[0]%20AS%20place,%20population,%20location[0]%20AS%20lon,%20location[1]%20AS%20lat%20FROM%20locations%20WHERE%20location=%27Berlin%27;
+ * http://localhost:9000/api/console.json?q=SELECT%20*%20FROM%20locations%20WHERE%20location=%2753.1,13.1%27;
  */
 public class ConsoleService extends AbstractAPIHandler implements APIHandler {
    
@@ -110,7 +114,40 @@ public class ConsoleService extends AbstractAPIHandler implements APIHandler {
             if (this.columns == null) return message;
             JSONObject json = new JSONObject(true);
             for (Map.Entry<String, String> c: columns.entrySet()) {
-                if (message.has(c.getKey())) json.put(c.getValue(), message.get(c.getKey()));
+                String key = c.getKey();
+                int p = key.indexOf('.');
+                if (p > 0) {
+                    // sub-element
+                    String k0 = key.substring(0,  p);
+                    String k1 = key.substring(p + 1);
+                    if (message.has(k0)) {
+                        if (k1.equals("length") || k1.equals("size()")) {
+                            Object a = message.get(k0);
+                            if (a instanceof String[]) {
+                                json.put(c.getValue(),((String[]) a).length);
+                            } else if (a instanceof JSONArray) {
+                                json.put(c.getValue(),((JSONArray) a).length());
+                            }
+                        } else {
+                            JSONObject o = message.getJSONObject(k0);
+                            if (o.has(k1)) json.put(c.getValue(), o.get(k1));
+                        }
+                    }
+                } else if ((p = key.indexOf('[')) > 0) {
+                    // array
+                    int q = key.indexOf("]", p);
+                    if (q > 0) {
+                        String k0 = key.substring(0,  p);
+                        int i = Integer.parseInt(key.substring(p + 1, q));
+                        if (message.has(k0)) {
+                            JSONArray a = message.getJSONArray(k0);
+                            if (i < a.length()) json.put(c.getValue(), a.get(i));
+                        }
+                    }
+                } else {
+                    // flat
+                    if (message.has(key)) json.put(c.getValue(), message.get(key));
+                }
             }
             return json;
         }
@@ -239,6 +276,18 @@ public class ConsoleService extends AbstractAPIHandler implements APIHandler {
                 json.setHits(0).setCount(0).setData(new JSONArray());
             } else {
                 json.setHits(1).setCount(1).setData(new JSONArray().put(account_entry.toJSON()));
+            }
+            return json.setData(columns.extractTable(json.getJSONArray("data")));
+        });
+        pattern.put(Pattern.compile("SELECT\\h+?(.*?)\\h+?FROM\\h+?locations\\h+?WHERE\\h+?location\\h??=\\h??'(.*?)'\\h??;"), matcher -> {
+            Columns columns = new Columns(matcher.group(1));
+            GeoMark loc = DAO.geoNames.analyse(matcher.group(2), null, 5, Long.toString(System.currentTimeMillis()));
+            SusiThought json = new SusiThought();
+            json.setQuery(matcher.group(2));
+            if (loc == null) {
+                json.setHits(0).setCount(0).setData(new JSONArray());
+            } else {
+                json.setHits(1).setCount(1).setData(new JSONArray().put(loc.toJSON(false)));
             }
             return json.setData(columns.extractTable(json.getJSONArray("data")));
         });

@@ -19,6 +19,10 @@
 
 package org.loklak.geo;
 
+import org.json.JSONArray;
+import org.json.JSONObject;
+import org.loklak.data.DAO;
+
 public class GeoMark extends GeoLocation implements GeoPoint {
 
     private double mlon, mlat; // coordinates for the marker
@@ -66,4 +70,14 @@ public class GeoMark extends GeoLocation implements GeoPoint {
         return this.mlat;
     }
     
+    public JSONObject toJSON(boolean minified) {
+        JSONObject json = new JSONObject(true);
+        json.put("place", minified ? new JSONArray(new String[]{this.getNames().iterator().next()}) : new JSONArray(this.getNames()));
+        json.put("population", this.getPopulation());
+        json.put("country_code", this.getISO3166cc());
+        json.put("country", DAO.geoNames.getCountryName(this.getISO3166cc()));
+        json.put("location", new JSONArray(new double[]{this.lon(), this.lat()}));
+        json.put("mark", new JSONArray(new double[]{this.mlon(), this.mlat()}));
+        return json;
+    }
 }

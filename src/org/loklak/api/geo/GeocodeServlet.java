@@ -90,16 +90,11 @@ public class GeocodeServlet extends HttpServlet {
         JSONObject locations = new JSONObject(true);
         for (String p: place) {
             GeoMark loc = DAO.geoNames.analyse(p, null, 5, Long.toString(System.currentTimeMillis()));
-            JSONObject location = new JSONObject(true);
             if (loc != null) {
-                location.put("place", minified ? new JSONArray(new String[]{loc.getNames().iterator().next()}) : new JSONArray(loc.getNames()));
-                location.put("population", loc.getPopulation());
-                location.put("country_code", loc.getISO3166cc());
-                location.put("country", DAO.geoNames.getCountryName(loc.getISO3166cc()));
-                location.put("location", new JSONArray(new double[]{loc.lon(), loc.lat()}));
-                location.put("mark", new JSONArray(new double[]{loc.mlon(), loc.mlat()}));
+                locations.put(p, loc.toJSON(minified));
+            } else {
+                locations.put(p, new JSONObject());
             }
-            locations.put(p, location);
         }
         
         post.setResponse(response, "application/javascript");
