@@ -30,9 +30,13 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.PrintWriter;
 
+import java.net.*;
+import java.io.*;
+
 import org.json.JSONObject;
 import org.loklak.server.Query;
 import org.loklak.http.RemoteAccess;
+import org.loklak.http.ClientConnection;
 
 /*
 Sample Read Format
@@ -139,6 +143,18 @@ public class NMEAServlet extends HttpServlet {
 		public void updatefix() {
 			fixed = quality > 0;
 		}
+
+		public JSONObject toJSONString() {
+			JSONObject rJsonObject = new JSONObject(true);
+			rJsonObject.put("lat", lat);
+			rJsonObject.put("long", lon);
+			rJsonObject.put("time", time);
+			rJsonObject.put("Q", quality);
+			rJsonObject.put("dir", dir);
+			rJsonObject.put("alt", altitude);
+			rJsonObject.put("vel", velocity);
+			return rJsonObject;
+		}
 		
 		public String toString() {
 			return String.format("POSITION: lat: %f, lon: %f, time: %f, Q: %d, dir: %f, alt: %f, vel: %f", lat, lon, time, quality, dir, altitude, velocity);
@@ -173,6 +189,33 @@ public class NMEAServlet extends HttpServlet {
 		return position;
 	}
 
+	// Object Response Structure
+	// -------------------------
+	// { "idNumbers" : { "lat", "long", "time" , "Q", "dir", "alt", "vel" } , ... }
+	// -------------------------
+	/* Sample Response
+		{
+		  "1": {
+		    "lat": 60.073490142822266,
+		    "long": 19.67548179626465,
+		    "time": 94154,
+		    "Q": 2,
+		    "dir": 82.0999984741211,
+		    "alt": 0.699999988079071,
+		    "vel": 1.7999999523162842
+		  },
+		  "2": {
+		    "lat": 60.07347106933594,
+		    "long": 19.675262451171875,
+		    "time": 94140,
+		    "Q": 2,
+		    "dir": 82.0999984741211,
+		    "alt": 0.10000000149011612,
+		    "vel": 1.7999999523162842
+		  }
+		}
+	*/
+
 	@Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         doGet(request, response);
@@ -181,20 +224,46 @@ public class NMEAServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
     	Query post = RemoteAccess.evaluate(request);
-    	GPSPosition a = new GPSPosition();
-    	a = parse("$GPGGA,220550,4124.7580,N,08152.2565,W,2,04,4.4,235.1,M,-34.0,M,,*7B");
+
+    	// Sample usage for each line of NMEA Sentence data
+    	// GPSPosition a = new GPSPosition();
+    	// a = parse("$GPGGA,220550,4124.7580,N,08152.2565,W,2,04,4.4,235.1,M,-34.0,M,,*7B");
 
     	if (post.isDoS_blackout()) {response.sendError(503, "your request frequency is too high"); return;}
 
+    	// Send the stream URL as stream parameter.
+    	String stream = post.get("stream", "");
+    	String minified = post.get("minified", "");
+
+    	// Download the file/Stream of NMEA data as a buffered stream.
+    	URL url = new URL(stream);
+    	BufferedReader in = new BufferedReader(new InputStreamReader(url.openStream()));
+    	String NMEALine;
+
     	JSONObject json = new JSONObject(true);
-    	json.put("success", "Hello");
-    	json.put("value", a.toString());
+    	int lines = 0;
+
+    	// Read each buffered stream line by line and parse and convert NMEA to an actual object.
+    	while ((NMEALine = in.readLine()) != null) {
+    		lines++;
+    		GPSPosition gpsObject = new GPSPosition();
+    		gpsObject = parse(NMEALine);
+    		json.put(String.valueOf(lines), gpsObject.toJSONString());
+    	}
+
+    	in.close();
+
+    	// Start the printwriter and get ready to respond with json
     	PrintWriter sos = response.getWriter();
-    	sos.print(json.toString(2));
+    	if (minified != "true") {
+    		sos.print(json.toString(2));
+    	}
+    	else {
+    		sos.print(json.toString());
+    	}
     	sos.println();
 
     	post.finalize();
     }
-
 
 }
