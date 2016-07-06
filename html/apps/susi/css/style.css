@@ -39,7 +39,7 @@ body {
 }
 .people-list ul {
   padding: 20px;
-  height: 770px;
+  height: 400px;
 }
 .people-list ul li {
   padding-bottom: 20px;
@@ -95,7 +95,7 @@ body {
   padding: 30px 30px 20px;
   border-bottom: 2px solid white;
   overflow-y: scroll;
-  height: 575px;
+  height: 400px;
 }
 .chat .chat-history .message-data {
   margin-bottom: 15px;
