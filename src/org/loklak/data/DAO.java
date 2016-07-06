@@ -886,14 +886,28 @@ public class DAO {
             QueryEntry.ElasticsearchQuery sq = new QueryEntry.ElasticsearchQuery(q, timezoneOffset);
             long interval = sq.until.getTime() - sq.since.getTime();
             IndexName resultIndex;
-            this.query = elasticsearch_client.query((resultIndex = IndexName.messages_hour).name(), sq.queryBuilder, order_field.getMessageFieldName(), timezoneOffset, resultCount, interval, "created_at", aggregationLimit, aggregationFields);
-            if (!q.contains("since:hour") && insufficient(this.query, resultCount, aggregationLimit, aggregationFields)) {
-                this.query =  elasticsearch_client.query((resultIndex = IndexName.messages_day).name(), sq.queryBuilder, order_field.getMessageFieldName(), timezoneOffset, resultCount, interval, "created_at", aggregationLimit, aggregationFields);
-                if (!q.contains("since:day") && insufficient(this.query, resultCount, aggregationLimit, aggregationFields)) {
+            boolean wholetime = aggregationFields.length > 0;
+            if (wholetime) {
+                if (q.contains("since:hour")) {
+                    this.query =  elasticsearch_client.query((resultIndex = IndexName.messages_hour).name(), sq.queryBuilder, order_field.getMessageFieldName(), timezoneOffset, resultCount, interval, "created_at", aggregationLimit, aggregationFields);
+                } else if (q.contains("since:day")) {
+                    this.query =  elasticsearch_client.query((resultIndex = IndexName.messages_day).name(), sq.queryBuilder, order_field.getMessageFieldName(), timezoneOffset, resultCount, interval, "created_at", aggregationLimit, aggregationFields);
+                } else if (q.contains("since:week")) {
                     this.query =  elasticsearch_client.query((resultIndex = IndexName.messages_week).name(), sq.queryBuilder, order_field.getMessageFieldName(), timezoneOffset, resultCount, interval, "created_at", aggregationLimit, aggregationFields);
-                    if (!q.contains("since:week") && insufficient(this.query, resultCount, aggregationLimit, aggregationFields)) {
-                        this.query =  elasticsearch_client.query((resultIndex = IndexName.messages).name(), sq.queryBuilder, order_field.getMessageFieldName(), timezoneOffset, resultCount, interval, "created_at", aggregationLimit, aggregationFields);
-            }}}
+                } else {
+                    this.query = elasticsearch_client.query((resultIndex = IndexName.messages_hour).name(), sq.queryBuilder, order_field.getMessageFieldName(), timezoneOffset, resultCount, interval, "created_at", aggregationLimit, aggregationFields);
+                }
+            } else {
+                // use only a time frame that is sufficient for a result
+                this.query = elasticsearch_client.query((resultIndex = IndexName.messages_hour).name(), sq.queryBuilder, order_field.getMessageFieldName(), timezoneOffset, resultCount, interval, "created_at", aggregationLimit, aggregationFields);
+                if (!q.contains("since:hour") && insufficient(this.query, resultCount, aggregationLimit, aggregationFields)) {
+                    this.query =  elasticsearch_client.query((resultIndex = IndexName.messages_day).name(), sq.queryBuilder, order_field.getMessageFieldName(), timezoneOffset, resultCount, interval, "created_at", aggregationLimit, aggregationFields);
+                    if (!q.contains("since:day") && insufficient(this.query, resultCount, aggregationLimit, aggregationFields)) {
+                        this.query =  elasticsearch_client.query((resultIndex = IndexName.messages_week).name(), sq.queryBuilder, order_field.getMessageFieldName(), timezoneOffset, resultCount, interval, "created_at", aggregationLimit, aggregationFields);
+                        if (!q.contains("since:week") && insufficient(this.query, resultCount, aggregationLimit, aggregationFields)) {
+                            this.query =  elasticsearch_client.query((resultIndex = IndexName.messages).name(), sq.queryBuilder, order_field.getMessageFieldName(), timezoneOffset, resultCount, interval, "created_at", aggregationLimit, aggregationFields);
+                }}}
+            }
             timeline.setHits(query.hitCount);
             timeline.setResultIndex(resultIndex);
                     

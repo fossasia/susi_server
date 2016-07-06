@@ -339,7 +339,7 @@ public class QueryEntry extends AbstractObjectEntry implements ObjectEntry {
         
         public String translate4scraper() {
             // check if a location constraint was given
-            String dateclean = this.raw.replace(" since:hour", "").replace(" since:day", "").replace(" since:week", "");
+            String dateclean = this.raw.replace(" since:hour", "").replace(" since:day", "").replace(" since:week", "").replace(" since:all", "").replace(" since:alltime", "").replace(" since:wholetime", "");
             if (this.bbox == null || this.original.indexOf("near:") > 0) {
                 return dateclean;
             }
@@ -464,6 +464,17 @@ public class QueryEntry extends AbstractObjectEntry implements ObjectEntry {
         splitIntoORGroups("Alpha OR Beta AND Gamma /constraint sand OR kies OR wasser skilanglauf");
     }
     
+    /**
+     * fixing a query mistake covers most common wrong queries from the user
+     * @param q
+     * @return the fixed query
+     */
+    public static String fixQueryMistakes(String q) {
+        q = q.replaceAll("hashtag:", "#");
+        q = q.replaceAll(" AND ", " "); // AND is default
+        return q;
+    }
+    
     public static class ElasticsearchQuery {
         
         public QueryBuilder queryBuilder;
@@ -480,7 +491,7 @@ public class QueryEntry extends AbstractObjectEntry implements ObjectEntry {
 
         private QueryBuilder preparse(String q, int timezoneOffset) {
             // detect usage of OR connector usage.
-            q = q.replaceAll(" AND ", " "); // AND is default
+            q = QueryEntry.fixQueryMistakes(q);
             List<String> terms = splitIntoORGroups(q); // OR binds stronger than AND
             if (terms.size() == 0) return QueryBuilders.constantScoreQuery(QueryBuilders.matchAllQuery());
             

@@ -19,6 +19,7 @@
 
 package org.loklak.api.search;
 
+import java.util.Date;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -27,10 +28,15 @@ import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.elasticsearch.search.sort.SortOrder;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.loklak.data.DAO;
+import org.loklak.objects.AccountEntry;
+import org.loklak.objects.QueryEntry;
+import org.loklak.objects.ResultList;
 import org.loklak.objects.Timeline;
+import org.loklak.objects.UserEntry;
 import org.loklak.server.APIException;
 import org.loklak.server.APIHandler;
 import org.loklak.server.BaseUserRole;
@@ -47,6 +53,8 @@ import org.loklak.tools.storage.JSONObjectWithDefault;
  * http://localhost:9000/api/console.json?q=SELECT%20link,screen_name%20FROM%20messages%20WHERE%20id=%27742384468560912386%27;
  * http://localhost:9000/api/console.json?q=SELECT%20COUNT(*)%20AS%20count,%20screen_name%20AS%20twitterer%20FROM%20messages%20WHERE%20query=%27loklak%27%20GROUP%20BY%20screen_name;
  * http://localhost:9000/api/console.json?q=SELECT%20PERCENT(count)%20AS%20percent,%20screen_name%20FROM%20(SELECT%20COUNT(*)%20AS%20count,%20screen_name%20FROM%20messages%20WHERE%20query=%27loklak%27%20GROUP%20BY%20screen_name)%20WHERE%20screen_name%20IN%20(%27leonmakk%27,%27Daminisatya%27,%27sudheesh001%27,%27shiven_mian%27);
+ * http://localhost:9000/api/console.json?q=SELECT%20query,%20query_count%20AS%20count%20FROM%20queries%20WHERE%20query=%27auto%27;
+ * http://localhost:9000/api/console.json?q=SELECT%20*%20FROM%20users%20WHERE%20screen_name=%270rb1t3r%27;
  */
 public class ConsoleService extends AbstractAPIHandler implements APIHandler {
    
@@ -201,6 +209,37 @@ public class ConsoleService extends AbstractAPIHandler implements APIHandler {
             Columns columns = new Columns(matcher.group(1));
             DAO.SearchLocalMessages messages = new DAO.SearchLocalMessages(matcher.group(2), Timeline.Order.CREATED_AT, 0, 100, 0);
             SusiThought json = messages.timeline.toSusi(true);
+            return json.setData(columns.extractTable(json.getJSONArray("data")));
+        });
+        pattern.put(Pattern.compile("SELECT\\h+?(.*?)\\h+?FROM\\h+?queries\\h+?WHERE\\h+?query\\h??=\\h??'(.*?)'\\h??;"), matcher -> {
+            Columns columns = new Columns(matcher.group(1));
+            ResultList<QueryEntry> queries = DAO.SearchLocalQueries(matcher.group(2), 100, "retrieval_next", "date", SortOrder.ASC, null, new Date(), "retrieval_next");
+            SusiThought json = queries.toSusi();
+            json.setQuery(matcher.group(2));
+            return json.setData(columns.extractTable(json.getJSONArray("data")));
+        });
+        pattern.put(Pattern.compile("SELECT\\h+?(.*?)\\h+?FROM\\h+?users\\h+?WHERE\\h+?screen_name\\h??=\\h??'(.*?)'\\h??;"), matcher -> {
+            Columns columns = new Columns(matcher.group(1));
+            UserEntry user_entry = DAO.searchLocalUserByScreenName(matcher.group(2));
+            SusiThought json = new SusiThought();
+            json.setQuery(matcher.group(2));
+            if (user_entry == null) {
+                json.setHits(0).setCount(0).setData(new JSONArray());
+            } else {
+                json.setHits(1).setCount(1).setData(new JSONArray().put(user_entry.toJSON()));
+            }
+            return json.setData(columns.extractTable(json.getJSONArray("data")));
+        });
+        pattern.put(Pattern.compile("SELECT\\h+?(.*?)\\h+?FROM\\h+?accounts\\h+?WHERE\\h+?screen_name\\h??=\\h??'(.*?)'\\h??;"), matcher -> {
+            Columns columns = new Columns(matcher.group(1));
+            AccountEntry account_entry = DAO.searchLocalAccount(matcher.group(2));
+            SusiThought json = new SusiThought();
+            json.setQuery(matcher.group(2));
+            if (account_entry == null) {
+                json.setHits(0).setCount(0).setData(new JSONArray());
+            } else {
+                json.setHits(1).setCount(1).setData(new JSONArray().put(account_entry.toJSON()));
+            }
             return json.setData(columns.extractTable(json.getJSONArray("data")));
         });
     }
