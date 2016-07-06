@@ -5,7 +5,7 @@
   "name":"susi",
   "headline":"Chat with Susi",
   "alternativeHeadline":"Ask Susi Your Queries",
-  "applicationCategory":"susi API",
+  "applicationCategory":"Susi API",
   "applicationSubCategory":"Text Retrieval",
   "operatingSystem":"http://loklak.org",
   "author":{
