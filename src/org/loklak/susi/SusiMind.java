@@ -40,7 +40,7 @@ import org.json.JSONObject;
 import org.json.JSONTokener;
 import org.loklak.data.DAO;
 
-public class SusiMemory {
+public class SusiMind {
     
     private final Map<String,String> synonyms; // a map from a synonym to a canonical expression
     private final Map<String,String> categories; // a map from an expression to an associated category name
@@ -49,7 +49,7 @@ public class SusiMemory {
     private final File watchpath; // a path where the memory looks for new additions of knowledge with memory files
     private final Map<File, Long> observations; // a mapping of mind memory files to the time when the file was read the last time
     
-    public SusiMemory(File watchpath) {
+    public SusiMind(File watchpath) {
         // initialize class objects
         this.watchpath = watchpath;
         this.watchpath.mkdirs();
@@ -60,7 +60,7 @@ public class SusiMemory {
         this.observations = new HashMap<>();
     }
     
-    public SusiMemory observe() throws IOException {
+    public SusiMind observe() throws IOException {
         for (File f: this.watchpath.listFiles()) {
             if (!f.isDirectory() && f.getName().endsWith(".json")) {
                 if (!observations.containsKey(f) || f.lastModified() > observations.get(f)) {
@@ -76,13 +76,13 @@ public class SusiMemory {
         return this;
     }
     
-    public SusiMemory learn(File file) throws JSONException, FileNotFoundException {
+    public SusiMind learn(File file) throws JSONException, FileNotFoundException {
         JSONObject json = new JSONObject(new JSONTokener(new FileReader(file)));
         //System.out.println(json.toString(2)); // debug
         return learn(json);
     }
     
-    public SusiMemory learn(JSONObject json) {
+    public SusiMind learn(JSONObject json) {
 
         // initialize temporary json objects
         JSONObject syn = json.has("synonyms") ? json.getJSONObject("synonyms") : new JSONObject();
@@ -183,7 +183,7 @@ public class SusiMemory {
     
     public static void main(String[] args) {
         try {
-            SusiMemory mem = new SusiMemory(new File(new File("data"), "susi"));
+            SusiMind mem = new SusiMind(new File(new File("data"), "susi"));
             mem.learn(new File("conf/susi/susi_cognition_000.json"));
             //System.out.println(mem.answer("who will win euro2016?", 3));
             System.out.println(mem.answer("I feel funny"));

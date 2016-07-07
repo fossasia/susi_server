@@ -75,7 +75,7 @@ import org.loklak.objects.SourceType;
 import org.loklak.objects.Timeline;
 import org.loklak.objects.UserEntry;
 import org.loklak.server.*;
-import org.loklak.susi.SusiMemory;
+import org.loklak.susi.SusiMind;
 import org.loklak.tools.DateParser;
 import org.loklak.tools.OS;
 import org.loklak.tools.storage.*;
@@ -152,7 +152,7 @@ public class DAO {
     public static Map<String, Accounting> accounting_temporary = new HashMap<>();
     
     // built-in artificial intelligence
-    public static SusiMemory susi;
+    public static SusiMind susi;
     
     public static enum IndexName {
     	messages_hour("messages.json"), messages_day("messages.json"), messages_week("messages.json"), messages, queries, users, accounts, import_profiles;
@@ -184,7 +184,7 @@ public class DAO {
         
         // wake up susi
         File watchpath = new File(new File("data"), "susi");
-        susi = new SusiMemory(watchpath);
+        susi = new SusiMind(watchpath);
         File susiinitpath = new File(conf_dir, "susi");
         for (String cogfile: susiinitpath.list()) {
             if (cogfile.endsWith(".json")) susi.learn(new File(susiinitpath, cogfile));
