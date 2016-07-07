@@ -85,4 +85,12 @@ public class SusiInference {
         // maybe the argument is not applicable, then the latest mindstate is empty application
         return argument.mindstate();
     }
+    
+    public String toString() {
+        return this.getJSON().toString();
+    }
+    
+    public JSONObject getJSON() {
+        return this.json;
+    }
 }

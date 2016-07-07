@@ -117,4 +117,12 @@ public class SusiAction {
         }
         return j;
     }
+    
+    /**
+     * toString
+     * @return return the json representation of the object as a string
+     */
+    public String toString() {
+        return toJSON().toString();
+    }
 }

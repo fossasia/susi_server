@@ -124,23 +124,30 @@ public class SusiMemory {
         token(query).forEach(token -> {List<SusiRule> r = this.ruletrigger.get(token); if (r != null) rules.addAll(r);});
 
         // add catchall rules always
-        List<SusiRule> ca = this.ruletrigger.get("*"); if (ca != null) rules.addAll(ca);
+        List<SusiRule> ca = this.ruletrigger.get(SusiRule.CATCHALL_KEY); if (ca != null) rules.addAll(ca);
         
         // create list of all rules that might apply
         TreeMap<Integer, List<SusiRule>> scored = new TreeMap<>();
         rules.forEach(rule -> {
+            //System.out.println("rule.phrase-1:" + rule.getPhrases().toString());
             int score = rule.getScore();
-            List<SusiRule> r = scored.get(score);
+            List<SusiRule> r = scored.get(-score);
             if (r == null) {r = new ArrayList<>(); scored.put(-score, r);}
             r.add(rule);
         });
 
         // make a sorted list of all rules
-        rules.clear(); scored.values().forEach(r -> rules.addAll(r));
+        rules.clear(); scored.values().forEach(r -> {
+            rules.addAll(r);
+        });
         
         // test rules and collect those which match up to maxcount
         List<SusiRule> mrules = new ArrayList<>(Math.min(10, maxcount));
         for (SusiRule rule: rules) {
+            //System.out.println("rule.phrase-2:" + rule.getPhrases().toString());
+            if (rule.getActions().size() == 0) continue;
+            if (rule.getActions().get(0).getPhrases().size() == 0) continue;
+            if (rule.getActions().get(0).getPhrases().get(0).length() == 0) continue;
             Matcher m = rule.matcher(query);
             if (m == null) continue;
             mrules.add(rule);
