@@ -66,7 +66,7 @@ public class SusiMemory {
                 if (!observations.containsKey(f) || f.lastModified() > observations.get(f)) {
                     observations.put(f, System.currentTimeMillis());
                     try {
-                        add(f);
+                        learn(f);
                     } catch (Throwable e) {
                         DAO.log(e.getMessage());
                     }
@@ -76,13 +76,13 @@ public class SusiMemory {
         return this;
     }
     
-    public SusiMemory add(File file) throws JSONException, FileNotFoundException {
+    public SusiMemory learn(File file) throws JSONException, FileNotFoundException {
         JSONObject json = new JSONObject(new JSONTokener(new FileReader(file)));
         //System.out.println(json.toString(2)); // debug
-        return add(json);
+        return learn(json);
     }
     
-    public SusiMemory add(JSONObject json) {
+    public SusiMemory learn(JSONObject json) {
 
         // initialize temporary json objects
         JSONObject syn = json.has("synonyms") ? json.getJSONObject("synonyms") : new JSONObject();
@@ -118,7 +118,7 @@ public class SusiMemory {
         return this;
     }
     
-    public List<SusiRule> getRules(String query, int maxcount) {
+    public List<SusiRule> associate(String query, int maxcount) {
         // tokenize query to have hint for rule collection
         List<SusiRule> rules = new ArrayList<>();
         token(query).forEach(token -> {List<SusiRule> r = this.ruletrigger.get(token); if (r != null) rules.addAll(r);});
@@ -137,9 +137,7 @@ public class SusiMemory {
         });
 
         // make a sorted list of all rules
-        rules.clear(); scored.values().forEach(r -> {
-            rules.addAll(r);
-        });
+        rules.clear(); scored.values().forEach(r -> rules.addAll(r));
         
         // test rules and collect those which match up to maxcount
         List<SusiRule> mrules = new ArrayList<>(Math.min(10, maxcount));
@@ -173,7 +171,7 @@ public class SusiMemory {
     }
     
     public List<SusiArgument> answer(final String query, int maxcount) {
-        List<SusiRule> rules = getRules(query, maxcount);
+        List<SusiRule> rules = associate(query, maxcount);
         return rules.stream().map(rule -> rule.consideration(query)).collect(Collectors.toList());
     }
     
@@ -186,7 +184,7 @@ public class SusiMemory {
     public static void main(String[] args) {
         try {
             SusiMemory mem = new SusiMemory(new File(new File("data"), "susi"));
-            mem.add(new File("conf/susi/susi_cognition_000.json"));
+            mem.learn(new File("conf/susi/susi_cognition_000.json"));
             //System.out.println(mem.answer("who will win euro2016?", 3));
             System.out.println(mem.answer("I feel funny"));
             System.out.println(mem.answer("Help me!"));

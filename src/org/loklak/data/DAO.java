@@ -187,7 +187,7 @@ public class DAO {
         susi = new SusiMemory(watchpath);
         File susiinitpath = new File(conf_dir, "susi");
         for (String cogfile: susiinitpath.list()) {
-            if (cogfile.endsWith(".json")) susi.add(new File(susiinitpath, cogfile));
+            if (cogfile.endsWith(".json")) susi.learn(new File(susiinitpath, cogfile));
         }
         String susi_boilerplate_name = "susi_cognition_boilerplate.json";
         File susi_boilerplate_file = new File(watchpath, susi_boilerplate_name);
