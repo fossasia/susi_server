@@ -185,7 +185,10 @@ public class DAO {
         // wake up susi
         File watchpath = new File(new File("data"), "susi");
         susi = new SusiMemory(watchpath);
-        susi.add(new File(new File(conf_dir, "susi"), "susi_cognition_000.json"));
+        File susiinitpath = new File(conf_dir, "susi");
+        for (String cogfile: susiinitpath.list()) {
+            if (cogfile.endsWith(".json")) susi.add(new File(susiinitpath, cogfile));
+        }
         String susi_boilerplate_name = "susi_cognition_boilerplate.json";
         File susi_boilerplate_file = new File(watchpath, susi_boilerplate_name);
         if (!susi_boilerplate_file.exists()) Files.copy(new File(conf_dir, "susi/" + susi_boilerplate_name + ".example"), susi_boilerplate_file);
