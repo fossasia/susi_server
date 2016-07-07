@@ -68,12 +68,12 @@ public class TwitterAnalysis extends HttpServlet {
 		response.setCharacterEncoding("UTF-8");
 		PrintWriter sos = response.getWriter();
 		String username = post.get("screen_name", "");
-
+		String count = post.get("count", "");
 		String siteurl = request.getRequestURL().toString();
 		String baseurl = siteurl.substring(0, siteurl.length() - request.getRequestURI().length())
 				+ request.getContextPath();
 
-		String searchurl = baseurl + "/api/search.json?q=from%3A" + username;
+		String searchurl = baseurl + "/api/search.json?q=from%3A" + username + (count != "" ? ("&count=" + count) : "");
 		// String userurl = baseurl + "/api/user.json?screen_name=" + username;
 		byte[] searchbyte = ClientConnection.download(searchurl);
 		// byte[] userbyte = ClientConnection.download(userurl);
@@ -86,7 +86,6 @@ public class TwitterAnalysis extends HttpServlet {
 			return;
 		}
 
-		finalresult.put("username", username);
 		String searchstr = UTF8.String(searchbyte);
 		// String userstr = UTF8.String(userbyte);
 		JSONObject searchresult = new JSONObject(searchstr);
@@ -134,6 +133,8 @@ public class TwitterAnalysis extends HttpServlet {
 		finalresult.put("yearwise_activity_frequency", yearlyact);
 		finalresult.put("hourwise_activity_frequency", hourlyact);
 		finalresult.put("daywise_activity_frequency", dailyact);
+		finalresult.put("username", username);
+		finalresult.put("tweets_analysed", searchresult.getJSONObject("search_metadata").get("count"));
 		sos.print(finalresult.toString(2));
 		sos.println();
 		post.finalize();
