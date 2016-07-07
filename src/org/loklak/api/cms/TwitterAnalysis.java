@@ -77,23 +77,24 @@ public class TwitterAnalysis extends HttpServlet {
 		// String userurl = baseurl + "/api/user.json?screen_name=" + username;
 		byte[] searchbyte = ClientConnection.download(searchurl);
 		// byte[] userbyte = ClientConnection.download(userurl);
-		if ((searchbyte == null || searchbyte.length == 0)) {
-			// TODO: add same check for userbyte in the if statement
+		String searchstr = UTF8.String(searchbyte);
+		// String userstr = UTF8.String(userbyte);
+		JSONObject searchresult = new JSONObject(searchstr);
+		// JSONObject userresult = new JSONObject(userstr);
+
+		JSONArray tweets = searchresult.getJSONArray("statuses");
+		if (tweets.length() == 0) {
+			// TODO: add similar check for userbyte in the if statement
 			finalresult.put("data collected", "empty");
+			finalresult.put("status", "invalid username or no tweets");
+			finalresult.put("username", username);
 			sos.print(finalresult.toString(2));
 			sos.println();
 			post.finalize();
 			return;
 		}
 
-		String searchstr = UTF8.String(searchbyte);
-		// String userstr = UTF8.String(userbyte);
-		JSONObject searchresult = new JSONObject(searchstr);
-		// JSONObject userresult = new JSONObject(userstr);
-
-		// activity times statistics
-
-		JSONArray tweets = searchresult.getJSONArray("statuses");
+		// activity frequency statistics
 		List<String> tweetDate = new ArrayList<>();
 		List<String> tweetHour = new ArrayList<>();
 		List<String> tweetDay = new ArrayList<>();
