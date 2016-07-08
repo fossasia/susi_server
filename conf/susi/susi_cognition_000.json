@@ -43,7 +43,17 @@
 		"Cool":["chilly", "cold", "frosty", "wintry", "icy", "frigid"],
 		"Crooked":["bent", "twisted", "curved", "hooked", "zigzag"],
 		"Cry":["shout", "yell", "yowl", "scream", "roar", "bellow", "weep", "wail", "sob", "bawl"],
-		"Cut":["gash", "slash", "prick", "nick", "sever", "slice", "carve", "cleave", "slit", "chop", "crop", "lop", "reduce"]
+		"Cut":["gash", "slash", "prick", "nick", "sever", "slice", "carve", "cleave", "slit", "chop", "crop", "lop", "reduce"],
+		"Dangerous":["perilous", "hazardous", "risky", "uncertain", "unsafe"],
+		"Dark":["shadowy", "unlit", "murky", "gloomy", "dim", "dusky", "shaded", "sunless", "black", "dismal", "sad"],
+		"Decide":["determine", "settle", "choose", "resolve"],
+		"Definite":["certain", "sure", "positive", "determined", "clear", "distinct", "obvious"],
+		"Delicious":["savory", "delectable", "appetizing", "luscious", "scrumptious", "palatable", "delightful", "enjoyable", "toothsome", "exquisite"],
+		"Describe":["portray", "characterize", "picture", "narrate", "relate", "recount", "represent", "report", "record"],
+		"Destroy":["ruin", "demolish", "raze", "waste", "kill", "slay", "end", "extinguish"],
+		"Difference":["disagreement", "inequity", "contrast", "dissimilarity", "incompatibility"],
+		"Do":["execute", "enact", "carry out", "finish", "conclude", "effect", "accomplish", "achieve", "attain"],
+		"Dull":["boring", "tiring", "tiresome", "uninteresting", "slow", "dumb", "stupid", "unimaginative", "lifeless", "dead", "insensible", "tedious", "wearisome", "listless", "expressionless", "plain", "monotonous", "humdrum", "dreary"]
 	},
 	"multi":{
 		"intro":["There might be several right answers..."],
