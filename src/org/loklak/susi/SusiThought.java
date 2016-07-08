@@ -56,7 +56,7 @@ public class SusiThought extends JSONObject {
      */
     public SusiThought(Matcher matcher) {
         this();
-        this.setOffset(0).setCount(1).setHits(1);
+        this.setOffset(0).setHits(1);
         JSONObject row = new JSONObject();
         row.put("0", matcher.group(0));
         for (int i = 0; i < matcher.groupCount(); i++) {
@@ -72,6 +72,12 @@ public class SusiThought extends JSONObject {
         this.data_name = data_name;
     }
 
+    public boolean equals(Object o) {
+        if (!(o instanceof SusiThought)) return false;
+        SusiThought t = (SusiThought) o;
+        return this.getData().equals(t.getData());
+    }
+    
     /**
      * In a series of information pieces the first information piece has number 0.
      * If the thought is a follow-up series of a previous set of information, an offset is needed.
@@ -84,15 +90,16 @@ public class SusiThought extends JSONObject {
         return this;
     }
     
+    public int getOffset() {
+        return getMetadata().has("offset") ? getMetadata().getInt("offset") : 0;
+    }
+    
     /**
      * The number of information pieces in a set of informations may have a count.
-     * This can be set here.
-     * @param hits number of information pieces
-     * @return the thought
+     * @return hits number of information pieces
      */
-    public SusiThought setCount(int count) {
-        getMetadata().put("count", count);
-        return this;
+    public int getCount() {
+        return getMetadata().has("count") ? getMetadata().getInt("count") : getData().length();
     }
     
     /**
@@ -105,6 +112,10 @@ public class SusiThought extends JSONObject {
     public SusiThought setHits(int hits) {
         getMetadata().put("hits", hits);
         return this;
+    }
+    
+    public int getHits() {
+        return getMetadata().has("hits") ? getMetadata().getInt("hits") : 0;
     }
 
     /**
@@ -134,10 +145,13 @@ public class SusiThought extends JSONObject {
      * @return the set of meta information for this thought
      */
     private JSONObject getMetadata() {
-        if (this.has(metadata_name)) return this.getJSONObject(metadata_name);
-        JSONObject metadata = new JSONObject();
-        this.put(metadata_name, metadata);
-        return metadata;
+        JSONObject md;
+        if (this.has(metadata_name)) md = this.getJSONObject(metadata_name); else {
+            md = new JSONObject();
+            this.put(metadata_name, md);
+        }
+        if (!md.has("count")) md.put("count", getData().length());
+        return md;
     }
     
     /**
@@ -156,7 +170,10 @@ public class SusiThought extends JSONObject {
      * @return a table of information pieces as a set of rows which all have the same column names.
      */
     public JSONArray getData() {
-        return this.getJSONArray(data_name);
+        if (this.has(data_name)) return this.getJSONArray(data_name);
+        JSONArray a = new JSONArray();
+        this.put(data_name, a);
+        return a;
     }
     
     /**

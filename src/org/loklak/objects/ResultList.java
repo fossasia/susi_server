@@ -57,10 +57,7 @@ public class ResultList<E> extends ArrayList<E> {
     }
     
     public SusiThought toSusi() throws JSONException {
-        SusiThought json = new SusiThought();
-        json
-            .setCount(this.size())
-            .setHits(this.size());
+        SusiThought json = new SusiThought().setHits(this.size());
         JSONArray statuses = new JSONArray();
         for (E t: this) {
             if (t instanceof QueryEntry) {

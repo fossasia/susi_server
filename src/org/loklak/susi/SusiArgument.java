@@ -69,7 +69,10 @@ public class SusiArgument {
     }
  
     /**
-     * Thinking is a series of thoughts, every new thought appends another thought to the argument
+     * Thinking is a series of thoughts, every new thought appends another thought to the argument.
+     * A special situation may (or may not) occur if one thinking step does not produce a result.
+     * Depending on the inference rule set that may mean that the consideration of the rule containing
+     * the inferences was wrong and should be abandoned. This happens if mindstate().equals(thought).
      * @param thought the next thought
      * @return self, the current mindstate
      */
@@ -101,14 +104,5 @@ public class SusiArgument {
             }
         }
         return statement;
-    }
-
-    /**
-     * To perform a proof we must apply inference steps.
-     * @param inference the inference to apply on this argument
-     * @return self, the current mindstate
-     */
-    public SusiArgument deducewith(SusiInference inference) {
-        return this.think(inference.applyon(this));
     }
 }

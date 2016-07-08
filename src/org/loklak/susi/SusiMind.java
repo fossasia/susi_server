@@ -32,7 +32,6 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Matcher;
-import java.util.stream.Collectors;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -170,13 +169,27 @@ public class SusiMind {
         return t;
     }
     
-    public List<SusiArgument> answer(final String query, int maxcount) {
-        List<SusiRule> rules = associate(query, maxcount);
-        return rules.stream().map(rule -> rule.consideration(query)).collect(Collectors.toList());
+    /**
+     * react on a user input: this causes the selection of deduction rules and the evaluation of the process steps
+     * in every rule up to the moment where enough rules have been applied as consideration. The reaction may also
+     * cause the evaluation of operational steps which may cause learning effects wihtin the SusiMind.
+     * @param query
+     * @param maxcount
+     * @return
+     */
+    public List<SusiArgument> react(final String query, int maxcount) {
+        List<SusiArgument> answers = new ArrayList<>();
+        List<SusiRule> rules = associate(query, 100);
+        for (SusiRule rule: rules) {
+            SusiArgument argument = rule.consideration(query);
+            if (argument != null) answers.add(argument);
+            if (answers.size() >= maxcount) break;
+        }
+        return answers;
     }
     
-    public String answer(String query) {
-        List<SusiArgument> datalist = answer(query, 1);
+    public String react(String query) {
+        List<SusiArgument> datalist = react(query, 1);
         SusiArgument bestargument = datalist.get(0);
         return bestargument.mindstate().getActions().get(0).apply(bestargument).getStringAttr("expression");
     }
@@ -186,8 +199,8 @@ public class SusiMind {
             SusiMind mem = new SusiMind(new File(new File("data"), "susi"));
             mem.learn(new File("conf/susi/susi_cognition_000.json"));
             //System.out.println(mem.answer("who will win euro2016?", 3));
-            System.out.println(mem.answer("I feel funny"));
-            System.out.println(mem.answer("Help me!"));
+            System.out.println(mem.react("I feel funny"));
+            System.out.println(mem.react("Help me!"));
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }

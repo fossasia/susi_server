@@ -238,7 +238,6 @@ public class Timeline implements Iterable<MessageEntry> {
     
     private SusiThought toSusi(boolean withEnrichedData, SusiThought json) throws JSONException {
         json
-            .setCount(this.tweets.size())
             .setQuery(this.query)
             .setHits(Math.max(this.hits, this.size()));
         if (this.scraperInfo.length() > 0) json.setScraperInfo(this.scraperInfo);

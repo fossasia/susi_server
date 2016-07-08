@@ -56,7 +56,7 @@ public class SusiService extends AbstractAPIHandler implements APIHandler {
         } catch (IOException e) {
             DAO.log(e.getMessage());
         }
-        return DAO.susi.answer(query, maxcount);
+        return DAO.susi.react(query, maxcount);
     }
     
     @Override

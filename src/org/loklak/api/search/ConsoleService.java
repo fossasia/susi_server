@@ -221,14 +221,14 @@ public class ConsoleService extends AbstractAPIHandler implements APIHandler {
                 if (j.has(filter_name) && filter_set.contains(j.getString(filter_name))) a1.put(j);
             });
             return new SusiThought()
-                    .setOffset(0).setHits(a0.length()).setCount(a1.length())
+                    .setOffset(0).setHits(a0.length())
                     .setData(columns.extractTable(a1));
         });
         pattern.put(Pattern.compile("SELECT\\h+?(.*?)\\h+?FROM\\h+?messages\\h+?WHERE\\h+?id\\h??=\\h??'(.*?)'\\h??;"), matcher -> {
             Columns columns = new Columns(matcher.group(1));
             JSONObject message = DAO.messages.readJSON(matcher.group(2));
             return message == null ? null : new SusiThought()
-                    .setOffset(0).setHits(1).setCount(1)
+                    .setOffset(0).setHits(1)
                     .setData((new JSONArray()).put(columns.extractRow(message)));
         });
         pattern.put(Pattern.compile("SELECT\\h+?(.*?)\\h+?FROM\\h+?messages\\h+?WHERE\\h+?query\\h??=\\h??'(.*?)'\\h?+GROUP\\h?+BY\\h?+(.*?)\\h??;"), matcher -> {
@@ -261,9 +261,9 @@ public class ConsoleService extends AbstractAPIHandler implements APIHandler {
             SusiThought json = new SusiThought();
             json.setQuery(matcher.group(2));
             if (user_entry == null) {
-                json.setHits(0).setCount(0).setData(new JSONArray());
+                json.setHits(0).setData(new JSONArray());
             } else {
-                json.setHits(1).setCount(1).setData(new JSONArray().put(user_entry.toJSON()));
+                json.setHits(1).setData(new JSONArray().put(user_entry.toJSON()));
             }
             return json.setData(columns.extractTable(json.getJSONArray("data")));
         });
@@ -273,9 +273,9 @@ public class ConsoleService extends AbstractAPIHandler implements APIHandler {
             SusiThought json = new SusiThought();
             json.setQuery(matcher.group(2));
             if (account_entry == null) {
-                json.setHits(0).setCount(0).setData(new JSONArray());
+                json.setHits(0).setData(new JSONArray());
             } else {
-                json.setHits(1).setCount(1).setData(new JSONArray().put(account_entry.toJSON()));
+                json.setHits(1).setData(new JSONArray().put(account_entry.toJSON()));
             }
             return json.setData(columns.extractTable(json.getJSONArray("data")));
         });
@@ -285,9 +285,9 @@ public class ConsoleService extends AbstractAPIHandler implements APIHandler {
             SusiThought json = new SusiThought();
             json.setQuery(matcher.group(2));
             if (loc == null) {
-                json.setHits(0).setCount(0).setData(new JSONArray());
+                json.setHits(0).setData(new JSONArray());
             } else {
-                json.setHits(1).setCount(1).setData(new JSONArray().put(loc.toJSON(false)));
+                json.setHits(1).setData(new JSONArray().put(loc.toJSON(false)));
             }
             return json.setData(columns.extractTable(json.getJSONArray("data")));
         });

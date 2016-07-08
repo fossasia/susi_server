@@ -198,10 +198,10 @@ public class SusiRule {
 
     /**
      * If a rule is applied to an input stream, it must follow a specific process which is implemented
-     * in this considerartion method. It is called a consideration in the context of an AI process which
+     * in this consideration method. It is called a consideration in the context of an AI process which
      * tries different rules to get the optimum result, thus considering different rules.
      * @param query the user input
-     * @return the result of the application of the rule, a thought argument containing the thoughts which terminated into a final mindstate
+     * @return the result of the application of the rule, a thought argument containing the thoughts which terminated into a final mindstate or NULL if the consideration should be rejected
      */
     public SusiArgument consideration(final String query) {
         
@@ -213,7 +213,13 @@ public class SusiRule {
         argument.think(idea);
         
         // lets apply the rules that belong to this specific consideration
-        this.getInferences().forEach(inference -> argument.deducewith(inference));
+        for (SusiInference inference: this.getInferences()) {
+            SusiThought nextThought = inference.applyon(argument);
+            // make sure that we are not stuck
+            if (argument.mindstate().equals(nextThought) || nextThought.getCount() == 0) return null; // TODO: do this only if specific marker is in rule
+            // think
+            argument.think(nextThought);
+        }
         
         // we deduced thoughts from the inferences in the rules. Now apply the actions of rule to produce results
         List<SusiAction> actions = new ArrayList<>();
