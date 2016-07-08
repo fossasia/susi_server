@@ -53,7 +53,20 @@
 		"Destroy":["ruin", "demolish", "raze", "waste", "kill", "slay", "end", "extinguish"],
 		"Difference":["disagreement", "inequity", "contrast", "dissimilarity", "incompatibility"],
 		"Do":["execute", "enact", "carry out", "finish", "conclude", "effect", "accomplish", "achieve", "attain"],
-		"Dull":["boring", "tiring", "tiresome", "uninteresting", "slow", "dumb", "stupid", "unimaginative", "lifeless", "dead", "insensible", "tedious", "wearisome", "listless", "expressionless", "plain", "monotonous", "humdrum", "dreary"]
+		"Dull":["boring", "tiring", "tiresome", "uninteresting", "slow", "dumb", "stupid", "unimaginative", "lifeless", "dead", "insensible", "tedious", "wearisome", "listless", "expressionless", "plain", "monotonous", "humdrum", "dreary"],
+		"Eager":["keen", "fervent", "enthusiastic", "involved", "interested", "alive to"],
+		"End":["stop", "finish", "terminate", "conclude", "close", "halt", "cessation", "discontinuance"],
+		"Enjoy":["appreciate", "delight in", "be pleased", "indulge in", "luxuriate in", "bask in", "relish", "devour", "savor", "like"],
+		"Explain":["elaborate", "clarify", "define", "interpret", "justify", "account for"],
+		"Fair":["just", "impartial", "unbiased", "objective", "unprejudiced", "honest"],
+		"Fall":["drop", "descend", "plunge", "topple", "tumble"],
+		"False":["fake", "fraudulent", "counterfeit", "spurious", "untrue", "unfounded", "erroneous", "deceptive", "groundless", "fallacious"],
+		"Famous":["well-known", "renowned", "celebrated", "famed", "eminent", "illustrious", "distinguished", "noted", "notorious"],
+		"Fast":["quick", "rapid", "speedy", "fleet", "hasty", "snappy", "mercurial", "swiftly", "rapidly", "quickly", "snappily", "speedily", "lickety-split", "posthaste", "hastily", "expeditiously", "like a flash"],
+		"Fat":["stout", "corpulent", "fleshy", "beefy", "paunchy", "plump", "full", "rotund", "tubby", "pudgy", "chubby", "chunky", "burly", "bulky", "elephantine"],
+		"Fear":["fright", "dread", "terror", "alarm", "dismay", "anxiety", "scare", "awe", "horror", "panic", "apprehension"],
+		"Fly":["soar", "hover", "flit", "wing", "flee", "waft", "glide", "coast", "skim", "sail", "cruise"],
+		"Funny":["humorous", "amusing", "droll", "comic", "comical", "laughable", "silly"]
 	},
 	"multi":{
 		"intro":["There might be several right answers..."],
