@@ -1,10 +1,9 @@
 <!DOCTYPE html>
-<html >
+<html>
   <head>
     <meta charset="UTF-8">
     <link rel="icon" type="image/png" href="../../artwork/favicon.png">
-    <title>Chat Widget
-    </title>
+    <title>Susi</title>
     <link rel="stylesheet" href="css/reset.css">
     <link rel='stylesheet prefetch' href='https://maxcdn.bootstrapcdn.com/font-awesome/4.4.0/css/font-awesome.min.css'>
     <link rel="stylesheet" href="css/style.css">
@@ -14,19 +13,14 @@
       <div class="people-list" id="people-list">
         <div class="search">
           <input type="text" placeholder="search" />
-          <i class="fa fa-search">
-          </i>
+          <i class="fa fa-search"></i>
         </div>
         <ul class="list">
           <li class="clearfix">
             <img src="images/susi.gif" style="height: 55px;" alt="avatar" />
             <div class="about">
-              <div class="name">Susi
-              </div>
-              <div class="status">
-                <i class="fa fa-circle online">
-                </i> online
-              </div>
+              <div class="name">Susi</div>
+              <div class="status"><i class="fa fa-circle online"></i> online</div>
             </div>
           </li>
         </ul>
@@ -35,25 +29,19 @@
         <div class="chat-header clearfix">
           <img src="images/susi.gif" style="height: 55px;" alt="avatar" />
           <div class="chat-about">
-            <div class="chat-with">Chat with Susi
-            </div>
-            <div class="chat-num-messages">Preparing witty responses, Just for you!
-            </div>
+            <div class="chat-with">Chat with Susi</div>
+            <div class="chat-num-messages">Preparing witty responses, Just for you!</div>
           </div>
-          <i class="fa fa-star">
-          </i>
+          <i class="fa fa-star"></i>
         </div> 
         <!-- end chat-header -->
         <div class="chat-history">
           <ul>
             <li class="clearfix">
               <div class="message-data align-right">
-                <span class="message-data-time" >10:10 AM, Today
-                </span> &nbsp; &nbsp;
-                <span class="message-data-name" >You
-                </span> 
-                <i class="fa fa-circle me">
-                </i>
+                <span class="message-data-time" >10:10 AM, Today</span> &nbsp; &nbsp;
+                <span class="message-data-name" >You</span> 
+                <i class="fa fa-circle me"></i>
               </div>
               <div class="message other-message float-right">
                 Hi Susi, how are you? How is the project coming along?
@@ -61,12 +49,8 @@
             </li>
             <li>
               <div class="message-data">
-                <span class="message-data-name">
-                  <i class="fa fa-circle online">
-                  </i> Susi
-                </span>
-                <span class="message-data-time">10:12 AM, Today
-                </span>
+                <span class="message-data-name"><i class="fa fa-circle online"></i> Susi</span>
+                <span class="message-data-time">10:12 AM, Today</span>
               </div>
               <div class="message my-message">
                 Are we meeting today? Project has been already finished and I have results to show you.
@@ -76,10 +60,8 @@
               <div class="message-data align-right">
                 <span class="message-data-time" >10:14 AM, Today
                 </span> &nbsp; &nbsp;
-                <span class="message-data-name" >you
-                </span> 
-                <i class="fa fa-circle me">
-                </i>
+                <span class="message-data-name" >you</span> 
+                <i class="fa fa-circle me"></i>
               </div>
               <div class="message other-message float-right">
                 Well I am not sure. The rest of the team is not here yet. Maybe in an hour or so? Have you faced any problems at the last phase of the project?
@@ -87,12 +69,8 @@
             </li>
             <li>
               <div class="message-data">
-                <span class="message-data-name">
-                  <i class="fa fa-circle online">
-                  </i> Susi
-                </span>
-                <span class="message-data-time">10:20 AM, Today
-                </span>
+                <span class="message-data-name"><i class="fa fa-circle online"></i> Susi</span>
+                <span class="message-data-time">10:20 AM, Today</span>
               </div>
               <div class="message my-message">
                 Actually everything was fine. I'm very excited to show this to our team.
@@ -100,32 +78,21 @@
             </li>
             <li>
               <div class="message-data">
-                <span class="message-data-name">
-                  <i class="fa fa-circle online">
-                  </i> Susi
-                </span>
-                <span class="message-data-time">10:31 AM, Today
-                </span>
+                <span class="message-data-name"><i class="fa fa-circle online"></i> Susi</span>
+                <span class="message-data-time">10:31 AM, Today</span>
               </div>
-              <i class="fa fa-circle online">
-              </i>
-              <i class="fa fa-circle online" style="color: #AED2A6">
-              </i>
-              <i class="fa fa-circle online" style="color:#DAE9DA">
-              </i>
+              <i class="fa fa-circle online"></i>
+              <i class="fa fa-circle online" style="color: #AED2A6"></i>
+              <i class="fa fa-circle online" style="color:#DAE9DA"></i>
             </li>
           </ul>
         </div> 
         <!-- end chat-history -->
         <div class="chat-message clearfix">
-          <textarea name="message-to-send" id="message-to-send" placeholder ="Type your message" rows="3">
-          </textarea>
-          <i class="fa fa-file-o">
-          </i> &nbsp;&nbsp;&nbsp;
-          <i class="fa fa-file-image-o">
-          </i>
-          <button>Send
-          </button>
+          <textarea name="message-to-send" id="message-to-send" placeholder ="Type your message" rows="3"></textarea>
+          <i class="fa fa-file-o"></i> &nbsp;&nbsp;&nbsp;
+          <i class="fa fa-file-image-o"></i>
+          <button>Send</button>
         </div> 
         <!-- end chat-message -->
       </div> 
@@ -133,34 +100,26 @@
     </div> 
     <!-- end container -->
     <script id="message-template" type="text/x-handlebars-template">
-  <li class="clearfix">
-    <div class="message-data align-right">
-      <span class="message-data-time" >{{time}}, Today</span> &nbsp; &nbsp;
-      <span class="message-data-name" >you</span> <i class="fa fa-circle me"></i>
-      </div>
-    <div class="message other-message float-right">
-      {{messageOutput}}
-      </div>
-      </li>
+    <li class="clearfix">
+      <div class="message-data align-right">
+        <span class="message-data-time" >{{time}}, Today</span> &nbsp; &nbsp;
+        <span class="message-data-name" >you</span> <i class="fa fa-circle me"></i>
+        </div>
+      <div class="message other-message float-right">{{messageOutput}}</div>
+    </li>
     </script>
     <script id="message-response-template" type="text/x-handlebars-template">
-  <li>
-    <div class="message-data">
-      <span class="message-data-name"><i class="fa fa-circle online"></i> Susi</span>
-      <span class="message-data-time">{{time}}, Today</span>
+    <li>
+      <div class="message-data">
+        <span class="message-data-name"><i class="fa fa-circle online"></i> Susi</span>
+        <span class="message-data-time">{{time}}, Today</span>
       </div>
-    <div class="message my-message">
-      {{response}}
-      </div>
-      </li>
+      <div class="message my-message">{{response}}</div>
+    </li>
     </script>
-    <script src='http://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.3/jquery.min.js'>
-    </script>
-    <script src='http://cdnjs.cloudflare.com/ajax/libs/handlebars.js/3.0.0/handlebars.min.js'>
-    </script>
-    <script src='http://cdnjs.cloudflare.com/ajax/libs/list.js/1.1.1/list.min.js'>
-    </script>
-    <script src="js/index.js">
-    </script>
+    <script src='http://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.3/jquery.min.js'></script>
+    <script src='js/handlebars.min.js'></script>
+    <script src='js/list.min.js'></script>
+    <script src="js/index.js"></script>
   </body>
 </html>
