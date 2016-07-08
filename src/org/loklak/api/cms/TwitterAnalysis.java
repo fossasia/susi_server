@@ -64,7 +64,7 @@ public class TwitterAnalysis extends HttpServlet {
 			return;
 		}
 
-		JSONObject finalresult = new JSONObject();
+		JSONObject finalresult = new JSONObject(true);
 		response.setCharacterEncoding("UTF-8");
 		PrintWriter sos = response.getWriter();
 		String username = post.get("screen_name", "");
@@ -93,8 +93,11 @@ public class TwitterAnalysis extends HttpServlet {
 			post.finalize();
 			return;
 		}
+		finalresult.put("username", username);
+		finalresult.put("tweets_analysed", searchresult.getJSONObject("search_metadata").get("count"));
 
 		// activity frequency statistics
+		JSONObject activityFreq = new JSONObject(true);
 		List<String> tweetDate = new ArrayList<>();
 		List<String> tweetHour = new ArrayList<>();
 		List<String> tweetDay = new ArrayList<>();
@@ -112,13 +115,13 @@ public class TwitterAnalysis extends HttpServlet {
 			tweetHour.add(hour); // hour
 		}
 
-		JSONObject yearlyact = new JSONObject();
-		JSONObject hourlyact = new JSONObject();
-		JSONObject dailyact = new JSONObject();
-
+		JSONObject yearlyact = new JSONObject(true);
+		JSONObject hourlyact = new JSONObject(true);
+		JSONObject dailyact = new JSONObject(true);
 		Set<String> yearset = new HashSet<String>(tweetDate);
 		Set<String> hourset = new HashSet<String>(tweetHour);
 		Set<String> dayset = new HashSet<String>(tweetDay);
+
 		for (String s : yearset) {
 			yearlyact.put(s, Collections.frequency(tweetDate, s));
 		}
@@ -131,11 +134,10 @@ public class TwitterAnalysis extends HttpServlet {
 			dailyact.put(s, Collections.frequency(tweetDay, s));
 		}
 
-		finalresult.put("yearwise_activity_frequency", yearlyact);
-		finalresult.put("hourwise_activity_frequency", hourlyact);
-		finalresult.put("daywise_activity_frequency", dailyact);
-		finalresult.put("username", username);
-		finalresult.put("tweets_analysed", searchresult.getJSONObject("search_metadata").get("count"));
+		activityFreq.put("yearwise", yearlyact);
+		activityFreq.put("hourwise", hourlyact);
+		activityFreq.put("daywise", dailyact);
+		finalresult.put("activity_frequency", activityFreq);
 		sos.print(finalresult.toString(2));
 		sos.println();
 		post.finalize();
