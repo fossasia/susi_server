@@ -472,7 +472,8 @@ public class MessageEntry extends AbstractObjectEntry implements ObjectEntry {
             if (link.indexOf("flickr.com") > 0 ||
                 link.indexOf("instagram.com") > 0 ||
                 link.indexOf("imgur.com") > 0 ||
-                link.indexOf("giphy.com") > 0) {this.images.add(link); continue;}
+                link.indexOf("giphy.com") > 0 || 
+                link.indexOf("pic.twitter.com") > 0) {this.images.add(link); continue;}
         }
         
         // find location
