@@ -703,38 +703,38 @@ public class DAO {
             List<IndexEntry<MessageEntry>> macc;
             final Set<String> existed = new HashSet<>();
 
-            DAO.log("***DEBUG messages     INIT: " + messageBulk.size());
+            //DAO.log("***DEBUG messages     INIT: " + messageBulk.size());
             
             limitDate.setTime(DateParser.oneHourAgo().getTime());
             macc = messageBulk.stream().filter(i -> i.getObject().getCreatedAt().after(limitDate)).collect(Collectors.toList());
-            DAO.log("***DEBUG messages for HOUR: " + macc.size());
+            //DAO.log("***DEBUG messages for HOUR: " + macc.size());
             result = messages_hour.writeEntries(macc);
-            DAO.log("***DEBUG messages for HOUR: " + result.getCreated().size() + "  created");
+            //DAO.log("***DEBUG messages for HOUR: " + result.getCreated().size() + "  created");
             for (IndexEntry<MessageEntry> i: macc) if (!(result.getCreated().contains(i.getId()))) existed.add(i.getId());
-            DAO.log("***DEBUG messages for HOUR: " + existed.size() + "  existed");
+            //DAO.log("***DEBUG messages for HOUR: " + existed.size() + "  existed");
             
             limitDate.setTime(DateParser.oneDayAgo().getTime());
             macc = messageBulk.stream().filter(i -> !(existed.contains(i.getObject().getIdStr()))).filter(i -> i.getObject().getCreatedAt().after(limitDate)).collect(Collectors.toList());
-            DAO.log("***DEBUG messages for  DAY : " + macc.size());
+            //DAO.log("***DEBUG messages for  DAY : " + macc.size());
             result = messages_day.writeEntries(macc);
-            DAO.log("***DEBUG messages for  DAY: " + result.getCreated().size() + " created");
+            //DAO.log("***DEBUG messages for  DAY: " + result.getCreated().size() + " created");
             for (IndexEntry<MessageEntry> i: macc) if (!(result.getCreated().contains(i.getId()))) existed.add(i.getId());
-            DAO.log("***DEBUG messages for  DAY: " + existed.size()  + "  existed");
+            //DAO.log("***DEBUG messages for  DAY: " + existed.size()  + "  existed");
             
             limitDate.setTime(DateParser.oneWeekAgo().getTime());
             macc = messageBulk.stream().filter(i -> !(existed.contains(i.getObject().getIdStr()))).filter(i -> i.getObject().getCreatedAt().after(limitDate)).collect(Collectors.toList());
-            DAO.log("***DEBUG messages for WEEK: " + macc.size());
+            //DAO.log("***DEBUG messages for WEEK: " + macc.size());
             result = messages_week.writeEntries(macc);
-            DAO.log("***DEBUG messages for WEEK: " + result.getCreated().size() + "  created");
+            //DAO.log("***DEBUG messages for WEEK: " + result.getCreated().size() + "  created");
             for (IndexEntry<MessageEntry> i: macc) if (!(result.getCreated().contains(i.getId()))) existed.add(i.getId());
-            DAO.log("***DEBUG messages for WEEK: " + existed.size()  + "  existed");
+            //DAO.log("***DEBUG messages for WEEK: " + existed.size()  + "  existed");
             
             macc = messageBulk.stream().filter(i -> !(existed.contains(i.getObject().getIdStr()))).collect(Collectors.toList());
-            DAO.log("***DEBUG messages for  ALL : " + macc.size());
+            //DAO.log("***DEBUG messages for  ALL : " + macc.size());
             result = messages.writeEntries(macc);
-            DAO.log("***DEBUG messages for  ALL: " + result.getCreated().size() + "  created");
+            //DAO.log("***DEBUG messages for  ALL: " + result.getCreated().size() + "  created");
             for (IndexEntry<MessageEntry> i: macc) if (!(result.getCreated().contains(i.getId()))) existed.add(i.getId());
-            DAO.log("***DEBUG messages for  ALL: " + existed.size()  + "  existed");
+            //DAO.log("***DEBUG messages for  ALL: " + existed.size()  + "  existed");
             
             users.writeEntries(userBulk);
             
