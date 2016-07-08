@@ -11,7 +11,19 @@
 		"computer":["machine","machines","computers"],
 		"was":["were"],
 		"you are":["you're"],
-		"i am":["i'm"],
+		"i am":["i'm"]
+	},
+	"filler":["actually","so","well","look","like","#"],
+	"categories":{
+		"euro2016":["euro2016", "Euro 2016"],
+		"be": ["am", "is", "are", "was"],
+		"belief": ["feel", "think", "believe", "wish"],
+		"cannot": ["can't"],
+		"desire": ["want", "need"],
+		"everyone": ["everybody", "nobody", "noone"],
+		"family": ["mother", "mom", "father", "dad", "sister", "brother", "wife", "children", "child"],
+		"happy": ["elated", "glad", "better"],
+		"sad": ["unhappy", "depressed", "sick"],
 		"alike":["same","identical","equivalent"],
 		"Amazing":["incredible", "unbelievable", "improbable", "fabulous", "wonderful", "fantastic", "astonishing", "astounding", "extraordinary"],
 		"Anger":["enrage", "infuriate", "arouse", "nettle", "exasperate", "inflame", "madden"],
@@ -32,18 +44,6 @@
 		"Crooked":["bent", "twisted", "curved", "hooked", "zigzag"],
 		"Cry":["shout", "yell", "yowl", "scream", "roar", "bellow", "weep", "wail", "sob", "bawl"],
 		"Cut":["gash", "slash", "prick", "nick", "sever", "slice", "carve", "cleave", "slit", "chop", "crop", "lop", "reduce"]
-	},
-	"filler":["actually","so","well","look","like","#"],
-	"categories":{
-		"euro2016":["euro2016", "Euro 2016"],
-		"be": ["am", "is", "are", "was"],
-		"belief": ["feel", "think", "believe", "wish"],
-		"cannot": ["can't"],
-		"desire": ["want", "need"],
-		"everyone": ["everybody", "nobody", "noone"],
-		"family": ["mother", "mom", "father", "dad", "sister", "brother", "wife", "children", "child"],
-		"happy": ["elated", "glad", "better"],
-		"sad": ["unhappy", "depressed", "sick"]
 	},
 	"multi":{
 		"intro":["There might be several right answers..."],
