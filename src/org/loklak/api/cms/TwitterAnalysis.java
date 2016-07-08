@@ -94,10 +94,13 @@ public class TwitterAnalysis extends HttpServlet {
 			return;
 		}
 		finalresult.put("username", username);
-		finalresult.put("tweets_analysed", searchresult.getJSONObject("search_metadata").get("count"));
+		finalresult.put("items_per_page", searchresult.getJSONObject("search_metadata").getString("itemsPerPage"));
+		finalresult.put("tweets_analysed", searchresult.getJSONObject("search_metadata").getString("count"));
 
-		// activity frequency statistics
+		// activity statistics
 		JSONObject activityFreq = new JSONObject(true);
+		JSONObject activityType = new JSONObject(true);
+		int imgCount = 0, audioCount = 0, videoCount = 0, linksCount = 0;
 		List<String> tweetDate = new ArrayList<>();
 		List<String> tweetHour = new ArrayList<>();
 		List<String> tweetDay = new ArrayList<>();
@@ -113,7 +116,18 @@ public class TwitterAnalysis extends HttpServlet {
 			String times = status.getString("created_at").split("T")[1];
 			String hour = times.substring(0, times.length() - 5).split(":")[0];
 			tweetHour.add(hour); // hour
+			imgCount += status.getInt("images_count");
+			audioCount += status.getInt("audio_count");
+			videoCount += status.getInt("videos_count");
+			linksCount += status.getInt("links_count");
 		}
+		activityType.put("posted_image", imgCount);
+		activityType.put("posted_audio", audioCount);
+		activityType.put("posted_video", videoCount);
+		activityType.put("posted_link", linksCount);
+		activityType.put("posted_story",
+				Integer.parseInt(searchresult.getJSONObject("search_metadata").getString("count"))
+						- (imgCount + audioCount + videoCount + linksCount));
 
 		JSONObject yearlyact = new JSONObject(true);
 		JSONObject hourlyact = new JSONObject(true);
@@ -138,6 +152,7 @@ public class TwitterAnalysis extends HttpServlet {
 		activityFreq.put("hourwise", hourlyact);
 		activityFreq.put("daywise", dailyact);
 		finalresult.put("activity_frequency", activityFreq);
+		finalresult.put("activity_type", activityType);
 		sos.print(finalresult.toString(2));
 		sos.println();
 		post.finalize();
