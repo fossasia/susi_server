@@ -28,6 +28,7 @@ import java.util.regex.PatternSyntaxException;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.loklak.data.DAO;
 
 /**
  * A Rule in the Susi AI framework is a collection of phrases, inference processes and actions that are applied
@@ -210,11 +211,13 @@ public class SusiRule {
         
         // that argument is filled with an idea which consist of the query where we extract the identified data entities
         SusiThought idea = new SusiThought(this.matcher(query));
+        DAO.log("Susi has an idea: " + idea.toString());
         argument.think(idea);
         
         // lets apply the rules that belong to this specific consideration
         for (SusiInference inference: this.getInferences()) {
             SusiThought nextThought = inference.applyon(argument);
+            DAO.log("Susi is thinking about: " + idea.toString());
             // make sure that we are not stuck
             if (argument.mindstate().equals(nextThought) || nextThought.getCount() == 0) return null; // TODO: do this only if specific marker is in rule
             // think
