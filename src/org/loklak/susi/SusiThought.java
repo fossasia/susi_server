@@ -99,7 +99,7 @@ public class SusiThought extends JSONObject {
      * @return hits number of information pieces
      */
     public int getCount() {
-        return getMetadata().has("count") ? getMetadata().getInt("count") : getData().length();
+        return getData().length();
     }
     
     /**
@@ -162,6 +162,8 @@ public class SusiThought extends JSONObject {
      */
     public SusiThought setData(JSONArray table) {
         this.put(data_name, table);
+        JSONObject md = getMetadata();
+        md.put("count", getData().length());
         return this;
     }
 
