@@ -35,7 +35,7 @@ public class SusiPhrase {
 
     public static enum Type {regex, pattern;}
 
-    private final static String CATCHALL_CAPTURE_GROUP_STRING = "(.*)";
+    private final static String CATCHALL_CAPTURE_GROUP_STRING = "(.*)"; // greedy capturing everything is the best choice: that covers words phrases as well
     private final static Pattern CATCHALL_CAPTURE_GROUP_PATTERN = Pattern.compile(Pattern.quote(CATCHALL_CAPTURE_GROUP_STRING));
     private final static Pattern dspace = Pattern.compile("  ");
 

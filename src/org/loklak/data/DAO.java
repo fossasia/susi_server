@@ -183,14 +183,11 @@ public class DAO {
         html_dir = new File("html");
         
         // wake up susi
-        File watchpath = new File(new File("data"), "susi");
-        susi = new SusiMind(watchpath);
         File susiinitpath = new File(conf_dir, "susi");
-        for (String cogfile: susiinitpath.list()) {
-            if (cogfile.endsWith(".json")) susi.learn(new File(susiinitpath, cogfile));
-        }
+        File sudiwatchpath = new File(new File("data"), "susi");
+        susi = new SusiMind(susiinitpath, sudiwatchpath);
         String susi_boilerplate_name = "susi_cognition_boilerplate.json";
-        File susi_boilerplate_file = new File(watchpath, susi_boilerplate_name);
+        File susi_boilerplate_file = new File(sudiwatchpath, susi_boilerplate_name);
         if (!susi_boilerplate_file.exists()) Files.copy(new File(conf_dir, "susi/" + susi_boilerplate_name + ".example"), susi_boilerplate_file);
         
         // initialize public and private keys
