@@ -66,7 +66,12 @@
 		"fat":["stout", "corpulent", "fleshy", "beefy", "paunchy", "plump", "full", "rotund", "tubby", "pudgy", "chubby", "chunky", "burly", "bulky", "elephantine"],
 		"fear":["fright", "dread", "terror", "alarm", "dismay", "anxiety", "scare", "awe", "horror", "panic", "apprehension"],
 		"fly":["soar", "hover", "flit", "wing", "flee", "waft", "glide", "coast", "skim", "sail", "cruise"],
-		"funny":["humorous", "amusing", "droll", "comic", "comical", "laughable", "silly"]
+		"funny":["humorous", "amusing", "droll", "comic", "comical", "laughable", "silly"],
+		"Get":["acquire", "obtain", "secure", "procure", "gain", "fetch", "find", "score", "accumulate", "win", "earn", "rep", "catch", "net", "bag", "derive", "collect", "gather", "glean", "pick up", "accept", "come by", "regain", "salvage"],
+		"Go":["recede", "depart", "fade", "disappear", "move", "travel", "proceed"],
+		"Good":["excellent", "fine", "superior", "wonderful", "marvelous", "qualified", "suited", "suitable", "apt", "proper", "capable", "generous", "kindly", "friendly", "gracious", "obliging", "pleasant", "agreeable", "pleasurable", "satisfactory", "well-behaved", "obedient", "honorable", "reliable", "trustworthy", "safe", "favorable", "profitable", "advantageous", "righteous", "expedient", "helpful", "valid", "genuine", "ample", "salubrious", "estimable", "beneficial", "splendid", "great", "noble", "worthy", "first-rate", "top-notch", "grand", "sterling", "superb", "respectable", "edifying"],
+		"Great":["noteworthy", "worthy", "distinguished", "remarkable", "grand", "considerable", "powerful", "much", "mighty"],
+		"Gross":["improper", "rude", "coarse", "indecent", "crude", "vulgar", "outrageous", "extreme", "grievous", "shameful", "uncouth", "obscene", "low"]
 	},
 	"multi":{
 		"intro":["There might be several right answers..."],
