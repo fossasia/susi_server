@@ -512,7 +512,8 @@ public class LoklakServer {
         		ClientHandshake.class,
         		PasswordResetService.class,
                 ChangeUserRole.class,
-                UserManagement.class
+                UserManagement.class,
+                RSSReader.class
         };
         for (Class<? extends Servlet> service: services)
             try {
@@ -550,7 +551,6 @@ public class LoklakServer {
         servletHandler.addServlet(ProxyServlet.class, "/api/proxy.jpg");
         servletHandler.addServlet(ValidateServlet.class, "/api/validate.json");
         servletHandler.addServlet(GenericScraper.class, "/api/genericscraper.json");
-        servletHandler.addServlet(RSSReader.class, "/api/rssreader.json");
         servletHandler.addServlet(EventbriteCrawler.class, "/api/eventbritecrawler.json");
         servletHandler.addServlet(WordpressCrawler.class, "/api/wordpresscrawler.json");
         ServletHolder pushServletHolder = new ServletHolder(PushServlet.class);

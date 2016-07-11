@@ -19,47 +19,42 @@
 
 package org.loklak.api.search;
 
-import java.io.IOException;
-import java.io.PrintWriter;
 import java.util.List;
-
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.loklak.http.ClientConnection;
-import org.loklak.http.RemoteAccess;
+import org.loklak.server.APIException;
+import org.loklak.server.APIHandler;
+import org.loklak.server.AbstractAPIHandler;
+import org.loklak.server.Authorization;
+import org.loklak.server.BaseUserRole;
 import org.loklak.server.Query;
+import org.loklak.tools.storage.JSONObjectWithDefault;
 
 import com.sun.syndication.feed.synd.SyndEntry;
 import com.sun.syndication.feed.synd.SyndFeed;
 import com.sun.syndication.io.SyndFeedInput;
 import com.sun.syndication.io.XmlReader;
 
-public class RSSReader extends HttpServlet {
+public class RSSReader extends AbstractAPIHandler implements APIHandler {
 
 	private static final long serialVersionUID = 1463185662941444503L;
 
-	@Override
-	protected void doPost(HttpServletRequest request, HttpServletResponse response)
-			throws ServletException, IOException {
-		doGet(request, response);
-	}
+    @Override
+    public BaseUserRole getMinimalBaseUserRole() { return BaseUserRole.ANONYMOUS; }
 
-	@SuppressWarnings("unchecked")
-	@Override
-	protected void doGet(HttpServletRequest request, HttpServletResponse response)
-			throws ServletException, IOException {
-		Query post = RemoteAccess.evaluate(request);
+    @Override
+    public JSONObject getDefaultPermissions(BaseUserRole baseUserRole) {
+        return null;
+    }
 
-		// manage DoS
-		if (post.isDoS_blackout()) {
-			response.sendError(503, "your request frequency is too high");
-			return;
-		}
+    public String getAPIPath() {
+        return "/api/rssreader.json";
+    }
+    
+    @Override
+    public JSONObject serviceImpl(Query post, Authorization rights, final JSONObjectWithDefault permissions) throws APIException {
 
 		String url = post.get("url", "");
 		SyndFeedInput input = new SyndFeedInput();
@@ -102,11 +97,6 @@ public class RSSReader extends HttpServlet {
 
 		JSONObject rssFeed = new JSONObject();
 		rssFeed.put("RSS Feed", jsonArray);
-
-		// print JSON
-		response.setCharacterEncoding("UTF-8");
-		PrintWriter sos = response.getWriter();
-		sos.print(rssFeed.toString(2));
-		sos.println();
+		return rssFeed;
 	}
 }
