@@ -76,8 +76,12 @@
 		"hide":["conceal", "cover", "mask", "cloak", "camouflage", "screen", "shroud", "veil"],
 		"hurry":["rush", "run", "speed", "race", "hasten", "urge", "accelerate", "bustle"],
 		"hurt":["damage", "harm", "injure", "wound", "distress", "afflict", "pain"],
+		"idea":["thought", "concept", "conception", "notion", "understanding", "opinion", "plan", "view", "belief"],
+		"important":["necessary", "vital", "critical", "indispensable", "valuable", "essential", "significant", "primary", "principal", "considerable", "famous", "distinguished", "notable", "well-known"],
+		"interesting":["fascinating", "engaging", "sharp", "keen", "bright", "intelligent", "animated", "spirited", "attractive", "inviting", "intriguing", "provocative", "though-provoking", "challenging", "inspiring", "involving", "moving", "titillating", "tantalizing", "exciting", "entertaining", "piquant", "lively", "racy", "spicy", "engrossing", "absorbing", "consuming", "gripping", "arresting", "enthralling", "spellbinding", "curious", "captivating", "enchanting", "bewitching", "appealing"],
+		"keep":["hold", "retain", "withhold", "preserve", "maintain", "sustain", "support"],
+		"kill":["slay", "execute", "assassinate", "murder", "destroy", "cancel", "abolish"],
 		"sad": ["unhappy", "depressed", "sick"]
-
 	},
 	"multi":{
 		"intro":["There might be several right answers..."],
