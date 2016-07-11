@@ -30,6 +30,7 @@ import org.loklak.server.AbstractAPIHandler;
 import org.loklak.server.Authorization;
 import org.loklak.server.BaseUserRole;
 import org.loklak.server.Query;
+import org.loklak.susi.SusiThought;
 import org.loklak.tools.storage.JSONObjectWithDefault;
 
 import com.sun.syndication.feed.synd.SyndEntry;
@@ -78,15 +79,13 @@ public class RSSReaderService extends AbstractAPIHandler implements APIHandler {
 		for (SyndEntry entry : (List<SyndEntry>) feed.getEntries()) {
 
 			JSONObject jsonObject = new JSONObject();
-
-			jsonObject.put("RSS Feed", url);
-			jsonObject.put("Title", entry.getTitle().toString());
-			jsonObject.put("Link", entry.getLink().toString());
-			jsonObject.put("URI", entry.getUri().toString());
-			jsonObject.put("Hash-Code", Integer.toString(entry.hashCode()));
-			if (entry.getPublishedDate() != null) jsonObject.put("Published-Date", entry.getPublishedDate().toString());
-			if (entry.getUpdatedDate() != null) jsonObject.put("Updated-Date", entry.getUpdatedDate().toString());
-			if (entry.getDescription() != null) jsonObject.put("Description", entry.getDescription().toString());
+			jsonObject.put("title", entry.getTitle().toString());
+			jsonObject.put("link", entry.getLink().toString());
+			jsonObject.put("uri", entry.getUri().toString());
+			jsonObject.put("guid", Integer.toString(entry.hashCode()));
+			if (entry.getPublishedDate() != null) jsonObject.put("pubDate", entry.getPublishedDate().toString());
+			if (entry.getUpdatedDate() != null) jsonObject.put("updateDate", entry.getUpdatedDate().toString());
+			if (entry.getDescription() != null) jsonObject.put("description", entry.getDescription().toString());
 
 			jsonArray.put(i, jsonObject);
 
@@ -95,8 +94,8 @@ public class RSSReaderService extends AbstractAPIHandler implements APIHandler {
 
 		totalEntries = i;
 
-		JSONObject rssFeed = new JSONObject();
-		rssFeed.put("RSS Feed", jsonArray);
-		return rssFeed;
+		SusiThought json = new SusiThought();
+		json.setData(jsonArray);
+		return json;
 	}
 }
