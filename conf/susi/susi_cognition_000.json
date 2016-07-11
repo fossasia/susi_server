@@ -66,7 +66,19 @@
 		"fat":["stout", "corpulent", "fleshy", "beefy", "paunchy", "plump", "full", "rotund", "tubby", "pudgy", "chubby", "chunky", "burly", "bulky", "elephantine"],
 		"fear":["fright", "dread", "terror", "alarm", "dismay", "anxiety", "scare", "awe", "horror", "panic", "apprehension"],
 		"fly":["soar", "hover", "flit", "wing", "flee", "waft", "glide", "coast", "skim", "sail", "cruise"],
-		"funny":["humorous", "amusing", "droll", "comic", "comical", "laughable", "silly"]
+		"funny":["humorous", "amusing", "droll", "comic", "comical", "laughable", "silly"],
+		"get":["acquire", "obtain", "secure", "procure", "gain", "fetch", "find", "score", "accumulate", "win", "earn", "rep", "catch", "net", "bag", "derive", "collect", "gather", "glean", "pick up", "accept", "come by", "regain", "salvage"],
+		"go":["recede", "depart", "fade", "disappear", "move", "travel", "proceed"],
+		"good":["excellent", "fine", "superior", "wonderful", "marvelous", "qualified", "suited", "suitable", "apt", "proper", "capable", "generous", "kindly", "friendly", "gracious", "obliging", "pleasant", "agreeable", "pleasurable", "satisfactory", "well-behaved", "obedient", "honorable", "reliable", "trustworthy", "safe", "favorable", "profitable", "advantageous", "righteous", "expedient", "helpful", "valid", "genuine", "ample", "salubrious", "estimable", "beneficial", "splendid", "great", "noble", "worthy", "first-rate", "top-notch", "grand", "sterling", "superb", "respectable", "edifying"],
+		"great":["noteworthy", "worthy", "distinguished", "remarkable", "grand", "considerable", "powerful", "much", "mighty"],
+		"gross":["improper", "rude", "coarse", "indecent", "crude", "vulgar", "outrageous", "extreme", "grievous", "shameful", "uncouth", "obscene", "low"],
+		"happy":["pleased", "contented", "satisfied", "delighted", "elated", "joyful", "cheerful", "ecstatic", "jubilant", "gay", "tickled", "gratified", "glad", "blissful", "overjoyed"],
+		"hate":["despise", "loathe", "detest", "abhor", "disfavor", "dislike", "disapprove", "abominate"],
+		"have":["hold", "possess", "own", "contain", "acquire", "gain", "maintain", "believe", "bear", "beget", "occupy", "absorb", "fill", "enjoy"],
+		"help":["aid", "assist", "support", "encourage", "back", "wait on", "attend", "serve", "relieve", "succor", "benefit", "befriend", "abet"],
+		"hide":["conceal", "cover", "mask", "cloak", "camouflage", "screen", "shroud", "veil"],
+		"hurry":["rush", "run", "speed", "race", "hasten", "urge", "accelerate", "bustle"],
+		"hurt":["damage", "harm", "injure", "wound", "distress", "afflict", "pain"]
 	},
 	"multi":{
 		"intro":["There might be several right answers..."],

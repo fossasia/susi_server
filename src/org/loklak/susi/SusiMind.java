@@ -45,11 +45,13 @@ public class SusiMind {
     private final Map<String,String> categories; // a map from an expression to an associated category name
     private final Set<String> filler; // a set of words that can be ignored completely
     private final Map<String, List<SusiRule>> ruletrigger; // a map from a keyword to a list of actions
-    private final File watchpath; // a path where the memory looks for new additions of knowledge with memory files
+    private final File initpath, watchpath; // a path where the memory looks for new additions of knowledge with memory files
     private final Map<File, Long> observations; // a mapping of mind memory files to the time when the file was read the last time
     
-    public SusiMind(File watchpath) {
+    public SusiMind(File initpath, File watchpath) {
         // initialize class objects
+        this.initpath = initpath;
+        this.initpath.mkdirs();
         this.watchpath = watchpath;
         this.watchpath.mkdirs();
         this.synonyms = new ConcurrentHashMap<>();
@@ -58,9 +60,15 @@ public class SusiMind {
         this.ruletrigger = new ConcurrentHashMap<>();
         this.observations = new HashMap<>();
     }
-    
+
     public SusiMind observe() throws IOException {
-        for (File f: this.watchpath.listFiles()) {
+        observe(this.initpath);
+        observe(this.watchpath);
+        return this;
+    }
+    
+    private void observe(File path) throws IOException {
+        for (File f: path.listFiles()) {
             if (!f.isDirectory() && f.getName().endsWith(".json")) {
                 if (!observations.containsKey(f) || f.lastModified() > observations.get(f)) {
                     observations.put(f, System.currentTimeMillis());
@@ -72,7 +80,6 @@ public class SusiMind {
                 }
             }
         }
-        return this;
     }
     
     public SusiMind learn(File file) throws JSONException, FileNotFoundException {
@@ -196,7 +203,9 @@ public class SusiMind {
     
     public static void main(String[] args) {
         try {
-            SusiMind mem = new SusiMind(new File(new File("data"), "susi"));
+            File init = new File(new File("conf"), "susi");
+            File watch = new File(new File("data"), "susi");
+            SusiMind mem = new SusiMind(init, watch);
             mem.learn(new File("conf/susi/susi_cognition_000.json"));
             //System.out.println(mem.answer("who will win euro2016?", 3));
             System.out.println(mem.react("I feel funny"));
