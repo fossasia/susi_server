@@ -60,7 +60,13 @@ public class SusiPhrase {
         expression = expression.toLowerCase().replaceAll("\\#", "  ");
         Matcher m;
         while ((m = dspace.matcher(expression)).find()) expression = m.replaceAll(" ");
-        if (type == Type.pattern) expression = expression.replaceAll("\\*", CATCHALL_CAPTURE_GROUP_STRING);
+        if (type == Type.pattern) {
+            if (expression.length() == 0 || expression.equals("*")) expression = CATCHALL_CAPTURE_GROUP_STRING;
+            if ("?!:.".indexOf(expression.charAt(expression.length() - 1)) >= 0) expression = expression.substring(0, expression.length() - 1);
+            if (expression.startsWith("* ")) expression = CATCHALL_CAPTURE_GROUP_STRING + " ?" + expression.substring(2);
+            if (expression.endsWith(" *")) expression = expression.substring(0, expression.length() - 2) + " ?" + CATCHALL_CAPTURE_GROUP_STRING;
+            expression = expression.replaceAll(" \\* ", " " + CATCHALL_CAPTURE_GROUP_STRING + " ");
+        }
         this.pattern = Pattern.compile(expression);
     }
     
