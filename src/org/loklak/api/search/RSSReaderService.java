@@ -37,7 +37,7 @@ import com.sun.syndication.feed.synd.SyndFeed;
 import com.sun.syndication.io.SyndFeedInput;
 import com.sun.syndication.io.XmlReader;
 
-public class RSSReader extends AbstractAPIHandler implements APIHandler {
+public class RSSReaderService extends AbstractAPIHandler implements APIHandler {
 
 	private static final long serialVersionUID = 1463185662941444503L;
 

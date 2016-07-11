@@ -72,7 +72,7 @@ import org.loklak.api.admin.StatusServlet;
 import org.loklak.api.admin.ThreaddumpServlet;
 import org.loklak.api.cms.*;
 import org.loklak.api.geo.GeocodeServlet;
-import org.loklak.api.handshake.ClientHandshake;
+import org.loklak.api.handshake.ClientHandshakeService;
 import org.loklak.api.iot.FossasiaPushServlet;
 import org.loklak.api.iot.FreifunkNodePushServlet;
 import org.loklak.api.iot.NMEAServlet;
@@ -94,7 +94,7 @@ import org.loklak.api.search.EventbriteCrawler;
 import org.loklak.api.search.UserServlet;
 import org.loklak.api.search.WordpressCrawler;
 import org.loklak.api.search.GenericScraper;
-import org.loklak.api.search.RSSReader;
+import org.loklak.api.search.RSSReaderService;
 import org.loklak.api.tools.CSVServlet;
 import org.loklak.api.tools.XMLServlet;
 import org.loklak.api.vis.MapServlet;
@@ -502,18 +502,18 @@ public class LoklakServer {
         Class<? extends Servlet>[] services = new Class[]{
                 SusiService.class,
                 AppsService.class,
-                AuthorizationDemo.class,
+                AuthorizationDemoService.class,
                 HelloService.class,
                 ConsoleService.class,
                 SignUpService.class,
                 LoginService.class,
                 PasswordRecoveryService.class,
                 TopMenuService.class,
-        		ClientHandshake.class,
+        		ClientHandshakeService.class,
         		PasswordResetService.class,
-                ChangeUserRole.class,
-                UserManagement.class,
-                RSSReader.class
+                ChangeUserRoleService.class,
+                UserManagementService.class,
+                RSSReaderService.class
         };
         for (Class<? extends Servlet> service: services)
             try {

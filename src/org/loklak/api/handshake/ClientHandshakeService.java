@@ -32,7 +32,7 @@ import org.loklak.server.ClientIdentity;
 import org.loklak.server.Query;
 import org.loklak.tools.storage.JSONObjectWithDefault;
 
-public class ClientHandshake extends AbstractAPIHandler implements APIHandler {
+public class ClientHandshakeService extends AbstractAPIHandler implements APIHandler {
    
     private static final long serialVersionUID = 1111478303032749879L;
     private static long defaultExpireTime = 7 * 24 * 60 * 60;
