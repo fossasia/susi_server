@@ -19,6 +19,8 @@
 
 package org.loklak.api.search;
 
+import java.io.IOException;
+import java.net.URLEncoder;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -30,9 +32,12 @@ import java.util.regex.Pattern;
 
 import org.elasticsearch.search.sort.SortOrder;
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
+import org.json.JSONTokener;
 import org.loklak.data.DAO;
 import org.loklak.geo.GeoMark;
+import org.loklak.http.ClientConnection;
 import org.loklak.objects.AccountEntry;
 import org.loklak.objects.QueryEntry;
 import org.loklak.objects.ResultList;
@@ -59,6 +64,7 @@ import org.loklak.tools.storage.JSONObjectWithDefault;
  * http://localhost:9000/api/console.json?q=SELECT%20*%20FROM%20users%20WHERE%20screen_name=%270rb1t3r%27;
  * http://localhost:9000/api/console.json?q=SELECT%20place[0]%20AS%20place,%20population,%20location[0]%20AS%20lon,%20location[1]%20AS%20lat%20FROM%20locations%20WHERE%20location=%27Berlin%27;
  * http://localhost:9000/api/console.json?q=SELECT%20*%20FROM%20locations%20WHERE%20location=%2753.1,13.1%27;
+ * http://localhost:9000/api/console.json?q=SELECT%20description%20FROM%20wikidata%20WHERE%20query=%27football%27;
  */
 public class ConsoleService extends AbstractAPIHandler implements APIHandler {
    
@@ -291,6 +297,21 @@ public class ConsoleService extends AbstractAPIHandler implements APIHandler {
             }
             return json.setData(columns.extractTable(json.getJSONArray("data")));
         });
+        pattern.put(Pattern.compile("SELECT\\h+?(.*?)\\h+?FROM\\h+?wikidata\\h+?WHERE\\h+?query\\h??=\\h??'(.*?)'\\h??;"), matcher -> {
+            JSONObject wikidata;
+            try {
+                ClientConnection cc = new ClientConnection("https://www.wikidata.org/w/api.php?action=wbsearchentities&format=json&language=en&search=" + URLEncoder.encode(matcher.group(2), "UTF-8"));
+                wikidata = new JSONObject(new JSONTokener(cc.inputStream));
+                cc.close();
+            } catch (IOException | JSONException e) {wikidata = new JSONObject();}
+            SusiThought json = new SusiThought();
+            json.setQuery(matcher.group(2));
+            Columns columns = new Columns(matcher.group(1));
+            json.setData(columns.extractTable(wikidata.getJSONArray("search")));
+            json.setHits(json.getCount());
+            return json;
+        });
+        
     }
 
     public static SusiThought console(String q) {
