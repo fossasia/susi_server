@@ -75,7 +75,7 @@ public class SusiMind {
                     try {
                         learn(f);
                     } catch (Throwable e) {
-                        DAO.log(e.getMessage());
+                        DAO.severe(e.getMessage());
                     }
                 }
             }
