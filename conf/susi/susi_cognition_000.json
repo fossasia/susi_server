@@ -173,7 +173,7 @@
 			"phrases":[	{"type":"regex", "expression":"Who will win the 2016 presidential election"},
 					  	{"type":"regex", "expression":"Who will (?:be|become) the next us president"}
 					  ],
-			"process":[	{"type":"console", "expression":"SELECT PERCENT(count) AS percent, hashtag AS president FROM (SELECT COUNT(*) AS count, hashtags AS hashtag FROM messages WHERE query='election2016' GROUP BY hashtags) WHERE hashtag IN ('hillary2016','sanders2016','trump2016');"}],
+			"process":[	{"type":"console", "expression":"SELECT PERCENT(count) AS percent, hashtag AS president FROM (SELECT COUNT(*) AS count, hashtags AS hashtag FROM messages WHERE query='election2016' GROUP BY hashtags) WHERE hashtag IN ('hillaryclinton','berniesanders','donaldtrump');"}],
 			"actions":[	{"type":"answer", "select":"random", "phrases":[
 							"I believe the next president will be $president$ with a likelihood of $percent$ percent but I a not sure.",
 							"I can calculate a likelihood, here is my guess:"
@@ -197,6 +197,17 @@
 			"phrases":[	{"type":"pattern", "expression":"How many times was * tweeted in the last 24 hours"}
 					  ],
 			"process":[	{"type":"console", "expression":"SELECT COUNT(*) AS count FROM messages WHERE query='$1$ since:day';"}],
+			"actions":[	{"type":"answer", "select":"random", "phrases":[
+							"Here you go, $count$ times!"
+						]}]
+		},
+		{
+			"keys"   :["how"],
+			"score"  :100,
+			"example":"How many mentions are on reddit about loklak",
+			"phrases":[	{"type":"pattern", "expression":"How many mentions are on reddit about *"}
+					  ],
+			"process":[	{"type":"console", "expression":"SELECT COUNT(*) AS count FROM rss WHERE url='https://www.reddit.com/search.rss?q=$1$';"}],
 			"actions":[	{"type":"answer", "select":"random", "phrases":[
 							"Here you go, $count$ times!"
 						]}]
