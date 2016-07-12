@@ -106,6 +106,9 @@ public class EventBriteCrawlerService extends AbstractAPIHandler implements APIH
 		String state = "completed"; // By Default
 		String eventType = "";
 
+		String temp;
+		Elements t;
+
 		eventID = htmlPage.getElementsByTag("body").attr("data-event-id");
 		eventName = htmlPage.getElementsByClass("listing-hero-body").text();
 		eventDescription = htmlPage.select("div.js-xd-read-more-toggle-view.read-more__toggle-view").text();
@@ -115,10 +118,20 @@ public class EventBriteCrawlerService extends AbstractAPIHandler implements APIH
 		imageLink = htmlPage.getElementsByTag("picture").attr("content");
 
 		eventLocation = htmlPage.select("p.listing-map-card-street-address.text-default").text();
-		startingTime = htmlPage.getElementsByAttributeValue("property", "event:start_time").attr("content").substring(0,
-				19);
-		endingTime = htmlPage.getElementsByAttributeValue("property", "event:end_time").attr("content").substring(0,
-				19);
+
+		temp = htmlPage.getElementsByAttributeValue("property", "event:start_time").attr("content");
+		if(temp.length() >= 20){
+			startingTime = htmlPage.getElementsByAttributeValue("property", "event:start_time").attr("content").substring(0,19);
+		}else{
+			startingTime = htmlPage.getElementsByAttributeValue("property", "event:start_time").attr("content");
+		}
+
+		temp = htmlPage.getElementsByAttributeValue("property", "event:end_time").attr("content");
+		if(temp.length() >= 20){
+			endingTime = htmlPage.getElementsByAttributeValue("property", "event:end_time").attr("content").substring(0,19);
+		}else{
+			endingTime = htmlPage.getElementsByAttributeValue("property", "event:end_time").attr("content");
+		}
 
 		ticketURL = url + "#tickets";
 
@@ -142,10 +155,17 @@ public class EventBriteCrawlerService extends AbstractAPIHandler implements APIH
 		creator.put("email", "");
 		creator.put("id", "1"); // By Default
 
-		latitude = Float
+		temp = htmlPage.getElementsByAttributeValue("property", "event:location:latitude").attr("content");
+		if(temp.length() > 0){
+			latitude = Float
 				.valueOf(htmlPage.getElementsByAttributeValue("property", "event:location:latitude").attr("content"));
-		longitude = Float
+		}
+
+		temp = htmlPage.getElementsByAttributeValue("property", "event:location:longitude").attr("content");
+		if(temp.length() > 0){
+			longitude = Float
 				.valueOf(htmlPage.getElementsByAttributeValue("property", "event:location:longitude").attr("content"));
+		}
 
 		// TODO This returns: "events.event" which is not supported by Open
 		// Event Generator
@@ -163,7 +183,12 @@ public class EventBriteCrawlerService extends AbstractAPIHandler implements APIH
 		String organizerFacebookAccountLink = null;
 		String organizerTwitterAccountLink = null;
 
-		organizerName = htmlPage.select("a.js-d-scroll-to.listing-organizer-name.text-default").text().substring(4);
+		temp = htmlPage.select("a.js-d-scroll-to.listing-organizer-name.text-default").text();
+		if(temp.length() >= 5){
+			organizerName = htmlPage.select("a.js-d-scroll-to.listing-organizer-name.text-default").text().substring(4);
+		}else{
+			organizerName = "";
+		}
 		organizerLink = url + "#listing-organizer";
 		organizerProfileLink = htmlPage
 				.getElementsByAttributeValue("class", "js-follow js-follow-target follow-me fx--fade-in is-hidden")
@@ -178,13 +203,42 @@ public class EventBriteCrawlerService extends AbstractAPIHandler implements APIH
 			e.printStackTrace();
 		}
 
-		organizerWebsite = orgProfilePage.getElementsByAttributeValue("class", "l-pad-vert-1 organizer-website").text();
-		organizerDescription = orgProfilePage.select("div.js-long-text.organizer-description").text();
-		organizerFacebookFeedLink = organizerProfileLink + "#facebook_feed";
-		organizerTwitterFeedLink = organizerProfileLink + "#twitter_feed";
-		organizerFacebookAccountLink = orgProfilePage.getElementsByAttributeValue("class", "fb-page").attr("data-href");
-		organizerTwitterAccountLink = orgProfilePage.getElementsByAttributeValue("class", "twitter-timeline")
-				.attr("href");
+		if(orgProfilePage != null){
+
+			t = orgProfilePage.getElementsByAttributeValue("class", "l-pad-vert-1 organizer-website");
+			if(t != null){
+				organizerWebsite = orgProfilePage.getElementsByAttributeValue("class", "l-pad-vert-1 organizer-website").text();
+			}else{
+				organizerWebsite = "";
+			}
+
+			t = orgProfilePage.select("div.js-long-text.organizer-description");
+			if(t != null){
+				organizerDescription = orgProfilePage.select("div.js-long-text.organizer-description").text();
+			}else{
+				organizerDescription = "";
+			}
+
+			organizerFacebookFeedLink = organizerProfileLink + "#facebook_feed";
+			organizerTwitterFeedLink = organizerProfileLink + "#twitter_feed";
+
+			t = orgProfilePage.getElementsByAttributeValue("class", "fb-page");
+			if(t != null){
+				organizerFacebookAccountLink = orgProfilePage.getElementsByAttributeValue("class", "fb-page").attr("data-href");
+			}else{
+				organizerFacebookAccountLink = "";
+			}
+
+			t = orgProfilePage.getElementsByAttributeValue("class", "twitter-timeline");
+			if(t != null){
+				organizerTwitterAccountLink = orgProfilePage.getElementsByAttributeValue("class", "twitter-timeline").attr("href");
+			}else{
+				organizerTwitterAccountLink = "";
+			}
+
+		}
+
+		
 
 		JSONArray socialLinks = new JSONArray();
 
