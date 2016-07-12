@@ -232,4 +232,19 @@ public class SusiRule {
         argument.mindstate().setActions(actions);
         return argument;
     }
+
+    @Override
+    public int hashCode() {
+        return this.keys.hashCode() + this.phrases.hashCode() + this.score;
+    }
+    
+    @Override
+    public boolean equals(Object o) {
+        if (!(o instanceof SusiRule)) return false;
+        SusiRule r = (SusiRule) o;
+        return this.hashCode() == r.hashCode() &&
+               this.keys.toString().equals(r.keys.toString()) &&
+               this.phrases.toString().equals(r.phrases.toString()) &&
+               this.score == r.score;
+    }
 }
