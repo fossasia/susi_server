@@ -47,7 +47,8 @@ public class SusiRule {
     private Set<String> keys;
     private String comment;
     private int score;
-
+    private long id;
+    
     /**
      * Create a rule by parsing of the rule description
      * @param json the rule description
@@ -93,6 +94,9 @@ public class SusiRule {
         
         // extract the score
         this.score = json.has("score") ? json.getInt("score") : DEFAULT_SCORE;
+        
+        // calculate the id
+        this.id = (this.keys.toString() + this.score).hashCode() << 16 + this.phrases.toString().hashCode();
     }
     
     /*
@@ -108,6 +112,10 @@ public class SusiRule {
         return s;
     }
     */
+    
+    public long getID() {
+        return this.id;
+    }
     
     /**
      * if no keys are given, we compute them from the given phrases
@@ -232,19 +240,5 @@ public class SusiRule {
         argument.mindstate().setActions(actions);
         return argument;
     }
-
-    @Override
-    public int hashCode() {
-        return this.keys.hashCode() + this.phrases.hashCode() + this.score;
-    }
     
-    @Override
-    public boolean equals(Object o) {
-        if (!(o instanceof SusiRule)) return false;
-        SusiRule r = (SusiRule) o;
-        return this.hashCode() == r.hashCode() &&
-               this.keys.toString().equals(r.keys.toString()) &&
-               this.phrases.toString().equals(r.phrases.toString()) &&
-               this.score == r.score;
-    }
 }
