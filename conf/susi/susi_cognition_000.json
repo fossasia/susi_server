@@ -81,6 +81,10 @@
 		"interesting":["fascinating", "engaging", "sharp", "keen", "bright", "intelligent", "animated", "spirited", "attractive", "inviting", "intriguing", "provocative", "though-provoking", "challenging", "inspiring", "involving", "moving", "titillating", "tantalizing", "exciting", "entertaining", "piquant", "lively", "racy", "spicy", "engrossing", "absorbing", "consuming", "gripping", "arresting", "enthralling", "spellbinding", "curious", "captivating", "enchanting", "bewitching", "appealing"],
 		"keep":["hold", "retain", "withhold", "preserve", "maintain", "sustain", "support"],
 		"kill":["slay", "execute", "assassinate", "murder", "destroy", "cancel", "abolish"],
+		"lazy":["indolent", "slothful", "idle", "inactive", "sluggish"],
+		"little":["tiny", "small", "diminutive", "shrimp", "runt", "miniature", "puny", "exiguous", "dinky", "cramped", "limited", "itsy-bitsy", "microscopic", "slight", "petite", "minute"],
+		"look":["gaze", "see", "glance", "watch", "survey", "study", "seek", "search for", "peek", "peep", "glimpse", "stare", "contemplate", "examine", "gape", "ogle", "scrutinize", "inspect", "leer", "behold", "observe", "view", "witness", "perceive", "spy", "sight", "discover", "notice", "recognize", "peer", "eye", "gawk", "peruse", "explore"],
+		"love":["like", "admire", "esteem", "fancy", "care for", "cherish", "adore", "treasure", "worship", "appreciate", "savor"],
 		"sad": ["unhappy", "depressed", "sick"]
 	},
 	"multi":{
