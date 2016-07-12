@@ -65,6 +65,7 @@ import org.loklak.tools.storage.JSONObjectWithDefault;
  * http://localhost:9000/api/console.json?q=SELECT%20place[0]%20AS%20place,%20population,%20location[0]%20AS%20lon,%20location[1]%20AS%20lat%20FROM%20locations%20WHERE%20location=%27Berlin%27;
  * http://localhost:9000/api/console.json?q=SELECT%20*%20FROM%20locations%20WHERE%20location=%2753.1,13.1%27;
  * http://localhost:9000/api/console.json?q=SELECT%20description%20FROM%20wikidata%20WHERE%20query=%27football%27;
+ * http://localhost:9000/api/console.json?q=SELECT%20*%20FROM%20meetup%20WHERE%20url=%27http://www.meetup.com/?q=Women-Who-Code-Delhi%27;
  * http://localhost:9000/api/console.json?q=SELECT%20*%20FROM%20rss%20WHERE%20url=%27https://www.reddit.com/search.rss?q=loklak%27;
  */
 public class ConsoleService extends AbstractAPIHandler implements APIHandler {
@@ -310,6 +311,12 @@ public class ConsoleService extends AbstractAPIHandler implements APIHandler {
             Columns columns = new Columns(matcher.group(1));
             json.setData(columns.extractTable(wikidata.getJSONArray("search")));
             json.setHits(json.getCount());
+            return json;
+        });
+        pattern.put(Pattern.compile("SELECT\\h+?(.*?)\\h+?FROM\\h+?meetup\\h+?WHERE\\h+?url\\h??=\\h??'(.*?)'\\h??;"), matcher -> {
+            SusiThought json = MeetupsCrawlerService.crawlMeetups(matcher.group(2));
+            Columns columns = new Columns(matcher.group(1));
+            json.setData(columns.extractTable(json.getData()));
             return json;
         });
         pattern.put(Pattern.compile("SELECT\\h+?(.*?)\\h+?FROM\\h+?rss\\h+?WHERE\\h+?url\\h??=\\h??'(.*?)'\\h??;"), matcher -> {
