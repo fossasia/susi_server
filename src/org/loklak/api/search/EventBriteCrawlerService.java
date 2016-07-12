@@ -16,21 +16,12 @@
  *  along with this program in the file lgpl21.txt
  *  If not, see <http://www.gnu.org/licenses/>.
  */
+
 package org.loklak.api.search;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.PrintWriter;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipOutputStream;
-
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -38,32 +29,42 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
-import org.loklak.http.RemoteAccess;
+import org.loklak.server.APIException;
+import org.loklak.server.APIHandler;
+import org.loklak.server.AbstractAPIHandler;
+import org.loklak.server.Authorization;
+import org.loklak.server.BaseUserRole;
 import org.loklak.server.Query;
+import org.loklak.susi.SusiThought;
+import org.loklak.tools.storage.JSONObjectWithDefault;
 
-public class EventbriteCrawler extends HttpServlet {
+public class EventBriteCrawlerService extends AbstractAPIHandler implements APIHandler {
 
-	private static final long serialVersionUID = 5216519528576842483L;
+	private static final long serialVersionUID = 7850249510419661716L;
 
 	@Override
-	protected void doPost(HttpServletRequest request, HttpServletResponse response)
-			throws ServletException, IOException {
-		doGet(request, response);
+	public String getAPIPath() {
+		return "/api/eventbritecrawler.json";
 	}
 
 	@Override
-	protected void doGet(HttpServletRequest request, HttpServletResponse response)
-			throws ServletException, IOException {
-		Query post = RemoteAccess.evaluate(request);
+	public BaseUserRole getMinimalBaseUserRole() {
+		return BaseUserRole.ANONYMOUS;
+	}
 
-		// manage DoS
-		if (post.isDoS_blackout()) {
-			response.sendError(503, "your request frequency is too high");
-			return;
-		}
+	@Override
+	public JSONObject getDefaultPermissions(BaseUserRole baseUserRole) {
+		return null;
+	}
 
-		String url = post.get("url", "");
+	@Override
+	public JSONObject serviceImpl(Query call, Authorization rights, JSONObjectWithDefault permissions)
+			throws APIException {
+		String url = call.get("url", "");
+		return crawlEventBrite(url);
+	}
 
+	public static SusiThought crawlEventBrite(String url) {
 		Document htmlPage = null;
 
 		try {
@@ -265,12 +266,6 @@ public class EventbriteCrawler extends HttpServlet {
 		JSONObject eventBriteResult = new JSONObject();
 		eventBriteResult.put("Event Brite Event Details", jsonArray);
 
-		// print JSON
-		response.setCharacterEncoding("UTF-8");
-		PrintWriter sos = response.getWriter();
-		sos.print(eventBriteResult.toString(2));
-		sos.println();
-
 		String userHome = System.getProperty("user.home");
 		String path = userHome + "/Downloads/EventBriteInfo";
 
@@ -336,50 +331,12 @@ public class EventbriteCrawler extends HttpServlet {
 			e1.printStackTrace();
 		}
 
-		try {
-			zipFolder(path, userHome + "/Downloads");
-		} catch (Exception e1) {
-			e1.printStackTrace();
-		}
+		JSONArray eventBriteResultJSONArray = new JSONArray();
+		eventBriteResultJSONArray.put(eventBriteResult);
+		SusiThought json = new SusiThought();
+		json.setData(eventBriteResultJSONArray);
+		return json;
 
-	}
-
-	static public void zipFolder(String srcFolder, String destZipFile) throws Exception {
-		ZipOutputStream zip = null;
-		FileOutputStream fileWriter = null;
-		fileWriter = new FileOutputStream(destZipFile);
-		zip = new ZipOutputStream(fileWriter);
-		addFolderToZip("", srcFolder, zip);
-		zip.flush();
-		zip.close();
-	}
-
-	static private void addFileToZip(String path, String srcFile, ZipOutputStream zip) throws Exception {
-		File folder = new File(srcFile);
-		if (folder.isDirectory()) {
-			addFolderToZip(path, srcFile, zip);
-		} else {
-			byte[] buf = new byte[1024];
-			int len;
-			FileInputStream in = new FileInputStream(srcFile);
-			zip.putNextEntry(new ZipEntry(path + "/" + folder.getName()));
-			while ((len = in.read(buf)) > 0) {
-				zip.write(buf, 0, len);
-			}
-			in.close();
-		}
-	}
-
-	static private void addFolderToZip(String path, String srcFolder, ZipOutputStream zip) throws Exception {
-		File folder = new File(srcFolder);
-
-		for (String fileName : folder.list()) {
-			if (path.equals("")) {
-				addFileToZip(folder.getName(), srcFolder + "/" + fileName, zip);
-			} else {
-				addFileToZip(path + "/" + folder.getName(), srcFolder + "/" + fileName, zip);
-			}
-		}
 	}
 
 }
