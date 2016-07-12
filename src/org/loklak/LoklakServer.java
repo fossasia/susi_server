@@ -94,6 +94,7 @@ import org.loklak.api.search.EventbriteCrawler;
 import org.loklak.api.search.UserServlet;
 import org.loklak.api.search.WordpressCrawler;
 import org.loklak.api.search.GenericScraper;
+import org.loklak.api.search.MeetupsCrawlerService;
 import org.loklak.api.search.RSSReaderService;
 import org.loklak.api.tools.CSVServlet;
 import org.loklak.api.tools.XMLServlet;
@@ -513,6 +514,7 @@ public class LoklakServer {
         		PasswordResetService.class,
                 ChangeUserRoleService.class,
                 UserManagementService.class,
+                MeetupsCrawlerService.class,
                 RSSReaderService.class
         };
         for (Class<? extends Servlet> service: services)
