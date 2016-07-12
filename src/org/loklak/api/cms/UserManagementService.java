@@ -27,7 +27,7 @@ import org.loklak.tools.storage.JSONObjectWithDefault;
 import java.util.HashMap;
 import java.util.Map;
 
-public class UserManagement extends AbstractAPIHandler implements APIHandler {
+public class UserManagementService extends AbstractAPIHandler implements APIHandler {
 
 	private static final long serialVersionUID = 8578478303032749879L;
 

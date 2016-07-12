@@ -1235,9 +1235,21 @@ public class DAO {
         }
         return chunk;
     }
-    
+
     public static void log(String line) {
         Log.getLog().info(line);
+    }
+
+    public static void severe(String line) {
+        Log.getLog().warn(line);
+    }
+
+    public static void severe(String line, Throwable e) {
+        Log.getLog().warn(line, e);
+    }
+    
+    public static void severe(Throwable e) {
+        Log.getLog().warn(e);
     }
 
 }

@@ -24,7 +24,7 @@ import org.loklak.data.DAO;
 import org.loklak.server.*;
 import org.loklak.tools.storage.JSONObjectWithDefault;
 
-public class ChangeUserRole extends AbstractAPIHandler implements APIHandler {
+public class ChangeUserRoleService extends AbstractAPIHandler implements APIHandler {
 
     private static final long serialVersionUID = 5577184683745091648L;
 
