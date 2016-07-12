@@ -85,6 +85,11 @@
 		"little":["tiny", "small", "diminutive", "shrimp", "runt", "miniature", "puny", "exiguous", "dinky", "cramped", "limited", "itsy-bitsy", "microscopic", "slight", "petite", "minute"],
 		"look":["gaze", "see", "glance", "watch", "survey", "study", "seek", "search for", "peek", "peep", "glimpse", "stare", "contemplate", "examine", "gape", "ogle", "scrutinize", "inspect", "leer", "behold", "observe", "view", "witness", "perceive", "spy", "sight", "discover", "notice", "recognize", "peer", "eye", "gawk", "peruse", "explore"],
 		"love":["like", "admire", "esteem", "fancy", "care for", "cherish", "adore", "treasure", "worship", "appreciate", "savor"],
+		"make":["create", "originate", "invent", "beget", "form", "construct", "design", "fabricate", "manufacture", "produce", "build", "develop", "do", "effect", "execute", "compose", "perform", "accomplish", "earn", "gain", "obtain", "acquire", "get"],
+		"mark":["label", "tag", "price", "ticket", "impress", "effect", "trace", "imprint", "stamp", "brand", "sign", "note", "heed", "notice", "designate"],
+		"mischievous":["prankish", "playful", "naughty", "roguish", "waggish", "impish", "sportive"],
+		"move":["plod", "go", "creep", "crawl", "inch", "poke", "drag", "toddle", "shuffle", "trot", "dawdle", "walk", "traipse", "mosey", "jog", "plug", "trudge", "slump", "lumber", "trail", "lag","run", "sprint", "trip", "bound", "hotfoot", "high-tail", "streak", "stride", "tear", "breeze", "whisk", "rush", "dash", "dart", "bolt", "fling", "scamper", "scurry", "skedaddle", "scoot", "scuttle", "scramble", "race", "chase", "hasten", "hurry", "hump", "gallop", "lope", "accelerate", "stir", "budge", "travel", "wander", "roam", "journey", "trek", "ride", "spin", "slip", "glide", "slide", "slither", "coast", "flow", "sail", "saunter", "hobble", "amble", "stagger", "paddle", "slouch", "prance", "straggle", "meander", "perambulate", "waddle", "wobble", "pace", "swagger", "promenade", "lunge"],
+		"moody":["temperamental", "changeable", "short-tempered", "glum", "morose", "sullen", "mopish", "irritable", "testy", "peevish", "fretful", "spiteful", "sulky", "touchy"],
 		"sad": ["unhappy", "depressed", "sick"]
 	},
 	"multi":{
