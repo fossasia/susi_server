@@ -297,28 +297,25 @@ public class EventBriteCrawlerService extends AbstractAPIHandler implements APIH
 		jsonArray.put(org);
 
 		JSONArray microlocations = new JSONArray();
-		jsonArray.put(microlocations);
+		jsonArray.put(new JSONObject().put("microlocations", microlocations));
 
 		JSONArray customForms = new JSONArray();
-		jsonArray.put(customForms);
+		jsonArray.put(new JSONObject().put("customForms", customForms));
 
 		JSONArray sessionTypes = new JSONArray();
-		jsonArray.put(sessionTypes);
+		jsonArray.put(new JSONObject().put("sessionTypes", sessionTypes));
 
 		JSONArray sessions = new JSONArray();
-		jsonArray.put(sessions);
+		jsonArray.put(new JSONObject().put("sessions", sessions));
 
 		JSONArray sponsors = new JSONArray();
-		jsonArray.put(sponsors);
+		jsonArray.put(new JSONObject().put("sponsors", sponsors));
 
 		JSONArray speakers = new JSONArray();
-		jsonArray.put(speakers);
+		jsonArray.put(new JSONObject().put("speakers", speakers));
 
 		JSONArray tracks = new JSONArray();
-		jsonArray.put(tracks);
-
-		JSONObject eventBriteResult = new JSONObject();
-		eventBriteResult.put("Event Brite Event Details", jsonArray);
+		jsonArray.put(new JSONObject().put("tracks", tracks));
 
 		String userHome = System.getProperty("user.home");
 		String path = userHome + "/Downloads/EventBriteInfo";
@@ -384,11 +381,9 @@ public class EventBriteCrawlerService extends AbstractAPIHandler implements APIH
 		} catch (IOException e1) {
 			e1.printStackTrace();
 		}
-
-		JSONArray eventBriteResultJSONArray = new JSONArray();
-		eventBriteResultJSONArray.put(eventBriteResult);
+        
 		SusiThought json = new SusiThought();
-		json.setData(eventBriteResultJSONArray);
+		json.setData(jsonArray);
 		return json;
 
 	}
