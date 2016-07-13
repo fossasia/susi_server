@@ -74,17 +74,12 @@ public class TwitterAnalysis extends HttpServlet {
 				+ request.getContextPath();
 
 		String searchurl = baseurl + "/api/search.json?q=from%3A" + username + (count != "" ? ("&count=" + count) : "");
-		// String userurl = baseurl + "/api/user.json?screen_name=" + username;
 		byte[] searchbyte = ClientConnection.download(searchurl);
-		// byte[] userbyte = ClientConnection.download(userurl);
 		String searchstr = UTF8.String(searchbyte);
-		// String userstr = UTF8.String(userbyte);
 		JSONObject searchresult = new JSONObject(searchstr);
-		// JSONObject userresult = new JSONObject(userstr);
 
 		JSONArray tweets = searchresult.getJSONArray("statuses");
 		if (tweets.length() == 0) {
-			// TODO: add similar check for userbyte in the if statement
 			finalresult.put("data collected", "empty");
 			finalresult.put("status", "invalid username or no tweets");
 			finalresult.put("username", username);
@@ -97,13 +92,22 @@ public class TwitterAnalysis extends HttpServlet {
 		finalresult.put("items_per_page", searchresult.getJSONObject("search_metadata").getString("itemsPerPage"));
 		finalresult.put("tweets_analysed", searchresult.getJSONObject("search_metadata").getString("count"));
 
-		// activity statistics
+		// main loop
 		JSONObject activityFreq = new JSONObject(true);
 		JSONObject activityType = new JSONObject(true);
-		int imgCount = 0, audioCount = 0, videoCount = 0, linksCount = 0;
+		int imgCount = 0, audioCount = 0, videoCount = 0, linksCount = 0, likesCount = 0, retweetCount = 0,
+				hashtagCount = 0;
+		int maxLikes = 0, maxRetweets = 0, maxHashtags = 0;
+		String maxLikeslink, maxRetweetslink, maxHashtagslink;
+		maxLikeslink = maxRetweetslink = maxHashtagslink = tweets.getJSONObject(0).getString("link");
 		List<String> tweetDate = new ArrayList<>();
 		List<String> tweetHour = new ArrayList<>();
 		List<String> tweetDay = new ArrayList<>();
+		List<Integer> likesList = new ArrayList<>();
+		List<Integer> retweetsList = new ArrayList<>();
+		List<Integer> hashtagsList = new ArrayList<>();
+		List<String> languageList = new ArrayList<>();
+		List<String> sentimentList = new ArrayList<>();
 		Calendar calendar = Calendar.getInstance();
 
 		for (int i = 0; i < tweets.length(); i++) {
@@ -120,6 +124,34 @@ public class TwitterAnalysis extends HttpServlet {
 			audioCount += status.getInt("audio_count");
 			videoCount += status.getInt("videos_count");
 			linksCount += status.getInt("links_count");
+			likesList.add(status.getInt("favourites_count"));
+			retweetsList.add(status.getInt("retweet_count"));
+			hashtagsList.add(status.getInt("hashtags_count"));
+			if (status.has("classifier_emotion")) {
+				sentimentList.add(status.getString("classifier_emotion"));
+			} else {
+				sentimentList.add("neutral");
+			}
+			if (status.has("classifier_language")) {
+				languageList.add(status.getString("classifier_language"));
+			} else {
+				languageList.add("no_text");
+			}
+			if (maxLikes < status.getInt("favourites_count")) {
+				maxLikes = status.getInt("favourites_count");
+				maxLikeslink = status.getString("link");
+			}
+			if (maxRetweets < status.getInt("retweet_count")) {
+				maxRetweets = status.getInt("retweet_count");
+				maxRetweetslink = status.getString("link");
+			}
+			if (maxHashtags < status.getInt("hashtags_count")) {
+				maxHashtags = status.getInt("hashtags_count");
+				maxHashtagslink = status.getString("link");
+			}
+			likesCount += status.getInt("favourites_count");
+			retweetCount += status.getInt("retweet_count");
+			hashtagCount += status.getInt("hashtags_count");
 		}
 		activityType.put("posted_image", imgCount);
 		activityType.put("posted_audio", audioCount);
@@ -151,8 +183,73 @@ public class TwitterAnalysis extends HttpServlet {
 		activityFreq.put("yearwise", yearlyact);
 		activityFreq.put("hourwise", hourlyact);
 		activityFreq.put("daywise", dailyact);
-		finalresult.put("activity_frequency", activityFreq);
-		finalresult.put("activity_type", activityType);
+		finalresult.put("tweet_frequency", activityFreq);
+		finalresult.put("tweet_type", activityType);
+
+		// activity on my tweets
+
+		JSONObject activityOnTweets = new JSONObject(true);
+		JSONObject activityCharts = new JSONObject(true);
+		JSONObject likesChart = new JSONObject(true);
+		JSONObject retweetChart = new JSONObject(true);
+		JSONObject hashtagsChart = new JSONObject(true);
+
+		Set<Integer> likesSet = new HashSet<Integer>(likesList);
+		Set<Integer> retweetSet = new HashSet<Integer>(retweetsList);
+		Set<Integer> hashtagSet = new HashSet<Integer>(hashtagsList);
+
+		for (Integer i : likesSet) {
+			likesChart.put(i.toString(), Collections.frequency(likesList, i));
+		}
+
+		for (Integer i : retweetSet) {
+			retweetChart.put(i.toString(), Collections.frequency(retweetsList, i));
+		}
+
+		for (Integer i : hashtagSet) {
+			hashtagsChart.put(i.toString(), Collections.frequency(hashtagsList, i));
+		}
+
+		activityOnTweets.put("likes_count", likesCount);
+		activityOnTweets.put("max_likes",
+				new JSONObject(true).put("number", maxLikes).put("link_to_tweet", maxLikeslink));
+		activityOnTweets.put("average_number_of_likes",
+				(likesCount / (Integer.parseInt(searchresult.getJSONObject("search_metadata").getString("count")))));
+
+		activityOnTweets.put("retweets_count", retweetCount);
+		activityOnTweets.put("max_retweets",
+				new JSONObject(true).put("number", maxRetweets).put("link_to_tweet", maxRetweetslink));
+		activityOnTweets.put("average_number_of_retweets",
+				(retweetCount / (Integer.parseInt(searchresult.getJSONObject("search_metadata").getString("count")))));
+
+		activityOnTweets.put("hashtags_used_count", hashtagCount);
+		activityOnTweets.put("max_hashtags",
+				new JSONObject(true).put("number", maxHashtags).put("link_to_tweet", maxHashtagslink));
+		activityOnTweets.put("average_number_of_hashtags_used",
+				(hashtagCount / (Integer.parseInt(searchresult.getJSONObject("search_metadata").getString("count")))));
+
+		activityCharts.put("likes", likesChart);
+		activityCharts.put("retweets", retweetChart);
+		activityCharts.put("hashtags", hashtagsChart);
+		activityOnTweets.put("frequency_charts", activityCharts);
+		finalresult.put("activity_on_my_tweets", activityOnTweets);
+
+		// content analysis
+		JSONObject contentAnalysis = new JSONObject(true);
+		JSONObject languageAnalysis = new JSONObject(true);
+		JSONObject sentimentAnalysis = new JSONObject(true);
+		Set<String> languageSet = new HashSet<String>(languageList), sentimentSet = new HashSet<String>(sentimentList);
+
+		for (String s : languageSet) {
+			languageAnalysis.put(s, Collections.frequency(languageList, s));
+		}
+
+		for (String s : sentimentSet) {
+			sentimentAnalysis.put(s, Collections.frequency(sentimentList, s));
+		}
+		contentAnalysis.put("language_analysis", languageAnalysis);
+		contentAnalysis.put("sentiment_analysis", sentimentAnalysis);
+		finalresult.put("content_analysis", contentAnalysis);
 		sos.print(finalresult.toString(2));
 		sos.println();
 		post.finalize();
