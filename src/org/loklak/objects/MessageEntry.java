@@ -469,7 +469,11 @@ public class MessageEntry extends AbstractObjectEntry implements ObjectEntry {
                 link.indexOf("ted.com") > 0) {this.videos.add(link); continue;}
             if (link.endsWith(".mp3") ||
                 link.indexOf("soundcloud.com") > 0) {this.audio.add(link); continue;}
-            if (link.indexOf("flickr.com") > 0 ||
+            if (link.endsWith(".jpg") || 
+            	link.endsWith(".jpeg") || 
+            	link.endsWith(".png") || 
+            	link.endsWith(".gif") ||
+            	link.indexOf("flickr.com") > 0 ||
                 link.indexOf("instagram.com") > 0 ||
                 link.indexOf("imgur.com") > 0 ||
                 link.indexOf("giphy.com") > 0 || 
