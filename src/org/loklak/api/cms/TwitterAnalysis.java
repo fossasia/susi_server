@@ -97,10 +97,14 @@ public class TwitterAnalysis extends HttpServlet {
 		finalresult.put("items_per_page", searchresult.getJSONObject("search_metadata").getString("itemsPerPage"));
 		finalresult.put("tweets_analysed", searchresult.getJSONObject("search_metadata").getString("count"));
 
-		// activity statistics
+		// main loop
 		JSONObject activityFreq = new JSONObject(true);
 		JSONObject activityType = new JSONObject(true);
-		int imgCount = 0, audioCount = 0, videoCount = 0, linksCount = 0;
+		int imgCount = 0, audioCount = 0, videoCount = 0, linksCount = 0, likesCount = 0, retweetCount = 0,
+				hashtagCount = 0;
+		int maxLikes = 0, maxRetweets = 0, maxHashtags = 0;
+		String maxLikeslink, maxRetweetslink, maxHashtagslink;
+		maxLikeslink = maxRetweetslink = maxHashtagslink = tweets.getJSONObject(0).getString("link");
 		List<String> tweetDate = new ArrayList<>();
 		List<String> tweetHour = new ArrayList<>();
 		List<String> tweetDay = new ArrayList<>();
@@ -120,6 +124,21 @@ public class TwitterAnalysis extends HttpServlet {
 			audioCount += status.getInt("audio_count");
 			videoCount += status.getInt("videos_count");
 			linksCount += status.getInt("links_count");
+			if (maxLikes < status.getInt("favourites_count")) {
+				maxLikes = status.getInt("favourites_count");
+				maxLikeslink = status.getString("link");
+			}
+			if (maxRetweets < status.getInt("retweet_count")) {
+				maxRetweets = status.getInt("retweet_count");
+				maxRetweetslink = status.getString("link");
+			}
+			if (maxHashtags < status.getInt("hashtags_count")) {
+				maxHashtags = status.getInt("hashtags_count");
+				maxHashtagslink = status.getString("link");
+			}
+			likesCount += status.getInt("favourites_count");
+			retweetCount += status.getInt("retweet_count");
+			hashtagCount += status.getInt("hashtags_count");
 		}
 		activityType.put("posted_image", imgCount);
 		activityType.put("posted_audio", audioCount);
@@ -151,8 +170,30 @@ public class TwitterAnalysis extends HttpServlet {
 		activityFreq.put("yearwise", yearlyact);
 		activityFreq.put("hourwise", hourlyact);
 		activityFreq.put("daywise", dailyact);
-		finalresult.put("activity_frequency", activityFreq);
-		finalresult.put("activity_type", activityType);
+		finalresult.put("tweet_frequency", activityFreq);
+		finalresult.put("tweet_type", activityType);
+
+		// activity on my tweets
+
+		JSONObject activityOnTweets = new JSONObject(true);
+		activityOnTweets.put("likes_count", likesCount);
+		activityOnTweets.put("max_likes", new JSONObject(true).put("number", maxLikes).put("link", maxLikeslink));
+		activityOnTweets.put("average_number_of_likes",
+				(likesCount / (Integer.parseInt(searchresult.getJSONObject("search_metadata").getString("count")))));
+
+		activityOnTweets.put("retweets_count", retweetCount);
+		activityOnTweets.put("max_retweets",
+				new JSONObject(true).put("number", maxRetweets).put("link_to_tweet", maxRetweetslink));
+		activityOnTweets.put("average_number_of_retweets",
+				(retweetCount / (Integer.parseInt(searchresult.getJSONObject("search_metadata").getString("count")))));
+
+		activityOnTweets.put("hashtags_used_count", hashtagCount);
+		activityOnTweets.put("max_hashtags",
+				new JSONObject(true).put("number", maxHashtags).put("link_to_tweet", maxHashtagslink));
+		activityOnTweets.put("average_number_of_hashtags_used",
+				(hashtagCount / (Integer.parseInt(searchresult.getJSONObject("search_metadata").getString("count")))));
+
+		finalresult.put("activity_on_my_tweets", activityOnTweets);
 		sos.print(finalresult.toString(2));
 		sos.println();
 		post.finalize();
