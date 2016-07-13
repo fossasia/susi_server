@@ -167,6 +167,14 @@
 					  ]}]
 		},
 		{
+			"score"  :1,
+			"phrases":[	{"type":"pattern", "expression":"I am *"} ],
+			"process":[],
+			"actions":[	{"type":"answer", "select":"random", "phrases":[
+							"Hi $1$."
+					  ]}]
+		},
+		{
 			"keys"   :["president","election","america"],
 			"score"  :100,
 			"comment":"a statistical app which tries to predict the american presidential election",
@@ -212,26 +220,28 @@
 							"Here you go, $count$ times!"
 						]}]
 		},
+		{        
+			"keys"   :["reddit"],
+			"score"  :100,
+			"example":"What are the reddit articles about loklak",
+			"phrases":[ {"type":"pattern", "expression":"* reddit * about *"}
+					],
+			"process":[ {"type":"console", "expression":"SELECT title FROM rss WHERE url='https://www.reddit.com/search.rss?q=$3$';"}],
+			"actions":[ {"type":"answer", "select":"random", "phrases":[
+							"Here is the list of articles about $3$"
+						]}, {"type":"table"}]
+		},
 		{
-            "keys"   :["reddit"],
-            "score"  :100,
-            "example":"What are the reddit articles about loklak",
-            "phrases":[ {"type":"pattern", "expression":"* reddit * about *"}
-                      ],
-            "process":[ {"type":"console", "expression":"SELECT title FROM rss WHERE url='https://www.reddit.com/search.rss?q=$3$';"}],
-            "actions":[ {"type":"answer", "select":"random", "phrases":[
-                            "Here is the list of articles about $3$"
-                        ]},
-						{"type":"table"}]
-        },
-		{
-            "score"  :1,
-            "phrases":[    {"type":"pattern", "expression":"I am *"} ],
-            "process":[],
-            "actions":[    {"type":"answer", "select":"random", "phrases":[
-                            "Hi $1$."
-                      ]}]
-        },
+			"keys"   :["rss"],
+			"score"  :100,
+			"example":"Read the RSS feed from https://news.ycombinator.com/rss",
+			"phrases":[ {"type":"pattern", "expression":"* read * RSS * from *"}
+					],
+			"process":[ {"type":"console", "expression":"SELECT title FROM rss WHERE url='$4$';"}],
+			"actions":[ {"type":"answer", "select":"random", "phrases":[
+							"Here is the list of articles from $4$"
+						]}, {"type":"table"}]
+		},
 		{
             "score"  :10,
             "keys"   :["dull"],
@@ -240,7 +250,6 @@
                             "I feel pretty bad that you think I am $intent_categorized$. I am not $intent_canonical$!"
                       ]}]
         }
-        
-        
+		
 	]
 }
