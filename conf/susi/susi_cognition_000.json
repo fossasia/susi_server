@@ -167,6 +167,14 @@
 					  ]}]
 		},
 		{
+			"score"  :1,
+			"phrases":[	{"type":"pattern", "expression":"I am *"} ],
+			"process":[],
+			"actions":[	{"type":"answer", "select":"random", "phrases":[
+							"Hi $1$."
+					  ]}]
+		},
+		{
 			"keys"   :["president","election","america"],
 			"score"  :100,
 			"comment":"a statistical app which tries to predict the american presidential election",
@@ -222,14 +230,6 @@
 			"actions":[ {"type":"answer", "select":"random", "phrases":[
 							"Here is the list of articles about $3$"
 						]}, {"type":"table"}]
-		},
-		{
-			"score"  :1,
-			"phrases":[	{"type":"pattern", "expression":"I am *"} ],
-			"process":[],
-			"actions":[	{"type":"answer", "select":"random", "phrases":[
-							"Hi $1$."
-					  ]}]
 		},
 		{
 			"keys"   :["rss"],
