@@ -18,7 +18,7 @@ app.controller("app_list", function($scope, $http) {
             $('div.span2').hide();
             qConstruct = 'div.span2#'+item;
             $(qConstruct).show();
-            event.stopPropogation();
+            event.stopImmediatePropagation();
         }
         else {
             $('#categoryName')[0].innerHTML = 'Loklak Apps';
