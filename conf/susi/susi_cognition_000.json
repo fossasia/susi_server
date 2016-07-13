@@ -223,6 +223,25 @@
 							"Here is the list of articles about $3$"
 						]}, {"type":"table"}]
 		},
+		{
+			"score"  :1,
+			"phrases":[	{"type":"pattern", "expression":"I am *"} ],
+			"process":[],
+			"actions":[	{"type":"answer", "select":"random", "phrases":[
+							"Hi $1$."
+					  ]}]
+		},
+		{
+			"keys"   :["rss"],
+			"score"  :100,
+			"example":"Read the RSS feed from https://news.ycombinator.com/rss",
+			"phrases":[ {"type":"pattern", "expression":"* read * RSS * from *"}
+					],
+			"process":[ {"type":"console", "expression":"SELECT title FROM rss WHERE url='$4$';"}],
+			"actions":[ {"type":"answer", "select":"random", "phrases":[
+							"Here is the list of articles from $4$"
+						]}, {"type":"table"}]
+		},
 		
 	]
 }
