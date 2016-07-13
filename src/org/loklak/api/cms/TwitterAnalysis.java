@@ -108,6 +108,9 @@ public class TwitterAnalysis extends HttpServlet {
 		List<String> tweetDate = new ArrayList<>();
 		List<String> tweetHour = new ArrayList<>();
 		List<String> tweetDay = new ArrayList<>();
+		List<Integer> likesList = new ArrayList<>();
+		List<Integer> retweetsList = new ArrayList<>();
+		List<Integer> hashtagsList = new ArrayList<>();
 		Calendar calendar = Calendar.getInstance();
 
 		for (int i = 0; i < tweets.length(); i++) {
@@ -124,6 +127,10 @@ public class TwitterAnalysis extends HttpServlet {
 			audioCount += status.getInt("audio_count");
 			videoCount += status.getInt("videos_count");
 			linksCount += status.getInt("links_count");
+			likesList.add(status.getInt("favourites_count"));
+			retweetsList.add(status.getInt("retweet_count"));
+			hashtagsList.add(status.getInt("hashtags_count"));
+
 			if (maxLikes < status.getInt("favourites_count")) {
 				maxLikes = status.getInt("favourites_count");
 				maxLikeslink = status.getString("link");
@@ -176,6 +183,27 @@ public class TwitterAnalysis extends HttpServlet {
 		// activity on my tweets
 
 		JSONObject activityOnTweets = new JSONObject(true);
+		JSONObject activityCharts = new JSONObject(true);
+		JSONObject likesChart = new JSONObject(true);
+		JSONObject retweetChart = new JSONObject(true);
+		JSONObject hashtagsChart = new JSONObject(true);
+
+		Set<Integer> likesSet = new HashSet<Integer>(likesList);
+		Set<Integer> retweetSet = new HashSet<Integer>(retweetsList);
+		Set<Integer> hashtagSet = new HashSet<Integer>(hashtagsList);
+
+		for (Integer i : likesSet) {
+			likesChart.put(i.toString(), Collections.frequency(likesList, i));
+		}
+
+		for (Integer i : retweetSet) {
+			retweetChart.put(i.toString(), Collections.frequency(retweetsList, i));
+		}
+
+		for (Integer i : hashtagSet) {
+			hashtagsChart.put(i.toString(), Collections.frequency(hashtagsList, i));
+		}
+
 		activityOnTweets.put("likes_count", likesCount);
 		activityOnTweets.put("max_likes", new JSONObject(true).put("number", maxLikes).put("link", maxLikeslink));
 		activityOnTweets.put("average_number_of_likes",
@@ -193,6 +221,10 @@ public class TwitterAnalysis extends HttpServlet {
 		activityOnTweets.put("average_number_of_hashtags_used",
 				(hashtagCount / (Integer.parseInt(searchresult.getJSONObject("search_metadata").getString("count")))));
 
+		activityCharts.put("likes", likesChart);
+		activityCharts.put("retweets", retweetChart);
+		activityCharts.put("hashtags", hashtagsChart);
+		activityOnTweets.put("frequency_charts", activityCharts);
 		finalresult.put("activity_on_my_tweets", activityOnTweets);
 		sos.print(finalresult.toString(2));
 		sos.println();
