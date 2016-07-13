@@ -74,17 +74,12 @@ public class TwitterAnalysis extends HttpServlet {
 				+ request.getContextPath();
 
 		String searchurl = baseurl + "/api/search.json?q=from%3A" + username + (count != "" ? ("&count=" + count) : "");
-		// String userurl = baseurl + "/api/user.json?screen_name=" + username;
 		byte[] searchbyte = ClientConnection.download(searchurl);
-		// byte[] userbyte = ClientConnection.download(userurl);
 		String searchstr = UTF8.String(searchbyte);
-		// String userstr = UTF8.String(userbyte);
 		JSONObject searchresult = new JSONObject(searchstr);
-		// JSONObject userresult = new JSONObject(userstr);
 
 		JSONArray tweets = searchresult.getJSONArray("statuses");
 		if (tweets.length() == 0) {
-			// TODO: add similar check for userbyte in the if statement
 			finalresult.put("data collected", "empty");
 			finalresult.put("status", "invalid username or no tweets");
 			finalresult.put("username", username);
@@ -205,7 +200,8 @@ public class TwitterAnalysis extends HttpServlet {
 		}
 
 		activityOnTweets.put("likes_count", likesCount);
-		activityOnTweets.put("max_likes", new JSONObject(true).put("number", maxLikes).put("link", maxLikeslink));
+		activityOnTweets.put("max_likes",
+				new JSONObject(true).put("number", maxLikes).put("link_to_tweet", maxLikeslink));
 		activityOnTweets.put("average_number_of_likes",
 				(likesCount / (Integer.parseInt(searchresult.getJSONObject("search_metadata").getString("count")))));
 
