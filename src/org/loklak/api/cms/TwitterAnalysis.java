@@ -106,6 +106,8 @@ public class TwitterAnalysis extends HttpServlet {
 		List<Integer> likesList = new ArrayList<>();
 		List<Integer> retweetsList = new ArrayList<>();
 		List<Integer> hashtagsList = new ArrayList<>();
+		List<String> languageList = new ArrayList<>();
+		List<String> sentimentList = new ArrayList<>();
 		Calendar calendar = Calendar.getInstance();
 
 		for (int i = 0; i < tweets.length(); i++) {
@@ -125,7 +127,16 @@ public class TwitterAnalysis extends HttpServlet {
 			likesList.add(status.getInt("favourites_count"));
 			retweetsList.add(status.getInt("retweet_count"));
 			hashtagsList.add(status.getInt("hashtags_count"));
-
+			if (status.has("classifier_emotion")) {
+				sentimentList.add(status.getString("classifier_emotion"));
+			} else {
+				sentimentList.add("neutral");
+			}
+			if (status.has("classifier_language")) {
+				languageList.add(status.getString("classifier_language"));
+			} else {
+				languageList.add("no_text");
+			}
 			if (maxLikes < status.getInt("favourites_count")) {
 				maxLikes = status.getInt("favourites_count");
 				maxLikeslink = status.getString("link");
@@ -222,6 +233,23 @@ public class TwitterAnalysis extends HttpServlet {
 		activityCharts.put("hashtags", hashtagsChart);
 		activityOnTweets.put("frequency_charts", activityCharts);
 		finalresult.put("activity_on_my_tweets", activityOnTweets);
+
+		// content analysis
+		JSONObject contentAnalysis = new JSONObject(true);
+		JSONObject languageAnalysis = new JSONObject(true);
+		JSONObject sentimentAnalysis = new JSONObject(true);
+		Set<String> languageSet = new HashSet<String>(languageList), sentimentSet = new HashSet<String>(sentimentList);
+
+		for (String s : languageSet) {
+			languageAnalysis.put(s, Collections.frequency(languageList, s));
+		}
+
+		for (String s : sentimentSet) {
+			sentimentAnalysis.put(s, Collections.frequency(sentimentList, s));
+		}
+		contentAnalysis.put("language_analysis", languageAnalysis);
+		contentAnalysis.put("sentiment_analysis", sentimentAnalysis);
+		finalresult.put("content_analysis", contentAnalysis);
 		sos.print(finalresult.toString(2));
 		sos.println();
 		post.finalize();
