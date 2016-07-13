@@ -90,7 +90,7 @@ import org.loklak.api.search.ShortlinkFromTweetServlet;
 import org.loklak.api.search.SuggestServlet;
 import org.loklak.api.search.SusiService;
 import org.loklak.api.search.ConsoleService;
-import org.loklak.api.search.EventbriteCrawler;
+import org.loklak.api.search.EventBriteCrawlerService;
 import org.loklak.api.search.UserServlet;
 import org.loklak.api.search.WordpressCrawler;
 import org.loklak.api.search.GenericScraper;
@@ -510,12 +510,13 @@ public class LoklakServer {
                 LoginService.class,
                 PasswordRecoveryService.class,
                 TopMenuService.class,
-        		ClientHandshakeService.class,
-        		PasswordResetService.class,
+                ClientHandshakeService.class,
+                PasswordResetService.class,
                 ChangeUserRoleService.class,
                 UserManagementService.class,
-                MeetupsCrawlerService.class,
-                RSSReaderService.class
+                RSSReaderService.class,
+                EventBriteCrawlerService.class,
+                MeetupsCrawlerService.class
         };
         for (Class<? extends Servlet> service: services)
             try {
@@ -553,7 +554,6 @@ public class LoklakServer {
         servletHandler.addServlet(ProxyServlet.class, "/api/proxy.jpg");
         servletHandler.addServlet(ValidateServlet.class, "/api/validate.json");
         servletHandler.addServlet(GenericScraper.class, "/api/genericscraper.json");
-        servletHandler.addServlet(EventbriteCrawler.class, "/api/eventbritecrawler.json");
         servletHandler.addServlet(WordpressCrawler.class, "/api/wordpresscrawler.json");
         ServletHolder pushServletHolder = new ServletHolder(PushServlet.class);
         pushServletHolder.getRegistration().setMultipartConfig(multipartConfig);

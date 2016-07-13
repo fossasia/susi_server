@@ -81,6 +81,24 @@
 		"interesting":["fascinating", "engaging", "sharp", "keen", "bright", "intelligent", "animated", "spirited", "attractive", "inviting", "intriguing", "provocative", "though-provoking", "challenging", "inspiring", "involving", "moving", "titillating", "tantalizing", "exciting", "entertaining", "piquant", "lively", "racy", "spicy", "engrossing", "absorbing", "consuming", "gripping", "arresting", "enthralling", "spellbinding", "curious", "captivating", "enchanting", "bewitching", "appealing"],
 		"keep":["hold", "retain", "withhold", "preserve", "maintain", "sustain", "support"],
 		"kill":["slay", "execute", "assassinate", "murder", "destroy", "cancel", "abolish"],
+		"lazy":["indolent", "slothful", "idle", "inactive", "sluggish"],
+		"little":["tiny", "small", "diminutive", "shrimp", "runt", "miniature", "puny", "exiguous", "dinky", "cramped", "limited", "itsy-bitsy", "microscopic", "slight", "petite", "minute"],
+		"look":["gaze", "see", "glance", "watch", "survey", "study", "seek", "search for", "peek", "peep", "glimpse", "stare", "contemplate", "examine", "gape", "ogle", "scrutinize", "inspect", "leer", "behold", "observe", "view", "witness", "perceive", "spy", "sight", "discover", "notice", "recognize", "peer", "eye", "gawk", "peruse", "explore"],
+		"love":["like", "admire", "esteem", "fancy", "care for", "cherish", "adore", "treasure", "worship", "appreciate", "savor"],
+		"make":["create", "originate", "invent", "beget", "form", "construct", "design", "fabricate", "manufacture", "produce", "build", "develop", "do", "effect", "execute", "compose", "perform", "accomplish", "earn", "gain", "obtain", "acquire", "get"],
+		"mark":["label", "tag", "price", "ticket", "impress", "effect", "trace", "imprint", "stamp", "brand", "sign", "note", "heed", "notice", "designate"],
+		"mischievous":["prankish", "playful", "naughty", "roguish", "waggish", "impish", "sportive"],
+		"move":["plod", "go", "creep", "crawl", "inch", "poke", "drag", "toddle", "shuffle", "trot", "dawdle", "walk", "traipse", "mosey", "jog", "plug", "trudge", "slump", "lumber", "trail", "lag","run", "sprint", "trip", "bound", "hotfoot", "high-tail", "streak", "stride", "tear", "breeze", "whisk", "rush", "dash", "dart", "bolt", "fling", "scamper", "scurry", "skedaddle", "scoot", "scuttle", "scramble", "race", "chase", "hasten", "hurry", "hump", "gallop", "lope", "accelerate", "stir", "budge", "travel", "wander", "roam", "journey", "trek", "ride", "spin", "slip", "glide", "slide", "slither", "coast", "flow", "sail", "saunter", "hobble", "amble", "stagger", "paddle", "slouch", "prance", "straggle", "meander", "perambulate", "waddle", "wobble", "pace", "swagger", "promenade", "lunge"],
+		"moody":["temperamental", "changeable", "short-tempered", "glum", "morose", "sullen", "mopish", "irritable", "testy", "peevish", "fretful", "spiteful", "sulky", "touchy"],
+		"neat":["clean", "orderly", "tidy", "trim", "dapper", "natty", "smart", "elegant", "well-organized", "super", "desirable", "spruce", "shipshape", "well-kept", "shapely"],
+		"new":["fresh", "unique", "original", "unusual", "novel", "modern", "current", "recent"],
+		"old":["feeble", "frail", "ancient", "weak", "aged", "used", "worn", "dilapidated", "ragged", "faded", "broken-down", "former", "old-fashioned", "outmoded", "passe", "veteran", "mature", "venerable", "primitive", "traditional", "archaic", "conventional", "customary", "stale", "musty", "obsolete", "extinct"],
+		"part":["portion", "share", "piece", "allotment", "section", "fraction", "fragment"],
+		"place":["space", "area", "spot", "plot", "region", "location", "situation", "position", "residence", "dwelling", "set", "site", "station", "status", "state"],
+		"plan":["plot", "scheme", "design", "draw", "map", "diagram", "procedure", "arrangement", "intention", "device", "contrivance", "method", "way", "blueprint"],
+		"popular":["well-liked", "approved", "accepted", "favorite", "celebrated", "common", "current"],
+		"predicament":["quandary", "dilemma", "pickle", "problem", "plight", "spot", "scrape", "jam"],
+		"put":["place", "set", "attach", "establish", "assign", "keep", "save", "set aside", "effect", "achieve", "do", "build"],
 		"sad": ["unhappy", "depressed", "sick"]
 	},
 	"multi":{
@@ -149,17 +167,16 @@
 					  ]}]
 		},
 		{
-			"keys"   :["euro2016","soccer"],
+			"keys"   :["president","election","america"],
 			"score"  :100,
-			"comment":"a statistical app which tries to predict euro2016",
-			"phrases":[	{"type":"regex", "expression":"Who (?:will win|wins) #euro2016.*"},
-					{"type":"regex", "expression":"Who will (?:be|become) european soccer champion 2016.*"}
+			"comment":"a statistical app which tries to predict the american presidential election",
+			"phrases":[	{"type":"regex", "expression":"Who will win the 2016 presidential election"},
+					  	{"type":"regex", "expression":"Who will (?:be|become) the next us president"}
 					  ],
-			"process":[	{"type":"console", "expression":"SELECT PERCENT(count) AS percent, hashtag AS country FROM (SELECT COUNT(*) AS count, hashtags AS hashtag FROM messages WHERE query='euro2016' GROUP BY hashtags) WHERE hashtag IN ('france','portugal','germany','belgium','italia','ireland’);"}],
+			"process":[	{"type":"console", "expression":"SELECT PERCENT(count) AS percent, hashtag AS president FROM (SELECT COUNT(*) AS count, hashtags AS hashtag FROM messages WHERE query='election2016' GROUP BY hashtags) WHERE hashtag IN ('hillaryclinton','berniesanders','donaldtrump');"}],
 			"actions":[	{"type":"answer", "select":"random", "phrases":[
-							"I believe the winner will be $country$ with a likelihood of $percent$ percent but I a not sure. Here is even more:",
-							"I can calculate a likelihood, here is my guess:",
-							"I am not good at football, but here is what other people say:"
+							"I believe the next president will be $president$ with a likelihood of $percent$ percent but I a not sure.",
+							"I can calculate a likelihood, here is my guess:"
 						]},
 						{"type":"piechart", "total":100, "key": "country", "value":"percent", "unit":"%"}]
 		},
@@ -167,7 +184,7 @@
 			"keys"   :["who"],
 			"score"  :100,
 			"phrases":[	{"type":"pattern", "expression":"Who tweeted most about *"},
-					{"type":"pattern", "expression":"The top tweeter about *"}
+					  	{"type":"pattern", "expression":"The top tweeter about *"}
 					  ],
 			"process":[	{"type":"console", "expression":"SELECT COUNT(*) AS count, screen_name FROM messages WHERE query='$1$ since:day' GROUP BY screen_name;"}],
 			"actions":[	{"type":"answer", "select":"random", "phrases":[
@@ -175,7 +192,7 @@
 						]}]
 		},
 		{
-			"keys"   :["who"],
+			"keys"   :["how"],
 			"score"  :100,
 			"phrases":[	{"type":"pattern", "expression":"How many times was * tweeted in the last 24 hours"}
 					  ],
@@ -183,6 +200,28 @@
 			"actions":[	{"type":"answer", "select":"random", "phrases":[
 							"Here you go, $count$ times!"
 						]}]
+		},
+		{
+			"keys"   :["how"],
+			"score"  :100,
+			"example":"How many mentions are on reddit about loklak",
+			"phrases":[	{"type":"pattern", "expression":"How many mentions are on reddit about *"}
+					  ],
+			"process":[	{"type":"console", "expression":"SELECT COUNT(*) AS count FROM rss WHERE url='https://www.reddit.com/search.rss?q=$1$';"}],
+			"actions":[	{"type":"answer", "select":"random", "phrases":[
+							"Here you go, $count$ times!"
+						]}]
+		},
+		{
+			"keys"   :["reddit"],
+			"score"  :100,
+			"example":"What are the reddit articles about loklak",
+			"phrases":[ {"type":"pattern", "expression":"* reddit * about *"}
+					],
+			"process":[ {"type":"console", "expression":"SELECT title FROM rss WHERE url='https://www.reddit.com/search.rss?q=$3$';"}],
+			"actions":[ {"type":"answer", "select":"random", "phrases":[
+							"Here is the list of articles about $3$"
+						]}, {"type":"table"}]
 		},
 		
 	]

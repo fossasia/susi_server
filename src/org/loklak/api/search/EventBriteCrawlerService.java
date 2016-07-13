@@ -16,21 +16,12 @@
  *  along with this program in the file lgpl21.txt
  *  If not, see <http://www.gnu.org/licenses/>.
  */
+
 package org.loklak.api.search;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.PrintWriter;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipOutputStream;
-
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -38,32 +29,42 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
-import org.loklak.http.RemoteAccess;
+import org.loklak.server.APIException;
+import org.loklak.server.APIHandler;
+import org.loklak.server.AbstractAPIHandler;
+import org.loklak.server.Authorization;
+import org.loklak.server.BaseUserRole;
 import org.loklak.server.Query;
+import org.loklak.susi.SusiThought;
+import org.loklak.tools.storage.JSONObjectWithDefault;
 
-public class EventbriteCrawler extends HttpServlet {
+public class EventBriteCrawlerService extends AbstractAPIHandler implements APIHandler {
 
-	private static final long serialVersionUID = 5216519528576842483L;
+	private static final long serialVersionUID = 7850249510419661716L;
 
 	@Override
-	protected void doPost(HttpServletRequest request, HttpServletResponse response)
-			throws ServletException, IOException {
-		doGet(request, response);
+	public String getAPIPath() {
+		return "/api/eventbritecrawler.json";
 	}
 
 	@Override
-	protected void doGet(HttpServletRequest request, HttpServletResponse response)
-			throws ServletException, IOException {
-		Query post = RemoteAccess.evaluate(request);
+	public BaseUserRole getMinimalBaseUserRole() {
+		return BaseUserRole.ANONYMOUS;
+	}
 
-		// manage DoS
-		if (post.isDoS_blackout()) {
-			response.sendError(503, "your request frequency is too high");
-			return;
-		}
+	@Override
+	public JSONObject getDefaultPermissions(BaseUserRole baseUserRole) {
+		return null;
+	}
 
-		String url = post.get("url", "");
+	@Override
+	public JSONObject serviceImpl(Query call, Authorization rights, JSONObjectWithDefault permissions)
+			throws APIException {
+		String url = call.get("url", "");
+		return crawlEventBrite(url);
+	}
 
+	public static SusiThought crawlEventBrite(String url) {
 		Document htmlPage = null;
 
 		try {
@@ -105,6 +106,9 @@ public class EventbriteCrawler extends HttpServlet {
 		String state = "completed"; // By Default
 		String eventType = "";
 
+		String temp;
+		Elements t;
+
 		eventID = htmlPage.getElementsByTag("body").attr("data-event-id");
 		eventName = htmlPage.getElementsByClass("listing-hero-body").text();
 		eventDescription = htmlPage.select("div.js-xd-read-more-toggle-view.read-more__toggle-view").text();
@@ -114,10 +118,20 @@ public class EventbriteCrawler extends HttpServlet {
 		imageLink = htmlPage.getElementsByTag("picture").attr("content");
 
 		eventLocation = htmlPage.select("p.listing-map-card-street-address.text-default").text();
-		startingTime = htmlPage.getElementsByAttributeValue("property", "event:start_time").attr("content").substring(0,
-				19);
-		endingTime = htmlPage.getElementsByAttributeValue("property", "event:end_time").attr("content").substring(0,
-				19);
+
+		temp = htmlPage.getElementsByAttributeValue("property", "event:start_time").attr("content");
+		if(temp.length() >= 20){
+			startingTime = htmlPage.getElementsByAttributeValue("property", "event:start_time").attr("content").substring(0,19);
+		}else{
+			startingTime = htmlPage.getElementsByAttributeValue("property", "event:start_time").attr("content");
+		}
+
+		temp = htmlPage.getElementsByAttributeValue("property", "event:end_time").attr("content");
+		if(temp.length() >= 20){
+			endingTime = htmlPage.getElementsByAttributeValue("property", "event:end_time").attr("content").substring(0,19);
+		}else{
+			endingTime = htmlPage.getElementsByAttributeValue("property", "event:end_time").attr("content");
+		}
 
 		ticketURL = url + "#tickets";
 
@@ -141,10 +155,17 @@ public class EventbriteCrawler extends HttpServlet {
 		creator.put("email", "");
 		creator.put("id", "1"); // By Default
 
-		latitude = Float
+		temp = htmlPage.getElementsByAttributeValue("property", "event:location:latitude").attr("content");
+		if(temp.length() > 0){
+			latitude = Float
 				.valueOf(htmlPage.getElementsByAttributeValue("property", "event:location:latitude").attr("content"));
-		longitude = Float
+		}
+
+		temp = htmlPage.getElementsByAttributeValue("property", "event:location:longitude").attr("content");
+		if(temp.length() > 0){
+			longitude = Float
 				.valueOf(htmlPage.getElementsByAttributeValue("property", "event:location:longitude").attr("content"));
+		}
 
 		// TODO This returns: "events.event" which is not supported by Open
 		// Event Generator
@@ -162,7 +183,12 @@ public class EventbriteCrawler extends HttpServlet {
 		String organizerFacebookAccountLink = null;
 		String organizerTwitterAccountLink = null;
 
-		organizerName = htmlPage.select("a.js-d-scroll-to.listing-organizer-name.text-default").text().substring(4);
+		temp = htmlPage.select("a.js-d-scroll-to.listing-organizer-name.text-default").text();
+		if(temp.length() >= 5){
+			organizerName = htmlPage.select("a.js-d-scroll-to.listing-organizer-name.text-default").text().substring(4);
+		}else{
+			organizerName = "";
+		}
 		organizerLink = url + "#listing-organizer";
 		organizerProfileLink = htmlPage
 				.getElementsByAttributeValue("class", "js-follow js-follow-target follow-me fx--fade-in is-hidden")
@@ -177,13 +203,42 @@ public class EventbriteCrawler extends HttpServlet {
 			e.printStackTrace();
 		}
 
-		organizerWebsite = orgProfilePage.getElementsByAttributeValue("class", "l-pad-vert-1 organizer-website").text();
-		organizerDescription = orgProfilePage.select("div.js-long-text.organizer-description").text();
-		organizerFacebookFeedLink = organizerProfileLink + "#facebook_feed";
-		organizerTwitterFeedLink = organizerProfileLink + "#twitter_feed";
-		organizerFacebookAccountLink = orgProfilePage.getElementsByAttributeValue("class", "fb-page").attr("data-href");
-		organizerTwitterAccountLink = orgProfilePage.getElementsByAttributeValue("class", "twitter-timeline")
-				.attr("href");
+		if(orgProfilePage != null){
+
+			t = orgProfilePage.getElementsByAttributeValue("class", "l-pad-vert-1 organizer-website");
+			if(t != null){
+				organizerWebsite = orgProfilePage.getElementsByAttributeValue("class", "l-pad-vert-1 organizer-website").text();
+			}else{
+				organizerWebsite = "";
+			}
+
+			t = orgProfilePage.select("div.js-long-text.organizer-description");
+			if(t != null){
+				organizerDescription = orgProfilePage.select("div.js-long-text.organizer-description").text();
+			}else{
+				organizerDescription = "";
+			}
+
+			organizerFacebookFeedLink = organizerProfileLink + "#facebook_feed";
+			organizerTwitterFeedLink = organizerProfileLink + "#twitter_feed";
+
+			t = orgProfilePage.getElementsByAttributeValue("class", "fb-page");
+			if(t != null){
+				organizerFacebookAccountLink = orgProfilePage.getElementsByAttributeValue("class", "fb-page").attr("data-href");
+			}else{
+				organizerFacebookAccountLink = "";
+			}
+
+			t = orgProfilePage.getElementsByAttributeValue("class", "twitter-timeline");
+			if(t != null){
+				organizerTwitterAccountLink = orgProfilePage.getElementsByAttributeValue("class", "twitter-timeline").attr("href");
+			}else{
+				organizerTwitterAccountLink = "";
+			}
+
+		}
+
+		
 
 		JSONArray socialLinks = new JSONArray();
 
@@ -265,12 +320,6 @@ public class EventbriteCrawler extends HttpServlet {
 		JSONObject eventBriteResult = new JSONObject();
 		eventBriteResult.put("Event Brite Event Details", jsonArray);
 
-		// print JSON
-		response.setCharacterEncoding("UTF-8");
-		PrintWriter sos = response.getWriter();
-		sos.print(eventBriteResult.toString(2));
-		sos.println();
-
 		String userHome = System.getProperty("user.home");
 		String path = userHome + "/Downloads/EventBriteInfo";
 
@@ -336,50 +385,12 @@ public class EventbriteCrawler extends HttpServlet {
 			e1.printStackTrace();
 		}
 
-		try {
-			zipFolder(path, userHome + "/Downloads");
-		} catch (Exception e1) {
-			e1.printStackTrace();
-		}
+		JSONArray eventBriteResultJSONArray = new JSONArray();
+		eventBriteResultJSONArray.put(eventBriteResult);
+		SusiThought json = new SusiThought();
+		json.setData(eventBriteResultJSONArray);
+		return json;
 
-	}
-
-	static public void zipFolder(String srcFolder, String destZipFile) throws Exception {
-		ZipOutputStream zip = null;
-		FileOutputStream fileWriter = null;
-		fileWriter = new FileOutputStream(destZipFile);
-		zip = new ZipOutputStream(fileWriter);
-		addFolderToZip("", srcFolder, zip);
-		zip.flush();
-		zip.close();
-	}
-
-	static private void addFileToZip(String path, String srcFile, ZipOutputStream zip) throws Exception {
-		File folder = new File(srcFile);
-		if (folder.isDirectory()) {
-			addFolderToZip(path, srcFile, zip);
-		} else {
-			byte[] buf = new byte[1024];
-			int len;
-			FileInputStream in = new FileInputStream(srcFile);
-			zip.putNextEntry(new ZipEntry(path + "/" + folder.getName()));
-			while ((len = in.read(buf)) > 0) {
-				zip.write(buf, 0, len);
-			}
-			in.close();
-		}
-	}
-
-	static private void addFolderToZip(String path, String srcFolder, ZipOutputStream zip) throws Exception {
-		File folder = new File(srcFolder);
-
-		for (String fileName : folder.list()) {
-			if (path.equals("")) {
-				addFileToZip(folder.getName(), srcFolder + "/" + fileName, zip);
-			} else {
-				addFileToZip(path + "/" + folder.getName(), srcFolder + "/" + fileName, zip);
-			}
-		}
 	}
 
 }

@@ -24,6 +24,7 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -44,7 +45,7 @@ public class SusiMind {
     private final Map<String,String> synonyms; // a map from a synonym to a canonical expression
     private final Map<String,String> categories; // a map from an expression to an associated category name
     private final Set<String> filler; // a set of words that can be ignored completely
-    private final Map<String, List<SusiRule>> ruletrigger; // a map from a keyword to a list of actions
+    private final Map<String, Map<Long, SusiRule>> ruletrigger; // a map from a keyword to a list of actions
     private final File initpath, watchpath; // a path where the memory looks for new additions of knowledge with memory files
     private final Map<File, Long> observations; // a mapping of mind memory files to the time when the file was read the last time
     
@@ -115,9 +116,9 @@ public class SusiMind {
         rules.forEach(j -> {
             SusiRule rule = new SusiRule((JSONObject) j);
             rule.getKeys().forEach(key -> {
-                    List<SusiRule> l = this.ruletrigger.get(key);
-                    if (l == null) {l = new ArrayList<>(); this.ruletrigger.put(key, l);}
-                    l.add(rule); 
+                    Map<Long, SusiRule> l = this.ruletrigger.get(key);
+                    if (l == null) {l = new HashMap<>(); this.ruletrigger.put(key, l);}
+                    l.put(rule.getID(), rule); 
                 });
             });
         
@@ -127,10 +128,10 @@ public class SusiMind {
     public List<SusiRule> associate(String query, int maxcount) {
         // tokenize query to have hint for rule collection
         List<SusiRule> rules = new ArrayList<>();
-        token(query).forEach(token -> {List<SusiRule> r = this.ruletrigger.get(token); if (r != null) rules.addAll(r);});
+        token(query).forEach(token -> {Map<Long, SusiRule> r = this.ruletrigger.get(token); if (r != null) rules.addAll(r.values());});
 
         // add catchall rules always
-        List<SusiRule> ca = this.ruletrigger.get(SusiRule.CATCHALL_KEY); if (ca != null) rules.addAll(ca);
+        Collection<SusiRule> ca = this.ruletrigger.get(SusiRule.CATCHALL_KEY).values(); if (ca != null) rules.addAll(ca);
         
         // create list of all rules that might apply
         TreeMap<Integer, List<SusiRule>> scored = new TreeMap<>();
