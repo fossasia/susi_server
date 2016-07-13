@@ -213,17 +213,16 @@
 						]}]
 		},
 		{
-            "keys"   :["reddit"],
-            "score"  :100,
-            "example":"What are the reddit articles about loklak",
-            "phrases":[ {"type":"pattern", "expression":"* reddit * about *"}
-                      ],
-            "process":[ {"type":"console", "expression":"SELECT title FROM rss WHERE url='https://www.reddit.com/search.rss?q=$3$';"}],
-            "actions":[ {"type":"answer", "select":"random", "phrases":[
-                            "Here is the list of articles about $3$"
-                        ]},
-						{"type":"table"}]
-        },
+			"keys"   :["reddit"],
+			"score"  :100,
+			"example":"What are the reddit articles about loklak",
+			"phrases":[ {"type":"pattern", "expression":"* reddit * about *"}
+					],
+			"process":[ {"type":"console", "expression":"SELECT title FROM rss WHERE url='https://www.reddit.com/search.rss?q=$3$';"}],
+			"actions":[ {"type":"answer", "select":"random", "phrases":[
+							"Here is the list of articles about $3$"
+						]}, {"type":"table"}]
+		},
 		
 	]
 }
