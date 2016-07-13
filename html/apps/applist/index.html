@@ -5,11 +5,13 @@
     <meta name="description" content="loklak provides an easy-to-extend app infrastructure. Here is a list of large-data evaluation applictions.">
     <link rel="icon" type="image/png" href="/artwork/favicon.png">
     <title>loklak.org - Application List</title>
+    <script src="../../js/jquery.min.js"></script>
+    <script src="../../js/angular-route.min.js"></script>
     <script src="../../js/angular-touch.min.js"></script>
     <link href="../../css/dashboard.css" rel="stylesheet">
     <link href="css/style.css" rel="stylesheet"/>
     <link href="css/animate.css" rel="stylesheet"/>
-    <script src="app_list.js"></script>
+    <script src="./app_list.js"></script>
     <!--#include file="../../../ssi/common_head_back.include" -->
     <!--#include file="../../../data/ssi/custom_head.include" -->
   </head>
@@ -76,4 +78,14 @@
     <!--#include file="../../../ssi/common_body_back.include" -->
     <!--#include file="../../../data/ssi/custom_body_back.include" -->
       </body>
+  <script>
+    $(document).ready(function() {
+      var headLocation = window.location;
+      var pathName = headLocation.pathname;
+      if (pathName == "/apps/applist/") {
+        console.log('Need to refresh');
+        window.location.replace("/apps/applist/index.html");
+      }
+    });
+  </script>
     </html>
