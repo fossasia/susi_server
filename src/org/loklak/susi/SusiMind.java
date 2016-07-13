@@ -26,10 +26,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.TreeMap;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Matcher;
@@ -42,12 +40,10 @@ import org.loklak.data.DAO;
 
 public class SusiMind {
     
-    private final Map<String,String> synonyms; // a map from a synonym to a canonical expression
-    private final Map<String,String> categories; // a map from an expression to an associated category name
-    private final Set<String> filler; // a set of words that can be ignored completely
     private final Map<String, Map<Long, SusiRule>> ruletrigger; // a map from a keyword to a list of actions
     private final File initpath, watchpath; // a path where the memory looks for new additions of knowledge with memory files
     private final Map<File, Long> observations; // a mapping of mind memory files to the time when the file was read the last time
+    private final SusiReader reader; // responsible to understand written communication
     
     public SusiMind(File initpath, File watchpath) {
         // initialize class objects
@@ -55,11 +51,9 @@ public class SusiMind {
         this.initpath.mkdirs();
         this.watchpath = watchpath;
         this.watchpath.mkdirs();
-        this.synonyms = new ConcurrentHashMap<>();
-        this.categories = new ConcurrentHashMap<>();
-        this.filler = new HashSet<>();
         this.ruletrigger = new ConcurrentHashMap<>();
         this.observations = new HashMap<>();
+        this.reader = new SusiReader();
     }
 
     public SusiMind observe() throws IOException {
@@ -91,26 +85,11 @@ public class SusiMind {
     
     public SusiMind learn(JSONObject json) {
 
-        // initialize temporary json objects
-        JSONObject syn = json.has("synonyms") ? json.getJSONObject("synonyms") : new JSONObject();
-        JSONArray fill = json.has("filler") ? json.getJSONArray("filler") : new JSONArray();
-        JSONObject cat = json.has("categories") ? json.getJSONObject("categories") : new JSONObject();
+        // teach the language parser
+        this.reader.learn(json);
+        
+        // initialize temporary json object
         JSONArray rules = json.has("rules") ? json.getJSONArray("rules") : new JSONArray();
-        
-        // add synonyms
-        for (String canonical: syn.keySet()) {
-            JSONArray a = syn.getJSONArray(canonical);
-            a.forEach(synonym -> synonyms.put(((String) synonym).toLowerCase(), canonical));
-        }
-        
-        // add filler
-        fill.forEach(word -> filler.add((String) word));
-        
-        // add categories
-        for (String canonical: cat.keySet()) {
-            JSONArray a = cat.getJSONArray(canonical);
-            a.forEach(synonym -> categories.put(((String) synonym).toLowerCase(), canonical));
-        }
         
         // add rules
         rules.forEach(j -> {
@@ -125,57 +104,49 @@ public class SusiMind {
         return this;
     }
     
-    public List<SusiRule> associate(String query, int maxcount) {
-        // tokenize query to have hint for rule collection
-        List<SusiRule> rules = new ArrayList<>();
-        token(query).forEach(token -> {Map<Long, SusiRule> r = this.ruletrigger.get(token); if (r != null) rules.addAll(r.values());});
-
-        // add catchall rules always
-        Collection<SusiRule> ca = this.ruletrigger.get(SusiRule.CATCHALL_KEY).values(); if (ca != null) rules.addAll(ca);
-        
-        // create list of all rules that might apply
-        TreeMap<Integer, List<SusiRule>> scored = new TreeMap<>();
-        rules.forEach(rule -> {
-            //System.out.println("rule.phrase-1:" + rule.getPhrases().toString());
-            int score = rule.getScore();
-            List<SusiRule> r = scored.get(-score);
-            if (r == null) {r = new ArrayList<>(); scored.put(-score, r);}
-            r.add(rule);
+    public List<SusiIdea> associate(String query, int maxcount) {
+        // tokenize query to have hint for idea collection
+        final List<SusiIdea> ideas = new ArrayList<>();
+        this.reader.tokenize(query).forEach(token -> {
+            Map<Long, SusiRule> r = this.ruletrigger.get(token.categorized);
+            if (r != null) {
+                r.values().forEach(rule -> ideas.add(new SusiIdea(rule).setIntent(token)));
+            }
         });
 
-        // make a sorted list of all rules
-        rules.clear(); scored.values().forEach(r -> rules.addAll(r));
+        // add catchall rules always (those are the 'bad ideas')
+        Collection<SusiRule> ca = this.ruletrigger.get(SusiRule.CATCHALL_KEY).values();
+        if (ca != null) ca.forEach(rule -> ideas.add(new SusiIdea(rule)));
         
-        // test rules and collect those which match up to maxcount
-        List<SusiRule> mrules = new ArrayList<>(Math.min(10, maxcount));
-        for (SusiRule rule: rules) {
-            //System.out.println("rule.phrase-2:" + rule.getPhrases().toString());
+        // create list of all ideas that might apply
+        TreeMap<Integer, List<SusiIdea>> scored = new TreeMap<>();
+        ideas.forEach(idea -> {
+            //System.out.println("idea.phrase-1:" + idea.getPhrases().toString());
+            int score = idea.getRule().getScore();
+            List<SusiIdea> r = scored.get(-score);
+            if (r == null) {r = new ArrayList<>(); scored.put(-score, r);}
+            r.add(idea);
+        });
+
+        // make a sorted list of all ideas
+        ideas.clear(); scored.values().forEach(r -> ideas.addAll(r));
+        
+        // test ideas and collect those which match up to maxcount
+        List<SusiIdea> plausibleIdeas = new ArrayList<>(Math.min(10, maxcount));
+        for (SusiIdea idea: ideas) {
+            //System.out.println("idea.phrase-2:" + idea.getPhrases().toString());
+            SusiRule rule = idea.getRule();
             if (rule.getActions().size() == 0) continue;
             if (rule.getActions().get(0).getPhrases().size() == 0) continue;
             if (rule.getActions().get(0).getPhrases().get(0).length() == 0) continue;
             Matcher m = rule.matcher(query);
             if (m == null) continue;
-            mrules.add(rule);
-            if (mrules.size() >= maxcount) break;
+            plausibleIdeas.add(idea);
+            if (plausibleIdeas.size() >= maxcount) break;
         }
-        return mrules;
+        return plausibleIdeas;
     }
-
-    private List<String> token(String query) {
-        List<String> t = new ArrayList<>();
-        query = query.replaceAll("\\?", " ?").replaceAll("\\!", " !").replaceAll("\\.", " .").replaceAll("\\,", " ,").replaceAll("\\;", " ;").replaceAll("\\:", " :").replaceAll("  ", " ");
-        String[] u = query.split(" ");
-        for (String v: u) {
-            String vl = v.toLowerCase();
-            if (this.filler.contains(vl)) continue;
-            String s = this.synonyms.get(vl);
-            if (s != null) vl = s;
-            String c = this.categories.get(vl);
-            if (c != null) vl = c;
-            t.add(vl);
-        }
-        return t;
-    }
+    
     
     /**
      * react on a user input: this causes the selection of deduction rules and the evaluation of the process steps
@@ -187,9 +158,9 @@ public class SusiMind {
      */
     public List<SusiArgument> react(final String query, int maxcount) {
         List<SusiArgument> answers = new ArrayList<>();
-        List<SusiRule> rules = associate(query, 100);
-        for (SusiRule rule: rules) {
-            SusiArgument argument = rule.consideration(query);
+        List<SusiIdea> ideas = associate(query, 100);
+        for (SusiIdea idea: ideas) {
+            SusiArgument argument = idea.getRule().consideration(query, idea.getIntent());
             if (argument != null) answers.add(argument);
             if (answers.size() >= maxcount) break;
         }

@@ -170,7 +170,7 @@
 			"keys"   :["president","election","america"],
 			"score"  :100,
 			"comment":"a statistical app which tries to predict the american presidential election",
-			"phrases":[	{"type":"regex", "expression":"Who will win the 2016 presidential election"},
+			"phrases":[	{"type":"pattern", "expression":"Who will win the 2016 presidential election"},
 					  	{"type":"regex", "expression":"Who will (?:be|become) the next us president"}
 					  ],
 			"process":[	{"type":"console", "expression":"SELECT PERCENT(count) AS percent, hashtag AS president FROM (SELECT COUNT(*) AS count, hashtags AS hashtag FROM messages WHERE query='election2016' GROUP BY hashtags) WHERE hashtag IN ('hillaryclinton','berniesanders','donaldtrump');"}],
@@ -224,6 +224,23 @@
                         ]},
 						{"type":"table"}]
         },
-		
+		{
+            "score"  :1,
+            "phrases":[    {"type":"pattern", "expression":"I am *"} ],
+            "process":[],
+            "actions":[    {"type":"answer", "select":"random", "phrases":[
+                            "Hi $1$."
+                      ]}]
+        },
+		{
+            "score"  :10,
+            "keys"   :["dull"],
+            "phrases":[{"type":"pattern", "expression":"* You *"} ],
+            "actions":[{"type":"answer", "select":"random", "phrases":[
+                            "I feel pretty bad that you think I am $intent_categorized$. I am not $intent_canonical$!"
+                      ]}]
+        }
+        
+        
 	]
 }

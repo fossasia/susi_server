@@ -179,6 +179,21 @@ public class SusiThought extends JSONObject {
     }
     
     /**
+     * If during thinking we observe something that we want to memorize, we can memorize this here
+     * @param featureName the object key
+     * @param observation the object value
+     * @return the thought
+     */
+    public SusiThought addObservation(String featureName, String observation) {
+        JSONArray data = getData();
+        if (data.length() == 1) {
+            JSONObject thought = data.getJSONObject(0);
+            thought.put(featureName, observation);
+        }
+        return this;
+    }
+    
+    /**
      * Every information may have a set of (re-)actions assigned.
      * Those (re-)actions are methods to do something with the thought.
      * @param actions (re-)actions on this thought
