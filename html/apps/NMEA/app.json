@@ -2,7 +2,7 @@
   "@context":"http://schema.org",
   "@type":"SoftwareApplication",
   "permissions":"/api/status.json,/api/suggest.json,/api/search.json,/api/peers.json,/api/hello.json,/api/settings.json,/api/threaddump.txt,/api/NMEA.txt",
-  "name":"GPSTracking",
+  "name":"NMEA",
   "headline":"GPS Device Tracking",
   "alternativeHeadline":"Tracking GPS NMEA Data using Loklak and OpenStreetMaps",
   "applicationCategory":"IOT",

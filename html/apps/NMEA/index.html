@@ -14,9 +14,10 @@
 	<link rel="icon" type="image/png" href="../../artwork/favicon.png">
 	<link href="../../css/bootstrap.min.css" rel="stylesheet">
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.1.0/jquery.js"></script>
+	<script src="../../js/bootstrap.min.js"></script>
 	<style>
 	#map { 
-		height: 500px;
+		height: 1000px;
 	}
 	</style>
 	<script src="../../js/angular.min.js"></script>
@@ -43,16 +44,40 @@
       </nav>
     <div class="container-fluid" style="margin-top:50px;">
     	<div class="row">
-			<div class="form-group"  style="text-align:center;">
-				<div class="col-md-8">
-					<input id="url" name="url" type="url" placeholder="Enter the data stream URL here" class="form-control input-md"> 
-				</div>
-				<input type="submit" value="Submit" onclick="getTracking();" class="btn btn-info">
 			<div id="map"></div>
-			</div>
 		</div>
+  <!-- Modal -->
+  <div class="modal fade" id="streamUrl" role="dialog">
+    <div class="modal-dialog">
+    
+      <!-- Modal content-->
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal">&times;</button>
+          <h4 class="modal-title">Enter the stream URL</h4>
+        </div>
+        <div class="modal-body">
+        	<div class="form-group">
+        		<div class="row">
+        			<div class="col-md-10">
+						<input id="url" name="url" type="url" placeholder="Enter the data stream URL here" class="form-control input-md">
+					</div>
+					<div class="col-md-2">
+						<input type="submit" value="Submit" onclick="getTracking();" class="btn btn-info">
+					</div>
+				</div>
+			</div>
+        </div>
+      </div>
+      
+    </div>
+  </div>
 	</div>
 	<script>
+	$(document).ready(function(){
+	    $("#streamUrl").modal();
+	});
+
 	function getTracking() {
 		var url = document.getElementById('url').value;
 		console.log(url);
@@ -62,14 +87,29 @@
 		// set default zoom level
 		var zoomLevel = 2;
 		$.getJSON(urlComplete, function (data) {
-			console.log(data);
+			var GPSObjects = [];
+			for (var key in data) {
+				var obj = data[key];
+				var latitudeObject, longitudeObject
+				for (var prop in obj) {
+					if (prop == 'lat') {
+						latitudeObject = obj[prop];
+					}
+					if (prop == 'long') {
+						longitudeObject = obj[prop];
+					}
+				}
+				var marker = L.marker([latitudeObject, longitudeObject]).addTo(map);
+				spiralCoords = connectTheDots(marker);
+				var spiralLine = L.polyline(spiralCoords).addTo(map)
+			}
 		});
 	}
 var centerlat = 52;
 var centerlon =  0;
 
 // set default zoom level
-var zoomLevel = 2;
+var zoomLevel = 5;
 
 // initialize map
 var map = L.map('map').setView([centerlat, centerlon], zoomLevel);
@@ -83,18 +123,6 @@ function onEachDot(feature, layer) {
     layer.bindPopup('<table style="width:180px"><tbody><tr><td><div><b>name:</b></div></td><td><div>' + feature.properties.popup + '</div></td></tr><tr class><td><div><b>time:</b></div></td><td><div>' + feature.properties.time + '</div></td></tr></tbody></table>');
 }
 
-//create data and add it to the map
-var spiralsteps = 60;
-var spiral = make_spiral_json(spiralsteps, [centerlat, centerlon], 0, 1, 0.3, 0.97, 0.1, 0.1);
-
-spiralLayer = L.geoJson(spiral, {
-    onEachFeature: onEachDot
-});
-
-spiralBounds = spiralLayer.getBounds();
-map.fitBounds(spiralBounds);
-spiralLayer.addTo(map);
-
 function connectTheDots(data){
     var c = [];
     for(i in data._layers) {
@@ -105,8 +133,8 @@ function connectTheDots(data){
     return c;
 }
 
-spiralCoords = connectTheDots(spiralLayer);
-var spiralLine = L.polyline(spiralCoords).addTo(map)
+// spiralCoords = connectTheDots(spiralLayer);
+// var spiralLine = L.polyline(spiralCoords).addTo(map)
 
 /////////////////////////////////////////////////////////////////////////////////////////////
 //functions for creating synthetic GeoJSON data//
