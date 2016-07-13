@@ -82,7 +82,7 @@ public class SusiRule {
         JSONArray k;
         if (json.has("keys")) {
             k = json.getJSONArray("keys");
-            if (k.length() == 0) k = computeKeysFromPhrases(this.phrases);
+            if (k.length() == 0 || (k.length() == 1 && k.getString(0).length() == 0)) k = computeKeysFromPhrases(this.phrases);
         } else {
             k = computeKeysFromPhrases(this.phrases);
         }
