@@ -318,7 +318,7 @@ public class EventBriteCrawlerService extends AbstractAPIHandler implements APIH
 		jsonArray.put(tracks);
 
 		JSONObject eventBriteResult = new JSONObject();
-		eventBriteResult.put("Event Brite Event Details", jsonArray);
+		eventBriteResult.put("EventBriteEventDetails", jsonArray);
 
 		String userHome = System.getProperty("user.home");
 		String path = userHome + "/Downloads/EventBriteInfo";
