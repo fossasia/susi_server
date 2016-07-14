@@ -1,25 +1,23 @@
 language: java
-
 jdk:
-  - oraclejdk8
-
+- oraclejdk8
 env:
   global:
-  - secure: "DbveaxDMtEP+/Er6ktKCP+P42uDU8xXWRBlVGaqVNU3muaRmmZtj8ngAARxfzY0f9amlJlCavqkEIAumQl9BYKPWIra28ylsLNbzAoCIi8alf9WLgddKwVWsTcZo9+UYocuY6UivJVkofycfFJ1blw/83dWMG0/TiW6s/SrwoDw="
-
-
+  - secure: DbveaxDMtEP+/Er6ktKCP+P42uDU8xXWRBlVGaqVNU3muaRmmZtj8ngAARxfzY0f9amlJlCavqkEIAumQl9BYKPWIra28ylsLNbzAoCIi8alf9WLgddKwVWsTcZo9+UYocuY6UivJVkofycfFJ1blw/83dWMG0/TiW6s/SrwoDw=
 script:
-  - ./gradle_init.sh
-  - gradle assemble
-  - ./gradle_clean.sh
-  - ant
-  - bin/start.sh
-
+- "./gradle_init.sh"
+- gradle assemble
+- "./gradle_clean.sh"
+- ant
+- bin/start.sh
 install: true
-
-branches:
-  only:
-    - "master"
-
 after_success:
 - sh .utility/push-javadoc-to-gh-pages.sh
+deploy:
+  provider: heroku
+  buildpack: https://github.com/loklak/heroku_buildpack_ant_loklak
+  api_key:
+    secure: GB3OGUAB73/jKvrfvkyWVoY98ugaKZJGTTuMOY2u1bcd2bD+21XbyJKo+v3+WvP/qWOYHz4k44a/ss9e0zB0c2PM2qI7uo1vQH7qwXzprcBdlUZAtjlx0jzEC5b3KZCv2+y4oYtZvpuwDkNmsu76hfh+kVXZh+LEPGt5nL7djT0=
+  app: loklak-server-dev
+  on:
+    branch: development
