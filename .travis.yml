@@ -15,6 +15,7 @@ after_success:
 - sh .utility/push-javadoc-to-gh-pages.sh
 deploy:
   provider: heroku
+  strategy: git
   buildpack: https://github.com/loklak/heroku_buildpack_ant_loklak
   api_key:
     secure: GB3OGUAB73/jKvrfvkyWVoY98ugaKZJGTTuMOY2u1bcd2bD+21XbyJKo+v3+WvP/qWOYHz4k44a/ss9e0zB0c2PM2qI7uo1vQH7qwXzprcBdlUZAtjlx0jzEC5b3KZCv2+y4oYtZvpuwDkNmsu76hfh+kVXZh+LEPGt5nL7djT0=
