@@ -11,10 +11,6 @@ script:
 - ant
 - bin/start.sh
 install: true
-branches:
-  only:
-  - master
-  - development
 after_success:
 - sh .utility/push-javadoc-to-gh-pages.sh
 deploy:
