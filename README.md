@@ -51,15 +51,15 @@ A self-upgrading process is available which must be triggered by a shell command
     > bin/upgrade.sh
 
 ### How do I install loklak with Docker?
-To install loklak with Docker please refer to the [loklak Docker installation readme](installation_docker.md).
+To install loklak with Docker please refer to the [loklak Docker installation readme](/docs/installation_docker.md).
 
 ### How do I deploy loklak with Heroku?
 You can easily deploy to Heroku by clicking the Deploy to Heroku button above.
 
-To install loklak using Heroku Toolbelt, please refer to the [loklak Heroku installation readme](installation_heroku.md).
+To install loklak using Heroku Toolbelt, please refer to the [loklak Heroku installation readme](/docs/installation_heroku.md).
 
 ### How do I deploy loklak with cloud9?
-To install loklak with cloud9 please refer to the [loklak cloud9 installation readme](installation_cloud9.md).
+To install loklak with cloud9 please refer to the [loklak cloud9 installation readme](/docs/installation_cloud9.md).
 
 ## How do I configure loklak?
 
