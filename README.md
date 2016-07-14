@@ -50,6 +50,13 @@ A self-upgrading process is available which must be triggered by a shell command
 
     > bin/upgrade.sh
 
+## Where can I download ready-built releases of loklak?
+
+Nowhere, you must clone the git repository of loklak and built it yourself. That's easy, just do
+- `git clone https://github.com/loklak/loklak_server.git`
+- `cd loklak`
+- then see above ("How do I run loklak")
+
 ### How do I install loklak with Docker?
 To install loklak with Docker please refer to the [loklak Docker installation readme](/docs/installation_docker.md).
 
@@ -60,6 +67,10 @@ To install loklak using Heroku Toolbelt, please refer to the [loklak Heroku inst
 
 ### How do I deploy loklak with cloud9?
 To install loklak with cloud9 please refer to the [loklak cloud9 installation readme](/docs/installation_cloud9.md).
+
+### How do I setup loklak on Eclipse?
+
+To install loklak on Eclipes, please refer to the [loklak Eclipse readme](/docs/eclipseSetup.md).
 
 ## How do I configure loklak?
 
@@ -88,10 +99,14 @@ Run elasticsearch-head with:
 
 ## Where can I find more information and documentation?
 
-The application has built-in documentation web pages, you will see them when you opened the application web pages or you can simply open `html/index.html` or just use http://loklak.org as reference.
+The application has built-in documentation web pages, you will see them when you opened the application web pages or you can simply open `html/index.html` or just use http://loklak.org as reference. Articles and tutorials are also on our blog at http://blog.loklak.net.
+
+## Where do I find the documentation/javadocs?
+
+At http://loklak.github.io/loklak_server/ or by building them via 'ant javadoc'
 
 ## How to compile using Gradle?
-- To install Gradle on ubuntu:
+- To install Gradle on Ubuntu:
 
   ```
   $ sudo add-apt-repository ppa:cwchien/gradle
@@ -134,27 +149,16 @@ LGPL 2.1
 
 This project is considered a community work. There is no company behind loklak. The development crew consist of YOU also. I am very thankful for pull request. So if you discovered that something can be enhanced, please do it yourself and send me a pull request. If you find a bug, please try to fix it. If you report a bug to me I will possibly consider it but at the very end of a giant, always growing heap of work. The best chance for you to get things done is to try it yourself.
 
+
 ## Where can I report bugs?
 
-Please see above.
-
-
-## Where can I download ready-built releases of loklak?
-
-Nowhere, you must clone the git repository of loklak and built it yourself. That's easy, just do
-- `git clone https://github.com/loklak/loklak_server.git`
-- `cd loklak`
-- then see above ("How do I run loklak")
+Please see above. We prefer you solve bugs you encounter. Our [tracker is here](https://github.com/loklak/loklak_server/issues).
 
 
 ## Where can I get the latest news about loklak?
 
 Hey, this is the tool for that! Just put http://loklak.org/api/search.rss?q=%23loklak into your rss reader. Oh wait.. you will get a lot of information about tasty Cambodian food with that as well. Alternatively you may also read the authors timeline using http://loklak.org/api/search.rss?q=0rb1t3r or just follow @0rb1t3r (that's a zero after the at sign)
 
-
-## Where do I find the documentation/javadocs?
-
-At http://loklak.github.io/loklak_server/ or by building them via 'ant javadoc'
 
 Have fun!
 @0rb1t3r
