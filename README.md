@@ -50,7 +50,7 @@ A self-upgrading process is available which must be triggered by a shell command
 
     > bin/upgrade.sh
 
-## Where can I download ready-built releases of loklak?
+### Where can I download ready-built releases of loklak?
 
 Nowhere, you must clone the git repository of loklak and built it yourself. That's easy, just do
 - `git clone https://github.com/loklak/loklak_server.git`
@@ -97,13 +97,21 @@ Run elasticsearch-head with:
 - `grunt server`
 ..which opens the administration page at `http://localhost:9100`
 
-## Where can I find more information and documentation?
+## Where can I find documentation?
 
-The application has built-in documentation web pages, you will see them when you opened the application web pages or you can simply open `html/index.html` or just use http://loklak.org as reference. Articles and tutorials are also on our blog at http://blog.loklak.net.
+The application has built-in documentation web pages, you will see them when you opened the application web pages or you can simply open `html/index.html` or just use http://loklak.org as reference. 
 
-## Where do I find the documentation/javadocs?
+### Where can I find showcases and tutorials?
+
+Articles and tutorials are also on our blog at http://blog.loklak.net.
+
+### Where do I find the javadocs?
 
 At http://loklak.github.io/loklak_server/ or by building them via 'ant javadoc'
+
+### Where can I get the latest news about loklak?
+
+Hey, this is the tool for that! Just put http://loklak.org/api/search.rss?q=%23loklak into your rss reader. Oh wait.. you will get a lot of information about tasty Cambodian food with that as well. Alternatively you may also read the authors timeline using http://loklak.org/api/search.rss?q=0rb1t3r or just follow @0rb1t3r (that's a zero after the at sign)
 
 ## How to compile using Gradle?
 - To install Gradle on Ubuntu:
@@ -153,11 +161,6 @@ This project is considered a community work. There is no company behind loklak. 
 ## Where can I report bugs?
 
 Please see above. We prefer you solve bugs you encounter. Our [tracker is here](https://github.com/loklak/loklak_server/issues).
-
-
-## Where can I get the latest news about loklak?
-
-Hey, this is the tool for that! Just put http://loklak.org/api/search.rss?q=%23loklak into your rss reader. Oh wait.. you will get a lot of information about tasty Cambodian food with that as well. Alternatively you may also read the authors timeline using http://loklak.org/api/search.rss?q=0rb1t3r or just follow @0rb1t3r (that's a zero after the at sign)
 
 
 Have fun!
