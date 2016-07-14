@@ -72,11 +72,7 @@ To install loklak with cloud9 please refer to the [loklak cloud9 installation re
 
 To install loklak on Eclipes, please refer to the [loklak Eclipse readme](/docs/eclipseSetup.md).
 
-## How do I configure loklak?
-
-The basis configuration file is in ```conf/config.properties```. To customize these settings place a file ```customized_config.properties``` to the path ```data/settings/```
-
-## How do I run loklak?
+### How do I run loklak?
 
 - build loklak (you need to do this only once, see above)
 - run `bin/start.sh`
@@ -96,6 +92,10 @@ for the index available in elasticsearch-head. To install this, do:
 Run elasticsearch-head with:
 - `grunt server`
 ..which opens the administration page at `http://localhost:9100`
+
+## How do I configure loklak?
+
+The basis configuration file is in ```conf/config.properties```. To customize these settings place a file ```customized_config.properties``` to the path ```data/settings/```
 
 ## Where can I find documentation?
 
