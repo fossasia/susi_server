@@ -249,7 +249,18 @@
             "actions":[{"type":"answer", "select":"random", "phrases":[
                             "I feel pretty bad that you think I am $intent_categorized$. I am not $intent_canonical$!"
                       ]}]
-        }
+        },
+        {
+			"keys"   :["eventbrite", "event"],
+			"score"  :1,
+			"example":"Susi, where is the event billets-europeade-2016-concert-de-musique-vocale-25592599153 being held ?",
+			"phrases":[ {"type":"pattern", "expression":"* event * held *"}
+					],
+			"process":[ {"type":"console", "expression":"SELECT location_name,latitude, longitude FROM eventbrite WHERE url='https://www.eventbrite.com/e/$2$';"}],
+			"actions":[ {"type":"answer", "select":"random", "phrases":[
+							"Here is the exact location of the event $2$"
+						]}, {"type":"table"}]
+		},
 		
 	]
 }
