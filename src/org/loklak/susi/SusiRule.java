@@ -220,9 +220,11 @@ public class SusiRule {
         
         // that argument is filled with an idea which consist of the query where we extract the identified data entities
         SusiThought keynote = new SusiThought(this.matcher(query));
-        keynote.addObservation("intent_original", intent.original);
-        keynote.addObservation("intent_canonical", intent.canonical);
-        keynote.addObservation("intent_categorized", intent.categorized);
+        if (intent != null) {
+            keynote.addObservation("intent_original", intent.original);
+            keynote.addObservation("intent_canonical", intent.canonical);
+            keynote.addObservation("intent_categorized", intent.categorized);
+        }
         DAO.log("Susi has an idea: " + keynote.toString());
         argument.think(keynote);
         
