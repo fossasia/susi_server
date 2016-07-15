@@ -41,6 +41,8 @@ import org.loklak.server.Query;
 import com.google.common.util.concurrent.AtomicDouble;
 import org.loklak.tools.storage.JSONObjectWithDefault;
 
+import javax.servlet.http.HttpServletResponse;
+
 /* examples:
  * http://localhost:9000/api/console.json?q=SELECT%20*%20FROM%20messages%20WHERE%20id=%27742384468560912386%27;
  * http://localhost:9000/api/console.json?q=SELECT%20link,screen_name%20FROM%20messages%20WHERE%20id=%27742384468560912386%27;
@@ -223,7 +225,7 @@ public class ConsoleService extends AbstractAPIHandler implements APIHandler {
     }
     
     @Override
-    public JSONObject serviceImpl(Query post, Authorization rights, final JSONObjectWithDefault permissions) throws APIException {
+    public JSONObject serviceImpl(Query post, HttpServletResponse response, Authorization rights, final JSONObjectWithDefault permissions) throws APIException {
 
         // parameters
         String q = post.get("q", "");
