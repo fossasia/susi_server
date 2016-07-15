@@ -52,7 +52,6 @@ public class AuthorizationDemoService extends AbstractAPIHandler implements APIH
 				break;
 			default:
 				result.put("download_limit", 0);
-				break;
 		}
 
 		return result;
