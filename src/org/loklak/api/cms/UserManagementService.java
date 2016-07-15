@@ -24,6 +24,7 @@ import org.loklak.data.DAO;
 import org.loklak.server.*;
 import org.loklak.tools.storage.JSONObjectWithDefault;
 
+import javax.servlet.http.HttpServletResponse;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -70,7 +71,7 @@ public class UserManagementService extends AbstractAPIHandler implements APIHand
 	}
 
 	@Override
-	public JSONObject serviceImpl(Query post, Authorization rights, final JSONObjectWithDefault permissions) throws APIException {
+	public JSONObject serviceImpl(Query post, HttpServletResponse response, Authorization rights, final JSONObjectWithDefault permissions) throws APIException {
 
 		JSONObject result = new JSONObject();
 

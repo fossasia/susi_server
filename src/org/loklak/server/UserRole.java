@@ -21,6 +21,8 @@
 package org.loklak.server;
 
 import org.json.JSONObject;
+import org.loklak.tools.storage.JSONObjectWithDefault;
+
 import javax.annotation.Nonnull;
 
 public class UserRole {
@@ -79,13 +81,13 @@ public class UserRole {
         this.parent = parent;
     }
 
-    public JSONObject getPermissions(APIHandler servlet){
-        JSONObject permissions;
+    public JSONObjectWithDefault getPermissions(APIHandler servlet){
+        JSONObjectWithDefault permissions;
 
         // get upstream permission from default values or from parent
         if(parent == null){
-            permissions = servlet.getDefaultPermissions(baseUserRole);
-            if(permissions == null) permissions = new JSONObject();
+            permissions = new JSONObjectWithDefault(servlet.getDefaultPermissions(baseUserRole));
+            if(permissions == null) permissions = new JSONObjectWithDefault();
         }
         else{
             permissions =  parent.getPermissions(servlet);

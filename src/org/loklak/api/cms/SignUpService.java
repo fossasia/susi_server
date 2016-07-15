@@ -20,12 +20,11 @@
 package org.loklak.api.cms;
 
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.net.URLDecoder;
 import java.nio.file.Paths;
 import java.util.regex.Pattern;
 
 import javax.naming.ConfigurationException;
+import javax.servlet.http.HttpServletResponse;
 
 import org.json.JSONObject;
 import org.loklak.LoklakEmailHandler;
@@ -54,16 +53,22 @@ public class SignUpService extends AbstractAPIHandler implements APIHandler {
 
 	@Override
 	public JSONObject getDefaultPermissions(BaseUserRole baseUserRole) {
-		return null;
-	}
+		JSONObject result = new JSONObject();
 
-	public BaseUserRole getCustomServiceLevel(Authorization rights) {
-		if (rights.isAdmin()) {
-			return BaseUserRole.ADMIN;
-		} else if (rights.getIdentity() != null) {
-			return BaseUserRole.USER;
+		switch(baseUserRole){
+			case ADMIN:
+			case PRIVILEGED:
+				result.put("register", true); // allow to register new users (this bypasses email verification and activation)
+				result.put("activate", true); // allow to activate new users
+				break;
+			case USER:
+			case ANONYMOUS:
+			default:
+				result.put("register", false);
+				result.put("activate", false);
 		}
-		return BaseUserRole.ANONYMOUS;
+
+		return result;
 	}
 
 	public String getAPIPath() {
@@ -71,10 +76,8 @@ public class SignUpService extends AbstractAPIHandler implements APIHandler {
 	}
 
 	@Override
-	public JSONObject serviceImpl(Query post, Authorization rights, final JSONObjectWithDefault permissions)
+	public JSONObject serviceImpl(Query post, HttpServletResponse response, Authorization auth, final JSONObjectWithDefault permissions)
 			throws APIException {
-
-		BaseUserRole serviceLevel = getCustomServiceLevel(rights);
 
 		JSONObject result = new JSONObject();
 
@@ -93,32 +96,53 @@ public class SignUpService extends AbstractAPIHandler implements APIHandler {
 		}
 
 		// is this a verification?
-		if (post.get("validateEmail", false) && serviceLevel.ordinal() > BaseUserRole.ANONYMOUS.ordinal()) {
-			ClientCredential credential = new ClientCredential(ClientCredential.Type.passwd_login,
-					rights.getIdentity().getName());
-			Authentication authentication = new Authentication(credential, DAO.authentication);
+		if (post.get("validateEmail", null) != null) {
+			if((auth.getIdentity().getName().equals(post.get("validateEmail", null)) && auth.getIdentity().isEmail()) // the user is logged in via an access token from the email
+				|| permissions.getBoolean("activate", false)){ // the user is allowed to activate other users
 
-			authentication.put("activated", true);
+				ClientCredential credential = new ClientCredential(ClientCredential.Type.passwd_login,
+						auth.getIdentity().getName());
+				Authentication authentication = new Authentication(credential, DAO.authentication);
 
-			result.put("message", "You successfully verified your account!");
-			return result;
+				if (authentication.getIdentity() == null) {
+					authentication.delete();
+					throw new APIException(400, "Bad request"); // do not leak if user exists or not
+				}
+
+				authentication.put("activated", true);
+
+				result.put("message", "You successfully verified your account!");
+				return result;
+			}
+			throw new APIException(400, "Bad request"); // do not leak if user exists or not
 		}
 
-		// check if this is done by admin or public and if verification is
-		// needed
-		boolean activated = true;
-		boolean sendEmail = false;
 
-		if (serviceLevel != BaseUserRole.ADMIN) {
+
+		boolean activated;
+		boolean sendEmail;
+		if (permissions.getBoolean("register", false)) { // if this registration is done by user that is allowed to register new users
+			activated = true;
+			sendEmail = false;
+		}
+		else{
 			switch (DAO.getConfig("users.public.signup", "false")) {
-			case "false":
-				throw new APIException(403, "Public signup disabled");
-			case "admin":
-				activated = false;
-				break;
-			case "email":
-				activated = false;
-				sendEmail = true;
+				case "false":
+					throw new APIException(403, "Public signup disabled");
+				case "true":
+					activated = true;
+					sendEmail = false;
+					break;
+				case "admin":
+					activated = false;
+					sendEmail = false;
+					break;
+				case "email":
+					activated = false;
+					sendEmail = true;
+					break;
+				default:
+					throw new APIException(500, "Invalid value for key: users.public.signup");
 			}
 		}
 
@@ -127,13 +151,8 @@ public class SignUpService extends AbstractAPIHandler implements APIHandler {
 		}
 
 		// get credentials
-		String signup, password;
-		try {
-			signup = URLDecoder.decode(post.get("signup", null), "UTF-8");
-			password = URLDecoder.decode(post.get("password", null), "UTF-8");
-		} catch (UnsupportedEncodingException e) {
-			throw new APIException(400, "malformed query");
-		}
+		String signup = post.get("signup", null);
+		String password = post.get("password", null);
 
 		// check email pattern
 		Pattern pattern = Pattern.compile(LoklakEmailHandler.EMAIL_PATTERN);
@@ -182,7 +201,7 @@ public class SignUpService extends AbstractAPIHandler implements APIHandler {
 			tokenAuthentication.put("one_time", true);
 
 			try {
-				LoklakEmailHandler.sendEmail(signup, "Loklak verification", getVerificationMailContent(token));
+				LoklakEmailHandler.sendEmail(signup, "Loklak verification", getVerificationMailContent(token, identity.getName()));
 
 				result.put("message",
 						"You successfully signed-up! An email with a verification link was send to your address.");
@@ -208,10 +227,10 @@ public class SignUpService extends AbstractAPIHandler implements APIHandler {
 	 *            - login token
 	 * @return Email String
 	 */
-	private String getVerificationMailContent(String token) {
+	private String getVerificationMailContent(String token, String userId) {
 
 		String verificationLink = DAO.getConfig("host.name", "http://localhost:9000") + "/api/signup.json?access_token="
-				+ token + "&validateEmail=true&request_session=true";
+				+ token + "&validateEmail=" + userId + "&request_session=true";
 
 		// get template file
 		String result;
