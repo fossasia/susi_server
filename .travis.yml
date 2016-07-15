@@ -20,6 +20,6 @@ deploy:
   buildpack: https://github.com/loklak/heroku_buildpack_ant_loklak
   api_key:
     secure: D2o+G28w42F9rDbdeSZQ91TRrm5aLUDyH02Rlh0d+Qov3Qc19WVc5bHuJdc8kYYaeMeG0UcXwpLfvnoAC5Hs03m1sYXMmrq0Z20JUxNx9yRm0p+SD1Y/mAoXkuTX25t9EVxD4YkL03PrSU3K1zIS4xWnzPv7kGl+xQSM68tPL/Q=
-  app: loklak-server-development
+  app: loklak-server-dev
   on:
     branch: development
