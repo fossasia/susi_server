@@ -349,7 +349,7 @@
 		},
 		{
 			"score"  :15,
-			"phrases":[	{"type":"regex", "expression":".+ (?.+ )+(.+)"} ],
+			"phrases":[	{"type":"regex", "expression":".+ (?:.+ )+(.+)"} ],
 			"process":[	{"type":"console", "expression":"SELECT text,retweet_count,favourites_count FROM messages WHERE query='you $1$ /pure' ORDER BY FAVOURITES_COUNT;"}],
 			"actions":[	{"type":"answer", "select":"random", "phrases":[
 							"$text$"
