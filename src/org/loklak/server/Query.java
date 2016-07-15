@@ -38,7 +38,7 @@ import org.loklak.tools.UTF8;
 
 public class Query {
     
-    private HttpServletRequest request;
+    public HttpServletRequest request;
     private Map<String, String> qm;
     public AccessTracker.Track track;
     
