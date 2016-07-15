@@ -124,6 +124,12 @@ public class ConsoleService extends AbstractAPIHandler implements APIHandler {
             SusiTransfer transfer = new SusiTransfer(matcher.group(1));
             return json.setData(transfer.conclude(json.getJSONArray("data")));
         });
+        dbAccess.put(Pattern.compile("SELECT\\h+?(.*?)\\h+?FROM\\h+?messages\\h+?WHERE\\h+?query\\h??=\\h??'(.*?)'\\h+?ORDER BY (.*?)\\h??;"), (flow, matcher) -> {
+            DAO.SearchLocalMessages messages = new DAO.SearchLocalMessages(matcher.group(2), Timeline.Order.valueOf(matcher.group(3)), 0, 100, 0);
+            SusiThought json = messages.timeline.toSusi(true);
+            SusiTransfer transfer = new SusiTransfer(matcher.group(1));
+            return json.setData(transfer.conclude(json.getJSONArray("data")));
+        });
         dbAccess.put(Pattern.compile("SELECT\\h+?(.*?)\\h+?FROM\\h+?queries\\h+?WHERE\\h+?query\\h??=\\h??'(.*?)'\\h??;"), (flow, matcher) -> {
             ResultList<QueryEntry> queries = DAO.SearchLocalQueries(matcher.group(2), 100, "retrieval_next", "date", SortOrder.ASC, null, new Date(), "retrieval_next");
             SusiThought json = queries.toSusi();
