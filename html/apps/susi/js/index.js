@@ -46,7 +46,6 @@
       }
       
     },
-    
     addMessage: function() {
       this.messageToSend = this.$textarea.val()
       this.render();         
@@ -54,7 +53,11 @@
     addMessageEnter: function(event) {
         // enter was pressed
         if (event.keyCode === 13) {
-          this.addMessage();
+          if (event.shiftKey) { //enter + shift
+            $(this).val( $(this).val() + "\n" );
+          } else {
+            this.addMessage();
+          }
         }
     },
     scrollToBottom: function() {
