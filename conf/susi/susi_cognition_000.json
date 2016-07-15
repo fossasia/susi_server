@@ -140,11 +140,27 @@
 		{
 			"keys"   :["hello"],
 			"score"  :1,
-			"phrases":[	{"type":"pattern", "expression":"*hello*"} ],
+			"phrases":[	{"type":"pattern", "expression":"*hello*"},
+						{"type":"pattern", "expression":"*hey*"},
+						{"type":"pattern", "expression":"*hi*"}
+					 ],
 			"process":[],
 			"actions":[	{"type":"answer", "select":"random", "phrases":[
 							"Hi, I'm Susi",
 							"Hello!"
+					  ]}]
+		},
+		{
+			"keys"   :["how"],
+			"score"  :1,
+			"phrases":[	{"type":"pattern", "expression":"*how are you*"},
+						{"type":"pattern", "expression":"*how have you been*"},
+						{"type":"pattern", "expression":"*Long time*"}
+					 ],
+			"process":[],
+			"actions":[	{"type":"answer", "select":"random", "phrases":[
+							"Hey, I'm good! Thank you.",
+							"Hello! Im doing well, Thank you"
 					  ]}]
 		},
 		{
