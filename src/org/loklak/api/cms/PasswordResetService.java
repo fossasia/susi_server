@@ -19,8 +19,6 @@
 
 package org.loklak.api.cms;
 
-import java.io.UnsupportedEncodingException;
-import java.net.URLDecoder;
 import java.util.regex.Pattern;
 
 import org.json.JSONObject;
@@ -34,6 +32,8 @@ import org.loklak.server.BaseUserRole;
 import org.loklak.server.ClientCredential;
 import org.loklak.server.Query;
 import org.loklak.tools.storage.JSONObjectWithDefault;
+
+import javax.servlet.http.HttpServletResponse;
 
 public class PasswordResetService extends AbstractAPIHandler implements APIHandler {
 
@@ -55,16 +55,11 @@ public class PasswordResetService extends AbstractAPIHandler implements APIHandl
 	}
 
 	@Override
-	public JSONObject serviceImpl(Query call, Authorization rights, final JSONObjectWithDefault permissions)
+	public JSONObject serviceImpl(Query call, HttpServletResponse response, Authorization rights, final JSONObjectWithDefault permissions)
 			throws APIException {
 		JSONObject result = new JSONObject();
 
-		String newpass;
-		try {
-			newpass = URLDecoder.decode(call.get("newpass", null), "UTF-8");
-		} catch (UnsupportedEncodingException e) {
-			throw new APIException(400, "malformed query");
-		}
+		String newpass = call.get("newpass", null);
 
 		ClientCredential credential = new ClientCredential(ClientCredential.Type.resetpass_token,
 				call.get("token", null));
