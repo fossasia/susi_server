@@ -19,7 +19,7 @@ deploy:
   strategy: git
   buildpack: https://github.com/loklak/heroku_buildpack_ant_loklak
   api_key:
-	secure: zE6ZJhHC2qq/TtVti46V5C5ZWphmAuq2A/+IenONCW4zNqO96jk1tno0cclGb8k7FO9ZFpF7oSoKWs8oYo5D3oYmSiWhEd02orwW6GT/HHWSd3J84Bue0zxkQxguMt4/dQ6DIroVcpbvP9+Xdg8mLJEm8IG2Xs58gsDK4U3RDro=
+  - secure: zE6ZJhHC2qq/TtVti46V5C5ZWphmAuq2A/+IenONCW4zNqO96jk1tno0cclGb8k7FO9ZFpF7oSoKWs8oYo5D3oYmSiWhEd02orwW6GT/HHWSd3J84Bue0zxkQxguMt4/dQ6DIroVcpbvP9+Xdg8mLJEm8IG2Xs58gsDK4U3RDro=
   app: loklak-server-dev
   on:
     branch: development
