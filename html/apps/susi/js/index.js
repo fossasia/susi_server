@@ -64,15 +64,11 @@
       return new Date().toLocaleTimeString().
               replace(/([\d]+:[\d]{2})(:[\d]{2})(.*)/, "$1$3");
     },
-    getRandomItem: function(arr) {
-      return arr[Math.floor(Math.random()*arr.length)];
-    },
     getSusiResponse: function(queryString) {
       var susiQueryConstruct = '/api/susi.json?q='+encodeURIComponent(queryString);
       var returnString = retrieveResponse(susiQueryConstruct);
       return returnString;
-    }
-    
+    } 
   };
 
   function retrieveResponse(queryString) {
