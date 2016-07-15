@@ -315,6 +315,36 @@
 							"Go social, get updates here ..."
 						]}, {"type":"table"}]
 		},
+		{
+			"keys"   :["what","describe","explain"],
+			"score"  :99,
+			"phrases":[	{"type":"pattern", "expression":"What is *"},
+					  	{"type":"pattern", "expression":"what does * mean"},
+					  	{"type":"pattern", "expression":"describe *"},
+					  	{"type":"pattern", "expression":"please describe *"},
+					  	{"type":"pattern", "expression":"explain *"},
+					  	{"type":"pattern", "expression":"please explain *"}
+					  ],
+			"process":[	{"type":"console", "expression":"SELECT description FROM wikidata WHERE query='$1$';"}],
+			"actions":[	{"type":"answer", "select":"random", "phrases":[
+							"$1$ is $description$."
+						]}]
+		},
+		{
+			"keys"   :["what","describe","explain"],
+			"score"  :98,
+			"phrases":[	{"type":"pattern", "expression":"What is *"},
+					  	{"type":"pattern", "expression":"what does * mean"},
+					  	{"type":"pattern", "expression":"describe *"},
+					  	{"type":"pattern", "expression":"please describe *"},
+					  	{"type":"pattern", "expression":"explain *"},
+					  	{"type":"pattern", "expression":"please explain *"}
+					  ],
+			"process":[	{"type":"console", "expression":"SELECT definition,example FROM urbandictionary WHERE query='$1$';"}],
+			"actions":[	{"type":"answer", "select":"random", "phrases":[
+							"$1$ is $definition$"
+						]}]
+		},
 		
 	]
 }
