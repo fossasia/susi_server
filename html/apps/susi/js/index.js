@@ -54,7 +54,7 @@
         // enter was pressed
         if (event.keyCode === 13) {
           if (event.shiftKey) { //enter + shift
-            $(this).val( $(this).val() + "\n" );
+            $(this).val( $(this.target).val() + "\n" );
           } else {
             this.addMessage();
           }
