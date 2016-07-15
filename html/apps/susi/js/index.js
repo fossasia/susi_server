@@ -40,8 +40,10 @@
         
         // responses
         var templateResponse = Handlebars.compile( $("#message-response-template").html());
+        var query = this.messageToSend.trim();
         var contextResponse = { 
-          response: this.getRandomItem(this.messageResponses),
+          // response: this.getRandomItem(this.messageResponses),
+          response: this.getSusiResponse(query),
           time: this.getCurrentTime()
         };
         
@@ -73,9 +75,31 @@
     },
     getRandomItem: function(arr) {
       return arr[Math.floor(Math.random()*arr.length)];
+    },
+    getSusiResponse: function(queryString) {
+      var susiQueryConstruct = '/api/susi.json?q='+encodeURIComponent(queryString);
+      console.log(susiQueryConstruct);
+      var returnString = retrieveResponse(susiQueryConstruct);
+      console.log(returnString);
+      return returnString;
     }
     
   };
+
+  function retrieveResponse(queryString) {
+    var answers ;
+    $.ajax({
+      url: queryString,
+      async: false,
+      dataType: 'json',
+      success: function (data) {
+        console.log(data);
+        answers = data.answers[0].actions[0].expression;
+      }
+    });
+    console.log(answers);
+    return answers;
+  }
   
   chat.init();
   
