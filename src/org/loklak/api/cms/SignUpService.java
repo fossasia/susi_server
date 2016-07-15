@@ -210,7 +210,7 @@ public class SignUpService extends AbstractAPIHandler implements APIHandler {
 	 */
 	private String getVerificationMailContent(String token) {
 
-		String verificationLink = DAO.getConfig("host.name", "http://localhost:9000") + "/api/signup.json?access_token="
+		String verificationLink = DAO.getConfig("host.name", "http://127.0.0.1:9000") + "/api/signup.json?access_token="
 				+ token + "&validateEmail=true&request_session=true";
 
 		// get template file

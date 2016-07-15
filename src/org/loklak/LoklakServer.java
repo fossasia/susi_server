@@ -244,7 +244,7 @@ public class LoklakServer {
         Caretaker.upgradeTime = Caretaker.startupTime + DAO.getConfig("upgradeInterval", 86400000);
         
         // if this is not headless, we can open a browser automatically
-        Browser.openBrowser("http://localhost:" + httpPort + "/");
+        Browser.openBrowser("http://127.0.0.1:" + httpPort + "/");
         
         Log.getLog().info("finished startup!");
         
