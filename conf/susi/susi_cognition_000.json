@@ -316,14 +316,15 @@
 						]}, {"type":"table"}]
 		},
 		{
-			"keys"   :["what","describe","explain"],
+			"keys"   :["what","describe","explain","search"],
 			"score"  :99,
 			"phrases":[	{"type":"pattern", "expression":"What is *"},
 					  	{"type":"pattern", "expression":"what does * mean"},
 					  	{"type":"pattern", "expression":"describe *"},
 					  	{"type":"pattern", "expression":"please describe *"},
 					  	{"type":"pattern", "expression":"explain *"},
-					  	{"type":"pattern", "expression":"please explain *"}
+					  	{"type":"pattern", "expression":"please explain *"},
+					  	{"type":"pattern", "expression":"search wikidata for *"}
 					  ],
 			"process":[	{"type":"console", "expression":"SELECT description FROM wikidata WHERE query='$1$';"}],
 			"actions":[	{"type":"answer", "select":"random", "phrases":[
@@ -331,20 +332,28 @@
 						]}]
 		},
 		{
-			"keys"   :["what","describe","explain"],
+			"keys"   :["what","describe","explain","search"],
 			"score"  :98,
 			"phrases":[	{"type":"pattern", "expression":"What is *"},
 					  	{"type":"pattern", "expression":"what does * mean"},
 					  	{"type":"pattern", "expression":"describe *"},
 					  	{"type":"pattern", "expression":"please describe *"},
 					  	{"type":"pattern", "expression":"explain *"},
-					  	{"type":"pattern", "expression":"please explain *"}
+					  	{"type":"pattern", "expression":"please explain *"},
+					  	{"type":"pattern", "expression":"search urbandictionary for *"}
 					  ],
 			"process":[	{"type":"console", "expression":"SELECT definition,example FROM urbandictionary WHERE query='$1$';"}],
 			"actions":[	{"type":"answer", "select":"random", "phrases":[
 							"$1$ is $definition$"
 						]}]
 		},
-		
+		{
+			"score"  :15,
+			"phrases":[	{"type":"regex", "expression":".+ (?.+ )+(.+)"} ],
+			"process":[	{"type":"console", "expression":"SELECT text,retweet_count,favourites_count FROM messages WHERE query='you $1$ /pure' ORDER BY FAVOURITES_COUNT;"}],
+			"actions":[	{"type":"answer", "select":"random", "phrases":[
+							"$text$"
+						]}]
+		},
 	]
 }
