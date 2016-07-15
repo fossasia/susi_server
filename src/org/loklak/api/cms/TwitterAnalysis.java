@@ -63,7 +63,8 @@ public class TwitterAnalysis extends HttpServlet {
 			response.sendError(503, "your request frequency is too high");
 			return;
 		}
-
+		JSONObject finalresultobject = new JSONObject(true);
+		JSONArray finalresultarray = new JSONArray();
 		JSONObject finalresult = new JSONObject(true);
 		response.setCharacterEncoding("UTF-8");
 		PrintWriter sos = response.getWriter();
@@ -250,7 +251,9 @@ public class TwitterAnalysis extends HttpServlet {
 		contentAnalysis.put("language_analysis", languageAnalysis);
 		contentAnalysis.put("sentiment_analysis", sentimentAnalysis);
 		finalresult.put("content_analysis", contentAnalysis);
-		sos.print(finalresult.toString(2));
+		finalresultarray.put(finalresult);
+		finalresultobject.put("data", finalresultarray);
+		sos.print(finalresultobject.toString(2));
 		sos.println();
 		post.finalize();
 		return;
