@@ -260,7 +260,6 @@ public class TwitterAnalysisService extends AbstractAPIHandler implements APIHan
 		contentAnalysis.put("language_analysis", languageAnalysis);
 		contentAnalysis.put("sentiment_analysis", sentimentAnalysis);
 		finalresult.put("content_analysis", contentAnalysis);
-
 		finalresultarray.put(finalresult);
 		json.setData(finalresultarray);
 		return json;
