@@ -255,7 +255,8 @@ public class QueryEntry extends AbstractObjectEntry implements ObjectEntry {
         hashtag("hashtags"),
         emotion("classifier_emotion"),
         profanity("classifier_profanity"),
-        language("classifier_language");
+        language("classifier_language"),
+        pure("");
         protected String field_name;
         protected Pattern pattern;
         private Constraint(String field_name) {
@@ -387,6 +388,11 @@ public class QueryEntry extends AbstractObjectEntry implements ObjectEntry {
             }
             
             // check constraints
+            if (tokens.constraints_positive.contains("pure") && (
+                    message.getImages().size() != 0 ||
+                    message.getMentions().length != 0 ||
+                    message.getLinks().length != 0
+               )) continue;
             if (tokens.constraints_positive.contains("image") && message.getImages().size() == 0) continue;
             if (tokens.constraints_negative.contains("image") && message.getImages().size() != 0) continue;
             if (tokens.constraints_positive.contains("place") && message.getPlaceName().length() == 0) continue;
@@ -620,7 +626,14 @@ public class QueryEntry extends AbstractObjectEntry implements ObjectEntry {
                 ops.add(QueryBuilders.constantScoreQuery(QueryBuilders.termQuery("hashtags", hashtag.toLowerCase())));
             }
             for (String hashtag: hashtags_negative) nops.add(QueryBuilders.constantScoreQuery(QueryBuilders.termQuery("hashtags", hashtag.toLowerCase())));
-            
+
+            if (constraints_positive.remove("pure")) {
+                nops.add(QueryBuilders.constantScoreQuery(QueryBuilders.existsQuery(Constraint.image.field_name)));
+                nops.add(QueryBuilders.constantScoreQuery(QueryBuilders.existsQuery(Constraint.audio.field_name)));
+                nops.add(QueryBuilders.constantScoreQuery(QueryBuilders.existsQuery(Constraint.video.field_name)));
+                nops.add(QueryBuilders.constantScoreQuery(QueryBuilders.existsQuery(Constraint.link.field_name)));
+                nops.add(QueryBuilders.constantScoreQuery(QueryBuilders.existsQuery(Constraint.mention.field_name)));
+            }
             if (modifier.containsKey("from")) {
                 for (String screen_name: modifier.get("from")) {
                     if (screen_name.indexOf(',') < 0) {
@@ -710,11 +723,13 @@ public class QueryEntry extends AbstractObjectEntry implements ObjectEntry {
             }
             for (String text: text_negative_filter) filters.add(QueryBuilders.boolQuery().mustNot(QueryBuilders.constantScoreQuery(QueryBuilders.termsQuery("text", text))));
             for (Constraint c: Constraint.values()) {
-                if (constraints_positive.contains(c.name())) {
-                    filters.add(QueryBuilders.existsQuery(c.field_name));
-                }
-                if (constraints_negative.contains(c.name())) {
-                    filters.add(QueryBuilders.boolQuery().mustNot(QueryBuilders.existsQuery(c.field_name)));
+                if (c.field_name != null && c.field_name.length() > 0) {
+                    if (constraints_positive.contains(c.name())) {
+                        filters.add(QueryBuilders.existsQuery(c.field_name));
+                    }
+                    if (constraints_negative.contains(c.name())) {
+                        filters.add(QueryBuilders.boolQuery().mustNot(QueryBuilders.existsQuery(c.field_name)));
+                    }
                 }
             }
             if (constraints_positive.contains("location")) {
