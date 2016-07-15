@@ -1,5 +1,5 @@
 /**
- *  TwitterAnalysis
+ *  TwitterAnalysisService
  *  Copyright 04.07.2016 by Shiven Mian, @shivenmian
  *
  *  This library is free software; you can redistribute it and/or
@@ -20,7 +20,6 @@
 package org.loklak.api.cms;
 
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -31,63 +30,73 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.loklak.http.ClientConnection;
-import org.loklak.http.RemoteAccess;
+import org.loklak.server.APIException;
+import org.loklak.server.APIHandler;
+import org.loklak.server.AbstractAPIHandler;
+import org.loklak.server.Authorization;
+import org.loklak.server.BaseUserRole;
 import org.loklak.server.Query;
+import org.loklak.susi.SusiThought;
 import org.loklak.tools.UTF8;
+import org.loklak.tools.storage.JSONObjectWithDefault;
 
-public class TwitterAnalysis extends HttpServlet {
+public class TwitterAnalysisService extends AbstractAPIHandler implements APIHandler {
 
 	private static final long serialVersionUID = -3753965521858525803L;
 
 	@Override
-	protected void doPost(HttpServletRequest request, HttpServletResponse response)
-			throws ServletException, IOException {
-		doGet(request, response);
+	public String getAPIPath() {
+		return "/api/twitanalysis.json";
 	}
 
 	@Override
-	protected void doGet(HttpServletRequest request, HttpServletResponse response)
-			throws ServletException, IOException {
-		Query post = RemoteAccess.evaluate(request);
+	public BaseUserRole getMinimalBaseUserRole() {
+		return BaseUserRole.ANONYMOUS;
+	}
 
-		// manage DoS
-		if (post.isDoS_blackout()) {
-			response.sendError(503, "your request frequency is too high");
-			return;
-		}
-		JSONObject finalresultobject = new JSONObject(true);
+	@Override
+	public JSONObject getDefaultPermissions(BaseUserRole baseUserRole) {
+		return null;
+	}
+
+	@Override
+	public JSONObject serviceImpl(Query call, Authorization rights, JSONObjectWithDefault permissions)
+			throws APIException {
+		String username = call.get("screen_name", "");
+		String count = call.get("count", "");
+		return showAnalysis(username, count, call.request);
+	}
+
+	public static SusiThought showAnalysis(String username, String count, HttpServletRequest request) {
+
+		SusiThought json = new SusiThought();
 		JSONArray finalresultarray = new JSONArray();
 		JSONObject finalresult = new JSONObject(true);
-		response.setCharacterEncoding("UTF-8");
-		PrintWriter sos = response.getWriter();
-		String username = post.get("screen_name", "");
-		String count = post.get("count", "");
 		String siteurl = request.getRequestURL().toString();
 		String baseurl = siteurl.substring(0, siteurl.length() - request.getRequestURI().length())
 				+ request.getContextPath();
 
 		String searchurl = baseurl + "/api/search.json?q=from%3A" + username + (count != "" ? ("&count=" + count) : "");
-		byte[] searchbyte = ClientConnection.download(searchurl);
+		byte[] searchbyte;
+		try {
+			searchbyte = ClientConnection.download(searchurl);
+		} catch (IOException e) {
+			return json.setData(new JSONArray().put(new JSONObject().put("Error", "Can't contact server")));
+		}
 		String searchstr = UTF8.String(searchbyte);
 		JSONObject searchresult = new JSONObject(searchstr);
 
 		JSONArray tweets = searchresult.getJSONArray("statuses");
 		if (tweets.length() == 0) {
-			finalresult.put("data collected", "empty");
-			finalresult.put("status", "invalid username or no tweets");
-			finalresult.put("username", username);
-			sos.print(finalresult.toString(2));
-			sos.println();
-			post.finalize();
-			return;
+			finalresult.put("error", "Invalid username " + username + " or no tweets");
+			finalresultarray.put(finalresult);
+			json.setData(finalresultarray);
+			return json;
 		}
 		finalresult.put("username", username);
 		finalresult.put("items_per_page", searchresult.getJSONObject("search_metadata").getString("itemsPerPage"));
@@ -251,12 +260,9 @@ public class TwitterAnalysis extends HttpServlet {
 		contentAnalysis.put("language_analysis", languageAnalysis);
 		contentAnalysis.put("sentiment_analysis", sentimentAnalysis);
 		finalresult.put("content_analysis", contentAnalysis);
-		finalresultarray.put(finalresult);
-		finalresultobject.put("data", finalresultarray);
-		sos.print(finalresultobject.toString(2));
-		sos.println();
-		post.finalize();
-		return;
-	}
 
+		finalresultarray.put(finalresult);
+		json.setData(finalresultarray);
+		return json;
+	}
 }
