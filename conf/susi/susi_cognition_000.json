@@ -140,11 +140,27 @@
 		{
 			"keys"   :["hello"],
 			"score"  :1,
-			"phrases":[	{"type":"pattern", "expression":"*hello*"} ],
+			"phrases":[	{"type":"pattern", "expression":"*hello*"},
+					{"type":"pattern", "expression":"*hey*"},
+					{"type":"pattern", "expression":"*hi*"}
+					 ],
 			"process":[],
 			"actions":[	{"type":"answer", "select":"random", "phrases":[
 							"Hi, I'm Susi",
 							"Hello!"
+					  ]}]
+		},
+		{
+			"keys"   :["how"],
+			"score"  :1,
+			"phrases":[	{"type":"pattern", "expression":"*how are you*"},
+					{"type":"pattern", "expression":"*how have you been*"},
+					{"type":"pattern", "expression":"*Long time*"}
+					 ],
+			"process":[],
+			"actions":[	{"type":"answer", "select":"random", "phrases":[
+							"Hey, I'm good! Thank you.",
+							"Hello! Im doing well, Thank you"
 					  ]}]
 		},
 		{
@@ -349,7 +365,7 @@
 		},
 		{
 			"score"  :15,
-			"phrases":[	{"type":"regex", "expression":".+ (?.+ )+(.+)"} ],
+			"phrases":[	{"type":"regex", "expression":".+ (?:.+ )+(.+)"} ],
 			"process":[	{"type":"console", "expression":"SELECT text,retweet_count,favourites_count FROM messages WHERE query='you $1$ /pure' ORDER BY FAVOURITES_COUNT;"}],
 			"actions":[	{"type":"answer", "select":"random", "phrases":[
 							"$text$"
