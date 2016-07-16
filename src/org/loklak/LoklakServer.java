@@ -92,7 +92,7 @@ import org.loklak.api.search.SusiService;
 import org.loklak.api.search.ConsoleService;
 import org.loklak.api.search.EventBriteCrawlerService;
 import org.loklak.api.search.UserServlet;
-import org.loklak.api.search.WordpressCrawler;
+import org.loklak.api.search.WordpressCrawlerService;
 import org.loklak.api.search.GenericScraper;
 import org.loklak.api.search.MeetupsCrawlerService;
 import org.loklak.api.search.RSSReaderService;
@@ -516,7 +516,8 @@ public class LoklakServer {
                 UserManagementService.class,
                 RSSReaderService.class,
                 EventBriteCrawlerService.class,
-                MeetupsCrawlerService.class
+                MeetupsCrawlerService.class,
+                WordpressCrawlerService.class
         };
         for (Class<? extends Servlet> service: services)
             try {
@@ -554,7 +555,6 @@ public class LoklakServer {
         servletHandler.addServlet(ProxyServlet.class, "/api/proxy.jpg");
         servletHandler.addServlet(ValidateServlet.class, "/api/validate.json");
         servletHandler.addServlet(GenericScraper.class, "/api/genericscraper.json");
-        servletHandler.addServlet(WordpressCrawler.class, "/api/wordpresscrawler.json");
         ServletHolder pushServletHolder = new ServletHolder(PushServlet.class);
         pushServletHolder.getRegistration().setMultipartConfig(multipartConfig);
         servletHandler.addServlet(pushServletHolder, "/api/push.json");
