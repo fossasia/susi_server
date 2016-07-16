@@ -46,7 +46,6 @@
       }
       
     },
-    
     addMessage: function() {
       this.messageToSend = this.$textarea.val()
       this.render();         
@@ -54,7 +53,11 @@
     addMessageEnter: function(event) {
         // enter was pressed
         if (event.keyCode === 13) {
-          this.addMessage();
+          if (event.shiftKey) { //enter + shift
+            $(this).val( $(this.target).val() + "\n" );
+          } else {
+            this.addMessage();
+          }
         }
     },
     scrollToBottom: function() {
@@ -64,15 +67,11 @@
       return new Date().toLocaleTimeString().
               replace(/([\d]+:[\d]{2})(:[\d]{2})(.*)/, "$1$3");
     },
-    getRandomItem: function(arr) {
-      return arr[Math.floor(Math.random()*arr.length)];
-    },
     getSusiResponse: function(queryString) {
       var susiQueryConstruct = '/api/susi.json?q='+encodeURIComponent(queryString);
       var returnString = retrieveResponse(susiQueryConstruct);
       return returnString;
-    }
-    
+    } 
   };
 
   function retrieveResponse(queryString) {
