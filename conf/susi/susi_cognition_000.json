@@ -332,10 +332,27 @@
 						]}, {"type":"table"}]
 		},
 		{
-			"keys"   :["what","describe","explain","search","how"],
+			"score"  :90,
+			"phrases":[	{"type":"regex", "expression":"(?:(?:a )*)(.*)"}
+					  ],
+			"process":[	{"type":"console", "expression":"SELECT description FROM wikidata WHERE query='$1$';"}],
+			"actions":[	{"type":"answer", "select":"random", "phrases":[
+							"$1$ is $description$."
+						]}]
+		},
+		{
+			"score"  :91,
+			"phrases":[	{"type":"regex", "expression":"(?:(?:a )*)(.*)"}
+					  ],
+			"process":[	{"type":"console", "expression":"SELECT definition,example FROM urbandictionary WHERE query='$1$';"}],
+			"actions":[	{"type":"answer", "select":"random", "phrases":[
+							"$1$ is $definition$."
+						]}]
+		},
+		{
+			"keys"   :["what","describe","explain","search"],
 			"score"  :99,
 			"phrases":[	{"type":"regex", "expression":"what is (?:(?:a )*)(.*)"},
-			            {"type":"regex", "expression":"how is (?:(?:a )*)(.*)"},
 					  	{"type":"regex", "expression":"describe (?:(?:a )*)(.*)"},
 					  	{"type":"regex", "expression":"please describe (?:(?:a )*)(.*)"},
 					  	{"type":"regex", "expression":"explain (?:(?:a )*)(.*)"},
@@ -349,10 +366,9 @@
 						]}]
 		},
 		{
-			"keys"   :["what","describe","explain","search","how"],
+			"keys"   :["what","describe","explain","search"],
 			"score"  :98,
 			"phrases":[	{"type":"regex", "expression":"what is (?:(?:a )*)(.*)"},
-			            {"type":"regex", "expression":"how is (?:(?:a )*)(.*)"},
 					  	{"type":"regex", "expression":"describe (?:(?:a )*)(.*)"},
 					  	{"type":"regex", "expression":"please describe (?:(?:a )*)(.*)"},
 					  	{"type":"regex", "expression":"explain (?:(?:a )*)(.*)"},
@@ -363,6 +379,36 @@
 			"process":[	{"type":"console", "expression":"SELECT definition,example FROM urbandictionary WHERE query='$1$';"}],
 			"actions":[	{"type":"answer", "select":"random", "phrases":[
 							"$1$ is $definition$"
+						]}]
+		},
+		{
+			"keys"   :["how"],
+			"score"  :98,
+			"phrases":[	{"type":"regex", "expression":"how is (?:(?:a )*)(.*)"}
+					  ],
+			"process":[	{"type":"console", "expression":"SELECT description FROM wikidata WHERE query='$1$';"}],
+			"actions":[	{"type":"answer", "select":"random", "phrases":[
+							"$1$ is $description$."
+						]}]
+		},
+		{
+			"keys"   :["how"],
+			"score"  :99,
+			"phrases":[	{"type":"regex", "expression":"how is (?:(?:a )*)(.*)"}
+					  ],
+			"process":[	{"type":"console", "expression":"SELECT definition,example FROM urbandictionary WHERE query='$1$';"}],
+			"actions":[	{"type":"answer", "select":"random", "phrases":[
+							"$1$ is $definition$"
+						]}]
+		},
+		{
+			"keys"   :["how"],
+			"score"  :55,
+			"phrases":[	{"type":"regex", "expression":"how is (?:(?:a )*)(.*)"}
+					  ],
+			"actions":[	{"type":"answer", "select":"random", "phrases":[
+							"$1$ is wonderful!",
+							"You will like $1$ sooner or later."
 						]}]
 		},
 		{
@@ -414,19 +460,19 @@
 						]}]
 		},
 		{
-			"keys"   :["what"],
+			"keys"   :["what","0/0","0%0"],
 			"score"  :150,
-			"phrases":[	{"type":"pattern", "expression":"what is 0/0"},
-			            {"type":"pattern", "expression":"what is 0%0"} ],
+			"phrases":[	{"type":"pattern", "expression":"what is 0/0"}, {"type":"pattern", "expression":"0/0"},
+			            {"type":"pattern", "expression":"what is 0%0"}, {"type":"pattern", "expression":"0%0"}, ],
 			"actions":[	{"type":"answer", "select":"random", "phrases":[
 							"That is actually a very simple question, why don't you ask what is 0^0 (zero to the power of zero) that is much more complex",
 							"If you divide anything by zero it gets infinite. Even if you do that with a zero. Maybe thats the reason for the big bang."
 						]}]
 		},
 		{
-			"keys"   :["what"],
+			"keys"   :["what","0\\^0"],
 			"score"  :150,
-			"phrases":[	{"type":"regex", "expression":"what is 0\\^0"},
+			"phrases":[	{"type":"regex", "expression":"what is 0\\^0"}, {"type":"regex", "expression":"0\\^0"},
 			            {"type":"pattern", "expression":"what is 0 to the power of 0"} ],
 			"actions":[	{"type":"answer", "select":"random", "phrases":[
 							"I doubt that you are intelligent enough to have the idea yourself to ask that. I guess you came across my answer to the question: 'what is 0/0'"
@@ -459,14 +505,14 @@
 		},
 		{
 			"score"  :151,
-			"phrases":[	{"type":"pattern", "expression":"yes"} ],
+			"phrases":[	{"type":"regex", "expression":"yes"} ],
 			"actions":[	{"type":"answer", "select":"random", "phrases":[
 							"yeah!"
 						]}]
 		},
 		{
 			"score"  :151,
-			"phrases":[	{"type":"pattern", "expression":"no"} ],
+			"phrases":[	{"type":"regex", "expression":"no"} ],
 			"actions":[	{"type":"answer", "select":"random", "phrases":[
 							"too bad."
 						]}]
