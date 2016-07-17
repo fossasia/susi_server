@@ -21,6 +21,7 @@ package org.loklak.server;
 
 import org.eclipse.jetty.util.log.Log;
 import org.json.JSONObject;
+import org.loklak.tools.storage.JSONObjectWithDefault;
 import org.loklak.tools.storage.JsonTray;
 
 import javax.annotation.Nonnull;
@@ -158,10 +159,10 @@ public class Authorization {
         return this;
     }
 
-    public JSONObject getPermissions(APIHandler servlet){
+    public JSONObjectWithDefault getPermissions(APIHandler servlet){
 
         // get upstream permissions
-        JSONObject permissions =  userRole.getPermissions(servlet);
+        JSONObjectWithDefault permissions =  userRole.getPermissions(servlet);
 
         // override of permissions
         if(this.permissions.has(servlet.getClass().getCanonicalName())){

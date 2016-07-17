@@ -29,6 +29,7 @@ public class ClientCredential extends Client {
         cookie(false),
         access_token(false),
         resetpass_token(false),
+        pubkey_challange(false),
         host(false);
         private final boolean persistent;
         Type(final boolean persistent) {
@@ -65,6 +66,14 @@ public class ClientCredential extends Client {
     
     public boolean isToken() {
         return this.getKey().equals(Type.access_token.name());
+    }
+
+    public boolean isResetToken() {
+        return this.getKey().equals(Type.resetpass_token.name());
+    }
+
+    public boolean isPubkeyChallange() {
+        return this.getKey().equals(Type.pubkey_challange.name());
     }
     
     public boolean isAnonymous() {

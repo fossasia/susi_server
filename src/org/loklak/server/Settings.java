@@ -21,24 +21,24 @@ package org.loklak.server;
 
 import java.io.File;
 import java.io.IOException;
-import java.security.Key;
 import java.security.KeyFactory;
-import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.PKCS8EncodedKeySpec;
-import java.security.spec.X509EncodedKeySpec;
 import java.util.Base64;
 
 import org.eclipse.jetty.util.log.Log;
+import org.loklak.tools.IO;
 import org.loklak.tools.storage.JsonFile;
+
+import javax.annotation.Nonnull;
 
 public class Settings extends JsonFile {
     
 
-    public Settings(File file) throws IOException {
+    public Settings(@Nonnull File file) throws IOException {
         super(file);
     }
 
@@ -61,7 +61,7 @@ public class Settings extends JsonFile {
      * @return String representation of the private key
      */
     public synchronized String getPrivateKeyAsString(){
-        return getKeyAsString(private_key);
+        return IO.getKeyAsString(private_key);
     }
     
     /**
@@ -77,7 +77,7 @@ public class Settings extends JsonFile {
      * @return String representation of the public key
      */
     public synchronized String getPublicKeyAsString(){
-        return getKeyAsString(public_key);
+        return IO.getKeyAsString(public_key);
     }
     
     /**
@@ -105,40 +105,14 @@ public class Settings extends JsonFile {
     }
     
     /**
-     * Get String representation of a key
-     * @param key
-     * @return String representation of a key
-     */
-    public synchronized String getKeyAsString(Key key){
-        return Base64.getEncoder().encodeToString(key.getEncoded());
-    }
-    
-    /**
      * Calculate the hash of the public key
      */
     private synchronized void setPeerHash(){
         hash_algorithm = "SHA-256";
-        peer_hash = getKeyHash(public_key, hash_algorithm);
+        peer_hash = IO.getKeyHash(public_key, hash_algorithm);
         put("peer_hash",peer_hash);
         put("peer_hash_algorithm",hash_algorithm);
         
-    }
-    
-    /**
-     * Create hash for a key
-     * @param pubkey
-     * @param algorithm
-     * @return String hash
-     */
-    public synchronized static String getKeyHash(PublicKey pubkey, String algorithm){
-        try {
-            MessageDigest md = MessageDigest.getInstance(algorithm);
-            md.update(pubkey.getEncoded());
-            return Base64.getEncoder().encodeToString(md.digest());
-        } catch (NoSuchAlgorithmException e) {
-        	Log.getLog().warn(e);
-        }
-        return null;
     }
     
     /**
@@ -174,7 +148,7 @@ public class Settings extends JsonFile {
         String encodedKey = getString("public_key");
         String algorithm = getString("key_algorithm");
         
-        PublicKey pub = decodePublicKey(encodedKey, algorithm);
+        PublicKey pub = IO.decodePublicKey(encodedKey, algorithm);
         if(pub != null){
             public_key = pub;
             key_algorithm = algorithm;
@@ -189,8 +163,8 @@ public class Settings extends JsonFile {
      * @param key
      * @param algorithm
      */
-    public synchronized void setPrivateKey(PrivateKey key, String algorithm){
-        put("private_key", getKeyAsString(key));
+    public synchronized void setPrivateKey(@Nonnull PrivateKey key, @Nonnull String algorithm){
+        put("private_key", IO.getKeyAsString(key));
         private_key = key;
         put("key_algorithm",algorithm);
         key_algorithm = algorithm;
@@ -201,31 +175,11 @@ public class Settings extends JsonFile {
      * @param key
      * @param algorithm
      */
-    public synchronized void setPublicKey(PublicKey key, String algorithm){
-        put("public_key", getKeyAsString(key));
+    public synchronized void setPublicKey(@Nonnull PublicKey key, @Nonnull String algorithm){
+        put("public_key", IO.getKeyAsString(key));
         public_key = key;
         put("key_algorithm",algorithm);
         key_algorithm = algorithm;
         setPeerHash();
     }
-    
-    /**
-     * Create PublicKey from String representation
-     * @param encodedKey
-     * @param algorithm
-     * @return PublicKey public_key
-     */
-    public synchronized static PublicKey decodePublicKey(String encodedKey, String algorithm){
-        try{
-            X509EncodedKeySpec keySpec = new X509EncodedKeySpec(Base64.getDecoder().decode(encodedKey));
-            PublicKey pub = KeyFactory.getInstance(algorithm).generatePublic(keySpec);
-            return pub;
-        }
-        catch(NoSuchAlgorithmException | InvalidKeySpecException e){
-        	Log.getLog().warn(e);
-        }
-        return null;
-    }
-    
-
 }

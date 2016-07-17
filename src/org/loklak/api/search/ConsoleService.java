@@ -50,6 +50,8 @@ import org.loklak.susi.SusiTransfer;
 
 import org.loklak.tools.storage.JSONObjectWithDefault;
 
+import javax.servlet.http.HttpServletResponse;
+
 /* examples:
  * http://localhost:9000/api/console.json?q=SELECT%20text,%20screen_name,%20user.name%20AS%20user%20FROM%20messages%20WHERE%20query=%271%27;
  * http://localhost:9000/api/console.json?q=SELECT%20*%20FROM%20messages%20WHERE%20id=%27742384468560912386%27;
@@ -230,7 +232,7 @@ public class ConsoleService extends AbstractAPIHandler implements APIHandler {
     }
     
     @Override
-    public JSONObject serviceImpl(Query post, Authorization rights, final JSONObjectWithDefault permissions) throws APIException {
+    public JSONObject serviceImpl(Query post, HttpServletResponse response, Authorization rights, final JSONObjectWithDefault permissions) throws APIException {
 
         // parameters
         String q = post.get("q", "");

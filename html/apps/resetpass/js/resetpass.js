@@ -71,7 +71,7 @@ $(document).ready(function()
 		checkEmpty();
 		var total = passerr || confirmerr || tokenerr;
 		if(!total){
-			var newpass = encodeURIComponent($('#pass').val());
+			var newpass = $('#pass').val();
 
 			$.ajax(	"/api/resetpassword.json", {
 				data: { token: urltoken, newpass: pwd },
