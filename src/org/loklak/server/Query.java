@@ -143,4 +143,6 @@ public class Query {
     public int hashCode() {
         return qm.hashCode();
     }
+
+    public HttpServletRequest getRequest(){ return this.request; }
 }

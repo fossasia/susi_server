@@ -36,6 +36,9 @@ import java.util.Set;
 import javax.servlet.MultipartConfigElement;
 import javax.servlet.Servlet;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.core.LoggerContext;
+import org.apache.logging.log4j.core.config.Configurator;
 import org.eclipse.jetty.rewrite.handler.RewriteHandler;
 import org.eclipse.jetty.rewrite.handler.RewriteRegexRule;
 import org.eclipse.jetty.server.Handler;
@@ -72,7 +75,6 @@ import org.loklak.api.admin.StatusServlet;
 import org.loklak.api.admin.ThreaddumpServlet;
 import org.loklak.api.cms.*;
 import org.loklak.api.geo.GeocodeServlet;
-import org.loklak.api.handshake.ClientHandshakeService;
 import org.loklak.api.iot.FossasiaPushServlet;
 import org.loklak.api.iot.FreifunkNodePushServlet;
 import org.loklak.api.iot.NMEAServlet;
@@ -169,7 +171,7 @@ public class LoklakServer {
         if (startup.exists()){
 	        startup.deleteOnExit();
 	        FileWriter writer = new FileWriter(startup);
-			writer.write("startup".toString());
+			writer.write("startup");
 			writer.close();
         }
         
@@ -251,7 +253,7 @@ public class LoklakServer {
         // signal to startup script
         if (startup.exists()){
         	FileWriter writer = new FileWriter(startup);
-			writer.write("done".toString());
+			writer.write("done");
 			writer.close();
         }
         
@@ -270,6 +272,12 @@ public class LoklakServer {
                     TwitterScraper.executor.shutdown();
                     Harvester.executor.shutdown();
                     Log.getLog().info("main terminated, goodby.");
+
+                    if( LogManager.getContext() instanceof LoggerContext) {
+                        Log.getLog().info("Shutting down log4j2");
+                        Configurator.shutdown((LoggerContext)LogManager.getContext());
+                    } else
+                        Log.getLog().warn("Unable to shutdown log4j2");
                 } catch (Exception e) {
                 }
             }
@@ -313,9 +321,9 @@ public class LoklakServer {
         if(httpsMode.isGreaterOrEqualTo(HttpsMode.ON)){
         	
         	String keySource = DAO.getConfig("https.keysource", "keystore");
-        	String keystorePath = null;
-        	String keystorePass = null;
-        	String keystoreManagerPass = null;
+        	String keystorePath;
+        	String keystorePass;
+        	String keystoreManagerPass;
         	
         	//check for key source. Can be a java keystore or in pem format (gets converted automatically)
         	if("keystore".equals(keySource)){
@@ -510,7 +518,6 @@ public class LoklakServer {
                 LoginService.class,
                 PasswordRecoveryService.class,
                 TopMenuService.class,
-                ClientHandshakeService.class,
                 PasswordResetService.class,
                 ChangeUserRoleService.class,
                 UserManagementService.class,
@@ -518,6 +525,7 @@ public class LoklakServer {
                 EventBriteCrawlerService.class,
                 MeetupsCrawlerService.class,
                 WordpressCrawlerService.class,
+                PublicKeyRegistrationService.class,
                 TwitterAnalysisService.class
         };
         for (Class<? extends Servlet> service: services)

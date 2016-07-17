@@ -55,6 +55,7 @@ public class RemoteAccess {
     public static Map<String, Map<String, RemoteAccess>> history = new ConcurrentHashMap<String, Map<String, RemoteAccess>>();
     
     public static Query evaluate(final HttpServletRequest request) {
+        try{ request.setCharacterEncoding("UTF-8");} catch (UnsupportedEncodingException e){} // set character encoding before any request is made
         String path = request.getServletPath();
         Map<String, String> qm = getQueryMap(request.getQueryString());
         Query post = new Query(request);
