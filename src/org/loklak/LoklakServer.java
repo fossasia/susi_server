@@ -36,6 +36,9 @@ import java.util.Set;
 import javax.servlet.MultipartConfigElement;
 import javax.servlet.Servlet;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.core.LoggerContext;
+import org.apache.logging.log4j.core.config.Configurator;
 import org.eclipse.jetty.rewrite.handler.RewriteHandler;
 import org.eclipse.jetty.rewrite.handler.RewriteRegexRule;
 import org.eclipse.jetty.server.Handler;
@@ -72,7 +75,6 @@ import org.loklak.api.admin.StatusServlet;
 import org.loklak.api.admin.ThreaddumpServlet;
 import org.loklak.api.cms.*;
 import org.loklak.api.geo.GeocodeServlet;
-import org.loklak.api.handshake.ClientHandshake;
 import org.loklak.api.iot.FossasiaPushServlet;
 import org.loklak.api.iot.FreifunkNodePushServlet;
 import org.loklak.api.iot.NMEAServlet;
@@ -270,6 +272,12 @@ public class LoklakServer {
                     TwitterScraper.executor.shutdown();
                     Harvester.executor.shutdown();
                     Log.getLog().info("main terminated, goodby.");
+
+                    if( LogManager.getContext() instanceof LoggerContext) {
+                        Log.getLog().info("Shutting down log4j2");
+                        Configurator.shutdown((LoggerContext)LogManager.getContext());
+                    } else
+                        Log.getLog().warn("Unable to shutdown log4j2");
                 } catch (Exception e) {
                 }
             }

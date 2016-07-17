@@ -113,14 +113,14 @@ public class LoginService extends AbstractAPIHandler implements APIHandler {
 		}
 
 		// check if too many invalid login attempts were made already
-		TreeMap<Long, String> invalidLogins = authorization.getAccounting().getRequests(this.getClass().getCanonicalName());
-		Long lastKey = invalidLogins.floorKey(System.currentTimeMillis() + 1000);
+		JSONObject invalidLogins = authorization.getAccounting().getRequests(this.getClass().getCanonicalName());
+		/*Long lastKey = invalidLogins.floorKey(System.currentTimeMillis() + 1000);
 		if(invalidLogins.size() > permissions.getInt("maxInvalidLogins", 10)
 				&& lastKey > System.currentTimeMillis() - permissions.getInt("blockTimeSeconds", 120) * 1000){
 			throw new APIException(403, "Too many invalid login attempts. Try again in "
 					+ (permissions.getInt("blockTimeSeconds", 120) * 1000 - System.currentTimeMillis() + lastKey) / 1000
 					+ " seconds");
-		}
+		}*/
 
 		if(passwordLogin) { // do login via password
 
