@@ -129,7 +129,7 @@ public class TwitterAnalysisService extends AbstractAPIHandler implements APIHan
 			String[] datearr = status.getString("created_at").split("T")[0].split("-");
 			calendar.set(Integer.parseInt(datearr[0]), Integer.parseInt(datearr[1]) - 1, Integer.parseInt(datearr[2]));
 			Date date = new Date(calendar.getTimeInMillis());
-			tweetDate.add(new SimpleDateFormat("MMM yyyy").format(date));
+			tweetDate.add(new SimpleDateFormat("MMMM yyyy").format(date));
 			tweetDay.add(new SimpleDateFormat("EEEE", Locale.ENGLISH).format(date)); // day
 			String times = status.getString("created_at").split("T")[1];
 			String hour = times.substring(0, times.length() - 5).split(":")[0];
