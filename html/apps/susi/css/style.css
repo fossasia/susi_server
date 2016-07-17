@@ -6,14 +6,14 @@
 body {
   background: #C5DDEB;
   font: 14px/20px "Lato", Arial, sans-serif;
-  padding: 40px 0;
+  padding: 4px 0;
   color: white;
 }
 
 .container {
   margin: 0 auto;
   width: 750px;
-  background: #444753;
+  background: #2b3e50;
   border-radius: 5px;
 }
 
@@ -39,7 +39,7 @@ body {
 }
 .people-list ul {
   padding: 20px;
-  height: 400px;
+  height: 375px;
 }
 .people-list ul li {
   padding-bottom: 20px;
@@ -95,7 +95,7 @@ body {
   padding: 30px 30px 20px;
   border-bottom: 2px solid white;
   overflow-y: scroll;
-  height: 400px;
+  height: 375px;
 }
 .chat .chat-history .message-data {
   margin-bottom: 15px;

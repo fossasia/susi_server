@@ -96,7 +96,10 @@ public class SusiRule {
         this.score = json.has("score") ? json.getInt("score") : DEFAULT_SCORE;
         
         // calculate the id
-        this.id = (this.keys.toString() + this.score).hashCode() << 16 + this.phrases.toString().hashCode();
+        String ids0 = this.keys.toString() + this.score;
+        String ids1 = this.phrases.toString();
+        this.id = ((long) ids0.hashCode()) << 16 + ids1.hashCode();
+        //System.out.println(ids1 + " - " + this.id + " - " + ids0.hashCode() + " - " + (((long) ids0.hashCode()) << 16));
     }
     
     /*
@@ -220,18 +223,20 @@ public class SusiRule {
         
         // that argument is filled with an idea which consist of the query where we extract the identified data entities
         SusiThought keynote = new SusiThought(this.matcher(query));
-        keynote.addObservation("intent_original", intent.original);
-        keynote.addObservation("intent_canonical", intent.canonical);
-        keynote.addObservation("intent_categorized", intent.categorized);
+        if (intent != null) {
+            keynote.addObservation("intent_original", intent.original);
+            keynote.addObservation("intent_canonical", intent.canonical);
+            keynote.addObservation("intent_categorized", intent.categorized);
+        }
         DAO.log("Susi has an idea: " + keynote.toString());
         argument.think(keynote);
         
         // lets apply the rules that belong to this specific consideration
         for (SusiInference inference: this.getInferences()) {
-            SusiThought implication = inference.applyon(argument);
+            SusiThought implication = inference.applySkills(argument);
             DAO.log("Susi is thinking about: " + implication.toString());
             // make sure that we are not stuck
-            if (argument.mindstate().equals(implication) || implication.getCount() == 0) return null; // TODO: do this only if specific marker is in rule
+            if (inference.getType() != SusiInference.Type.flow && (argument.mindstate().equals(implication) || implication.getCount() == 0)) return null; // TODO: do this only if specific marker is in rule
             // think
             argument.think(implication);
         }

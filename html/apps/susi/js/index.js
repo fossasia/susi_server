@@ -2,14 +2,6 @@
   
   var chat = {
     messageToSend: '',
-    messageResponses: [
-      'Why did the web developer leave the restaurant? Because of the table layout.',
-      'How do you comfort a JavaScript bug? You console it.',
-      'An SQL query enters a bar, approaches two tables and asks: "May I join you?"',
-      'What is the most used language in programming? Profanity.',
-      'What is the object-oriented way to become wealthy? Inheritance.',
-      'An SEO expert walks into a bar, bars, pub, tavern, public house, Irish pub, drinks, beer, alcohol'
-    ],
     init: function() {
       this.cacheDOM();
       this.bindEvents();
@@ -40,8 +32,9 @@
         
         // responses
         var templateResponse = Handlebars.compile( $("#message-response-template").html());
+        var query = this.messageToSend.trim();
         var contextResponse = { 
-          response: this.getRandomItem(this.messageResponses),
+          response: this.getSusiResponse(query),
           time: this.getCurrentTime()
         };
         
@@ -53,7 +46,6 @@
       }
       
     },
-    
     addMessage: function() {
       this.messageToSend = this.$textarea.val()
       this.render();         
@@ -61,7 +53,11 @@
     addMessageEnter: function(event) {
         // enter was pressed
         if (event.keyCode === 13) {
-          this.addMessage();
+          if (event.shiftKey) { //enter + shift
+            $(this).val( $(this.target).val() + "\n" );
+          } else {
+            this.addMessage();
+          }
         }
     },
     scrollToBottom: function() {
@@ -71,11 +67,25 @@
       return new Date().toLocaleTimeString().
               replace(/([\d]+:[\d]{2})(:[\d]{2})(.*)/, "$1$3");
     },
-    getRandomItem: function(arr) {
-      return arr[Math.floor(Math.random()*arr.length)];
-    }
-    
+    getSusiResponse: function(queryString) {
+      var susiQueryConstruct = '/api/susi.json?q='+encodeURIComponent(queryString);
+      var returnString = retrieveResponse(susiQueryConstruct);
+      return returnString;
+    } 
   };
+
+  function retrieveResponse(queryString) {
+    var answers ;
+    $.ajax({
+      url: queryString,
+      async: false,
+      dataType: 'json',
+      success: function (data) {
+        answers = data.answers[0].actions[0].expression;
+      }
+    });
+    return answers;
+  }
   
   chat.init();
   

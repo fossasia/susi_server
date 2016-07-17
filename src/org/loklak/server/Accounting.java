@@ -28,7 +28,7 @@ import org.json.JSONObject;
  */
 public class Accounting extends JSONObject {
 
-    private static final TreeMap<Long, String> EMPTY_MAP = new TreeMap<>();
+    private static final JSONObject EMPTY_MAP = new JSONObject(new TreeMap<String, String>());
     private static final long ONE_HOUR_MILLIS = 1000 * 60 * 60;
 
     private static long uc = 0;
@@ -46,11 +46,11 @@ public class Accounting extends JSONObject {
         if (!this.has("requests")) return this;
         JSONObject requests = this.getJSONObject("requests");
         for (String path: requests.keySet()) {
-            TreeMap<Long, String> events = (TreeMap<Long, String>) requests.get(path);
+            JSONObject events = requests.getJSONObject(path);
             // shrink that map and delete everything which is older than now minus one hour
             long pivotTime = System.currentTimeMillis() - ONE_HOUR_MILLIS;
-            while (events.size() > 0 && events.firstKey().longValue() < pivotTime) events.remove(events.firstKey());
-            if (events.size() == 0) requests.remove(path);
+            while (events.length() > 0 && Long.parseLong(events.keys().next()) < pivotTime) events.remove(events.keys().next());
+            if (events.length() == 0) requests.remove(path);
         }
         return this;
     }
@@ -58,18 +58,25 @@ public class Accounting extends JSONObject {
     public synchronized Accounting addRequest(String path, String query) {
         if (!this.has("requests")) this.put("requests", new JSONObject());
         JSONObject requests = this.getJSONObject("requests");
-        if (!requests.has(path)) requests.put(path, new TreeMap<Long, String>());
-        TreeMap<Long, String> events = (TreeMap<Long, String>) requests.get(path);
-        events.put(System.currentTimeMillis() + ((uc ++) % 1000), query); // the counter is used to distinguish very fast concurrent requests
+        if (!requests.has(path)) requests.put(path, new TreeMap<String, String>());
+        JSONObject events = requests.getJSONObject(path);
+        events.put(Long.toString(System.currentTimeMillis() + ((uc ++) % 1000)), query); // the counter is used to distinguish very fast concurrent requests
         return this;
     }
     
-    public synchronized TreeMap<Long, String> getRequests(String path) {
+    public synchronized JSONObject getRequests(String path) {
         if (!this.has("requests")) return EMPTY_MAP;
         JSONObject requests = this.getJSONObject("requests");
         if (!requests.has(path)) return EMPTY_MAP;
-        TreeMap<Long, String> events = (TreeMap<Long, String>) requests.get(path);
+        JSONObject events = requests.getJSONObject(path);
         return events;
+    }
+    
+    public static void main(String[] args) {
+        Accounting a = new Accounting();
+        a.addRequest("/api/test.json", "q=test");
+        JSONObject r = a.getRequests("/api/test.json");
+        System.out.println(r.toString());
     }
     
 }

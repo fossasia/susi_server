@@ -121,7 +121,7 @@ public class SusiMind {
         // create list of all ideas that might apply
         TreeMap<Integer, List<SusiIdea>> scored = new TreeMap<>();
         ideas.forEach(idea -> {
-            //System.out.println("idea.phrase-1:" + idea.getPhrases().toString());
+            //System.out.println("idea.phrase-1:" + idea.getRule().getPhrases().toString());
             int score = idea.getRule().getScore();
             List<SusiIdea> r = scored.get(-score);
             if (r == null) {r = new ArrayList<>(); scored.put(-score, r);}
@@ -134,7 +134,7 @@ public class SusiMind {
         // test ideas and collect those which match up to maxcount
         List<SusiIdea> plausibleIdeas = new ArrayList<>(Math.min(10, maxcount));
         for (SusiIdea idea: ideas) {
-            //System.out.println("idea.phrase-2:" + idea.getPhrases().toString());
+            //System.out.println("idea.phrase-2:" + idea.getRule().getPhrases().toString());
             SusiRule rule = idea.getRule();
             if (rule.getActions().size() == 0) continue;
             if (rule.getActions().get(0).getPhrases().size() == 0) continue;

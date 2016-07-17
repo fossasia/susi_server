@@ -19,6 +19,8 @@
 
 package org.loklak.susi;
 
+import java.util.regex.Pattern;
+
 import org.json.JSONObject;
 import org.loklak.api.search.ConsoleService;
 
@@ -33,7 +35,7 @@ import org.loklak.api.search.ConsoleService;
  */
 public class SusiInference {
     
-    public static enum Type {console;}
+    public static enum Type {console,flow;}
     
     private JSONObject json;
 
@@ -67,7 +69,32 @@ public class SusiInference {
     public String getExpression() {
         return this.json.has("expression") ? this.json.getString("expression") : "";
     }
-
+    
+    private final static SusiSkills flowSkill = new SusiSkills();
+    static {
+        flowSkill.put(Pattern.compile("first"), (flow, matcher) -> {
+            SusiThought nextThought = new SusiThought();
+            if (flow != null && flow.getCount() > 0) nextThought.getData().put(flow.getData().get(0));
+            return nextThought;
+        });
+        flowSkill.put(Pattern.compile("first\\h+?(.*?)\\h*?"), (flow, matcher) -> {
+            SusiThought nextThought = new SusiThought();
+            if (flow != null && flow.getCount() > 0) nextThought.getData().put(flow.getData().get(0));
+            return nextThought;
+        });
+        flowSkill.put(Pattern.compile("rest"), (flow, matcher) -> {
+            SusiThought nextThought = new SusiThought();
+            if (flow != null && flow.getCount() > 0) nextThought.getData().put(flow.getData().remove(0));
+            return nextThought;
+        });
+        flowSkill.put(Pattern.compile("rest\\h+?(.*?)\\h*?"), (flow, matcher) -> {
+            SusiThought nextThought = new SusiThought();
+            if (flow != null && flow.getCount() > 0) nextThought.getData().put(flow.getData().remove(0));
+            return nextThought;
+        });
+    }
+    
+    
     /**
      * Inference must be applicable to thought arguments. This method executes the inference process on an existing 
      * argument and produces another thought which may or may not be appended to the given argument to create a full
@@ -75,16 +102,19 @@ public class SusiInference {
      * @param argument
      * @return a new thought as result of the inference
      */
-    public SusiThought applyon(SusiArgument argument) {
+    public SusiThought applySkills(SusiArgument argument) {
         Type type = this.getType();
         if (type == SusiInference.Type.console) {
-            String expression = this.getExpression();
-            expression = argument.unify(expression);
-            return ConsoleService.console(expression);
+            String expression = argument.unify(this.getExpression());
+            return ConsoleService.dbAccess.inspire(expression);
+        }
+        if (type == SusiInference.Type.flow) {
+            String expression = argument.unify(this.getExpression());
+            return flowSkill.deduce(argument.mindstate(), expression);
         }
         // maybe the argument is not applicable, then the latest mindstate is empty application
         return argument.mindstate();
-    }
+}
     
     public String toString() {
         return this.getJSON().toString();

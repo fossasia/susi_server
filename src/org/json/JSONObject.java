@@ -45,6 +45,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.ResourceBundle;
 import java.util.Set;
+import java.util.TreeMap;
 
 /**
  * A JSONObject is an unordered collection of name/value pairs. Its external
@@ -254,7 +255,11 @@ public class JSONObject {
      *            the JSONObject.
      */
     public JSONObject(Map<?, ?> map) {
-        this.map = map instanceof LinkedHashMap ? new LinkedHashMap<String, Object>() : new HashMap<String, Object>();
+        this.map = map instanceof LinkedHashMap ?
+                new LinkedHashMap<String, Object>() :
+                map instanceof TreeMap<?, ?> ?
+                        new TreeMap<>() :
+                        new HashMap<String, Object>();
         if (map != null) {
         	for (final Entry<?, ?> e : map.entrySet()) {
                 final Object value = e.getValue();
