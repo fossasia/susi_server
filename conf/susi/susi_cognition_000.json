@@ -442,7 +442,7 @@
 						{"type":"pattern", "expression":"* tweets did * post in the month of *"}
 					  ],
 
-			"process":[ {"type": "console", "expression": "SELECT $3$ AS count FROM (SELECT yearwise FROM (SELECT tweet_frequency FROM twitanalysis WHERE screen_name=$2$ AND count='1000'))"}],
+			"process":[ {"type": "console", "expression": "SELECT $3$ AS count FROM (SELECT yearwise FROM (SELECT tweet_frequency FROM twitanalysis WHERE screen_name=$2$ AND count='1000'));"}],
 			"actions":[ {"type": "answer", "select": "random", "phrases":[
 							"$2$ tweeted $count$ times in $3$"
 						]}]
