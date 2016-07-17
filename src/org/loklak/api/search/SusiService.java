@@ -34,6 +34,8 @@ import org.loklak.server.Query;
 import org.loklak.susi.SusiArgument;
 import org.loklak.tools.storage.JSONObjectWithDefault;
 
+import javax.servlet.http.HttpServletResponse;
+
 public class SusiService extends AbstractAPIHandler implements APIHandler {
    
     private static final long serialVersionUID = 857847830309879111L;
@@ -60,7 +62,7 @@ public class SusiService extends AbstractAPIHandler implements APIHandler {
     }
     
     @Override
-    public JSONObject serviceImpl(Query post, Authorization rights, final JSONObjectWithDefault permissions) throws APIException {
+    public JSONObject serviceImpl(Query post, HttpServletResponse response, Authorization rights, final JSONObjectWithDefault permissions) throws APIException {
 
         // parameters
         String q = post.get("q", "");
