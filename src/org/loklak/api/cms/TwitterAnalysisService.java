@@ -31,6 +31,7 @@ import java.util.Locale;
 import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -65,11 +66,11 @@ public class TwitterAnalysisService extends AbstractAPIHandler implements APIHan
 	}
 
 	@Override
-	public JSONObject serviceImpl(Query call, Authorization rights, JSONObjectWithDefault permissions)
-			throws APIException {
+	public JSONObject serviceImpl(Query call, HttpServletResponse response, Authorization rights,
+			JSONObjectWithDefault permissions) throws APIException {
 		String username = call.get("screen_name", "");
 		String count = call.get("count", "");
-		return showAnalysis(username, count, call.request);
+		return showAnalysis(username, count, call.getRequest());
 	}
 
 	public static SusiThought showAnalysis(String username, String count, HttpServletRequest request) {
