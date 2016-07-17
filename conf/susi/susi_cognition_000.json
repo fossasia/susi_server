@@ -332,15 +332,16 @@
 						]}, {"type":"table"}]
 		},
 		{
-			"keys"   :["what","describe","explain","search"],
+			"keys"   :["what","describe","explain","search","how"],
 			"score"  :99,
-			"phrases":[	{"type":"pattern", "expression":"What is *"},
-					  	{"type":"pattern", "expression":"what does * mean"},
-					  	{"type":"pattern", "expression":"describe *"},
-					  	{"type":"pattern", "expression":"please describe *"},
-					  	{"type":"pattern", "expression":"explain *"},
-					  	{"type":"pattern", "expression":"please explain *"},
-					  	{"type":"pattern", "expression":"search wikidata for *"}
+			"phrases":[	{"type":"regex", "expression":"what is (?:(?:a )*)(.*)"},
+			            {"type":"regex", "expression":"how is (?:(?:a )*)(.*)"},
+					  	{"type":"regex", "expression":"describe (?:(?:a )*)(.*)"},
+					  	{"type":"regex", "expression":"please describe (?:(?:a )*)(.*)"},
+					  	{"type":"regex", "expression":"explain (?:(?:a )*)(.*)"},
+					  	{"type":"regex", "expression":"please explain (?:(?:a )*)(.*)"},
+					  	{"type":"regex", "expression":"search urbandictionary for (?:(?:a )*)(.*)"},
+					  	{"type":"pattern", "expression":"what does * mean"}
 					  ],
 			"process":[	{"type":"console", "expression":"SELECT description FROM wikidata WHERE query='$1$';"}],
 			"actions":[	{"type":"answer", "select":"random", "phrases":[
@@ -348,15 +349,16 @@
 						]}]
 		},
 		{
-			"keys"   :["what","describe","explain","search"],
+			"keys"   :["what","describe","explain","search","how"],
 			"score"  :98,
-			"phrases":[	{"type":"pattern", "expression":"What is *"},
-					  	{"type":"pattern", "expression":"what does * mean"},
-					  	{"type":"pattern", "expression":"describe *"},
-					  	{"type":"pattern", "expression":"please describe *"},
-					  	{"type":"pattern", "expression":"explain *"},
-					  	{"type":"pattern", "expression":"please explain *"},
-					  	{"type":"pattern", "expression":"search urbandictionary for *"}
+			"phrases":[	{"type":"regex", "expression":"what is (?:(?:a )*)(.*)"},
+			            {"type":"regex", "expression":"how is (?:(?:a )*)(.*)"},
+					  	{"type":"regex", "expression":"describe (?:(?:a )*)(.*)"},
+					  	{"type":"regex", "expression":"please describe (?:(?:a )*)(.*)"},
+					  	{"type":"regex", "expression":"explain (?:(?:a )*)(.*)"},
+					  	{"type":"regex", "expression":"please explain (?:(?:a )*)(.*)"},
+					  	{"type":"regex", "expression":"search urbandictionary for (?:(?:a )*)(.*)"},
+					  	{"type":"pattern", "expression":"what does * mean"}
 					  ],
 			"process":[	{"type":"console", "expression":"SELECT definition,example FROM urbandictionary WHERE query='$1$';"}],
 			"actions":[	{"type":"answer", "select":"random", "phrases":[
