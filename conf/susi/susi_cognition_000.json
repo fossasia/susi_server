@@ -366,6 +366,20 @@
 						]}]
 		},
 		{
+			"keys"   :["what","describe","search","where"],
+			"score"  :97,
+			"phrases":[	{"type":"regex", "expression":"where is (?:(?:a )*)(.*)"},
+			            {"type":"regex", "expression":"what is (?:(?:a )*)(.*)"},
+					  	{"type":"regex", "expression":"describe (?:(?:a )*)(.*)"},
+					  	{"type":"regex", "expression":"please describe (?:(?:a )*)(.*)"},
+					  	{"type":"regex", "expression":"please explain (?:(?:a )*)(.*)"}
+					  ],
+			"process":[	{"type":"console", "expression":"SELECT place[0] AS place, population, location[0] AS lon, location[1] AS lat FROM locations WHERE location='$1$';"}],
+			"actions":[	{"type":"answer", "select":"random", "phrases":[
+							"$place$ is a place with a population of $population$. Here is a map: https://www.openstreetmap.org/#map=13/$lat$/$lon$"
+						]}]
+		},
+		{
 			"score"  :15,
 			"phrases":[	{"type":"regex", "expression":".+ (?:.+ )+(.+)"} ],
 			"process":[	{"type":"console", "expression":"SELECT text,retweet_count,favourites_count FROM messages WHERE query='you $1$ /pure' ORDER BY FAVOURITES_COUNT;"}],
