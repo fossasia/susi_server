@@ -255,7 +255,7 @@ public class SearchServlet extends HttpServlet {
         
         // create json or xml according to path extension
         int shortlink_iflinkexceedslength = (int) DAO.getConfig("shortlink.iflinkexceedslength", 500L);
-        String shortlink_urlstub = DAO.getConfig("shortlink.urlstub", "http://localhost:9000");
+        String shortlink_urlstub = DAO.getConfig("shortlink.urlstub", "http://127.0.0.1:9000");
         if (jsonExt) {
             post.setResponse(response, jsonp ? "application/javascript": "application/json");
             // generate json
