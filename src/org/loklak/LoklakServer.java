@@ -72,6 +72,7 @@ import org.loklak.api.admin.StatusServlet;
 import org.loklak.api.admin.ThreaddumpServlet;
 import org.loklak.api.cms.*;
 import org.loklak.api.geo.GeocodeServlet;
+import org.loklak.api.handshake.ClientHandshake;
 import org.loklak.api.iot.FossasiaPushServlet;
 import org.loklak.api.iot.FreifunkNodePushServlet;
 import org.loklak.api.iot.NMEAServlet;
