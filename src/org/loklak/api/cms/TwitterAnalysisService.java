@@ -50,6 +50,8 @@ public class TwitterAnalysisService extends AbstractAPIHandler implements APIHan
 
 	private static final long serialVersionUID = -3753965521858525803L;
 
+	private static HttpServletRequest request;
+
 	@Override
 	public String getAPIPath() {
 		return "/api/twitanalysis.json";
@@ -70,10 +72,11 @@ public class TwitterAnalysisService extends AbstractAPIHandler implements APIHan
 			JSONObjectWithDefault permissions) throws APIException {
 		String username = call.get("screen_name", "");
 		String count = call.get("count", "");
-		return showAnalysis(username, count, call.getRequest());
+		TwitterAnalysisService.request = call.getRequest();
+		return showAnalysis(username, count);
 	}
 
-	public static SusiThought showAnalysis(String username, String count, HttpServletRequest request) {
+	public static SusiThought showAnalysis(String username, String count) {
 
 		SusiThought json = new SusiThought();
 		JSONArray finalresultarray = new JSONArray();
