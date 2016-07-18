@@ -115,7 +115,7 @@ public class LoginService extends AbstractAPIHandler implements APIHandler {
 		}
 
 		// check if user is blocked because of too many invalid login attempts
-		checkInvalidLogins(authorization, permissions);
+		checkInvalidLogins(post, authorization, permissions);
 
 		if(passwordLogin) { // do login via password
 
@@ -325,16 +325,18 @@ public class LoginService extends AbstractAPIHandler implements APIHandler {
 
 	/**
 	 * Check if the requesting user is blocked because of too many invalid login attempts
+	 * @post the query as used in serviceImpl
 	 * @param authorization the authorization as used in serviceImpl
 	 * @param permissions the permissions as used in serviceImpl
 	 * @throws APIException if the user is blocked
      */
-	private void checkInvalidLogins(Authorization authorization, JSONObjectWithDefault permissions) throws APIException {
+	private void checkInvalidLogins(Query post, Authorization authorization, JSONObjectWithDefault permissions) throws APIException {
 
 		// is already blocked?
 		long blockedUntil = permissions.getLong("blockedUntil");
 		if(blockedUntil != 0) {
 			if (blockedUntil > Instant.now().getEpochSecond()) {
+				Log.getLog().info("Blocked ip " + post.getClientHost() + " because of too many invalid login attempts.");
 				throw new APIException(403, "Too many invalid login attempts. Try again in "
 						+ (blockedUntil - Instant.now().getEpochSecond()) + " seconds");
 			}
