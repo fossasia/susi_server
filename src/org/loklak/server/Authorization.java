@@ -25,6 +25,8 @@ import org.loklak.tools.storage.JSONObjectWithDefault;
 import org.loklak.tools.storage.JsonTray;
 
 import javax.annotation.Nonnull;
+import java.util.Collection;
+import java.util.Map;
 
 /**
  * Authorization asks: what is the user allowed to do? This class holds user rights.
@@ -174,11 +176,82 @@ public class Authorization {
 
     public void setPermission(String servletCanonicalName, String key, JSONObject value){
         if(!permissions.has(servletCanonicalName)) permissions.put(servletCanonicalName, new JSONObject());
-
         permissions.getJSONObject(servletCanonicalName).put(key, value);
     }
 
     public void setPermission(APIHandler servlet, String key, JSONObject value){
+        setPermission(servlet.getClass().getCanonicalName(), key, value);
+    }
+
+    public void setPermission(String servletCanonicalName, String key, String value){
+        if(!permissions.has(servletCanonicalName)) permissions.put(servletCanonicalName, new JSONObject());
+        permissions.getJSONObject(servletCanonicalName).put(key, value);
+    }
+
+    public void setPermission(APIHandler servlet, String key, String value){
+        setPermission(servlet.getClass().getCanonicalName(), key, value);
+    }
+
+    public void setPermission(String servletCanonicalName, String key, int value){
+        if(!permissions.has(servletCanonicalName)) permissions.put(servletCanonicalName, new JSONObject());
+        permissions.getJSONObject(servletCanonicalName).put(key, value);
+    }
+
+    public void setPermission(APIHandler servlet, String key, int value){
+        setPermission(servlet.getClass().getCanonicalName(), key, value);
+    }
+
+    public void setPermission(String servletCanonicalName, String key, long value){
+        if(!permissions.has(servletCanonicalName)) permissions.put(servletCanonicalName, new JSONObject());
+        permissions.getJSONObject(servletCanonicalName).put(key, value);
+    }
+
+    public void setPermission(APIHandler servlet, String key, long value){
+        setPermission(servlet.getClass().getCanonicalName(), key, value);
+    }
+
+    public void setPermission(String servletCanonicalName, String key, double value){
+        if(!permissions.has(servletCanonicalName)) permissions.put(servletCanonicalName, new JSONObject());
+        permissions.getJSONObject(servletCanonicalName).put(key, value);
+    }
+
+    public void setPermission(APIHandler servlet, String key, double value){
+        setPermission(servlet.getClass().getCanonicalName(), key, value);
+    }
+
+    public void setPermission(String servletCanonicalName, String key, Object value){
+        if(!permissions.has(servletCanonicalName)) permissions.put(servletCanonicalName, new JSONObject());
+        permissions.getJSONObject(servletCanonicalName).put(key, value);
+    }
+
+    public void setPermission(APIHandler servlet, String key, Object value){
+        setPermission(servlet.getClass().getCanonicalName(), key, value);
+    }
+
+    public void setPermission(String servletCanonicalName, String key, boolean value){
+        if(!permissions.has(servletCanonicalName)) permissions.put(servletCanonicalName, new JSONObject());
+        permissions.getJSONObject(servletCanonicalName).put(key, value);
+    }
+
+    public void setPermission(APIHandler servlet, String key, boolean value){
+        setPermission(servlet.getClass().getCanonicalName(), key, value);
+    }
+
+    public void setPermission(String servletCanonicalName, String key, Map<?, ?> value){
+        if(!permissions.has(servletCanonicalName)) permissions.put(servletCanonicalName, new JSONObject());
+        permissions.getJSONObject(servletCanonicalName).put(key, value);
+    }
+
+    public void setPermission(APIHandler servlet, String key, Map<?, ?> value){
+        setPermission(servlet.getClass().getCanonicalName(), key, value);
+    }
+
+    public void setPermission(String servletCanonicalName, String key, Collection<?> value){
+        if(!permissions.has(servletCanonicalName)) permissions.put(servletCanonicalName, new JSONObject());
+        permissions.getJSONObject(servletCanonicalName).put(key, value);
+    }
+
+    public void setPermission(APIHandler servlet, String key, Collection<?> value){
         setPermission(servlet.getClass().getCanonicalName(), key, value);
     }
 }
