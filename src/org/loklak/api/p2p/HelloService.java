@@ -37,6 +37,8 @@ import org.loklak.tools.DateParser;
 import org.loklak.tools.UTF8;
 import org.loklak.tools.storage.JSONObjectWithDefault;
 
+import javax.servlet.http.HttpServletResponse;
+
 /**
  * Servlet to span the message peer-to-peer network.
  * This servlet is called to announce the existence of the remote peer.
@@ -128,7 +130,7 @@ public class HelloService extends AbstractAPIHandler implements APIHandler {
     }
     
     @Override
-    public JSONObject serviceImpl(Query call, Authorization rights, final JSONObjectWithDefault permissions) {
+    public JSONObject serviceImpl(Query call, HttpServletResponse response, Authorization rights, final JSONObjectWithDefault permissions) {
     	JSONObject res = DAO.public_settings.toJSONObject();
     	res.put("status", "ok");
     	return res;

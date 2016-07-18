@@ -22,7 +22,10 @@ package org.loklak.tools.storage;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-
+/**
+ * This class extends JSONObjects with additional get-methods that accept default values. It catches all possible errors and exceptions,
+ * thus always returning a valid output. It's intention is to provide a saver way to acquire values in security/stability sensitive environments
+ */
 public class JSONObjectWithDefault extends JSONObject {
 
     public JSONObjectWithDefault(){
@@ -38,7 +41,7 @@ public class JSONObjectWithDefault extends JSONObject {
         try{
             return getBoolean(key);
         }
-        catch (Exception e){
+        catch (Throwable e){
             return dftval;
         }
     }
@@ -47,7 +50,7 @@ public class JSONObjectWithDefault extends JSONObject {
         try{
             return getDouble(key);
         }
-        catch (Exception e){
+        catch (Throwable e){
             return dftval;
         }
     }
@@ -56,7 +59,7 @@ public class JSONObjectWithDefault extends JSONObject {
         try{
             return getInt(key);
         }
-        catch (Exception e){
+        catch (Throwable e){
             return dftval;
         }
     }
@@ -64,7 +67,7 @@ public class JSONObjectWithDefault extends JSONObject {
         try{
             return getJSONArray(key);
         }
-        catch (Exception e){
+        catch (Throwable e){
             return dftval;
         }
     }
@@ -72,7 +75,16 @@ public class JSONObjectWithDefault extends JSONObject {
         try{
             return getJSONObject(key);
         }
-        catch (Exception e){
+        catch (Throwable e){
+            return dftval;
+        }
+    }
+
+    public JSONObjectWithDefault getJSONObjectWithDefault(String key, JSONObjectWithDefault dftval){
+        try{
+            return new JSONObjectWithDefault(getJSONObject(key));
+        }
+        catch (Throwable e){
             return dftval;
         }
     }
@@ -80,7 +92,7 @@ public class JSONObjectWithDefault extends JSONObject {
         try{
             return getLong(key);
         }
-        catch (Exception e){
+        catch (Throwable e){
             return dftval;
         }
     }
@@ -88,7 +100,7 @@ public class JSONObjectWithDefault extends JSONObject {
         try{
             return getString(key);
         }
-        catch (Exception e){
+        catch (Throwable e){
             return dftval;
         }
     }

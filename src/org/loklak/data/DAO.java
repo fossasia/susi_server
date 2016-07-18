@@ -150,6 +150,7 @@ public class DAO {
     public static UserRoles userRoles;
     public static JsonTray passwordreset;
     public static Map<String, Accounting> accounting_temporary = new HashMap<>();
+    public static JsonFile login_keys;
     
     // built-in artificial intelligence
     public static SusiMind susi;
@@ -260,6 +261,9 @@ public class DAO {
         Path accounting_path = settings_dir.resolve("accounting.json");
         accounting = new JsonTray(accounting_path.toFile(), 10000);
         OS.protectPath(accounting_path);
+        Path login_keys_path = settings_dir.resolve("login-keys.json");
+        login_keys = new JsonFile(login_keys_path.toFile());
+        OS.protectPath(login_keys_path);
 
 
         Log.getLog().info("Initializing user roles");

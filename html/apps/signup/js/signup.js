@@ -99,8 +99,8 @@ $(document).ready(function()
         checkEmpty();
         var total = passerr || confirmerr || emailerr;
         if(!total){
-            var mail = encodeURIComponent($('#email').val());
-            var pwd = encodeURIComponent($('#pass').val());
+            var mail = $('#email').val();
+            var pwd = $('#pass').val();
 
             $.ajax(	"/api/signup.json", {
              data: { signup: mail, password: pwd },

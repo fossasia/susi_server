@@ -24,6 +24,8 @@ import org.loklak.server.*;
 import org.loklak.server.BaseUserRole;
 import org.loklak.tools.storage.JSONObjectWithDefault;
 
+import javax.servlet.http.HttpServletResponse;
+
 public class AuthorizationDemoService extends AbstractAPIHandler implements APIHandler {
 
     private static final long serialVersionUID = 8678478303032749879L;
@@ -50,7 +52,6 @@ public class AuthorizationDemoService extends AbstractAPIHandler implements APIH
 				break;
 			default:
 				result.put("download_limit", 0);
-				break;
 		}
 
 		return result;
@@ -62,7 +63,7 @@ public class AuthorizationDemoService extends AbstractAPIHandler implements APIH
     }
 
     @Override
-    public JSONObject serviceImpl(Query post, Authorization rights, final JSONObjectWithDefault permissions) throws APIException {
+    public JSONObject serviceImpl(Query post, HttpServletResponse response, Authorization rights, final JSONObjectWithDefault permissions) throws APIException {
     	
     	JSONObject result = new JSONObject();
 
