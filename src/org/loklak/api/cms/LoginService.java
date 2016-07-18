@@ -31,7 +31,6 @@ import javax.servlet.http.HttpServletResponse;
 import java.security.*;
 import java.time.Instant;
 import java.util.Base64;
-import java.util.TreeMap;
 
 /**
  * This service allows users to login, logout or to check their login status.

@@ -44,15 +44,6 @@ input.success{
 	width: 65%;
 	margin: auto;
 	padding: 24px 12px 24px 12px;
-}
-
-.fields label {
-	font-size: 15px;
-	float: right;
-	margin-top: 5%;
-}
-
-.fields input{
 	border-radius: 7px;
 }
 
@@ -88,6 +79,15 @@ input.success{
     display: none;
 }
 
-.text {
-    color: white !important;
+textarea {
+	border: none;
+	background: #fff;
+  	font-weight:400;
+	color: #000;
+	font-size: 15px;
+	outline: none;
+	width: 95%;
+	margin: auto;
+	padding: 24px 12px 24px 12px;
+	border-radius: 7px;
 }

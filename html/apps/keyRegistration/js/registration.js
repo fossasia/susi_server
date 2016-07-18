@@ -3,7 +3,7 @@ $(document).ready(function()
     var self = $('#self').prop("checked");
     self ? $('#email').addClass("hidden") : $('#email').removeClass("hidden");
     var create = $('#create').prop("checked");
-    create ? $('#key').addClass("hidden") : $('#key').removeClass("hidden");
+    create ? $('#registerInput').addClass("hidden") : $('#registerInput').removeClass("hidden");
 
 	// get password parameters
 	var regex;
@@ -17,6 +17,13 @@ $(document).ready(function()
                 $('#email').prop( "disabled", true );
                 $('#key').prop( "disabled", true );
                 $('#register').prop( "disabled", true );
+            }
+            else{
+                $('#status-box').text("");
+                $('#status-box').removeClass("error");
+                $('#email').prop( "disabled", false );
+                $('#key').prop( "disabled", false );
+                $('#register').prop( "disabled", false );
             }
         },
         error: function (xhr, ajaxOptions, thrownError) {
@@ -35,7 +42,7 @@ $(document).ready(function()
 
     $('#create').click(function(){
         create = $(this).prop("checked");
-        create ? $('#key').addClass("hidden") : $('#key').removeClass("hidden");
+        create ? $('#registerInput').addClass("hidden") : $('#registerInput').removeClass("hidden");
     });
 
     $('#register').click(function(){
@@ -50,6 +57,7 @@ $(document).ready(function()
             }
             else{
                 data["register"] = key;
+                data["type"] = typeSelect.value;
             }
             console.log(data);
 
