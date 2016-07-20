@@ -38,6 +38,8 @@ import com.sun.syndication.feed.synd.SyndFeed;
 import com.sun.syndication.io.SyndFeedInput;
 import com.sun.syndication.io.XmlReader;
 
+import javax.servlet.http.HttpServletResponse;
+
 public class RSSReaderService extends AbstractAPIHandler implements APIHandler {
 
 	private static final long serialVersionUID = 1463185662941444503L;
@@ -55,7 +57,7 @@ public class RSSReaderService extends AbstractAPIHandler implements APIHandler {
     }
     
     @Override
-    public JSONObject serviceImpl(Query post, Authorization rights, final JSONObjectWithDefault permissions) throws APIException {
+    public JSONObject serviceImpl(Query post, HttpServletResponse response, Authorization rights, final JSONObjectWithDefault permissions) throws APIException {
 		String url = post.get("url", "");
 		return readRSS(url);
     }

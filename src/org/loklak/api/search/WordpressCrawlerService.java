@@ -20,12 +20,6 @@
 package org.loklak.api.search;
 
 import java.io.IOException;
-import java.io.PrintWriter;
-
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -33,33 +27,44 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
-import org.loklak.http.RemoteAccess;
+import org.loklak.server.APIException;
+import org.loklak.server.APIHandler;
+import org.loklak.server.AbstractAPIHandler;
+import org.loklak.server.Authorization;
+import org.loklak.server.BaseUserRole;
 import org.loklak.server.Query;
+import org.loklak.susi.SusiThought;
+import org.loklak.tools.storage.JSONObjectWithDefault;
 
-public class WordpressCrawler extends HttpServlet {
+import javax.servlet.http.HttpServletResponse;
 
-	private static final long serialVersionUID = 3254323058673931715L;
+public class WordpressCrawlerService extends AbstractAPIHandler implements APIHandler {
+
+	private static final long serialVersionUID = -5357182691897402354L;
 
 	@Override
-	protected void doPost(HttpServletRequest request, HttpServletResponse response)
-			throws ServletException, IOException {
-		doGet(request, response);
+	public String getAPIPath() {
+		return "/api/wordpresscrawler.json";
 	}
 
 	@Override
-	protected void doGet(HttpServletRequest request, HttpServletResponse response)
-			throws ServletException, IOException {
-		Query post = RemoteAccess.evaluate(request);
+	public BaseUserRole getMinimalBaseUserRole() {
+		return BaseUserRole.ANONYMOUS;
+	}
 
-		// manage DoS
-		if (post.isDoS_blackout()) {
-			response.sendError(503, "your request frequency is too high");
-			return;
-		}
+	@Override
+	public JSONObject getDefaultPermissions(BaseUserRole baseUserRole) {
+		return null;
+	}
 
-		// evaluate get parameters
-		String blogURL = post.get("url", "");
-
+	@Override
+	public JSONObject serviceImpl(Query call, HttpServletResponse response, Authorization rights, JSONObjectWithDefault permissions)
+			throws APIException {
+		String url = call.get("url", "");
+		return crawlWordpress(url);
+	}
+	
+	public static SusiThought crawlWordpress(String blogURL) {
 		Document blogHTML = null;
 
 		Elements articles = null;
@@ -126,16 +131,11 @@ public class WordpressCrawler extends HttpServlet {
 			blogpost.put("content", blogPosts[k][3]);
 			blog.put(blogpost);
 		}
-
-		JSONObject final_blog_info = new JSONObject();
-
-		final_blog_info.put("Wordpress blog: " + blogURL, blog);
-
-		// print JSON
-		response.setCharacterEncoding("UTF-8");
-		PrintWriter sos = response.getWriter();
-		sos.print(final_blog_info.toString(2));
-		sos.println();
+		
+		SusiThought json = new SusiThought();
+		json.setData(blog);
+		return json;
+	
 	}
 
 }

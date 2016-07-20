@@ -38,6 +38,8 @@ import org.loklak.server.Query;
 import org.loklak.susi.SusiThought;
 import org.loklak.tools.storage.JSONObjectWithDefault;
 
+import javax.servlet.http.HttpServletResponse;
+
 public class EventBriteCrawlerService extends AbstractAPIHandler implements APIHandler {
 
 	private static final long serialVersionUID = 7850249510419661716L;
@@ -58,7 +60,7 @@ public class EventBriteCrawlerService extends AbstractAPIHandler implements APIH
 	}
 
 	@Override
-	public JSONObject serviceImpl(Query call, Authorization rights, JSONObjectWithDefault permissions)
+	public JSONObject serviceImpl(Query call, HttpServletResponse response, Authorization rights, JSONObjectWithDefault permissions)
 			throws APIException {
 		String url = call.get("url", "");
 		return crawlEventBrite(url);

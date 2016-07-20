@@ -5,25 +5,34 @@ $(document).ready(function()
 	// get password parameters
 	var regex;
 	$.ajax(	"/api/signup.json", {
-       data: { getParameters: true },
-       dataType: 'json',
-       success: function (response) {
-        regex = response.regex;
-        var regexTooltip = response.regexTooltip;
-        $('#pass').tooltip({'trigger':'focus', 'placement': 'left', 'title': regexTooltip});
-    },
-    error: function (xhr, ajaxOptions, thrownError) {
-       $('#status-box').text(thrownError);
-       $('#status-box').addClass("error");
-       $('#email').prop( "disabled", true );
-       $('#pass').prop( "disabled", true );
-       $('#confirmpass').prop( "disabled", true );
-       $('#signup').prop( "disabled", true );
-   },
-});
+        data: { getParameters: true },
+        dataType: 'json',
+        success: function (response) {
+            regex = response.regex;
+            var regexTooltip = response.regexTooltip;
+            $('#pass').tooltip({'trigger':'focus', 'placement': 'left', 'title': regexTooltip});
 
-    $('#pass').keyup(function(){
-        $('#passtrength').text(strengthlvl($('#pass').val()));
+            $('#status-box').text("");
+            $('#status-box').removeClass("error");
+            $('#email').removeClass("hidden");
+            $('#pass').removeClass("hidden");
+            $('#confirmpass').removeClass("hidden");
+            $('#signup').removeClass("hidden");
+        },
+        error: function (xhr, ajaxOptions, thrownError) {
+            $('#status-box').text(thrownError);
+            $('#status-box').addClass("error");
+            $('#email').addClass("hidden");
+            $('#pass').addClass("hidden");
+            $('#confirmpass').addClass("hidden");
+            $('#signup').addClass("hidden");
+        },
+    });
+
+    $('#email').keyup(function(event){
+        if(event.keyCode == 13){
+            $("#signup").click();
+        }
     });
 
     $('#pass').focus(function(){
@@ -53,19 +62,26 @@ $(document).ready(function()
         }
     })
 
-    $('#pass').keyup(function(){
-        $('#confirmpass').removeClass();
-        $('#matching').removeClass();
-        if($('#confirmpass').val() && $(this).val()!=$('#confirmpass').val()){
+    $('#pass').keyup(function(event){
+        if(event.keyCode == 13){
+            $("#signup").click();
+        }
+        else{
+            $('#passtrength').text(strengthlvl($('#pass').val()));
+
             $('#confirmpass').removeClass();
-            $('#confirmpass').addClass("error");
-            $('#matching').text("");
-            confirmerr = true;
-        } else if ($('#confirmpass').val() && $(this).val()==$('#confirmpass').val() && $(this).val().length >=6) {
-            $('#confirmpass').addClass("success");
-            $('#matching').addClass("success");
-            $('#matching').text("Passwords match!");
-            confirmerr = false;
+            $('#matching').removeClass();
+            if($('#confirmpass').val() && $(this).val()!=$('#confirmpass').val()){
+                $('#confirmpass').removeClass();
+                $('#confirmpass').addClass("error");
+                $('#matching').text("");
+                confirmerr = true;
+            } else if ($('#confirmpass').val() && $(this).val()==$('#confirmpass').val() && $(this).val().length >=6) {
+                $('#confirmpass').addClass("success");
+                $('#matching').addClass("success");
+                $('#matching').text("Passwords match!");
+                confirmerr = false;
+            }
         }
     })
 
@@ -73,25 +89,30 @@ $(document).ready(function()
         checkEmpty();
     })
 
-    $('#confirmpass').keyup(function(){
-        var pass = $('#pass').val();
-        var confirmpass = $(this).val();
-        if(confirmpass){
-            $(this).removeClass();
-            $('#matching').removeClass();
-            if(confirmpass == pass && pass.length >= 6){
-                $(this).addClass("success");
-                $('#matching').addClass("success");
-                $('#matching').text("Passwords match!");
-                confirmerr = false;
+    $('#confirmpass').keyup(function(event){
+        if(event.keyCode == 13){
+            $("#signup").click();
+        }
+        else{
+            var pass = $('#pass').val();
+            var confirmpass = $(this).val();
+            if(confirmpass){
+                $(this).removeClass();
+                $('#matching').removeClass();
+                if(confirmpass == pass && pass.length >= 6){
+                    $(this).addClass("success");
+                    $('#matching').addClass("success");
+                    $('#matching').text("Passwords match!");
+                    confirmerr = false;
+                } else {
+                    $(this).addClass("error");
+                    $('#matching').text("");
+                    confirmerr = true;
+                }
             } else {
-                $(this).addClass("error");
+                $(this).removeClass();
                 $('#matching').text("");
-                confirmerr = true;
             }
-        } else {
-            $(this).removeClass();
-            $('#matching').text("");
         }
     });
 
@@ -99,8 +120,8 @@ $(document).ready(function()
         checkEmpty();
         var total = passerr || confirmerr || emailerr;
         if(!total){
-            var mail = encodeURIComponent($('#email').val());
-            var pwd = encodeURIComponent($('#pass').val());
+            var mail = $('#email').val();
+            var pwd = $('#pass').val();
 
             $.ajax(	"/api/signup.json", {
              data: { signup: mail, password: pwd },

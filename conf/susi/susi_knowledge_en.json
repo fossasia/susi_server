@@ -1,0 +1,74 @@
+{
+	"rules":[
+		{
+			"score"  :90,
+			"phrases":[	{"type":"regex", "expression":"(?:(?:a )*)(.*)"}
+					  ],
+			"process":[	{"type":"console", "expression":"SELECT description FROM wikidata WHERE query='$1$';"}],
+			"actions":[	{"type":"answer", "select":"random", "phrases":[
+							"$1$ is $description$."
+						]}]
+		},
+		{
+			"score"  :91,
+			"phrases":[	{"type":"regex", "expression":"(?:(?:a )*)(.*)"}
+					  ],
+			"process":[	{"type":"console", "expression":"SELECT definition,example FROM urbandictionary WHERE query='$1$';"}],
+			"actions":[	{"type":"answer", "select":"random", "phrases":[
+							"$1$ is $definition$."
+						]}]
+		},
+		{
+			"keys"   :["what","describe","explain","search"],
+			"score"  :99,
+			"phrases":[	{"type":"regex", "expression":"what is (?:(?:a )*)(.*)"},
+					  	{"type":"regex", "expression":"describe (?:(?:a )*)(.*)"},
+					  	{"type":"regex", "expression":"please describe (?:(?:a )*)(.*)"},
+					  	{"type":"regex", "expression":"explain (?:(?:a )*)(.*)"},
+					  	{"type":"regex", "expression":"please explain (?:(?:a )*)(.*)"},
+					  	{"type":"regex", "expression":"search urbandictionary for (?:(?:a )*)(.*)"},
+					  	{"type":"pattern", "expression":"what does * mean"}
+					  ],
+			"process":[	{"type":"console", "expression":"SELECT description FROM wikidata WHERE query='$1$';"}],
+			"actions":[	{"type":"answer", "select":"random", "phrases":[
+							"$1$ is $description$."
+						]}]
+		},
+		{
+			"keys"   :["what","describe","explain","search"],
+			"score"  :98,
+			"phrases":[	{"type":"regex", "expression":"what is (?:(?:a )*)(.*)"},
+					  	{"type":"regex", "expression":"describe (?:(?:a )*)(.*)"},
+					  	{"type":"regex", "expression":"please describe (?:(?:a )*)(.*)"},
+					  	{"type":"regex", "expression":"explain (?:(?:a )*)(.*)"},
+					  	{"type":"regex", "expression":"please explain (?:(?:a )*)(.*)"},
+					  	{"type":"regex", "expression":"search urbandictionary for (?:(?:a )*)(.*)"},
+					  	{"type":"pattern", "expression":"what does * mean"}
+					  ],
+			"process":[	{"type":"console", "expression":"SELECT definition,example FROM urbandictionary WHERE query='$1$';"}],
+			"actions":[	{"type":"answer", "select":"random", "phrases":[
+							"$1$ is $definition$"
+						]}]
+		},
+		{
+			"keys"   :["how"],
+			"score"  :98,
+			"phrases":[	{"type":"regex", "expression":"how is (?:(?:a )*)(.*)"}
+					  ],
+			"process":[	{"type":"console", "expression":"SELECT description FROM wikidata WHERE query='$1$';"}],
+			"actions":[	{"type":"answer", "select":"random", "phrases":[
+							"$1$ is $description$."
+						]}]
+		},
+		{
+			"keys"   :["how"],
+			"score"  :99,
+			"phrases":[	{"type":"regex", "expression":"how is (?:(?:a )*)(.*)"}
+					  ],
+			"process":[	{"type":"console", "expression":"SELECT definition,example FROM urbandictionary WHERE query='$1$';"}],
+			"actions":[	{"type":"answer", "select":"random", "phrases":[
+							"$1$ is $definition$"
+						]}]
+		}
+	]
+}

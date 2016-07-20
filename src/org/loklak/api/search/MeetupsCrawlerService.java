@@ -34,6 +34,8 @@ import org.loklak.server.Query;
 import org.loklak.susi.SusiThought;
 import org.loklak.tools.storage.JSONObjectWithDefault;
 
+import javax.servlet.http.HttpServletResponse;
+
 public class MeetupsCrawlerService extends AbstractAPIHandler implements APIHandler {
 
 	private static final long serialVersionUID = -8463958440848132447L;
@@ -54,7 +56,7 @@ public class MeetupsCrawlerService extends AbstractAPIHandler implements APIHand
 	}
 
 	@Override
-	public JSONObject serviceImpl(Query call, Authorization rights, JSONObjectWithDefault permissions)
+	public JSONObject serviceImpl(Query call, HttpServletResponse response, Authorization rights, JSONObjectWithDefault permissions)
 			throws APIException {
 		String url = call.get("url", "");
 		return crawlMeetups(url);
