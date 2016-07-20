@@ -80,8 +80,10 @@
 
 	function getTracking() {
 		var url = document.getElementById('url').value;
-		console.log(url);
-		var urlComplete = 'http://localhost:9000/api/nmea.txt?stream='+url;
+        var cUrl = window.location.href;
+        var pName = window.location.pathname;
+        var baseUrl = cUrl.split(pName)[0]
+		var urlComplete = baseUrl+'/api/nmea.txt?stream='+url;
 		var centerlat = 52;
 		var centerlon =  0;
 		// set default zoom level

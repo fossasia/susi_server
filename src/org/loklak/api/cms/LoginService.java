@@ -54,7 +54,9 @@ public class LoginService extends AbstractAPIHandler implements APIHandler {
 	public JSONObject getDefaultPermissions(BaseUserRole baseUserRole) {
 		JSONObject result = new JSONObject();
 		result.put("maxInvalidLogins", 10);
-		result.put("blockTimeSeconds", 20);
+		result.put("blockTimeSeconds", 120);
+		result.put("periodSeconds", 60);
+		result.put("blockedUntil", 0);
 		return result;
 	}
 
@@ -112,15 +114,8 @@ public class LoginService extends AbstractAPIHandler implements APIHandler {
 			throw new APIException(400, "Bad login parameters.");
 		}
 
-		// check if too many invalid login attempts were made already
-		JSONObject invalidLogins = authorization.getAccounting().getRequests(this.getClass().getCanonicalName());
-		/*Long lastKey = invalidLogins.floorKey(System.currentTimeMillis() + 1000);
-		if(invalidLogins.size() > permissions.getInt("maxInvalidLogins", 10)
-				&& lastKey > System.currentTimeMillis() - permissions.getInt("blockTimeSeconds", 120) * 1000){
-			throw new APIException(403, "Too many invalid login attempts. Try again in "
-					+ (permissions.getInt("blockTimeSeconds", 120) * 1000 - System.currentTimeMillis() + lastKey) / 1000
-					+ " seconds");
-		}*/
+		// check if user is blocked because of too many invalid login attempts
+		checkInvalidLogins(post, authorization, permissions);
 
 		if(passwordLogin) { // do login via password
 
@@ -128,7 +123,7 @@ public class LoginService extends AbstractAPIHandler implements APIHandler {
 			String password = post.get("password", null);
 			String type = post.get("type", null);
 
-			Authentication authentication = getAuthentication(new ClientCredential(ClientCredential.Type.passwd_login, login), post);
+			Authentication authentication = getAuthentication(post, authorization, new ClientCredential(ClientCredential.Type.passwd_login, login));
 			ClientIdentity identity = authentication.getIdentity();
 
 			// check if the password is valid
@@ -206,7 +201,7 @@ public class LoginService extends AbstractAPIHandler implements APIHandler {
 			String login = post.get("login", null);
 			String keyHash = post.get("keyhash", null);
 
-			Authentication authentication = getAuthentication(new ClientCredential(ClientCredential.Type.passwd_login, login), post);
+			Authentication authentication = getAuthentication(post, authorization, new ClientCredential(ClientCredential.Type.passwd_login, login));
 			ClientIdentity identity = authentication.getIdentity();
 
 			if(!DAO.login_keys.has(identity.toString()) || !DAO.login_keys.getJSONObject(identity.toString()).has(keyHash)) throw new APIException(400, "Unknown key");
@@ -234,7 +229,7 @@ public class LoginService extends AbstractAPIHandler implements APIHandler {
 			String sessionID = post.get("sessionID", null);
 			String challangeResponse = post.get("response", null);
 
-			Authentication authentication = getAuthentication(new ClientCredential(ClientCredential.Type.pubkey_challange, sessionID), post);
+			Authentication authentication = getAuthentication(post, authorization, new ClientCredential(ClientCredential.Type.pubkey_challange, sessionID));
 			ClientIdentity identity = authentication.getIdentity();
 
 			String challenge = authentication.getString("challenge");
@@ -251,8 +246,6 @@ public class LoginService extends AbstractAPIHandler implements APIHandler {
 				throw new APIException(400, "No such algorithm");
 			} catch (InvalidKeyException e){
 				throw new APIException(400, "Invalid key");
-			} catch (SignatureException e){
-				throw new APIException(400, "Bad signature");
 			} catch (Throwable e){
 				throw new APIException(400, "Bad signature");
 			}
@@ -276,18 +269,31 @@ public class LoginService extends AbstractAPIHandler implements APIHandler {
 				return result;
 			}
 			else {
+				authorization.getAccounting().addRequest(this.getClass().getCanonicalName(), "invalid login");
 				throw new APIException(400, "Bad Signature");
 			}
 		}
 		throw new APIException(500, "Server error");
 	}
 
-	private Authentication getAuthentication(ClientCredential credential, Query post) throws APIException{
+	/**
+	 * little helper function to avoid code duplication
+	 * @param post
+	 * @param authorization
+	 * @param credential
+	 * @return
+	 * @throws APIException
+     */
+	private Authentication getAuthentication(Query post, Authorization authorization, ClientCredential credential) throws APIException{
 		// create Authentication
 		Authentication authentication = new Authentication(credential, DAO.authentication);
 
 		if (authentication.getIdentity() == null) { // check if identity is valid
+
 			authentication.delete();
+
+			authorization.getAccounting().addRequest(this.getClass().getCanonicalName(), "invalid login");
+
 			Log.getLog().info("Invalid login try for unknown user: " + credential.getName() + " via passwd from host: " + post.getClientHost());
 			throw new APIException(422, "Invalid credentials");
 		}
@@ -315,5 +321,41 @@ public class LoginService extends AbstractAPIHandler implements APIHandler {
 		}
 
 		return token;
+	}
+
+	/**
+	 * Check if the requesting user is blocked because of too many invalid login attempts
+	 * @post the query as used in serviceImpl
+	 * @param authorization the authorization as used in serviceImpl
+	 * @param permissions the permissions as used in serviceImpl
+	 * @throws APIException if the user is blocked
+     */
+	private void checkInvalidLogins(Query post, Authorization authorization, JSONObjectWithDefault permissions) throws APIException {
+
+		// is already blocked?
+		long blockedUntil = permissions.getLong("blockedUntil");
+		if(blockedUntil != 0) {
+			if (blockedUntil > Instant.now().getEpochSecond()) {
+				Log.getLog().info("Blocked ip " + post.getClientHost() + " because of too many invalid login attempts.");
+				throw new APIException(403, "Too many invalid login attempts. Try again in "
+						+ (blockedUntil - Instant.now().getEpochSecond()) + " seconds");
+			}
+			else{
+				authorization.setPermission(this, "blockedUntil", 0);
+			}
+		}
+
+		// check if too many invalid login attempts were made already
+		JSONObject invalidLogins = authorization.getAccounting().getRequests(this.getClass().getCanonicalName());
+		long period = permissions.getLong("periodSeconds", 600) * 1000; // get time period in which wrong logins are counted (e.g. the last 10 minutes)
+		int counter = 0;
+		for(String key : invalidLogins.keySet()){
+			if(Long.parseLong(key, 10) > System.currentTimeMillis() - period) counter++;
+		}
+		if(counter > permissions.getInt("maxInvalidLogins", 10)){
+			authorization.setPermission(this, "blockedUntil", Instant.now().getEpochSecond() + permissions.getInt("blockTimeSeconds", 120));
+			throw new APIException(403, "Too many invalid login attempts. Try again in "
+					+ permissions.getInt("blockTimeSeconds", 120) + " seconds");
+		}
 	}
 }
