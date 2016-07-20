@@ -114,6 +114,11 @@
 		"tell":["disclose", "reveal", "show", "expose", "uncover", "relate", "narrate", "inform", "advise", "explain", "divulge", "declare", "command", "order", "bid", "recount", "repeat"],
 		"think":["judge", "deem", "assume", "believe", "consider", "contemplate", "reflect", "mediate"],
 		"trouble":["distress", "anguish", "anxiety", "worry", "wretchedness", "pain", "danger", "peril", "disaster", "grief", "misfortune", "difficulty", "concern", "pains", "inconvenience", "exertion", "effort"],
+		"true":["accurate", "right", "proper", "precise", "exact", "valid", "genuine", "real", "actual", "trusty", "steady", "loyal", "dependable", "sincere", "staunch"],
+		"take":["hold", "catch", "seize", "grasp", "win", "capture", "acquire", "pick", "choose", "select", "prefer", "remove", "steal", "lift", "rob", "engage", "bewitch", "purchase", "buy", "retract", "recall", "assume", "occupy", "consume"],
+		"tell":["disclose", "reveal", "show", "expose", "uncover", "relate", "narrate", "inform", "advise", "explain", "divulge", "declare", "command", "order", "bid", "recount", "repeat"],
+		"think":["judge", "deem", "assume", "believe", "consider", "contemplate", "reflect", "mediate"],
+		"trouble":["distress", "anguish", "anxiety", "worry", "wretchedness", "pain", "danger", "peril", "disaster", "grief", "misfortune", "difficulty", "concern", "pains", "inconvenience", "exertion", "effort"],
 		"true":["accurate", "right", "proper", "precise", "exact", "valid", "genuine", "real", "actual", "trusty", "steady", "loyal", "dependable", "sincere", "staunch"]
 	},
 	"multi":{
