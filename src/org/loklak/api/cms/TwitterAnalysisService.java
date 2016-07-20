@@ -80,7 +80,13 @@ public class TwitterAnalysisService extends AbstractAPIHandler implements APIHan
 
 		SusiThought json = new SusiThought();
 		JSONArray finalresultarray = new JSONArray();
-		JSONObject finalresult = new JSONObject(true);
+		JSONObject userresult = new JSONObject(true);
+		JSONObject frequencyresult = new JSONObject(true);
+		JSONObject typeresult = new JSONObject(true);
+		JSONObject activityresult = new JSONObject(true);
+		JSONObject chartresult = new JSONObject(true);
+		JSONObject languageresult = new JSONObject(true);
+		JSONObject sentimentresult = new JSONObject(true);
 		String siteurl = request.getRequestURL().toString();
 		String baseurl = siteurl.substring(0, siteurl.length() - request.getRequestURI().length())
 				+ request.getContextPath();
@@ -97,18 +103,17 @@ public class TwitterAnalysisService extends AbstractAPIHandler implements APIHan
 
 		JSONArray tweets = searchresult.getJSONArray("statuses");
 		if (tweets.length() == 0) {
-			finalresult.put("error", "Invalid username " + username + " or no tweets");
-			finalresultarray.put(finalresult);
+			finalresultarray.put(new JSONObject().put("error", "Invalid username " + username + " or no tweets"));
 			json.setData(finalresultarray);
 			return json;
 		}
-		finalresult.put("username", username);
-		finalresult.put("items_per_page", searchresult.getJSONObject("search_metadata").getString("itemsPerPage"));
-		finalresult.put("tweets_analysed", searchresult.getJSONObject("search_metadata").getString("count"));
+		userresult.put("username", username);
+		userresult.put("items_per_page", searchresult.getJSONObject("search_metadata").getString("itemsPerPage"));
+		userresult.put("tweets_analysed", searchresult.getJSONObject("search_metadata").getString("count"));
+		finalresultarray.put(userresult);
 
 		// main loop
-		JSONObject activityFreq = new JSONObject(true);
-		JSONObject activityType = new JSONObject(true);
+
 		int imgCount = 0, audioCount = 0, videoCount = 0, linksCount = 0, likesCount = 0, retweetCount = 0,
 				hashtagCount = 0;
 		int maxLikes = 0, maxRetweets = 0, maxHashtags = 0;
@@ -167,11 +172,12 @@ public class TwitterAnalysisService extends AbstractAPIHandler implements APIHan
 			retweetCount += status.getInt("retweet_count");
 			hashtagCount += status.getInt("hashtags_count");
 		}
-		activityType.put("posted_image", imgCount);
-		activityType.put("posted_audio", audioCount);
-		activityType.put("posted_video", videoCount);
-		activityType.put("posted_link", linksCount);
-		activityType.put("posted_story",
+
+		typeresult.put("posted_image", imgCount);
+		typeresult.put("posted_audio", audioCount);
+		typeresult.put("posted_video", videoCount);
+		typeresult.put("posted_link", linksCount);
+		typeresult.put("posted_story",
 				Integer.parseInt(searchresult.getJSONObject("search_metadata").getString("count"))
 						- (imgCount + audioCount + videoCount + linksCount));
 
@@ -194,16 +200,13 @@ public class TwitterAnalysisService extends AbstractAPIHandler implements APIHan
 			dailyact.put(s, Collections.frequency(tweetDay, s));
 		}
 
-		activityFreq.put("yearwise", yearlyact);
-		activityFreq.put("hourwise", hourlyact);
-		activityFreq.put("daywise", dailyact);
-		finalresult.put("tweet_frequency", activityFreq);
-		finalresult.put("tweet_type", activityType);
+		frequencyresult.put("yearwise", yearlyact);
+		frequencyresult.put("hourwise", hourlyact);
+		frequencyresult.put("daywise", dailyact);
+		finalresultarray.put(frequencyresult);
+		finalresultarray.put(typeresult);
 
 		// activity on my tweets
-
-		JSONObject activityOnTweets = new JSONObject(true);
-		JSONObject activityCharts = new JSONObject(true);
 		JSONObject likesChart = new JSONObject(true);
 		JSONObject retweetChart = new JSONObject(true);
 		JSONObject hashtagsChart = new JSONObject(true);
@@ -224,47 +227,43 @@ public class TwitterAnalysisService extends AbstractAPIHandler implements APIHan
 			hashtagsChart.put(i.toString(), Collections.frequency(hashtagsList, i));
 		}
 
-		activityOnTweets.put("likes_count", likesCount);
-		activityOnTweets.put("max_likes",
+		activityresult.put("likes_count", likesCount);
+		activityresult.put("max_likes",
 				new JSONObject(true).put("number", maxLikes).put("link_to_tweet", maxLikeslink));
-		activityOnTweets.put("average_number_of_likes",
+		activityresult.put("average_number_of_likes",
 				(likesCount / (Integer.parseInt(searchresult.getJSONObject("search_metadata").getString("count")))));
 
-		activityOnTweets.put("retweets_count", retweetCount);
-		activityOnTweets.put("max_retweets",
+		activityresult.put("retweets_count", retweetCount);
+		activityresult.put("max_retweets",
 				new JSONObject(true).put("number", maxRetweets).put("link_to_tweet", maxRetweetslink));
-		activityOnTweets.put("average_number_of_retweets",
+		activityresult.put("average_number_of_retweets",
 				(retweetCount / (Integer.parseInt(searchresult.getJSONObject("search_metadata").getString("count")))));
 
-		activityOnTweets.put("hashtags_used_count", hashtagCount);
-		activityOnTweets.put("max_hashtags",
+		activityresult.put("hashtags_used_count", hashtagCount);
+		activityresult.put("max_hashtags",
 				new JSONObject(true).put("number", maxHashtags).put("link_to_tweet", maxHashtagslink));
-		activityOnTweets.put("average_number_of_hashtags_used",
+		activityresult.put("average_number_of_hashtags_used",
 				(hashtagCount / (Integer.parseInt(searchresult.getJSONObject("search_metadata").getString("count")))));
 
-		activityCharts.put("likes", likesChart);
-		activityCharts.put("retweets", retweetChart);
-		activityCharts.put("hashtags", hashtagsChart);
-		activityOnTweets.put("frequency_charts", activityCharts);
-		finalresult.put("activity_on_my_tweets", activityOnTweets);
+		finalresultarray.put(activityresult);
+		chartresult.put("likes_chart", likesChart);
+		chartresult.put("retweets_chart", retweetChart);
+		chartresult.put("hashtags_chart", hashtagsChart);
+		finalresultarray.put(chartresult);
 
 		// content analysis
-		JSONObject contentAnalysis = new JSONObject(true);
-		JSONObject languageAnalysis = new JSONObject(true);
-		JSONObject sentimentAnalysis = new JSONObject(true);
 		Set<String> languageSet = new HashSet<String>(languageList), sentimentSet = new HashSet<String>(sentimentList);
 
 		for (String s : languageSet) {
-			languageAnalysis.put(s, Collections.frequency(languageList, s));
+			languageresult.put(s, Collections.frequency(languageList, s));
 		}
 
 		for (String s : sentimentSet) {
-			sentimentAnalysis.put(s, Collections.frequency(sentimentList, s));
+			sentimentresult.put(s, Collections.frequency(sentimentList, s));
 		}
-		contentAnalysis.put("language_analysis", languageAnalysis);
-		contentAnalysis.put("sentiment_analysis", sentimentAnalysis);
-		finalresult.put("content_analysis", contentAnalysis);
-		finalresultarray.put(finalresult);
+
+		finalresultarray.put(languageresult);
+		finalresultarray.put(sentimentresult);
 		json.setData(finalresultarray);
 		return json;
 	}
