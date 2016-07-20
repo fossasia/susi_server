@@ -19,6 +19,10 @@
 
 package org.loklak.api.cms;
 
+import org.bouncycastle.util.io.pem.PemObject;
+import org.bouncycastle.util.io.pem.PemReader;
+import org.bouncycastle.util.io.pem.PemWriter;
+import org.eclipse.jetty.util.log.Log;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.loklak.data.DAO;
@@ -27,8 +31,11 @@ import org.loklak.tools.IO;
 import org.loklak.tools.storage.JSONObjectWithDefault;
 
 import javax.servlet.http.HttpServletResponse;
-import javax.xml.bind.DatatypeConverter;
+import java.io.IOException;
+import java.io.StringReader;
+import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.security.*;
 import java.security.interfaces.RSAPublicKey;
@@ -41,16 +48,31 @@ import java.util.stream.IntStream;
  * It can either take a public key or create a new key-pair.
  * Users can also be granted the right to register keys for individual other users or whole user roles.
  *
- * To convert a ssh-key into a readable format, call:
- * - openssl rsa -in id_rsa -pubout -outform DER -out public_key.der (for some reason needs the private key as input)
- * - convert it to BASE64
+ * To export your own PublikKey from java for registering, call:
+ * - String encodedPublicKey = Base64.getEncoder().encodeToString(publicKey.getEncoded());
+ *
+ * To use the private key as generated in DER format in java, call:
+ * - PKCS8EncodedKeySpec keySpec = new PKCS8EncodedKeySpec(Base64.getDecoder().decode(encodedPrivateKey));
+ * - PrivateKey privateKey = KeyFactory.getInstance("RSA").generatePrivate(keySpec);
+ *
+ * To sign a challenge as given by the login, call:
+ * - Signature sig = Signature.getInstance("SHA256withRSA");
+ * - sig.initSign(privateKey);
+ * - sig.update(challengeString.getBytes());
+ * - String result = new String(Base64.getEncoder().encode(sig.sign()));
+ *
+ * To create a signature with openssl (using a key in pem format), the following command should work:
+ * - openssl dgst -sha256 -sign privkey.pem -out response.txt challenge.txt
+ * - encode the content of response.in BASE64
  * - if necessary, encode it URL-friendly
  */
 public class PublicKeyRegistrationService extends AbstractAPIHandler implements APIHandler {
 
 	private static final long serialVersionUID = 8578478303032749879L;
 
-	private static final int[] allowedKeyLengthRSA = {1024, 2048, 4096};
+	private static final int[] allowedKeySizesRSA = {1024, 2048, 4096};
+	private static final int defaultKeySizeRSA = 2048;
+	private static final String[] allowedFormats = {"DER", "PEM"};
 
 	@Override
 	public BaseUserRole getMinimalBaseUserRole() {
@@ -107,18 +129,23 @@ public class PublicKeyRegistrationService extends AbstractAPIHandler implements 
 			result.put("users", permissions.getJSONObject("users"));
 			result.put("userRoles", permissions.getJSONObject("userRoles"));
 
-			JSONArray algorithms = new JSONArray();
+			JSONObject algorithms = new JSONObject();
 
 			JSONObject rsa = new JSONObject();
-			rsa.put("algorithm", "RSA");
-			JSONArray keyLength = new JSONArray();
-			for(int i : allowedKeyLengthRSA){
-				keyLength.put(i);
+			JSONArray keySizes = new JSONArray();
+			for(int i : allowedKeySizesRSA){
+				keySizes.put(i);
 			}
-			rsa.put("lengths", keyLength);
-			algorithms.put(rsa);
-
+			rsa.put("sizes", keySizes);
+			rsa.put("defaultSize", defaultKeySizeRSA);
+			algorithms.put("RSA", rsa);
 			result.put("algorithms", algorithms);
+
+			JSONArray formats = new JSONArray();
+			for(String format : allowedFormats){
+				formats.put(format);
+			}
+			result.put("formats", formats);
 
 			return result;
 		}
@@ -170,20 +197,20 @@ public class PublicKeyRegistrationService extends AbstractAPIHandler implements 
 		if(post.get("create", false)){ // create a new key pair on the server
 
 			if(algorithm.equals("RSA")) {
-				int keyLength = 2048;
-				if (post.get("key-length", null) != null) {
-					int finalKeyLength = post.get("key-length", 0);
-					if (!IntStream.of(allowedKeyLengthRSA).anyMatch(x -> x == finalKeyLength)) {
-						throw new APIException(400, "Invalid key length.");
+				int keySize = 2048;
+				if (post.get("key-size", null) != null) {
+					int finalKeyLength = post.get("key-size", 0);
+					if (!IntStream.of(allowedKeySizesRSA).anyMatch(x -> x == finalKeyLength)) {
+						throw new APIException(400, "Invalid key size.");
 					}
-					keyLength = finalKeyLength;
+					keySize = finalKeyLength;
 				}
 
 				KeyPairGenerator keyGen;
 				KeyPair keyPair;
 				try {
 					keyGen = KeyPairGenerator.getInstance(algorithm);
-					keyGen.initialize(keyLength);
+					keyGen.initialize(keySize);
 					keyPair = keyGen.genKeyPair();
 				} catch (NoSuchAlgorithmException e) {
 					throw new APIException(500, "Server error");
@@ -191,19 +218,33 @@ public class PublicKeyRegistrationService extends AbstractAPIHandler implements 
 
 				registerKey(authorization.getIdentity(), keyPair.getPublic());
 
-				String pubKeyPem =	"-----BEGIN RSA PUBLIC KEY-----\n"
-									+ DatatypeConverter.printBase64Binary(keyPair.getPublic().getEncoded())
-									+ "\n-----END RSA PUBLIC KEY-----\n";
-				String privKeyPem =	"-----BEGIN RSA PRIVATE KEY-----\n"
-									+ DatatypeConverter.printBase64Binary(keyPair.getPrivate().getEncoded())
-									+ "\n-----END RSA PRIVATE KEY-----\n";
+				String pubkey_pem = null, privkey_pem = null;
+				try {
+					StringWriter writer = new StringWriter();
+					PemWriter pemWriter = new PemWriter(writer);
+					pemWriter.writeObject(new PemObject("PUBLIC KEY", keyPair.getPublic().getEncoded()));
+					pemWriter.flush();
+					pemWriter.close();
+					pubkey_pem = writer.toString();
+				}
+				catch (IOException e){}
+				try {
+					StringWriter writer = new StringWriter();
+					PemWriter pemWriter = new PemWriter(writer);
+					pemWriter.writeObject(new PemObject("PRIVATE KEY", keyPair.getPrivate().getEncoded()));
+					pemWriter.flush();
+					pemWriter.close();
+					privkey_pem = writer.toString();
+				}
+				catch (IOException e){}
 
 				result.put("publickey_DER_BASE64", Base64.getEncoder().encodeToString(keyPair.getPublic().getEncoded()));
 				result.put("privatekey_DER_BASE64", Base64.getEncoder().encodeToString(keyPair.getPrivate().getEncoded()));
-				result.put("publickey_PEM", pubKeyPem);
-				result.put("privatekey_PEM", privKeyPem);
+				result.put("publickey_PEM", pubkey_pem);
+				result.put("privatekey_PEM", privkey_pem);
 				result.put("keyhash", IO.getKeyHash(keyPair.getPublic()));
 				try{ result.put("keyhash_urlsave", URLEncoder.encode(IO.getKeyHash(keyPair.getPublic()), "UTF-8")); } catch (UnsupportedEncodingException e){}
+				result.put("key-size", keySize);
 				result.put("message", "Successfully created and registered key. Make sure to copy the private key, it won't be saved on the server");
 
 				return result;
@@ -213,13 +254,34 @@ public class PublicKeyRegistrationService extends AbstractAPIHandler implements 
 		else if(post.get("register", null) != null){
 
 			if(algorithm.equals("RSA")) {
+				String type = post.get("type", null);
+				if(type == null) type = "DER";
+
 				RSAPublicKey pub;
-				String encodedKey = post.get("register", null);
-				try {
-					X509EncodedKeySpec keySpec = new X509EncodedKeySpec(Base64.getDecoder().decode(encodedKey));
-					pub = (RSAPublicKey) KeyFactory.getInstance(algorithm).generatePublic(keySpec);
-				} catch (Throwable e) {
-					throw new APIException(400, "Public key not readable");
+				String encodedKey;
+				try { encodedKey = URLDecoder.decode(post.get("register", null), "UTF-8");} catch (Throwable e){throw new APIException(500, "Server error");}
+				Log.getLog().info("Key (" + type + "): " + encodedKey);
+
+				if(type.equals("DER")) {
+					try {
+						X509EncodedKeySpec keySpec = new X509EncodedKeySpec(Base64.getDecoder().decode(encodedKey));
+						pub = (RSAPublicKey) KeyFactory.getInstance(algorithm).generatePublic(keySpec);
+					} catch (Throwable e) {
+						throw new APIException(400, "Public key not readable (DER)");
+					}
+				}
+				else if(type.equals("PEM")){
+					try {
+						PemReader pemReader = new PemReader(new StringReader(encodedKey));
+						PemObject pem = pemReader.readPemObject();
+						X509EncodedKeySpec keySpec = new X509EncodedKeySpec(pem.getContent());
+						pub = (RSAPublicKey) KeyFactory.getInstance(algorithm).generatePublic(keySpec);
+					} catch (Exception e) {
+						throw new APIException(400, "Public key not readable (PEM)");
+					}
+				}
+				else{
+					throw new APIException(400, "Invalid value for 'type'.");
 				}
 
 				// check key size (not really perfect yet)
@@ -240,18 +302,25 @@ public class PublicKeyRegistrationService extends AbstractAPIHandler implements 
 				else {
 					keySize = 8192;
 				}
-				if (!IntStream.of(allowedKeyLengthRSA).anyMatch(x -> x == keySize)) {
+				if (!IntStream.of(allowedKeySizesRSA).anyMatch(x -> x == keySize)) {
 					throw new APIException(400, "Invalid key length.");
 				}
 
 				registerKey(authorization.getIdentity(), pub);
 
-				String keypem =	"-----BEGIN RSA PUBLIC KEY-----\n"
-								+ DatatypeConverter.printBase64Binary(pub.getEncoded())
-								+ "\n-----END RSA PUBLIC KEY-----\n";
+				String pubkey_pem = null;
+				try {
+					StringWriter writer = new StringWriter();
+					PemWriter pemWriter = new PemWriter(writer);
+					pemWriter.writeObject(new PemObject("PUBLIC KEY", pub.getEncoded()));
+					pemWriter.flush();
+					pemWriter.close();
+					pubkey_pem = writer.toString();
+				}
+				catch (IOException e){}
 
 				result.put("publickey_DER_BASE64", Base64.getEncoder().encodeToString(pub.getEncoded()));
-				result.put("publickey_PEM", keypem);
+				result.put("publickey_PEM", pubkey_pem);
 				result.put("keyhash", IO.getKeyHash(pub));
 				try{ result.put("keyhash_urlsave", URLEncoder.encode(IO.getKeyHash(pub), "UTF-8")); } catch (UnsupportedEncodingException e){}
 				result.put("message", "Successfully registered key.");
@@ -270,7 +339,7 @@ public class PublicKeyRegistrationService extends AbstractAPIHandler implements 
 	 * @param id
 	 * @param key
      */
-	private void registerKey(ClientIdentity id, PublicKey key){
+	private void registerKey(ClientIdentity id, PublicKey key) throws APIException{
 		JSONObject user_obj;
 
 		try{
@@ -279,6 +348,8 @@ public class PublicKeyRegistrationService extends AbstractAPIHandler implements 
 			user_obj = new JSONObject();
 			DAO.login_keys.put(id.toString(), user_obj);
 		}
+
+		if(user_obj.has(IO.getKeyHash(key))) throw new APIException(422, "Key already registered");
 
 		user_obj.put(IO.getKeyHash(key),IO.getKeyAsString(key));
 
