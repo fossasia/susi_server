@@ -119,7 +119,11 @@
 		"tell":["disclose", "reveal", "show", "expose", "uncover", "relate", "narrate", "inform", "advise", "explain", "divulge", "declare", "command", "order", "bid", "recount", "repeat"],
 		"think":["judge", "deem", "assume", "believe", "consider", "contemplate", "reflect", "mediate"],
 		"trouble":["distress", "anguish", "anxiety", "worry", "wretchedness", "pain", "danger", "peril", "disaster", "grief", "misfortune", "difficulty", "concern", "pains", "inconvenience", "exertion", "effort"],
-		"true":["accurate", "right", "proper", "precise", "exact", "valid", "genuine", "real", "actual", "trusty", "steady", "loyal", "dependable", "sincere", "staunch"]
+		"true":["accurate", "right", "proper", "precise", "exact", "valid", "genuine", "real", "actual", "trusty", "steady", "loyal", "dependable", "sincere", "staunch"],
+		"ugly":["hideous", "frightful", "frightening", "shocking", "horrible", "unpleasant", "monstrous", "terrifying", "gross", "grisly", "ghastly", "horrid", "unsightly", "plain", "homely", "evil", "repulsive", "repugnant", "gruesome"],
+		"unhappy":["miserable", "uncomfortable", "wretched", "heart-broken", "unfortunate", "poor", "downhearted", "sorrowful", "depressed", "dejected", "melancholy", "glum", "gloomy", "dismal", "discouraged", "sad"],
+		"use":["employ", "utilize", "exhaust", "spend", "expend", "consume", "exercise"],
+		"wrong":["incorrect", "inaccurate", "mistaken", "erroneous", "improper", "unsuitable"]
 	},
 	"multi":{
 		"intro":["There might be several right answers..."],
