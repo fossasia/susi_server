@@ -99,7 +99,17 @@
 		"popular":["well-liked", "approved", "accepted", "favorite", "celebrated", "common", "current"],
 		"predicament":["quandary", "dilemma", "pickle", "problem", "plight", "spot", "scrape", "jam"],
 		"put":["place", "set", "attach", "establish", "assign", "keep", "save", "set aside", "effect", "achieve", "do", "build"],
-		"sad": ["unhappy", "depressed", "sick"]
+		"quiet":["silent", "still", "soundless", "mute", "tranquil", "peaceful", "calm", "restful"],
+		"right":["correct", "accurate", "factual", "true", "good", "just", "honest", "upright", "lawful", "moral", "proper", "suitable", "apt", "legal", "fair"],
+		"run":["race", "speed", "hurry", "hasten", "sprint", "dash", "rush", "escape", "elope", "flee"],
+		"say":["inform", "notify", "advise", "relate", "recount", "narrate", "explain", "reveal", "disclose", "divulge", "declare", "command", "order", "bid", "enlighten", "instruct", "insist", "teach", "train", "direct", "issue", "remark", "converse", "speak", "affirm", "suppose", "utter", "negate", "express", "verbalize", "voice", "articulate", "pronounce", "deliver", "convey", "impart", "assert", "state", "allege", "mutter", "mumble", "whisper", "sigh", "exclaim", "yell", "sing", "yelp", "snarl", "hiss", "grunt", "snort", "roar", "bellow", "thunder", "boom", "scream", "shriek", "screech", "squawk", "whine", "philosophize", "stammer", "stutter", "lisp", "drawl", "jabber", "protest", "announce", "swear", "vow", "content", "assure", "deny", "dispute"],
+		"sad": ["unhappy", "depressed", "sick"],
+		"scared":["afraid", "frightened", "alarmed", "terrified", "panicked", "fearful", "unnerved", "insecure", "timid", "shy", "skittish", "jumpy", "disquieted", "worried", "vexed", "troubled", "disturbed", "horrified", "terrorized", "shocked", "petrified", "haunted", "timorous", "shrinking", "tremulous", "stupefied", "paralyzed", "stunned", "apprehensive"],
+		"show":["display", "exhibit", "present", "note", "indicate", "explain", "reveal", "prove", "demonstrate", "expose"],
+		"slow":["unhurried", "gradual", "leisurely", "late", "behind", "tedious", "slack"],
+		"stop":["cease", "halt", "stay", "pause", "discontinue", "conclude", "end", "finish", "quit"],
+		"story":["tale", "myth", "legend", "fable", "yarn", "account", "narrative", "chronicle", "epic", "sage", "anecdote", "record", "memoir"],
+		"strange":["odd", "peculiar", "unusual", "unfamiliar", "uncommon", "queer", "weird", "outlandish", "curious", "unique", "exclusive", "irregular"]
 	},
 	"multi":{
 		"intro":["There might be several right answers..."],
