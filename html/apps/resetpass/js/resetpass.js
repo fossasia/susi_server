@@ -74,7 +74,7 @@ $(document).ready(function()
 			var newpass = $('#pass').val();
 
 			$.ajax(	"/api/resetpassword.json", {
-				data: { token: urltoken, newpass: pwd },
+				data: { token: urltoken, newpass: newpass },
 				dataType: 'json',
 				success: function (response) {
 					resetFields();
