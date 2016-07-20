@@ -31,14 +31,18 @@ import javax.servlet.http.HttpServletResponse;
 import java.security.*;
 import java.time.Instant;
 import java.util.Base64;
-import java.util.TreeMap;
 
 /**
  * This service allows users to login, logout or to check their login status.
- * For login, there are three options: session, cookie (both stateful, for browsers) and access-token (stateless, for api access)
- * It requires the following parameters: login (the login id, usually an email), password and type (one of the above)
- * To check if the user is logged it, set the parameter 'checkLogin' to true
- * To logout, set the parameter 'logout' to true
+ *
+ * The following parameter combinations are valid:
+ * - checkLogin=true	# check the login status
+ * - logout=true		# end the current session
+ * - login,password,type(session | cookie | access_token)	# login with password. session starts a browser session, cookie sets a long living cookie, access_token creates an access_token and returns it with the server reply
+ * - login,keyhash	# first part of login via public/private key handshake. The keyhash is displayed on key registration
+ * - sessionID,response	# second part. sessionID is part of the server reply of the first part. response is a signature of the challenge, also part of the server reply.
+ * At the moment, only SHA256withRSA is supported as signature algorithm
+ *
  */
 public class LoginService extends AbstractAPIHandler implements APIHandler {
 
