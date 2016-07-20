@@ -85,6 +85,7 @@ public class TwitterAnalysisService extends AbstractAPIHandler implements APIHan
 		JSONObject typeresult = new JSONObject(true);
 		JSONObject activityresult = new JSONObject(true);
 		JSONObject chartresult = new JSONObject(true);
+		JSONObject contentresult = new JSONObject(true);
 		JSONObject languageresult = new JSONObject(true);
 		JSONObject sentimentresult = new JSONObject(true);
 		String siteurl = request.getRequestURL().toString();
@@ -261,9 +262,9 @@ public class TwitterAnalysisService extends AbstractAPIHandler implements APIHan
 		for (String s : sentimentSet) {
 			sentimentresult.put(s, Collections.frequency(sentimentList, s));
 		}
-
-		finalresultarray.put(languageresult);
-		finalresultarray.put(sentimentresult);
+		contentresult.put("language_analysis", languageresult);
+		contentresult.put("sentiment_analysis", sentimentresult);
+		finalresultarray.put(contentresult);
 		json.setData(finalresultarray);
 		return json;
 	}
