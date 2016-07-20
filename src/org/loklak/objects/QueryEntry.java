@@ -391,7 +391,8 @@ public class QueryEntry extends AbstractObjectEntry implements ObjectEntry {
             if (tokens.constraints_positive.contains("pure") && (
                     message.getImages().size() != 0 ||
                     message.getMentions().length != 0 ||
-                    message.getLinks().length != 0
+                    message.getLinks().length != 0 ||
+                    message.getHashtags().length != 0
                )) continue;
             if (tokens.constraints_positive.contains("image") && message.getImages().size() == 0) continue;
             if (tokens.constraints_negative.contains("image") && message.getImages().size() != 0) continue;
@@ -633,6 +634,7 @@ public class QueryEntry extends AbstractObjectEntry implements ObjectEntry {
                 nops.add(QueryBuilders.constantScoreQuery(QueryBuilders.existsQuery(Constraint.video.field_name)));
                 nops.add(QueryBuilders.constantScoreQuery(QueryBuilders.existsQuery(Constraint.link.field_name)));
                 nops.add(QueryBuilders.constantScoreQuery(QueryBuilders.existsQuery(Constraint.mention.field_name)));
+                nops.add(QueryBuilders.constantScoreQuery(QueryBuilders.existsQuery(Constraint.hashtag.field_name)));
             }
             if (modifier.containsKey("from")) {
                 for (String screen_name: modifier.get("from")) {
