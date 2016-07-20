@@ -109,7 +109,12 @@
 		"slow":["unhurried", "gradual", "leisurely", "late", "behind", "tedious", "slack"],
 		"stop":["cease", "halt", "stay", "pause", "discontinue", "conclude", "end", "finish", "quit"],
 		"story":["tale", "myth", "legend", "fable", "yarn", "account", "narrative", "chronicle", "epic", "sage", "anecdote", "record", "memoir"],
-		"strange":["odd", "peculiar", "unusual", "unfamiliar", "uncommon", "queer", "weird", "outlandish", "curious", "unique", "exclusive", "irregular"]
+		"strange":["odd", "peculiar", "unusual", "unfamiliar", "uncommon", "queer", "weird", "outlandish", "curious", "unique", "exclusive", "irregular"],
+		"take":["hold", "catch", "seize", "grasp", "win", "capture", "acquire", "pick", "choose", "select", "prefer", "remove", "steal", "lift", "rob", "engage", "bewitch", "purchase", "buy", "retract", "recall", "assume", "occupy", "consume"],
+		"tell":["disclose", "reveal", "show", "expose", "uncover", "relate", "narrate", "inform", "advise", "explain", "divulge", "declare", "command", "order", "bid", "recount", "repeat"],
+		"think":["judge", "deem", "assume", "believe", "consider", "contemplate", "reflect", "mediate"],
+		"trouble":["distress", "anguish", "anxiety", "worry", "wretchedness", "pain", "danger", "peril", "disaster", "grief", "misfortune", "difficulty", "concern", "pains", "inconvenience", "exertion", "effort"],
+		"true":["accurate", "right", "proper", "precise", "exact", "valid", "genuine", "real", "actual", "trusty", "steady", "loyal", "dependable", "sincere", "staunch"]
 	},
 	"multi":{
 		"intro":["There might be several right answers..."],
