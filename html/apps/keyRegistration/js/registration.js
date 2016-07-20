@@ -3,7 +3,13 @@ $(document).ready(function()
     var self = $('#self').prop("checked");
     self ? $('#email').addClass("hidden") : $('#email').removeClass("hidden");
     var create = $('#create').prop("checked");
-    create ? $('#registerInput').addClass("hidden") : $('#registerInput').removeClass("hidden");
+    create ? $('#key').addClass("hidden") : $('#key').removeClass("hidden");
+    create ? $('#typeSelect').addClass("hidden") : $('#typeSelect').removeClass("hidden");
+    create ? $('#type_label').addClass("hidden") : $('#type_label').removeClass("hidden");
+    create ? $('#keysizeSelect').removeClass("hidden") : $('#keysizeSelect').addClass("hidden");
+    create ? $('#keysize_label').removeClass("hidden") : $('#keysize_label').addClass("hidden");
+
+    var algorithms;
 
 	// get password parameters
 	var regex;
@@ -11,29 +17,65 @@ $(document).ready(function()
         data: { getParameters: true },
         dataType: 'json',
         success: function (response) {
-            if(!response.self){
-                $('#status-box').text("You're not allowed to register a public key");
-                $('#status-box').addClass("error");
-                $('#email').prop( "disabled", true );
-                $('#key').prop( "disabled", true );
-                $('#register').prop( "disabled", true );
-            }
-            else{
+            if(response.self){
                 $('#status-box').text("");
                 $('#status-box').removeClass("error");
-                $('#email').prop( "disabled", false );
-                $('#key').prop( "disabled", false );
-                $('#register').prop( "disabled", false );
+                self ? $('#email').addClass("hidden") : $('#email').removeClass("hidden");
+                create ? $('#key').addClass("hidden") : $('#key').removeClass("hidden");
+                $('#register').removeClass("hidden");
+                $('#options_self').removeClass("hidden");
+                $('#options_create').removeClass("hidden");
+                $('#options_general').removeClass("hidden");
+                create ? $('#typeSelect').addClass("hidden") : $('#typeSelect').removeClass("hidden");
+                create ? $('#type_label').addClass("hidden") : $('#type_label').removeClass("hidden");
+                create ? $('#keysizeSelect').removeClass("hidden") : $('#keysizeSelect').addClass("hidden");
+                create ? $('#keysize_label').removeClass("hidden") : $('#keysize_label').addClass("hidden");
+
+                $.each(response.formats, function (i, format) {
+                    $('#typeSelect').append($('<option>', {
+                        value : format,
+                        text : format
+                    }));
+                });
+
+                algorithms = response.algorithms;
+                var keySizeSet = false;
+                $.each(algorithms, function (algorithm, algorithmObject) {
+                    $('#algorithmSelect').append($('<option>', {
+                        value : algorithm,
+                        text : algorithm
+                    }));
+                    if(!keySizeSet){
+                        $.each(algorithmObject.sizes, function (i, keySize) {
+                            $('#keysizeSelect').append($('<option>', {
+                                value : keySize,
+                                text : keySize
+                            }));
+                        });
+                        $('#keysizeSelect').val(algorithmObject.defaultSize);
+                        keyLengthSet = true;
+                    }
+                });
+            }
+            else{
+                setError("You're not allowed to register a public key");
             }
         },
         error: function (xhr, ajaxOptions, thrownError) {
-           $('#status-box').text(thrownError);
-           $('#status-box').addClass("error");
-           $('#email').prop( "disabled", true );
-           $('#key').prop( "disabled", true );
-           $('#register').prop( "disabled", true );
+            setError(thrownError);
        },
     });
+
+    function setError(text){
+        $('#status-box').text(text);
+        $('#status-box').addClass("error");
+        $('#email').addClass("hidden");
+        $('#key').addClass("hidden");
+        $('#register').addClass("hidden");
+        $('#options_self').addClass("hidden");
+        $('#options_create').addClass("hidden");
+        $('#options_general').addClass("hidden");
+    }
 
     $('#self').click(function(){
         self = $(this).prop("checked");
@@ -42,7 +84,17 @@ $(document).ready(function()
 
     $('#create').click(function(){
         create = $(this).prop("checked");
-        create ? $('#registerInput').addClass("hidden") : $('#registerInput').removeClass("hidden");
+        create ? $('#key').addClass("hidden") : $('#key').removeClass("hidden");
+        create ? $('#typeSelect').addClass("hidden") : $('#typeSelect').removeClass("hidden");
+        create ? $('#type_label').addClass("hidden") : $('#type_label').removeClass("hidden");
+        create ? $('#keysizeSelect').removeClass("hidden") : $('#keysizeSelect').addClass("hidden");
+        create ? $('#keysize_label').removeClass("hidden") : $('#keysize_label').addClass("hidden");
+    });
+
+    $('#algorithmSelect').change(function(){
+        algorithm = algorithmSelect.value;
+        console.log(algorithm);
+        console.log("TODO: Implement change of key-sizes");
     });
 
     $('#register').click(function(){
@@ -51,15 +103,17 @@ $(document).ready(function()
             var key = encodeURIComponent($('#key').val());
 
             var data = {};
+            data["algorithm"] = algorithmSelect.value;
             if(!self) data["id"] = mail;
             if(create){
                 data["create"] = true;
+                data["key-size"] = keysizeSelect.value;
             }
             else{
                 data["register"] = key;
                 data["type"] = typeSelect.value;
             }
-            console.log(data);
+            //console.log(data);
 
             $.ajax(	"/api/pubkey_registration.json", {
                 data: data,

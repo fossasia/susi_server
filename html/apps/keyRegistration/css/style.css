@@ -1,8 +1,14 @@
 body {
 	background: #000;
 }
-p {
+
+h1 {
 	font-size: 35px;
+	color: #fff;
+}
+
+p {
+	font-size: 20px;
 	color: #fff;
 }
 

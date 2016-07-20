@@ -48,16 +48,31 @@ import java.util.stream.IntStream;
  * It can either take a public key or create a new key-pair.
  * Users can also be granted the right to register keys for individual other users or whole user roles.
  *
- * To convert a ssh-key into a readable format, call:
- * - openssl rsa -in id_rsa -pubout -outform DER -out public_key.der (for some reason needs the private key as input)
- * - convert it to BASE64
+ * To export your own PublikKey from java for registering, call:
+ * - String encodedPublicKey = Base64.getEncoder().encodeToString(publicKey.getEncoded());
+ *
+ * To use the private key as generated in DER format in java, call:
+ * - PKCS8EncodedKeySpec keySpec = new PKCS8EncodedKeySpec(Base64.getDecoder().decode(encodedPrivateKey));
+ * - PrivateKey privateKey = KeyFactory.getInstance("RSA").generatePrivate(keySpec);
+ *
+ * To sign a challenge as given by the login, call:
+ * - Signature sig = Signature.getInstance("SHA256withRSA");
+ * - sig.initSign(privateKey);
+ * - sig.update(challengeString.getBytes());
+ * - String result = new String(Base64.getEncoder().encode(sig.sign()));
+ *
+ * To create a signature with openssl (using a key in pem format), the following command should work:
+ * - openssl dgst -sha256 -sign privkey.pem -out response.txt challenge.txt
+ * - encode the content of response.in BASE64
  * - if necessary, encode it URL-friendly
  */
 public class PublicKeyRegistrationService extends AbstractAPIHandler implements APIHandler {
 
 	private static final long serialVersionUID = 8578478303032749879L;
 
-	private static final int[] allowedKeyLengthRSA = {1024, 2048, 4096};
+	private static final int[] allowedKeySizesRSA = {1024, 2048, 4096};
+	private static final int defaultKeySizeRSA = 2048;
+	private static final String[] allowedFormats = {"DER", "PEM"};
 
 	@Override
 	public BaseUserRole getMinimalBaseUserRole() {
@@ -114,18 +129,23 @@ public class PublicKeyRegistrationService extends AbstractAPIHandler implements 
 			result.put("users", permissions.getJSONObject("users"));
 			result.put("userRoles", permissions.getJSONObject("userRoles"));
 
-			JSONArray algorithms = new JSONArray();
+			JSONObject algorithms = new JSONObject();
 
 			JSONObject rsa = new JSONObject();
-			rsa.put("algorithm", "RSA");
-			JSONArray keyLength = new JSONArray();
-			for(int i : allowedKeyLengthRSA){
-				keyLength.put(i);
+			JSONArray keySizes = new JSONArray();
+			for(int i : allowedKeySizesRSA){
+				keySizes.put(i);
 			}
-			rsa.put("lengths", keyLength);
-			algorithms.put(rsa);
-
+			rsa.put("sizes", keySizes);
+			rsa.put("defaultSize", defaultKeySizeRSA);
+			algorithms.put("RSA", rsa);
 			result.put("algorithms", algorithms);
+
+			JSONArray formats = new JSONArray();
+			for(String format : allowedFormats){
+				formats.put(format);
+			}
+			result.put("formats", formats);
 
 			return result;
 		}
@@ -177,20 +197,20 @@ public class PublicKeyRegistrationService extends AbstractAPIHandler implements 
 		if(post.get("create", false)){ // create a new key pair on the server
 
 			if(algorithm.equals("RSA")) {
-				int keyLength = 2048;
-				if (post.get("key-length", null) != null) {
-					int finalKeyLength = post.get("key-length", 0);
-					if (!IntStream.of(allowedKeyLengthRSA).anyMatch(x -> x == finalKeyLength)) {
-						throw new APIException(400, "Invalid key length.");
+				int keySize = 2048;
+				if (post.get("key-size", null) != null) {
+					int finalKeyLength = post.get("key-size", 0);
+					if (!IntStream.of(allowedKeySizesRSA).anyMatch(x -> x == finalKeyLength)) {
+						throw new APIException(400, "Invalid key size.");
 					}
-					keyLength = finalKeyLength;
+					keySize = finalKeyLength;
 				}
 
 				KeyPairGenerator keyGen;
 				KeyPair keyPair;
 				try {
 					keyGen = KeyPairGenerator.getInstance(algorithm);
-					keyGen.initialize(keyLength);
+					keyGen.initialize(keySize);
 					keyPair = keyGen.genKeyPair();
 				} catch (NoSuchAlgorithmException e) {
 					throw new APIException(500, "Server error");
@@ -224,6 +244,7 @@ public class PublicKeyRegistrationService extends AbstractAPIHandler implements 
 				result.put("privatekey_PEM", privkey_pem);
 				result.put("keyhash", IO.getKeyHash(keyPair.getPublic()));
 				try{ result.put("keyhash_urlsave", URLEncoder.encode(IO.getKeyHash(keyPair.getPublic()), "UTF-8")); } catch (UnsupportedEncodingException e){}
+				result.put("key-size", keySize);
 				result.put("message", "Successfully created and registered key. Make sure to copy the private key, it won't be saved on the server");
 
 				return result;
@@ -281,7 +302,7 @@ public class PublicKeyRegistrationService extends AbstractAPIHandler implements 
 				else {
 					keySize = 8192;
 				}
-				if (!IntStream.of(allowedKeyLengthRSA).anyMatch(x -> x == keySize)) {
+				if (!IntStream.of(allowedKeySizesRSA).anyMatch(x -> x == keySize)) {
 					throw new APIException(400, "Invalid key length.");
 				}
 
