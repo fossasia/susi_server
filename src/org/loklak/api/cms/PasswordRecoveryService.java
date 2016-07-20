@@ -118,7 +118,7 @@ public class PasswordRecoveryService extends AbstractAPIHandler implements APIHa
 
 	private String getVerificationMailContent(String token) {
 
-		String verificationLink = DAO.getConfig("host.name", "http://127.0.0.1:9000")
+		String verificationLink = DAO.getConfig("host.url", "http://127.0.0.1:9000")
 				+ "/apps/resetpass/index.html?token=" + token;
 		String result;
 		try {
