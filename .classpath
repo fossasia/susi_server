@@ -72,5 +72,6 @@
 	<classpathentry kind="lib" path="lib/jdom-1.1.3.jar"/>
 	<classpathentry kind="lib" path="lib/rome-1.0.jar"/>
 	<classpathentry kind="lib" path="lib/bcprov-jdk15on-154.jar"/>
+	<classpathentry kind="lib" path="lib/bcpkix-jdk15on-154.jar"/>
 	<classpathentry kind="output" path="classes"/>
 </classpath>

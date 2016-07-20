@@ -19,14 +19,16 @@
 
 package org.loklak;
 
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileWriter;
-import java.io.IOException;
+import java.io.*;
 import java.net.ServerSocket;
 import java.nio.file.FileSystems;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.security.KeyStore;
+import java.security.PrivateKey;
+import java.security.Security;
+import java.security.cert.Certificate;
+import java.security.cert.X509Certificate;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
@@ -39,6 +41,11 @@ import javax.servlet.Servlet;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.core.LoggerContext;
 import org.apache.logging.log4j.core.config.Configurator;
+import org.bouncycastle.asn1.pkcs.PrivateKeyInfo;
+import org.bouncycastle.cert.X509CertificateHolder;
+import org.bouncycastle.cert.jcajce.JcaX509CertificateConverter;
+import org.bouncycastle.openssl.PEMParser;
+import org.bouncycastle.openssl.jcajce.JcaPEMKeyConverter;
 import org.eclipse.jetty.rewrite.handler.RewriteHandler;
 import org.eclipse.jetty.rewrite.handler.RewriteRegexRule;
 import org.eclipse.jetty.server.Handler;
@@ -319,94 +326,69 @@ public class LoklakServer {
         //https
         //uncommented lines for http2 (jetty 9.3 / java 8)        
         if(httpsMode.isGreaterOrEqualTo(HttpsMode.ON)){
+
+            Log.getLog().info("HTTPS activated");
         	
         	String keySource = DAO.getConfig("https.keysource", "keystore");
-        	String keystorePath;
-        	String keystorePass;
+            KeyStore keyStore;
         	String keystoreManagerPass;
         	
         	//check for key source. Can be a java keystore or in pem format (gets converted automatically)
         	if("keystore".equals(keySource)){
+                Log.getLog().info("Loading keystore from disk");
+
         		//use native keystore format
         		
-        		File keystore = new File(DAO.conf_dir, DAO.getConfig("keystore.name", "keystore.jks"));
-        		if(!keystore.exists() || !keystore.isFile() || !keystore.canRead()){
+        		File keystoreFile = new File(DAO.conf_dir, DAO.getConfig("keystore.name", "keystore.jks"));
+        		if(!keystoreFile.exists() || !keystoreFile.isFile() || !keystoreFile.canRead()){
         			throw new Exception("Could not find keystore");
         		}
-        		keystorePath = keystore.getAbsolutePath();
-        		keystorePass = DAO.getConfig("keystore.password", "");
+        		keyStore = KeyStore.getInstance(KeyStore.getDefaultType());
+                keyStore.load(new FileInputStream(keystoreFile.getAbsolutePath()), DAO.getConfig("keystore.password", "").toCharArray());
+
         		keystoreManagerPass = DAO.getConfig("keystore.password", "");
         	}
         	else if ("key-cert".equals(keySource)){
+                Log.getLog().info("Importing keystore from key/cert files");
         		//use more common pem format as used by openssl
-        		
+
+                //generate random password
+                char[] chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789".toCharArray();
+                StringBuilder sb = new StringBuilder();
+                Random random = new Random();
+                for (int i = 0; i < 20; i++) {
+                    char c = chars[random.nextInt(chars.length)];
+                    sb.append(c);
+                }
+                String password = keystoreManagerPass = sb.toString();
+
         		//get key and cert
-        		File key = new File(DAO.getConfig("https.key", ""));
-        		if(!key.exists() || !key.isFile() || !key.canRead()){
+        		File keyFile = new File(DAO.getConfig("https.key", ""));
+        		if(!keyFile.exists() || !keyFile.isFile() || !keyFile.canRead()){
         			throw new Exception("Could not find key file");
         		}
-        		File cert = new File(DAO.getConfig("https.cert", ""));
-        		if(!cert.exists() || !cert.isFile() || !cert.canRead()){
+        		File certFile = new File(DAO.getConfig("https.cert", ""));
+        		if(!certFile.exists() || !certFile.isFile() || !certFile.canRead()){
         			throw new Exception("Could not find cert file");
         		}
-        		
-        		
-        		//generate random password
-        		char[] chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789".toCharArray();
-        		StringBuilder sb = new StringBuilder();
-        		Random random = new Random();
-        		for (int i = 0; i < 20; i++) {
-        		    char c = chars[random.nextInt(chars.length)];
-        		    sb.append(c);
-        		}
-        		keystorePass = keystoreManagerPass = sb.toString();
-        		
-        		
-        		//temporary keystore files
-        		String pkcs12_temp = DAO.conf_dir.getAbsolutePath() + "/keystore_temp.pkcs12";
-        		keystorePath = DAO.conf_dir.getAbsolutePath() + "/keystore_temp.jks";
-        		File temp = new File(pkcs12_temp);
-        		if(temp.exists()) temp.delete();
-        		temp = new File(keystorePath);
-        		if(temp.exists()) temp.delete();
-        		
-        		//create temporary pkcs12 file from key and cert
-        		Runtime rt = Runtime.getRuntime();
-        		try{
-        			Process p = rt.exec("openssl pkcs12 -export -out " + pkcs12_temp
-        					+ " -in " + cert.getAbsolutePath()
-        					+ " -inkey " + key.getAbsolutePath()
-        					+ " -passout pass:" + keystorePass);
-        			p.waitFor();
-        		}
-        		catch(IOException e){
-        			throw new Exception("Key/Cert conversion failed");
-        		}
-        		
-        		//import pkcs12 file into keystore
-        		try{
-        			Process p = rt.exec("keytool -importkeystore -noprompt" 
-        					+ " -srckeystore " + pkcs12_temp
-        					+ " -srcstorepass " + keystorePass
-        					+ " -srcstoretype PKCS12"
-        					+ " -destkeystore " + keystorePath
-        					+ " -storepass " + keystorePass);
-        			p.waitFor();
-        		}
-        		catch(IOException e){
-        			throw new Exception("Import of temporary pkcs12 file failed");
-        		}
-        		finally{
-        			//remove intermediate keystore
-        			temp = new File(pkcs12_temp);
-        			if (temp.exists()) temp.delete();
-        		}
-        		
-        		//remove temporary java keystore on program exit
-        		File keystore = new File(keystorePath);
-        		if (keystore.exists()) keystore.deleteOnExit();
-        		
-        		
+
+                Security.addProvider(new org.bouncycastle.jce.provider.BouncyCastleProvider());
+
+                byte[] keyBytes = Files.readAllBytes(keyFile.toPath());
+                byte[] certBytes = Files.readAllBytes(certFile.toPath());
+
+                PEMParser parser = new PEMParser(new InputStreamReader(new ByteArrayInputStream(certBytes)));
+                X509Certificate cert = new JcaX509CertificateConverter().setProvider("BC").getCertificate((X509CertificateHolder) parser.readObject());
+
+                parser = new PEMParser(new InputStreamReader(new ByteArrayInputStream(keyBytes)));
+                PrivateKey key = new JcaPEMKeyConverter().setProvider("BC").getPrivateKey((PrivateKeyInfo) parser.readObject());
+
+                keyStore = KeyStore.getInstance(KeyStore.getDefaultType());
+                keyStore.load(null, null);
+
+                keyStore.setCertificateEntry(cert.getSubjectX500Principal().getName(), cert);
+                keyStore.setKeyEntry("defaultKey",key, password.toCharArray(), new Certificate[] {cert});
+
         		Log.getLog().info("Successfully imported keystore from key/cert files");
         	}
         	else{
@@ -425,9 +407,8 @@ public class LoklakServer {
 	        //alpn.setDefaultProtocol(http1.getProtocol());
 
 	        SslContextFactory sslContextFactory = new SslContextFactory();
-	        
-	        sslContextFactory.setKeyStorePath(keystorePath);
-	        sslContextFactory.setKeyStorePassword(keystorePass);
+
+            sslContextFactory.setKeyStore(keyStore);
 	        sslContextFactory.setKeyManagerPassword(keystoreManagerPass);
 	        //sslContextFactory.setCipherComparator(HTTP2Cipher.COMPARATOR);
 	        //sslContextFactory.setUseCipherSuitesOrder(true);
