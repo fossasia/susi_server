@@ -20,14 +20,10 @@
 package org.loklak.api.admin;
 
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.util.Date;
 import java.util.Enumeration;
 import java.util.List;
 
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.elasticsearch.search.sort.SortOrder;
@@ -37,16 +33,36 @@ import org.loklak.LoklakServer;
 import org.loklak.QueuedIndexing;
 import org.loklak.data.DAO;
 import org.loklak.http.ClientConnection;
-import org.loklak.http.RemoteAccess;
 import org.loklak.objects.QueryEntry;
-import org.loklak.server.FileHandler;
+import org.loklak.server.APIException;
+import org.loklak.server.APIHandler;
+import org.loklak.server.AbstractAPIHandler;
+import org.loklak.server.Authorization;
+import org.loklak.server.BaseUserRole;
 import org.loklak.server.Query;
 import org.loklak.tools.OS;
 import org.loklak.tools.UTF8;
+import org.loklak.tools.storage.JSONObjectWithDefault;
 
-public class StatusServlet extends HttpServlet {
+public class StatusService extends AbstractAPIHandler implements APIHandler {
    
     private static final long serialVersionUID = 8578478303032749879L;
+
+    @Override
+    public String getAPIPath() {
+        return "/api/status.json";
+    }
+
+    @Override
+    public BaseUserRole getMinimalBaseUserRole() {
+        return BaseUserRole.ANONYMOUS;
+    }
+
+    @Override
+    public JSONObject getDefaultPermissions(BaseUserRole baseUserRole) {
+        return null;
+    }
+
 
     public static JSONObject status(final String protocolhostportstub) throws IOException {
         final String urlstring = protocolhostportstub + "/api/status.json";
@@ -55,19 +71,10 @@ public class StatusServlet extends HttpServlet {
         JSONObject json = new JSONObject(UTF8.String(response));
         return json;
     }
-    
+
     @Override
-    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        doGet(request, response);
-    }
-    
-    @Override
-    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        Query post = RemoteAccess.evaluate(request);
-        
-        String callback = post.get("callback", "");
-        boolean jsonp = callback != null && callback.length() > 0;
-        
+    public JSONObject serviceImpl(Query post, HttpServletResponse response, Authorization rights, JSONObjectWithDefault permissions) throws APIException {
+
         if (post.isLocalhostAccess() && OS.canExecUnix && post.get("upgrade", "").equals("true")) {
             Caretaker.upgrade(); // it's a hack to add this here, this may disappear anytime
         }
@@ -76,10 +83,10 @@ public class StatusServlet extends HttpServlet {
         final boolean backend_push = DAO.getConfig("backend.push.enabled", false);
         JSONObject backend_status = null;
         JSONObject backend_status_index_sizes = null;
-        if (backend.length() > 0 && !backend_push) {
-            backend_status = StatusServlet.status(backend);
+        if (backend.length() > 0 && !backend_push) try {
+            backend_status = StatusService.status(backend);
             backend_status_index_sizes = backend_status == null ? null : (JSONObject) backend_status.get("index_sizes");
-        }
+        } catch (IOException e) {}
         long backend_messages = backend_status_index_sizes == null ? 0 : ((Number) backend_status_index_sizes.get("messages")).longValue();
         long backend_users = backend_status_index_sizes == null ? 0 : ((Number) backend_status_index_sizes.get("users")).longValue();
         long local_messages = DAO.countLocalMessages(-1);
@@ -156,10 +163,10 @@ public class StatusServlet extends HttpServlet {
         client_info.put("IsLocalhost", post.isLocalhostAccess() ? "true" : "false");
 
         JSONObject request_header = new JSONObject(true);
-        Enumeration<String> he = request.getHeaderNames();
+        Enumeration<String> he = post.getRequest().getHeaderNames();
         while (he.hasMoreElements()) {
             String h = he.nextElement();
-            request_header.put(h, request.getHeader(h));
+            request_header.put(h, post.getRequest().getHeader(h));
         }
         client_info.put("request_header", request_header);
         
@@ -167,16 +174,7 @@ public class StatusServlet extends HttpServlet {
         json.put("index", index);
         json.put("client_info", client_info);
 
-        // write json
-        response.setCharacterEncoding("UTF-8");
-        FileHandler.setCaching(response, 60);
-        PrintWriter sos = response.getWriter();
-        if (jsonp) sos.print(callback + "(");
-        sos.print(json.toString(2));
-        if (jsonp) sos.println(");");
-        sos.println();
-    
-        FileHandler.setCaching(response, 10); // prevent re-loading of this servlet in the next 10 seconds
+        return json;
     }
 
     public static void main(String[] args) {

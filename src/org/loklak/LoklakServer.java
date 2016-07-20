@@ -71,7 +71,7 @@ import org.loklak.api.admin.AccessServlet;
 import org.loklak.api.admin.CampaignServlet;
 import org.loklak.api.admin.CrawlerServlet;
 import org.loklak.api.admin.SettingsServlet;
-import org.loklak.api.admin.StatusServlet;
+import org.loklak.api.admin.StatusService;
 import org.loklak.api.admin.ThreaddumpServlet;
 import org.loklak.api.cms.*;
 import org.loklak.api.geo.GeocodeServlet;
@@ -509,23 +509,40 @@ public class LoklakServer {
         // add services
         @SuppressWarnings("unchecked")
         Class<? extends Servlet>[] services = new Class[]{
-                SusiService.class,
+                // admin
+                StatusService.class,
+                
+                // cms
                 AppsService.class,
                 AuthorizationDemoService.class,
-                HelloService.class,
-                ConsoleService.class,
-                SignUpService.class,
+                ChangeUserRoleService.class,
                 LoginService.class,
                 PasswordRecoveryService.class,
-                TopMenuService.class,
                 PasswordResetService.class,
-                ChangeUserRoleService.class,
+                PublicKeyRegistrationService.class,
+                SignUpService.class,
+                TopMenuService.class,
                 UserManagementService.class,
-                RSSReaderService.class,
+                
+                // geo
+                
+                // iot
+                
+                // p2p
+                HelloService.class,
+                
+                // search
+                ConsoleService.class,
                 EventBriteCrawlerService.class,
                 MeetupsCrawlerService.class,
-                WordpressCrawlerService.class,
-                PublicKeyRegistrationService.class
+                RSSReaderService.class,
+                SusiService.class,
+                WordpressCrawlerService.class
+                
+                // tools
+                
+                // vis
+                
         };
         for (Class<? extends Servlet> service: services)
             try {
@@ -543,7 +560,6 @@ public class LoklakServer {
         servletHandler.addServlet(PeersServlet.class, "/api/peers.json");
         servletHandler.addServlet(PeersServlet.class, "/api/peers.csv");
         servletHandler.addServlet(CrawlerServlet.class, "/api/crawler.json");
-        servletHandler.addServlet(StatusServlet.class, "/api/status.json");
         servletHandler.addServlet(SearchServlet.class, "/api/search.rss");
         servletHandler.addServlet(SearchServlet.class, "/api/search.json");
         servletHandler.addServlet(SearchServlet.class, "/api/search.txt");
