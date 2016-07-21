@@ -409,6 +409,7 @@
 
 			"keys"   :["tweet frequency", "tweets", "month"],
 			"score"  :2000,
+			"example": "How many tweets did melaniatrump post in May 2016",
 			"phrases":[ {"type":"pattern", "expression":"* tweet frequency of * in *"},
 						{"type":"pattern", "expression":"* tweets did * post in *"},
 						{"type":"pattern", "expression":"* tweets did * post in the month of *"}
@@ -423,6 +424,7 @@
 
 			"keys"   :["tweet frequency", "tweets", "post", "at"],
 			"score"  :2000,
+			"example": "How many tweets did melaniatrump post at 6 PM",
 			"phrases":[ {"type":"pattern", "expression":"* tweet frequency of * at *"},
 						{"type":"pattern", "expression":"* tweets did * post at *"}
 					  ],
@@ -436,6 +438,7 @@
 
 			"keys"   :["tweet frequency", "tweets", "post", "on"],
 			"score"  :2000,
+			"example": "How many tweets did melaniatrump post on Saturdays",
 			"phrases":[ {"type":"pattern", "expression":"* tweet frequency of * on *s"},
 						{"type":"pattern", "expression":"* tweets did * post on *s"}
 					  ],
@@ -449,6 +452,7 @@
 
 			"keys"   :["tweet frequency", "chart"],
 			"score"  :2000,
+			"example": "Show me the yearwise tweet frequency chart of melaniatrump",
 			"phrases":[ {"type":"pattern", "expression":"* the * tweet frequency chart of *"}],
 			"process":[ {"type": "console", "expression": "SELECT $2$ FROM twitanalysis WHERE screen_name='$3$' AND count='1000';"}],
 			"actions":[ {"type": "answer", "select": "random", "phrases":[
@@ -459,6 +463,7 @@
 
 			"keys"   :["tweet type", "post", "a"],
 			"score"  :2000,
+			"example": "How many times did melaniatrump post a video",
 			"phrases":[ {"type":"pattern", "expression":"* did * post a *"}],
 			"process":[ {"type": "console", "expression": "SELECT $3$ AS count FROM twitanalysis WHERE screen_name='$2$' AND count='1000';"}],
 			"actions":[ {"type": "answer", "select": "random", "phrases":[
@@ -468,6 +473,7 @@
 		{
 
 			"keys"   :["tweet activity", "likes", "count"],
+			"example": "How many likes does melaniatrump have in all",
 			"score"  :2000,
 			"phrases":[ {"type":"pattern", "expression":"* likes does * have *"}
 					  ],
@@ -480,8 +486,9 @@
 		{
 
 			"keys"   :["tweet activity", "likes", "maximum"],
+			"example": "What is the maximum number of likes that melaniatrump got",
 			"score"  :2000,
-			"phrases":[ {"type":"pattern", "expression":"* maximum * likes did * get"}
+			"phrases":[ {"type":"pattern", "expression":"* maximum * likes that * got"}
 					  ],
 
 			"process":[ {"type": "console", "expression": "SELECT max_likes FROM twitanalysis WHERE screen_name='$3$' AND count='1000';"}],
@@ -492,6 +499,7 @@
 		{
 
 			"keys"   :["tweet activity", "likes", "average"],
+			"example": "What is the average number of likes that melaniatrump gets",
 			"score"  :2000,
 			"phrases":[ {"type":"pattern", "expression":"* average * likes that * gets"}
 					  ],
@@ -505,6 +513,7 @@
 
 			"keys"   :["tweet activity", "likes", "frequency"],
 			"score"  :2000,
+			"example": "How many times did melaniatrump get 0 likes",
 			"phrases":[ {"type":"pattern", "expression":"* * have * likes"},
 						{"type":"pattern", "expression":"* * get * likes"}
 					  ],
@@ -518,10 +527,11 @@
 
 			"keys"   :["tweet activity", "likes", "frequency", "chart"],
 			"score"  :2000,
-			"phrases":[ {"type":"pattern", "expression":"* frequency chart * likes * *"}
+			"example": "Show me the likes frequency chart of melaniatrump",
+			"phrases":[ {"type":"pattern", "expression":"* likes frequency chart * *"}
 					  ],
 
-			"process":[ {"type": "console", "expression": "SELECT likes_chart FROM twitanalysis WHERE screen_name='$4$' AND count='1000';"}],
+			"process":[ {"type": "console", "expression": "SELECT likes_chart FROM twitanalysis WHERE screen_name='$3$' AND count='1000';"}],
 			"actions":[ {"type": "answer", "select": "random", "phrases":[
 							"Here is the likes frequency chart"
 						]}, {"type": "table"}]
@@ -530,6 +540,7 @@
 
 			"keys"   :["tweet activity", "retweets", "count"],
 			"score"  :2000,
+			"example": "How many retweets does melaniatrump have in all",
 			"phrases":[ {"type":"pattern", "expression":"* retweets does * have *"}
 					  ],
 
@@ -542,7 +553,8 @@
 
 			"keys"   :["tweet activity", "retweets", "maximum"],
 			"score"  :2000,
-			"phrases":[ {"type":"pattern", "expression":"* maximum * retweets did * get"}
+			"example": "What is the maximum number of retweets that melaniatrump got",
+			"phrases":[ {"type":"pattern", "expression":"* maximum * retweets that * got"}
 					  ],
 
 			"process":[ {"type": "console", "expression": "SELECT max_retweets FROM twitanalysis WHERE screen_name='$3$' AND count='1000';"}],
@@ -554,6 +566,7 @@
 
 			"keys"   :["tweet activity", "retweets", "average"],
 			"score"  :2000,
+			"example": "What is the average number of retweets that melaniatrump gets",
 			"phrases":[ {"type":"pattern", "expression":"* average * retweets that * gets"}
 					  ],
 
@@ -566,6 +579,7 @@
 
 			"keys"   :["tweet activity", "retweets", "frequency"],
 			"score"  :2000,
+			"example": "How many times did melaniatrump get 0 retweets",
 			"phrases":[ {"type":"pattern", "expression":"* * have * retweets"},
 						{"type":"pattern", "expression":"* * get * retweets"}
 					  ],
@@ -579,10 +593,11 @@
 
 			"keys"   :["tweet activity", "retweets", "frequency", "chart"],
 			"score"  :2000,
-			"phrases":[ {"type":"pattern", "expression":"* frequency chart * retweets * *"}
+			"example": "Show me the retweet frequency chart of melaniatrump",
+			"phrases":[ {"type":"pattern", "expression":"* retweet frequency chart * *"}
 					  ],
 
-			"process":[ {"type": "console", "expression": "SELECT retweets_chart FROM twitanalysis WHERE screen_name='$4$' AND count='1000';"}],
+			"process":[ {"type": "console", "expression": "SELECT retweets_chart FROM twitanalysis WHERE screen_name='$3$' AND count='1000';"}],
 			"actions":[ {"type": "answer", "select": "random", "phrases":[
 							"Here is the retweets frequency chart"
 						]}, {"type": "table"}]
@@ -591,7 +606,8 @@
 
 			"keys"   :["tweet activity", "hashtags", "count"],
 			"score"  :2000,
-			"phrases":[ {"type":"pattern", "expression":"* hashtags has * uses *"}
+			"example": "How many hashtags has melaniatrump used in all",
+			"phrases":[ {"type":"pattern", "expression":"* hashtags has * used *"}
 					  ],
 
 			"process":[ {"type": "console", "expression": "SELECT hashtags_used_count AS count FROM twitanalysis WHERE screen_name='$2$' AND count='1000';"}],
@@ -603,7 +619,8 @@
 
 			"keys"   :["tweet activity", "hashtags", "maximum"],
 			"score"  :2000,
-			"phrases":[ {"type":"pattern", "expression":"* maximum * hashtags did * use"}
+			"example": "What is the maximum number of hastags that melaniatrump used",
+			"phrases":[ {"type":"pattern", "expression":"* maximum * hashtags that * used"}
 					  ],
 
 			"process":[ {"type": "console", "expression": "SELECT max_hashtags FROM twitanalysis WHERE screen_name='$3$' AND count='1000';"}],
@@ -615,6 +632,7 @@
 
 			"keys"   :["tweet activity", "hashtags", "average"],
 			"score"  :2000,
+			"example": "What is the average number of hashtags that melaniatrump uses",
 			"phrases":[ {"type":"pattern", "expression":"* average * hashtags that * uses"}
 					  ],
 
@@ -627,6 +645,7 @@
 
 			"keys"   :["tweet activity", "hashtags", "frequency"],
 			"score"  :2000,
+			"example": "Hoe many times did melaniatrump use 20 hashtags",
 			"phrases":[ {"type":"pattern", "expression":"* * use * hashtags"}
 					  ],
 
@@ -639,10 +658,11 @@
 
 			"keys"   :["tweet activity", "hashtags", "frequency", "chart"],
 			"score"  :2000,
-			"phrases":[ {"type":"pattern", "expression":"* frequency chart * hashtags * *"}
+			"example": "Show me the hashtag frequency chart of melaniatrump",
+			"phrases":[ {"type":"pattern", "expression":"* hashtag frequency chart * *"}
 					  ],
 
-			"process":[ {"type": "console", "expression": "SELECT hashtags_chart FROM twitanalysis WHERE screen_name='$4$' AND count='1000';"}],
+			"process":[ {"type": "console", "expression": "SELECT hashtags_chart FROM twitanalysis WHERE screen_name='$3$' AND count='1000';"}],
 			"actions":[ {"type": "answer", "select": "random", "phrases":[
 							"Here is the hashtags frequency chart"
 						]}, {"type": "table"}]
