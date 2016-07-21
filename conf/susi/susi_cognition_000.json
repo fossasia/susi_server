@@ -516,7 +516,7 @@
 		},
 		{
 
-			"keys"   :["tweet activity", "likes", "frequency" "chart"],
+			"keys"   :["tweet activity", "likes", "frequency", "chart"],
 			"score"  :2000,
 			"phrases":[ {"type":"pattern", "expression":"* frequency chart * likes * *"}
 					  ],
@@ -577,7 +577,7 @@
 		},
 		{
 
-			"keys"   :["tweet activity", "retweets", "frequency" "chart"],
+			"keys"   :["tweet activity", "retweets", "frequency", "chart"],
 			"score"  :2000,
 			"phrases":[ {"type":"pattern", "expression":"* frequency chart * retweets * *"}
 					  ],
@@ -637,7 +637,7 @@
 		},
 		{
 
-			"keys"   :["tweet activity", "hashtags", "frequency" "chart"],
+			"keys"   :["tweet activity", "hashtags", "frequency", "chart"],
 			"score"  :2000,
 			"phrases":[ {"type":"pattern", "expression":"* frequency chart * hashtags * *"}
 					  ],
@@ -646,6 +646,6 @@
 			"actions":[ {"type": "answer", "select": "random", "phrases":[
 							"Here is the hashtags frequency chart"
 						]}, {"type": "table"}]
-		},
+		}
 	]
 }
