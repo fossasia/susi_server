@@ -259,20 +259,6 @@
 		},
 		{
 
-			"keys"   :["twitanalysis", "frequency_yearwise"],
-			"score"  :200,
-			"phrases":[ {"type":"pattern", "expression":"* frequency of * in *"},
-						{"type":"pattern", "expression":"* tweets did * post in *"},
-						{"type":"pattern", "expression":"* tweets did * post in the month of *"}
-					  ],
-
-			"process":[ {"type": "console", "expression": "SELECT $3$ AS count FROM (SELECT yearwise FROM (SELECT tweet_frequency FROM twitanalysis WHERE screen_name=$2$ AND count='1000'));"}],
-			"actions":[ {"type": "answer", "select": "random", "phrases":[
-							"$2$ tweeted $count$ times in $3$"
-						]}]
-		},
-		{
-
 			"keys"   :["who","what"],
 			"score"  :50,
 			"phrases":[	{"type":"pattern", "expression":"who are you"},
@@ -418,6 +404,248 @@
 			"actions":[	{"type":"answer", "select":"random", "phrases":[
 							"You are welcome, too."
 						]}]
-		}
+		},
+		{
+
+			"keys"   :["tweet frequency", "tweets", "month"],
+			"score"  :2000,
+			"phrases":[ {"type":"pattern", "expression":"* tweet frequency of * in *"},
+						{"type":"pattern", "expression":"* tweets did * post in *"},
+						{"type":"pattern", "expression":"* tweets did * post in the month of *"}
+					  ],
+
+			"process":[ {"type": "console", "expression": "SELECT yearwise['$3$'] AS count FROM twitanalysis WHERE screen_name='$2$' AND count='1000';"}],
+			"actions":[ {"type": "answer", "select": "random", "phrases":[
+							"$2$ tweeted $count$ times in $3$"
+						]}]
+		},
+		{
+
+			"keys"   :["tweet frequency", "tweets", "post", "at"],
+			"score"  :2000,
+			"phrases":[ {"type":"pattern", "expression":"* tweet frequency of * at *"},
+						{"type":"pattern", "expression":"* tweets did * post at *"}
+					  ],
+
+			"process":[ {"type": "console", "expression": "SELECT hourwise['$3$'] AS count FROM twitanalysis WHERE screen_name='$2$' AND count='1000';"}],
+			"actions":[ {"type": "answer", "select": "random", "phrases":[
+							"$2$ tweeted $count$ times at $3$"
+						]}]
+		},
+		{
+
+			"keys"   :["tweet frequency", "tweets", "post", "on"],
+			"score"  :2000,
+			"phrases":[ {"type":"pattern", "expression":"* tweet frequency of * on *s"},
+						{"type":"pattern", "expression":"* tweets did * post on *s"}
+					  ],
+
+			"process":[ {"type": "console", "expression": "SELECT daywise['$3$'] AS count FROM twitanalysis WHERE screen_name='$2$' AND count='1000';"}],
+			"actions":[ {"type": "answer", "select": "random", "phrases":[
+							"$2$ tweeted $count$ times in $3$"
+						]}]
+		},
+		{
+
+			"keys"   :["tweet frequency", "chart"],
+			"score"  :2000,
+			"phrases":[ {"type":"pattern", "expression":"* the * tweet frequency chart of *"}],
+			"process":[ {"type": "console", "expression": "SELECT $2$ FROM twitanalysis WHERE screen_name='$3$' AND count='1000';"}],
+			"actions":[ {"type": "answer", "select": "random", "phrases":[
+							"This is the $2$ frequency chart of $3$"
+						]}, {"type":"table"}]
+		},
+		{
+
+			"keys"   :["tweet type", "post", "a"],
+			"score"  :2000,
+			"phrases":[ {"type":"pattern", "expression":"* did * post a *"}],
+			"process":[ {"type": "console", "expression": "SELECT $3$ AS count FROM twitanalysis WHERE screen_name='$2$' AND count='1000';"}],
+			"actions":[ {"type": "answer", "select": "random", "phrases":[
+							"$2$ posted a $3$ $count$ times"
+						]}]
+		},
+		{
+
+			"keys"   :["tweet activity", "likes", "count"],
+			"score"  :2000,
+			"phrases":[ {"type":"pattern", "expression":"* likes does * have *"}
+					  ],
+
+			"process":[ {"type": "console", "expression": "SELECT likes_count AS count FROM twitanalysis WHERE screen_name='$2$' AND count='1000';"}],
+			"actions":[ {"type": "answer", "select": "random", "phrases":[
+							"$2$ has $count$ likes till now"
+						]}]
+		},
+		{
+
+			"keys"   :["tweet activity", "likes", "maximum"],
+			"score"  :2000,
+			"phrases":[ {"type":"pattern", "expression":"* maximum * likes did * get"}
+					  ],
+
+			"process":[ {"type": "console", "expression": "SELECT max_likes FROM twitanalysis WHERE screen_name='$3$' AND count='1000';"}],
+			"actions":[ {"type": "answer", "select": "random", "phrases":[
+							"Here you go"
+						]}, {"type": "table"}]
+		},
+		{
+
+			"keys"   :["tweet activity", "likes", "average"],
+			"score"  :2000,
+			"phrases":[ {"type":"pattern", "expression":"* average * likes that * gets"}
+					  ],
+
+			"process":[ {"type": "console", "expression": "SELECT average_number_of_likes AS count FROM twitanalysis WHERE screen_name='$3$' AND count='1000';"}],
+			"actions":[ {"type": "answer", "select": "random", "phrases":[
+							"$3$ gets $count$ likes on an average"
+						]}]
+		},
+		{
+
+			"keys"   :["tweet activity", "likes", "frequency"],
+			"score"  :2000,
+			"phrases":[ {"type":"pattern", "expression":"* * have * likes"},
+						{"type":"pattern", "expression":"* * get * likes"}
+					  ],
+
+			"process":[ {"type": "console", "expression": "SELECT likes_chart['$3$'] AS count FROM twitanalysis WHERE screen_name='$2$' AND count='1000';"}],
+			"actions":[ {"type": "answer", "select": "random", "phrases":[
+							"$2$ got $3$ likes, $count$ times"
+						]}]
+		},
+		{
+
+			"keys"   :["tweet activity", "likes", "frequency" "chart"],
+			"score"  :2000,
+			"phrases":[ {"type":"pattern", "expression":"* frequency chart * likes * *"}
+					  ],
+
+			"process":[ {"type": "console", "expression": "SELECT likes_chart FROM twitanalysis WHERE screen_name='$4$' AND count='1000';"}],
+			"actions":[ {"type": "answer", "select": "random", "phrases":[
+							"Here is the likes frequency chart"
+						]}, {"type": "table"}]
+		},
+		{
+
+			"keys"   :["tweet activity", "retweets", "count"],
+			"score"  :2000,
+			"phrases":[ {"type":"pattern", "expression":"* retweets does * have *"}
+					  ],
+
+			"process":[ {"type": "console", "expression": "SELECT retweets_count AS count FROM twitanalysis WHERE screen_name='$2$' AND count='1000';"}],
+			"actions":[ {"type": "answer", "select": "random", "phrases":[
+							"$2$ has $count$ retweets till now"
+						]}]
+		},
+		{
+
+			"keys"   :["tweet activity", "retweets", "maximum"],
+			"score"  :2000,
+			"phrases":[ {"type":"pattern", "expression":"* maximum * retweets did * get"}
+					  ],
+
+			"process":[ {"type": "console", "expression": "SELECT max_retweets FROM twitanalysis WHERE screen_name='$3$' AND count='1000';"}],
+			"actions":[ {"type": "answer", "select": "random", "phrases":[
+							"Here you go"
+						]}, {"type": "table"}]
+		},
+		{
+
+			"keys"   :["tweet activity", "retweets", "average"],
+			"score"  :2000,
+			"phrases":[ {"type":"pattern", "expression":"* average * retweets that * gets"}
+					  ],
+
+			"process":[ {"type": "console", "expression": "SELECT average_number_of_retweets AS count FROM twitanalysis WHERE screen_name='$3$' AND count='1000';"}],
+			"actions":[ {"type": "answer", "select": "random", "phrases":[
+							"$3$ gets $count$ retweets on an average"
+						]}]
+		},
+		{
+
+			"keys"   :["tweet activity", "retweets", "frequency"],
+			"score"  :2000,
+			"phrases":[ {"type":"pattern", "expression":"* * have * retweets"},
+						{"type":"pattern", "expression":"* * get * retweets"}
+					  ],
+
+			"process":[ {"type": "console", "expression": "SELECT retweets_chart['$3$'] AS count FROM twitanalysis WHERE screen_name='$2$' AND count='1000';"}],
+			"actions":[ {"type": "answer", "select": "random", "phrases":[
+							"$2$ got $3$ retweets, $count$ times"
+						]}]
+		},
+		{
+
+			"keys"   :["tweet activity", "retweets", "frequency" "chart"],
+			"score"  :2000,
+			"phrases":[ {"type":"pattern", "expression":"* frequency chart * retweets * *"}
+					  ],
+
+			"process":[ {"type": "console", "expression": "SELECT retweets_chart FROM twitanalysis WHERE screen_name='$4$' AND count='1000';"}],
+			"actions":[ {"type": "answer", "select": "random", "phrases":[
+							"Here is the retweets frequency chart"
+						]}, {"type": "table"}]
+		},
+		{
+
+			"keys"   :["tweet activity", "hashtags", "count"],
+			"score"  :2000,
+			"phrases":[ {"type":"pattern", "expression":"* hashtags has * uses *"}
+					  ],
+
+			"process":[ {"type": "console", "expression": "SELECT hashtags_used_count AS count FROM twitanalysis WHERE screen_name='$2$' AND count='1000';"}],
+			"actions":[ {"type": "answer", "select": "random", "phrases":[
+							"$2$ has used $count$ hashtags till now"
+						]}]
+		},
+		{
+
+			"keys"   :["tweet activity", "hashtags", "maximum"],
+			"score"  :2000,
+			"phrases":[ {"type":"pattern", "expression":"* maximum * hashtags did * use"}
+					  ],
+
+			"process":[ {"type": "console", "expression": "SELECT max_hashtags FROM twitanalysis WHERE screen_name='$3$' AND count='1000';"}],
+			"actions":[ {"type": "answer", "select": "random", "phrases":[
+							"Here you go"
+						]}, {"type": "table"}]
+		},
+		{
+
+			"keys"   :["tweet activity", "hashtags", "average"],
+			"score"  :2000,
+			"phrases":[ {"type":"pattern", "expression":"* average * hashtags that * uses"}
+					  ],
+
+			"process":[ {"type": "console", "expression": "SELECT average_number_of_hashtags_used AS count FROM twitanalysis WHERE screen_name='$3$' AND count='1000';"}],
+			"actions":[ {"type": "answer", "select": "random", "phrases":[
+							"$3$ uses $count$ hashtags on an average"
+						]}]
+		},
+		{
+
+			"keys"   :["tweet activity", "hashtags", "frequency"],
+			"score"  :2000,
+			"phrases":[ {"type":"pattern", "expression":"* * use * hashtags"}
+					  ],
+
+			"process":[ {"type": "console", "expression": "SELECT hashtags_chart['$3$'] AS count FROM twitanalysis WHERE screen_name='$2$' AND count='1000';"}],
+			"actions":[ {"type": "answer", "select": "random", "phrases":[
+							"$2$ used $3$ hashtags, $count$ times"
+						]}]
+		},
+		{
+
+			"keys"   :["tweet activity", "hashtags", "frequency" "chart"],
+			"score"  :2000,
+			"phrases":[ {"type":"pattern", "expression":"* frequency chart * hashtags * *"}
+					  ],
+
+			"process":[ {"type": "console", "expression": "SELECT hashtags_chart FROM twitanalysis WHERE screen_name='$4$' AND count='1000';"}],
+			"actions":[ {"type": "answer", "select": "random", "phrases":[
+							"Here is the hashtags frequency chart"
+						]}, {"type": "table"}]
+		},
 	]
 }

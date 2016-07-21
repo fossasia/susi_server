@@ -20,6 +20,7 @@
 package org.loklak.api.cms;
 
 import java.io.IOException;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -135,11 +136,15 @@ public class TwitterAnalysisService extends AbstractAPIHandler implements APIHan
 			String[] datearr = status.getString("created_at").split("T")[0].split("-");
 			calendar.set(Integer.parseInt(datearr[0]), Integer.parseInt(datearr[1]) - 1, Integer.parseInt(datearr[2]));
 			Date date = new Date(calendar.getTimeInMillis());
-			tweetDate.add(new SimpleDateFormat("MMMM yyyy").format(date));
-			tweetDay.add(new SimpleDateFormat("EEEE", Locale.ENGLISH).format(date)); // day
 			String times = status.getString("created_at").split("T")[1];
 			String hour = times.substring(0, times.length() - 5).split(":")[0];
-			tweetHour.add(hour); // hour
+			try {
+				tweetHour.add(new SimpleDateFormat("h a").format(new SimpleDateFormat("hh").parse(hour)));
+			} catch (ParseException e) {
+				continue;
+			}
+			tweetDate.add(new SimpleDateFormat("MMMM yyyy").format(date));
+			tweetDay.add(new SimpleDateFormat("EEEE", Locale.ENGLISH).format(date)); // day
 			imgCount += status.getInt("images_count");
 			audioCount += status.getInt("audio_count");
 			videoCount += status.getInt("videos_count");
@@ -174,13 +179,12 @@ public class TwitterAnalysisService extends AbstractAPIHandler implements APIHan
 			hashtagCount += status.getInt("hashtags_count");
 		}
 
-		typeresult.put("posted_image", imgCount);
-		typeresult.put("posted_audio", audioCount);
-		typeresult.put("posted_video", videoCount);
-		typeresult.put("posted_link", linksCount);
-		typeresult.put("posted_story",
-				Integer.parseInt(searchresult.getJSONObject("search_metadata").getString("count"))
-						- (imgCount + audioCount + videoCount + linksCount));
+		typeresult.put("image", imgCount);
+		typeresult.put("audio", audioCount);
+		typeresult.put("video", videoCount);
+		typeresult.put("link", linksCount);
+		typeresult.put("story", Integer.parseInt(searchresult.getJSONObject("search_metadata").getString("count"))
+				- (imgCount + audioCount + videoCount + linksCount));
 
 		JSONObject yearlyact = new JSONObject(true);
 		JSONObject hourlyact = new JSONObject(true);

@@ -239,6 +239,12 @@ public class ConsoleService extends AbstractAPIHandler implements APIHandler {
             json.setData(transfer.conclude(json.getData()));
             return json;
         });
+        dbAccess.put(Pattern.compile("SELECT\\h+?(.*?)\\h+?FROM\\h+?twitanalysis\\h+?WHERE\\h+?screen_name\\h??=\\h??'(.*?)'\\h+?AND\\h+?count\\h??=\\h??'(.*?)'\\h??;"), (flow, matcher) -> {
+            SusiThought json = TwitterAnalysisService.showAnalysis(matcher.group(2), matcher.group(3));
+            SusiTransfer transfer = new SusiTransfer(matcher.group(1));
+            json.setData(transfer.conclude(json.getData()));
+            return json;
+        });
 	}
 
     @Override
