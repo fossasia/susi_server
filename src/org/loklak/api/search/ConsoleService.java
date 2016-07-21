@@ -51,7 +51,6 @@ import org.loklak.susi.SusiTransfer;
 
 import org.loklak.tools.storage.JSONObjectWithDefault;
 
-
 import javax.servlet.http.HttpServletResponse;
 
 /* examples:
@@ -70,26 +69,29 @@ import javax.servlet.http.HttpServletResponse;
  * http://localhost:9000/api/console.json?q=SELECT%20*%20FROM%20eventbrite%20WHERE%20url=%27https://www.eventbrite.fr/e/billets-europeade-2016-concert-de-musique-vocale-25592599153?aff=es2%27;
  * http://localhost:9000/api/console.json?q=SELECT%20definition,example%20FROM%20urbandictionary%20WHERE%20query=%27football%27;
  * http://localhost:9000/api/console.json?q=SELECT%20*%20FROM%20wordpress%20WHERE%20url=%27https://jigyasagrover.wordpress.com/%27;
- * */
+ * http://localhost:9000/api/console.json?q=SELECT%20*%20FROM%20timeanddate;
+* */
 
 public class ConsoleService extends AbstractAPIHandler implements APIHandler {
-   
-    private static final long serialVersionUID = 8578478303032749879L;
 
-    @Override
-    public BaseUserRole getMinimalBaseUserRole() { return BaseUserRole.ANONYMOUS; }
+	private static final long serialVersionUID = 8578478303032749879L;
 
-    @Override
-    public JSONObject getDefaultPermissions(BaseUserRole baseUserRole) {
-        return null;
-    }
+	@Override
+	public BaseUserRole getMinimalBaseUserRole() {
+		return BaseUserRole.ANONYMOUS;
+	}
 
-    public String getAPIPath() {
-        return "/api/console.json";
-    }
-    
-    public final static SusiSkills dbAccess = new SusiSkills();
-    static {
+	@Override
+	public JSONObject getDefaultPermissions(BaseUserRole baseUserRole) {
+		return null;
+	}
+
+	public String getAPIPath() {
+		return "/api/console.json";
+	}
+
+	public final static SusiSkills dbAccess = new SusiSkills();
+	static {
         dbAccess.put(Pattern.compile("SELECT\\h+?(.*?)\\h+?FROM\\h+?\\(\\h??SELECT\\h+?(.*?)\\h??\\)\\h+?WHERE\\h+?(.*?)\\h?+IN\\h?+\\((.*?)\\)\\h??;"), (flow, matcher) -> {
             String subquery = matcher.group(2).trim();
             if (!subquery.endsWith(";")) subquery = subquery + ";";
@@ -231,15 +233,14 @@ public class ConsoleService extends AbstractAPIHandler implements APIHandler {
             json.setData(transfer.conclude(json.getData()));
             return json;
         });
-        dbAccess.put(Pattern.compile("SELECT\\h+?(.*?)\\h+?FROM\\h+?twitanalysis\\h+?WHERE\\h+?screen_name\\h??=\\h??'(.*?)'\\h+?AND\\h+?count\\h??=\\h??'(.*?)'\\h??;"), (flow, matcher) -> {
-            SusiThought json = TwitterAnalysisService.showAnalysis(matcher.group(2), matcher.group(3));
+        dbAccess.put(Pattern.compile("SELECT\\h+?(.*?)\\h+?FROM\\h+?timeanddate;"), (flow, matcher) -> {
+            SusiThought json = TimeAndDateService.timeAndDate();
             SusiTransfer transfer = new SusiTransfer(matcher.group(1));
             json.setData(transfer.conclude(json.getData()));
             return json;
         });
-        
-    }
-    
+	}
+
     @Override
     public JSONObject serviceImpl(Query post, HttpServletResponse response, Authorization rights, final JSONObjectWithDefault permissions) throws APIException {
 

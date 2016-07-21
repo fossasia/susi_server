@@ -14,7 +14,7 @@
 [![Deploy to Docker Cloud](https://files.cloud.docker.com/images/deploy-to-dockercloud.svg)](https://cloud.docker.com/stack/deploy/)
 
 ## Description
-loklak is a server application which is able to collect messages from various sources, including twitter. The server contains a search index and a peer-to-peer index sharing interface. All messages are stored in an elasticsearch index.
+loklak is a server application which is able to collect messages from various sources, including twitter. The server contains a search index and a peer-to-peer index sharing interface. All messages are stored in an elasticsearch index. An automatic deployment from the development branch at GitHub is available for tests here https://loklak-server-dev.herokuapp.com
 
 'Lok Lak' is also a very tasty Cambodian stir-fry meat dish (usually beef) with a LOT of fresh black pepper. If you ever have the chance to eat Beef Lok Lak, please try it. I hope not to scare vegetarians with this name, currently I am one as well.
 
@@ -61,9 +61,7 @@ Nowhere, you must clone the git repository of loklak and built it yourself. That
 To install loklak with Docker please refer to the [loklak Docker installation readme](/docs/installation_docker.md).
 
 ### How do I deploy loklak with Heroku?
-You can easily deploy to Heroku by clicking the Deploy to Heroku button above.
-
-To install loklak using Heroku Toolbelt, please refer to the [loklak Heroku installation readme](/docs/installation_heroku.md).
+You can easily deploy to Heroku by clicking the Deploy to Heroku button above. To install loklak using Heroku Toolbelt, please refer to the [loklak Heroku installation readme](/docs/installation_heroku.md).
 
 ### How do I deploy loklak with cloud9?
 To install loklak with cloud9 please refer to the [loklak cloud9 installation readme](/docs/installation_cloud9.md).
@@ -153,14 +151,9 @@ Hey, this is the tool for that! Just put http://loklak.org/api/search.rss?q=%23l
 LGPL 2.1
 
 
-## There should be XXX and YYY can be enhanced!!
+## Where can I report bugs and make feature requests?
 
-This project is considered a community work. There is no company behind loklak. The development crew consist of YOU also. I am very thankful for pull request. So if you discovered that something can be enhanced, please do it yourself and send me a pull request. If you find a bug, please try to fix it. If you report a bug to me I will possibly consider it but at the very end of a giant, always growing heap of work. The best chance for you to get things done is to try it yourself.
-
-
-## Where can I report bugs?
-
-Please see above. We prefer you solve bugs you encounter. Our [tracker is here](https://github.com/loklak/loklak_server/issues).
+This project is considered a community work. The development crew consist of YOU too. I am very thankful for pull request. So if you discovered that something can be enhanced, please do it yourself and make a pull request. If you find a bug, please try to fix it. If you report a bug to me I will possibly consider it but at the very end of a giant, always growing heap of work. The best chance for you to get things done is to try it yourself. Our [issue tracker is here](https://github.com/loklak/loklak_server/issues).
 
 
 Have fun!
