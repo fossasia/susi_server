@@ -645,7 +645,7 @@
 
 			"keys"   :["tweet activity", "hashtags", "frequency"],
 			"score"  :2000,
-			"example": "Hoe many times did melaniatrump use 20 hashtags",
+			"example": "How many times did melaniatrump use 20 hashtags",
 			"phrases":[ {"type":"pattern", "expression":"* * use * hashtags"}
 					  ],
 

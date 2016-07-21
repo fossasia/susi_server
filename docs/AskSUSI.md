@@ -35,6 +35,26 @@ _example:_ Please explain insomnia.
 
 - Who tweeted most about `<query-term>` ? *OR* The top tweeter about `<query-term>`
 - How many times was `<query-term>` tweeted in the last 24 hours ?
+- How many tweets did `<query-username>` post in May 2016 ?
+- How many tweets did `<query-username>` post at 6 PM ?
+- How many tweets did `<query-username>` post on Saturdays ?
+- Show me the yearwise tweet frequency chart of `<query-username>` ?
+- How many times did `<query-username>` post a video ?
+- How many likes does `<query-username>` have in all ?
+- What is the maximum number of likes that `<query-username>` got ?
+- What is the average number of likes that `<query-username>` gets ?
+- How many times did `<query-username>` get 0 likes ?
+- Show me the likes frequency chart of `<query-username>`
+- How many retweets does `<query-username>` have in all ?
+- What is the maximum number of retweets that `<query-username>` got ?
+- What is the average number of retweets that `<query-username>` gets ?
+- How many times did `<query-username>` get 0 retweets ?
+- Show me the retweet frequency chart of `<query-username>`
+- How many hashtags has `<query-username>` used in all ?
+- What is the maximum number of hastags that `<query-username>` used ?
+- What is the average number of hashtags that `<query-username>` uses ?
+- How many times did `<query-username>` use 20 hashtags ?
+- Show me the hashtag frequency chart of `<query-username>`
 
 ***
 ###RSS Feeds
