@@ -412,7 +412,7 @@
 				{"type":"pattern", "expression":"* tweets did * post in *"},
 				{"type":"pattern", "expression":"* tweets did * post in the month of *"}
 			],
-			"process":[ {"type": "console", "expression": "SELECT yearwise['$3$'] AS count FROM twitanalysis WHERE screen_name='$2$' AND count='1000';"}],
+			"process":[ {"type": "console", "expression": "SELECT yearwise[$3$] AS count FROM twitanalysis WHERE screen_name='$2$' AND count='1000';"}],
 			"actions":[ {"type": "answer", "select": "random", "phrases":[
 				"$2$ tweeted $count$ times in $3$"
 			]}]
@@ -424,7 +424,7 @@
 			"phrases":[ {"type":"pattern", "expression":"* tweet frequency of * at *"},
 				{"type":"pattern", "expression":"* tweets did * post at *"}
 			],
-			"process":[ {"type": "console", "expression": "SELECT hourwise['$3$'] AS count FROM twitanalysis WHERE screen_name='$2$' AND count='1000';"}],
+			"process":[ {"type": "console", "expression": "SELECT hourwise[$3$] AS count FROM twitanalysis WHERE screen_name='$2$' AND count='1000';"}],
 			"actions":[ {"type": "answer", "select": "random", "phrases":[
 				"$2$ tweeted $count$ times at $3$"
 			]}]
@@ -438,7 +438,7 @@
 				{"type":"pattern", "expression":"* tweet frequency of * on *"},
 				{"type":"pattern", "expression":"* tweets did * post on *"}
 			],
-			"process":[ {"type": "console", "expression": "SELECT daywise['$3$'] AS count FROM twitanalysis WHERE screen_name='$2$' AND count='1000';"}],
+			"process":[ {"type": "console", "expression": "SELECT daywise[$3$] AS count FROM twitanalysis WHERE screen_name='$2$' AND count='1000';"}],
 			"actions":[ {"type": "answer", "select": "random", "phrases":[
 				"$2$ tweeted $count$ times on $3$"
 			]}]
@@ -503,7 +503,7 @@
 			"phrases":[ {"type":"pattern", "expression":"* * have * likes"},
 				{"type":"pattern", "expression":"* * get * likes"}
 			],
-			"process":[ {"type": "console", "expression": "SELECT likes_chart['$3$'] AS count FROM twitanalysis WHERE screen_name='$2$' AND count='1000';"}],
+			"process":[ {"type": "console", "expression": "SELECT likes_chart[$3$] AS count FROM twitanalysis WHERE screen_name='$2$' AND count='1000';"}],
 			"actions":[ {"type": "answer", "select": "random", "phrases":[
 				"$2$ got $3$ likes, $count$ times"
 			]}]
@@ -559,7 +559,7 @@
 			"phrases":[ {"type":"pattern", "expression":"* * have * retweets"},
 				{"type":"pattern", "expression":"* * get * retweets"}
 			],
-			"process":[ {"type": "console", "expression": "SELECT retweets_chart['$3$'] AS count FROM twitanalysis WHERE screen_name='$2$' AND count='1000';"}],
+			"process":[ {"type": "console", "expression": "SELECT retweets_chart[$3$] AS count FROM twitanalysis WHERE screen_name='$2$' AND count='1000';"}],
 			"actions":[ {"type": "answer", "select": "random", "phrases":[
 				"$2$ got $3$ retweets, $count$ times"
 			]}]
@@ -614,7 +614,7 @@
 			"example": "How many times did melaniatrump use 20 hashtags",
 			"phrases":[ {"type":"pattern", "expression":"* * use * hashtags"}
 			],
-			"process":[ {"type": "console", "expression": "SELECT hashtags_chart['$3$'] AS count FROM twitanalysis WHERE screen_name='$2$' AND count='1000';"}],
+			"process":[ {"type": "console", "expression": "SELECT hashtags_chart[$3$] AS count FROM twitanalysis WHERE screen_name='$2$' AND count='1000';"}],
 			"actions":[ {"type": "answer", "select": "random", "phrases":[
 				"$2$ used $3$ hashtags, $count$ times"
 			]}]
@@ -638,7 +638,7 @@
 				{"type":"pattern", "expression":"* * post in *"},
 				{"type":"pattern", "expression":"* of * were written in *"}
 			],
-			"process":[ {"type": "console", "expression": "SELECT languages['$3$'] AS count FROM twitanalysis WHERE screen_name='$2$' AND count='1000';"}],
+			"process":[ {"type": "console", "expression": "SELECT languages[$3$] AS count FROM twitanalysis WHERE screen_name='$2$' AND count='1000';"}],
 			"actions":[ {"type": "answer", "select": "random", "phrases":[
 				"$2$ posted $count$ tweets in $3$"
 			]}]
