@@ -440,12 +440,14 @@
 			"score"  :2000,
 			"example": "How many tweets did melaniatrump post on Saturdays",
 			"phrases":[ {"type":"pattern", "expression":"* tweet frequency of * on *s"},
-						{"type":"pattern", "expression":"* tweets did * post on *s"}
+						{"type":"pattern", "expression":"* tweets did * post on *s"},
+						{"type":"pattern", "expression":"* tweet frequency of * on *"},
+						{"type":"pattern", "expression":"* tweets did * post on *"}
 					  ],
 
 			"process":[ {"type": "console", "expression": "SELECT daywise['$3$'] AS count FROM twitanalysis WHERE screen_name='$2$' AND count='1000';"}],
 			"actions":[ {"type": "answer", "select": "random", "phrases":[
-							"$2$ tweeted $count$ times in $3$"
+							"$2$ tweeted $count$ times on $3$"
 						]}]
 		},
 		{
@@ -665,6 +667,47 @@
 			"process":[ {"type": "console", "expression": "SELECT hashtags_chart FROM twitanalysis WHERE screen_name='$3$' AND count='1000';"}],
 			"actions":[ {"type": "answer", "select": "random", "phrases":[
 							"Here is the hashtags frequency chart"
+						]}, {"type": "table"}]
+		},
+		{
+
+			"keys"   :["tweet content", "language", "frequency"],
+			"score"  :2000,
+			"example": "How many tweets did melaniatrump write in English?",
+			"phrases":[ {"type":"pattern", "expression":"* * write in *"},
+						{"type":"pattern", "expression":"* * post in *"},
+						{"type":"pattern", "expression":"* of * were written in *"}
+					  ],
+
+			"process":[ {"type": "console", "expression": "SELECT languages['$3$'] AS count FROM twitanalysis WHERE screen_name='$2$' AND count='1000';"}],
+			"actions":[ {"type": "answer", "select": "random", "phrases":[
+							"$2$ posted $count$ tweets in $3$"
+						]}]
+		},
+		{
+
+			"keys"   :["tweet content", "language", "analysis", "chart"],
+			"score"  :2000,
+			"example": "Show me the language analysis chart of melaniatrump",
+			"phrases":[ {"type":"pattern", "expression":"* language analysis chart * *"}
+					  ],
+
+			"process":[ {"type": "console", "expression": "SELECT languages FROM twitanalysis WHERE screen_name='$3$' AND count='1000';"}],
+			"actions":[ {"type": "answer", "select": "random", "phrases":[
+							"Here is the language analysis chart"
+						]}, {"type": "table"}]
+		},
+		{
+
+			"keys"   :["tweet content", "sentiment", "analysis", "chart"],
+			"score"  :2000,
+			"example": "Show me the sentiment analysis chart of melaniatrump",
+			"phrases":[ {"type":"pattern", "expression":"* sentiment analysis chart * *"}
+					  ],
+
+			"process":[ {"type": "console", "expression": "SELECT sentiments FROM twitanalysis WHERE screen_name='$3$' AND count='1000';"}],
+			"actions":[ {"type": "answer", "select": "random", "phrases":[
+							"Here is the sentiment analysis chart"
 						]}, {"type": "table"}]
 		}
 	]

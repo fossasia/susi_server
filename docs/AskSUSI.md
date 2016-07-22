@@ -34,27 +34,79 @@ _example:_ Please explain insomnia.
 ###Twitter/Loklak
 
 - Who tweeted most about `<query-term>` ? *OR* The top tweeter about `<query-term>`
+_example:_  Who tweeted most about pokemongo ?
+
 - How many times was `<query-term>` tweeted in the last 24 hours ?
-- How many tweets did `<query-username>` post in May 2016 ?
-- How many tweets did `<query-username>` post at 6 PM ?
-- How many tweets did `<query-username>` post on Saturdays ?
-- Show me the yearwise tweet frequency chart of `<query-username>` ?
-- How many times did `<query-username>` post a video ?
-- How many likes does `<query-username>` have in all ?
-- What is the maximum number of likes that `<query-username>` got ?
-- What is the average number of likes that `<query-username>` gets ?
-- How many times did `<query-username>` get 0 likes ?
-- Show me the likes frequency chart of `<query-username>`
-- How many retweets does `<query-username>` have in all ?
-- What is the maximum number of retweets that `<query-username>` got ?
-- What is the average number of retweets that `<query-username>` gets ?
-- How many times did `<query-username>` get 0 retweets ?
-- Show me the retweet frequency chart of `<query-username>`
-- How many hashtags has `<query-username>` used in all ?
-- What is the maximum number of hastags that `<query-username>` used ?
-- What is the average number of hashtags that `<query-username>` uses ?
-- How many times did `<query-username>` use 20 hashtags ?
-- Show me the hashtag frequency chart of `<query-username>`
+_example:_  How many times was pokemongo tweeted in the last 24 hours ?
+
+- `<random>` tweets did `<query-username>` post in `<query-month>` ?
+_example:_  How many tweets did melaniatrump post in May 2016 ?
+
+- `<random>` tweets did `<query-username>` post at `<query-time>` ?
+_example:_  How many tweets did melaniatrump post at 6 PM ?
+
+- `<random>` tweets did `<query-username>` post on `<query-day>`s ?
+_example:_  How many tweets did melaniatrump post on Saturdays ?
+
+- `<random>` the `<query-frequency> (yearwise / hourwise / daywise)` tweet frequency chart of `<query-username>` ?
+_example:_  Show me the yearwise tweet frequency chart of melaniatrump 
+
+- `<random>` did `<query-username>` post a `<query-tweet-type>` ?
+_example:_  How many times did melaniatrump post a video ?
+
+- `<random>` likes does `<query-username>` have `<random>` ?
+_example:_  How many likes does melaniatrump have in all ?
+
+- `<random>` maximum `<random>` likes that `<query-username>` got ?
+_example:_  What is the maximum number of likes that melaniatrump got ?
+
+- `<random>` average `<random>` likes that `<query-username>` gets ?
+_example:_  What is the average number of likes that melaniatrump gets ?
+
+- `<random>` `<query-username>` get `<query-number>` likes ?
+_example:_  How many times did melaniatrump get 0 likes ?
+
+- `<random>` likes frequency chart `<random>` `<query-username>`
+_example:_  Show me the likes frequency chart of melaniatrump
+
+- `<random>` retweets does `<query-username>` have `<random>` ?
+_example:_  How many retweets does melaniatrump have in all ?
+
+- `<random>` maximum `<random>` retweets that `<query-username>` got ?
+_example:_  What is the maximum number of retweets that melaniatrump got ?
+
+- `<random>` average `<random>` retweets that `<query-username>` gets ?
+_example:_  What is the average number of retweets that melaniatrump gets ?
+
+- `<random>` `<query-username>` get `<query-number>` retweets ?
+_example:_  How many times did melaniatrump get 0 retweets ?
+
+- `<random>` retweet frequency chart `<random>` `<query-username>`
+_example:_  Show me the retweet frequency chart of melaniatrump 
+
+- `<random>` hashtags has `<query-username>` used `<random>` ?
+_example:_  How many hashtags has melaniatrump used in all ?
+
+- `<random>` maximum `<random>` hashtags that `<query-username>` used ?
+_example:_  What is the maximum number of hastags that melaniatrump used ?
+
+- `<random>` average `<random>` hashtags that `<query-username>` uses ?
+_example:_  What is the average number of hashtags that melaniatrump uses ?
+
+- `<random>` `<query-username>` use `<query-number>` hashtags ?
+_example:_  How many times did melaniatrump use 20 hashtags ?
+
+- `<random>` hashtag frequency chart `<random>` `<query-username>`
+_example:_  Show me the hashtag frequency chart of melaniatrump
+
+- `<random>` `<query-username>` write in `<query-language>` ?
+_example:_  How many tweets did melaniatrump write in English ?
+
+- `<random>` language analysis chart `<random>` `<query-username>`
+_example:_  Show me the language analysis chart of melaniatrump
+
+- `<random>` sentiment analysis chart `<random>` `<query-username>`
+_example:_  Show me the sentiment analysis chart of melaniatrump
 
 ***
 ###RSS Feeds

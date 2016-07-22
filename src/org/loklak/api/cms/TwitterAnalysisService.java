@@ -266,8 +266,8 @@ public class TwitterAnalysisService extends AbstractAPIHandler implements APIHan
 		for (String s : sentimentSet) {
 			sentimentresult.put(s, Collections.frequency(sentimentList, s));
 		}
-		contentresult.put("language_analysis", languageresult);
-		contentresult.put("sentiment_analysis", sentimentresult);
+		contentresult.put("languages", languageresult);
+		contentresult.put("sentiments", sentimentresult);
 		finalresultarray.put(contentresult);
 		json.setData(finalresultarray);
 		return json;
