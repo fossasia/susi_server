@@ -8,6 +8,8 @@
         <pathelement location="lib/antlr-runtime-3.5.jar"/>
         <pathelement location="lib/asm-4.1.jar"/>
         <pathelement location="lib/asm-commons-4.1.jar"/>
+        <pathelement location="lib/bcprov-jdk15on-154.jar"/>
+        <pathelement location="lib/bcpkix-jdk15on-154.jar"/>
         <pathelement location="lib/commons-cli-1.3.1.jar"/>
         <pathelement location="lib/commons-logging-1.2.jar"/>
         <pathelement location="lib/compiler-0.8.13.jar"/>

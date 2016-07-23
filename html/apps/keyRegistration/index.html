@@ -51,30 +51,37 @@
     
     <br>
     <div class = "form">
-      <p>Register a public key</p>
+      <p><h1>Register a public key</h1></p>
       <br>
       <div id = "status-box"></div>
       <br>
       <div id="form">
-        <div class = "options_self">
+        <div id="options_self">
           <input type = "checkbox" id = "self" checked>
           <label for = "self" id = "self_label">For this user</label>
         </div>
         <div class = "fields">
           <input type = "text" id="email" placeholder="Email" required>
-          <label id = "email_label"></label>
         </div>
         <br>
 
-        <div class = "options_create">
+        <div id="options_create">
           <input type = "checkbox" id = "create" checked>
           <label for = "create" id = "create_label">Create new key-pair</label>
         </div>
 
-        <div class = "fields">
-          <input name = "key" id="key" type="text" placeholder="Public Key" required>
-          <label id = "key_label"></label>
+        <div id="options_general">
+          <label id = "algorithm_label" for="algorithmSelect">Algorithm:</label>
+          <select id="algorithmSelect"></select>
+          <label id = "type_label" for="typeSelect">Key type:</label>
+          <select id="typeSelect"></select>
+          <label id = "keysize_label" for="keysizeSelect">Key size:</label>
+          <select id="keysizeSelect"></select>
         </div>
+        <br>
+
+
+        <textarea id="key" cols="80" rows="30" placeholder="Public Key"></textarea>
 
         <br>
 
@@ -83,26 +90,26 @@
       </div>
       <div id="output" class="hidden">
         <label id="hash_label" for="hash">Key Hash</label><br>
-        <textarea id="hash" class="text" cols="70" rows="1" readonly></textarea>
+        <textarea id="hash" class="text" cols="80" rows="1" readonly></textarea>
         <br>
         <label id="hash_label_URLSAVE" for="hash_URLSAVE">Key Hash URL-save</label><br>
-        <textarea id="hash_URLSAVE" class="text" cols="70" rows="1" readonly></textarea>
-        <br>
-        <p>DER + BASE64 format for easy use in java</p>
+        <textarea id="hash_URLSAVE" class="text" cols="80" rows="1" readonly></textarea>
+        <p><br></p>
+        <p>DER + BASE64 format (mostly used in java projects)</p>
         <br>
         <label id="pubkey_DER_label" for="pubkey_DER" >Public Key</label><br>
-        <textarea id="pubkey_DER" class="text" cols="70" rows="7" readonly></textarea>
+        <textarea id="pubkey_DER" class="text" cols="80" rows="7" readonly></textarea>
         <br><br>
         <label id="privkey_DER_label" for="privkey_DER" class="hidden">Private Key</label><br>
-        <textarea id="privkey_DER" class="hidden text" cols="70" rows="30" readonly></textarea>
-        <br>
-        <p>PEM format for easy use with OpenSSL</p>
+        <textarea id="privkey_DER" class="hidden text" cols="80" rows="30" readonly></textarea>
+        <p><br></p>
+        <p>PEM format (common in other projects like OpenSSL)</p>
         <br>
         <label id="pubkey_PEM_label" for="pubkey_PEM" >Public Key</label><br>
-        <textarea id="pubkey_PEM" class="text" cols="70" rows="7" readonly></textarea>
+        <textarea id="pubkey_PEM" class="text" cols="80" rows="7" readonly></textarea>
         <br><br>
         <label id="privkey_PEM_label" for="privkey_PEM" class="hidden">Private Key</label><br>
-        <textarea id="privkey_PEM" class="hidden text" cols="70" rows="30" readonly></textarea>
+        <textarea id="privkey_PEM" class="hidden text" cols="80" rows="30" readonly></textarea>
       </div>
     </div>
 

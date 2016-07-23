@@ -25,6 +25,18 @@ $(document).ready(function()
 		},
 	});
 
+	$('#email').keyup(function(event){
+        if(event.keyCode == 13){
+            $("#login").click();
+        }
+    });
+
+    $('#pass').keyup(function(event){
+        if(event.keyCode == 13){
+            $("#login").click();
+        }
+    });
+
 	$('#pass').focus(function(){
 		checkEmpty();
 	})
