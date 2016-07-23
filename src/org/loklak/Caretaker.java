@@ -237,10 +237,25 @@ public class Caretaker extends Thread {
     }
     
     public static void transmitTimelineToBackend(Timeline tl) {
-        if (DAO.getConfig("backend", new String[0], ",").length > 0) pushToBackendTimeline.add(tl);
+        if (DAO.getConfig("backend", new String[0], ",").length > 0) {
+            boolean clone = false;
+            for (MessageEntry message: tl) {
+                if (!message.getSourceType().propagate()) {clone = true; break;}
+            }
+            if (clone) {
+                Timeline tlc = new Timeline(tl.getOrder(), tl.getScraperInfo());
+                for (MessageEntry message: tl) {
+                    if (message.getSourceType().propagate()) tlc.add(message, tl.getUser(message));
+                }
+                if (tlc.size() > 0) pushToBackendTimeline.add(tlc);
+            } else {
+                pushToBackendTimeline.add(tl);
+            }
+        }
     }
     
     public static void transmitMessage(final MessageEntry tweet, final UserEntry user) {
+        if (!tweet.getSourceType().propagate()) return;
         if (DAO.getConfig("backend", new String[0], ",").length <= 0) return;
         if (!DAO.getConfig("backend.push.enabled", false)) return;
         Timeline tl = pushToBackendTimeline.poll();

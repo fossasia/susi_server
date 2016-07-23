@@ -67,7 +67,7 @@ public class QueryEntry extends AbstractObjectEntry implements ObjectEntry {
     
     protected String query;           // the query in the exact way as the user typed it in
     protected int query_length;       // the length in the query, number of characters
-    public SourceType source_type; // the (external) retrieval system where that query was submitted
+    public SourceType source_type;    // the (external) retrieval system where that query was submitted
     protected int timezoneOffset;     // the timezone offset of the user
     protected Date query_first;       // the date when this query was submitted by the user the first time
     protected Date query_last;        // the date when this query was submitted by the user the last time
@@ -112,7 +112,7 @@ public class QueryEntry extends AbstractObjectEntry implements ObjectEntry {
         this.query_length = (int) parseLong((Number) json.get("query_length"));
         String source_type_string = (String) json.get("source_type");
         if (source_type_string == null) source_type_string = SourceType.TWITTER.toString();
-        this.source_type = new SourceType(source_type_string);
+        this.source_type = SourceType.byName(source_type_string);
         this.timezoneOffset = (int) parseLong((Number) json.get("timezoneOffset"));
         Date now = new Date();
         this.query_first = parseDate(json.get("query_first"), now);

@@ -478,6 +478,46 @@
     }
   }
 }</pre>
+<p>Loklak can also suggest what's trending and can give you the list of trending hashtags using the same search aggregations method. To find out the most trending hashtags on loklak since a particular date. Other filters like <code>until</code> can also be applied, here is a sample request</p>
+<ul class="request">
+  <li>url&nbsp;&nbsp;: <a href="http://loklak.org/api/search.json?q=since:2016-06-01&source=cache&count=0&fields=hashtags" target="_blank">http://loklak.org/api/search.json?q=since:2016-06-01&source=cache&count=0&fields=hashtags</a>
+  </li>
+</ul><br>
+<pre>{
+  "readme_0": "THIS JSON IS THE RESULT OF YOUR SEARCH QUERY - THERE IS NO WEB PAGE WHICH SHOWS THE RESULT!",
+  "readme_1": "loklak.org is the framework for a message search system, not the portal, read: http://loklak.org/about.html#notasearchportal",
+  "readme_2": "This is supposed to be the back-end of a search portal. For the api, see http://loklak.org/api.html",
+  "readme_3": "Parameters q=(query), source=(cache|backend|twitter|all), callback=p for jsonp, maximumRecords=(message count), minified=(true|false)",
+  "search_metadata": {
+    "itemsPerPage": "0",
+    "count": "0",
+    "count_twitter_all": 0,
+    "count_twitter_new": 0,
+    "count_backend": 0,
+    "count_cache": 33284,
+    "hits": 33284,
+    "period": 9223372036854775807,
+    "query": "since:2016-06-01",
+    "client": "1.39.62.88",
+    "time": 4,
+    "servicereduction": "false",
+    "index": "messages_hour"
+  },
+  "statuses": [],
+  "aggregations": {"hashtags": {
+    "job": 433,
+    "hiring": 346,
+    "jobs": 183,
+    "nowplaying": 165,
+    "careerarc": 162,
+    "6yearsof1d": 115,
+    "6yearsofonedirection": 110,
+    "dncleaks": 99,
+    "pslmatchmadeinheaven": 97,
+    "hungariangp": 92
+  }}
+} 
+</pre>
 <p>A special field is the "created_at" field which will create a
   date histogram if listed in the GET-attribute 'fields'. The date
   histogram resolution depends on the time frame as given in the
@@ -524,6 +564,212 @@
     "2015-04-06 13:00": 0,
     "2015-04-06 14:00": 1
   }}
+}
+</pre>
+<p>It is also possible to specify the order in descending order for the following filter options <code>favourites_count</code>, <code>retweet_count</code> and the default being <code>created_at</code>. Here are the examples of the different queries which make this happen.</p>
+<ul class="request">
+  <li>retweet count: &nbsp;&nbsp;: <a href="http://localhost:9000/api/search.json?timezoneOffset=-120&q=fossasia&order=retweet_count&source=cache" target="_blank">http://localhost:9000/api/search.json?timezoneOffset=-120&q=fossasia&order=retweet_count&source=cache</a></li>
+  <li>favorites count: &nbsp;&nbsp;: <a href="http://localhost:9000/api/search.json?timezoneOffset=-120&q=fossasia&order=favourites_count&source=cache" target="_blank">http://localhost:9000/api/search.json?timezoneOffset=-120&q=fossasia&order=favourites_count&source=cache</a></li>
+</ul>
+<pre>
+  {
+  "readme_0": "THIS JSON IS THE RESULT OF YOUR SEARCH QUERY - THERE IS NO WEB PAGE WHICH SHOWS THE RESULT!",
+  "readme_1": "loklak.org is the framework for a message search system, not the portal, read: http://loklak.org/about.html#notasearchportal",
+  "readme_2": "This is supposed to be the back-end of a search portal. For the api, see http://loklak.org/api.html",
+  "readme_3": "Parameters q=(query), source=(cache|backend|twitter|all), callback=p for jsonp, maximumRecords=(message count), minified=(true|false)",
+  "search_metadata": {
+    "itemsPerPage": "100",
+    "count": "100",
+    "count_twitter_all": 0,
+    "count_twitter_new": 0,
+    "count_backend": 0,
+    "count_cache": 211,
+    "hits": 211,
+    "query": "fossasia",
+    "client": "0:0:0:0:0:0:0:1",
+    "time": 34,
+    "servicereduction": "false",
+    "index": "messages"
+  },
+  "statuses": [
+    {
+      "timestamp": "2016-07-23T13:25:33.795Z",
+      "created_at": "2016-03-25T01:09:45.000Z",
+      "screen_name": "fossasia",
+      "text": "Become a #FOSSASIA #GSoC student! Application deadline ~20 hours: 25 March 19:00 UTC https://developers.google.com/open-source/gsoc/ @hpdang https://pic.twitter.com/IIGYXgpJ38",
+      "link": "https://twitter.com/fossasia/status/713170978025504768",
+      "id_str": "713170978025504768",
+      "source_type": "TWITTER",
+      "provider_type": "SCRAPED",
+      "retweet_count": 27,
+      "favourites_count": 6,
+      "images": ["https://pic.twitter.com/IIGYXgpJ38"],
+      "images_count": 1,
+      "audio": [],
+      "audio_count": 0,
+      "videos": [],
+      "videos_count": 0,
+      "place_name": "March",
+      "place_id": "",
+      "place_context": "FROM",
+      "place_country": "United Kingdom",
+      "place_country_code": "GB",
+      "place_country_center": [
+        -4.696459893461537,
+        30.077280001750808
+      ],
+      "location_point": [
+        0.08827996444341579,
+        52.55131132553856
+      ],
+      "location_radius": 0,
+      "location_mark": [
+        0.0831126359772881,
+        52.54923050316976
+      ],
+      "location_source": "PLACE",
+      "hosts": [
+        "developers.google.com",
+        "pic.twitter.com"
+      ],
+      "hosts_count": 2,
+      "links": [
+        "https://developers.google.com/open-source/gsoc/",
+        "https://pic.twitter.com/IIGYXgpJ38"
+      ],
+      "links_count": 2,
+      "mentions": ["hpdang"],
+      "mentions_count": 1,
+      "hashtags": [
+        "fossasia",
+        "gsoc"
+      ],
+      "hashtags_count": 2,
+      "classifier_emotion": "joy",
+      "classifier_emotion_probability": 2.4644330223466497E-22,
+      "classifier_language": "english",
+      "classifier_language_probability": 6.620603696388408E-20,
+      "without_l_len": 92,
+      "without_lu_len": 84,
+      "without_luh_len": 68,
+      "user": {
+        "appearance_first": "2016-07-23T13:25:33.809Z",
+        "profile_image_url_https": "https://pbs.twimg.com/profile_images/1141238022/fossasia-cubelogo_bigger.jpg",
+        "screen_name": "fossasia",
+        "user_id": "157702526",
+        "name": "FOSSASIA",
+        "appearance_latest": "2016-07-23T13:25:33.809Z"
+      }
+    },
+    {
+      "timestamp": "2016-06-19T09:37:37.365Z",
+      "created_at": "2016-03-19T06:37:30.000Z",
+      "screen_name": "fossasia",
+      "text": "#FOSSASIA 2016's group photo is out! :D THANK YOU FOR JOINING! #opensource #redhat #linux @opensourceway #nosql https://pic.twitter.com/VmOfUkdzg8",
+      "link": "https://twitter.com/fossasia/status/711079128221396993",
+      "id_str": "711079128221396993",
+      "source_type": "TWITTER",
+      "provider_type": "SCRAPED",
+      "retweet_count": 16,
+      "favourites_count": 18,
+      "images": ["https://pic.twitter.com/VmOfUkdzg8"],
+      "images_count": 1,
+      "audio": [],
+      "audio_count": 0,
+      "videos": [],
+      "videos_count": 0,
+      "place_name": "",
+      "place_id": "",
+      "place_context": "ABOUT",
+      "hosts": ["pic.twitter.com"],
+      "hosts_count": 1,
+      "links": ["https://pic.twitter.com/VmOfUkdzg8"],
+      "links_count": 1,
+      "mentions": ["opensourceway"],
+      "mentions_count": 1,
+      "hashtags": [
+        "fossasia",
+        "opensource",
+        "redhat",
+        "linux",
+        "nosql"
+      ],
+      "hashtags_count": 5,
+      "classifier_emotion": "joy",
+      "classifier_emotion_probability": 4.249905094787197E-18,
+      "classifier_language": "english",
+      "classifier_language_probability": 2.3849911989795255E-16,
+      "without_l_len": 111,
+      "without_lu_len": 96,
+      "without_luh_len": 52,
+      "user": {
+        "appearance_first": "2016-07-23T13:25:33.809Z",
+        "profile_image_url_https": "https://pbs.twimg.com/profile_images/1141238022/fossasia-cubelogo_bigger.jpg",
+        "screen_name": "fossasia",
+        "user_id": "157702526",
+        "name": "FOSSASIA",
+        "appearance_latest": "2016-07-23T13:25:33.809Z"
+      }
+    },
+    {
+      "timestamp": "2016-07-23T13:25:33.794Z",
+      "created_at": "2016-06-23T07:43:31.000Z",
+      "screen_name": "fossasia",
+      "text": "We love the @redhatopen #Developer #Portal Thanks for sharing it at #FOSSASIA https://developers.redhat.com/auth/realms/rhd/protocol/openid-connect/registrations?client_id=web&redirect_uri=http%3a%2f%2fdevelopers.redhat.com%2fconfirmation&state=707feed6-2bd7-4cbd-8076-6da431b952ed&response_type=code&sc_cid=70160000000q5gAAAQ&elqTrackId=4dbc7819a1a74e59af32f4a534e5a9cd&elq=4999a526808d4ff0a7a6c73cfa6fe06c&elqaid=26078&elqat=1&elqCampaignId=107211 @harishpillay https://pic.twitter.com/YiV3NqQAIR",
+      "link": "https://twitter.com/fossasia/status/745884978777587713",
+      "id_str": "745884978777587713",
+      "source_type": "TWITTER",
+      "provider_type": "SCRAPED",
+      "retweet_count": 15,
+      "favourites_count": 5,
+      "images": ["https://pic.twitter.com/YiV3NqQAIR"],
+      "images_count": 1,
+      "audio": [],
+      "audio_count": 0,
+      "videos": [],
+      "videos_count": 0,
+      "place_name": "",
+      "place_id": "",
+      "place_context": "ABOUT",
+      "hosts": [
+        "developers.redhat.com",
+        "pic.twitter.com"
+      ],
+      "hosts_count": 2,
+      "links": [
+        "https://developers.redhat.com/auth/realms/rhd/protocol/openid-connect/registrations?client_id=web&redirect_uri=http%3a%2f%2fdevelopers.redhat.com%2fconfirmation&state=707feed6-2bd7-4cbd-8076-6da431b952ed&response_type=code&sc_cid=70160000000q5gAAAQ&elqTrackId=4dbc7819a1a74e59af32f4a534e5a9cd&elq=4999a526808d4ff0a7a6c73cfa6fe06c&elqaid=26078&elqat=1&elqCampaignId=107211",
+        "https://pic.twitter.com/YiV3NqQAIR"
+      ],
+      "links_count": 2,
+      "mentions": [
+        "redhatopen",
+        "harishpillay"
+      ],
+      "mentions_count": 2,
+      "hashtags": [
+        "developer",
+        "portal",
+        "fossasia"
+      ],
+      "hashtags_count": 3,
+      "classifier_language": "english",
+      "classifier_language_probability": 4.634340188089729E-28,
+      "classifier_profanity": "sex",
+      "classifier_profanity_probability": 9.00210576209998E-30,
+      "without_l_len": 91,
+      "without_lu_len": 65,
+      "without_luh_len": 36,
+      "user": {
+        "appearance_first": "2016-07-23T13:25:33.809Z",
+        "profile_image_url_https": "https://pbs.twimg.com/profile_images/1141238022/fossasia-cubelogo_bigger.jpg",
+        "screen_name": "fossasia",
+        "user_id": "157702526",
+        "name": "FOSSASIA",
+        "appearance_latest": "2016-07-23T13:25:33.809Z"
+      }
+    }
+  ],
+  "aggregations": {}
 }
 </pre>
 <p>Please note that the times given here as since- und until
@@ -751,6 +997,8 @@ Example usage:
 </p>
 <ul class="request">
 <li> http://localhost:9000/api/geocode.json?data={%22places%22:[%22Frankfurt%20am%20Main%22,%22New%20York%22,%22Singapore%22]}</li>
+<li> Other languages: http://localhost:9000/api/geocode.json?data={%22places%22:[%22%E5%9C%A3%E8%83%A1%E5%88%A9%E5%A8%85%20%E5%BE%B7%E6%B4%9B%E9%87%8C%E4%BA%9A%22]}</li>
+<li> Multiple Cities: http://localhost:9000/api/geocode.json?minified=true&data={%22places%22:[%22Singapore%22,%20%22New%20York%22,%20%22Los%20Angeles%22]}</li>
 </ul>
 <p>
 upgrade to geocode location detection: now recognizes also all
@@ -1689,7 +1937,7 @@ loklak_messages under the name image0.png</p>
     <li><a href="https://github.com/loklak/ruby-loklak-api" target="_blank">Ruby</a>
       <div class="alert alert-success" role="alert">gem install loklak</div>
     </li>
-  </ul>
+  </ul><br/><br/>
 </section>
 <!-- End programming languages API Endpoints section -->
 

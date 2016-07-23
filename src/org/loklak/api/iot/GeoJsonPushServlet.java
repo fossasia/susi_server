@@ -74,7 +74,7 @@ public class GeoJsonPushServlet extends HttpServlet {
             DAO.log("invalid or missing source_type value : " + source_type_str);
             source_type_str = SourceType.GEOJSON.toString();
         }
-        SourceType sourceType = new SourceType(source_type_str);
+        SourceType sourceType = SourceType.GEOJSON;
 
         if (url == null || url.length() == 0) {response.sendError(400, "your request does not contain an url to your data object"); return;}
         String screen_name = post.get("screen_name", "");
