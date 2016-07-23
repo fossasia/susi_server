@@ -67,6 +67,7 @@ import org.loklak.tools.storage.JSONObjectWithDefault;
  * http://localhost:9000/api/console.json?q=SELECT%20definition,example%20FROM%20urbandictionary%20WHERE%20query=%27football%27;
  * http://localhost:9000/api/console.json?q=SELECT%20*%20FROM%20wordpress%20WHERE%20url=%27https://jigyasagrover.wordpress.com/%27;
  * http://localhost:9000/api/console.json?q=SELECT%20*%20FROM%20timeanddate;
+ * http://localhost:9000/api/console.json?q=SELECT%20*%20FROM%20githubProfile%20WHERE%20profile=%27torvalds%27;
 * */
 
 public class ConsoleService extends AbstractAPIHandler implements APIHandler {
@@ -230,6 +231,12 @@ public class ConsoleService extends AbstractAPIHandler implements APIHandler {
         });
         dbAccess.put(Pattern.compile("SELECT\\h+?(.*?)\\h+?FROM\\h+?timeanddate;"), (flow, matcher) -> {
             SusiThought json = TimeAndDateService.timeAndDate();
+            SusiTransfer transfer = new SusiTransfer(matcher.group(1));
+            json.setData(transfer.conclude(json.getData()));
+            return json;
+        });
+        dbAccess.put(Pattern.compile("SELECT\\h+?(.*?)\\h+?FROM\\h+?githubProfile\\h+?WHERE\\h+?profile\\h??=\\h??'(.*?)'\\h??;"), (flow, matcher) -> {
+            SusiThought json = GithubProfileScraper.scrapeGithub(matcher.group(2));
             SusiTransfer transfer = new SusiTransfer(matcher.group(1));
             json.setData(transfer.conclude(json.getData()));
             return json;
