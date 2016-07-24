@@ -235,8 +235,10 @@ public class SusiRule {
         for (SusiInference inference: this.getInferences()) {
             SusiThought implication = inference.applySkills(argument);
             DAO.log("Susi is thinking about: " + implication.toString());
-            // make sure that we are not stuck
-            if (inference.getType() != SusiInference.Type.flow && (argument.mindstate().equals(implication) || implication.getCount() == 0)) return null; // TODO: do this only if specific marker is in rule
+            // make sure that we are not stuck:
+            // in case that we are stuck (== no progress was made) we terminate and return null
+            if (inference.getType() != SusiInference.Type.flow &&
+                (argument.mindstate().equals(implication) || implication.getCount() == 0)) return null; // TODO: do this only if specific marker is in rule
             // think
             argument.think(implication);
         }

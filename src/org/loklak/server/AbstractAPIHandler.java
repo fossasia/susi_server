@@ -21,15 +21,12 @@ package org.loklak.server;
 
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.io.UnsupportedEncodingException;
-import java.net.URLDecoder;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.time.Instant;
 import java.util.Base64;
 import java.util.Random;
 
-import javax.security.auth.login.LoginException;
 import javax.servlet.ServletException;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServlet;
@@ -252,18 +249,18 @@ public abstract class AbstractAPIHandler extends HttpServlet implements APIHandl
     		throw new APIException(422, "Invalid access token");
     	}
     	
-        return getAnonymousIdentity(request);
+        return getAnonymousIdentity(request.getRemoteHost());
     }
     
     /**
      * Create or fetch an anonymous identity
      * @return the anonymous ClientIdentity
      */
-    private ClientIdentity getAnonymousIdentity(HttpServletRequest request){
-    	ClientCredential credential = new ClientCredential(ClientCredential.Type.host, request.getRemoteHost());
+    private static ClientIdentity getAnonymousIdentity(String remoteHost) {
+    	ClientCredential credential = new ClientCredential(ClientCredential.Type.host, remoteHost);
     	Authentication authentication = new Authentication(credential, DAO.authentication);
     	
-    	if(authentication.getIdentity() == null) authentication.setIdentity(new ClientIdentity(credential.toString()));
+    	if (authentication.getIdentity() == null) authentication.setIdentity(new ClientIdentity(credential.toString()));
     	authentication.setExpireTime(Instant.now().getEpochSecond() + defaultAnonymousTime);
     	
         return authentication.getIdentity();
