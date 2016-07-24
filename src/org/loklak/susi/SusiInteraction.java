@@ -33,8 +33,9 @@ public class SusiInteraction {
 
     JSONObject json;
 
-    public SusiInteraction(final String query, int maxcount, SusiMind mind) {
+    public SusiInteraction(final String query, int maxcount, String client_id, SusiMind mind) {
         this.json = new JSONObject(true);
+        this.json.put("client_id", client_id);
         this.json.put("query", query);
         long query_date = System.currentTimeMillis();
         this.json.put("query_date", AbstractObjectEntry.utcFormatter.print(query_date));

@@ -24,6 +24,7 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -38,6 +39,7 @@ import org.json.JSONObject;
 import org.json.JSONTokener;
 import org.loklak.data.DAO;
 import org.loklak.server.ClientIdentity;
+import org.loklak.tools.UTF8;
 
 public class SusiMind {
     
@@ -178,10 +180,10 @@ public class SusiMind {
     
     public SusiInteraction interaction(final String query, int maxcount, ClientIdentity identity) {
         // get a response from susis mind
-        SusiInteraction si = new SusiInteraction(query, maxcount, this);
+        String client = identity.getType() + "_" + identity.getName();
+        SusiInteraction si = new SusiInteraction(query, maxcount, Base64.getEncoder().encodeToString(UTF8.getBytes(client)), this);
         // write a log about the response using the users identity
-        String user = identity.getType() + "_" + identity.getName();
-        this.logs.addInteraction(user, si);
+        this.logs.addInteraction(client, si);
         // return the computed response
         return si;
     }
@@ -192,7 +194,6 @@ public class SusiMind {
             File watch = new File(new File("data"), "susi");
             SusiMind mem = new SusiMind(init, watch);
             mem.learn(new File("conf/susi/susi_cognition_000.json"));
-            //System.out.println(mem.answer("who will win euro2016?", 3));
             System.out.println(mem.react("I feel funny"));
             System.out.println(mem.react("Help me!"));
         } catch (FileNotFoundException e) {
