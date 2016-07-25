@@ -30,7 +30,6 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONTokener;
-import org.loklak.api.cms.TwitterAnalysisService;
 import org.loklak.data.DAO;
 import org.loklak.geo.GeoMark;
 import org.loklak.http.ClientConnection;
@@ -73,25 +72,23 @@ import javax.servlet.http.HttpServletResponse;
 * */
 
 public class ConsoleService extends AbstractAPIHandler implements APIHandler {
+   
+    private static final long serialVersionUID = 8578478303032749879L;
 
-	private static final long serialVersionUID = 8578478303032749879L;
+    @Override
+    public BaseUserRole getMinimalBaseUserRole() { return BaseUserRole.ANONYMOUS; }
 
-	@Override
-	public BaseUserRole getMinimalBaseUserRole() {
-		return BaseUserRole.ANONYMOUS;
-	}
+    @Override
+    public JSONObject getDefaultPermissions(BaseUserRole baseUserRole) {
+        return null;
+    }
 
-	@Override
-	public JSONObject getDefaultPermissions(BaseUserRole baseUserRole) {
-		return null;
-	}
-
-	public String getAPIPath() {
-		return "/api/console.json";
-	}
-
-	public final static SusiSkills dbAccess = new SusiSkills();
-	static {
+    public String getAPIPath() {
+        return "/api/console.json";
+    }
+    
+    public final static SusiSkills dbAccess = new SusiSkills();
+    static {
         dbAccess.put(Pattern.compile("SELECT\\h+?(.*?)\\h+?FROM\\h+?\\(\\h??SELECT\\h+?(.*?)\\h??\\)\\h+?WHERE\\h+?(.*?)\\h?+IN\\h?+\\((.*?)\\)\\h??;"), (flow, matcher) -> {
             String subquery = matcher.group(2).trim();
             if (!subquery.endsWith(";")) subquery = subquery + ";";
@@ -239,14 +236,8 @@ public class ConsoleService extends AbstractAPIHandler implements APIHandler {
             json.setData(transfer.conclude(json.getData()));
             return json;
         });
-        dbAccess.put(Pattern.compile("SELECT\\h+?(.*?)\\h+?FROM\\h+?twitanalysis\\h+?WHERE\\h+?screen_name\\h??=\\h??'(.*?)'\\h+?AND\\h+?count\\h??=\\h??'(.*?)'\\h??;"), (flow, matcher) -> {
-            SusiThought json = TwitterAnalysisService.showAnalysis(matcher.group(2), matcher.group(3));
-            SusiTransfer transfer = new SusiTransfer(matcher.group(1));
-            json.setData(transfer.conclude(json.getData()));
-            return json;
-        });
-	}
-
+    }
+    
     @Override
     public JSONObject serviceImpl(Query post, HttpServletResponse response, Authorization rights, final JSONObjectWithDefault permissions) throws APIException {
 

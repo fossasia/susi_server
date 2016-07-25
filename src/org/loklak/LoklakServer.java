@@ -516,7 +516,6 @@ public class LoklakServer {
                 ConsoleService.class,
                 EventBriteCrawlerService.class,
                 MeetupsCrawlerService.class,
-                TwitterAnalysisService.class,
                 RSSReaderService.class,
                 SusiService.class,
                 WordpressCrawlerService.class
@@ -577,6 +576,7 @@ public class LoklakServer {
         assetServletHolder.getRegistration().setMultipartConfig(multipartConfig);
         servletHandler.addServlet(assetServletHolder, "/api/asset");
         servletHandler.addServlet(Sitemap.class, "/api/sitemap.xml");
+        servletHandler.addServlet(TwitterAnalysis.class, "/api/twitanalysis.json");
         servletHandler.addServlet(ThreaddumpServlet.class, "/api/threaddump.txt");
         servletHandler.addServlet(MarkdownServlet.class, "/vis/markdown.gif");
         servletHandler.addServlet(MarkdownServlet.class, "/vis/markdown.gif.base64");
