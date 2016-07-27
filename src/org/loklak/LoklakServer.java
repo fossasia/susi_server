@@ -103,6 +103,7 @@ import org.loklak.api.search.EventBriteCrawlerService;
 import org.loklak.api.search.UserServlet;
 import org.loklak.api.search.WordpressCrawlerService;
 import org.loklak.api.search.GenericScraper;
+import org.loklak.api.search.WeiboUserInfo;
 import org.loklak.api.search.MeetupsCrawlerService;
 import org.loklak.api.search.RSSReaderService;
 import org.loklak.api.tools.CSVServlet;
@@ -560,6 +561,7 @@ public class LoklakServer {
         servletHandler.addServlet(ProxyServlet.class, "/api/proxy.jpg");
         servletHandler.addServlet(ValidateServlet.class, "/api/validate.json");
         servletHandler.addServlet(GenericScraper.class, "/api/genericscraper.json");
+        servletHandler.addServlet(WeiboUserInfo.class, "/api/weibo.json");
         ServletHolder pushServletHolder = new ServletHolder(PushServlet.class);
         pushServletHolder.getRegistration().setMultipartConfig(multipartConfig);
         servletHandler.addServlet(pushServletHolder, "/api/push.json");
