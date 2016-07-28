@@ -568,8 +568,8 @@
 </pre>
 <p>It is also possible to specify the order in descending order for the following filter options <code>favourites_count</code>, <code>retweet_count</code> and the default being <code>created_at</code>. Here are the examples of the different queries which make this happen.</p>
 <ul class="request">
-  <li>retweet count: &nbsp;&nbsp;: <a href="http://localhost:9000/api/search.json?timezoneOffset=-120&q=fossasia&order=retweet_count&source=cache" target="_blank">http://localhost:9000/api/search.json?timezoneOffset=-120&q=fossasia&order=retweet_count&source=cache</a></li>
-  <li>favorites count: &nbsp;&nbsp;: <a href="http://localhost:9000/api/search.json?timezoneOffset=-120&q=fossasia&order=favourites_count&source=cache" target="_blank">http://localhost:9000/api/search.json?timezoneOffset=-120&q=fossasia&order=favourites_count&source=cache</a></li>
+  <li>retweet count: &nbsp;&nbsp;: <a href="http://loklak.org/api/search.json?timezoneOffset=-120&q=fossasia&order=retweet_count&source=cache" target="_blank">http://loklak.org/api/search.json?timezoneOffset=-120&q=fossasia&order=retweet_count&source=cache</a></li>
+  <li>favorites count: &nbsp;&nbsp;: <a href="http://loklak.org/api/search.json?timezoneOffset=-120&q=fossasia&order=favourites_count&source=cache" target="_blank">http://localhost:9000/api/search.json?timezoneOffset=-120&q=fossasia&order=favourites_count&source=cache</a></li>
 </ul>
 <pre>
   {
@@ -996,9 +996,12 @@ fuzziness). location coordinates are given as [lon,lat]
 Example usage:
 </p>
 <ul class="request">
-<li> http://localhost:9000/api/geocode.json?data={%22places%22:[%22Frankfurt%20am%20Main%22,%22New%20York%22,%22Singapore%22]}</li>
-<li> Other languages: http://localhost:9000/api/geocode.json?data={%22places%22:[%22%E5%9C%A3%E8%83%A1%E5%88%A9%E5%A8%85%20%E5%BE%B7%E6%B4%9B%E9%87%8C%E4%BA%9A%22]}</li>
-<li> Multiple Cities: http://localhost:9000/api/geocode.json?minified=true&data={%22places%22:[%22Singapore%22,%20%22New%20York%22,%20%22Los%20Angeles%22]}</li>
+<li><a href="http://loklak.org/api/geocode.json?data={%22places%22:[%22Frankfurt%20am%20Main%22,%22New%20York%22,%22Singapore%22]}" target="_blank">http://loklak.org/api/geocode.json?data={%22places%22:[%22Frankfurt%20am%20Main%22,%22New%20York%22,%22Singapore%22]} 
+</a></li>
+<li> Other languages: <br> <a href="http://loklak.org/api/geocode.json?data={%22places%22:[%22%E5%9C%A3%E8%83%A1%E5%88%A9%E5%A8%85%20%E5%BE%B7%E6%B4%9B%E9%87%8C%E4%BA%9A%22]}" target="_blank">http://loklak.org/api/geocode.json?data={%22places%22:[%22%E5%9C%A3%E8%83%A1%E5%88%A9%E5%A8%85%20%E5%BE%B7%E6%B4%9B%E9%87%8C%E4%BA%9A%22]}</a></li>
+<li> Multiple Cities: <br><a href="http://loklak.org/api/geocode.json?minified=true&data={%22places%22:[%22Singapore%22,%20%22New%20York%22,%20%22Los%20Angeles%22]}" target="_blank">
+http://loklak.org/api/geocode.json?minified=true&data={%22places%22:[%22Singapore%22,%20%22New%20York%22,%20%22Los%20Angeles%22]}
+</a></li>
 </ul>
 <p>
 upgrade to geocode location detection: now recognizes also all
@@ -1488,7 +1491,7 @@ shortens this array to only one entry. The API also has reverse geocoding and fu
 <p>This servlet provides the retrieval of user followers and the accounts which the user is following.
    Just submit the <code>screen_name</code> as GET http attribute. Example:
    <ul class="request">
-  <li><a href="http://localhost:9000/api/user.json?screen_name=loklak_app">http://localhost:9000/api/user.json?screen_name=loklak_app</a></li>
+  <li><a href="http://loklak.org/api/user.json?screen_name=loklak_app">http://loklak.org/api/user.json?screen_name=loklak_app</a></li>
    </ul><br/>
 </p>
 <pre>{
@@ -1577,7 +1580,7 @@ shortens this array to only one entry. The API also has reverse geocoding and fu
    This will produce a list of
    <code>&lt;maxcount&gt;</code> user entries in a 'topology' object. Example :
    <ul class="request">
-  <li><a href="http://localhost:9000/api/user.json?screen_name=loklak_app&followers=10000&following=10000">http://localhost:9000/api/user.json?screen_name=loklak_app&followers=10000&following=10000</a></li>
+  <li><a href="http://loklak.org/api/user.json?screen_name=loklak_app&followers=10000&following=10000">http://loklak.org/api/user.json?screen_name=loklak_app&followers=10000&following=10000</a></li>
    </ul><br/>
 </p>
 
@@ -1634,7 +1637,7 @@ shortens this array to only one entry. The API also has reverse geocoding and fu
   <br/>
   <p>Furthermore, the servlet can now be called with an 'category' property, like:</p>
   <ul class="request">
-    <li><a href="http://localhost:9000/api/apps.json?category=Demo">http://localhost:9000/api/apps.json?category=Demo</a></li>
+    <li><a href="http://loklak.org/api/apps.json?category=Demo">http://loklak.org/api/apps.json?category=Demo</a></li>
   </ul>
   <br/>
   <p>This will reduce the app list to the sub-list which contains only apps from that category.</p>
@@ -1912,7 +1915,7 @@ loklak_messages under the name image0.png</p>
 
 <p>Here is an example :
 <ul class="request">
-  <li><a href="http://localhost:9000/vis/markdown.png?text=hello%20world%0Dhello%20universe&color_text=000000&color_background=ffffff&padding=3">http://localhost:9000/vis/markdown.png?text=hello%20world%0Dhello%20universe&color_text=000000&color_background=ffffff&padding=3</a></li>
+  <li><a href="http://loklak.org/vis/markdown.png?text=hello%20world%0Dhello%20universe&color_text=000000&color_background=ffffff&padding=3">http://loklak.org/vis/markdown.png?text=hello%20world%0Dhello%20universe&color_text=000000&color_background=ffffff&padding=3</a></li>
 </ul><br/>
 </p>
 </section>
