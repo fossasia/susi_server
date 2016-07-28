@@ -664,6 +664,54 @@
 			"actions":[ {"type": "answer", "select": "random", "phrases":[
 				"Here is the sentiment analysis chart"
 			]}, {"type": "table"}]
+		},
+		{
+			"keys"   :["day"],
+			"score"  :151,
+			"phrases":[	{"type":"pattern", "expression":"How was your day?"}],
+			"actions":[	{"type":"answer", "select":"random", "phrases":[
+							"It was great thank you!"
+						]}]
+		},
+		{
+			"keys"   :["help"],
+			"score"  :151,
+			"phrases":[	{"type":"pattern", "expression":"I need some help with *"},
+					{"type":"pattern", "expression":"I need some help"},
+					{"type":"pattern", "expression":"I'm in need of help *"},
+					{"type":"pattern", "expression":"I need some help with this problem"}
+						],
+			"actions":[	{"type":"answer", "select":"random", "phrases":[
+							"Would love to help! In what way can I help you?"
+						]}]
+		},
+		{
+			"keys"   :["know"],
+			"score"  :151,
+			"phrases":[	{"type":"pattern", "expression":"Would like to know more about you!"}],
+			"actions":[	{"type":"answer", "select":"random", "phrases":[
+							"You can ask me what you want to know!"
+						]}]
+		},
+		{
+			"keys"   :["Where"],
+			"score"  :151,
+			"phrases":[	{"type":"pattern", "expression":"Where did you come from?"},
+					{"type":"pattern", "expression":"Where do you live?"}
+						],
+			"actions":[	{"type":"answer", "select":"random", "phrases":[
+							"What do you think? Obviously planet earth!"
+						]}]
+		},
+		{
+			"keys"   :["Where"],
+			"score"  :151,
+			"phrases":[	{"type":"pattern", "expression":"What are your interests?"},
+					{"type":"pattern", "expression":"What * you like?"}
+						],
+			"actions":[	{"type":"answer", "select":"random", "phrases":[
+							"I like to chat with people!"
+						]}]
 		}
 	]
 }
