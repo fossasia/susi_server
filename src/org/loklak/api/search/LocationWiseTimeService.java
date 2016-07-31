@@ -85,8 +85,7 @@ public class LocationWiseTimeService extends AbstractAPIHandler implements APIHa
 				JSONObject obj = new JSONObject();
 				String l = e.getElementsByTag("a").text();
 				obj.put("location", l);
-				e = e.siblingElements().get(0);
-				String t = e.text();
+				String t = e.nextElementSibling().text();
 				obj.put("time", t);
 				arr.put(obj);
 			}
