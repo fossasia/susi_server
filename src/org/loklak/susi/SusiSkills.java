@@ -41,10 +41,11 @@ public class SusiSkills extends LinkedHashMap<Pattern, BiFunction<SusiThought, M
     }
     
     /**
-     * Inspiration is the application of a skill on perception. In this method the mappings
-     * from the skill set is applied to the perception q. Every mapping that has a matcher 
+     * Deduction is the application of a skill on perception and a world model.
+     * In this method the mappings from the skill set is applied to the perception q and previous
+     * deduction steps as given with the flow. Every mapping that has a matcher 
      * with the perception causes the application of the stored lambda function on the perception
-     * producing a thought. If the thought generation is not successfull (which means that the lambda
+     * producing a thought. If the thought generation is not successful (which means that the lambda
      * fails or produces a null output) then the next mappings from the skill set is tried.
      * In case that no inspiration is possible, an empty thought is produced, containing nothing.
      * @param q the perception
@@ -72,12 +73,8 @@ public class SusiSkills extends LinkedHashMap<Pattern, BiFunction<SusiThought, M
     }
     
     /**
-     * Inspiration is the application of a skill on perception. In this method the mappings
-     * from the skill set is applied to the perception q. Every mapping that has a matcher 
-     * with the perception causes the application of the stored lambda function on the perception
-     * producing a thought. If the thought generation is not successfull (which means that the lambda
-     * fails or produces a null output) then the next mappings from the skill set is tried.
-     * In case that no inspiration is possible, an empty thought is produced, containing nothing.
+     * Inspiration is the application of a skill on a minimum perception. In this method the mappings
+     * from the skill set is applied only to the perception q.
      * @param q the perception
      * @return a thought from the application of the skill set
      */

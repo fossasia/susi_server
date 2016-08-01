@@ -37,6 +37,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONTokener;
 import org.loklak.data.DAO;
+import org.loklak.server.ClientIdentity;
 
 public class SusiMind {
     
@@ -44,6 +45,7 @@ public class SusiMind {
     private final File initpath, watchpath; // a path where the memory looks for new additions of knowledge with memory files
     private final Map<File, Long> observations; // a mapping of mind memory files to the time when the file was read the last time
     private final SusiReader reader; // responsible to understand written communication
+    private final SusiLog logs; // conversation logs
     
     public SusiMind(File initpath, File watchpath) {
         // initialize class objects
@@ -54,6 +56,7 @@ public class SusiMind {
         this.ruletrigger = new ConcurrentHashMap<>();
         this.observations = new HashMap<>();
         this.reader = new SusiReader();
+        this.logs = new SusiLog(watchpath, 3);
     }
 
     public SusiMind observe() throws IOException {
@@ -171,6 +174,16 @@ public class SusiMind {
         List<SusiArgument> datalist = react(query, 1);
         SusiArgument bestargument = datalist.get(0);
         return bestargument.mindstate().getActions().get(0).apply(bestargument).getStringAttr("expression");
+    }
+    
+    public SusiInteraction interaction(final String query, int maxcount, ClientIdentity identity) {
+        // get a response from susis mind
+        SusiInteraction si = new SusiInteraction(query, maxcount, this);
+        // write a log about the response using the users identity
+        String user = identity.getType() + "_" + identity.getName();
+        this.logs.addInteraction(user, si);
+        // return the computed response
+        return si;
     }
     
     public static void main(String[] args) {

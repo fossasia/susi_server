@@ -1,8 +1,9 @@
 $(document).ready(function()
 {
-	var emailerr = false, passerr = false, checked = false, session = true, logout = false;
+	var emailerr = false, passerr = false, checked = $('#remember').prop("checked"), logout = false;
 
 	$.ajax(	"/api/login.json", {
+	    data: { checkLogin: true },
 		dataType: 'json',
 		success: function (response) {
 			if(response.loggedIn){
@@ -24,16 +25,24 @@ $(document).ready(function()
 		},
 	});
 
+	$('#email').keyup(function(event){
+        if(event.keyCode == 13){
+            $("#login").click();
+        }
+    });
+
+    $('#pass').keyup(function(event){
+        if(event.keyCode == 13){
+            $("#login").click();
+        }
+    });
+
 	$('#pass').focus(function(){
 		checkEmpty();
 	})
 
 	$('#remember').click(function(){
-		if($(this).prop("checked")){
-			checked = true;
-		} else{
-			checked = false;
-		}
+	    checked = $(this).prop("checked");
 	});
 
 	$('#login').click(function(){
@@ -64,11 +73,11 @@ $(document).ready(function()
 		checkEmpty();
 		var total = passerr || emailerr;
 		if(!total){
-			var mail = encodeURIComponent($('#email').val());
-			var pwd = encodeURIComponent($('#pass').val());
+			var mail = $('#email').val();
+			var pwd = $('#pass').val();
 			
 			$.ajax(	"/api/login.json", {
-				data: { login: mail, password: pwd, request_cookie: checked, request_session: session },
+				data: { login: mail, password: pwd, type: checked ? "cookie" : "session" },
 				dataType: 'json',
 				success: function (response) {
 					window.location = '/apps/applist/index.html';

@@ -7,7 +7,7 @@ $(document).ready(function()
         if(emailerr){
             $('#status-box').text("Please fill email");
         } else{
-            var mail = encodeURIComponent($('#email').val());
+            var mail = $('#email').val();
             $.ajax( "/api/recoverpassword.json", {
                 data: { forgotemail: mail },
                 dataType: 'json',

@@ -25,7 +25,7 @@ import java.util.Map;
 
 import org.eclipse.jetty.util.log.Log;
 import org.json.JSONObject;
-import org.loklak.api.admin.StatusServlet;
+import org.loklak.api.admin.StatusService;
 import org.loklak.data.DAO;
 import org.loklak.http.ClientConnection;
 import org.loklak.server.APIHandler;
@@ -36,6 +36,8 @@ import org.loklak.server.Query;
 import org.loklak.tools.DateParser;
 import org.loklak.tools.UTF8;
 import org.loklak.tools.storage.JSONObjectWithDefault;
+
+import javax.servlet.http.HttpServletResponse;
 
 /**
  * Servlet to span the message peer-to-peer network.
@@ -73,7 +75,7 @@ public class HelloService extends AbstractAPIHandler implements APIHandler {
         JSONObject backend_status_index_sizes = null;
         if (backend.length() > 0 && !backend_push) {
             try {
-                backend_status = StatusServlet.status(backend);
+                backend_status = StatusService.status(backend);
             } catch (IOException e) {
             	Log.getLog().warn(e);
             }
@@ -128,7 +130,7 @@ public class HelloService extends AbstractAPIHandler implements APIHandler {
     }
     
     @Override
-    public JSONObject serviceImpl(Query call, Authorization rights, final JSONObjectWithDefault permissions) {
+    public JSONObject serviceImpl(Query call, HttpServletResponse response, Authorization rights, final JSONObjectWithDefault permissions) {
     	JSONObject res = DAO.public_settings.toJSONObject();
     	res.put("status", "ok");
     	return res;

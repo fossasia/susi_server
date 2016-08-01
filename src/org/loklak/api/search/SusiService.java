@@ -20,9 +20,7 @@
 package org.loklak.api.search;
 
 import java.io.IOException;
-import java.util.List;
 
-import org.json.JSONArray;
 import org.json.JSONObject;
 import org.loklak.data.DAO;
 import org.loklak.server.APIException;
@@ -31,8 +29,10 @@ import org.loklak.server.BaseUserRole;
 import org.loklak.server.AbstractAPIHandler;
 import org.loklak.server.Authorization;
 import org.loklak.server.Query;
-import org.loklak.susi.SusiArgument;
+import org.loklak.susi.SusiInteraction;
 import org.loklak.tools.storage.JSONObjectWithDefault;
+
+import javax.servlet.http.HttpServletResponse;
 
 public class SusiService extends AbstractAPIHandler implements APIHandler {
    
@@ -50,28 +50,20 @@ public class SusiService extends AbstractAPIHandler implements APIHandler {
         return "/api/susi.json";
     }
     
-    public static List<SusiArgument> susi(String query, int maxcount) {
+    @Override
+    public JSONObject serviceImpl(Query post, HttpServletResponse response, Authorization user, final JSONObjectWithDefault permissions) throws APIException {
+
+        // parameters
+        String q = post.get("q", "");
+        int count = post.get("count", 1);
         try {
             DAO.susi.observe(); // get a database update
         } catch (IOException e) {
             DAO.log(e.getMessage());
         }
-        return DAO.susi.react(query, maxcount);
-    }
-    
-    @Override
-    public JSONObject serviceImpl(Query post, Authorization rights, final JSONObjectWithDefault permissions) throws APIException {
-
-        // parameters
-        String q = post.get("q", "");
-        int count = post.get("count", 1);
         
-        List<SusiArgument> dispute = susi(q, count);
-        JSONObject json = new JSONObject();
-        json.put("count", count);
-        JSONArray answers = new JSONArray();
-        dispute.forEach(answer -> answers.put(answer.mindstate()));
-        json.put("answers", answers);
+        SusiInteraction interaction = DAO.susi.interaction(q, count, user.getIdentity());
+        JSONObject json = interaction.getJSON();
         return json;
     }
     

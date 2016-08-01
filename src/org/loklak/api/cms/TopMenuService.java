@@ -10,6 +10,8 @@ import org.loklak.server.BaseUserRole;
 import org.loklak.server.Query;
 import org.loklak.tools.storage.JSONObjectWithDefault;
 
+import javax.servlet.http.HttpServletResponse;
+
 public class TopMenuService extends AbstractAPIHandler implements APIHandler {
     
     private static final long serialVersionUID = 1839868262296635665L;
@@ -28,7 +30,7 @@ public class TopMenuService extends AbstractAPIHandler implements APIHandler {
     }
     
     @Override
-    public JSONObject serviceImpl(Query call, Authorization rights, final JSONObjectWithDefault permissions) {
+    public JSONObject serviceImpl(Query call, HttpServletResponse response, Authorization rights, final JSONObjectWithDefault permissions) {
         
         int limited_count = (int) DAO.getConfig("download.limited.count", (long) Integer.MAX_VALUE);
     
@@ -36,7 +38,7 @@ public class TopMenuService extends AbstractAPIHandler implements APIHandler {
         JSONArray topmenu = new JSONArray()
             .put(new JSONObject().put("Home", "index.html"))
             .put(new JSONObject().put("About", "about.html"))
-            .put(new JSONObject().put("Showcase", "showcase.html"))
+            .put(new JSONObject().put("Blog", "http://blog.loklak.net/"))
             .put(new JSONObject().put("Architecture", "architecture.html"))
             .put(new JSONObject().put("Download", "download.html"))
             .put(new JSONObject().put("Tutorials", "tutorials.html"))

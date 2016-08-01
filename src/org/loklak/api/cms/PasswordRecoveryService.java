@@ -20,8 +20,6 @@
 package org.loklak.api.cms;
 
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.net.URLDecoder;
 import java.nio.file.Paths;
 
 import org.json.JSONObject;
@@ -38,6 +36,8 @@ import org.loklak.server.ClientIdentity;
 import org.loklak.server.Query;
 import org.loklak.tools.IO;
 import org.loklak.tools.storage.JSONObjectWithDefault;
+
+import javax.servlet.http.HttpServletResponse;
 
 public class PasswordRecoveryService extends AbstractAPIHandler implements APIHandler {
 
@@ -60,7 +60,7 @@ public class PasswordRecoveryService extends AbstractAPIHandler implements APIHa
 	}
 
 	@Override
-	public JSONObject serviceImpl(Query call, Authorization rights, final JSONObjectWithDefault permissions)
+	public JSONObject serviceImpl(Query call, HttpServletResponse response, Authorization rights, final JSONObjectWithDefault permissions)
 			throws APIException {
 		JSONObject result = new JSONObject();
 
@@ -90,12 +90,7 @@ public class PasswordRecoveryService extends AbstractAPIHandler implements APIHa
 			}
 		}
 
-		String usermail;
-		try {
-			usermail = URLDecoder.decode(call.get("forgotemail", null), "UTF-8");
-		} catch (UnsupportedEncodingException e) {
-			throw new APIException(400, "malformed query");
-		}
+		String usermail = call.get("forgotemail", null);
 
 		ClientCredential credential = new ClientCredential(ClientCredential.Type.passwd_login, usermail);
 		ClientIdentity identity = new ClientIdentity(ClientIdentity.Type.email, credential.getName());
@@ -123,7 +118,7 @@ public class PasswordRecoveryService extends AbstractAPIHandler implements APIHa
 
 	private String getVerificationMailContent(String token) {
 
-		String verificationLink = DAO.getConfig("host.name", "http://localhost:9000")
+		String verificationLink = DAO.getConfig("host.url", "http://127.0.0.1:9000")
 				+ "/apps/resetpass/index.html?token=" + token;
 		String result;
 		try {

@@ -79,7 +79,7 @@ public class ImportProfileEntry extends AbstractObjectEntry implements ObjectEnt
         String source_type_string = json.getString("source_type");
         if (source_type_string == null) source_type_string = SourceType.TWITTER.toString();
         try {
-            this.source_type = new SourceType(source_type_string.toUpperCase());
+            this.source_type = SourceType.byName(source_type_string.toUpperCase());
         } catch (IllegalArgumentException e) {
             Logger.getLogger("ImportProfileEntry").warning("Illegal source type value : " + source_type_string);
             this.source_type = SourceType.TWITTER;
