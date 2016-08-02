@@ -110,6 +110,7 @@ import org.loklak.api.tools.CSVServlet;
 import org.loklak.api.tools.XMLServlet;
 import org.loklak.api.vis.MapServlet;
 import org.loklak.api.vis.MarkdownServlet;
+import org.loklak.api.vis.PieChartServlet;
 import org.loklak.data.DAO;
 import org.loklak.harvester.TwitterScraper;
 import org.loklak.http.RemoteAccess;
@@ -592,6 +593,7 @@ public class LoklakServer {
         servletHandler.addServlet(MapServlet.class, "/vis/map.png.base64");
         servletHandler.addServlet(MapServlet.class, "/vis/map.jpg");
         servletHandler.addServlet(MapServlet.class, "/vis/map.jpg.base64");
+        servletHandler.addServlet(PieChartServlet.class, "/vis/piechart.png");
         servletHandler.setMaxFormContentSize(10 * 1024 * 1024); // 10 MB
 
         ErrorHandler errorHandler = new LoklakErrorHandler();
