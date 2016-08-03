@@ -35,7 +35,7 @@ import java.util.*;
  }
  */
 public class DAOWrapper {
-    private static final class GenericJSONBuilder{
+    public static final class GenericJSONBuilder{
         private String id_str = null;
         private String screen_name = "unknown";
         private Date created_at = null;
