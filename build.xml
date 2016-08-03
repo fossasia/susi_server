@@ -29,6 +29,7 @@
         <pathelement location="lib/jackson-dataformat-yaml-2.6.2.jar"/>
         <pathelement location="lib/javax.servlet-api-3.1.0.jar"/>
         <pathelement location="lib/javax.mail-1.5.5.jar"/>
+        <pathelement location="lib/jcommon-1.0.18.jar"/>
         <pathelement location="lib/jetty-http-9.3.9.v20160517.jar"/>
         <pathelement location="lib/jetty-io-9.3.9.v20160517.jar"/>
         <pathelement location="lib/jetty-rewrite-9.3.9.v20160517.jar"/>
@@ -38,6 +39,7 @@
         <pathelement location="lib/jetty-servlets-9.3.9.v20160517.jar"/>
         <pathelement location="lib/jetty-util-9.3.9.v20160517.jar"/>
         <pathelement location="lib/jetty-webapp-9.3.9.v20160517.jar"/>
+        <pathelement location="lib/jfreechart-1.0.19.jar"/>
         <pathelement location="lib/jna-4.1.0.jar"/>
         <pathelement location="lib/joda-convert-1.2.jar"/>
         <pathelement location="lib/joda-time-2.8.2.jar"/>
