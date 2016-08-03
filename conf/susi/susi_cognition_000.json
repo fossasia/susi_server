@@ -712,6 +712,56 @@
 			"actions":[	{"type":"answer", "select":"random", "phrases":[
 							"I like to chat with people!"
 						]}]
-		}
+		},
+		{
+			"keys"   :["github"],
+			"score"  :3000,
+			"example": "Susi, View/Read the Github profile of mariobehling",
+			"phrases":[ {"type":"pattern", "expression":"* github * of *"}],
+			"process":[ {"type": "console", "expression": "SELECT * FROM githubProfile WHERE profile='$3$';"}],
+			"actions":[ {"type": "answer", "select": "random", "phrases":[
+				"Here are the profile details on Github for $3$"
+			]}, {"type":"table"}]
+		},
+		{
+			"keys"   :["github"],
+			"score"  :3000,
+			"example": "Susi, What are the github profile stats of mariobehling",
+			"phrases":[ {"type":"pattern", "expression":"* github * profile * of *"}],
+			"process":[ {"type": "console", "expression": "SELECT * FROM githubProfile WHERE profile='$4$';"}],
+			"actions":[ {"type": "answer", "select": "random", "phrases":[
+				"Here are the profile stats on Github for $4$"
+			]}, {"type":"table"}]
+		},
+		{
+			"keys"   :["github"],
+			"score"  :3000,
+			"example": "Read mariobehling Github profile",
+			"phrases":[ {"type":"pattern", "expression":"* read * github *"}],
+			"process":[ {"type": "console", "expression": "SELECT * FROM githubProfile WHERE profile='$2$';"}],
+			"actions":[ {"type": "answer", "select": "random", "phrases":[
+				"Here are the profile details on Github for $2$"
+			]}, {"type":"table"}]
+		},
+		{
+			"keys"   :["github"],
+			"score"  :3000,
+			"example": "Give me more information from Github about mariobehling",
+			"phrases":[ {"type":"pattern", "expression":"* github * about *"}],
+			"process":[ {"type": "console", "expression": "SELECT * FROM githubProfile WHERE profile='$3$';"}],
+			"actions":[ {"type": "answer", "select": "random", "phrases":[
+				"Here are the profile details on Github for $3$"
+			]}, {"type":"table"}]
+		},
+		{
+			"keys"   :["github"],
+			"score"  :3000,
+			"example": "Can you find mariobehling on Github and give me information",
+			"phrases":[ {"type":"pattern", "expression":"* find * on * github *"}],
+			"process":[ {"type": "console", "expression": "SELECT * FROM githubProfile WHERE profile='$2$';"}],
+			"actions":[ {"type": "answer", "select": "random", "phrases":[
+				"Here are the profile details on Github for $2$"
+			]}, {"type":"table"}]
+		},
 	]
 }
