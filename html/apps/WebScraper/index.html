@@ -1,18 +1,22 @@
 <!DOCTYPE html>
 <html>
    <head>
+   <meta charset="utf-8">
    <link rel="icon" type="image/png" href="../../artwork/favicon.png">
       <title>WebScraper</title>
       <link href="style.css" rel="stylesheet"/>
-      <link href="https://bootswatch.com/cosmo/bootstrap.min.css" rel="stylesheet"/>
+      <!-- <link href="https://bootswatch.com/cosmo/bootstrap.min.css" rel="stylesheet"/> -->
+      <!-- Latest compiled and minified CSS -->
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
       <script src="/js/angular.min.js"></script>
       <script src="/js/jquery.min.js"></script>
+      <link href="css/json-formatter.css" rel="stylesheet"/>
    </head>
-   <body>
+   <body ng-app="TweetSearch" ng-controller="Controller">
       <center>
          <h1>What would you like to scrape?</h1>
          <br>
-         <div ng-app="TweetSearch" ng-controller="Controller">
+         <div>
             <div class="form-group">
                <div class="input-group" id="searchBar">
                   <input type="text" id="url" class="form-control" ng-model="url" placeholder="Enter website address">
@@ -21,31 +25,31 @@
                   </span>
                </div>
             </div>
-            <div ng-if="spinner && !JsonResult"><img src="loading.gif" height="400" width="400"/></div>
+            <div ng-if="spinner && !data"><img src="loading.gif" height="400" width="400"/></div>
             <br>
             <br>
             <br>
-            <div ng-if="JsonResult">
-              <textarea cols="70" rows="25">{{JsonResult}}</textarea>
+            <div ng-if="data">
+              <json-formatter json="data" open="1"></json-formatter>
             </div>
          </div>
          </div>
          </div>
       </center>
       <script>
-         var app = angular.module('TweetSearch', []);
+         var app = angular.module('TweetSearch', ['jsonFormatter']);
          app.controller('Controller', ['$scope', '$http', '$sce', function($scope, $http, $sce) {
          
              $scope.Scrape = function() {
                 $scope.spinner=true;
                  var QueryCommand = '/api/genericscraper.json?callback=JSON_CALLBACK&url=' + $scope.url;
-                 $http.get(String(QueryCommand)).success(function(response) {
-                  var data = response;
-                  $scope.JsonResult = JSON.stringify(data, null, 6);
+                 $http.get(String(QueryCommand)).success(function(JSON) {
+                  $scope.data = JSON;
                  });
              }
               $scope.spinner = false;
          }]);
       </script>
+      <script src="js/json-formatter.min.js"></script>
    </body>
 </html>
