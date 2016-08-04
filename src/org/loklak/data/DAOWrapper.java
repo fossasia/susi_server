@@ -4,7 +4,7 @@ package org.loklak.data;
  * Created by Deng Yiping on 16-7-31.
  */
 
-import javafx.util.Pair;
+
 import org.loklak.objects.MessageEntry;
 import org.loklak.objects.QueryEntry;
 import org.loklak.objects.SourceType;
@@ -244,9 +244,9 @@ public class DAOWrapper {
         /**
          * Insert the fields
          */
-        List<Pair<String, String>> fields = msg.getExtraField();
-        for(Pair<String, String> field:fields){
-            bd.addField(field.getKey(), field.getValue());
+        List<TwoTuple<String, String>> fields = msg.getExtraField();
+        for(TwoTuple<String, String> field:fields){
+            bd.addField(field.first, field.second);
         }
     }
 }
