@@ -4,7 +4,7 @@ package org.loklak.data;
  * Created by hadoop on 16-8-3.
  */
 
-import javafx.util.Pair;
+
 
 import java.util.*;
 
@@ -19,5 +19,5 @@ public interface Insertable {
     String getUsername();
     String getUserID();
     String getDomain();
-    List<Pair<String, String>> getExtraField();
+    List<TwoTuple<String, String>> getExtraField();
 }
