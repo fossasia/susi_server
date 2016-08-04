@@ -763,5 +763,34 @@
 				"Here are the profile details on Github for $2$"
 			]}, {"type":"table"}]
 		},
+		{
+			"keys"   :["wordpress"],
+			"score"  :1,
+			"example":"Susi, Read wordpress blogs from http://ishothim.com/",
+			"phrases":[ {"type":"pattern", "expression":"* read * wordpress * from *"}],
+			"process":[ {"type":"console", "expression":"SELECT * FROM wordpress WHERE url='$4$';"}],
+			"actions":[ {"type":"answer", "select":"random", "phrases":[
+				"Here are the blogposts .."
+			]}, {"type":"table"}]
+		},
+		{
+			"keys"   :["wordpress"],
+			"score"  :1,
+			"phrases":[ {"type":"pattern", "expression":"* view * wordpress * from *"}],
+			"process":[ {"type":"console", "expression":"SELECT * FROM wordpress WHERE url='$4$';"}],
+			"actions":[ {"type":"answer", "select":"random", "phrases":[
+				"Here are the blogposts .."
+			]}, {"type":"table"}]
+		},
+		{
+			"keys"   :["wordpress"],
+			"score"  :1,
+			"example":"Display articles from the blog http://ishothim.com/",
+			"phrases":[ {"type":"pattern", "expression":"* display * blog *"}],
+			"process":[ {"type":"console", "expression":"SELECT * FROM wordpress WHERE url='$3$';"}],
+			"actions":[ {"type":"answer", "select":"random", "phrases":[
+				"Here are the articles .."
+			]}, {"type":"table"}]
+		},
 	]
 }
