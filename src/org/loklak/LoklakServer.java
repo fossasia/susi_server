@@ -78,6 +78,7 @@ import org.loklak.api.admin.CrawlerServlet;
 import org.loklak.api.admin.SettingsServlet;
 import org.loklak.api.admin.StatusService;
 import org.loklak.api.admin.ThreaddumpServlet;
+import org.loklak.api.amazon.AmazonProductService;
 import org.loklak.api.cms.*;
 import org.loklak.api.geo.GeocodeServlet;
 import org.loklak.api.iot.FossasiaPushServlet;
@@ -106,6 +107,7 @@ import org.loklak.api.search.GithubProfileScraper;
 import org.loklak.api.search.InstagramProfileScraper;
 import org.loklak.api.search.LocationWiseTimeService;
 import org.loklak.api.search.WeiboUserInfo;
+import org.loklak.api.search.WikiGeoData;
 import org.loklak.api.search.MeetupsCrawlerService;
 import org.loklak.api.search.RSSReaderService;
 import org.loklak.api.tools.CSVServlet;
@@ -507,6 +509,7 @@ public class LoklakServer {
                 TopMenuService.class,
                 UserManagementService.class,
                 TwitterAnalysisService.class,
+                AmazonProductService.class,
                 
                 // geo
                 
@@ -526,7 +529,7 @@ public class LoklakServer {
                 InstagramProfileScraper.class,
                 LocationWiseTimeService.class,
                 TimeAndDateService.class,
-                //WikiGeoData.class
+                WikiGeoData.class
                 
                 // tools
                 
