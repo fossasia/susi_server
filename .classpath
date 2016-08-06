@@ -34,6 +34,8 @@
 	<classpathentry kind="lib" path="lib/jetty-servlets-9.3.9.v20160517.jar"/>
 	<classpathentry kind="lib" path="lib/jetty-util-9.3.9.v20160517.jar"/>
 	<classpathentry kind="lib" path="lib/jetty-webapp-9.3.9.v20160517.jar"/>
+	<classpathentry kind="lib" path="lib/jcommon-1.0.18.jar"/>
+	<classpathentry kind="lib" path="lib/jfreechart-1.0.19.jar"/>
 	<classpathentry kind="lib" path="lib/javax.mail-1.5.5.jar"/>
 	<classpathentry kind="lib" path="lib/slf4j-api-1.7.21.jar"/>
 	<classpathentry kind="lib" path="lib/log4j-slf4j-impl-2.6.jar"/>

@@ -103,12 +103,14 @@ import org.loklak.api.search.EventBriteCrawlerService;
 import org.loklak.api.search.UserServlet;
 import org.loklak.api.search.WordpressCrawlerService;
 import org.loklak.api.search.GenericScraper;
+import org.loklak.api.search.WeiboUserInfo;
 import org.loklak.api.search.MeetupsCrawlerService;
 import org.loklak.api.search.RSSReaderService;
 import org.loklak.api.tools.CSVServlet;
 import org.loklak.api.tools.XMLServlet;
 import org.loklak.api.vis.MapServlet;
 import org.loklak.api.vis.MarkdownServlet;
+import org.loklak.api.vis.PieChartServlet;
 import org.loklak.data.DAO;
 import org.loklak.harvester.TwitterScraper;
 import org.loklak.http.RemoteAccess;
@@ -504,6 +506,7 @@ public class LoklakServer {
                 SignUpService.class,
                 TopMenuService.class,
                 UserManagementService.class,
+                TwitterAnalysisService.class,
                 
                 // geo
                 
@@ -560,6 +563,7 @@ public class LoklakServer {
         servletHandler.addServlet(ProxyServlet.class, "/api/proxy.jpg");
         servletHandler.addServlet(ValidateServlet.class, "/api/validate.json");
         servletHandler.addServlet(GenericScraper.class, "/api/genericscraper.json");
+        servletHandler.addServlet(WeiboUserInfo.class, "/api/weibo.json");
         ServletHolder pushServletHolder = new ServletHolder(PushServlet.class);
         pushServletHolder.getRegistration().setMultipartConfig(multipartConfig);
         servletHandler.addServlet(pushServletHolder, "/api/push.json");
@@ -576,7 +580,6 @@ public class LoklakServer {
         assetServletHolder.getRegistration().setMultipartConfig(multipartConfig);
         servletHandler.addServlet(assetServletHolder, "/api/asset");
         servletHandler.addServlet(Sitemap.class, "/api/sitemap.xml");
-        servletHandler.addServlet(TwitterAnalysis.class, "/api/twitanalysis.json");
         servletHandler.addServlet(ThreaddumpServlet.class, "/api/threaddump.txt");
         servletHandler.addServlet(MarkdownServlet.class, "/vis/markdown.gif");
         servletHandler.addServlet(MarkdownServlet.class, "/vis/markdown.gif.base64");
@@ -590,6 +593,7 @@ public class LoklakServer {
         servletHandler.addServlet(MapServlet.class, "/vis/map.png.base64");
         servletHandler.addServlet(MapServlet.class, "/vis/map.jpg");
         servletHandler.addServlet(MapServlet.class, "/vis/map.jpg.base64");
+        servletHandler.addServlet(PieChartServlet.class, "/vis/piechart.png");
         servletHandler.setMaxFormContentSize(10 * 1024 * 1024); // 10 MB
 
         ErrorHandler errorHandler = new LoklakErrorHandler();

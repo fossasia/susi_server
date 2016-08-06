@@ -30,6 +30,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONTokener;
+import org.loklak.api.cms.TwitterAnalysisService;
 import org.loklak.data.DAO;
 import org.loklak.geo.GeoMark;
 import org.loklak.http.ClientConnection;
@@ -70,6 +71,7 @@ import javax.servlet.http.HttpServletResponse;
  * http://localhost:9000/api/console.json?q=SELECT%20*%20FROM%20wordpress%20WHERE%20url=%27https://jigyasagrover.wordpress.com/%27;
  * http://localhost:9000/api/console.json?q=SELECT%20*%20FROM%20timeanddate;
  * http://localhost:9000/api/console.json?q=SELECT%20*%20FROM%20githubProfile%20WHERE%20profile=%27torvalds%27;
+ * http://localhost:9000/api/console.json?q=SELECT%20*%20FROM%20locationwisetime%20WHERE%20query=%27london%27;
 * */
 
 public class ConsoleService extends AbstractAPIHandler implements APIHandler {
@@ -239,6 +241,18 @@ public class ConsoleService extends AbstractAPIHandler implements APIHandler {
         });
         dbAccess.put(Pattern.compile("SELECT\\h+?(.*?)\\h+?FROM\\h+?githubProfile\\h+?WHERE\\h+?profile\\h??=\\h??'(.*?)'\\h??;"), (flow, matcher) -> {
             SusiThought json = GithubProfileScraper.scrapeGithub(matcher.group(2));
+            SusiTransfer transfer = new SusiTransfer(matcher.group(1));
+            json.setData(transfer.conclude(json.getData()));
+            return json;
+        });
+        dbAccess.put(Pattern.compile("SELECT\\h+?(.*?)\\h+?FROM\\h+?locationwisetime\\h+?WHERE\\h+?query\\h??=\\h??'(.*?)'\\h??;"), (flow, matcher) -> {
+            SusiThought json = LocationWiseTimeService.locationWiseTime(matcher.group(2));
+            SusiTransfer transfer = new SusiTransfer(matcher.group(1));
+            json.setData(transfer.conclude(json.getData()));
+            return json;
+        });
+        dbAccess.put(Pattern.compile("SELECT\\h+?(.*?)\\h+?FROM\\h+?twitanalysis\\h+?WHERE\\h+?screen_name\\h??=\\h??'(.*?)'\\h+?AND\\h+?count\\h??=\\h??'(.*?)'\\h??;"), (flow, matcher) -> {
+            SusiThought json = TwitterAnalysisService.showAnalysis(matcher.group(2), matcher.group(3));
             SusiTransfer transfer = new SusiTransfer(matcher.group(1));
             json.setData(transfer.conclude(json.getData()));
             return json;
