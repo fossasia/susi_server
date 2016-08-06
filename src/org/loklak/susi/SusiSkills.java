@@ -59,7 +59,10 @@ public class SusiSkills extends LinkedHashMap<Pattern, BiFunction<SusiThought, M
             Matcher m = p.matcher(q);
             if (m.find()) try {
                 SusiThought json = pe.getValue().apply(flow, m);
-                if (json != null) return json;
+                if (json != null) {
+                    json.setProcess(p.pattern());
+                    return json;
+                }
             } catch (Throwable e) {
                 // applying a skill may produce various failure, including
                 // - IOExceptions if the skill needs external resources

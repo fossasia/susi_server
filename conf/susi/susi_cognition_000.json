@@ -12,17 +12,8 @@
 					  ]}]
 		},
 		{
-			"keys"   :["test"],
-			"score"  :1,
-			"phrases":[	{"type":"pattern", "expression":"*test*"} ],
-			"process":[],
-			"actions":[	{"type":"answer", "select":"random", "phrases":[
-							"Test me"
-					  ]}]
-		},
-		{
 			"keys"   :["sorry"],
-			"score"  :1,
+			"score"  :180,
 			"phrases":[	{"type":"pattern", "expression":"*sorry*"} ],
 			"process":[],
 			"actions":[	{"type":"answer", "select":"random", "phrases":[
@@ -33,7 +24,7 @@
 		},
 		{
 			"keys"   :["hello"],
-			"score"  :1,
+			"score"  :180,
 			"phrases":[	{"type":"pattern", "expression":"*hello*"},
 					{"type":"pattern", "expression":"*hey*"},
 					{"type":"pattern", "expression":"*hi*"}
@@ -46,7 +37,7 @@
 		},
 		{
 			"keys"   :["how"],
-			"score"  :1,
+			"score"  :180,
 			"phrases":[	{"type":"pattern", "expression":"*how are you*"},
 					{"type":"pattern", "expression":"*how have you been*"},
 					{"type":"pattern", "expression":"*Long time*"}
@@ -59,7 +50,7 @@
 		},
 		{
 			"keys"   :["belief"],
-			"score"  :1,
+			"score"  :180,
 			"phrases":[	{"type":"pattern", "expression":"*I feel *"} ],
 			"process":[],
 			"actions":[	{"type":"answer", "select":"random", "phrases":[
@@ -68,7 +59,7 @@
 		},
 		{
 			"keys"   :["famous"],
-			"score"  :1,
+			"score"  :180,
 			"phrases":[	{"type":"pattern", "expression":"*Am I famous *"} ],
 			"process":[],
 			"actions":[	{"type":"answer", "select":"random", "phrases":[
@@ -77,7 +68,7 @@
 					  ]}]
 		},
 		{
-			"score"  :1,
+			"score"  :180,
 			"phrases":[	{"type":"pattern", "expression":"I am *"} ],
 			"process":[],
 			"actions":[	{"type":"answer", "select":"random", "phrases":[
@@ -259,7 +250,7 @@
 		},
 		{
 			"keys"   :["who","what"],
-			"score"  :50,
+			"score"  :200,
 			"phrases":[	{"type":"pattern", "expression":"who are you"},
 			            {"type":"pattern", "expression":"what are you"} ],
 			"actions":[	{"type":"answer", "select":"random", "phrases":[
@@ -272,7 +263,7 @@
 		},
 		{
 			"keys"   :["who","what"],
-			"score"  :50,
+			"score"  :200,
 			"phrases":[	{"type":"pattern", "expression":"who am i"},
 			            {"type":"pattern", "expression":"what am i"} ],
 			"actions":[	{"type":"answer", "select":"random", "phrases":[

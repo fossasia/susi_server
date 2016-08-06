@@ -48,31 +48,36 @@ public class SusiLog {
         this.logs = new ConcurrentHashMap<>();
     }
     
-    public List<SusiInteraction> getInteractions(String username) {
-        UserRecord ur = logs.get(username);
+    /**
+     * get a list of interaction using the client key
+     * @param client
+     * @return a list of interactions, latest interaction is first in list
+     */
+    public ArrayList<SusiInteraction> getInteractions(String client) {
+        UserRecord ur = logs.get(client);
         if (ur == null) {
-            ur = new UserRecord(username);
-            logs.put(username, ur);
+            ur = new UserRecord(client);
+            logs.put(client, ur);
         }
         return ur.conversation;
     }
     
-    public SusiLog addInteraction(String username, SusiInteraction si) {
-        UserRecord ur = logs.get(username);
+    public SusiLog addInteraction(String client, SusiInteraction si) {
+        UserRecord ur = logs.get(client);
         if (ur == null) {
-            ur = new UserRecord(username);
-            logs.put(username, ur);
+            ur = new UserRecord(client);
+            logs.put(client, ur);
         }
         ur.add(si);
         return this;
     }
     
     public class UserRecord {
-        ArrayList<SusiInteraction> conversation;
-        File logdump;
-        public UserRecord(String userName) {
+        private ArrayList<SusiInteraction> conversation; // first entry always has the latest interaction
+        private File logdump;
+        public UserRecord(String client) {
             this.conversation = new ArrayList<>();
-            File logpath = new File(root, userName);
+            File logpath = new File(root, client);
             logpath.mkdirs();
             this.logdump = new File(logpath, "log.txt");
             if (this.logdump.exists()) {

@@ -65,5 +65,7 @@ public class SusiIdea {
         return this.intent;
     }
     
-    
+    public String toString() {
+        return this.rule.toString();
+    }
 }

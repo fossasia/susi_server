@@ -19,11 +19,15 @@
 
 package org.loklak.susi;
 
+import java.util.ArrayList;
+import java.util.Base64;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.loklak.objects.AbstractObjectEntry;
+import org.loklak.tools.UTF8;
 
 /**
  * An interaction with susi is the combination of a query of a user with the response
@@ -33,28 +37,58 @@ public class SusiInteraction {
 
     JSONObject json;
 
-    public SusiInteraction(final String query, int maxcount, String client_id, SusiMind mind) {
+    public SusiInteraction(JSONObject json) {
+        this.json = json;
+    }
+
+    public SusiInteraction(final String query, int maxcount, String client, SusiMind mind) {
+        String client_id = Base64.getEncoder().encodeToString(UTF8.getBytes(client));        
         this.json = new JSONObject(true);
         this.json.put("client_id", client_id);
         this.json.put("query", query);
         long query_date = System.currentTimeMillis();
         this.json.put("query_date", AbstractObjectEntry.utcFormatter.print(query_date));
-        List<SusiArgument> dispute = mind.react(query, maxcount);
+        List<SusiArgument> dispute = mind.react(query, maxcount, client);
         long answer_date = System.currentTimeMillis();
         this.json.put("answer_date", AbstractObjectEntry.utcFormatter.print(answer_date));
         this.json.put("answer_time", answer_date - query_date);
         this.json.put("count", maxcount);
-        JSONArray answers = new JSONArray();
-        dispute.forEach(answer -> answers.put(answer.mindstate()));
-        this.json.put("answers", answers);
+        this.json.put("answers", new JSONArray(dispute.stream().map(argument -> {
+            JSONObject answer = argument.mindstate();
+            answer.put("actions", argument.getActions().stream()
+                    .map(action -> action.apply(argument).toJSON())
+                    .collect(Collectors.toList()));
+            return answer;
+        }).collect(Collectors.toList())));
     }
     
-    public SusiInteraction(JSONObject json) {
-        this.json = json;
+    /**
+     * The interaction is the result of a though extraction. We can reconstruct
+     * the disput as list of last mindstates using the interaction data.
+     * @return an argument reconstructed from the interaction data
+     */
+    public SusiArgument recallDispute() {
+        SusiArgument dispute = new SusiArgument();
+        if (this.json.has("answers")) {
+            JSONArray answers = this.json.getJSONArray("answers");
+            for (int i = answers.length() - 1; i >= 0; i--) {
+                SusiThought compressedThought = new SusiThought(answers.getJSONObject(i));
+                compressedThought.addObservation("query", this.json.getString("query"));  // we can unify "query" in queries
+                if (compressedThought.has("actions") &&
+                    compressedThought.getJSONArray("actions").getJSONObject(0).has("expression"))
+                    compressedThought.addObservation("answer",
+                            compressedThought.getJSONArray("actions").getJSONObject(0).getString("expression")); // we can unify with "answer" in queries
+                dispute.think(compressedThought);
+            }
+        }
+        return dispute;
     }
     
     public JSONObject getJSON() {
         return this.json;
     }
     
+    public String toString() {
+        return this.json.toString();
+    }
 }

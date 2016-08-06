@@ -20,8 +20,6 @@
 
 package org.loklak.susi;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.regex.Matcher;
 
 import org.json.JSONArray;
@@ -43,6 +41,17 @@ public class SusiThought extends JSONObject {
         super(true);
         this.metadata_name = "metadata";
         this.data_name = "data";
+    }
+    
+    /**
+     * create a clone of a json object as a SusiThought object
+     * @param json the 'other' thought, probably an exported and re-imported thought
+     */
+    public SusiThought(JSONObject json) {
+        this();
+        if (json.has(this.metadata_name)) this.put(this.metadata_name, json.getJSONObject(this.metadata_name));
+        if (json.has(this.data_name)) this.setData(json.getJSONArray(this.data_name));
+        if (json.has("actions")) this.put("actions", json.getJSONArray("actions"));
     }
     
     /**
@@ -119,14 +128,29 @@ public class SusiThought extends JSONObject {
     }
 
     /**
+     * The process which created this thought may have a name or description string.
+     * To document what happened, the process namen can be given here
+     * @param query the process which formed this thought
+     * @return the thought
+     */
+    public SusiThought setProcess(String processName) {
+        getMetadata().put("process", processName);
+        return this;
+    }
+
+    /**
      * If this thought was the result of a retrieval using a specific expression, that expression is
      * called the query. The query can be attached to a thought
-     * @param query the expression that cause that this thought was formed
+     * @param query the expression which caused that this thought was formed
      * @return the thought
      */
     public SusiThought setQuery(String query) {
         getMetadata().put("query", query);
         return this;
+    }
+    
+    public String getQuery() {
+        return getMetadata().has("query") ? getMetadata().getString("query") : "";
     }
     
     /**
@@ -186,35 +210,14 @@ public class SusiThought extends JSONObject {
      */
     public SusiThought addObservation(String featureName, String observation) {
         JSONArray data = getData();
-        if (data.length() == 1) {
-            JSONObject thought = data.getJSONObject(0);
-            thought.put(featureName, observation);
+        JSONObject spark;
+        if (data.length() == 0) {
+            spark = new JSONObject();
+            this.setData(new JSONArray().put(spark));
+        } else {
+            spark = data.getJSONObject(0);
         }
+        spark.put(featureName, observation);
         return this;
     }
-    
-    /**
-     * Every information may have a set of (re-)actions assigned.
-     * Those (re-)actions are methods to do something with the thought.
-     * @param actions (re-)actions on this thought
-     * @return the thought
-     */
-    public SusiThought setActions(List<SusiAction> actions) {
-        JSONArray a = new JSONArray();
-        actions.forEach(action -> a.put(action.toJSON()));
-        this.put("actions", a);
-        return this;
-    }
-    
-    /**
-     * To be able to apply (re-)actions to this thought, the actions on the information can be retrieved.
-     * @return the (re-)actions which are applicable to this thought.
-     */
-    public List<SusiAction> getActions() {
-        List<SusiAction> actions = new ArrayList<>();
-        if (!this.has("actions")) return actions;
-        this.getJSONArray("actions").forEach(action -> actions.add(new SusiAction((JSONObject) action)));
-        return actions;
-    }
-    
 }

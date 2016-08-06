@@ -102,8 +102,8 @@ public class SusiRule {
         //System.out.println(ids1 + " - " + this.id + " - " + ids0.hashCode() + " - " + (((long) ids0.hashCode()) << 16));
     }
     
-    /*
     public String toString() {
+        /*
         String s = 
             "{\n" +
             "  \"phrases\":[{\"type\": \"pattern\", \"expression\": \"\"}],\n" +
@@ -113,8 +113,10 @@ public class SusiRule {
             "  \"}]\n" +
             "\"}\";\n";
         return s;
+        */
+        return this.phrases.get(0).toString();
     }
-    */
+
     
     public long getID() {
         return this.id;
@@ -216,10 +218,10 @@ public class SusiRule {
      * @param intent the key from the user query which matched the rule keys (also considering category matching)
      * @return the result of the application of the rule, a thought argument containing the thoughts which terminated into a final mindstate or NULL if the consideration should be rejected
      */
-    public SusiArgument consideration(final String query, SusiReader.Token intent) {
+    public SusiArgument consideration(final String query, SusiArgument recall_argument, SusiReader.Token intent) {
         
-        // we start with an empty argument
-        final SusiArgument argument = new SusiArgument();
+        // we start with the recall from previous interactions as argument
+        final SusiArgument argument = recall_argument.clone();
         
         // that argument is filled with an idea which consist of the query where we extract the identified data entities
         SusiThought keynote = new SusiThought(this.matcher(query));
@@ -244,11 +246,7 @@ public class SusiRule {
         }
         
         // we deduced thoughts from the inferences in the rules. Now apply the actions of rule to produce results
-        List<SusiAction> actions = new ArrayList<>();
-        for (SusiAction action: this.getActions()) {
-            actions.add(action.apply(argument));
-        }
-        argument.mindstate().setActions(actions);
+        this.getActions().forEach(action -> argument.addAction(action.apply(argument)));
         return argument;
     }
     

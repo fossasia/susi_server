@@ -24,7 +24,6 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Base64;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -39,7 +38,6 @@ import org.json.JSONObject;
 import org.json.JSONTokener;
 import org.loklak.data.DAO;
 import org.loklak.server.ClientIdentity;
-import org.loklak.tools.UTF8;
 
 public class SusiMind {
     
@@ -109,7 +107,7 @@ public class SusiMind {
         return this;
     }
     
-    public List<SusiIdea> associate(String query, int maxcount) {
+    public List<SusiIdea> associate(String query, SusiArgument previous_argument, int maxcount) {
         // tokenize query to have hint for idea collection
         final List<SusiIdea> ideas = new ArrayList<>();
         this.reader.tokenize(query).forEach(token -> {
@@ -156,16 +154,21 @@ public class SusiMind {
     /**
      * react on a user input: this causes the selection of deduction rules and the evaluation of the process steps
      * in every rule up to the moment where enough rules have been applied as consideration. The reaction may also
-     * cause the evaluation of operational steps which may cause learning effects wihtin the SusiMind.
+     * cause the evaluation of operational steps which may cause learning effects within the SusiMind.
      * @param query
      * @param maxcount
      * @return
      */
-    public List<SusiArgument> react(final String query, int maxcount) {
+    public List<SusiArgument> react(final String query, int maxcount, String client) {
+        List<SusiInteraction> previous_interactions = this.logs.getInteractions(client); // first entry is latest interaction
+        SusiArgument latest_argument = new SusiArgument();
+        for (int i = previous_interactions.size() - 1; i >= 0; i--) {
+            latest_argument.think(previous_interactions.get(i).recallDispute());
+        }
         List<SusiArgument> answers = new ArrayList<>();
-        List<SusiIdea> ideas = associate(query, 100);
+        List<SusiIdea> ideas = associate(query, latest_argument, 100);
         for (SusiIdea idea: ideas) {
-            SusiArgument argument = idea.getRule().consideration(query, idea.getIntent());
+            SusiArgument argument = idea.getRule().consideration(query, latest_argument, idea.getIntent());
             if (argument != null) answers.add(argument);
             if (answers.size() >= maxcount) break;
         }
@@ -173,15 +176,15 @@ public class SusiMind {
     }
     
     public String react(String query) {
-        List<SusiArgument> datalist = react(query, 1);
+        List<SusiArgument> datalist = react(query, 1, "host_localhost");
         SusiArgument bestargument = datalist.get(0);
-        return bestargument.mindstate().getActions().get(0).apply(bestargument).getStringAttr("expression");
+        return bestargument.getActions().get(0).apply(bestargument).getStringAttr("expression");
     }
     
     public SusiInteraction interaction(final String query, int maxcount, ClientIdentity identity) {
         // get a response from susis mind
         String client = identity.getType() + "_" + identity.getName();
-        SusiInteraction si = new SusiInteraction(query, maxcount, Base64.getEncoder().encodeToString(UTF8.getBytes(client)), this);
+        SusiInteraction si = new SusiInteraction(query, maxcount, client, this);
         // write a log about the response using the users identity
         this.logs.addInteraction(client, si);
         // return the computed response
