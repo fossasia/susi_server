@@ -1,5 +1,5 @@
 /**
- *  GenericScraper
+ *  WeiboUserInfo
  *  Copyright 22.07.2016 by Damini Satya, @daminisatya
  *
  *  This library is free software; you can redistribute it and/or
