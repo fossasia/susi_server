@@ -4,14 +4,11 @@
     <link rel="icon" type="image/png" href="../../artwork/favicon.png">
     <title>PeersDeployGame
     </title>
-    <link href="style.css" rel="stylesheet"/>
-    <link href="https://bootswatch.com/cosmo/bootstrap.min.css" rel="stylesheet"/>
-    <script src="/js/angular.min.js">
-    </script>
-    <script src="/js/jquery.min.js">
-    </script>
-    <script src="app.js">
-    </script>
+    <link href="css/style.css" rel="stylesheet"/>
+    <link href="css/bootstrap.min.css" rel="stylesheet"/>
+    <script src="../../js/angular.min.js"></script>
+    <script src="../../js/jquery.min.js"></script>
+    <script src="app.js"></script>
   </head>
   <style>
     <style>
@@ -80,7 +77,7 @@
     <div class="graph right">
     </div>
     </div>
-  <script src="http://d3js.org/d3.v3.js">
+  <script src="js/d3.v3.min.js">
   </script>
   <script src="../../js/d3-tip.min.js">
   </script>
@@ -183,20 +180,8 @@
           name: name}
                                     );
       }
-      // force.on('end', function() {
-      //   node.attr('r', width/85)
-      //       .attr('cx', function(d) { return d.x; })
-      //       .attr('cy', function(d) { return d.y; });
-      //   link.attr('x1', function(d) { return d.source.x; })
-      //       .attr('y1', function(d) { return d.source.y; })
-      //       .attr('x2', function(d) { return d.target.x; })
-      //       .attr('y2', function(d) { return d.target.y; });
-      // }
-      // );
-      // force.start();
     }
            );
-  </script>
   </script>
 </body>
 </html>
