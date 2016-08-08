@@ -39,8 +39,6 @@ import javax.servlet.MultipartConfigElement;
 import javax.servlet.Servlet;
 
 import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.core.LoggerContext;
-import org.apache.logging.log4j.core.config.Configurator;
 import org.bouncycastle.asn1.pkcs.PrivateKeyInfo;
 import org.bouncycastle.cert.X509CertificateHolder;
 import org.bouncycastle.cert.jcajce.JcaX509CertificateConverter;
@@ -282,11 +280,9 @@ public class LoklakServer {
                     Harvester.executor.shutdown();
                     Log.getLog().info("main terminated, goodby.");
 
-                    if( LogManager.getContext() instanceof LoggerContext) {
-                        Log.getLog().info("Shutting down log4j2");
-                        Configurator.shutdown((LoggerContext)LogManager.getContext());
-                    } else
-                        Log.getLog().warn("Unable to shutdown log4j2");
+                    Log.getLog().info("Shutting down log4j2");
+                    LogManager.shutdown();
+
                 } catch (Exception e) {
                 }
             }
