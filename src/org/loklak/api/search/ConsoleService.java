@@ -72,6 +72,7 @@ import javax.servlet.http.HttpServletResponse;
  * http://localhost:9000/api/console.json?q=SELECT%20*%20FROM%20timeanddate;
  * http://localhost:9000/api/console.json?q=SELECT%20*%20FROM%20githubProfile%20WHERE%20profile=%27torvalds%27;
  * http://localhost:9000/api/console.json?q=SELECT%20*%20FROM%20locationwisetime%20WHERE%20query=%27london%27;
+ *http://localhost:9000/api/console.json?q=SELECT%20*%20FROM%20instagramprofile%20WHERE%20profile=%27justinpjtrudeau%27;
 * */
 
 public class ConsoleService extends AbstractAPIHandler implements APIHandler {
@@ -253,6 +254,12 @@ public class ConsoleService extends AbstractAPIHandler implements APIHandler {
         });
         dbAccess.put(Pattern.compile("SELECT\\h+?(.*?)\\h+?FROM\\h+?twitanalysis\\h+?WHERE\\h+?screen_name\\h??=\\h??'(.*?)'\\h+?AND\\h+?count\\h??=\\h??'(.*?)'\\h??;"), (flow, matcher) -> {
             SusiThought json = TwitterAnalysisService.showAnalysis(matcher.group(2), matcher.group(3));
+            SusiTransfer transfer = new SusiTransfer(matcher.group(1));
+            json.setData(transfer.conclude(json.getData()));
+            return json;
+        });
+        dbAccess.put(Pattern.compile("SELECT\\h+?(.*?)\\h+?FROM\\h+?instagramprofile\\h+?WHERE\\h+?profile\\h??=\\h??'(.*?)'\\h??;"), (flow, matcher) -> {
+            SusiThought json = InstagramProfileScraper.scrapeInstagram(matcher.group(2));
             SusiTransfer transfer = new SusiTransfer(matcher.group(1));
             json.setData(transfer.conclude(json.getData()));
             return json;
