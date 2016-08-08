@@ -73,23 +73,29 @@ public class SusiInference {
     private final static SusiSkills flowSkill = new SusiSkills();
     static {
         flowSkill.put(Pattern.compile("first"), (flow, matcher) -> {
+            // extract only the first row of a thought
             SusiThought nextThought = new SusiThought();
-            if (flow != null && flow.getCount() > 0) nextThought.getData().put(flow.getData().get(0));
+            SusiThought mindstate = flow.mindstate();
+            if (flow != null && mindstate.getCount() > 0) nextThought.getData().put(mindstate.getData().get(0));
             return nextThought;
         });
         flowSkill.put(Pattern.compile("first\\h+?(.*?)\\h*?"), (flow, matcher) -> {
             SusiThought nextThought = new SusiThought();
-            if (flow != null && flow.getCount() > 0) nextThought.getData().put(flow.getData().get(0));
+            SusiThought mindstate = flow.mindstate();
+            if (flow != null && mindstate.getCount() > 0) nextThought.getData().put(mindstate.getData().get(0));
             return nextThought;
         });
         flowSkill.put(Pattern.compile("rest"), (flow, matcher) -> {
+            // remove the first row of a thought and return the remaining
             SusiThought nextThought = new SusiThought();
-            if (flow != null && flow.getCount() > 0) nextThought.getData().put(flow.getData().remove(0));
+            SusiThought mindstate = flow.mindstate();
+            if (flow != null && mindstate.getCount() > 0) nextThought.getData().put(mindstate.getData().remove(0));
             return nextThought;
         });
         flowSkill.put(Pattern.compile("rest\\h+?(.*?)\\h*?"), (flow, matcher) -> {
             SusiThought nextThought = new SusiThought();
-            if (flow != null && flow.getCount() > 0) nextThought.getData().put(flow.getData().remove(0));
+            SusiThought mindstate = flow.mindstate();
+            if (flow != null && mindstate.getCount() > 0) nextThought.getData().put(mindstate.getData().remove(0));
             return nextThought;
         });
     }
@@ -110,7 +116,7 @@ public class SusiInference {
         }
         if (type == SusiInference.Type.flow) {
             String expression = argument.unify(this.getExpression());
-            return flowSkill.deduce(argument.mindstate(), expression);
+            return flowSkill.deduce(argument, expression);
         }
         // maybe the argument is not applicable, then the latest mindstate is empty application
         return argument.mindstate();

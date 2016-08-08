@@ -23,6 +23,7 @@ package org.loklak.susi;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -217,4 +218,31 @@ public class SusiThought extends JSONObject {
         return actions;
     }
     
+    public static final Pattern variable_pattern = Pattern.compile("\\$.*?\\$");
+    
+    /**
+     * Unification applies a piece of memory within the current argument to a statement
+     * which creates an instantiated statement
+     * @param statement
+     * @return the instantiated statement with elements of the argument applied or null if the statement cannot be fully instantiated
+     */
+    public String unify(String statement) {
+        JSONArray table = this.getData();
+        if (table != null && table.length() > 0) {
+            JSONObject row = table.getJSONObject(0);
+            for (String key: row.keySet()) {
+                int i = statement.indexOf("$" + key + "$");
+                if (i >= 0) {
+                    statement = statement.substring(0, i) + row.get(key).toString() + statement.substring(i + key.length() + 2);
+                }
+            }
+            if (!variable_pattern.matcher(statement).find()) return null;
+        }
+        return statement;
+    }
+    
+    public static void main(String[] args) {
+        SusiThought t = new SusiThought().addObservation("a", "letter-a");
+        System.out.println(t.unify("the letter $a$"));
+    }
 }

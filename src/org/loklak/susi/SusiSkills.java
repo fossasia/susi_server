@@ -29,7 +29,7 @@ import java.util.regex.Pattern;
  * A skill is the ability to inspire, to create thoughts from perception. The data structure of
  * a skill set is a mapping from perception patterns to lambda expressions which induce thoughts.
  */
-public class SusiSkills extends LinkedHashMap<Pattern, BiFunction<SusiThought, Matcher, SusiThought>> implements Map<Pattern, BiFunction<SusiThought, Matcher, SusiThought>> {
+public class SusiSkills extends LinkedHashMap<Pattern, BiFunction<SusiArgument, Matcher, SusiThought>> implements Map<Pattern, BiFunction<SusiArgument, Matcher, SusiThought>> {
 
     private static final long serialVersionUID = 4531596762427825563L;
 
@@ -50,10 +50,10 @@ public class SusiSkills extends LinkedHashMap<Pattern, BiFunction<SusiThought, M
      * @param q the perception
      * @return a thought from the application of the skill set
      */
-    public SusiThought deduce(SusiThought flow, String q) {
+    public SusiThought deduce(SusiArgument flow, String q) {
         if (q == null) return new SusiThought();
         q = q.trim();
-        for (Map.Entry<Pattern, BiFunction<SusiThought, Matcher, SusiThought>> pe: this.entrySet()) {
+        for (Map.Entry<Pattern, BiFunction<SusiArgument, Matcher, SusiThought>> pe: this.entrySet()) {
             Pattern p = pe.getKey();
             Matcher m = p.matcher(q);
             if (m.find()) try {

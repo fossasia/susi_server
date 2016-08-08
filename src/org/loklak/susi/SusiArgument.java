@@ -20,17 +20,14 @@
 package org.loklak.susi;
 
 import java.util.ArrayList;
-import java.util.regex.Pattern;
-
-import org.json.JSONArray;
-import org.json.JSONObject;
+import java.util.Iterator;
 
 /**
  * An Argument is a series of thoughts, also known as a 'proof' in automated reasoning.
  * Within the Susi AI infrastructure this may be considered as the representation of
  * the short-time memory of thinking inside Susi.
  */
-public class SusiArgument {
+public class SusiArgument implements Iterable<SusiThought> {
 
     private final ArrayList<SusiThought> recall;
     
@@ -81,28 +78,31 @@ public class SusiArgument {
         return this;
     }
     
-    private static final Pattern variable_pattern = Pattern.compile("\\$.*?\\$");
-    
     /**
-     * Unification applies a piece of memory wihtin the current argument to a statement
+     * Unification applies a piece of memory within the current argument to a statement
      * which creates an instantiated statement
      * @param statement
      * @return the instantiated statement with elements of the argument applied
      */
     public String unify(String statement) {
-        remember: for (int mindstate_count = this.recall.size() - 1; mindstate_count >= 0; mindstate_count--) {
-            JSONArray table = this.recall.get(mindstate_count).getData();
-            if (table != null && table.length() > 0) {
-                JSONObject row = table.getJSONObject(0);
-                for (String key: row.keySet()) {
-                    int i = statement.indexOf("$" + key + "$");
-                    if (i >= 0) {
-                        statement = statement.substring(0, i) + row.get(key).toString() + statement.substring(i + key.length() + 2);
-                    }
-                }
-                if (!variable_pattern.matcher(statement).find()) break remember;
-            }
+        for (SusiThought t: this) {
+            String s = t.unify(statement);
+            if (s == null) break; // no more patterns to be instantiated left, not an error!
+            statement = s;
         }
+        if (SusiThought.variable_pattern.matcher(statement).find()) return null; // failure!
         return statement;
+    }
+
+    /**
+     * the iterator returns the thoughts in reverse order, latest thought first
+     */
+    @Override
+    public Iterator<SusiThought> iterator() {
+        return new Iterator<SusiThought>() {
+            private int p = recall.size(); 
+            @Override public boolean hasNext() {return p > 0;}
+            @Override public SusiThought next() {return remember(--p);}
+        };
     }
 }

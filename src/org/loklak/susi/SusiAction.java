@@ -98,7 +98,8 @@ public class SusiAction {
             // transform the answer according to the data
             ArrayList<String> a = getPhrases();
             String phrase = a.get(random.nextInt(a.size()));
-            this.json.put("expression", thoughts.unify(phrase));
+            String expression = thoughts.unify(phrase);
+            if (expression != null) this.json.put("expression", expression);
         }
         return this;
     }
