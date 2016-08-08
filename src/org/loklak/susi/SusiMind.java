@@ -37,6 +37,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONTokener;
 import org.loklak.data.DAO;
+import org.loklak.server.ClientIdentity;
 
 public class SusiMind {
     
@@ -44,6 +45,7 @@ public class SusiMind {
     private final File initpath, watchpath; // a path where the memory looks for new additions of knowledge with memory files
     private final Map<File, Long> observations; // a mapping of mind memory files to the time when the file was read the last time
     private final SusiReader reader; // responsible to understand written communication
+    private final SusiLog logs; // conversation logs
     
     public SusiMind(File initpath, File watchpath) {
         // initialize class objects
@@ -54,6 +56,7 @@ public class SusiMind {
         this.ruletrigger = new ConcurrentHashMap<>();
         this.observations = new HashMap<>();
         this.reader = new SusiReader();
+        this.logs = new SusiLog(watchpath, 3);
     }
 
     public SusiMind observe() throws IOException {
@@ -104,7 +107,7 @@ public class SusiMind {
         return this;
     }
     
-    public List<SusiIdea> associate(String query, int maxcount) {
+    public List<SusiIdea> associate(String query, SusiArgument previous_argument, int maxcount) {
         // tokenize query to have hint for idea collection
         final List<SusiIdea> ideas = new ArrayList<>();
         this.reader.tokenize(query).forEach(token -> {
@@ -151,16 +154,21 @@ public class SusiMind {
     /**
      * react on a user input: this causes the selection of deduction rules and the evaluation of the process steps
      * in every rule up to the moment where enough rules have been applied as consideration. The reaction may also
-     * cause the evaluation of operational steps which may cause learning effects wihtin the SusiMind.
+     * cause the evaluation of operational steps which may cause learning effects within the SusiMind.
      * @param query
      * @param maxcount
      * @return
      */
-    public List<SusiArgument> react(final String query, int maxcount) {
+    public List<SusiArgument> react(final String query, int maxcount, String client) {
+        List<SusiInteraction> previous_interactions = this.logs.getInteractions(client); // first entry is latest interaction
+        SusiArgument latest_argument = new SusiArgument();
+        for (int i = previous_interactions.size() - 1; i >= 0; i--) {
+            latest_argument.think(previous_interactions.get(i).recallDispute());
+        }
         List<SusiArgument> answers = new ArrayList<>();
-        List<SusiIdea> ideas = associate(query, 100);
+        List<SusiIdea> ideas = associate(query, latest_argument, 100);
         for (SusiIdea idea: ideas) {
-            SusiArgument argument = idea.getRule().consideration(query, idea.getIntent());
+            SusiArgument argument = idea.getRule().consideration(query, latest_argument, idea.getIntent());
             if (argument != null) answers.add(argument);
             if (answers.size() >= maxcount) break;
         }
@@ -168,9 +176,19 @@ public class SusiMind {
     }
     
     public String react(String query) {
-        List<SusiArgument> datalist = react(query, 1);
+        List<SusiArgument> datalist = react(query, 1, "host_localhost");
         SusiArgument bestargument = datalist.get(0);
-        return bestargument.mindstate().getActions().get(0).apply(bestargument).getStringAttr("expression");
+        return bestargument.getActions().get(0).apply(bestargument).getStringAttr("expression");
+    }
+    
+    public SusiInteraction interaction(final String query, int maxcount, ClientIdentity identity) {
+        // get a response from susis mind
+        String client = identity.getType() + "_" + identity.getName();
+        SusiInteraction si = new SusiInteraction(query, maxcount, client, this);
+        // write a log about the response using the users identity
+        this.logs.addInteraction(client, si);
+        // return the computed response
+        return si;
     }
     
     public static void main(String[] args) {
@@ -179,7 +197,6 @@ public class SusiMind {
             File watch = new File(new File("data"), "susi");
             SusiMind mem = new SusiMind(init, watch);
             mem.learn(new File("conf/susi/susi_cognition_000.json"));
-            //System.out.println(mem.answer("who will win euro2016?", 3));
             System.out.println(mem.react("I feel funny"));
             System.out.println(mem.react("Help me!"));
         } catch (FileNotFoundException e) {

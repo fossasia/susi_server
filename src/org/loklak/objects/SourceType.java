@@ -23,22 +23,22 @@ package org.loklak.objects;
  * The SourceType objects answers on the question "what kind of data format".
  * Do not mix up this with the ProviderType, because there can be many providers for the same SourceType.
  */
-public class SourceType {
+public enum SourceType {
 
-    public final static SourceType TWITTER       = new SourceType("TWITTER");       // generated at twitter and scraped from there
-    public final static SourceType FOSSASIA_API  = new SourceType("FOSSASIA_API");  // imported from FOSSASIA API data,
-    public final static SourceType OPENWIFIMAP   = new SourceType("OPENWIFIMAP");   // imported from OpenWifiMap API data
-    public final static SourceType NODELIST      = new SourceType("NODELIST");      // imported from Freifunk Nodelist
-    public final static SourceType NETMON        = new SourceType("NETMON");        // imported from Freifunk Netmon
-    public final static SourceType FREIFUNK_NODE = new SourceType("FREIFUNK_NODE"); // imported from Freifunk wifi router node (custom schema)
-    public final static SourceType NINUX         = new SourceType("NINUX");         // imported from Ninux http://map.ninux.org
-    public final static SourceType GEOJSON       = new SourceType("GEOJSON");       // geojson feature collection provided from remote peer
+    TWITTER(true),        // generated at twitter and scraped from there
+    FOSSASIA_API(false),  // imported from FOSSASIA API data,
+    OPENWIFIMAP(false),   // imported from OpenWifiMap API data
+    NODELIST(false),      // imported from Freifunk Nodelist
+    NETMON(false),        // imported from Freifunk Netmon
+    FREIFUNK_NODE(false), // imported from Freifunk wifi router node (custom schema)
+    NINUX(false),         // imported from Ninux http://map.ninux.org
+    GEOJSON(false),       // geojson feature collection provided from remote peer
+    GENERIC(false);       // no specific format
     
-    final private String typeName;
+    private final boolean propagate;
     
-    public SourceType(String typeName) throws RuntimeException {
-        if (!isValid(typeName)) throw new RuntimeException("type names must be in uppercase");
-        this.typeName = typeName;
+    private SourceType(boolean propagate) throws RuntimeException {
+        this.propagate = propagate;
     }
     
     /**
@@ -49,14 +49,24 @@ public class SourceType {
      * @return true if the name is valid
      */
     public static boolean isValid(String typeName) {
-        return typeName != null && typeName.length() >= 3 && typeName.indexOf(' ') < 0 && typeName.equals(typeName.toUpperCase());
+        if (typeName == null) return false;
+        try {
+            return SourceType.valueOf(typeName) != null;
+        } catch (IllegalArgumentException e) {
+            return false;
+        }
     }
     
-    public boolean equals(Object o) {
-        return o instanceof SourceType && ((SourceType) o).typeName.equals(this.typeName);
+    public static SourceType byName(String typeName) {
+        if (typeName == null) return SourceType.GENERIC;
+        try {
+            return SourceType.valueOf(typeName);
+        } catch (IllegalArgumentException e) {
+            return SourceType.GENERIC;
+        }
     }
     
-    public String toString() {
-        return this.typeName;
+    public boolean propagate() {
+        return this.propagate;
     }
 }

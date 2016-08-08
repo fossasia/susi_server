@@ -47,7 +47,7 @@ public class SusiAction {
     }
     
     /**
-     * Get the action type. That can be used to filter specific infirmation from the action JSON object
+     * Get the action type. That can be used to filter specific information from the action JSON object
      * to create specific activities like 'saying' a sentence, painting a graph and so on.
      * @return the action type
      */

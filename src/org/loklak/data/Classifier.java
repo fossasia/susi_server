@@ -39,7 +39,7 @@ public class Classifier {
     public enum Category {
         joy,trust,fear,surprise,sadness,disgust,anger,anticipation,
         swear,sex,leet,troll,
-        english, german, french, spanish,
+        english, german, french, spanish, dutch,
         NONE;
     }
 
@@ -50,7 +50,7 @@ public class Classifier {
         
         emotion(new Category[]{Category.joy,Category.trust,Category.fear,Category.surprise,Category.sadness,Category.disgust,Category.anger,Category.anticipation}),
         profanity(new Category[]{Category.swear,Category.sex,Category.leet,Category.troll}),
-        language(new Category[]{Category.english, Category.german, Category.french, Category.spanish});
+        language(new Category[]{Category.english, Category.german, Category.french, Category.spanish, Category.dutch});
         
         public Map<Category, Set<String>> categories;
         BayesClassifier<String, Category> bayes;

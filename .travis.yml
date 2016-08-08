@@ -1,6 +1,9 @@
 language: java
+sudo: required
+dist: trusty
 jdk:
 - oraclejdk8
+- openjdk8
 env:
   global:
   - secure: DbveaxDMtEP+/Er6ktKCP+P42uDU8xXWRBlVGaqVNU3muaRmmZtj8ngAARxfzY0f9amlJlCavqkEIAumQl9BYKPWIra28ylsLNbzAoCIi8alf9WLgddKwVWsTcZo9+UYocuY6UivJVkofycfFJ1blw/83dWMG0/TiW6s/SrwoDw=
@@ -10,9 +13,14 @@ script:
 - "./gradle_clean.sh"
 - ant
 - bin/start.sh
+before_script:
+- pip install --user codecov
 install: true
 after_success:
 - sh .utility/push-javadoc-to-gh-pages.sh
+- bash <(curl -s https://codecov.io/bash)
+- mvn clean cobertura:cobertura coveralls:report
+- codecov
 deploy:
   provider: heroku
   email: robert.mader@posteo.de

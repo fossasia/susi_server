@@ -48,7 +48,39 @@ import org.loklak.objects.Timeline.Order;
 import org.loklak.server.Query;
 import org.loklak.tools.UTF8;
 
+/**
+ * push api to send messages to the loklak index.
+ * The push json format is exactly like a search result json. Most of the attributes in a message can be ommitted.
+ * Here is an example file that can be prepared for a push:
 
+{
+  "statuses": [
+    {
+      "id_str": "yourmessageid_1234",
+      "screen_name": "testuser",
+      "created_at": "2016-07-22T07:53:24.000Z",
+      "text": "The rain is spain stays always in the plain",
+      "source_type": "GENERIC",
+      "place_name": "Georgia, USA",
+      "location_point": [3.058579854228782,50.63296878274201],
+      "location_radius": 0,
+      "user": {
+        "user_id": "youruserid_5678",
+        "name": "Mr. Bob",
+      }
+    }
+  ]
+}
+
+ * save this json into a file named "test.json" and thenn call curl the following way:
+ * curl -X POST -F 'data=@test.json' http://localhost:9000/api/push.json
+ * 
+ * You should modify the source_type object to a name which describes the semantic of the text content.
+ * You can i.e. use GEOJSON to describe that you are pushing a geojson data object within the text body.
+ * Please take care that you choose a proper id_str and user_id which has it's own id name domain
+ * so it can be distinguished from other id domains. You can do that i.e. by choosing a fixed prefix for your
+ * data domain.
+ */
 public class PushServlet extends HttpServlet {
     
     private static final long serialVersionUID = 7504310048722996407L;
@@ -162,6 +194,7 @@ public class PushServlet extends HttpServlet {
                 if (user == null) continue;
                 tweet.put("provider_type", ProviderType.REMOTE.name());
                 tweet.put("provider_hash", remoteHash);
+                if (!user.has("screen_name") && tweet.has("screen_name")) user.put("screen_name", tweet.getString("screen_name"));
                 UserEntry u = new UserEntry(user);
                 MessageEntry t = new MessageEntry(tweet);
                 tl.add(t, u);

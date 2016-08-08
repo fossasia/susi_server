@@ -8,6 +8,8 @@
         <pathelement location="lib/antlr-runtime-3.5.jar"/>
         <pathelement location="lib/asm-4.1.jar"/>
         <pathelement location="lib/asm-commons-4.1.jar"/>
+        <pathelement location="lib/bcprov-jdk15on-154.jar"/>
+        <pathelement location="lib/bcpkix-jdk15on-154.jar"/>
         <pathelement location="lib/commons-cli-1.3.1.jar"/>
         <pathelement location="lib/commons-logging-1.2.jar"/>
         <pathelement location="lib/compiler-0.8.13.jar"/>
@@ -27,6 +29,7 @@
         <pathelement location="lib/jackson-dataformat-yaml-2.6.2.jar"/>
         <pathelement location="lib/javax.servlet-api-3.1.0.jar"/>
         <pathelement location="lib/javax.mail-1.5.5.jar"/>
+        <pathelement location="lib/jcommon-1.0.18.jar"/>
         <pathelement location="lib/jetty-http-9.3.9.v20160517.jar"/>
         <pathelement location="lib/jetty-io-9.3.9.v20160517.jar"/>
         <pathelement location="lib/jetty-rewrite-9.3.9.v20160517.jar"/>
@@ -36,6 +39,7 @@
         <pathelement location="lib/jetty-servlets-9.3.9.v20160517.jar"/>
         <pathelement location="lib/jetty-util-9.3.9.v20160517.jar"/>
         <pathelement location="lib/jetty-webapp-9.3.9.v20160517.jar"/>
+        <pathelement location="lib/jfreechart-1.0.19.jar"/>
         <pathelement location="lib/jna-4.1.0.jar"/>
         <pathelement location="lib/joda-convert-1.2.jar"/>
         <pathelement location="lib/joda-time-2.8.2.jar"/>
@@ -44,10 +48,10 @@
         <pathelement location="lib/jsr166e-1.1.0.jar"/>
         <pathelement location="lib/jts-1.13.jar"/>
         <pathelement location="lib/junit-4.12.jar"/>
-        <pathelement location="lib/log4j-1.2-api-2.6.jar"/>
-        <pathelement location="lib/log4j-api-2.6.jar"/>
-        <pathelement location="lib/log4j-core-2.6.jar"/>
-        <pathelement location="lib/log4j-slf4j-impl-2.6.jar"/>
+        <pathelement location="lib/log4j-1.2-api-2.6.2.jar"/>
+        <pathelement location="lib/log4j-api-2.6.2.jar"/>
+        <pathelement location="lib/log4j-core-2.6.2.jar"/>
+        <pathelement location="lib/log4j-slf4j-impl-2.6.2.jar"/>
         <pathelement location="lib/lucene-analyzers-common-5.5.0.jar"/>
         <pathelement location="lib/lucene-backward-codecs-5.5.0.jar"/>
         <pathelement location="lib/lucene-core-5.5.0.jar"/>

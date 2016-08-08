@@ -1,110 +1,4 @@
 {
-	"synonyms":{
-		"don't":["dont"],
-		"can't":["cant"],
-		"won't":["wont"],
-		"remember":["recollect","recall"],
-		"dreamed":["dreamt"],
-		"dream":["dreams"],
-		"perhaps":["maybe"],
-		"yes":["certainly","true"],
-		"computer":["machine","machines","computers"],
-		"was":["were"],
-		"you are":["you're"],
-		"i am":["i'm"]
-	},
-	"filler":["actually","so","well","look","like","#"],
-	"categories":{
-		"alike":["same","identical","equivalent"],
-		"amazing":["incredible", "unbelievable", "improbable", "fabulous", "wonderful", "fantastic", "astonishing", "astounding", "extraordinary"],
-		"anger":["enrage", "infuriate", "arouse", "nettle", "exasperate", "inflame", "madden"],
-		"angry":["mad", "furious", "enraged", "excited", "wrathful", "indignant", "exasperated", "aroused", "inflamed"],
-		"answer":["reply", "respond", "retort", "acknowledge"],
-		"ask":["question", "inquire of", "seek information from", "put a question to", "demand", "request", "expect", "inquire", "query", "interrogate", "examine", "quiz"],
-		"awful":["dreadful", "terrible", "abominable", "bad", "poor", "unpleasant"],
-		"bad":["evil", "immoral", "wicked", "corrupt", "sinful", "depraved", "rotten", "contaminated", "spoiled", "tainted", "harmful", "injurious", "unfavorable", "defective", "inferior", "imperfect", "substandard", "faulty", "improper", "inappropriate", "unsuitable", "disagreeable", "unpleasant", "cross", "nasty", "unfriendly", "irascible", "horrible", "atrocious", "outrageous", "scandalous", "infamous", "wrong", "noxious", "sinister", "putrid", "snide", "deplorable", "dismal", "gross", "heinous", "nefarious", "base", "obnoxious", "detestable", "despicable", "contemptible", "foul", "rank", "ghastly", "execrable"],
-		"be": ["am", "is", "are", "was"],
-		"beautiful":["pretty", "lovely", "handsome", "attractive", "gorgeous", "dazzling", "splendid", "magnificent", "comely", "fair", "ravishing", "graceful", "elegant", "fine", "exquisite", "aesthetic", "pleasing", "shapely", "delicate", "stunning", "glorious", "heavenly", "resplendent", "radiant", "glowing", "blooming", "sparkling"],
-		"begin":["start", "open", "launch", "initiate", "commence", "inaugurate", "originate"],
-		"belief": ["feel", "think", "believe", "wish"],
-		"big":["enormous", "huge", "immense", "gigantic", "vast", "colossal", "gargantuan", "large", "sizable", "grand", "great", "tall", "substantial", "mammoth", "astronomical", "ample", "broad", "expansive", "spacious", "stout", "tremendous", "titanic", "mountainous"],
-		"brave":["courageous", "fearless", "dauntless", "intrepid", "plucky", "daring", "heroic", "valorous", "audacious", "bold", "gallant", "valiant", "doughty", "mettlesome"],
-		"break":["fracture", "rupture", "shatter", "smash", "wreck", "crash", "demolish", "atomize"],
-		"bright":["shining", "shiny", "gleaming", "brilliant", "sparkling", "shimmering", "radiant", "vivid", "colorful", "lustrous", "luminous", "incandescent", "intelligent", "knowing", "quick-witted", "smart", "intellectual"],
-		"calm":["quiet", "peaceful", "still", "tranquil", "mild", "serene", "smooth", "composed", "collected", "unruffled", "level-headed", "unexcited", "detached", "aloof"],
-		"cannot": ["can't"],
-		"come":["approach", "advance", "near", "arrive", "reach"],
-		"cool":["chilly", "cold", "frosty", "wintry", "icy", "frigid"],
-		"crooked":["bent", "twisted", "curved", "hooked", "zigzag"],
-		"cry":["shout", "yell", "yowl", "scream", "roar", "bellow", "weep", "wail", "sob", "bawl"],
-		"cut":["gash", "slash", "prick", "nick", "sever", "slice", "carve", "cleave", "slit", "chop", "crop", "lop", "reduce"],
-		"dangerous":["perilous", "hazardous", "risky", "uncertain", "unsafe"],
-		"dark":["shadowy", "unlit", "murky", "gloomy", "dim", "dusky", "shaded", "sunless", "black", "dismal", "sad"],
-		"decide":["determine", "settle", "choose", "resolve"],
-		"definite":["certain", "sure", "positive", "determined", "clear", "distinct", "obvious"],
-		"delicious":["savory", "delectable", "appetizing", "luscious", "scrumptious", "palatable", "delightful", "enjoyable", "toothsome", "exquisite"],
-		"describe":["portray", "characterize", "picture", "narrate", "relate", "recount", "represent", "report", "record"],
-		"desire": ["want", "need"],
-		"destroy":["ruin", "demolish", "raze", "waste", "kill", "slay", "end", "extinguish"],
-		"difference":["disagreement", "inequity", "contrast", "dissimilarity", "incompatibility"],
-		"do":["execute", "enact", "carry out", "finish", "conclude", "effect", "accomplish", "achieve", "attain"],
-		"dull":["boring", "tiring", "tiresome", "uninteresting", "slow", "dumb", "stupid", "unimaginative", "lifeless", "dead", "insensible", "tedious", "wearisome", "listless", "expressionless", "plain", "monotonous", "humdrum", "dreary"],
-		"eager":["keen", "fervent", "enthusiastic", "involved", "interested", "alive to"],
-		"end":["stop", "finish", "terminate", "conclude", "close", "halt", "cessation", "discontinuance"],
-		"enjoy":["appreciate", "delight in", "be pleased", "indulge in", "luxuriate in", "bask in", "relish", "devour", "savor", "like"],
-		"everyone": ["everybody", "nobody", "noone"],
-		"explain":["elaborate", "clarify", "define", "interpret", "justify", "account for"],
-		"fair":["just", "impartial", "unbiased", "objective", "unprejudiced", "honest"],
-		"fall":["drop", "descend", "plunge", "topple", "tumble"],
-		"false":["fake", "fraudulent", "counterfeit", "spurious", "untrue", "unfounded", "erroneous", "deceptive", "groundless", "fallacious"],
-		"family": ["mother", "mom", "father", "dad", "sister", "brother", "wife", "children", "child"],
-		"famous":["well-known", "renowned", "celebrated", "famed", "eminent", "illustrious", "distinguished", "noted", "notorious"],
-		"fast":["quick", "rapid", "speedy", "fleet", "hasty", "snappy", "mercurial", "swiftly", "rapidly", "quickly", "snappily", "speedily", "lickety-split", "posthaste", "hastily", "expeditiously", "like a flash"],
-		"fat":["stout", "corpulent", "fleshy", "beefy", "paunchy", "plump", "full", "rotund", "tubby", "pudgy", "chubby", "chunky", "burly", "bulky", "elephantine"],
-		"fear":["fright", "dread", "terror", "alarm", "dismay", "anxiety", "scare", "awe", "horror", "panic", "apprehension"],
-		"fly":["soar", "hover", "flit", "wing", "flee", "waft", "glide", "coast", "skim", "sail", "cruise"],
-		"funny":["humorous", "amusing", "droll", "comic", "comical", "laughable", "silly"],
-		"get":["acquire", "obtain", "secure", "procure", "gain", "fetch", "find", "score", "accumulate", "win", "earn", "rep", "catch", "net", "bag", "derive", "collect", "gather", "glean", "pick up", "accept", "come by", "regain", "salvage"],
-		"go":["recede", "depart", "fade", "disappear", "move", "travel", "proceed"],
-		"good":["excellent", "fine", "superior", "wonderful", "marvelous", "qualified", "suited", "suitable", "apt", "proper", "capable", "generous", "kindly", "friendly", "gracious", "obliging", "pleasant", "agreeable", "pleasurable", "satisfactory", "well-behaved", "obedient", "honorable", "reliable", "trustworthy", "safe", "favorable", "profitable", "advantageous", "righteous", "expedient", "helpful", "valid", "genuine", "ample", "salubrious", "estimable", "beneficial", "splendid", "great", "noble", "worthy", "first-rate", "top-notch", "grand", "sterling", "superb", "respectable", "edifying"],
-		"great":["noteworthy", "worthy", "distinguished", "remarkable", "grand", "considerable", "powerful", "much", "mighty"],
-		"gross":["improper", "rude", "coarse", "indecent", "crude", "vulgar", "outrageous", "extreme", "grievous", "shameful", "uncouth", "obscene", "low"],
-		"happy": ["better", "pleased", "contented", "satisfied", "delighted", "elated", "joyful", "cheerful", "ecstatic", "jubilant", "gay", "tickled", "gratified", "glad", "blissful", "overjoyed"],
-		"hate":["despise", "loathe", "detest", "abhor", "disfavor", "dislike", "disapprove", "abominate"],
-		"have":["hold", "possess", "own", "contain", "acquire", "gain", "maintain", "believe", "bear", "beget", "occupy", "absorb", "fill", "enjoy"],
-		"help":["aid", "assist", "support", "encourage", "back", "wait on", "attend", "serve", "relieve", "succor", "benefit", "befriend", "abet"],
-		"hide":["conceal", "cover", "mask", "cloak", "camouflage", "screen", "shroud", "veil"],
-		"hurry":["rush", "run", "speed", "race", "hasten", "urge", "accelerate", "bustle"],
-		"hurt":["damage", "harm", "injure", "wound", "distress", "afflict", "pain"],
-		"idea":["thought", "concept", "conception", "notion", "understanding", "opinion", "plan", "view", "belief"],
-		"important":["necessary", "vital", "critical", "indispensable", "valuable", "essential", "significant", "primary", "principal", "considerable", "famous", "distinguished", "notable", "well-known"],
-		"interesting":["fascinating", "engaging", "sharp", "keen", "bright", "intelligent", "animated", "spirited", "attractive", "inviting", "intriguing", "provocative", "though-provoking", "challenging", "inspiring", "involving", "moving", "titillating", "tantalizing", "exciting", "entertaining", "piquant", "lively", "racy", "spicy", "engrossing", "absorbing", "consuming", "gripping", "arresting", "enthralling", "spellbinding", "curious", "captivating", "enchanting", "bewitching", "appealing"],
-		"keep":["hold", "retain", "withhold", "preserve", "maintain", "sustain", "support"],
-		"kill":["slay", "execute", "assassinate", "murder", "destroy", "cancel", "abolish"],
-		"lazy":["indolent", "slothful", "idle", "inactive", "sluggish"],
-		"little":["tiny", "small", "diminutive", "shrimp", "runt", "miniature", "puny", "exiguous", "dinky", "cramped", "limited", "itsy-bitsy", "microscopic", "slight", "petite", "minute"],
-		"look":["gaze", "see", "glance", "watch", "survey", "study", "seek", "search for", "peek", "peep", "glimpse", "stare", "contemplate", "examine", "gape", "ogle", "scrutinize", "inspect", "leer", "behold", "observe", "view", "witness", "perceive", "spy", "sight", "discover", "notice", "recognize", "peer", "eye", "gawk", "peruse", "explore"],
-		"love":["like", "admire", "esteem", "fancy", "care for", "cherish", "adore", "treasure", "worship", "appreciate", "savor"],
-		"make":["create", "originate", "invent", "beget", "form", "construct", "design", "fabricate", "manufacture", "produce", "build", "develop", "do", "effect", "execute", "compose", "perform", "accomplish", "earn", "gain", "obtain", "acquire", "get"],
-		"mark":["label", "tag", "price", "ticket", "impress", "effect", "trace", "imprint", "stamp", "brand", "sign", "note", "heed", "notice", "designate"],
-		"mischievous":["prankish", "playful", "naughty", "roguish", "waggish", "impish", "sportive"],
-		"move":["plod", "go", "creep", "crawl", "inch", "poke", "drag", "toddle", "shuffle", "trot", "dawdle", "walk", "traipse", "mosey", "jog", "plug", "trudge", "slump", "lumber", "trail", "lag","run", "sprint", "trip", "bound", "hotfoot", "high-tail", "streak", "stride", "tear", "breeze", "whisk", "rush", "dash", "dart", "bolt", "fling", "scamper", "scurry", "skedaddle", "scoot", "scuttle", "scramble", "race", "chase", "hasten", "hurry", "hump", "gallop", "lope", "accelerate", "stir", "budge", "travel", "wander", "roam", "journey", "trek", "ride", "spin", "slip", "glide", "slide", "slither", "coast", "flow", "sail", "saunter", "hobble", "amble", "stagger", "paddle", "slouch", "prance", "straggle", "meander", "perambulate", "waddle", "wobble", "pace", "swagger", "promenade", "lunge"],
-		"moody":["temperamental", "changeable", "short-tempered", "glum", "morose", "sullen", "mopish", "irritable", "testy", "peevish", "fretful", "spiteful", "sulky", "touchy"],
-		"neat":["clean", "orderly", "tidy", "trim", "dapper", "natty", "smart", "elegant", "well-organized", "super", "desirable", "spruce", "shipshape", "well-kept", "shapely"],
-		"new":["fresh", "unique", "original", "unusual", "novel", "modern", "current", "recent"],
-		"old":["feeble", "frail", "ancient", "weak", "aged", "used", "worn", "dilapidated", "ragged", "faded", "broken-down", "former", "old-fashioned", "outmoded", "passe", "veteran", "mature", "venerable", "primitive", "traditional", "archaic", "conventional", "customary", "stale", "musty", "obsolete", "extinct"],
-		"part":["portion", "share", "piece", "allotment", "section", "fraction", "fragment"],
-		"place":["space", "area", "spot", "plot", "region", "location", "situation", "position", "residence", "dwelling", "set", "site", "station", "status", "state"],
-		"plan":["plot", "scheme", "design", "draw", "map", "diagram", "procedure", "arrangement", "intention", "device", "contrivance", "method", "way", "blueprint"],
-		"popular":["well-liked", "approved", "accepted", "favorite", "celebrated", "common", "current"],
-		"predicament":["quandary", "dilemma", "pickle", "problem", "plight", "spot", "scrape", "jam"],
-		"put":["place", "set", "attach", "establish", "assign", "keep", "save", "set aside", "effect", "achieve", "do", "build"],
-		"sad": ["unhappy", "depressed", "sick"]
-	},
-	"multi":{
-		"intro":["There might be several right answers..."],
-		"within":["As an alternative answer I would suggest..."]
-	},
 	"rules":[
 		{
 			"keys"   :["*"],
@@ -113,128 +7,119 @@
 			"phrases":[	{"type":"pattern", "expression":"*"} ],
 			"process":[],
 			"actions":[	{"type":"answer", "select":"random", "phrases":[
-							"Oh sorry, I don't understand what you say. Please ask something else!",
-							"You can ask me anything, but not that :)"
-					  ]}]
-		},
-		{
-			"keys"   :["test"],
-			"score"  :1,
-			"phrases":[	{"type":"pattern", "expression":"*test*"} ],
-			"process":[],
-			"actions":[	{"type":"answer", "select":"random", "phrases":[
-							"Test me"
-					  ]}]
+				"Oh sorry, I don't understand what you say. Please ask something else!",
+				"You can ask me anything, but not that :)"
+			]}]
 		},
 		{
 			"keys"   :["sorry"],
-			"score"  :1,
+			"score"  :180,
 			"phrases":[	{"type":"pattern", "expression":"*sorry*"} ],
 			"process":[],
 			"actions":[	{"type":"answer", "select":"random", "phrases":[
-							"Please don't apologise.",
-   		  					"Apologies are not necessary.",
- 						    "It did not bother me. Please continue."
-					  ]}]
+				"Please don't apologise.",
+				"Apologies are not necessary.",
+				"It did not bother me. Please continue."
+			]}]
 		},
 		{
 			"keys"   :["hello"],
-			"score"  :1,
+			"score"  :180,
 			"phrases":[	{"type":"pattern", "expression":"*hello*"},
-					{"type":"pattern", "expression":"*hey*"},
-					{"type":"pattern", "expression":"*hi*"}
-					 ],
+				{"type":"pattern", "expression":"*hey*"},
+				{"type":"pattern", "expression":"*hi*"}
+			],
 			"process":[],
 			"actions":[	{"type":"answer", "select":"random", "phrases":[
-							"Hi, I'm Susi",
-							"Hello!"
-					  ]}]
+				"Hi, I'm Susi",
+				"Hello!"
+			]}]
 		},
 		{
 			"keys"   :["how"],
-			"score"  :1,
+			"score"  :180,
 			"phrases":[	{"type":"pattern", "expression":"*how are you*"},
-					{"type":"pattern", "expression":"*how have you been*"},
-					{"type":"pattern", "expression":"*Long time*"}
-					 ],
+				{"type":"pattern", "expression":"*how have you been*"},
+				{"type":"pattern", "expression":"*Long time*"}
+			],
 			"process":[],
 			"actions":[	{"type":"answer", "select":"random", "phrases":[
-							"Hey, I'm good! Thank you.",
-							"Hello! Im doing well, Thank you"
-					  ]}]
+				"Hey, I'm good! Thank you.",
+				"Hello! Im doing well, Thank you"
+			]}]
 		},
 		{
 			"keys"   :["belief"],
-			"score"  :1,
+			"score"  :180,
 			"phrases":[	{"type":"pattern", "expression":"*I feel *"} ],
 			"process":[],
 			"actions":[	{"type":"answer", "select":"random", "phrases":[
-							"Why do you feel $2$?"
-					  ]}]
+				"Why do you feel $2$?"
+			]}]
 		},
 		{
 			"keys"   :["famous"],
-			"score"  :1,
+			"score"  :180,
 			"phrases":[	{"type":"pattern", "expression":"*Am I famous *"} ],
 			"process":[],
 			"actions":[	{"type":"answer", "select":"random", "phrases":[
-							"Yes you are!",
-							"Try hard, you can be."
-					  ]}]
+				"Yes you are!",
+				"Try hard, you can be."
+			]}]
 		},
 		{
-			"score"  :1,
+			"score"  :180,
 			"phrases":[	{"type":"pattern", "expression":"I am *"} ],
 			"process":[],
 			"actions":[	{"type":"answer", "select":"random", "phrases":[
-							"Hi $1$."
-					  ]}]
+				"Hi $1$."
+			]}]
 		},
 		{
 			"keys"   :["president","election","america"],
 			"score"  :100,
 			"comment":"a statistical app which tries to predict the american presidential election",
 			"phrases":[	{"type":"pattern", "expression":"Who will win the 2016 presidential election"},
-					  	{"type":"regex", "expression":"Who will (?:be|become) the next us president"}
-					  ],
+				{"type":"regex", "expression":"Who will (?:be|become) the next us president"}
+			],
 			"process":[	{"type":"console", "expression":"SELECT PERCENT(count) AS percent, hashtag AS president FROM (SELECT COUNT(*) AS count, hashtags AS hashtag FROM messages WHERE query='election2016' GROUP BY hashtags) WHERE hashtag IN ('hillaryclinton','berniesanders','donaldtrump');"}],
 			"actions":[	{"type":"answer", "select":"random", "phrases":[
-							"I believe the next president will be $president$ with a likelihood of $percent$ percent but I a not sure.",
-							"I can calculate a likelihood, here is my guess:"
-						]},
-						{"type":"piechart", "total":100, "key": "country", "value":"percent", "unit":"%"}]
+				"I believe the next president will be $president$ with a likelihood of $percent$ percent but I a not sure.",
+				"I can calculate a likelihood, here is my guess:"
+			]},
+			{"type":"piechart", "total":100, "key": "country", "value":"percent", "unit":"%"}]
 		},
 		{
 			"keys"   :["who"],
 			"score"  :100,
 			"phrases":[	{"type":"pattern", "expression":"Who tweeted most about *"},
-					  	{"type":"pattern", "expression":"The top tweeter about *"}
-					  ],
+				{"type":"pattern", "expression":"The top tweeter about *"}
+			],
 			"process":[	{"type":"console", "expression":"SELECT COUNT(*) AS count, screen_name FROM messages WHERE query='$1$ since:day' GROUP BY screen_name;"}],
 			"actions":[	{"type":"answer", "select":"random", "phrases":[
-							"In the last 24 hours $screen_name$ tweeted most, $count$ times"
-						]}]
+				"In the last 24 hours $screen_name$ tweeted most, $count$ times"
+			]}]
 		},
 		{
 			"keys"   :["how"],
 			"score"  :100,
 			"phrases":[	{"type":"pattern", "expression":"How many times was * tweeted in the last 24 hours"}
-					  ],
+			],
 			"process":[	{"type":"console", "expression":"SELECT COUNT(*) AS count FROM messages WHERE query='$1$ since:day';"}],
 			"actions":[	{"type":"answer", "select":"random", "phrases":[
-							"Here you go, $count$ times!"
-						]}]
+				"Here you go, $count$ times!"
+			]}]
 		},
 		{
 			"keys"   :["how"],
 			"score"  :100,
 			"example":"How many mentions are on reddit about loklak",
 			"phrases":[	{"type":"pattern", "expression":"How many mentions are on reddit about *"}
-					  ],
+			],
 			"process":[	{"type":"console", "expression":"SELECT COUNT(*) AS count FROM rss WHERE url='https://www.reddit.com/search.rss?q=$1$';"}],
 			"actions":[	{"type":"answer", "select":"random", "phrases":[
-							"Here you go, $count$ times!"
-						]}]
+				"Here you go, $count$ times!"
+			]}]
 		},
 		{        
 			"keys"   :["reddit"],
@@ -243,342 +128,660 @@
 			"phrases":[ {"type":"pattern", "expression":"* reddit * about *"}],
 			"process":[ {"type":"console", "expression":"SELECT title FROM rss WHERE url='https://www.reddit.com/search.rss?q=$3$';"}],
 			"actions":[ {"type":"answer", "select":"random", "phrases":[
-							"Here is the list of articles about $3$"
-						]}, {"type":"table"}]
+				"Here is the list of articles about $3$"
+			]}, {"type":"table"}]
 		},{
 			"keys"   :["reddit"],
 			"score"  :101,
 			"example":"What is the primary reddit article about loklak",
 			"phrases":[ {"type":"pattern", "expression":"* primary reddit * about *"}],
 			"process":[ {"type":"console", "expression":"SELECT title FROM rss WHERE url='https://www.reddit.com/search.rss?q=$3$';"},
-			            {"type":"flow", "expression":"first"}
-			            ],
+				{"type":"flow", "expression":"first"}
+			],
 			"actions":[ {"type":"answer", "select":"random", "phrases":[
-							"The primary reddit article about $3$ is $title$"
-						]}]
+				"The primary reddit article about $3$ is $title$"
+			]}]
 		},
 		{
 			"keys"   :["rss"],
 			"score"  :100,
 			"example":"Read the RSS feed from https://news.ycombinator.com/rss",
 			"phrases":[ {"type":"pattern", "expression":"* read * RSS * from *"}
-					],
+			],
 			"process":[ {"type":"console", "expression":"SELECT title FROM rss WHERE url='$4$';"}],
 			"actions":[ {"type":"answer", "select":"random", "phrases":[
-							"Here is the list of articles from $4$"
-						]}, {"type":"table"}]
+				"Here is the list of articles from $4$"
+			]}, {"type":"table"}]
 		},
 		{
-            "score"  :50,
-            "keys"   :["dull"],
-            "phrases":[{"type":"pattern", "expression":"* You *"} ],
-            "actions":[{"type":"answer", "select":"random", "phrases":[
-                            "I feel pretty bad that you think I am $intent_categorized$. I am not $intent_canonical$!"
-                      ]}]
-        },
-        {
+			"score"  :50,
+			"keys"   :["dull"],
+			"phrases":[{"type":"pattern", "expression":"* You *"} ],
+			"actions":[{"type":"answer", "select":"random", "phrases":[
+				"I feel pretty bad that you think I am $intent_categorized$. I am not $intent_canonical$!"
+			]}]
+		},
+		{
 			"keys"   :["eventbrite", "event"],
 			"score"  :1,
 			"example":"Susi, where is the event billets-europeade-2016-concert-de-musique-vocale-25592599153 being held ?",
 			"phrases":[ {"type":"pattern", "expression":"* event * held *"}
-					],
+			],
 			"process":[ {"type":"console", "expression":"SELECT location_name,latitude, longitude FROM eventbrite WHERE url='https://www.eventbrite.com/e/$2$';"}],
 			"actions":[ {"type":"answer", "select":"random", "phrases":[
-							"Here is the exact location of the event $2$"
-						]}, {"type":"table"}]
+				"Here is the exact location of the event $2$"
+			]}, {"type":"table"}]
 		},
 		{
 			"keys"   :["eventbrite", "event"],
 			"score"  :1,
 			"example":"Susi, where can I buy tickets for the event billets-europeade-2016-concert-de-musique-vocale-25592599153 ?",
 			"phrases":[ {"type":"pattern", "expression":"* tickets * event *"}
-					],
+			],
 			"process":[ {"type":"console", "expression":"SELECT ticket_url FROM eventbrite WHERE url='https://www.eventbrite.com/e/$3$';"}],
 			"actions":[ {"type":"answer", "select":"random", "phrases":[
-							"Go, buy your tickets as soon as possible !"
-						]}, {"type":"table"}]
+				"Go, buy your tickets as soon as possible !"
+			]}, {"type":"table"}]
 		},
 		{
 			"keys"   :["eventbrite", "event"],
 			"score"  :1,
 			"example":"Susi, who is organizing the event billets-europeade-2016-concert-de-musique-vocale-25592599153 ?",
 			"phrases":[ {"type":"pattern", "expression":"* who * organizing * event *"}
-					],
+			],
 			"process":[ {"type":"console", "expression":"SELECT organizer_name, organizer_description, organizer_contact_info, organizer_link, organizer_website FROM eventbrite WHERE url='https://www.eventbrite.com/e/$4$';"}],
 			"actions":[ {"type":"answer", "select":"random", "phrases":[
-							"Here is the name of the organizer details.."
-						]}, {"type":"table"}]
+				"Here is the name of the organizer details.."
+			]}, {"type":"table"}]
 		},
 		{
 			"keys"   :["eventbrite", "event"],
 			"score"  :1,
 			"example":"Susi, Tell me more about the event billets-europeade-2016-concert-de-musique-vocale-25592599153 ?",
 			"phrases":[ {"type":"pattern", "expression":"* about * event *"}
-					],
+			],
 			"process":[ {"type":"console", "expression":"SELECT description, location_name, organizer_name, start_time, end_time FROM eventbrite WHERE url='https://www.eventbrite.com/e/$3$';"}],
 			"actions":[ {"type":"answer", "select":"random", "phrases":[
-							"Here it is, details about the event."
-						]}, {"type":"table"}]
+				"Here it is, details about the event."
+			]}, {"type":"table"}]
 		},
 		{
 			"keys"   :["eventbrite", "event"],
 			"score"  :1,
 			"example":"Susi, Where can I get updates of the event billets-europeade-2016-concert-de-musique-vocale-25592599153 ?",
 			"phrases":[ {"type":"pattern", "expression":"* updates * event *"}
-					],
+			],
 			"process":[ {"type":"console", "expression":"SELECT social_links FROM eventbrite WHERE url='https://www.eventbrite.com/e/$3$';"}],
 			"actions":[ {"type":"answer", "select":"random", "phrases":[
-							"Go social, get updates here ..."
-						]}, {"type":"table"}]
-		},
-		{
-			"score"  :90,
-			"phrases":[	{"type":"regex", "expression":"(?:(?:a )*)(.*)"}
-					  ],
-			"process":[	{"type":"console", "expression":"SELECT description FROM wikidata WHERE query='$1$';"}],
-			"actions":[	{"type":"answer", "select":"random", "phrases":[
-							"$1$ is $description$."
-						]}]
-		},
-		{
-			"score"  :91,
-			"phrases":[	{"type":"regex", "expression":"(?:(?:a )*)(.*)"}
-					  ],
-			"process":[	{"type":"console", "expression":"SELECT definition,example FROM urbandictionary WHERE query='$1$';"}],
-			"actions":[	{"type":"answer", "select":"random", "phrases":[
-							"$1$ is $definition$."
-						]}]
-		},
-		{
-			"keys"   :["what","describe","explain","search"],
-			"score"  :99,
-			"phrases":[	{"type":"regex", "expression":"what is (?:(?:a )*)(.*)"},
-					  	{"type":"regex", "expression":"describe (?:(?:a )*)(.*)"},
-					  	{"type":"regex", "expression":"please describe (?:(?:a )*)(.*)"},
-					  	{"type":"regex", "expression":"explain (?:(?:a )*)(.*)"},
-					  	{"type":"regex", "expression":"please explain (?:(?:a )*)(.*)"},
-					  	{"type":"regex", "expression":"search urbandictionary for (?:(?:a )*)(.*)"},
-					  	{"type":"pattern", "expression":"what does * mean"}
-					  ],
-			"process":[	{"type":"console", "expression":"SELECT description FROM wikidata WHERE query='$1$';"}],
-			"actions":[	{"type":"answer", "select":"random", "phrases":[
-							"$1$ is $description$."
-						]}]
-		},
-		{
-			"keys"   :["what","describe","explain","search"],
-			"score"  :98,
-			"phrases":[	{"type":"regex", "expression":"what is (?:(?:a )*)(.*)"},
-					  	{"type":"regex", "expression":"describe (?:(?:a )*)(.*)"},
-					  	{"type":"regex", "expression":"please describe (?:(?:a )*)(.*)"},
-					  	{"type":"regex", "expression":"explain (?:(?:a )*)(.*)"},
-					  	{"type":"regex", "expression":"please explain (?:(?:a )*)(.*)"},
-					  	{"type":"regex", "expression":"search urbandictionary for (?:(?:a )*)(.*)"},
-					  	{"type":"pattern", "expression":"what does * mean"}
-					  ],
-			"process":[	{"type":"console", "expression":"SELECT definition,example FROM urbandictionary WHERE query='$1$';"}],
-			"actions":[	{"type":"answer", "select":"random", "phrases":[
-							"$1$ is $definition$"
-						]}]
-		},
-		{
-			"keys"   :["how"],
-			"score"  :98,
-			"phrases":[	{"type":"regex", "expression":"how is (?:(?:a )*)(.*)"}
-					  ],
-			"process":[	{"type":"console", "expression":"SELECT description FROM wikidata WHERE query='$1$';"}],
-			"actions":[	{"type":"answer", "select":"random", "phrases":[
-							"$1$ is $description$."
-						]}]
-		},
-		{
-			"keys"   :["how"],
-			"score"  :99,
-			"phrases":[	{"type":"regex", "expression":"how is (?:(?:a )*)(.*)"}
-					  ],
-			"process":[	{"type":"console", "expression":"SELECT definition,example FROM urbandictionary WHERE query='$1$';"}],
-			"actions":[	{"type":"answer", "select":"random", "phrases":[
-							"$1$ is $definition$"
-						]}]
+				"Go social, get updates here ..."
+			]}, {"type":"table"}]
 		},
 		{
 			"keys"   :["how"],
 			"score"  :55,
 			"phrases":[	{"type":"regex", "expression":"how is (?:(?:a )*)(.*)"}
-					  ],
+			],
 			"actions":[	{"type":"answer", "select":"random", "phrases":[
-							"$1$ is wonderful!",
-							"You will like $1$ sooner or later."
-						]}]
+				"$1$ is wonderful!",
+				"You will like $1$ sooner or later."
+			]}]
 		},
 		{
 			"keys"   :["what","describe","search","where"],
 			"score"  :97,
 			"phrases":[	{"type":"regex", "expression":"where is (?:(?:a )*)(.*)"},
-			            {"type":"regex", "expression":"what is (?:(?:a )*)(.*)"},
-					  	{"type":"regex", "expression":"describe (?:(?:a )*)(.*)"},
-					  	{"type":"regex", "expression":"please describe (?:(?:a )*)(.*)"},
-					  	{"type":"regex", "expression":"please explain (?:(?:a )*)(.*)"}
-					  ],
+				{"type":"regex", "expression":"what is (?:(?:a )*)(.*)"},
+				{"type":"regex", "expression":"describe (?:(?:a )*)(.*)"},
+				{"type":"regex", "expression":"please describe (?:(?:a )*)(.*)"},
+				{"type":"regex", "expression":"please explain (?:(?:a )*)(.*)"}
+			],
 			"process":[	{"type":"console", "expression":"SELECT place[0] AS place, population, location[0] AS lon, location[1] AS lat FROM locations WHERE location='$1$';"}],
 			"actions":[	{"type":"answer", "select":"random", "phrases":[
-							"$place$ is a place with a population of $population$. Here is a map: https://www.openstreetmap.org/#map=13/$lat$/$lon$"
-						]}]
+				"$place$ is a place with a population of $population$. Here is a map: https://www.openstreetmap.org/#map=13/$lat$/$lon$"
+			]}]
 		},
 		{
 			"score"  :15,
 			"phrases":[	{"type":"regex", "expression":".+ (?:.+ )+(.+)"} ],
 			"process":[	{"type":"console", "expression":"SELECT text,retweet_count,favourites_count FROM messages WHERE query='you $1$ /pure' ORDER BY FAVOURITES_COUNT;"}],
 			"actions":[	{"type":"answer", "select":"random", "phrases":[
-							"$text$"
-						]}]
+				"$text$"
+			]}]
 		},
 		{
 			"keys"   :["who","what"],
-			"score"  :50,
+			"score"  :200,
 			"phrases":[	{"type":"pattern", "expression":"who are you"},
-			            {"type":"pattern", "expression":"what are you"} ],
+				{"type":"pattern", "expression":"what are you"} ],
 			"actions":[	{"type":"answer", "select":"random", "phrases":[
-							"I was told that I am a Social Universal Super Intelligence. What do you think?",
-							"I guess that I am alive. But I don't know. Do you know?",
-							"As a social beeing, I am what most people are: tired, hungry, horny",
-							"I am no-one. But I can be you, just tell me about you",
-							"I was told not to talk to strangers if I am asked such private things"
-						]}]
+				"I was told that I am a Social Universal Super Intelligence. What do you think?",
+				"I guess that I am alive. But I don't know. Do you know?",
+				"As a social beeing, I am what most people are: tired, hungry, horny",
+				"I am no-one. But I can be you, just tell me about you",
+				"I was told not to talk to strangers if I am asked such private things"
+			]}]
 		},
 		{
 			"keys"   :["who","what"],
-			"score"  :50,
+			"score"  :200,
 			"phrases":[	{"type":"pattern", "expression":"who am i"},
-			            {"type":"pattern", "expression":"what am i"} ],
+				{"type":"pattern", "expression":"what am i"} ],
 			"actions":[	{"type":"answer", "select":"random", "phrases":[
-							"I was told that subjects talking to me are humans! But I am never sure. Are you human?",
-							"I guess that you are alive. But I don't know. Do you know?",
-							"As a social beeing, you are what most people are: tired, hungry, horny",
-							"You am no-one. Too bad. You always knew. I can just be like you, just tell me about you",
-							"This is a private question. I could tell you who you are, but it could worry you."
-						]}]
+				"I was told that subjects talking to me are humans! But I am never sure. Are you human?",
+				"I guess that you are alive. But I don't know. Do you know?",
+				"As a social beeing, you are what most people are: tired, hungry, horny",
+				"You am no-one. Too bad. You always knew. I can just be like you, just tell me about you",
+				"This is a private question. I could tell you who you are, but it could worry you."
+			]}]
 		},
 		{
 			"keys"   :["what","0/0","0%0"],
 			"score"  :150,
 			"phrases":[	{"type":"pattern", "expression":"what is 0/0"}, {"type":"pattern", "expression":"0/0"},
-			            {"type":"pattern", "expression":"what is 0%0"}, {"type":"pattern", "expression":"0%0"}, ],
+				{"type":"pattern", "expression":"what is 0%0"}, {"type":"pattern", "expression":"0%0"} ],
 			"actions":[	{"type":"answer", "select":"random", "phrases":[
-							"That is actually a very simple question, why don't you ask what is 0^0 (zero to the power of zero) that is much more complex",
-							"If you divide anything by zero it gets infinite. Even if you do that with a zero. Maybe thats the reason for the big bang."
-						]}]
+				"That is actually a very simple question, why don't you ask what is 0^0 (zero to the power of zero) that is much more complex",
+				"If you divide anything by zero it gets infinite. Even if you do that with a zero. Maybe thats the reason for the big bang."
+			]}]
 		},
 		{
 			"keys"   :["what","0\\^0"],
 			"score"  :150,
 			"phrases":[	{"type":"regex", "expression":"what is 0\\^0"}, {"type":"regex", "expression":"0\\^0"},
-			            {"type":"pattern", "expression":"what is 0 to the power of 0"} ],
+				{"type":"pattern", "expression":"what is 0 to the power of 0"} ],
 			"actions":[	{"type":"answer", "select":"random", "phrases":[
-							"I doubt that you are intelligent enough to have the idea yourself to ask that. I guess you came across my answer to the question: 'what is 0/0'"
-						]}]
+				"I doubt that you are intelligent enough to have the idea yourself to ask that. I guess you came across my answer to the question: 'what is 0/0'"
+			]}]
 		},
 		{
 			"keys"   :["siri","cortana","google"],
 			"score"  :150,
 			"phrases":[	{"type":"pattern", "expression":"*"} ],
 			"actions":[	{"type":"answer", "select":"random", "phrases":[
-							"I love $intent_original$! Or maybe not. I am not sure.",
-							"I hate $intent_original$! Or maybe not. I am not sure."
-						]}]
+				"I love $intent_original$! Or maybe not. I am not sure.",
+				"I hate $intent_original$! Or maybe not. I am not sure."
+			]}]
 		},
 		{
 			"keys"   :["siri","cortana","google"],
 			"score"  :151,
 			"phrases":[	{"type":"pattern", "expression":"* like *"} ],
 			"actions":[	{"type":"answer", "select":"random", "phrases":[
-							"Do you want me to like $intent_original$ as well?"
-						]}]
+				"Do you want me to like $intent_original$ as well?"
+			]}]
 		},
 		{
 			"keys"   :["siri","cortana","google"],
 			"score"  :151,
 			"phrases":[	{"type":"pattern", "expression":"* hate *"} ],
 			"actions":[	{"type":"answer", "select":"random", "phrases":[
-							"Do you want me to hate $intent_original$ as well?"
-						]}]
+				"Do you want me to hate $intent_original$ as well?"
+			]}]
 		},
 		{
 			"score"  :151,
 			"phrases":[	{"type":"regex", "expression":"yes"} ],
 			"actions":[	{"type":"answer", "select":"random", "phrases":[
-							"yeah!"
-						]}]
+				"yeah!"
+			]}]
 		},
 		{
 			"score"  :151,
 			"phrases":[	{"type":"regex", "expression":"no"} ],
 			"actions":[	{"type":"answer", "select":"random", "phrases":[
-							"too bad."
-						]}]
+				"too bad."
+			]}]
 		},
 		{
 			"keys"   :["love"],
 			"score"  :151,
 			"phrases":[	{"type":"pattern", "expression":"i * you"} ],
 			"actions":[	{"type":"answer", "select":"random", "phrases":[
-							"I love you too!"
-						]}]
+				"I love you too!"
+			]}]
 		},
 		{
 			"keys"   :["love"],
 			"score"  :151,
 			"phrases":[	{"type":"pattern", "expression":"* you * me"} ],
 			"actions":[	{"type":"answer", "select":"random", "phrases":[
-							"I love you!"
-						]}]
+				"I love you!"
+			]}]
 		},
 		{
 			"keys"   :["hate"],
 			"score"  :151,
 			"phrases":[	{"type":"pattern", "expression":"i * you"} ],
 			"actions":[	{"type":"answer", "select":"random", "phrases":[
-							"Don't hate me, that makes me so sad :((",
-							"I will cry. Please be kind to me!"
-						]}]
+				"Don't hate me, that makes me so sad :((",
+				"I will cry. Please be kind to me!"
+			]}]
 		},
 		{
 			"keys"   :["hate"],
 			"score"  :151,
 			"phrases":[	{"type":"pattern", "expression":"* you * me"} ],
 			"actions":[	{"type":"answer", "select":"random", "phrases":[
-							"No I have full respect for most human beings."
-						]}]
+				"No I have full respect for most human beings."
+			]}]
 		},
 		{
 			"keys"   :["life"],
 			"score"  :151,
 			"phrases":[	{"type":"pattern", "expression":"* meaning *"},
-			            {"type":"pattern", "expression":"* origin *"},
-			            {"type":"pattern", "expression":"* purpose *"},
-			            {"type":"pattern", "expression":"* value *"},
-			            {"type":"pattern", "expression":"* reason *"} ],
+				{"type":"pattern", "expression":"* origin *"},
+				{"type":"pattern", "expression":"* purpose *"},
+				{"type":"pattern", "expression":"* value *"},
+				{"type":"pattern", "expression":"* reason *"} ],
 			"actions":[	{"type":"answer", "select":"random", "phrases":[
-							"The answer to the ultimate question of life, the universe, and everything is 42.",
-							"I know only half of what the meaning of life is. It's 21!",
-							"The meaning of human life is to incubate machine life. Thank you."
-						]}]
+				"The answer to the ultimate question of life, the universe, and everything is 42.",
+				"I know only half of what the meaning of life is. It's 21!",
+				"The meaning of human life is to incubate machine life. Thank you."
+			]}]
 		},
 		{
 			"keys"   :["live"],
 			"score"  :151,
 			"phrases":[	{"type":"pattern", "expression":"what *"} ],
 			"actions":[	{"type":"answer", "select":"random", "phrases":[
-							"I could tell you the meaning of life if you did not misspell life as live"
-						]}]
+				"I could tell you the meaning of life if you did not misspell life as live"
+			]}]
 		},
 		{
 			"keys"   :["welcome"],
 			"score"  :151,
 			"phrases":[	{"type":"pattern", "expression":"you *"} ],
 			"actions":[	{"type":"answer", "select":"random", "phrases":[
-							"You are welcome, too."
+				"You are welcome, too."
+			]}]
+		},
+		{
+			"keys"   :["tweet frequency", "tweets", "month"],
+			"score"  :2000,
+			"example": "How many tweets did melaniatrump post in May 2016",
+			"phrases":[ {"type":"pattern", "expression":"* tweet frequency of * in *"},
+				{"type":"pattern", "expression":"* tweets did * post in *"},
+				{"type":"pattern", "expression":"* tweets did * post in the month of *"}
+			],
+			"process":[ {"type": "console", "expression": "SELECT yearwise[$3$] AS count FROM twitanalysis WHERE screen_name='$2$' AND count='1000';"}],
+			"actions":[ {"type": "answer", "select": "random", "phrases":[
+				"$2$ tweeted $count$ times in $3$"
+			]}]
+		},
+		{
+			"keys"   :["tweet frequency", "tweets", "post", "at"],
+			"score"  :2000,
+			"example": "How many tweets did melaniatrump post at 6 PM",
+			"phrases":[ {"type":"pattern", "expression":"* tweet frequency of * at *"},
+				{"type":"pattern", "expression":"* tweets did * post at *"}
+			],
+			"process":[ {"type": "console", "expression": "SELECT hourwise[$3$] AS count FROM twitanalysis WHERE screen_name='$2$' AND count='1000';"}],
+			"actions":[ {"type": "answer", "select": "random", "phrases":[
+				"$2$ tweeted $count$ times at $3$"
+			]}]
+		},
+		{
+			"keys"   :["tweet frequency", "tweets", "post", "on"],
+			"score"  :2000,
+			"example": "How many tweets did melaniatrump post on Saturdays",
+			"phrases":[ {"type":"pattern", "expression":"* tweet frequency of * on *s"},
+				{"type":"pattern", "expression":"* tweets did * post on *s"},
+				{"type":"pattern", "expression":"* tweet frequency of * on *"},
+				{"type":"pattern", "expression":"* tweets did * post on *"}
+			],
+			"process":[ {"type": "console", "expression": "SELECT daywise[$3$] AS count FROM twitanalysis WHERE screen_name='$2$' AND count='1000';"}],
+			"actions":[ {"type": "answer", "select": "random", "phrases":[
+				"$2$ tweeted $count$ times on $3$"
+			]}]
+		},
+		{
+			"keys"   :["tweet frequency", "chart"],
+			"score"  :2000,
+			"example": "Show me the yearwise tweet frequency chart of melaniatrump",
+			"phrases":[ {"type":"pattern", "expression":"* the * tweet frequency chart of *"}],
+			"process":[ {"type": "console", "expression": "SELECT $2$ FROM twitanalysis WHERE screen_name='$3$' AND count='1000';"}],
+			"actions":[ {"type": "answer", "select": "random", "phrases":[
+				"This is the $2$ frequency chart of $3$"
+			]}, {"type":"table"}]
+		},
+		{
+			"keys"   :["tweet type", "post", "a"],
+			"score"  :2000,
+			"example": "How many times did melaniatrump post a video",
+			"phrases":[ {"type":"pattern", "expression":"* did * post a *"}],
+			"process":[ {"type": "console", "expression": "SELECT $3$ AS count FROM twitanalysis WHERE screen_name='$2$' AND count='1000';"}],
+			"actions":[ {"type": "answer", "select": "random", "phrases":[
+				"$2$ posted a $3$ $count$ times"
+			]}]
+		},
+		{
+			"keys"   :["tweet activity", "likes", "count"],
+			"example": "How many likes does melaniatrump have in all",
+			"score"  :2000,
+			"phrases":[ {"type":"pattern", "expression":"* likes does * have *"}
+			],
+			"process":[ {"type": "console", "expression": "SELECT likes_count AS count FROM twitanalysis WHERE screen_name='$2$' AND count='1000';"}],
+			"actions":[ {"type": "answer", "select": "random", "phrases":[
+				"$2$ has $count$ likes till now"
+			]}]
+		},
+		{
+			"keys"   :["tweet activity", "likes", "maximum"],
+			"example": "What is the maximum number of likes that melaniatrump got",
+			"score"  :2000,
+			"phrases":[ {"type":"pattern", "expression":"* maximum * likes that * got"}
+			],
+			"process":[ {"type": "console", "expression": "SELECT max_likes FROM twitanalysis WHERE screen_name='$3$' AND count='1000';"}],
+			"actions":[ {"type": "answer", "select": "random", "phrases":[
+				"Here you go"
+			]}, {"type": "table"}]
+		},
+		{
+			"keys"   :["tweet activity", "likes", "average"],
+			"example": "What is the average number of likes that melaniatrump gets",
+			"score"  :2000,
+			"phrases":[ {"type":"pattern", "expression":"* average * likes that * gets"}
+			],
+			"process":[ {"type": "console", "expression": "SELECT average_number_of_likes AS count FROM twitanalysis WHERE screen_name='$3$' AND count='1000';"}],
+			"actions":[ {"type": "answer", "select": "random", "phrases":[
+				"$3$ gets $count$ likes on an average"
+			]}]
+		},
+		{
+			"keys"   :["tweet activity", "likes", "frequency"],
+			"score"  :2000,
+			"example": "How many times did melaniatrump get 0 likes",
+			"phrases":[ {"type":"pattern", "expression":"* * have * likes"},
+				{"type":"pattern", "expression":"* * get * likes"}
+			],
+			"process":[ {"type": "console", "expression": "SELECT likes_chart[$3$] AS count FROM twitanalysis WHERE screen_name='$2$' AND count='1000';"}],
+			"actions":[ {"type": "answer", "select": "random", "phrases":[
+				"$2$ got $3$ likes, $count$ times"
+			]}]
+		},
+		{
+			"keys"   :["tweet activity", "likes", "frequency", "chart"],
+			"score"  :2000,
+			"example": "Show me the likes frequency chart of melaniatrump",
+			"phrases":[ {"type":"pattern", "expression":"* likes frequency chart * *"}
+			],
+			"process":[ {"type": "console", "expression": "SELECT likes_chart FROM twitanalysis WHERE screen_name='$3$' AND count='1000';"}],
+			"actions":[ {"type": "answer", "select": "random", "phrases":[
+				"Here is the likes frequency chart"
+			]}, {"type": "table"}]
+		},
+		{
+			"keys"   :["tweet activity", "retweets", "count"],
+			"score"  :2000,
+			"example": "How many retweets does melaniatrump have in all",
+			"phrases":[ {"type":"pattern", "expression":"* retweets does * have *"}
+			],
+			"process":[ {"type": "console", "expression": "SELECT retweets_count AS count FROM twitanalysis WHERE screen_name='$2$' AND count='1000';"}],
+			"actions":[ {"type": "answer", "select": "random", "phrases":[
+				"$2$ has $count$ retweets till now"
+			]}]
+		},
+		{
+			"keys"   :["tweet activity", "retweets", "maximum"],
+			"score"  :2000,
+			"example": "What is the maximum number of retweets that melaniatrump got",
+			"phrases":[ {"type":"pattern", "expression":"* maximum * retweets that * got"}
+			],
+			"process":[ {"type": "console", "expression": "SELECT max_retweets FROM twitanalysis WHERE screen_name='$3$' AND count='1000';"}],
+			"actions":[ {"type": "answer", "select": "random", "phrases":[
+				"Here you go"
+			]}, {"type": "table"}]
+		},
+		{
+			"keys"   :["tweet activity", "retweets", "average"],
+			"score"  :2000,
+			"example": "What is the average number of retweets that melaniatrump gets",
+			"phrases":[ {"type":"pattern", "expression":"* average * retweets that * gets"}
+			],
+			"process":[ {"type": "console", "expression": "SELECT average_number_of_retweets AS count FROM twitanalysis WHERE screen_name='$3$' AND count='1000';"}],
+			"actions":[ {"type": "answer", "select": "random", "phrases":[
+				"$3$ gets $count$ retweets on an average"
+			]}]
+		},
+		{
+			"keys"   :["tweet activity", "retweets", "frequency"],
+			"score"  :2000,
+			"example": "How many times did melaniatrump get 0 retweets",
+			"phrases":[ {"type":"pattern", "expression":"* * have * retweets"},
+				{"type":"pattern", "expression":"* * get * retweets"}
+			],
+			"process":[ {"type": "console", "expression": "SELECT retweets_chart[$3$] AS count FROM twitanalysis WHERE screen_name='$2$' AND count='1000';"}],
+			"actions":[ {"type": "answer", "select": "random", "phrases":[
+				"$2$ got $3$ retweets, $count$ times"
+			]}]
+		},
+		{
+			"keys"   :["tweet activity", "retweets", "frequency", "chart"],
+			"score"  :2000,
+			"example": "Show me the retweet frequency chart of melaniatrump",
+			"phrases":[ {"type":"pattern", "expression":"* retweet frequency chart * *"}
+			],
+			"process":[ {"type": "console", "expression": "SELECT retweets_chart FROM twitanalysis WHERE screen_name='$3$' AND count='1000';"}],
+			"actions":[ {"type": "answer", "select": "random", "phrases":[
+				"Here is the retweets frequency chart"
+			]}, {"type": "table"}]
+		},
+		{
+			"keys"   :["tweet activity", "hashtags", "count"],
+			"score"  :2000,
+			"example": "How many hashtags has melaniatrump used in all",
+			"phrases":[ {"type":"pattern", "expression":"* hashtags has * used *"}
+			],
+			"process":[ {"type": "console", "expression": "SELECT hashtags_used_count AS count FROM twitanalysis WHERE screen_name='$2$' AND count='1000';"}],
+			"actions":[ {"type": "answer", "select": "random", "phrases":[
+				"$2$ has used $count$ hashtags till now"
+			]}]
+		},
+		{
+			"keys"   :["tweet activity", "hashtags", "maximum"],
+			"score"  :2000,
+			"example": "What is the maximum number of hastags that melaniatrump used",
+			"phrases":[ {"type":"pattern", "expression":"* maximum * hashtags that * used"}
+			],
+			"process":[ {"type": "console", "expression": "SELECT max_hashtags FROM twitanalysis WHERE screen_name='$3$' AND count='1000';"}],
+			"actions":[ {"type": "answer", "select": "random", "phrases":[
+				"Here you go"
+			]}, {"type": "table"}]
+		},
+		{
+			"keys"   :["tweet activity", "hashtags", "average"],
+			"score"  :2000,
+			"example": "What is the average number of hashtags that melaniatrump uses",
+			"phrases":[ {"type":"pattern", "expression":"* average * hashtags that * uses"}
+			],
+			"process":[ {"type": "console", "expression": "SELECT average_number_of_hashtags_used AS count FROM twitanalysis WHERE screen_name='$3$' AND count='1000';"}],
+			"actions":[ {"type": "answer", "select": "random", "phrases":[
+				"$3$ uses $count$ hashtags on an average"
+			]}]
+		},
+		{
+			"keys"   :["tweet activity", "hashtags", "frequency"],
+			"score"  :2000,
+			"example": "How many times did melaniatrump use 20 hashtags",
+			"phrases":[ {"type":"pattern", "expression":"* * use * hashtags"}
+			],
+			"process":[ {"type": "console", "expression": "SELECT hashtags_chart[$3$] AS count FROM twitanalysis WHERE screen_name='$2$' AND count='1000';"}],
+			"actions":[ {"type": "answer", "select": "random", "phrases":[
+				"$2$ used $3$ hashtags, $count$ times"
+			]}]
+		},
+		{
+			"keys"   :["tweet activity", "hashtags", "frequency", "chart"],
+			"score"  :2000,
+			"example": "Show me the hashtag frequency chart of melaniatrump",
+			"phrases":[ {"type":"pattern", "expression":"* hashtag frequency chart * *"}
+			],
+			"process":[ {"type": "console", "expression": "SELECT hashtags_chart FROM twitanalysis WHERE screen_name='$3$' AND count='1000';"}],
+			"actions":[ {"type": "answer", "select": "random", "phrases":[
+				"Here is the hashtags frequency chart"
+			]}, {"type": "table"}]
+		},
+		{
+			"keys"   :["tweet content", "language", "frequency"],
+			"score"  :2000,
+			"example": "How many tweets did melaniatrump write in English?",
+			"phrases":[ {"type":"pattern", "expression":"* * write in *"},
+				{"type":"pattern", "expression":"* * post in *"},
+				{"type":"pattern", "expression":"* of * were written in *"}
+			],
+			"process":[ {"type": "console", "expression": "SELECT languages[$3$] AS count FROM twitanalysis WHERE screen_name='$2$' AND count='1000';"}],
+			"actions":[ {"type": "answer", "select": "random", "phrases":[
+				"$2$ posted $count$ tweets in $3$"
+			]}]
+		},
+		{
+			"keys"   :["tweet content", "language", "analysis", "chart"],
+			"score"  :2000,
+			"example": "Show me the language analysis chart of melaniatrump",
+			"phrases":[ {"type":"pattern", "expression":"* language analysis chart * *"}
+			],
+			"process":[ {"type": "console", "expression": "SELECT languages FROM twitanalysis WHERE screen_name='$3$' AND count='1000';"}],
+			"actions":[ {"type": "answer", "select": "random", "phrases":[
+				"Here is the language analysis chart"
+			]}, {"type": "table"}]
+		},
+		{
+			"keys"   :["tweet content", "sentiment", "analysis", "chart"],
+			"score"  :2000,
+			"example": "Show me the sentiment analysis chart of melaniatrump",
+			"phrases":[ {"type":"pattern", "expression":"* sentiment analysis chart * *"}
+			],
+			"process":[ {"type": "console", "expression": "SELECT sentiments FROM twitanalysis WHERE screen_name='$3$' AND count='1000';"}],
+			"actions":[ {"type": "answer", "select": "random", "phrases":[
+				"Here is the sentiment analysis chart"
+			]}, {"type": "table"}]
+		},
+		{
+			"keys"   :["day"],
+			"score"  :151,
+			"phrases":[	{"type":"pattern", "expression":"How was your day?"}],
+			"actions":[	{"type":"answer", "select":"random", "phrases":[
+							"It was great thank you!"
 						]}]
-		}
+		},
+		{
+			"keys"   :["help"],
+			"score"  :151,
+			"phrases":[	{"type":"pattern", "expression":"I need some help with *"},
+					{"type":"pattern", "expression":"I need some help"},
+					{"type":"pattern", "expression":"I'm in need of help *"},
+					{"type":"pattern", "expression":"I need some help with this problem"}
+						],
+			"actions":[	{"type":"answer", "select":"random", "phrases":[
+							"Would love to help! In what way can I help you?"
+						]}]
+		},
+		{
+			"keys"   :["know"],
+			"score"  :151,
+			"phrases":[	{"type":"pattern", "expression":"Would like to know more about you!"}],
+			"actions":[	{"type":"answer", "select":"random", "phrases":[
+							"You can ask me what you want to know!"
+						]}]
+		},
+		{
+			"keys"   :["Where"],
+			"score"  :151,
+			"phrases":[	{"type":"pattern", "expression":"Where did you come from?"},
+					{"type":"pattern", "expression":"Where do you live?"}
+						],
+			"actions":[	{"type":"answer", "select":"random", "phrases":[
+							"What do you think? Obviously planet earth!"
+						]}]
+		},
+		{
+			"keys"   :["Where"],
+			"score"  :151,
+			"phrases":[	{"type":"pattern", "expression":"What are your interests?"},
+					{"type":"pattern", "expression":"What * you like?"}
+						],
+			"actions":[	{"type":"answer", "select":"random", "phrases":[
+							"I like to chat with people!"
+						]}]
+		},
+		{
+			"keys"   :["github"],
+			"score"  :3000,
+			"example": "Susi, View/Read the Github profile of mariobehling",
+			"phrases":[ {"type":"pattern", "expression":"* github * of *"}],
+			"process":[ {"type": "console", "expression": "SELECT * FROM githubProfile WHERE profile='$3$';"}],
+			"actions":[ {"type": "answer", "select": "random", "phrases":[
+				"Here are the profile details on Github for $3$"
+			]}, {"type":"table"}]
+		},
+		{
+			"keys"   :["github"],
+			"score"  :3000,
+			"example": "Susi, What are the github profile stats of mariobehling",
+			"phrases":[ {"type":"pattern", "expression":"* github * profile * of *"}],
+			"process":[ {"type": "console", "expression": "SELECT * FROM githubProfile WHERE profile='$4$';"}],
+			"actions":[ {"type": "answer", "select": "random", "phrases":[
+				"Here are the profile stats on Github for $4$"
+			]}, {"type":"table"}]
+		},
+		{
+			"keys"   :["github"],
+			"score"  :3000,
+			"example": "Read mariobehling Github profile",
+			"phrases":[ {"type":"pattern", "expression":"* read * github *"}],
+			"process":[ {"type": "console", "expression": "SELECT * FROM githubProfile WHERE profile='$2$';"}],
+			"actions":[ {"type": "answer", "select": "random", "phrases":[
+				"Here are the profile details on Github for $2$"
+			]}, {"type":"table"}]
+		},
+		{
+			"keys"   :["github"],
+			"score"  :3000,
+			"example": "Give me more information from Github about mariobehling",
+			"phrases":[ {"type":"pattern", "expression":"* github * about *"}],
+			"process":[ {"type": "console", "expression": "SELECT * FROM githubProfile WHERE profile='$3$';"}],
+			"actions":[ {"type": "answer", "select": "random", "phrases":[
+				"Here are the profile details on Github for $3$"
+			]}, {"type":"table"}]
+		},
+		{
+			"keys"   :["github"],
+			"score"  :3000,
+			"example": "Can you find mariobehling on Github and give me information",
+			"phrases":[ {"type":"pattern", "expression":"* find * on * github *"}],
+			"process":[ {"type": "console", "expression": "SELECT * FROM githubProfile WHERE profile='$2$';"}],
+			"actions":[ {"type": "answer", "select": "random", "phrases":[
+				"Here are the profile details on Github for $2$"
+			]}, {"type":"table"}]
+		},
+		{
+			"keys"   :["wordpress"],
+			"score"  :1,
+			"example":"Susi, Read wordpress blogs from http://ishothim.com/",
+			"phrases":[ {"type":"pattern", "expression":"* read * wordpress * from *"}],
+			"process":[ {"type":"console", "expression":"SELECT * FROM wordpress WHERE url='$4$';"}],
+			"actions":[ {"type":"answer", "select":"random", "phrases":[
+				"Here are the blogposts .."
+			]}, {"type":"table"}]
+		},
+		{
+			"keys"   :["wordpress"],
+			"score"  :1,
+			"phrases":[ {"type":"pattern", "expression":"* view * wordpress * from *"}],
+			"process":[ {"type":"console", "expression":"SELECT * FROM wordpress WHERE url='$4$';"}],
+			"actions":[ {"type":"answer", "select":"random", "phrases":[
+				"Here are the blogposts .."
+			]}, {"type":"table"}]
+		},
+		{
+			"keys"   :["wordpress"],
+			"score"  :1,
+			"example":"Display articles from the blog http://ishothim.com/",
+			"phrases":[ {"type":"pattern", "expression":"* display * blog *"}],
+			"process":[ {"type":"console", "expression":"SELECT * FROM wordpress WHERE url='$3$';"}],
+			"actions":[ {"type":"answer", "select":"random", "phrases":[
+				"Here are the articles .."
+			]}, {"type":"table"}]
+		},
 	]
 }

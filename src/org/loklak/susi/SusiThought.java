@@ -47,6 +47,17 @@ public class SusiThought extends JSONObject {
     }
     
     /**
+     * create a clone of a json object as a SusiThought object
+     * @param json the 'other' thought, probably an exported and re-imported thought
+     */
+    public SusiThought(JSONObject json) {
+        this();
+        if (json.has(this.metadata_name)) this.put(this.metadata_name, json.getJSONObject(this.metadata_name));
+        if (json.has(this.data_name)) this.setData(json.getJSONArray(this.data_name));
+        if (json.has("actions")) this.put("actions", json.getJSONArray("actions"));
+    }
+    
+    /**
      * Create an initial thought using the matcher on an expression.
      * Such an expression is like the input from a text source which contains keywords
      * that are essential for the thought. The matcher extracts such information.
@@ -120,14 +131,29 @@ public class SusiThought extends JSONObject {
     }
 
     /**
+     * The process which created this thought may have a name or description string.
+     * To document what happened, the process namen can be given here
+     * @param query the process which formed this thought
+     * @return the thought
+     */
+    public SusiThought setProcess(String processName) {
+        getMetadata().put("process", processName);
+        return this;
+    }
+
+    /**
      * If this thought was the result of a retrieval using a specific expression, that expression is
      * called the query. The query can be attached to a thought
-     * @param query the expression that cause that this thought was formed
+     * @param query the expression which caused that this thought was formed
      * @return the thought
      */
     public SusiThought setQuery(String query) {
         getMetadata().put("query", query);
         return this;
+    }
+    
+    public String getQuery() {
+        return getMetadata().has("query") ? getMetadata().getString("query") : "";
     }
     
     /**
@@ -187,10 +213,14 @@ public class SusiThought extends JSONObject {
      */
     public SusiThought addObservation(String featureName, String observation) {
         JSONArray data = getData();
-        if (data.length() == 1) {
-            JSONObject thought = data.getJSONObject(0);
-            thought.put(featureName, observation);
+        JSONObject spark;
+        if (data.length() == 0) {
+            spark = new JSONObject();
+            this.setData(new JSONArray().put(spark));
+        } else {
+            spark = data.getJSONObject(0);
         }
+        spark.put(featureName, observation);
         return this;
     }
     
@@ -224,7 +254,7 @@ public class SusiThought extends JSONObject {
      * Unification applies a piece of memory within the current argument to a statement
      * which creates an instantiated statement
      * @param statement
-     * @return the instantiated statement with elements of the argument applied or null if the statement cannot be fully instantiated
+     * @return the instantiated statement with elements of the argument applied as much as possible
      */
     public String unify(String statement) {
         JSONArray table = this.getData();
@@ -236,7 +266,6 @@ public class SusiThought extends JSONObject {
                     statement = statement.substring(0, i) + row.get(key).toString() + statement.substring(i + key.length() + 2);
                 }
             }
-            if (!variable_pattern.matcher(statement).find()) return null;
         }
         return statement;
     }

@@ -13,7 +13,7 @@
 	<meta name="author" content="@sudheesh001"> <!-- CHANGE THIS -->
 	<link rel="icon" type="image/png" href="../../artwork/favicon.png">
 	<link href="../../css/bootstrap.min.css" rel="stylesheet">
-	<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.1.0/jquery.js"></script>
+	<script src="../../js/jquery.js"></script>
 	<script src="../../js/bootstrap.min.js"></script>
 	<style>
 	#map { 
@@ -80,8 +80,10 @@
 
 	function getTracking() {
 		var url = document.getElementById('url').value;
-		console.log(url);
-		var urlComplete = 'http://localhost:9000/api/nmea.txt?stream='+url;
+        var cUrl = window.location.href;
+        var pName = window.location.pathname;
+        var baseUrl = cUrl.split(pName)[0]
+		var urlComplete = baseUrl+'/api/nmea.txt?stream='+url;
 		var centerlat = 52;
 		var centerlon =  0;
 		// set default zoom level
