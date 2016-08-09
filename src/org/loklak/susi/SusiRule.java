@@ -218,10 +218,10 @@ public class SusiRule {
      * @param intent the key from the user query which matched the rule keys (also considering category matching)
      * @return the result of the application of the rule, a thought argument containing the thoughts which terminated into a final mindstate or NULL if the consideration should be rejected
      */
-    public SusiArgument consideration(final String query, SusiArgument recall_argument, SusiReader.Token intent) {
+    public SusiArgument consideration(final String query, SusiArgument recall, SusiReader.Token intent) {
         
-        // we start with the recall from previous interactions as argument
-        final SusiArgument argument = recall_argument.clone();
+        // we start with the recall from previous interactions as new flow
+        final SusiArgument flow = recall.clone();
         
         // that argument is filled with an idea which consist of the query where we extract the identified data entities
         SusiThought keynote = new SusiThought(this.matcher(query));
@@ -231,23 +231,23 @@ public class SusiRule {
             keynote.addObservation("intent_categorized", intent.categorized);
         }
         DAO.log("Susi has an idea: " + keynote.toString());
-        argument.think(keynote);
+        flow.think(keynote);
         
         // lets apply the rules that belong to this specific consideration
         for (SusiInference inference: this.getInferences()) {
-            SusiThought implication = inference.applySkills(argument);
+            SusiThought implication = inference.applySkills(flow);
             DAO.log("Susi is thinking about: " + implication.toString());
             // make sure that we are not stuck:
             // in case that we are stuck (== no progress was made) we terminate and return null
             if (inference.getType() != SusiInference.Type.flow &&
-                (argument.mindstate().equals(implication) || implication.getCount() == 0)) return null; // TODO: do this only if specific marker is in rule
+                (flow.mindstate().equals(implication) || implication.getCount() == 0)) return null; // TODO: do this only if specific marker is in rule
             // think
-            argument.think(implication);
+            flow.think(implication);
         }
         
         // we deduced thoughts from the inferences in the rules. Now apply the actions of rule to produce results
-        this.getActions().forEach(action -> argument.addAction(action.apply(argument)));
-        return argument;
+        this.getActions().forEach(action -> flow.addAction(action.apply(flow)));
+        return flow;
     }
     
 }
