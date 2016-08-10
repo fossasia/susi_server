@@ -44,12 +44,18 @@ public class SusiInteraction {
     public SusiInteraction(final String query, int maxcount, String client, SusiMind mind) {
         String client_id = Base64.getEncoder().encodeToString(UTF8.getBytes(client));        
         this.json = new JSONObject(true);
+
+        // store metadata
         this.json.put("client_id", client_id);
         this.json.put("query", query);
         long query_date = System.currentTimeMillis();
         this.json.put("query_date", AbstractObjectEntry.utcFormatter.print(query_date));
+
+        // compute the mind reaction
         List<SusiArgument> dispute = mind.react(query, maxcount, client);
         long answer_date = System.currentTimeMillis();
+        
+        // store answer and actions into json
         this.json.put("answer_date", AbstractObjectEntry.utcFormatter.print(answer_date));
         this.json.put("answer_time", answer_date - query_date);
         this.json.put("count", maxcount);
@@ -65,20 +71,19 @@ public class SusiInteraction {
     /**
      * The interaction is the result of a though extraction. We can reconstruct
      * the disput as list of last mindstates using the interaction data.
-     * @return an argument reconstructed from the interaction data
-     */
-    public SusiArgument recallDispute() {
-        SusiArgument dispute = new SusiArgument();
+     * @return a backtrackable thought reconstructed from the interaction data
+     */    
+    public SusiThought recallDispute() {
+        SusiThought dispute = new SusiThought();
         if (this.json.has("answers")) {
             JSONArray answers = this.json.getJSONArray("answers");
             for (int i = answers.length() - 1; i >= 0; i--) {
-                SusiThought compressedThought = new SusiThought(answers.getJSONObject(i));
-                compressedThought.addObservation("query", this.json.getString("query"));  // we can unify "query" in queries
-                if (compressedThought.has("actions") &&
-                    compressedThought.getJSONArray("actions").getJSONObject(0).has("expression"))
-                    compressedThought.addObservation("answer",
-                            compressedThought.getJSONArray("actions").getJSONObject(0).getString("expression")); // we can unify with "answer" in queries
-                dispute.think(compressedThought);
+                SusiThought clonedThought = new SusiThought(answers.getJSONObject(i));
+                dispute.addObservation("query", this.json.getString("query"));  // we can unify "query" in queries
+                if (clonedThought.has("actions") &&
+                    clonedThought.getJSONArray("actions").getJSONObject(0).has("expression"))
+                    dispute.addObservation("answer",
+                            clonedThought.getJSONArray("actions").getJSONObject(0).getString("expression")); // we can unify with "answer" in queries
             }
         }
         return dispute;

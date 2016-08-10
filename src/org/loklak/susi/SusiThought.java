@@ -213,14 +213,14 @@ public class SusiThought extends JSONObject {
      */
     public SusiThought addObservation(String featureName, String observation) {
         JSONArray data = getData();
-        JSONObject spark;
-        if (data.length() == 0) {
-            spark = new JSONObject();
-            this.setData(new JSONArray().put(spark));
-        } else {
-            spark = data.getJSONObject(0);
+        for (int i = 0; i < data.length(); i++) {
+            JSONObject spark = data.getJSONObject(i);
+            if (!spark.has(featureName)) {
+                spark.put(featureName, observation);
+                return this;
+            }
         }
-        spark.put(featureName, observation);
+        data.put(new JSONObject().put(featureName, observation));
         return this;
     }
     
