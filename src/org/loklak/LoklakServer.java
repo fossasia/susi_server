@@ -96,12 +96,17 @@ import org.loklak.api.search.SearchServlet;
 import org.loklak.api.search.ShortlinkFromTweetServlet;
 import org.loklak.api.search.SuggestServlet;
 import org.loklak.api.search.SusiService;
+import org.loklak.api.search.TimeAndDateService;
 import org.loklak.api.search.ConsoleService;
 import org.loklak.api.search.EventBriteCrawlerService;
 import org.loklak.api.search.UserServlet;
 import org.loklak.api.search.WordpressCrawlerService;
 import org.loklak.api.search.GenericScraper;
+import org.loklak.api.search.GithubProfileScraper;
+import org.loklak.api.search.InstagramProfileScraper;
+import org.loklak.api.search.LocationWiseTimeService;
 import org.loklak.api.search.WeiboUserInfo;
+import org.loklak.api.search.WikiGeoData;
 import org.loklak.api.search.MeetupsCrawlerService;
 import org.loklak.api.search.RSSReaderService;
 import org.loklak.api.tools.CSVServlet;
@@ -517,7 +522,12 @@ public class LoklakServer {
                 MeetupsCrawlerService.class,
                 RSSReaderService.class,
                 SusiService.class,
-                WordpressCrawlerService.class
+                WordpressCrawlerService.class,
+                GithubProfileScraper.class,
+                InstagramProfileScraper.class,
+                LocationWiseTimeService.class,
+                TimeAndDateService.class,
+                WikiGeoData.class
                 
                 // tools
                 
