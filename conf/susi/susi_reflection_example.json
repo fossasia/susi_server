@@ -3,13 +3,13 @@
 		{
 			"keys"   :["what"],
 			"score"  :200,
-			"phrases":[{"type":"pattern", "expression":"what did I say"}],
+			"phrases":[{"type":"prior", "expression":"what did I say"}],
 			"actions":[{"type":"answer", "select":"random", "phrases":["you asked me: $query$"]}]
 		},
 		{
 			"keys"   :["what"],
 			"score"  :200,
-			"phrases":[{"type":"pattern", "expression":"what did you say"}],
+			"phrases":[{"type":"prior", "expression":"what did you say"}],
 			"actions":[{"type":"answer", "select":"random", "phrases":["I responded: $answer$"]}]
 		}
 	]
