@@ -265,12 +265,14 @@ public class ConsoleService extends AbstractAPIHandler implements APIHandler {
             json.setData(transfer.conclude(json.getData()));
             return json;
         });
+        /*
         dbAccess.put(Pattern.compile("SELECT\\h+?(.*?)\\h+?FROM\\h+?wikigeodata\\h+?WHERE\\h+?place\\h??=\\h??'(.*?)'\\h??;"), (flow, matcher) -> {
             SusiThought json = WikiGeoData.wikiGeoData(matcher.group(2));
             SusiTransfer transfer = new SusiTransfer(matcher.group(1));
             json.setData(transfer.conclude(json.getData()));
             return json;
         });
+        */
     }
     
     @Override

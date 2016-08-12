@@ -106,7 +106,6 @@ import org.loklak.api.search.GithubProfileScraper;
 import org.loklak.api.search.InstagramProfileScraper;
 import org.loklak.api.search.LocationWiseTimeService;
 import org.loklak.api.search.WeiboUserInfo;
-import org.loklak.api.search.WikiGeoData;
 import org.loklak.api.search.MeetupsCrawlerService;
 import org.loklak.api.search.RSSReaderService;
 import org.loklak.api.tools.CSVServlet;
@@ -527,7 +526,7 @@ public class LoklakServer {
                 InstagramProfileScraper.class,
                 LocationWiseTimeService.class,
                 TimeAndDateService.class,
-                WikiGeoData.class
+                //WikiGeoData.class
                 
                 // tools
                 
@@ -538,6 +537,7 @@ public class LoklakServer {
             try {
                 servletHandler.addServlet(service, ((APIHandler) (service.newInstance())).getAPIPath());
             } catch (InstantiationException | IllegalAccessException e) {
+                Log.getLog().warn(service.getName() + " instantiation error", e);
                 e.printStackTrace();
             }
         
