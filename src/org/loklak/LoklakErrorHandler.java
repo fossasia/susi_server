@@ -24,6 +24,7 @@ import java.io.Writer;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.json.JSONObject;
 import org.eclipse.jetty.server.handler.ErrorHandler;
 
 public class LoklakErrorHandler extends ErrorHandler {
@@ -35,7 +36,12 @@ public class LoklakErrorHandler extends ErrorHandler {
 			// return a page here instead
 			return;
 		}
-		
+		if (code == 500) {
+			JSONObject errorMessage = new JSONObject();
+			errorMessage.put("Error", "Please check the input params which you had provided.");
+			writer.write(errorMessage.toString());
+			return;
+		}	
 		super.handleErrorPage(request, writer, code, message);
 	}
 }
