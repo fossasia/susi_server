@@ -12,6 +12,9 @@
 * [Events](#events)
 * [Wordpress](#wordpress)
 * [Github](#github)
+* [Instagram](#instagram)
+* [Date/Time](#datetime)
+* [Wikipedia](#wikipedia)
 
 ###General
 
@@ -187,5 +190,36 @@ _example:_ Susi, What are the github profile stats of mariobehling
 
 - `<random>` github `<random>` of `<username-as-on-Github>`<br>
 _example:_ Susi, View/Read the Github profile of mariobehling
+
+***
+###Instagram
+
+- `<random>` find `<username-as-on-Instagram>` on `<random>` Instagram `<random>` <br>
+_example:_ Can you find justinpjtrudeau on Instagram and give me information ?
+
+- `<random>` Instagram `<random>` about `<username-as-on-Instagram>`<br>
+_example:_ Give me more information from Instagram about justinpjtrudeau
+
+- `<random>` read `<username-as-on-Instagram>` Instagram `<random>`<br>
+_example:_ Read justinpjtrudeau Instagram profile.
+
+- `<random>` Instagram `<random>` profile `<random>` of `<username-as-on-Instagram>`<br>
+_example:_ Susi, What are the Instagram profile stats of justinpjtrudeau
+
+- `<random>` Instagram `<random>` of `<username-as-on-Instagram>`<br>
+_example:_ Susi, View/Read the Instagram profile of justinpjtrudeau
+
+***
+###Date/Time
+
+- `<random>` time `<random>` at `<location-name>`<br>
+_example:_ Susi, what is the current time at Singapore ?
+
+***
+
+###Wikipedia
+
+- `<random>` wikipedia articles `<random>` location `<location-name>`<br>
+_example:_ Show me the wikipedia articles tagged with location Berlin.
 
 ***
