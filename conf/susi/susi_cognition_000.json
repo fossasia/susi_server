@@ -784,5 +784,75 @@
 				"Here are the articles .."
 			]}, {"type":"table"}]
 		},
+		{
+			"keys"   :["instagram"],
+			"score"  :3000,
+			"example": "Susi, View/Read the Instagram profile of justinpjtrudeau",
+			"phrases":[ {"type":"pattern", "expression":"* instagram * of *"}],
+			"process":[ {"type": "console", "expression": "SELECT * FROM instagramprofile WHERE profile='$3$';"}],
+			"actions":[ {"type": "answer", "select": "random", "phrases":[
+				"Here are the profile details on Instagram for $3$"
+			]}, {"type":"table"}]
+		},
+		{
+			"keys"   :["instagram"],
+			"score"  :3000,
+			"example": "Susi, What are the Instagram profile stats of justinpjtrudeau",
+			"phrases":[ {"type":"pattern", "expression":"* instagram * profile * of *"}],
+			"process":[ {"type": "console", "expression": "SELECT * FROM instagramprofile WHERE profile='$4$';"}],
+			"actions":[ {"type": "answer", "select": "random", "phrases":[
+				"Here are the profile stats on Instagram for $4$"
+			]}, {"type":"table"}]
+		},
+		{
+			"keys"   :["instagram"],
+			"score"  :3000,
+			"example": "Read justinpjtrudeau Instagram profile",
+			"phrases":[ {"type":"pattern", "expression":"* read * instagram *"}],
+			"process":[ {"type": "console", "expression": "SELECT * FROM instagramprofile WHERE profile='$2$';"}],
+			"actions":[ {"type": "answer", "select": "random", "phrases":[
+				"Here are the profile details on Instagram for $2$"
+			]}, {"type":"table"}]
+		},
+		{
+			"keys"   :["instagram"],
+			"score"  :3000,
+			"example": "Give me more information from Instagram about justinpjtrudeau",
+			"phrases":[ {"type":"pattern", "expression":"* instagram * about *"}],
+			"process":[ {"type": "console", "expression": "SELECT * FROM instagramprofile WHERE profile='$3$';"}],
+			"actions":[ {"type": "answer", "select": "random", "phrases":[
+				"Here are the profile details on Instagram for $3$"
+			]}, {"type":"table"}]
+		},
+		{
+			"keys"   :["instagram"],
+			"score"  :3000,
+			"example": "Can you find justinpjtrudeau on Instagram and give me information",
+			"phrases":[ {"type":"pattern", "expression":"* find * on * instagram *"}],
+			"process":[ {"type": "console", "expression": "SELECT * FROM instagramprofile WHERE profile='$2$';"}],
+			"actions":[ {"type": "answer", "select": "random", "phrases":[
+				"Here are the profile details on Instagram for $2$"
+			]}, {"type":"table"}]
+		},
+		{
+			"keys"   :["time"],
+			"score"  :4000,
+			"example": "Can you find the current time at Singapore",
+			"phrases":[ {"type":"pattern", "expression":"* time * at *"}],
+			"process":[ {"type": "console", "expression": "SELECT * FROM locationwisetime WHERE query='$3$';"}],
+			"actions":[ {"type": "answer", "select": "random", "phrases":[
+				"Here is the current time at $3$"
+			]}, {"type":"table"}]
+		},
+		{
+			"keys"   :["wiki"],
+			"score"  :5000,
+			"example": "Show me the wikipedia articles tagged with location Berlin",
+			"phrases":[ {"type":"pattern", "expression":"* wikipedia articles * location *"}],
+			"process":[ {"type": "console", "expression": "SELECT * FROM wikigeodata WHERE place='$3$';"}],
+			"actions":[ {"type": "answer", "select": "random", "phrases":[
+				"Here are the wiki articles"
+			]}, {"type":"table"}]
+		},
 	]
 }
