@@ -33,6 +33,12 @@ public class SusiAction {
 
     public static enum ActionType {answer, table, piechart;}
     public static enum ActionAnswerType {random, roundrobin;}
+    public static enum ActionAnswerPurposeType {
+        answer, question, reply;
+        public int getSubscore() {
+            return this.ordinal();
+        }
+    }
     
     private final static Random random = new Random(System.currentTimeMillis());
     
@@ -52,7 +58,20 @@ public class SusiAction {
      * @return the action type
      */
     public ActionType getType() {
-        return this.json.has("type") ? ActionType.valueOf(this.json.getString("type")) : null;
+        if (actionTypeCache == null) 
+            actionTypeCache = this.json.has("type") ? ActionType.valueOf(this.json.getString("type")) : null;
+        return actionTypeCache;
+    }
+    private ActionType actionTypeCache = null;
+    
+    public ActionAnswerPurposeType getPurposeType() {
+        if (this.getType() != ActionType.answer) return ActionAnswerPurposeType.answer;
+        for (String phrase: getPhrases()) {
+            if (phrase.endsWith("?")) {
+                return phrase.indexOf(". ") >= 0 ? ActionAnswerPurposeType.reply : ActionAnswerPurposeType.question;
+            }
+        }
+        return ActionAnswerPurposeType.answer;
     }
     
     /**
@@ -60,11 +79,15 @@ public class SusiAction {
      * @return the action phrases
      */
     public ArrayList<String> getPhrases() {
-        ArrayList<String> a = new ArrayList<>();
-        if (!this.json.has("phrases")) return a;
-        this.json.getJSONArray("phrases").forEach(p -> a.add((String) p));
-        return a;
+        if (phrasesCache == null) {
+            ArrayList<String> a = new ArrayList<>();
+            if (!this.json.has("phrases")) return a;
+            this.json.getJSONArray("phrases").forEach(p -> a.add((String) p));
+            phrasesCache = a;
+        }
+        return phrasesCache;
     }
+    private ArrayList<String> phrasesCache = null;
     
     /**
      * if the action contains more String attributes where these strings are named, they can be retrieved here

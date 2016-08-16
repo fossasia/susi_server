@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
 import java.util.regex.PatternSyntaxException;
 
@@ -56,19 +57,23 @@ public class SusiRule {
      */
     public SusiRule(JSONObject json) throws PatternSyntaxException {
         
-        // extract the phrases
+        // extract the phrases and the phrases subscore
         if (!json.has("phrases")) throw new PatternSyntaxException("phrases missing", "", 0);
         JSONArray p = (JSONArray) json.remove("phrases");
         this.phrases = new ArrayList<>(p.length());
         p.forEach(q -> this.phrases.add(new SusiPhrase((JSONObject) q)));
-
-        // extract the actions
+        final AtomicInteger phrases_subscore = new AtomicInteger(0);
+        this.phrases.forEach(phrase -> phrases_subscore.set(Math.max(phrases_subscore.get(), phrase.getType().getSubscore())));
+        
+        // extract the actions and the action subscore
         if (!json.has("actions")) throw new PatternSyntaxException("actions missing", "", 0);
         p = (JSONArray) json.remove("actions");
         this.actions = new ArrayList<>(p.length());
         p.forEach(q -> this.actions.add(new SusiAction((JSONObject) q)));
+        final AtomicInteger action_subscore = new AtomicInteger(0);
+        this.actions.forEach(action -> action_subscore.set(Math.max(action_subscore.get(), action.getPurposeType().getSubscore())));
         
-        // extract the inferences; there may be none
+        // extract the inferences and the process subscore; there may be no inference at all
         if (json.has("process")) {
             p = (JSONArray) json.remove("process");
             this.inferences = new ArrayList<>(p.length());
@@ -76,6 +81,8 @@ public class SusiRule {
         } else {
             this.inferences = new ArrayList<>(0);
         }
+        final AtomicInteger process_subscore = new AtomicInteger(0);
+        this.inferences.forEach(inference -> process_subscore.set(Math.max(process_subscore.get(), inference.getType().getSubscore())));
         
         // extract (or compute) the keys; there may be none key given, then they will be computed
         this.keys = new HashSet<>();
@@ -93,7 +100,12 @@ public class SusiRule {
         this.comment = json.has("comment") ? json.getString("comment") : "";
         
         // extract the score
-        this.score = json.has("score") ? json.getInt("score") : DEFAULT_SCORE;
+        this.score = 1000;
+        this.score = this.score * SusiPhrase.Type.values().length + phrases_subscore.get();
+        this.score = this.score * SusiAction.ActionAnswerPurposeType.values().length + action_subscore.get();
+        this.score = this.score * SusiInference.Type.values().length + process_subscore.get();
+        int user_subscore = json.has("score") ? json.getInt("score") : DEFAULT_SCORE;
+        this.score += user_subscore;
         
         // calculate the id
         String ids0 = this.keys.toString() + this.score;

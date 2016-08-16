@@ -35,7 +35,12 @@ import org.loklak.api.search.ConsoleService;
  */
 public class SusiInference {
     
-    public static enum Type {console,flow;}
+    public static enum Type {
+        console, flow, memory;
+        public int getSubscore() {
+            return this.ordinal();
+        }
+    }
     
     private JSONObject json;
 
@@ -56,7 +61,7 @@ public class SusiInference {
      * @return the inference type
      */
     public Type getType() {
-        return this.json.has("type") ? Type.valueOf(this.json.getString("type")) : null;
+        return this.json.has("type") ? Type.valueOf(this.json.getString("type")) : Type.console;
     }
     
     /**
