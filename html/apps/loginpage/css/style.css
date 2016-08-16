@@ -13,14 +13,11 @@ p {
 label.error{
 	color: red !important;
 }
-input.error{
-	border: 2px solid red !important;
-}
 div.error{
 	color: red !important;
 }
 
-.form {
+#forms {
 	width:540px;
 	height: auto;
 	margin: auto;
@@ -69,7 +66,7 @@ div.error{
 	background: #d1d1d1;
 }
 
-.form button {
+input[type = "submit"] {
 	width: 70%;
 	border-radius: 7px;
 	background: GreenYellow;

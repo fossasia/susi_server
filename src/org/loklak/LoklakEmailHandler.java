@@ -21,102 +21,132 @@ package org.loklak;
 import java.util.Date;
 import java.util.Properties;
 import java.util.regex.Pattern;
-import javax.mail.Message;
-import javax.mail.MessagingException;
-import javax.mail.PasswordAuthentication;
-import javax.mail.Session;
-import javax.mail.Transport;
+import javax.annotation.Nonnull;
+import javax.mail.*;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
-import javax.naming.ConfigurationException;
 
 import org.eclipse.jetty.util.log.Log;
 import org.loklak.data.DAO;
-import org.loklak.server.ClientCredential;
 
 public class LoklakEmailHandler {
 
-	private static Pattern pattern;
 	public static final String EMAIL_PATTERN = "^[_A-Za-z0-9-\\+]+(\\.[_A-Za-z0-9-]+)*@"
 			+ "[A-Za-z0-9-]+(\\.[A-Za-z0-9]+)*(\\.[A-Za-z]{2,})$";
 
-	public static void sendEmail(String addressTo, String subject, String text) throws Exception {
+    /**
+     * Send an email
+     * @param addressTo Email address to send to
+     * @param subject The email subject
+     * @param text The content
+     * @throws Exception on errors
+     */
+	public static void sendEmail(@Nonnull String addressTo, @Nonnull String subject, @Nonnull String text) throws Exception {
 		
 		if (!"true".equals(DAO.getConfig("smtp.mails.enabled", "false"))) {
-			throw new ConfigurationException("Mail sending disabled");
+			throw new Exception("Mail sending disabled");
 		}
-		
-		pattern = Pattern.compile(EMAIL_PATTERN);
-		
-		ClientCredential credential = new ClientCredential(ClientCredential.Type.passwd_login, addressTo);
-		String sender = DAO.getConfig("smtp.host.senderid", "server@loklak.org");
-		String pass = DAO.getConfig("smtp.host.senderpass", "randomxyz");
-		String hostname = DAO.getConfig("smtp.host.name", "smtp.gmail.com");
-		String type = DAO.getConfig("smtp.host.encryption", "tls");
-		String port = DAO.getConfig("smtp.host.port", "465");
 
+		String senderEmail = DAO.getConfig("smtp.sender.email", null);
+        String displayname = DAO.getConfig("smtp.sender.displayname", null);
+		String username = DAO.getConfig("smtp.sender.username", null);
+        String password = DAO.getConfig("smtp.sender.password", null);
+		String hostname = DAO.getConfig("smtp.host.name", null);
+		String encryption = DAO.getConfig("smtp.host.encryption", null);
+		Long port = DAO.getConfig("smtp.host.port", 0);
+		boolean disableCertChecking = DAO.getConfig("smtp.trustselfsignedcerts", false);
+
+        if(senderEmail == null || password == null || hostname == null){
+            throw new Exception("Invalid SMTP configuration");
+        }
+
+        Pattern pattern = Pattern.compile(EMAIL_PATTERN);
 		if (!pattern.matcher(addressTo).matches()) {
 			throw new Exception("Invalid email ID");
 		}
-		if (!pattern.matcher(sender).matches()) {
+		if (!pattern.matcher(senderEmail).matches()) {
 			throw new Exception("Invalid sender ID");
 		}
 
-		if (DAO.authentication.has(credential.toString())
-				&& ("none".equals(type) || "tls".equals(type) || "starttls".equals(type)))
+        Properties props = createProperties(hostname, port.intValue(), encryption, disableCertChecking);
 
-		{
-			java.util.Properties props;
+        Session session;
+        if ("none".equals(encryption)) {
+            session = Session.getInstance(props, null);
+        } else {
+            session = Session.getInstance(props, new Authenticator() {
+                protected PasswordAuthentication getPasswordAuthentication() {
+                    return new PasswordAuthentication(username, password);
+                }
+            });
+        }
 
-			if ("none".equals(type)) {
-				props = System.getProperties();
-			} else {
-				props = new Properties();
-				props.put("mail.smtp.auth", true);
-				props.put("mail.smtp.port", port);
-			}
-
-			props.put("mail.smtp.host", hostname);
-			props.put("mail.debug", true);
-
-			if ("starttls".equals(type)) {
-				props.put("mail.smtp.starttls.enable", true);
-			} else if ("tls".equals(type)) {
-				props.put("mail.smtp.socketFactory.port", port);
-				props.put("mail.smtp.socketFactory.class", "javax.net.ssl.SSLSocketFactory");
-			}
-
-			Session session;
-			if ("none".equals(type)) {
-				session = Session.getInstance(props, null);
-			} else {
-				session = Session.getInstance(props, new javax.mail.Authenticator() {
-					protected PasswordAuthentication getPasswordAuthentication() {
-						return new PasswordAuthentication(sender, pass);
-					}
-				});
-			}
-
-			try {
-
-				MimeMessage message = new MimeMessage(session);
-				message.addHeader("Content-type", "text/HTML; charset=UTF-8");
-				message.addHeader("format", "flowed");
-				message.addHeader("Content-Transfer-Encoding", "8bit");
-				message.setSentDate(new Date());
-				message.setFrom(new InternetAddress(sender));
-				message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(addressTo, false));
-				message.setSubject(subject, "UTF-8");
-				message.setText(text, "UTF-8");
-				Transport.send(message);
-				Log.getLog().debug("status: ok", "reason: ok");
-
-			} catch (MessagingException mex) {
-				throw mex;
-			}
-
-		} else {
-			throw new Exception("Receiver email does not exist or invalid encryption type");
-		}
+        MimeMessage message = new MimeMessage(session);
+        message.addHeader("Content-type", "text/HTML; charset=UTF-8");
+        message.addHeader("format", "flowed");
+        message.addHeader("Content-Transfer-Encoding", "8bit");
+        message.setSentDate(new Date());
+        message.setReplyTo(new Address[]{new InternetAddress(senderEmail, displayname)});
+        message.setFrom(new InternetAddress(senderEmail, displayname));
+        message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(addressTo, false));
+        message.setSubject(subject, "UTF-8");
+        message.setText(text, "UTF-8");
+        Transport.send(message);
+        Log.getLog().info("Successfully send mail to " + addressTo);
 	}
+
+    /**
+     * Check SMTP login credentials
+     * @param hostname the host address
+     * @param username the username/login
+     * @param password the password
+     * @param encryption encryption type (must be none, starttls or tls)
+     * @param port the port number
+     * @param disableCertificateChecking disable certificate checking (behind a ssl-proxy or when the server has a self signed certificate)
+     * @throws MessagingException on error
+     */
+	public static void checkConnection(@Nonnull String hostname, @Nonnull String username,
+                                       @Nonnull String password, @Nonnull String encryption,
+                                       int port, boolean disableCertificateChecking) throws MessagingException{
+
+        Properties props = createProperties(hostname, port, encryption, disableCertificateChecking);
+
+        Session session = Session.getInstance(props, null);
+        Transport transport = session.getTransport("smtp");
+        transport.connect(username, password);
+        transport.close();
+    }
+
+    /**
+     * Shared property creation
+     * @param port the port number
+     * @param encryption encryption type (must be none, starttls or tls)
+     * @param disableCertificateChecking disable certificate checking (behind a ssl-proxy or when the server has a self signed certificate)
+     * @return a Properties object
+     * @throws MessagingException on error
+     */
+    static private Properties createProperties(@Nonnull String hostname, int port, @Nonnull String encryption, boolean disableCertificateChecking) throws MessagingException{
+
+        if(port <= 0 || port > 65535 || !("none".equals(encryption) || "tls".equals(encryption) || "starttls".equals(encryption))){
+            throw new MessagingException("Invalid Port or Encryption scheme");
+        }
+
+        Properties props = new Properties();
+        props.put("mail.smtp.auth", true);
+        props.put("mail.smtp.port", port);
+        props.put("mail.smtp.host", hostname);
+
+        if ("starttls".equals(encryption)) {
+            props.put("mail.smtp.starttls.enable", true);
+        } else if ("tls".equals(encryption)) {
+            props.put("mail.smtp.ssl.enable", true);
+        }
+        props.put("mail.smtp.connectiontimeout", 20000);
+
+        if(disableCertificateChecking){
+            props.put("mail.smtp.ssl.trust", "*");
+        }
+
+        return props;
+    }
 }
