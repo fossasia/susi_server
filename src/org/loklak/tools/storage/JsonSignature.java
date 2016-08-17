@@ -98,6 +98,10 @@ public class JsonSignature {
         return res;
     }
 
+    public static boolean hasSignature(JSONObject obj){
+        return obj.has(signatureString);
+    }
+
     public static void main(String[] args) throws Exception {
         KeyPairGenerator keyGen = KeyPairGenerator.getInstance("RSA");
         keyGen.initialize(2048);
@@ -150,7 +154,7 @@ public class JsonSignature {
                 "    }");
 
         addSignature(randomObj,keyPair.getPrivate());
-        System.out.println("Verify: " + verify(randomObj,keyPair.getPublic()));
+        if(hasSignature(randomObj)) System.out.println("Verify: " + verify(randomObj,keyPair.getPublic()));
         removeSignature(randomObj);
     }
 }
