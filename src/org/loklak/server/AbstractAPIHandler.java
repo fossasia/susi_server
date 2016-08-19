@@ -125,7 +125,7 @@ public abstract class AbstractAPIHandler extends HttpServlet implements APIHandl
         // user identification
         ClientIdentity identity;
 		try {
-			identity = getIdentity(request, response);
+			identity = getIdentity(request, response, query);
 		} catch (APIException e) {
 			response.sendError(e.getStatusCode(), e.getMessage());
 			return;
@@ -193,7 +193,7 @@ public abstract class AbstractAPIHandler extends HttpServlet implements APIHandl
      * Checks a request for valid login data, either a existing session, a cookie or an access token
      * @return user identity if some login is active, anonymous identity otherwise
      */
-    private ClientIdentity getIdentity(HttpServletRequest request, HttpServletResponse response) throws APIException{
+    private ClientIdentity getIdentity(HttpServletRequest request, HttpServletResponse response, Query query) throws APIException{
     	
     	if(getLoginCookie(request) != null){ // check if login cookie is set
 			
@@ -218,7 +218,7 @@ public abstract class AbstractAPIHandler extends HttpServlet implements APIHandl
 			// delete cookie if set
 			deleteLoginCookie(response);
 
-			Log.getLog().info("Invalid login try via cookie from host: " + request.getRemoteHost());
+			Log.getLog().info("Invalid login try via cookie from host: " + query.getClientHost());
 		}
 		else if(request.getSession().getAttribute("identity") != null){ // check session is set
 			return (ClientIdentity) request.getSession().getAttribute("identity");
@@ -233,7 +233,7 @@ public abstract class AbstractAPIHandler extends HttpServlet implements APIHandl
     			ClientIdentity identity = authentication.getIdentity();
     			
     			if(authentication.checkExpireTime()){
-    				Log.getLog().info("login for user: " + identity.getName() + " via access token from host: " + request.getRemoteHost());
+    				Log.getLog().info("login for user: " + identity.getName() + " via access token from host: " + query.getClientHost());
     				
     				if("true".equals(request.getParameter("request_session"))){
             			request.getSession().setAttribute("identity",identity);
@@ -244,12 +244,12 @@ public abstract class AbstractAPIHandler extends HttpServlet implements APIHandl
     				return identity;
     			}
     		}
-    		Log.getLog().info("Invalid access token from host: " + request.getRemoteHost());
+    		Log.getLog().info("Invalid access token from host: " + query.getClientHost());
     		authentication.delete();
     		throw new APIException(422, "Invalid access token");
     	}
     	
-        return getAnonymousIdentity(request.getRemoteHost());
+        return getAnonymousIdentity(query.getClientHost());
     }
     
     /**
