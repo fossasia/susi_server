@@ -78,6 +78,7 @@ import org.loklak.api.admin.CrawlerServlet;
 import org.loklak.api.admin.SettingsServlet;
 import org.loklak.api.admin.StatusService;
 import org.loklak.api.admin.ThreaddumpServlet;
+import org.loklak.api.amazon.AmazonProductService;
 import org.loklak.api.cms.*;
 import org.loklak.api.geo.GeocodeServlet;
 import org.loklak.api.iot.FossasiaPushServlet;
@@ -513,6 +514,7 @@ public class LoklakServer {
                 TopMenuService.class,
                 UserManagementService.class,
                 TwitterAnalysisService.class,
+                AmazonProductService.class,
                 
                 // geo
                 
