@@ -76,6 +76,10 @@
         <pathelement location="lib/twitter4j-stream-4.0.2.jar"/>
     	<pathelement location="lib/jdom-1.1.3.jar"/>
     	<pathelement location="lib/rome-1.0.jar"/>
+        <pathelement location="lib/xerces-2.9.1.jar"/>
+        <pathelement location="lib/nekohtml-1.9.17.jar"/>
+        <pathelement location="lib/boilerpipe-1.2-dev.jar"/>
+
     </path>
     
     <target name="init">
