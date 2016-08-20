@@ -1,0 +1,36 @@
+﻿##
+# NekoHTML error messages.
+#
+# @author Andy Clark
+#
+# @version $Id$
+
+# internal messages
+HTML0000=中のエラーは起きました。
+
+# scanner messages
+HTML1000=文書の始まりには、キャラクター・エンコーディングの符号がありません。
+HTML1001=No Java character encoding mapping for IANA character encoding "{0}".
+HTML1002=Unsupported syntax starting with "<!". 「>」まで動きます。
+HTML1003=Bare markup character '<' found.
+HTML1004=Bare ampersand found.
+HTML1005=Invalid character entity "{0}".
+HTML1006=Unknown general entity "{0}".
+HTML1007=Premature end of file encountered.
+HTML1008=処理命令まで動きます。
+HTML1009=開始タグの名前はありません。
+HTML1010=Unsupported character encoding "{0}". Ignoring charset directive.
+HTML1011=属性の名前はありません。
+HTML1012=終了タグの名前はありません。
+
+# tag balancer messages
+HTML2000=文書は内表がありません。
+HTML2001=Element <{0}> not closed properly.
+HTML2002=Missing parent chain. Inserting proper parent <{1}> for element <{0}>.
+HTML2003=Element <{1}> missing proper parent element <{2}>. Removing element <{0}> up to element <{3}>.
+HTML2004=Inserting proper parent element <{1}> for element <{0}>.
+HTML2005=「{0}」と言う開始タグは自動に「{1}」タグが閉まられます。
+HTML2006=Bare character content found. Inserting parent element <{0}>.
+HTML2007=「{0}」と言う終了タグは自動に「{1}」タグが閉まられます。
+HTML2008=Re-opening unbalanced inline element <{0}>.
+
