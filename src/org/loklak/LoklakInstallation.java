@@ -466,9 +466,9 @@ public class LoklakInstallation {
         }
     }
 
-    public static void shutdown(){
+    public static void shutdown(int exitcode){
         Log.getLog().info("Shutting down installation now");
         server.setStopTimeout(0);
-        System.exit(0);
+        System.exit(exitcode);
     }
 }

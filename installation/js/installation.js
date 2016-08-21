@@ -51,17 +51,21 @@ $(document).ready(function() {
         dataType:       "json"
     };
 
-    function showRestart(responseObject, statusText, xhr, $form){
+    function showRestart(){
         $("#step0").addClass("hidden");
         $("#step1").addClass("hidden");
         $("#step2").addClass("hidden");
         $("#step3").addClass("hidden");
         $("#step4").addClass("hidden");
         $("#step5").addClass("hidden");
-        $("#abort").addClass("hidden");
+        $("#abort_form").addClass("hidden");
         $("#finish").removeClass("hidden");
         window.onbeforeunload = null;
-        $("#abort").ajaxSubmit(optionsRestart);
+    }
+
+    function finish(){
+        showRestart();
+        $("#finish_form").ajaxSubmit(optionsRestart);
     }
 
     function showError(xhr, ajaxOptions, thrownError) {
@@ -69,7 +73,7 @@ $(document).ready(function() {
     }
 
     var options = {
-        success:        showRestart,   // post-submit callback
+        success:        finish,   // post-submit callback
         error:          showError,      // on error
         url:            installationApiPath,
         type:           "get",
@@ -82,8 +86,8 @@ $(document).ready(function() {
 
     $("#abort_button").click(function(){
         if (confirm("Are you sure you want to abort the installation?")) {
-            $("#abort").ajaxSubmit(optionsRestart);
             showRestart();
+            $("#abort_form").ajaxSubmit(optionsRestart);
         }
     });
 

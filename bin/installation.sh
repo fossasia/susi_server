@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 
+INSTALLATIONCONFIG="data/settings/installation.txt"
 PIDFILE="data/loklak.pid"
 DFAULTCONFIG="conf/config.properties"
 CUSTOMCONFIG="data/settings/customized_config.properties"
@@ -65,11 +66,15 @@ if [ -f $STARTUPFILE ] && [ $(ps -p $PID -o pid=) ]; then
 	echo "loklak installation started at port $CUSTOMPORT, open your browser at $LOCALHOST"
 	rm -f $STARTUPFILE
 
-	if [ -n "$1" ] && [ "$1" = 'exitonclose' ];then
-	    echo "waiting for installation to finish"
-        wait "$PID"
+    echo "waiting for installation to finish"
+    wait "$PID"
+    if [ $? -eq 0 ]; then
         echo "loklak installation finished"
+        echo 'done' > $INSTALLATIONCONFIG
+    else
+        echo "loklak installation aborted"
     fi
+
 	exit 0
 else
 	echo "loklak installation failed to start. See data/loklag.log for details. Here are the last logs:"

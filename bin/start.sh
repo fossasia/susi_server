@@ -35,11 +35,10 @@ if [ ! -f $INSTALLATIONCONFIG ]; then
         read -n 1 -s -t 20 input
         if  [ $? = 0 ]; then
             if [ "$input" = "y" ]; then
-                bin/installation.sh exitonclose
+                bin/installation.sh
                 if [ $? -ne 0 ]; then
                     exit 1
                 fi
-                echo 'done' > $INSTALLATIONCONFIG
                 break
             elif [ "$input" = "n" ]; then
                 echo "Installation wizard skipped."

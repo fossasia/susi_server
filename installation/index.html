@@ -220,9 +220,12 @@
         </div>
       </form>
       <br>
-      <form id="abort">
-        <input type="hidden" name="restart" value="true">
+      <form id="abort_form">
+        <input type="hidden" name="abort" value="true">
         <button id="abort_button" type="button">Abort</button>
+      </form>
+      <form id="finish_form" class="hidden">
+        <input type="hidden" name="finish" value="true">
       </form>
       <div id="finish" class="form hidden">
         <p>The installation wizard will shut down now.</p>

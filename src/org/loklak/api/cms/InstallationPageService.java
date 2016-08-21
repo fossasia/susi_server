@@ -58,8 +58,13 @@ public class InstallationPageService extends AbstractAPIHandler implements APIHa
 
 		JSONObject result = new JSONObject();
 
-		if(post.get("restart", false)){
-			LoklakInstallation.shutdown();
+		if(post.get("finish", false)){
+			LoklakInstallation.shutdown(0);
+			return null;
+		}
+
+		if(post.get("abort", false)){
+			LoklakInstallation.shutdown(1);
 			return null;
 		}
 
