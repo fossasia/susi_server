@@ -15,7 +15,8 @@
 * [Instagram](#instagram)
 * [Date/Time](#datetime)
 * [Wikipedia](#wikipedia)
-
+* [Quora](#quora)
+* 
 ###General
 
 - `<random>` Hello `<random>`. <br>
@@ -223,3 +224,23 @@ _example:_ Susi, what is the current time at Singapore ?
 _example:_ Show me the wikipedia articles tagged with location Berlin.
 
 ***
+
+###Quora
+
+- `<random>` find `<username-as-on-Quora>` on `<random>` Quora `<random>` <br>
+_example:_ Can you find Mark-Zuckerberg on Quora and give me information ?
+
+- `<random>` Quora `<random>` about `<username-as-on-Quora>`<br>
+_example:_ Give me more information from Quora about Mark-Zuckerberg
+
+- `<random>` read `<username-as-on-Quora>` Quora `<random>`<br>
+_example:_ Read Mark-Zuckerberg Quora profile.
+
+- `<random>` Quora `<random>` profile `<random>` of `<username-as-on-Quora>`<br>
+_example:_ Susi, What are the Quora profile stats of Mark-Zuckerberg
+
+- `<random>` Quora `<random>` of `<username-as-on-Quora>`<br>
+_example:_ Susi, View/Read the Quora profile of Mark-Zuckerberg
+
+***
+
