@@ -22,6 +22,8 @@ package org.loklak.api.p2p;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
+import java.security.InvalidKeyException;
+import java.security.SignatureException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -47,6 +49,7 @@ import org.loklak.objects.UserEntry;
 import org.loklak.objects.Timeline.Order;
 import org.loklak.server.Query;
 import org.loklak.tools.UTF8;
+import org.loklak.tools.JsonSignature;
 
 /**
  * push api to send messages to the loklak index.
@@ -102,6 +105,7 @@ public class PushServlet extends HttpServlet {
                 if (hoststub.endsWith("/")) hoststub = hoststub.substring(0, hoststub.length() - 1);
                 Map<String, byte[]> post = new HashMap<String, byte[]>();
                 post.put("data", UTF8.getBytes(data)); // optionally implement a gzipped form here
+                JsonSignature.addSignature(post,DAO.private_settings.getPrivateKey());
                 ClientConnection connection = null;
                 try {
                     connection = new ClientConnection(hoststub + "/api/push.json", post, !"peers".equals(DAO.getConfig("httpsclient.trustselfsignedcerts", "peers")));
@@ -115,6 +119,12 @@ public class PushServlet extends HttpServlet {
             return transmittedToAtLeastOnePeer;
         } catch (JSONException e) {
         	Log.getLog().warn(e);
+            return false;
+        } catch (SignatureException e) {
+            Log.getLog().warn(e);
+            return false;
+        } catch (InvalidKeyException e) {
+            Log.getLog().warn(e);
             return false;
         }
     }
