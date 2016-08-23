@@ -82,7 +82,7 @@ public class SusiPhrase {
             expression = expression.replaceAll(" \\* | \\?\\* ", " " + CATCHALL_CAPTURE_GROUP_STRING + " ");
         }
         this.pattern = Pattern.compile(expression);
-        this.type = t;
+        this.type = expression.equals("(.*)") ? Type.minor : t;
     }
     
     /**

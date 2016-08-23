@@ -30,6 +30,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
 
 import org.json.JSONArray;
@@ -38,6 +39,7 @@ import org.json.JSONObject;
 import org.json.JSONTokener;
 import org.loklak.data.DAO;
 import org.loklak.server.ClientIdentity;
+import org.loklak.susi.SusiReader.Token;
 
 public class SusiMind {
     
@@ -99,7 +101,11 @@ public class SusiMind {
             SusiRule rule = new SusiRule((JSONObject) j);
             rule.getKeys().forEach(key -> {
                     Map<Long, SusiRule> l = this.ruletrigger.get(key);
-                    if (l == null) {l = new HashMap<>(); this.ruletrigger.put(key, l);}
+                    if (l == null) {
+                        l = new HashMap<>();
+                        Token keyToken = this.reader.tokenizeTerm(key);
+                        this.ruletrigger.put(keyToken.categorized, l);
+                    }
                     l.put(rule.getID(), rule); 
                 });
             });
@@ -110,43 +116,50 @@ public class SusiMind {
     public List<SusiIdea> associate(String query, SusiArgument previous_argument, int maxcount) {
         // tokenize query to have hint for idea collection
         final List<SusiIdea> ideas = new ArrayList<>();
-        this.reader.tokenize(query).forEach(token -> {
+        this.reader.tokenizeSentence(query).forEach(token -> {
             Map<Long, SusiRule> r = this.ruletrigger.get(token.categorized);
             if (r != null) {
                 r.values().forEach(rule -> ideas.add(new SusiIdea(rule).setIntent(token)));
             }
         });
-
+        
+        //for (SusiIdea idea: ideas) System.out.println("idea.phrase-1:" + idea.getRule().getPhrases().toString());
+        
         // add catchall rules always (those are the 'bad ideas')
         Collection<SusiRule> ca = this.ruletrigger.get(SusiRule.CATCHALL_KEY).values();
         if (ca != null) ca.forEach(rule -> ideas.add(new SusiIdea(rule)));
         
         // create list of all ideas that might apply
         TreeMap<Integer, List<SusiIdea>> scored = new TreeMap<>();
+        AtomicInteger count = new AtomicInteger(0);
         ideas.forEach(idea -> {
-            //System.out.println("idea.phrase-1:" + idea.getRule().getPhrases().toString());
             int score = idea.getRule().getScore();
             List<SusiIdea> r = scored.get(-score);
-            if (r == null) {r = new ArrayList<>(); scored.put(-score, r);}
+            if (r == null) {r = new ArrayList<>(); scored.put(count.get() - score * 1000, r);}
             r.add(idea);
+            count.incrementAndGet();
         });
 
         // make a sorted list of all ideas
         ideas.clear(); scored.values().forEach(r -> ideas.addAll(r));
         
+        //for (SusiIdea idea: ideas) System.out.println("idea.phrase-2:" + idea.getRule().getPhrases().toString());
+        
         // test ideas and collect those which match up to maxcount
         List<SusiIdea> plausibleIdeas = new ArrayList<>(Math.min(10, maxcount));
         for (SusiIdea idea: ideas) {
-            //System.out.println("idea.phrase-2:" + idea.getRule().getPhrases().toString());
             SusiRule rule = idea.getRule();
             if (rule.getActions().size() == 0) continue;
             if (rule.getActions().get(0).getPhrases().size() == 0) continue;
             if (rule.getActions().get(0).getPhrases().get(0).length() == 0) continue;
             Matcher m = rule.matcher(query);
-            if (m == null) continue;
+            if (m == null || !m.matches()) continue;
             plausibleIdeas.add(idea);
             if (plausibleIdeas.size() >= maxcount) break;
         }
+        
+        //for (SusiIdea idea: plausibleIdeas) System.out.println("idea.phrase-3:" + idea.getRule().getPhrases().toString());
+        
         return plausibleIdeas;
     }
     

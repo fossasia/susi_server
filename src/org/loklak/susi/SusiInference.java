@@ -19,7 +19,9 @@
 
 package org.loklak.susi;
 
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
 
 import org.json.JSONObject;
 import org.loklak.api.search.ConsoleService;
@@ -77,32 +79,65 @@ public class SusiInference {
     
     private final static SusiSkills flowSkill = new SusiSkills();
     static {
-        flowSkill.put(Pattern.compile("first"), (flow, matcher) -> {
+        flowSkill.put(Pattern.compile("FIRST"), (flow, matcher) -> {
             // extract only the first row of a thought
             SusiThought nextThought = new SusiThought();
             SusiThought mindstate = flow.mindstate();
             if (flow != null && mindstate.getCount() > 0) nextThought.getData().put(mindstate.getData().get(0));
             return nextThought;
         });
-        flowSkill.put(Pattern.compile("first\\h+?(.*?)\\h*?"), (flow, matcher) -> {
+        flowSkill.put(Pattern.compile("FIRST\\h+?(.*?)\\h*?"), (flow, matcher) -> {
             SusiThought nextThought = new SusiThought();
             SusiThought mindstate = flow.mindstate();
             if (flow != null && mindstate.getCount() > 0) nextThought.getData().put(mindstate.getData().get(0));
             return nextThought;
         });
-        flowSkill.put(Pattern.compile("rest"), (flow, matcher) -> {
+        flowSkill.put(Pattern.compile("REST"), (flow, matcher) -> {
             // remove the first row of a thought and return the remaining
             SusiThought nextThought = new SusiThought();
             SusiThought mindstate = flow.mindstate();
             if (flow != null && mindstate.getCount() > 0) nextThought.getData().put(mindstate.getData().remove(0));
             return nextThought;
         });
-        flowSkill.put(Pattern.compile("rest\\h+?(.*?)\\h*?"), (flow, matcher) -> {
+        flowSkill.put(Pattern.compile("REST\\h+?(.*?)\\h*?"), (flow, matcher) -> {
             SusiThought nextThought = new SusiThought();
             SusiThought mindstate = flow.mindstate();
             if (flow != null && mindstate.getCount() > 0) nextThought.getData().put(mindstate.getData().remove(0));
             return nextThought;
         });
+        flowSkill.put(Pattern.compile("SEE\\h+?(.*?)\\h+?FROM\\h+?'(.*?)'\\h+?MATCHING\\h+?'(.*?)'\\h*?"), (flow, matcher) -> {
+            // group(1) is the transfer expression (like first expression in SQL)
+            // group(2) is the string to match on
+            // group(3) is the pattern
+            // there will be an empty thought as response if the pattern does not match
+            // having no match will cause a fail (triggered by empty thought), the rule is aborted
+            // example: see $1$ as idea from ""
+            SusiThought nextThought = new SusiThought();
+            try {
+                Pattern pattern = Pattern.compile(flow.unify(matcher.group(3)));
+                Matcher m = pattern.matcher(flow.unify(matcher.group(2)));
+                if (m.matches()) {
+                    SusiTransfer transfer = new SusiTransfer(matcher.group(1));
+                    JSONObject choice = new JSONObject();
+                    int gc = m.groupCount();
+                    choice.put("%0%", m.group(0));
+                    for (int i = 0; i < gc; i++) choice.put("%" + (i+1) + "%", m.group(i));
+                    JSONObject seeing = transfer.extract(choice);
+                    for (String key: seeing.keySet()) nextThought.addObservation(key, seeing.getString(key));
+                }
+            } catch (PatternSyntaxException e) {
+                e.printStackTrace();
+            }
+            return nextThought; // an empty thought is a fail signal
+        });
+        // more skills:
+        // - fail as filter (stop execution if pattern matches)
+        // - map/reduce to enable loops
+        // - sort asc/dec
+        // - stack + join
+        // - register (write temporary variable)
+        // - compute (write computation into new field)
+        // - cut (to stop backtracking)
     }
     
     

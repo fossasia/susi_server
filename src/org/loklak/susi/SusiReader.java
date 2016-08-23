@@ -73,20 +73,32 @@ public class SusiReader {
             this.canonical = canonical;
             this.categorized = categorized;
         }
+        public String toString() {
+            return "{" +
+                    "\"original\"=\"" + original + "\"," +
+                    "\"canonical\"=\"" + canonical + "\"," +
+                    "\"categorized\"=\"" + categorized + "\"," +
+                    "}";
+        }
     }
 
-    public List<Token> tokenize(String query) {
+    public Token tokenizeTerm(String term) {
+        String original = term.toLowerCase();
+        String s = this.synonyms.get(original);
+        String canonical = s == null ? original : s;
+        String c = this.categories.get(canonical);
+        String categorized = c == null ? canonical : c;
+        return new Token(original, canonical, categorized);
+    }
+
+    public List<Token> tokenizeSentence(String query) {
         List<Token> t = new ArrayList<>();
         query = query.replaceAll("\\?", " ?").replaceAll("\\!", " !").replaceAll("\\.", " .").replaceAll("\\,", " ,").replaceAll("\\;", " ;").replaceAll("\\:", " :").replaceAll("  ", " ");
         String[] u = query.split(" ");
         for (String v: u) {
             String original = v.toLowerCase();
             if (this.filler.contains(original)) continue;
-            String s = this.synonyms.get(original);
-            String canonical = s == null ? original : s;
-            String c = this.categories.get(canonical);
-            String categorized = c == null ? canonical : c;
-            t.add(new Token(original, canonical, categorized));
+            t.add(tokenizeTerm(original));
         }
         return t;
     }

@@ -1,16 +1,22 @@
 {
-	"rules":[
-		{
-			"keys"   :["what"],
-			"score"  :200,
-			"phrases":[{"type":"prior", "expression":"what did I say"}],
-			"actions":[{"type":"answer", "select":"random", "phrases":["you asked me: $query$"]}]
-		},
-		{
-			"keys"   :["what"],
-			"score"  :200,
-			"phrases":[{"type":"prior", "expression":"what did you say"}],
-			"actions":[{"type":"answer", "select":"random", "phrases":["I responded: $answer$"]}]
-		}
-	]
+  "rules":[
+	{
+		"keys"   :["what"],
+		"phrases":[{"type":"prior", "expression":"what did I say"}],
+		"actions":[{"type":"answer", "select":"random", "phrases":["you asked me: $query$"]}]
+	},
+	{
+		"keys"   :["what"],
+		"phrases":[{"type":"prior", "expression":"what did you say"}],
+		"actions":[{"type":"answer", "select":"random", "phrases":["I responded: $answer$"]}]
+	},
+	{
+		"keys"   :["set"],
+		"score"  :1000,
+		"phrases":[{"type":"pattern", "expression":"set * to *"}],
+		"process":[{"type":"flow", "expression":"SEE %1% AS variable FROM '$1$' MATCHING '(.*)'"},
+		           {"type":"flow", "expression":"SEE %1% AS value FROM '$2$' MATCHING '(.*)'"}],
+		"actions":[{"type":"answer", "select":"random", "phrases":["I should set $variable$ to $value$"]}]
+	}
+  ]
 }
