@@ -42,11 +42,6 @@ import org.loklak.tools.UTF8;
 
 import java.net.URL;
 import java.net.MalformedURLException;
-import java.io.IOException;
-
-import de.l3s.boilerpipe.extractors.ArticleExtractor;
-import de.l3s.boilerpipe.BoilerpipeProcessingException;
-import java.io.PrintWriter;
 
 import org.jsoup.Jsoup;
 import org.jsoup.helper.Validate;
@@ -81,7 +76,7 @@ public class GenericScraper extends HttpServlet {
         String data = "";
 
         try {
-            data = ArticleExtractor.INSTANCE.getText(qurl);
+            data = null;// ArticleExtractor.INSTANCE.getText(qurl);
             genericScraperData.put("query", qurl);
             genericScraperData.put("data", data);
             genericScraperData.put("NLP", "true");
