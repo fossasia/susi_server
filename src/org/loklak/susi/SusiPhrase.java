@@ -66,6 +66,7 @@ public class SusiPhrase {
             Log.error("type value is wrong: " + json.getString("type"));
             t = expression.indexOf(".*") >= 0 ? Type.regex : expression.indexOf('*') >= 0 ? Type.pattern : Type.minor;
         }
+        
         expression = expression.toLowerCase().replaceAll("\\#", "  ");
         Matcher m;
         while ((m = dspace.matcher(expression)).find()) expression = m.replaceAll(" ");
@@ -78,7 +79,7 @@ public class SusiPhrase {
             if (expression.startsWith("*")) expression = CATCHALL_CAPTURE_GROUP_STRING + " ?" + expression.substring(1);
             if (expression.endsWith(" *")) expression = expression.substring(0, expression.length() - 2) + " ?" + CATCHALL_CAPTURE_GROUP_STRING;
             if (expression.endsWith("*")) expression = expression.substring(0, expression.length() - 1) + " ?" + CATCHALL_CAPTURE_GROUP_STRING;
-            expression = expression.replaceAll(" \\* ", " " + CATCHALL_CAPTURE_GROUP_STRING + " ");
+            expression = expression.replaceAll(" \\* | \\?\\* ", " " + CATCHALL_CAPTURE_GROUP_STRING + " ");
         }
         this.pattern = Pattern.compile(expression);
         this.type = t;
