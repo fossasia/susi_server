@@ -854,5 +854,55 @@
 				"Here are the wiki articles"
 			]}, {"type":"table"}]
 		},
+		{
+			"keys"   :["quora"],
+			"score"  :6000,
+			"example": "Susi, View/Read the Quora profile of Mark-Zuckerberg",
+			"phrases":[ {"type":"pattern", "expression":"* quora * of *"}],
+			"process":[ {"type": "console", "expression": "SELECT * FROM quoraprofile WHERE profile='$3$';"}],
+			"actions":[ {"type": "answer", "select": "random", "phrases":[
+				"Here are the profile details on Quora for $3$"
+			]}, {"type":"table"}]
+		},
+		{
+			"keys"   :["quora"],
+			"score"  :6000,
+			"example": "Susi, What are the Quora profile stats of Mark-Zuckerberg",
+			"phrases":[ {"type":"pattern", "expression":"* quora * profile * of *"}],
+			"process":[ {"type": "console", "expression": "SELECT * FROM quoraprofile WHERE profile='$4$';"}],
+			"actions":[ {"type": "answer", "select": "random", "phrases":[
+				"Here are the profile stats on Quora for $4$"
+			]}, {"type":"table"}]
+		},
+		{
+			"keys"   :["quora"],
+			"score"  :3000,
+			"example": "Read Mark-Zuckerberg Quora profile",
+			"phrases":[ {"type":"pattern", "expression":"* read * quora *"}],
+			"process":[ {"type": "console", "expression": "SELECT * FROM quoraprofile WHERE profile='$2$';"}],
+			"actions":[ {"type": "answer", "select": "random", "phrases":[
+				"Here are the profile details on Quora for $2$"
+			]}, {"type":"table"}]
+		},
+		{
+			"keys"   :["quora"],
+			"score"  :3000,
+			"example": "Give me more information from Quora about Mark-Zuckerberg",
+			"phrases":[ {"type":"pattern", "expression":"* quora * about *"}],
+			"process":[ {"type": "console", "expression": "SELECT * FROM quoraprofile WHERE profile='$3$';"}],
+			"actions":[ {"type": "answer", "select": "random", "phrases":[
+				"Here are the profile details on Quora for $3$"
+			]}, {"type":"table"}]
+		},
+		{
+			"keys"   :["instagram"],
+			"score"  :3000,
+			"example": "Can you find justinpjtrudeau on Instagram and give me information",
+			"phrases":[ {"type":"pattern", "expression":"* find * on * instagram *"}],
+			"process":[ {"type": "console", "expression": "SELECT * FROM instagramprofile WHERE profile='$2$';"}],
+			"actions":[ {"type": "answer", "select": "random", "phrases":[
+				"Here are the profile details on Instagram for $2$"
+			]}, {"type":"table"}]
+		},
 	]
 }

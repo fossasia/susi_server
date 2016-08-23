@@ -114,6 +114,7 @@ import org.loklak.api.search.LocationWiseTimeService;
 import org.loklak.api.search.WeiboUserInfo;
 import org.loklak.api.search.WikiGeoData;
 import org.loklak.api.search.MeetupsCrawlerService;
+import org.loklak.api.search.QuoraProfileScraper;
 import org.loklak.api.search.RSSReaderService;
 import org.loklak.api.tools.CSVServlet;
 import org.loklak.api.tools.XMLServlet;
@@ -534,7 +535,8 @@ public class LoklakServer {
                 InstagramProfileScraper.class,
                 LocationWiseTimeService.class,
                 TimeAndDateService.class,
-                WikiGeoData.class
+                WikiGeoData.class,
+                QuoraProfileScraper.class
                 
                 // tools
                 
