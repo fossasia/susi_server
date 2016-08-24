@@ -98,12 +98,47 @@ public class SusiRule {
         
         // extract the comment
         this.comment = json.has("comment") ? json.getString("comment") : "";
+
+        /*
+         * Score Computation:
+         * see: https://github.com/loklak/loklak_server/issues/767
+
+         * (1) primary criteria is the conversation plan:
+         * purpose: {answer, question, reply} purpose would have to be defined
+         * The purpose can be computed using a pattern on the answer expression: is there a '?' at the end, is it a question. Is there also a '. ' (end of sentence) in the text, is it a reply.
+
+         * (2) secondary criteria is the existence of a pattern where we decide between prior and minor rules
+         * pattern: {false, true} with/without pattern could be computed from the rule string
+         * all rules with pattern are ordered in the middle between prior and minor
+         * this is combined with
+         * prior: {false, true} overruling (prior=true) or default (prior=false) would have to be defined
+         * The prior attribute can also be expressed as an replacement of a pattern type because it is only relevant if the query is not a pattern or regular expression.
+         * The resulting criteria is a property with three possible values: {minor, pattern, major}
+    
+         * (3) tertiary criteria is the operation type
+         * op: {retrieval, computation, storage} the operation could be computed from the rule string
+
+         * (4) quaternary criteria is the IO activity (-location)
+         * io: {remote, local, ram} the storage location can be computed from the rule string
+    
+         * (5) finally the subscore can be assigned manually
+         * subscore a score in a small range which can be used to distinguish rules within the same categories
+         */
         
         // extract the score
+        //System.out.println("DEBUG RULE SCORE: action=" + action_subscore.get() + ", phrase=" + phrases_subscore.get() + ", process=" + process_subscore.get() + ", pattern=" + phrases.get(0).toString());
         this.score = 1000;
-        this.score = this.score * SusiPhrase.Type.values().length + phrases_subscore.get();
+
+        // (1) conversation plan from the answer purpose
         this.score = this.score * SusiAction.ActionAnswerPurposeType.values().length + action_subscore.get();
+        
+        // (2) pattern score
+        this.score = this.score * SusiPhrase.Type.values().length + phrases_subscore.get();
+
+        // (3) operation type
         this.score = this.score * SusiInference.Type.values().length + process_subscore.get();
+        
+        // (5) subscore from the user
         int user_subscore = json.has("score") ? json.getInt("score") : DEFAULT_SCORE;
         this.score += user_subscore;
         

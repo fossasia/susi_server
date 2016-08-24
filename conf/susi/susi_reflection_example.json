@@ -14,8 +14,8 @@
 		"keys"   :["set"],
 		"score"  :1000,
 		"phrases":[{"type":"pattern", "expression":"set * to *"}],
-		"process":[{"type":"flow", "expression":"SEE %1% AS variable FROM '$1$' MATCHING '(.*)'"},
-		           {"type":"flow", "expression":"SEE %1% AS value FROM '$2$' MATCHING '(.*)'"}],
+		"process":[{"type":"flow", "expression":"SEE %1% AS variable FROM '$1$' MATCHING '(.*)' REGEX"},
+		           {"type":"flow", "expression":"SEE %1% AS value FROM '$2$' MATCHING '(.*)' REGEX"}],
 		"actions":[{"type":"answer", "select":"random", "phrases":["I should set $variable$ to $value$"]}]
 	}
   ]

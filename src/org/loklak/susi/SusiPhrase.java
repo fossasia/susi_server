@@ -72,17 +72,20 @@ public class SusiPhrase {
         while ((m = dspace.matcher(expression)).find()) expression = m.replaceAll(" ");
         if ((t == Type.minor || t == Type.prior) && expression.indexOf(".*") >= 0) t = Type.regex;
         if ((t == Type.minor || t == Type.prior) && expression.indexOf('*') >= 0) t = Type.pattern;
-        if (t == Type.pattern) {
-            if (expression.length() == 0 || expression.equals("*")) expression = CATCHALL_CAPTURE_GROUP_STRING;
-            if ("?!:.".indexOf(expression.charAt(expression.length() - 1)) >= 0) expression = expression.substring(0, expression.length() - 1);
-            if (expression.startsWith("* ")) expression = CATCHALL_CAPTURE_GROUP_STRING + " ?" + expression.substring(2);
-            if (expression.startsWith("*")) expression = CATCHALL_CAPTURE_GROUP_STRING + " ?" + expression.substring(1);
-            if (expression.endsWith(" *")) expression = expression.substring(0, expression.length() - 2) + " ?" + CATCHALL_CAPTURE_GROUP_STRING;
-            if (expression.endsWith("*")) expression = expression.substring(0, expression.length() - 1) + " ?" + CATCHALL_CAPTURE_GROUP_STRING;
-            expression = expression.replaceAll(" \\* | \\?\\* ", " " + CATCHALL_CAPTURE_GROUP_STRING + " ");
-        }
+        if (t == Type.pattern) expression = parsePattern(expression);
         this.pattern = Pattern.compile(expression);
         this.type = expression.equals("(.*)") ? Type.minor : t;
+    }
+    
+    public static String parsePattern(String expression) {
+        if (expression.length() == 0 || expression.equals("*")) expression = CATCHALL_CAPTURE_GROUP_STRING;
+        if ("?!:.".indexOf(expression.charAt(expression.length() - 1)) >= 0) expression = expression.substring(0, expression.length() - 1);
+        if (expression.startsWith("* ")) expression = CATCHALL_CAPTURE_GROUP_STRING + " ?" + expression.substring(2);
+        if (expression.startsWith("*")) expression = CATCHALL_CAPTURE_GROUP_STRING + " ?" + expression.substring(1);
+        if (expression.endsWith(" *")) expression = expression.substring(0, expression.length() - 2) + " ?" + CATCHALL_CAPTURE_GROUP_STRING;
+        if (expression.endsWith("*")) expression = expression.substring(0, expression.length() - 1) + " ?" + CATCHALL_CAPTURE_GROUP_STRING;
+        expression = expression.replaceAll(" \\* | \\?\\* ", " " + CATCHALL_CAPTURE_GROUP_STRING + " ");
+        return expression;
     }
     
     /**
