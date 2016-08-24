@@ -174,6 +174,10 @@ public class Authorization {
         return permissions;
     }
 
+    public JSONObject getPermissionOverrides(){
+        return permissions;
+    }
+
     public void setPermission(String servletCanonicalName, String key, JSONObject value){
         if(!permissions.has(servletCanonicalName)) permissions.put(servletCanonicalName, new JSONObject());
         permissions.getJSONObject(servletCanonicalName).put(key, value);
