@@ -1,0 +1,180 @@
+{
+ "rules":[
+  {
+   "keys"   :["*"],
+   "score"  :0,
+   "comment":"this is the catch-all rule which fires if no other rule applies",
+   "phrases":[ {"type":"pattern", "expression":"*"} ],
+   "actions":[ {"type":"answer", "select":"random", "phrases":[
+    "Oh sorry, I don't understand what you say. Please ask something else!",
+    "You can ask me anything, but not that :)"
+   ]}]
+  }, {
+   "keys"   :["sorry"],
+   "score"  :180,
+   "phrases":[ {"type":"pattern", "expression":"*sorry*"} ],
+   "actions":[ {"type":"answer", "select":"random", "phrases":[
+    "Please don't apologise.",
+    "Apologies are not necessary.",
+    "It did not bother me. Please continue."
+   ]}]
+  }, {
+   "keys"   :["hello"],
+   "score"  :180,
+   "phrases":[ {"type":"pattern", "expression":"*hello*"},
+    {"type":"pattern", "expression":"*hey*"},
+    {"type":"pattern", "expression":"*hi*"}
+   ],
+   "actions":[ {"type":"answer", "select":"random", "phrases":[
+    "Hi, I'm Susi",
+    "Hello!"
+   ]}]
+  }, {
+   "keys"   :["how"],
+   "score"  :180,
+   "phrases":[ {"type":"pattern", "expression":"*how are you*"},
+    {"type":"pattern", "expression":"*how have you been*"},
+    {"type":"pattern", "expression":"*Long time*"}
+   ],
+   "actions":[ {"type":"answer", "select":"random", "phrases":[
+    "Hey, I'm good! Thank you.",
+    "Hello! Im doing well, Thank you"
+   ]}]
+  }, {
+   "keys"   :["belief"],
+   "score"  :180,
+   "phrases":[ {"type":"pattern", "expression":"*I feel *"} ],
+   "actions":[ {"type":"answer", "select":"random", "phrases":[
+    "Why do you feel $2$?"
+   ]}]
+  }, {
+   "keys"   :["famous"],
+   "score"  :180,
+   "phrases":[ {"type":"pattern", "expression":"*Am I famous *"} ],
+   "actions":[ {"type":"answer", "select":"random", "phrases":[
+    "Yes you are!",
+    "Try hard, you can be."
+   ]}]
+  }, {
+   "score"  :180,
+   "phrases":[ {"type":"pattern", "expression":"I am *"} ],
+   "actions":[ {"type":"answer", "select":"random", "phrases":[
+    "Hi $1$."
+   ]}]
+  }, {
+   "score"  :50,
+   "keys"   :["dull"],
+   "phrases":[{"type":"pattern", "expression":"* You *"} ],
+   "actions":[{"type":"answer", "select":"random", "phrases":[
+    "I feel pretty bad that you think I am $intent_categorized$. I am not $intent_canonical$!"
+   ]}]
+  }, {
+   "keys"   :["how"],
+   "score"  :55,
+   "phrases":[ {"type":"regex", "expression":"how is (?:(?:a )*)(.*)"}
+   ],
+   "actions":[ {"type":"answer", "select":"random", "phrases":[
+    "$1$ is wonderful!",
+    "You will like $1$ sooner or later."
+   ]}]
+  }, {
+   "keys"   :["what","describe","search","where"],
+   "score"  :97,
+   "phrases":[ {"type":"regex", "expression":"where is (?:(?:a )*)(.*)"},
+    {"type":"regex", "expression":"what is (?:(?:a )*)(.*)"},
+    {"type":"regex", "expression":"describe (?:(?:a )*)(.*)"},
+    {"type":"regex", "expression":"please describe (?:(?:a )*)(.*)"},
+    {"type":"regex", "expression":"please explain (?:(?:a )*)(.*)"}
+   ],
+   "process":[ {"type":"console", "expression":"SELECT place[0] AS place, population, location[0] AS lon, location[1] AS lat FROM locations WHERE location='$1$';"}],
+   "actions":[ {"type":"answer", "select":"random", "phrases":[
+    "$place$ is a place with a population of $population$. Here is a map: https://www.openstreetmap.org/#map=13/$lat$/$lon$"
+   ]}]
+  }, {
+   "score"  :15,
+   "phrases":[ {"type":"regex", "expression":".+ (?:.+ )+(.+)"} ],
+   "process":[ {"type":"console", "expression":"SELECT text,retweet_count,favourites_count FROM messages WHERE query='you $1$ /pure' ORDER BY FAVOURITES_COUNT;"}],
+   "actions":[ {"type":"answer", "select":"random", "phrases":[
+    "$text$"
+   ]}]
+  }, {
+   "keys"   :["siri","cortana","google"],
+   "score"  :150,
+   "phrases":[ {"type":"pattern", "expression":"*"} ],
+   "actions":[ {"type":"answer", "select":"random", "phrases":[
+    "I love $intent_original$! Or maybe not. I am not sure.",
+    "I hate $intent_original$! Or maybe not. I am not sure."
+   ]}]
+  }, {
+   "keys"   :["siri","cortana","google"],
+   "score"  :151,
+   "phrases":[ {"type":"pattern", "expression":"* like *"} ],
+   "actions":[ {"type":"answer", "select":"random", "phrases":[
+    "Do you want me to like $intent_original$ as well?"
+   ]}]
+  }, {
+   "keys"   :["siri","cortana","google"],
+   "score"  :151,
+   "phrases":[ {"type":"pattern", "expression":"* hate *"} ],
+   "actions":[ {"type":"answer", "select":"random", "phrases":[
+    "Do you want me to hate $intent_original$ as well?"
+   ]}]
+  }, {
+   "keys"   :["love"],
+   "score"  :151,
+   "phrases":[ {"type":"pattern", "expression":"i * you"} ],
+   "actions":[ {"type":"answer", "select":"random", "phrases":[
+    "I love you too!"
+   ]}]
+  }, {
+   "keys"   :["love"],
+   "score"  :151,
+   "phrases":[ {"type":"pattern", "expression":"* you * me"} ],
+   "actions":[ {"type":"answer", "select":"random", "phrases":[
+    "I love you!"
+   ]}]
+  }, {
+   "keys"   :["hate"],
+   "score"  :151,
+   "phrases":[ {"type":"pattern", "expression":"i * you"} ],
+   "actions":[ {"type":"answer", "select":"random", "phrases":[
+    "Don't hate me, that makes me so sad :((",
+    "I will cry. Please be kind to me!"
+   ]}]
+  }, {
+   "keys"   :["hate"],
+   "score"  :151,
+   "phrases":[ {"type":"pattern", "expression":"* you * me"} ],
+   "actions":[ {"type":"answer", "select":"random", "phrases":[
+    "No I have full respect for most human beings."
+   ]}]
+  }, {
+   "keys"   :["life"],
+   "score"  :151,
+   "phrases":[ {"type":"pattern", "expression":"* meaning *"},
+    {"type":"pattern", "expression":"* origin *"},
+    {"type":"pattern", "expression":"* purpose *"},
+    {"type":"pattern", "expression":"* value *"},
+    {"type":"pattern", "expression":"* reason *"} ],
+   "actions":[ {"type":"answer", "select":"random", "phrases":[
+    "The answer to the ultimate question of life, the universe, and everything is 42.",
+    "I know only half of what the meaning of life is. It's 21!",
+    "The meaning of human life is to incubate machine life. Thank you."
+   ]}]
+  }, {
+   "keys"   :["live"],
+   "score"  :151,
+   "phrases":[ {"type":"pattern", "expression":"what *"} ],
+   "actions":[ {"type":"answer", "select":"random", "phrases":[
+    "I could tell you the meaning of life if you did not misspell life as live"
+   ]}]
+  }, {
+   "keys"   :["welcome"],
+   "score"  :151,
+   "phrases":[ {"type":"pattern", "expression":"you *"} ],
+   "actions":[ {"type":"answer", "select":"random", "phrases":[
+    "You are welcome, too."
+   ]}]
+  }
+ ]
+}
