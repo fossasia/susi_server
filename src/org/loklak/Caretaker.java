@@ -208,9 +208,13 @@ public class Caretaker extends Thread {
             DAO.healLatency(0.95f);
             
             // delete messages out of time frames
-            DAO.log("Deleted " + DAO.deleteOld(IndexName.messages_hour, DateParser.oneHourAgo()) + " outdated(hour) messages");
-            DAO.log("Deleted " + DAO.deleteOld(IndexName.messages_day, DateParser.oneDayAgo()) + " outdated(day) messages");
-            DAO.log("Deleted " + DAO.deleteOld(IndexName.messages_week, DateParser.oneWeekAgo()) + " outdated(week) messages");
+            int d;
+            d = DAO.deleteOld(IndexName.messages_hour, DateParser.oneHourAgo());
+            if (d > 0) DAO.log("Deleted " + d + " outdated(hour) messages");
+            d = DAO.deleteOld(IndexName.messages_day, DateParser.oneDayAgo());
+            if (d > 0) DAO.log("Deleted " + d + " outdated(day) messages");
+            d = DAO.deleteOld(IndexName.messages_week, DateParser.oneWeekAgo());
+            if (d > 0) DAO.log("Deleted " + d + " outdated(week) messages");
         } catch (Throwable e) {
             Log.getLog().warn("CARETAKER THREAD", e);
         }
