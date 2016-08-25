@@ -29,9 +29,8 @@
   }, {
    "keys"   :["how"],
    "phrases":[ {"type":"pattern", "expression":"*how are you*"},
-    {"type":"pattern", "expression":"*how have you been*"},
-    {"type":"pattern", "expression":"*Long time*"}
-   ],
+               {"type":"pattern", "expression":"*how have you been*"},
+               {"type":"pattern", "expression":"*Long time*"} ],
    "actions":[ {"type":"answer", "select":"random", "phrases":[
     "Hey, I'm good! Thank you.",
     "Hello! Im doing well, Thank you"
@@ -71,11 +70,10 @@
   }, {
    "keys"   :["what","describe","search","where"],
    "phrases":[ {"type":"regex", "expression":"where is (?:(?:a )*)(.*)"},
-    {"type":"regex", "expression":"what is (?:(?:a )*)(.*)"},
-    {"type":"regex", "expression":"describe (?:(?:a )*)(.*)"},
-    {"type":"regex", "expression":"please describe (?:(?:a )*)(.*)"},
-    {"type":"regex", "expression":"please explain (?:(?:a )*)(.*)"}
-   ],
+               {"type":"regex", "expression":"what is (?:(?:a )*)(.*)"},
+               {"type":"regex", "expression":"describe (?:(?:a )*)(.*)"},
+               {"type":"regex", "expression":"please describe (?:(?:a )*)(.*)"},
+               {"type":"regex", "expression":"please explain (?:(?:a )*)(.*)"} ],
    "process":[ {"type":"console", "expression":"SELECT place[0] AS place, population, location[0] AS lon, location[1] AS lat FROM locations WHERE location='$1$';"}],
    "actions":[ {"type":"answer", "select":"random", "phrases":[
     "$place$ is a place with a population of $population$. Here is a map: https://www.openstreetmap.org/#map=13/$lat$/$lon$"
@@ -133,10 +131,10 @@
   }, {
    "keys"   :["life"],
    "phrases":[ {"type":"pattern", "expression":"* meaning *"},
-    {"type":"pattern", "expression":"* origin *"},
-    {"type":"pattern", "expression":"* purpose *"},
-    {"type":"pattern", "expression":"* value *"},
-    {"type":"pattern", "expression":"* reason *"} ],
+               {"type":"pattern", "expression":"* origin *"},
+               {"type":"pattern", "expression":"* purpose *"},
+               {"type":"pattern", "expression":"* value *"},
+               {"type":"pattern", "expression":"* reason *"} ],
    "actions":[ {"type":"answer", "select":"random", "phrases":[
     "The answer to the ultimate question of life, the universe, and everything is 42.",
     "I know only half of what the meaning of life is. It's 21!",
