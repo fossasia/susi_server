@@ -30,7 +30,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.regex.Matcher;
 
 import org.json.JSONArray;
@@ -117,10 +117,12 @@ public class SusiMind {
         // tokenize query to have hint for idea collection
         final List<SusiIdea> ideas = new ArrayList<>();
         this.reader.tokenizeSentence(query).forEach(token -> {
-            Map<Long, SusiRule> r = this.ruletrigger.get(token.categorized);
-            if (r != null) {
-                r.values().forEach(rule -> ideas.add(new SusiIdea(rule).setIntent(token)));
-            }
+            Map<Long, SusiRule> rule_for_category = this.ruletrigger.get(token.categorized);
+            Map<Long, SusiRule> rule_for_original = token.original.equals(token.categorized) ? null : this.ruletrigger.get(token.original);
+            Map<Long, SusiRule> r = new HashMap<>();
+            if (rule_for_category != null) r.putAll(rule_for_category);
+            if (rule_for_original != null) r.putAll(rule_for_original);
+            r.values().forEach(rule -> ideas.add(new SusiIdea(rule).setIntent(token)));
         });
         
         //for (SusiIdea idea: ideas) System.out.println("idea.phrase-1:" + idea.getRule().getPhrases().toString());
@@ -130,14 +132,14 @@ public class SusiMind {
         if (ca != null) ca.forEach(rule -> ideas.add(new SusiIdea(rule)));
         
         // create list of all ideas that might apply
-        TreeMap<Integer, List<SusiIdea>> scored = new TreeMap<>();
-        AtomicInteger count = new AtomicInteger(0);
+        TreeMap<Long, List<SusiIdea>> scored = new TreeMap<>();
+        AtomicLong count = new AtomicLong(0);
         ideas.forEach(idea -> {
             int score = idea.getRule().getScore();
-            List<SusiIdea> r = scored.get(-score);
-            if (r == null) {r = new ArrayList<>(); scored.put(count.get() - score * 1000, r);}
+            long orderkey = Long.MAX_VALUE - ((long) score) * 1000L + count.incrementAndGet();
+            List<SusiIdea> r = scored.get(orderkey);
+            if (r == null) {r = new ArrayList<>(); scored.put(orderkey, r);}
             r.add(idea);
-            count.incrementAndGet();
         });
 
         // make a sorted list of all ideas

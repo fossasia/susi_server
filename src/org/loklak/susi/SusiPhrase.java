@@ -35,10 +35,10 @@ import org.json.JSONObject;
 public class SusiPhrase {
 
     public static enum Type {
-        minor(0), regex(1), pattern(1), prior(2);
+        minor(0), regex(1), pattern(1), prior(3);
         private final int subscore;
         private Type(int s) {this.subscore = s;}
-        public int getSubscore() {return this.subscore;}
+        private int getSubscore() {return this.subscore;}
     }
 
     private final static String CATCHALL_CAPTURE_GROUP_STRING = "(.*)"; // greedy capturing everything is the best choice: that covers words phrases as well
@@ -47,6 +47,8 @@ public class SusiPhrase {
 
     private final Pattern pattern;
     private final Type type;
+    private final boolean hasCaptureGroups;
+    private final int meatsize;
     
     /**
      * Create a phrase using a json data structure containing the phrase description.
@@ -75,6 +77,10 @@ public class SusiPhrase {
         if (t == Type.pattern) expression = parsePattern(expression);
         this.pattern = Pattern.compile(expression);
         this.type = expression.equals("(.*)") ? Type.minor : t;
+        this.hasCaptureGroups = expression.indexOf('(') >= 0;
+        
+        // measure the meat size
+        this.meatsize = Math.min(99, extractMeat(expression).length());
     }
     
     public static String parsePattern(String expression) {
@@ -86,6 +92,15 @@ public class SusiPhrase {
         if (expression.endsWith("*")) expression = expression.substring(0, expression.length() - 1) + " ?" + CATCHALL_CAPTURE_GROUP_STRING;
         expression = expression.replaceAll(" \\* | \\?\\* ", " " + CATCHALL_CAPTURE_GROUP_STRING + " ");
         return expression;
+    }
+    
+    public static String extractMeat(String expression) {
+        StringBuffer sb = new StringBuffer();
+        for (int i = 0; i < expression.length(); i++) {
+            char c = expression.charAt(i);
+            if ((c >= '0' && c <= '9') || (c >= 'a' && c <= 'z') ||(c >= 'A' && c <= 'Z')) sb.append(c);
+        }
+        return sb.toString();
     }
     
     /**
@@ -102,6 +117,14 @@ public class SusiPhrase {
      */
     public Type getType() {
         return this.type;
+    }
+    
+    public int getSubscore() {
+        return ((this.type == Type.pattern || this.type == Type.regex) && !this.hasCaptureGroups) ? this.type.getSubscore() + 1 : this.type.getSubscore();
+    }
+    
+    public int getMeatsize() {
+        return this.meatsize;
     }
     
     public String toString() {

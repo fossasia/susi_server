@@ -1,7 +1,6 @@
 {
  "rules":[
   {
-   "keys"   :["*"],
    "comment":"this is the catch-all rule which fires if no other rule applies",
    "phrases":[ {"type":"pattern", "expression":"*"} ],
    "actions":[ {"type":"answer", "select":"random", "phrases":[
@@ -9,7 +8,6 @@
     "You can ask me anything, but not that :)"
    ]}]
   }, {
-   "keys"   :["sorry"],
    "phrases":[ {"type":"pattern", "expression":"*sorry*"} ],
    "actions":[ {"type":"answer", "select":"random", "phrases":[
     "Please don't apologise.",
@@ -17,7 +15,6 @@
     "It did not bother me. Please continue."
    ]}]
   }, {
-   "keys"   :["hello"],
    "phrases":[ {"type":"pattern", "expression":"*hello*"},
     {"type":"pattern", "expression":"*hey*"},
     {"type":"pattern", "expression":"*hi*"}
@@ -27,7 +24,6 @@
     "Hello!"
    ]}]
   }, {
-   "keys"   :["how"],
    "phrases":[ {"type":"pattern", "expression":"*how are you*"},
                {"type":"pattern", "expression":"*how have you been*"},
                {"type":"pattern", "expression":"*Long time*"} ],
@@ -42,7 +38,6 @@
     "Why do you feel $2$?"
    ]}]
   }, {
-   "keys"   :["famous"],
    "phrases":[ {"type":"pattern", "expression":"*Am I famous *"} ],
    "actions":[ {"type":"answer", "select":"random", "phrases":[
     "Yes you are!",
@@ -60,29 +55,10 @@
     "I feel pretty bad that you think I am $intent_categorized$. I am not $intent_canonical$!"
    ]}]
   }, {
-   "keys"   :["how"],
-   "phrases":[ {"type":"regex", "expression":"how is (?:(?:a )*)(.*)"}
-   ],
+   "phrases":[ {"type":"regex", "expression":"how is (?:(?:a )*)(.*)"} ],
    "actions":[ {"type":"answer", "select":"random", "phrases":[
     "$1$ is wonderful!",
     "You will like $1$ sooner or later."
-   ]}]
-  }, {
-   "keys"   :["what","describe","search","where"],
-   "phrases":[ {"type":"regex", "expression":"where is (?:(?:a )*)(.*)"},
-               {"type":"regex", "expression":"what is (?:(?:a )*)(.*)"},
-               {"type":"regex", "expression":"describe (?:(?:a )*)(.*)"},
-               {"type":"regex", "expression":"please describe (?:(?:a )*)(.*)"},
-               {"type":"regex", "expression":"please explain (?:(?:a )*)(.*)"} ],
-   "process":[ {"type":"console", "expression":"SELECT place[0] AS place, population, location[0] AS lon, location[1] AS lat FROM locations WHERE location='$1$';"}],
-   "actions":[ {"type":"answer", "select":"random", "phrases":[
-    "$place$ is a place with a population of $population$. Here is a map: https://www.openstreetmap.org/#map=13/$lat$/$lon$"
-   ]}]
-  }, {
-   "phrases":[ {"type":"regex", "expression":".+ (?:.+ )+(.+)"} ],
-   "process":[ {"type":"console", "expression":"SELECT text,retweet_count,favourites_count FROM messages WHERE query='you $1$ /pure' ORDER BY FAVOURITES_COUNT;"}],
-   "actions":[ {"type":"answer", "select":"random", "phrases":[
-    "$text$"
    ]}]
   }, {
    "keys"   :["siri","cortana","google"],

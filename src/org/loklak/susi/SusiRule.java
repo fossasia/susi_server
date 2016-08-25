@@ -21,6 +21,8 @@ package org.loklak.susi;
 
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -63,7 +65,11 @@ public class SusiRule {
         this.phrases = new ArrayList<>(p.length());
         p.forEach(q -> this.phrases.add(new SusiPhrase((JSONObject) q)));
         final AtomicInteger phrases_subscore = new AtomicInteger(0);
-        this.phrases.forEach(phrase -> phrases_subscore.set(Math.max(phrases_subscore.get(), phrase.getType().getSubscore())));
+        final AtomicInteger phrases_meatscore = new AtomicInteger(0);
+        this.phrases.forEach(phrase -> {
+            phrases_subscore.set(Math.max(phrases_subscore.get(), phrase.getSubscore()));
+            phrases_meatscore.set(Math.max(phrases_meatscore.get(), phrase.getMeatsize()));
+        });
         
         // extract the actions and the action subscore
         if (!json.has("actions")) throw new PatternSyntaxException("actions missing", "", 0);
@@ -122,7 +128,9 @@ public class SusiRule {
          * (4) quaternary criteria is the IO activity (-location)
          * io: {remote, local, ram} the storage location can be computed from the rule string
     
-         * (5) finally the subscore can be assigned manually
+         * (5) the meatsize (number of characters that are non-patterns)
+    
+         * (6) finally the subscore can be assigned manually
          * subscore a score in a small range which can be used to distinguish rules within the same categories
          */
         
@@ -139,7 +147,10 @@ public class SusiRule {
         // (3) operation type - there may be no operation at all
         this.score = this.score * (1 + SusiInference.Type.values().length) + process_subscore.get();
         
-        // (5) subscore from the user
+        // (4) meatsize
+        this.score = this.score * 100 + phrases_meatscore.get();
+        
+        // (6) subscore from the user
         int user_subscore = json.has("score") ? json.getInt("score") : DEFAULT_SCORE;
         this.score += this.score * 1000 + Math.min(1000, user_subscore);
         
@@ -176,7 +187,24 @@ public class SusiRule {
      * @return
      */
     private static JSONArray computeKeysFromPhrases(List<SusiPhrase> phrases) {
-        return new JSONArray().put(CATCHALL_KEY);
+        Set<String> t = new LinkedHashSet<>();
+        // collect all token
+        phrases.forEach(phrase -> {
+            for (String token: phrase.getPattern().toString().split(" ")) {
+                String m = SusiPhrase.extractMeat(token.toLowerCase());
+                if (m.length() > 2) t.add(m);
+            }
+        });
+        // remove all token that do not appear in all phrases
+        phrases.forEach(phrase -> {
+            String p = phrase.getPattern().toString().toLowerCase();
+            Iterator<String> i = t.iterator();
+            while (i.hasNext()) if (p.indexOf(i.next()) < 0) i.remove();
+        });        
+        // if no token is left, use the catchall-key
+        if (t.size() == 0) return new JSONArray().put(CATCHALL_KEY);
+        // use the first token
+        return new JSONArray().put(t.iterator().next());
     }
     
     /**
