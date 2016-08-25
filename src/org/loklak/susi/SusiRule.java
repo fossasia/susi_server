@@ -74,15 +74,16 @@ public class SusiRule {
         this.actions.forEach(action -> action_subscore.set(Math.max(action_subscore.get(), action.getPurposeType().getSubscore())));
         
         // extract the inferences and the process subscore; there may be no inference at all
+        final AtomicInteger process_subscore = new AtomicInteger(0);
         if (json.has("process")) {
             p = (JSONArray) json.remove("process");
             this.inferences = new ArrayList<>(p.length());
             p.forEach(q -> this.inferences.add(new SusiInference((JSONObject) q)));
+            this.inferences.forEach(inference -> process_subscore.set(Math.max(process_subscore.get(), inference.getType().getSubscore())));
         } else {
             this.inferences = new ArrayList<>(0);
+            process_subscore.set(SusiInference.Type.values().length);
         }
-        final AtomicInteger process_subscore = new AtomicInteger(0);
-        this.inferences.forEach(inference -> process_subscore.set(Math.max(process_subscore.get(), inference.getType().getSubscore())));
         
         // extract (or compute) the keys; there may be none key given, then they will be computed
         this.keys = new HashSet<>();
@@ -126,8 +127,8 @@ public class SusiRule {
          */
         
         // extract the score
-        //System.out.println("DEBUG RULE SCORE: action=" + action_subscore.get() + ", phrase=" + phrases_subscore.get() + ", process=" + process_subscore.get() + ", pattern=" + phrases.get(0).toString());
-        this.score = 1000;
+        System.out.println("DEBUG RULE SCORE: action=" + action_subscore.get() + ", phrase=" + phrases_subscore.get() + ", process=" + process_subscore.get() + ", pattern=" + phrases.get(0).toString());
+        this.score = 0;
 
         // (1) conversation plan from the answer purpose
         this.score = this.score * SusiAction.ActionAnswerPurposeType.values().length + action_subscore.get();
@@ -135,12 +136,12 @@ public class SusiRule {
         // (2) pattern score
         this.score = this.score * SusiPhrase.Type.values().length + phrases_subscore.get();
 
-        // (3) operation type
-        this.score = this.score * SusiInference.Type.values().length + process_subscore.get();
+        // (3) operation type - there may be no operation at all
+        this.score = this.score * (1 + SusiInference.Type.values().length) + process_subscore.get();
         
         // (5) subscore from the user
         int user_subscore = json.has("score") ? json.getInt("score") : DEFAULT_SCORE;
-        this.score += user_subscore;
+        this.score += this.score * 1000 + Math.min(1000, user_subscore);
         
         // calculate the id
         String ids0 = this.keys.toString() + this.score;
