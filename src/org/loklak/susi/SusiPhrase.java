@@ -77,7 +77,7 @@ public class SusiPhrase {
         if (t == Type.pattern) expression = parsePattern(expression);
         this.pattern = Pattern.compile(expression);
         this.type = expression.equals("(.*)") ? Type.minor : t;
-        this.hasCaptureGroups = expression.indexOf('(') >= 0;
+        this.hasCaptureGroups = expression.replaceAll("\\(\\?", "").indexOf('(') >= 0;
         
         // measure the meat size
         this.meatsize = Math.min(99, extractMeat(expression).length());

@@ -1,8 +1,8 @@
 {
 	"rules":[
 		{
-			"score"  :90,
-			"phrases":[	{"type":"regex", "expression":"(?:(?:a )*)(.*)"}
+			"score"  :0,
+			"phrases":[	{"type":"regex", "expression":"(?:a )+(.*)"}
 					  ],
 			"process":[	{"type":"console", "expression":"SELECT description FROM wikidata WHERE query='$1$';"}],
 			"actions":[	{"type":"answer", "select":"random", "phrases":[
@@ -10,8 +10,8 @@
 						]}]
 		},
 		{
-			"score"  :91,
-			"phrases":[	{"type":"regex", "expression":"(?:(?:a )*)(.*)"}
+			"score"  :1,
+			"phrases":[	{"type":"regex", "expression":"(?:a )+(.*)"}
 					  ],
 			"process":[	{"type":"console", "expression":"SELECT definition,example FROM urbandictionary WHERE query='$1$';"}],
 			"actions":[	{"type":"answer", "select":"random", "phrases":[
@@ -19,8 +19,7 @@
 						]}]
 		},
 		{
-			"keys"   :["what","describe","explain","search"],
-			"score"  :99,
+			"score"  :1,
 			"phrases":[	{"type":"regex", "expression":"what is (?:(?:a )*)(.*)"},
 					  	{"type":"regex", "expression":"describe (?:(?:a )*)(.*)"},
 					  	{"type":"regex", "expression":"please describe (?:(?:a )*)(.*)"},
@@ -35,8 +34,7 @@
 						]}]
 		},
 		{
-			"keys"   :["what","describe","explain","search"],
-			"score"  :98,
+			"score"  :0,
 			"phrases":[	{"type":"regex", "expression":"what is (?:(?:a )*)(.*)"},
 					  	{"type":"regex", "expression":"describe (?:(?:a )*)(.*)"},
 					  	{"type":"regex", "expression":"please describe (?:(?:a )*)(.*)"},
@@ -51,8 +49,7 @@
 						]}]
 		},
 		{
-			"keys"   :["how"],
-			"score"  :98,
+			"score"  :0,
 			"phrases":[	{"type":"regex", "expression":"how is (?:(?:a )*)(.*)"}
 					  ],
 			"process":[	{"type":"console", "expression":"SELECT description FROM wikidata WHERE query='$1$';"}],
@@ -61,8 +58,7 @@
 						]}]
 		},
 		{
-			"keys"   :["how"],
-			"score"  :99,
+			"score"  :1,
 			"phrases":[	{"type":"regex", "expression":"how is (?:(?:a )*)(.*)"}
 					  ],
 			"process":[	{"type":"console", "expression":"SELECT definition,example FROM urbandictionary WHERE query='$1$';"}],

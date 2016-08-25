@@ -15,9 +15,9 @@
     "It did not bother me. Please continue."
    ]}]
   }, {
-   "phrases":[ {"type":"pattern", "expression":"*hello*"},
-    {"type":"pattern", "expression":"*hey*"},
-    {"type":"pattern", "expression":"*hi*"}
+   "phrases":[ {"type":"pattern", "expression":"hello*"},
+               {"type":"pattern", "expression":"hey*"},
+               {"type":"pattern", "expression":"hi*"}
    ],
    "actions":[ {"type":"answer", "select":"random", "phrases":[
     "Hi, I'm Susi",
@@ -55,10 +55,10 @@
     "I feel pretty bad that you think I am $intent_categorized$. I am not $intent_canonical$!"
    ]}]
   }, {
-   "phrases":[ {"type":"regex", "expression":"how is (?:(?:a )*)(.*)"} ],
-   "actions":[ {"type":"answer", "select":"random", "phrases":[
-    "$1$ is wonderful!",
-    "You will like $1$ sooner or later."
+   "keys"   :["dull"],
+   "phrases":[{"type":"pattern", "expression":"* I am *"} ],
+   "actions":[{"type":"answer", "select":"random", "phrases":[
+    "If you think that you are $intent_canonical$ then that would mean that you are actually smart because of the Dunning-Kruger effect!"
    ]}]
   }, {
    "keys"   :["siri","cortana","google"],
@@ -69,7 +69,8 @@
    ]}]
   }, {
    "keys"   :["siri","cortana","google"],
-   "phrases":[ {"type":"pattern", "expression":"* like *"} ],
+   "phrases":[ {"type":"pattern", "expression":"* like *"},
+               {"type":"pattern", "expression":"* love *"} ],
    "actions":[ {"type":"answer", "select":"random", "phrases":[
     "Do you want me to like $intent_original$ as well?"
    ]}]
@@ -77,7 +78,7 @@
    "keys"   :["siri","cortana","google"],
    "phrases":[ {"type":"pattern", "expression":"* hate *"} ],
    "actions":[ {"type":"answer", "select":"random", "phrases":[
-    "Do you want me to hate $intent_original$ as well?"
+    "Oh you hate $intent_original$, what do you think of me?"
    ]}]
   }, {
    "keys"   :["love"],

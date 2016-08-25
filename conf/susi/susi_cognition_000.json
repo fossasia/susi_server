@@ -420,9 +420,9 @@
 			"keys"   :["help"],
 			"score"  :151,
 			"phrases":[	{"type":"pattern", "expression":"I need some help with *"},
-					{"type":"pattern", "expression":"I need some help"},
+					{"type":"prior", "expression":"I need some help"},
 					{"type":"pattern", "expression":"I'm in need of help *"},
-					{"type":"pattern", "expression":"I need some help with this problem"}
+					{"type":"prior", "expression":"I need some help with this problem"}
 						],
 			"actions":[	{"type":"answer", "select":"random", "phrases":[
 							"Would love to help! In what way can I help you?"
