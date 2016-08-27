@@ -160,7 +160,10 @@ public class SusiTransfer {
                 return a;
             }
         }
-        for (Object json: choices) a.put(this.extract((JSONObject) json));
+        for (Object json: choices) {
+            JSONObject extraction = this.extract((JSONObject) json);
+            if (extraction.length() > 0) a.put(extraction);
+        }
         return a;
     }
     

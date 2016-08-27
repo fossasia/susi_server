@@ -160,7 +160,7 @@ public class SusiInference {
     
     
     /**
-     * Inference must be applicable to thought arguments. This method executes the inference process on an existing 
+     * The inference must be applicable to thought arguments. This method executes the inference process on an existing 
      * argument and produces another thought which may or may not be appended to the given argument to create a full
      * argument proof. Within this method also data from the argument is unified with the inference variables
      * @param flow
@@ -176,8 +176,8 @@ public class SusiInference {
             String expression = flow.unify(this.getExpression());
             try {return flowSkill.deduce(flow, expression);} catch (Exception e) {}
         }
-        // maybe the argument is not applicable, then the latest mindstate is empty application
-        return flow.mindstate();
+        // maybe the argument is not applicable, then an empty thought is produced (which means a 'fail')
+        return new SusiThought();
 }
     
     public String toString() {

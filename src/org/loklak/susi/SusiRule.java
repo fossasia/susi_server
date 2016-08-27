@@ -20,6 +20,7 @@
 package org.loklak.susi;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
@@ -133,9 +134,10 @@ public class SusiRule {
          * (6) finally the subscore can be assigned manually
          * subscore a score in a small range which can be used to distinguish rules within the same categories
          */
+
+        int user_subscore = json.has("score") ? json.getInt("score") : DEFAULT_SCORE;
         
         // extract the score
-        System.out.println("DEBUG RULE SCORE: action=" + action_subscore.get() + ", phrase=" + phrases_subscore.get() + ", process=" + process_subscore.get() + ", pattern=" + phrases.get(0).toString());
         this.score = 0;
 
         // (1) conversation plan from the answer purpose
@@ -151,14 +153,14 @@ public class SusiRule {
         this.score = this.score * 100 + phrases_meatscore.get();
         
         // (6) subscore from the user
-        int user_subscore = json.has("score") ? json.getInt("score") : DEFAULT_SCORE;
         this.score += this.score * 1000 + Math.min(1000, user_subscore);
         
         // calculate the id
         String ids0 = this.keys.toString() + this.score;
         String ids1 = this.phrases.toString();
         this.id = ((long) ids0.hashCode()) << 16 + ids1.hashCode();
-        //System.out.println(ids1 + " - " + this.id + " - " + ids0.hashCode() + " - " + (((long) ids0.hashCode()) << 16));
+        
+        //System.out.println("DEBUG RULE SCORE: id=" + this.id + ", score=" + this.score + ", action=" + action_subscore.get() + ", phrase=" + phrases_subscore.get() + ", process=" + process_subscore.get() + ", meta=" + phrases_meatscore.get() + ", subscore=" + user_subscore + ", pattern=" + phrases.get(0).toString() + (this.inferences.size() > 0 ? ", inference=" + this.inferences.get(0).getExpression() : ""));
     }
     
     public String toString() {
@@ -277,13 +279,17 @@ public class SusiRule {
      * @param s the string which shozld match
      * @return a matcher on the rule phrases
      */
-    public Matcher matcher(String s) {
+    public Collection<Matcher> matcher(String s) {
+        List<Matcher> l = new ArrayList<>();
         s = s.toLowerCase();
         for (SusiPhrase p: this.phrases) {
             Matcher m = p.getPattern().matcher(s);
-            if (m.find()) return m;
+            if (m.find()) {
+                //System.out.println("MATCHERGROUP=" + m.group().toString());
+                l.add(m); // TODO: exclude double-entries
+            }
         }
-        return null;
+        return l;
     }
 
     /**
@@ -300,30 +306,34 @@ public class SusiRule {
         final SusiArgument flow = recall.clone();
         
         // that argument is filled with an idea which consist of the query where we extract the identified data entities
-        SusiThought keynote = new SusiThought(this.matcher(query));
-        if (intent != null) {
-            keynote.addObservation("intent_original", intent.original);
-            keynote.addObservation("intent_canonical", intent.canonical);
-            keynote.addObservation("intent_categorized", intent.categorized);
+        alternatives: for (Matcher matcher: this.matcher(query)) {
+            SusiThought keynote = new SusiThought(matcher);
+            if (intent != null) {
+                keynote.addObservation("intent_original", intent.original);
+                keynote.addObservation("intent_canonical", intent.canonical);
+                keynote.addObservation("intent_categorized", intent.categorized);
+            }
+            DAO.log("Susi has an idea: " + keynote.toString());
+            flow.think(keynote);
+            
+            // lets apply the rules that belong to this specific consideration
+            for (SusiInference inference: this.getInferences()) {
+                SusiThought implication = inference.applySkills(flow);
+                DAO.log("Susi is thinking about: " + implication.toString());
+                // make sure that we are not stuck:
+                // in case that we are stuck (== no progress was made) we terminate and return null
+                if (inference.getType() != SusiInference.Type.flow &&
+                    (flow.mindstate().equals(implication) || implication.getCount() == 0)) continue alternatives; // TODO: do this only if specific marker is in rule
+                // think
+                flow.think(implication);
+            }
+            
+            // we deduced thoughts from the inferences in the rules. Now apply the actions of rule to produce results
+            this.getActions().forEach(action -> flow.addAction(action.apply(flow)));
+            return flow;
         }
-        DAO.log("Susi has an idea: " + keynote.toString());
-        flow.think(keynote);
-        
-        // lets apply the rules that belong to this specific consideration
-        for (SusiInference inference: this.getInferences()) {
-            SusiThought implication = inference.applySkills(flow);
-            DAO.log("Susi is thinking about: " + implication.toString());
-            // make sure that we are not stuck:
-            // in case that we are stuck (== no progress was made) we terminate and return null
-            if (inference.getType() != SusiInference.Type.flow &&
-                (flow.mindstate().equals(implication) || implication.getCount() == 0)) return null; // TODO: do this only if specific marker is in rule
-            // think
-            flow.think(implication);
-        }
-        
-        // we deduced thoughts from the inferences in the rules. Now apply the actions of rule to produce results
-        this.getActions().forEach(action -> flow.addAction(action.apply(flow)));
-        return flow;
+        // fail, no alternative was successful
+        return null;
     }
     
 }

@@ -1,24 +1,6 @@
 {
 	"rules":[
 		{
-			"score"  :0,
-			"phrases":[	{"type":"regex", "expression":"(?:a )+(.*)"}
-					  ],
-			"process":[	{"type":"console", "expression":"SELECT description FROM wikidata WHERE query='$1$';"}],
-			"actions":[	{"type":"answer", "select":"random", "phrases":[
-							"$1$ is $description$."
-						]}]
-		},
-		{
-			"score"  :1,
-			"phrases":[	{"type":"regex", "expression":"(?:a )+(.*)"}
-					  ],
-			"process":[	{"type":"console", "expression":"SELECT definition,example FROM urbandictionary WHERE query='$1$';"}],
-			"actions":[	{"type":"answer", "select":"random", "phrases":[
-							"$1$ is $definition$."
-						]}]
-		},
-		{
 			"score"  :1,
 			"phrases":[	{"type":"regex", "expression":"what is (?:(?:a )*)(.*)"},
 					  	{"type":"regex", "expression":"describe (?:(?:a )*)(.*)"},
@@ -28,7 +10,8 @@
 					  	{"type":"regex", "expression":"search urbandictionary for (?:(?:a )*)(.*)"},
 					  	{"type":"pattern", "expression":"what does * mean"}
 					  ],
-			"process":[	{"type":"console", "expression":"SELECT description FROM wikidata WHERE query='$1$';"}],
+			"process":[	{"type":"console", "expression":"SELECT description FROM wikidata WHERE query='$1$';"},
+			            {"type":"flow", "expression":"REJECT '$description$' MATCHING 'Wikipedia disambiguation page' PATTERN"} ],
 			"actions":[	{"type":"answer", "select":"random", "phrases":[
 							"$1$ is $description$."
 						]}]
@@ -52,7 +35,8 @@
 			"score"  :0,
 			"phrases":[	{"type":"regex", "expression":"how is (?:(?:a )*)(.*)"}
 					  ],
-			"process":[	{"type":"console", "expression":"SELECT description FROM wikidata WHERE query='$1$';"}],
+			"process":[	{"type":"console", "expression":"SELECT description FROM wikidata WHERE query='$1$';"},
+			            {"type":"flow", "expression":"REJECT '$description$' MATCHING 'Wikipedia disambiguation page' PATTERN"} ],
 			"actions":[	{"type":"answer", "select":"random", "phrases":[
 							"$1$ is $description$."
 						]}]

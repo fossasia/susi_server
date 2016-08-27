@@ -65,6 +65,16 @@ public class SusiArgument implements Iterable<SusiThought> {
     }
     
     /**
+     * The mindmeld is the combination of all thoughts into one
+     * @return the latest thought in a series of proof steps
+     */
+    public SusiThought mindmeld() {
+        SusiThought meltedMind = new SusiThought();
+        this.recall.forEach(memory -> meltedMind.mergeData(memory.getData()));
+        return meltedMind;
+    }
+    
+    /**
      * Remembering the thoughts is essential to recall which thoughts leads to the current mindstate
      * @param timesBack the number of thoughts backwards from the current mindstate
      * @return the thought in the past according to the elapsed time of the thoughts

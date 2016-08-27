@@ -99,7 +99,7 @@ public class SusiLog {
             this.conversation.add(0, interaction);
             if (this.conversation.size() > rc) this.conversation.remove(this.conversation.size() - 1);
             try {
-                Files.write(this.logdump.toPath(), UTF8.getBytes(interaction.json.toString(0) + "\n"), StandardOpenOption.APPEND, StandardOpenOption.CREATE);
+                Files.write(this.logdump.toPath(), UTF8.getBytes(interaction.getJSON().toString(0) + "\n"), StandardOpenOption.APPEND, StandardOpenOption.CREATE);
             } catch (JSONException | IOException e) {
                 e.printStackTrace();
             }

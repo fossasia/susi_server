@@ -73,6 +73,7 @@ public class RSSReaderService extends AbstractAPIHandler implements APIHandler {
 			feed = input.build(xmlreader);
 		} catch (Exception e) {
 			e.printStackTrace();
+			return new SusiThought(); // fail
 		}
 
 		@SuppressWarnings("unused")

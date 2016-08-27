@@ -96,7 +96,7 @@ public class ConsoleService extends AbstractAPIHandler implements APIHandler {
     
     public final static SusiSkills dbAccess = new SusiSkills();
     static {
-        dbAccess.put(Pattern.compile("SELECT\\h+?(.*?)\\h+?FROM\\h+?\\(\\h??SELECT\\h+?(.*?)\\h??\\)\\h+?WHERE\\h+?(.*?)\\h?+IN\\h?+\\((.*?)\\)\\h??;"), (flow, matcher) -> {
+        dbAccess.put(Pattern.compile("SELECT +?(.*?) +?FROM +?\\( ??SELECT +?(.*?) ??\\) +?WHERE +?(.*?) ?+IN ?+\\((.*?)\\) ??;"), (flow, matcher) -> {
             String subquery = matcher.group(2).trim();
             if (!subquery.endsWith(";")) subquery = subquery + ";";
             String filter_name = matcher.group(3);
@@ -112,14 +112,14 @@ public class ConsoleService extends AbstractAPIHandler implements APIHandler {
                     .setOffset(0).setHits(a0.length())
                     .setData(transfer.conclude(a1));
         });
-        dbAccess.put(Pattern.compile("SELECT\\h+?(.*?)\\h+?FROM\\h+?messages\\h+?WHERE\\h+?id\\h??=\\h??'(.*?)'\\h??;"), (flow, matcher) -> {
+        dbAccess.put(Pattern.compile("SELECT +?(.*?) +?FROM +?messages +?WHERE +?id ??= ??'([^']*?)' ??;"), (flow, matcher) -> {
             JSONObject message = DAO.messages.readJSON(matcher.group(2));
             SusiTransfer transfer = new SusiTransfer(matcher.group(1));
             return message == null ? null : new SusiThought()
                     .setOffset(0).setHits(1)
                     .setData((new JSONArray()).put(transfer.extract(message)));
         });
-        dbAccess.put(Pattern.compile("SELECT\\h+?(.*?)\\h+?FROM\\h+?messages\\h+?WHERE\\h+?query\\h??=\\h??'(.*?)'\\h?+GROUP\\h?+BY\\h?+(.*?)\\h??;"), (flow, matcher) -> {
+        dbAccess.put(Pattern.compile("SELECT +?(.*?) +?FROM +?messages +?WHERE +?query ??= ??'([^']*?)' +?GROUP +?BY +?(.*?) *?;"), (flow, matcher) -> {
             String group = matcher.group(3);
             DAO.SearchLocalMessages messages = new DAO.SearchLocalMessages(matcher.group(2), Timeline.Order.CREATED_AT, 0, 0, 100, group);
             JSONArray array = new JSONArray();
@@ -130,26 +130,26 @@ public class ConsoleService extends AbstractAPIHandler implements APIHandler {
             SusiTransfer transfer = new SusiTransfer(matcher.group(1));
             return json.setData(transfer.conclude(array));
         });
-        dbAccess.put(Pattern.compile("SELECT\\h+?(.*?)\\h+?FROM\\h+?messages\\h+?WHERE\\h+?query\\h??=\\h??'(.*?)'\\h??;"), (flow, matcher) -> {
+        dbAccess.put(Pattern.compile("SELECT +?(.*?) +?FROM +?messages +?WHERE +?query ??= ??'([^']*?)' ??;"), (flow, matcher) -> {
             DAO.SearchLocalMessages messages = new DAO.SearchLocalMessages(matcher.group(2), Timeline.Order.CREATED_AT, 0, 100, 0);
             SusiThought json = messages.timeline.toSusi(true);
             SusiTransfer transfer = new SusiTransfer(matcher.group(1));
             return json.setData(transfer.conclude(json.getJSONArray("data")));
         });
-        dbAccess.put(Pattern.compile("SELECT\\h+?(.*?)\\h+?FROM\\h+?messages\\h+?WHERE\\h+?query\\h??=\\h??'(.*?)'\\h+?ORDER BY (.*?)\\h??;"), (flow, matcher) -> {
+        dbAccess.put(Pattern.compile("SELECT +?(.*?) +?FROM +?messages +?WHERE +?query ??= ??'([^']*?)' +?ORDER BY (.*?) ??;"), (flow, matcher) -> {
             DAO.SearchLocalMessages messages = new DAO.SearchLocalMessages(matcher.group(2), Timeline.Order.valueOf(matcher.group(3)), 0, 100, 0);
             SusiThought json = messages.timeline.toSusi(true);
             SusiTransfer transfer = new SusiTransfer(matcher.group(1));
             return json.setData(transfer.conclude(json.getJSONArray("data")));
         });
-        dbAccess.put(Pattern.compile("SELECT\\h+?(.*?)\\h+?FROM\\h+?queries\\h+?WHERE\\h+?query\\h??=\\h??'(.*?)'\\h??;"), (flow, matcher) -> {
+        dbAccess.put(Pattern.compile("SELECT +?(.*?) +?FROM +?queries +?WHERE +?query ??= ??'([^']*?)' ??;"), (flow, matcher) -> {
             ResultList<QueryEntry> queries = DAO.SearchLocalQueries(matcher.group(2), 100, "retrieval_next", "date", SortOrder.ASC, null, new Date(), "retrieval_next");
             SusiThought json = queries.toSusi();
             json.setQuery(matcher.group(2));
             SusiTransfer transfer = new SusiTransfer(matcher.group(1));
             return json.setData(transfer.conclude(json.getJSONArray("data")));
         });
-        dbAccess.put(Pattern.compile("SELECT\\h+?(.*?)\\h+?FROM\\h+?users\\h+?WHERE\\h+?screen_name\\h??=\\h??'(.*?)'\\h??;"), (flow, matcher) -> {
+        dbAccess.put(Pattern.compile("SELECT +?(.*?) +?FROM +?users +?WHERE +?screen_name ??= ??'([^']*?)' ??;"), (flow, matcher) -> {
             UserEntry user_entry = DAO.searchLocalUserByScreenName(matcher.group(2));
             SusiThought json = new SusiThought();
             json.setQuery(matcher.group(2));
@@ -161,7 +161,7 @@ public class ConsoleService extends AbstractAPIHandler implements APIHandler {
             SusiTransfer transfer = new SusiTransfer(matcher.group(1));
             return json.setData(transfer.conclude(json.getJSONArray("data")));
         });
-        dbAccess.put(Pattern.compile("SELECT\\h+?(.*?)\\h+?FROM\\h+?accounts\\h+?WHERE\\h+?screen_name\\h??=\\h??'(.*?)'\\h??;"), (flow, matcher) -> {
+        dbAccess.put(Pattern.compile("SELECT +?(.*?) +?FROM +?accounts +?WHERE +?screen_name ??= ??'(.*?)' ??;"), (flow, matcher) -> {
             AccountEntry account_entry = DAO.searchLocalAccount(matcher.group(2));
             SusiThought json = new SusiThought();
             json.setQuery(matcher.group(2));
@@ -173,7 +173,7 @@ public class ConsoleService extends AbstractAPIHandler implements APIHandler {
             SusiTransfer transfer = new SusiTransfer(matcher.group(1));
             return json.setData(transfer.conclude(json.getJSONArray("data")));
         });
-        dbAccess.put(Pattern.compile("SELECT\\h+?(.*?)\\h+?FROM\\h+?locations\\h+?WHERE\\h+?location\\h??=\\h??'(.*?)'\\h??;"), (flow, matcher) -> {
+        dbAccess.put(Pattern.compile("SELECT +?(.*?) +?FROM +?locations +?WHERE +?location ??= ??'(.*?)' ??;"), (flow, matcher) -> {
             GeoMark loc = DAO.geoNames.analyse(matcher.group(2), null, 5, Long.toString(System.currentTimeMillis()));
             SusiThought json = new SusiThought();
             json.setQuery(matcher.group(2));
@@ -185,7 +185,7 @@ public class ConsoleService extends AbstractAPIHandler implements APIHandler {
             SusiTransfer transfer = new SusiTransfer(matcher.group(1));
             return json.setData(transfer.conclude(json.getJSONArray("data")));
         });
-        dbAccess.put(Pattern.compile("SELECT\\h+?(.*?)\\h+?FROM\\h+?wikidata\\h+?WHERE\\h+?query\\h??=\\h??'(.*?)'\\h??;"), (flow, matcher) -> {
+        dbAccess.put(Pattern.compile("SELECT +?(.*?) +?FROM +?wikidata +?WHERE +?query ??= ??'(.*?)' ??;"), (flow, matcher) -> {
             JSONObject wikidata;
             try {
                 ClientConnection cc = new ClientConnection("https://www.wikidata.org/w/api.php?action=wbsearchentities&format=json&language=en&search=" + URLEncoder.encode(matcher.group(2), "UTF-8"));
@@ -199,7 +199,7 @@ public class ConsoleService extends AbstractAPIHandler implements APIHandler {
             json.setHits(json.getCount());
             return json;
         });
-        dbAccess.put(Pattern.compile("SELECT\\h+?(.*?)\\h+?FROM\\h+?urbandictionary\\h+?WHERE\\h+?query\\h??=\\h??'(.*?)'\\h??;"), (flow, matcher) -> {
+        dbAccess.put(Pattern.compile("SELECT +?(.*?) +?FROM +?urbandictionary +?WHERE +?query ??= ??'(.*?)' ??;"), (flow, matcher) -> {
             JSONObject urbandictionary;
             try {
                 ClientConnection cc = new ClientConnection("http://api.urbandictionary.com/v0/define?term=" + URLEncoder.encode(matcher.group(2), "UTF-8"));
@@ -213,66 +213,66 @@ public class ConsoleService extends AbstractAPIHandler implements APIHandler {
             json.setHits(json.getCount());
             return json;
         });
-        dbAccess.put(Pattern.compile("SELECT\\h+?(.*?)\\h+?FROM\\h+?meetup\\h+?WHERE\\h+?url\\h??=\\h??'(.*?)'\\h??;"), (flow, matcher) -> {
+        dbAccess.put(Pattern.compile("SELECT +?(.*?) +?FROM +?meetup +?WHERE +?url ??= ??'(.*?)' ??;"), (flow, matcher) -> {
             SusiThought json = MeetupsCrawlerService.crawlMeetups(matcher.group(2));
             SusiTransfer transfer = new SusiTransfer(matcher.group(1));
             json.setData(transfer.conclude(json.getData()));
             return json;
         });
-        dbAccess.put(Pattern.compile("SELECT\\h+?(.*?)\\h+?FROM\\h+?rss\\h+?WHERE\\h+?url\\h??=\\h??'(.*?)'\\h??;"), (flow, matcher) -> {
+        dbAccess.put(Pattern.compile("SELECT +?(.*?) +?FROM +?rss +?WHERE +?url ??= ??'(.*?)' ??;"), (flow, matcher) -> {
             SusiThought json = RSSReaderService.readRSS(matcher.group(2));
             SusiTransfer transfer = new SusiTransfer(matcher.group(1));
             json.setData(transfer.conclude(json.getData()));
             return json;
         });
-        dbAccess.put(Pattern.compile("SELECT\\h+?(.*?)\\h+?FROM\\h+?eventbrite\\h+?WHERE\\h+?url\\h??=\\h??'(.*?)'\\h??;"), (flow, matcher) -> {
+        dbAccess.put(Pattern.compile("SELECT +?(.*?) +?FROM +?eventbrite +?WHERE +?url ??= ??'(.*?)' ??;"), (flow, matcher) -> {
             SusiThought json = EventBriteCrawlerService.crawlEventBrite(matcher.group(2));
             SusiTransfer transfer = new SusiTransfer(matcher.group(1));
             json.setData(transfer.conclude(json.getData()));
             return json;
         });
-        dbAccess.put(Pattern.compile("SELECT\\h+?(.*?)\\h+?FROM\\h+?wordpress\\h+?WHERE\\h+?url\\h??=\\h??'(.*?)'\\h??;"), (flow, matcher) -> {
+        dbAccess.put(Pattern.compile("SELECT +?(.*?) +?FROM +?wordpress +?WHERE +?url ??= ??'(.*?)' ??;"), (flow, matcher) -> {
             SusiThought json = WordpressCrawlerService.crawlWordpress(matcher.group(2));
             SusiTransfer transfer = new SusiTransfer(matcher.group(1));
             json.setData(transfer.conclude(json.getData()));
             return json;
         });
-        dbAccess.put(Pattern.compile("SELECT\\h+?(.*?)\\h+?FROM\\h+?timeanddate;"), (flow, matcher) -> {
+        dbAccess.put(Pattern.compile("SELECT +?(.*?) +?FROM +?timeanddate;"), (flow, matcher) -> {
             SusiThought json = TimeAndDateService.timeAndDate();
             SusiTransfer transfer = new SusiTransfer(matcher.group(1));
             json.setData(transfer.conclude(json.getData()));
             return json;
         });
-        dbAccess.put(Pattern.compile("SELECT\\h+?(.*?)\\h+?FROM\\h+?githubProfile\\h+?WHERE\\h+?profile\\h??=\\h??'(.*?)'\\h??;"), (flow, matcher) -> {
+        dbAccess.put(Pattern.compile("SELECT +?(.*?) +?FROM +?githubProfile +?WHERE +?profile ??= ??'(.*?)' ??;"), (flow, matcher) -> {
             SusiThought json = GithubProfileScraper.scrapeGithub(matcher.group(2));
             SusiTransfer transfer = new SusiTransfer(matcher.group(1));
             json.setData(transfer.conclude(json.getData()));
             return json;
         });
-        dbAccess.put(Pattern.compile("SELECT\\h+?(.*?)\\h+?FROM\\h+?locationwisetime\\h+?WHERE\\h+?query\\h??=\\h??'(.*?)'\\h??;"), (flow, matcher) -> {
+        dbAccess.put(Pattern.compile("SELECT +?(.*?) +?FROM +?locationwisetime +?WHERE +?query ??= ??'(.*?)' ??;"), (flow, matcher) -> {
             SusiThought json = LocationWiseTimeService.locationWiseTime(matcher.group(2));
             SusiTransfer transfer = new SusiTransfer(matcher.group(1));
             json.setData(transfer.conclude(json.getData()));
             return json;
         });
-        dbAccess.put(Pattern.compile("SELECT\\h+?(.*?)\\h+?FROM\\h+?twitanalysis\\h+?WHERE\\h+?screen_name\\h??=\\h??'(.*?)'\\h+?AND\\h+?count\\h??=\\h??'(.*?)'\\h??;"), (flow, matcher) -> {
+        dbAccess.put(Pattern.compile("SELECT +?(.*?) +?FROM +?twitanalysis +?WHERE +?screen_name ??= ??'(.*?)' +?AND +?count ??= ??'(.*?)' ??;"), (flow, matcher) -> {
             SusiThought json = TwitterAnalysisService.showAnalysis(matcher.group(2), matcher.group(3));
             SusiTransfer transfer = new SusiTransfer(matcher.group(1));
             json.setData(transfer.conclude(json.getData()));
             return json;
         });
-        dbAccess.put(Pattern.compile("SELECT\\h+?(.*?)\\h+?FROM\\h+?instagramprofile\\h+?WHERE\\h+?profile\\h??=\\h??'(.*?)'\\h??;"), (flow, matcher) -> {
+        dbAccess.put(Pattern.compile("SELECT +?(.*?) +?FROM +?instagramprofile +?WHERE +?profile ??= ??'(.*?)' ??;"), (flow, matcher) -> {
             SusiThought json = InstagramProfileScraper.scrapeInstagram(matcher.group(2));
             SusiTransfer transfer = new SusiTransfer(matcher.group(1));
             json.setData(transfer.conclude(json.getData()));
             return json;
-        });dbAccess.put(Pattern.compile("SELECT\\h+?(.*?)\\h+?FROM\\h+?quoraprofile\\h+?WHERE\\h+?profile\\h??=\\h??'(.*?)'\\h??;"), (flow, matcher) -> {
+        });dbAccess.put(Pattern.compile("SELECT +?(.*?) +?FROM +?quoraprofile +?WHERE +?profile ??= ??'(.*?)' ??;"), (flow, matcher) -> {
             SusiThought json = QuoraProfileScraper.scrapeQuora(matcher.group(2));
             SusiTransfer transfer = new SusiTransfer(matcher.group(1));
             json.setData(transfer.conclude(json.getData()));
             return json;
         });
-		dbAccess.put(Pattern.compile("SELECT\\h+?(.*?)\\h+?FROM\\h+?wikigeodata\\h+?WHERE\\h+?place\\h??=\\h??'(.*?)'\\h??;"), (flow, matcher) -> {
+		dbAccess.put(Pattern.compile("SELECT +?(.*?) +?FROM +?wikigeodata +?WHERE +?place ??= ??'(.*?)' ??;"), (flow, matcher) -> {
             SusiThought json = WikiGeoData.wikiGeoData(matcher.group(2));
             SusiTransfer transfer = new SusiTransfer(matcher.group(1));
             json.setData(transfer.conclude(json.getData()));

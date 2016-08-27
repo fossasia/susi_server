@@ -75,7 +75,7 @@ public class SusiMind {
                     try {
                         learn(f);
                     } catch (Throwable e) {
-                        DAO.severe(e.getMessage());
+                        DAO.severe("BAD JSON FILE: " + f.getAbsolutePath() + ", " + e.getMessage());
                     }
                 }
             }
@@ -113,7 +113,20 @@ public class SusiMind {
         return this;
     }
     
-    public List<SusiIdea> associate(String query, SusiArgument previous_argument, int maxcount) {
+    /**
+     * This is the core principle of creativity: being able to match a given input
+     * with problem-solving knowledge.
+     * This method finds ideas (with a query instantiated rules) for a given query.
+     * The rules are selected using a scoring system and pattern matching with the query.
+     * Not only the most recent user query is considered for rule selection but also
+     * previously requested queries and their answers to be able to set new rule selections
+     * in the context of the previous conversation.
+     * @param query the user input
+     * @param previous_argument the latest conversation with the same user
+     * @param maxcount the maximum number of ideas to return
+     * @return an ordered list of ideas, first idea should be considered first.
+     */
+    public List<SusiIdea> creativity(String query, SusiArgument previous_argument, int maxcount) {
         // tokenize query to have hint for idea collection
         final List<SusiIdea> ideas = new ArrayList<>();
         this.reader.tokenizeSentence(query).forEach(token -> {
@@ -154,13 +167,13 @@ public class SusiMind {
             if (rule.getActions().size() == 0) continue;
             if (rule.getActions().get(0).getPhrases().size() == 0) continue;
             if (rule.getActions().get(0).getPhrases().get(0).length() == 0) continue;
-            Matcher m = rule.matcher(query);
-            if (m == null || !m.matches()) continue;
+            Collection<Matcher> m = rule.matcher(query);
+            if (m.isEmpty()) continue;
             plausibleIdeas.add(idea);
             if (plausibleIdeas.size() >= maxcount) break;
         }
         
-        //for (SusiIdea idea: plausibleIdeas) System.out.println("idea.phrase-3:" + idea.getRule().getPhrases().toString());
+        //for (SusiIdea idea: plausibleIdeas) System.out.println("idea.phrase-3:" + idea.getRule().getPhrases().toString() + " -- " + idea.getRule().getActions().toString());
         
         return plausibleIdeas;
     }
@@ -181,7 +194,7 @@ public class SusiMind {
             latest_argument.think(previous_interactions.get(i).recallDispute());
         }
         List<SusiArgument> answers = new ArrayList<>();
-        List<SusiIdea> ideas = associate(query, latest_argument, 100);
+        List<SusiIdea> ideas = creativity(query, latest_argument, 100);
         for (SusiIdea idea: ideas) {
             SusiArgument argument = idea.getRule().consideration(query, latest_argument, idea.getIntent());
             if (argument != null) answers.add(argument);

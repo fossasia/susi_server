@@ -15,35 +15,61 @@
 			{"type":"piechart", "total":100, "key": "country", "value":"percent", "unit":"%"}]
 		},
 		{
-			"keys"   :["who"],
-			"score"  :100,
+			"score"  :4,
 			"phrases":[	{"type":"pattern", "expression":"Who tweeted most about *"},
-				{"type":"pattern", "expression":"The top tweeter about *"}
+						{"type":"pattern", "expression":"Who tweeted most about * in the last hour"},
+						{"type":"pattern", "expression":"The top tweeter about *"}
+			],
+			"process":[	{"type":"console", "expression":"SELECT COUNT(*) AS count, screen_name FROM messages WHERE query='$1$ since:hour' GROUP BY screen_name;"}],
+			"actions":[	{"type":"answer", "select":"random", "phrases":[
+				"In the last hour @$screen_name$ tweeted most about $1$, $count$ times"
+			]}]
+		},
+		{
+			"score"  :3,
+			"phrases":[	{"type":"pattern", "expression":"Who tweeted most about *"},
+						{"type":"pattern", "expression":"Who tweeted most about * in the last day"},
+						{"type":"pattern", "expression":"The top tweeter about *"}
 			],
 			"process":[	{"type":"console", "expression":"SELECT COUNT(*) AS count, screen_name FROM messages WHERE query='$1$ since:day' GROUP BY screen_name;"}],
 			"actions":[	{"type":"answer", "select":"random", "phrases":[
-				"In the last 24 hours $screen_name$ tweeted most, $count$ times"
+				"In the last 24 hours @$screen_name$ tweeted most about $1$, $count$ times"
 			]}]
 		},
 		{
-			"keys"   :["how"],
-			"score"  :100,
-			"phrases":[	{"type":"pattern", "expression":"How many times was * tweeted in the last 24 hours"}
+			"score"  :2,
+			"phrases":[	{"type":"pattern", "expression":"Who tweeted most about *"},
+						{"type":"pattern", "expression":"Who tweeted most about * in the last week"},
+						{"type":"pattern", "expression":"The top tweeter about *"}
 			],
+			"process":[	{"type":"console", "expression":"SELECT COUNT(*) AS count, screen_name FROM messages WHERE query='$1$ since:week' GROUP BY screen_name;"}],
+			"actions":[	{"type":"answer", "select":"random", "phrases":[
+				"In the last week @$screen_name$ tweeted most about $1$, $count$ times"
+			]}]
+		},
+		{
+			"score"  :1,
+			"phrases":[	{"type":"pattern", "expression":"Who tweeted most about *"},
+						{"type":"pattern", "expression":"The top tweeter about *"}
+			],
+			"process":[	{"type":"console", "expression":"SELECT COUNT(*) AS count, screen_name FROM messages WHERE query='$1$' GROUP BY screen_name;"}],
+			"actions":[	{"type":"answer", "select":"random", "phrases":[
+				"@$screen_name$ tweeted most about $1$, $count$ times"
+			]}]
+		},
+		{
+			"phrases":[	{"type":"pattern", "expression":"How many times was * tweeted in the last 24 hours"} ],
 			"process":[	{"type":"console", "expression":"SELECT COUNT(*) AS count FROM messages WHERE query='$1$ since:day';"}],
 			"actions":[	{"type":"answer", "select":"random", "phrases":[
-				"Here you go, $count$ times!"
+				"Here you go, $1$ was $count$ times tweeted!"
 			]}]
 		},
 		{
-			"keys"   :["how"],
-			"score"  :100,
 			"example":"How many mentions are on reddit about loklak",
-			"phrases":[	{"type":"pattern", "expression":"How many mentions are on reddit about *"}
-			],
+			"phrases":[	{"type":"pattern", "expression":"How many mentions are on reddit about *"} ],
 			"process":[	{"type":"console", "expression":"SELECT COUNT(*) AS count FROM rss WHERE url='https://www.reddit.com/search.rss?q=$1$';"}],
 			"actions":[	{"type":"answer", "select":"random", "phrases":[
-				"Here you go, $count$ times!"
+				"Here you go, $1$ was $count$ times mentioned on reddit!"
 			]}]
 		},
 		{        
@@ -54,7 +80,7 @@
 			"process":[ {"type":"console", "expression":"SELECT title FROM rss WHERE url='https://www.reddit.com/search.rss?q=$3$';"}],
 			"actions":[ {"type":"answer", "select":"random", "phrases":[
 				"Here is the list of articles about $3$"
-			]}, {"type":"table"}]
+			]}, {"type":"table", "columns":["title"]}]
 		},{
 			"keys"   :["reddit"],
 			"score"  :101,
@@ -76,7 +102,7 @@
 			"process":[ {"type":"console", "expression":"SELECT title FROM rss WHERE url='$4$';"}],
 			"actions":[ {"type":"answer", "select":"random", "phrases":[
 				"Here is the list of articles from $4$"
-			]}, {"type":"table"}]
+			]}, {"type":"table", "columns":["title"]}]
 		},
 		{
 			"keys"   :["eventbrite", "event"],
@@ -84,10 +110,10 @@
 			"example":"Susi, where is the event billets-europeade-2016-concert-de-musique-vocale-25592599153 being held ?",
 			"phrases":[ {"type":"pattern", "expression":"* event * held *"}
 			],
-			"process":[ {"type":"console", "expression":"SELECT location_name,latitude, longitude FROM eventbrite WHERE url='https://www.eventbrite.com/e/$2$';"}],
+			"process":[ {"type":"console", "expression":"SELECT location_name,latitude,longitude FROM eventbrite WHERE url='https://www.eventbrite.com/e/$2$';"}],
 			"actions":[ {"type":"answer", "select":"random", "phrases":[
 				"Here is the exact location of the event $2$"
-			]}, {"type":"table"}]
+			]}, {"type":"table", "columns":["location_name", "latitude", "longitude"]}]
 		},
 		{
 			"keys"   :["eventbrite", "event"],

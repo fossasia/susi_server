@@ -19,7 +19,6 @@
 
 package org.loklak.susi;
 
-import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -35,7 +34,7 @@ import org.loklak.tools.UTF8;
  */
 public class SusiInteraction {
 
-    JSONObject json;
+    private JSONObject json;
 
     public SusiInteraction(JSONObject json) {
         this.json = json;
@@ -60,7 +59,7 @@ public class SusiInteraction {
         this.json.put("answer_time", answer_date - query_date);
         this.json.put("count", maxcount);
         this.json.put("answers", new JSONArray(dispute.stream().map(argument -> {
-            JSONObject answer = argument.mindstate();
+            JSONObject answer = argument.mindmeld();
             answer.put("actions", argument.getActions().stream()
                     .map(action -> action.apply(argument).toJSON())
                     .collect(Collectors.toList()));

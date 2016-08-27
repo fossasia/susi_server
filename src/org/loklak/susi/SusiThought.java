@@ -206,6 +206,23 @@ public class SusiThought extends JSONObject {
     }
     
     /**
+     * Merging of data is required during an mind-meld.
+     * To meld two thoughts, we combine their data arrays into one.
+     * The resulting table has the maximum length of the source tables
+     * @param table the information to be melted into our existing table.
+     * @return the thought
+     */
+    public SusiThought mergeData(JSONArray table1) {
+        JSONArray table0 = this.getData();
+        while (table0.length() < table1.length()) table0.put(new JSONObject());
+        for (int i = 0; i < table1.length(); i++) {
+            table0.getJSONObject(i).putAll(table1.getJSONObject(i));
+        }
+        setData(table0);
+        return this;
+    }
+    
+    /**
      * If during thinking we observe something that we want to memorize, we can memorize this here
      * @param featureName the object key
      * @param observation the object value
