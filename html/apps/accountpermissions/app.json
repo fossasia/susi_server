@@ -1,0 +1,18 @@
+{
+  "@context":"http://schema.org",
+  "@type":"SoftwareApplication",
+  "permissions":"/api/account-permissions.json",
+  "name":"accountpermissions",
+  "headline":"View permissions",
+  "alternativeHeadline":"Account Permissions",
+  "applicationCategory":"Accounts API",
+  "applicationSubCategory":"account operations",
+  "operatingSystem":"http://loklak.org",
+  "author":{
+    "@type":"Person",
+    "name":"Robert Mader",
+    "url":"",
+    "email":"treba@silentundo.org",
+    "sameAs":"https://github.com/treba123"
+  }
+}

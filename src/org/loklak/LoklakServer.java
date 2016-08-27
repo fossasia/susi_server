@@ -141,7 +141,8 @@ public class LoklakServer {
     public  static QueuedIndexing queuedIndexing = null;
     private static DumpImporter dumpImporter = null;
     private static HttpsMode httpsMode = HttpsMode.OFF;
-    
+    public static Class<? extends Servlet>[] services;
+
     public static Map<String, String> readConfig(Path data) throws IOException {
         File conf_dir = new File("conf");
         Properties prop = new Properties();
@@ -435,7 +436,8 @@ public class LoklakServer {
 	        LoklakServer.server.addConnector(sslConnector);
         }
     }
-    
+
+    @SuppressWarnings("unchecked")
     private static void setServerHandler(File dataFile){
     	
     	
@@ -498,8 +500,7 @@ public class LoklakServer {
         ServletContextHandler servletHandler = new ServletContextHandler();
 
         // add services
-        @SuppressWarnings("unchecked")
-        Class<? extends Servlet>[] services = new Class[]{
+        services = new Class[]{
                 // admin
                 StatusService.class,
                 
@@ -515,7 +516,8 @@ public class LoklakServer {
                 UserManagementService.class,
                 TwitterAnalysisService.class,
                 AmazonProductService.class,
-                
+                UserAccountPermissions.class,
+
                 // geo
                 
                 // iot
