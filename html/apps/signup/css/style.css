@@ -16,6 +16,10 @@ div.error{
 	color: red !important;
 }
 
+input:invalid{
+    box-shadow: none;
+}
+
 label.success{
 	color: GreenYellow !important;
 }
@@ -23,7 +27,7 @@ input.success{
 	border: 2px solid GreenYellow !important;
 }
 
-.form {
+form {
 	width:650px;
 	height: auto;
 	margin: auto;
@@ -75,7 +79,7 @@ input.success{
 	background: #d1d1d1;
 }
 
-.form button {
+form input[type='submit'] {
 	width: 65%;
 	border-radius: 7px;
 	background: GreenYellow;

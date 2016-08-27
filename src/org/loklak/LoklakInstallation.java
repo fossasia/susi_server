@@ -1,6 +1,6 @@
 /**
- *  LoklakServer
- *  Copyright 22.02.2015 by Michael Peter Christen, @0rb1t3r
+ *  LoklakInstallation
+ *  Copyright 04.08.2016 by Robert Mader, @treba123
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -19,6 +19,40 @@
 
 package org.loklak;
 
+import org.apache.logging.log4j.LogManager;
+import org.bouncycastle.asn1.pkcs.PrivateKeyInfo;
+import org.bouncycastle.cert.X509CertificateHolder;
+import org.bouncycastle.cert.jcajce.JcaX509CertificateConverter;
+import org.bouncycastle.openssl.PEMParser;
+import org.bouncycastle.openssl.jcajce.JcaPEMKeyConverter;
+import org.eclipse.jetty.rewrite.handler.RewriteHandler;
+import org.eclipse.jetty.rewrite.handler.RewriteRegexRule;
+import org.eclipse.jetty.security.ConstraintMapping;
+import org.eclipse.jetty.security.ConstraintSecurityHandler;
+import org.eclipse.jetty.security.authentication.BasicAuthenticator;
+import org.eclipse.jetty.server.*;
+import org.eclipse.jetty.server.handler.DefaultHandler;
+import org.eclipse.jetty.server.handler.ErrorHandler;
+import org.eclipse.jetty.server.handler.HandlerList;
+import org.eclipse.jetty.server.handler.IPAccessHandler;
+import org.eclipse.jetty.server.handler.gzip.GzipHandler;
+import org.eclipse.jetty.server.session.HashSessionIdManager;
+import org.eclipse.jetty.server.session.HashSessionManager;
+import org.eclipse.jetty.server.session.SessionHandler;
+import org.eclipse.jetty.servlet.ServletContextHandler;
+import org.eclipse.jetty.util.ConcurrentHashSet;
+import org.eclipse.jetty.util.log.Log;
+import org.eclipse.jetty.util.security.Constraint;
+import org.eclipse.jetty.util.ssl.SslContextFactory;
+import org.eclipse.jetty.util.thread.QueuedThreadPool;
+import org.eclipse.jetty.webapp.WebAppContext;
+import org.loklak.api.cms.InstallationPageService;
+import org.loklak.data.DAO;
+import org.loklak.http.RemoteAccess;
+import org.loklak.server.FileHandler;
+import org.loklak.server.HttpsMode;
+import org.loklak.tools.Browser;
+
 import java.io.*;
 import java.net.ServerSocket;
 import java.nio.file.FileSystems;
@@ -29,147 +63,19 @@ import java.security.PrivateKey;
 import java.security.Security;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
-import java.util.HashMap;
 import java.util.Map;
-import java.util.Properties;
 import java.util.Random;
 import java.util.Set;
 
-import javax.servlet.MultipartConfigElement;
-import javax.servlet.Servlet;
-
-import org.apache.logging.log4j.LogManager;
-import org.bouncycastle.asn1.pkcs.PrivateKeyInfo;
-import org.bouncycastle.cert.X509CertificateHolder;
-import org.bouncycastle.cert.jcajce.JcaX509CertificateConverter;
-import org.bouncycastle.openssl.PEMParser;
-import org.bouncycastle.openssl.jcajce.JcaPEMKeyConverter;
-import org.eclipse.jetty.rewrite.handler.RewriteHandler;
-import org.eclipse.jetty.rewrite.handler.RewriteRegexRule;
-import org.eclipse.jetty.server.Handler;
-import org.eclipse.jetty.server.Server;
-import org.eclipse.jetty.server.ServerConnector;
-import org.eclipse.jetty.server.handler.DefaultHandler;
-import org.eclipse.jetty.server.handler.ErrorHandler;
-import org.eclipse.jetty.server.handler.HandlerList;
-import org.eclipse.jetty.server.handler.IPAccessHandler;
-import org.eclipse.jetty.servlet.ServletContextHandler;
-import org.eclipse.jetty.servlet.ServletHolder;
-import org.eclipse.jetty.server.handler.gzip.GzipHandler;
-import org.eclipse.jetty.server.session.HashSessionIdManager;
-import org.eclipse.jetty.server.session.HashSessionManager;
-import org.eclipse.jetty.server.session.SessionHandler;
-import org.eclipse.jetty.util.ConcurrentHashSet;
-import org.eclipse.jetty.util.log.Log;
-import org.eclipse.jetty.util.thread.QueuedThreadPool;
-import org.eclipse.jetty.util.ssl.SslContextFactory;
-import org.eclipse.jetty.util.security.Constraint;
-import org.eclipse.jetty.webapp.WebAppContext;
-import org.eclipse.jetty.server.HttpConfiguration;
-import org.eclipse.jetty.server.SecureRequestCustomizer;
-import org.eclipse.jetty.server.HttpConnectionFactory;
-import org.eclipse.jetty.server.SslConnectionFactory;
-import org.eclipse.jetty.security.ConstraintMapping;
-import org.eclipse.jetty.security.ConstraintSecurityHandler;
-import org.eclipse.jetty.security.authentication.BasicAuthenticator;
-import org.loklak.api.admin.AccessServlet;
-import org.loklak.api.admin.CampaignServlet;
-import org.loklak.api.admin.CrawlerServlet;
-import org.loklak.api.admin.SettingsServlet;
-import org.loklak.api.admin.StatusService;
-import org.loklak.api.admin.ThreaddumpServlet;
-import org.loklak.api.amazon.AmazonProductService;
-import org.loklak.api.cms.*;
-import org.loklak.api.geo.GeocodeServlet;
-import org.loklak.api.iot.FossasiaPushServlet;
-import org.loklak.api.iot.FreifunkNodePushServlet;
-import org.loklak.api.iot.FreifunkNodeFetchServlet;
-import org.loklak.api.iot.NMEAServlet;
-import org.loklak.api.iot.NOAAAlertServlet;
-import org.loklak.api.iot.GeoJsonPushServlet;
-import org.loklak.api.iot.ImportProfileServlet;
-import org.loklak.api.iot.NetmonPushServlet;
-import org.loklak.api.iot.NodelistPushServlet;
-import org.loklak.api.iot.OpenWifiMapPushServlet;
-import org.loklak.api.iot.StuffInSpaceServlet;
-import org.loklak.api.iot.ValidateServlet;
-import org.loklak.api.iot.YahiHazeServlet;
-import org.loklak.api.iot.EarthquakeServlet;
-import org.loklak.api.p2p.HelloService;
-import org.loklak.api.p2p.PeersServlet;
-import org.loklak.api.p2p.PushServlet;
-import org.loklak.api.search.SearchServlet;
-import org.loklak.api.search.ShortlinkFromTweetServlet;
-import org.loklak.api.search.SuggestServlet;
-import org.loklak.api.search.SusiService;
-import org.loklak.api.search.TimeAndDateService;
-import org.loklak.api.search.ConsoleService;
-import org.loklak.api.search.EventBriteCrawlerService;
-import org.loklak.api.search.UserServlet;
-import org.loklak.api.search.WordpressCrawlerService;
-import org.loklak.api.search.GenericScraper;
-import org.loklak.api.search.GithubProfileScraper;
-import org.loklak.api.search.InstagramProfileScraper;
-import org.loklak.api.search.LocationWiseTimeService;
-import org.loklak.api.search.WeiboUserInfo;
-import org.loklak.api.search.WikiGeoData;
-import org.loklak.api.search.MeetupsCrawlerService;
-import org.loklak.api.search.QuoraProfileScraper;
-import org.loklak.api.search.RSSReaderService;
-import org.loklak.api.tools.CSVServlet;
-import org.loklak.api.tools.XMLServlet;
-import org.loklak.api.vis.MapServlet;
-import org.loklak.api.vis.MarkdownServlet;
-import org.loklak.api.vis.PieChartServlet;
-import org.loklak.data.DAO;
-import org.loklak.harvester.TwitterScraper;
-import org.loklak.http.RemoteAccess;
-import org.loklak.server.APIHandler;
-import org.loklak.server.FileHandler;
-import org.loklak.server.HttpsMode;
-import org.loklak.tools.Browser;
-import org.loklak.tools.OS;
+import static org.loklak.LoklakServer.readConfig;
 
 
-public class LoklakServer {
+public class LoklakInstallation {
 	
     public final static Set<String> blacklistedHosts = new ConcurrentHashSet<>();
-
     
-    private static Server server = null;
-    private static Caretaker caretaker = null;
-    public  static QueuedIndexing queuedIndexing = null;
-    private static DumpImporter dumpImporter = null;
+    public static Server server = null;
     private static HttpsMode httpsMode = HttpsMode.OFF;
-    
-    public static Map<String, String> readConfig(Path data) throws IOException {
-        File conf_dir = new File("conf");
-        Properties prop = new Properties();
-        prop.load(new FileInputStream(new File(conf_dir, "config.properties")));
-        Map<String, String> config = new HashMap<>();
-        for (Map.Entry<Object, Object> entry: prop.entrySet()) config.put((String) entry.getKey(), (String) entry.getValue());
-        Path settings_dir = data.resolve("settings");
-        settings_dir.toFile().mkdirs();
-        OS.protectPath(settings_dir);
-        File customized_config = new File(settings_dir.toFile(), "customized_config.properties");
-        if (!customized_config.exists()) {
-            BufferedWriter w = new BufferedWriter(new FileWriter(customized_config));
-            w.write("# This file can be used to customize the configuration file conf/config.properties\n");
-            w.close();
-        }
-        Properties customized_config_props = new Properties();
-        customized_config_props.load(new FileInputStream(customized_config));
-        for (Map.Entry<Object, Object> entry: customized_config_props.entrySet()) config.put((String) entry.getKey(), (String) entry.getValue());
-        return config;
-    }
-    
-    public static int getServerThreads() {
-        return server.getThreadPool().getThreads() - server.getThreadPool().getIdleThreads();
-    }
-    
-    public static String getServerURI() {
-        return server.getURI().toASCIIString();
-    }
     
     public static void main(String[] args) throws Exception {
     	System.setProperty("java.awt.headless", "true"); // no awt used here so we can switch off that stuff
@@ -179,7 +85,7 @@ public class LoklakServer {
         File dataFile = data.toFile();
         if (!dataFile.exists()) dataFile.mkdirs(); // should already be there since the start.sh script creates it
         
-        Log.getLog().info("Starting loklak initialization");
+        Log.getLog().info("Starting loklak-installation initialization");
 
         // prepare shutdown signal
         File pid = new File(dataFile, "loklak.pid");
@@ -209,7 +115,7 @@ public class LoklakServer {
         	case "on": httpsMode = HttpsMode.ON; break;
         	case "redirect": httpsMode = HttpsMode.REDIRECT; break;
         	case "only": httpsMode = HttpsMode.ONLY; break;
-        	default: httpsMode = HttpsMode.OFF;
+        	default: httpsMode = HttpsMode.OFF; break;
         }
         
         // get server ports
@@ -252,18 +158,8 @@ public class LoklakServer {
 		}
         setServerHandler(dataFile);
         
-        LoklakServer.server.start();
-        LoklakServer.caretaker = new Caretaker();
-        LoklakServer.caretaker.start();
-        LoklakServer.queuedIndexing = new QueuedIndexing();
-        LoklakServer.queuedIndexing.start();
-        LoklakServer.dumpImporter = new DumpImporter(Integer.MAX_VALUE);
-        LoklakServer.dumpImporter.start();
-        
-        
-        // read upgrade interval
-        Caretaker.upgradeTime = Caretaker.startupTime + DAO.getConfig("upgradeInterval", 86400000);
-        
+        LoklakInstallation.server.start();
+
         // if this is not headless, we can open a browser automatically
         Browser.openBrowser("http://127.0.0.1:" + httpPort + "/");
         
@@ -283,13 +179,8 @@ public class LoklakServer {
             public void run() {
                 try {
                     Log.getLog().info("catched main termination signal");
-                    LoklakServer.dumpImporter.shutdown();
-                    LoklakServer.queuedIndexing.shutdown();
-                    LoklakServer.caretaker.shutdown();
-                    LoklakServer.server.stop();
+                    LoklakInstallation.server.stop();
                     DAO.close();
-                    TwitterScraper.executor.shutdown();
-                    Harvester.executor.shutdown();
                     Log.getLog().info("main terminated, goodby.");
 
                     Log.getLog().info("Shutting down log4j2");
@@ -302,7 +193,7 @@ public class LoklakServer {
 
         // ** wait for shutdown signal, do this with a kill HUP (default level 1, 'kill -1') signal **
         
-        LoklakServer.server.join();
+        LoklakInstallation.server.join();
         Log.getLog().info("server terminated");
         
         // After this, the jvm processes all shutdown hooks and terminates then.
@@ -313,8 +204,8 @@ public class LoklakServer {
     private static void setupHttpServer(int httpPort, int httpsPort) throws Exception{
     	QueuedThreadPool pool = new QueuedThreadPool();
         pool.setMaxThreads(500);
-        LoklakServer.server = new Server(pool);
-        LoklakServer.server.setStopAtShutdown(true);
+        LoklakInstallation.server = new Server(pool);
+        LoklakInstallation.server.setStopAtShutdown(true);
         
         //http
         if(!httpsMode.equals(HttpsMode.ONLY)){
@@ -325,12 +216,12 @@ public class LoklakServer {
 	        	http_config.setSecurePort(httpsPort);
 	        }
 	        
-	        ServerConnector connector = new ServerConnector(LoklakServer.server);
+	        ServerConnector connector = new ServerConnector(LoklakInstallation.server);
 	        connector.addConnectionFactory(new HttpConnectionFactory(http_config));
 	        connector.setPort(httpPort);
 	        connector.setName("httpd:" + httpPort);
 	        connector.setIdleTimeout(20000); // timout in ms when no bytes send / received
-	        LoklakServer.server.addConnector(connector);
+	        LoklakInstallation.server.addConnector(connector);
         }
         
         //https
@@ -428,11 +319,11 @@ public class LoklakServer {
 	        SslConnectionFactory ssl = new SslConnectionFactory(sslContextFactory, "http/1.1");
 	        
 	        //ServerConnector sslConnector = new ServerConnector(LoklakServer.server, ssl, alpn, http2, http1);
-	        ServerConnector sslConnector = new ServerConnector(LoklakServer.server, ssl, http1);
+	        ServerConnector sslConnector = new ServerConnector(LoklakInstallation.server, ssl, http1);
 	        sslConnector.setPort(httpsPort);
 	        sslConnector.setName("httpd:" + httpsPort);
 	        sslConnector.setIdleTimeout(20000); // timout in ms when no bytes send / received
-	        LoklakServer.server.addConnector(sslConnector);
+	        LoklakInstallation.server.addConnector(sslConnector);
         }
     }
     
@@ -448,7 +339,7 @@ public class LoklakServer {
         if(redirect || auth){
         	
             org.eclipse.jetty.security.LoginService loginService = new org.eclipse.jetty.security.HashLoginService("LoklakRealm", DAO.conf_dir.getAbsolutePath() + "/http_auth");
-        	if(auth) LoklakServer.server.addBean(loginService);
+        	if(auth) LoklakInstallation.server.addBean(loginService);
         	
         	Constraint constraint = new Constraint();
         	if(redirect) constraint.setDataConstraint(Constraint.DC_CONFIDENTIAL);
@@ -492,138 +383,25 @@ public class LoklakServer {
         WebAppContext htrootContext = new WebAppContext();
         htrootContext.setContextPath("/");
 
-        File tmp = new File(dataFile, "tmp");
-        MultipartConfigElement multipartConfigDefault = new MultipartConfigElement(tmp.getAbsolutePath());
-        MultipartConfigElement multipartConfig = new MultipartConfigElement(tmp.getAbsolutePath(), multipartConfigDefault.getMaxFileSize(), multipartConfigDefault.getMaxRequestSize(), 1024 * 1024); // reduce IO using a non-zero fileSizeThreshold
         ServletContextHandler servletHandler = new ServletContextHandler();
 
         // add services
-        @SuppressWarnings("unchecked")
-        Class<? extends Servlet>[] services = new Class[]{
-                // admin
-                StatusService.class,
-                
-                // cms
-                AppsService.class,
-                AuthorizationDemoService.class,
-                LoginService.class,
-                PasswordRecoveryService.class,
-                PasswordResetService.class,
-                PublicKeyRegistrationService.class,
-                SignUpService.class,
-                TopMenuService.class,
-                UserManagementService.class,
-                TwitterAnalysisService.class,
-                AmazonProductService.class,
-                
-                // geo
-                
-                // iot
-                
-                // p2p
-                HelloService.class,
-                
-                // search
-                ConsoleService.class,
-                EventBriteCrawlerService.class,
-                MeetupsCrawlerService.class,
-                RSSReaderService.class,
-                SusiService.class,
-                WordpressCrawlerService.class,
-                GithubProfileScraper.class,
-                InstagramProfileScraper.class,
-                LocationWiseTimeService.class,
-                TimeAndDateService.class,
-                WikiGeoData.class,
-                QuoraProfileScraper.class
-                
-                // tools
-                
-                // vis
-                
-        };
-        for (Class<? extends Servlet> service: services)
-            try {
-                servletHandler.addServlet(service, ((APIHandler) (service.newInstance())).getAPIPath());
-            } catch (InstantiationException | IllegalAccessException e) {
-                Log.getLog().warn(service.getName() + " instantiation error", e);
-                e.printStackTrace();
-            }
-        
-        // add servlets        
-        servletHandler.addServlet(DumpDownloadServlet.class, "/dump/*");
-        servletHandler.addServlet(ShortlinkFromTweetServlet.class, "/x");
-        servletHandler.addServlet(AccessServlet.class, "/api/access.json");
-        servletHandler.addServlet(AccessServlet.class, "/api/access.html");
-        servletHandler.addServlet(AccessServlet.class, "/api/access.txt");
-        servletHandler.addServlet(PeersServlet.class, "/api/peers.json");
-        servletHandler.addServlet(PeersServlet.class, "/api/peers.csv");
-        servletHandler.addServlet(CrawlerServlet.class, "/api/crawler.json");
-        servletHandler.addServlet(SearchServlet.class, "/api/search.rss");
-        servletHandler.addServlet(SearchServlet.class, "/api/search.json");
-        servletHandler.addServlet(SearchServlet.class, "/api/search.txt");
-        servletHandler.addServlet(SuggestServlet.class, "/api/suggest.json");
-        servletHandler.addServlet(XMLServlet.class, "/api/xml2json.json");
-        servletHandler.addServlet(CSVServlet.class, "/api/csv2json.json");
-        ServletHolder accountServletHolder = new ServletHolder(AccountService.class);
-        accountServletHolder.getRegistration().setMultipartConfig(multipartConfig);
-        servletHandler.addServlet(accountServletHolder, "/api/account.json");
-        servletHandler.addServlet(UserServlet.class, "/api/user.json");
-        servletHandler.addServlet(CampaignServlet.class, "/api/campaign.json");
-        servletHandler.addServlet(ImportProfileServlet.class, "/api/import.json");
-        servletHandler.addServlet(SettingsServlet.class, "/api/settings.json");
-        servletHandler.addServlet(GeocodeServlet.class, "/api/geocode.json");
-        servletHandler.addServlet(ProxyServlet.class, "/api/proxy.gif");
-        servletHandler.addServlet(ProxyServlet.class, "/api/proxy.png");
-        servletHandler.addServlet(ProxyServlet.class, "/api/proxy.jpg");
-        servletHandler.addServlet(ValidateServlet.class, "/api/validate.json");
-        servletHandler.addServlet(GenericScraper.class, "/api/genericscraper.json");
-        servletHandler.addServlet(WeiboUserInfo.class, "/api/weibo.json");
-        ServletHolder pushServletHolder = new ServletHolder(PushServlet.class);
-        pushServletHolder.getRegistration().setMultipartConfig(multipartConfig);
-        servletHandler.addServlet(pushServletHolder, "/api/push.json");
-        ServletHolder geojsonPushServletHolder = new ServletHolder(GeoJsonPushServlet.class);
-        geojsonPushServletHolder.getRegistration().setMultipartConfig(multipartConfig);
-        servletHandler.addServlet(geojsonPushServletHolder, "/api/push/geojson.json");
-        servletHandler.addServlet(FossasiaPushServlet.class, "/api/push/fossasia.json");
-        servletHandler.addServlet(OpenWifiMapPushServlet.class, "/api/push/openwifimap.json");
-        servletHandler.addServlet(NodelistPushServlet.class, "/api/push/nodelist.json");
-        servletHandler.addServlet(FreifunkNodePushServlet.class, "/api/push/freifunknode.json");
-        servletHandler.addServlet(FreifunkNodeFetchServlet.class, "/api/freifunkfetch.json");
-        servletHandler.addServlet(NetmonPushServlet.class, "/api/push/netmon.xml");
-        servletHandler.addServlet(NMEAServlet.class, "/api/nmea.txt");
-        servletHandler.addServlet(NOAAAlertServlet.class, "/api/noaa.json");
-        servletHandler.addServlet(StuffInSpaceServlet.class, "/api/stuffinspace.json");
-        servletHandler.addServlet(YahiHazeServlet.class, "/api/yahi.json");
-        servletHandler.addServlet(EarthquakeServlet.class, "/api/earthquake.json");
-        ServletHolder assetServletHolder = new ServletHolder(AssetServlet.class);
-        assetServletHolder.getRegistration().setMultipartConfig(multipartConfig);
-        servletHandler.addServlet(assetServletHolder, "/api/asset");
-        servletHandler.addServlet(Sitemap.class, "/api/sitemap.xml");
-        servletHandler.addServlet(ThreaddumpServlet.class, "/api/threaddump.txt");
-        servletHandler.addServlet(MarkdownServlet.class, "/vis/markdown.gif");
-        servletHandler.addServlet(MarkdownServlet.class, "/vis/markdown.gif.base64");
-        servletHandler.addServlet(MarkdownServlet.class, "/vis/markdown.png");
-        servletHandler.addServlet(MarkdownServlet.class, "/vis/markdown.png.base64");
-        servletHandler.addServlet(MarkdownServlet.class, "/vis/markdown.jpg");
-        servletHandler.addServlet(MarkdownServlet.class, "/vis/markdown.jpg.base64");
-        servletHandler.addServlet(MapServlet.class, "/vis/map.gif");
-        servletHandler.addServlet(MapServlet.class, "/vis/map.gif.base64");
-        servletHandler.addServlet(MapServlet.class, "/vis/map.png");
-        servletHandler.addServlet(MapServlet.class, "/vis/map.png.base64");
-        servletHandler.addServlet(MapServlet.class, "/vis/map.jpg");
-        servletHandler.addServlet(MapServlet.class, "/vis/map.jpg.base64");
-        servletHandler.addServlet(PieChartServlet.class, "/vis/piechart.png");
+        try {
+            servletHandler.addServlet(InstallationPageService.class, (InstallationPageService.class.newInstance()).getAPIPath());
+        } catch (InstantiationException | IllegalAccessException e) {
+            e.printStackTrace();
+        }
+
         servletHandler.setMaxFormContentSize(10 * 1024 * 1024); // 10 MB
 
         ErrorHandler errorHandler = new LoklakErrorHandler();
         errorHandler.setShowStacks(true);
         servletHandler.setErrorHandler(errorHandler);
         
-        FileHandler fileHandler = new FileHandler(Integer.parseInt(DAO.getConfig("www.expires","600")));
+        FileHandler fileHandler = new FileHandler(0);
         fileHandler.setDirectoriesListed(true);
         fileHandler.setWelcomeFiles(new String[]{ "index.html" });
-        fileHandler.setResourceBase(DAO.getConfig("www.path","html"));
+        fileHandler.setResourceBase("installation");
         
         RewriteHandler rewriteHandler = new RewriteHandler();
         rewriteHandler.setRewriteRequestURI(true);
@@ -642,13 +420,13 @@ public class LoklakServer {
         gzipHandler.setHandler(handlerlist2);
         
         HashSessionIdManager idmanager = new HashSessionIdManager();
-        LoklakServer.server.setSessionIdManager(idmanager);
+        LoklakInstallation.server.setSessionIdManager(idmanager);
         SessionHandler sessions = new SessionHandler(new HashSessionManager());
         sessions.setHandler(gzipHandler);
         securityHandler.setHandler(sessions);
         ipaccess.setHandler(securityHandler);
         
-        LoklakServer.server.setHandler(ipaccess);
+        LoklakInstallation.server.setHandler(ipaccess);
         
         
     }
@@ -686,5 +464,11 @@ public class LoklakServer {
 	            if (sss != null) sss.close();
 	        }
         }
+    }
+
+    public static void shutdown(int exitcode){
+        Log.getLog().info("Shutting down installation now");
+        server.setStopTimeout(0);
+        System.exit(exitcode);
     }
 }

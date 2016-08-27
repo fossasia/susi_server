@@ -72,7 +72,7 @@ public class FileHandler extends ResourceHandler implements Handler {
     protected void doResponseHeaders(HttpServletResponse response, Resource resource, String mimeType) {
         super.doResponseHeaders(response, resource, mimeType);
         // modify the caching strategy of ResourceHandler
-        if (this.expiresSeconds > 0) setCaching(response, this.expiresSeconds);
+        setCaching(response, this.expiresSeconds);
     }
     
     public static void setCaching(final HttpServletResponse response, final int expiresSeconds) {
@@ -90,10 +90,21 @@ public class FileHandler extends ResourceHandler implements Handler {
             fields.remove(HttpHeader.LAST_MODIFIED); // if this field is present, the reload-time is a 10% fraction of ttl and other caching headers do not work
 
             // cache-control: allow shared caching (i.e. proxies) and set expires age for cache
-            fields.put(HttpHeader.CACHE_CONTROL, "public, max-age=" + Integer.toString(expiresSeconds)); // seconds
+            if(expiresSeconds == 0){
+                fields.put(HttpHeader.CACHE_CONTROL, "public, no-store, max-age=" + Integer.toString(expiresSeconds)); // seconds
+            }
+            else {
+                fields.put(HttpHeader.CACHE_CONTROL, "public, max-age=" + Integer.toString(expiresSeconds)); // seconds
+            }
         } else {
             response.setHeader(HttpHeader.LAST_MODIFIED.asString(), ""); // not really the best wqy to remove this header but there is no other option
-            response.setHeader(HttpHeader.CACHE_CONTROL.asString(), "public, max-age=" + Integer.toString(expiresSeconds));
+            if(expiresSeconds == 0){
+                response.setHeader(HttpHeader.CACHE_CONTROL.asString(), "public, no-store, max-age=" + Integer.toString(expiresSeconds));
+            }
+            else{
+                response.setHeader(HttpHeader.CACHE_CONTROL.asString(), "public, max-age=" + Integer.toString(expiresSeconds));
+            }
+
         }
 
         // expires: define how long the file shall stay in a cache if cache-control is not used for this information

@@ -1,123 +1,69 @@
 $(document).ready(function()
 {
-	var emailerr = false, passerr = false, checked = $('#remember').prop("checked"), logout = false;
-
 	$.ajax(	"/api/login.json", {
 	    data: { checkLogin: true },
-		dataType: 'json',
+		dataType: "json",
 		success: function (response) {
 			if(response.loggedIn){
-				$('#status-box').text(response.message);
-				$('#status-box').addClass("error");
-				$('#login').text("Logout");
-				$('#pass').addClass("hidden");
-				$('#email').addClass("hidden");
-				$('#remember').addClass("hidden");
-				$('#rememberme').addClass("hidden");
-				$('#signup').addClass("hidden");
-				$('#forgot-password').addClass("hidden");
-				logout = true;
+				$("#status-box").text(response.message);
+				$("#status-box").addClass("error");
+				$("#loginForm").addClass("hidden");
+				$("#logoutForm").removeClass("hidden");
 			}
 		},
 		error: function (xhr, ajaxOptions, thrownError) {
-			$('#status-box').text(thrownError);
-			$('#status-box').addClass("error");
+			$("#status-box").text(thrownError);
+			$("#status-box").addClass("error");
 		},
 	});
 
-	$('#email').keyup(function(event){
-        if(event.keyCode == 13){
-            $("#login").click();
+    function setRemember(){
+        if($("#remember").is(":checked")){
+            $("#remember_hidden").val("cookie");
         }
+        else{
+            $("#remember_hidden").val("session");
+        }
+    }
+    $("#remember").click(function(){setRemember();});
+    setRemember();
+
+	var optionsLogin = {
+        url:        "/api/login.json",
+        type:       "get",
+        dataType:   "json",
+        success(response) {
+            window.location = "/apps/applist/index.html";
+        },
+        error(xhr, ajaxOptions, thrownError) {
+            $("#status-box").text(thrownError);
+            $("#status-box").addClass("error");
+        }
+    };
+
+    $("#loginForm").submit(function() {
+        $(this).ajaxSubmit(optionsLogin);
+        return false;
     });
 
-    $('#pass').keyup(function(event){
-        if(event.keyCode == 13){
-            $("#login").click();
+    var optionsLogout = {
+        url:        "/api/login.json",
+        type:       "get",
+        dataType:   "json",
+        success(response) {
+            $("#loginForm").removeClass("hidden");
+            $("#logoutForm").addClass("hidden");
+            $("#status-box").text("");
+            $("#status-box").removeClass();
+        },
+        error(xhr, ajaxOptions, thrownError) {
+            $("#status-box").text(thrownError);
+            $("#status-box").addClass("error");
         }
+    };
+
+    $("#logoutForm").submit(function() {
+        $(this).ajaxSubmit(optionsLogout);
+        return false;
     });
-
-	$('#pass').focus(function(){
-		checkEmpty();
-	})
-
-	$('#remember').click(function(){
-	    checked = $(this).prop("checked");
-	});
-
-	$('#login').click(function(){
-		if(logout){
-			$.ajax(	"/api/login.json", {
-				data: { logout: true },
-				dataType: 'json',
-				success: function (response) {
-					$('#login').text("Login");
-					$('#email').removeClass();
-					$('#pass').removeClass();
-					$('#remember').removeClass();
-					$('#rememberme').removeClass();
-					$('#signup').removeClass();
-					$('#forgot-password').removeClass();
-					$('#status-box').text("");
-					$('#status-box').removeClass();
-					logout = false;
-				},
-				error: function (xhr, ajaxOptions, thrownError) {
-					$('#status-box').text(thrownError);
-					$('#status-box').addClass("error");
-				},
-			});
-			return;
-		}
-		
-		checkEmpty();
-		var total = passerr || emailerr;
-		if(!total){
-			var mail = $('#email').val();
-			var pwd = $('#pass').val();
-			
-			$.ajax(	"/api/login.json", {
-				data: { login: mail, password: pwd, type: checked ? "cookie" : "session" },
-				dataType: 'json',
-				success: function (response) {
-					window.location = '/apps/applist/index.html';
-				},
-				error: function (xhr, ajaxOptions, thrownError) {
-					$('#status-box').text(thrownError);
-					$('#status-box').addClass("error");
-				},
-			});
-		}
-	});
-
-	function checkEmpty(){
-		var emailval = $('#email').val();
-		var passval = $('#pass').val();
-		if(!emailval && !($('#email').is(":focus"))){
-			$('#emailfield').text("Required field!");
-			$('#email').removeClass();
-			$('#emailfield').removeClass();
-			$('#email').addClass("error");
-			$('#emailfield').addClass("error");
-			emailerr = true;
-		} else {
-			emailerr = false;
-			$('#email').removeClass();
-			$('#emailfield').removeClass();
-			$('#emailfield').text("");
-		}
-		if(!passval && !($('#pass').is(":focus"))){
-			$('#passfield').text("Required field!");
-			$('#pass').removeClass();
-			$('#passfield').removeClass();
-			$('#pass').addClass("error");
-			$('#passfield').addClass("error");
-			passerr = true;
-		} else {
-			passerr = false;
-			$('#pass').removeClass();
-			$('#passfield').removeClass();
-			$('#passfield').text("");
-		}
-	}
 });

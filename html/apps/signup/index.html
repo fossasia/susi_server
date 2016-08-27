@@ -24,8 +24,6 @@
     <script src="../../js/angular.min.js"></script>
     <script src="../../js/angular-route.min.js"></script>
     <script src="../../js/loklak.js"></script>
-    <script src="../../js/jquery.min.js"></script>
-    <script src="js/signup.js"></script>
   </head>
 
   <body>
@@ -50,13 +48,13 @@
     <br><br><br>
     
     <br>
-    <div class = "form">
+    <form id="form">
       <p>Sign up on Loklak!</p>
       <br>
       <div id = "status-box"></div>
       <br>
       <div class = "fields">
-        <input type = "text" id="email" placeholder="Email" required>
+        <input name = "signup" type = "email" id="email" placeholder="Email" autofocus required>
         <label id = "valid"></label>
       </div>
 
@@ -65,7 +63,7 @@
       </div>
 
       <div class = "fields">
-        <input name = "pass" id="pass" type="password" placeholder="Password" required>
+        <input name = "password" id="pass" type="password" placeholder="Password" required>
         <label id = "passtrength"></label>
       </div>
 
@@ -74,22 +72,24 @@
       </div>
 
       <div class = "fields">
-        <input name="confirmpass" id="confirmpass" type="password" placeholder="Confirm Password" required>
-        <label id = "matching"></label>
+        <input id="confirmpass" type="password" placeholder="Confirm Password" title="This has to match the password above" required>
+        <label id = "matching" class="success"></label>
       </div>
 
       <br><br>
-      <button id = "signup">Sign Up</button>
+      <input type="submit" id="signup" value="Sign Up">
       <br><br>
       <a id = "login" href="../loginpage/index.html" style="text-decoration:none"><p style="font-size:15px; margin-left:10%;">Already have an account? Login!</p></a>
-    </div>
+    </form>
 
     <!-- Bootstrap core JavaScript
     ================================================== -->
     <!-- Placed at the end of the document so the pages load faster -->
     <script src="../../js/jquery.min.js"></script>
+    <script src="../../js/jquery.form.min.js"></script>
     <script src="../../js/bootstrap.min.js"></script>
     <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
     <script src="../../js/ie10-viewport-bug-workaround.js"></script>
+    <script src="js/signup.js"></script>
   </body>
 </html>

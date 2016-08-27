@@ -23,7 +23,6 @@ import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.regex.Pattern;
 
-import javax.naming.ConfigurationException;
 import javax.servlet.http.HttpServletResponse;
 
 import org.json.JSONObject;
@@ -44,7 +43,7 @@ import org.loklak.tools.storage.JSONObjectWithDefault;
 public class SignUpService extends AbstractAPIHandler implements APIHandler {
 
 	private static final long serialVersionUID = 8578478303032749879L;
-	private static String verificationLinkPlaceholder = "%VERIFICATION-LINK%";
+	public static String verificationLinkPlaceholder = "%VERIFICATION-LINK%";
 
 	@Override
 	public BaseUserRole getMinimalBaseUserRole() {
@@ -206,12 +205,8 @@ public class SignUpService extends AbstractAPIHandler implements APIHandler {
 				result.put("message",
 						"You successfully signed-up! An email with a verification link was send to your address.");
 
-			} catch (ConfigurationException e) {
-				result.put("message",
-						"You successfully signed-up, but no email was sent as it's disabled by the server.");
-			} catch (Exception e) {
-				result.put("message",
-						"You successfully signed-up, but an error occurred while sending the verification mail.");
+			} catch (Throwable e) {
+				result.put("message", "You successfully signed-up, but no email was sent: " + e.getMessage());
 			}
 		} else {
 			result.put("message", "You successfully signed-up!");
@@ -227,21 +222,23 @@ public class SignUpService extends AbstractAPIHandler implements APIHandler {
 	 *            - login token
 	 * @return Email String
 	 */
-	private String getVerificationMailContent(String token, String userId) {
+	private String getVerificationMailContent(String token, String userId) throws APIException {
 
-		String verificationLink = DAO.getConfig("host.name", "http://127.0.0.1:9000") + "/api/signup.json?access_token="
-				+ token + "&validateEmail=" + userId + "&request_session=true";
+		String hostUrl = DAO.getConfig("host.url", null);
+		if(hostUrl == null) throw new APIException(500, "No host url configured");
+
+		String verificationLink = hostUrl + "/api/signup.json?access_token=" + token
+                + "&validateEmail=" + userId + "&request_session=true";
 
 		// get template file
 		String result;
 		try {
 			result = IO.readFileCached(Paths.get(DAO.conf_dir + "/templates/verification-mail.txt"));
 		} catch (IOException e) {
-			result = "";
+			throw new APIException(500, "No verification email template");
 		}
 
-		result = result.contains(verificationLinkPlaceholder)
-				? result.replace(verificationLinkPlaceholder, verificationLink) : verificationLink;
+		result = result.replace(verificationLinkPlaceholder, verificationLink);
 
 		return result;
 	}
