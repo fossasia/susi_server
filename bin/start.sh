@@ -30,6 +30,7 @@ if [ ! -f $INSTALLATIONCONFIG ]; then
     echo "It let's you setup an administrator account and a number of settings, but is not mandatory."
     echo "You can manually start it by running bin/installation.sh"
 
+:<<'OPTIONAL'
     while [ true ]; do
         echo "Would you like to start the installation now? (y)es, (n)o, (r)emind me next time"
         read -n 1 -s -t 20 input
@@ -53,6 +54,7 @@ if [ ! -f $INSTALLATIONCONFIG ]; then
             break
         fi
     done
+OPTIONAL
 fi
 
 if [ -f $DFAULTCONFIG ]; then
