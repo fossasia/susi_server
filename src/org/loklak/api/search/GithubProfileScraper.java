@@ -41,7 +41,7 @@ import org.loklak.server.Query;
 import org.loklak.susi.SusiThought;
 import org.loklak.tools.storage.JSONObjectWithDefault;
 
-public abstract class GithubProfileScraper extends AbstractAPIHandler implements APIHandler {
+public class GithubProfileScraper extends AbstractAPIHandler implements APIHandler {
 
 	private static final long serialVersionUID = -4166800345379685201L;
 

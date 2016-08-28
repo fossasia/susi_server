@@ -33,7 +33,7 @@ import org.loklak.server.Query;
 import org.loklak.susi.SusiThought;
 import org.loklak.tools.storage.JSONObjectWithDefault;
 
-public abstract class TimeAndDateService extends AbstractAPIHandler implements APIHandler {
+public class TimeAndDateService extends AbstractAPIHandler implements APIHandler {
 
 	private static final long serialVersionUID = 6808423132726076271L;
 
