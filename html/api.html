@@ -1268,12 +1268,14 @@ shortens this array to only one entry. The API also has reverse geocoding and fu
   set to `true` to make the data searchable by other users</li>
 </ul>
 
+<p>It's mandatory to mention the <code>SOURCE_TYPE</code> as <code>IMPORT</code> and also it's mandatory to have a <code>screen_name</code> parameter while performing the push to the geojson. The GeoJSON should follow a valid geojson feature format.</p>
+
 <p>
   The servlet returns with the same information as <code>/api/push.json</code>.
 <p>Here is an example:</p>
 <ul class="request">
   <li><a
-    href="http://localhost:9000/api/push/geojson.json?url=mysite.com/mygeojson.json&source_type=IMPORT">http://localhost:9000/api/push/geojson.json?url=mysite.com/mygeojson.json&source_type=IMPORT</a></li>
+    href="http://localhost:9000/api/push/geojson.json?url=mysite.com/mygeojson.json&source_type=IMPORT&screen_name=test">http://localhost:9000/api/push/geojson.json?url=mysite.com/mygeojson.json&source_type=IMPORT&screen_name=test</a></li>
 </ul><br/>
 <p>Another example, with 3 field mapping rules:</p>
 <ul class="request">
