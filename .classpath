@@ -1,16 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
 	<classpathentry kind="lib" path="lib/joda-convert-1.2.jar"/>
-	<classpathentry kind="lib" path="lib/joda-time-2.8.2.jar"/>
 	<classpathentry kind="lib" path="lib/guava-18.0.jar"/>
-	<classpathentry kind="lib" path="lib/jackson-core-2.6.2.jar"/>
-	<classpathentry kind="lib" path="lib/jackson-dataformat-cbor-2.6.2.jar"/>
-	<classpathentry kind="lib" path="lib/jackson-dataformat-smile-2.6.2.jar"/>
-	<classpathentry kind="lib" path="lib/jackson-dataformat-yaml-2.6.2.jar"/>
 	<classpathentry kind="lib" path="lib/snakeyaml-1.15.jar"/>
 	<classpathentry kind="lib" path="lib/spatial4j-0.5.jar"/>
 	<classpathentry kind="lib" path="lib/securesm-1.0.jar"/>
-	<classpathentry kind="lib" path="lib/elasticsearch-2.3.2.jar"/>
 	<classpathentry kind="lib" path="lib/lucene-analyzers-common-5.5.0.jar"/>
 	<classpathentry kind="lib" path="lib/lucene-backward-codecs-5.5.0.jar"/>
 	<classpathentry kind="lib" path="lib/lucene-core-5.5.0.jar"/>
@@ -42,6 +36,12 @@
 	<classpathentry kind="lib" path="lib/jetty-servlets-9.3.11.v20160721.jar"/>
 	<classpathentry kind="lib" path="lib/jetty-util-9.3.11.v20160721.jar"/>
 	<classpathentry kind="lib" path="lib/jetty-webapp-9.3.11.v20160721.jar"/>
+	<classpathentry kind="lib" path="lib/elasticsearch-2.3.5.jar"/>
+	<classpathentry kind="lib" path="lib/jackson-core-2.6.6.jar"/>
+	<classpathentry kind="lib" path="lib/jackson-dataformat-cbor-2.6.6.jar"/>
+	<classpathentry kind="lib" path="lib/jackson-dataformat-smile-2.6.6.jar"/>
+	<classpathentry kind="lib" path="lib/jackson-dataformat-yaml-2.6.6.jar"/>
+	<classpathentry kind="lib" path="lib/joda-time-2.9.4.jar"/>
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="src" path="test"/>
 	<classpathentry kind="lib" path="lib/javax.servlet-api-3.1.0.jar"/>
