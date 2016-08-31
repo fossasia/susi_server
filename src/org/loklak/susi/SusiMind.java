@@ -37,6 +37,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONTokener;
+import org.loklak.api.search.ConsoleService;
 import org.loklak.data.DAO;
 import org.loklak.server.ClientIdentity;
 import org.loklak.susi.SusiReader.Token;
@@ -92,11 +93,23 @@ public class SusiMind {
 
         // teach the language parser
         this.reader.learn(json);
-        
-        // initialize temporary json object
+
+        // add console rules
+        JSONObject consoleServices = json.has("console") ? json.getJSONObject("console") : new JSONObject();
+        consoleServices.keySet().forEach(console -> {
+            JSONObject service = consoleServices.getJSONObject(console);
+            if (service.has("url") && service.has("data") && service.has("parser")) {
+                String url = service.getString("url");
+                String data = service.getString("data");
+                String parser = service.getString("parser");
+                if (parser.equals("json")) {
+                    ConsoleService.addGenericConsole(console, url, data);
+                }
+            }
+        });
+
+        // add conversation rules
         JSONArray rules = json.has("rules") ? json.getJSONArray("rules") : new JSONArray();
-        
-        // add rules
         rules.forEach(j -> {
             SusiRule rule = new SusiRule((JSONObject) j);
             rule.getKeys().forEach(key -> {

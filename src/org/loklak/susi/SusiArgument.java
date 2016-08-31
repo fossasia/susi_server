@@ -155,6 +155,10 @@ public class SusiArgument implements Iterable<SusiThought> {
         return this.actions;
     }
 
+    public String toString() {
+        return this.mindmeld().toString();
+    }
+    
     public static void main(String[] args) {
         SusiArgument a = new SusiArgument().think(new SusiThought().addObservation("a", "letter-a"));
         System.out.println(a.unify("the letter $a$"));

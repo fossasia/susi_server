@@ -1,0 +1,16 @@
+{
+	"console":{
+		"wikidata":{
+			"url":"https://www.wikidata.org/w/api.php?action=wbsearchentities&format=json&language=en&search=",
+			"parser":"json",
+			"data":"search",
+			"license":"Creative Commons CC0 License"
+		},
+		"urbandictionary":{
+			"url":"http://api.urbandictionary.com/v0/define?term=",
+			"parser":"json",
+			"data":"search",
+			"license":"Copyright by urbandictionary.com, http://about.urbandictionary.com/tos"
+		}
+	}
+}

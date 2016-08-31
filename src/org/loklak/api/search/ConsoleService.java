@@ -114,8 +114,6 @@ public class ConsoleService extends AbstractAPIHandler implements APIHandler {
     }
     
     static {
-        addGenericConsole("wikidata", "https://www.wikidata.org/w/api.php?action=wbsearchentities&format=json&language=en&search=", "search");
-        addGenericConsole("urbandictionary", "http://api.urbandictionary.com/v0/define?term=", "list");
         dbAccess.put(Pattern.compile("SELECT +?(.*?) +?FROM +?\\( ??SELECT +?(.*?) ??\\) +?WHERE +?(.*?) ?+IN ?+\\((.*?)\\) ??;"), (flow, matcher) -> {
             String subquery = matcher.group(2).trim();
             if (!subquery.endsWith(";")) subquery = subquery + ";";
