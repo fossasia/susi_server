@@ -95,7 +95,27 @@ public class ConsoleService extends AbstractAPIHandler implements APIHandler {
     }
     
     public final static SusiSkills dbAccess = new SusiSkills();
+    
+    public static void addGenericConsole(String serviceName, String serviceURL, String responseArrayObjectName) {
+        dbAccess.put(Pattern.compile("SELECT +?(.*?) +?FROM +?" + serviceName + " +?WHERE +?query ??= ??'(.*?)' ??;"), (flow, matcher) -> {
+            JSONObject serviceResponse;
+            try {
+                ClientConnection cc = new ClientConnection(serviceURL + URLEncoder.encode(matcher.group(2), "UTF-8"));
+                serviceResponse = new JSONObject(new JSONTokener(cc.inputStream));
+                cc.close();
+            } catch (IOException | JSONException e) {serviceResponse = new JSONObject();}
+            SusiThought json = new SusiThought();
+            json.setQuery(matcher.group(2));
+            SusiTransfer transfer = new SusiTransfer(matcher.group(1));
+            json.setData(transfer.conclude(serviceResponse.getJSONArray(responseArrayObjectName)));
+            json.setHits(json.getCount());
+            return json;
+        });
+    }
+    
     static {
+        addGenericConsole("wikidata", "https://www.wikidata.org/w/api.php?action=wbsearchentities&format=json&language=en&search=", "search");
+        addGenericConsole("urbandictionary", "http://api.urbandictionary.com/v0/define?term=", "list");
         dbAccess.put(Pattern.compile("SELECT +?(.*?) +?FROM +?\\( ??SELECT +?(.*?) ??\\) +?WHERE +?(.*?) ?+IN ?+\\((.*?)\\) ??;"), (flow, matcher) -> {
             String subquery = matcher.group(2).trim();
             if (!subquery.endsWith(";")) subquery = subquery + ";";
@@ -185,34 +205,6 @@ public class ConsoleService extends AbstractAPIHandler implements APIHandler {
             SusiTransfer transfer = new SusiTransfer(matcher.group(1));
             return json.setData(transfer.conclude(json.getJSONArray("data")));
         });
-        dbAccess.put(Pattern.compile("SELECT +?(.*?) +?FROM +?wikidata +?WHERE +?query ??= ??'(.*?)' ??;"), (flow, matcher) -> {
-            JSONObject wikidata;
-            try {
-                ClientConnection cc = new ClientConnection("https://www.wikidata.org/w/api.php?action=wbsearchentities&format=json&language=en&search=" + URLEncoder.encode(matcher.group(2), "UTF-8"));
-                wikidata = new JSONObject(new JSONTokener(cc.inputStream));
-                cc.close();
-            } catch (IOException | JSONException e) {wikidata = new JSONObject();}
-            SusiThought json = new SusiThought();
-            json.setQuery(matcher.group(2));
-            SusiTransfer transfer = new SusiTransfer(matcher.group(1));
-            json.setData(transfer.conclude(wikidata.getJSONArray("search")));
-            json.setHits(json.getCount());
-            return json;
-        });
-        dbAccess.put(Pattern.compile("SELECT +?(.*?) +?FROM +?urbandictionary +?WHERE +?query ??= ??'(.*?)' ??;"), (flow, matcher) -> {
-            JSONObject urbandictionary;
-            try {
-                ClientConnection cc = new ClientConnection("http://api.urbandictionary.com/v0/define?term=" + URLEncoder.encode(matcher.group(2), "UTF-8"));
-                urbandictionary = new JSONObject(new JSONTokener(cc.inputStream));
-                cc.close();
-            } catch (IOException | JSONException e) {urbandictionary = new JSONObject();}
-            SusiThought json = new SusiThought();
-            json.setQuery(matcher.group(2));
-            SusiTransfer transfer = new SusiTransfer(matcher.group(1));
-            json.setData(transfer.conclude(urbandictionary.getJSONArray("list")));
-            json.setHits(json.getCount());
-            return json;
-        });
         dbAccess.put(Pattern.compile("SELECT +?(.*?) +?FROM +?meetup +?WHERE +?url ??= ??'(.*?)' ??;"), (flow, matcher) -> {
             SusiThought json = MeetupsCrawlerService.crawlMeetups(matcher.group(2));
             SusiTransfer transfer = new SusiTransfer(matcher.group(1));
@@ -279,6 +271,8 @@ public class ConsoleService extends AbstractAPIHandler implements APIHandler {
             return json;
         });
     }
+    
+    
     
     @Override
     public JSONObject serviceImpl(Query post, HttpServletResponse response, Authorization rights, final JSONObjectWithDefault permissions) throws APIException {
