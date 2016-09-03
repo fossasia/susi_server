@@ -115,11 +115,11 @@ public class QueryEntry extends AbstractObjectEntry implements ObjectEntry {
         this.source_type = SourceType.byName(source_type_string);
         this.timezoneOffset = (int) parseLong((Number) json.get("timezoneOffset"));
         Date now = new Date();
-        this.query_first = parseDate(json.get("query_first"), now);
-        this.query_last = parseDate(json.get("query_last"), now);
-        this.retrieval_last = parseDate(json.get("retrieval_last"), now);
-        this.retrieval_next = parseDate(json.get("retrieval_next"), now);
-        this.expected_next = parseDate(json.get("expected_next"), now);
+        this.query_first = json.has("query_first") ? parseDate(json.get("query_first"), now) : new Date();
+        this.query_last = json.has("query_last") ? parseDate(json.get("query_last"), now) : new Date();
+        this.retrieval_last = json.has("retrieval_last") ? parseDate(json.get("retrieval_last"), now) : new Date();
+        this.retrieval_next = json.has("retrieval_next") ? parseDate(json.get("retrieval_next"), now) : new Date();
+        this.expected_next = json.has("expected_next") ? parseDate(json.get("expected_next"), now) : new Date();
         this.query_count = (int) parseLong((Number) json.get("query_count"));
         this.retrieval_count = (int) parseLong((Number) json.get("retrieval_count"));
         this.message_period = parseLong((Number) json.get("message_period"));
