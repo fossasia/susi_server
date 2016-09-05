@@ -10,7 +10,7 @@
 		"yes":["certainly","true"],
 		"computer":["machine","machines","computers"],
 		"was":["were"],
-		"you are":["you're"],
+		"you are":["you're","u are", "u r"],
 		"i am":["i'm"]
 	},
 	"filler":["actually","so","well","look","like","#"],
