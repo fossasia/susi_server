@@ -23,7 +23,7 @@
 		"ask":["question", "inquire of", "seek information from", "put a question to", "demand", "request", "expect", "inquire", "query", "interrogate", "examine", "quiz"],
 		"awful":["dreadful", "terrible", "abominable", "bad", "poor", "unpleasant"],
 		"bad":["evil", "immoral", "wicked", "corrupt", "sinful", "depraved", "rotten", "contaminated", "spoiled", "tainted", "harmful", "injurious", "unfavorable", "defective", "inferior", "imperfect", "substandard", "faulty", "improper", "inappropriate", "unsuitable", "disagreeable", "unpleasant", "cross", "nasty", "unfriendly", "irascible", "horrible", "atrocious", "outrageous", "scandalous", "infamous", "wrong", "noxious", "sinister", "putrid", "snide", "deplorable", "dismal", "gross", "heinous", "nefarious", "base", "obnoxious", "detestable", "despicable", "contemptible", "foul", "rank", "ghastly", "execrable"],
-		"be": ["am", "is", "are", "was"],
+		"be": ["am", "is", "are", "was","were"],
 		"beautiful":["pretty", "lovely", "handsome", "attractive", "gorgeous", "dazzling", "splendid", "magnificent", "comely", "fair", "ravishing", "graceful", "elegant", "fine", "exquisite", "aesthetic", "pleasing", "shapely", "delicate", "stunning", "glorious", "heavenly", "resplendent", "radiant", "glowing", "blooming", "sparkling"],
 		"begin":["start", "open", "launch", "initiate", "commence", "inaugurate", "originate"],
 		"belief": ["feel", "think", "believe", "wish"],
