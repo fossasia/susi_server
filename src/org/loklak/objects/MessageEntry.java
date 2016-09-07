@@ -33,6 +33,7 @@ import java.util.regex.Pattern;
 
 import org.eclipse.jetty.util.log.Log;
 import org.json.JSONObject;
+import org.loklak.api.search.ShortlinkFromTweetServlet;
 import org.loklak.data.Classifier;
 import org.loklak.data.DAO;
 import org.loklak.data.Classifier.Category;
@@ -368,12 +369,20 @@ public class MessageEntry extends AbstractObjectEntry implements ObjectEntry {
     
     public String getText(final int iflinkexceedslength, final String urlstub) {
         // check if we shall replace shortlinks
-        if (this.getLinks() != null && this.getLinks().length == 1 &&
-            this.getLinks()[0] != null && this.getLinks()[0].length() > iflinkexceedslength &&
-            DAO.existMessage(this.getIdStr())) {
-            return this.text.replace(this.getLinks()[0], urlstub + "/x?id=" + this.getIdStr());
+        String t = this.text;
+        String[] links = this.getLinks();
+        if (links != null) {
+            linkloop: for (int nth = 0; nth < links.length; nth++) {
+                String link = links[nth];
+                if (link.length() > iflinkexceedslength) {
+                    if (!DAO.existMessage(this.getIdStr())) break linkloop;
+                    t = t.replace(link, urlstub + "/x?id=" + this.getIdStr() +
+                            (nth == 0 ? "" : ShortlinkFromTweetServlet.SHORTLINK_COUNTER_SEPERATOR + Integer.toString(nth)));
+                }
+            }
         }
-        return this.text;
+        
+        return t;
     }
 
     public String[] getMentions() {

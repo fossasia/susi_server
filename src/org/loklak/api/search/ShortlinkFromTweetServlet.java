@@ -35,6 +35,8 @@ public class ShortlinkFromTweetServlet extends HttpServlet {
 
     private static final long serialVersionUID = 5632263908L;
 
+    public final static char SHORTLINK_COUNTER_SEPERATOR = '*';
+    
     @Override
     protected void doPost(final HttpServletRequest request, final HttpServletResponse response) throws ServletException, IOException {
         doGet(request, response);
@@ -47,13 +49,21 @@ public class ShortlinkFromTweetServlet extends HttpServlet {
         if (id.length() == 0) {response.sendError(503, "bad request (id missing)"); return;}
         
         // search for tweet with id
+        int nth = 0;
+        int p = id.indexOf(SHORTLINK_COUNTER_SEPERATOR);
+        if (p >= 0) {
+            // cut away the counter and use it to address the nth entry in the links array
+            nth = Integer.parseInt(id.substring(p + 1));
+            id = id.substring(0, p);
+        }
+        
         MessageEntry message = DAO.readMessage(id);
         if (message == null) {response.sendError(503, "bad request (message with id=" + id + " unknown)"); return;}
         
         // read link in message
         String[] links = message.getLinks();
-        if (links.length != 1) {response.sendError(503, "bad request (message with id=" + id + " must have exactly one link)"); return;}
+        if (nth + 1 > links.length) {response.sendError(503, "bad request (message with id=" + id + " wrong number of links)"); return;}
         
-        response.sendRedirect(links[0]);
+        response.sendRedirect(links[nth]);
     }
 }
