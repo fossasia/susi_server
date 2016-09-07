@@ -25,7 +25,6 @@ import org.loklak.server.*;
 import org.loklak.tools.storage.JSONObjectWithDefault;
 
 import javax.servlet.http.HttpServletResponse;
-import java.util.HashMap;
 import java.util.Map;
 
 public class UserManagementService extends AbstractAPIHandler implements APIHandler {

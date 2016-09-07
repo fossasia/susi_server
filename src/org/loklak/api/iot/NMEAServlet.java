@@ -36,7 +36,6 @@ import java.io.*;
 import org.json.JSONObject;
 import org.loklak.server.Query;
 import org.loklak.http.RemoteAccess;
-import org.loklak.http.ClientConnection;
 
 /*
 Sample Read Format

@@ -21,33 +21,19 @@ package org.loklak.api.search;
 
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.net.URLEncoder;
-import java.util.*;
-import java.io.*;
-
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.eclipse.jetty.util.log.Log;
-import org.json.JSONArray;
 import org.json.JSONObject;
-import org.loklak.data.DAO;
-import org.loklak.http.ClientConnection;
 import org.loklak.http.RemoteAccess;
 import org.loklak.server.Query;
-import org.loklak.tools.CharacterCoding;
-import org.loklak.tools.UTF8;
-
 import java.net.URL;
 import java.net.MalformedURLException;
 
 import org.jsoup.Jsoup;
-import org.jsoup.helper.Validate;
 import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
-import org.jsoup.select.Elements;
 
 public class GenericScraper extends HttpServlet {
 

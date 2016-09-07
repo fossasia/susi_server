@@ -29,9 +29,6 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.io.PrintWriter;
 
-import java.net.*;
-import java.io.*;
-
 import org.eclipse.jetty.util.log.Log;
 import org.json.JSONObject;
 import org.json.JSONArray;

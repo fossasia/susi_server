@@ -33,8 +33,6 @@ import java.nio.charset.Charset;
 import java.io.Reader;
 
 import java.net.*;
-import java.io.*;
-
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.loklak.server.Query;
