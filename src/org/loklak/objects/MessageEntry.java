@@ -538,17 +538,22 @@ public class MessageEntry extends AbstractObjectEntry implements ObjectEntry {
         if (this.provider_hash != null && this.provider_hash.length() > 0) m.put("provider_hash", this.provider_hash);
         m.put("retweet_count", this.retweet_count);
         m.put("favourites_count", this.favourites_count); // there is a slight inconsistency here in the plural naming but thats how it is noted in the twitter api
-        m.put("images", this.images);
-        m.put("images_count", this.images.size());
-        m.put("audio", this.audio);
-        m.put("audio_count", this.audio.size());
-        m.put("videos", this.videos);
-        m.put("videos_count", this.videos.size());
         m.put("place_name", this.place_name);
         m.put("place_id", this.place_id);
         
         // add statistic/calculated data
         if (calculatedData) {
+            // links
+            m.put("links", this.links);
+            m.put("links_count", this.links.length);
+            m.put("images", this.images);
+            m.put("images_count", this.images.size());
+            m.put("audio", this.audio);
+            m.put("audio_count", this.audio.size());
+            m.put("videos", this.videos);
+            m.put("videos_count", this.videos.size());
+            
+            
             // location data
             if (this.place_context != null) m.put("place_context", this.place_context.name());
             if (this.place_country != null && this.place_country.length() == 2) {
