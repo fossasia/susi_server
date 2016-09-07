@@ -47,7 +47,15 @@ public class RedirectUnshortener {
         "amzn.to",
         "tmblr.co",
         "tumblr.com",
-        "www.tumblr.com"
+        "www.tumblr.com",
+        "abo.io",
+        "gdta.st",
+        "wpo.st",
+        "buff.ly",
+        "reut.rs",
+        "dlvr.it",
+        "flip.it",
+        "lnkd.in"
     };
     
     private final static String[] untestedHosts = new String[] {
@@ -91,6 +99,12 @@ public class RedirectUnshortener {
         }
         for (String t: untestedHosts) { // we just suspect that they work
             if (s.startsWith(t + "/")) return true;
+        }
+        int slp = s.indexOf('/');
+        int domlength = slp < 0 ? s.length() : slp;
+        if (domlength < 8 && s.length() < 23 && !s.endsWith("/") && !s.endsWith("html")) {
+            // very short, because of SEO mostly urls are very long. lets try that
+            return true;
         }
         return false;
     }
