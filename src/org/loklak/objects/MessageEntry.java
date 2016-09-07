@@ -543,16 +543,6 @@ public class MessageEntry extends AbstractObjectEntry implements ObjectEntry {
         
         // add statistic/calculated data
         if (calculatedData) {
-            // links
-            m.put("links", this.links);
-            m.put("links_count", this.links.length);
-            m.put("images", this.images);
-            m.put("images_count", this.images.size());
-            m.put("audio", this.audio);
-            m.put("audio_count", this.audio.size());
-            m.put("videos", this.videos);
-            m.put("videos_count", this.videos.size());
-            
             
             // location data
             if (this.place_context != null) m.put("place_context", this.place_context.name());
@@ -576,6 +566,12 @@ public class MessageEntry extends AbstractObjectEntry implements ObjectEntry {
             m.put("hosts_count", this.hosts.length);
             m.put("links", this.links);
             m.put("links_count", this.links.length);
+            m.put("images", this.images);
+            m.put("images_count", this.images.size());
+            m.put("audio", this.audio);
+            m.put("audio_count", this.audio.size());
+            m.put("videos", this.videos);
+            m.put("videos_count", this.videos.size());
             m.put("mentions", this.mentions);
             m.put("mentions_count", this.mentions.length);
             m.put("hashtags", this.hashtags);
