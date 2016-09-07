@@ -73,7 +73,7 @@ public class SearchServlet extends HttpServlet {
         Timeline tl = new Timeline(order);
         String urlstring = "";
         try {
-            urlstring = protocolhostportstub + "/api/search.json?q=" + URLEncoder.encode(query.replace(' ', '+'), "UTF-8") + "&timezoneOffset=" + timezoneOffset + "&maximumRecords=" + count + "&source=" + (source == null ? "all" : source) + "&minified=true&timeout=" + timeout;
+            urlstring = protocolhostportstub + "/api/search.json?q=" + URLEncoder.encode(query.replace(' ', '+'), "UTF-8") + "&timezoneOffset=" + timezoneOffset + "&maximumRecords=" + count + "&source=" + (source == null ? "all" : source) + "&minified=true&shortlink=false&timeout=" + timeout;
             byte[] jsonb = ClientConnection.downloadPeer(urlstring);
             if (jsonb == null || jsonb.length == 0) throw new IOException("empty content from " + protocolhostportstub);
             String jsons = UTF8.String(jsonb);
@@ -128,6 +128,7 @@ public class SearchServlet extends HttpServlet {
         String callback = post.get("callback", "");
         boolean jsonp = callback != null && callback.length() > 0;
         boolean minified = post.get("minified", false);
+        boolean shortlink_request = post.get("shortlink", true);
         String query = post.get("q", "");
         if (query == null || query.length() == 0) query = post.get("query", "");
         query = CharacterCoding.html2unicode(query).replaceAll("\\+", " ");
@@ -254,7 +255,7 @@ public class SearchServlet extends HttpServlet {
         tl.reduceToMaxsize(count);
         
         // create json or xml according to path extension
-        int shortlink_iflinkexceedslength = (int) DAO.getConfig("shortlink.iflinkexceedslength", 500L);
+        int shortlink_iflinkexceedslength =  shortlink_request ? (int) DAO.getConfig("shortlink.iflinkexceedslength", 500L) : Integer.MAX_VALUE;
         String shortlink_urlstub = DAO.getConfig("shortlink.urlstub", "http://127.0.0.1:9000");
         if (jsonExt) {
             post.setResponse(response, jsonp ? "application/javascript": "application/json");
