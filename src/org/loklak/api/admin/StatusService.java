@@ -112,21 +112,27 @@ public class StatusService extends AbstractAPIHandler implements APIHandler {
         system.put("server_uri", LoklakServer.getServerURI());
 
         JSONObject index = new JSONObject(true);
+        long countLocalMinMessages  = DAO.countLocalMessages(60000L);
+        long countLocal10MMessages  = DAO.countLocalMessages(600000L);
         long countLocalHourMessages = DAO.countLocalMessages(3600000L);
-        long countLocalDayMessages = DAO.countLocalMessages(86400000L);
+        long countLocalDayMessages  = DAO.countLocalMessages(86400000L);
         long countLocalWeekMessages = DAO.countLocalMessages(604800000L);
-        int mps1w = (int) (countLocalDayMessages / 604800L);
-        int mps1d = (int) (countLocalDayMessages / 86400L);
-        int mps1h = (int) (countLocalHourMessages / 3600L);
-        int mps10m = (int) (DAO.countLocalMessages(60000L) / 600L);
-        index.put("mps1w", mps1w);
-        index.put("mps1d", mps1d);
-        index.put("mps1h", mps1h);
+        float mps1m  = countLocalMinMessages  / 60f;
+        float mps10m = countLocal10MMessages  / 600f;
+        float mps1h  = countLocalHourMessages / 3600f;
+        float mps1d  = countLocalDayMessages  / 86400f;
+        float mps1w  = countLocalWeekMessages / 604800f;
+        index.put("mps1m", mps1m);
         index.put("mps10m", mps10m);
-        index.put("mps", Math.max(mps1d, Math.max(mps1h, mps10m))); // best of 1d, 1h and 10m
+        index.put("mps1h", mps1h);
+        index.put("mps1d", mps1d);
+        index.put("mps1w", mps1w);
+        index.put("mps", (int) Math.max(mps1d, Math.max(mps1h, Math.max(mps10m, mps1m)))); // best of 1d, 1h and 10m
         JSONObject messages = new JSONObject(true);
         messages.put("size", local_messages + backend_messages);
         messages.put("size_local", local_messages);
+        messages.put("size_local_minute", countLocalMinMessages);
+        messages.put("size_local_10minutes", countLocal10MMessages);
         messages.put("size_local_hour", countLocalHourMessages);
         messages.put("size_local_day", countLocalDayMessages);
         messages.put("size_local_week", countLocalWeekMessages);

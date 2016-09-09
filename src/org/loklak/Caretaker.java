@@ -21,6 +21,7 @@ package org.loklak;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.Random;
@@ -115,7 +116,7 @@ public class Caretaker extends Thread {
                 long start = System.currentTimeMillis();
                 boolean success = PushServlet.push(remote, tl);
                 if (success) {
-                    DAO.log("success pushing " + tl.size() + " messages to backend in 1st attempt in " + (System.currentTimeMillis() - start) + " ms");
+                    DAO.log("success pushing " + tl.size() + " messages to backend " + Arrays.toString(remote) + " in 1st attempt in " + (System.currentTimeMillis() - start) + " ms");
                 }
                 if (!success) {
                     // we should try again.. but not an infinite number because then
@@ -123,15 +124,15 @@ public class Caretaker extends Thread {
                     retrylook: for (int retry = 0; retry < 5; retry++) {
                         // give back-end time to recover
                         try {Thread.sleep(3000 + retry * 3000);} catch (InterruptedException e) {}
-                        DAO.log("trying to push (again) " + tl.size() + " messages to backend, attempt #" + retry + 1 + "/5");
+                        DAO.log("trying to push (again) " + tl.size() + " messages to backend " + Arrays.toString(remote) + ", attempt #" + (retry + 1) + "/5");
                         start = System.currentTimeMillis();
                         if (PushServlet.push(remote, tl)) {
-                            DAO.log("success pushing " + tl.size() + " messages to backend in " + (retry + 2) + ". attempt in " + (System.currentTimeMillis() - start) + " ms");
+                            DAO.log("success pushing " + tl.size() + " messages to backend " + Arrays.toString(remote) + " in " + (retry + 2) + ". attempt in " + (System.currentTimeMillis() - start) + " ms");
                             success = true;
                             break retrylook;
                         }
                     }
-                    if (!success) DAO.log("failed pushing " + tl.size() + " messages to backend");
+                    if (!success) DAO.log("failed pushing " + tl.size() + " messages to backend " + Arrays.toString(remote));
                 }
                 busy = true;
             }
