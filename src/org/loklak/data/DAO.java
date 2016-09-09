@@ -672,8 +672,10 @@ public class DAO {
             if (mw.t == null) continue;
             if (mw.dump) dump.add(mw); else noDump.add(mw);
         }
-        writeMessageBulkNoDump(noDump);
-        return writeMessageBulkDump(dump);
+        Set<String> createdIDs = new HashSet<>();
+        createdIDs.addAll(writeMessageBulkNoDump(noDump));
+        createdIDs.addAll(writeMessageBulkDump(dump)); // does also do an writeMessageBulkNoDump internally
+        return createdIDs;
     }
 
     /**
@@ -802,25 +804,31 @@ public class DAO {
         }
         return true;
     }
+
+    private static long countLocalHourMessages(final long millis) {
+        if (millis > 3600000L) return countLocalDayMessages(millis);
+        return elasticsearch_client.count(IndexName.messages_hour.name(), "timestamp", millis == 3600000L ? -1 : millis);
+    }
     
-    public static long countLocalMessages(String provider_hash) {
-        return elasticsearch_client.countLocal(IndexName.messages.name(), provider_hash);
+    private static long countLocalDayMessages(final long millis) {
+        if (millis > 86400000L) return countLocalWeekMessages(millis);
+        return elasticsearch_client.count(IndexName.messages_day.name(), "timestamp", millis == 3600000L ? -1 : millis);
+    }
+    
+    private static long countLocalWeekMessages(final long millis) {
+        if (millis > 604800000L) return countLocalMessages(millis);
+        return elasticsearch_client.count(IndexName.messages_week.name(), "timestamp", millis == 3600000L ? -1 : millis);
     }
 
-    public static long countLocalMessages(long millis) {
-        return elasticsearch_client.count(IndexName.messages.name(), "timestamp", millis);
+    public static long countLocalMessages(final long millis) {
+        if (millis <= 3600000L) return countLocalHourMessages(millis);
+        if (millis <= 86400000L) return countLocalDayMessages(millis);
+        if (millis <= 604800000L) return countLocalWeekMessages(millis);
+        return elasticsearch_client.count(IndexName.messages.name(), "timestamp", millis == Long.MAX_VALUE ? -1 : millis);
     }
-    
-    public static long countLocalHourMessages(long millis) {
-        return elasticsearch_client.count(IndexName.messages_hour.name(), "timestamp", millis);
-    }
-    
-    public static long countLocalDayMessages(long millis) {
-        return elasticsearch_client.count(IndexName.messages_day.name(), "timestamp", millis);
-    }
-    
-    public static long countLocalWeekMessages(long millis) {
-        return elasticsearch_client.count(IndexName.messages_week.name(), "timestamp", millis);
+
+    public static long countLocalMessages(String provider_hash) {
+        return elasticsearch_client.countLocal(IndexName.messages.name(), provider_hash);
     }
     
     public static long countLocalUsers() {
