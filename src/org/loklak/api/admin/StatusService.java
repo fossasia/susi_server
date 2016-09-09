@@ -89,7 +89,7 @@ public class StatusService extends AbstractAPIHandler implements APIHandler {
         } catch (IOException e) {}
         long backend_messages = backend_status_index_sizes == null ? 0 : ((Number) backend_status_index_sizes.get("messages")).longValue();
         long backend_users = backend_status_index_sizes == null ? 0 : ((Number) backend_status_index_sizes.get("users")).longValue();
-        long local_messages = DAO.countLocalMessages(-1);
+        long local_messages = DAO.countLocalMessages();
         long local_users = DAO.countLocalUsers();
         
         post.setResponse(response, "application/javascript");

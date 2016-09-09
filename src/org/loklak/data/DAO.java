@@ -821,10 +821,17 @@ public class DAO {
     }
 
     public static long countLocalMessages(final long millis) {
-        if (millis <= 3600000L) return countLocalHourMessages(millis);
-        if (millis <= 86400000L) return countLocalDayMessages(millis);
-        if (millis <= 604800000L) return countLocalWeekMessages(millis);
+        if (millis == 0) return 0;
+        if (millis > 0) {
+            if (millis <= 3600000L) return countLocalHourMessages(millis);
+            if (millis <= 86400000L) return countLocalDayMessages(millis);
+            if (millis <= 604800000L) return countLocalWeekMessages(millis);
+        }
         return elasticsearch_client.count(IndexName.messages.name(), "timestamp", millis == Long.MAX_VALUE ? -1 : millis);
+    }
+
+    public static long countLocalMessages() {
+        return elasticsearch_client.count(IndexName.messages.name(), "timestamp", -1);
     }
 
     public static long countLocalMessages(String provider_hash) {
