@@ -97,36 +97,26 @@ public class PushServlet extends HttpServlet {
      */
     public static boolean push(String[] hoststubs, Timeline timeline, boolean peerMessage) {
         // transmit the timeline        
-        try {
-            String data = timeline.toJSON(false, "search_metadata", "statuses").toString();
-            assert data != null;
-            boolean transmittedToAtLeastOnePeer = false;
-            for (String hoststub: hoststubs) {
+        String data = timeline.toJSON(false, "search_metadata", "statuses").toString();
+        assert data != null;
+        boolean transmittedToAtLeastOnePeer = false;
+        for (String hoststub: hoststubs) {
+            ClientConnection connection = null;
+            try {
                 if (hoststub.endsWith("/")) hoststub = hoststub.substring(0, hoststub.length() - 1);
                 Map<String, byte[]> post = new HashMap<String, byte[]>();
                 post.put("data", UTF8.getBytes(data)); // optionally implement a gzipped form here
                 JsonSignature.addSignature(post,DAO.private_settings.getPrivateKey());
-                ClientConnection connection = null;
-                try {
-                    connection = new ClientConnection(hoststub + "/api/push.json", post, !"peers".equals(DAO.getConfig("httpsclient.trustselfsignedcerts", "peers")));
-                    transmittedToAtLeastOnePeer = true;
-                } catch (IOException e) {
-                    //Log.getLog().warn(e);
-                } finally {
-                    if (connection != null) connection.close();
-                }
+                connection = new ClientConnection(hoststub + "/api/push.json", post, !"peers".equals(DAO.getConfig("httpsclient.trustselfsignedcerts", "peers")));
+                transmittedToAtLeastOnePeer = true;
+            } catch (IOException | JSONException | SignatureException | InvalidKeyException e) {
+                DAO.log("FAILED to push " + timeline.size() + " messages to backend " + hoststub);
+                Log.getLog().warn(e);
+            } finally {
+                if (connection != null) connection.close();
             }
-            return transmittedToAtLeastOnePeer;
-        } catch (JSONException e) {
-        	Log.getLog().warn(e);
-            return false;
-        } catch (SignatureException e) {
-            Log.getLog().warn(e);
-            return false;
-        } catch (InvalidKeyException e) {
-            Log.getLog().warn(e);
-            return false;
         }
+        return transmittedToAtLeastOnePeer;
     }
     
     public static boolean push(String[] hoststubs, Timeline timeline) {
@@ -252,6 +242,7 @@ public class PushServlet extends HttpServlet {
         JSONObject json = new JSONObject(true);
         json.put("status", "ok");
         json.put("records", recordCount);
+        json.put("mps", DAO.countLocalMessages(3600000L) / 3600L); // to enable client throttling: mps measured by hour
         if (remoteHashFromPeerId) json.put("contribution_message_count", messages_from_client);
         //json.field("new", newCount);
         //json.field("known", knownCount);
