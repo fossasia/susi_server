@@ -7,21 +7,20 @@
 [![Twitter](https://img.shields.io/twitter/url/http/shields.io.svg?style=social)](https://twitter.com/intent/tweet?text=Wow Check Loklak on @gitHub @loklak_app @lklknt: https://github.com/loklak/loklak_server &url=%5Bobject%20Object%5D)
 [![Twitter Follow](https://img.shields.io/twitter/follow/lklknt.svg?style=social&label=Follow&maxAge=2592000?style=flat-square)](https://twitter.com/lklknt)
 
-## One-click Deploy
-[![Deploy](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy)
-[![Deploy on Scalingo](https://cdn.scalingo.com/deploy/button.svg)](https://my.scalingo.com/deploy?source=https://github.com/loklak/loklak_server)
-[![Deploy to Bluemix](https://bluemix.net/deploy/button.png)](https://bluemix.net/deploy?repository=https://github.com/loklak/loklak_server)
-[![Deploy to Docker Cloud](https://files.cloud.docker.com/images/deploy-to-dockercloud.svg)](https://cloud.docker.com/stack/deploy/)
-
 ## Description
 loklak is a server application which is able to collect messages from various sources, including twitter. The server contains a search index and a peer-to-peer index sharing interface. All messages are stored in an elasticsearch index. An automatic deployment from the development branch at GitHub is available for tests here https://loklak-server-dev.herokuapp.com
 
 'Lok Lak' is also a very tasty Cambodian stir-fry meat dish (usually beef) with a LOT of fresh black pepper. If you ever have the chance to eat Beef Lok Lak, please try it. I hope not to scare vegetarians with this name, currently I am one as well.
 
+## Communication
+
+Please join our mailing list to discuss questions regarding the project: https://groups.google.com/forum/#!forum/loklak
+
+Our chat channel is on gitter here: https://gitter.im/loklak/loklak
 
 ## Why should I use loklak?
 
-If you like to be anonymous when searching things, want to archive tweets or messages about specific topics and if you are looking for a tool to create statistics about tweet topics, then you may consider loklak. With loklak you can do:
+If you like to be anonymous when searching things, want to archive tweets or messages about specific topics and if you are looking for a tool to create statistics about tweet topics, then you may consider loklak. With loklak you can:
 
 - collect and store a very, very large amount of tweets
 - create your own search engine for tweets
@@ -32,6 +31,11 @@ If you like to be anonymous when searching things, want to archive tweets or mes
 - use [Kibana](https://github.com/elastic/kibana) to analyze large amounts of tweets for statistical data.
 
 ## How do I install loklak: Download, Build, Run
+
+[![Deploy](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy)
+[![Deploy on Scalingo](https://cdn.scalingo.com/deploy/button.svg)](https://my.scalingo.com/deploy?source=https://github.com/loklak/loklak_server)
+[![Deploy to Bluemix](https://bluemix.net/deploy/button.png)](https://bluemix.net/deploy?repository=https://github.com/loklak/loklak_server)
+[![Deploy to Docker Cloud](https://files.cloud.docker.com/images/deploy-to-dockercloud.svg)](https://cloud.docker.com/stack/deploy/)
 
 At this time, loklak is not provided in compiled form, you easily build it yourself. It's not difficult and done in one minute! The source code is hosted at https://github.com/loklak/loklak_server, you can download it and run loklak with:
 
