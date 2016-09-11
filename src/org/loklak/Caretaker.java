@@ -64,6 +64,8 @@ public class Caretaker extends Thread {
     private       static long helloTime   = 0; // latest hello ping time
 
     private static BlockingQueue<Timeline> pushToBackendTimeline = new LinkedBlockingQueue<Timeline>();
+    private static final int TIMELINE_PUSH_MINSIZE = 200;
+    private static final int TIMELINE_PUSH_MAXSIZE = 1000;
     
     /**
      * ask the thread to shut down
@@ -110,7 +112,7 @@ public class Caretaker extends Thread {
             //DAO.log("connection pool: " + ClientConnection.cm.getTotalStats().toString());
             
             // peer-to-peer operation
-            Timeline tl = takeTimelineMin(pushToBackendTimeline, Timeline.Order.CREATED_AT, 200);
+            Timeline tl = takeTimelineMin(Timeline.Order.CREATED_AT, TIMELINE_PUSH_MINSIZE, TIMELINE_PUSH_MAXSIZE);
             if (tl != null && tl.size() > 0 && remote.length > 0) {
                 // transmit the timeline
                 long start = System.currentTimeMillis();
@@ -145,7 +147,10 @@ public class Caretaker extends Thread {
             }
             
             // run some harvesting steps
-            if (DAO.getConfig("retrieval.forbackend.enabled", false) && DAO.getConfig("backend.push.enabled", false) && (DAO.getConfig("backend", "").length() > 0)) {
+            if (DAO.getConfig("retrieval.forbackend.enabled", false) &&
+                DAO.getConfig("backend.push.enabled", false) &&
+                (DAO.getConfig("backend", "").length() > 0) &&
+                timelineSize() < TIMELINE_PUSH_MAXSIZE) {
                 int retrieval_forbackend_concurrency = (int) DAO.getConfig("retrieval.forbackend.concurrency", 1);
                 int retrieval_forbackend_loops = (int) DAO.getConfig("retrieval.forbackend.loops", 10);
                 int retrieval_forbackend_sleep_base = (int) DAO.getConfig("retrieval.forbackend.sleep.base", 300);
@@ -272,23 +277,19 @@ public class Caretaker extends Thread {
     /**
      * if the given list of timelines contain at least the wanted minimum size of messages, they are flushed from the queue
      * and combined into a new timeline
-     * @param dumptl
      * @param order
      * @param minsize
      * @return
      */
-    public static Timeline takeTimelineMin(final BlockingQueue<Timeline> dumptl, final Timeline.Order order, final int minsize) {
-        int c = 0;
-        for (Timeline tl: dumptl) c += tl.size();
-        if (c < minsize) return new Timeline(order);
-        
-        // now flush the timeline queue completely
+    public static Timeline takeTimelineMin(final Timeline.Order order, final int minsize, final int maxsize) {
+        if (timelineSize() < minsize) return new Timeline(order);
         Timeline tl = new Timeline(order);
         try {
-            while (dumptl.size() > 0) {
-                Timeline tl0 = dumptl.take();
+            while (pushToBackendTimeline.size() > 0) {
+                Timeline tl0 = pushToBackendTimeline.take();
                 if (tl0 == null) return tl;
                 tl.putAll(tl0);
+                if (tl.size() >= maxsize) break;
             }
             return tl;
         } catch (InterruptedException e) {
@@ -296,4 +297,9 @@ public class Caretaker extends Thread {
         }
     }
     
+    public static int timelineSize() {
+        int c = 0;
+        for (Timeline tl: pushToBackendTimeline) c += tl.size();
+        return c;
+    }
 }
