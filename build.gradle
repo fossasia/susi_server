@@ -77,7 +77,7 @@ dependencies {
   compile name: 'lucene-spatial3d-5.5.2'
   compile name: 'lucene-suggest-5.5.2'
   compile name: 'nekohtml-1.9.17'
-  compile name: 'netty-3.10.5.Final'
+  compile name: 'netty-3.10.6.Final'
   compile name: 'rome-1.0'
   compile name: 'securesm-1.0'
   compile name: 'slf4j-api-1.7.21'
