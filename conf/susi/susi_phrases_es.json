@@ -1,0 +1,33 @@
+{
+ "rules":[
+  {
+   "phrases":[ {"type":"prior", "expression":"hola"} ],
+   "actions":[ {"type":"answer", "select":"random", "phrases":[
+    "¡Hola! Me llamo Susi. ¿Qué tal?"
+   ]}]
+  },{
+   "phrases":[ {"type":"prior", "expression":"* muy bien *"} ],
+   "actions":[ {"type":"answer", "select":"random", "phrases":[
+    "¿Cómo puedo ayudarte?"
+   ]}]
+  },{
+   "phrases":[ {"type":"prior", "expression":"que tal"},
+               {"type":"prior", "expression":"qué tal"} ],
+   "actions":[ {"type":"answer", "select":"random", "phrases":[
+    "¡Muy bien, gracias!"
+   ]}]
+  },{
+   "phrases":[ {"type":"prior", "expression":"como te llamas"},
+               {"type":"prior", "expression":"cómo te llamas"} ],
+   "actions":[ {"type":"answer", "select":"random", "phrases":[
+    "Me llamo Susi"
+   ]}]
+  },{
+   "phrases":[ {"type":"prior", "expression":"de donde eres"},
+               {"type":"prior", "expression":"de dónde eres"} ],
+   "actions":[ {"type":"answer", "select":"random", "phrases":[
+    "Yo soy de internet.."
+   ]}]
+  }
+ ]
+}
