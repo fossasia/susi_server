@@ -19,5 +19,5 @@ public interface Insertable {
     String getUsername();
     String getUserID();
     String getDomain();
-    List<TwoTuple<String, String>> getExtraField();
+    Collection<Map.Entry<String, String>> getExtraField();
 }

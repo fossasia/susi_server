@@ -221,32 +221,19 @@ public class DAOWrapper {
         }
     }
 
-
-
-
-
     public static GenericJSONBuilder builder(){
         return new GenericJSONBuilder();
     }
 
-
-
-
-
     public static void insert(Insertable msg){
-
         GenericJSONBuilder bd = builder()
         .setAuthor(msg.getUsername(), msg.getDomain())
         .addText(msg.getText())
         .setUserid(msg.getUserID());
 
-
         /**
          * Insert the fields
          */
-        List<TwoTuple<String, String>> fields = msg.getExtraField();
-        for(TwoTuple<String, String> field:fields){
-            bd.addField(field.first, field.second);
-        }
+        msg.getExtraField().forEach(entry -> bd.addField(entry.getKey(), entry.getValue()));
     }
 }
