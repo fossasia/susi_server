@@ -618,7 +618,7 @@ public class LoklakServer {
         servletHandler.addServlet(PieChartServlet.class, "/vis/piechart.png");
         servletHandler.setMaxFormContentSize(10 * 1024 * 1024); // 10 MB
 
-        ErrorHandler errorHandler = new LoklakErrorHandler();
+        ErrorHandler errorHandler = new ErrorHandler();
         errorHandler.setShowStacks(true);
         servletHandler.setErrorHandler(errorHandler);
         
