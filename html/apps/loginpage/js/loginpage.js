@@ -1,6 +1,6 @@
 $(document).ready(function()
 {
-	$.ajax(	"/api/login.json", {
+	$.ajax(	"/aaa/login.json", {
 	    data: { checkLogin: true },
 		dataType: "json",
 		success: function (response) {
@@ -29,7 +29,7 @@ $(document).ready(function()
     setRemember();
 
 	var optionsLogin = {
-        url:        "/api/login.json",
+        url:        "/aaa/login.json",
         type:       "get",
         dataType:   "json",
         success(response) {
@@ -47,7 +47,7 @@ $(document).ready(function()
     });
 
     var optionsLogout = {
-        url:        "/api/login.json",
+        url:        "/aaa/login.json",
         type:       "get",
         dataType:   "json",
         success(response) {

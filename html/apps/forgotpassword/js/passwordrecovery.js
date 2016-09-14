@@ -8,7 +8,7 @@ $(document).ready(function()
             $('#status-box').text("Please fill email");
         } else{
             var mail = $('#email').val();
-            $.ajax( "/api/recoverpassword.json", {
+            $.ajax( "/aaa/recoverpassword.json", {
                 data: { forgotemail: mail },
                 dataType: 'json',
                 success: function (response) {

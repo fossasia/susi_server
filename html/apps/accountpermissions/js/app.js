@@ -1,6 +1,6 @@
 $(document).ready(function()
 {
-	$.ajax(	"/api/account-permissions.json", {
+	$.ajax(	"/aaa/account-permissions.json", {
 		dataType: "json",
 		success (response) {
 		    $("#permissions").removeClass("hidden");
@@ -20,7 +20,7 @@ $(document).ready(function()
 		}
 	});
 
-	$.ajax(	"/api/account-permissions.json", {
+	$.ajax(	"/aaa/account-permissions.json", {
 		data: { getServiceList: true },
 		dataType: "json",
 		success (response) {
@@ -36,7 +36,7 @@ $(document).ready(function()
 
 		if(child.attr("valueSet") === "false"){
 			child.hide();
-			$.ajax(	"/api/account-permissions.json", {
+			$.ajax(	"/aaa/account-permissions.json", {
 				data: { getServicePermissions: obj.attr("id") },
 				dataType: "json",
 				success (response) {

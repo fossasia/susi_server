@@ -36,7 +36,7 @@
   ],
   "potentialAction": {
     "@type": "SearchAction",
-    "target": "http://loklak.org/api/search.json?q={query}",
+    "target": "http://loklak.org/aaa/search.json?q={query}",
     "query-input": "required name=query"
   }
 }
@@ -102,9 +102,9 @@
             <script>document.getElementById("timezoneOffset0").value = new Date().getTimezoneOffset();</script>
             <div class="input-group input-group-lg col-sm-8" style="float:left">
               <input name="q" id="query" type="text" class="center-block form-control input-lg" title="Search Twitter and the loklak network" placeholder="Search Twitter and the loklak network">
-              <span class="input-group-btn"><button class="btn btn-lg btn-primary" type="submit" target="_blank" onclick="form.target='_blank'; form.action='/api/search.json?q=' + document.getElementById('query').value;">Get JSON Data</button></span>
+              <span class="input-group-btn"><button class="btn btn-lg btn-primary" type="submit" target="_blank" onclick="form.target='_blank'; form.action='/aaa/search.json?q=' + document.getElementById('query').value;">Get JSON Data</button></span>
             </div>
-            <input type="submit" value="Get RSS Feed" class="btn btn-success btn-lg" onclick="form.target='_blank'; form.action='/api/search.rss?q=' + document.getElementById('query').value;"/>
+            <input type="submit" value="Get RSS Feed" class="btn btn-success btn-lg" onclick="form.target='_blank'; form.action='/aaa/search.rss?q=' + document.getElementById('query').value;"/>
             <br/><span style="font-size:7pt;">
               <span class="label label-info">Info</span>
               Input a search text or "search text" for exact matches; @user finds user mentions, from:user find messages from a user, #hashtag finds a hashtag, near:location finds messages near a location.</span>
@@ -115,8 +115,8 @@
             <script>document.getElementById("timezoneOffset1").value = new Date().getTimezoneOffset();</script>
             <input name="q" id="query" type="text" class="center-block form-control input-lg" title="Search Twitter and the loklak network" placeholder="Search Twitter & the loklak network" style="border-bottom-width: 5px;padding-right: 12px;">
             <div class="input-group input-group-lg row col-sm-12" style="float:left">
-              <span class="input-group-btn"><button class="btn btn-lg btn-primary" type="submit" target="_blank" onclick="form.target='_blank'; form.action='/api/search.json?q=' + document.getElementById('query').value;">Get JSON Data</button>
-              <input type="submit" value="Get RSS Feed" class="btn btn-success btn-lg" onclick="form.target='_blank'; form.action='/api/search.rss?q=' + document.getElementById('query').value;"/></span>
+              <span class="input-group-btn"><button class="btn btn-lg btn-primary" type="submit" target="_blank" onclick="form.target='_blank'; form.action='/aaa/search.json?q=' + document.getElementById('query').value;">Get JSON Data</button>
+              <input type="submit" value="Get RSS Feed" class="btn btn-success btn-lg" onclick="form.target='_blank'; form.action='/aaa/search.rss?q=' + document.getElementById('query').value;"/></span>
             </div>
             <br/><span style="font-size:7pt;">
               <span class="label label-info">Info</span>
@@ -138,10 +138,10 @@
         </div>
         <div class="col-md-4">
           <h2>API Example?</h2>
-          <p>Easy, call <code>/api/search.json?q=&lt;search-term&gt;</code> for <a href="https://dev.twitter.com/rest/reference/get/search/tweets">official Twitter API</a>-like results
-          or <code>/api/search.rss?q=&lt;search-term&gt;</code> for <a href="http://www.opensearch.org/Specifications/OpenSearch/1.1#OpenSearch_description_document">opensearch/rss</a> results.
+          <p>Easy, call <code>/aaa/search.json?q=&lt;search-term&gt;</code> for <a href="https://dev.twitter.com/rest/reference/get/search/tweets">official Twitter API</a>-like results
+          or <code>/aaa/search.rss?q=&lt;search-term&gt;</code> for <a href="http://www.opensearch.org/Specifications/OpenSearch/1.1#OpenSearch_description_document">opensearch/rss</a> results.
           You don't need a twitter account or an <a href="https://dev.twitter.com/oauth">OAuth key</a>.</p>
-          <p><a class="btn btn-default" href="/api/search.json?q=fossasia&callback=p" role="button">show an example &raquo;</a>
+          <p><a class="btn btn-default" href="/aaa/search.json?q=fossasia&callback=p" role="button">show an example &raquo;</a>
           <a class="btn btn-default" href="api.html" role="button">show apidoc &raquo;</a></p>
         </div>
         <div class="col-md-3">

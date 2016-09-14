@@ -40,45 +40,45 @@
         <div id="navSidebar">
           <ul class="nav nav-sidebar">
             <h4 style="padding-left:1em">Search</h4>
-            <li><a href="#search">/api/search.json</a></li>
-            <li><a href="#suggest">/api/suggest.json</a></li>
+            <li><a href="#search">/aaa/search.json</a></li>
+            <li><a href="#suggest">/aaa/suggest.json</a></li>
             
             <h4 style="padding-left:1em">Peer-to-Peer</h4>
-            <li><a href="#peers">/api/peers.json</a></li>
-            <li><a href="#hello">/api/hello.json</a></li>
-            <li><a href="#push">/api/push.json</a></li>
+            <li><a href="#peers">/aaa/peers.json</a></li>
+            <li><a href="#hello">/aaa/hello.json</a></li>
+            <li><a href="#push">/aaa/push.json</a></li>
             
             <h4 style="padding-left:1em">Administration</h4>
-            <li><a href="#crawler">/api/crawler.json</a></li>
-            <li><a href="#status">/api/status.json</a></li>
-            <li><a href="#threaddump">/api/threaddump.txt</a></li>
+            <li><a href="#crawler">/aaa/crawler.json</a></li>
+            <li><a href="#status">/aaa/status.json</a></li>
+            <li><a href="#threaddump">/aaa/threaddump.txt</a></li>
 
             <h4 style="padding-left:1em">Content Management</h4>
-            <li><a href="#proxy">/api/proxy.json</a></li>
+            <li><a href="#proxy">/aaa/proxy.json</a></li>
 
             <h4 style="padding-left:1em">Geo-Location</h4>
-            <li><a href="#geocode">/api/geocode.json</a></li>
+            <li><a href="#geocode">/aaa/geocode.json</a></li>
 
             <h4 style="padding-left:1em">Internet Of Things</h4>
-            <li><a href="#geojsonpush">/api/push/geojson.json</a></li>
-            <li><a href="#custompush">/api/push/*.*</a></li>
+            <li><a href="#geojsonpush">/aaa/push/geojson.json</a></li>
+            <li><a href="#custompush">/aaa/push/*.*</a></li>
             
             <h4 style="padding-left:1em">Visualization</h4>
             <li><a href="#map">/vis/map.png</a></li>
             <li><a href="#markdown">/vis/markdown.png</a></li>
             
             <h4 style="padding-left:1em">Installable APIs</h4>
-            <li><a href="#xml2json">/api/xml2json.json</a></li>
-            <li><a href="#csv2json">/api/csv2json.json</a></li>
+            <li><a href="#xml2json">/aaa/xml2json.json</a></li>
+            <li><a href="#csv2json">/aaa/csv2json.json</a></li>
             
-            <li><a href="#import">/api/import.json</a></li>
-            <li><a href="#validate">/api/validate.json</a></li>
-            <li><a href="#settings">/api/settings.json</a></li>
-            <li><a href="#account">/api/account.json</a></li>
-            <li><a href="#user">/api/user.json</a></li>
-            <li><a href="#apps">/api/apps.json</a></li>
-            <li><a href="#asset">/api/asset</a></li>
-            <li><a href="#threaddump">/api/threaddump.txt</a></li>
+            <li><a href="#import">/aaa/import.json</a></li>
+            <li><a href="#validate">/aaa/validate.json</a></li>
+            <li><a href="#settings">/aaa/settings.json</a></li>
+            <li><a href="#account">/aaa/account.json</a></li>
+            <li><a href="#user">/aaa/user.json</a></li>
+            <li><a href="#apps">/aaa/apps.json</a></li>
+            <li><a href="#asset">/aaa/asset</a></li>
+            <li><a href="#threaddump">/aaa/threaddump.txt</a></li>
             <li><a href="#map">/vis/map.png</a></li>
             <li><a href="#markdown">/vis/markdown.png</a></li>
             <li><a href="#piechart">/vis/piechart.png</a></li>
@@ -126,16 +126,16 @@
 </p>
 
 <ul class="request">
-  <li><div class="tabcol1">client.apiUrl</div><div class="tabcol2">:&nbsp;http://localhost:9000/api/</div>&nbsp;</li>
+  <li><div class="tabcol1">client.apiUrl</div><div class="tabcol2">:&nbsp;http://localhost:9000/aaa/</div>&nbsp;</li>
   <li><div class="tabcol1">client.domain</div><div class="tabcol2">:&nbsp;http://localhost:3001</div>&nbsp;</li>
   <li><div class="tabcol1">client.twitterCallbackUrl</div><div class="tabcol2">:&nbsp;http://localhost:3000/auth/twitter/callback</div>&nbsp;</li>
 </ul><br/>
 
 <p>
-    Properties prefixed with <code>client.</code> are exposed at the <a href="#settings">/api/settings.json</a> API to clients outside.
+    Properties prefixed with <code>client.</code> are exposed at the <a href="#settings">/aaa/settings.json</a> API to clients outside.
     Some outside services may share authorization values for OAuth-protected services
     which are also used inside of <code>loklak_server</code>.
-    Some services (like <a href="#account">/api/account.json</a>) also need access tokens, which shall never be exposed. You should configure the
+    Some services (like <a href="#account">/aaa/account.json</a>) also need access tokens, which shall never be exposed. You should configure the
     following attributes:
 </p>
 <ul class="request">
@@ -151,7 +151,7 @@
 <br/>
 <section id="status">
 <h2 class="sub-header">
-  <code>/api/status.json</code>
+  <code>/aaa/status.json</code>
 </h2>
 <div class="alert alert-success" role="alert">This API is open and can be accessed without any restrictions!</div>
 <p>The status servlet shows the size of the internal
@@ -290,13 +290,13 @@
 <br/>
 <section id="search">
 <h2 class="sub-header">
-  <code>/api/search.json</code>
+  <code>/aaa/search.json</code>
 </h2>
 <div class="alert alert-success" role="alert">This API is open and can be accessed without any restrictions!</div>
 <p>
   Get a search result. There are two formats available: JSON and RSS.
   To get RSS data (which is OpenSearch-compliant) use the path
-  <code>/api/search.rss</code>
+  <code>/aaa/search.rss</code>
   . The JSON return format is a subset of the Twitter API search
   result but has also some additional attributes. Request properties
   are:
@@ -458,7 +458,7 @@
   aggregation search request sets the count of search results to
   zero. Example:</p>
 <ul class="request">
-  <li>url&nbsp;:&nbsp;<a href="http://localhost:9000/api/search.json?q=spacex%20since:2015-04-01%20until:2015-04-06&source=cache&count=0&fields=mentions,hashtags&limit=6" target="_blank">http://localhost:9000/api/search.json?q=spacex%20since:2015-04-01%20until:2015-04-06&source=cache&count=0&fields=mentions,hashtags&limit=6</a></li>
+  <li>url&nbsp;:&nbsp;<a href="http://localhost:9000/aaa/search.json?q=spacex%20since:2015-04-01%20until:2015-04-06&source=cache&count=0&fields=mentions,hashtags&limit=6" target="_blank">http://localhost:9000/aaa/search.json?q=spacex%20since:2015-04-01%20until:2015-04-06&source=cache&count=0&fields=mentions,hashtags&limit=6</a></li>
 </ul><br/>
 <pre>{
   "readme_0": "THIS JSON IS THE RESULT OF YOUR SEARCH QUERY - THERE IS NO WEB PAGE WHICH SHOWS THE RESULT!",
@@ -501,7 +501,7 @@
 }</pre>
 <p>Loklak can also suggest what's trending and can give you the list of trending hashtags using the same search aggregations method. To find out the most trending hashtags on loklak since a particular date. Other filters like <code>until</code> can also be applied, here is a sample request</p>
 <ul class="request">
-  <li>url&nbsp;&nbsp;: <a href="http://loklak.org/api/search.json?q=since:2016-06-01&source=cache&count=0&fields=hashtags" target="_blank">http://loklak.org/api/search.json?q=since:2016-06-01&source=cache&count=0&fields=hashtags</a>
+  <li>url&nbsp;&nbsp;: <a href="http://loklak.org/aaa/search.json?q=since:2016-06-01&source=cache&count=0&fields=hashtags" target="_blank">http://loklak.org/aaa/search.json?q=since:2016-06-01&source=cache&count=0&fields=hashtags</a>
   </li>
 </ul><br>
 <pre>{
@@ -546,7 +546,7 @@
   the time frame is below three hours, hours if the time frame is
   below seven days and days otherwise. Example:
 <ul class="request">
-  <li>url&nbsp;:&nbsp;<a href="http://loklak.org/api/search.json?q=spacex%20since:2015-04-05_23:10%20until:2015-04-06_23:20&source=cache&count=0&fields=created_at&timezoneOffset=-120" target="_blank">http://localhost:9000/api/search.json?q=spacex%20since:2015-04-05_23:10%20until:2015-04-05_23:20&source=cache&count=0&fields=created_at&timezoneOffset=-120</a></li>
+  <li>url&nbsp;:&nbsp;<a href="http://loklak.org/aaa/search.json?q=spacex%20since:2015-04-05_23:10%20until:2015-04-06_23:20&source=cache&count=0&fields=created_at&timezoneOffset=-120" target="_blank">http://localhost:9000/aaa/search.json?q=spacex%20since:2015-04-05_23:10%20until:2015-04-05_23:20&source=cache&count=0&fields=created_at&timezoneOffset=-120</a></li>
 </ul><br/>
 <pre>{
   "readme_0": "THIS JSON IS THE RESULT OF YOUR SEARCH QUERY - THERE IS NO WEB PAGE WHICH SHOWS THE RESULT!",
@@ -589,8 +589,8 @@
 </pre>
 <p>It is also possible to specify the order in descending order for the following filter options <code>favourites_count</code>, <code>retweet_count</code> and the default being <code>created_at</code>. Here are the examples of the different queries which make this happen.</p>
 <ul class="request">
-  <li>retweet count: &nbsp;&nbsp;: <a href="http://loklak.org/api/search.json?timezoneOffset=-120&q=fossasia&order=retweet_count&source=cache" target="_blank">http://loklak.org/api/search.json?timezoneOffset=-120&q=fossasia&order=retweet_count&source=cache</a></li>
-  <li>favorites count: &nbsp;&nbsp;: <a href="http://loklak.org/api/search.json?timezoneOffset=-120&q=fossasia&order=favourites_count&source=cache" target="_blank">http://localhost:9000/api/search.json?timezoneOffset=-120&q=fossasia&order=favourites_count&source=cache</a></li>
+  <li>retweet count: &nbsp;&nbsp;: <a href="http://loklak.org/aaa/search.json?timezoneOffset=-120&q=fossasia&order=retweet_count&source=cache" target="_blank">http://loklak.org/aaa/search.json?timezoneOffset=-120&q=fossasia&order=retweet_count&source=cache</a></li>
+  <li>favorites count: &nbsp;&nbsp;: <a href="http://loklak.org/aaa/search.json?timezoneOffset=-120&q=fossasia&order=favourites_count&source=cache" target="_blank">http://localhost:9000/aaa/search.json?timezoneOffset=-120&q=fossasia&order=favourites_count&source=cache</a></li>
 </ul>
 <pre>
   {
@@ -807,7 +807,7 @@
 <br/>
 <section id="suggest">
 <h2 class="sub-header">
-  <code>/api/suggest.json</code>
+  <code>/aaa/suggest.json</code>
 </h2>
 <div class="alert alert-warning" role="alert">This API has access limitations: localhost clients are granted more data than public clients.</div>
 <p>
@@ -827,12 +827,12 @@ query, number of Tweets per day estimated by the latest query result and
 much more. Examples:
 </p>
 <ul class="request">
-  <li><a href="http://localhost:9000/api/suggest.json?q=soj&orderby=query_count">http://localhost:9000/api/suggest.json?q=soj&orderby=query_count</a></li>
-  <li><a href="http://localhost:9000/api/suggest.json?count=20&order=asc">http://localhost:9000/api/suggest.json?count=20&order=asc</a></li>
-  <li><a href="http://localhost:9000/api/suggest.json?count=20&order=desc">http://localhost:9000/api/suggest.json?count=20&order=desc</a></li>
-  <li><a href="http://localhost:9000/api/suggest.json?count=20&orderby=messages_per_day&order=desc">http://localhost:9000/api/suggest.json?count=20&orderby=messages_per_day&order=desc</a></li>
-  <li><a href="http://localhost:9000/api/suggest.json?until=now&selectby=retrieval_next&orderby=retrieval_next&order=desc">http://localhost:9000/api/suggest.json?until=now&selectby=retrieval_next&orderby=retrieval_next&order=desc</a></li>
-  <li><a href="http://localhost:9000/api/suggest.json?q=&timezoneOffset=-60&count=90&source=query&order=asc&orderby=retrieval_next&until=now&selectby=retrieval_next&random=3&minified=true&port.http=9000&port.https=9443&peername=anonymous">http://localhost:9000/api/suggest.json?q=&timezoneOffset=-60&count=90&source=query&order=asc&orderby=retrieval_next&until=now&selectby=retrieval_next&random=3&minified=true&port.http=9000&port.https=9443&peername=anonymous</a></li>
+  <li><a href="http://localhost:9000/aaa/suggest.json?q=soj&orderby=query_count">http://localhost:9000/aaa/suggest.json?q=soj&orderby=query_count</a></li>
+  <li><a href="http://localhost:9000/aaa/suggest.json?count=20&order=asc">http://localhost:9000/aaa/suggest.json?count=20&order=asc</a></li>
+  <li><a href="http://localhost:9000/aaa/suggest.json?count=20&order=desc">http://localhost:9000/aaa/suggest.json?count=20&order=desc</a></li>
+  <li><a href="http://localhost:9000/aaa/suggest.json?count=20&orderby=messages_per_day&order=desc">http://localhost:9000/aaa/suggest.json?count=20&orderby=messages_per_day&order=desc</a></li>
+  <li><a href="http://localhost:9000/aaa/suggest.json?until=now&selectby=retrieval_next&orderby=retrieval_next&order=desc">http://localhost:9000/aaa/suggest.json?until=now&selectby=retrieval_next&orderby=retrieval_next&order=desc</a></li>
+  <li><a href="http://localhost:9000/aaa/suggest.json?q=&timezoneOffset=-60&count=90&source=query&order=asc&orderby=retrieval_next&until=now&selectby=retrieval_next&random=3&minified=true&port.http=9000&port.https=9443&peername=anonymous">http://localhost:9000/aaa/suggest.json?q=&timezoneOffset=-60&count=90&source=query&order=asc&orderby=retrieval_next&until=now&selectby=retrieval_next&random=3&minified=true&port.http=9000&port.https=9443&peername=anonymous</a></li>
 </ul><br/>
 <p>
 Delete operations are also possible for localhost clients by simply adding a <code>delete=true</code> to the call properties. This will produce a result set like without the delete property, but all data shown are deleted afterwards.
@@ -924,7 +924,7 @@ This API is therefore also a tool to generate location name suggestions.</p>
 <br/>
 <section id="crawler">
 <h2 class="sub-header">
-  <code>/api/crawler.json</code>
+  <code>/aaa/crawler.json</code>
 </h2>
 <div class="alert alert-warning" role="alert">This API has access limitations: localhost clients are granted more data than public clients.</div>
 <p>With the crawler servlet it is possible to retrieve mass-data
@@ -973,7 +973,7 @@ This API is therefore also a tool to generate location name suggestions.</p>
 <br/>
 <section id="hello">
 <h2 class="sub-header">
-  <code>/api/hello.json</code>
+  <code>/aaa/hello.json</code>
 </h2>
 <div class="alert alert-success" role="alert">This API is open and can be accessed without any restrictions!</div>
 <p>The hello servlet is part of the loklak peer-to-peer bootstrap process and shall be used to announce that a
@@ -1005,7 +1005,7 @@ network, then simply the field <code>backend</code> in the configuration must be
 <br/>
 <section id="geocode">
 <h2 class="sub-header">
-  <code>/api/geocode.json</code>
+  <code>/aaa/geocode.json</code>
 </h2>
 <div class="alert alert-success" role="alert">This API is open and can be accessed without any restrictions!</div>
 <p>
@@ -1017,11 +1017,11 @@ fuzziness). location coordinates are given as [lon,lat]
 Example usage:
 </p>
 <ul class="request">
-<li><a href="http://loklak.org/api/geocode.json?data={%22places%22:[%22Frankfurt%20am%20Main%22,%22New%20York%22,%22Singapore%22]}" target="_blank">http://loklak.org/api/geocode.json?data={%22places%22:[%22Frankfurt%20am%20Main%22,%22New%20York%22,%22Singapore%22]} 
+<li><a href="http://loklak.org/aaa/geocode.json?data={%22places%22:[%22Frankfurt%20am%20Main%22,%22New%20York%22,%22Singapore%22]}" target="_blank">http://loklak.org/aaa/geocode.json?data={%22places%22:[%22Frankfurt%20am%20Main%22,%22New%20York%22,%22Singapore%22]} 
 </a></li>
-<li> Other languages: <br> <a href="http://loklak.org/api/geocode.json?data={%22places%22:[%22%E5%9C%A3%E8%83%A1%E5%88%A9%E5%A8%85%20%E5%BE%B7%E6%B4%9B%E9%87%8C%E4%BA%9A%22]}" target="_blank">http://loklak.org/api/geocode.json?data={%22places%22:[%22%E5%9C%A3%E8%83%A1%E5%88%A9%E5%A8%85%20%E5%BE%B7%E6%B4%9B%E9%87%8C%E4%BA%9A%22]}</a></li>
-<li> Multiple Cities: <br><a href="http://loklak.org/api/geocode.json?minified=true&data={%22places%22:[%22Singapore%22,%20%22New%20York%22,%20%22Los%20Angeles%22]}" target="_blank">
-http://loklak.org/api/geocode.json?minified=true&data={%22places%22:[%22Singapore%22,%20%22New%20York%22,%20%22Los%20Angeles%22]}
+<li> Other languages: <br> <a href="http://loklak.org/aaa/geocode.json?data={%22places%22:[%22%E5%9C%A3%E8%83%A1%E5%88%A9%E5%A8%85%20%E5%BE%B7%E6%B4%9B%E9%87%8C%E4%BA%9A%22]}" target="_blank">http://loklak.org/aaa/geocode.json?data={%22places%22:[%22%E5%9C%A3%E8%83%A1%E5%88%A9%E5%A8%85%20%E5%BE%B7%E6%B4%9B%E9%87%8C%E4%BA%9A%22]}</a></li>
+<li> Multiple Cities: <br><a href="http://loklak.org/aaa/geocode.json?minified=true&data={%22places%22:[%22Singapore%22,%20%22New%20York%22,%20%22Los%20Angeles%22]}" target="_blank">
+http://loklak.org/aaa/geocode.json?minified=true&data={%22places%22:[%22Singapore%22,%20%22New%20York%22,%20%22Los%20Angeles%22]}
 </a></li>
 </ul>
 <p>
@@ -1063,7 +1063,7 @@ shortens this array to only one entry. The API also has reverse geocoding and fu
 <br/>
 <section id="peers">
 <h2 class="sub-header">
-  <code>/api/peers.json</code>
+  <code>/aaa/peers.json</code>
 </h2>
 <div class="alert alert-success" role="alert">This API is open and can be accessed without any restrictions!</div>
 <p>This servlet combined the result of the hello calls from all
@@ -1077,7 +1077,7 @@ shortens this array to only one entry. The API also has reverse geocoding and fu
     "port.http" : 80,
     "port.https" : 443,
     "lastSeen" : 1461655070398,
-    "lastPath" : "/api/suggest.json",
+    "lastPath" : "/aaa/suggest.json",
     "peername" : "anonymous"
   }, {
     "class" : "SuggestServlet",
@@ -1085,7 +1085,7 @@ shortens this array to only one entry. The API also has reverse geocoding and fu
     "port.http" : 80,
     "port.https" : 443,
     "lastSeen" : 1461654681535,
-    "lastPath" : "/api/suggest.json",
+    "lastPath" : "/aaa/suggest.json",
     "peername" : "anonymous"
   }, {
     "class" : "SuggestServlet",
@@ -1093,7 +1093,7 @@ shortens this array to only one entry. The API also has reverse geocoding and fu
     "port.http" : 9000,
     "port.https" : 9443,
     "lastSeen" : 1461655043101,
-    "lastPath" : "/api/suggest.json",
+    "lastPath" : "/aaa/suggest.json",
     "peername" : "anonymous"
   }, {
     "class" : "SuggestServlet",
@@ -1101,7 +1101,7 @@ shortens this array to only one entry. The API also has reverse geocoding and fu
     "port.http" : 80,
     "port.https" : 443,
     "lastSeen" : 1461654988168,
-    "lastPath" : "/api/suggest.json",
+    "lastPath" : "/aaa/suggest.json",
     "peername" : "anonymous"
   } ],
   "count" : 4
@@ -1115,7 +1115,7 @@ shortens this array to only one entry. The API also has reverse geocoding and fu
 <br/>
 <section id="proxy">
 <h2 class="sub-header">
-  <code>/api/proxy.json</code>
+  <code>/aaa/proxy.json</code>
 </h2>
 <div class="alert alert-danger" role="alert">This API has access restrictions: only localhost clients are granted.</div>
 <p>Either a URL or a screen_name can be passed to the API, or both. The
@@ -1124,8 +1124,8 @@ shortens this array to only one entry. The API also has reverse geocoding and fu
   the screen_name and no URL is given, the proxy returns the image of that user.
   If only a URL is given, the proxy.json tries to identify the url as user-
   related and loads the content.
-  To retrieve an image, there are three possible paths: <code>/api/proxy.gif</code>,
-    <code>/api/proxy.png</code>, or <code>/api/proxy.jpg</code>.
+  To retrieve an image, there are three possible paths: <code>/aaa/proxy.gif</code>,
+    <code>/aaa/proxy.png</code>, or <code>/aaa/proxy.jpg</code>.
 
   This API supports both GET and POST requests. The HTTP GET or POST request
   has these attributes:</p>
@@ -1148,7 +1148,7 @@ shortens this array to only one entry. The API also has reverse geocoding and fu
 <p>Retrieval of the image</p>
    <ul class="request">
 
-  <li><a href="http://localhost:9000/api/proxy.png?screen_name=loklak_app&url=https://pbs.twimg.com/profile_images/577512240640733184/fizL4YIn_bigger.png">http://localhost:9000/api/proxy.png?screen_name=loklak_app&url=https://pbs.twimg.com/profile_images/577512240640733184/fizL4YIn_bigger.png</a></li>
+  <li><a href="http://localhost:9000/aaa/proxy.png?screen_name=loklak_app&url=https://pbs.twimg.com/profile_images/577512240640733184/fizL4YIn_bigger.png">http://localhost:9000/aaa/proxy.png?screen_name=loklak_app&url=https://pbs.twimg.com/profile_images/577512240640733184/fizL4YIn_bigger.png</a></li>
 
   </ul><br/>
 
@@ -1160,7 +1160,7 @@ shortens this array to only one entry. The API also has reverse geocoding and fu
 <br/>
 <section id="push">
 <h2 class="sub-header">
-  <code>/api/push.json</code>
+  <code>/aaa/push.json</code>
 </h2>
 <div class="alert alert-warning" role="alert">This API has access limitations: localhost clients are granted more data than public clients.</div>
 <p>Whenever a peer acquires new Tweets, it reports these to the
@@ -1191,7 +1191,7 @@ shortens this array to only one entry. The API also has reverse geocoding and fu
 <br/>
 <section id="geojsonpush">
 <h2 class="sub-header">
-  <code>/api/push/geojson.json</code>
+  <code>/aaa/push/geojson.json</code>
 </h2>
 <div class="alert alert-success" role="alert">This API is open and can be accessed without any restrictions!</div>
 <p>
@@ -1271,16 +1271,16 @@ shortens this array to only one entry. The API also has reverse geocoding and fu
 <p>It's mandatory to mention the <code>SOURCE_TYPE</code> as <code>IMPORT</code> and also it's mandatory to have a <code>screen_name</code> parameter while performing the push to the geojson. The GeoJSON should follow a valid geojson feature format.</p>
 
 <p>
-  The servlet returns with the same information as <code>/api/push.json</code>.
+  The servlet returns with the same information as <code>/aaa/push.json</code>.
 <p>Here is an example:</p>
 <ul class="request">
   <li><a
-    href="http://localhost:9000/api/push/geojson.json?url=mysite.com/mygeojson.json&source_type=IMPORT&screen_name=test">http://localhost:9000/api/push/geojson.json?url=mysite.com/mygeojson.json&source_type=IMPORT&screen_name=test</a></li>
+    href="http://localhost:9000/aaa/push/geojson.json?url=mysite.com/mygeojson.json&source_type=IMPORT&screen_name=test">http://localhost:9000/aaa/push/geojson.json?url=mysite.com/mygeojson.json&source_type=IMPORT&screen_name=test</a></li>
 </ul><br/>
 <p>Another example, with 3 field mapping rules:</p>
 <ul class="request">
   <li><a
-    href="http://localhost:9000/api/push/geojson.json?url=mysite.com/mygeojson.json&source_type=IMPORT">http://localhost:9000/api/push/geojson.json?url=mysite.com/mygeojson.json&source_type=IMPORT&map_type=message_name:screen_name,username:user.name,user_shortname:user.screen_name</a></li>
+    href="http://localhost:9000/aaa/push/geojson.json?url=mysite.com/mygeojson.json&source_type=IMPORT">http://localhost:9000/aaa/push/geojson.json?url=mysite.com/mygeojson.json&source_type=IMPORT&map_type=message_name:screen_name,username:user.name,user_shortname:user.screen_name</a></li>
 </ul><br/>
 </section>
 <!-- ===================================================================== -->
@@ -1289,16 +1289,16 @@ shortens this array to only one entry. The API also has reverse geocoding and fu
 <br/>
 <section id="custompush">
 <h2 class="sub-header">
-  <code>/api/push/*.*</code>
+  <code>/aaa/push/*.*</code>
 </h2>
 <div class="alert alert-success" role="alert">This API is open and can be accessed without any restrictions!</div>
 <p>Numerous data formats are internally supported by loklak push feature, other than geojson. The main difference is that these formats are hardwired and do not support custom mapping rules. This is a non-exhaustive list of active push endpoints: </p>
 <ul class="request">
-  <li>/api/fossasia_api.json</li>
-  <li>/api/freifunk_node.json</li>
-  <li>/api/openwifimap.json</li>
-  <li>/api/nodelist.json</li>
-  <li>/api/netmon.xml</li>
+  <li>/aaa/fossasia_api.json</li>
+  <li>/aaa/freifunk_node.json</li>
+  <li>/aaa/openwifimap.json</li>
+  <li>/aaa/nodelist.json</li>
+  <li>/aaa/netmon.xml</li>
 </ul>
 
 <p>Required attributes are:</p>
@@ -1331,11 +1331,11 @@ shortens this array to only one entry. The API also has reverse geocoding and fu
 <br/>
 <section id="import">
 <h2 class="sub-header">
-  <code>/api/import.json</code>
+  <code>/aaa/import.json</code>
 </h2>
 <div class="alert alert-success" role="alert">This API is open and can be accessed without any restrictions!</div>
 
-<p>While pushing custom data using /api/push/*.json, loklak saves metadata of the push: collection frequency, lifetime, privacy status, etc.. in an object structure called ImportProfile. This API enables Read-Update-Delete operations on those objects. The type of action to performed is defined by `action` attribute: </p>
+<p>While pushing custom data using /aaa/push/*.json, loklak saves metadata of the push: collection frequency, lifetime, privacy status, etc.. in an object structure called ImportProfile. This API enables Read-Update-Delete operations on those objects. The type of action to performed is defined by `action` attribute: </p>
 <ul class="request">
   <li><div class="tabcol0">action</div>
     <div class="tabcol1">&nbsp;=&nbsp;&lt;action type&gt;</div>// accepted values are update|delete. Leave blank for read operation.
@@ -1372,7 +1372,7 @@ shortens this array to only one entry. The API also has reverse geocoding and fu
 <br/>
 <section id="validate">
 <h2 class="sub-header">
-  <code>/api/validate.json</code>
+  <code>/aaa/validate.json</code>
 </h2>
 <div class="alert alert-success" role="alert">This API is open and can be accessed without any restrictions!</div>
 <p>In loklak, before pushing custom data, the data format is validated against its corresponding JSON schema. This step ensures the data format is correct and helps users check their data even before pushing it. Required attributes are:</p>
@@ -1389,7 +1389,7 @@ shortens this array to only one entry. The API also has reverse geocoding and fu
 <br/></br>
 <section id="settings">
 <h2 class="sub-header">
-  <code>/api/settings.json</code>
+  <code>/aaa/settings.json</code>
 </h2>
 <div class="alert alert-danger" role="alert">This API has access restrictions: only localhost clients are granted.</div>
 <p>This servlet provides a method to provide the settings API
@@ -1422,7 +1422,7 @@ shortens this array to only one entry. The API also has reverse geocoding and fu
 </pre>
 <p>Here is an example :</p>
 <ul class="request">
-  <li><a href="http://localhost:9000/api/settings.json">http://localhost:9000/api/settings.json</a></li>
+  <li><a href="http://localhost:9000/aaa/settings.json">http://localhost:9000/aaa/settings.json</a></li>
 </ul><br/>
 </section>
 
@@ -1432,7 +1432,7 @@ shortens this array to only one entry. The API also has reverse geocoding and fu
 <br/>
 <section id="account">
 <h2 class="sub-header">
-  <code>/api/account.json</code>
+  <code>/aaa/account.json</code>
 </h2>
 <div class="alert alert-danger" role="alert">This API has access restrictions: only localhost clients are granted.</div>
 <p>This servlet provides the storage and retrieval of user account data.
@@ -1481,13 +1481,13 @@ shortens this array to only one entry. The API also has reverse geocoding and fu
 </pre>
 <p>You can set such a record i.e. with the call
 <ul class="request">
-  <li><a href="http://localhost:9000/api/account.json?action=update&data={%22screen_name%22:%22test%22,%22oauth_token%22:%22abc%22,%22oauth_token_secret%22:%22def%22}">http://localhost:9000/api/account.json?action=update&data={"screen_name":"test","oauth_token":"abc","oauth_token_secret":"def"}</a></li>
+  <li><a href="http://localhost:9000/aaa/account.json?action=update&data={%22screen_name%22:%22test%22,%22oauth_token%22:%22abc%22,%22oauth_token_secret%22:%22def%22}">http://localhost:9000/aaa/account.json?action=update&data={"screen_name":"test","oauth_token":"abc","oauth_token_secret":"def"}</a></li>
 </ul><br/>
 </p>
 
 <p>It can then be retrieved again with
 <ul class="request">
-  <li><a href="http://localhost:9000/api/account.json?screen_name=test">http://localhost:9000/api/account.json?screen_name=test</a></li>
+  <li><a href="http://localhost:9000/aaa/account.json?screen_name=test">http://localhost:9000/aaa/account.json?screen_name=test</a></li>
 </ul><br/>
 </p>
 
@@ -1497,7 +1497,7 @@ shortens this array to only one entry. The API also has reverse geocoding and fu
   settings, simply omit the OAuth details and just set apps
 <ul class="request">
   <li><a
-    href="http://localhost:9000/api/account.json?action=update&data={%22screen_name%22:%22test%22,%22apps%22:{%22wall%22:{%22type%22:%22horizontal%22}}}">http://localhost:9000/api/account.json?action=update&data={"screen_name":"test","apps":{"wall":{"type":"horizontal"}}}</a></li>
+    href="http://localhost:9000/aaa/account.json?action=update&data={%22screen_name%22:%22test%22,%22apps%22:{%22wall%22:{%22type%22:%22horizontal%22}}}">http://localhost:9000/aaa/account.json?action=update&data={"screen_name":"test","apps":{"wall":{"type":"horizontal"}}}</a></li>
 </ul><br/>
 </p>
 </section>
@@ -1508,13 +1508,13 @@ shortens this array to only one entry. The API also has reverse geocoding and fu
 <br/>
 <section id="user">
 <h2 class="sub-header">
-  <code>/api/user.json</code>
+  <code>/aaa/user.json</code>
 </h2>
 <div class="alert alert-success" role="alert">This API is open and can be accessed without any restrictions!</div>
 <p>This servlet provides the retrieval of user followers and the accounts which the user is following.
    Just submit the <code>screen_name</code> as GET http attribute. Example:
    <ul class="request">
-  <li><a href="http://loklak.org/api/user.json?screen_name=loklak_app">http://loklak.org/api/user.json?screen_name=loklak_app</a></li>
+  <li><a href="http://loklak.org/aaa/user.json?screen_name=loklak_app">http://loklak.org/aaa/user.json?screen_name=loklak_app</a></li>
    </ul><br/>
 </p>
 <pre>{
@@ -1603,7 +1603,7 @@ shortens this array to only one entry. The API also has reverse geocoding and fu
    This will produce a list of
    <code>&lt;maxcount&gt;</code> user entries in a 'topology' object. Example :
    <ul class="request">
-  <li><a href="http://loklak.org/api/user.json?screen_name=loklak_app&followers=10000&following=10000">http://loklak.org/api/user.json?screen_name=loklak_app&followers=10000&following=10000</a></li>
+  <li><a href="http://loklak.org/aaa/user.json?screen_name=loklak_app&followers=10000&following=10000">http://loklak.org/aaa/user.json?screen_name=loklak_app&followers=10000&following=10000</a></li>
    </ul><br/>
 </p>
 
@@ -1649,10 +1649,10 @@ shortens this array to only one entry. The API also has reverse geocoding and fu
 <br/>
 <section id="apps">
 <h2 class="sub-header">
-  <code>/api/apps.json</code>
+  <code>/aaa/apps.json</code>
 </h2>
 <div class="alert alert-success" role="alert">This API is open and can be accessed without any restrictions!</div>
-  <p>the json of <code>/api/apps.json</code> now contains two more objects:</p>
+  <p>the json of <code>/aaa/apps.json</code> now contains two more objects:</p>
   <ul>
     <li><p>"categories" with a list of category names</p></li>
     <li><p>"category" with an object which holds a list of the application names for each category.</p></li>
@@ -1660,7 +1660,7 @@ shortens this array to only one entry. The API also has reverse geocoding and fu
   <br/>
   <p>Furthermore, the servlet can now be called with an 'category' property, like:</p>
   <ul class="request">
-    <li><a href="http://loklak.org/api/apps.json?category=Demo">http://loklak.org/api/apps.json?category=Demo</a></li>
+    <li><a href="http://loklak.org/aaa/apps.json?category=Demo">http://loklak.org/aaa/apps.json?category=Demo</a></li>
   </ul>
   <br/>
   <p>This will reduce the app list to the sub-list which contains only apps from that category.</p>
@@ -1690,13 +1690,13 @@ shortens this array to only one entry. The API also has reverse geocoding and fu
 <br/>
 <section id="asset">
 <h2 class="sub-header">
-  <code>/api/asset</code>
+  <code>/aaa/asset</code>
 </h2>
 <div class="alert alert-warning" role="alert">This API has access limitations: localhost clients are granted more data than public clients.</div>
 
 <p>Storage of data must be done using POST http commands to servlet
-/api/asset and retrieval of data must be done using GET http commands to
-the same servlet /api/asset.</p>
+/aaa/asset and retrieval of data must be done using GET http commands to
+the same servlet /aaa/asset.</p>
 <p>POST request:
 <ul class="request">
   <li><div class="tabcol0">screen_name</div>
@@ -1710,14 +1710,14 @@ the same servlet /api/asset.</p>
 </ul></p>
 <p>For example,</p>
 <ul class="request">
-  <li><a href="http://localhost:9000/api/asset?id_str=608991531941425153&screen_name=loklak_messages&file=image0.png">http://localhost:9000/api/asset?id_str=608991531941425153&screen_name=loklak_messages&file=image0.png</a></li>
+  <li><a href="http://localhost:9000/aaa/asset?id_str=608991531941425153&screen_name=loklak_messages&file=image0.png">http://localhost:9000/aaa/asset?id_str=608991531941425153&screen_name=loklak_messages&file=image0.png</a></li>
 </ul><br/>
 <p>... with data in POST parameter stores the file from /Users/admin/Desktop/wall0.png as attachment
 for a message with id 608991531941425153 assigned to user
 loklak_messages under the name image0.png</p>
 <p>Retrieval of this file with the browser you can do with GET request to:
 <ul class="request">
-  <li><a href="http://localhost:9000/api/asset?id_str=608991531941425153&screen_name=loklak_messages&file=image0.png">http://localhost:9000/api/asset?id_str=608991531941425153&screen_name=loklak_messages&file=image0.png</a></li>
+  <li><a href="http://localhost:9000/aaa/asset?id_str=608991531941425153&screen_name=loklak_messages&file=image0.png">http://localhost:9000/aaa/asset?id_str=608991531941425153&screen_name=loklak_messages&file=image0.png</a></li>
 </ul><br/>
 </p>
 </section>
@@ -1727,11 +1727,11 @@ loklak_messages under the name image0.png</p>
 <br/>
 <section id="threaddump">
 <h2 class="sub-header">
-  <code>/api/threaddump.txt</code>
+  <code>/aaa/threaddump.txt</code>
 </h2>
 <div class="alert alert-warning" role="alert">This API has access limitations: localhost clients are granted more data than public clients.</div>
-<p>Simply download <a href="http://localhost:9000/api/threaddump.txt">http://localhost:9000/api/threaddump.txt</a> file. Either <strong>GET</strong> or <strong>POST</strong> request is valid for thread dump api. <strong>No parameter is needed in this api</strong>.</p>
-<p><a href="http://localhost:9000/api/threaddump.txt.">http://localhost:9000/api/threaddump.txt</a> contains the real-time information about loklak in JVM, including:</p>
+<p>Simply download <a href="http://localhost:9000/aaa/threaddump.txt">http://localhost:9000/aaa/threaddump.txt</a> file. Either <strong>GET</strong> or <strong>POST</strong> request is valid for thread dump api. <strong>No parameter is needed in this api</strong>.</p>
+<p><a href="http://localhost:9000/aaa/threaddump.txt.">http://localhost:9000/aaa/threaddump.txt</a> contains the real-time information about loklak in JVM, including:</p>
 <ul>
   <li>Memory usage</li>
   <li>Total running time</li>
@@ -1739,9 +1739,9 @@ loklak_messages under the name image0.png</p>
   <li>Status of individual threads</li>
   <li>Threads that have been terminated</li>
 </ul>
-<p>Thread dump can be used to track the memory use of loklak, and it helps developers to discover potential problems like memory leaks. There are six states that has been assigned to a thread, see further reading: <a href="https://docs.oracle.com/javase/7/docs/api/java/lang/Thread.State.html">Enum Thread.State</a></p>
+<p>Thread dump can be used to track the memory use of loklak, and it helps developers to discover potential problems like memory leaks. There are six states that has been assigned to a thread, see further reading: <a href="https://docs.oracle.com/javase/7/docs/aaa/java/lang/Thread.State.html">Enum Thread.State</a></p>
 <p>At the end of the thread dump is a list of running thread. This list may indicate the load of the server.</p>
-<p>Here is some example of <a href="http://localhost:9000/api/threaddump.txt">threaddump.txt</a>(The following example has been delibrately cut to fit in the document):</p>
+<p>Here is some example of <a href="http://localhost:9000/aaa/threaddump.txt">threaddump.txt</a>(The following example has been delibrately cut to fit in the document):</p>
 <pre>
   ************* Start Thread Dump Thu Dec 31 07:51:47 CET 2015 *******************
 
@@ -2002,7 +2002,7 @@ loklak_messages under the name image0.png</p>
 <!-- XML2JSON API Endpoint -->
 <section id="xml2json">
   <h2 class="sub-header">
-    <code>/api/xml2json.json</code>
+    <code>/aaa/xml2json.json</code>
   </h2>
   <p>Any well formed XML data source can be converted to JSON using the loklak's `xml2json.json` API endpoint. This servlet provides the ability to send data to loklak's API as XML and receive a JSON response.</p>
   <ul class="request">
@@ -2141,7 +2141,7 @@ loklak_messages under the name image0.png</p>
     &lt;/target&gt;
 &lt;/project&gt;
 </pre>
-<li>Query String: <a>http://localhost:9000/api/xml2json.json?data=&lt;xml&gt;</a></li>
+<li>Query String: <a>http://localhost:9000/aaa/xml2json.json?data=&lt;xml&gt;</a></li>
 <p>Resulting JSON
 <pre>
   {"project": {
@@ -2329,7 +2329,7 @@ loklak_messages under the name image0.png</p>
 <!-- CSV2JSON API Endpoint -->
 <section id="csv2json">
   <h2 class="sub-header">
-    <code>/api/csv2json.json</code>
+    <code>/aaa/csv2json.json</code>
   </h2>
   <p>Any well formed CSV data source can be converted to JSON using the loklak's `csv2json.json` API endpoint. This servlet provides the ability to send data to loklak's API as CSV and receive a JSON response. To do this, every CSV line ending with <code>\n</code> needs to be encoded as <code>%0A</code>. Then pass this information as a value to <code>data</code> and you'll get a response.</p>
   <ul class="request">
@@ -2339,13 +2339,13 @@ loklak_messages under the name image0.png</p>
       // This is the field which takes data=&lt;CSV,CSV,CSV%0ACSV,CSV,CSV&gt;
     </li>
   </ul>
-  <li>Query String: <a>http://localhost:9000/api/xml2json.json?data=&lt;csv&gt;</a></li>
+  <li>Query String: <a>http://localhost:9000/aaa/xml2json.json?data=&lt;csv&gt;</a></li>
   <pre>
   twittername,name,org
   0rb1t3r, Michael Peter Christen, FOSSASIA
   sudheesh001, Sudheesh Singanamalla, FOSSASIA
   </pre>
-  <p>Sample Query: <a href="http://localhost:9000/api/csv2json.json?data=twittername,name,org%0A0rb1t3r,Michael%20Peter%20Christen,FOSSASIA%0Asudheesh001,Sudheesh%20Singanamalla,FOSSASIA%0A">http://localhost:9000/api/csv2json.json?data=twittername,name,org%0A0rb1t3r,Michael%20Peter%20Christen,FOSSASIA%0Asudheesh001,Sudheesh%20Singanamalla,FOSSASIA%0A</a></p>
+  <p>Sample Query: <a href="http://localhost:9000/aaa/csv2json.json?data=twittername,name,org%0A0rb1t3r,Michael%20Peter%20Christen,FOSSASIA%0Asudheesh001,Sudheesh%20Singanamalla,FOSSASIA%0A">http://localhost:9000/aaa/csv2json.json?data=twittername,name,org%0A0rb1t3r,Michael%20Peter%20Christen,FOSSASIA%0Asudheesh001,Sudheesh%20Singanamalla,FOSSASIA%0A</a></p>
   <p>Output
   <pre>
 [

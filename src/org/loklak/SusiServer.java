@@ -70,26 +70,24 @@ import org.eclipse.jetty.server.SslConnectionFactory;
 import org.eclipse.jetty.security.ConstraintMapping;
 import org.eclipse.jetty.security.ConstraintSecurityHandler;
 import org.eclipse.jetty.security.authentication.BasicAuthenticator;
-import org.loklak.api.admin.AccessServlet;
-import org.loklak.api.admin.CampaignServlet;
-import org.loklak.api.admin.SettingsServlet;
-import org.loklak.api.admin.StatusService;
-import org.loklak.api.admin.ThreaddumpServlet;
-import org.loklak.api.cms.AppsService;
-import org.loklak.api.cms.AuthorizationDemoService;
-import org.loklak.api.cms.LoginService;
-import org.loklak.api.cms.PasswordRecoveryService;
-import org.loklak.api.cms.PasswordResetService;
-import org.loklak.api.cms.PublicKeyRegistrationService;
-import org.loklak.api.cms.SignUpService;
-import org.loklak.api.cms.Sitemap;
-import org.loklak.api.cms.TopMenuService;
-import org.loklak.api.cms.UserAccountPermissions;
-import org.loklak.api.cms.UserManagementService;
-import org.loklak.api.search.SusiService;
-import org.loklak.api.search.ConsoleService;
-import org.loklak.api.search.GenericScraper;
-import org.loklak.api.search.RSSReaderService;
+import org.loklak.api.aaa.AccessServlet;
+import org.loklak.api.aaa.AppsService;
+import org.loklak.api.aaa.AuthorizationDemoService;
+import org.loklak.api.aaa.LoginService;
+import org.loklak.api.aaa.PasswordRecoveryService;
+import org.loklak.api.aaa.PasswordResetService;
+import org.loklak.api.aaa.PublicKeyRegistrationService;
+import org.loklak.api.aaa.SignUpService;
+import org.loklak.api.aaa.Sitemap;
+import org.loklak.api.aaa.ThreaddumpServlet;
+import org.loklak.api.aaa.TopMenuService;
+import org.loklak.api.aaa.UserAccountPermissions;
+import org.loklak.api.aaa.UserManagementService;
+import org.loklak.api.aggregation.ConsoleService;
+import org.loklak.api.aggregation.GenericScraper;
+import org.loklak.api.aggregation.RSSReaderService;
+import org.loklak.api.aggregation.StatusService;
+import org.loklak.api.aggregation.SusiService;
 import org.loklak.api.vis.MapServlet;
 import org.loklak.api.vis.MarkdownServlet;
 import org.loklak.api.vis.PieChartServlet;
@@ -460,10 +458,8 @@ public class SusiServer {
 
         // add services
         services = new Class[]{
-                // admin
+                // aaa
                 StatusService.class,
-                
-                // cms
                 AppsService.class,
                 AuthorizationDemoService.class,
                 LoginService.class,
@@ -475,7 +471,7 @@ public class SusiServer {
                 UserManagementService.class,
                 UserAccountPermissions.class,
 
-                // search
+                // aggregation
                 ConsoleService.class,
                 RSSReaderService.class,
                 SusiService.class
@@ -488,15 +484,17 @@ public class SusiServer {
                 e.printStackTrace();
             }
         
-        // add servlets
-        servletHandler.addServlet(AccessServlet.class, "/api/access.json");
-        servletHandler.addServlet(AccessServlet.class, "/api/access.html");
-        servletHandler.addServlet(AccessServlet.class, "/api/access.txt");
-        servletHandler.addServlet(CampaignServlet.class, "/api/campaign.json");
-        servletHandler.addServlet(SettingsServlet.class, "/api/settings.json");
-        servletHandler.addServlet(GenericScraper.class, "/api/genericscraper.json");
-        servletHandler.addServlet(Sitemap.class, "/api/sitemap.xml");
-        servletHandler.addServlet(ThreaddumpServlet.class, "/api/threaddump.txt");
+        // aaa api
+        servletHandler.addServlet(AccessServlet.class, "/aaa/access.json");
+        servletHandler.addServlet(AccessServlet.class, "/aaa/access.html");
+        servletHandler.addServlet(AccessServlet.class, "/aaa/access.txt");
+        servletHandler.addServlet(Sitemap.class, "/aaa/sitemap.xml");
+        servletHandler.addServlet(ThreaddumpServlet.class, "/aaa/threaddump.txt");
+        
+        // aggregation api
+        servletHandler.addServlet(GenericScraper.class, "/aggregation/genericscraper.json");
+
+        // vis api
         servletHandler.addServlet(MarkdownServlet.class, "/vis/markdown.gif");
         servletHandler.addServlet(MarkdownServlet.class, "/vis/markdown.gif.base64");
         servletHandler.addServlet(MarkdownServlet.class, "/vis/markdown.png");
@@ -545,8 +543,6 @@ public class SusiServer {
         ipaccess.setHandler(securityHandler);
         
         SusiServer.server.setHandler(ipaccess);
-        
-        
     }
     
     private static void checkServerPorts(int httpPort, int httpsPort) throws IOException{

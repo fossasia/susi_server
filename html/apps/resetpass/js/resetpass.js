@@ -6,7 +6,7 @@ $(document).ready(function()
 	var regex;
 	var urltoken = getParameter('token');
 
-	$.ajax(	"/api/recoverpassword.json", {
+	$.ajax(	"/aaa/recoverpassword.json", {
 		data: { getParameters: true, token: urltoken },
 		dataType: 'json',
 		success: function (response) {
@@ -73,7 +73,7 @@ $(document).ready(function()
 		if(!total){
 			var newpass = $('#pass').val();
 
-			$.ajax(	"/api/resetpassword.json", {
+			$.ajax(	"/aaa/resetpassword.json", {
 				data: { token: urltoken, newpass: newpass },
 				dataType: 'json',
 				success: function (response) {

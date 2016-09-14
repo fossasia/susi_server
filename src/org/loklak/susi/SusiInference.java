@@ -24,7 +24,7 @@ import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
 import org.json.JSONObject;
-import org.loklak.api.search.ConsoleService;
+import org.loklak.api.aggregation.ConsoleService;
 
 /**
  * Automated reasoning systems need inference methods to move from one proof state to another.

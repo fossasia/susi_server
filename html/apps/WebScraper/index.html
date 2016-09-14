@@ -37,7 +37,7 @@
          
              $scope.Scrape = function() {
                 $scope.spinner=true;
-                 var QueryCommand = '/api/genericscraper.json?callback=JSON_CALLBACK&url=' + $scope.url;
+                 var QueryCommand = '/aaa/genericscraper.json?callback=JSON_CALLBACK&url=' + $scope.url;
                  $http.get(String(QueryCommand)).success(function(JSON) {
                   $scope.data = JSON;
                  });

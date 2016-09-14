@@ -33,7 +33,7 @@ $(document).ready(function() {
     }
 
     // global variables
-    var installationApiPath = "/api/installation.json";
+    var installationApiPath = "/aaa/installation.json";
     var nextButton;
 
     // prevent side from unloading

@@ -13,7 +13,7 @@ $(document).ready(function()
 
 	// get password parameters
 	var regex;
-    $.ajax(	"/api/pubkey_registration.json", {
+    $.ajax(	"/aaa/pubkey_registration.json", {
         data: { getParameters: true },
         dataType: 'json',
         success: function (response) {
@@ -115,7 +115,7 @@ $(document).ready(function()
             }
             //console.log(data);
 
-            $.ajax(	"/api/pubkey_registration.json", {
+            $.ajax(	"/aaa/pubkey_registration.json", {
                 data: data,
                 dataType: 'json',
                 success: function (response) {
