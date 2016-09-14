@@ -53,7 +53,7 @@ public class RSSReaderService extends AbstractAPIHandler implements APIHandler {
     }
 
     public String getAPIPath() {
-        return "/aggregation/rssreader.json";
+        return "/susi/rssreader.json";
     }
     
     @Override

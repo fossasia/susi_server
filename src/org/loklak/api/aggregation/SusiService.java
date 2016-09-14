@@ -47,7 +47,7 @@ public class SusiService extends AbstractAPIHandler implements APIHandler {
     }
 
     public String getAPIPath() {
-        return "/aggregation/chat.json";
+        return "/susi/chat.json";
     }
     
     @Override

@@ -458,7 +458,7 @@ public class SusiServer {
 
         // add services
         services = new Class[]{
-                // aaa
+                // aaa services
                 StatusService.class,
                 AppsService.class,
                 AuthorizationDemoService.class,
@@ -471,7 +471,7 @@ public class SusiServer {
                 UserManagementService.class,
                 UserAccountPermissions.class,
 
-                // aggregation
+                // susi search aggregation services
                 ConsoleService.class,
                 RSSReaderService.class,
                 SusiService.class
@@ -492,7 +492,7 @@ public class SusiServer {
         servletHandler.addServlet(ThreaddumpServlet.class, "/aaa/threaddump.txt");
         
         // aggregation api
-        servletHandler.addServlet(GenericScraper.class, "/aggregation/genericscraper.json");
+        servletHandler.addServlet(GenericScraper.class, "/susi/genericscraper.json");
 
         // vis api
         servletHandler.addServlet(MarkdownServlet.class, "/vis/markdown.gif");

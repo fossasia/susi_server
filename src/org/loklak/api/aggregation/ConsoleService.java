@@ -81,7 +81,7 @@ public class ConsoleService extends AbstractAPIHandler implements APIHandler {
     }
 
     public String getAPIPath() {
-        return "/aggregation/console.json";
+        return "/susi/console.json";
     }
     
     public final static SusiSkills dbAccess = new SusiSkills();
