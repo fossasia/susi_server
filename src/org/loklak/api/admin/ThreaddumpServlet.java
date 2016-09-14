@@ -51,7 +51,6 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.eclipse.jetty.util.log.Log;
 import org.loklak.Caretaker;
-import org.loklak.data.DAO;
 import org.loklak.http.RemoteAccess;
 import org.loklak.server.FileHandler;
 import org.loklak.server.Query;
@@ -180,21 +179,6 @@ public class ThreaddumpServlet extends HttpServlet {
         ThreadInfo[] threadinfo = threadbean.dumpAllThreads(true, true);
         for (ThreadInfo ti: threadinfo) {
             bufferappend(buffer, ti.getThreadName());
-        }
-
-        bufferappend(buffer, "");
-        bufferappend(buffer, "ELASTICSEARCH ClUSTER STATS");
-        bufferappend(buffer, DAO.clusterStats());
-
-        bufferappend(buffer, "");
-        bufferappend(buffer, "ELASTICSEARCH PENDING ClUSTER TASKS");
-        bufferappend(buffer, DAO.pendingClusterTasks());
-        
-        if (post.isLocalhostAccess()) {
-            // this can reveal private data, so keep it on localhost access only
-            bufferappend(buffer, "");
-            bufferappend(buffer, "ELASTICSEARCH NODE SETTINGS");
-            bufferappend(buffer, DAO.nodeSettings().toString());
         }
 
         FileHandler.setCaching(response, 10);

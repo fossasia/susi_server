@@ -21,7 +21,7 @@ package org.loklak.api.cms;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.loklak.LoklakServer;
+import org.loklak.SusiServer;
 import org.loklak.server.*;
 import org.loklak.tools.storage.JSONObjectWithDefault;
 
@@ -82,7 +82,7 @@ public class UserAccountPermissions extends AbstractAPIHandler implements APIHan
 			}
 		} else if(query.get("getServiceList", false)) {
 			JSONArray serviceList = new JSONArray();
-			for(Class<? extends Servlet> service: LoklakServer.services){
+			for(Class<? extends Servlet> service: SusiServer.services){
 				serviceList.put(service.getCanonicalName());
 			}
 			result.put("serviceList", serviceList);

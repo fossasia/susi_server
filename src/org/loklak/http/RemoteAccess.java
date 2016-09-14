@@ -26,6 +26,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.InetAddress;
 import java.net.URLDecoder;
 import java.net.UnknownHostException;
+import java.util.Base64;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -39,7 +40,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.Part;
 
-import org.elasticsearch.common.Base64;
 import org.loklak.data.DAO;
 import org.loklak.graphics.RasterPlotter;
 import org.loklak.server.Query;
@@ -230,7 +230,7 @@ public class RemoteAccess {
         ServletOutputStream sos = response.getOutputStream();
         if (fileType.fileType == FileType.PNG) {
             post.setResponse(response, fileType.base64 ? "application/octet-stream" : "image/png");
-            sos.write(fileType.base64 ? Base64.encodeBytes(matrix.pngEncode(1)).getBytes() : matrix.pngEncode(1));
+            sos.write(fileType.base64 ? Base64.getEncoder().encode(matrix.pngEncode(1)) : matrix.pngEncode(1));
         }
         if (fileType.fileType == FileType.GIF) {
             post.setResponse(response, fileType.base64 ? "application/octet-stream" : "image/gif");
@@ -238,7 +238,7 @@ public class RemoteAccess {
                 ByteArrayOutputStream baos = new ByteArrayOutputStream();
                 ImageIO.write(matrix.getImage(), "gif", baos);
                 baos.close();
-                sos.write(Base64.encodeBytes(baos.toByteArray()).getBytes());
+                sos.write(Base64.getEncoder().encode(baos.toByteArray()));
             } else {
                 ImageIO.write(matrix.getImage(), "gif", sos);
             }
@@ -249,7 +249,7 @@ public class RemoteAccess {
                 ByteArrayOutputStream baos = new ByteArrayOutputStream();
                 ImageIO.write(matrix.getImage(), "jpg", baos);
                 baos.close();
-                sos.write(Base64.encodeBytes(baos.toByteArray()).getBytes());
+                sos.write(Base64.getEncoder().encode(baos.toByteArray()));
             } else {
                 ImageIO.write(matrix.getImage(), "jpg", sos);
             }

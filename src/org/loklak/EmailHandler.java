@@ -29,7 +29,7 @@ import javax.mail.internet.MimeMessage;
 import org.eclipse.jetty.util.log.Log;
 import org.loklak.data.DAO;
 
-public class LoklakEmailHandler {
+public class EmailHandler {
 
 	public static final String EMAIL_PATTERN = "^[_A-Za-z0-9-\\+]+(\\.[_A-Za-z0-9-]+)*@"
 			+ "[A-Za-z0-9-]+(\\.[A-Za-z0-9]+)*(\\.[A-Za-z]{2,})$";

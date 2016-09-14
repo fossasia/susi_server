@@ -20,8 +20,8 @@
 package org.loklak.api.cms;
 
 import org.json.JSONObject;
-import org.loklak.LoklakEmailHandler;
-import org.loklak.LoklakInstallation;
+import org.loklak.EmailHandler;
+import org.loklak.SusiInstallation;
 import org.loklak.data.DAO;
 import org.loklak.server.*;
 import org.loklak.tools.storage.JSONObjectWithDefault;
@@ -59,12 +59,12 @@ public class InstallationPageService extends AbstractAPIHandler implements APIHa
 		JSONObject result = new JSONObject();
 
 		if(post.get("finish", false)){
-			LoklakInstallation.shutdown(0);
+			SusiInstallation.shutdown(0);
 			return null;
 		}
 
 		if(post.get("abort", false)){
-			LoklakInstallation.shutdown(1);
+			SusiInstallation.shutdown(1);
 			return null;
 		}
 
@@ -82,7 +82,7 @@ public class InstallationPageService extends AbstractAPIHandler implements APIHa
 			}
 
 			try {
-                LoklakEmailHandler.checkConnection(smtpHostName, smtpUsername, smtpPassword, smtpHostEncryption, smtpHostPort, smtpDisableCertificateChecking);
+                EmailHandler.checkConnection(smtpHostName, smtpUsername, smtpPassword, smtpHostEncryption, smtpHostPort, smtpDisableCertificateChecking);
 				return result;
 			}
 			catch (AuthenticationFailedException e) {
@@ -110,7 +110,7 @@ public class InstallationPageService extends AbstractAPIHandler implements APIHa
 
 		if(adminEmail != null && adminPassword != null){
 			// check email pattern
-			Pattern pattern = Pattern.compile(LoklakEmailHandler.EMAIL_PATTERN);
+			Pattern pattern = Pattern.compile(EmailHandler.EMAIL_PATTERN);
 			if (!pattern.matcher(adminEmail).matches()) {
 				throw new APIException(400, "no valid email address");
 			}

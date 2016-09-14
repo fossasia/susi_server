@@ -23,7 +23,7 @@ import java.io.IOException;
 import java.nio.file.Paths;
 
 import org.json.JSONObject;
-import org.loklak.LoklakEmailHandler;
+import org.loklak.EmailHandler;
 import org.loklak.data.DAO;
 import org.loklak.server.APIException;
 import org.loklak.server.APIHandler;
@@ -108,7 +108,7 @@ public class PasswordRecoveryService extends AbstractAPIHandler implements APIHa
 
 		String subject = "Password Recovery";
 		try {
-			LoklakEmailHandler.sendEmail(usermail, subject, getVerificationMailContent(token));
+			EmailHandler.sendEmail(usermail, subject, getVerificationMailContent(token));
 			result.put("message", "Recovery email sent to your email ID. Please check");
 		} catch (Exception e) {
 			result.put("message", e.getMessage());

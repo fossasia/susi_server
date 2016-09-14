@@ -26,7 +26,7 @@ import java.util.regex.Pattern;
 import javax.servlet.http.HttpServletResponse;
 
 import org.json.JSONObject;
-import org.loklak.LoklakEmailHandler;
+import org.loklak.EmailHandler;
 import org.loklak.data.DAO;
 import org.loklak.server.APIException;
 import org.loklak.server.APIHandler;
@@ -154,7 +154,7 @@ public class SignUpService extends AbstractAPIHandler implements APIHandler {
 		String password = post.get("password", null);
 
 		// check email pattern
-		Pattern pattern = Pattern.compile(LoklakEmailHandler.EMAIL_PATTERN);
+		Pattern pattern = Pattern.compile(EmailHandler.EMAIL_PATTERN);
 		if (!pattern.matcher(signup).matches()) {
 			throw new APIException(400, "no valid email address");
 		}
@@ -200,7 +200,7 @@ public class SignUpService extends AbstractAPIHandler implements APIHandler {
 			tokenAuthentication.put("one_time", true);
 
 			try {
-				LoklakEmailHandler.sendEmail(signup, "Loklak verification", getVerificationMailContent(token, identity.getName()));
+				EmailHandler.sendEmail(signup, "Loklak verification", getVerificationMailContent(token, identity.getName()));
 
 				result.put("message",
 						"You successfully signed-up! An email with a verification link was send to your address.");

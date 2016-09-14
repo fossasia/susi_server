@@ -20,20 +20,14 @@
 package org.loklak.api.admin;
 
 import java.io.IOException;
-import java.util.Date;
 import java.util.Enumeration;
-import java.util.List;
-
 import javax.servlet.http.HttpServletResponse;
 
-import org.elasticsearch.search.sort.SortOrder;
 import org.json.JSONObject;
 import org.loklak.Caretaker;
-import org.loklak.LoklakServer;
-import org.loklak.QueuedIndexing;
+import org.loklak.SusiServer;
 import org.loklak.data.DAO;
 import org.loklak.http.ClientConnection;
-import org.loklak.objects.QueryEntry;
 import org.loklak.server.APIException;
 import org.loklak.server.APIHandler;
 import org.loklak.server.AbstractAPIHandler;
@@ -89,8 +83,6 @@ public class StatusService extends AbstractAPIHandler implements APIHandler {
         } catch (IOException e) {}
         long backend_messages = backend_status_index_sizes == null ? 0 : ((Number) backend_status_index_sizes.get("messages")).longValue();
         long backend_users = backend_status_index_sizes == null ? 0 : ((Number) backend_status_index_sizes.get("users")).longValue();
-        long local_messages = DAO.countLocalMessages();
-        long local_users = DAO.countLocalUsers();
         
         post.setResponse(response, "application/javascript");
         
@@ -108,68 +100,24 @@ public class StatusService extends AbstractAPIHandler implements APIHandler {
         system.put("load_system_average", OS.getSystemLoadAverage());
         system.put("load_system_cpu", OS.getSystemCpuLoad());
         system.put("load_process_cpu", OS.getProcessCpuLoad());
-        system.put("server_threads", LoklakServer.getServerThreads());
-        system.put("server_uri", LoklakServer.getServerURI());
+        system.put("server_threads", SusiServer.getServerThreads());
+        system.put("server_uri", SusiServer.getServerURI());
 
         JSONObject index = new JSONObject(true);
-        long countLocalMinMessages  = DAO.countLocalMessages(60000L);
-        long countLocal10MMessages  = DAO.countLocalMessages(600000L);
-        long countLocalHourMessages = DAO.countLocalMessages(3600000L);
-        long countLocalDayMessages  = DAO.countLocalMessages(86400000L);
-        long countLocalWeekMessages = DAO.countLocalMessages(604800000L);
-        float mps1m  = countLocalMinMessages  / 60f;
-        float mps10m = countLocal10MMessages  / 600f;
-        float mps1h  = countLocalHourMessages / 3600f;
-        float mps1d  = countLocalDayMessages  / 86400f;
-        float mps1w  = countLocalWeekMessages / 604800f;
-        index.put("mps1m", mps1m);
-        index.put("mps10m", mps10m);
-        index.put("mps1h", mps1h);
-        index.put("mps1d", mps1d);
-        index.put("mps1w", mps1w);
-        index.put("mps", (int) Math.max(mps1d, Math.max(mps1h, Math.max(mps10m, mps1m)))); // best of 1d, 1h and 10m
         JSONObject messages = new JSONObject(true);
-        messages.put("size", local_messages + backend_messages);
-        messages.put("size_local", local_messages);
-        messages.put("size_local_minute", countLocalMinMessages);
-        messages.put("size_local_10minutes", countLocal10MMessages);
-        messages.put("size_local_hour", countLocalHourMessages);
-        messages.put("size_local_day", countLocalDayMessages);
-        messages.put("size_local_week", countLocalWeekMessages);
         messages.put("size_backend", backend_messages);
-        messages.put("stats", DAO.messages.getStats());
         JSONObject queue = new JSONObject(true);
-        queue.put("size", QueuedIndexing.getMessageQueueSize());
-        queue.put("maxSize", QueuedIndexing.getMessageQueueMaxSize());
-        queue.put("clients", QueuedIndexing.getMessageQueueClients());   
         messages.put("queue", queue);
         JSONObject users = new JSONObject(true);
-        users.put("size", local_users + backend_users);
-        users.put("size_local", local_users);
-        users.put("size_backend", backend_users);
-        users.put("stats", DAO.users.getStats());
         JSONObject queries = new JSONObject(true);
-        queries.put("size", DAO.countLocalQueries());
-        queries.put("stats", DAO.queries.getStats());
         JSONObject accounts = new JSONObject(true);
-        accounts.put("size", DAO.countLocalAccounts());
         JSONObject user = new JSONObject(true);
-        user.put("size", DAO.user_dump.size());
-        JSONObject followers = new JSONObject(true);
-        followers.put("size", DAO.followers_dump.size());
-        JSONObject following = new JSONObject(true);
-        following.put("size", DAO.following_dump.size());
         index.put("messages", messages);
         index.put("users", users);
         index.put("queries", queries);
         index.put("accounts", accounts);
         index.put("user", user);
-        index.put("followers", followers);
-        index.put("following", following);
-        if (DAO.getConfig("retrieval.queries.enabled", false)) {
-            List<QueryEntry> queryList = DAO.SearchLocalQueries("", 1000, "retrieval_next", "date", SortOrder.ASC, null, new Date(), "retrieval_next");
-            index.put("queries_pending", queryList.size());
-        } 
+
         
         JSONObject client_info = new JSONObject(true);
         client_info.put("RemoteHost", post.getClientHost());

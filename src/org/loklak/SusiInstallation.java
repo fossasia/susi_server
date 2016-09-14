@@ -67,10 +67,10 @@ import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 
-import static org.loklak.LoklakServer.readConfig;
+import static org.loklak.SusiServer.readConfig;
 
 
-public class LoklakInstallation {
+public class SusiInstallation {
 	
     public final static Set<String> blacklistedHosts = new ConcurrentHashSet<>();
     
@@ -158,7 +158,7 @@ public class LoklakInstallation {
 		}
         setServerHandler(dataFile);
         
-        LoklakInstallation.server.start();
+        SusiInstallation.server.start();
 
         // if this is not headless, we can open a browser automatically
         Browser.openBrowser("http://127.0.0.1:" + httpPort + "/");
@@ -179,7 +179,7 @@ public class LoklakInstallation {
             public void run() {
                 try {
                     Log.getLog().info("catched main termination signal");
-                    LoklakInstallation.server.stop();
+                    SusiInstallation.server.stop();
                     DAO.close();
                     Log.getLog().info("main terminated, goodby.");
 
@@ -193,7 +193,7 @@ public class LoklakInstallation {
 
         // ** wait for shutdown signal, do this with a kill HUP (default level 1, 'kill -1') signal **
         
-        LoklakInstallation.server.join();
+        SusiInstallation.server.join();
         Log.getLog().info("server terminated");
         
         // After this, the jvm processes all shutdown hooks and terminates then.
@@ -204,8 +204,8 @@ public class LoklakInstallation {
     private static void setupHttpServer(int httpPort, int httpsPort) throws Exception{
     	QueuedThreadPool pool = new QueuedThreadPool();
         pool.setMaxThreads(500);
-        LoklakInstallation.server = new Server(pool);
-        LoklakInstallation.server.setStopAtShutdown(true);
+        SusiInstallation.server = new Server(pool);
+        SusiInstallation.server.setStopAtShutdown(true);
         
         //http
         if(!httpsMode.equals(HttpsMode.ONLY)){
@@ -216,12 +216,12 @@ public class LoklakInstallation {
 	        	http_config.setSecurePort(httpsPort);
 	        }
 	        
-	        ServerConnector connector = new ServerConnector(LoklakInstallation.server);
+	        ServerConnector connector = new ServerConnector(SusiInstallation.server);
 	        connector.addConnectionFactory(new HttpConnectionFactory(http_config));
 	        connector.setPort(httpPort);
 	        connector.setName("httpd:" + httpPort);
 	        connector.setIdleTimeout(20000); // timout in ms when no bytes send / received
-	        LoklakInstallation.server.addConnector(connector);
+	        SusiInstallation.server.addConnector(connector);
         }
         
         //https
@@ -319,11 +319,11 @@ public class LoklakInstallation {
 	        SslConnectionFactory ssl = new SslConnectionFactory(sslContextFactory, "http/1.1");
 	        
 	        //ServerConnector sslConnector = new ServerConnector(LoklakServer.server, ssl, alpn, http2, http1);
-	        ServerConnector sslConnector = new ServerConnector(LoklakInstallation.server, ssl, http1);
+	        ServerConnector sslConnector = new ServerConnector(SusiInstallation.server, ssl, http1);
 	        sslConnector.setPort(httpsPort);
 	        sslConnector.setName("httpd:" + httpsPort);
 	        sslConnector.setIdleTimeout(20000); // timout in ms when no bytes send / received
-	        LoklakInstallation.server.addConnector(sslConnector);
+	        SusiInstallation.server.addConnector(sslConnector);
         }
     }
     
@@ -339,7 +339,7 @@ public class LoklakInstallation {
         if(redirect || auth){
         	
             org.eclipse.jetty.security.LoginService loginService = new org.eclipse.jetty.security.HashLoginService("LoklakRealm", DAO.conf_dir.getAbsolutePath() + "/http_auth");
-        	if(auth) LoklakInstallation.server.addBean(loginService);
+        	if(auth) SusiInstallation.server.addBean(loginService);
         	
         	Constraint constraint = new Constraint();
         	if(redirect) constraint.setDataConstraint(Constraint.DC_CONFIDENTIAL);
@@ -420,13 +420,13 @@ public class LoklakInstallation {
         gzipHandler.setHandler(handlerlist2);
         
         HashSessionIdManager idmanager = new HashSessionIdManager();
-        LoklakInstallation.server.setSessionIdManager(idmanager);
+        SusiInstallation.server.setSessionIdManager(idmanager);
         SessionHandler sessions = new SessionHandler(new HashSessionManager());
         sessions.setHandler(gzipHandler);
         securityHandler.setHandler(sessions);
         ipaccess.setHandler(securityHandler);
         
-        LoklakInstallation.server.setHandler(ipaccess);
+        SusiInstallation.server.setHandler(ipaccess);
         
         
     }

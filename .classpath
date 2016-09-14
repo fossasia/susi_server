@@ -23,25 +23,6 @@
 	<classpathentry kind="lib" path="lib/jetty-util-9.3.11.v20160721.jar"/>
 	<classpathentry kind="lib" path="lib/jetty-webapp-9.3.11.v20160721.jar"/>
 	<classpathentry kind="lib" path="lib/joda-time-2.9.4.jar"/>
-	<classpathentry kind="lib" path="lib/jackson-core-2.8.1.jar"/>
-	<classpathentry kind="lib" path="lib/jackson-dataformat-cbor-2.8.1.jar"/>
-	<classpathentry kind="lib" path="lib/jackson-dataformat-smile-2.8.1.jar"/>
-	<classpathentry kind="lib" path="lib/jackson-dataformat-yaml-2.8.1.jar"/>
-	<classpathentry kind="lib" path="lib/elasticsearch-2.4.0.jar"/>
-	<classpathentry kind="lib" path="lib/lucene-analyzers-common-5.5.2.jar"/>
-	<classpathentry kind="lib" path="lib/lucene-backward-codecs-5.5.2.jar"/>
-	<classpathentry kind="lib" path="lib/lucene-core-5.5.2.jar"/>
-	<classpathentry kind="lib" path="lib/lucene-grouping-5.5.2.jar"/>
-	<classpathentry kind="lib" path="lib/lucene-highlighter-5.5.2.jar"/>
-	<classpathentry kind="lib" path="lib/lucene-join-5.5.2.jar"/>
-	<classpathentry kind="lib" path="lib/lucene-memory-5.5.2.jar"/>
-	<classpathentry kind="lib" path="lib/lucene-misc-5.5.2.jar"/>
-	<classpathentry kind="lib" path="lib/lucene-queries-5.5.2.jar"/>
-	<classpathentry kind="lib" path="lib/lucene-queryparser-5.5.2.jar"/>
-	<classpathentry kind="lib" path="lib/lucene-sandbox-5.5.2.jar"/>
-	<classpathentry kind="lib" path="lib/lucene-spatial-5.5.2.jar"/>
-	<classpathentry kind="lib" path="lib/lucene-spatial3d-5.5.2.jar"/>
-	<classpathentry kind="lib" path="lib/lucene-suggest-5.5.2.jar"/>
 	<classpathentry kind="lib" path="lib/netty-3.10.6.Final.jar"/>
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="src" path="test"/>
@@ -51,8 +32,6 @@
 	<classpathentry kind="lib" path="lib/asm-commons-4.1.jar"/>
 	<classpathentry kind="lib" path="lib/jna-4.1.0.jar"/>
 	<classpathentry kind="lib" path="lib/jts-1.13.jar"/>
-	<classpathentry kind="lib" path="lib/twitter4j-core-4.0.2.jar"/>
-	<classpathentry kind="lib" path="lib/twitter4j-stream-4.0.2.jar"/>
 	<classpathentry kind="lib" path="lib/json-schema-validator-2.2.6-lib.jar" sourcepath="lib/json-schema-validator-2.2.6-lib.jar"/>
 	<classpathentry kind="lib" path="lib/commons-logging-1.2.jar"/>
 	<classpathentry kind="lib" path="lib/httpclient-4.5.2.jar"/>

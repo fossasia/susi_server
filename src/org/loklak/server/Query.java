@@ -29,7 +29,7 @@ import java.util.Set;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.loklak.LoklakServer;
+import org.loklak.SusiServer;
 import org.loklak.data.DAO;
 import org.loklak.http.AccessTracker;
 import org.loklak.http.RemoteAccess;
@@ -61,7 +61,7 @@ public class Query {
         
         this.track.setTimeSinceLastAccess(this.track.getDate().getTime() - RemoteAccess.latestVisit(this.track.getClassName(), clientHost));
         //System.out.println("*** this.time_since_last_access = " + this.time_since_last_access);
-        this.track.setDoSBlackout(LoklakServer.blacklistedHosts.contains(clientHost) || (!this.track.isLocalhostAccess() && (this.track.getTimeSinceLastAccess() < DAO.getConfig("DoS.blackout", 100))));
+        this.track.setDoSBlackout(SusiServer.blacklistedHosts.contains(clientHost) || (!this.track.isLocalhostAccess() && (this.track.getTimeSinceLastAccess() < DAO.getConfig("DoS.blackout", 100))));
         this.track.setDoSServicereduction(!this.track.isLocalhostAccess() && (this.track.getTimeSinceLastAccess() < DAO.getConfig("DoS.servicereduction", 1000)));
     }
     public void finalize() {
