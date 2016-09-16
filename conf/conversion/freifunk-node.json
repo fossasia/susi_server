@@ -1,7 +1,0 @@
-{
-  "rules" :
-  [
-    ["name", "text"],
-    ["geo", ["location_point", "location_mark"]]
-  ]
-}
