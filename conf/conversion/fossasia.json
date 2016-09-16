@@ -1,7 +1,0 @@
-{
-  "rules" :
-  [
-    ["name", "text"],
-    ["url", "link"]
-  ]
-}

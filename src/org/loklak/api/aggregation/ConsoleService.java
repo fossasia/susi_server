@@ -28,6 +28,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONTokener;
+import org.loklak.data.DAO;
 import org.loklak.http.ClientConnection;
 import org.loklak.server.APIException;
 import org.loklak.server.APIHandler;
@@ -90,7 +91,10 @@ public class ConsoleService extends AbstractAPIHandler implements APIHandler {
         dbAccess.put(Pattern.compile("SELECT +?(.*?) +?FROM +?" + serviceName + " +?WHERE +?query ??= ??'(.*?)' ??;"), (flow, matcher) -> {
             JSONObject serviceResponse;
             try {
-                ClientConnection cc = new ClientConnection(serviceURL + URLEncoder.encode(matcher.group(2), "UTF-8"));
+                String encodedQuery = URLEncoder.encode(matcher.group(2), "UTF-8");
+                int qp = serviceURL.indexOf("$query$");
+                String url = qp < 0 ? serviceURL + encodedQuery : serviceURL.substring(0,  qp) + encodedQuery + serviceURL.substring(qp + 7);
+                ClientConnection cc = new ClientConnection(url);
                 serviceResponse = new JSONObject(new JSONTokener(cc.inputStream));
                 cc.close();
             } catch (IOException | JSONException e) {serviceResponse = new JSONObject();}
@@ -136,7 +140,11 @@ public class ConsoleService extends AbstractAPIHandler implements APIHandler {
         // parameters
         String q = post.get("q", "");
         //int timezoneOffset = post.get("timezoneOffset", 0);
-        
+        try {
+            DAO.susi.observe(); // learn new console rules if there are new one
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         return dbAccess.inspire(q);
     }
     

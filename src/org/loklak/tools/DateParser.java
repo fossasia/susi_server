@@ -110,7 +110,6 @@ public class DateParser {
     
     public static void main(String[] args) {
         Calendar calendar = new GregorianCalendar();
-        TimeZone timeZone = calendar.getTimeZone();
         System.out.println("the date is           : " + calendar.getTime().getTime());
         System.out.println("the timezoneOffset is : " + getTimezoneOffset());
         String postDate = toPostDate(calendar.getTime());
