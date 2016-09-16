@@ -55,7 +55,7 @@
                {"type":"regex", "expression":"describe (?:(?:a )*)(.*)"},
                {"type":"regex", "expression":"please describe (?:(?:a )*)(.*)"},
                {"type":"regex", "expression":"please explain (?:(?:a )*)(.*)"} ],
-   "process":[ {"type":"console", "expression":"SELECT place[0] AS place, population, location[0] AS lon, location[1] AS lat FROM locations WHERE location='$1$';"}],
+   "process":[ {"type":"console", "expression":"SELECT place[0] AS place, population, location[0] AS lon, location[1] AS lat FROM locations WHERE query='$1$';"}],
    "actions":[ {"type":"answer", "select":"random", "phrases":[
     "$place$ is a place with a population of $population$. Here is a map: https://www.openstreetmap.org/#map=13/$lat$/$lon$"
    ]}]

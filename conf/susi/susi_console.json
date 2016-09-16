@@ -11,6 +11,12 @@
 			"parser":"json",
 			"data":"list",
 			"license":"Copyright by urbandictionary.com, http://about.urbandictionary.com/tos"
+		},
+		"locations":{
+			"url":"http://api.loklak.org/api/console.json?q=SELECT%20*%20FROM%20locations%20WHERE%20location='$query$';",
+			"parser":"json",
+			"data":"data",
+			"license":"Copyright by GeoNames"
 		}
 	}
 }
