@@ -2,7 +2,7 @@ apply plugin: 'java'
 
 jar {
     manifest {
-        attributes 'Main-Class': 'org.loklak.LoklakServer'
+        attributes 'Main-Class': 'org.loklak.SusiServer'
     }
 }
 
