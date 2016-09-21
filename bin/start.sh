@@ -26,7 +26,7 @@ fi
 # installation
 INSTALLATIONCONFIG="data/settings/installation.txt"
 if [ ! -f $INSTALLATIONCONFIG ]; then
-    echo "Loklak detected that you did not yet run the installation wizard."
+    echo "susi detected that you did not yet run the installation wizard."
     echo "It let's you setup an administrator account and a number of settings, but is not mandatory."
     echo "You can manually start it by running bin/installation.sh"
 
@@ -77,7 +77,7 @@ elif [ -n "$CUSTOMXmx" ]; then cmdline="$cmdline -Xmx$CUSTOMXmx";
 elif [ -n "$DFAULTXmx" ]; then cmdline="$cmdline -Xmx$DFAULTXmx";
 fi
 
-echo "starting loklak"
+echo "starting susi"
 echo "startup" > $STARTUPFILE
 
 cmdline="$cmdline -server -classpath $CLASSPATH -Dlog4j.configurationFile=$LOGCONFIG org.loklak.SusiServer >> data/loklak.log 2>&1 &";
@@ -97,11 +97,11 @@ done
 if [ -f $STARTUPFILE ] && [ $(ps -p $PID -o pid=) ]; then
 	CUSTOMPORT=$(grep -iw 'port.http' conf/config.properties | sed 's/^[^=]*=//' );
 	LOCALHOST=$(grep -iw 'shortlink.urlstub' conf/config.properties | sed 's/^[^=]*=//');
-	echo "loklak server started at port $CUSTOMPORT, open your browser at $LOCALHOST"
+	echo "susi server started at port $CUSTOMPORT, open your browser at $LOCALHOST"
 	rm -f $STARTUPFILE
 	exit 0
 else
-	echo "loklak server failed to start. See data/loklag.log for details. Here are the last logs:"
+	echo "susi server failed to start. See data/loklag.log for details. Here are the last logs:"
     tail data/loklak.log
 	rm -f $STARTUPFILE
 	exit 1

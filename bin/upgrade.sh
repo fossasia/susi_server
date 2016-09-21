@@ -4,6 +4,6 @@ echo "loading latest code changes"
 git pull origin master
 echo "clean up"
 ant clean
-echo "building loklak"
+echo "building susi"
 ant
 bin/restart.sh
