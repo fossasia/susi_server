@@ -70,6 +70,7 @@ public class FileHandler extends ResourceHandler implements Handler {
 
     @Override
     protected void doResponseHeaders(HttpServletResponse response, Resource resource, String mimeType) {
+	if (mimeType == null && resource.getName().endsWith(".css")) mimeType = "text/css";
         super.doResponseHeaders(response, resource, mimeType);
         // modify the caching strategy of ResourceHandler
         setCaching(response, this.expiresSeconds);
