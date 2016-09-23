@@ -22,10 +22,8 @@ package org.loklak;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
-import java.util.Random;
 import org.eclipse.jetty.util.log.Log;
 import org.loklak.data.DAO;
-import org.loklak.tools.DateParser;
 import org.loklak.tools.OS;
 
 
@@ -34,19 +32,12 @@ import org.loklak.tools.OS;
  * and data transmission asynchronously.
  */
 public class Caretaker extends Thread {
-
-    private static final Random random = new Random(System.currentTimeMillis());
     
     private boolean shallRun = true;
     
     public  final static long startupTime = System.currentTimeMillis();
-    private final static long upgradeWait = DateParser.DAY_MILLIS; // 1 day
+    private final static long upgradeWait = 60000; //DateParser.DAY_MILLIS; // 1 day
     public        static long upgradeTime = startupTime + upgradeWait;
-    private final static long helloPeriod = 600000; // one ping each 10 minutes
-    private       static long helloTime   = 0; // latest hello ping time
-
-    private static final int TIMELINE_PUSH_MINSIZE = 200;
-    private static final int TIMELINE_PUSH_MAXSIZE = 1000;
     
     /**
      * ask the thread to shut down
@@ -59,13 +50,11 @@ public class Caretaker extends Thread {
     
     @Override
     public void run() {
-        // send a message to other peers that I am alive
-        String[] remote = DAO.getConfig("backend", new String[0], ",");
         
         boolean busy = false;
         // work loop
         beat: while (this.shallRun) try {
-            // check upgrate time
+            // check upgrade time
             if (System.currentTimeMillis() > upgradeTime) {
                 // increase the upgrade time to prevent that the peer runs amok (re-tries the attempt all the time) when upgrade fails for any reason
                 upgradeTime = upgradeTime + upgradeWait;
