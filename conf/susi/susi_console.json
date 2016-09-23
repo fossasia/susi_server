@@ -17,6 +17,12 @@
 			"parser":"json",
 			"data":"data",
 			"license":"Copyright by GeoNames"
+		},
+		"yacy":{
+			"url":"http://yacy.searchlab.eu/yacysearch.json?query=",
+			"parser":"json",
+			"data":"channels[0].items",
+			"license":""
 		}
 	}
 }
