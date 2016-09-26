@@ -69,9 +69,7 @@ public class SusiPhrase {
             t = expression.indexOf(".*") >= 0 ? Type.regex : expression.indexOf('*') >= 0 ? Type.pattern : Type.minor;
         }
         
-        expression = expression.toLowerCase().replaceAll("\\#", "  ");
-        Matcher m;
-        while ((m = dspace.matcher(expression)).find()) expression = m.replaceAll(" ");
+        expression = normalizeExpression(expression);
         if ((t == Type.minor || t == Type.prior) && expression.indexOf(".*") >= 0) t = Type.regex;
         if ((t == Type.minor || t == Type.prior) && expression.indexOf('*') >= 0) t = Type.pattern;
         if (t == Type.pattern) expression = parsePattern(expression);
@@ -81,6 +79,17 @@ public class SusiPhrase {
         
         // measure the meat size
         this.meatsize = Math.min(99, extractMeat(expression).length());
+    }
+    
+    public static String normalizeExpression(String s) {
+        s = s.toLowerCase().replaceAll("\\#", "  ");
+        Matcher m;
+        while ((m = dspace.matcher(s)).find()) s = m.replaceAll(" ");
+        // to be considered: https://en.wikipedia.org/wiki/Wikipedia:List_of_English_contractionst
+        int p = -1;
+        while ((p = s.toLowerCase().indexOf("it's ")) >= 0) s = s.substring(0, p + 2) + " is " + s.substring(p + 5);
+        while ((p = s.toLowerCase().indexOf("what's ")) >= 0) s = s.substring(0, p + 4) + " is " + s.substring(p + 7);
+        return s;
     }
     
     public static JSONObject simplePhrase(String query, boolean prior) {

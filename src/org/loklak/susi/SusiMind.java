@@ -238,12 +238,18 @@ public class SusiMind {
      * @param maxcount
      * @return
      */
-    public List<SusiArgument> react(final String query, int maxcount, String client) {
+    public List<SusiArgument> react(String query, int maxcount, String client) {
+        // get the history
         List<SusiInteraction> previous_interactions = this.logs.getInteractions(client); // first entry is latest interaction
         SusiArgument latest_argument = new SusiArgument();
         for (int i = previous_interactions.size() - 1; i >= 0; i--) {
             latest_argument.think(previous_interactions.get(i).recallDispute());
         }
+        
+        // normalize the query
+        query = SusiPhrase.normalizeExpression(query);
+        
+        // find an answer
         List<SusiArgument> answers = new ArrayList<>();
         List<SusiIdea> ideas = creativity(query, latest_argument, 100);
         for (SusiIdea idea: ideas) {
