@@ -19,6 +19,7 @@
 
 package org.loklak.susi;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
@@ -70,7 +71,7 @@ public class SusiMind {
     
     private void observe(File path) throws IOException {
         for (File f: path.listFiles()) {
-            if (!f.isDirectory() && f.getName().endsWith(".json")) {
+            if (!f.isDirectory() && (f.getName().endsWith(".json") || f.getName().endsWith(".txt"))) {
                 if (!observations.containsKey(f) || f.lastModified() > observations.get(f)) {
                     observations.put(f, System.currentTimeMillis());
                     try {
@@ -84,9 +85,46 @@ public class SusiMind {
     }
     
     public SusiMind learn(File file) throws JSONException, FileNotFoundException {
-        JSONObject json = new JSONObject(new JSONTokener(new FileReader(file)));
-        //System.out.println(json.toString(2)); // debug
-        return learn(json);
+        if (file.getName().endsWith(".json")) {
+            JSONObject json = new JSONObject(new JSONTokener(new FileReader(file)));
+            //System.out.println(json.toString(2)); // debug
+            return learn(json);
+        }
+        if (file.getName().endsWith(".txt")) {
+            // read the text file and turn it into a rule json; then learn that
+            BufferedReader br = new BufferedReader(new FileReader(file));
+            JSONObject json = new JSONObject();
+            JSONArray rules = new JSONArray();
+            json.put("rules", rules);
+            String lastLine = "", line = "";
+            boolean prior = false;
+            try {readloop: while ((line = br.readLine()) != null) {
+                line = line.trim();
+                
+                // read metadata
+                if (line.startsWith("::")) {
+                    line = line.toLowerCase();
+                    if (line.startsWith("::minor")) prior = false;
+                    if (line.startsWith("::prior")) prior = true;
+                    lastLine = "";
+                    continue readloop;
+                }
+                
+                if (line.startsWith("#")) {
+                    lastLine = "";
+                    continue readloop;
+                }
+                
+                // read content
+                if (line.length() > 0 && lastLine.length() > 0) {
+                    // mid of conversation (last answer is query for next rule)
+                    rules.put(SusiRule.simpleRule(lastLine.split("\\|"), line.split("\\|"), prior));
+                }
+                lastLine = line;
+            }} catch (IOException e) {}
+            return learn(json);
+        }
+        return this;
     }
     
     public SusiMind learn(JSONObject json) {

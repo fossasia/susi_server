@@ -83,6 +83,13 @@ public class SusiPhrase {
         this.meatsize = Math.min(99, extractMeat(expression).length());
     }
     
+    public static JSONObject simplePhrase(String query, boolean prior) {
+        JSONObject json = new JSONObject();
+        json.put("type", prior ? Type.prior.name() : Type.minor.name());
+        json.put("expression", query);
+        return json;
+    }
+    
     public static String parsePattern(String expression) {
         if (expression.length() == 0 || expression.equals("*")) expression = CATCHALL_CAPTURE_GROUP_STRING;
         if ("?!:.".indexOf(expression.charAt(expression.length() - 1)) >= 0) expression = expression.substring(0, expression.length() - 1);

@@ -22,6 +22,7 @@ package org.loklak.susi;
 import java.util.ArrayList;
 import java.util.Random;
 
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 /**
@@ -50,6 +51,16 @@ public class SusiAction {
      */
     public SusiAction(JSONObject json) {
         this.json = json;
+    }
+
+    public static JSONObject simpleAction(String[] answers) {
+        JSONObject json = new JSONObject();
+        JSONArray phrases = new JSONArray();
+        json.put("type", ActionAnswerPurposeType.answer.name());
+        json.put("select", ActionAnswerType.random.name());
+        json.put("phrases", phrases);
+        for (String answer: answers) phrases.put(answer);
+        return json;
     }
     
     /**

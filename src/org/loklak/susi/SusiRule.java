@@ -163,6 +163,18 @@ public class SusiRule {
         //System.out.println("DEBUG RULE SCORE: id=" + this.id + ", score=" + this.score + ", action=" + action_subscore.get() + ", phrase=" + phrases_subscore.get() + ", process=" + process_subscore.get() + ", meta=" + phrases_meatscore.get() + ", subscore=" + user_subscore + ", pattern=" + phrases.get(0).toString() + (this.inferences.size() > 0 ? ", inference=" + this.inferences.get(0).getExpression() : ""));
     }
     
+    public static JSONObject simpleRule(String[] phrases, String[] answers, boolean prior) {
+        JSONObject json = new JSONObject();
+
+        JSONArray p = new JSONArray();
+        json.put("phrases", p);
+        for (String phrase: phrases) p.put(SusiPhrase.simplePhrase(phrase, prior));
+        JSONArray a = new JSONArray();
+        json.put("actions", a);
+        a.put(SusiAction.simpleAction(answers));        
+        return json;
+    }
+    
     public String toString() {
         /*
         String s = 
