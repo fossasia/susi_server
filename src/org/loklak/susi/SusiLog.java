@@ -17,7 +17,6 @@
  *  If not, see <http://www.gnu.org/licenses/>.
  */
 
-
 package org.loklak.susi;
 
 import java.io.File;
@@ -25,8 +24,10 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.json.JSONException;
@@ -73,7 +74,7 @@ public class SusiLog {
     }
     
     public class UserRecord {
-        private ArrayList<SusiInteraction> conversation; // first entry always has the latest interaction
+        private ArrayList<SusiInteraction> conversation = null; // first entry always has the latest interaction
         private File logdump;
         public UserRecord(String client) {
             this.conversation = new ArrayList<>();
@@ -82,20 +83,14 @@ public class SusiLog {
             this.logdump = new File(logpath, "log.txt");
             if (this.logdump.exists()) {
                 try {
-                    List<String> lines = Files.readAllLines(this.logdump.toPath());
-                    for (int i = lines.size() - 1; i >= 0; i--) {
-                        String line = lines.get(i);
-                        if (line.length() == 0) continue;
-                        SusiInteraction si = new SusiInteraction(new JSONObject(line));
-                        this.conversation.add(si);
-                        if (this.conversation.size() >= rc) break;
-                    }
+                    this.conversation = readLog(this.logdump, rc);
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
             }
         }
         public UserRecord add(SusiInteraction interaction) {
+            if (this.conversation == null) return this;
             this.conversation.add(0, interaction);
             if (this.conversation.size() > rc) this.conversation.remove(this.conversation.size() - 1);
             try {
@@ -105,6 +100,40 @@ public class SusiLog {
             }
             return this;
         }
+    }
+    
+    public static ArrayList<SusiInteraction> readLog(final File logdump, int count) throws IOException {
+        List<String> lines = Files.readAllLines(logdump.toPath());
+        ArrayList<SusiInteraction> conversation = new ArrayList<>();
+        for (int i = lines.size() - 1; i >= 0; i--) {
+            String line = lines.get(i);
+            if (line.length() == 0) continue;
+            SusiInteraction si = new SusiInteraction(new JSONObject(line));
+            conversation.add(si);
+            if (conversation.size() >= count) break;
+        }
+        return conversation;
+    }
+    
+    public TreeMap<Long, List<SusiInteraction>> getAllLogs() {
+        TreeMap<Long, List<SusiInteraction>> all = new TreeMap<>();
+        String[] clients = this.root.list();
+        for (String client: clients) {
+            File logpath = new File(this.root, client);
+            if (logpath.exists()) {
+                File logdump = new File(logpath, "log.txt");
+                if (logdump.exists()) try {
+                    ArrayList<SusiInteraction> conversation = readLog(logdump, Integer.MAX_VALUE);
+                    if (conversation.size() > 0) {
+                        Date d = conversation.get(0).getQueryDate();
+                        all.put(-d.getTime(), conversation);
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+        return all;
     }
     
 }

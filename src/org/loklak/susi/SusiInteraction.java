@@ -20,6 +20,7 @@
 package org.loklak.susi;
 
 import java.util.Base64;
+import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -65,6 +66,11 @@ public class SusiInteraction {
                     .collect(Collectors.toList()));
             return answer;
         }).collect(Collectors.toList())));
+    }
+    
+    public Date getQueryDate() {
+        String d = this.json.getString("query_date");
+        return AbstractObjectEntry.utcFormatter.parseDateTime(d).toDate();
     }
     
     /**

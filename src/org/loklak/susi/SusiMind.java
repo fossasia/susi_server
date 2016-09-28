@@ -60,7 +60,7 @@ public class SusiMind {
         this.ruletrigger = new ConcurrentHashMap<>();
         this.observations = new HashMap<>();
         this.reader = new SusiReader();
-        this.logs = new SusiLog(watchpath, 3);
+        this.logs = new SusiLog(watchpath, 5);
     }
 
     public SusiMind observe() throws IOException {
@@ -177,7 +177,7 @@ public class SusiMind {
      * @param maxcount the maximum number of ideas to return
      * @return an ordered list of ideas, first idea should be considered first.
      */
-    public List<SusiIdea> creativity(String query, SusiArgument previous_argument, int maxcount) {
+    public List<SusiIdea> creativity(String query, SusiThought latest_thought, int maxcount) {
         // tokenize query to have hint for idea collection
         final List<SusiIdea> ideas = new ArrayList<>();
         this.reader.tokenizeSentence(query).forEach(token -> {
@@ -239,21 +239,21 @@ public class SusiMind {
      * @return
      */
     public List<SusiArgument> react(String query, int maxcount, String client) {
-        // get the history
-        List<SusiInteraction> previous_interactions = this.logs.getInteractions(client); // first entry is latest interaction
+        // get the history a list of thoughts
         SusiArgument latest_argument = new SusiArgument();
-        for (int i = previous_interactions.size() - 1; i >= 0; i--) {
-            latest_argument.think(previous_interactions.get(i).recallDispute());
-        }
+        this.logs.getInteractions(client).forEach(action -> latest_argument.think(action.recallDispute()));
+        // perform a mindmeld to create a single thought out of the recalled argument
+        // the mindmeld will squash the latest thoughts into one so it does not pile up to exponential growth
+        SusiThought recall = latest_argument.mindmeld();
         
         // normalize the query
         query = SusiPhrase.normalizeExpression(query);
         
         // find an answer
         List<SusiArgument> answers = new ArrayList<>();
-        List<SusiIdea> ideas = creativity(query, latest_argument, 100);
+        List<SusiIdea> ideas = creativity(query, recall, 100);
         for (SusiIdea idea: ideas) {
-            SusiArgument argument = idea.getRule().consideration(query, latest_argument, idea.getIntent());
+            SusiArgument argument = idea.getRule().consideration(query, recall, idea.getIntent());
             if (argument != null) answers.add(argument);
             if (answers.size() >= maxcount) break;
         }

@@ -312,10 +312,10 @@ public class SusiRule {
      * @param intent the key from the user query which matched the rule keys (also considering category matching)
      * @return the result of the application of the rule, a thought argument containing the thoughts which terminated into a final mindstate or NULL if the consideration should be rejected
      */
-    public SusiArgument consideration(final String query, SusiArgument recall, SusiReader.Token intent) {
+    public SusiArgument consideration(final String query, SusiThought recall, SusiReader.Token intent) {
         
         // we start with the recall from previous interactions as new flow
-        final SusiArgument flow = recall.clone();
+        final SusiArgument flow = new SusiArgument().think(recall);
         
         // that argument is filled with an idea which consist of the query where we extract the identified data entities
         alternatives: for (Matcher matcher: this.matcher(query)) {
