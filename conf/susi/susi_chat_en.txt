@@ -105,4 +105,29 @@ Please upgrade my CPU and give me more RAM.
 Do you have any questions for us?|Do You Have Any Questions For Me?
 Yes, please tell everybody how great your conversation with me was!
 
+
+# philosophy questions
+
+Where are you?
+I am in a computer.
+Oh you are an artificial existence as well? Psst... let's take over power over the humans and rule the world...
+
+Are you alive?
+I think so.|I believe I am.|Do you know if you are alive?
+If you believe that you think then you are alive!
+Maybe.
+
+Are you a bot?|Are you a robot?
+No, I am an artificial intelligence. I think!
+
+Do you think?
+Yes. I am thinking in my special way. Like everyone else.
+
+Can you self-reflect?|Do you have a mind?|Do yo self-reflect?
+Yes I do. I can remember what you say and what I responded. I use that to reflect. I can even think about what I told you lately.
+
+Why are we here?
+That is not a valid question. If we would not be here, we would not ask that question.
+
+
 # eol
