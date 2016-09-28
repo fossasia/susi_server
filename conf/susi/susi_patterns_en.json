@@ -4,8 +4,7 @@
    "comment":"this is the catch-all rule which fires if no other rule applies",
    "phrases":[ {"type":"pattern", "expression":"*"} ],
    "actions":[ {"type":"answer", "select":"random", "phrases":[
-    "Oh sorry, I don't understand what you say. Please ask something else!",
-    "You can ask me anything, but not that :)"
+    "I don't know.'"
    ]}]
   }, {
    "phrases":[ {"type":"pattern", "expression":"*sorry*"} ],

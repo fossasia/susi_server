@@ -3,19 +3,32 @@
 	{
 		"keys"   :["what"],
 		"phrases":[{"type":"prior", "expression":"what did I say"}],
+		"process":[{"type":"flow", "expression":"SQUASH"}, {"type":"flow", "expression":"FIRST"}],
 		"actions":[{"type":"answer", "select":"random", "phrases":["you asked me: $query$"]}]
 	},
 	{
 		"keys"   :["what"],
 		"phrases":[{"type":"prior", "expression":"what did you say"}],
+		"process":[{"type":"flow", "expression":"SQUASH"}, {"type":"flow", "expression":"FIRST"}],
 		"actions":[{"type":"answer", "select":"random", "phrases":["I responded: $answer$"]}]
 	},
 	{
+		"keys"   :["what"],
+		"phrases":[{"type":"prior", "expression":"what did I say lately"}],
+		"process":[{"type":"flow", "expression":"SQUASH"}, {"type":"flow", "expression":"REST"}],
+		"actions":[{"type":"answer", "select":"random", "phrases":["you asked me lately: $query$"]}]
+	},
+	{
+		"keys"   :["what"],
+		"phrases":[{"type":"prior", "expression":"what did you say lately"}],
+		"process":[{"type":"flow", "expression":"SQUASH"}, {"type":"flow", "expression":"REST"}],
+		"actions":[{"type":"answer", "select":"random", "phrases":["I responded lately: $answer$"]}]
+	},
+	{
 		"keys"   :["set"],
-		"score"  :1000,
 		"phrases":[{"type":"pattern", "expression":"set * to *"}],
-		"process":[{"type":"flow", "expression":"SEE %1% AS variable FROM '$1$' MATCHING '(.*)' REGEX"},
-		           {"type":"flow", "expression":"SEE %1% AS value FROM '$2$' MATCHING '(.*)' REGEX"}],
+		"process":[{"type":"flow", "expression":"REMEMBER %1% AS variable FROM '$1$' MATCHING '(.*)' REGEX"},
+		           {"type":"flow", "expression":"REMEMBER %1% AS value FROM '$2$' MATCHING '(.*)' REGEX"}],
 		"actions":[{"type":"answer", "select":"random", "phrases":["I should set $variable$ to $value$"]}]
 	}
   ]
