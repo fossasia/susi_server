@@ -78,6 +78,7 @@ public class SusiMind {
                         learn(f);
                     } catch (Throwable e) {
                         DAO.severe("BAD JSON FILE: " + f.getAbsolutePath() + ", " + e.getMessage());
+                        e.printStackTrace();
                     }
                 }
             }
@@ -118,7 +119,9 @@ public class SusiMind {
                 // read content
                 if (line.length() > 0 && lastLine.length() > 0) {
                     // mid of conversation (last answer is query for next rule)
-                    rules.put(SusiRule.simpleRule(lastLine.split("\\|"), line.split("\\|"), prior));
+                    JSONObject rule = SusiRule.simpleRule(lastLine.split("\\|"), line.split("\\|"), prior);
+                    //System.out.println(rule.toString());
+                    rules.put(rule);
                 }
                 lastLine = line;
             }} catch (IOException e) {}
@@ -162,6 +165,25 @@ public class SusiMind {
             });
         
         return this;
+    }
+    
+    /**
+     * extract the mind system from the ruletrigger
+     * @return
+     */
+    public JSONObject getMind() {
+        JSONObject mind = new JSONObject(true);
+        this.ruletrigger.forEach((key, rulemap) -> {
+            JSONArray rules = new JSONArray();
+            mind.put(key, rules);
+            rulemap.forEach((hash, rule) -> {
+                JSONObject r = new JSONObject(true);
+                r.putAll(rule.toJSON());
+                r.put("hash", hash);
+                rules.put(r);
+            });
+        });
+        return mind;
     }
     
     /**

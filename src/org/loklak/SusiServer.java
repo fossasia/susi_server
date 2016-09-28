@@ -85,6 +85,7 @@ import org.loklak.api.aaa.UserAccountPermissions;
 import org.loklak.api.aaa.UserManagementService;
 import org.loklak.api.aggregation.ConsoleService;
 import org.loklak.api.aggregation.GenericScraper;
+import org.loklak.api.aggregation.MindService;
 import org.loklak.api.aggregation.RSSReaderService;
 import org.loklak.api.aggregation.StatusService;
 import org.loklak.api.aggregation.SusiService;
@@ -474,7 +475,8 @@ public class SusiServer {
                 // susi search aggregation services
                 ConsoleService.class,
                 RSSReaderService.class,
-                SusiService.class
+                SusiService.class,
+                MindService.class
         };
         for (Class<? extends Servlet> service: services)
             try {
