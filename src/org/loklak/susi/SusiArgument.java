@@ -49,28 +49,37 @@ public class SusiArgument implements Iterable<SusiThought> {
     }
     
     /**
-     * Get an impression of time which elapsed since the start of reasoning in this argument
-     * @return the number of thoughts
+     * Get an impression of time which elapsed since the start of reasoning in this argument.
+     * This uses the idea that 'time' is not a physical effect but simply the result of a delta operation
+     * on memory states (thus a 'psychic perception') while 'time' in the physical world (in this model)
+     * is just the wrong word for 'causality'. In that context: maybe the "constant perception of time"
+     * is what humans call "self-awareness". This could be the core of an artificial self-awareness.
+     * @return the number of thoughts within this argument, to be considered as perception of time
      */
     public int times() {
         return this.recall.size();
     }
     
     /**
-     * The mindstate is the current state of an argument
-     * @return the latest thought in a series of proof steps
+     * The 'mindstate' is the current state of an argument. Its the latest thought.
+     * This is the same operation as a 'top' for stacks.
+     * @return the latest thought in a series of proof steps in an argument
      */
     public SusiThought mindstate() {
         return remember(0);
     }
     
     /**
-     * The mindmeld is the combination of all thoughts into one
-     * @return the latest thought in a series of proof steps
+     * The mindmeld is the combination of all thoughts into one. It is a required operation in case
+     * that a previous argument is recalled and used to start a new one. This prevents that thinking
+     * creates ever increasing argument list; instead old arguments can be 'squashed' into one, like
+     * it's done with git commits.
+     * @return the squashed thoughts from an argument as one thought
      */
     public SusiThought mindmeld() {
         SusiThought meltedMind = new SusiThought();
         this.recall.forEach(memory -> meltedMind.mergeData(memory.getData()));
+        meltedMind.put("times", times()); // remember the length of the argument to create a perception of time based on number of thoughts
         return meltedMind;
     }
     
@@ -84,12 +93,38 @@ public class SusiArgument implements Iterable<SusiThought> {
         if (state < 0) return new SusiThought(); // empty mind!
         return this.recall.get(state);
     }
- 
+    
+    /**
+     * Re-Thinking removes the latest thought from the mind stack. It may be manipulated
+     * by any inference rules and then pushed again to the recall stack. This is needed to
+     * manipulate the backtracking stack within each element of an argument during inference
+     * processing.
+     * This is the same operation as a 'pop' on a stack.
+     * @return the latest thought in the argument, while the argument list shrinks by that element
+     */
+    public SusiThought rethink() {
+        if (this.recall.size() <= 0) return new SusiThought(); // empty mind!
+        SusiThought rethought = this.recall.remove(this.recall.size() - 1);
+        return rethought;
+    }
+    
+    /**
+     * Creating amnesia means to forget all thoughts in an argument.
+     * This can be used to squash the argument into one which contains the
+     * mindmeld thought from a state before the amnesia is called.
+     * @return the current (now empty) argument
+     */
+    public SusiArgument amnesia() {
+        this.recall.clear();
+        return this;
+    }
+    
     /**
      * Thinking is a series of thoughts, every new thought appends another thought to the argument.
      * A special situation may (or may not) occur if one thinking step does not produce a result.
      * Depending on the inference rule set that may mean that the consideration of the rule containing
      * the inferences was wrong and should be abandoned. This happens if mindstate().equals(thought).
+     * This is the same operation as a 'push' on a stack.
      * @param thought the next thought
      * @return self, the current argument
      */
@@ -99,7 +134,8 @@ public class SusiArgument implements Iterable<SusiThought> {
     }
     
     /**
-     * to remember larger sets of thoughts, we can also think arguments
+     * to remember larger sets of thoughts, we can also think arguments. All of the thoughts of the
+     * new arguments are pushed ontop of the recall thought stack.
      * @param argument
      * @return self, the current argument
      */

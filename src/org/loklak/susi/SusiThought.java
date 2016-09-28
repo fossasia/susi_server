@@ -218,7 +218,7 @@ public class SusiThought extends JSONObject {
         for (int i = 0; i < table1.length(); i++) {
             JSONObject j1i = table1.getJSONObject(i);
             while (t0c < table0.length() && anyObjectKeySame(j1i, table0.getJSONObject(t0c))) {t0c++;}
-            if (t0c >= table0.length()) table0.put(new JSONObject());
+            if (t0c >= table0.length()) table0.put(new JSONObject(true));
             table0.getJSONObject(t0c).putAll(table1.getJSONObject(i));
         }
         setData(table0);

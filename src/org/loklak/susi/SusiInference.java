@@ -23,6 +23,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
+import org.json.JSONArray;
 import org.json.JSONObject;
 import org.loklak.api.aggregation.ConsoleService;
 
@@ -79,36 +80,29 @@ public class SusiInference {
     
     private final static SusiSkills flowSkill = new SusiSkills();
     static {
+        flowSkill.put(Pattern.compile("SQUASH"), (flow, matcher) -> {
+            // perform a full mindmeld
+            if (flow == null) return new SusiThought();
+            SusiThought squashedArgument = flow.mindmeld();
+            flow.amnesia();
+            return squashedArgument;
+        });
         flowSkill.put(Pattern.compile("FIRST"), (flow, matcher) -> {
             // extract only the first row of a thought
-            SusiThought nextThought = new SusiThought();
-            SusiThought mindstate = flow.mindstate();
-            if (flow != null && mindstate.getCount() > 0) nextThought.getData().put(mindstate.getData().get(0));
-            return nextThought;
-        });
-        flowSkill.put(Pattern.compile("FIRST\\h+?(.*?)\\h*?"), (flow, matcher) -> {
-            SusiThought nextThought = new SusiThought();
-            SusiThought mindstate = flow.mindstate();
-            if (flow != null && mindstate.getCount() > 0) nextThought.getData().put(mindstate.getData().get(0));
-            return nextThought;
+            SusiThought recall = flow == null ? new SusiThought() : flow.rethink(); // removes/replaces the latest thought from the flow!
+            if (recall.getCount() > 0) recall.setData(new JSONArray().put(recall.getData().getJSONObject(0)));
+            return recall;
         });
         flowSkill.put(Pattern.compile("REST"), (flow, matcher) -> {
             // remove the first row of a thought and return the remaining
-            SusiThought nextThought = new SusiThought();
-            SusiThought mindstate = flow.mindstate();
-            if (flow != null && mindstate.getCount() > 0) nextThought.getData().put(mindstate.getData().remove(0));
-            return nextThought;
+            SusiThought recall = flow == null ? new SusiThought() : flow.rethink(); // removes/replaces the latest thought from the flow!
+            if (recall.getCount() > 0) recall.getData().remove(0);
+            return recall;
         });
-        flowSkill.put(Pattern.compile("REST\\h+?(.*?)\\h*?"), (flow, matcher) -> {
-            SusiThought nextThought = new SusiThought();
-            SusiThought mindstate = flow.mindstate();
-            if (flow != null && mindstate.getCount() > 0) nextThought.getData().put(mindstate.getData().remove(0));
-            return nextThought;
-        });
-        flowSkill.put(Pattern.compile("SEE\\h+?(.*?)\\h+?FROM\\h+?'(.*?)'\\h+?MATCHING\\h+?'(.*?)'\\h+?REGEX\\h*?"), (flow, matcher) -> {
+        flowSkill.put(Pattern.compile("REMEMBER\\h+?(.*?)\\h+?FROM\\h+?'(.*?)'\\h+?MATCHING\\h+?'(.*?)'\\h+?REGEX\\h*?"), (flow, matcher) -> {
             return see(flow, matcher.group(1), matcher.group(2), Pattern.compile(flow.unify(matcher.group(3))));
         });
-        flowSkill.put(Pattern.compile("SEE\\h+?(.*?)\\h+?FROM\\h+?'(.*?)'\\h+?MATCHING\\h+?'(.*?)'\\h+?PATTERN\\h*?"), (flow, matcher) -> {
+        flowSkill.put(Pattern.compile("REMEMBER\\h+?(.*?)\\h+?FROM\\h+?'(.*?)'\\h+?MATCHING\\h+?'(.*?)'\\h+?PATTERN\\h*?"), (flow, matcher) -> {
             return see(flow, matcher.group(1), matcher.group(2), Pattern.compile(SusiPhrase.parsePattern(flow.unify(matcher.group(3)))));
         });
         flowSkill.put(Pattern.compile("EXPECT\\h+?'(.*?)'\\h+?MATCHING\\h+?'(.*?)'\\h+?REGEX\\h*?"), (flow, matcher) -> {
@@ -137,8 +131,6 @@ public class SusiInference {
     }
     
     private static final SusiThought see(SusiArgument flow, String transferExpr, String expr, Pattern pattern) {
-        // there will be an empty thought as response if the pattern does not match
-        // having no match will cause a fail (triggered by empty thought), the rule is aborted
         // example: see $1$ as idea from ""
         SusiThought nextThought = new SusiThought();
         try {

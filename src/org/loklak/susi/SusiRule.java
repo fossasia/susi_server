@@ -78,7 +78,7 @@ public class SusiRule {
         this.actions = new ArrayList<>(p.length());
         p.forEach(q -> this.actions.add(new SusiAction((JSONObject) q)));
         final AtomicInteger action_subscore = new AtomicInteger(0);
-        this.actions.forEach(action -> action_subscore.set(Math.max(action_subscore.get(), action.getPurposeType().getSubscore())));
+        this.actions.forEach(action -> action_subscore.set(Math.max(action_subscore.get(), action.getDialogType().getSubscore())));
         
         // extract the inferences and the process subscore; there may be no inference at all
         final AtomicInteger process_subscore = new AtomicInteger(0);
@@ -141,7 +141,7 @@ public class SusiRule {
         this.score = 0;
 
         // (1) conversation plan from the answer purpose
-        this.score = this.score * SusiAction.ActionAnswerPurposeType.values().length + action_subscore.get();
+        this.score = this.score * SusiAction.DialogType.values().length + action_subscore.get();
         
         // (2) pattern score
         this.score = this.score * SusiPhrase.Type.values().length + phrases_subscore.get();
@@ -161,6 +161,21 @@ public class SusiRule {
         this.id = ((long) ids0.hashCode()) << 16 + ids1.hashCode();
         
         //System.out.println("DEBUG RULE SCORE: id=" + this.id + ", score=" + this.score + ", action=" + action_subscore.get() + ", phrase=" + phrases_subscore.get() + ", process=" + process_subscore.get() + ", meta=" + phrases_meatscore.get() + ", subscore=" + user_subscore + ", pattern=" + phrases.get(0).toString() + (this.inferences.size() > 0 ? ", inference=" + this.inferences.get(0).getExpression() : ""));
+    }
+    
+    public JSONObject toJSON() {
+        JSONObject json = new JSONObject(true);
+        json.put("id", id);
+        if (this.keys != null && this.keys.size() > 0) json.put("keys", new JSONArray(this.keys));
+        JSONArray p = new JSONArray(); this.phrases.forEach(phrase -> p.put(phrase.toJSON()));
+        json.put("phrases", p);
+        JSONArray i = new JSONArray(); this.inferences.forEach(inference -> i.put(inference.getJSON()));
+        json.put("process", i);
+        JSONArray a = new JSONArray(); this.actions.forEach(action -> a.put(action.toJSON()));
+        json.put("actions", a);
+        if (this.comment != null && this.comment.length() > 0) json.put("comment", comment);
+        if (score > 0) json.put("score", score);
+        return json;
     }
     
     public static JSONObject simpleRule(String[] phrases, String[] answers, boolean prior) {

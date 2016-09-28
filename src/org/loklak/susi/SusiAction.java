@@ -20,6 +20,7 @@
 package org.loklak.susi;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Random;
 
 import org.json.JSONArray;
@@ -32,9 +33,9 @@ import org.json.JSONObject;
  */
 public class SusiAction {
 
-    public static enum ActionType {answer, table, piechart;}
-    public static enum ActionAnswerType {random, roundrobin;}
-    public static enum ActionAnswerPurposeType {
+    public static enum RenderType {answer, table, piechart;}
+    public static enum SelectionType {random, roundrobin;}
+    public static enum DialogType {
         answer, question, reply;
         public int getSubscore() {
             return this.ordinal();
@@ -56,33 +57,44 @@ public class SusiAction {
     public static JSONObject simpleAction(String[] answers) {
         JSONObject json = new JSONObject();
         JSONArray phrases = new JSONArray();
-        json.put("type", ActionAnswerPurposeType.answer.name());
-        json.put("select", ActionAnswerType.random.name());
+        json.put("type", RenderType.answer.name());
+        json.put("select", SelectionType.random.name());
         json.put("phrases", phrases);
         for (String answer: answers) phrases.put(answer);
         return json;
     }
     
     /**
-     * Get the action type. That can be used to filter specific information from the action JSON object
+     * Get the render type. That can be used to filter specific information from the action JSON object
      * to create specific activities like 'saying' a sentence, painting a graph and so on.
      * @return the action type
      */
-    public ActionType getType() {
-        if (actionTypeCache == null) 
-            actionTypeCache = this.json.has("type") ? ActionType.valueOf(this.json.getString("type")) : null;
-        return actionTypeCache;
+    public RenderType getRenderType() {
+        if (renderTypeCache == null) 
+            renderTypeCache = this.json.has("type") ? RenderType.valueOf(this.json.getString("type")) : null;
+        return renderTypeCache;
     }
-    private ActionType actionTypeCache = null;
+    private RenderType renderTypeCache = null;
+
+    public DialogType getDialogType() {
+        if (this.getRenderType() != RenderType.answer) return DialogType.answer;
+        return getDialogType(getPhrases());
+    }
     
-    public ActionAnswerPurposeType getPurposeType() {
-        if (this.getType() != ActionType.answer) return ActionAnswerPurposeType.answer;
-        for (String phrase: getPhrases()) {
-            if (phrase.endsWith("?")) {
-                return phrase.indexOf(". ") >= 0 ? ActionAnswerPurposeType.reply : ActionAnswerPurposeType.question;
-            }
+    public static DialogType getDialogType(Collection<String> phrases) {
+        DialogType type = DialogType.answer;
+        for (String phrase: phrases) {
+            type = getDialogType(phrase);
+            if (type != DialogType.answer) return type;
         }
-        return ActionAnswerPurposeType.answer;
+        return DialogType.answer;
+    }
+    
+    public static DialogType getDialogType(String phrase) {
+        if (phrase.endsWith("?")) {
+            return phrase.indexOf(". ") >= 0 ? DialogType.reply : DialogType.question;
+        }
+        return DialogType.answer;
     }
     
     /**
@@ -128,7 +140,7 @@ public class SusiAction {
      * @return the action with the attribute "expression" instantiated by unification of the thought with the action
      */
     public SusiAction apply(SusiArgument thoughts) {
-        if (this.getType() == ActionType.answer && this.json.has("phrases")) {
+        if (this.getRenderType() == RenderType.answer && this.json.has("phrases")) {
             // transform the answer according to the data
             ArrayList<String> a = getPhrases();
             String phrase = a.get(random.nextInt(a.size()));
