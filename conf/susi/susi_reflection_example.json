@@ -27,9 +27,9 @@
 	{
 		"keys"   :["set"],
 		"phrases":[{"type":"pattern", "expression":"set * to *"}],
-		"process":[{"type":"flow", "expression":"REMEMBER %1% AS variable FROM '$1$' MATCHING '(.*)' REGEX"},
-		           {"type":"flow", "expression":"REMEMBER %1% AS value FROM '$2$' MATCHING '(.*)' REGEX"}],
-		"actions":[{"type":"answer", "select":"random", "phrases":["I should set $variable$ to $value$"]}]
+		"process":[{"type":"flow", "expression":"REMEMBER %1% AS varname FROM 'var_$1$' MATCHING '(.*)' REGEX"},
+                   {"type":"flow", "expression":"REMEMBER %1% AS _$varname$ FROM '$2$' MATCHING '(.*)' REGEX"}],
+		"actions":[{"type":"answer", "select":"random", "phrases":["I should set _$varname$ to $2$"]}]
 	}
   ]
 }

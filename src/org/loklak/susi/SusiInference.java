@@ -100,10 +100,10 @@ public class SusiInference {
             return recall;
         });
         flowSkill.put(Pattern.compile("REMEMBER\\h+?(.*?)\\h+?FROM\\h+?'(.*?)'\\h+?MATCHING\\h+?'(.*?)'\\h+?REGEX\\h*?"), (flow, matcher) -> {
-            return see(flow, matcher.group(1), matcher.group(2), Pattern.compile(flow.unify(matcher.group(3))));
+            return see(flow, flow.unify(matcher.group(1)), flow.unify(matcher.group(2)), Pattern.compile(flow.unify(matcher.group(3))));
         });
         flowSkill.put(Pattern.compile("REMEMBER\\h+?(.*?)\\h+?FROM\\h+?'(.*?)'\\h+?MATCHING\\h+?'(.*?)'\\h+?PATTERN\\h*?"), (flow, matcher) -> {
-            return see(flow, matcher.group(1), matcher.group(2), Pattern.compile(SusiPhrase.parsePattern(flow.unify(matcher.group(3)))));
+            return see(flow, flow.unify(matcher.group(1)), flow.unify(matcher.group(2)), Pattern.compile(SusiPhrase.parsePattern(flow.unify(matcher.group(3)))));
         });
         flowSkill.put(Pattern.compile("EXPECT\\h+?'(.*?)'\\h+?MATCHING\\h+?'(.*?)'\\h+?REGEX\\h*?"), (flow, matcher) -> {
             return see(flow, "*", matcher.group(1), Pattern.compile(flow.unify(matcher.group(2))));
@@ -130,6 +130,19 @@ public class SusiInference {
         // - cut (to stop backtracking)
     }
     
+    /**
+     * "see" defines a new thought based on the names given in the "transferExpr" and retrieved using the content of
+     * a variable in the "expr" expression using a matching in the given pattern. It can be used to check if something
+     * learned in the flow matches against a known pattern. When the matching is successful, that defines new knowledge
+     * pieces that are stored in the resulting thought thus extending an argument with new insights.
+     * The "transferExpr" must be constructed using variables of the name schema "%1%", "%2%", .. which contain matches
+     * of the variables from the expr retrieval in the flow with the pattern.
+     * @param flow the argument flow
+     * @param transferExpr SQL-like transfer expression, like "a AS akk, b AS bit". These defined variables stored in the flow as next thought
+     * @param expr the name of a variable entity in the argument flow. The content of that variable is matched in the pattern
+     * @param pattern the
+     * @return a new thought containing variables from the matcher in the pattern
+     */
     private static final SusiThought see(SusiArgument flow, String transferExpr, String expr, Pattern pattern) {
         // example: see $1$ as idea from ""
         SusiThought nextThought = new SusiThought();

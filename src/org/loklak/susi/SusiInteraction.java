@@ -75,13 +75,13 @@ public class SusiInteraction {
     
     /**
      * The interaction is the result of a though extraction. We can reconstruct
-     * the disput as list of last mindstates using the interaction data.
+     * the dispute as list of last mindstates using the interaction data.
      * @return a backtrackable thought reconstructed from the interaction data
      */    
     public SusiThought recallDispute() {
         SusiThought dispute = new SusiThought();
         if (this.json.has("answers")) {
-            JSONArray answers = this.json.getJSONArray("answers");
+            JSONArray answers = this.json.getJSONArray("answers"); // in most cases there is only one answer
             for (int i = answers.length() - 1; i >= 0; i--) {
                 SusiThought clonedThought = new SusiThought(answers.getJSONObject(i));
                 dispute.addObservation("query", this.json.getString("query"));  // we can unify "query" in queries
@@ -89,6 +89,14 @@ public class SusiInteraction {
                     clonedThought.getJSONArray("actions").getJSONObject(0).has("expression"))
                     dispute.addObservation("answer",
                             clonedThought.getJSONArray("actions").getJSONObject(0).getString("expression")); // we can unify with "answer" in queries
+                // add all data from the old dispute
+                JSONArray data = dispute.getData();
+                JSONArray clonedData = clonedThought.getData();
+                if (clonedData.length() > 0) {
+                    JSONObject row = clonedData.getJSONObject(0);
+                    row.keySet().forEach(key -> {if (key.startsWith("_")) dispute.addObservation(key, row.getString(key));});
+                    //data.put(clonedData.get(0));
+                }
             }
         }
         return dispute;

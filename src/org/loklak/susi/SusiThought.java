@@ -231,21 +231,51 @@ public class SusiThought extends JSONObject {
     }
     
     /**
-     * If during thinking we observe something that we want to memorize, we can memorize this here
+     * If during thinking we observe something that we want to memorize, we can memorize this here.
+     * We insert the new data always in front of existing same data to make it visible as primary
+     * backtracking option. This means that new observations are always more important than old
+     * observations but do not overwrite them; they can be used again in case that the new observation
+     * is not valid during inference computation.
      * @param featureName the object key
      * @param observation the object value
      * @return the thought
      */
     public SusiThought addObservation(String featureName, String observation) {
         JSONArray data = getData();
-        for (int i = 0; i < data.length(); i++) {
-            JSONObject spark = data.getJSONObject(i);
-            if (!spark.has(featureName)) {
-                spark.put(featureName, observation);
-                return this;
+        
+        // find first occurrence of key in rows
+        int rowc = 0; boolean found = false;
+        while (rowc < data.length()) {
+            JSONObject row = data.getJSONObject(rowc);
+            if (row.has(featureName)) found = true;
+            if (found) break;
+            rowc++;
+        }
+        if (found) {
+            // insert feature in front of row
+            if (rowc == 0) {
+                // insert a row and shift everything up
+                JSONArray newData = new JSONArray();
+                JSONObject row = new JSONObject();
+                row.put(featureName, observation);
+                newData.put(row);
+                for (Object o: data) newData.put(o);
+                this.setData(newData);
+            } else {
+                JSONObject row = data.getJSONObject(rowc - 1);
+                row.put(featureName, observation);
+            }
+        } else {
+            // insert into first line
+            if (data.length() == 0) {
+                JSONObject row = new JSONObject();
+                row.put(featureName, observation);
+                data.put(row);
+            } else {
+                JSONObject row = data.getJSONObject(0);
+                row.put(featureName, observation);
             }
         }
-        data.put(new JSONObject().put(featureName, observation));
         return this;
     }
     
