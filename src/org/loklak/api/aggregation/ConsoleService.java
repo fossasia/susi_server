@@ -89,22 +89,57 @@ public class ConsoleService extends AbstractAPIHandler implements APIHandler {
     
     public static void addGenericConsole(String serviceName, String serviceURL, String responseArrayObjectName) {
         dbAccess.put(Pattern.compile("SELECT +?(.*?) +?FROM +?" + serviceName + " +?WHERE +?query ??= ??'(.*?)' ??;"), (flow, matcher) -> {
-            JSONObject serviceResponse;
+            JSONTokener serviceResponse;
+            SusiThought json = new SusiThought();
             try {
                 String encodedQuery = URLEncoder.encode(matcher.group(2), "UTF-8");
                 int qp = serviceURL.indexOf("$query$");
                 String url = qp < 0 ? serviceURL + encodedQuery : serviceURL.substring(0,  qp) + encodedQuery + serviceURL.substring(qp + 7);
                 ClientConnection cc = new ClientConnection(url);
-                serviceResponse = new JSONObject(new JSONTokener(cc.inputStream));
+                serviceResponse = new JSONTokener(cc.inputStream);
+                json.setQuery(matcher.group(2));
+                SusiTransfer transfer = new SusiTransfer(matcher.group(1));
+                JSONArray data = parseJSONPath(serviceResponse, responseArrayObjectName);
                 cc.close();
-            } catch (IOException | JSONException e) {serviceResponse = new JSONObject();}
-            SusiThought json = new SusiThought();
-            json.setQuery(matcher.group(2));
-            SusiTransfer transfer = new SusiTransfer(matcher.group(1));
-            json.setData(transfer.conclude(serviceResponse.getJSONArray(responseArrayObjectName)));
-            json.setHits(json.getCount());
+                if (data != null) json.setData(transfer.conclude(data));
+                json.setHits(json.getCount());
+            } catch (IOException | JSONException e) {serviceResponse = null;}
             return json;
         });
+    }
+    
+    /**
+     * very simple JSONPath decoder which always creates a JSONArray as result
+     * @param tokener contains the parsed JSON
+     * @param jsonPath a path as defined by http://goessner.net/articles/JsonPath/
+     * @return a JSONArray with the data part of a console query
+     */
+    public static JSONArray parseJSONPath(JSONTokener tokener, String jsonPath) {
+        if (tokener == null) return null;
+        String[] dompath = jsonPath.split("\\.");
+        if (dompath == null || dompath.length < 1 || !dompath[0].equals("$")) return null; // wrong syntax of jsonPath
+        if (dompath.length == 1) {
+            // the tokener contains already the data array
+            return new JSONArray(tokener);
+        }
+        Object decomposition = null;
+        for (int domc = 1; domc < dompath.length; domc++) {
+            String path = dompath[domc];
+            int p = path.indexOf('[');
+            if (p < 0) {
+                decomposition = ((decomposition == null) ? new JSONObject(tokener) : ((JSONObject) decomposition)).get(path);
+            } else if (p == 0) {
+                int idx = Integer.parseInt(path.substring(1, path.length() - 1));
+                decomposition = ((decomposition == null) ? new JSONArray(tokener) : ((JSONArray) decomposition)).get(idx);
+            } else {
+                int idx = Integer.parseInt(path.substring(p + 1, path.length() - 1));
+                path = path.substring(0, p);
+                decomposition = ((decomposition == null) ? new JSONObject(tokener) : ((JSONObject) decomposition)).get(path);
+                decomposition = ((JSONArray) decomposition).get(idx);
+            }
+        }
+        if (decomposition instanceof JSONArray) return (JSONArray) decomposition;
+        return null;
     }
     
     static {

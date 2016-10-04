@@ -1,27 +1,31 @@
 {
 	"console":{
 		"wikidata":{
+		    "example":"http://127.0.0.1:4000/susi/console.json?q=%22SELECT%20*%20FROM%20wikidata%20WHERE%20query=%27football%27;%22",
 			"url":"https://www.wikidata.org/w/api.php?action=wbsearchentities&format=json&language=en&search=",
 			"parser":"json",
-			"data":"search",
+			"data":"$.search",
 			"license":"Creative Commons CC0 License"
 		},
 		"urbandictionary":{
+		    "example":"http://127.0.0.1:4000/susi/console.json?q=%22SELECT%20*%20FROM%20urbandictionary%20WHERE%20query=%27football%27;%22",
 			"url":"http://api.urbandictionary.com/v0/define?term=",
 			"parser":"json",
-			"data":"list",
+			"data":"$.list",
 			"license":"Copyright by urbandictionary.com, http://about.urbandictionary.com/tos"
 		},
 		"locations":{
+		    "example":"http://127.0.0.1:4000/susi/console.json?q=%22SELECT%20*%20FROM%20locations%20WHERE%20query=%27rome%27;%22",
 			"url":"http://api.loklak.org/api/console.json?q=SELECT%20*%20FROM%20locations%20WHERE%20location='$query$';",
 			"parser":"json",
-			"data":"data",
+			"data":"$.data",
 			"license":"Copyright by GeoNames"
 		},
 		"yacy":{
+		    "example":"http://127.0.0.1:4000/susi/console.json?q=%22SELECT%20title,%20link%20FROM%20yacy%20WHERE%20query=%27java%27;%22",
 			"url":"http://yacy.searchlab.eu/yacysearch.json?query=",
 			"parser":"json",
-			"data":"channels[0].items",
+			"data":"$.channels[0].items",
 			"license":""
 		}
 	}
