@@ -27,6 +27,13 @@
 			"parser":"json",
 			"data":"$.channels[0].items",
 			"license":""
+		},
+		"spelld-de":{
+		    "example":"http://127.0.0.1:4000/susi/console.json?q=%22SELECT%20*%20FROM%20spelld-de%20WHERE%20query=%27fox%20nox%27;%22",
+			"url":"http://spelld.searchlab.eu/spell.json?q=",
+			"parser":"json",
+			"data":"$.proposal",
+			"license":""
 		}
 	}
 }
