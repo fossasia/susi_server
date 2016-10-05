@@ -34,6 +34,72 @@
 			"parser":"json",
 			"data":"$.proposal",
 			"license":""
+		},
+		"messages":{
+		    "url":"http://api.loklak.org/api/console.json?q=SELECT%20*%20FROM%20messages%20WHERE%20query='$query$';",
+			"parser":"json",
+			"data":"$.data"
+		},
+		"messageid":{
+		    "url":"http://api.loklak.org/api/console.json?q=SELECT%20*%20FROM%20messages%20WHERE%20id='$query$';",
+			"parser":"json",
+			"data":"$.data"
+	    },
+		"queries":{
+		    "url":"http://api.loklak.org/api/console.json?q=SELECT%20*%20FROM%20queries%20WHERE%20query='$query$';",
+			"parser":"json",
+			"data":"$.data"
+		},
+		"users":{
+		    "url":"http://api.loklak.org/api/console.json?q=SELECT%20*%20FROM%20users%20WHERE%20screen_name='$query$';",
+			"parser":"json",
+			"data":"$.data"
+		},
+		"meetup":{
+		    "url":"http://api.loklak.org/api/console.json?q=SELECT%20*%20FROM%20meetup%20WHERE%20url='$query$';",
+			"parser":"json",
+			"data":"$.data"
+		},
+		"rss":{
+		    "url":"http://api.loklak.org/api/console.json?q=SELECT%20*%20FROM%20rss%20WHERE%20url='$query$';",
+			"parser":"json",
+			"data":"$.data"
+		},
+		"eventbrite":{
+		    "url":"http://api.loklak.org/api/console.json?q=SELECT%20*%20FROM%20eventbrite%20WHERE%20url='$query$';",
+			"parser":"json",
+			"data":"$.data"
+		},
+		"wordpress":{
+		    "url":"http://api.loklak.org/api/console.json?q=SELECT%20*%20FROM%20wordpress%20WHERE%20url='$query$';",
+			"parser":"json",
+			"data":"$.data"
+		},
+		"githubProfile":{
+		    "url":"http://api.loklak.org/api/console.json?q=SELECT%20*%20FROM%20githubProfile%20WHERE%20profile='$query$';",
+			"parser":"json",
+			"data":"$.data"
+		},
+		"locationwisetime":{
+		    "example":"http://127.0.0.1:4000/susi/console.json?q=%22SELECT%20*%20FROM%20locationwisetime%20WHERE%20query=%27london%27;%22",
+		    "url":"http://api.loklak.org/api/console.json?q=SELECT%20*%20FROM%20locationwisetime%20WHERE%20query='$query$';",
+			"parser":"json",
+			"data":"$.data"
+		},
+		"instagramprofile":{
+		    "url":"http://api.loklak.org/api/console.json?q=SELECT%20*%20FROM%20instagramprofile%20WHERE%20profile='$query$';",
+			"parser":"json",
+			"data":"$.data"
+		},
+		"wikigeodata":{
+		    "url":"http://api.loklak.org/api/console.json?q=SELECT%20*%20FROM%20wikigeodata%20WHERE%20place='$query$';",
+			"parser":"json",
+			"data":"$.data"
+		},
+		"quoraprofile":{
+		    "url":"http://api.loklak.org/api/console.json?q=SELECT%20*%20FROM%20quoraprofile%20WHERE%20profile='$query$';",
+			"parser":"json",
+			"data":"$.data"
 		}
 	}
 }
