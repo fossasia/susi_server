@@ -1,0 +1,21 @@
+Hallo *|Guten Tag|Susi
+Guten Tag. Wie kann ich helfen?
+
+Mein Name ist *|Ich heisse *
+Guten Tag $1$
+
+Ich habe ein Problem|Ich möchte etwas melden
+Bitte nennen Sie ihren Aufenhaltsort
+
+Ich bin in *
+Was habe Sie in $1$ beobachtet?
+
+Meine * ist kaputt|Die * ist kaputt|Die * funktioniert nicht
+Wenn die $1$ nicht geht, ist das für Sie betriebsverhindernd?
+
+Das * geht nicht
+Wenn das $1$ nicht geht, ist das für Sie betriebsverhindernd?
+
+Der * geht nicht
+Wenn der $1$ nicht geht, ist das für Sie betriebsverhindernd?
+
