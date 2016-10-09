@@ -4,7 +4,7 @@
    "comment":"this is the catch-all rule which fires if no other rule applies",
    "phrases":[ {"type":"pattern", "expression":"*"} ],
    "actions":[ {"type":"answer", "select":"random", "phrases":[
-    "I don't know.'"
+    "I don't know."
    ]}]
   }, {
    "phrases":[ {"type":"pattern", "expression":"*sorry*"} ],

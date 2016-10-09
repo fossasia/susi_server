@@ -36,7 +36,14 @@
 			"license":""
 		},
 		"messages":{
+		    "example":"http://127.0.0.1:4000/susi/console.json?q=%22SELECT%20*%20FROM%20messages%20WHERE%20query=%27loklak%27;%22",
 		    "url":"http://api.loklak.org/api/console.json?q=SELECT%20*%20FROM%20messages%20WHERE%20query='$query$';",
+			"parser":"json",
+			"data":"$.data"
+		},
+		"messages-group-by-screen_name":{
+		    "example":"http://127.0.0.1:4000/susi/console.json?q=%22SELECT%20*%20FROM%20messages-group-by-screen_name%20WHERE%20query=%27loklak%27;%22",
+		    "url":"http://api.loklak.org/api/console.json?q=SELECT%20*%20FROM%20messages%20WHERE%20query='$query$' GROUP BY screen_name;",
 			"parser":"json",
 			"data":"$.data"
 		},

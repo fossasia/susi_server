@@ -30,6 +30,17 @@
 		"process":[{"type":"flow", "expression":"REMEMBER %1% AS varname FROM 'var_$1$' MATCHING '(.*)' REGEX"},
                    {"type":"flow", "expression":"REMEMBER %1% AS _$varname$ FROM '$2$' MATCHING '(.*)' REGEX"}],
 		"actions":[{"type":"answer", "select":"random", "phrases":["I should set _$varname$ to $2$"]}]
+	},
+	{
+	    "comment":"this is an experiment"
+		"phrases":[{"type":"prior", "expression":"ask me anything"}],
+		"actions":[{"type":"answer", "select":"random", "phrases":["what is your name"]}]
+	},
+	{
+		"phrases":[{"type":"pattern", "expression":"*"}],
+		"process":[{"type":"flow", "expression":""},
+                   {"type":"flow", "expression":"REMEMBER %1% AS _$varname$ FROM '$2$' MATCHING '(.*)' REGEX"}],
+		"actions":[{"type":"answer", "select":"random", "phrases":["thank you $name$"]}]
 	}
   ]
 }

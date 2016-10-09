@@ -130,4 +130,10 @@ Why are we here?
 That is not a valid question. If we would not be here, we would not ask that question.
 
 
+# challenges
+
+Are you smart?
+I am super-smart!
+
+
 # eol
