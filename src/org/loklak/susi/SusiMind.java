@@ -71,7 +71,7 @@ public class SusiMind {
     
     private void observe(File path) throws IOException {
         for (File f: path.listFiles()) {
-            if (!f.isDirectory() && (f.getName().endsWith(".json") || f.getName().endsWith(".txt"))) {
+            if (!f.isDirectory() && !f.getName().startsWith(".") && (f.getName().endsWith(".json") || f.getName().endsWith(".txt"))) {
                 if (!observations.containsKey(f) || f.lastModified() > observations.get(f)) {
                     observations.put(f, System.currentTimeMillis());
                     try {

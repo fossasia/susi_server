@@ -33,7 +33,7 @@ import org.json.JSONObject;
  */
 public class SusiAction {
 
-    public static enum RenderType {answer, table, piechart;}
+    public static enum RenderType {answer, table, piechart, rss;}
     public static enum SelectionType {random, roundrobin;}
     public static enum DialogType {
         answer, question, reply;

@@ -653,5 +653,15 @@
 				"Here are the profile details on Instagram for $2$"
 			]}, {"type":"table"}]
 		},
+		{        
+			"keys"   :["search"],
+			"example":"Search freedom for everyone",
+			"phrases":[ {"type":"pattern", "expression":"search for *"},
+			 			{"type":"pattern", "expression":"search *"}],
+			"process":[ {"type":"console", "expression":"SELECT title,description,link FROM yacy WHERE query='$1$';"}],
+			"actions":[ {"type":"answer", "select":"random", "phrases":[
+				"Here is a web search result for $1$"
+			]}, {"type":"rss", "columns":["title","description","link"]}]
+		}
 	]
 }

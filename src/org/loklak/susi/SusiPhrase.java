@@ -60,7 +60,7 @@ public class SusiPhrase {
      */
     public SusiPhrase(JSONObject json) throws PatternSyntaxException {
         if (!json.has("expression")) throw new PatternSyntaxException("expression missing", "", 0);
-        String expression = json.getString("expression");
+        String expression = json.getString("expression").toLowerCase();
         Type t = Type.pattern;
         if (json.has("type")) try {
             t = Type.valueOf(json.getString("type"));
