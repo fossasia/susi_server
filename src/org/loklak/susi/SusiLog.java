@@ -84,7 +84,7 @@ public class SusiLog {
         // debug
         for (String c: this.root.list()) {
             getInteractions(c).forEach(i -> {
-                String query = i.getQuery();
+                String query = i.getQuery().toLowerCase();
                 String answer = i.getAnswer();
                 if (query.length() > 0 && failset.contains(answer)) this.unanswered.add(query);
                 //System.out.println("** DEBUG user " + c + "; q = " + query + "; a = " + answer);
@@ -95,7 +95,7 @@ public class SusiLog {
 
     public void removeUnanswered(String s) {
         if (this.unanswered == null) getUnanswered();
-        boolean removed = this.unanswered.remove(s);
+        boolean removed = this.unanswered.remove(s.toLowerCase());
         //if (removed) System.out.println("** removed unanswered " + s);
     }
     

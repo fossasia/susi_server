@@ -20,7 +20,9 @@
 package org.loklak.api.aggregation;
 
 import java.io.IOException;
+import java.util.Collection;
 import java.util.Set;
+import java.util.TreeSet;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -48,15 +50,23 @@ public class UnansweredServlet extends HttpServlet {
 
         final StringBuilder buffer = new StringBuilder(1000);
         Set<String> unanswered = DAO.susi.getUnanswered();
-        for (String s: unanswered) {
-            buffer.append(s);
-            buffer.append('\n');
-        }
+        Set<String> sorted = new TreeSet<>();
+        sorted.addAll(unanswered);
+        appendL(buffer, sorted, 0, 5);
+        appendL(buffer, sorted, 5, 20);
+        appendL(buffer, sorted, 20, Integer.MAX_VALUE);
         
         FileHandler.setCaching(response, 60);
         post.setResponse(response, "text/plain");
         response.getOutputStream().write(UTF8.getBytes(buffer.toString()));
         post.finalize();
+    }
+    
+    private static void appendL(StringBuilder buffer, Collection<String> c, int minLen, int maxLimit) {
+        for (String s: c) if (s.length() >= minLen && s.length() < maxLimit) {
+            buffer.append(s);
+            buffer.append('\n');
+        }
     }
     
 }

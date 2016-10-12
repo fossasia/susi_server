@@ -61,6 +61,7 @@ public class SusiMind {
         this.observations = new HashMap<>();
         this.reader = new SusiReader();
         this.logs = new SusiLog(watchpath, 5);
+        try {observe();} catch (IOException e) {}
     }
 
     public Set<String> getUnanswered() {
