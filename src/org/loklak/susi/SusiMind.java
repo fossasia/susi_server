@@ -41,7 +41,6 @@ import org.json.JSONTokener;
 import org.loklak.api.aggregation.ConsoleService;
 import org.loklak.data.DAO;
 import org.loklak.server.ClientIdentity;
-import org.loklak.susi.SusiReader.Token;
 
 public class SusiMind {
     
@@ -75,7 +74,14 @@ public class SusiMind {
                 if (!observations.containsKey(f) || f.lastModified() > observations.get(f)) {
                     observations.put(f, System.currentTimeMillis());
                     try {
-                        learn(f);
+                        JSONObject lesson = new JSONObject();
+                        if (f.getName().endsWith(".json")) {
+                            lesson = readJsonLesson(f);
+                        }
+                        if (f.getName().endsWith(".txt")) {
+                            lesson = readTextLesson(f);
+                        }
+                        learn(lesson);
                     } catch (Throwable e) {
                         DAO.severe("BAD JSON FILE: " + f.getAbsolutePath() + ", " + e.getMessage());
                         e.printStackTrace();
@@ -83,51 +89,51 @@ public class SusiMind {
                 }
             }
         }
+        
+        //this.ruletrigger.forEach((term, map) -> System.out.println("***DEBUG trigger " + term + " -> " + map.toString()));
+    }
+
+    public JSONObject readJsonLesson(File file) throws JSONException, FileNotFoundException {
+        JSONObject json = new JSONObject(new JSONTokener(new FileReader(file)));
+        //System.out.println(json.toString(2)); // debug
+        return json;
     }
     
-    public SusiMind learn(File file) throws JSONException, FileNotFoundException {
-        if (file.getName().endsWith(".json")) {
-            JSONObject json = new JSONObject(new JSONTokener(new FileReader(file)));
-            //System.out.println(json.toString(2)); // debug
-            return learn(json);
-        }
-        if (file.getName().endsWith(".txt")) {
-            // read the text file and turn it into a rule json; then learn that
-            BufferedReader br = new BufferedReader(new FileReader(file));
-            JSONObject json = new JSONObject();
-            JSONArray rules = new JSONArray();
-            json.put("rules", rules);
-            String lastLine = "", line = "";
-            boolean prior = false;
-            try {readloop: while ((line = br.readLine()) != null) {
-                line = line.trim();
-                
-                // read metadata
-                if (line.startsWith("::")) {
-                    line = line.toLowerCase();
-                    if (line.startsWith("::minor")) prior = false;
-                    if (line.startsWith("::prior")) prior = true;
-                    lastLine = "";
-                    continue readloop;
-                }
-                
-                if (line.startsWith("#")) {
-                    lastLine = "";
-                    continue readloop;
-                }
-                
-                // read content
-                if (line.length() > 0 && lastLine.length() > 0) {
-                    // mid of conversation (last answer is query for next rule)
-                    JSONObject rule = SusiRule.simpleRule(lastLine.split("\\|"), line.split("\\|"), prior);
-                    //System.out.println(rule.toString());
-                    rules.put(rule);
-                }
-                lastLine = line;
-            }} catch (IOException e) {}
-            return learn(json);
-        }
-        return this;
+    public JSONObject readTextLesson(File file) throws JSONException, FileNotFoundException {
+        // read the text file and turn it into a rule json; then learn that
+        BufferedReader br = new BufferedReader(new FileReader(file));
+        JSONObject json = new JSONObject();
+        JSONArray rules = new JSONArray();
+        json.put("rules", rules);
+        String lastLine = "", line = "";
+        boolean prior = false;
+        try {readloop: while ((line = br.readLine()) != null) {
+            line = line.trim();
+            
+            // read metadata
+            if (line.startsWith("::")) {
+                line = line.toLowerCase();
+                if (line.startsWith("::minor")) prior = false;
+                if (line.startsWith("::prior")) prior = true;
+                lastLine = "";
+                continue readloop;
+            }
+            
+            if (line.startsWith("#")) {
+                lastLine = "";
+                continue readloop;
+            }
+            
+            // read content
+            if (line.length() > 0 && lastLine.length() > 0) {
+                // mid of conversation (last answer is query for next rule)
+                JSONObject rule = SusiRule.simpleRule(lastLine.split("\\|"), line.split("\\|"), prior);
+                //System.out.println(rule.toString());
+                rules.put(rule);
+            }
+            lastLine = line;
+        }} catch (IOException e) {}
+        return json;
     }
     
     public SusiMind learn(JSONObject json) {
@@ -157,10 +163,10 @@ public class SusiMind {
                     Map<Long, SusiRule> l = this.ruletrigger.get(key);
                     if (l == null) {
                         l = new HashMap<>();
-                        Token keyToken = this.reader.tokenizeTerm(key);
-                        this.ruletrigger.put(keyToken.categorized, l);
+                        this.ruletrigger.put(key, l);
                     }
-                    l.put(rule.getID(), rule); 
+                    l.put(rule.getID(), rule);
+                    //System.out.println("***DEBUG: ADD RULE FOR KEY " + key + ": " + rule.toString());
                 });
             });
         
@@ -303,7 +309,8 @@ public class SusiMind {
             File init = new File(new File("conf"), "susi");
             File watch = new File(new File("data"), "susi");
             SusiMind mem = new SusiMind(init, watch);
-            mem.learn(new File("conf/susi/susi_cognition_000.json"));
+            JSONObject lesson = mem.readJsonLesson(new File("conf/susi/susi_cognition_000.json"));
+            mem.learn(lesson);
             System.out.println(mem.react("I feel funny"));
             System.out.println(mem.react("Help me!"));
         } catch (FileNotFoundException e) {

@@ -77,7 +77,7 @@ public class SusiReader {
             return "{" +
                     "\"original\"=\"" + original + "\"," +
                     "\"canonical\"=\"" + canonical + "\"," +
-                    "\"categorized\"=\"" + categorized + "\"," +
+                    "\"categorized\"=\"" + categorized + "\"" +
                     "}";
         }
     }
