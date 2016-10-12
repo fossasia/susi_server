@@ -73,6 +73,25 @@ public class SusiInteraction {
         return AbstractObjectEntry.utcFormatter.parseDateTime(d).toDate();
     }
     
+    public String getQuery() {
+        if (!this.json.has("query")) return "";
+        String q = this.json.getString("query");
+        return q == null ? "" : q;
+    }
+
+    public String getAnswer() {
+        if (!this.json.has("answers")) return "";
+        JSONArray a = this.json.getJSONArray("answers");
+        if (a.length() == 0) return "";
+        JSONObject b = a.getJSONObject(0);
+        if (!b.has("actions")) return "";
+        JSONArray c = b.getJSONArray("actions");
+        if (c.length() == 0) return "";
+        JSONObject d = c.getJSONObject(0);
+        if (!d.has("expression")) return "";
+        return d.getString("expression");
+    }
+    
     /**
      * The interaction is the result of a though extraction. We can reconstruct
      * the dispute as list of last mindstates using the interaction data.

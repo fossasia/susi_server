@@ -89,6 +89,7 @@ import org.loklak.api.aggregation.MindService;
 import org.loklak.api.aggregation.RSSReaderService;
 import org.loklak.api.aggregation.StatusService;
 import org.loklak.api.aggregation.SusiService;
+import org.loklak.api.aggregation.UnansweredServlet;
 import org.loklak.api.vis.MapServlet;
 import org.loklak.api.vis.MarkdownServlet;
 import org.loklak.api.vis.PieChartServlet;
@@ -485,6 +486,9 @@ public class SusiServer {
                 Log.getLog().warn(service.getName() + " instantiation error", e);
                 e.printStackTrace();
             }
+        
+        // susi api
+        servletHandler.addServlet(UnansweredServlet.class, "/susi/unanswered.txt");
         
         // aaa api
         servletHandler.addServlet(AccessServlet.class, "/aaa/access.json");

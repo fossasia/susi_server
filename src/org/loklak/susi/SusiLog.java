@@ -25,11 +25,16 @@ import java.nio.file.Files;
 import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.regex.Pattern;
 
+import org.eclipse.jetty.util.ConcurrentHashSet;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.loklak.tools.UTF8;
@@ -39,14 +44,76 @@ import org.loklak.tools.UTF8;
  */
 public class SusiLog {
 
+    private final static String[] failterms = new String[]{
+            "You can ask me anything, but not that :)",
+            "Oh sorry, I don't understand what you say. Please ask something else!",
+            "Das weiss ich leider nicht.",
+            "I don't know."
+    };
+    private final static String[] donotremoveunanswered = new String[] {
+            "was ?(.*)",
+            ".+ (?:.+ )+(.+)",
+            "(.*)",
+            "(.*) ?sorry ?(.*)",
+            "(.*) ?you ?(.*)",
+            "what ?(.*)",
+            "you ?(.*)"
+    };
+    private final static Set<String> failset = new HashSet<>();
+    private final static Set<String> dnruset = new HashSet<>();
+    static {
+        for (String t: failterms) failset.add(t);
+        for (String t: donotremoveunanswered) dnruset.add(t);
+    }
+    
     private File root;
     private int rc;
     private Map<String, UserRecord> logs;
+    private Set<String> unanswered;
     
     public SusiLog(File storageLocation, int rememberLatestCount) {
         this.root = storageLocation;
         this.rc = rememberLatestCount;
         this.logs = new ConcurrentHashMap<>();
+        this.unanswered = null;
+    }
+    
+    public Set<String> getUnanswered() {
+        if (this.unanswered != null) return this.unanswered;
+        this.unanswered = new ConcurrentHashSet<>();
+        // debug
+        for (String c: this.root.list()) {
+            getInteractions(c).forEach(i -> {
+                String query = i.getQuery();
+                String answer = i.getAnswer();
+                if (query.length() > 0 && failset.contains(answer)) this.unanswered.add(query);
+                //System.out.println("** DEBUG user " + c + "; q = " + query + "; a = " + answer);
+            });
+        }
+        return this.unanswered;
+    }
+
+    public void removeUnanswered(String s) {
+        if (this.unanswered == null) getUnanswered();
+        boolean removed = this.unanswered.remove(s);
+        //if (removed) System.out.println("** removed unanswered " + s);
+    }
+    
+    public void removeUnanswered(Pattern p) {
+        if (this.unanswered == null) getUnanswered();
+        if (dnruset.contains(p.pattern())) return;
+        boolean removed = this.unanswered.remove(p.pattern());
+        if (!removed) {
+            Iterator<String> i = this.unanswered.iterator();
+            while (i.hasNext()) {
+                String s = i.next();
+                if (p.matcher(s).matches()) {
+                    i.remove();
+                    removed = true;
+                }
+            }
+        }
+        if (removed) System.out.println("** removed unanswered " + p.pattern());
     }
     
     /**

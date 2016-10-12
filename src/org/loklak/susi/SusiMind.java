@@ -29,6 +29,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
@@ -62,6 +63,10 @@ public class SusiMind {
         this.logs = new SusiLog(watchpath, 5);
     }
 
+    public Set<String> getUnanswered() {
+        return this.logs.getUnanswered();
+    }
+    
     public SusiMind observe() throws IOException {
         observe(this.initpath);
         observe(this.watchpath);
@@ -166,6 +171,7 @@ public class SusiMind {
                         this.ruletrigger.put(key, l);
                     }
                     l.put(rule.getID(), rule);
+                    rule.getPhrases().forEach(phrase -> this.logs.removeUnanswered(phrase.getPattern()));
                     //System.out.println("***DEBUG: ADD RULE FOR KEY " + key + ": " + rule.toString());
                 });
             });
