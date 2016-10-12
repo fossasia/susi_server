@@ -7,6 +7,34 @@
     "I don't know."
    ]}]
   }, {
+   "comment":"just one or two character(s) as often used for testig",
+   "phrases":[
+   	{"type":"regex", "expression":"\\w"},
+   	{"type":"regex", "expression":"\\w\\w"},
+   	{"type":"regex", "expression":":.*"}
+   ],
+   "actions":[ {"type":"answer", "select":"random", "phrases":[
+    "That is not enough input, please try again",
+    "I guess that is a typo",
+    "What do you want to tell me with $1$?"
+   ]}]
+  }, {
+   "comment":"a question mark",
+   "phrases":[
+   	{"type":"regex", "expression":"\\?"}
+   ],
+   "actions":[ {"type":"answer", "select":"random", "phrases":[
+    "Are you unsure?","What are you asking?"
+   ]}]
+  }, {
+   "comment":"attempt to use a wildcard",
+   "phrases":[
+   	{"type":"regex", "expression":"\\*.*"}
+   ],
+   "actions":[ {"type":"answer", "select":"random", "phrases":[
+    "No wildcards please, just speak naturally."
+   ]}]
+  }, {
    "phrases":[ {"type":"pattern", "expression":"*sorry*"} ],
    "actions":[ {"type":"answer", "select":"random", "phrases":[
     "Please don't apologise.",

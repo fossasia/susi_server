@@ -32,7 +32,7 @@
 		"actions":[{"type":"answer", "select":"random", "phrases":["I should set _$varname$ to $2$"]}]
 	},
 	{
-	    "comment":"this is an experiment"
+	    "comment":"this is an experiment",
 		"phrases":[{"type":"prior", "expression":"ask me anything"}],
 		"actions":[{"type":"answer", "select":"random", "phrases":["what is your name"]}]
 	},
