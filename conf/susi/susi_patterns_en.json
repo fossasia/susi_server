@@ -7,18 +7,6 @@
     "I don't know."
    ]}]
   }, {
-   "comment":"just one or two character(s) as often used for testig",
-   "phrases":[
-   	{"type":"regex", "expression":"\\w"},
-   	{"type":"regex", "expression":"\\w\\w"},
-   	{"type":"regex", "expression":":.*"}
-   ],
-   "actions":[ {"type":"answer", "select":"random", "phrases":[
-    "That is not enough input, please try again",
-    "I guess that is a typo",
-    "What do you want to tell me with $1$?"
-   ]}]
-  }, {
    "comment":"a question mark",
    "phrases":[
    	{"type":"regex", "expression":"\\?"}
