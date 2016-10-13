@@ -1,0 +1,31 @@
+{"rules":[
+  {
+   "phrases":[	{"type":"regex", "expression":".+ (?:.+ )+(.+)"} ],
+   "process":[	{"type":"console", "expression":"SELECT text,retweet_count,favourites_count FROM messages WHERE query='you $1$ /pure' ORDER BY FAVOURITES_COUNT;"}],
+   "actions":[	{"type":"answer", "select":"random", "phrases":[
+     "$text$"
+   ]}]
+  }, {
+   "comment":"this is the catch-all rule which fires if no other rule applies",
+   "phrases":[ {"type":"pattern", "expression":"*"} ],
+   "actions":[ {"type":"answer", "select":"random", "phrases":[
+    "I don't know."
+   ]}]
+  }, {
+   "comment":"a question mark",
+   "phrases":[
+   	{"type":"regex", "expression":"\\?"}
+   ],
+   "actions":[ {"type":"answer", "select":"random", "phrases":[
+    "Are you unsure?","What are you asking?"
+   ]}]
+  }, {
+   "comment":"attempt to use a wildcard",
+   "phrases":[
+   	{"type":"regex", "expression":"\\*.*"}
+   ],
+   "actions":[ {"type":"answer", "select":"random", "phrases":[
+    "No wildcards please, just speak naturally."
+   ]}]
+  }
+]}

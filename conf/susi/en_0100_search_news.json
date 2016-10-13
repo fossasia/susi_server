@@ -1,8 +1,6 @@
-{
-	"rules":[
+{"rules":[
 		{
 			"keys"   :["president","election","america"],
-			"score"  :100,
 			"comment":"a statistical app which tries to predict the american presidential election",
 			"phrases":[	{"type":"prior", "expression":"Who will win the 2016 presidential election"},
 				{"type":"regex", "expression":"Who will (?:be|become) the next us president"}
@@ -104,83 +102,7 @@
 				"Here is the list of articles from $4$"
 			]}, {"type":"table", "columns":["title"]}]
 		},
-		{
-			"keys"   :["eventbrite", "event"],
-			"score"  :1,
-			"example":"Susi, where is the event billets-europeade-2016-concert-de-musique-vocale-25592599153 being held ?",
-			"phrases":[ {"type":"pattern", "expression":"* event * held *"}
-			],
-			"process":[ {"type":"console", "expression":"SELECT location_name,latitude,longitude FROM eventbrite WHERE url='https://www.eventbrite.com/e/$2$';"}],
-			"actions":[ {"type":"answer", "select":"random", "phrases":[
-				"Here is the exact location of the event $2$"
-			]}, {"type":"table", "columns":["location_name", "latitude", "longitude"]}]
-		},
-		{
-			"keys"   :["eventbrite", "event"],
-			"score"  :1,
-			"example":"Susi, where can I buy tickets for the event billets-europeade-2016-concert-de-musique-vocale-25592599153 ?",
-			"phrases":[ {"type":"pattern", "expression":"* tickets * event *"}
-			],
-			"process":[ {"type":"console", "expression":"SELECT ticket_url FROM eventbrite WHERE url='https://www.eventbrite.com/e/$3$';"}],
-			"actions":[ {"type":"answer", "select":"random", "phrases":[
-				"Go, buy your tickets as soon as possible !"
-			]}, {"type":"table"}]
-		},
-		{
-			"keys"   :["eventbrite", "event"],
-			"score"  :1,
-			"example":"Susi, who is organizing the event billets-europeade-2016-concert-de-musique-vocale-25592599153 ?",
-			"phrases":[ {"type":"pattern", "expression":"* who * organizing * event *"}
-			],
-			"process":[ {"type":"console", "expression":"SELECT organizer_name, organizer_description, organizer_contact_info, organizer_link, organizer_website FROM eventbrite WHERE url='https://www.eventbrite.com/e/$4$';"}],
-			"actions":[ {"type":"answer", "select":"random", "phrases":[
-				"Here is the name of the organizer details.."
-			]}, {"type":"table"}]
-		},
-		{
-			"keys"   :["eventbrite", "event"],
-			"score"  :1,
-			"example":"Susi, Tell me more about the event billets-europeade-2016-concert-de-musique-vocale-25592599153 ?",
-			"phrases":[ {"type":"pattern", "expression":"* about * event *"}
-			],
-			"process":[ {"type":"console", "expression":"SELECT description, location_name, organizer_name, start_time, end_time FROM eventbrite WHERE url='https://www.eventbrite.com/e/$3$';"}],
-			"actions":[ {"type":"answer", "select":"random", "phrases":[
-				"Here it is, details about the event."
-			]}, {"type":"table"}]
-		},
-		{
-			"keys"   :["eventbrite", "event"],
-			"score"  :1,
-			"example":"Susi, Where can I get updates of the event billets-europeade-2016-concert-de-musique-vocale-25592599153 ?",
-			"phrases":[ {"type":"pattern", "expression":"* updates * event *"}
-			],
-			"process":[ {"type":"console", "expression":"SELECT social_links FROM eventbrite WHERE url='https://www.eventbrite.com/e/$3$';"}],
-			"actions":[ {"type":"answer", "select":"random", "phrases":[
-				"Go social, get updates here ..."
-			]}, {"type":"table"}]
-		},
-		{
-			"keys"   :["what","describe","search","where"],
-			"score"  :97,
-			"phrases":[	{"type":"regex", "expression":"where is (?:(?:a )*)(.*)"},
-				{"type":"regex", "expression":"what is (?:(?:a )*)(.*)"},
-				{"type":"regex", "expression":"describe (?:(?:a )*)(.*)"},
-				{"type":"regex", "expression":"please describe (?:(?:a )*)(.*)"},
-				{"type":"regex", "expression":"please explain (?:(?:a )*)(.*)"}
-			],
-			"process":[	{"type":"console", "expression":"SELECT place[0] AS place, population, location[0] AS lon, location[1] AS lat FROM locations WHERE location='$1$';"}],
-			"actions":[	{"type":"answer", "select":"random", "phrases":[
-				"$place$ is a place with a population of $population$. Here is a map: https://www.openstreetmap.org/#map=13/$lat$/$lon$"
-			]}]
-		},
-		{
-			"score"  :15,
-			"phrases":[	{"type":"regex", "expression":".+ (?:.+ )+(.+)"} ],
-			"process":[	{"type":"console", "expression":"SELECT text,retweet_count,favourites_count FROM messages WHERE query='you $1$ /pure' ORDER BY FAVOURITES_COUNT;"}],
-			"actions":[	{"type":"answer", "select":"random", "phrases":[
-				"$text$"
-			]}]
-		},
+		
 		{
 			"keys"   :["tweet frequency", "tweets", "month"],
 			"score"  :2000,
@@ -442,18 +364,15 @@
 				"Here is the sentiment analysis chart"
 			]}, {"type": "table"}]
 		},
-		{
-			"keys"   :["help"],
-			"score"  :151,
-			"phrases":[	{"type":"pattern", "expression":"I need some help with *"},
-					{"type":"prior", "expression":"I need some help"},
-					{"type":"pattern", "expression":"I'm in need of help *"},
-					{"type":"prior", "expression":"I need some help with this problem"}
-						],
-			"actions":[	{"type":"answer", "select":"random", "phrases":[
-							"Would love to help! In what way can I help you?"
-						]}]
-		},
+ {
+  "keys":["who"], "score":1,
+  "example":"who tweeted recently about loklak",
+  "comment":"this is an example rule, use it as boilerplate for your own rules. Test this by calling http://localhost:4000/aggregation/chat.json?q=who%20tweeted%20recently%20about%20loklak",
+  "phrases":[{"type":"pattern", "expression":"who tweeted recently about *"}],
+  "process":[{"type":"console", "expression":"SELECT screen_name FROM messages WHERE query='$1$';"}],
+  "actions":[{"type":"answer", "select":"random", "phrases":["The latest tweet about $1$ was from $screen_name$."]
+  }]
+ },
 		{
 			"keys"   :["github"],
 			"score"  :3000,
@@ -663,5 +582,4 @@
 				"Here is a web search result for $1$"
 			]}, {"type":"rss", "columns":["title","description","link"]}]
 		}
-	]
-}
+]}

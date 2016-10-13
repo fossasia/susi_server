@@ -1,5 +1,4 @@
-{
-  "rules":[
+{"rules":[
 	{
 		"keys"   :["what"],
 		"phrases":[{"type":"prior", "expression":"what did I say"}],
@@ -42,5 +41,4 @@
                    {"type":"flow", "expression":"REMEMBER %1% AS _$varname$ FROM '$2$' MATCHING '(.*)' REGEX"}],
 		"actions":[{"type":"answer", "select":"random", "phrases":["thank you $name$"]}]
 	}
-  ]
-}
+]}

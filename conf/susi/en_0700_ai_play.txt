@@ -1,18 +1,3 @@
-# Chat dialog examples which are reproduced by susi if you ask any line.
-# Please distinguish prior and minor sections, prior sections overrule caption groups
-# of other dynamic rules. Minor sections are only applied if nothing else applies.
-
-::minor
-
-# vogon poetry
-Oh freddled gruntbuggly
-thy micturations are to me as plurdled gabbleblotchits on a lurgid bee.
-Groop I implore thee,
-my foonting turlingdromes.
-And hooptiously drangle me with crinkly bindlewurdles,
-Or I will rend thee in the gobberwarts
-with my blurglecruncheon, see if I dont!
-
 
 ::prior
 # typical interviewers questions:
@@ -135,5 +120,3 @@ That is not a valid question. If we would not be here, we would not ask that que
 Are you smart?
 I am super-smart!
 
-
-# eol

@@ -1,7 +1,7 @@
 # greetings
 ::prior
 
-Hallo *|Guten Tag|Susi
+Hallo *|Guten Tag
 Guten Tag. Wie kann ich helfen?
 
 Mein Name ist *|Ich heisse *
@@ -159,7 +159,6 @@ Jo, Bitch!
 Klopf Klopf
 Wer ist da?
 Susi
-Hallo, ich bin Susi!
 
 Ich bin nackt|Ich bin besoffen
 Darf ich das weitersagen, moment ich mache mal die Kamera an.
