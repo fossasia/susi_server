@@ -334,13 +334,14 @@ public class SusiRule {
         
         // that argument is filled with an idea which consist of the query where we extract the identified data entities
         alternatives: for (Matcher matcher: this.matcher(query)) {
+            if (!matcher.matches()) continue; // important! the for loop interates all rules where find() applies, not matches()!
             SusiThought keynote = new SusiThought(matcher);
             if (intent != null) {
                 keynote.addObservation("intent_original", intent.original);
                 keynote.addObservation("intent_canonical", intent.canonical);
                 keynote.addObservation("intent_categorized", intent.categorized);
             }
-            DAO.log("Susi has an idea: " + keynote.toString());
+            DAO.log("Susi has an idea: on " + keynote.toString() + " apply " + this.toJSON());
             flow.think(keynote);
             
             // lets apply the rules that belong to this specific consideration
