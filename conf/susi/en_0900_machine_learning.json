@@ -37,8 +37,8 @@
 	},
 	{
 		"phrases":[{"type":"pattern", "expression":"*"}],
-		"process":[{"type":"flow", "expression":""},
-                   {"type":"flow", "expression":"REMEMBER %1% AS _$varname$ FROM '$2$' MATCHING '(.*)' REGEX"}],
-		"actions":[{"type":"answer", "select":"random", "phrases":["thank you $name$"]}]
+		"process":[{"type":"flow", "expression":"EXPECT '$response$' MATCHING 'what is your name' PATTERN"},
+                   {"type":"flow", "expression":"REMEMBER %1% AS _username FROM '$1$' MATCHING '(.*)' REGEX"}],
+		"actions":[{"type":"answer", "select":"random", "phrases":["thank you $_username$"]}]
 	}
 ]}
