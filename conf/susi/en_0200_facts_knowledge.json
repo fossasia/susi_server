@@ -1,73 +1,74 @@
 {"rules":[
-		{
-			"keys"   :["what","describe","search","where"],
-			"score"  :97,
-			"phrases":[	{"type":"regex", "expression":"where is (?:(?:a )*)(.*)"},
-				{"type":"regex", "expression":"what is (?:(?:a )*)(.*)"},
-				{"type":"regex", "expression":"describe (?:(?:a )*)(.*)"},
-				{"type":"regex", "expression":"please describe (?:(?:a )*)(.*)"},
-				{"type":"regex", "expression":"please explain (?:(?:a )*)(.*)"}
-			],
-			"process":[	{"type":"console", "expression":"SELECT place[0] AS place, population, location[0] AS lon, location[1] AS lat FROM locations WHERE location='$1$';"}],
-			"actions":[	{"type":"answer", "select":"random", "phrases":[
-				"$place$ is a place with a population of $population$. Here is a map: https://www.openstreetmap.org/#map=13/$lat$/$lon$"
-			]}]
-		},
-		{
-			"score"  :1,
-			"phrases":[	{"type":"regex", "expression":"what is (?:(?:a )*)(.*)"},
-					  	{"type":"regex", "expression":"describe (?:(?:a )*)(.*)"},
-					  	{"type":"regex", "expression":"please describe (?:(?:a )*)(.*)"},
-					  	{"type":"regex", "expression":"explain (?:(?:a )*)(.*)"},
-					  	{"type":"regex", "expression":"please explain (?:(?:a )*)(.*)"},
-					  	{"type":"regex", "expression":"search urbandictionary for (?:(?:a )*)(.*)"},
-					  	{"type":"pattern", "expression":"what does * mean"}
-					  ],
-			"process":[	{"type":"console", "expression":"SELECT description FROM wikidata WHERE query='$1$';"},
-			            {"type":"flow", "expression":"REJECT '$description$' MATCHING 'Wikipedia disambiguation page' PATTERN"} ],
-			"actions":[	{"type":"answer", "select":"random", "phrases":[
-							"$1$ is $description$."
-						]}]
-		},
-		{
-			"score"  :0,
-			"phrases":[	{"type":"regex", "expression":"what is (?:(?:a )*)(.*)"},
-					  	{"type":"regex", "expression":"describe (?:(?:a )*)(.*)"},
-					  	{"type":"regex", "expression":"please describe (?:(?:a )*)(.*)"},
-					  	{"type":"regex", "expression":"explain (?:(?:a )*)(.*)"},
-					  	{"type":"regex", "expression":"please explain (?:(?:a )*)(.*)"},
-					  	{"type":"regex", "expression":"search urbandictionary for (?:(?:a )*)(.*)"},
-					  	{"type":"pattern", "expression":"what does * mean"}
-					  ],
-			"process":[	{"type":"console", "expression":"SELECT definition,example FROM urbandictionary WHERE query='$1$';"}],
-			"actions":[	{"type":"answer", "select":"random", "phrases":[
-							"$1$ is $definition$"
-						]}]
-		},
-		{
-			"score"  :0,
-			"phrases":[	{"type":"regex", "expression":"how is (?:(?:a )*)(.*)"}
-					  ],
-			"process":[	{"type":"console", "expression":"SELECT description FROM wikidata WHERE query='$1$';"},
-			            {"type":"flow", "expression":"REJECT '$description$' MATCHING 'Wikipedia disambiguation page' PATTERN"} ],
-			"actions":[	{"type":"answer", "select":"random", "phrases":[
-							"$1$ is $description$."
-						]}]
-		},
-		{
-			"score"  :1,
-			"phrases":[	{"type":"regex", "expression":"how is (?:(?:a )*)(.*)"}
-					  ],
-			"process":[	{"type":"console", "expression":"SELECT definition,example FROM urbandictionary WHERE query='$1$';"}],
-			"actions":[	{"type":"answer", "select":"random", "phrases":[
-							"$1$ is $definition$"
-						]}]
-		},{
-   "phrases":[ {"type":"regex", "expression":"where is (?:(?:a )*)(.*)"},
-               {"type":"regex", "expression":"what is (?:(?:a )*)(.*)"},
-               {"type":"regex", "expression":"describe (?:(?:a )*)(.*)"},
-               {"type":"regex", "expression":"please describe (?:(?:a )*)(.*)"},
-               {"type":"regex", "expression":"please explain (?:(?:a )*)(.*)"} ],
+  {
+    "keys"   :["what","describe","search","where"],
+    "phrases":[
+      {"type":"regex", "expression":"where is (?:(?:a )*)(.*)"},
+      {"type":"regex", "expression":"what is (?:(?:a )*)(.*)"},
+      {"type":"regex", "expression":"describe (?:(?:a )*)(.*)"},
+      {"type":"regex", "expression":"please describe (?:(?:a )*)(.*)"},
+      {"type":"regex", "expression":"please explain (?:(?:a )*)(.*)"}
+    ],
+    "process":[ {"type":"console", "expression":"SELECT place[0] AS place, population, location[0] AS lon, location[1] AS lat FROM locations WHERE location='$1$';"}],
+    "actions":[ {"type":"answer", "select":"random", "phrases":[
+      "$place$ is a place with a population of $population$. Here is a map: https://www.openstreetmap.org/#map=13/$lat$/$lon$"
+    ]}]
+  }, {
+    "score"  :1,
+    "phrases":[
+      {"type":"regex", "expression":"what is (?:(?:a )*)(.*)"},
+      {"type":"regex", "expression":"describe (?:(?:a )*)(.*)"},
+      {"type":"regex", "expression":"please describe (?:(?:a )*)(.*)"},
+      {"type":"regex", "expression":"explain (?:(?:a )*)(.*)"},
+      {"type":"regex", "expression":"please explain (?:(?:a )*)(.*)"},
+      {"type":"regex", "expression":"search urbandictionary for (?:(?:a )*)(.*)"},
+      {"type":"pattern", "expression":"what does * mean"}
+    ],
+    "process":[ {"type":"console", "expression":"SELECT description FROM wikidata-en WHERE query='$1$';"},
+                {"type":"flow", "expression":"REJECT '$description$' MATCHING 'Wikipedia disambiguation page' PATTERN"} ],
+    "actions":[ {"type":"answer", "select":"random", "phrases":[
+      "$1$ is $description$."
+    ]}]
+  }, {
+    "score"  :0,
+    "phrases":[
+      {"type":"regex", "expression":"what is (?:(?:a )*)(.*)"},
+      {"type":"regex", "expression":"describe (?:(?:a )*)(.*)"},
+      {"type":"regex", "expression":"please describe (?:(?:a )*)(.*)"},
+      {"type":"regex", "expression":"explain (?:(?:a )*)(.*)"},
+      {"type":"regex", "expression":"please explain (?:(?:a )*)(.*)"},
+      {"type":"regex", "expression":"search urbandictionary for (?:(?:a )*)(.*)"},
+      {"type":"pattern", "expression":"what does * mean"}
+    ],
+    "process":[ {"type":"console", "expression":"SELECT definition,example FROM urbandictionary WHERE query='$1$';"}],
+    "actions":[ {"type":"answer", "select":"random", "phrases":[
+      "$1$ is $definition$"
+    ]}]
+  }, {
+    "score"  :0,
+    "phrases":[
+      {"type":"regex", "expression":"how is (?:(?:a )*)(.*)"}
+    ],
+    "process":[ {"type":"console", "expression":"SELECT description FROM wikidata-en WHERE query='$1$';"},
+                {"type":"flow", "expression":"REJECT '$description$' MATCHING 'Wikipedia disambiguation page' PATTERN"} ],
+    "actions":[  {"type":"answer", "select":"random", "phrases":[
+      "$1$ is $description$."
+    ]}]
+  }, {
+    "score"  :1,
+    "phrases":[
+      {"type":"regex", "expression":"how is (?:(?:a )*)(.*)"}
+    ],
+    "process":[ {"type":"console", "expression":"SELECT definition,example FROM urbandictionary WHERE query='$1$';"}],
+    "actions":[ {"type":"answer", "select":"random", "phrases":[
+      "$1$ is $definition$"
+    ]}]
+  },{
+   "phrases":[
+     {"type":"regex", "expression":"where is (?:(?:a )*)(.*)"},
+     {"type":"regex", "expression":"what is (?:(?:a )*)(.*)"},
+     {"type":"regex", "expression":"describe (?:(?:a )*)(.*)"},
+     {"type":"regex", "expression":"please describe (?:(?:a )*)(.*)"},
+     {"type":"regex", "expression":"please explain (?:(?:a )*)(.*)"} ],
    "process":[ {"type":"console", "expression":"SELECT place[0] AS place, population, location[0] AS lon, location[1] AS lat FROM locations WHERE query='$1$';"}],
    "actions":[ {"type":"answer", "select":"random", "phrases":[
     "$place$ is a place with a population of $population$. Here is a map: https://www.openstreetmap.org/#map=13/$lat$/$lon$"
@@ -78,5 +79,5 @@
    "actions":[ {"type":"answer", "select":"random", "phrases":[
     "$text$"
    ]}]
-   }
+ }
 ]}
