@@ -41,7 +41,7 @@ public class SusiInference {
     public static enum Type {
         console, flow, memory;
         public int getSubscore() {
-            return this.ordinal();
+            return this.ordinal() + 1;
         }
     }
     

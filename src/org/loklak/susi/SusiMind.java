@@ -27,6 +27,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -45,7 +46,7 @@ import org.loklak.server.ClientIdentity;
 
 public class SusiMind {
     
-    private final Map<String, Map<Long, SusiRule>> ruletrigger; // a map from a keyword to a list of actions
+    private final Map<String, Set<SusiRule>> ruletrigger; // a map from a keyword to a set of actions
     private final File initpath, watchpath; // a path where the memory looks for new additions of knowledge with memory files
     private final Map<File, Long> observations; // a mapping of mind memory files to the time when the file was read the last time
     private final SusiReader reader; // responsible to understand written communication
@@ -166,12 +167,12 @@ public class SusiMind {
         rules.forEach(j -> {
             SusiRule rule = new SusiRule((JSONObject) j);
             rule.getKeys().forEach(key -> {
-                    Map<Long, SusiRule> l = this.ruletrigger.get(key);
+                    Set<SusiRule> l = this.ruletrigger.get(key);
                     if (l == null) {
-                        l = new HashMap<>();
+                        l = new HashSet<>();
                         this.ruletrigger.put(key, l);
                     }
-                    l.put(rule.getID(), rule);
+                    l.add(rule);
                     rule.getPhrases().forEach(phrase -> this.logs.removeUnanswered(phrase.getPattern()));
                     //System.out.println("***DEBUG: ADD RULE FOR KEY " + key + ": " + rule.toString());
                 });
@@ -189,10 +190,10 @@ public class SusiMind {
         this.ruletrigger.forEach((key, rulemap) -> {
             JSONArray rules = new JSONArray();
             mind.put(key, rules);
-            rulemap.forEach((hash, rule) -> {
+            rulemap.forEach(rule -> {
                 JSONObject r = new JSONObject(true);
                 r.putAll(rule.toJSON());
-                r.put("hash", hash);
+                r.put("hash", rule.hashCode());
                 rules.put(r);
             });
         });
@@ -216,18 +217,18 @@ public class SusiMind {
         // tokenize query to have hint for idea collection
         final List<SusiIdea> ideas = new ArrayList<>();
         this.reader.tokenizeSentence(query).forEach(token -> {
-            Map<Long, SusiRule> rule_for_category = this.ruletrigger.get(token.categorized);
-            Map<Long, SusiRule> rule_for_original = token.original.equals(token.categorized) ? null : this.ruletrigger.get(token.original);
-            Map<Long, SusiRule> r = new HashMap<>();
-            if (rule_for_category != null) r.putAll(rule_for_category);
-            if (rule_for_original != null) r.putAll(rule_for_original);
-            r.values().forEach(rule -> ideas.add(new SusiIdea(rule).setIntent(token)));
+            Set<SusiRule> rule_for_category = this.ruletrigger.get(token.categorized);
+            Set<SusiRule> rule_for_original = token.original.equals(token.categorized) ? null : this.ruletrigger.get(token.original);
+            Set<SusiRule> r = new HashSet<>();
+            if (rule_for_category != null) r.addAll(rule_for_category);
+            if (rule_for_original != null) r.addAll(rule_for_original);
+            r.forEach(rule -> ideas.add(new SusiIdea(rule).setIntent(token)));
         });
         
         //for (SusiIdea idea: ideas) System.out.println("idea.phrase-1:" + idea.getRule().getPhrases().toString());
         
         // add catchall rules always (those are the 'bad ideas')
-        Collection<SusiRule> ca = this.ruletrigger.get(SusiRule.CATCHALL_KEY).values();
+        Collection<SusiRule> ca = this.ruletrigger.get(SusiRule.CATCHALL_KEY);
         if (ca != null) ca.forEach(rule -> ideas.add(new SusiIdea(rule)));
         
         // create list of all ideas that might apply
@@ -259,7 +260,7 @@ public class SusiMind {
             if (plausibleIdeas.size() >= maxcount) break;
         }
         
-        //for (SusiIdea idea: plausibleIdeas) System.out.println("idea.phrase-3:" + idea.getRule().getPhrases().toString() + " -- " + idea.getRule().getActions().toString());
+        for (SusiIdea idea: plausibleIdeas) System.out.println("idea.phrase-3: score=" + idea.getRule().getScore() + " : " + idea.getRule().getPhrases().toString());
         
         return plausibleIdeas;
     }
