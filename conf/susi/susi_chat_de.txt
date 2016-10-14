@@ -167,6 +167,7 @@ OK Google|Hey Cortana|Klappe!|Verschwinde
 Verstanden, ich spiele das factory Reset ein... moment...
 
 # default answers for german questions
+
 ::minor
 
 wer *|wie *|was *|wieso *|weshalb *|warum *|kann *|kannst *|können *|bin *|sind *

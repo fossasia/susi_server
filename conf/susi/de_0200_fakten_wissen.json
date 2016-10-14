@@ -1,0 +1,19 @@
+{"rules":[
+  {
+    "phrases":[
+      {"type":"regex", "expression":"was ist (?:(?:a )*)(.*)"},
+      {"type":"regex", "expression":"beschreibe (?:(?:a )*)(.*)"},
+      {"type":"regex", "expression":"erkläre (?:(?:a )*)(.*)"},
+      {"type":"regex", "expression":"bitte beschreibe (?:(?:a )*)(.*)"},
+      {"type":"regex", "expression":"bitte erkläre (?:(?:a )*)(.*)"},
+      {"type":"pattern", "expression":"was bedeutet *"},
+      {"type":"pattern", "expression":"was heisst *"},
+      {"type":"pattern", "expression":"was heißt *"}
+    ],
+    "process":[ {"type":"console", "expression":"SELECT description FROM wikidata-de WHERE query='$1$';"},
+                {"type":"flow", "expression":"REJECT '$description$' MATCHING 'Wikipedia disambiguation page' PATTERN"} ],
+    "actions":[ {"type":"answer", "select":"random", "phrases":[
+      "$1$ ist $description$."
+    ]}]
+  }
+]}
