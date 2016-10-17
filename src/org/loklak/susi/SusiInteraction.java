@@ -19,6 +19,7 @@
 
 package org.loklak.susi;
 
+import java.util.ArrayList;
 import java.util.Base64;
 import java.util.Date;
 import java.util.List;
@@ -60,12 +61,14 @@ public class SusiInteraction {
         this.json.put("answer_time", answer_date - query_date);
         this.json.put("count", maxcount);
         this.json.put("answers", new JSONArray(dispute.stream().map(argument -> {
-            JSONObject answer = argument.mindmeld();
-            answer.put("actions", argument.getActions().stream()
-                    .map(action -> action.apply(argument).toJSON())
-                    .collect(Collectors.toList()));
+            SusiThought answer = argument.mindmeld(true);
+            answer.put("actions", 
+                    argument.getActions().stream()
+                        .map(action -> action.apply(argument).toJSON())
+                        .collect(Collectors.toList()));
             return answer;
         }).collect(Collectors.toList())));
+        System.out.println(this.json);
     }
     
     public Date getQueryDate() {
@@ -104,12 +107,14 @@ public class SusiInteraction {
             for (int i = answers.length() - 1; i >= 0; i--) {
                 SusiThought clonedThought = new SusiThought(answers.getJSONObject(i));
                 dispute.addObservation("query", this.json.getString("query"));  // we can unify "query" in queries
-                if (clonedThought.has("actions") &&
-                    clonedThought.getJSONArray("actions").getJSONObject(0).has("expression"))
-                    dispute.addObservation("answer",
-                            clonedThought.getJSONArray("actions").getJSONObject(0).getString("expression")); // we can unify with "answer" in queries
+                SusiAction expressionAction = null;
+                for (SusiAction a: clonedThought.getActions()) {
+                    ArrayList<String> phrases = a.getPhrases();
+                    if (phrases.size() > 0) {expressionAction = a; break;}
+                }
+                if (expressionAction != null) dispute.addObservation("answer", expressionAction.getPhrases().get(0)); // we can unify with "answer" in queries
+
                 // add all data from the old dispute
-                JSONArray data = dispute.getData();
                 JSONArray clonedData = clonedThought.getData();
                 if (clonedData.length() > 0) {
                     JSONObject row = clonedData.getJSONObject(0);

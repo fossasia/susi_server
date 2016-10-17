@@ -104,8 +104,12 @@ public class SusiAction {
     public ArrayList<String> getPhrases() {
         if (phrasesCache == null) {
             ArrayList<String> a = new ArrayList<>();
-            if (!this.json.has("phrases")) return a;
-            this.json.getJSONArray("phrases").forEach(p -> a.add((String) p));
+            // actions may have either a single expression "expression" or a phrases object with 
+            if (this.json.has("phrases")) {
+                this.json.getJSONArray("phrases").forEach(p -> a.add((String) p));
+            } else if (this.json.has("expression")) {
+                a.add(this.json.getString("expression"));
+            } else return null;
             phrasesCache = a;
         }
         return phrasesCache;
@@ -160,7 +164,6 @@ public class SusiAction {
         if (j.has("expression")) {
             j.remove("phrases");
             j.remove("select");
-            this.json.remove("expression"); // thats a bad hack, TODO: better concurrency
         }
         return j;
     }

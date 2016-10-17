@@ -83,7 +83,7 @@ public class SusiInference {
         flowSkill.put(Pattern.compile("SQUASH"), (flow, matcher) -> {
             // perform a full mindmeld
             if (flow == null) return new SusiThought();
-            SusiThought squashedArgument = flow.mindmeld();
+            SusiThought squashedArgument = flow.mindmeld(true);
             flow.amnesia();
             return squashedArgument;
         });
@@ -100,24 +100,24 @@ public class SusiInference {
             return recall;
         });
         flowSkill.put(Pattern.compile("REMEMBER\\h+?(.*?)\\h+?FROM\\h+?'(.*?)'\\h+?MATCHING\\h+?'(.*?)'\\h+?REGEX\\h*?"), (flow, matcher) -> {
-            return see(flow, flow.unify(matcher.group(1)), flow.unify(matcher.group(2)), Pattern.compile(flow.unify(matcher.group(3))));
+            return see(flow, flow.unify(matcher.group(1), 0), flow.unify(matcher.group(2), 0), Pattern.compile(flow.unify(matcher.group(3), 0)));
         });
         flowSkill.put(Pattern.compile("REMEMBER\\h+?(.*?)\\h+?FROM\\h+?'(.*?)'\\h+?MATCHING\\h+?'(.*?)'\\h+?PATTERN\\h*?"), (flow, matcher) -> {
-            return see(flow, flow.unify(matcher.group(1)), flow.unify(matcher.group(2)), Pattern.compile(SusiPhrase.parsePattern(flow.unify(matcher.group(3)))));
+            return see(flow, flow.unify(matcher.group(1), 0), flow.unify(matcher.group(2), 0), Pattern.compile(SusiPhrase.parsePattern(flow.unify(matcher.group(3), 0))));
         });
         flowSkill.put(Pattern.compile("EXPECT\\h+?'(.*?)'\\h+?MATCHING\\h+?'(.*?)'\\h+?REGEX\\h*?"), (flow, matcher) -> {
-            return see(flow, "*", matcher.group(1), Pattern.compile(flow.unify(matcher.group(2))));
+            return see(flow, "*", matcher.group(1), Pattern.compile(flow.unify(matcher.group(2), 0)));
         });
         flowSkill.put(Pattern.compile("EXPECT\\h+?'(.*?)'\\h+?MATCHING\\h+?'(.*?)'\\h+?PATTERN\\h*?"), (flow, matcher) -> {
-            return see(flow, "*", matcher.group(1), Pattern.compile(SusiPhrase.parsePattern(flow.unify(matcher.group(2)))));
+            return see(flow, "*", matcher.group(1), Pattern.compile(SusiPhrase.parsePattern(flow.unify(matcher.group(2), 0))));
         });
         flowSkill.put(Pattern.compile("REJECT\\h+?'(.*?)'\\h+?MATCHING\\h+?'(.*?)'\\h+?REGEX\\h*?"), (flow, matcher) -> {
-            SusiThought t = see(flow, "*", matcher.group(1), Pattern.compile(flow.unify(matcher.group(2))));
+            SusiThought t = see(flow, "*", matcher.group(1), Pattern.compile(flow.unify(matcher.group(2), 0)));
             if (t.getCount() == 0) return new SusiThought().addObservation("regex-" + matcher.group(2), matcher.group(1));
             return new SusiThought(); // empty thought -> fail
         });
         flowSkill.put(Pattern.compile("REJECT\\h+?'(.*?)'\\h+?MATCHING\\h+?'(.*?)'\\h+?PATTERN\\h*?"), (flow, matcher) -> {
-            SusiThought t = see(flow, "*", matcher.group(1), Pattern.compile(SusiPhrase.parsePattern(flow.unify(matcher.group(2)))));
+            SusiThought t = see(flow, "*", matcher.group(1), Pattern.compile(SusiPhrase.parsePattern(flow.unify(matcher.group(2), 0))));
             if (t.getCount() == 0) return new SusiThought().addObservation("pattern-" + matcher.group(2), matcher.group(1));
             return new SusiThought(); // empty thought -> fail
         });
@@ -133,7 +133,7 @@ public class SusiInference {
     /**
      * "see" defines a new thought based on the names given in the "transferExpr" and retrieved using the content of
      * a variable in the "expr" expression using a matching in the given pattern. It can be used to check if something
-     * learned in the flow matches against a known pattern. When the matching is successful, that defines new knowledge
+     * learned in the flow matches against a known pattern. When the matching is successful, that defines a new knowledge
      * pieces that are stored in the resulting thought thus extending an argument with new insights.
      * The "transferExpr" must be constructed using variables of the name schema "%1%", "%2%", .. which contain matches
      * of the variables from the expr retrieval in the flow with the pattern.
@@ -147,7 +147,7 @@ public class SusiInference {
         // example: see $1$ as idea from ""
         SusiThought nextThought = new SusiThought();
         try {
-            Matcher m = pattern.matcher(flow.unify(expr));
+            Matcher m = pattern.matcher(flow.unify(expr, 0));
             if (m.matches()) {
                 SusiTransfer transfer = new SusiTransfer(transferExpr);
                 JSONObject choice = new JSONObject();

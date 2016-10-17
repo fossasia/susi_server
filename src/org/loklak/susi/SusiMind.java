@@ -277,10 +277,11 @@ public class SusiMind {
     public List<SusiArgument> react(String query, int maxcount, String client) {
         // get the history a list of thoughts
         SusiArgument latest_argument = new SusiArgument();
-        this.logs.getInteractions(client).forEach(action -> latest_argument.think(action.recallDispute()));
+        ArrayList<SusiInteraction> interactions = this.logs.getInteractions(client);
+        interactions.forEach(action -> latest_argument.think(action.recallDispute()));
         // perform a mindmeld to create a single thought out of the recalled argument
         // the mindmeld will squash the latest thoughts into one so it does not pile up to exponential growth
-        SusiThought recall = latest_argument.mindmeld();
+        SusiThought recall = latest_argument.mindmeld(false);
         
         // normalize the query
         query = SusiPhrase.normalizeExpression(query);

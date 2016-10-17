@@ -34,8 +34,9 @@ import org.json.JSONObject;
  * of the current argument.
  */
 public class SusiThought extends JSONObject {
-
-    final String metadata_name, data_name;
+    
+    private final String metadata_name, data_name;
+    private int times;
 
     /**
      * create an empty thought, to be filled with single data entities.
@@ -44,6 +45,7 @@ public class SusiThought extends JSONObject {
         super(true);
         this.metadata_name = "metadata";
         this.data_name = "data";
+        this.times = 0;
     }
     
     /**
@@ -88,6 +90,20 @@ public class SusiThought extends JSONObject {
         if (!(o instanceof SusiThought)) return false;
         SusiThought t = (SusiThought) o;
         return this.getData().equals(t.getData());
+    }
+    
+    public SusiThought setTimes(int t) {
+        this.times = t;
+        return this;
+    }
+    
+    public SusiThought addTimes(int t) {
+        this.times += t;
+        return this;
+    }
+    
+    public int getTimes() {
+        return this.times;
     }
     
     /**
@@ -279,16 +295,33 @@ public class SusiThought extends JSONObject {
         return this;
     }
     
+    public List<String> getObservations(String featureName) {
+        List<String> list = new ArrayList<>();
+        JSONArray table = this.getData();
+        if (table != null && table.length() > 0) {
+            JSONObject row = table.getJSONObject(0);
+            for (String key: row.keySet()) {
+                if (key.equals(featureName)) list.add(row.get(key).toString());
+            }
+        }
+        return list;
+    }
+    
     /**
      * Every information may have a set of (re-)actions assigned.
      * Those (re-)actions are methods to do something with the thought.
      * @param actions (re-)actions on this thought
      * @return the thought
      */
-    public SusiThought setActions(List<SusiAction> actions) {
-        JSONArray a = new JSONArray();
+    public SusiThought addActions(List<SusiAction> actions) {
+        JSONArray a = getActionsJSON();
         actions.forEach(action -> a.put(action.toJSON()));
-        this.put("actions", a);
+        return this;
+    }
+    
+    public SusiThought addAction(SusiAction action) {
+        JSONArray a = getActionsJSON();
+        a.put(action.toJSON());
         return this;
     }
     
@@ -298,8 +331,18 @@ public class SusiThought extends JSONObject {
      */
     public List<SusiAction> getActions() {
         List<SusiAction> actions = new ArrayList<>();
-        if (!this.has("actions")) return actions;
-        this.getJSONArray("actions").forEach(action -> actions.add(new SusiAction((JSONObject) action)));
+        getActionsJSON().forEach(action -> actions.add(new SusiAction((JSONObject) action)));
+        return actions;
+    }
+    
+    private JSONArray getActionsJSON() {
+        JSONArray actions;
+        if (!this.has("actions")) {
+            actions = new JSONArray();
+            this.put("actions", actions);
+        } else {
+            actions = this.getJSONArray("actions");
+        }
         return actions;
     }
     
@@ -323,6 +366,10 @@ public class SusiThought extends JSONObject {
             }
         }
         return statement;
+    }
+    
+    public JSONObject toJSON() {
+        return this;
     }
     
     public static void main(String[] args) {

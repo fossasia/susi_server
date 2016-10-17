@@ -59,7 +59,7 @@ public class RSSReaderService extends AbstractAPIHandler implements APIHandler {
     @Override
     public JSONObject serviceImpl(Query post, HttpServletResponse response, Authorization rights, final JSONObjectWithDefault permissions) throws APIException {
 		String url = post.get("url", "");
-		return readRSS(url);
+		return readRSS(url).toJSON();
     }
 		
     public static SusiThought readRSS(String url) {

@@ -128,7 +128,7 @@ public class ConsoleService extends AbstractAPIHandler implements APIHandler {
             String subquery = matcher.group(2).trim();
             if (!subquery.endsWith(";")) subquery = subquery + ";";
             String filter_name = matcher.group(3);
-            JSONArray a0 = dbAccess.inspire("SELECT " + subquery).getJSONArray("data");
+            JSONArray a0 = dbAccess.inspire("SELECT " + subquery).getData();
             JSONArray a1 = new JSONArray();
             Set<String> filter_set = new SusiTransfer(matcher.group(4)).keys();
             a0.forEach(o -> {
@@ -161,7 +161,7 @@ public class ConsoleService extends AbstractAPIHandler implements APIHandler {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        return dbAccess.inspire(q);
+        return dbAccess.inspire(q).toJSON();
     }
     
 }

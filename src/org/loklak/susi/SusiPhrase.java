@@ -98,8 +98,17 @@ public class SusiPhrase {
         json.put("expression", query);
         return json;
     }
-    
+
     public static String parsePattern(String expression) {
+        String[] expressions = expression.split("\\|");
+        if (expressions.length == 0) return "";
+        if (expressions.length == 1) return parseOnePattern(expressions[0]);
+        StringBuilder sb = new StringBuilder();
+        for (String e: expressions) sb.append("(?:").append(parseOnePattern(e)).append(")|");
+        return sb.substring(0, sb.length() - 1);
+    }
+    
+    private static String parseOnePattern(String expression) {
         if (expression.length() == 0 || expression.equals("*")) expression = CATCHALL_CAPTURE_GROUP_STRING;
         if ("?!:.".indexOf(expression.charAt(expression.length() - 1)) >= 0) expression = expression.substring(0, expression.length() - 1);
         if (expression.startsWith("* ")) expression = CATCHALL_CAPTURE_GROUP_STRING + " ?" + expression.substring(2);

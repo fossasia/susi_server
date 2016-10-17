@@ -23,6 +23,9 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import org.json.JSONArray;
+import org.json.JSONObject;
+
 /**
  * An Argument is a series of thoughts, also known as a 'proof' in automated reasoning.
  * Within the Susi AI infrastructure this may be considered as the representation of
@@ -74,12 +77,17 @@ public class SusiArgument implements Iterable<SusiThought> {
      * that a previous argument is recalled and used to start a new one. This prevents that thinking
      * creates ever increasing argument list; instead old arguments can be 'squashed' into one, like
      * it's done with git commits.
+     * The mindmeld also should have the ability to 'overwrite' old values with new ones. That is done
+     * by considering the new values in a order which makes them more visible than the value before.
      * @return the squashed thoughts from an argument as one thought
      */
-    public SusiThought mindmeld() {
+    public SusiThought mindmeld(boolean reverse) {
         SusiThought meltedMind = new SusiThought();
-        this.recall.forEach(memory -> meltedMind.mergeData(memory.getData()));
-        meltedMind.put("times", times()); // remember the length of the argument to create a perception of time based on number of thoughts
+        if (reverse)
+            for (int i = this.recall.size() -1; i >= 0; i--) meltedMind.mergeData(this.recall.get(i).getData());
+        else 
+            for (int i = 0; i < this.recall.size(); i++) meltedMind.mergeData(this.recall.get(i).getData());
+        meltedMind.setTimes(times()); // remember the length of the argument to create a perception of time based on number of thoughts
         return meltedMind;
     }
     
@@ -149,15 +157,21 @@ public class SusiArgument implements Iterable<SusiThought> {
      * which creates an instantiated statement
      * TODO: this should support backtracking, thus producing optional several unifications and turning this into a choice point
      * @param statement
+     * @param depth the maximum depth into the flow. depth == 0 means 'only the last thought'
      * @return the instantiated statement with elements of the argument applied
      */
-    public String unify(String statement) {
+    public String unify(String statement, int depth) {
         for (SusiThought t: this) {
+            if (depth-- < 0) break;
             statement = t.unify(statement);
             if (!SusiThought.variable_pattern.matcher(statement).find()) return statement;
         }
         if (SusiThought.variable_pattern.matcher(statement).find()) return null; // failure!
         return statement;
+    }
+    
+    public String unify(String statement) {
+        return unify(statement, Integer.MAX_VALUE);
     }
 
     /**
@@ -191,8 +205,19 @@ public class SusiArgument implements Iterable<SusiThought> {
         return this.actions;
     }
 
+    public JSONObject toJSON() {
+        JSONObject json = new JSONObject(true);
+        JSONArray recallJson = new JSONArray();
+        this.recall.forEach(thought -> recallJson.put(thought));
+        JSONArray actionsJson = new JSONArray();
+        this.actions.forEach(action -> actionsJson.put(action.toJSON()));
+        json.put("recall", recallJson);
+        json.put("action", actionsJson);
+        return json;
+    }
+
     public String toString() {
-        return this.mindmeld().toString();
+        return this.toJSON().toString();
     }
     
     public static void main(String[] args) {
