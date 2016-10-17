@@ -36,9 +36,31 @@
 		"actions":[{"type":"answer", "select":"random", "phrases":["what is your name"]}]
 	},
 	{
-		"phrases":[{"type":"pattern", "expression":"*"}],
-		"process":[{"type":"flow", "expression":"EXPECT '$response$' MATCHING 'what is your name' PATTERN"},
+		"phrases":[{"type":"pattern", "expression":"*"}, {"type":"pattern", "expression":"My name is *"},
+		           {"type":"pattern", "expression":"I am *"}, {"type":"pattern", "expression":"I'm *"}],
+		"process":[{"type":"flow", "expression":"EXPECT '$answer$' MATCHING 'what is your name|* tell me your name' PATTERN"},
                    {"type":"flow", "expression":"REMEMBER %1% AS _username FROM '$1$' MATCHING '(.*)' REGEX"}],
 		"actions":[{"type":"answer", "select":"random", "phrases":["thank you $_username$"]}]
+	},
+	{
+		"phrases":[{"type":"pattern", "expression":"My name is *"},
+		           {"type":"pattern", "expression":"I am *"}, {"type":"pattern", "expression":"I'm *"}],
+        "process":[{"type":"flow", "expression":"REMEMBER %1% AS _username FROM '$1$' MATCHING '(.*)' REGEX"}],
+		"actions":[{"type":"answer", "select":"random", "phrases":["I will call you $_username$"]}]
+	},
+	{
+		"phrases":[{"type":"prior", "expression":"what is my name"}],
+		"process":[{"type":"flow", "expression":"EXPECT '$_username$' MATCHING '.*+' REGEX"}],
+		"actions":[{"type":"answer", "select":"random", "phrases":["Your name is $_username$"]}]
+	},
+	{
+		"phrases":[{"type":"prior", "expression":"what is my name"}],
+		"process":[{"type":"flow", "expression":"REJECT '$_username$' MATCHING '.*+' REGEX"}],
+		"actions":[{"type":"answer", "select":"random", "phrases":["I don't know your name. Please tell me your name'"]}]
+	},
+	{
+		"phrases":[{"type":"prior", "expression":"Do you like me"}],
+		"process":[{"type":"flow", "expression":"EXPECT '$_username$' MATCHING '.*+' REGEX"}],
+		"actions":[{"type":"answer", "select":"random", "phrases":["Yes I like you $_username$"]}]
 	}
 ]}

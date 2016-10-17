@@ -46,11 +46,6 @@
     "Try hard, you can be."
    ]}]
   }, {
-   "phrases":[ {"type":"pattern", "expression":"I am *"} ],
-   "actions":[ {"type":"answer", "select":"random", "phrases":[
-    "Hi $1$."
-   ]}]
-  }, {
    "keys"   :["dull"],
    "phrases":[{"type":"pattern", "expression":"* You *"} ],
    "actions":[{"type":"answer", "select":"random", "phrases":[

@@ -26,7 +26,7 @@
     "process":[ {"type":"console", "expression":"SELECT description FROM wikidata-en WHERE query='$1$';"},
                 {"type":"flow", "expression":"REJECT '$description$' MATCHING 'Wikipedia disambiguation page' PATTERN"} ],
     "actions":[ {"type":"answer", "select":"random", "phrases":[
-      "$1$ is $description$."
+      "$1$ is a $description$."
     ]}]
   }, {
     "score"  :0,
@@ -41,7 +41,7 @@
     ],
     "process":[ {"type":"console", "expression":"SELECT definition,example FROM urbandictionary WHERE query='$1$';"}],
     "actions":[ {"type":"answer", "select":"random", "phrases":[
-      "$1$ is $definition$"
+      "$1$ is a $definition$"
     ]}]
   }, {
     "score"  :0,
@@ -51,7 +51,7 @@
     "process":[ {"type":"console", "expression":"SELECT description FROM wikidata-en WHERE query='$1$';"},
                 {"type":"flow", "expression":"REJECT '$description$' MATCHING 'Wikipedia disambiguation page' PATTERN"} ],
     "actions":[  {"type":"answer", "select":"random", "phrases":[
-      "$1$ is $description$."
+      "$1$ is a $description$."
     ]}]
   }, {
     "score"  :1,
@@ -60,7 +60,7 @@
     ],
     "process":[ {"type":"console", "expression":"SELECT definition,example FROM urbandictionary WHERE query='$1$';"}],
     "actions":[ {"type":"answer", "select":"random", "phrases":[
-      "$1$ is $definition$"
+      "$1$ is a $definition$"
     ]}]
   },{
    "phrases":[
