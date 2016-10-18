@@ -40,6 +40,12 @@
       "parser":"json",
       "data":"$.data"
     },
+    "messages-order-by-favourites_count":{
+      "example":"http://127.0.0.1:4000/susi/console.json?q=%22SELECT%20*%20FROM%20messages-order-by-favourites_count%20WHERE%20query=%27winter is coming /pure%27;%22",
+      "url":"http://api.loklak.org/api/console.json?q=SELECT%20*%20FROM%20messages%20WHERE%20query='$query$'%20ORDER%20BY%20FAVOURITES_COUNT;",
+      "parser":"json",
+      "data":"$.data"
+    },
     "messageid":{
       "example":"http://127.0.0.1:4000/susi/console.json?q=%22SELECT%20*%20FROM%20messageid%20WHERE%20query=%27787120060066213888%27;%22",
       "url":"http://api.loklak.org/api/console.json?q=SELECT%20*%20FROM%20messages%20WHERE%20id='$query$';",

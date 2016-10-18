@@ -1,7 +1,64 @@
 {"rules":[
   {
-   "phrases":[	{"type":"regex", "expression":".+ (?:.+ )+(.+)"} ],
-   "process":[	{"type":"console", "expression":"SELECT text,retweet_count,favourites_count FROM messages WHERE query='you $1$ /pure' ORDER BY FAVOURITES_COUNT;"}],
+   "score"  : 16,
+   "phrases":[	{"type":"pattern", "expression":"*"} ],
+   "process":[	{"type":"console", "expression":"SELECT text FROM messages-order-by-favourites_count WHERE query='you $1$ since:hour /pure /len25';"}],
+   "actions":[	{"type":"answer", "select":"random", "phrases":[
+     "$text$"
+   ]}]
+  }, {
+   "score"  : 15,
+   "phrases":[	{"type":"pattern", "expression":"*"} ],
+   "process":[	{"type":"console", "expression":"SELECT text FROM messages-order-by-favourites_count WHERE query='you $1$ since:day /pure /len25';"}],
+   "actions":[	{"type":"answer", "select":"random", "phrases":[
+     "$text$"
+   ]}]
+  }, {
+   "score"  : 14,
+   "phrases":[	{"type":"pattern", "expression":"*"} ],
+   "process":[	{"type":"console", "expression":"SELECT text FROM messages-order-by-favourites_count WHERE query='you $1$ since:week /pure /len25';"}],
+   "actions":[	{"type":"answer", "select":"random", "phrases":[
+     "$text$"
+   ]}]
+  }, {
+   "score"  : 13,
+   "phrases":[	{"type":"pattern", "expression":"*"} ],
+   "process":[	{"type":"console", "expression":"SELECT text FROM messages-order-by-favourites_count WHERE query='you $1$ since:hour /pure /len50';"}],
+   "actions":[	{"type":"answer", "select":"random", "phrases":[
+     "$text$"
+   ]}]
+  }, {
+   "score"  : 12,
+   "phrases":[	{"type":"pattern", "expression":"*"} ],
+   "process":[	{"type":"console", "expression":"SELECT text FROM messages-order-by-favourites_count WHERE query='you $1$ since:day /pure /len50';"}],
+   "actions":[	{"type":"answer", "select":"random", "phrases":[
+     "$text$"
+   ]}]
+  }, {
+   "score"  : 11,
+   "phrases":[	{"type":"pattern", "expression":"*"} ],
+   "process":[	{"type":"console", "expression":"SELECT text FROM messages-order-by-favourites_count WHERE query='you $1$ since:week /pure /len50';"}],
+   "actions":[	{"type":"answer", "select":"random", "phrases":[
+     "$text$"
+   ]}]
+  }, {
+   "score"  : 10,
+   "phrases":[	{"type":"pattern", "expression":"*"} ],
+   "process":[	{"type":"console", "expression":"SELECT text FROM messages-order-by-favourites_count WHERE query='you $1$ since:hour /pure /len75';"}],
+   "actions":[	{"type":"answer", "select":"random", "phrases":[
+     "$text$"
+   ]}]
+  }, {
+   "score"  : 9,
+   "phrases":[	{"type":"pattern", "expression":"*"} ],
+   "process":[	{"type":"console", "expression":"SELECT text FROM messages-order-by-favourites_count WHERE query='you $1$ since:day /pure /len75';"}],
+   "actions":[	{"type":"answer", "select":"random", "phrases":[
+     "$text$"
+   ]}]
+  }, {
+   "score"  : 8,
+   "phrases":[	{"type":"pattern", "expression":"*"} ],
+   "process":[	{"type":"console", "expression":"SELECT text FROM messages-order-by-favourites_count WHERE query='you $1$ since:week /pure /len75';"}],
    "actions":[	{"type":"answer", "select":"random", "phrases":[
      "$text$"
    ]}]
