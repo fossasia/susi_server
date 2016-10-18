@@ -1,0 +1,11 @@
+{"rules":[
+  {
+   "comment":"multiple lines in an answer - Test",
+   "phrases":[ {"type":"pattern", "expression":"multi3"} ],
+   "actions":[
+     {"type":"answer", "select":"random", "phrases":["Line 1"]},
+     {"type":"answer", "select":"random", "phrases":["Line 2"], "delay":400},
+     {"type":"answer", "select":"random", "phrases":["Line 3"], "delay":1000}
+   ]
+  }
+]}
