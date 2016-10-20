@@ -1,4 +1,4 @@
-# How to setup Loklak Server on Eclipse
+# How to setup Susi Server on Eclipse
 
 If you already have a local copy of `susi_server` repository
 
