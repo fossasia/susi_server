@@ -32,9 +32,9 @@ fi
 
 echo "starting loklak"
 
-cmdline="$cmdline -server -classpath $CLASSPATH -Dlog4j.configurationFile=$LOGCONFIG org.loklak.LoklakServer";
+cmdline="$cmdline -server -classpath $CLASSPATH -Dlog4j.configurationFile=$LOGCONFIG org.loklak.SusiServer";
 
 eval $cmdline
 #echo $cmdline;
 
-echo "loklak server started at port 9000, open your browser at http://localhost:9000"
+echo "susi server started at port 4000, open your browser at http://localhost:4000"
