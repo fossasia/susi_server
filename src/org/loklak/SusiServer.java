@@ -185,7 +185,7 @@ public class SusiServer {
         // get server ports
         Map<String, String> env = System.getenv();
         String httpPortS = config.get("port.http");
-        int httpPort = httpPortS == null ? 9000 : Integer.parseInt(httpPortS);
+        int httpPort = httpPortS == null ? 4000 : Integer.parseInt(httpPortS);
         if(env.containsKey("PORT")) {
             httpPort = Integer.parseInt(env.get("PORT"));
         }

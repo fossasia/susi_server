@@ -6,7 +6,7 @@ Its very easy!
 - install git, jdk 7 and ant
 
 ## Download
-- `git clone https://github.com/loklak/loklak_server.git`
+- `git clone https://github.com/fossasia/susi_server.git`
 - `cd loklak_server`
 
 ## Build
@@ -16,7 +16,7 @@ Its very easy!
 - `bin/start.sh`
 
 ## Operate
-- open `http://localhost:9000` in your browser
+- open `http://localhost:4000` in your browser
 
 ## Shut down
 - `bin/stop.sh`

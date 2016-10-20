@@ -43,7 +43,7 @@ At this time, loklak is not provided in compiled form, you easily build it yours
     > ant
     > bin/start.sh
 
-After all server processes are running, Susi tries to open a browser page itself. If that does not happen, just open http://localhost:9000; if you made the installation on a headless or remote server, then replace 'localhost' with your server name.
+After all server processes are running, Susi tries to open a browser page itself. If that does not happen, just open http://localhost:4000; if you made the installation on a headless or remote server, then replace 'localhost' with your server name.
 
 To stop Susi, run: (this will block until the server has actually terminated)
 
@@ -77,7 +77,7 @@ To install Susi on Eclipes, please refer to the [Susi Eclipse readme](/docs/ecli
 
 - build Susi (you need to do this only once, see above)
 - run `bin/start.sh`
-- open `http://localhost:9000` in your browser
+- open `http://localhost:4000` in your browser
 - to shut down Susi, run `bin/stop.sh`
 
 ## How do I analyze data acquired by Susi
