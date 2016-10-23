@@ -7,7 +7,7 @@ Its very easy!
 
 ## Download
 - `git clone https://github.com/fossasia/susi_server.git`
-- `cd loklak_server`
+- `cd susi_server`
 
 ## Build
 - `ant` (just this, type "ant" - without quotes - and hit enter)
