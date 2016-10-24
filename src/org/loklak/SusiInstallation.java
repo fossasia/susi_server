@@ -121,7 +121,7 @@ public class SusiInstallation {
         // get server ports
         Map<String, String> env = System.getenv();
         String httpPortS = config.get("port.http");
-        int httpPort = httpPortS == null ? 9000 : Integer.parseInt(httpPortS);
+        int httpPort = httpPortS == null ? 4000 : Integer.parseInt(httpPortS);
         if(env.containsKey("PORT")) {
             httpPort = Integer.parseInt(env.get("PORT"));
         }
@@ -318,7 +318,6 @@ public class SusiInstallation {
 	        //SslConnectionFactory ssl = new SslConnectionFactory(sslContextFactory, alpn.getProtocol());
 	        SslConnectionFactory ssl = new SslConnectionFactory(sslContextFactory, "http/1.1");
 	        
-	        //ServerConnector sslConnector = new ServerConnector(LoklakServer.server, ssl, alpn, http2, http1);
 	        ServerConnector sslConnector = new ServerConnector(SusiInstallation.server, ssl, http1);
 	        sslConnector.setPort(httpsPort);
 	        sslConnector.setName("httpd:" + httpsPort);

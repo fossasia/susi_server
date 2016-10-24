@@ -1,12 +1,12 @@
 # Susi
 
 [![Join the chat at https://gitter.im/fossasia/susi_server](https://badges.gitter.im/fossasia/susi_server.svg)](https://gitter.im/fossasia/susi_server?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
-[![Build Status](https://travis-ci.org/fossasia/susi_server.svg?branch=master)](https://travis-ci.org/fossasia/susi_server)
+[![Build Status](https://travis-ci.org/fossasia/susi_server.svg?branch=development)](https://travis-ci.org/fossasia/susi_server)
 [![Join the chat at https://gitter.im/loklak/loklak](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/loklak/loklak)
 [![Docker Pulls](https://img.shields.io/docker/pulls/mariobehling/loklak.svg?maxAge=2592000?style=flat-square)](https://hub.docker.com/r/mariobehling/loklak/)
 [![Percentage of issues still open](http://isitmaintained.com/badge/open/fossasia/susi_server.svg)](http://isitmaintained.com/project/fossasia/susi_server "Percentage of issues still open")
 [![Average time to resolve an issue](http://isitmaintained.com/badge/resolution/fossasia/susi_server.svg)](http://isitmaintained.com/project/fossasia/susi_server "Average time to resolve an issue")
-[![Twitter](https://img.shields.io/twitter/url/http/shields.io.svg?style=social)](https://twitter.com/intent/tweet?text=Wow Check Susi on @gitHub @loklak_app @lklknt: https://github.com/fossasia/susi_server &url=%5Bobject%20Object%5D)
+[![Twitter](https://img.shields.io/twitter/url/http/shields.io.svg?style=social)](https://twitter.com/intent/tweet?text=Wow Check Susi on @gitHub @asksusi: https://github.com/fossasia/susi_server &url=%5Bobject%20Object%5D)
 [![Twitter Follow](https://img.shields.io/twitter/follow/lklknt.svg?style=social&label=Follow&maxAge=2592000?style=flat-square)](https://twitter.com/lklknt)
 
 Susi is a server application which is able to collect messages from various sources, including twitter. The server contains a search index and a peer-to-peer index sharing interface. All messages are stored in an elasticsearch index. An automatic deployment from the development branch at GitHub is available for tests here https://susi-server.herokuapp.com
@@ -15,7 +15,7 @@ Susi is a server application which is able to collect messages from various sour
 
 Please join our mailing list to discuss questions regarding the project: https://groups.google.com/forum/#!forum/loklak
 
-Our chat channel is on gitter here: https://gitter.im/loklak/loklak
+Our chat channel is on gitter here: https://gitter.im/fossasia/susi_server
 
 ## Why should I use Susi?
 
@@ -36,14 +36,14 @@ If you like to be anonymous when searching things, want to archive tweets or mes
 [![Deploy to Bluemix](https://bluemix.net/deploy/button.png)](https://bluemix.net/deploy?repository=https://github.com/fossasia/susi_server)
 [![Deploy to Docker Cloud](https://files.cloud.docker.com/images/deploy-to-dockercloud.svg)](https://cloud.docker.com/stack/deploy/)
 
-At this time, loklak is not provided in compiled form, you easily build it yourself. It's not difficult and done in one minute! The source code is hosted at https://github.com/fossasia/susi_server, you can download it and run Susi with:
+At this time, Susi is not provided in compiled form, you easily build it yourself. It's not difficult and done in one minute! The source code is hosted at https://github.com/fossasia/susi_server, you can download it and run Susi with:
 
     > git clone https://github.com/fossasia/susi_server.git
     > cd susi_server
     > ant
     > bin/start.sh
 
-After all server processes are running, Susi tries to open a browser page itself. If that does not happen, just open http://localhost:9000; if you made the installation on a headless or remote server, then replace 'localhost' with your server name.
+After all server processes are running, Susi tries to open a browser page itself. If that does not happen, just open http://localhost:4000; if you made the installation on a headless or remote server, then replace 'localhost' with your server name.
 
 To stop Susi, run: (this will block until the server has actually terminated)
 
@@ -77,7 +77,7 @@ To install Susi on Eclipes, please refer to the [Susi Eclipse readme](/docs/ecli
 
 - build Susi (you need to do this only once, see above)
 - run `bin/start.sh`
-- open `http://localhost:9000` in your browser
+- open `http://localhost:4000` in your browser
 - to shut down Susi, run `bin/stop.sh`
 
 ## How do I analyze data acquired by Susi
@@ -100,7 +100,7 @@ The basis configuration file is in ```conf/config.properties```. To customize th
 
 ## Where can I find documentation?
 
-The application has built-in documentation web pages, you will see them when you opened the application web pages or you can simply open `html/index.html` or just use http://loklak.org as reference. 
+The application has built-in documentation web pages, you will see them when you opened the application web pages or you can simply open `html/index.html` or just use http://api.asksusi.com as reference. 
 
 ### Where can I find showcases and tutorials?
 

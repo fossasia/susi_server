@@ -38,7 +38,7 @@ dbAccess.put(Pattern.compile("SELECT\\h+?(.*?)\\h+?FROM\\h+?rss\\h+?WHERE\\h+?ur
         });
 ```
 
-* Sample Link: [http://localhost:9000/api/console.json?q=SELECT * FROM rss WHERE url= 'https://www.reddit.com/search.rss?q=loklak';](http://localhost:9000/api/console.json?q=SELECT%20*%20FROM%20rss%20WHERE%20url=%27https://www.reddit.com/search.rss?q=loklak%27;
+* Sample Link: [http://localhost:4000/api/console.json?q=SELECT * FROM rss WHERE url= 'https://www.reddit.com/search.rss?q=loklak';](http://localhost:4000/api/console.json?q=SELECT%20*%20FROM%20rss%20WHERE%20url=%27https://www.reddit.com/search.rss?q=loklak%27;
 )
 * Sample Output: 
 ```
@@ -336,8 +336,8 @@ This crawler parses the event details (name, description, date, time, location, 
             return json;
         });
 ```
-* Usage: [http://localhost:9000/api/console.json?q=SELECT * FROM eventbrite WHERE url='<-link-to-event-listing-on-eventbrite.com->';
-](http://localhost:9000/api/console.json?q=SELECT%20*%20FROM%20eventbrite%20WHERE%20url=%27https://www.eventbrite.fr/e/billets-europeade-2016-concert-de-musique-vocale-25592599153?aff=es2%27;
+* Usage: [http://localhost:4000/api/console.json?q=SELECT * FROM eventbrite WHERE url='<-link-to-event-listing-on-eventbrite.com->';
+](http://localhost:4000/api/console.json?q=SELECT%20*%20FROM%20eventbrite%20WHERE%20url=%27https://www.eventbrite.fr/e/billets-europeade-2016-concert-de-musique-vocale-25592599153?aff=es2%27;
 )
 
 * Sample Link: [http://loklak.org/api/eventbritecrawler.json?url=https://www.eventbrite.fr/e/billets-europeade-2016-concert-de-musique-vocale-25592599153](http://loklak.org/api/eventbritecrawler.json?url=https://www.eventbrite.fr/e/billets-europeade-2016-concert-de-musique-vocale-25592599153)
@@ -566,7 +566,7 @@ This scraper is intended to provide with all the information like name, agenda, 
   }}
 }
 ```
-* Usage: [http://localhost:9000/api/console.json?q=SELECT * FROM wordpress WHERE url='<-link-to-wordpress-blogspot->';](http://localhost:9000/api/console.json?q=SELECT%20*%20FROM%20wordpress%20WHERE%20url=%27https://jigyasagrover.wordpress.com/%27;)
+* Usage: [http://localhost:4000/api/console.json?q=SELECT * FROM wordpress WHERE url='<-link-to-wordpress-blogspot->';](http://localhost:4000/api/console.json?q=SELECT%20*%20FROM%20wordpress%20WHERE%20url=%27https://jigyasagrover.wordpress.com/%27;)
 
 
 
