@@ -57,6 +57,7 @@ public class Query {
         // start tracking: get calling thread and start tracking for that
         StackTraceElement[] stackTraceElements = Thread.currentThread().getStackTrace();
         StackTraceElement caller = stackTraceElements[3];
+        if (caller.getClassName().contains("Abstract")) caller = stackTraceElements[2];
         this.track = DAO.access.startTracking(caller.getClassName(), clientHost);
         
         this.track.setTimeSinceLastAccess(this.track.getDate().getTime() - RemoteAccess.latestVisit(this.track.getClassName(), clientHost));
