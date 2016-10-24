@@ -67,8 +67,8 @@ public class RemoteAccess {
         String peername = qm == null ? request.getParameter("peername") : qm.get("peername");
         if (peername == null || peername.length() > 132) peername = "anonymous";
         final String remoteHost = post.getClientHost();
-        Map<String, RemoteAccess> hmap = history.get(post.track.getClassName());
-        if (hmap == null) {hmap = new ConcurrentHashMap<>(); history.put(post.track.getClassName(), hmap);}
+        Map<String, RemoteAccess> hmap = history.get(request.getServletPath());
+        if (hmap == null) {hmap = new ConcurrentHashMap<>(); history.put(request.getServletPath(), hmap);}
         if (httpport == null || httpsport == null) {
             // if port configuration is omitted, just update the value if it exist
             RemoteAccess ra = hmap.get(remoteHost);
