@@ -210,7 +210,7 @@ public class SusiArgument implements Iterable<SusiThought> {
         JSONArray recallJson = new JSONArray();
         this.recall.forEach(thought -> recallJson.put(thought));
         JSONArray actionsJson = new JSONArray();
-        this.actions.forEach(action -> actionsJson.put(action.toJSON()));
+        this.actions.forEach(action -> actionsJson.put(action.toJSONClone()));
         json.put("recall", recallJson);
         json.put("action", actionsJson);
         return json;

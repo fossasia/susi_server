@@ -315,13 +315,13 @@ public class SusiThought extends JSONObject {
      */
     public SusiThought addActions(List<SusiAction> actions) {
         JSONArray a = getActionsJSON();
-        actions.forEach(action -> a.put(action.toJSON()));
+        actions.forEach(action -> a.put(action.toJSONClone()));
         return this;
     }
     
     public SusiThought addAction(SusiAction action) {
         JSONArray a = getActionsJSON();
-        a.put(action.toJSON());
+        a.put(action.toJSONClone());
         return this;
     }
     
