@@ -1,5 +1,5 @@
 /**
- *  LoklakInstallation
+ *  SusiInstallation
  *  Copyright 04.08.2016 by Robert Mader, @treba123
  *
  *  This library is free software; you can redistribute it and/or

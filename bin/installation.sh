@@ -46,7 +46,7 @@ fi
 echo "starting loklak installation"
 echo "startup" > $STARTUPFILE
 
-cmdline="$cmdline -server -classpath $CLASSPATH -Dlog4j.configurationFile=$LOGCONFIG org.loklak.LoklakInstallation >> data/loklak.log 2>&1 &";
+cmdline="$cmdline -server -classpath $CLASSPATH -Dlog4j.configurationFile=$LOGCONFIG org.loklak.SusiInstallation >> data/loklak.log 2>&1 &";
 
 eval $cmdline
 PID=$!
