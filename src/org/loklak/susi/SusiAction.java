@@ -21,6 +21,7 @@ package org.loklak.susi;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.Random;
 
 import org.json.JSONArray;
@@ -33,7 +34,7 @@ import org.json.JSONObject;
  */
 public class SusiAction {
 
-    public static enum RenderType {answer, table, piechart, rss;}
+    public static enum RenderType {answer, table, piechart, rss, include;}
     public static enum SelectionType {random, roundrobin;}
     public static enum DialogType {
         answer, question, reply;
@@ -143,13 +144,28 @@ public class SusiAction {
      * @param thoughts an argument from previously applied inferences
      * @return the action with the attribute "expression" instantiated by unification of the thought with the action
      */
-    public SusiAction apply(SusiArgument thoughts) {
-        if (this.getRenderType() == RenderType.answer && this.json.has("phrases")) {
+    public SusiAction apply(SusiArgument thoughts, SusiMind mind, String client) {
+        if ((this.getRenderType() == RenderType.answer || this.getRenderType() == RenderType.include) && this.json.has("phrases")) {
             // transform the answer according to the data
             ArrayList<String> a = getPhrases();
             String phrase = a.get(random.nextInt(a.size()));
             String expression = thoughts.unify(phrase);
-            if (expression != null) this.json.put("expression", expression);
+            if (expression != null) {
+                if (this.getRenderType() == RenderType.answer) {
+                    // transform the answer according to the data
+                    this.json.put("expression", expression);
+                }
+                if (this.getRenderType() == RenderType.include) {
+                    // recursive call susi with the answer
+                    List<SusiArgument> datalist = mind.react(expression, 1, client);
+                    SusiArgument bestargument = datalist.get(0);
+                    expression = bestargument.getActions().get(0).apply(bestargument, mind, client).getStringAttr("expression");
+                    this.json.put("expression", expression);
+                    // patch the render type
+                    this.json.put("type", RenderType.answer.name());
+                    this.renderTypeCache = RenderType.answer;
+                }
+            }
         }
         return this;
     }
@@ -158,8 +174,8 @@ public class SusiAction {
      * An action is backed with a JSON data structure. That can be retrieved here.
      * @return the json structure of the action
      */
-    public JSONObject toJSON() {
-        JSONObject j = new JSONObject();
+    public JSONObject toJSONClone() {
+        JSONObject j = new JSONObject(true);
         this.json.keySet().forEach(key -> j.put(key, this.json.get(key))); // make a clone
         if (j.has("expression")) {
             j.remove("phrases");
@@ -173,6 +189,6 @@ public class SusiAction {
      * @return return the json representation of the object as a string
      */
     public String toString() {
-        return toJSON().toString();
+        return toJSONClone().toString();
     }
 }

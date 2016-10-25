@@ -55,12 +55,8 @@ public class Query {
         if (XRealIP != null && XRealIP.length() > 0) clientHost = XRealIP; // get IP through nginx config "proxy_set_header X-Real-IP $remote_addr;"
         
         // start tracking: get calling thread and start tracking for that
-        StackTraceElement[] stackTraceElements = Thread.currentThread().getStackTrace();
-        StackTraceElement caller = stackTraceElements[3];
-        this.track = DAO.access.startTracking(caller.getClassName(), clientHost);
-        
-        this.track.setTimeSinceLastAccess(this.track.getDate().getTime() - RemoteAccess.latestVisit(this.track.getClassName(), clientHost));
-        //System.out.println("*** this.time_since_last_access = " + this.time_since_last_access);
+        this.track = DAO.access.startTracking(request.getServletPath(), clientHost);
+        this.track.setTimeSinceLastAccess(this.track.getDate().getTime() - RemoteAccess.latestVisit(request.getServletPath(), clientHost));
         this.track.setDoSBlackout(SusiServer.blacklistedHosts.contains(clientHost) || (!this.track.isLocalhostAccess() && (this.track.getTimeSinceLastAccess() < DAO.getConfig("DoS.blackout", 100))));
         this.track.setDoSServicereduction(!this.track.isLocalhostAccess() && (this.track.getTimeSinceLastAccess() < DAO.getConfig("DoS.servicereduction", 1000)));
     }

@@ -336,11 +336,9 @@ public class SusiMind {
         List<SusiIdea> plausibleIdeas = new ArrayList<>(Math.min(10, maxcount));
         for (SusiIdea idea: ideas) {
             SusiRule rule = idea.getRule();
-            if (rule.getActions().size() == 0) continue;
-            if (rule.getActions().get(0).getPhrases().size() == 0) continue;
-            if (rule.getActions().get(0).getPhrases().get(0).length() == 0) continue;
             Collection<Matcher> m = rule.matcher(query);
             if (m.isEmpty()) continue;
+            // TODO: evaluate leading SEE flow commands right here as well
             plausibleIdeas.add(idea);
             if (plausibleIdeas.size() >= maxcount) break;
         }
@@ -375,7 +373,7 @@ public class SusiMind {
         List<SusiArgument> answers = new ArrayList<>();
         List<SusiIdea> ideas = creativity(query, recall, 100);
         for (SusiIdea idea: ideas) {
-            SusiArgument argument = idea.getRule().consideration(query, recall, idea.getIntent());
+            SusiArgument argument = idea.getRule().consideration(query, recall, idea.getIntent(), this, client);
             if (argument != null) answers.add(argument);
             if (answers.size() >= maxcount) break;
         }
@@ -383,9 +381,10 @@ public class SusiMind {
     }
     
     public String react(String query) {
-        List<SusiArgument> datalist = react(query, 1, "host_localhost");
+        String client = "host_localhost";
+        List<SusiArgument> datalist = react(query, 1, client);
         SusiArgument bestargument = datalist.get(0);
-        return bestargument.getActions().get(0).apply(bestargument).getStringAttr("expression");
+        return bestargument.getActions().get(0).apply(bestargument, this, client).getStringAttr("expression");
     }
     
     public SusiInteraction interaction(final String query, int maxcount, ClientIdentity identity) {

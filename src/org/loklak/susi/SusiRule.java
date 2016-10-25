@@ -118,7 +118,7 @@ public class SusiRule {
         json.put("phrases", p);
         JSONArray i = new JSONArray(); this.inferences.forEach(inference -> i.put(inference.getJSON()));
         json.put("process", i);
-        JSONArray a = new JSONArray(); this.actions.forEach(action -> a.put(action.toJSON()));
+        JSONArray a = new JSONArray(); this.actions.forEach(action -> a.put(action.toJSONClone()));
         json.put("actions", a);
         if (this.comment != null && this.comment.length() > 0) json.put("comment", comment);
         if (score > 0) json.put("score", score);
@@ -307,10 +307,13 @@ public class SusiRule {
     /**
      * Actions are operations that are activated when inferences terminate and something should be done with the
      * result. Actions describe how data should be presented, i.e. painted in graphs or just answer lines.
+     * Because actions may get changed during computation, we return a clone here
      * @return a list of possible actions. It might be possible to use only a subset, but it is recommended to activate all of them
      */
-    public List<SusiAction> getActions() {
-        return this.actions;
+    public List<SusiAction> getActionsClone() {
+        List<SusiAction> clonedList = new ArrayList<>();
+        this.actions.forEach(action -> clonedList.add(new SusiAction(action.toJSONClone())));
+        return clonedList;
     }
 
     /**
@@ -340,7 +343,7 @@ public class SusiRule {
      * @param intent the key from the user query which matched the rule keys (also considering category matching)
      * @return the result of the application of the rule, a thought argument containing the thoughts which terminated into a final mindstate or NULL if the consideration should be rejected
      */
-    public SusiArgument consideration(final String query, SusiThought recall, SusiReader.Token intent) {
+    public SusiArgument consideration(final String query, SusiThought recall, SusiReader.Token intent, SusiMind mind, String client) {
         
         // we start with the recall from previous interactions as new flow
         final SusiArgument flow = new SusiArgument().think(recall);
@@ -369,7 +372,7 @@ public class SusiRule {
             }
             
             // we deduced thoughts from the inferences in the rules. Now apply the actions of rule to produce results
-            this.getActions().forEach(action -> flow.addAction(action.apply(flow)));
+            this.getActionsClone().forEach(action -> flow.addAction(action.apply(flow, mind, client)));
             return flow;
         }
         // fail, no alternative was successful
