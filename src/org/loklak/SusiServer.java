@@ -208,6 +208,7 @@ public class SusiServer {
         try{
         	DAO.init(config, data);
         } catch(Exception e){
+            e.printStackTrace();
         	Log.getLog().warn(e.getMessage());
         	Log.getLog().warn("Could not initialize DAO. Exiting.");
         	System.exit(-1);

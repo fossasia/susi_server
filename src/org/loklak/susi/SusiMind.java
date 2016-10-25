@@ -20,10 +20,12 @@
 package org.loklak.susi;
 
 import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -36,6 +38,9 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.regex.Matcher;
 
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -43,6 +48,9 @@ import org.json.JSONTokener;
 import org.loklak.api.aggregation.ConsoleService;
 import org.loklak.data.DAO;
 import org.loklak.server.ClientIdentity;
+import org.w3c.dom.Document;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
 public class SusiMind {
     
@@ -62,7 +70,9 @@ public class SusiMind {
         this.observations = new HashMap<>();
         this.reader = new SusiReader();
         this.logs = new SusiLog(watchpath, 5);
-        try {observe();} catch (IOException e) {}
+        try {observe();} catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     public Set<String> getUnanswered() {
@@ -71,13 +81,16 @@ public class SusiMind {
     
     public SusiMind observe() throws IOException {
         observe(this.initpath);
+        observe(new File(this.initpath.getParentFile(), "aiml"));
         observe(this.watchpath);
+        observe(new File(this.watchpath.getParentFile(), "aiml"));
         return this;
     }
     
     private void observe(File path) throws IOException {
+        if (!path.exists()) return;
         for (File f: path.listFiles()) {
-            if (!f.isDirectory() && !f.getName().startsWith(".") && (f.getName().endsWith(".json") || f.getName().endsWith(".txt"))) {
+            if (!f.isDirectory() && !f.getName().startsWith(".") && (f.getName().endsWith(".json") || f.getName().endsWith(".txt") || f.getName().endsWith(".aiml"))) {
                 if (!observations.containsKey(f) || f.lastModified() > observations.get(f)) {
                     observations.put(f, System.currentTimeMillis());
                     try {
@@ -87,6 +100,9 @@ public class SusiMind {
                         }
                         if (f.getName().endsWith(".txt")) {
                             lesson = readTextLesson(f);
+                        }
+                        if (f.getName().endsWith(".aiml")) {
+                            lesson = readAIMLLesson(f);
                         }
                         learn(lesson);
                     } catch (Throwable e) {
@@ -141,6 +157,75 @@ public class SusiMind {
             lastLine = line;
         }} catch (IOException e) {}
         return json;
+    }
+    
+    public JSONObject readAIMLLesson(File file) throws Exception {
+        // read the file as string
+        BufferedReader br = new BufferedReader(new FileReader(file));
+        String str;
+        StringBuilder buf=new StringBuilder();
+        while ((str = br.readLine()) != null) buf.append(str);
+        br.close();
+        
+        // parse the string as xml into a node object
+        InputStream is = new ByteArrayInputStream(buf.toString().getBytes("UTF-8"));
+        DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
+        DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
+        Document doc = dBuilder.parse(is);
+        doc.getDocumentElement().normalize();
+        Node root = doc.getDocumentElement();
+        Node node = root;
+        NodeList nl = node.getChildNodes();
+        JSONObject json = new JSONObject();
+        JSONArray rules = new JSONArray();
+        json.put("rules", rules);
+        for (int i = 0; i < nl.getLength(); i++) {
+            String nodename = nl.item(i).getNodeName().toLowerCase();
+            if (nodename.equals("category")) {
+                JSONObject rule = readAIMLCategory(nl.item(i));
+                if (rule != null && rule.length() > 0) rules.put(rule);
+            }
+            System.out.println("ROOT NODE " + nl.item(i).getNodeName());
+        }
+        return json;
+    }
+    
+    public JSONObject readAIMLCategory(Node category) {
+        NodeList nl = category.getChildNodes();
+        String[] phrases = null;
+        String[] answers = null;
+        for (int i = 0; i < nl.getLength(); i++) {
+            String nodename = nl.item(i).getNodeName().toLowerCase();
+            System.out.println("CATEGORYY NODE " + nl.item(i).getNodeName());
+            if (nodename.equals("pattern")) {
+                phrases = readAIMLSentences(nl.item(i));
+            } else if (nodename.equals("that")) {
+                
+            } else if (nodename.equals("template")) {
+                answers = readAIMLSentences(nl.item(i));
+            }
+        }
+        if (phrases != null && answers != null) {
+            return SusiRule.simpleRule(phrases, answers, false);
+        }
+        return null;
+    }
+    
+    public String[] readAIMLSentences(Node pot) {
+        NodeList nl = pot.getChildNodes();
+        JSONObject json = new JSONObject();
+        for (int i = 0; i < nl.getLength(); i++) {
+            String nodename = nl.item(i).getNodeName().toLowerCase();
+            System.out.println("SENTENCE NODE " + nl.item(i).getNodeName());
+            if (nodename.equals("pattern")) {
+                
+            } else if (nodename.equals("that")) {
+                
+            } else if (nodename.equals("template")) {
+                
+            }
+        }
+        return null;
     }
     
     public SusiMind learn(JSONObject json) {
