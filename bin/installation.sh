@@ -46,7 +46,7 @@ fi
 echo "starting loklak installation"
 echo "startup" > $STARTUPFILE
 
-cmdline="$cmdline -server -classpath $CLASSPATH -Dlog4j.configurationFile=$LOGCONFIG org.loklak.LoklakInstallation >> data/loklak.log 2>&1 &";
+cmdline="$cmdline -server -classpath $CLASSPATH -Dlog4j.configurationFile=$LOGCONFIG org.loklak.SusiInstallation >> data/loklak.log 2>&1 &";
 
 eval $cmdline
 PID=$!
@@ -63,21 +63,21 @@ done
 if [ -f $STARTUPFILE ] && [ $(ps -p $PID -o pid=) ]; then
 	CUSTOMPORT=$(grep -iw 'port.http' conf/config.properties | sed 's/^[^=]*=//' );
 	LOCALHOST=$(grep -iw 'shortlink.urlstub' conf/config.properties | sed 's/^[^=]*=//');
-	echo "loklak installation started at port $CUSTOMPORT, open your browser at $LOCALHOST"
+	echo "susi installation started at port $CUSTOMPORT, open your browser at $LOCALHOST"
 	rm -f $STARTUPFILE
 
     echo "waiting for installation to finish"
     wait "$PID"
     if [ $? -eq 0 ]; then
-        echo "loklak installation finished"
+        echo "susi installation finished"
         echo 'done' > $INSTALLATIONCONFIG
     else
-        echo "loklak installation aborted"
+        echo "susi installation aborted"
     fi
 
 	exit 0
 else
-	echo "loklak installation failed to start. See data/loklag.log for details. Here are the last logs:"
+	echo "susi installation failed to start. See data/loklag.log for details. Here are the last logs:"
     tail data/loklak.log
 	rm -f $STARTUPFILE
 	exit 1
