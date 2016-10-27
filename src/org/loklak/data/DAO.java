@@ -70,13 +70,7 @@ import org.loklak.tools.storage.JsonTray;
  */
 public class DAO {
 
-    public final static String MESSAGE_DUMP_FILE_PREFIX = "messages_";
-    public final static String ACCOUNT_DUMP_FILE_PREFIX = "accounts_";
-    public final static String USER_DUMP_FILE_PREFIX = "users_";
-    public final static String ACCESS_DUMP_FILE_PREFIX = "access_";
-    public final static String FOLLOWERS_DUMP_FILE_PREFIX = "followers_";
-    public final static String FOLLOWING_DUMP_FILE_PREFIX = "following_";
-    private static final String IMPORT_PROFILE_FILE_PREFIX = "profile_";
+    private final static String ACCESS_DUMP_FILE_PREFIX = "access_";
     
     public final static int CACHE_MAXSIZE =   10000;
     public final static int EXIST_MAXSIZE = 4000000;
@@ -98,20 +92,6 @@ public class DAO {
     
     // built-in artificial intelligence
     public static SusiMind susi;
-    
-    public static enum IndexName {
-    	messages_hour("messages.json"), messages_day("messages.json"), messages_week("messages.json"), messages, queries, users, accounts, import_profiles;
-        private String schemaFileName;
-    	private IndexName() {
-    	    schemaFileName = this.name() + ".json";
-    	}
-    	private IndexName(String filename) {
-            schemaFileName = filename;
-        }
-    	public String getSchemaFilename() {
-    	    return this.schemaFileName;
-    	}
-    }
     
     /**
      * initialize the DAO
@@ -168,18 +148,26 @@ public class DAO {
         // open AAA storage
         Path settings_dir = dataPath.resolve("settings");
         settings_dir.toFile().mkdirs();
-        Path authentication_path = settings_dir.resolve("authentication.json");
-        authentication = new JsonTray(authentication_path.toFile(), 10000);
-        OS.protectPath(authentication_path);
-        Path authorization_path = settings_dir.resolve("authorization.json");
-        authorization = new JsonTray(authorization_path.toFile(), 10000);
-        OS.protectPath(authorization_path);
-        Path passwordreset_path = settings_dir.resolve("passwordreset.json");
-        passwordreset = new JsonTray(passwordreset_path.toFile(), 10000);
-        OS.protectPath(passwordreset_path);
-        Path accounting_path = settings_dir.resolve("accounting.json");
-        accounting = new JsonTray(accounting_path.toFile(), 10000);
-        OS.protectPath(accounting_path);
+        Path authentication_path_per = settings_dir.resolve("authentication.json");
+        Path authentication_path_vol = settings_dir.resolve("authentication_session.json");
+        authentication = new JsonTray(authentication_path_per.toFile(), authentication_path_vol.toFile(), 10000);
+        OS.protectPath(authentication_path_per);
+        OS.protectPath(authentication_path_vol);
+        Path authorization_path_per = settings_dir.resolve("authorization.json");
+        Path authorization_path_vol = settings_dir.resolve("authorization_session.json");
+        authorization = new JsonTray(authorization_path_per.toFile(), authorization_path_vol.toFile(), 10000);
+        OS.protectPath(authorization_path_per);
+        OS.protectPath(authorization_path_vol);
+        Path passwordreset_path_per = settings_dir.resolve("passwordreset.json");
+        Path passwordreset_path_vol = settings_dir.resolve("passwordreset_session.json");
+        passwordreset = new JsonTray(passwordreset_path_per.toFile(), passwordreset_path_vol.toFile(), 10000);
+        OS.protectPath(passwordreset_path_per);
+        OS.protectPath(passwordreset_path_vol);
+        Path accounting_path_per = settings_dir.resolve("accounting.json");
+        Path accounting_path_vol = settings_dir.resolve("accounting_session.json");
+        accounting = new JsonTray(accounting_path_per.toFile(), accounting_path_vol.toFile(), 10000);
+        OS.protectPath(accounting_path_per);
+        OS.protectPath(accounting_path_vol);
         Path login_keys_path = settings_dir.resolve("login-keys.json");
         login_keys = new JsonFile(login_keys_path.toFile());
         OS.protectPath(login_keys_path);
@@ -234,6 +222,12 @@ public class DAO {
         
         // close the tracker
         access.close();
+        
+        // close AAA for session hand-over
+        authentication.close();
+        authorization.close();
+        passwordreset.close();
+        accounting.close();
 
         Log.getLog().info("closed DAO");
     }

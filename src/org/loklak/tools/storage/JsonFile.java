@@ -39,21 +39,57 @@ public class JsonFile extends JSONObject {
 	
 	private final File file;
 
-	public JsonFile(File file) throws IOException{
+	public JsonFile(File file) throws IOException {
 		super();
-		if(file == null) throw new IOException("File must not be null");
+		if (file == null) throw new IOException("File must not be null");
 		
 		this.file = file;
-		if(file.exists()){
+		if (file.exists()) {
 			JSONTokener tokener;
 			tokener = new JSONTokener(new FileReader(file));
 			putAll(new JSONObject(tokener));
-		}
-		else{
+		} else {
 			file.createNewFile();
 			commit();
 		}
 	}
+	
+	/**
+	 * static JSON reader which is able to read a json file written by JsonFile
+	 * @param file
+	 * @return the json
+	 * @throws IOException
+	 */
+	public static JSONObject readJson(File file) throws IOException {
+        if (file == null) throw new IOException("file must not be null");
+	    JSONObject json = new JSONObject(true);
+	    JSONTokener tokener;
+        tokener = new JSONTokener(new FileReader(file));
+        json.putAll(new JSONObject(tokener));
+        return json;
+	}
+	
+	/**
+	 * write a json file in transaction style: first write a temporary file,
+	 * then rename the original file to another temporary file, then rename the
+	 * just written file to the target file name, then delete all other temporary files.
+	 * @param file
+	 * @param json
+	 * @throws IOException
+	 */
+	public static void writeJson(File file, JSONObject json) throws IOException {
+        if (file == null) throw new IOException("file must not be null");
+        if (json == null) throw new IOException("json must not be null");
+        if (!file.exists()) file.createNewFile();
+        File tmpFile0 = new File(file.getParentFile(), file.getName() + "." + System.currentTimeMillis());
+        File tmpFile1 = new File(tmpFile0.getParentFile(), tmpFile0.getName() + "1");
+        FileWriter writer = new FileWriter(tmpFile0);
+        writer.write(json.toString(2));
+        writer.close();
+        file.renameTo(tmpFile1);
+        tmpFile0.renameTo(file);
+        tmpFile1.delete();
+    }
 	
 	public synchronized File getFile() {
 	    return this.file;
@@ -66,15 +102,8 @@ public class JsonFile extends JSONObject {
 	 * @throws JSONException
 	 */
 	public synchronized void commit() throws JSONException {
-	    File tmpFile0 = new File(this.file.getParentFile(), this.file.getName() + "." + System.currentTimeMillis());
-	    File tmpFile1 = new File(tmpFile0.getParentFile(), tmpFile0.getName() + "1");
-        try {
-		    FileWriter writer = new FileWriter(tmpFile0);
-			writer.write(this.toString(2));
-			writer.close();
-            this.file.renameTo(tmpFile1);
-            tmpFile0.renameTo(this.file);
-            tmpFile1.delete();
+	    try {
+            writeJson(this.file, this);
 		} catch (IOException e) {
 			throw new JSONException(e.getMessage());
 		}

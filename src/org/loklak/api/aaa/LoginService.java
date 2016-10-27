@@ -47,7 +47,7 @@ import java.util.Base64;
 public class LoginService extends AbstractAPIHandler implements APIHandler {
 
 	private static final long serialVersionUID = 8578478303032749879L;
-	private static final long defaultAccessTokenExpireTime = 7 * 24 * 60 * 60;
+	private static final long defaultAccessTokenExpireTime = 7 * 24 * 60 * 60; // one week
 
 	@Override
 	public BaseUserRole getMinimalBaseUserRole() {

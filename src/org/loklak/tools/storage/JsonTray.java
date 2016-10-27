@@ -24,6 +24,7 @@ package org.loklak.tools.storage;
 import java.io.File;
 import java.io.IOException;
 import java.util.LinkedHashMap;
+import java.util.Map;
 
 import org.json.JSONObject;
 import org.loklak.tools.CacheMap;
@@ -32,10 +33,30 @@ public class JsonTray {
     
     private JsonFile per;
     private CacheMap<String, JSONObject> vol;
+    private File file_volatile;
     
-    public JsonTray(File file, int cachesize) throws IOException {
-        this.per = new JsonFile(file);
+    public JsonTray(File file_persistent, File file_volatile, int cachesize) throws IOException {
+        this.per = new JsonFile(file_persistent);
         this.vol = new CacheMap<String, JSONObject>(cachesize);
+        this.file_volatile = file_volatile;
+        if (file_volatile.exists()) try {
+            JSONObject j = JsonFile.readJson(file_volatile);
+            for (String key: j.keySet()) this.vol.put(key, j.getJSONObject(key));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+    
+    public void close() {
+        JSONObject j = new JSONObject(true);
+        for (Map.Entry<String, JSONObject> entry: this.vol.getMap().entrySet()) {
+            j.put(entry.getKey(), entry.getValue());
+        }
+        try {
+            JsonFile.writeJson(this.file_volatile, j);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
     
     public boolean has(String key) {
@@ -50,12 +71,12 @@ public class JsonTray {
         return this;
     }
     
-    public JsonTray putPersistent(String key, JSONObject value) {
+    private JsonTray putPersistent(String key, JSONObject value) {
         this.per.put(key, value);
         return this;
     }
     
-    public JsonTray putVolatile(String key, JSONObject value) {
+    private JsonTray putVolatile(String key, JSONObject value) {
         synchronized (this.vol) {
             this.vol.put(key, value);
         }
