@@ -40,7 +40,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.Part;
 
-import org.loklak.data.DAO;
 import org.loklak.graphics.RasterPlotter;
 import org.loklak.server.Query;
 import org.loklak.tools.UTF8;
@@ -83,7 +82,6 @@ public class RemoteAccess {
             // overwrite if new port configuration is submitted
             RemoteAccess ra = new RemoteAccess(remoteHost, path, httpport, httpsport, peername);
             hmap.put(remoteHost, ra);
-            DAO.updateFrontPeerCache(ra);
         }
         return post;
     }

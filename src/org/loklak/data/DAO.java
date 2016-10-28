@@ -24,23 +24,15 @@ import java.nio.file.Path;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.security.NoSuchAlgorithmException;
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.Set;
-import java.util.TreeMap;
-import org.eclipse.jetty.util.ConcurrentHashSet;
 
 import com.google.common.io.Files;
 
 import org.eclipse.jetty.util.log.Log;
 import org.loklak.http.AccessTracker;
-import org.loklak.http.RemoteAccess;
 import org.loklak.server.Accounting;
 import org.loklak.server.Settings;
 import org.loklak.server.UserRoles;
@@ -71,9 +63,6 @@ import org.loklak.tools.storage.JsonTray;
 public class DAO {
 
     private final static String ACCESS_DUMP_FILE_PREFIX = "access_";
-    
-    public final static int CACHE_MAXSIZE =   10000;
-    public final static int EXIST_MAXSIZE = 4000000;
     
     public  static File conf_dir, bin_dir, html_dir;
     private static File external_data, assets, dictionaries;
@@ -274,88 +263,8 @@ public class DAO {
     public static Set<String> getConfigKeys() {
         return config.keySet();
     }
-
-
     
     public static final Random random = new Random(System.currentTimeMillis());
-    private static final Map<String, Long> peerLatency = new HashMap<>();
-    private static ArrayList<String> getBestPeers(Collection<String> peers) {
-        ArrayList<String> best = new ArrayList<>();
-        if (peers == null || peers.size() == 0) return best;
-        // first check if any of the given peers has unknown latency
-        TreeMap<Long, String> o = new TreeMap<>();
-        for (String peer: peers) {
-            if (peerLatency.containsKey(peer)) {
-                o.put(peerLatency.get(peer) * 1000 + best.size(), peer);
-            } else {
-                best.add(peer);
-            }
-        }
-        best.addAll(o.values());
-        return best;
-    }
-    public static void healLatency(float factor) {
-        for (Map.Entry<String, Long> entry: peerLatency.entrySet()) {
-            entry.setValue((long) (factor * entry.getValue()));
-        }
-    }
-
-    private static Set<String> frontPeerCache = new HashSet<String>();
-    private static Set<String> backendPeerCache = new HashSet<String>();
-    
-    public static void updateFrontPeerCache(RemoteAccess remoteAccess) {
-        if (remoteAccess.getLocalHTTPPort() >= 80) {
-            frontPeerCache.add("http://" + remoteAccess.getRemoteHost() + (remoteAccess.getLocalHTTPPort() == 80 ? "" : ":" + remoteAccess.getLocalHTTPPort()));
-        } else if (remoteAccess.getLocalHTTPSPort() >= 443) {
-            frontPeerCache.add("https://" + remoteAccess.getRemoteHost() + (remoteAccess.getLocalHTTPSPort() == 443 ? "" : ":" + remoteAccess.getLocalHTTPSPort()));
-        }
-    }
-    
-    /**
-     * from all known front peers, generate a list of available peers, ordered by the peer latency
-     * @return a list of front peers. only the first one shall be used, but the other are fail-over peers
-     */
-    public static ArrayList<String> getFrontPeers() {
-        String[] remote = DAO.getConfig("frontpeers", new String[0], ",");
-        ArrayList<String> testpeers = new ArrayList<>();
-        if (remote.length > 0) {
-            for (String peer: remote) testpeers.add(peer);
-            return testpeers;
-        }
-        if (frontPeerCache.size() == 0) {
-            // add dynamically all peers that contacted myself
-            for (Map<String, RemoteAccess> hmap: RemoteAccess.history.values()) {
-                for (Map.Entry<String, RemoteAccess> peer: hmap.entrySet()) {
-                    updateFrontPeerCache(peer.getValue());
-                }
-            }
-        }
-        testpeers.addAll(frontPeerCache);
-        return getBestPeers(testpeers);
-    }
-    
-    public static List<String> getBackendPeers() {
-        List<String> testpeers = new ArrayList<>();
-        if (backendPeerCache.size() == 0) {
-            String[] remote = DAO.getConfig("backend", new String[0], ",");
-            for (String peer: remote) backendPeerCache.add(peer);
-        }
-        testpeers.addAll(backendPeerCache);
-        return getBestPeers(testpeers);
-    }
-
-    public final static Set<Number> newUserIds = new ConcurrentHashSet<>();
-    
-    public static Set<Number> getNewUserIdsChunk() {
-        if (newUserIds.size() < 100) return null;
-        Set<Number> chunk = new HashSet<>();
-        Iterator<Number> i = newUserIds.iterator();
-        for (int j = 0; j < 100; j++) {
-            chunk.add(i.next());
-            i.remove();
-        }
-        return chunk;
-    }
 
     public static void log(String line) {
         Log.getLog().info(line);

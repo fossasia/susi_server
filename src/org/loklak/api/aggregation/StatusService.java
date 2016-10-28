@@ -26,7 +26,6 @@ import javax.servlet.http.HttpServletResponse;
 import org.json.JSONObject;
 import org.loklak.Caretaker;
 import org.loklak.SusiServer;
-import org.loklak.data.DAO;
 import org.loklak.http.ClientConnection;
 import org.loklak.server.APIException;
 import org.loklak.server.APIHandler;
@@ -69,21 +68,6 @@ public class StatusService extends AbstractAPIHandler implements APIHandler {
     @Override
     public JSONObject serviceImpl(Query post, HttpServletResponse response, Authorization rights, JSONObjectWithDefault permissions) throws APIException {
 
-        if (post.isLocalhostAccess() && OS.canExecUnix && post.get("upgrade", "").equals("true")) {
-            Caretaker.upgrade(); // it's a hack to add this here, this may disappear anytime
-        }
-        
-        final String backend = DAO.getConfig("backend", "");
-        final boolean backend_push = DAO.getConfig("backend.push.enabled", false);
-        JSONObject backend_status = null;
-        JSONObject backend_status_index_sizes = null;
-        if (backend.length() > 0 && !backend_push) try {
-            backend_status = StatusService.status(backend);
-            backend_status_index_sizes = backend_status == null ? null : (JSONObject) backend_status.get("index_sizes");
-        } catch (IOException e) {}
-        long backend_messages = backend_status_index_sizes == null ? 0 : ((Number) backend_status_index_sizes.get("messages")).longValue();
-        long backend_users = backend_status_index_sizes == null ? 0 : ((Number) backend_status_index_sizes.get("users")).longValue();
-        
         post.setResponse(response, "application/javascript");
         
         // generate json
@@ -96,7 +80,6 @@ public class StatusService extends AbstractAPIHandler implements APIHandler {
         system.put("cores", runtime.availableProcessors());
         system.put("threads", Thread.activeCount());
         system.put("runtime", System.currentTimeMillis() - Caretaker.startupTime);
-        system.put("time_to_restart", Caretaker.upgradeTime - System.currentTimeMillis());
         system.put("load_system_average", OS.getSystemLoadAverage());
         system.put("load_system_cpu", OS.getSystemCpuLoad());
         system.put("load_process_cpu", OS.getProcessCpuLoad());
@@ -105,7 +88,6 @@ public class StatusService extends AbstractAPIHandler implements APIHandler {
 
         JSONObject index = new JSONObject(true);
         JSONObject messages = new JSONObject(true);
-        messages.put("size_backend", backend_messages);
         JSONObject queue = new JSONObject(true);
         messages.put("queue", queue);
         JSONObject users = new JSONObject(true);

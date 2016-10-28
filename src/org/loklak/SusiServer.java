@@ -19,7 +19,13 @@
 
 package org.loklak;
 
-import java.io.*;
+import java.io.BufferedWriter;
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.net.ServerSocket;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
@@ -226,10 +232,6 @@ public class SusiServer {
         SusiServer.server.start();
         SusiServer.caretaker = new Caretaker();
         SusiServer.caretaker.start();
-        
-        
-        // read upgrade interval
-        Caretaker.upgradeTime = Caretaker.startupTime + DAO.getConfig("upgradeInterval", 86400000);
         
         // if this is not headless, we can open a browser automatically
         Browser.openBrowser("http://127.0.0.1:" + httpPort + "/");
@@ -456,7 +458,6 @@ public class SusiServer {
         WebAppContext htrootContext = new WebAppContext();
         htrootContext.setContextPath("/");
 
-        File tmp = new File(dataFile, "tmp");
         ServletContextHandler servletHandler = new ServletContextHandler();
 
         // add services

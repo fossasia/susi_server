@@ -122,10 +122,6 @@ public class ThreaddumpServlet extends HttpServlet {
         int runtimeminutes = (int) (runtimeseconds / 60); runtimeseconds = runtimeseconds % 60;
         int runtimehours = runtimeminutes / 60; runtimeminutes = runtimeminutes % 60;
         bufferappend(buffer, keylen, "Runtime", runtimehours + "h " + runtimeminutes + "m " + runtimeseconds + "s");
-        long timetorestartseconds = (Caretaker.upgradeTime - System.currentTimeMillis()) / 1000;
-        int timetorestartminutes = (int) (timetorestartseconds / 60); timetorestartseconds = timetorestartseconds % 60;
-        int timetorestarthours = timetorestartminutes / 60; timetorestartminutes = timetorestartminutes % 60;
-        bufferappend(buffer, keylen, "Time To Restart", timetorestarthours + "h " + timetorestartminutes + "m " + timetorestartseconds + "s");
         // print system beans
         for (Method method : osBean.getClass().getDeclaredMethods()) try {
             method.setAccessible(true);
