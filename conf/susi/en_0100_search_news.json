@@ -43,7 +43,7 @@
 			],
 			"process":[	{"type":"console", "expression":"SELECT COUNT(*) AS count, screen_name FROM messages-group-by-screen_name WHERE query='$2$';"}],
 			"actions":[	{"type":"answer", "select":"random", "phrases":[
-				"@$screen_name$ tweeted most about $1$, $count$ times"
+				"@$screen_name$ tweeted most about $2$, $count$ times"
 			]}]
 		},
 		{
