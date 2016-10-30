@@ -79,6 +79,7 @@ public class SusiInference {
     }
     
     private final static SusiSkills flowSkill = new SusiSkills();
+    private final static SusiSkills memorySkill = new SusiSkills();
     static {
         flowSkill.put(Pattern.compile("SQUASH"), (flow, matcher) -> {
             // perform a full mindmeld
@@ -99,24 +100,24 @@ public class SusiInference {
             if (recall.getCount() > 0) recall.getData().remove(0);
             return recall;
         });
-        flowSkill.put(Pattern.compile("REMEMBER\\h+?(.*?)\\h+?FROM\\h+?'(.*?)'\\h+?MATCHING\\h+?'(.*?)'\\h+?REGEX\\h*?"), (flow, matcher) -> {
+        memorySkill.put(Pattern.compile("REMEMBER\\h+?(.*?)\\h+?FROM\\h+?'(.*?)'\\h+?MATCHING\\h+?'(.*?)'\\h+?REGEX\\h*?"), (flow, matcher) -> {
             return see(flow, flow.unify(matcher.group(1), 0), flow.unify(matcher.group(2), 0), Pattern.compile(flow.unify(matcher.group(3), 0)));
         });
-        flowSkill.put(Pattern.compile("REMEMBER\\h+?(.*?)\\h+?FROM\\h+?'(.*?)'\\h+?MATCHING\\h+?'(.*?)'\\h+?PATTERN\\h*?"), (flow, matcher) -> {
+        memorySkill.put(Pattern.compile("REMEMBER\\h+?(.*?)\\h+?FROM\\h+?'(.*?)'\\h+?MATCHING\\h+?'(.*?)'\\h+?PATTERN\\h*?"), (flow, matcher) -> {
             return see(flow, flow.unify(matcher.group(1), 0), flow.unify(matcher.group(2), 0), Pattern.compile(SusiPhrase.parsePattern(flow.unify(matcher.group(3), 0))));
         });
-        flowSkill.put(Pattern.compile("EXPECT\\h+?'(.*?)'\\h+?MATCHING\\h+?'(.*?)'\\h+?REGEX\\h*?"), (flow, matcher) -> {
+        memorySkill.put(Pattern.compile("EXPECT\\h+?'(.*?)'\\h+?MATCHING\\h+?'(.*?)'\\h+?REGEX\\h*?"), (flow, matcher) -> {
             return see(flow, "*", matcher.group(1), Pattern.compile(flow.unify(matcher.group(2), 0)));
         });
-        flowSkill.put(Pattern.compile("EXPECT\\h+?'(.*?)'\\h+?MATCHING\\h+?'(.*?)'\\h+?PATTERN\\h*?"), (flow, matcher) -> {
+        memorySkill.put(Pattern.compile("EXPECT\\h+?'(.*?)'\\h+?MATCHING\\h+?'(.*?)'\\h+?PATTERN\\h*?"), (flow, matcher) -> {
             return see(flow, "*", matcher.group(1), Pattern.compile(SusiPhrase.parsePattern(flow.unify(matcher.group(2), 0))));
         });
-        flowSkill.put(Pattern.compile("REJECT\\h+?'(.*?)'\\h+?MATCHING\\h+?'(.*?)'\\h+?REGEX\\h*?"), (flow, matcher) -> {
+        memorySkill.put(Pattern.compile("REJECT\\h+?'(.*?)'\\h+?MATCHING\\h+?'(.*?)'\\h+?REGEX\\h*?"), (flow, matcher) -> {
             SusiThought t = see(flow, "*", matcher.group(1), Pattern.compile(flow.unify(matcher.group(2), 0)));
             if (t.getCount() == 0) return new SusiThought().addObservation("regex-" + matcher.group(2), matcher.group(1));
             return new SusiThought(); // empty thought -> fail
         });
-        flowSkill.put(Pattern.compile("REJECT\\h+?'(.*?)'\\h+?MATCHING\\h+?'(.*?)'\\h+?PATTERN\\h*?"), (flow, matcher) -> {
+        memorySkill.put(Pattern.compile("REJECT\\h+?'(.*?)'\\h+?MATCHING\\h+?'(.*?)'\\h+?PATTERN\\h*?"), (flow, matcher) -> {
             SusiThought t = see(flow, "*", matcher.group(1), Pattern.compile(SusiPhrase.parsePattern(flow.unify(matcher.group(2), 0))));
             if (t.getCount() == 0) return new SusiThought().addObservation("pattern-" + matcher.group(2), matcher.group(1));
             return new SusiThought(); // empty thought -> fail
@@ -180,6 +181,10 @@ public class SusiInference {
         if (type == SusiInference.Type.flow) {
             String expression = flow.unify(this.getExpression());
             try {return flowSkill.deduce(flow, expression);} catch (Exception e) {}
+        }
+        if (type == SusiInference.Type.memory) {
+            String expression = flow.unify(this.getExpression());
+            try {return memorySkill.deduce(flow, expression);} catch (Exception e) {}
         }
         // maybe the argument is not applicable, then an empty thought is produced (which means a 'fail')
         return new SusiThought();
