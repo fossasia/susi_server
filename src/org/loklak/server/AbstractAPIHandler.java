@@ -121,15 +121,8 @@ public abstract class AbstractAPIHandler extends HttpServlet implements APIHandl
         if (query.isDoS_blackout()) {response.sendError(503, "your request frequency is too high"); return;} // DoS protection
         if (DAO.getConfig("users.admin.localonly", true) && minimalBaseUserRole == BaseUserRole.ADMIN && !query.isLocalhostAccess()) {response.sendError(503, "access only allowed from localhost, your request comes from " + query.getClientHost()); return;} // danger! do not remove this!
         
-        
         // user identification
-        ClientIdentity identity;
-		try {
-			identity = getIdentity(request, response, query);
-		} catch (APIException e) {
-			response.sendError(e.getStatusCode(), e.getMessage());
-			return;
-		}
+        ClientIdentity identity = getIdentity(request, response, query);
         
         // user authorization: we use the identification of the user to get the assigned authorization
         Authorization authorization = new Authorization(identity, DAO.authorization, DAO.userRoles);
@@ -193,7 +186,7 @@ public abstract class AbstractAPIHandler extends HttpServlet implements APIHandl
      * Checks a request for valid login data, either a existing session, a cookie or an access token
      * @return user identity if some login is active, anonymous identity otherwise
      */
-    private ClientIdentity getIdentity(HttpServletRequest request, HttpServletResponse response, Query query) throws APIException{
+    public static ClientIdentity getIdentity(HttpServletRequest request, HttpServletResponse response, Query query) {
     	
     	if(getLoginCookie(request) != null){ // check if login cookie is set
 			
@@ -245,8 +238,7 @@ public abstract class AbstractAPIHandler extends HttpServlet implements APIHandl
     			}
     		}
     		Log.getLog().info("Invalid access token from host: " + query.getClientHost());
-    		authentication.delete();
-    		throw new APIException(422, "Invalid access token");
+    		return getAnonymousIdentity(query.getClientHost());
     	}
     	
         return getAnonymousIdentity(query.getClientHost());
@@ -304,7 +296,7 @@ public abstract class AbstractAPIHandler extends HttpServlet implements APIHandl
      * @param request
      * @return the login cookie if present, null otherwise
      */
-    private Cookie getLoginCookie(HttpServletRequest request){
+    private static Cookie getLoginCookie(HttpServletRequest request){
     	if(request.getCookies() != null){
 	    	for(Cookie cookie : request.getCookies()){
 				if("login".equals(cookie.getName())){
@@ -319,7 +311,7 @@ public abstract class AbstractAPIHandler extends HttpServlet implements APIHandl
      * Delete the login cookie if present
      * @param response
      */
-    protected void deleteLoginCookie(HttpServletResponse response){
+    protected static void deleteLoginCookie(HttpServletResponse response){
     	Cookie deleteCookie = new Cookie("login", null);
 		deleteCookie.setPath("/");
 		deleteCookie.setMaxAge(0);

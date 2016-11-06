@@ -54,7 +54,7 @@ public class FileHandler extends ResourceHandler implements Handler {
     private int expiresSeconds = 0;
     
     /**
-     * cerate a custom ResourceHandler with more caching
+     * create a custom ResourceHandler with more caching
      * @param expiresSeconds the time each file shall stay in the cache
      */
     public FileHandler(int expiresSeconds) {
