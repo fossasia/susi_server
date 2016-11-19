@@ -16,6 +16,7 @@ If you already have a local copy of `susi_server` repository
 12. In the frame panel that opens up, Move to the Arguments Tab and add the VM Arguments as `-Xmx2G -Xms2G -server -ea`
 13. Click `Apply` and then `Close` the window
 
+
 You can use Eclipse to download the susi_server from the `git url` in Step 4, Instead of choosing `Local Repository`
 choose `Remote URL` and use the git link `https://github.com/fossasia/susi_server.git` and follow the rest of the instructions
 
@@ -23,3 +24,8 @@ choose `Remote URL` and use the git link `https://github.com/fossasia/susi_serve
 1. Choose `File > New > Project`
 2. Choose `Java > Java Project from existing ant file`
 3. Navigate to the local copy of the repository and use the build file to open up `susi_server`
+
+
+# Test : 
+
+Right click on SusiServer.java and click on Run As -> JAVA Application , a window in your browser should open on 127.0.0.1:4000 .
