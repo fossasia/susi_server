@@ -17,7 +17,7 @@
  *  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.loklak.api.aggregation;
+package org.loklak.api.susi;
 
 import java.io.IOException;
 
@@ -29,13 +29,14 @@ import org.loklak.server.BaseUserRole;
 import org.loklak.server.AbstractAPIHandler;
 import org.loklak.server.Authorization;
 import org.loklak.server.Query;
+import org.loklak.susi.SusiInteraction;
 import org.loklak.tools.storage.JSONObjectWithDefault;
 
 import javax.servlet.http.HttpServletResponse;
 
-public class MindService extends AbstractAPIHandler implements APIHandler {
+public class SusiService extends AbstractAPIHandler implements APIHandler {
    
-    private static final long serialVersionUID = 8578478303098111L;
+    private static final long serialVersionUID = 857847830309879111L;
 
     @Override
     public BaseUserRole getMinimalBaseUserRole() { return BaseUserRole.ANONYMOUS; }
@@ -46,19 +47,23 @@ public class MindService extends AbstractAPIHandler implements APIHandler {
     }
 
     public String getAPIPath() {
-        return "/susi/mind.json";
+        return "/susi/chat.json";
     }
     
     @Override
     public JSONObject serviceImpl(Query post, HttpServletResponse response, Authorization user, final JSONObjectWithDefault permissions) throws APIException {
 
+        // parameters
+        String q = post.get("q", "");
+        int count = post.get("count", 1);
         try {
             DAO.susi.observe(); // get a database update
         } catch (IOException e) {
             DAO.log(e.getMessage());
         }
         
-        JSONObject json = DAO.susi.getMind();
+        SusiInteraction interaction = DAO.susi.interaction(q, count, user.getIdentity());
+        JSONObject json = interaction.getJSON();
         return json;
     }
     

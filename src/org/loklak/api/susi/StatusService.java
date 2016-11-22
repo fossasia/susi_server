@@ -17,7 +17,7 @@
  *  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.loklak.api.aggregation;
+package org.loklak.api.susi;
 
 import java.io.IOException;
 import java.util.Enumeration;
@@ -43,7 +43,7 @@ public class StatusService extends AbstractAPIHandler implements APIHandler {
 
     @Override
     public String getAPIPath() {
-        return "/aggregation/status.json";
+        return "/susi/status.json";
     }
 
     @Override

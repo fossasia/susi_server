@@ -45,7 +45,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONTokener;
-import org.loklak.api.aggregation.ConsoleService;
+import org.loklak.api.susi.ConsoleService;
 import org.loklak.data.DAO;
 import org.loklak.server.ClientIdentity;
 import org.w3c.dom.Document;

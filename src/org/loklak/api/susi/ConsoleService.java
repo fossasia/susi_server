@@ -17,7 +17,7 @@
  *  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.loklak.api.aggregation;
+package org.loklak.api.susi;
 
 import java.io.IOException;
 import java.net.URLEncoder;
