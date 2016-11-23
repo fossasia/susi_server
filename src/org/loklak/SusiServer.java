@@ -89,7 +89,7 @@ import org.loklak.api.aaa.ThreaddumpServlet;
 import org.loklak.api.aaa.TopMenuService;
 import org.loklak.api.aaa.UserAccountPermissions;
 import org.loklak.api.aaa.UserManagementService;
-import org.loklak.api.learning.RuleLearning;
+import org.loklak.api.learning.ConsoleLearning;
 import org.loklak.api.susi.ConsoleService;
 import org.loklak.api.susi.GenericScraper;
 import org.loklak.api.susi.MindService;
@@ -483,7 +483,7 @@ public class SusiServer {
                 MindService.class,
                 
                 // learning services
-                RuleLearning.class
+                ConsoleLearning.class
         };
         for (Class<? extends Servlet> service: services)
             try {

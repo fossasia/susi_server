@@ -161,7 +161,7 @@ import javax.servlet.http.HttpServletResponse;
  * i.e.
  * http://127.0.0.1:4000/learning/rule.json?action=delete&name=loklak
  */
-public class RuleLearning extends AbstractAPIHandler implements APIHandler {
+public class ConsoleLearning extends AbstractAPIHandler implements APIHandler {
    
     private static final long serialVersionUID = 857847830309879111L;
 
