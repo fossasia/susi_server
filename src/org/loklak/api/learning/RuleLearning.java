@@ -42,6 +42,125 @@ import org.loklak.tools.storage.JsonTray;
 
 import javax.servlet.http.HttpServletResponse;
 
+/**
+ * rule learning servlet
+ * The user shall be able to submit new console rules. This servlet supports the
+ * submission of new console rules and takes the user input to store these rules.
+ * 
+ * IMPORTANT: this servlet only works if the user is logged in. To log in, first use the login app here:
+ * http://localhost:4000/apps/loginpage/
+ * If you do not have an account, first sign in.
+ * 
+ * Example:
+ * 
+ * == (1) Testing a service URL and discovery of the path attribute ==
+ * Test a console url and compute the path to the data object - the following attributes must be given:
+ * action = test - tells the servlet that this is not a storage process, just a dry-run test
+ * name = <name> - the future name of the new rule
+ * url = <url>   - the url to the remote json service which will be used to retrieve information. It must contain a $query$ string.
+ * test = <parameter> - the parameter that will replace the $query$ string inside the given url. It is required to test the service.
+ * i.e.:
+ * http://127.0.0.1:4000/learning/rule.json?action=test&name=loklak&url=http://api.loklak.org/api/search.json?q=$query$&test=fossasia
+ * 
+ * The resulting json will contain information about the success of the test, in this case:
+ * {
+ * "accepted": true,
+ * "project": "default",
+ * "tags": [""],
+ * "action": "test",
+ * "name": "loklak",
+ * "path_computed": ["$.statuses"]
+ * }
+ * This contains default values for the not given parameters "project" and "tags" which may be further useful to find
+ * the rule after storage. The "project" name is actually the file name where the rule will be stored and the "tags"
+ * option is a list of tags to categorize the rule.
+ * The "accepted": true tells us, that everything went fine so far.
+ * A very important information is the "path_computed" list. It tells us where inside the json of the remote service an
+ * array of attribute values is detected. One of there paths must be given when testing the rule again to discover the
+ * Attributes of the data object
+ * 
+ * == (2) Testing the jsonpath to read a table from the service url ==
+ * As a second step, the test service can be called again with the jsonpath inside the path parameter:
+ * path = <jsonpath to data table>
+ * i.e.
+ * http://127.0.0.1:4000/learning/rule.json?action=test&name=loklak&url=http://api.loklak.org/api/search.json?q=$query$&test=fossasia&path=$.statuses
+ * This url has only one attribute appended, path=$.statuses
+ * Now the servlet is able to show all attributes in the resulting json which can be found in an example rule
+ * {
+  "accepted": true,
+  "project": "default",
+  "tags": [""],
+  "action": "test",
+  "name": "loklak",
+  "path_computed": ["$.statuses"],
+  "console": {"loklak": {
+    "example": "http://127.0.0.1:4000/susi/console.json?q=%22SELECT%20*%20FROM%20loklak%20WHERE%20query=%27fossasia%27;%22",
+    "url": "http://api.loklak.org/api/search.json?q=$query$",
+    "test": "fossasia",
+    "parser": "json",
+    "path": "$.statuses",
+    "attributes": [
+      "timestamp",
+      "created_at",
+      "screen_name",
+      "text",
+      "link",
+      "id_str",
+      "canonical_id",
+      "parent",
+      "source_type",
+      "provider_type",
+      "retweet_count",
+      "favourites_count",
+      "place_name",
+      "place_id",
+      "text_length",
+      "place_context",
+      "hosts",
+      "hosts_count",
+      "links",
+      "links_count",
+      "unshorten",
+      "images",
+      "images_count",
+      "audio",
+      "audio_count",
+      "videos",
+      "videos_count",
+      "mentions",
+      "mentions_count",
+      "hashtags",
+      "hashtags_count",
+      "classifier_emotion",
+      "classifier_emotion_probability",
+      "classifier_language",
+      "classifier_language_probability",
+      "without_l_len",
+      "without_lu_len",
+      "without_luh_len",
+      "user"
+    ]
+  }}
+  }
+ * In this json you find the attributes in console.loklak.attributes. Therefore the path is always console.<name>.attributes.
+ * The rule is now ready for storage. Just change the action parameter to 'leran'.
+ * 
+ * == (3) Learning the rule ==
+ * The rule is now ready for storage. Just change the action parameter to 'leran'.
+ * i.e.
+ * http://127.0.0.1:4000/learning/rule.json?action=learn&name=loklak&url=http://api.loklak.org/api/search.json?q=$query$&test=fossasia&path=$.statuses
+ *
+ * == (4) Listing of all rules ==
+ * Just send the following attributes:
+ * project = <projectname> (optional, by default 'default')
+ * action = list
+ * http://127.0.0.1:4000/learning/rule.json?action=list
+ * 
+ * == (5) Deletion of one rule ==
+ * You must give the project name and the rule name. If the project is default, you can omit the project
+ * i.e.
+ * http://127.0.0.1:4000/learning/rule.json?action=delete&name=loklak
+ */
 public class RuleLearning extends AbstractAPIHandler implements APIHandler {
    
     private static final long serialVersionUID = 857847830309879111L;
