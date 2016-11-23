@@ -25,6 +25,7 @@ import java.nio.file.Files;
 import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -38,6 +39,7 @@ import org.eclipse.jetty.util.ConcurrentHashSet;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.loklak.tools.UTF8;
+import org.loklak.tools.storage.JsonTray;
 
 /**
  * Susis log is a kind of reflection about the conversation in the past
@@ -69,12 +71,14 @@ public class SusiLog {
     private File root;
     private int rc;
     private Map<String, UserRecord> logs;
+    private Map<String, Map<String, JsonTray>> rulesets;
     private Set<String> unanswered;
     
     public SusiLog(File storageLocation, int rememberLatestCount) {
         this.root = storageLocation;
         this.rc = rememberLatestCount;
         this.logs = new ConcurrentHashMap<>();
+        this.rulesets = new ConcurrentHashMap<>();
         this.unanswered = null;
     }
     
@@ -122,19 +126,18 @@ public class SusiLog {
      * @return a list of interactions, latest interaction is first in list
      */
     public ArrayList<SusiInteraction> getInteractions(String client) {
-        UserRecord ur = logs.get(client);
+        UserRecord ur = this.logs.get(client);
         if (ur == null) {
             ur = new UserRecord(client);
-            logs.put(client, ur);
+            this.logs.put(client, ur);
         }
         return ur.conversation;
     }
-    
     public SusiLog addInteraction(String client, SusiInteraction si) {
-        UserRecord ur = logs.get(client);
+        UserRecord ur = this.logs.get(client);
         if (ur == null) {
             ur = new UserRecord(client);
-            logs.put(client, ur);
+            this.logs.put(client, ur);
         }
         ur.add(si);
         return this;
@@ -202,5 +205,32 @@ public class SusiLog {
         }
         return all;
     }
+
+    public Set<String> getRulesetNames(String client) {
+        Map<String, JsonTray> rulesets = this.rulesets.get(client);
+        if (rulesets == null) {
+            Set<String> rules = new HashSet<String>();
+            File rpath = new File(root, client);
+            rpath.mkdirs();
+            for (String s: rpath.list()) if (s.endsWith(".json")) rules.add(s.substring(0, s.length() - 5));
+            return rules;
+        }
+        return rulesets.keySet();
+    }
     
+    public JsonTray getRuleset(String client, String name) throws IOException {
+        Map<String, JsonTray> rulesets = this.rulesets.get(client);
+        if (rulesets == null) {
+            rulesets = new HashMap<>();
+            this.rulesets.put(client, rulesets);
+        }
+        JsonTray jt = rulesets.get(name);
+        if (jt == null) {
+            File rpath = new File(root, client);
+            rpath.mkdirs();
+            jt = new JsonTray(new File(rpath, name + ".json"), null, 1000);
+            rulesets.put(name,  jt);
+        }
+        return jt;
+    }
 }

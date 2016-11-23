@@ -63,6 +63,11 @@ public class ClientIdentity extends Client {
         return this.getKey().equals(Type.host.name());
     }
     
+    public String getClient() {
+        String client = this.getType() + "_" + this.getName();
+        return client;
+    }
+    
     public Type getType() {
         return Type.valueOf(this.getKey());
     }

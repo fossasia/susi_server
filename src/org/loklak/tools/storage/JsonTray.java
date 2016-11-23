@@ -39,7 +39,7 @@ public class JsonTray {
         this.per = new JsonFile(file_persistent);
         this.vol = new CacheMap<String, JSONObject>(cachesize);
         this.file_volatile = file_volatile;
-        if (file_volatile.exists()) try {
+        if (file_volatile != null && file_volatile.exists()) try {
             JSONObject j = JsonFile.readJson(file_volatile);
             for (String key: j.keySet()) this.vol.put(key, j.getJSONObject(key));
         } catch (IOException e) {
@@ -52,7 +52,7 @@ public class JsonTray {
         for (Map.Entry<String, JSONObject> entry: this.vol.getMap().entrySet()) {
             j.put(entry.getKey(), entry.getValue());
         }
-        try {
+        if (this.file_volatile != null) try {
             JsonFile.writeJson(this.file_volatile, j);
         } catch (IOException e) {
             e.printStackTrace();
@@ -109,24 +109,17 @@ public class JsonTray {
         return this.per.getJSONObject(key);
     }
     
-    // for debug reasons
-    public JSONObject getPersistent(){
-    	JSONObject res = new JSONObject();
-    	for(String key : this.per.keySet()){
-    		res.put(key, this.per.get(key));
+    public JSONObject toJSON() {
+    	JSONObject j = new JSONObject();
+    	for (String key : this.per.keySet()){
+    		j.put(key, this.per.get(key));
     	}
-    	return res;
-    }
-    
-    // for debug reasons
-    public JSONObject getVolatile(){
-    	JSONObject res = new JSONObject();
-    	synchronized(this.vol) {
+    	synchronized (this.vol) {
     		LinkedHashMap<String,JSONObject> map = this.vol.getMap();
 	    	for(String key : map.keySet()){
-	    		res.put(key, map.get(key));
+	    		j.put(key, map.get(key));
 	    	}
     	}
-    	return res;
+    	return j;
     }
 }

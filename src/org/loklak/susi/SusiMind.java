@@ -48,6 +48,7 @@ import org.json.JSONTokener;
 import org.loklak.api.susi.ConsoleService;
 import org.loklak.data.DAO;
 import org.loklak.server.ClientIdentity;
+import org.loklak.tools.storage.JsonTray;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -237,12 +238,12 @@ public class SusiMind {
         JSONObject consoleServices = json.has("console") ? json.getJSONObject("console") : new JSONObject();
         consoleServices.keySet().forEach(console -> {
             JSONObject service = consoleServices.getJSONObject(console);
-            if (service.has("url") && service.has("data") && service.has("parser")) {
+            if (service.has("url") && service.has("path") && service.has("parser")) {
                 String url = service.getString("url");
-                String data = service.getString("data");
+                String path = service.getString("path");
                 String parser = service.getString("parser");
                 if (parser.equals("json")) {
-                    ConsoleService.addGenericConsole(console, url, data);
+                    ConsoleService.addGenericConsole(console, url, path);
                 }
             }
         });
@@ -389,12 +390,22 @@ public class SusiMind {
     
     public SusiInteraction interaction(final String query, int maxcount, ClientIdentity identity) {
         // get a response from susis mind
-        String client = identity.getType() + "_" + identity.getName();
+        String client = identity.getClient();
         SusiInteraction si = new SusiInteraction(query, maxcount, client, this);
         // write a log about the response using the users identity
         this.logs.addInteraction(client, si);
         // return the computed response
         return si;
+    }
+    
+
+
+    public Set<String> getRulesetNames(String client) {
+        return this.logs.getRulesetNames(client);
+    }
+    
+    public JsonTray getRuleset(String client, String name) throws IOException {
+        return this.logs.getRuleset(client, name);
     }
     
     public static void main(String[] args) {

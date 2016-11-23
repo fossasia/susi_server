@@ -40,7 +40,7 @@ public class JsonFile extends JSONObject {
 	private final File file;
 
 	public JsonFile(File file) throws IOException {
-		super();
+		super(true);
 		if (file == null) throw new IOException("File must not be null");
 		
 		this.file = file;

@@ -7,6 +7,9 @@
 ## 0100 General Search & News
 
 ### Web search
+search freedom
+search for quantum physics
+
 ### Search Twitter
 ### Photo Search
 ### Weather

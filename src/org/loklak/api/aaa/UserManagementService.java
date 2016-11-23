@@ -77,7 +77,7 @@ public class UserManagementService extends AbstractAPIHandler implements APIHand
 		switch (post.get("show","")){
 			case "user-list":
 				if(permissions.getBoolean("list_users", false)){
-					result.put("user-list", DAO.authorization.getPersistent());
+					result.put("user-list", DAO.authorization.toJSON());
 				} else throw new APIException(403, "Forbidden");
 				break;
 			case "user-roles":
