@@ -20,6 +20,7 @@
 package org.loklak.api.susi;
 
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.net.URLEncoder;
 import java.util.Set;
@@ -91,7 +92,16 @@ public class ConsoleService extends AbstractAPIHandler implements APIHandler {
         int qp = serviceURL.indexOf("$query$");
         String url = qp < 0 ? serviceURL + encodedQuery : serviceURL.substring(0,  qp) + encodedQuery + serviceURL.substring(qp + 7);
         ClientConnection cc = new ClientConnection(url);
-        byte[] b = sun.misc.IOUtils.readFully(cc.inputStream, -1, true);
+        
+        // fully read the input stream
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        int n;
+        byte[] buffer = new byte[16384];
+        try {while ((n = cc.inputStream.read(buffer, 0, buffer.length)) != -1) baos.write(buffer, 0, n);} catch (IOException e) {}
+        baos.flush();
+        byte[] b = baos.toByteArray();
+        
+        // finished, close
         cc.close();
         return b;
     }
