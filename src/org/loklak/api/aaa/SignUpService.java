@@ -227,7 +227,7 @@ public class SignUpService extends AbstractAPIHandler implements APIHandler {
 		String hostUrl = DAO.getConfig("host.url", null);
 		if(hostUrl == null) throw new APIException(500, "No host url configured");
 
-		String verificationLink = hostUrl + "/api/signup.json?access_token=" + token
+		String verificationLink = hostUrl + "/aaa/signup.json?access_token=" + token
                 + "&validateEmail=" + userId + "&request_session=true";
 
 		// get template file

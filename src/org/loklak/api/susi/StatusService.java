@@ -58,7 +58,7 @@ public class StatusService extends AbstractAPIHandler implements APIHandler {
 
 
     public static JSONObject status(final String protocolhostportstub) throws IOException {
-        final String urlstring = protocolhostportstub + "/api/status.json";
+        final String urlstring = protocolhostportstub + "/susi/status.json";
         byte[] response = ClientConnection.downloadPeer(urlstring);
         if (response == null || response.length == 0) return new JSONObject();
         JSONObject json = new JSONObject(UTF8.String(response));

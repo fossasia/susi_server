@@ -74,7 +74,7 @@ public class AssetServlet extends HttpServlet {
         sos.write(data.toByteArray());
     }
     
-    // http://localhost:9000/api/asset?screen_name=loklak_app&id_str=123&file=image.jpg&data=
+    // http://localhost:9000/aaa/asset?screen_name=loklak_app&id_str=123&file=image.jpg&data=
     
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
