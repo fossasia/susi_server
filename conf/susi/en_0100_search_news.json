@@ -562,8 +562,8 @@
 		{        
 			"keys"   :["search"],
 			"example":"Search freedom for everyone",
-			"phrases":[ {"type":"pattern", "expression":"search for *"},
-			 			{"type":"pattern", "expression":"search *"}],
+			"phrases":[ {"type":"pattern", "expression":"search yacy for *"},
+			 			{"type":"pattern", "expression":"search yacy *"}],
 			"process":[ {"type":"console", "expression":"SELECT title,description,link FROM yacy WHERE query='$1$';"}],
 			"actions":[ {"type":"answer", "select":"random", "phrases":[
 				"Here is a web search result for $1$"

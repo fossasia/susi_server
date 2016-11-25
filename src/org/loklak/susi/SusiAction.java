@@ -34,7 +34,7 @@ import org.json.JSONObject;
  */
 public class SusiAction {
 
-    public static enum RenderType {answer, table, piechart, rss, include;}
+    public static enum RenderType {answer, table, piechart, rss, include, websearch;}
     public static enum SelectionType {random, roundrobin;}
     public static enum DialogType {
         answer, question, reply;
@@ -166,6 +166,9 @@ public class SusiAction {
                     this.renderTypeCache = RenderType.answer;
                 }
             }
+        }
+        if (this.getRenderType() == RenderType.websearch && this.json.has("query")) {
+            this.json.put("query", thoughts.unify(getStringAttr("query")));
         }
         return this;
     }
