@@ -87,7 +87,9 @@ public class LoginService extends AbstractAPIHandler implements APIHandler {
 		}
 
 		// do logout if requested
-		if(post.get("logout", false)){	// logout if requested
+        boolean logout = post.get("logout", false);
+        boolean delete = post.get("delete", false);
+		if (logout || delete) {	// logout if requested
 
 			// invalidate session
 			post.getRequest().getSession().invalidate();
@@ -95,8 +97,14 @@ public class LoginService extends AbstractAPIHandler implements APIHandler {
 			// delete cookie if set
 			deleteLoginCookie(response);
 
+			if (delete) {
+	            ClientCredential pwcredential = new ClientCredential(authorization.getIdentity());
+			    delete = DAO.authentication.has(pwcredential.toString());
+			    if (delete) DAO.authentication.remove(pwcredential.toString());
+			}
+			
 			JSONObject result = new JSONObject();
-			result.put("message", "Logout successful");
+			result.put("message", delete ? "Account deletion successful" : "Logout successful");
 			return result;
 		}
 
@@ -121,13 +129,13 @@ public class LoginService extends AbstractAPIHandler implements APIHandler {
 		// check if user is blocked because of too many invalid login attempts
 		checkInvalidLogins(post, authorization, permissions);
 
-		if(passwordLogin) { // do login via password
+		if (passwordLogin) { // do login via password
 
 			String login = post.get("login", null);
 			String password = post.get("password", null);
 			String type = post.get("type", null);
-
-			Authentication authentication = getAuthentication(post, authorization, new ClientCredential(ClientCredential.Type.passwd_login, login));
+			ClientCredential pwcredential = new ClientCredential(ClientCredential.Type.passwd_login, login);
+			Authentication authentication = getAuthentication(post, authorization, pwcredential);
 			ClientIdentity identity = authentication.getIdentity();
 
 			// check if the password is valid

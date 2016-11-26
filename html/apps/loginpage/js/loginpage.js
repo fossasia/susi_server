@@ -9,6 +9,7 @@ $(document).ready(function()
 				$("#status-box").addClass("error");
 				$("#loginForm").addClass("hidden");
 				$("#logoutForm").removeClass("hidden");
+				$("#deleteForm").removeClass("hidden");
 			}
 		},
 		error: function (xhr, ajaxOptions, thrownError) {
@@ -53,6 +54,7 @@ $(document).ready(function()
         success(response) {
             $("#loginForm").removeClass("hidden");
             $("#logoutForm").addClass("hidden");
+            $("#deleteForm").addClass("hidden");
             $("#status-box").text("");
             $("#status-box").removeClass();
         },
@@ -63,6 +65,10 @@ $(document).ready(function()
     };
 
     $("#logoutForm").submit(function() {
+        $(this).ajaxSubmit(optionsLogout);
+        return false;
+    });
+    $("#deleteForm").submit(function() {
         $(this).ajaxSubmit(optionsLogout);
         return false;
     });

@@ -52,6 +52,11 @@ public class ClientCredential extends Client {
         this.persistent = type.isPersistent();
     }
 
+    public ClientCredential(ClientIdentity identity) {
+        super(Type.passwd_login.name(), identity.getName());
+        this.persistent = Type.passwd_login.isPersistent();
+    }
+
     public boolean isPersistent() {
         return this.persistent;
     }
