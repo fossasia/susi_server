@@ -90,6 +90,7 @@ import org.loklak.api.cms.Sitemap;
 import org.loklak.api.cms.ThreaddumpServlet;
 import org.loklak.api.cms.TopMenuService;
 import org.loklak.api.learning.ConsoleLearning;
+import org.loklak.api.service.EmailSenderService;
 import org.loklak.api.susi.ConsoleService;
 import org.loklak.api.susi.GenericScraper;
 import org.loklak.api.susi.MindService;
@@ -483,7 +484,10 @@ public class SusiServer {
                 MindService.class,
                 
                 // learning services
-                ConsoleLearning.class
+                ConsoleLearning.class,
+                
+                // services
+                EmailSenderService.class
         };
         for (Class<? extends Servlet> service: services)
             try {

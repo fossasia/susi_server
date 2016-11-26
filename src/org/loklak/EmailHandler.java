@@ -42,31 +42,35 @@ public class EmailHandler {
      * @throws Exception on errors
      */
 	public static void sendEmail(@Nonnull String addressTo, @Nonnull String subject, @Nonnull String text) throws Exception {
-		
-		if (!"true".equals(DAO.getConfig("smtp.mails.enabled", "false"))) {
-			throw new Exception("Mail sending disabled");
-		}
-
 		String senderEmail = DAO.getConfig("smtp.sender.email", null);
         String displayname = DAO.getConfig("smtp.sender.displayname", null);
-		String username = DAO.getConfig("smtp.sender.username", null);
+        sendEmail(senderEmail, displayname, addressTo, subject, text);
+	}
+
+   public static void sendEmail(String senderEmail, String displayname, @Nonnull String addressTo, @Nonnull String subject, @Nonnull String text) throws Exception {
+        
+        if (!"true".equals(DAO.getConfig("smtp.mails.enabled", "false"))) {
+            throw new Exception("Mail sending disabled");
+        }
+
+        String username = DAO.getConfig("smtp.sender.username", null);
         String password = DAO.getConfig("smtp.sender.password", null);
-		String hostname = DAO.getConfig("smtp.host.name", null);
-		String encryption = DAO.getConfig("smtp.host.encryption", null);
-		Long port = DAO.getConfig("smtp.host.port", 0);
-		boolean disableCertChecking = DAO.getConfig("smtp.trustselfsignedcerts", false);
+        String hostname = DAO.getConfig("smtp.host.name", null);
+        String encryption = DAO.getConfig("smtp.host.encryption", null);
+        Long port = DAO.getConfig("smtp.host.port", 0);
+        boolean disableCertChecking = DAO.getConfig("smtp.trustselfsignedcerts", false);
 
         if(senderEmail == null || password == null || hostname == null){
             throw new Exception("Invalid SMTP configuration");
         }
 
         Pattern pattern = Pattern.compile(EMAIL_PATTERN);
-		if (!pattern.matcher(addressTo).matches()) {
-			throw new Exception("Invalid email ID");
-		}
-		if (!pattern.matcher(senderEmail).matches()) {
-			throw new Exception("Invalid sender ID");
-		}
+        if (!pattern.matcher(addressTo).matches()) {
+            throw new Exception("Invalid email ID");
+        }
+        if (!pattern.matcher(senderEmail).matches()) {
+            throw new Exception("Invalid sender ID");
+        }
 
         Properties props = createProperties(hostname, port.intValue(), encryption, disableCertChecking);
 
@@ -93,8 +97,8 @@ public class EmailHandler {
         message.setText(text, "UTF-8");
         Transport.send(message);
         Log.getLog().info("Successfully send mail to " + addressTo);
-	}
-
+    }
+	
     /**
      * Check SMTP login credentials
      * @param hostname the host address
