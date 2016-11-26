@@ -1,4 +1,4 @@
-package org.loklak.api.aaa;
+package org.loklak.api.cms;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -25,7 +25,7 @@ public class TopMenuService extends AbstractAPIHandler implements APIHandler {
 
     @Override
     public String getAPIPath() {
-        return "/aaa/topmenu.json";
+        return "/cms/topmenu.json";
     }
     
     @Override

@@ -17,7 +17,7 @@
  *  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.loklak.api.aaa;
+package org.loklak.api.cms;
 
 import org.json.JSONObject;
 import org.loklak.EmailHandler;
@@ -50,7 +50,7 @@ public class InstallationPageService extends AbstractAPIHandler implements APIHa
 
 	@Override
 	public String getAPIPath() {
-        return "/aaa/installation.json";
+        return "/cms/installation.json";
     }
 
     @Override

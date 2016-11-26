@@ -17,7 +17,7 @@
  *  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.loklak.api.aaa;
+package org.loklak.api.service;
 
 import java.io.BufferedInputStream;
 import java.io.ByteArrayOutputStream;

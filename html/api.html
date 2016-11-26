@@ -76,7 +76,7 @@
             <li><a href="#settings">/aaa/settings.json</a></li>
             <li><a href="#account">/aaa/account.json</a></li>
             <li><a href="#user">/aaa/user.json</a></li>
-            <li><a href="#apps">/aaa/apps.json</a></li>
+            <li><a href="#apps">/cms/apps.json</a></li>
             <li><a href="#asset">/aaa/asset</a></li>
             <li><a href="#threaddump">/aaa/threaddump.txt</a></li>
             <li><a href="#map">/vis/map.png</a></li>
@@ -1649,10 +1649,10 @@ shortens this array to only one entry. The API also has reverse geocoding and fu
 <br/>
 <section id="apps">
 <h2 class="sub-header">
-  <code>/aaa/apps.json</code>
+  <code>/cms/apps.json</code>
 </h2>
 <div class="alert alert-success" role="alert">This API is open and can be accessed without any restrictions!</div>
-  <p>the json of <code>/aaa/apps.json</code> now contains two more objects:</p>
+  <p>the json of <code>/cms/apps.json</code> now contains two more objects:</p>
   <ul>
     <li><p>"categories" with a list of category names</p></li>
     <li><p>"category" with an object which holds a list of the application names for each category.</p></li>
@@ -1660,7 +1660,7 @@ shortens this array to only one entry. The API also has reverse geocoding and fu
   <br/>
   <p>Furthermore, the servlet can now be called with an 'category' property, like:</p>
   <ul class="request">
-    <li><a href="http://asksusi.com/aaa/apps.json?category=Demo">http://asksusi.com/aaa/apps.json?category=Demo</a></li>
+    <li><a href="/cms/apps.json?category=Demo">/cms/apps.json?category=Demo</a></li>
   </ul>
   <br/>
   <p>This will reduce the app list to the sub-list which contains only apps from that category.</p>

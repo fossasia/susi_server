@@ -77,18 +77,18 @@ import org.eclipse.jetty.security.ConstraintMapping;
 import org.eclipse.jetty.security.ConstraintSecurityHandler;
 import org.eclipse.jetty.security.authentication.BasicAuthenticator;
 import org.loklak.api.aaa.AccessServlet;
-import org.loklak.api.aaa.AppsService;
 import org.loklak.api.aaa.AuthorizationDemoService;
 import org.loklak.api.aaa.LoginService;
 import org.loklak.api.aaa.PasswordRecoveryService;
 import org.loklak.api.aaa.PasswordResetService;
 import org.loklak.api.aaa.PublicKeyRegistrationService;
 import org.loklak.api.aaa.SignUpService;
-import org.loklak.api.aaa.Sitemap;
-import org.loklak.api.aaa.ThreaddumpServlet;
-import org.loklak.api.aaa.TopMenuService;
 import org.loklak.api.aaa.UserAccountPermissions;
 import org.loklak.api.aaa.UserManagementService;
+import org.loklak.api.cms.AppsService;
+import org.loklak.api.cms.Sitemap;
+import org.loklak.api.cms.ThreaddumpServlet;
+import org.loklak.api.cms.TopMenuService;
 import org.loklak.api.learning.ConsoleLearning;
 import org.loklak.api.susi.ConsoleService;
 import org.loklak.api.susi.GenericScraper;
@@ -500,8 +500,8 @@ public class SusiServer {
         servletHandler.addServlet(AccessServlet.class, "/aaa/access.json");
         servletHandler.addServlet(AccessServlet.class, "/aaa/access.html");
         servletHandler.addServlet(AccessServlet.class, "/aaa/access.txt");
-        servletHandler.addServlet(Sitemap.class, "/aaa/sitemap.xml");
-        servletHandler.addServlet(ThreaddumpServlet.class, "/aaa/threaddump.txt");
+        servletHandler.addServlet(Sitemap.class, "/sitemap.xml");
+        servletHandler.addServlet(ThreaddumpServlet.class, "/threaddump.txt");
         
         // aggregation api
         servletHandler.addServlet(GenericScraper.class, "/susi/genericscraper.json");
