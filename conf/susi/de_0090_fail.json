@@ -1,0 +1,22 @@
+{"rules":[
+   {
+   "phrases":[	{"type":"pattern", "expression":"was ist *"}, {"type":"pattern", "expression":"erkläre *"}, {"type":"pattern", "expression":"beschreibe *"} ],
+   "process":[	{"type":"console", "expression":"SELECT text FROM messages-order-by-favourites_count WHERE query='$1$ ist since:week /pure /len75';"}],
+   "actions":[	{"type":"answer", "select":"random", "phrases":[
+     "$text$"
+   ]}]
+  }, {
+   "phrases":[	{"type":"pattern", "expression":"wo ist *"} ],
+   "process":[	{"type":"console", "expression":"SELECT text FROM messages-order-by-favourites_count WHERE query='$1$ ist in since:week /pure /len75';"}],
+   "actions":[	{"type":"answer", "select":"random", "phrases":[
+     "$text$"
+   ]}]
+  }, {
+   "phrases":[ {"type":"pattern", "expression":"suche *"}, {"type":"pattern", "expression":"suche * im web"}  ],
+   "actions":[
+     {"type":"answer", "select":"random",
+      "phrases":["Hier ist das Resultat einer Websuche:"]},
+     {"type":"websearch", "query":"$1$"}
+   ]
+  }
+]}
