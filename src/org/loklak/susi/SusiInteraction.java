@@ -38,22 +38,34 @@ public class SusiInteraction {
 
     private JSONObject json;
 
+    public SusiInteraction() {
+        this.json = new JSONObject(true);
+    }
+
     public SusiInteraction(JSONObject json) {
         this.json = json;
     }
-
-    public SusiInteraction(final String query, int maxcount, String client, SusiMind mind) {
-        String client_id = Base64.getEncoder().encodeToString(UTF8.getBytes(client));        
-        this.json = new JSONObject(true);
-
-        // store metadata
-        this.json.put("client_id", client_id);
+    
+    public SusiInteraction setQuery(final String query) {
         this.json.put("query", query);
+        return this;
+    }
+    
+    public String getQuery() {
+        if (!this.json.has("query")) return "";
+        String q = this.json.getString("query");
+        return q == null ? "" : q;
+    }
+    
+    public SusiInteraction react(int maxcount, String client, SusiMind mind, SusiThought observation) {
+        this.json.put("client_id", Base64.getEncoder().encodeToString(UTF8.getBytes(client)));
         long query_date = System.currentTimeMillis();
         this.json.put("query_date", AbstractObjectEntry.utcFormatter.print(query_date));
-
+        
         // compute the mind reaction
-        List<SusiArgument> dispute = mind.react(query, maxcount, client);
+        String query = this.json.getString("query");
+        
+        List<SusiArgument> dispute = mind.react(query, maxcount, client, observation);
         long answer_date = System.currentTimeMillis();
         
         // store answer and actions into json
@@ -68,18 +80,14 @@ public class SusiInteraction {
                         .collect(Collectors.toList()));
             return answer;
         }).collect(Collectors.toList())));
-        System.out.println(this.json);
+        
+        //System.out.println(this.json);
+        return this;
     }
     
     public Date getQueryDate() {
         String d = this.json.getString("query_date");
         return AbstractObjectEntry.utcFormatter.parseDateTime(d).toDate();
-    }
-    
-    public String getQuery() {
-        if (!this.json.has("query")) return "";
-        String q = this.json.getString("query");
-        return q == null ? "" : q;
     }
 
     public String getAnswer() {

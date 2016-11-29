@@ -358,14 +358,15 @@ public class SusiMind {
      * @param maxcount
      * @return
      */
-    public List<SusiArgument> react(String query, int maxcount, String client) {
+    public List<SusiArgument> react(String query, int maxcount, String client, SusiThought observation) {
         // get the history a list of thoughts
-        SusiArgument latest_argument = new SusiArgument();
+        SusiArgument observation_argument = new SusiArgument();
+        if (observation != null && observation.length() > 0) observation_argument.think(observation);
         ArrayList<SusiInteraction> interactions = this.logs.getInteractions(client);
-        interactions.forEach(action -> latest_argument.think(action.recallDispute()));
+        interactions.forEach(action -> observation_argument.think(action.recallDispute()));
         // perform a mindmeld to create a single thought out of the recalled argument
         // the mindmeld will squash the latest thoughts into one so it does not pile up to exponential growth
-        SusiThought recall = latest_argument.mindmeld(false);
+        SusiThought recall = observation_argument.mindmeld(false);
         
         // normalize the query
         query = SusiPhrase.normalizeExpression(query);
@@ -383,15 +384,26 @@ public class SusiMind {
     
     public String react(String query) {
         String client = "host_localhost";
-        List<SusiArgument> datalist = react(query, 1, client);
+        List<SusiArgument> datalist = react(query, 1, client, new SusiThought());
         SusiArgument bestargument = datalist.get(0);
         return bestargument.getActions().get(0).apply(bestargument, this, client).getStringAttr("expression");
     }
     
-    public SusiInteraction interaction(final String query, int maxcount, ClientIdentity identity) {
+    public SusiInteraction interaction(final String query, int timezoneOffset, double latitude, double longitude, int maxcount, ClientIdentity identity) {
         // get a response from susis mind
         String client = identity.getClient();
-        SusiInteraction si = new SusiInteraction(query, maxcount, client, this);
+        SusiInteraction si = new SusiInteraction().setQuery(query);
+        SusiThought observation = new SusiThought();
+        observation.addObservation("timezoneOffset", Integer.toString(timezoneOffset));
+        
+        if (!Double.isNaN(latitude) && !Double.isNaN(longitude)) {
+            observation.addObservation("latitude", Double.toString(latitude));
+            observation.addObservation("longitude", Double.toString(longitude));
+        }
+        
+        // react
+        si.react(maxcount, client, this, observation);
+        
         // write a log about the response using the users identity
         this.logs.addInteraction(client, si);
         // return the computed response

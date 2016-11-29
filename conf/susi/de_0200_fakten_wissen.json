@@ -26,5 +26,19 @@
     "actions":[ {"type":"answer", "select":"random", "phrases":[
       "$1$ = $javascript$"
     ]}]
+  },{
+    "phrases":[
+      {"type":"pattern", "expression":"wieviel Uhr"},
+      {"type":"pattern", "expression":"wieviel Uhr ist es"},
+      {"type":"pattern", "expression":"Zeit"},
+      {"type":"pattern", "expression":"Uhrzeit"},
+      {"type":"pattern", "expression":"wie spät ist es"},
+      {"type":"pattern", "expression":"wie spät ists"},
+      {"type":"pattern", "expression":"wie spät"}
+    ],
+    "process":[ {"type":"javascript", "expression":"(Math.round(new Date().getHours() + (new Date().getTimezoneOffset() - $timezoneOffset$)/60)) + ' Uhr und ' + new Date().getMinutes() + ' Minuten'"} ],
+    "actions":[ {"type":"answer", "select":"random", "phrases":[
+      "es ist $javascript$"
+    ]}]
   }
 ]}

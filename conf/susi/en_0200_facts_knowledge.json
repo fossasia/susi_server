@@ -90,5 +90,20 @@
     "actions":[ {"type":"answer", "select":"random", "phrases":[
       "$1$ = $javascript$"
     ]}]
+  },{
+    "phrases":[
+      {"type":"pattern", "expression":"what time is it"},
+      {"type":"pattern", "expression":"what time"},
+      {"type":"pattern", "expression":"time"},
+      {"type":"pattern", "expression":"daytime"},
+      {"type":"pattern", "expression":"have you got the time"},
+      {"type":"pattern", "expression":"have you got the time please"},
+      {"type":"pattern", "expression":"do you have the time"},
+      {"type":"pattern", "expression":"do you have the time please"}
+    ],
+    "process":[ {"type":"javascript", "expression":"new Date().getMinutes() + ' minutes past ' + (Math.round(new Date().getHours() + (new Date().getTimezoneOffset() - $timezoneOffset$)/60))"} ],
+    "actions":[ {"type":"answer", "select":"random", "phrases":[
+      "it is $javascript$"
+    ]}]
   }
 ]}

@@ -157,7 +157,7 @@ public class SusiAction {
                 }
                 if (this.getRenderType() == RenderType.include) {
                     // recursive call susi with the answer
-                    List<SusiArgument> datalist = mind.react(expression, 1, client);
+                    List<SusiArgument> datalist = mind.react(expression, 1, client, null);
                     SusiArgument bestargument = datalist.get(0);
                     expression = bestargument.getActions().get(0).apply(bestargument, mind, client).getStringAttr("expression");
                     this.json.put("expression", expression);

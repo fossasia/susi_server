@@ -56,13 +56,16 @@ public class SusiService extends AbstractAPIHandler implements APIHandler {
         // parameters
         String q = post.get("q", "");
         int count = post.get("count", 1);
+        int timezoneOffset = post.get("timezoneOffset", 0); // minutes, i.e. -60
+        double latitude = post.get("latitude", Double.NaN); // i.e. 8.68 
+        double longitude = post.get("longitude", Double.NaN); // i.e. 50.11
         try {
             DAO.susi.observe(); // get a database update
         } catch (IOException e) {
             DAO.log(e.getMessage());
         }
         
-        SusiInteraction interaction = DAO.susi.interaction(q, count, user.getIdentity());
+        SusiInteraction interaction = DAO.susi.interaction(q, timezoneOffset, latitude, longitude, count, user.getIdentity());
         JSONObject json = interaction.getJSON();
         return json;
     }

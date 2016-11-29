@@ -27,8 +27,10 @@ import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
 
+import org.eclipse.jetty.util.log.Log;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.loklak.SusiServer;
 import org.loklak.api.susi.ConsoleService;
 
 /**
@@ -133,6 +135,7 @@ public class SusiInference {
             try {
                 return new SusiThought().addObservation("javascript", javascript.eval(flow.unify(term)).toString());
             } catch (ScriptException e) {
+                Log.getLog().debug(e);
                 return new SusiThought(); // empty thought -> fail
             }
         });
