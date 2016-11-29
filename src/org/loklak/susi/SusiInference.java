@@ -23,6 +23,10 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
+import javax.script.ScriptEngine;
+import javax.script.ScriptEngineManager;
+import javax.script.ScriptException;
+
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.loklak.api.susi.ConsoleService;
@@ -39,14 +43,15 @@ import org.loklak.api.susi.ConsoleService;
 public class SusiInference {
     
     public static enum Type {
-        console, flow, memory;
+        console, flow, memory, javascript;
         public int getSubscore() {
             return this.ordinal() + 1;
         }
     }
     
     private JSONObject json;
-
+    private static final ScriptEngine javascript =  new ScriptEngineManager().getEngineByName("nashorn");
+    
     /**
      * Instantiate an inference with the inference description. The description should usually contain two
      * properties:
@@ -80,6 +85,7 @@ public class SusiInference {
     
     private final static SusiSkills flowSkill = new SusiSkills();
     private final static SusiSkills memorySkill = new SusiSkills();
+    private final static SusiSkills javascriptSkill = new SusiSkills();
     static {
         flowSkill.put(Pattern.compile("SQUASH"), (flow, matcher) -> {
             // perform a full mindmeld
@@ -121,6 +127,14 @@ public class SusiInference {
             SusiThought t = see(flow, "*", matcher.group(1), Pattern.compile(SusiPhrase.parsePattern(flow.unify(matcher.group(2), 0))));
             if (t.getCount() == 0) return new SusiThought().addObservation("pattern-" + matcher.group(2), matcher.group(1));
             return new SusiThought(); // empty thought -> fail
+        });
+        javascriptSkill.put(Pattern.compile("(.*)"), (flow, matcher) -> {
+            String term = matcher.group(1);
+            try {
+                return new SusiThought().addObservation("javascript", javascript.eval(flow.unify(term)).toString());
+            } catch (ScriptException e) {
+                return new SusiThought(); // empty thought -> fail
+            }
         });
         // more skills:
         // - map/reduce to enable loops
@@ -185,6 +199,10 @@ public class SusiInference {
         if (type == SusiInference.Type.memory) {
             String expression = flow.unify(this.getExpression());
             try {return memorySkill.deduce(flow, expression);} catch (Exception e) {}
+        }
+        if (type == SusiInference.Type.javascript) {
+            String expression = flow.unify(this.getExpression());
+            try {return javascriptSkill.deduce(flow, expression);} catch (Exception e) {}
         }
         // maybe the argument is not applicable, then an empty thought is produced (which means a 'fail')
         return new SusiThought();

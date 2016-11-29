@@ -79,5 +79,16 @@
    "actions":[ {"type":"answer", "select":"random", "phrases":[
     "$text$"
    ]}]
- }
+ },{
+    "phrases":[
+      {"type":"regex", "expression":"compute (\\(?\\d[\\(\\)\\d\\+\\-\\/\\*\\.]*\\d\\)?)"},
+      {"type":"regex", "expression":"what is (\\(?\\d[\\(\\)\\d\\+\\-\\/\\*\\.]*\\d\\)?)"},
+      {"type":"regex", "expression":"calculate (\\(?\\d[\\(\\)\\d\\+\\-\\/\\*\\.]*\\d\\)?)"},
+      {"type":"regex", "expression":"(\\(?\\d[\\(\\)\\d\\+\\-\\/\\*\\.]*\\d\\)?)"}
+    ],
+    "process":[ {"type":"javascript", "expression":"$1$"} ],
+    "actions":[ {"type":"answer", "select":"random", "phrases":[
+      "$1$ = $javascript$"
+    ]}]
+  }
 ]}
