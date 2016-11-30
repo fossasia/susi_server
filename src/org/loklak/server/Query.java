@@ -102,24 +102,24 @@ public class Query {
     }
     public int get(String key, int dflt) {
         String val = qm == null ? request.getParameter(key) : qm.get(key);
-        return val == null || val.length() == 0 ? dflt : Integer.parseInt(val);
+        return val == null || val.length() == 0 ? dflt : Integer.parseInt(val.trim());
     }
     public long get(String key, long dflt) {
         String val = qm == null ? request.getParameter(key) : qm.get(key);
-        return val == null || val.length() == 0 ? dflt : Long.parseLong(val);
+        return val == null || val.length() == 0 ? dflt : Long.parseLong(val.trim());
     }
     public double get(String key, double dflt) {
         String val = qm == null ? request.getParameter(key) : qm.get(key);
-        return val == null || val.length() == 0 ? dflt : Double.parseDouble(val);
+        return val == null || val.length() == 0 ? dflt : Double.parseDouble(val.trim());
     }
     public boolean get(String key, boolean dflt) {
         String val = qm == null ? request.getParameter(key) : qm.get(key);
-        return val == null ? dflt : "true".equals(val) || "1".equals(val);
+        return val == null ? dflt : "true".equals(val = val.trim()) || "1".equals(val);
     }
     public Date get(String key, Date dflt, int timezoneOffset) {
         String val = qm == null ? request.getParameter(key) : qm.get(key);
         try {
-            return val == null || val.length() == 0 ? dflt : DateParser.parse(val, timezoneOffset).getTime();
+            return val == null || val.length() == 0 ? dflt : DateParser.parse(val.trim(), timezoneOffset).getTime();
         } catch (ParseException e) {
             return dflt;
         }

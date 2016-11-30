@@ -54,7 +54,7 @@ public class SusiService extends AbstractAPIHandler implements APIHandler {
     public JSONObject serviceImpl(Query post, HttpServletResponse response, Authorization user, final JSONObjectWithDefault permissions) throws APIException {
 
         // parameters
-        String q = post.get("q", "");
+        String q = post.get("q", "").trim();
         int count = post.get("count", 1);
         int timezoneOffset = post.get("timezoneOffset", 0); // minutes, i.e. -60
         double latitude = post.get("latitude", Double.NaN); // i.e. 8.68 
