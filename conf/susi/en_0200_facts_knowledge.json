@@ -67,10 +67,10 @@
    ]}]
  },{
     "phrases":[
-      {"type":"regex", "expression":"compute (\\(?\\d[\\(\\)\\d\\+\\-\\/\\*\\.]*\\d\\)?)"},
-      {"type":"regex", "expression":"what is (\\(?\\d[\\(\\)\\d\\+\\-\\/\\*\\.]*\\d\\)?)"},
-      {"type":"regex", "expression":"calculate (\\(?\\d[\\(\\)\\d\\+\\-\\/\\*\\.]*\\d\\)?)"},
-      {"type":"regex", "expression":"(\\(?\\d[\\(\\)\\d\\+\\-\\/\\*\\.]*\\d\\)?)"}
+      {"type":"regex", "expression":"compute (\\(?\\d[\\s\\(\\)\\d\\+\\-\\/\\*\\.]*\\d\\)?)"},
+      {"type":"regex", "expression":"what is (\\(?\\d[\\s\\(\\)\\d\\+\\-\\/\\*\\.]*\\d\\)?)"},
+      {"type":"regex", "expression":"calculate (\\(?\\d[\\s\\(\\)\\d\\+\\-\\/\\*\\.]*\\d\\)?)"},
+      {"type":"regex", "expression":"(\\(?\\d[\\s\\(\\)\\d\\+\\-\\/\\*\\.]*\\d\\)?)"}
     ],
     "process":[ {"type":"javascript", "expression":"$1$"} ],
     "actions":[ {"type":"answer", "select":"random", "phrases":[
