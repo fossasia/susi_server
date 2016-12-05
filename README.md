@@ -43,6 +43,20 @@ At this time, Susi is not provided in compiled form, you easily build it yoursel
     > ant
     > bin/start.sh
 
+For Windows Users (who are using GitBash/Cygwin or any terminal):
+    > git clone https://github.com/fossasia/susi_server.git
+    > cd susi_server
+    > git checkout master
+    > ant jar
+    > java -jar dist/susiserver.jar
+    > git checkout development
+    > ant jar
+    > java -jar dist/susiserver.jar
+    
+    To stop:
+    > Press Ctrl+C
+
+
 After all server processes are running, Susi tries to open a browser page itself. If that does not happen, just open http://localhost:4000; if you made the installation on a headless or remote server, then replace 'localhost' with your server name.
 
 To stop Susi, run: (this will block until the server has actually terminated)

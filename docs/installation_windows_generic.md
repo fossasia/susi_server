@@ -6,10 +6,16 @@
 ##Install Apache Ant and JDK
 
 Install in terminal:
-Open Command Prompt (Run as Administrator)
-- 'set JAVA_HOME="<Location to the JDK>"''
-- 'set ANT_HOME= "<Location to the Apache Ant>"''
-- 'set PATH=%PATH%;%JAVA_HOME%\bin;%ANT_HOME%\bin'
+
+#To be done as system variables: (Run as Admin)
+- set JAVA_HOME to Location to the JDK
+- set ANT_HOME to Location to the Apache Ant
+- set PATH=%PATH%;%JAVA_HOME%\bin;%ANT_HOME%\bin
+
+	> set JAVA_HOME = "C:\Program Files\Java\jdk1.8.0_101"
+    > set ANT_HOME = "C:\apache-ant\bin"
+    > set PATH="%PATH%;%JAVA_HOME%\bin;%ANT_HOME%\bin"
+
 
 
 ## Download
@@ -17,11 +23,14 @@ Open Command Prompt (Run as Administrator)
 - 'Clone this repo: https://github.com/fossasia/susi_server.git'
 - `cd susi_server`
 
-## Build
-- `ant jar`
-
-## Run
-- `java -jar dist/susiserver.jar`
+## Build and Run
+	> cd susi_server
+    > git checkout master
+    > ant jar
+    > java -jar dist/susiserver.jar
+    > git checkout development
+    > ant jar
+    > java -jar dist/susiserver.jar
 
 ## Operate
 - open `http://localhost:4000` in your browser
