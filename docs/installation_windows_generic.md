@@ -26,12 +26,14 @@ Install in terminal:
 ## Build and Run
 	> cd susi_server
     
-    	> ant jar
-    	> java -jar dist/susiserver.jar 
-	
-    (if on running above command gives error, try to change the branch either to "master" or "development" by following commands) :
-    > git checkout development
+    	
+    (if on running above command gives error, try to change the branch "master" and then to "development" by following commands) :
     > git checkout master
+    > ant jar
+    > java -jar dist/susiserver.jar 
+	
+	
+    > git checkout development
     
     (And re-run) :
     > ant jar
