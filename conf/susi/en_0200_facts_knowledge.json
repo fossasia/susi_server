@@ -88,6 +88,39 @@
       "compute $1$ * $2$"
     ]}]
   },{
+    "keys"   :["divided"],
+    "phrases":[
+      {"type":"pattern", "expression":"compute * divided by *"},
+      {"type":"pattern", "expression":"what is * divided by *"},
+      {"type":"pattern", "expression":"calculate * divided by *"},
+      {"type":"pattern", "expression":"* divided by *"}
+    ],
+    "actions":[ {"type":"include", "select":"random", "phrases":[
+      "compute $1$ / $2$"
+    ]}]
+  },{
+    "keys"   :["plus"],
+    "phrases":[
+      {"type":"pattern", "expression":"compute * plus *"},
+      {"type":"pattern", "expression":"what is * plus *"},
+      {"type":"pattern", "expression":"calculate * plus *"},
+      {"type":"pattern", "expression":"* plus *"}
+    ],
+    "actions":[ {"type":"include", "select":"random", "phrases":[
+      "compute $1$ + $2$"
+    ]}]
+  },{
+    "keys"   :["minus"],
+    "phrases":[
+      {"type":"pattern", "expression":"compute * minus *"},
+      {"type":"pattern", "expression":"what is * minus *"},
+      {"type":"pattern", "expression":"calculate * minus *"},
+      {"type":"pattern", "expression":"* minus *"}
+    ],
+    "actions":[ {"type":"include", "select":"random", "phrases":[
+      "compute $1$ - $2$"
+    ]}]
+  },{
     "phrases":[
       {"type":"pattern", "expression":"what time is it"},
       {"type":"pattern", "expression":"what time"},
