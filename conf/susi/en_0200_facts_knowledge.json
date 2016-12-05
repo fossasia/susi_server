@@ -20,8 +20,8 @@
       {"type":"regex", "expression":"please describe (?:(?:a )*)(.*)"},
       {"type":"regex", "expression":"explain (?:(?:a )*)(.*)"},
       {"type":"regex", "expression":"please explain (?:(?:a )*)(.*)"},
-      {"type":"regex", "expression":"search urbandictionary for (?:(?:a )*)(.*)"},
-      {"type":"pattern", "expression":"what does * mean"}
+      {"type":"pattern", "expression":"what does * mean"},
+      {"type":"regex", "expression":"how is (?:(?:a )*)(.*)"}
     ],
     "process":[ {"type":"console", "expression":"SELECT description FROM wikidata-en WHERE query='$1$';"},
                 {"type":"flow", "expression":"REJECT '$description$' MATCHING 'Wikipedia disambiguation page' PATTERN"} ],
@@ -31,13 +31,8 @@
   }, {
     "score"  :0,
     "phrases":[
-      {"type":"regex", "expression":"what is (?:(?:a )*)(.*)"},
-      {"type":"regex", "expression":"describe (?:(?:a )*)(.*)"},
-      {"type":"regex", "expression":"please describe (?:(?:a )*)(.*)"},
-      {"type":"regex", "expression":"explain (?:(?:a )*)(.*)"},
-      {"type":"regex", "expression":"please explain (?:(?:a )*)(.*)"},
       {"type":"regex", "expression":"search urbandictionary for (?:(?:a )*)(.*)"},
-      {"type":"pattern", "expression":"what does * mean"}
+      {"type":"regex", "expression":"ask urbandictionary for (?:(?:a )*)(.*)"}
     ],
     "process":[ {"type":"console", "expression":"SELECT definition,example FROM urbandictionary WHERE query='$1$';"}],
     "actions":[ {"type":"answer", "select":"random", "phrases":[
@@ -54,15 +49,6 @@
       "$1$ is a $description$."
     ]}]
   }, {
-    "score"  :1,
-    "phrases":[
-      {"type":"regex", "expression":"how is (?:(?:a )*)(.*)"}
-    ],
-    "process":[ {"type":"console", "expression":"SELECT definition,example FROM urbandictionary WHERE query='$1$';"}],
-    "actions":[ {"type":"answer", "select":"random", "phrases":[
-      "$1$ is a $definition$"
-    ]}]
-  },{
    "phrases":[
      {"type":"regex", "expression":"where is (?:(?:a )*)(.*)"},
      {"type":"regex", "expression":"what is (?:(?:a )*)(.*)"},
