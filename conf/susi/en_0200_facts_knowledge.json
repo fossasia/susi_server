@@ -77,6 +77,17 @@
       "$1$ = $javascript$"
     ]}]
   },{
+    "keys"   :["times"],
+    "phrases":[
+      {"type":"pattern", "expression":"compute * times *"},
+      {"type":"pattern", "expression":"what is * times *"},
+      {"type":"pattern", "expression":"calculate * times *"},
+      {"type":"pattern", "expression":"* times *"}
+    ],
+    "actions":[ {"type":"include", "select":"random", "phrases":[
+      "compute $1$ * $2$"
+    ]}]
+  },{
     "phrases":[
       {"type":"pattern", "expression":"what time is it"},
       {"type":"pattern", "expression":"what time"},

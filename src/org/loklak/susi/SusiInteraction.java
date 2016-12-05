@@ -76,7 +76,7 @@ public class SusiInteraction {
             SusiThought answer = argument.mindmeld(true);
             answer.put("actions", 
                     argument.getActions().stream()
-                        .map(action -> action.apply(argument, mind, client).toJSONClone()) // TODO: check if this apply is necessary
+                        .map(action -> action.apply(argument, mind, client).toJSONClone())
                         .collect(Collectors.toList()));
             return answer;
         }).collect(Collectors.toList())));

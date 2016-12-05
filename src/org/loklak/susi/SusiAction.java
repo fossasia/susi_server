@@ -106,10 +106,10 @@ public class SusiAction {
         if (phrasesCache == null) {
             ArrayList<String> a = new ArrayList<>();
             // actions may have either a single expression "expression" or a phrases object with 
-            if (this.json.has("phrases")) {
-                this.json.getJSONArray("phrases").forEach(p -> a.add((String) p));
-            } else if (this.json.has("expression")) {
+            if (this.json.has("expression")) {
                 a.add(this.json.getString("expression"));
+            } else if (this.json.has("phrases")) {
+                this.json.getJSONArray("phrases").forEach(p -> a.add((String) p));
             } else return null;
             phrasesCache = a;
         }
@@ -159,8 +159,9 @@ public class SusiAction {
                     // recursive call susi with the answer
                     List<SusiArgument> datalist = mind.react(expression, 1, client, null);
                     SusiArgument bestargument = datalist.get(0);
-                    expression = bestargument.getActions().get(0).apply(bestargument, mind, client).getStringAttr("expression");
+                    expression = bestargument.getActions().get(0).getStringAttr("expression");
                     this.json.put("expression", expression);
+                    this.phrasesCache = null; // important, otherwise the expression is not recognized
                     // patch the render type
                     this.json.put("type", RenderType.answer.name());
                     this.renderTypeCache = RenderType.answer;
