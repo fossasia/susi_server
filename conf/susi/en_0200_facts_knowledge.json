@@ -13,6 +13,14 @@
       "$place$ is a place with a population of $population$. Here is a map: https://www.openstreetmap.org/#map=13/$lat$/$lon$"
     ]}]
   }, {
+    "keys"   :["where"],
+    "phrases":[
+      {"type":"pattern", "expression":"where am i"}
+    ],
+    "actions":[ {"type":"answer", "select":"random", "phrases":[
+      "You are here: https://www.openstreetmap.org/#map=13/$latitude$/$longitude$"
+    ]}]
+  }, {
     "score"  :1,
     "phrases":[
       {"type":"regex", "expression":"what is (?:(?:a )*)(.*)"},
@@ -137,3 +145,5 @@
     ]}]
   }
 ]}
+
+http://api.asksusi.com/susi/chat.json?timezoneOffset=-60&longitude=8.11&latitude=55.8&q=where+am+I

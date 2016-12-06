@@ -16,6 +16,14 @@
       "$1$ ist $description$."
     ]}]
   },{
+    "keys"   :["wo"],
+    "phrases":[
+      {"type":"pattern", "expression":"wo bin ich"}
+    ],
+    "actions":[ {"type":"answer", "select":"random", "phrases":[
+      "Du bist hier: https://www.openstreetmap.org/#map=13/$latitude$/$longitude$"
+    ]}]
+  },{
     "phrases":[
       {"type":"regex", "expression":"berechne (\\(?\\d[\\s\\(\\)\\d\\+\\-\\/\\*\\.]*\\d\\)?)"},
       {"type":"regex", "expression":"was ist (\\(?\\d[\\s\\(\\)\\d\\+\\-\\/\\*\\.]*\\d\\)?)"},
