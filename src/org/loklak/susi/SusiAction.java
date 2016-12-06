@@ -34,7 +34,7 @@ import org.json.JSONObject;
  */
 public class SusiAction {
 
-    public static enum RenderType {answer, table, piechart, rss, include, websearch;}
+    public static enum RenderType {answer, table, piechart, rss, self, websearch;}
     public static enum SelectionType {random, roundrobin;}
     public static enum DialogType {
         answer, question, reply;
@@ -145,7 +145,7 @@ public class SusiAction {
      * @return the action with the attribute "expression" instantiated by unification of the thought with the action
      */
     public SusiAction apply(SusiArgument thoughts, SusiMind mind, String client) {
-        if ((this.getRenderType() == RenderType.answer || this.getRenderType() == RenderType.include) && this.json.has("phrases")) {
+        if ((this.getRenderType() == RenderType.answer || this.getRenderType() == RenderType.self) && this.json.has("phrases")) {
             // transform the answer according to the data
             ArrayList<String> a = getPhrases();
             String phrase = a.get(random.nextInt(a.size()));
@@ -155,7 +155,7 @@ public class SusiAction {
                     // transform the answer according to the data
                     this.json.put("expression", expression);
                 }
-                if (this.getRenderType() == RenderType.include) {
+                if (this.getRenderType() == RenderType.self) {
                     // recursive call susi with the answer
                     List<SusiArgument> datalist = mind.react(expression, 1, client, null);
                     SusiArgument bestargument = datalist.get(0);

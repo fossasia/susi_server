@@ -84,7 +84,7 @@
       {"type":"pattern", "expression":"calculate * times *"},
       {"type":"pattern", "expression":"* times *"}
     ],
-    "actions":[ {"type":"include", "select":"random", "phrases":[
+    "actions":[ {"type":"self", "select":"random", "phrases":[
       "compute $1$ * $2$"
     ]}]
   },{
@@ -95,7 +95,7 @@
       {"type":"pattern", "expression":"calculate * divided by *"},
       {"type":"pattern", "expression":"* divided by *"}
     ],
-    "actions":[ {"type":"include", "select":"random", "phrases":[
+    "actions":[ {"type":"self", "select":"random", "phrases":[
       "compute $1$ / $2$"
     ]}]
   },{
@@ -106,7 +106,7 @@
       {"type":"pattern", "expression":"calculate * plus *"},
       {"type":"pattern", "expression":"* plus *"}
     ],
-    "actions":[ {"type":"include", "select":"random", "phrases":[
+    "actions":[ {"type":"self", "select":"random", "phrases":[
       "compute $1$ + $2$"
     ]}]
   },{
@@ -117,7 +117,7 @@
       {"type":"pattern", "expression":"calculate * minus *"},
       {"type":"pattern", "expression":"* minus *"}
     ],
-    "actions":[ {"type":"include", "select":"random", "phrases":[
+    "actions":[ {"type":"self", "select":"random", "phrases":[
       "compute $1$ - $2$"
     ]}]
   },{
