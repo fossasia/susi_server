@@ -17,14 +17,58 @@
     ]}]
   },{
     "phrases":[
-      {"type":"regex", "expression":"berechne (\\(?\\d[\\(\\)\\d\\+\\-\\/\\*\\.]*\\d\\)?)"},
-      {"type":"regex", "expression":"was ist (\\(?\\d[\\(\\)\\d\\+\\-\\/\\*\\.]*\\d\\)?)"},
-      {"type":"regex", "expression":"rechne aus (\\(?\\d[\\(\\)\\d\\+\\-\\/\\*\\.]*\\d\\)?)"},
-      {"type":"regex", "expression":"(\\(?\\d[\\(\\)\\d\\+\\-\\/\\*\\.]*\\d\\)?)"}
+      {"type":"regex", "expression":"berechne (\\(?\\d[\\s\\(\\)\\d\\+\\-\\/\\*\\.]*\\d\\)?)"},
+      {"type":"regex", "expression":"was ist (\\(?\\d[\\s\\(\\)\\d\\+\\-\\/\\*\\.]*\\d\\)?)"},
+      {"type":"regex", "expression":"rechne aus (\\(?\\d[\\s\\(\\)\\d\\+\\-\\/\\*\\.]*\\d\\)?)"},
+      {"type":"regex", "expression":"(\\(?\\d[\\s\\(\\)\\d\\+\\-\\/\\*\\.]*\\d\\)?)"}
     ],
     "process":[ {"type":"javascript", "expression":"$1$"} ],
     "actions":[ {"type":"answer", "select":"random", "phrases":[
       "$1$ = $javascript$"
+    ]}]
+  },{
+    "keys"   :["mal"],
+    "phrases":[
+      {"type":"pattern", "expression":"berechne * mal *"},
+      {"type":"pattern", "expression":"was ist * mal *"},
+      {"type":"pattern", "expression":"rechne aus * mal *"},
+      {"type":"pattern", "expression":"* mal *"}
+    ],
+    "actions":[ {"type":"self", "select":"random", "phrases":[
+      "berechne $1$ * $2$"
+    ]}]
+  },{
+    "keys"   :["geteilt"],
+    "phrases":[
+      {"type":"pattern", "expression":"berechne * geteilt durch *"},
+      {"type":"pattern", "expression":"was ist * geteilt durch *"},
+      {"type":"pattern", "expression":"rechne aus * geteilt durch *"},
+      {"type":"pattern", "expression":"* geteilt durch *"}
+    ],
+    "actions":[ {"type":"self", "select":"random", "phrases":[
+      "berechne $1$ / $2$"
+    ]}]
+  },{
+    "keys"   :["plus"],
+    "phrases":[
+      {"type":"pattern", "expression":"berechne * plus *"},
+      {"type":"pattern", "expression":"was ist * plus *"},
+      {"type":"pattern", "expression":"rechne aus * plus *"},
+      {"type":"pattern", "expression":"* plus *"}
+    ],
+    "actions":[ {"type":"self", "select":"random", "phrases":[
+      "berechne $1$ + $2$"
+    ]}]
+  },{
+    "keys"   :["minus"],
+    "phrases":[
+      {"type":"pattern", "expression":"berechne * minus *"},
+      {"type":"pattern", "expression":"was ist * minus *"},
+      {"type":"pattern", "expression":"rechne aus * minus *"},
+      {"type":"pattern", "expression":"* minus *"}
+    ],
+    "actions":[ {"type":"self", "select":"random", "phrases":[
+      "berechne $1$ - $2$"
     ]}]
   },{
     "phrases":[
