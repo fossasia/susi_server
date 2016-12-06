@@ -10,7 +10,7 @@
     <script src="../../js/angular-touch.min.js"></script>
     <link href="../../css/dashboard.css" rel="stylesheet">
     <link href="css/style.css" rel="stylesheet"/>
-    <link href="css/animate.css" rel="stylesheet"/>
+    <!link href="css/animate.css" rel="stylesheet"/>
     <script src="./app_list.js"></script>
     <!--#include file="../../../ssi/common_head_back.include" -->
     <!--#include file="../../../data/ssi/custom_head.include" -->
@@ -42,8 +42,7 @@
       <div class="row">
         <div class="col-sm-3 col-md-2 sidebar">
           <div id="navSidebar">
-          <div><h4><center>CATEGORIES</center></h4></div>
-            <ul class="nav nav-sidebar" isolateClick>
+                      <ul class="nav nav-sidebar" isolateClick>
                 <li ng-repeat="category in categoryKeys track by $index" class=""><a href="#{{category | nospace}}" ng-click="categoryFilter($event)" id="{{category | nospace}}">{{category}}</a></li>
               </ul>
           </div>
