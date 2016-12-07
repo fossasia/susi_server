@@ -1,5 +1,34 @@
 {"rules":[
   {
+    "keys"   :["wo","was","beschreibe","erkläre"],
+    "phrases":[
+      {"type":"regex", "expression":"wo ist (?:(?:a )*)(.*)"},
+      {"type":"regex", "expression":"was ist (?:(?:a )*)(.*)"},
+      {"type":"regex", "expression":"beschreibe (?:(?:a )*)(.*)"},
+      {"type":"regex", "expression":"bitte beschreibe (?:(?:a )*)(.*)"},
+      {"type":"regex", "expression":"erkläre (?:(?:a )*)(.*)"},
+      {"type":"regex", "expression":"bitte erkläre (?:(?:a )*)(.*)"}
+    ],
+    "process":[ {"type":"console", "expression":"SELECT place[0] AS place, population, location[0] AS lon, location[1] AS lat FROM locations WHERE query='$1$';"}],
+    "actions":[
+      {"type":"answer", "select":"random",
+       "phrases":["$place$ ist ein Ort mit $population$ Einwohnern. Hier ist eine Karte: https://www.openstreetmap.org/#map=13/$lat$/$lon$"]
+      },
+      {"type":"anchor", "link":"https://www.openstreetmap.org/#map=13/$lat$/$lon$", "text":"Link zur Openstreetmap Karte für $place$"},
+      {"type":"map", "latitude":"$lat$", "longitude":"$lon$", "zoom":"13"}
+    ]
+  }, {
+    "keys"   :["wo"],
+    "phrases":[
+      {"type":"pattern", "expression":"wo bin ich"}
+    ],
+    "actions":[ {"type":"answer", "select":"random", "phrases":[
+      "Du bist hier: https://www.openstreetmap.org/#map=13/$latitude$/$longitude$"
+    ]},
+      {"type":"anchor", "link":"https://www.openstreetmap.org/#map=13/$lat$/$lon$", "text":"Link zur Openstreetmap Karte für deinen Ort"},
+      {"type":"map", "latitude":"$latitude$", "longitude":"$longitude$", "zoom":"13"}
+    ]
+  }, {
     "phrases":[
       {"type":"regex", "expression":"was ist (?:(?:a )*)(.*)"},
       {"type":"regex", "expression":"beschreibe (?:(?:a )*)(.*)"},
@@ -14,14 +43,6 @@
                 {"type":"flow", "expression":"REJECT '$description$' MATCHING 'Wikipedia disambiguation page' PATTERN"} ],
     "actions":[ {"type":"answer", "select":"random", "phrases":[
       "$1$ ist $description$."
-    ]}]
-  },{
-    "keys"   :["wo"],
-    "phrases":[
-      {"type":"pattern", "expression":"wo bin ich"}
-    ],
-    "actions":[ {"type":"answer", "select":"random", "phrases":[
-      "Du bist hier: https://www.openstreetmap.org/#map=13/$latitude$/$longitude$"
     ]}]
   },{
     "phrases":[

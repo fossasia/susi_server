@@ -34,7 +34,7 @@ import org.json.JSONObject;
  */
 public class SusiAction {
 
-    public static enum RenderType {answer, table, piechart, rss, self, websearch;}
+    public static enum RenderType {answer, table, piechart, rss, self, websearch, anchor, map;}
     public static enum SelectionType {random, roundrobin;}
     public static enum DialogType {
         answer, question, reply;
@@ -170,6 +170,15 @@ public class SusiAction {
         }
         if (this.getRenderType() == RenderType.websearch && this.json.has("query")) {
             this.json.put("query", thoughts.unify(getStringAttr("query")));
+        }
+        if (this.getRenderType() == RenderType.anchor && this.json.has("link") && this.json.has("text")) {
+            this.json.put("link", thoughts.unify(getStringAttr("link")));
+            this.json.put("text", thoughts.unify(getStringAttr("text")));
+        }
+        if (this.getRenderType() == RenderType.map && this.json.has("latitude") && this.json.has("longitude") && this.json.has("zoom")) {
+            this.json.put("latitude", thoughts.unify(getStringAttr("latitude")));
+            this.json.put("longitude", thoughts.unify(getStringAttr("longitude")));
+            this.json.put("zoom", thoughts.unify(getStringAttr("zoom")));
         }
         return this;
     }
