@@ -29,8 +29,8 @@
 .animated.flipOutY,
 .animated.bounceIn,
 .animated.bounceOut {
-  -webkit-animation-duration: .75s;
-  animation-duration: .75s;
+  -webkit-animation-duration: 0s;
+  animation-duration: 0s;
 }
 
 @-webkit-keyframes bounce {
