@@ -84,13 +84,16 @@
 	},
 	{
 		"phrases":[{"type":"prior", "expression":"what is my name"}],
-		"process":[{"type":"memory", "expression":"IF $_username$"}],
-		"actions":[{"type":"answer", "select":"random", "phrases":["Your name is $_username$"]}]
-	},
-	{
-		"phrases":[{"type":"prior", "expression":"what is my name"}],
-		"process":[{"type":"memory", "expression":"NOT $_username$"}],
-		"actions":[{"type":"answer", "select":"random", "phrases":["I don't know your name. Please tell me your name"]}]
+		"options":[
+		{
+			"process":[{"type":"memory", "expression":"IF $_username$"}],
+			"actions":[{"type":"answer", "select":"random", "phrases":["Your name is $_username$"]}]
+		},
+		{
+			"process":[{"type":"memory", "expression":"NOT $_username$"}],
+			"actions":[{"type":"answer", "select":"random", "phrases":["I don't know your name. Please tell me your name"]}]
+		}
+		]
 	},
 	{
 		"phrases":[{"type":"prior", "expression":"Do you like me"}],

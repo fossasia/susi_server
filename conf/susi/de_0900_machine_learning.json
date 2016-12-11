@@ -25,37 +25,70 @@
 	},
 	{
 	    "comment":"this is an experiment",
-		"phrases":[{"type":"prior", "expression":"frag mich irgendwas"}, {"type":"prior", "expression":"frag mich was"}, {"type":"prior", "expression":"frag mich etwas"},
-		           {"type":"prior", "expression":"frage mich irgendwas"}, {"type":"prior", "expression":"frage mich was"}, {"type":"prior", "expression":"frage mich etwas"}],
-		"actions":[{"type":"answer", "select":"random", "phrases":["wie heisst du"]}]
+		"phrases":[
+			{"type":"prior", "expression":"frag mich irgendwas"},
+			{"type":"prior", "expression":"frag mich was"},
+			{"type":"prior", "expression":"frag mich etwas"},
+			{"type":"prior", "expression":"frage mich irgendwas"},
+			{"type":"prior", "expression":"frage mich was"},
+			{"type":"prior", "expression":"frage mich etwas"}
+		],
+		"actions":[
+			{"type":"answer", "select":"random", "phrases":["wie heisst du"]}
+		]
 	},
 	{
-		"phrases":[{"type":"pattern", "expression":"*"},
-		           {"type":"pattern", "expression":"ich heisse *"}],
-	    "process":[{"type":"memory", "expression":"IF $answer$ = (?:wie heisst du)|(?:(.*) sag mir deinen Namen)"},
-                   {"type":"memory", "expression":"SET _username = $1$"}],
-		"actions":[{"type":"answer", "select":"random", "phrases":["Vielen Dank $_username$"]}]
+		"phrases":[
+			{"type":"pattern", "expression":"*"},
+		    {"type":"pattern", "expression":"ich heisse *"}
+		],
+	    "process":[
+	    	{"type":"memory", "expression":"IF $answer$ = (?:wie heisst du)|(?:(.*) sag mir deinen Namen)"},
+			{"type":"memory", "expression":"SET _username = $1$"}
+		],
+		"actions":[
+			{"type":"answer", "select":"random", "phrases":["Vielen Dank $_username$"]}
+		]
 	},
 	{
-		"phrases":[{"type":"pattern", "expression":"Mein name ist *"},
-		           {"type":"pattern", "expression":"Ich heisse *"}],
-        "process":[{"type":"memory", "expression":"SET _username = $1$"}],
-		"actions":[{"type":"answer", "select":"random", "phrases":["OK ich nenne dich $_username$"]}]
+		"phrases":[
+			{"type":"pattern", "expression":"Mein name ist *"},
+			{"type":"pattern", "expression":"Ich heisse *"}
+		],
+        "process":[
+        	{"type":"memory", "expression":"SET _username = $1$"}
+        ],
+		"actions":[
+			{"type":"answer", "select":"random", "phrases":["OK ich nenne dich $_username$"]}
+		]
 	},
 	{
-		"phrases":[{"type":"pattern", "expression":"Vergesse meinen Namen"}, {"type":"pattern", "expression":"Vergiss meinen Namen"}],
-        "process":[{"type":"memory", "expression":"CLEAR _username"}],
-		"actions":[{"type":"answer", "select":"random", "phrases":["Ich habe jetzt deinen Namen vergessen"]}]
+		"phrases":[
+			{"type":"pattern", "expression":"Vergesse meinen Namen"},
+			{"type":"pattern", "expression":"Vergiss meinen Namen"}
+		],
+        "process":[
+        	{"type":"memory", "expression":"CLEAR _username"}
+        ],
+		"actions":[
+			{"type":"answer", "select":"random", "phrases":["Ich habe jetzt deinen Namen vergessen"]}
+		]
 	},
 	{
-		"phrases":[{"type":"prior", "expression":"Wie heisse ich"}, {"type":"prior", "expression":"Wie ist mein Name"}],
-		"process":[{"type":"memory", "expression":"IF $_username$"}],
-		"actions":[{"type":"answer", "select":"random", "phrases":["Dein Name ist $_username$"]}]
-	},
-	{
-		"phrases":[{"type":"prior", "expression":"Wie heisse ich"}, {"type":"prior", "expression":"Wie ist mein Name"}],
-		"process":[{"type":"memory", "expression":"NOT $_username$"}],
-		"actions":[{"type":"answer", "select":"random", "phrases":["Ich kenne deinen Namen nicht. Bitte nenne mir deinen Namen."]}]
+		"phrases":[
+			{"type":"prior", "expression":"Wie heisse ich"},
+			{"type":"prior", "expression":"Wie ist mein Name"}
+		],
+		"options":[
+		{
+			"process":[{"type":"memory", "expression":"IF $_username$"}],
+			"actions":[{"type":"answer", "select":"random", "phrases":["Dein Name ist $_username$"]}]
+		},
+		{
+			"process":[{"type":"memory", "expression":"NOT $_username$"}],
+			"actions":[{"type":"answer", "select":"random", "phrases":["Ich kenne deinen Namen nicht. Bitte sag mir deinen Namen"]}]
+		}
+		]
 	},
 	{
 		"phrases":[{"type":"prior", "expression":"Magst du mich"}],
