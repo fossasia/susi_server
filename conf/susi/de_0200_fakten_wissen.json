@@ -40,7 +40,7 @@
       {"type":"pattern", "expression":"was heißt *"}
     ],
     "process":[ {"type":"console", "expression":"SELECT description FROM wikidata-de WHERE query='$1$';"},
-                {"type":"flow", "expression":"REJECT '$description$' MATCHING 'Wikipedia disambiguation page' PATTERN"} ],
+                {"type":"flow", "expression":"NOT $description$ = Wikipedia disambiguation page"} ],
     "actions":[ {"type":"answer", "select":"random", "phrases":[
       "$1$ ist $description$."
     ]}]
