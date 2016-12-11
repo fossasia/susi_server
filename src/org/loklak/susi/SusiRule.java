@@ -55,11 +55,36 @@ public class SusiRule {
     private int id;
     
     /**
+     * Generate a set of rules from a single rule definition. This may be possible if the rule contains an 'options'
+     * object which creates a set of rules, one for each option. The options combine with one set of phrases
+     * @param json - a multi-rule definition
+     * @return a set of rules
+     */
+    public static List<SusiRule> getRules(JSONObject json) {
+        if (!json.has("phrases")) throw new PatternSyntaxException("phrases missing", "", 0);
+        final List<SusiRule> rules = new ArrayList<>();
+        if (json.has("options")) {
+            JSONArray options = json.getJSONArray("options");
+            for (int i = 0; i < options.length(); i++) {
+                JSONObject option = new JSONObject();
+                option.put("phrases", json.get("phrases"));
+                JSONObject or = options.getJSONObject(i);
+                for (String k: or.keySet()) option.put(k, or.get(k));
+                rules.add(new SusiRule(option));
+            }
+        } else {
+            SusiRule rule = new SusiRule(json);
+            rules.add(rule);
+        }
+        return rules;
+    }
+    
+    /**
      * Create a rule by parsing of the rule description
      * @param json the rule description
      * @throws PatternSyntaxException
      */
-    public SusiRule(JSONObject json) throws PatternSyntaxException {
+    private SusiRule(JSONObject json) throws PatternSyntaxException {
         
         // extract the phrases and the phrases subscore
         if (!json.has("phrases")) throw new PatternSyntaxException("phrases missing", "", 0);

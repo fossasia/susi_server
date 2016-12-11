@@ -249,10 +249,11 @@ public class SusiMind {
         });
 
         // add conversation rules
-        JSONArray rules = json.has("rules") ? json.getJSONArray("rules") : new JSONArray();
-        rules.forEach(j -> {
-            SusiRule rule = new SusiRule((JSONObject) j);
-            rule.getKeys().forEach(key -> {
+        JSONArray ruleset = json.has("rules") ? json.getJSONArray("rules") : new JSONArray();
+        ruleset.forEach(j -> {
+            List<SusiRule> rules = SusiRule.getRules((JSONObject) j);
+            rules.forEach(rule ->
+                rule.getKeys().forEach(key -> {
                     Set<SusiRule> l = this.ruletrigger.get(key);
                     if (l == null) {
                         l = new HashSet<>();
@@ -261,8 +262,9 @@ public class SusiMind {
                     l.add(rule);
                     rule.getPhrases().forEach(phrase -> this.logs.removeUnanswered(phrase.getPattern()));
                     //System.out.println("***DEBUG: ADD RULE FOR KEY " + key + ": " + rule.toString());
-                });
-            });
+                })
+            );
+        });
         
         return this;
     }
