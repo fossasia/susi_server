@@ -8,10 +8,26 @@
       {"type":"regex", "expression":"please describe (?:(?:a )*)(.*)"},
       {"type":"regex", "expression":"please explain (?:(?:a )*)(.*)"}
     ],
-    "process":[ {"type":"console", "expression":"SELECT place[0] AS place, population, location[0] AS lon, location[1] AS lat FROM locations WHERE location='$1$';"}],
-    "actions":[ {"type":"answer", "select":"random", "phrases":[
-      "$place$ is a place with a population of $population$. Here is a map: https://www.openstreetmap.org/#map=13/$lat$/$lon$"
-    ]}]
+    "process":[ {"type":"console", "expression":"SELECT place[0] AS place, population, location[0] AS lon, location[1] AS lat FROM locations WHERE query='$1$';"}],
+    "actions":[
+      {"type":"answer", "select":"random",
+       "phrases":["$place$ is a place with a population of $population$. Here is a map: https://www.openstreetmap.org/#map=13/$lat$/$lon$"]
+      },
+      {"type":"anchor", "link":"https://www.openstreetmap.org/#map=13/$lat$/$lon$", "text":"Link to Openstreetmap: $place$"},
+      {"type":"map", "latitude":"$lat$", "longitude":"$lon$", "zoom":"13"}
+    ]
+  }, {
+    "keys"   :["where"],
+    "phrases":[
+      {"type":"pattern", "expression":"where am i"}
+    ],
+    "actions":[
+      {"type":"answer", "select":"random",
+       "phrases":["You are here: https://www.openstreetmap.org/#map=13/$latitude$/$longitude$"]
+      },
+      {"type":"anchor", "link":"https://www.openstreetmap.org/#map=13/$lat$/$lon$", "text":"Link to an Openstreetmap for your location"},
+      {"type":"map", "latitude":"$latitude$", "longitude":"$longitude$", "zoom":"13"}
+    ]
   }, {
     "score"  :1,
     "phrases":[
@@ -24,7 +40,7 @@
       {"type":"regex", "expression":"how is (?:(?:a )*)(.*)"}
     ],
     "process":[ {"type":"console", "expression":"SELECT description FROM wikidata-en WHERE query='$1$';"},
-                {"type":"flow", "expression":"REJECT '$description$' MATCHING 'Wikipedia disambiguation page' PATTERN"} ],
+                {"type":"flow", "expression":"NOT $description$ = Wikipedia disambiguation page"} ],
     "actions":[ {"type":"answer", "select":"random", "phrases":[
       "$1$ is a $description$."
     ]}]
@@ -44,21 +60,10 @@
       {"type":"regex", "expression":"how is (?:(?:a )*)(.*)"}
     ],
     "process":[ {"type":"console", "expression":"SELECT description FROM wikidata-en WHERE query='$1$';"},
-                {"type":"flow", "expression":"REJECT '$description$' MATCHING 'Wikipedia disambiguation page' PATTERN"} ],
+                {"type":"flow", "expression":"NOT $description$ = Wikipedia disambiguation page PATTERN"} ],
     "actions":[  {"type":"answer", "select":"random", "phrases":[
       "$1$ is a $description$."
     ]}]
-  }, {
-   "phrases":[
-     {"type":"regex", "expression":"where is (?:(?:a )*)(.*)"},
-     {"type":"regex", "expression":"what is (?:(?:a )*)(.*)"},
-     {"type":"regex", "expression":"describe (?:(?:a )*)(.*)"},
-     {"type":"regex", "expression":"please describe (?:(?:a )*)(.*)"},
-     {"type":"regex", "expression":"please explain (?:(?:a )*)(.*)"} ],
-   "process":[ {"type":"console", "expression":"SELECT place[0] AS place, population, location[0] AS lon, location[1] AS lat FROM locations WHERE query='$1$';"}],
-   "actions":[ {"type":"answer", "select":"random", "phrases":[
-    "$place$ is a place with a population of $population$. Here is a map: https://www.openstreetmap.org/#map=13/$lat$/$lon$"
-   ]}]
   }, {
    "phrases":[ {"type":"regex", "expression":".+ (?:.+ )+(.+)"} ],
    "process":[ {"type":"console", "expression":"SELECT text,retweet_count,favourites_count FROM messages WHERE query='you $1$ /pure' ORDER BY FAVOURITES_COUNT;"}],
@@ -84,7 +89,7 @@
       {"type":"pattern", "expression":"calculate * times *"},
       {"type":"pattern", "expression":"* times *"}
     ],
-    "actions":[ {"type":"include", "select":"random", "phrases":[
+    "actions":[ {"type":"self", "select":"random", "phrases":[
       "compute $1$ * $2$"
     ]}]
   },{
@@ -95,7 +100,7 @@
       {"type":"pattern", "expression":"calculate * divided by *"},
       {"type":"pattern", "expression":"* divided by *"}
     ],
-    "actions":[ {"type":"include", "select":"random", "phrases":[
+    "actions":[ {"type":"self", "select":"random", "phrases":[
       "compute $1$ / $2$"
     ]}]
   },{
@@ -106,7 +111,7 @@
       {"type":"pattern", "expression":"calculate * plus *"},
       {"type":"pattern", "expression":"* plus *"}
     ],
-    "actions":[ {"type":"include", "select":"random", "phrases":[
+    "actions":[ {"type":"self", "select":"random", "phrases":[
       "compute $1$ + $2$"
     ]}]
   },{
@@ -117,7 +122,7 @@
       {"type":"pattern", "expression":"calculate * minus *"},
       {"type":"pattern", "expression":"* minus *"}
     ],
-    "actions":[ {"type":"include", "select":"random", "phrases":[
+    "actions":[ {"type":"self", "select":"random", "phrases":[
       "compute $1$ - $2$"
     ]}]
   },{
@@ -137,3 +142,5 @@
     ]}]
   }
 ]}
+
+http://api.asksusi.com/susi/chat.json?timezoneOffset=-60&longitude=8.11&latitude=55.8&q=where+am+I

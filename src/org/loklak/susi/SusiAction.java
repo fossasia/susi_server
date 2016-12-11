@@ -34,7 +34,7 @@ import org.json.JSONObject;
  */
 public class SusiAction {
 
-    public static enum RenderType {answer, table, piechart, rss, include, websearch;}
+    public static enum RenderType {answer, table, piechart, rss, self, websearch, anchor, map;}
     public static enum SelectionType {random, roundrobin;}
     public static enum DialogType {
         answer, question, reply;
@@ -145,7 +145,7 @@ public class SusiAction {
      * @return the action with the attribute "expression" instantiated by unification of the thought with the action
      */
     public SusiAction apply(SusiArgument thoughts, SusiMind mind, String client) {
-        if ((this.getRenderType() == RenderType.answer || this.getRenderType() == RenderType.include) && this.json.has("phrases")) {
+        if ((this.getRenderType() == RenderType.answer || this.getRenderType() == RenderType.self) && this.json.has("phrases")) {
             // transform the answer according to the data
             ArrayList<String> a = getPhrases();
             String phrase = a.get(random.nextInt(a.size()));
@@ -155,7 +155,7 @@ public class SusiAction {
                     // transform the answer according to the data
                     this.json.put("expression", expression);
                 }
-                if (this.getRenderType() == RenderType.include) {
+                if (this.getRenderType() == RenderType.self) {
                     // recursive call susi with the answer
                     List<SusiArgument> datalist = mind.react(expression, 1, client, null);
                     SusiArgument bestargument = datalist.get(0);
@@ -170,6 +170,15 @@ public class SusiAction {
         }
         if (this.getRenderType() == RenderType.websearch && this.json.has("query")) {
             this.json.put("query", thoughts.unify(getStringAttr("query")));
+        }
+        if (this.getRenderType() == RenderType.anchor && this.json.has("link") && this.json.has("text")) {
+            this.json.put("link", thoughts.unify(getStringAttr("link")));
+            this.json.put("text", thoughts.unify(getStringAttr("text")));
+        }
+        if (this.getRenderType() == RenderType.map && this.json.has("latitude") && this.json.has("longitude") && this.json.has("zoom")) {
+            this.json.put("latitude", thoughts.unify(getStringAttr("latitude")));
+            this.json.put("longitude", thoughts.unify(getStringAttr("longitude")));
+            this.json.put("zoom", thoughts.unify(getStringAttr("zoom")));
         }
         return this;
     }

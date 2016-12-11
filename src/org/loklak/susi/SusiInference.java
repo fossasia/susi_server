@@ -108,26 +108,44 @@ public class SusiInference {
             if (recall.getCount() > 0) recall.getData().remove(0);
             return recall;
         });
-        memorySkill.put(Pattern.compile("REMEMBER\\h+?(.*?)\\h+?FROM\\h+?'(.*?)'\\h+?MATCHING\\h+?'(.*?)'\\h+?REGEX\\h*?"), (flow, matcher) -> {
-            return see(flow, flow.unify(matcher.group(1), 0), flow.unify(matcher.group(2), 0), Pattern.compile(flow.unify(matcher.group(3), 0)));
+        memorySkill.put(Pattern.compile("SET\\h+?([^=]*?)\\h+?=\\h+?([^=]*)\\h*?"), (flow, matcher) -> {
+            String remember = matcher.group(1), matching = matcher.group(2);
+            return see(flow, flow.unify("%1% AS " + remember, 0), flow.unify(matching, 0), Pattern.compile("(.*)"));
         });
-        memorySkill.put(Pattern.compile("REMEMBER\\h+?(.*?)\\h+?FROM\\h+?'(.*?)'\\h+?MATCHING\\h+?'(.*?)'\\h+?PATTERN\\h*?"), (flow, matcher) -> {
-            return see(flow, flow.unify(matcher.group(1), 0), flow.unify(matcher.group(2), 0), Pattern.compile(SusiPhrase.parsePattern(flow.unify(matcher.group(3), 0))));
+        memorySkill.put(Pattern.compile("SET\\h+?([^=]*?)\\h+?=\\h+?([^=]*?)\\h+?MATCHING\\h+?(.*)\\h*?"), (flow, matcher) -> {
+            String remember = matcher.group(1), matching = matcher.group(2), pattern = matcher.group(3);
+            return see(flow, flow.unify(remember, 0), flow.unify(matching, 0), Pattern.compile(flow.unify(pattern, 0)));
         });
-        memorySkill.put(Pattern.compile("EXPECT\\h+?'(.*?)'\\h+?MATCHING\\h+?'(.*?)'\\h+?REGEX\\h*?"), (flow, matcher) -> {
-            return see(flow, "*", matcher.group(1), Pattern.compile(flow.unify(matcher.group(2), 0)));
+        memorySkill.put(Pattern.compile("CLEAR\\h+?(.*)\\h*?"), (flow, matcher) -> {
+            String clear = matcher.group(1);
+            return see(flow, "%1% AS " + flow.unify(clear, 0), "", Pattern.compile("(.*)"));
         });
-        memorySkill.put(Pattern.compile("EXPECT\\h+?'(.*?)'\\h+?MATCHING\\h+?'(.*?)'\\h+?PATTERN\\h*?"), (flow, matcher) -> {
-            return see(flow, "*", matcher.group(1), Pattern.compile(SusiPhrase.parsePattern(flow.unify(matcher.group(2), 0))));
+        memorySkill.put(Pattern.compile("IF\\h+?([^=]*)\\h*?"), (flow, matcher) -> {
+            String expect = matcher.group(1);
+            SusiThought t = see(flow, "%1% AS EXPECTED", flow.unify(expect, 0), Pattern.compile("(.+)"));
+            if (t.isFailed() || t.hasEmptyObservation("EXPECTED")) return new SusiThought(); // empty thought -> fail
+            return t;
         });
-        memorySkill.put(Pattern.compile("REJECT\\h+?'(.*?)'\\h+?MATCHING\\h+?'(.*?)'\\h+?REGEX\\h*?"), (flow, matcher) -> {
-            SusiThought t = see(flow, "*", matcher.group(1), Pattern.compile(flow.unify(matcher.group(2), 0)));
-            if (t.getCount() == 0) return new SusiThought().addObservation("regex-" + matcher.group(2), matcher.group(1));
+        memorySkill.put(Pattern.compile("IF\\h+?([^=]*?)\\h+?=\\h+?([^=]*)\\h*?"), (flow, matcher) -> {
+            String expect = matcher.group(1), matching = matcher.group(2);
+            SusiThought t = see(flow, "%1% AS EXPECTED", flow.unify(expect, 0), Pattern.compile(flow.unify(matching, 0)));
+            if (t.isFailed() || t.hasEmptyObservation("EXPECTED")) return new SusiThought(); // empty thought -> fail
+            return t;
+        });
+        memorySkill.put(Pattern.compile("NOT\\h*"), (flow, matcher) -> {
+            SusiThought t = see(flow, "%1% AS EXPECTED", "", Pattern.compile("(.*)"));
+            return new SusiThought().addObservation("REJECTED", "");
+        });
+        memorySkill.put(Pattern.compile("NOT\\h+?([^=]*)\\h*?"), (flow, matcher) -> {
+            String reject = matcher.group(1);
+            SusiThought t = see(flow, "%1% AS EXPECTED", flow.unify(reject, 0), Pattern.compile("(.*)"));
+            if (t.isFailed() || t.hasEmptyObservation("EXPECTED")) return new SusiThought().addObservation("REJECTED", reject);
             return new SusiThought(); // empty thought -> fail
         });
-        memorySkill.put(Pattern.compile("REJECT\\h+?'(.*?)'\\h+?MATCHING\\h+?'(.*?)'\\h+?PATTERN\\h*?"), (flow, matcher) -> {
-            SusiThought t = see(flow, "*", matcher.group(1), Pattern.compile(SusiPhrase.parsePattern(flow.unify(matcher.group(2), 0))));
-            if (t.getCount() == 0) return new SusiThought().addObservation("pattern-" + matcher.group(2), matcher.group(1));
+        memorySkill.put(Pattern.compile("NOT\\h+?([^=]*?)\\h+?=\\h+?([^=]*)\\h*?"), (flow, matcher) -> {
+            String reject = matcher.group(1), matching = matcher.group(2);
+            SusiThought t = see(flow, "%1% AS EXPECTED", flow.unify(reject, 0), Pattern.compile(flow.unify(matching, 0)));
+            if (t.isFailed() || t.hasEmptyObservation("EXPECTED")) return new SusiThought().addObservation("REJECTED(" + matching + ")", reject);
             return new SusiThought(); // empty thought -> fail
         });
         javascriptSkill.put(Pattern.compile("(.*)"), (flow, matcher) -> {
@@ -166,14 +184,16 @@ public class SusiInference {
         SusiThought nextThought = new SusiThought();
         try {
             Matcher m = pattern.matcher(flow.unify(expr, 0));
-            if (m.matches()) {
+            int gc;
+            if (m.matches() && (gc = m.groupCount()) > 0) {
                 SusiTransfer transfer = new SusiTransfer(transferExpr);
                 JSONObject choice = new JSONObject();
-                int gc = m.groupCount();
-                choice.put("%0%", m.group(0));
                 for (int i = 0; i < gc; i++) choice.put("%" + (i+1) + "%", m.group(i));
                 JSONObject seeing = transfer.extract(choice);
-                for (String key: seeing.keySet()) nextThought.addObservation(key, seeing.getString(key));
+                for (String key: seeing.keySet()) {
+                    String observed = seeing.getString(key);
+                    nextThought.addObservation(key, observed);
+                }
             }
         } catch (PatternSyntaxException e) {
             e.printStackTrace();

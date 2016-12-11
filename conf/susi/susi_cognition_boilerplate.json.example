@@ -1,0 +1,15 @@
+{
+"comment":"Use this files as a boilerplate for your own rules. All files in data/susi/*.json will be ingested into susi. For each call to http://localhost:9000/api/susi.json it will be tested if the files in are fresh or must be re-ingested",
+"rules": [
+
+{
+  "keys": ["who"], "score":1,
+  "example":"who tweeted recently about loklak",
+  "comment":"this is an example rule, use it as boilerplate for your own rules. Test this by calling http://localhost:9000/api/susi.json?q=who%20tweeted%20recently%20about%20loklak",
+  "phrases":[{"type": "pattern", "expression": "who tweeted recently about *"}],
+  "process":[{"type": "console", "expression": "SELECT screen_name FROM messages WHERE query='$1$';"}],
+  "actions":[{"type": "answer", "select": "random", "phrases": ["The latest tweet about $1$ was from $screen_name$."]
+  }]
+}
+
+]}

@@ -8,20 +8,20 @@
      {"type":"answer", "select":"random", "phrases":["Line 3"], "delay":1000}
    ]
   }, {
-   "comment":"include test - trigger",
-   "phrases":[ {"type":"pattern", "expression":"include me *"} ],
+   "comment":"self test - trigger",
+   "phrases":[ {"type":"pattern", "expression":"self *"} ],
    "actions":[
-     {"type":"answer", "select":"random", "phrases":["I repeat in include:"]},
-     {"type":"include", "select":"random", "phrases":["includetest1 $1$", "includetest2 $1$", "multi3"], "delay":1000}
+     {"type":"answer", "select":"random", "phrases":["I repeat myself:"]},
+     {"type":"self", "select":"random", "phrases":["includetest1 $1$", "includetest2 $1$", "multi3"], "delay":1000}
    ]
   }, {
-   "comment":"include test - target 1",
+   "comment":"self test - target 1",
    "phrases":[ {"type":"pattern", "expression":"includetest1 *"} ],
    "actions":[
      {"type":"answer", "select":"random", "phrases":["included type 1 $1$"]}
    ]
   }, {
-   "comment":"include test - target 2",
+   "comment":"self test - target 2",
    "phrases":[ {"type":"pattern", "expression":"includetest2 *"} ],
    "actions":[
      {"type":"answer", "select":"random", "phrases":["included type 2 $1$"]}

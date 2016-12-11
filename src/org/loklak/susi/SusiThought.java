@@ -129,6 +129,15 @@ public class SusiThought extends JSONObject {
     public int getCount() {
         return getData().length();
     }
+
+    public boolean isFailed() {
+        return getData().length() == 0;
+    }
+
+    public boolean hasEmptyObservation(String key) {
+        List<String> observations = this.getObservations(key);
+        return observations.size() == 0 || observations.get(0).length() == 0;
+    }
     
     /**
      * While the number of information pieces in a whole has a count, the number of relevant

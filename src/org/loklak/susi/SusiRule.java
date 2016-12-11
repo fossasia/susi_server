@@ -391,7 +391,7 @@ public class SusiRule {
                 DAO.log("Susi is thinking about: " + implication.toString());
                 // make sure that we are not stuck:
                 // in case that we are stuck (== no progress was made) we terminate and return null
-                if ((flow.mindstate().equals(implication) || implication.getCount() == 0)) continue alternatives; // TODO: do this only if specific marker is in rule
+                if ((flow.mindstate().equals(implication) || implication.isFailed())) continue alternatives; // TODO: do this only if specific marker is in rule
                 // think
                 flow.think(implication);
             }

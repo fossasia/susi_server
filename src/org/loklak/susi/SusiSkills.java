@@ -57,7 +57,7 @@ public class SusiSkills extends LinkedHashMap<Pattern, BiFunction<SusiArgument, 
         for (Map.Entry<Pattern, BiFunction<SusiArgument, Matcher, SusiThought>> pe: this.entrySet()) {
             Pattern p = pe.getKey();
             Matcher m = p.matcher(q);
-            if (m.find()) try {
+            if (m.matches()) try {
                 SusiThought json = pe.getValue().apply(flow, m);
                 if (json != null) {
                     json.setProcess(p.pattern());
