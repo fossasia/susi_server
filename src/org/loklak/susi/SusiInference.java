@@ -30,7 +30,6 @@ import javax.script.ScriptException;
 import org.eclipse.jetty.util.log.Log;
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.loklak.SusiServer;
 import org.loklak.api.susi.ConsoleService;
 
 /**
@@ -65,6 +64,13 @@ public class SusiInference {
         this.json = json;
     }
 
+    public static JSONObject simpleMemoryProcess(String expression) {
+        JSONObject json = new JSONObject();
+        json.put("type", Type.memory.name());
+        json.put("expression", expression);
+        return json;
+    }
+    
     /**
      * Inferences may have different types. Each type selects inference methods inside the inference description.
      * While the inference description mostly has only one other attribute, the "expression" it might have more.

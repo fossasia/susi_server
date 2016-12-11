@@ -150,12 +150,22 @@ public class SusiRule {
         return json;
     }
     
-    public static JSONObject simpleRule(String[] phrases, String[] answers, boolean prior) {
+    public static JSONObject simpleRule(String[] phrases, String condition, String[] answers, boolean prior) {
         JSONObject json = new JSONObject();
 
+        // write phrases
         JSONArray p = new JSONArray();
         json.put("phrases", p);
         for (String phrase: phrases) p.put(SusiPhrase.simplePhrase(phrase, prior));
+        
+        // write conditions (if any)
+        if (condition != null && condition.length() > 0) {
+            JSONArray c = new JSONArray();
+            json.put("process", c);
+            c.put(SusiInference.simpleMemoryProcess(condition));   
+        }
+        
+        // write actions
         JSONArray a = new JSONArray();
         json.put("actions", a);
         a.put(SusiAction.simpleAction(answers));        

@@ -151,9 +151,31 @@ public class SusiMind {
             // read content
             if (line.length() > 0 && lastLine.length() > 0) {
                 // mid of conversation (last answer is query for next rule)
-                JSONObject rule = SusiRule.simpleRule(lastLine.split("\\|"), line.split("\\|"), prior);
-                //System.out.println(rule.toString());
-                rules.put(rule);
+                String[] phrases = lastLine.split("\\|");
+                String condition = null;
+                int thenpos = -1;
+                if (line.startsWith("?") && (thenpos = line.indexOf(':')) > 0) {
+                    int elsepos = line.substring(thenpos + 1).indexOf(':') + thenpos;
+                    condition = line.substring(1, thenpos).trim();
+                    if (elsepos <= thenpos) {
+                        // only if, no else
+                        String[] answers = line.substring(thenpos + 1).split("\\|");
+                        JSONObject rule = SusiRule.simpleRule(phrases, "IF " + condition, answers, prior);
+                        rules.put(rule);
+                    } else {
+                        String[] ifanswers = line.substring(thenpos + 1, elsepos).split("\\|");
+                        String[] elseanswers = line.substring(elsepos + 1).split("\\|");
+                        JSONObject ruleif = SusiRule.simpleRule(phrases, "IF " + condition, ifanswers, prior);
+                        JSONObject ruleelse = SusiRule.simpleRule(phrases, "NOT " + condition, elseanswers, prior);
+                        rules.put(ruleif);
+                        rules.put(ruleelse);
+                    }
+                } else {
+                    String[] answers = line.split("\\|");
+                    JSONObject rule = SusiRule.simpleRule(phrases, condition, answers, prior);
+                    //System.out.println(rule.toString());
+                    rules.put(rule);
+                }
             }
             lastLine = line;
         }} catch (IOException e) {}
@@ -207,7 +229,7 @@ public class SusiMind {
             }
         }
         if (phrases != null && answers != null) {
-            return SusiRule.simpleRule(phrases, answers, false);
+            return SusiRule.simpleRule(phrases, null, answers, false);
         }
         return null;
     }

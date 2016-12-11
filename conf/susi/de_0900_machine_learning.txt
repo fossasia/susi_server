@@ -1,0 +1,5 @@
+kennst du meinen namen?
+? $_username$ : ja : nein
+
+willst du wissen wie ich heisse|willst du meinen namen wissen
+? $_username$ : nein, ich weiss ja dass du $_username$ heisst : ja, wie heisst du?
