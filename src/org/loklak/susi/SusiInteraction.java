@@ -21,6 +21,7 @@ package org.loklak.susi;
 
 import java.util.ArrayList;
 import java.util.Base64;
+import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -73,11 +74,11 @@ public class SusiInteraction {
         this.json.put("answer_time", answer_date - query_date);
         this.json.put("count", maxcount);
         this.json.put("answers", new JSONArray(dispute.stream().map(argument -> {
+            Collection<JSONObject> actions = argument.getActions().stream()
+                    .map(action -> action.apply(argument, mind, client).toJSONClone())
+                    .collect(Collectors.toList());
             SusiThought answer = argument.mindmeld(true);
-            answer.put("actions", 
-                    argument.getActions().stream()
-                        .map(action -> action.apply(argument, mind, client).toJSONClone())
-                        .collect(Collectors.toList()));
+            answer.put("actions", actions);
             return answer;
         }).collect(Collectors.toList())));
         

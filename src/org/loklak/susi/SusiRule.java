@@ -156,7 +156,7 @@ public class SusiRule {
         // write phrases
         JSONArray p = new JSONArray();
         json.put("phrases", p);
-        for (String phrase: phrases) p.put(SusiPhrase.simplePhrase(phrase, prior));
+        for (String phrase: phrases) p.put(SusiPhrase.simplePhrase(phrase.trim(), prior));
         
         // write conditions (if any)
         if (condition != null && condition.length() > 0) {
@@ -184,7 +184,7 @@ public class SusiRule {
             "\"}\";\n";
         return s;
         */
-        return this.phrases.get(0).toString();
+        return this.phrases.toString();
     }
 
     
@@ -385,7 +385,7 @@ public class SusiRule {
         
         // that argument is filled with an idea which consist of the query where we extract the identified data entities
         alternatives: for (Matcher matcher: this.matcher(query)) {
-            if (!matcher.matches()) continue; // important! the for loop interates all rules where find() applies, not matches()!
+            if (!matcher.matches()) continue;
             SusiThought keynote = new SusiThought(matcher);
             if (intent != null) {
                 keynote.addObservation("intent_original", intent.original);
@@ -407,7 +407,7 @@ public class SusiRule {
             }
             
             // we deduced thoughts from the inferences in the rules. Now apply the actions of rule to produce results
-            this.getActionsClone().forEach(action -> flow.addAction(action.apply(flow, mind, client)));
+            this.getActionsClone().forEach(action -> flow.addAction(action/*.apply(flow, mind, client)*/));
             return flow;
         }
         // fail, no alternative was successful

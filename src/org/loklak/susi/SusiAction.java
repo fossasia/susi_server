@@ -23,6 +23,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Random;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -61,7 +63,7 @@ public class SusiAction {
         json.put("type", RenderType.answer.name());
         json.put("select", SelectionType.random.name());
         json.put("phrases", phrases);
-        for (String answer: answers) phrases.put(answer);
+        for (String answer: answers) phrases.put(answer.trim());
         return json;
     }
     
@@ -135,6 +137,8 @@ public class SusiAction {
         return this.json.has(attr) ? this.json.getInt(attr) : 0;
     }
     
+    final static Pattern assignment = Pattern.compile("(?:(?:.*)[\\h,.;-])?+(.+?)>([_a-zA-Z0-9]+)(?:[\\h,.;-](?:.*))?+");
+    
     /**
      * Action descriptions are templates for data content. Strings may refer to arguments from
      * a thought deduction using variable templates. I.e. "$name$" inside an action string would
@@ -151,8 +155,20 @@ public class SusiAction {
             String phrase = a.get(random.nextInt(a.size()));
             String expression = thoughts.unify(phrase);
             if (expression != null) {
+                // transform the answer according to the data
+                // this is the final chance that we can add another thought according to a memorizing rule in the answer string
+                Matcher m;
+                while ((m = assignment.matcher(expression)).matches()) {
+                    String observation = m.group(1);
+                    String variable = m.group(2);
+                    expression = expression.substring(0, m.start() + observation.length()) + expression.substring(m.end());
+                    // write the variable v as side-effect into the thoughts argument
+                    thoughts.think(new SusiThought().addObservation(variable, observation));
+                }
+                
+                // find an response type: self-recursion or answer
                 if (this.getRenderType() == RenderType.answer) {
-                    // transform the answer according to the data
+                    // the expression is answered to the communication partner
                     this.json.put("expression", expression);
                 }
                 if (this.getRenderType() == RenderType.self) {

@@ -155,7 +155,7 @@ public class SusiMind {
                 String condition = null;
                 int thenpos = -1;
                 if (line.startsWith("?") && (thenpos = line.indexOf(':')) > 0) {
-                    int elsepos = line.substring(thenpos + 1).indexOf(':') + thenpos;
+                    int elsepos = line.substring(thenpos + 1).indexOf(':') + thenpos + 1;
                     condition = line.substring(1, thenpos).trim();
                     if (elsepos <= thenpos) {
                         // only if, no else

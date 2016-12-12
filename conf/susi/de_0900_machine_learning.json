@@ -65,7 +65,8 @@
 	{
 		"phrases":[
 			{"type":"pattern", "expression":"Vergesse meinen Namen"},
-			{"type":"pattern", "expression":"Vergiss meinen Namen"}
+			{"type":"pattern", "expression":"Vergiss meinen Namen"},
+			{"type":"pattern", "expression":"Vergiss wie ich heisse"}
 		],
         "process":[
         	{"type":"memory", "expression":"CLEAR _username"}
