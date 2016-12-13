@@ -117,52 +117,72 @@ public class SusiMind {
         //this.ruletrigger.forEach((term, map) -> System.out.println("***DEBUG trigger " + term + " -> " + map.toString()));
     }
 
-    private JSONObject readJsonLesson(File file) throws JSONException, FileNotFoundException {
+    public JSONObject readJsonLesson(File file) throws JSONException, FileNotFoundException {
         JSONObject json = new JSONObject(new JSONTokener(new FileReader(file)));
         //System.out.println(json.toString(2)); // debug
         return json;
     }
     
-    private JSONObject readTextLesson(File file) throws JSONException, FileNotFoundException {
+    public JSONObject readTextLesson(File file) throws JSONException, FileNotFoundException {
         // read the text file and turn it into a rule json; then learn that
         BufferedReader br = new BufferedReader(new FileReader(file));
         JSONObject json = new JSONObject();
         JSONArray rules = new JSONArray();
         json.put("rules", rules);
-        String lastLine = "", line;
+        String lastLine = "", line = "";
         boolean prior = false;
-        try {
-            while ((line = br.readLine()) != null) {
-                line = line.trim();
-
-                // read metadata
-                if (line.startsWith("::")) {
-                    line = line.toLowerCase();
-                    if (line.startsWith("::minor")) prior = false;
-                    if (line.startsWith("::prior")) prior = true;
-                    lastLine = "";
-                    continue;
-                }
-
-                if (line.startsWith("#")) {
-                    lastLine = "";
-                    continue;
-                }
-
-                // read content
-                if (line.length() > 0 && lastLine.length() > 0) {
-                    // mid of conversation (last answer is query for next rule)
-                    JSONObject rule = SusiRule.simpleRule(lastLine.split("\\|"), line.split("\\|"), prior);
+        try {readloop: while ((line = br.readLine()) != null) {
+            line = line.trim();
+            
+            // read metadata
+            if (line.startsWith("::")) {
+                line = line.toLowerCase();
+                if (line.startsWith("::minor")) prior = false;
+                if (line.startsWith("::prior")) prior = true;
+                lastLine = "";
+                continue readloop;
+            }
+            
+            if (line.startsWith("#")) {
+                lastLine = "";
+                continue readloop;
+            }
+            
+            // read content
+            if (line.length() > 0 && lastLine.length() > 0) {
+                // mid of conversation (last answer is query for next rule)
+                String[] phrases = lastLine.split("\\|");
+                String condition = null;
+                int thenpos = -1;
+                if (line.startsWith("?") && (thenpos = line.indexOf(':')) > 0) {
+                    int elsepos = line.substring(thenpos + 1).indexOf(':') + thenpos + 1;
+                    condition = line.substring(1, thenpos).trim();
+                    if (elsepos <= thenpos) {
+                        // only if, no else
+                        String[] answers = line.substring(thenpos + 1).split("\\|");
+                        JSONObject rule = SusiRule.simpleRule(phrases, "IF " + condition, answers, prior);
+                        rules.put(rule);
+                    } else {
+                        String[] ifanswers = line.substring(thenpos + 1, elsepos).split("\\|");
+                        String[] elseanswers = line.substring(elsepos + 1).split("\\|");
+                        JSONObject ruleif = SusiRule.simpleRule(phrases, "IF " + condition, ifanswers, prior);
+                        JSONObject ruleelse = SusiRule.simpleRule(phrases, "NOT " + condition, elseanswers, prior);
+                        rules.put(ruleif);
+                        rules.put(ruleelse);
+                    }
+                } else {
+                    String[] answers = line.split("\\|");
+                    JSONObject rule = SusiRule.simpleRule(phrases, condition, answers, prior);
                     //System.out.println(rule.toString());
                     rules.put(rule);
                 }
-                lastLine = line;
             }
-        } catch (IOException e) {}
+            lastLine = line;
+        }} catch (IOException e) {}
         return json;
     }
     
-    private JSONObject readAIMLLesson(File file) throws Exception {
+    public JSONObject readAIMLLesson(File file) throws Exception {
         // read the file as string
         BufferedReader br = new BufferedReader(new FileReader(file));
         String str;
@@ -193,53 +213,45 @@ public class SusiMind {
         return json;
     }
     
-    private JSONObject readAIMLCategory(Node category) {
+    public JSONObject readAIMLCategory(Node category) {
         NodeList nl = category.getChildNodes();
         String[] phrases = null;
         String[] answers = null;
         for (int i = 0; i < nl.getLength(); i++) {
             String nodename = nl.item(i).getNodeName().toLowerCase();
             System.out.println("CATEGORYY NODE " + nl.item(i).getNodeName());
-            switch (nodename) {
-                case "pattern":
-                    phrases = readAIMLSentences(nl.item(i));
-                    break;
-                case "that":
-
-                    break;
-                case "template":
-                    answers = readAIMLSentences(nl.item(i));
-                    break;
+            if (nodename.equals("pattern")) {
+                phrases = readAIMLSentences(nl.item(i));
+            } else if (nodename.equals("that")) {
+                
+            } else if (nodename.equals("template")) {
+                answers = readAIMLSentences(nl.item(i));
             }
         }
         if (phrases != null && answers != null) {
-            return SusiRule.simpleRule(phrases, answers, false);
+            return SusiRule.simpleRule(phrases, null, answers, false);
         }
         return null;
     }
     
-    private String[] readAIMLSentences(Node pot) {
+    public String[] readAIMLSentences(Node pot) {
         NodeList nl = pot.getChildNodes();
         JSONObject json = new JSONObject();
         for (int i = 0; i < nl.getLength(); i++) {
             String nodename = nl.item(i).getNodeName().toLowerCase();
             System.out.println("SENTENCE NODE " + nl.item(i).getNodeName());
-            switch (nodename) {
-                case "pattern":
-
-                    break;
-                case "that":
-
-                    break;
-                case "template":
-
-                    break;
+            if (nodename.equals("pattern")) {
+                
+            } else if (nodename.equals("that")) {
+                
+            } else if (nodename.equals("template")) {
+                
             }
         }
         return null;
     }
     
-    private SusiMind learn(JSONObject json) {
+    public SusiMind learn(JSONObject json) {
 
         // teach the language parser
         this.reader.learn(json);
@@ -259,14 +271,6 @@ public class SusiMind {
         });
 
         // add conversation rules
-<<<<<<< HEAD:src/main/java/org/loklak/susi/SusiMind.java
-        JSONArray rules = json.has("rules") ? json.getJSONArray("rules") : new JSONArray();
-        rules.forEach(j -> {
-            SusiRule rule = new SusiRule((JSONObject) j);
-            rule.getKeys().forEach(key -> {
-                Set<SusiRule> l = this.ruletrigger.computeIfAbsent(key, k -> new HashSet<>());
-                l.add(rule);
-=======
         JSONArray ruleset = json.has("rules") ? json.getJSONArray("rules") : new JSONArray();
         ruleset.forEach(j -> {
             List<SusiRule> rules = SusiRule.getRules((JSONObject) j);
@@ -278,7 +282,6 @@ public class SusiMind {
                         this.ruletrigger.put(key, l);
                     }
                     l.add(rule);
->>>>>>> afe6be2... added option to join different rules with same phrases into one rule:src/org/loklak/susi/SusiMind.java
                     rule.getPhrases().forEach(phrase -> this.logs.removeUnanswered(phrase.getPattern()));
                     //System.out.println("***DEBUG: ADD RULE FOR KEY " + key + ": " + rule.toString());
                 })
@@ -320,7 +323,7 @@ public class SusiMind {
      * @param maxcount the maximum number of ideas to return
      * @return an ordered list of ideas, first idea should be considered first.
      */
-    private List<SusiIdea> creativity(String query, SusiThought latest_thought, int maxcount) {
+    public List<SusiIdea> creativity(String query, SusiThought latest_thought, int maxcount) {
         // tokenize query to have hint for idea collection
         final List<SusiIdea> ideas = new ArrayList<>();
         this.reader.tokenizeSentence(query).forEach(token -> {
@@ -344,12 +347,13 @@ public class SusiMind {
         ideas.forEach(idea -> {
             int score = idea.getRule().getScore();
             long orderkey = Long.MAX_VALUE - ((long) score) * 1000L + count.incrementAndGet();
-            List<SusiIdea> r = scored.computeIfAbsent(orderkey, k -> new ArrayList<>());
+            List<SusiIdea> r = scored.get(orderkey);
+            if (r == null) {r = new ArrayList<>(); scored.put(orderkey, r);}
             r.add(idea);
         });
 
         // make a sorted list of all ideas
-        ideas.clear(); scored.values().forEach(ideas::addAll);
+        ideas.clear(); scored.values().forEach(r -> ideas.addAll(r));
         
         //for (SusiIdea idea: ideas) System.out.println("idea.phrase-2: score=" + idea.getRule().getScore() + " : " + idea.getRule().getPhrases().toString());
         
@@ -402,7 +406,7 @@ public class SusiMind {
         return answers;
     }
     
-    private String react(String query) {
+    public String react(String query) {
         String client = "host_localhost";
         List<SusiArgument> datalist = react(query, 1, client, new SusiThought());
         SusiArgument bestargument = datalist.get(0);
