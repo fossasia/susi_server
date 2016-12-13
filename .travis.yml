@@ -5,10 +5,7 @@ env:
   global:
   - secure: DbveaxDMtEP+/Er6ktKCP+P42uDU8xXWRBlVGaqVNU3muaRmmZtj8ngAARxfzY0f9amlJlCavqkEIAumQl9BYKPWIra28ylsLNbzAoCIi8alf9WLgddKwVWsTcZo9+UYocuY6UivJVkofycfFJ1blw/83dWMG0/TiW6s/SrwoDw=
 script:
-- "./gradle_init.sh"
-- gradle assemble
-- "./gradle_clean.sh"
-- ant
+- gradle build -x test 
 before_script:
 - pip install --user codecov
 install: true
