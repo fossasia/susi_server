@@ -1,1 +1,1 @@
-web: sh bin/heroku_start.sh
+web: gradle run

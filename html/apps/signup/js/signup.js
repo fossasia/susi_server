@@ -5,8 +5,8 @@ $(document).ready(function()
 		data: { getParameters: true },
 		dataType: "json",
 		success: function (response) {
-			var regex = response.regex;
-			var regexTooltip = response.regexTooltip;
+			const regex = response.regex;
+			const regexTooltip = response.regexTooltip;
 
 			$("#pass").attr("pattern", regex);
 			$("#passconfirm").attr("pattern", regex);
@@ -83,9 +83,9 @@ $(document).ready(function()
 
 	function setStrengthlvl(){
 
-        var pass = $("#pass").val();
+        const pass = $("#pass").val();
 
-        var strength = 0;
+        let strength = 0;
         $("#passtrength").removeClass();
         if(pass.length === 0){
             $("#passtrength").text("");
@@ -154,7 +154,7 @@ $(document).ready(function()
 			$("#valid").text("Invalid email!");
 			$("#valid").addClass("error");
 		}
-	})
+	});
 
 	$("#pass").keyup(function(){
 		checkPasswordSameAsEmail();
@@ -169,10 +169,10 @@ $(document).ready(function()
 
 	$("#confirmpass").keyup(function(){checkConfirmPass();});
 
-	var options = {
-        url:        "/aaa/signup.json",
-        type:       "get",
-        dataType:   "json",
+	const options = {
+        url: "/aaa/signup.json",
+        type: "get",
+        dataType: "json",
         success(response) {
             resetFields();
             $("#status-box").text(response.message);

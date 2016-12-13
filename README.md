@@ -40,19 +40,13 @@ At this time, Susi is not provided in compiled form, you easily build it yoursel
 
     > git clone https://github.com/fossasia/susi_server.git
     > cd susi_server
-    > ant
-    > bin/start.sh
+    > gradle run
 
-For Windows Users (who are using GitBash/Cygwin or any terminal):
+For Windows Users
     > git clone https://github.com/fossasia/susi_server.git
     > cd susi_server
-    > git checkout master
-    > ant jar
-    > java -jar dist/susiserver.jar
-    > git checkout development
-    > ant jar
-    > java -jar dist/susiserver.jar
-    
+    > gradlew run
+   
     To stop:
     > Press Ctrl+C
 

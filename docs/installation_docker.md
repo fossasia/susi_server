@@ -1,6 +1,6 @@
-# Installation of loklak with Docker
+# Installation of Susi with Docker
 
-## Installing loklak on Bluemix with Docker
+## Installing Susi on Bluemix with Docker
 
 1. Install docker on your system
 
@@ -52,11 +52,11 @@ cf ic login   (No credentials are necessary of you logged in to bluemix before
    ```
 10. Init your docker connection with `cf ic init`
 
-11. Upload the loklak docker file to your namespace with `cf ic cpi mariobehling/loklak loklak`   (takes some time)
+11. Upload the Susi docker file to your namespace with `cf ic cpi mariobehling/Susi Susi`   (takes some time)
 
 12. Create docker group with: (the XXXX must be unique, play around to found a free name)
    ```
-   cf ic group create --name loklak --auto --desired 2 -m 1024 -n XXXX -d mybluemix.net -p 80 registry.ng.bluemix.net/<namespace>/loklak
+   cf ic group create --name Susi --auto --desired 2 -m 1024 -n XXXX -d mybluemix.net -p 80 registry.ng.bluemix.net/<namespace>/Susi
    ```
 13. Check if your group is running either with pressing Dashboard in the browser or:
    ```
@@ -64,11 +64,11 @@ cf ic login   (No credentials are necessary of you logged in to bluemix before
    ```
 14. Wait until your container group is build and the network is configured (>1 minute) and
    ```
-   check at https://XXXX.mybluemix.net is working with your version of loklak
+   check at https://XXXX.mybluemix.net is working with your version of Susi
    ```
-15. Send your own bluemix loklak link to Mario in order to prove your done it
+15. Send your own bluemix Susi link to Mario in order to prove your done it
 
-## Installing loklak on AWS with Docker
+## Installing Susi on AWS with Docker
 
 1. Sign in to [AWS](https://aws.amazon.com)
 
@@ -78,7 +78,7 @@ cf ic login   (No credentials are necessary of you logged in to bluemix before
 
 4. In Step 1: Choose an Amazon Machine Image, we choose ```Ubuntu Server 14.04 LTS (HVM), SSD Volume Type```.
 
-5. In Step 2: Choose an Instance Type, we choose ```t2.micro```(<strong>Warning:</strong> ```t2.micro``` is not suitable for running loklak for a long period, and AWS may shut down your instance(block your Internet access on specific port) at any time. ```t2.micro``` instance users are only allow to use <strong>10%</strong> of a single CPU core on average. In our case, loklak_server uses 30 - 40% on average. Reference: [Burstable Instance](http://aws.amazon.com/ec2/faqs/#burst)  Case study: [Real case running loklak](http://geekinguniverse.com/2016/01/14/dont-use-aws-for-your-web-application/))
+5. In Step 2: Choose an Instance Type, we choose ```t2.micro```(<strong>Warning:</strong> ```t2.micro``` is not suitable for running Susi for a long period, and AWS may shut down your instance(block your Internet access on specific port) at any time. ```t2.micro``` instance users are only allow to use <strong>10%</strong> of a single CPU core on average. In our case, Susi_server uses 30 - 40% on average. Reference: [Burstable Instance](http://aws.amazon.com/ec2/faqs/#burst)  Case study: [Real case running Susi](http://geekinguniverse.com/2016/01/14/dont-use-aws-for-your-web-application/))
 
 6. Then we click ```Configure Instance Details```, do not create a instance yet.
 
@@ -94,7 +94,7 @@ cf ic login   (No credentials are necessary of you logged in to bluemix before
 
 12. We go back to EC2 control panel again. Click on instances on the left hand side. Then choose the instance you just created, and click connect button on top. It will you connect to your EC2 by giving you a example like:
 	```
-	ssh -i "loklak.pem" ubuntu@ec2-54-169-103-75.ap-southeast-1.compute.amazonaws.com
+	ssh -i "Susi.pem" ubuntu@ec2-54-169-103-75.ap-southeast-1.compute.amazonaws.com
 	```
 
 13. Once connected, we have to set up docker and add a 4G swapfile to prevent lack of memory:
@@ -112,15 +112,15 @@ cf ic login   (No credentials are necessary of you logged in to bluemix before
 	sudo apt-get install docker-engine
 	```
 
-14. Once docker is installed, we start our loklak-server by entering:
+14. Once docker is installed, we start our Susi-server by entering:
 	```
-	sudo docker pull mariobehling/loklak
-	sudo docker run -d -p 80:80 -p 443:443 mariobehling/loklak:latest
+	sudo docker pull mariobehling/Susi
+	sudo docker run -d -p 80:80 -p 443:443 mariobehling/Susi:latest
 	```
 
-15. Check if Loklak is running on your server, by going to your public DNS, e.g.: ```ec2-54-169-103-75.ap-southeast-1.compute.amazonaws.com```.
+15. Check if Susi is running on your server, by going to your public DNS, e.g.: ```ec2-54-169-103-75.ap-southeast-1.compute.amazonaws.com```.
 
-## Installing loklak on Google Cloud with Docker
+## Installing Susi on Google Cloud with Docker
 
 
 1. Go to [Google Cloud Free Trial](https://cloud.google.com/free-trial/) and sign up. You will get 300 dollars credit for 3 months.
@@ -158,18 +158,18 @@ sudo fallocate -l 4G /swapfile
 sudo chmod 600 /swapfile
 sudo mkswap /swapfile
 sudo swapon /swapfile
-sudo docker build https://github.com/loklak/loklak_server.git
+sudo docker build https://github.com/Susi/Susi_server.git
 ```
 
 Once finished, the last line will provide the image ID, like ```Successfully built 4e11208a7b34```. Copy or remember this id, we will need this id to tag the image.
-Tag your image by entering ```sudo docker tag YOUR_IMAGE_ID loklak```. In my case, we enter ```sudo docker tag 4e11208a7b34 loklak```
+Tag your image by entering ```sudo docker tag YOUR_IMAGE_ID Susi```. In my case, we enter ```sudo docker tag 4e11208a7b34 Susi```
 Run our server by entering:
 ```
-sudo docker run -d -p 80:80 -p 443:443 loklak
+sudo docker run -d -p 80:80 -p 443:443 Susi
 ```
 Enter your assigned IP address into your browser to check if it is working.
 
-## Installing loklak on DigitalOcean with Docker
+## Installing Susi on DigitalOcean with Docker
 
 [DigitalOcean](https://www.digitalocean.com) - simple cloud hosting, built for developers.
 
@@ -205,14 +205,14 @@ Enter your assigned IP address into your browser to check if it is working.
     Built:        Fri Nov 20 13:12:04 UTC 2015
     OS/Arch:      linux/amd64
    ```
-5. Pull Docker image from [Loklak repository](https://hub.docker.com/r/mariobehling/loklak/) in Docker Hub (it should take about a minute):
+5. Pull Docker image from [Susi repository](https://hub.docker.com/r/mariobehling/Susi/) in Docker Hub (it should take about a minute):
    ```bash
-   docker pull mariobehling/loklak
+   docker pull mariobehling/Susi
    ```
 
-6. OK, you're ready to run Loklak:
+6. OK, you're ready to run Susi:
    ```bash
-   docker run -d -p 80:80 -p 443:443 mariobehling/loklak:latest
+   docker run -d -p 80:80 -p 443:443 mariobehling/Susi:latest
    ```
 
-7. Go to your droplet IP using web browser. You should see Loklak main page.
+7. Go to your droplet IP using web browser. You should see Susi main page.

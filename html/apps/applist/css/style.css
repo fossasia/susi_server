@@ -1,10 +1,10 @@
 .content { 
 	width: 100%; 
-	margin: 0px auto; 
+	margin: 0 auto;
 }
 .span2 { 
 	width: 23%; 
-	padding: 0px;
+	padding: 0;
 	margin-right: 16px;
 	margin-bottom: 16px;
 	float: left;

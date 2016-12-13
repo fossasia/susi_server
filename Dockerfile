@@ -7,14 +7,14 @@ RUN apt-get update
 RUN apt-get upgrade -y
 
 # add packages
-RUN apt-get install -y git ant openjdk-8-jdk
+RUN apt-get install -y git gradle openjdk-8-jdk
 
 # clone the github repo
 RUN git clone https://github.com/loklak/loklak_server.git
 WORKDIR loklak_server
 
 # compile
-RUN ant
+RUN gradle run
 
 # Expose the web interface ports
 EXPOSE 80 443

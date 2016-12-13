@@ -40,13 +40,12 @@
       {"type":"pattern", "expression":"was heißt *"}
     ],
     "process":[ {"type":"console", "expression":"SELECT description FROM wikidata-de WHERE query='$1$';"},
-                {"type":"flow", "expression":"NOT $description$ = Wikipedia disambiguation page"} ],
+                {"type":"flow", "expression":"REJECT '$description$' MATCHING 'Wikipedia disambiguation page' PATTERN"} ],
     "actions":[ {"type":"answer", "select":"random", "phrases":[
       "$1$ ist $description$."
     ]}]
   },{
     "phrases":[
-      {"type":"regex", "expression":"rechne (\\(?\\d[\\s\\(\\)\\d\\+\\-\\/\\*\\.]*\\d\\)?)"},
       {"type":"regex", "expression":"berechne (\\(?\\d[\\s\\(\\)\\d\\+\\-\\/\\*\\.]*\\d\\)?)"},
       {"type":"regex", "expression":"was ist (\\(?\\d[\\s\\(\\)\\d\\+\\-\\/\\*\\.]*\\d\\)?)"},
       {"type":"regex", "expression":"rechne aus (\\(?\\d[\\s\\(\\)\\d\\+\\-\\/\\*\\.]*\\d\\)?)"},
