@@ -77,6 +77,8 @@ public class SusiInteraction {
             Collection<JSONObject> actions = argument.getActions().stream()
                     .map(action -> action.apply(argument, mind, client).toJSONClone())
                     .collect(Collectors.toList());
+            // the 'apply' method has a possible side-effect on the argument - it can append objects to it
+            // therefore the mindmeld must be done after action application to get those latest changes
             SusiThought answer = argument.mindmeld(true);
             answer.put("actions", actions);
             return answer;
@@ -91,17 +93,34 @@ public class SusiInteraction {
         return AbstractObjectEntry.utcFormatter.parseDateTime(d).toDate();
     }
 
-    public String getAnswer() {
-        if (!this.json.has("answers")) return "";
-        JSONArray a = this.json.getJSONArray("answers");
-        if (a.length() == 0) return "";
-        JSONObject b = a.getJSONObject(0);
-        if (!b.has("actions")) return "";
-        JSONArray c = b.getJSONArray("actions");
-        if (c.length() == 0) return "";
-        JSONObject d = c.getJSONObject(0);
-        if (!d.has("expression")) return "";
-        return d.getString("expression");
+    /**
+     * The answer of an interaction contains a list of the mind-melted arguments as one thought
+     * @return a list of answer thoughts
+     */
+    public List<SusiThought> getAnswers() {
+        List<SusiThought> answers = new ArrayList<>();
+        if (this.json.has("answers")) {
+            JSONArray a = this.json.getJSONArray("answers");
+            for (int i = 0; i < a.length(); i++) answers.add(new SusiThought(a.getJSONObject(i)));
+        }
+        return answers;
+    }
+    
+    /**
+     * the expression of an interaction is the actual string that comes out as response to
+     * actions of the user
+     * @return a response string
+     */
+    public String getExpression() {
+        List<SusiThought> answers = getAnswers();
+        if (answers == null || answers.size() == 0) return "";
+        SusiThought t = answers.get(0);
+        List<SusiAction> actions = t.getActions();
+        if (actions == null || actions.size() == 0) return "";
+        SusiAction a = actions.get(0);
+        List<String> phrases = a.getPhrases();
+        if (phrases == null || phrases.size() == 0) return "";
+        return phrases.get(0);
     }
     
     /**
