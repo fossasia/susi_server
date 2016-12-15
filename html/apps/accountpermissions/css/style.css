@@ -25,8 +25,7 @@ h1 {
     float: left;
     padding: 4%;
     margin: 4%;
-    border-style: solid;
-    border-width: 3px;
+    border: 3px solid;
     border-radius: 5px;
 }
 

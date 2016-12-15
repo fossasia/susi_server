@@ -1,13 +1,13 @@
 $(document).ready(function()
 {
-    var emailerr = false, session = true;
+    let emailerr = false, session = true;
 
     $('#submit').click(function(){
         checkEmpty();
         if(emailerr){
             $('#status-box').text("Please fill email");
         } else{
-            var mail = $('#email').val();
+            const mail = $('#email').val();
             $.ajax( "/aaa/recoverpassword.json", {
                 data: { forgotemail: mail },
                 dataType: 'json',
@@ -33,7 +33,7 @@ $(document).ready(function()
     }
 
     function checkEmpty(){
-        var emailval = $('#email').val();
+        let emailval = $('#email').val();
         if(!emailval && !($('#email').is(":focus"))){
             $('#emailfield').text("Required field!");
             $('#email').removeClass();

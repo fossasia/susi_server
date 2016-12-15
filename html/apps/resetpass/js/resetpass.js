@@ -1,17 +1,17 @@
 $(document).ready(function()
 {
-	var passerr = false, confirmerr = false, tokenerr = false;
+	let passerr = false, confirmerr = false, tokenerr = false;
 
 	// get password parameters
-	var regex;
-	var urltoken = getParameter('token');
+	let regex;
+	const urltoken = getParameter('token');
 
 	$.ajax(	"/aaa/recoverpassword.json", {
 		data: { getParameters: true, token: urltoken },
 		dataType: 'json',
 		success: function (response) {
 			regex = response.regex;
-			var regexTooltip = response.regexTooltip;
+			const regexTooltip = response.regexTooltip;
 			$('#pass').tooltip({'trigger':'focus', 'placement': 'left', 'title': regexTooltip});
 			$('#status-box').text(response.message);
 			tokenerr = false;
@@ -43,11 +43,11 @@ $(document).ready(function()
 
 	$('#confirmpass').focus(function(){
 		checkEmpty();
-	})
+	});
 
 	$('#confirmpass').keyup(function(){
-		var pass = $('#pass').val();
-		var confirmpass = $(this).val();
+		const pass = $('#pass').val();
+		const confirmpass = $(this).val();
 		if(confirmpass){
 			$(this).removeClass();
 			$('#matching').removeClass();
@@ -69,9 +69,9 @@ $(document).ready(function()
 
 	$('#resetbut').click(function(){
 		checkEmpty();
-		var total = passerr || confirmerr || tokenerr;
+		let total = passerr || confirmerr || tokenerr;
 		if(!total){
-			var newpass = $('#pass').val();
+			const newpass = $('#pass').val();
 
 			$.ajax(	"/aaa/resetpassword.json", {
 				data: { token: urltoken, newpass: newpass },
@@ -103,7 +103,7 @@ $(document).ready(function()
 
 	function strengthlvl(pass){
 
-		var strength = 0;
+		let strength = 0;
 		$('#passtrength').removeClass();
 		if(pass.length == 0){
 			return "";
@@ -153,8 +153,8 @@ $(document).ready(function()
     }
 
     function checkEmpty(){
-    	var passval = $('#pass').val();
-    	var confirmval = $('#confirmpass').val();
+    	let passval = $('#pass').val();
+    	let confirmval = $('#confirmpass').val();
     	if(!passval && !($('#pass').is(":focus"))){
     		$('#passtrength').text("Required field!");
     		$('#pass').removeClass();
@@ -174,10 +174,10 @@ $(document).ready(function()
     }
 
     function getParameter(theParameter) { 
-    	var params = window.location.search.substr(1).split('&');
+    	const params = window.location.search.substr(1).split('&');
     	
-    	for (var i = 0; i < params.length; i++) {
-    		var p=params[i].split('=');
+    	for (let i = 0; i < params.length; i++) {
+    		const p = params[i].split('=');
     		if (p[0] == theParameter) {
     			return p[1];
     		}   

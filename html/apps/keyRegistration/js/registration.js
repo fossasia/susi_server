@@ -1,18 +1,18 @@
 $(document).ready(function()
 {
-    var self = $('#self').prop("checked");
+    let self = $('#self').prop("checked");
     self ? $('#email').addClass("hidden") : $('#email').removeClass("hidden");
-    var create = $('#create').prop("checked");
+    let create = $('#create').prop("checked");
     create ? $('#key').addClass("hidden") : $('#key').removeClass("hidden");
     create ? $('#typeSelect').addClass("hidden") : $('#typeSelect').removeClass("hidden");
     create ? $('#type_label').addClass("hidden") : $('#type_label').removeClass("hidden");
     create ? $('#keysizeSelect').removeClass("hidden") : $('#keysizeSelect').addClass("hidden");
     create ? $('#keysize_label').removeClass("hidden") : $('#keysize_label').addClass("hidden");
 
-    var algorithms;
+    let algorithms;
 
 	// get password parameters
-	var regex;
+	let regex;
     $.ajax(	"/aaa/pubkey_registration.json", {
         data: { getParameters: true },
         dataType: 'json',
@@ -39,7 +39,7 @@ $(document).ready(function()
                 });
 
                 algorithms = response.algorithms;
-                var keySizeSet = false;
+                let keySizeSet = false;
                 $.each(algorithms, function (algorithm, algorithmObject) {
                     $('#algorithmSelect').append($('<option>', {
                         value : algorithm,
@@ -99,10 +99,10 @@ $(document).ready(function()
 
     $('#register').click(function(){
         if(requiredFieldsSet()){
-            var mail = encodeURIComponent($('#email').val());
-            var key = encodeURIComponent($('#key').val());
+            const mail = encodeURIComponent($('#email').val());
+            const key = encodeURIComponent($('#key').val());
 
-            var data = {};
+            const data = {};
             data["algorithm"] = algorithmSelect.value;
             if(!self) data["id"] = mail;
             if(create){
@@ -156,10 +156,10 @@ $(document).ready(function()
     }
 
     function requiredFieldsSet(){
-        var emailval = $('#email').val();
-        var keyval = $('#key').val();
+        let emailval = $('#email').val();
+        let keyval = $('#key').val();
 
-        var result = true;
+        let result = true;
 
         if(!self && !emailval && !($('#email').is(":focus"))){
             $('#valid').text("Required field!");

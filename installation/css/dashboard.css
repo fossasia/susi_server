@@ -145,8 +145,8 @@ body {
 }
 
 .main, .col-sm-9, .col-sm-offset-3, .col-md-10, .col-md-offset-2{
-  padding-bottom: 0px;
-  margin-bottom: 0px;
+  padding-bottom: 0;
+  margin-bottom: 0;
 }
 
 section{

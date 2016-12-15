@@ -1,4 +1,4 @@
-var app = angular.module("loklak", ['ngRoute']);
+const app = angular.module("loklak", ['ngRoute']);
 app.controller("status", function($scope, $http) {
   $http.get("/aggregation/status.json").
     success(function(data, status, headers, config) {
@@ -14,7 +14,7 @@ app.controller("search", function($scope, $http) {
       $scope.results = [];
       $http.get("/aaa/search.json?q=" + $scope.query).
         success(function(data, status, headers, config) {
-          for (var i = 0; i < data.statuses.length; i++) {
+          for (let i = 0; i < data.statuses.length; i++) {
             $scope.results.push(data.statuses[i].text);
           }
         });
@@ -32,12 +32,12 @@ app.filter("reverse", function() {
 });
 
 angular.element(document).ready(function () {
-  var navString = "";
-  var winLocation = window.location.href;
+  let navString = "";
+  const winLocation = window.location.href;
   $.getJSON("/cms/topmenu.json", function(data) {
     navItems = data.items;
     navItems = navItems.reverse();
-    var count = 0;
+    let count = 0;
     $.each( navItems, function(index, itemData) {
       name = Object.keys(itemData);
       link = itemData[name];
@@ -54,7 +54,7 @@ angular.element(document).ready(function () {
         liItem += "<a href='\/"+link+"'>"+name+"</a></li>";
       }
       liItem = $(liItem);
-      $('#navbar > ul').prepend(liItem);
+      $('#navbar').find('> ul').prepend(liItem);
     });
   });
 });

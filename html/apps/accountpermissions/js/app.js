@@ -14,9 +14,9 @@ $(document).ready(function()
 			});
 			$("#ParentUserRole").children().first().append(response.userRole);
 		},
-		error (xhr, ajaxOptions, thrownError) {
+		error (xhr, ajaxOptions) {
 			$("#notLoggedIn").removeClass("hidden");
-			return;
+
 		}
 	});
 
@@ -31,8 +31,8 @@ $(document).ready(function()
 	});
 
 	$(document).on("click",".serviceTitle",function(){
-		var obj = $(this).parent();
-		var child = obj.children("div").first();
+		const obj = $(this).parent();
+		const child = obj.children("div").first();
 
 		if(child.attr("valueSet") === "false"){
 			child.hide();

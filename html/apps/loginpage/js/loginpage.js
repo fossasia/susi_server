@@ -29,10 +29,10 @@ $(document).ready(function()
     $("#remember").click(function(){setRemember();});
     setRemember();
 
-	var optionsLogin = {
-        url:        "/aaa/login.json",
-        type:       "get",
-        dataType:   "json",
+	const optionsLogin = {
+        url: "/aaa/login.json",
+        type: "get",
+        dataType: "json",
         success(response) {
             window.location = "/apps/applist/index.html";
         },
@@ -47,10 +47,10 @@ $(document).ready(function()
         return false;
     });
 
-    var optionsLogout = {
-        url:        "/aaa/login.json",
-        type:       "get",
-        dataType:   "json",
+    const optionsLogout = {
+        url: "/aaa/login.json",
+        type: "get",
+        dataType: "json",
         success(response) {
             $("#loginForm").removeClass("hidden");
             $("#logoutForm").addClass("hidden");

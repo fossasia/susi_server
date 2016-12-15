@@ -10,7 +10,7 @@
     <script src="../../js/angular-touch.min.js"></script>
     <link href="../../css/dashboard.css" rel="stylesheet">
     <link href="css/style.css" rel="stylesheet"/>
-    <!link href="css/animate.css" rel="stylesheet"/>
+    <!--<link href="css/animate.css" rel="stylesheet"/>-->
     <script src="./app_list.js"></script>
     <!--#include file="../../../ssi/common_head_back.include" -->
     <!--#include file="../../../data/ssi/custom_head.include" -->
@@ -79,8 +79,8 @@
       </body>
   <script>
     $(document).ready(function() {
-      var headLocation = window.location;
-      var pathName = headLocation.pathname;
+        const headLocation = window.location;
+        const pathName = headLocation.pathname;
       if (pathName == "/apps/applist/") {
         console.log('Need to refresh');
         window.location.replace("/apps/applist/index.html");

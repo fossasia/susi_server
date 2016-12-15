@@ -22,19 +22,19 @@ $(document).ready(function() {
     // javascript fallback support
     if (!String.prototype.endsWith) {
       String.prototype.endsWith = function(searchString, position) {
-          var subjectString = this.toString();
+          const subjectString = this.toString();
           if (typeof position !== "number" || !isFinite(position) || Math.floor(position) !== position || position > subjectString.length) {
             position = subjectString.length;
           }
           position -= searchString.length;
-          var lastIndex = subjectString.indexOf(searchString, position);
+          const lastIndex = subjectString.indexOf(searchString, position);
           return lastIndex !== -1 && lastIndex === position;
       };
     }
 
     // global variables
-    var installationApiPath = "/cms/installation.json";
-    var nextButton;
+    const installationApiPath = "/cms/installation.json";
+    let nextButton;
 
     // prevent side from unloading
 
@@ -45,10 +45,10 @@ $(document).ready(function() {
 
     // submit form via ajax
 
-    var optionsRestart = {
-        url:            installationApiPath,
-        type:           "get",
-        dataType:       "json"
+    const optionsRestart = {
+        url: installationApiPath,
+        type: "get",
+        dataType: "json"
     };
 
     function showRestart(){
@@ -72,12 +72,12 @@ $(document).ready(function() {
         alert("An error occured: " + thrownError);
     }
 
-    var options = {
-        success:        finish,   // post-submit callback
-        error:          showError,      // on error
-        url:            installationApiPath,
-        type:           "get",
-        dataType:       "json"
+    const options = {
+        success: finish,   // post-submit callback
+        error: showError,      // on error
+        url: installationApiPath,
+        type: "get",
+        dataType: "json"
     };
 
     $("#submit").click(function(){
@@ -115,11 +115,11 @@ $(document).ready(function() {
 
     // admin settings page
 
-    var adminEmail = $("#admin_email")[0];
-    var adminPassword = $("#admin_password")[0];
-    var adminConfirmPassword = $("#admin_password_confirm")[0];
-    var adminLocalOnly = $("#admin_local_only_hidden")[0];
-    var passwordsMatch = false;
+    const adminEmail = $("#admin_email")[0];
+    const adminPassword = $("#admin_password")[0];
+    const adminConfirmPassword = $("#admin_password_confirm")[0];
+    const adminLocalOnly = $("#admin_local_only_hidden")[0];
+    let passwordsMatch = false;
 
     function checkStep0(){
 
@@ -169,10 +169,10 @@ $(document).ready(function() {
 
     // general settings page
 
-    var shortlinkValue;
+    let shortlinkValue;
     // set current url
     function setUrl(){
-        var url = $(location).attr("href");
+        let url = $(location).attr("href");
         if(url.endsWith("index.html")){
             url = url.slice(0,-"index.html".length);
         }
@@ -185,11 +185,11 @@ $(document).ready(function() {
     }
     setUrl();
 
-    var hostUrl = $("#host_url")[0];
-    var shortlinkUrl = $("#shortlink_url")[0];
-    var peername = $("#peername")[0];
-    var backends = $("#backends")[0];
-    var backendPush = $("#backend_push_hidden")[0];
+    const hostUrl = $("#host_url")[0];
+    const shortlinkUrl = $("#shortlink_url")[0];
+    const peername = $("#peername")[0];
+    const backends = $("#backends")[0];
+    const backendPush = $("#backend_push_hidden")[0];
 
     function checkStep2(){
         if(hostUrl.checkValidity()
@@ -249,14 +249,14 @@ $(document).ready(function() {
 
     // smtp settings
 
-    var smtpHost = $("#smtp_host")[0];
-    var smtpEmail = $("#smtp_email")[0];
-    var smtpDisplayname = $("#smtp_displayname")[0];
-    var smtpUsername = $("#smtp_username")[0];
-    var smtpPassword = $("#smtp_password")[0];
-    var smtpPort = $("#smtp_port")[0];
-    var smtpEncryption = $("#smtp_encryption")[0];
-    var smtpDisableCertificateChecking = $("#smtp_disable_certificate_checking_hidden")[0];
+    const smtpHost = $("#smtp_host")[0];
+    const smtpEmail = $("#smtp_email")[0];
+    const smtpDisplayname = $("#smtp_displayname")[0];
+    const smtpUsername = $("#smtp_username")[0];
+    const smtpPassword = $("#smtp_password")[0];
+    const smtpPort = $("#smtp_port")[0];
+    const smtpEncryption = $("#smtp_encryption")[0];
+    const smtpDisableCertificateChecking = $("#smtp_disable_certificate_checking_hidden")[0];
 
     function checkStep3(){
         if(smtpHost.checkValidity()
@@ -307,7 +307,7 @@ $(document).ready(function() {
     }
 
     // if email registration is enabled, make smtp settings mandatory
-    var smtpEnabledValue = $("#smtp_enabled").is(":checked");
+    let smtpEnabledValue = $("#smtp_enabled").is(":checked");
     function setEmailRequired(){
         if($("#user_registration_confirmation").val() === "email"){
             smtpEnabledValue = $("#smtp_enabled").is(":checked");
@@ -392,13 +392,13 @@ $(document).ready(function() {
 
     // https settings
 
-    var certificatesTrustSelfsigned = $("#certificates_trust_selfsigned")[0];
-    var httpsMode = $("#https_mode")[0];
-    var httpsKeySource = $("#https_key_source")[0];
-    var httpsKeyStore = $("#https_keystore_name")[0];
-    var httpsKeyStorePW = $("#https_keystore_password")[0];
-    var httpsKey = $("#https_key")[0];
-    var httpsCert = $("#https_cert")[0];
+    const certificatesTrustSelfsigned = $("#certificates_trust_selfsigned")[0];
+    const httpsMode = $("#https_mode")[0];
+    const httpsKeySource = $("#https_key_source")[0];
+    const httpsKeyStore = $("#https_keystore_name")[0];
+    const httpsKeyStorePW = $("#https_keystore_password")[0];
+    const httpsKey = $("#https_key")[0];
+    const httpsCert = $("#https_cert")[0];
 
     function checkStep4(){
         if(certificatesTrustSelfsigned.checkValidity()
@@ -472,8 +472,8 @@ $(document).ready(function() {
     // summary
 
     function setSummary(){
-        var summary = $("#summary");
-        var showPasswords = $("#summary_show_passwords").is(":checked");
+        const summary = $("#summary");
+        const showPasswords = $("#summary_show_passwords").is(":checked");
 
         summary.val("Admin settings");
         summary.val(summary.val() + "\nAdmin email: " + $("#admin_email").val());
