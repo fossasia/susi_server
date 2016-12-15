@@ -123,7 +123,7 @@ public class SusiPhrase {
         StringBuffer sb = new StringBuffer();
         for (int i = 0; i < expression.length(); i++) {
             char c = expression.charAt(i);
-            if ((c >= '0' && c <= '9') || (c >= 'a' && c <= 'z') ||(c >= 'A' && c <= 'Z')) sb.append(c);
+            if (Character.isLetter(c) || Character.isDigit(c) || c == ' ') sb.append(c);
         }
         return sb.toString();
     }
