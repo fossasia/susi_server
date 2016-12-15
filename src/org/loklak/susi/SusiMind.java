@@ -335,7 +335,7 @@ public class SusiMind {
             r.forEach(rule -> ideas.add(new SusiIdea(rule).setIntent(token)));
         });
         
-        //for (SusiIdea idea: ideas) System.out.println("idea.phrase-1:" + idea.getRule().getPhrases().toString());
+        //for (SusiIdea idea: ideas) System.out.println("idea.phrase-1: score=" + idea.getRule().getScore() + " : " + idea.getRule().getPhrases().toString() + " " + idea.getRule().getActionsClone());
         
         // add catchall rules always (those are the 'bad ideas')
         Collection<SusiRule> ca = this.ruletrigger.get(SusiRule.CATCHALL_KEY);
@@ -355,7 +355,7 @@ public class SusiMind {
         // make a sorted list of all ideas
         ideas.clear(); scored.values().forEach(r -> ideas.addAll(r));
         
-        //for (SusiIdea idea: ideas) System.out.println("idea.phrase-2: score=" + idea.getRule().getScore() + " : " + idea.getRule().getPhrases().toString());
+        //for (SusiIdea idea: ideas) System.out.println("idea.phrase-2: score=" + idea.getRule().getScore() + " : " + idea.getRule().getPhrases().toString() + " " + idea.getRule().getActionsClone());
         
         // test ideas and collect those which match up to maxcount
         List<SusiIdea> plausibleIdeas = new ArrayList<>(Math.min(10, maxcount));
@@ -367,9 +367,9 @@ public class SusiMind {
             plausibleIdeas.add(idea);
             if (plausibleIdeas.size() >= maxcount) break;
         }
-        
-        for (SusiIdea idea: plausibleIdeas) System.out.println("idea.phrase-3: score=" + idea.getRule().getScore() + " : " + idea.getRule().getPhrases().toString());
-        
+
+        for (SusiIdea idea: plausibleIdeas) System.out.println("idea.phrase-3: score=" + idea.getRule().getScore() + " : " + idea.getRule().getPhrases().toString() + " " + idea.getRule().getActionsClone());
+
         return plausibleIdeas;
     }
     

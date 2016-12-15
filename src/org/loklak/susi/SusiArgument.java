@@ -79,6 +79,7 @@ public class SusiArgument implements Iterable<SusiThought> {
      * it's done with git commits.
      * The mindmeld also should have the ability to 'overwrite' old values with new ones. That is done
      * by considering the new values in a order which makes them more visible than the value before.
+     * @param reverse if true, then the latest thought of the argument becomes the primary data
      * @return the squashed thoughts from an argument as one thought
      */
     public SusiThought mindmeld(boolean reverse) {
@@ -162,6 +163,7 @@ public class SusiArgument implements Iterable<SusiThought> {
      */
     public String unify(String statement, int depth) {
         for (SusiThought t: this) {
+            // this uses our iterator which iterates in reverse order. That means, latest thought is first returned
             if (depth-- < 0) break;
             statement = t.unify(statement);
             if (!SusiThought.variable_pattern.matcher(statement).find()) return statement;
