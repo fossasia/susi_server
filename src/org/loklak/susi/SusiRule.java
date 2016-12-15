@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
 import org.json.JSONArray;
@@ -192,6 +193,8 @@ public class SusiRule {
         return this.id;
     }
     
+    private final static Pattern SPACE_PATTERN = Pattern.compile(" ");
+    
     /**
      * if no keys are given, we compute them from the given phrases
      * @param phrases
@@ -199,22 +202,42 @@ public class SusiRule {
      */
     private static JSONArray computeKeysFromPhrases(List<SusiPhrase> phrases) {
         Set<String> t = new LinkedHashSet<>();
-        // collect all token
+        
+        // create a list of token sets from the phrases
+        List<Set<String>> ptl = new ArrayList<>();
         phrases.forEach(phrase -> {
-            for (String token: phrase.getPattern().toString().split(" ")) {
+            Set<String> s = new HashSet<>();
+            for (String token: SPACE_PATTERN.split(phrase.getPattern().toString())) {
                 String m = SusiPhrase.extractMeat(token.toLowerCase());
-                if (m.length() > 2) t.add(m);
+                if (m.length() > 1) s.add(m);
             }
+            ptl.add(s);
         });
+        
+        // collect all token
+        ptl.forEach(set -> set.forEach(token -> t.add(token)));
+        
+        // if no tokens are available, return the catchall key
+        JSONArray a = new JSONArray();
+        if (t.size() == 0) return a.put(CATCHALL_KEY);
+        
+        // make a copy to make it possible to use the original key set again
+        Set<String> tc = new LinkedHashSet<>();
+        t.forEach(c -> tc.add(c));
+        
         // remove all token that do not appear in all phrases
-        phrases.forEach(phrase -> {
-            String p = phrase.getPattern().toString().toLowerCase();
+        ptl.forEach(set -> {
             Iterator<String> i = t.iterator();
-            while (i.hasNext()) if (p.indexOf(i.next()) < 0) i.remove();
-        });        
-        // if no token is left, use the catchall-key
-        if (t.size() == 0) return new JSONArray().put(CATCHALL_KEY);
-        // use the first token
+            while (i.hasNext()) if (!set.contains(i.next())) i.remove();
+        });
+
+        // if no token is left, use the original tc set and add all keys
+        if (t.size() == 0) {
+            tc.forEach(c -> a.put(c));
+            return a;
+        }
+        
+        // use only the first token, because that appears in all the phrases
         return new JSONArray().put(t.iterator().next());
     }
     
