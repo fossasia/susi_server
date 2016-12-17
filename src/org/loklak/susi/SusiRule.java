@@ -26,6 +26,7 @@ import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -205,20 +206,27 @@ public class SusiRule {
         
         // create a list of token sets from the phrases
         List<Set<String>> ptl = new ArrayList<>();
+        final AtomicBoolean needsCatchall = new AtomicBoolean(false);
         phrases.forEach(phrase -> {
             Set<String> s = new HashSet<>();
             for (String token: SPACE_PATTERN.split(phrase.getPattern().toString())) {
                 String m = SusiPhrase.extractMeat(token.toLowerCase());
                 if (m.length() > 1) s.add(m);
             }
+            // if there is no meat inside, it will not be possible to access the rule without the catchall rule, so remember that
+            if (s.size() == 0) needsCatchall.set(true);
+            
             ptl.add(s);
         });
+        
+        // this is a kind of emergency case where we need a catchall rule because otherwise we cannot access one of the phrases
+        JSONArray a = new JSONArray();
+        if (needsCatchall.get()) return a.put(CATCHALL_KEY);
         
         // collect all token
         ptl.forEach(set -> set.forEach(token -> t.add(token)));
         
         // if no tokens are available, return the catchall key
-        JSONArray a = new JSONArray();
         if (t.size() == 0) return a.put(CATCHALL_KEY);
         
         // make a copy to make it possible to use the original key set again
@@ -242,7 +250,7 @@ public class SusiRule {
     }
     
     /**
-     * To simplify the check wether or not a rule could be applicable, a key set is provided which
+     * To simplify the check weather or not a rule could be applicable, a key set is provided which
      * must match with input tokens literally. This key check prevents too large numbers of phrase checks
      * thus increasing performance.
      * @return the keys which must appear in an input to allow that this rule can be applied

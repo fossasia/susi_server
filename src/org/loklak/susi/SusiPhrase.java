@@ -61,6 +61,7 @@ public class SusiPhrase {
     public SusiPhrase(JSONObject json) throws PatternSyntaxException {
         if (!json.has("expression")) throw new PatternSyntaxException("expression missing", "", 0);
         String expression = json.getString("expression").toLowerCase();
+        
         Type t = Type.pattern;
         if (json.has("type")) try {
             t = Type.valueOf(json.getString("type"));
@@ -119,7 +120,21 @@ public class SusiPhrase {
         return expression;
     }
     
+    public static boolean isRegularExpression(String expression) {
+        if (expression.indexOf('\\') >=0 || (expression.indexOf('(') >= 0 && expression.indexOf(')') >= 0) ) {
+            // this is a hint that this could be a regular expression.
+            // the meatsize of regular expressions must be 0, therefore we must check this in more detail
+            try {
+                Pattern.compile(expression);
+                return true;
+            } catch (PatternSyntaxException e) {}
+            // if this is not successful, go on
+        }
+        return false;
+    }
+    
     public static String extractMeat(String expression) {
+        if (isRegularExpression(expression)) return ""; // the meatsize of a regular expression is zero
         StringBuffer sb = new StringBuffer();
         for (int i = 0; i < expression.length(); i++) {
             char c = expression.charAt(i);
