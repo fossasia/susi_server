@@ -89,7 +89,7 @@ public class SusiLog {
         for (String c: this.root.list()) {
             getInteractions(c).forEach(i -> {
                 String query = i.getQuery().toLowerCase();
-                String answer = i.getAnswer();
+                String answer = i.getExpression();
                 if (query.length() > 0 && failset.contains(answer)) this.unanswered.add(query);
                 //System.out.println("** DEBUG user " + c + "; q = " + query + "; a = " + answer);
             });

@@ -151,9 +151,31 @@ public class SusiMind {
             // read content
             if (line.length() > 0 && lastLine.length() > 0) {
                 // mid of conversation (last answer is query for next rule)
-                JSONObject rule = SusiRule.simpleRule(lastLine.split("\\|"), line.split("\\|"), prior);
-                //System.out.println(rule.toString());
-                rules.put(rule);
+                String[] phrases = lastLine.split("\\|");
+                String condition = null;
+                int thenpos = -1;
+                if (line.startsWith("?") && (thenpos = line.indexOf(':')) > 0) {
+                    int elsepos = line.substring(thenpos + 1).indexOf(':') + thenpos + 1;
+                    condition = line.substring(1, thenpos).trim();
+                    if (elsepos <= thenpos) {
+                        // only if, no else
+                        String[] answers = line.substring(thenpos + 1).split("\\|");
+                        JSONObject rule = SusiRule.simpleRule(phrases, "IF " + condition, answers, prior);
+                        rules.put(rule);
+                    } else {
+                        String[] ifanswers = line.substring(thenpos + 1, elsepos).split("\\|");
+                        String[] elseanswers = line.substring(elsepos + 1).split("\\|");
+                        JSONObject ruleif = SusiRule.simpleRule(phrases, "IF " + condition, ifanswers, prior);
+                        JSONObject ruleelse = SusiRule.simpleRule(phrases, "NOT " + condition, elseanswers, prior);
+                        rules.put(ruleif);
+                        rules.put(ruleelse);
+                    }
+                } else {
+                    String[] answers = line.split("\\|");
+                    JSONObject rule = SusiRule.simpleRule(phrases, condition, answers, prior);
+                    //System.out.println(rule.toString());
+                    rules.put(rule);
+                }
             }
             lastLine = line;
         }} catch (IOException e) {}
@@ -207,7 +229,7 @@ public class SusiMind {
             }
         }
         if (phrases != null && answers != null) {
-            return SusiRule.simpleRule(phrases, answers, false);
+            return SusiRule.simpleRule(phrases, null, answers, false);
         }
         return null;
     }
@@ -249,10 +271,11 @@ public class SusiMind {
         });
 
         // add conversation rules
-        JSONArray rules = json.has("rules") ? json.getJSONArray("rules") : new JSONArray();
-        rules.forEach(j -> {
-            SusiRule rule = new SusiRule((JSONObject) j);
-            rule.getKeys().forEach(key -> {
+        JSONArray ruleset = json.has("rules") ? json.getJSONArray("rules") : new JSONArray();
+        ruleset.forEach(j -> {
+            List<SusiRule> rules = SusiRule.getRules((JSONObject) j);
+            rules.forEach(rule ->
+                rule.getKeys().forEach(key -> {
                     Set<SusiRule> l = this.ruletrigger.get(key);
                     if (l == null) {
                         l = new HashSet<>();
@@ -261,8 +284,9 @@ public class SusiMind {
                     l.add(rule);
                     rule.getPhrases().forEach(phrase -> this.logs.removeUnanswered(phrase.getPattern()));
                     //System.out.println("***DEBUG: ADD RULE FOR KEY " + key + ": " + rule.toString());
-                });
-            });
+                })
+            );
+        });
         
         return this;
     }
@@ -311,7 +335,7 @@ public class SusiMind {
             r.forEach(rule -> ideas.add(new SusiIdea(rule).setIntent(token)));
         });
         
-        //for (SusiIdea idea: ideas) System.out.println("idea.phrase-1:" + idea.getRule().getPhrases().toString());
+        //for (SusiIdea idea: ideas) System.out.println("idea.phrase-1: score=" + idea.getRule().getScore() + " : " + idea.getRule().getPhrases().toString() + " " + idea.getRule().getActionsClone());
         
         // add catchall rules always (those are the 'bad ideas')
         Collection<SusiRule> ca = this.ruletrigger.get(SusiRule.CATCHALL_KEY);
@@ -331,7 +355,7 @@ public class SusiMind {
         // make a sorted list of all ideas
         ideas.clear(); scored.values().forEach(r -> ideas.addAll(r));
         
-        //for (SusiIdea idea: ideas) System.out.println("idea.phrase-2: score=" + idea.getRule().getScore() + " : " + idea.getRule().getPhrases().toString());
+        //for (SusiIdea idea: ideas) System.out.println("idea.phrase-2: score=" + idea.getRule().getScore() + " : " + idea.getRule().getPhrases().toString() + " " + idea.getRule().getActionsClone());
         
         // test ideas and collect those which match up to maxcount
         List<SusiIdea> plausibleIdeas = new ArrayList<>(Math.min(10, maxcount));
@@ -343,9 +367,9 @@ public class SusiMind {
             plausibleIdeas.add(idea);
             if (plausibleIdeas.size() >= maxcount) break;
         }
-        
-        for (SusiIdea idea: plausibleIdeas) System.out.println("idea.phrase-3: score=" + idea.getRule().getScore() + " : " + idea.getRule().getPhrases().toString());
-        
+
+        for (SusiIdea idea: plausibleIdeas) System.out.println("idea.phrase-3: score=" + idea.getRule().getScore() + " : " + idea.getRule().getPhrases().toString() + " " + idea.getRule().getActionsClone());
+
         return plausibleIdeas;
     }
     

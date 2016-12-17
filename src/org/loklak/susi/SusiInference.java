@@ -30,7 +30,6 @@ import javax.script.ScriptException;
 import org.eclipse.jetty.util.log.Log;
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.loklak.SusiServer;
 import org.loklak.api.susi.ConsoleService;
 
 /**
@@ -65,6 +64,13 @@ public class SusiInference {
         this.json = json;
     }
 
+    public static JSONObject simpleMemoryProcess(String expression) {
+        JSONObject json = new JSONObject();
+        json.put("type", Type.memory.name());
+        json.put("expression", expression);
+        return json;
+    }
+    
     /**
      * Inferences may have different types. Each type selects inference methods inside the inference description.
      * While the inference description mostly has only one other attribute, the "expression" it might have more.
@@ -126,7 +132,7 @@ public class SusiInference {
             if (t.isFailed() || t.hasEmptyObservation("EXPECTED")) return new SusiThought(); // empty thought -> fail
             return t;
         });
-        memorySkill.put(Pattern.compile("IF\\h+?([^=]*?)\\h+?=\\h+?([^=]*)\\h*?"), (flow, matcher) -> {
+        memorySkill.put(Pattern.compile("IF\\h+?([^=]*?)\\h*=\\h*([^=]*)\\h*?"), (flow, matcher) -> {
             String expect = matcher.group(1), matching = matcher.group(2);
             SusiThought t = see(flow, "%1% AS EXPECTED", flow.unify(expect, 0), Pattern.compile(flow.unify(matching, 0)));
             if (t.isFailed() || t.hasEmptyObservation("EXPECTED")) return new SusiThought(); // empty thought -> fail
@@ -142,7 +148,7 @@ public class SusiInference {
             if (t.isFailed() || t.hasEmptyObservation("EXPECTED")) return new SusiThought().addObservation("REJECTED", reject);
             return new SusiThought(); // empty thought -> fail
         });
-        memorySkill.put(Pattern.compile("NOT\\h+?([^=]*?)\\h+?=\\h+?([^=]*)\\h*?"), (flow, matcher) -> {
+        memorySkill.put(Pattern.compile("NOT\\h+?([^=]*?)\\h*=\\h*([^=]*)\\h*?"), (flow, matcher) -> {
             String reject = matcher.group(1), matching = matcher.group(2);
             SusiThought t = see(flow, "%1% AS EXPECTED", flow.unify(reject, 0), Pattern.compile(flow.unify(matching, 0)));
             if (t.isFailed() || t.hasEmptyObservation("EXPECTED")) return new SusiThought().addObservation("REJECTED(" + matching + ")", reject);
@@ -184,11 +190,15 @@ public class SusiInference {
         SusiThought nextThought = new SusiThought();
         try {
             Matcher m = pattern.matcher(flow.unify(expr, 0));
-            int gc;
-            if (m.matches() && (gc = m.groupCount()) > 0) {
+            int gc = -1;
+            if (m.matches()) {
                 SusiTransfer transfer = new SusiTransfer(transferExpr);
                 JSONObject choice = new JSONObject();
-                for (int i = 0; i < gc; i++) choice.put("%" + (i+1) + "%", m.group(i));
+                if ((gc = m.groupCount()) > 0) {
+                    for (int i = 0; i < gc; i++) choice.put("%" + (i+1) + "%", m.group(i));
+                } else {
+                    choice.put("%1%", expr);
+                }
                 JSONObject seeing = transfer.extract(choice);
                 for (String key: seeing.keySet()) {
                     String observed = seeing.getString(key);

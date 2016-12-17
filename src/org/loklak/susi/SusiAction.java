@@ -23,6 +23,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Random;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -37,7 +39,9 @@ public class SusiAction {
     public static enum RenderType {answer, table, piechart, rss, self, websearch, anchor, map;}
     public static enum SelectionType {random, roundrobin;}
     public static enum DialogType {
-        answer, question, reply;
+        answer,    // a sentence which may end a conversation
+        question,  // a sentence which may cause that the user answers with a fact
+        reply;     // a response of an answers of the user from a question aked by sudy
         public int getSubscore() {
             return this.ordinal();
         }
@@ -61,7 +65,7 @@ public class SusiAction {
         json.put("type", RenderType.answer.name());
         json.put("select", SelectionType.random.name());
         json.put("phrases", phrases);
-        for (String answer: answers) phrases.put(answer);
+        for (String answer: answers) phrases.put(answer.trim());
         return json;
     }
     
@@ -92,7 +96,7 @@ public class SusiAction {
     }
     
     public static DialogType getDialogType(String phrase) {
-        if (phrase.endsWith("?")) {
+        if (phrase.indexOf('?') > 3) { // the question mark must not be at the beginning
             return phrase.indexOf(". ") >= 0 ? DialogType.reply : DialogType.question;
         }
         return DialogType.answer;
@@ -134,6 +138,9 @@ public class SusiAction {
     public int getIntAttr(String attr) {
         return this.json.has(attr) ? this.json.getInt(attr) : 0;
     }
+
+    final static Pattern visible_assignment = Pattern.compile("(?:(?:.*)[\\?\\!\\h,\\.;-])+([^\\^]+?)>([_a-zA-Z0-9]+)(?:[\\?\\!\\h,\\.;-](?:.*))?+");
+    final static Pattern blind_assignment = Pattern.compile("(?:.*)\\^(.*?)\\^>([_a-zA-Z0-9]+)(?:[\\?\\!\\h,\\.;-](?:.*))?+");
     
     /**
      * Action descriptions are templates for data content. Strings may refer to arguments from
@@ -151,8 +158,27 @@ public class SusiAction {
             String phrase = a.get(random.nextInt(a.size()));
             String expression = thoughts.unify(phrase);
             if (expression != null) {
+                // transform the answer according to the data
+                // this is the final chance that we can add another thought according to a memorizing rule in the answer string
+                Matcher m;
+                while ((m = visible_assignment.matcher(expression)).matches()) {
+                    String observation = m.group(1);
+                    String variable = m.group(2);
+                    expression = expression.substring(0, m.end(1)) + expression.substring(m.end(2));
+                    // write the variable v as side-effect into the thoughts argument
+                    thoughts.think(new SusiThought().addObservation(variable, observation));
+                }
+                while ((m = blind_assignment.matcher(expression)).matches()) {
+                    String observation = m.group(1);
+                    String variable = m.group(2);
+                    expression = expression.substring(0, m.start(1) - 1) + expression.substring(m.end(2));
+                    // write the variable v as side-effect into the thoughts argument
+                    thoughts.think(new SusiThought().addObservation(variable, observation));
+                }
+                
+                // find an response type: self-recursion or answer
                 if (this.getRenderType() == RenderType.answer) {
-                    // transform the answer according to the data
+                    // the expression is answered to the communication partner
                     this.json.put("expression", expression);
                 }
                 if (this.getRenderType() == RenderType.self) {

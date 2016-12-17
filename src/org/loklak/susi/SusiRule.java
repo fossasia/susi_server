@@ -26,8 +26,10 @@ import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
 import org.json.JSONArray;
@@ -55,11 +57,36 @@ public class SusiRule {
     private int id;
     
     /**
+     * Generate a set of rules from a single rule definition. This may be possible if the rule contains an 'options'
+     * object which creates a set of rules, one for each option. The options combine with one set of phrases
+     * @param json - a multi-rule definition
+     * @return a set of rules
+     */
+    public static List<SusiRule> getRules(JSONObject json) {
+        if (!json.has("phrases")) throw new PatternSyntaxException("phrases missing", "", 0);
+        final List<SusiRule> rules = new ArrayList<>();
+        if (json.has("options")) {
+            JSONArray options = json.getJSONArray("options");
+            for (int i = 0; i < options.length(); i++) {
+                JSONObject option = new JSONObject();
+                option.put("phrases", json.get("phrases"));
+                JSONObject or = options.getJSONObject(i);
+                for (String k: or.keySet()) option.put(k, or.get(k));
+                rules.add(new SusiRule(option));
+            }
+        } else {
+            SusiRule rule = new SusiRule(json);
+            rules.add(rule);
+        }
+        return rules;
+    }
+    
+    /**
      * Create a rule by parsing of the rule description
      * @param json the rule description
      * @throws PatternSyntaxException
      */
-    public SusiRule(JSONObject json) throws PatternSyntaxException {
+    private SusiRule(JSONObject json) throws PatternSyntaxException {
         
         // extract the phrases and the phrases subscore
         if (!json.has("phrases")) throw new PatternSyntaxException("phrases missing", "", 0);
@@ -125,12 +152,22 @@ public class SusiRule {
         return json;
     }
     
-    public static JSONObject simpleRule(String[] phrases, String[] answers, boolean prior) {
+    public static JSONObject simpleRule(String[] phrases, String condition, String[] answers, boolean prior) {
         JSONObject json = new JSONObject();
 
+        // write phrases
         JSONArray p = new JSONArray();
         json.put("phrases", p);
-        for (String phrase: phrases) p.put(SusiPhrase.simplePhrase(phrase, prior));
+        for (String phrase: phrases) p.put(SusiPhrase.simplePhrase(phrase.trim(), prior));
+        
+        // write conditions (if any)
+        if (condition != null && condition.length() > 0) {
+            JSONArray c = new JSONArray();
+            json.put("process", c);
+            c.put(SusiInference.simpleMemoryProcess(condition));   
+        }
+        
+        // write actions
         JSONArray a = new JSONArray();
         json.put("actions", a);
         a.put(SusiAction.simpleAction(answers));        
@@ -149,13 +186,15 @@ public class SusiRule {
             "\"}\";\n";
         return s;
         */
-        return this.phrases.get(0).toString();
+        return this.phrases.toString();
     }
 
     
     public long getID() {
         return this.id;
     }
+    
+    private final static Pattern SPACE_PATTERN = Pattern.compile(" ");
     
     /**
      * if no keys are given, we compute them from the given phrases
@@ -164,27 +203,54 @@ public class SusiRule {
      */
     private static JSONArray computeKeysFromPhrases(List<SusiPhrase> phrases) {
         Set<String> t = new LinkedHashSet<>();
-        // collect all token
+        
+        // create a list of token sets from the phrases
+        List<Set<String>> ptl = new ArrayList<>();
+        final AtomicBoolean needsCatchall = new AtomicBoolean(false);
         phrases.forEach(phrase -> {
-            for (String token: phrase.getPattern().toString().split(" ")) {
+            Set<String> s = new HashSet<>();
+            for (String token: SPACE_PATTERN.split(phrase.getPattern().toString())) {
                 String m = SusiPhrase.extractMeat(token.toLowerCase());
-                if (m.length() > 2) t.add(m);
+                if (m.length() > 1) s.add(m);
             }
+            // if there is no meat inside, it will not be possible to access the rule without the catchall rule, so remember that
+            if (s.size() == 0) needsCatchall.set(true);
+            
+            ptl.add(s);
         });
+        
+        // this is a kind of emergency case where we need a catchall rule because otherwise we cannot access one of the phrases
+        JSONArray a = new JSONArray();
+        if (needsCatchall.get()) return a.put(CATCHALL_KEY);
+        
+        // collect all token
+        ptl.forEach(set -> set.forEach(token -> t.add(token)));
+        
+        // if no tokens are available, return the catchall key
+        if (t.size() == 0) return a.put(CATCHALL_KEY);
+        
+        // make a copy to make it possible to use the original key set again
+        Set<String> tc = new LinkedHashSet<>();
+        t.forEach(c -> tc.add(c));
+        
         // remove all token that do not appear in all phrases
-        phrases.forEach(phrase -> {
-            String p = phrase.getPattern().toString().toLowerCase();
+        ptl.forEach(set -> {
             Iterator<String> i = t.iterator();
-            while (i.hasNext()) if (p.indexOf(i.next()) < 0) i.remove();
-        });        
-        // if no token is left, use the catchall-key
-        if (t.size() == 0) return new JSONArray().put(CATCHALL_KEY);
-        // use the first token
+            while (i.hasNext()) if (!set.contains(i.next())) i.remove();
+        });
+
+        // if no token is left, use the original tc set and add all keys
+        if (t.size() == 0) {
+            tc.forEach(c -> a.put(c));
+            return a;
+        }
+        
+        // use only the first token, because that appears in all the phrases
         return new JSONArray().put(t.iterator().next());
     }
     
     /**
-     * To simplify the check wether or not a rule could be applicable, a key set is provided which
+     * To simplify the check weather or not a rule could be applicable, a key set is provided which
      * must match with input tokens literally. This key check prevents too large numbers of phrase checks
      * thus increasing performance.
      * @return the keys which must appear in an input to allow that this rule can be applied
@@ -350,7 +416,7 @@ public class SusiRule {
         
         // that argument is filled with an idea which consist of the query where we extract the identified data entities
         alternatives: for (Matcher matcher: this.matcher(query)) {
-            if (!matcher.matches()) continue; // important! the for loop interates all rules where find() applies, not matches()!
+            if (!matcher.matches()) continue;
             SusiThought keynote = new SusiThought(matcher);
             if (intent != null) {
                 keynote.addObservation("intent_original", intent.original);
@@ -372,7 +438,7 @@ public class SusiRule {
             }
             
             // we deduced thoughts from the inferences in the rules. Now apply the actions of rule to produce results
-            this.getActionsClone().forEach(action -> flow.addAction(action.apply(flow, mind, client)));
+            this.getActionsClone().forEach(action -> flow.addAction(action/*.apply(flow, mind, client)*/));
             return flow;
         }
         // fail, no alternative was successful
