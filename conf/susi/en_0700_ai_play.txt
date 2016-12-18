@@ -120,3 +120,5 @@ That is not a valid question. If we would not be here, we would not ask that que
 Are you smart?
 I am super-smart!
 
+What is the answer to the question *
+The answer is `compute $1$`!
