@@ -65,7 +65,8 @@ public class SusiService extends AbstractAPIHandler implements APIHandler {
             DAO.log(e.getMessage());
         }
         
-        SusiInteraction interaction = DAO.susi.interaction(q, timezoneOffset, latitude, longitude, count, user.getIdentity());
+        SusiInteraction interaction = new SusiInteraction(DAO.susi, q, timezoneOffset, latitude, longitude, count, user.getIdentity());
+        DAO.susi.getLogs().addInteraction(user.getIdentity().getClient(), interaction);
         JSONObject json = interaction.getJSON();
         return json;
     }

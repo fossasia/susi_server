@@ -21,7 +21,6 @@ package org.loklak.susi;
 
 import java.util.ArrayList;
 import java.util.Base64;
-import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -29,6 +28,7 @@ import java.util.stream.Collectors;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.loklak.objects.AbstractObjectEntry;
+import org.loklak.server.ClientIdentity;
 import org.loklak.tools.UTF8;
 
 /**
@@ -37,14 +37,42 @@ import org.loklak.tools.UTF8;
  */
 public class SusiInteraction {
 
-    private JSONObject json;
+    JSONObject json;
 
-    public SusiInteraction() {
+    public SusiInteraction(final SusiMind mind, final String query, int timezoneOffset, double latitude, double longitude, int maxcount, ClientIdentity identity) {
         this.json = new JSONObject(true);
+        
+        // get a response from susis mind
+        String client = identity.getClient();
+        this.setQuery(query);
+        this.json.put("count", maxcount);
+        SusiThought observation = new SusiThought();
+        observation.addObservation("timezoneOffset", Integer.toString(timezoneOffset));
+        
+        if (!Double.isNaN(latitude) && !Double.isNaN(longitude)) {
+            observation.addObservation("latitude", Double.toString(latitude));
+            observation.addObservation("longitude", Double.toString(longitude));
+        }
+        this.json.put("client_id", Base64.getEncoder().encodeToString(UTF8.getBytes(client)));
+        long query_date = System.currentTimeMillis();
+        this.json.put("query_date", AbstractObjectEntry.utcFormatter.print(query_date));
+        
+        // compute the mind reaction
+        List<SusiArgument> dispute = mind.react(query, maxcount, client, observation);
+        long answer_date = System.currentTimeMillis();
+        
+        // store answer and actions into json
+        this.json.put("answers", new JSONArray(dispute.stream().map(argument -> argument.finding(client, mind)).collect(Collectors.toList())));
+        this.json.put("answer_date", AbstractObjectEntry.utcFormatter.print(answer_date));
+        this.json.put("answer_time", answer_date - query_date);
     }
-
+    
     public SusiInteraction(JSONObject json) {
         this.json = json;
+    }
+
+    public SusiInteraction() {
+        
     }
     
     public SusiInteraction setQuery(final String query) {
@@ -56,36 +84,6 @@ public class SusiInteraction {
         if (!this.json.has("query")) return "";
         String q = this.json.getString("query");
         return q == null ? "" : q;
-    }
-    
-    public SusiInteraction react(int maxcount, String client, SusiMind mind, SusiThought observation) {
-        this.json.put("client_id", Base64.getEncoder().encodeToString(UTF8.getBytes(client)));
-        long query_date = System.currentTimeMillis();
-        this.json.put("query_date", AbstractObjectEntry.utcFormatter.print(query_date));
-        
-        // compute the mind reaction
-        String query = this.json.getString("query");
-        
-        List<SusiArgument> dispute = mind.react(query, maxcount, client, observation);
-        long answer_date = System.currentTimeMillis();
-        
-        // store answer and actions into json
-        this.json.put("answer_date", AbstractObjectEntry.utcFormatter.print(answer_date));
-        this.json.put("answer_time", answer_date - query_date);
-        this.json.put("count", maxcount);
-        this.json.put("answers", new JSONArray(dispute.stream().map(argument -> {
-            Collection<JSONObject> actions = argument.getActions().stream()
-                    .map(action -> action.apply(argument, mind, client).toJSONClone())
-                    .collect(Collectors.toList());
-            // the 'apply' method has a possible side-effect on the argument - it can append objects to it
-            // therefore the mindmeld must be done after action application to get those latest changes
-            SusiThought answer = argument.mindmeld(true);
-            answer.put("actions", actions);
-            return answer;
-        }).collect(Collectors.toList())));
-        
-        //System.out.println(this.json);
-        return this;
     }
     
     public Date getQueryDate() {

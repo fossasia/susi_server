@@ -21,7 +21,6 @@ package org.loklak.susi;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 import java.util.Random;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -141,6 +140,7 @@ public class SusiAction {
 
     final static Pattern visible_assignment = Pattern.compile("(?:(?:.*)[\\?\\!\\h,\\.;-])+([^\\^]+?)>([_a-zA-Z0-9]+)(?:[\\?\\!\\h,\\.;-](?:.*))?+");
     final static Pattern blind_assignment = Pattern.compile("(?:.*)\\^(.*?)\\^>([_a-zA-Z0-9]+)(?:[\\?\\!\\h,\\.;-](?:.*))?+");
+    final static Pattern self_referrer = Pattern.compile(".*`([^`]*?)`.*");
     
     /**
      * Action descriptions are templates for data content. Strings may refer to arguments from
@@ -151,7 +151,7 @@ public class SusiAction {
      * @param thoughts an argument from previously applied inferences
      * @return the action with the attribute "expression" instantiated by unification of the thought with the action
      */
-    public SusiAction apply(SusiArgument thoughts, SusiMind mind, String client) {
+    public SusiAction execution(SusiArgument thoughts, SusiMind mind, String client) {
         if ((this.getRenderType() == RenderType.answer || this.getRenderType() == RenderType.self) && this.json.has("phrases")) {
             // transform the answer according to the data
             ArrayList<String> a = getPhrases();
@@ -161,6 +161,14 @@ public class SusiAction {
                 // transform the answer according to the data
                 // this is the final chance that we can add another thought according to a memorizing rule in the answer string
                 Matcher m;
+
+                // self-referrer evaluate contents from the answers expressions as recursion: susi is asked again
+                while ((m = self_referrer.matcher(expression)).matches()) {
+                    String observation = m.group(1);
+                    expression = expression.substring(0, m.start(1) - 1) + mind.react(observation, client, new SusiThought()) + expression.substring(m.end(1) + 1);
+                }
+                
+                // assignments set variables from the result expressions. These can be visible or invisible
                 while ((m = visible_assignment.matcher(expression)).matches()) {
                     String observation = m.group(1);
                     String variable = m.group(2);
@@ -183,9 +191,7 @@ public class SusiAction {
                 }
                 if (this.getRenderType() == RenderType.self) {
                     // recursive call susi with the answer
-                    List<SusiArgument> datalist = mind.react(expression, 1, client, null);
-                    SusiArgument bestargument = datalist.get(0);
-                    expression = bestargument.getActions().get(0).getStringAttr("expression");
+                    expression = mind.react(expression, client, new SusiThought());
                     this.json.put("expression", expression);
                     this.phrasesCache = null; // important, otherwise the expression is not recognized
                     // patch the render type

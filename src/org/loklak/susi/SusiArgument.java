@@ -20,8 +20,10 @@
 package org.loklak.susi;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -197,6 +199,26 @@ public class SusiArgument implements Iterable<SusiThought> {
     public SusiArgument addAction(final SusiAction action) {
         this.actions.add(action);
         return this;
+    }
+
+    /**
+     * Compute a finding on an argument: this will cause the execution of all actions of an argument.
+     * Then the argument is mind-melted which creates a new thought. The findings from all actions of the
+     * argument are attached as 'actions' object: a list of transformed actions where the original action
+     * is replaced by the execution result.
+     * @param client
+     * @param mind
+     * @return a new thought containing an action object which resulted from the argument computation
+     */
+    public SusiThought finding(String client, SusiMind mind) {
+        Collection<JSONObject> actions = this.getActions().stream()
+                .map(action -> action.execution(this, mind, client).toJSONClone())
+                .collect(Collectors.toList());
+        // the 'execution' method has a possible side-effect on the argument - it can append objects to it
+        // therefore the mindmeld must be done after action application to get those latest changes
+        SusiThought answer = this.mindmeld(true);
+        answer.put("actions", actions);
+        return answer;
     }
     
     /**

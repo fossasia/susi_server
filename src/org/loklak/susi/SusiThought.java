@@ -368,8 +368,8 @@ public class SusiThought extends JSONObject {
         if (table != null && table.length() > 0) {
             JSONObject row = table.getJSONObject(0);
             for (String key: row.keySet()) {
-                int i = statement.indexOf("$" + key + "$");
-                if (i >= 0) {
+                int i;
+                while ((i = statement.indexOf("$" + key + "$")) >= 0) {
                     statement = statement.substring(0, i) + row.get(key).toString() + statement.substring(i + key.length() + 2);
                 }
             }

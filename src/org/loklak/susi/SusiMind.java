@@ -47,7 +47,6 @@ import org.json.JSONObject;
 import org.json.JSONTokener;
 import org.loklak.api.susi.ConsoleService;
 import org.loklak.data.DAO;
-import org.loklak.server.ClientIdentity;
 import org.loklak.tools.storage.JsonTray;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
@@ -76,6 +75,10 @@ public class SusiMind {
         }
     }
 
+    public SusiLog getLogs() {
+        return logs;
+    }
+    
     public Set<String> getUnanswered() {
         return this.logs.getUnanswered();
     }
@@ -335,7 +338,7 @@ public class SusiMind {
             r.forEach(rule -> ideas.add(new SusiIdea(rule).setIntent(token)));
         });
         
-        //for (SusiIdea idea: ideas) System.out.println("idea.phrase-1: score=" + idea.getRule().getScore() + " : " + idea.getRule().getPhrases().toString() + " " + idea.getRule().getActionsClone());
+        for (SusiIdea idea: ideas) System.out.println("idea.phrase-1: score=" + idea.getRule().getScore() + " : " + idea.getRule().getPhrases().toString() + " " + idea.getRule().getActionsClone());
         
         // add catchall rules always (those are the 'bad ideas')
         Collection<SusiRule> ca = this.ruletrigger.get(SusiRule.CATCHALL_KEY);
@@ -355,7 +358,7 @@ public class SusiMind {
         // make a sorted list of all ideas
         ideas.clear(); scored.values().forEach(r -> ideas.addAll(r));
         
-        //for (SusiIdea idea: ideas) System.out.println("idea.phrase-2: score=" + idea.getRule().getScore() + " : " + idea.getRule().getPhrases().toString() + " " + idea.getRule().getActionsClone());
+        for (SusiIdea idea: ideas) System.out.println("idea.phrase-2: score=" + idea.getRule().getScore() + " : " + idea.getRule().getPhrases().toString() + " " + idea.getRule().getActionsClone());
         
         // test ideas and collect those which match up to maxcount
         List<SusiIdea> plausibleIdeas = new ArrayList<>(Math.min(10, maxcount));
@@ -372,7 +375,6 @@ public class SusiMind {
 
         return plausibleIdeas;
     }
-    
     
     /**
      * react on a user input: this causes the selection of deduction rules and the evaluation of the process steps
@@ -406,35 +408,15 @@ public class SusiMind {
         return answers;
     }
     
-    public String react(String query) {
-        String client = "host_localhost";
-        List<SusiArgument> datalist = react(query, 1, client, new SusiThought());
+    public String react(String query, String client, SusiThought observation) {
+        List<SusiArgument> datalist = react(query, 1, client, observation);
+        if (datalist.size() == 0) return "";
         SusiArgument bestargument = datalist.get(0);
-        return bestargument.getActions().get(0).apply(bestargument, this, client).getStringAttr("expression");
+        if (bestargument.getActions().isEmpty()) return "";
+        SusiAction action = bestargument.getActions().get(0);
+        String expression = action.execution(bestargument, this, client).getStringAttr("expression");
+        return expression;
     }
-    
-    public SusiInteraction interaction(final String query, int timezoneOffset, double latitude, double longitude, int maxcount, ClientIdentity identity) {
-        // get a response from susis mind
-        String client = identity.getClient();
-        SusiInteraction si = new SusiInteraction().setQuery(query);
-        SusiThought observation = new SusiThought();
-        observation.addObservation("timezoneOffset", Integer.toString(timezoneOffset));
-        
-        if (!Double.isNaN(latitude) && !Double.isNaN(longitude)) {
-            observation.addObservation("latitude", Double.toString(latitude));
-            observation.addObservation("longitude", Double.toString(longitude));
-        }
-        
-        // react
-        si.react(maxcount, client, this, observation);
-        
-        // write a log about the response using the users identity
-        this.logs.addInteraction(client, si);
-        // return the computed response
-        return si;
-    }
-    
-
 
     public Set<String> getRulesetNames(String client) {
         return this.logs.getRulesetNames(client);
@@ -451,8 +433,8 @@ public class SusiMind {
             SusiMind mem = new SusiMind(init, watch);
             JSONObject lesson = mem.readJsonLesson(new File("conf/susi/susi_cognition_000.json"));
             mem.learn(lesson);
-            System.out.println(mem.react("I feel funny"));
-            System.out.println(mem.react("Help me!"));
+            System.out.println(mem.react("I feel funny", "localhost", new SusiThought()));
+            System.out.println(mem.react("Help me!", "localhost", new SusiThought()));
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
