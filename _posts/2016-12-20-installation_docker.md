@@ -1,3 +1,8 @@
+---
+layout: default
+title: Deploy on Docker
+---
+
 # Installation of loklak with Docker
 
 ## Installing loklak on Bluemix with Docker
