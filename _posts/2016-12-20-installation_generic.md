@@ -1,3 +1,8 @@
+---
+layout: default
+title: Deploy on Linux / MacOS
+---
+
 # Installation on Linux or Mac OS
 
 Its very easy!

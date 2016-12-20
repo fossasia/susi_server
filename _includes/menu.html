@@ -1,0 +1,5 @@
+<div class="ui vertical menu">
+  {% for post in site.posts %}	
+    <a href="{{ post.url }}" class="item">{{ post.title }}</a>
+  {% endfor %}
+</div>
