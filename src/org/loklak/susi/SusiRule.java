@@ -438,7 +438,7 @@ public class SusiRule {
             }
             
             // we deduced thoughts from the inferences in the rules. Now apply the actions of rule to produce results
-            this.getActionsClone().forEach(action -> flow.addAction(action/*.apply(flow, mind, client)*/));
+            this.getActionsClone().forEach(action -> flow.addAction(action/*.execution(flow, mind, client)*/));
             return flow;
         }
         // fail, no alternative was successful

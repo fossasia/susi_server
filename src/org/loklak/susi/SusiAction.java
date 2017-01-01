@@ -86,12 +86,12 @@ public class SusiAction {
     }
     
     public static DialogType getDialogType(Collection<String> phrases) {
-        DialogType type = DialogType.answer;
+        DialogType type = DialogType.reply;
         for (String phrase: phrases) {
-            type = getDialogType(phrase);
-            if (type != DialogType.answer) return type;
+            DialogType t = getDialogType(phrase);
+            if (t.getSubscore() < type.getSubscore()) type = t;
         }
-        return DialogType.answer;
+        return type;
     }
     
     public static DialogType getDialogType(String phrase) {

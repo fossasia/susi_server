@@ -389,6 +389,7 @@ public class SusiMind {
         SusiArgument observation_argument = new SusiArgument();
         if (observation != null && observation.length() > 0) observation_argument.think(observation);
         ArrayList<SusiInteraction> interactions = this.logs.getInteractions(client);
+        // latest interaction is first in list
         interactions.forEach(action -> observation_argument.think(action.recallDispute()));
         // perform a mindmeld to create a single thought out of the recalled argument
         // the mindmeld will squash the latest thoughts into one so it does not pile up to exponential growth

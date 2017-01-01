@@ -16,11 +16,8 @@ For whom should the present be?^gift^>_action
 
 # counter questions and communication flow
 
-my *|*
+my *
 ?$_action$=gift:You want to buy a gift for your $1$>_person. Does `$1$ noun` like `$1$ topic`>_topic?^giftlike^>_action
-
-yes
-?$_action$=giftlike:
 
 
 # knowledge about persons to generate correct sentences
@@ -43,6 +40,9 @@ flowers|jewelry|gardening
 wife topic
 flowers|jewelry
 
+husband topic
+
+neig
 
 # links to products
 
