@@ -10,8 +10,8 @@ RUN apt-get upgrade -y
 RUN apt-get install -y git ant openjdk-8-jdk
 
 # clone the github repo
-RUN git clone https://github.com/loklak/loklak_server.git
-WORKDIR loklak_server
+RUN git clone https://github.com/fossasia/susi_server.git
+WORKDIR susi_server
 
 # compile
 RUN ant
