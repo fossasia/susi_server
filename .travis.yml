@@ -5,9 +5,9 @@ env:
   global:
   - secure: DbveaxDMtEP+/Er6ktKCP+P42uDU8xXWRBlVGaqVNU3muaRmmZtj8ngAARxfzY0f9amlJlCavqkEIAumQl9BYKPWIra28ylsLNbzAoCIi8alf9WLgddKwVWsTcZo9+UYocuY6UivJVkofycfFJ1blw/83dWMG0/TiW6s/SrwoDw=
 script:
-- "./gradle_init.sh"
+- ./gradle_init.sh
 - gradle assemble
-- "./gradle_clean.sh"
+- ./gradle_clean.sh
 - ant
 before_script:
 - pip install --user codecov
@@ -19,7 +19,7 @@ deploy:
   provider: heroku
   buildpack: https://github.com/loklak/heroku_buildpack_ant_loklak.git
   api_key:
-    secure: "Secret key: travis encrypt $(heroku auth:token) --add deploy.api_key"
+    secure: CqW0sgNQiVHA2bUaTpWBd5xslu1LQaBRuT9t/XIhes1WQbJ7+rfsqPb1FFPS6cD8o+7Pgx7hCmIyKxcchrmk8Oat2jrO59fe8i3xuOh/Tl9os8PWy0Y2Kbsd4zjWODMC++ioY9sJKB71fhkA1sZjemo10cDLB0jp5P9vmGwj+34H8h2Mw/kA/CggD+lu52ZR/LqLT+QYTF+l5Q9wF1PdCMYNMi2zis3bKjvt6psCMjfQ9PA+C8GjhrA3d5hd6ToIekPaFXk179ev+FbAzJrVo9Ltste7JHRhtm2e+5juSjkpt1jh/l97DHoVLkIyWUNBuR+owfTEPFotFFhLfFJ048NBM9fCoGdJ8kRWpuaFCzu3UeQQODVVlqJHyShBFiaGrOiJPK8V9mSCXVVoU4D6NM/W8CXAhgdAY1jpzjAvwShCnnpOU9aBTzPGNhFJvl01QiM+mIgaIyyW3/Zb5lorzUA89+DgTMZucQKn8oFagsC+nxl7T0dgNML4JnWnKGh7cqnUSS8lTdHBIgEdq8kxFxpM5BEzQ85B1/pmlPeiop/hilq3onXgv3+qMLajRV0KE/GQg11XV8z/9qFBm8LppfUYJeKkjCg/vKsJfnOmj8Z6GDOZyVx5JAQ0Kd9e5Ds/yObmqaih6gKdoJlypkN94WMvEQsochS+/Ld3jxvLQaU=
   app: susi-server
   on:
     branch: development
