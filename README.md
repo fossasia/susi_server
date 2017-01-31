@@ -16,7 +16,9 @@ title: Susi - Docs
 [![Twitter](https://img.shields.io/twitter/url/http/shields.io.svg?style=social)](https://twitter.com/intent/tweet?text=Wow Check Susi on @gitHub @asksusi: https://github.com/fossasia/susi_server &url=%5Bobject%20Object%5D)
 [![Twitter Follow](https://img.shields.io/twitter/follow/lklknt.svg?style=social&label=Follow&maxAge=2592000?style=flat-square)](https://twitter.com/lklknt)
 
-Susi is a server application which is able to collect messages from various sources, including twitter. The server contains a search index and a peer-to-peer index sharing interface. All messages are stored in an elasticsearch index. An automatic deployment from the development branch at GitHub is available for tests here https://susi-server.herokuapp.com
+Susi AI is a server application which is able to interact with humans as a personal assitant. Susi AI is using a wide variety of sources and data to provide answers or perform actions demanded by the user. Susi AI is not only able to answer questions, but also to ask for additional information in order to perform the desired outcome.
+
+An automatic deployment from the development branch at GitHub is available for tests here https://susi-server.herokuapp.com
 
 ## Communication
 
@@ -26,15 +28,7 @@ Our chat channel is on gitter here: https://gitter.im/fossasia/susi_server
 
 ## Why should I use Susi?
 
-If you like to be anonymous when searching things, want to archive tweets or messages about specific topics and if you are looking for a tool to create statistics about tweet topics, then you may consider Susi. With Susi you can:
-
-- collect and store a very, very large amount of tweets
-- create your own search engine for tweets
-- omit authentication enforcement for API requests on twitter
-- share tweets and tweet archives with other loklak users
-- search anonymously on your own search portal
-- create your own tweet search portal or statistical evaluations
-- use [Kibana](https://github.com/elastic/kibana) to analyze large amounts of tweets for statistical data.
+If you like to create your own AI, then you may consider Susi. 
 
 ## How do I install Susi: Download, Build, Run
 
