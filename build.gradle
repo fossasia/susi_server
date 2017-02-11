@@ -1,5 +1,7 @@
 apply plugin: 'java'
 
+sourceSets.main.java.srcDirs = ['src']
+
 jar {
     manifest {
         attributes 'Main-Class': 'org.loklak.SusiServer'
