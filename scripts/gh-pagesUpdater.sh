@@ -24,7 +24,7 @@ cp -rf ../../docs ./
 cp -rf ../../README.md ./index.md
 
 # Adding everything
-git add .
+git add -A
 
 # Checking for staged changes
 git status --porcelain|grep "M"
