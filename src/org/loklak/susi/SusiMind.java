@@ -102,8 +102,8 @@ public class SusiMind {
                         if (f.getName().endsWith(".json")) {
                             lesson = readJsonLesson(f);
                         }
-                        if (f.getName().endsWith(".txt")) {
-                            lesson = readTextLesson(f);
+                        if (f.getName().endsWith(".txt") || f.getName().endsWith(".ezd")) {
+                            lesson = readEzDLesson(new BufferedReader(new FileReader(f)));
                         }
                         if (f.getName().endsWith(".aiml")) {
                             lesson = readAIMLLesson(f);
@@ -126,9 +126,15 @@ public class SusiMind {
         return json;
     }
     
-    public JSONObject readTextLesson(File file) throws JSONException, FileNotFoundException {
+    /**
+     * read an "EzD" ('Easy Dialog') file: this is just a text file. Read the docs/ai_rule_development_tutorial.md for an explanation
+     * @param br
+     * @return
+     * @throws JSONException
+     * @throws FileNotFoundException
+     */
+    public JSONObject readEzDLesson(BufferedReader br) throws JSONException {
         // read the text file and turn it into a rule json; then learn that
-        BufferedReader br = new BufferedReader(new FileReader(file));
         JSONObject json = new JSONObject();
         JSONArray rules = new JSONArray();
         json.put("rules", rules);

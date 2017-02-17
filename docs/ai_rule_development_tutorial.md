@@ -13,7 +13,7 @@ therefore you must run a local `susi_server` to test your self-made conversation
 
 ### Requirements
 
-You need to have a version 1.8 of Java installed. 
+You need to have a version 1.8 of Java installed. You also need git, ant and you must be able to use a text editor :)
 
 ### Installation
 
@@ -79,15 +79,23 @@ find a collection of `.txt` (Susi EzD) files and `.json` (Susi Mind) files.
 * Edit `000_en_tutorial.txt` and inser the following content:
 ```
 # susi EzD tutorial playground
+::prior
 roses are red
 susi is a hack
 ```
+This defines one simple rule: to answer on "roses are red" the phrase "susi is a hack". The other lines mean:
+* all lines starting with `#` are comment lines and are ignored.
+* all lines starting with a '::' are section declaration modifiers. Here we define that all following rules are 'prior' rules, that mean they rank higher than other rules which depend on phrase patterns. We will learn the details later
+* all other text lines define dialog rules. Rules are separate with empty lines. Comment and section declaration modifiers count also like empty lines as separator.
+
+Now you can test the new rule:
 * send the following query to Susi (yes your local own susi_server, must be running, look above how that works): "roses are red"
 * Susi will answer with "susi is a hack".
 The EzD format is just a text file where two lines which are not separated with an empty line represent a conversation pattern.
 You can actually add a third line to your file:
 ```
 # susi EzD tutorial playground
+::prior
 roses are red
 susi is a hack
 skynet is back
@@ -95,3 +103,5 @@ skynet is back
 With that file, Susi would respond on "roses are red" the answer "susi is a hack" and on the query "susi is a hack" it would respond "skynet is back". Try it!
 
 ### Tutorial Level 1: Patterns in Queries
+
+
