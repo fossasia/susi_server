@@ -162,16 +162,25 @@ public class SusiMind {
                     condition = line.substring(1, thenpos).trim();
                     if (elsepos <= thenpos) {
                         // only if, no else
-                        String[] answers = line.substring(thenpos + 1).split("\\|");
-                        JSONObject rule = SusiRule.simpleRule(phrases, "IF " + condition, answers, prior);
-                        rules.put(rule);
+                        String ifsubstring = line.substring(thenpos + 1).trim();
+                        if (ifsubstring.length() > 0) {
+                            String[] answers = ifsubstring.split("\\|");
+                            JSONObject rule = SusiRule.simpleRule(phrases, "IF " + condition, answers, prior);
+                            rules.put(rule);
+                        }
                     } else {
-                        String[] ifanswers = line.substring(thenpos + 1, elsepos).split("\\|");
-                        String[] elseanswers = line.substring(elsepos + 1).split("\\|");
-                        JSONObject ruleif = SusiRule.simpleRule(phrases, "IF " + condition, ifanswers, prior);
-                        JSONObject ruleelse = SusiRule.simpleRule(phrases, "NOT " + condition, elseanswers, prior);
-                        rules.put(ruleif);
-                        rules.put(ruleelse);
+                        String ifsubstring = line.substring(thenpos + 1, elsepos).trim();
+                        if (ifsubstring.length() > 0) {
+                            String[] ifanswers = ifsubstring.split("\\|");
+                            JSONObject ruleif = SusiRule.simpleRule(phrases, "IF " + condition, ifanswers, prior);
+                            rules.put(ruleif);
+                        }
+                        String elsesubstring = line.substring(elsepos + 1).trim();
+                        if (elsesubstring.length() > 0) {
+                            String[] elseanswers = elsesubstring.split("\\|");
+                            JSONObject ruleelse = SusiRule.simpleRule(phrases, "NOT " + condition, elseanswers, prior);
+                            rules.put(ruleelse);
+                        }
                     }
                 } else {
                     String[] answers = line.split("\\|");
