@@ -7,14 +7,14 @@ RUN apt-get update
 RUN apt-get upgrade -y
 
 # add packages
-RUN apt-get install -y git ant openjdk-8-jdk
+RUN apt-get install -y git openjdk-8-jdk
 
 # clone the github repo
 RUN git clone https://github.com/fossasia/susi_server.git
 WORKDIR susi_server
 
 # compile
-RUN ant
+RUN ./gradlew build
 
 # Expose the web interface ports
 EXPOSE 80 443
@@ -28,4 +28,4 @@ RUN sed -i.bak 's/^\(upgradeInterval=\).*/\186400000000/' conf/config.properties
 RUN echo "while true; do sleep 10;done" >> bin/start.sh
 
 # start loklak
-CMD ["bin/start.sh"]
+CMD ["bin/start.sh", "-Idn"]

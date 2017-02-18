@@ -1,31 +1,36 @@
 #!/usr/bin/env bash
 
-PIDFILE="data/loklak.pid"
-DFAULTCONFIG="conf/config.properties"
-CUSTOMCONFIG="data/settings/customized_config.properties"
-LOGCONFIG="conf/logs/log-to-file.properties"
-STARTUPFILE="data/startup.tmp"
-DFAULTXmx="-Xmx800m";
-CUSTOMXmx=""
+# If you're looking for the variables, please go to bin/.preload.sh
 
+# Make sure we're on project root
 cd $(dirname $0)/..
-mkdir -p data/settings
 
-#to not allow process to overwrite the already running one.
-if [ -f $PIDFILE ]; then
-	PID=$(cat $PIDFILE 2>/dev/null)
-	if [ $(ps -p $PID -o pid=) ]; then
-		echo "Server is already running, please stop it and then start"
-		exit 1
-	else
-		rm $PIDFILE
-	fi
-fi
+# Execute preload script
+source bin/.preload.sh
 
+while getopts ":Idn" opt; do
+    case $opt in
+        I)
+            SKIP_INSTALL_CHECK=1
+            ;;
+        d)
+            SKIP_WAITING=1
+            ;;
+        n)
+            DO_NOT_DAEMONIZE=1
+            ;;
+        \?)
+            echo "Usage: $0 [options...]"
+            echo -e " -I\tIgnore installation config"
+            echo -e " -d\tSkip waiting for Loklak"
+            echo -e " -n\tDo not Daemonize"
+            exit 1
+            ;;
+    esac
+done
 
 # installation
-INSTALLATIONCONFIG="data/settings/installation.txt"
-if [ ! -f $INSTALLATIONCONFIG ]; then
+if [ ! -f $INSTALLATIONCONFIG ] && [[ $SKIP_INSTALL_CHECK -eq 0 ]]; then
     echo "susi detected that you did not yet run the installation wizard."
     echo "It let's you setup an administrator account and a number of settings, but is not mandatory."
     echo "You can manually start it by running bin/installation.sh"
@@ -57,42 +62,37 @@ if [ ! -f $INSTALLATIONCONFIG ]; then
 OPTIONAL
 fi
 
-if [ -f $DFAULTCONFIG ]; then
-    j="$(grep Xmx $DFAULTCONFIG | sed 's/^[^=]*=//')";
-    if [ -n $j ]; then DFAULTXmx="$j"; fi;
-fi
-if [ -f $CUSTOMCONFIG ]; then
-    j="$(grep Xmx $CUSTOMCONFIG | sed 's/^[^=]*=//')";
-    if [ -n $j ]; then CUSTOMXmx="$j"; fi;
-fi
-
-CLASSPATH=""
-for N in lib/*.jar; do CLASSPATH="$CLASSPATH$N:"; done
-CLASSPATH=".:./classes/:$CLASSPATH"
-
-cmdline="java";
-
-if [ -n "$ENVXmx" ] ; then cmdline="$cmdline -Xmx$ENVXmx";
-elif [ -n "$CUSTOMXmx" ]; then cmdline="$cmdline -Xmx$CUSTOMXmx";
-elif [ -n "$DFAULTXmx" ]; then cmdline="$cmdline -Xmx$DFAULTXmx";
+# If DO_NOT_DAEMONIZE is declared, use the log4j config that outputs
+# to stdout/stderr
+if [[ $DO_NOT_DAEMONIZE -eq 1 ]]; then
+    LOGCONFIG="conf/logs/log4j2.properties"
 fi
 
 echo "starting susi"
 echo "startup" > $STARTUPFILE
 
-cmdline="$cmdline -server -classpath $CLASSPATH -Dlog4j.configurationFile=$LOGCONFIG org.loklak.SusiServer >> data/loklak.log 2>&1 &";
+cmdline="$cmdline -server -classpath $CLASSPATH -Dlog4j.configurationFile=$LOGCONFIG org.loklak.SusiServer";
+
+# If DO_NOT_DAEMONIZE, pass it to the java command, end of this script.
+if [[ $DO_NOT_DAEMONIZE -eq 1 ]]; then
+    exec $cmdline
+fi
+
+cmdline="$cmdline >> data/loklak.log 2>&1 &"
 
 eval $cmdline
 PID=$!
 echo $PID > $PIDFILE
 
-while [ -f $STARTUPFILE ] && [ $(ps -p $PID -o pid=) ]; do
-	if [ $(cat $STARTUPFILE) = 'done' ]; then
-		break
-	else
-		sleep 1
-	fi
-done
+if [[ $SKIP_WAITING -eq 0 ]]; then
+    while [ -f $STARTUPFILE ] && [ $(ps -p $PID -o pid=) ]; do
+        if [ $(cat $STARTUPFILE) = 'done' ]; then
+            break
+        else
+            sleep 1
+        fi
+    done
+fi
 
 if [ -f $STARTUPFILE ] && [ $(ps -p $PID -o pid=) ]; then
 	CUSTOMPORT=$(grep -iw 'port.http' conf/config.properties | sed 's/^[^=]*=//' );
