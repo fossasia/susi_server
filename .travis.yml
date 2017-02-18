@@ -7,9 +7,8 @@ env:
 script:
 # The gh-pages updating script
 - 'if [ "$TRAVIS_PULL_REQUEST" = "false" ]; then bash ./scripts/gh-pagesUpdater.sh; fi'
-- "./gradle_init.sh"
 - gradle assemble
-- ./gradle_clean.sh
+- gradle clean
 - ant
 before_script:
 - pip install --user codecov
