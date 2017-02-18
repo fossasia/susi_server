@@ -102,6 +102,20 @@ skynet is back
 ```
 With that file, Susi would respond on "roses are red" the answer "susi is a hack" and on the query "susi is a hack" it would respond "skynet is back". Try it!
 
-### Tutorial Level 1: Patterns in Queries
+### Tutorial Level 1: Random Answers
 
+### Tutorial Level 2: Query Alternatives for One Dialog Rule
 
+### Tutorial Level 3: Patterns in Queries
+
+### Tutorial Level 4: Using Query-Patterns in Answers
+
+### Tutorial Level 5: Multiple Patterns in Queries and Answers
+
+### Tutorial Level 6: Using Variables from Answer Terms
+
+### Tutorial Level 7: Setting Status Variables
+
+### Tutorial Level 8: Conditions for Answers
+
+### Tutorial Level 9: Rules used as Functions/Templates
