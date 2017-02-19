@@ -9,7 +9,6 @@ title: Susi - Docs
 
 [![Join the chat at https://gitter.im/fossasia/susi_server](https://badges.gitter.im/fossasia/susi_server.svg)](https://gitter.im/fossasia/susi_server?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 [![Build Status](https://travis-ci.org/fossasia/susi_server.svg?branch=development)](https://travis-ci.org/fossasia/susi_server)
-[![Join the chat at https://gitter.im/loklak/loklak](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/loklak/loklak)
 [![Docker Pulls](https://img.shields.io/docker/pulls/mariobehling/loklak.svg?maxAge=2592000?style=flat-square)](https://hub.docker.com/r/mariobehling/loklak/)
 [![Percentage of issues still open](http://isitmaintained.com/badge/open/fossasia/susi_server.svg)](http://isitmaintained.com/project/fossasia/susi_server "Percentage of issues still open")
 [![Average time to resolve an issue](http://isitmaintained.com/badge/resolution/fossasia/susi_server.svg)](http://isitmaintained.com/project/fossasia/susi_server "Average time to resolve an issue")
@@ -27,7 +26,8 @@ Please join our mailing list to discuss questions regarding the project: https:/
 Our chat channel is on gitter here: https://gitter.im/fossasia/susi_server
 
 [**Contributior Guide**](/docs/contributor-guide.md)|
-[**Documentation for Developers** :book:](/docs/documentation-guide.md)
+[**Documentation for Developers** :book:](/docs/documentation-guide.md)|
+[**Code practices**](/docs/workflow.md)
 
 ## Why should I use Susi?
 
