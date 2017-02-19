@@ -27,7 +27,7 @@ Our chat channel is on gitter here: https://gitter.im/fossasia/susi_server
 
 [**Contributior Guide**](/docs/contributor-guide.md)|
 [**Documentation for Developers** :book:](/docs/documentation-guide.md)|
-[**Code practices**](/docs/workflow.md)
+[**Development Workflow**](/docs/workflow.md)
 
 ## Why should I use Susi?
 
