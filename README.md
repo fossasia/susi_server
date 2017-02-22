@@ -25,10 +25,6 @@ Please join our mailing list to discuss questions regarding the project: https:/
 
 Our chat channel is on gitter here: https://gitter.im/fossasia/susi_server
 
-[**Contributior Guide**](/docs/contributor-guide.md)|
-[**Documentation for Developers** :book:](/docs/documentation-guide.md)|
-[**Development Workflow**](/docs/workflow.md)
-
 # How do I install Susi: Download, Build, Run
 
 [![Deploy](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy)
