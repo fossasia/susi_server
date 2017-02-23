@@ -1,47 +1,12 @@
 #!/usr/bin/env bash
 
-INSTALLATIONCONFIG="data/settings/installation.txt"
-PIDFILE="data/loklak.pid"
-DFAULTCONFIG="conf/config.properties"
-CUSTOMCONFIG="data/settings/customized_config.properties"
-LOGCONFIG="conf/logs/log-to-file.properties"
-STARTUPFILE="data/startup.tmp"
-DFAULTXmx="-Xmx800m";
-CUSTOMXmx=""
+# If you're looking for the variables, please go to bin/.preload.sh
 
+# Make sure we're on project root
 cd $(dirname $0)/..
-mkdir -p data
 
-#to not allow process to overwrite the already running one.
-if [ -f $PIDFILE ]; then
-	PID=$(cat $PIDFILE 2>/dev/null)
-	if [ $(ps -p $PID -o pid=) ]; then
-		echo "Server is already running, please stop it and then start"
-		exit 1
-	else
-		rm $PIDFILE
-	fi
-fi
-
-if [ -f $DFAULTCONFIG ]; then
-    j="$(grep Xmx $DFAULTCONFIG | sed 's/^[^=]*=//')";
-    if [ -n $j ]; then DFAULTXmx="$j"; fi;
-fi
-if [ -f $CUSTOMCONFIG ]; then
-    j="$(grep Xmx $CUSTOMCONFIG | sed 's/^[^=]*=//')";
-    if [ -n $j ]; then CUSTOMXmx="$j"; fi;
-fi
-
-CLASSPATH=""
-for N in lib/*.jar; do CLASSPATH="$CLASSPATH$N:"; done
-CLASSPATH=".:./classes/:$CLASSPATH"
-
-cmdline="java";
-
-if [ -n "$ENVXmx" ] ; then cmdline="$cmdline -Xmx$ENVXmx";
-elif [ -n "$CUSTOMXmx" ]; then cmdline="$cmdline -Xmx$CUSTOMXmx";
-elif [ -n "$DFAULTXmx" ]; then cmdline="$cmdline -Xmx$DFAULTXmx";
-fi
+# Execute preload script
+source bin/.preload.sh
 
 echo "starting loklak installation"
 echo "startup" > $STARTUPFILE
