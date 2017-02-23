@@ -28,11 +28,11 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
-import org.apache.log4j.Logger;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.loklak.data.DAO;
@@ -80,7 +80,7 @@ public class SusiRule {
                 SusiRule rule = new SusiRule(json);
                 rules.add(rule);
             } catch (PatternSyntaxException e) {
-                Logger.getLogger("SusiRule").error("Regular Expression error in Susi Rule: " + json.toString(2));
+                Logger.getLogger("SusiRule").warning("Regular Expression error in Susi Rule: " + json.toString(2));
             }
         }
         return rules;

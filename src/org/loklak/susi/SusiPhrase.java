@@ -19,11 +19,11 @@
 
 package org.loklak.susi;
 
+import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
-import org.jfree.util.Log;
 import org.json.JSONObject;
 
 /**
@@ -66,7 +66,7 @@ public class SusiPhrase {
         if (json.has("type")) try {
             t = Type.valueOf(json.getString("type"));
         } catch (IllegalArgumentException e) {
-            Log.error("type value is wrong: " + json.getString("type"));
+            Logger.getLogger("SusiPhrase").warning("type value is wrong: " + json.getString("type"));
             t = expression.indexOf(".*") >= 0 ? Type.regex : expression.indexOf('*') >= 0 ? Type.pattern : Type.minor;
         }
         
