@@ -312,7 +312,9 @@ public class SusiRule {
     
          * (5) the meatsize (number of characters that are non-patterns)
     
-         * (6) finally the subscore can be assigned manually
+         * (6) the whole size (total number of characters)
+    
+         * (7) finally the subscore can be assigned manually
          * subscore a score in a small range which can be used to distinguish rules within the same categories
          */
         
@@ -334,12 +336,17 @@ public class SusiRule {
         this.inferences.forEach(inference -> inference_subscore.set(Math.max(inference_subscore.get(), inference.getType().getSubscore())));
         this.score = this.score * (1 + SusiInference.Type.values().length) + inference_subscore.get();
         
-        // (4) meatsize
+        // (5) meatsize: length of a phrase (counts letters)
         final AtomicInteger phrases_meatscore = new AtomicInteger(0);
         this.phrases.forEach(phrase -> phrases_meatscore.set(Math.max(phrases_meatscore.get(), phrase.getMeatsize())));
         this.score = this.score * 100 + phrases_meatscore.get();
         
-        // (6) subscore from the user
+        // (6) whole size: length of the pattern
+        final AtomicInteger phrases_wholesize = new AtomicInteger(0);
+        this.phrases.forEach(phrase -> phrases_wholesize.set(Math.max(phrases_wholesize.get(), phrase.getPattern().toString().length())));
+        this.score = this.score * 100 + phrases_wholesize.get();
+        
+        // (7) subscore from the user
         this.score += this.score * 1000 + Math.min(1000, this.user_subscore);
         
         /*
