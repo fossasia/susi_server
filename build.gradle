@@ -9,6 +9,7 @@ buildscript {
 }
 
 apply plugin: 'java'
+apply plugin: 'eclipse'
 apply plugin: 'com.github.johnrengelman.shadow'
 
 sourceCompatibility = 1.8
