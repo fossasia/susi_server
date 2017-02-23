@@ -86,6 +86,8 @@ public class SusiPhrase {
         s = s.toLowerCase().replaceAll("\\#", "  ");
         Matcher m;
         while ((m = dspace.matcher(s)).find()) s = m.replaceAll(" ");
+        s = s.trim();
+        if (".?!".indexOf(s.charAt(s.length() - 1)) >= 0) s = s.substring(0, s.length() - 1).trim();
         // to be considered: https://en.wikipedia.org/wiki/Wikipedia:List_of_English_contractionst
         int p = -1;
         while ((p = s.toLowerCase().indexOf("it's ")) >= 0) s = s.substring(0, p + 2) + " is " + s.substring(p + 5);

@@ -114,7 +114,6 @@ public class SusiServer {
 	
     public final static Set<String> blacklistedHosts = new ConcurrentHashSet<>();
 
-    
     private static Server server = null;
     private static Caretaker caretaker = null;
     private static HttpsMode httpsMode = HttpsMode.OFF;

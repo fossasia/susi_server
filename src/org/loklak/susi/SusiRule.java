@@ -32,6 +32,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
+import org.apache.log4j.Logger;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.loklak.data.DAO;
@@ -75,8 +76,12 @@ public class SusiRule {
                 rules.add(new SusiRule(option));
             }
         } else {
-            SusiRule rule = new SusiRule(json);
-            rules.add(rule);
+            try {
+                SusiRule rule = new SusiRule(json);
+                rules.add(rule);
+            } catch (PatternSyntaxException e) {
+                Logger.getLogger("SusiRule").error("Regular Expression error in Susi Rule: " + json.toString(2));
+            }
         }
         return rules;
     }

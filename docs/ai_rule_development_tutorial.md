@@ -103,10 +103,30 @@ skynet is back
 With that file, Susi would respond on "roses are red" the answer "susi is a hack" and on the query "susi is a hack" it would respond "skynet is back". Try it!
 
 ### Tutorial Level 1: Random Answers
+Conversation rules without a deterministic behavior will create less predictable results.
+That can easily be defined with EzD rules. Lets consider you want a rule where different answers
+on "What is your favorite dish?" are "Potatoes", "Vegetables" or "Fish". Thats easy: add an empty line
+to the end of your test file and then:
+```
+What is your favorite dish
+Potatoes|Vegetables|Fish
+```
 
 ### Tutorial Level 2: Query Alternatives for One Dialog Rule
+Maybe you want that Susi responds to several different queries with the same answer. This can be
+done very easy with Alternatives in the query line:
+```
+Bonjour|Buenos días|Ciao
+Hello
+```
 
 ### Tutorial Level 3: Patterns in Queries
+In some cases the query lines may be so similar, that you want to use a pattern to declare all possible queries for an answer instead of using fixed alternatives. Query patters can be declared using the "*" wildcard character. A "*" matches any sentence token, but not a substring. That means, a "*" replaces a word or a list of words.
+
+```
+May I * you?
+Yes you may.
+```
 
 ### Tutorial Level 4: Using Query-Patterns in Answers
 

@@ -23,13 +23,6 @@ import org.loklak.server.ClientIdentity;
 
 public class SusiTutorialTest {
 
-    private final static String testFile = 
-                    "# susi EzD tutorial playground\n" +
-                    "::prior\n" +
-                    "roses are red\n" +
-                    "susi is a hack\n" +
-                    "skynet is back\n";
-    
     private final BufferedReader getTestReader() {
         ByteArrayInputStream bais = new ByteArrayInputStream(testFile.getBytes(StandardCharsets.UTF_8));
         return new BufferedReader(new InputStreamReader(bais, StandardCharsets.UTF_8));
@@ -85,13 +78,34 @@ public class SusiTutorialTest {
             }
             
             ClientIdentity identity = new ClientIdentity("host:localhost");
-            //System.out.println(susiAnswer("ich möchte was verschenken", identity));
-            //System.out.println(susiAnswer("meinen Vater", identity));
-            System.out.println(susiAnswer("roses are red", identity));
-            System.out.println(susiAnswer("susi is a hack", identity));
+            assertTrue(susiAnswer("roses are red", identity).equals("susi is a hack"));
+            assertTrue(susiAnswer("susi is a hack", identity).equals("skynet is back"));
+            assertTrue("Potatoes|Vegetables|Fish".indexOf(susiAnswer("What is your favorite dish", identity)) >= 0);
+            assertTrue(susiAnswer("Bonjour", identity).equals("Hello"));
+            assertTrue(susiAnswer("Buenos días", identity).equals("Hello"));
+            assertTrue(susiAnswer("Ciao", identity).equals("Hello"));
+            assertTrue(susiAnswer("May I help you?", identity).equals("Yes you may"));
+            
         } catch (Exception e) {
             e.printStackTrace();
         }        
     }
 
+    private final static String testFile = 
+                    "# susi EzD tutorial playground\n" +
+                    "::prior\n" +
+                    "roses are red\n" +
+                    "susi is a hack\n" +
+                    "skynet is back\n" +
+                    "\n" +
+                    "What is your favorite dish\n" +
+                    "Potatoes|Vegetables|Fish\n" +
+                    "\n" +
+                    "Bonjour|Buenos días|Ciao\n" +
+                    "Hello\n" +
+                    "\n" +
+                    "May I * you\n" +
+                    "Yes you may\n";
 }
+
+
