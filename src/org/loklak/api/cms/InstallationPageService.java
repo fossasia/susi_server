@@ -24,6 +24,7 @@ import org.loklak.EmailHandler;
 import org.loklak.SusiInstallation;
 import org.loklak.data.DAO;
 import org.loklak.server.*;
+import org.loklak.tools.TimeoutMatcher;
 import org.loklak.tools.storage.JSONObjectWithDefault;
 
 import javax.mail.AuthenticationFailedException;
@@ -111,13 +112,13 @@ public class InstallationPageService extends AbstractAPIHandler implements APIHa
 		if(adminEmail != null && adminPassword != null){
 			// check email pattern
 			Pattern pattern = Pattern.compile(EmailHandler.EMAIL_PATTERN);
-			if (!pattern.matcher(adminEmail).matches()) {
+			if (!new TimeoutMatcher(pattern.matcher(adminEmail)).matches()) {
 				throw new APIException(400, "no valid email address");
 			}
 
 			// check password pattern
 			pattern = Pattern.compile("^(?=.*\\d)(?=.*[a-z])(?=.*[A-Z]).{8,64}$");
-			if (adminEmail.equals(adminPassword) || !pattern.matcher(adminPassword).matches()) {
+			if (adminEmail.equals(adminPassword) || !new TimeoutMatcher(pattern.matcher(adminPassword)).matches()) {
 				throw new APIException(400, "invalid password");
 			}
 

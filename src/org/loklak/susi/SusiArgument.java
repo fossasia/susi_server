@@ -27,6 +27,7 @@ import java.util.stream.Collectors;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.loklak.tools.TimeoutMatcher;
 
 /**
  * An Argument is a series of thoughts, also known as a 'proof' in automated reasoning.
@@ -133,7 +134,7 @@ public class SusiArgument implements Iterable<SusiThought> {
     /**
      * Thinking is a series of thoughts, every new thought appends another thought to the argument.
      * A special situation may (or may not) occur if one thinking step does not produce a result.
-     * Depending on the inference rule set that may mean that the consideration of the rule containing
+     * Depending on the inference skill set that may mean that the consideration of the skill containing
      * the inferences was wrong and should be abandoned. This happens if mindstate().equals(thought).
      * This is the same operation as a 'push' on a stack.
      * @param thought the next thought
@@ -168,9 +169,9 @@ public class SusiArgument implements Iterable<SusiThought> {
             // this uses our iterator which iterates in reverse order. That means, latest thought is first returned
             if (depth-- < 0) break;
             statement = t.unify(statement);
-            if (!SusiThought.variable_pattern.matcher(statement).find()) return statement;
+            if (!new TimeoutMatcher(SusiThought.variable_pattern.matcher(statement)).find()) return statement;
         }
-        if (SusiThought.variable_pattern.matcher(statement).find()) return null; // failure!
+        if (new TimeoutMatcher(SusiThought.variable_pattern.matcher(statement)).find()) return null; // failure!
         return statement;
     }
     
@@ -241,7 +242,7 @@ public class SusiArgument implements Iterable<SusiThought> {
     }
 
     public String toString() {
-        return this.toJSON().toString();
+        return this.toJSON().toString(2);
     }
     
     public static void main(String[] args) {

@@ -27,6 +27,7 @@ import java.util.regex.Pattern;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.loklak.tools.TimeoutMatcher;
 
 /**
  * An action is an application on the information deduced during inferences on mind states
@@ -159,24 +160,24 @@ public class SusiAction {
             String expression = thoughts.unify(phrase);
             if (expression != null) {
                 // transform the answer according to the data
-                // this is the final chance that we can add another thought according to a memorizing rule in the answer string
+                // this is the final chance that we can add another thought according to a memorizing skill in the answer string
                 Matcher m;
 
                 // self-referrer evaluate contents from the answers expressions as recursion: susi is asked again
-                while ((m = self_referrer.matcher(expression)).matches()) {
+                while (new TimeoutMatcher(m = self_referrer.matcher(expression)).matches()) {
                     String observation = m.group(1);
                     expression = expression.substring(0, m.start(1) - 1) + mind.react(observation, client, new SusiThought()) + expression.substring(m.end(1) + 1);
                 }
                 
                 // assignments set variables from the result expressions. These can be visible or invisible
-                while ((m = visible_assignment.matcher(expression)).matches()) {
+                while (new TimeoutMatcher(m = visible_assignment.matcher(expression)).matches()) {
                     String observation = m.group(1);
                     String variable = m.group(2);
                     expression = expression.substring(0, m.end(1)) + expression.substring(m.end(2));
                     // write the variable v as side-effect into the thoughts argument
                     thoughts.think(new SusiThought().addObservation(variable, observation));
                 }
-                while ((m = blind_assignment.matcher(expression)).matches()) {
+                while (new TimeoutMatcher(m = blind_assignment.matcher(expression)).matches()) {
                     String observation = m.group(1);
                     String variable = m.group(2);
                     expression = expression.substring(0, m.start(1) - 1) + expression.substring(m.end(2));

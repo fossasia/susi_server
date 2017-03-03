@@ -40,7 +40,7 @@
       {"type":"regex", "expression":"how is (?:(?:a )*)(.*)"}
     ],
     "process":[ {"type":"console", "expression":"SELECT description FROM wikidata-en WHERE query='$1$';"},
-                {"type":"flow", "expression":"NOT $description$ = Wikipedia disambiguation page"} ],
+                {"type":"memory", "expression":"NOT $description$ = Wikipedia disambiguation page"} ],
     "actions":[ {"type":"answer", "select":"random", "phrases":[
       "$1$ is a $description$."
     ]}]
@@ -60,6 +60,17 @@
       "Definition of $1$: $plaintext$."
     ]}]
   }, {
+    "score"  :2,
+    "phrases":[
+      {"type":"regex", "expression":"how (?:(?:a )*)(.*)"},
+      {"type":"regex", "expression":"why (?:(?:a )*)(.*)"},
+      {"type":"regex", "expression":"explain (?:(?:a )*)(.*)"}
+    ],
+    "process":[ {"type":"console", "expression":"SELECT plaintext FROM wolframalpha WHERE query='$0$';"} ],
+    "actions":[ {"type":"answer", "select":"random", "phrases":[
+      "$plaintext$."
+    ]}]
+  }, {
     "score"  :0,
     "phrases":[
       {"type":"regex", "expression":"search urbandictionary for (?:(?:a )*)(.*)"},
@@ -75,7 +86,7 @@
       {"type":"regex", "expression":"how is (?:(?:a )*)(.*)"}
     ],
     "process":[ {"type":"console", "expression":"SELECT description FROM wikidata-en WHERE query='$1$';"},
-                {"type":"flow", "expression":"NOT $description$ = Wikipedia disambiguation page PATTERN"} ],
+                {"type":"memory", "expression":"NOT $description$ = Wikipedia disambiguation page PATTERN"} ],
     "actions":[  {"type":"answer", "select":"random", "phrases":[
       "$1$ is a $description$."
     ]}]
@@ -94,7 +105,7 @@
     ],
     "process":[ {"type":"javascript", "expression":"$1$"} ],
     "actions":[ {"type":"answer", "select":"random", "phrases":[
-      "$1$ = $javascript$"
+      "$1$ = $!$"
     ]}]
   },{
     "keys"   :["times"],
@@ -153,7 +164,7 @@
     ],
     "process":[ {"type":"javascript", "expression":"new Date().getMinutes() + ' minutes past ' + (Math.round(new Date().getHours() + (new Date().getTimezoneOffset() - $timezoneOffset$)/60))"} ],
     "actions":[ {"type":"answer", "select":"random", "phrases":[
-      "it is $javascript$"
+      "it is $!$"
     ]}]
   }
 ]}

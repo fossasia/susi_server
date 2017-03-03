@@ -29,16 +29,22 @@ public class SusiTutorialTest {
         return new BufferedReader(new InputStreamReader(bais, StandardCharsets.UTF_8));
     }
     
-    public static String susiAnswer(String q, ClientIdentity identity) throws JSONException {
-        SusiInteraction interaction = new SusiInteraction(DAO.susi, q, 0, 0, 0, 1, identity);
-        JSONObject json = interaction.getJSON();
-        DAO.susi.getLogs().addInteraction(identity.getClient(), interaction);
-        String answer = json.getJSONArray("answers")
+    public static String susiAnswer(String q, ClientIdentity identity) {
+        SusiCognition cognition = new SusiCognition(DAO.susi, q, 0, 0, 0, 1, identity);
+        JSONObject json = cognition.getJSON();
+        DAO.susi.getMemories().addCognition(identity.getClient(), cognition);
+        try {
+            String answer = json.getJSONArray("answers")
                 .getJSONObject(0)
                 .getJSONArray("actions")
                 .getJSONObject(0)
                 .getString("expression");
-        return answer;
+            return answer;
+        } catch (JSONException e) {
+            System.out.println("json not well-formed: " + json.toString());
+            e.printStackTrace();
+            return null;
+        }
     }
     
     @BeforeClass
@@ -69,6 +75,7 @@ public class SusiTutorialTest {
                 DAO.init(config, data);
                 BufferedReader br = getTestReader();
                 JSONObject lesson = DAO.susi.readEzDLesson(br);
+                System.out.println(lesson.toString(2));
                 DAO.susi.learn(lesson);
                 br.close();
             } catch(Exception e){
@@ -79,6 +86,7 @@ public class SusiTutorialTest {
             }
             
             ClientIdentity identity = new ClientIdentity("host:localhost");
+            test("reset test.", "ok", identity);
             test("roses are red", "susi is a hack", identity);
             test("susi is a hack", "skynet is back", identity);
             assertTrue("Potatoes|Vegetables|Fish".indexOf(susiAnswer("What is your favorite dish", identity)) >= 0);
@@ -89,8 +97,15 @@ public class SusiTutorialTest {
             test("May I get a beer?", "Yes you may get a beer!", identity);
             test("For one dollar I can buy a beer", "Yeah, I believe one dollar is a god price for a beer", identity);
             test("Someday I buy a car", "Sure, you should buy a car!", identity);
-            //test("I really like bitburger beer", "You then should have one bitburger!", identity);
+            test("I really like bitburger beer", "You then should have one bitburger!", identity);
             test("What beer is the best?", "I bet you like bitburger beer!", identity);
+            test("How do I feel?", "I don't know your mood.", identity);
+            test("I am bored.", "Make something!", identity);
+            test("How do I feel?", "You are inactive.", identity);
+            test("I am so happy!", "Good for you!", identity);
+            test("Shall I eat?", "You will be happy, whatever I say!", identity);
+            test("javascript hello", "Hello world from Nashorn", identity);
+            test("compute 10 to the power of 3", "10^3 = 1000.0", identity);
             
         } catch (Exception e) {
             e.printStackTrace();
@@ -116,6 +131,9 @@ public class SusiTutorialTest {
     private final static String testFile = 
                     "# susi EzD tutorial playground\n" +
                     "::prior\n" +
+                    "reset test.\n" +
+                    "ok^^>_mood\n" +
+                    "\n" +
                     "roses are red\n" +
                     "susi is a hack\n" +
                     "skynet is back\n" +
@@ -143,7 +161,32 @@ public class SusiTutorialTest {
                     "\n" +
                     "* beer * best?\n" +
                     "I bet you like $_beerbrand$ beer!\n" +
+                    "\n" +
+                    "I am so happy!\n" +
+                    "Good for you!^excited^>_mood\n" +
+                    "\n" +
+                    "I am bored.\n" +
+                    "Make something!^inactive^>_mood\n" +
+                    "\n" +
+                    "How do I feel?\n" +
+                    "?$_mood$:You are $_mood$.:I don't know your mood.\n" +
+                    "\n" +
+                    "Shall I *?\n" +
+                    "?$_mood$=excited:You will be happy, whatever I say!\n" +
+                    "\n" +
+                    "javascript hello\n" +
+                    "!javascript:$!$ from Nashorn\n" +
+                    "print('Hello world');\n" +
+                    "eol\n" +
+                    "\n" +
+                    "compute * to the power of *\n" +
+                    "!javascript:$1$^$2$ = $!$\n" +
+                    "Math.pow($1$, $2$)\n" +
+                    "eol\n" +
+                    "\n" +
+                    "\n" +
                     "\n";
+
 }
 
 

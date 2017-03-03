@@ -160,6 +160,7 @@ public class SusiTransfer {
                 return a;
             }
         }
+        // this.selectionMapping == null -> extract everything
         for (Object json: choices) {
             JSONObject extraction = this.extract((JSONObject) json);
             if (extraction.length() > 0) a.put(extraction);

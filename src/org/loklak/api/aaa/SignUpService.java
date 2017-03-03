@@ -38,6 +38,7 @@ import org.loklak.server.ClientCredential;
 import org.loklak.server.ClientIdentity;
 import org.loklak.server.Query;
 import org.loklak.tools.IO;
+import org.loklak.tools.TimeoutMatcher;
 import org.loklak.tools.storage.JSONObjectWithDefault;
 
 public class SignUpService extends AbstractAPIHandler implements APIHandler {
@@ -155,7 +156,7 @@ public class SignUpService extends AbstractAPIHandler implements APIHandler {
 
 		// check email pattern
 		Pattern pattern = Pattern.compile(EmailHandler.EMAIL_PATTERN);
-		if (!pattern.matcher(signup).matches()) {
+		if (!new TimeoutMatcher(pattern.matcher(signup)).matches()) {
 			throw new APIException(400, "no valid email address");
 		}
 
@@ -164,7 +165,7 @@ public class SignUpService extends AbstractAPIHandler implements APIHandler {
 
 		pattern = Pattern.compile(passwordPattern);
 
-		if (signup.equals(password) || !pattern.matcher(password).matches()) {
+		if (signup.equals(password) || !new TimeoutMatcher(pattern.matcher(password)).matches()) {
 			throw new APIException(400, "invalid password");
 		}
 

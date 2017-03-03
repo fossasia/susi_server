@@ -1,5 +1,5 @@
 /**
- *  SusiSkill
+ *  SusiProcedures
  *  Copyright 14.07.2016 by Michael Peter Christen, @0rb1t3r
  *
  *  This library is free software; you can redistribute it and/or
@@ -25,18 +25,20 @@ import java.util.function.BiFunction;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.loklak.tools.TimeoutMatcher;
+
 /**
  * A skill is the ability to inspire, to create thoughts from perception. The data structure of
  * a skill set is a mapping from perception patterns to lambda expressions which induce thoughts.
  */
-public class SusiSkills extends LinkedHashMap<Pattern, BiFunction<SusiArgument, Matcher, SusiThought>> implements Map<Pattern, BiFunction<SusiArgument, Matcher, SusiThought>> {
+public class SusiProcedures extends LinkedHashMap<Pattern, BiFunction<SusiArgument, Matcher, SusiThought>> implements Map<Pattern, BiFunction<SusiArgument, Matcher, SusiThought>> {
 
     private static final long serialVersionUID = 4531596762427825563L;
 
     /**
      * create an empty skill set
      */
-    public SusiSkills() {
+    public SusiProcedures() {
         super();
     }
     
@@ -57,7 +59,7 @@ public class SusiSkills extends LinkedHashMap<Pattern, BiFunction<SusiArgument, 
         for (Map.Entry<Pattern, BiFunction<SusiArgument, Matcher, SusiThought>> pe: this.entrySet()) {
             Pattern p = pe.getKey();
             Matcher m = p.matcher(q);
-            if (m.matches()) try {
+            if (new TimeoutMatcher(m).matches()) try {
                 SusiThought json = pe.getValue().apply(flow, m);
                 if (json != null) {
                     json.setProcess(p.pattern());

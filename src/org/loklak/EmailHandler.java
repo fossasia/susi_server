@@ -28,6 +28,7 @@ import javax.mail.internet.MimeMessage;
 
 import org.eclipse.jetty.util.log.Log;
 import org.loklak.data.DAO;
+import org.loklak.tools.TimeoutMatcher;
 
 public class EmailHandler {
 
@@ -65,10 +66,10 @@ public class EmailHandler {
         }
 
         Pattern pattern = Pattern.compile(EMAIL_PATTERN);
-        if (!pattern.matcher(addressTo).matches()) {
+        if (!new TimeoutMatcher(pattern.matcher(addressTo)).matches()) {
             throw new Exception("Invalid email ID");
         }
-        if (!pattern.matcher(senderEmail).matches()) {
+        if (!new TimeoutMatcher(pattern.matcher(senderEmail)).matches()) {
             throw new Exception("Invalid sender ID");
         }
 

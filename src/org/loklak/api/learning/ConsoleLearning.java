@@ -38,6 +38,7 @@ import org.loklak.server.AbstractAPIHandler;
 import org.loklak.server.Authorization;
 import org.loklak.server.Query;
 import org.loklak.tools.storage.JSONObjectWithDefault;
+import org.loklak.tools.storage.JsonPath;
 import org.loklak.tools.storage.JsonTray;
 
 import javax.servlet.http.HttpServletResponse;
@@ -208,11 +209,11 @@ public class ConsoleLearning extends AbstractAPIHandler implements APIHandler {
         json.put("action", action);
 
         if (action.equals("list")) {
-            Set<String> projectnames = DAO.susi.getRulesetNames(client);
+            Set<String> projectnames = DAO.susi.getSkillsetNames(client);
             JSONObject projects = new JSONObject(true);
             for (String p: projectnames) {
                 try {
-                    JsonTray t = DAO.susi.getRuleset(client, p);
+                    JsonTray t = DAO.susi.getSkillset(client, p);
                     projects.put(p, t.toJSON().getJSONObject("console"));
                 } catch (IOException e) {
                     e.printStackTrace();
@@ -230,7 +231,7 @@ public class ConsoleLearning extends AbstractAPIHandler implements APIHandler {
 
             if (action.equals("delete")) {
                 try {
-                    JsonTray tray = DAO.susi.getRuleset(client, project);
+                    JsonTray tray = DAO.susi.getSkillset(client, project);
                     if (!tray.has("console")) tray.put("console", new JSONObject(), true);
                     JSONObject console = tray.getJSONObject("console");
                     console.remove(name);
@@ -299,7 +300,7 @@ public class ConsoleLearning extends AbstractAPIHandler implements APIHandler {
                 }
             }
             
-            JSONArray data = ConsoleService.parseJSONPath(new JSONTokener(new ByteArrayInputStream(serviceResponse)), path);
+            JSONArray data = JsonPath.parse(new JSONTokener(new ByteArrayInputStream(serviceResponse)), path);
             if (data == null || data.length() == 0) {
                 json.put("accepted", false);
                 json.put("reject-reason", "the jsonPath from data object did not recognize an array object");
@@ -338,7 +339,7 @@ public class ConsoleLearning extends AbstractAPIHandler implements APIHandler {
             
             if (action.equals("learn")) {
                 try {
-                    JsonTray tray = DAO.susi.getRuleset(client, project);
+                    JsonTray tray = DAO.susi.getSkillset(client, project);
                     if (!tray.has("console")) tray.put("console", new JSONObject(), true);
                     JSONObject console = tray.getJSONObject("console");
                     console.put(name, consolerule);

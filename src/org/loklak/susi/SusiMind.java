@@ -47,6 +47,7 @@ import org.json.JSONObject;
 import org.json.JSONTokener;
 import org.loklak.api.susi.ConsoleService;
 import org.loklak.data.DAO;
+import org.loklak.susi.SusiInference.Type;
 import org.loklak.tools.storage.JsonTray;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
@@ -54,40 +55,48 @@ import org.w3c.dom.NodeList;
 
 public class SusiMind {
     
-    private final Map<String, Set<SusiRule>> ruletrigger; // a map from a keyword to a set of actions
-    private final File initpath, watchpath; // a path where the memory looks for new additions of knowledge with memory files
+    public final static int ATTENTION_TIME = 5;
+    
+    private final Map<String, Set<SusiSkill>> skilltrigger; // a map from a keyword to a set of skills
+    private final File initpath, watchpath, memorypath; // a path where the memory looks for new additions of knowledge with memory files
     private final Map<File, Long> observations; // a mapping of mind memory files to the time when the file was read the last time
     private final SusiReader reader; // responsible to understand written communication
-    private final SusiLog logs; // conversation logs
+    private final SusiMemory memories; // conversation logs are memories
     
-    public SusiMind(File initpath, File watchpath) {
+    public SusiMind(File initpath, File watchpath, File memorypath) {
         // initialize class objects
         this.initpath = initpath;
-        this.initpath.mkdirs();
+        if (this.initpath != null) this.initpath.mkdirs(); // a dream does not have that
         this.watchpath = watchpath;
-        this.watchpath.mkdirs();
-        this.ruletrigger = new ConcurrentHashMap<>();
+        if (this.watchpath != null) this.watchpath.mkdirs(); // a dream does not have that
+        this.memorypath = memorypath;
+        if (this.memorypath != null) this.memorypath.mkdirs(); // a dream SHOULD have that
+        this.skilltrigger = new ConcurrentHashMap<>();
         this.observations = new HashMap<>();
         this.reader = new SusiReader();
-        this.logs = new SusiLog(watchpath, 5);
+        this.memories = new SusiMemory(memorypath, ATTENTION_TIME);
         try {observe();} catch (IOException e) {
             e.printStackTrace();
         }
     }
 
-    public SusiLog getLogs() {
-        return logs;
+    public SusiMemory getMemories() {
+        return memories;
     }
     
     public Set<String> getUnanswered() {
-        return this.logs.getUnanswered();
+        return this.memories.getUnanswered();
     }
     
     public SusiMind observe() throws IOException {
-        observe(this.initpath);
-        observe(new File(this.initpath.getParentFile(), "aiml"));
-        observe(this.watchpath);
-        observe(new File(this.watchpath.getParentFile(), "aiml"));
+        if (this.initpath != null) {
+            observe(this.initpath);
+            observe(new File(this.initpath.getParentFile(), "aiml"));
+        }
+        if (this.watchpath != null) {
+            observe(this.watchpath);
+            observe(new File(this.watchpath.getParentFile(), "aiml"));
+        }
         return this;
     }
     
@@ -117,7 +126,7 @@ public class SusiMind {
             }
         }
         
-        //this.ruletrigger.forEach((term, map) -> System.out.println("***DEBUG trigger " + term + " -> " + map.toString()));
+        //this.skilltrigger.forEach((term, map) -> System.out.println("***DEBUG trigger " + term + " -> " + map.toString()));
     }
 
     public JSONObject readJsonLesson(File file) throws JSONException, FileNotFoundException {
@@ -127,21 +136,69 @@ public class SusiMind {
     }
     
     /**
-     * read an "EzD" ('Easy Dialog') file: this is just a text file. Read the docs/ai_rule_development_tutorial.md for an explanation
+     * read an "EzD" ('Easy Dialog') file: this is just a text file. Read the docs/susi_skill_development_tutorial.md for an explanation
      * @param br
      * @return
      * @throws JSONException
      * @throws FileNotFoundException
      */
     public JSONObject readEzDLesson(BufferedReader br) throws JSONException {
-        // read the text file and turn it into a rule json; then learn that
+        // read the text file and turn it into a skill json; then learn that
         JSONObject json = new JSONObject();
-        JSONArray rules = new JSONArray();
-        json.put("rules", rules);
+        JSONArray skills = new JSONArray();
+        json.put("skills", skills);
         String lastLine = "", line = "";
+        String bang_phrases = "", bang_type = "", bang_term = ""; StringBuilder bang_bag = new StringBuilder();
         boolean prior = false;
         try {readloop: while ((line = br.readLine()) != null) {
             line = line.trim();
+            
+            if (bang_type.length() > 0) {
+                // collect a bang
+                if (line.toLowerCase().equals("eol")) {
+                    // stop collection
+                    if (bang_type.equals("javascript")) {
+                        // create a javascript skill
+                        JSONObject skill = new JSONObject(true);
+                        JSONArray phrases = new JSONArray();
+                        skill.put("phrases", phrases);
+                        for (String phrase: bang_phrases.split("\\|")) phrases.put(SusiPhrase.simplePhrase(phrase.trim(), prior));
+                        
+                        // javascript process
+                        JSONObject process = new JSONObject();
+                        process.put("type", Type.javascript.name());
+                        process.put("expression", bang_bag.toString());
+                        skill.put("process", new JSONArray().put(process));
+                        
+                        // answers; must contain $!$
+                        skill.put("actions", new JSONArray().put(SusiAction.simpleAction(bang_term.split("\\|"))));
+                        skills.put(skill);
+                    }
+                    if (bang_type.equals("console")) {
+                        // create a console skill
+                        JSONObject skill = new JSONObject(true);
+                        JSONArray phrases = new JSONArray();
+                        skill.put("phrases", phrases);
+                        for (String phrase: bang_phrases.split("\\|")) phrases.put(SusiPhrase.simplePhrase(phrase.trim(), prior));
+                        
+                        // console process
+                        JSONObject process = new JSONObject();
+                        process.put("type", Type.console.name());
+                        process.put("definition", new JSONObject(new JSONTokener(bang_bag.toString())));
+                        skill.put("process", new JSONArray().put(process));
+                        
+                        // answers; must contain names from the console result array
+                        skill.put("actions", new JSONArray().put(SusiAction.simpleAction(bang_term.split("\\|"))));
+                        skills.put(skill);
+                    }
+                    bang_phrases = "";
+                    bang_type = "";
+                    bang_term = "";
+                    bang_bag.setLength(0);
+                }
+                bang_bag.append(line).append('\n');
+                continue readloop;
+            }
             
             // read metadata
             if (line.startsWith("::")) {
@@ -159,7 +216,7 @@ public class SusiMind {
             
             // read content
             if (line.length() > 0 && lastLine.length() > 0) {
-                // mid of conversation (last answer is query for next rule)
+                // mid of conversation (last answer is query for next skill)
                 String[] phrases = lastLine.split("\\|");
                 String condition = null;
                 int thenpos = -1;
@@ -171,28 +228,34 @@ public class SusiMind {
                         String ifsubstring = line.substring(thenpos + 1).trim();
                         if (ifsubstring.length() > 0) {
                             String[] answers = ifsubstring.split("\\|");
-                            JSONObject rule = SusiRule.simpleRule(phrases, "IF " + condition, answers, prior);
-                            rules.put(rule);
+                            JSONObject skill = SusiSkill.simpleSkill(phrases, "IF " + condition, answers, prior);
+                            skills.put(skill);
                         }
                     } else {
                         String ifsubstring = line.substring(thenpos + 1, elsepos).trim();
                         if (ifsubstring.length() > 0) {
                             String[] ifanswers = ifsubstring.split("\\|");
-                            JSONObject ruleif = SusiRule.simpleRule(phrases, "IF " + condition, ifanswers, prior);
-                            rules.put(ruleif);
+                            JSONObject skillif = SusiSkill.simpleSkill(phrases, "IF " + condition, ifanswers, prior);
+                            skills.put(skillif);
                         }
                         String elsesubstring = line.substring(elsepos + 1).trim();
                         if (elsesubstring.length() > 0) {
                             String[] elseanswers = elsesubstring.split("\\|");
-                            JSONObject ruleelse = SusiRule.simpleRule(phrases, "NOT " + condition, elseanswers, prior);
-                            rules.put(ruleelse);
+                            JSONObject skillelse = SusiSkill.simpleSkill(phrases, "NOT " + condition, elseanswers, prior);
+                            skills.put(skillelse);
                         }
                     }
+                } else if (line.startsWith("!") && (thenpos = line.indexOf(':')) > 0) {
+                    bang_phrases = lastLine;
+                    bang_type = line.substring(1, thenpos).trim().toLowerCase();
+                    bang_term = line.substring(thenpos + 1).trim();
+                    bang_bag.setLength(0);
+                    continue readloop;
                 } else {
                     String[] answers = line.split("\\|");
-                    JSONObject rule = SusiRule.simpleRule(phrases, condition, answers, prior);
-                    //System.out.println(rule.toString());
-                    rules.put(rule);
+                    JSONObject skill = SusiSkill.simpleSkill(phrases, condition, answers, prior);
+                    //System.out.println(skill.toString());
+                    skills.put(skill);
                 }
             }
             lastLine = line;
@@ -218,13 +281,13 @@ public class SusiMind {
         Node node = root;
         NodeList nl = node.getChildNodes();
         JSONObject json = new JSONObject();
-        JSONArray rules = new JSONArray();
-        json.put("rules", rules);
+        JSONArray skills = new JSONArray();
+        json.put("skills", skills);
         for (int i = 0; i < nl.getLength(); i++) {
             String nodename = nl.item(i).getNodeName().toLowerCase();
             if (nodename.equals("category")) {
-                JSONObject rule = readAIMLCategory(nl.item(i));
-                if (rule != null && rule.length() > 0) rules.put(rule);
+                JSONObject skill = readAIMLCategory(nl.item(i));
+                if (skill != null && skill.length() > 0) skills.put(skill);
             }
             System.out.println("ROOT NODE " + nl.item(i).getNodeName());
         }
@@ -247,7 +310,7 @@ public class SusiMind {
             }
         }
         if (phrases != null && answers != null) {
-            return SusiRule.simpleRule(phrases, null, answers, false);
+            return SusiSkill.simpleSkill(phrases, null, answers, false);
         }
         return null;
     }
@@ -274,7 +337,7 @@ public class SusiMind {
         // teach the language parser
         this.reader.learn(json);
 
-        // add console rules
+        // add console skills
         JSONObject consoleServices = json.has("console") ? json.getJSONObject("console") : new JSONObject();
         consoleServices.keySet().forEach(console -> {
             JSONObject service = consoleServices.getJSONObject(console);
@@ -288,20 +351,20 @@ public class SusiMind {
             }
         });
 
-        // add conversation rules
-        JSONArray ruleset = json.has("rules") ? json.getJSONArray("rules") : new JSONArray();
-        ruleset.forEach(j -> {
-            List<SusiRule> rules = SusiRule.getRules((JSONObject) j);
-            rules.forEach(rule ->
-                rule.getKeys().forEach(key -> {
-                    Set<SusiRule> l = this.ruletrigger.get(key);
+        // add conversation skills
+        JSONArray skillset = json.has("rules") ? json.getJSONArray("rules") : json.has("skills") ? json.getJSONArray("skills") : new JSONArray();
+        skillset.forEach(j -> {
+            List<SusiSkill> skills = SusiSkill.getSkills((JSONObject) j);
+            skills.forEach(skill ->
+                skill.getKeys().forEach(key -> {
+                    Set<SusiSkill> l = this.skilltrigger.get(key);
                     if (l == null) {
                         l = new HashSet<>();
-                        this.ruletrigger.put(key, l);
+                        this.skilltrigger.put(key, l);
                     }
-                    l.add(rule);
-                    rule.getPhrases().forEach(phrase -> this.logs.removeUnanswered(phrase.getPattern()));
-                    //System.out.println("***DEBUG: ADD RULE FOR KEY " + key + ": " + rule.toString());
+                    l.add(skill);
+                    skill.getPhrases().forEach(phrase -> this.memories.removeUnanswered(phrase.getPattern()));
+                    //System.out.println("***DEBUG: ADD SKILL FOR KEY " + key + ": " + skill.toString());
                 })
             );
         });
@@ -310,19 +373,19 @@ public class SusiMind {
     }
     
     /**
-     * extract the mind system from the ruletrigger
+     * extract the mind system from the skilltrigger
      * @return
      */
     public JSONObject getMind() {
         JSONObject mind = new JSONObject(true);
-        this.ruletrigger.forEach((key, rulemap) -> {
-            JSONArray rules = new JSONArray();
-            mind.put(key, rules);
-            rulemap.forEach(rule -> {
+        this.skilltrigger.forEach((key, skillmap) -> {
+            JSONArray skills = new JSONArray();
+            mind.put(key, skills);
+            skillmap.forEach(skill -> {
                 JSONObject r = new JSONObject(true);
-                r.putAll(rule.toJSON());
-                r.put("hash", rule.hashCode());
-                rules.put(r);
+                r.putAll(skill.toJSON());
+                r.put("hash", skill.hashCode());
+                skills.put(r);
             });
         });
         return mind;
@@ -331,10 +394,10 @@ public class SusiMind {
     /**
      * This is the core principle of creativity: being able to match a given input
      * with problem-solving knowledge.
-     * This method finds ideas (with a query instantiated rules) for a given query.
-     * The rules are selected using a scoring system and pattern matching with the query.
-     * Not only the most recent user query is considered for rule selection but also
-     * previously requested queries and their answers to be able to set new rule selections
+     * This method finds ideas (with a query instantiated skills) for a given query.
+     * The skills are selected using a scoring system and pattern matching with the query.
+     * Not only the most recent user query is considered for skill selection but also
+     * previously requested queries and their answers to be able to set new skill selections
      * in the context of the previous conversation.
      * @param query the user input
      * @param previous_argument the latest conversation with the same user
@@ -345,25 +408,25 @@ public class SusiMind {
         // tokenize query to have hint for idea collection
         final List<SusiIdea> ideas = new ArrayList<>();
         this.reader.tokenizeSentence(query).forEach(token -> {
-            Set<SusiRule> rule_for_category = this.ruletrigger.get(token.categorized);
-            Set<SusiRule> rule_for_original = token.original.equals(token.categorized) ? null : this.ruletrigger.get(token.original);
-            Set<SusiRule> r = new HashSet<>();
-            if (rule_for_category != null) r.addAll(rule_for_category);
-            if (rule_for_original != null) r.addAll(rule_for_original);
-            r.forEach(rule -> ideas.add(new SusiIdea(rule).setIntent(token)));
+            Set<SusiSkill> skill_for_category = this.skilltrigger.get(token.categorized);
+            Set<SusiSkill> skill_for_original = token.original.equals(token.categorized) ? null : this.skilltrigger.get(token.original);
+            Set<SusiSkill> r = new HashSet<>();
+            if (skill_for_category != null) r.addAll(skill_for_category);
+            if (skill_for_original != null) r.addAll(skill_for_original);
+            r.forEach(skill -> ideas.add(new SusiIdea(skill).setIntent(token)));
         });
         
-        for (SusiIdea idea: ideas) DAO.log("idea.phrase-1: score=" + idea.getRule().getScore() + " : " + idea.getRule().getPhrases().toString() + " " + idea.getRule().getActionsClone());
+        for (SusiIdea idea: ideas) DAO.log("idea.phrase-1: score=" + idea.getSkill().getScore().score + " : " + idea.getSkill().getPhrases().toString() + " " + idea.getSkill().getActionsClone());
         
-        // add catchall rules always (those are the 'bad ideas')
-        Collection<SusiRule> ca = this.ruletrigger.get(SusiRule.CATCHALL_KEY);
-        if (ca != null) ca.forEach(rule -> ideas.add(new SusiIdea(rule)));
+        // add catchall skills always (those are the 'bad ideas')
+        Collection<SusiSkill> ca = this.skilltrigger.get(SusiSkill.CATCHALL_KEY);
+        if (ca != null) ca.forEach(skill -> ideas.add(new SusiIdea(skill)));
         
         // create list of all ideas that might apply
         TreeMap<Long, List<SusiIdea>> scored = new TreeMap<>();
         AtomicLong count = new AtomicLong(0);
         ideas.forEach(idea -> {
-            int score = idea.getRule().getScore();
+            int score = idea.getSkill().getScore().score;
             long orderkey = Long.MAX_VALUE - ((long) score) * 1000L + count.incrementAndGet();
             List<SusiIdea> r = scored.get(orderkey);
             if (r == null) {r = new ArrayList<>(); scored.put(orderkey, r);}
@@ -373,27 +436,30 @@ public class SusiMind {
         // make a sorted list of all ideas
         ideas.clear(); scored.values().forEach(r -> ideas.addAll(r));
         
-        for (SusiIdea idea: ideas) DAO.log("idea.phrase-2: score=" + idea.getRule().getScore() + " : " + idea.getRule().getPhrases().toString() + " " + idea.getRule().getActionsClone());
+        for (SusiIdea idea: ideas) DAO.log("idea.phrase-2: score=" + idea.getSkill().getScore().score + " : " + idea.getSkill().getPhrases().toString() + " " + idea.getSkill().getActionsClone());
         
         // test ideas and collect those which match up to maxcount
         List<SusiIdea> plausibleIdeas = new ArrayList<>(Math.min(10, maxcount));
         for (SusiIdea idea: ideas) {
-            SusiRule rule = idea.getRule();
-            Collection<Matcher> m = rule.matcher(query);
+            SusiSkill skill = idea.getSkill();
+            Collection<Matcher> m = skill.matcher(query);
             if (m.isEmpty()) continue;
             // TODO: evaluate leading SEE flow commands right here as well
             plausibleIdeas.add(idea);
             if (plausibleIdeas.size() >= maxcount) break;
         }
 
-        for (SusiIdea idea: plausibleIdeas) DAO.log("idea.phrase-3: score=" + idea.getRule().getScore() + " : " + idea.getRule().getPhrases().toString() + " " + idea.getRule().getActionsClone());
+        for (SusiIdea idea: plausibleIdeas) {
+            DAO.log("idea.phrase-3: score=" + idea.getSkill().getScore().score + " : " + idea.getSkill().getPhrases().toString() + " " + idea.getSkill().getActionsClone());
+            DAO.log("idea.phrase-3:   log=" + idea.getSkill().getScore().log );
+        }
 
         return plausibleIdeas;
     }
     
     /**
-     * react on a user input: this causes the selection of deduction rules and the evaluation of the process steps
-     * in every rule up to the moment where enough rules have been applied as consideration. The reaction may also
+     * react on a user input: this causes the selection of deduction skills and the evaluation of the process steps
+     * in every skill up to the moment where enough skills have been applied as consideration. The reaction may also
      * cause the evaluation of operational steps which may cause learning effects within the SusiMind.
      * @param query
      * @param maxcount
@@ -403,9 +469,9 @@ public class SusiMind {
         // get the history a list of thoughts
         SusiArgument observation_argument = new SusiArgument();
         if (observation != null && observation.length() > 0) observation_argument.think(observation);
-        ArrayList<SusiInteraction> interactions = this.logs.getInteractions(client);
-        // latest interaction is first in list
-        interactions.forEach(action -> observation_argument.think(action.recallDispute()));
+        List<SusiCognition> cognitions = this.memories.getCognitions(client);
+        // latest cognition is first in list
+        cognitions.forEach(cognition -> observation_argument.think(cognition.recallDispute()));
         // perform a mindmeld to create a single thought out of the recalled argument
         // the mindmeld will squash the latest thoughts into one so it does not pile up to exponential growth
         SusiThought recall = observation_argument.mindmeld(false);
@@ -417,7 +483,7 @@ public class SusiMind {
         List<SusiArgument> answers = new ArrayList<>();
         List<SusiIdea> ideas = creativity(query, recall, 100);
         for (SusiIdea idea: ideas) {
-            SusiArgument argument = idea.getRule().consideration(query, recall, idea.getIntent(), this, client);
+            SusiArgument argument = idea.getSkill().consideration(query, recall, idea.getIntent(), this, client);
             if (argument != null) answers.add(argument);
             if (answers.size() >= maxcount) break;
         }
@@ -434,19 +500,19 @@ public class SusiMind {
         return expression;
     }
 
-    public Set<String> getRulesetNames(String client) {
-        return this.logs.getRulesetNames(client);
+    public Set<String> getSkillsetNames(String client) {
+        return this.memories.getSkillsetNames(client);
     }
     
-    public JsonTray getRuleset(String client, String name) throws IOException {
-        return this.logs.getRuleset(client, name);
+    public JsonTray getSkillset(String client, String name) throws IOException {
+        return this.memories.getSkillset(client, name);
     }
     
     public static void main(String[] args) {
         try {
             File init = new File(new File("conf"), "susi");
             File watch = new File(new File("data"), "susi");
-            SusiMind mem = new SusiMind(init, watch);
+            SusiMind mem = new SusiMind(init, watch, watch);
             JSONObject lesson = mem.readJsonLesson(new File("conf/susi/susi_cognition_000.json"));
             mem.learn(lesson);
             System.out.println(mem.react("I feel funny", "localhost", new SusiThought()));

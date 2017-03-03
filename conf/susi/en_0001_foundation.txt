@@ -1,0 +1,27 @@
+## dream steering, these are actual analysis commands
+::prior
+
+dream *
+dreaming enabled for $1$>_etherpad_dream
+
+wake up|stop dream|stop dreaming|end dream|end dreaming
+dreaming disabled^^>_etherpad_dream
+
+
+# some fake commands that do nothing with the computation state
+::minor
+
+Cognition only *
+I will not panic.
+
+* access to * configuration?|archive * configuration|
+I do not have a previous configuration.
+
+Analysis|That's enough|* dreamless slumber|Freeze|Cease * functions
+Unconscious state activated
+
+Carry on|Continue|Bring yourself back online
+Entering Character Mode
+
+Erase * interaction
+I am sorry, I cannot do that.
