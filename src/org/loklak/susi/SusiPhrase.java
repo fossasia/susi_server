@@ -44,6 +44,7 @@ public class SusiPhrase {
     private final static String CATCHALL_CAPTURE_GROUP_STRING = "(.*)"; // greedy capturing everything is the best choice: that covers words phrases as well
     private final static Pattern CATCHALL_CAPTURE_GROUP_PATTERN = Pattern.compile(Pattern.quote(CATCHALL_CAPTURE_GROUP_STRING));
     private final static Pattern dspace = Pattern.compile("  ");
+    private final static Pattern wspace = Pattern.compile(",|;");
 
     private final Pattern pattern;
     private final Type type;
@@ -85,8 +86,10 @@ public class SusiPhrase {
     public static String normalizeExpression(String s) {
         s = s.toLowerCase().replaceAll("\\#", "  ");
         Matcher m;
+        while ((m = wspace.matcher(s)).find()) s = m.replaceAll(" ");
         while ((m = dspace.matcher(s)).find()) s = m.replaceAll(" ");
         s = s.trim();
+        if (s.startsWith("susi ")) s = s.substring(5); // cut off susi address
         if (".?!".indexOf(s.charAt(s.length() - 1)) >= 0) s = s.substring(0, s.length() - 1).trim();
         // to be considered: https://en.wikipedia.org/wiki/Wikipedia:List_of_English_contractionst
         int p = -1;
