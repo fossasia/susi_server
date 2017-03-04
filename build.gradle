@@ -1,3 +1,7 @@
+apply plugin: 'java'
+apply plugin: 'eclipse'
+apply plugin: 'com.github.johnrengelman.shadow'
+
 buildscript {
   repositories {
     jcenter()
@@ -8,14 +12,11 @@ buildscript {
   }
 }
 
-apply plugin: 'java'
-apply plugin: 'eclipse'
-apply plugin: 'com.github.johnrengelman.shadow'
-
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
 
 sourceSets.main.java.srcDirs = ['src']
+sourceSets.main.resources.srcDirs = ['conf/logs']
 
 jar {
     manifest {
@@ -81,3 +82,15 @@ dependencies {
   compile group: 'rome', name: 'rome', version: '1.0'
   compile group: 'org.slf4j', name: 'slf4j-api', version: '1.7.21'
 }
+
+tasks.withType(Javadoc) {
+  options.addBooleanOption('Xdoclint:none', true)
+}
+
+task start(type: JavaExec, dependsOn: classes) {
+  main = 'org.loklak.SusiServer'
+  classpath sourceSets.main.runtimeClasspath
+  classpath configurations.runtime
+}
+
+
