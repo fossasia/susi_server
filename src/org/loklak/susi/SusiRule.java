@@ -291,12 +291,13 @@ public class SusiRule {
         /*
          * Score Computation:
          * see: https://github.com/loklak/loklak_server/issues/767
+         * Criteria:
 
-         * (1) primary criteria is the conversation plan:
+         * (1) the conversation plan:
          * purpose: {answer, question, reply} purpose would have to be defined
          * The purpose can be computed using a pattern on the answer expression: is there a '?' at the end, is it a question. Is there also a '. ' (end of sentence) in the text, is it a reply.
 
-         * (2) secondary criteria is the existence of a pattern where we decide between prior and minor rules
+         * (2) the existence of a pattern where we decide between prior and minor rules
          * pattern: {false, true} with/without pattern could be computed from the rule string
          * all rules with pattern are ordered in the middle between prior and minor
          * this is combined with
@@ -304,10 +305,10 @@ public class SusiRule {
          * The prior attribute can also be expressed as an replacement of a pattern type because it is only relevant if the query is not a pattern or regular expression.
          * The resulting criteria is a property with three possible values: {minor, pattern, major}
     
-         * (3) tertiary criteria is the operation type
+         * (3) the operation type
          * op: {retrieval, computation, storage} the operation could be computed from the rule string
 
-         * (4) quaternary criteria is the IO activity (-location)
+         * (4) the IO activity (-location)
          * io: {remote, local, ram} the storage location can be computed from the rule string
     
          * (5) the meatsize (number of characters that are non-patterns)
@@ -325,7 +326,7 @@ public class SusiRule {
         final AtomicInteger dialogType_subscore = new AtomicInteger(0);
         this.actions.forEach(action -> dialogType_subscore.set(Math.max(dialogType_subscore.get(), action.getDialogType().getSubscore())));
         this.score = this.score * SusiAction.DialogType.values().length + dialogType_subscore.get();
-        
+         
         // (2) pattern score
         final AtomicInteger phrases_subscore = new AtomicInteger(0);
         this.phrases.forEach(phrase -> phrases_subscore.set(Math.max(phrases_subscore.get(), phrase.getSubscore())));
@@ -345,7 +346,7 @@ public class SusiRule {
         final AtomicInteger phrases_wholesize = new AtomicInteger(0);
         this.phrases.forEach(phrase -> phrases_wholesize.set(Math.max(phrases_wholesize.get(), phrase.getPattern().toString().length())));
         this.score = this.score * 100 + phrases_wholesize.get();
-        
+     
         // (7) subscore from the user
         this.score += this.score * 1000 + Math.min(1000, this.user_subscore);
         
