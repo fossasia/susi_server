@@ -1,0 +1,11 @@
+build.commands=org.eclipse.jdt.core.javabuilder
+connection.arguments=
+connection.gradle.distribution=GRADLE_DISTRIBUTION(WRAPPER)
+connection.java.home=null
+connection.jvm.arguments=
+connection.project.dir=
+containers=org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.8/
+derived.resources=.gradle,build
+eclipse.preferences.version=1
+natures=org.eclipse.jdt.core.javanature
+project.path=\:
