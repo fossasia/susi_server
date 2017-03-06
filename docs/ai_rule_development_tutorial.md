@@ -129,10 +129,63 @@ Yes you may.
 ```
 
 ### Tutorial Level 4: Using Query-Patterns in Answers
+It would be nice if we could use the content of the text which matched with the query patterns.
+Every pattern that matched has a pattern number: the first pattern has the number 1 and if 
+we want to use that pattern in the result, we can denote that with the term `$1$`:
+```
+May I get a *?
+Yes you may get a $1$!
+```
+It is of course possible to combine Query-Patterns with alternatives
+in the query-part and the response part.
 
 ### Tutorial Level 5: Multiple Patterns in Queries and Answers
+You can have of course multiple wildcards in the query pattern.
+There may be different reasons for that: either it is actually intended
+that both wildcards are used in the response or one of the wildcard
+is just there because you want to ignore everything where it matches.
+
+The following example shows a case where both wildcards are used:
+```
+For * I can buy a *
+Yeah, I believe $1$ is a god price for a $2$
+```
+
+Another case is, where you just want to ignore a whole part of the query:
+```
+* buy a *
+Sure, you should buy a $2$!
+```
+
+Text patterns like `$1$`are called 'variable pattern'. There is also a special
+variable pattern: `$0$` denotes the whole sentence, identical to what the user asked susi.
+
 
 ### Tutorial Level 6: Using Variables from Answer Terms
+Susi has a memory! It is possible to store information inside Susi's user session
+and use that information later on. For example, you can tell Susi your most favorite
+beer brand:
+
+```
+I * like * beer
+You then should have one $2$>_beerbrand!
+```
+
+Now Susi knows your most favourite beer brand, it is stored inside the variable `_beerbrand`. Note that the variable starts with a leading '_'. That has a special meaning: variables without a leading '_' are only valid while Susi is thinking about
+a phrase, not after the response has computed. Susi will not remember a variable, if
+that variable was set in a past converation and has not a leading '_'.
+
+You can now use that variable in another rule:
+```
+* beer * best?
+I bet you like $_beerbrand$ beer!
+```
+Note that the `*` wildcards in the query are not used at all. They are just there
+to make it easy that this rule matches. It will i.e. match on "What beer brand is the best?"
+
+Variables are only visible within the same user session. Therefore we need
+authentified users and that is a main reason that you have to log on to use Susi.
+
 
 ### Tutorial Level 7: Setting Status Variables
 
