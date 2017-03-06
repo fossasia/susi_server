@@ -44,11 +44,11 @@ import org.loklak.susi.SusiTransfer;
 
 import org.loklak.tools.storage.JSONObjectWithDefault;
 
-
 import javax.servlet.http.HttpServletResponse;
 
 /* examples:
- * http://localhost:9000/api/console.json?q=SELECT%20*%20FROM%20rss%20WHERE%20url=%27https://www.reddit.com/search.rss?q=loklak%27;
+ * http://localhost:4000/susi/console.json?q=SELECT%20*%20FROM%20rss%20WHERE%20url=%27https://www.reddit.com/search.rss?q=loklak%27;
+ * http://localhost:4000/susi/console.json?q=SELECT%20plaintext%20FROM%20wolframalpha%20WHERE%20query=%27berlin%27;
 * */
 
 public class ConsoleService extends AbstractAPIHandler implements APIHandler {
@@ -165,10 +165,34 @@ public class ConsoleService extends AbstractAPIHandler implements APIHandler {
             json.setData(transfer.conclude(json.getData()));
             return json;
         });
+        dbAccess.put(Pattern.compile("SELECT +?(.*?) +?FROM +?wolframalpha +?WHERE +?query ??= ??'(.*?)' ??;"), (flow, matcher) -> {
+            SusiThought json = new SusiThought();
+            try {
+                String query = matcher.group(2);
+                String appid = DAO.getConfig("wolframalpha.appid", "");
+                String serviceURL = "https://api.wolframalpha.com/v2/query?input=$query$&format=plaintext&output=JSON&appid=" + appid;
+                JSONTokener serviceResponse = new JSONTokener(new ByteArrayInputStream(loadData(serviceURL, query)));
+                JSONObject wa = new JSONObject(serviceResponse);
+                JSONArray pods = wa.getJSONObject("queryresult").getJSONArray("pods");
+                // get the relevant pod
+                JSONObject subpod = pods.getJSONObject(1).getJSONArray("subpods").getJSONObject(0);
+                String response = subpod.getString("plaintext");
+                int p = response.indexOf('\n');
+                if (p >= 0) response = response.substring(0, p);
+                p = response.lastIndexOf('|');
+                if (p >= 0) response = response.substring(p + 1).trim();
+                subpod.put("plaintext", response);
+                json.setQuery(query);
+                SusiTransfer transfer = new SusiTransfer(matcher.group(1));
+                json.setData(transfer.conclude(new JSONArray().put(subpod)));
+                json.setHits(json.getCount());
+            } catch (Throwable e) {
+                // probably a time-out or a json error
+            }
+            return json;
+        });
     }
-    
-    
-    
+
     @Override
     public JSONObject serviceImpl(Query post, HttpServletResponse response, Authorization rights, final JSONObjectWithDefault permissions) throws APIException {
 

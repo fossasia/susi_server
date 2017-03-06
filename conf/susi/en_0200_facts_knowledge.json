@@ -29,7 +29,7 @@
       {"type":"map", "latitude":"$latitude$", "longitude":"$longitude$", "zoom":"13"}
     ]
   }, {
-    "score"  :1,
+    "score"  :2,
     "phrases":[
       {"type":"regex", "expression":"what is (?:(?:a )*)(.*)"},
       {"type":"regex", "expression":"describe (?:(?:a )*)(.*)"},
@@ -43,6 +43,21 @@
                 {"type":"flow", "expression":"NOT $description$ = Wikipedia disambiguation page"} ],
     "actions":[ {"type":"answer", "select":"random", "phrases":[
       "$1$ is a $description$."
+    ]}]
+  }, {
+    "score"  :1,
+    "phrases":[
+      {"type":"regex", "expression":"what is (?:(?:a )*)(.*)"},
+      {"type":"regex", "expression":"describe (?:(?:a )*)(.*)"},
+      {"type":"regex", "expression":"please describe (?:(?:a )*)(.*)"},
+      {"type":"regex", "expression":"explain (?:(?:a )*)(.*)"},
+      {"type":"regex", "expression":"please explain (?:(?:a )*)(.*)"},
+      {"type":"pattern", "expression":"what does * mean"},
+      {"type":"regex", "expression":"how is (?:(?:a )*)(.*)"}
+    ],
+    "process":[ {"type":"console", "expression":"SELECT plaintext FROM wolframalpha WHERE query='$1$';"} ],
+    "actions":[ {"type":"answer", "select":"random", "phrases":[
+      "Definition of $1$: $plaintext$."
     ]}]
   }, {
     "score"  :0,
