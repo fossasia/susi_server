@@ -316,6 +316,17 @@ public class SusiThought extends JSONObject {
         return list;
     }
     
+    public String getObservation(String featureName) {
+        JSONArray table = this.getData();
+        if (table != null && table.length() > 0) {
+            JSONObject row = table.getJSONObject(0);
+            for (String key: row.keySet()) {
+                if (key.equals(featureName)) return row.get(key).toString();
+            }
+        }
+        return null;
+    }
+    
     /**
      * Every information may have a set of (re-)actions assigned.
      * Those (re-)actions are methods to do something with the thought.

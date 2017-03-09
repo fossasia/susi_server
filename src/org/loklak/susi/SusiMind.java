@@ -63,9 +63,9 @@ public class SusiMind {
     public SusiMind(File initpath, File watchpath) {
         // initialize class objects
         this.initpath = initpath;
-        this.initpath.mkdirs();
+        if (this.initpath != null) this.initpath.mkdirs(); // a dream does not have that
         this.watchpath = watchpath;
-        this.watchpath.mkdirs();
+        if (this.watchpath != null) this.watchpath.mkdirs(); // a dream does not have that
         this.ruletrigger = new ConcurrentHashMap<>();
         this.observations = new HashMap<>();
         this.reader = new SusiReader();
@@ -84,10 +84,14 @@ public class SusiMind {
     }
     
     public SusiMind observe() throws IOException {
-        observe(this.initpath);
-        observe(new File(this.initpath.getParentFile(), "aiml"));
-        observe(this.watchpath);
-        observe(new File(this.watchpath.getParentFile(), "aiml"));
+        if (this.watchpath != null) {
+            observe(this.initpath);
+            observe(new File(this.initpath.getParentFile(), "aiml"));
+        }
+        if (this.watchpath != null) {
+            observe(this.watchpath);
+            observe(new File(this.watchpath.getParentFile(), "aiml"));
+        }
         return this;
     }
     

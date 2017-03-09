@@ -86,7 +86,7 @@ public class SusiLog {
         if (this.unanswered != null) return this.unanswered;
         this.unanswered = new ConcurrentHashSet<>();
         // debug
-        for (String c: this.root.list()) {
+        if (this.root != null) for (String c: this.root.list()) {
             getInteractions(c).forEach(i -> {
                 String query = i.getQuery().toLowerCase();
                 String answer = i.getExpression();

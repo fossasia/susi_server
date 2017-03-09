@@ -41,7 +41,6 @@ import org.loklak.server.Query;
 import org.loklak.susi.SusiSkills;
 import org.loklak.susi.SusiThought;
 import org.loklak.susi.SusiTransfer;
-
 import org.loklak.tools.storage.JSONObjectWithDefault;
 
 import javax.servlet.http.HttpServletResponse;
