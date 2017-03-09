@@ -40,7 +40,7 @@
       {"type":"regex", "expression":"how is (?:(?:a )*)(.*)"}
     ],
     "process":[ {"type":"console", "expression":"SELECT description FROM wikidata-en WHERE query='$1$';"},
-                {"type":"flow", "expression":"NOT $description$ = Wikipedia disambiguation page"} ],
+                {"type":"memory", "expression":"NOT $description$ = Wikipedia disambiguation page"} ],
     "actions":[ {"type":"answer", "select":"random", "phrases":[
       "$1$ is a $description$."
     ]}]
@@ -75,7 +75,7 @@
       {"type":"regex", "expression":"how is (?:(?:a )*)(.*)"}
     ],
     "process":[ {"type":"console", "expression":"SELECT description FROM wikidata-en WHERE query='$1$';"},
-                {"type":"flow", "expression":"NOT $description$ = Wikipedia disambiguation page PATTERN"} ],
+                {"type":"memory", "expression":"NOT $description$ = Wikipedia disambiguation page PATTERN"} ],
     "actions":[  {"type":"answer", "select":"random", "phrases":[
       "$1$ is a $description$."
     ]}]
