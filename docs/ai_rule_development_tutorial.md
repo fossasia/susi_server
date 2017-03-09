@@ -189,6 +189,56 @@ authentified users and that is a main reason that you have to log on to use Susi
 
 ### Tutorial Level 7: Setting Status Variables
 
+A status variable is exactly the same variable as in the previous tutorial level. The difference is that the value for the variable
+does not come from a term that is visible in the answer. Instead, an invisible 'status' can be assigned to the variable.
+
+```
+I am so happy!
+Good for you!^excited^>_mood
+
+I am bored.
+Make something!^inactive^>_mood
+
+How do I feel?
+You are $_mood$.
+```
+
+In this example, Susi remembers your mood and can tell you about it. The actual word which was used to describe the mood was never printed to the user before, because using the `^^` symbols it got quoted and became invisible.
+
 ### Tutorial Level 8: Conditions for Answers
 
-### Tutorial Level 9: Rules used as Functions/Templates
+Whenever you are using variables in answers which are not set in the same rule, you should test if these variables exist and had been set.
+It is possible to add simple conditions to the answer lines:
+
+```
+How do I feel?
+?$_mood$:You are $_mood$.:I don't know your mood.
+```
+
+This rule replaces the last rule from the latest Level. It makes a distinction between the case where no knowledge about the mood is there, or the mood is set.
+
+```
+Shall I *?
+?$_mood$=excited:You will be happy, whatever I say!
+```
+
+### Tutorial Level 9: Rules used as Functions/Templates (Basic Self-Reflection)
+
+Susi can call itself during an answer preparation. This can be used to create rules which are designed
+to be called in such a self-call. For example:
+
+```
+function colour
+red|green|blue|white|black|yellow|purple|brown
+```
+
+We would not expect that anybody asks "function colour". But we can use this to add the name of a colour in our answer:
+
+```
+What is your favourite colour?
+?$_mycolour$:My favourite colour is $_mycolour$!:I like ``function colour``>_mycolour!
+```
+
+Here, the colour is randomly generated with the `function colour` call, but only if Susi has not done that yet. If Susi just generated a colour in the answer, that answer will be stored in the variable `_mycolour`. But if that variable already existed, it will be used to make the answer without the `function colour`.
+
+

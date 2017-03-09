@@ -86,6 +86,7 @@ public class SusiTutorialTest {
             }
             
             ClientIdentity identity = new ClientIdentity("host:localhost");
+            test("reset test.", "ok", identity);
             test("roses are red", "susi is a hack", identity);
             test("susi is a hack", "skynet is back", identity);
             assertTrue("Potatoes|Vegetables|Fish".indexOf(susiAnswer("What is your favorite dish", identity)) >= 0);
@@ -98,6 +99,11 @@ public class SusiTutorialTest {
             test("Someday I buy a car", "Sure, you should buy a car!", identity);
             test("I really like bitburger beer", "You then should have one bitburger!", identity);
             test("What beer is the best?", "I bet you like bitburger beer!", identity);
+            test("How do I feel?", "I don't know your mood.", identity);
+            test("I am bored.", "Make something!", identity);
+            test("How do I feel?", "You are inactive.", identity);
+            test("I am so happy!", "Good for you!", identity);
+            test("Shall I eat?", "You will be happy, whatever I say!", identity);
             
         } catch (Exception e) {
             e.printStackTrace();
@@ -123,6 +129,9 @@ public class SusiTutorialTest {
     private final static String testFile = 
                     "# susi EzD tutorial playground\n" +
                     "::prior\n" +
+                    "reset test.\n" +
+                    "ok^^>_mood\n" +
+                    "\n" +
                     "roses are red\n" +
                     "susi is a hack\n" +
                     "skynet is back\n" +
@@ -150,7 +159,23 @@ public class SusiTutorialTest {
                     "\n" +
                     "* beer * best?\n" +
                     "I bet you like $_beerbrand$ beer!\n" +
+                    "\n" +
+                    "I am so happy!\n" +
+                    "Good for you!^excited^>_mood\n" +
+                    "\n" +
+                    "I am bored.\n" +
+                    "Make something!^inactive^>_mood\n" +
+                    "\n" +
+                    "How do I feel?\n" +
+                    "?$_mood$:You are $_mood$.:I don't know your mood.\n" +
+                    "\n" +
+                    "Shall I *?\n" +
+                    "?$_mood$=excited:You will be happy, whatever I say!\n" +
                     "\n";
+                    
+                    
+
+
 }
 
 
