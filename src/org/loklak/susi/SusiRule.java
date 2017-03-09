@@ -180,18 +180,7 @@ public class SusiRule {
     }
     
     public String toString() {
-        /*
-        String s = 
-            "{\n" +
-            "  \"phrases\":[{\"type\": \"pattern\", \"expression\": \"\"}],\n" +
-            "  \"actions\":[{\"type\": \"answer\", \"select\": \"random\", \"phrases\": [\n" +
-            "  \"\"\n" +
-            "  \"]\n" +
-            "  \"}]\n" +
-            "\"}\";\n";
-        return s;
-        */
-        return this.phrases.toString();
+        return this.toJSON().toString(2);
     }
 
     

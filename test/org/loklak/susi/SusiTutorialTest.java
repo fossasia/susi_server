@@ -29,16 +29,22 @@ public class SusiTutorialTest {
         return new BufferedReader(new InputStreamReader(bais, StandardCharsets.UTF_8));
     }
     
-    public static String susiAnswer(String q, ClientIdentity identity) throws JSONException {
+    public static String susiAnswer(String q, ClientIdentity identity) {
         SusiInteraction interaction = new SusiInteraction(DAO.susi, q, 0, 0, 0, 1, identity);
         JSONObject json = interaction.getJSON();
         DAO.susi.getLogs().addInteraction(identity.getClient(), interaction);
-        String answer = json.getJSONArray("answers")
+        try {
+            String answer = json.getJSONArray("answers")
                 .getJSONObject(0)
                 .getJSONArray("actions")
                 .getJSONObject(0)
                 .getString("expression");
-        return answer;
+            return answer;
+        } catch (JSONException e) {
+            System.out.println("json not well-formed: " + json.toString());
+            e.printStackTrace();
+            return null;
+        }
     }
     
     @BeforeClass
@@ -69,6 +75,7 @@ public class SusiTutorialTest {
                 DAO.init(config, data);
                 BufferedReader br = getTestReader();
                 JSONObject lesson = DAO.susi.readEzDLesson(br);
+                System.out.println(lesson.toString(2));
                 DAO.susi.learn(lesson);
                 br.close();
             } catch(Exception e){
@@ -89,7 +96,7 @@ public class SusiTutorialTest {
             test("May I get a beer?", "Yes you may get a beer!", identity);
             test("For one dollar I can buy a beer", "Yeah, I believe one dollar is a god price for a beer", identity);
             test("Someday I buy a car", "Sure, you should buy a car!", identity);
-            //test("I really like bitburger beer", "You then should have one bitburger!", identity);
+            test("I really like bitburger beer", "You then should have one bitburger!", identity);
             test("What beer is the best?", "I bet you like bitburger beer!", identity);
             
         } catch (Exception e) {

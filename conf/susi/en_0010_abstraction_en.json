@@ -13,7 +13,7 @@
 		"you are":["you're","u are", "u r"],
 		"i am":["i'm"]
 	},
-	"filler":["actually","so","well","look","like","#"],
+	"filler":["actually","so","well","look","#"],
 	"categories":{
 		"alike":["same","identical","equivalent"],
 		"amazing":["incredible", "unbelievable", "improbable", "fabulous", "wonderful", "fantastic", "astonishing", "astounding", "extraordinary"],
