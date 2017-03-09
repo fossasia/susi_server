@@ -236,7 +236,7 @@ We would not expect that anybody asks "function colour". But we can use this to 
 
 ```
 What is your favourite colour?
-?$_mycolour$:My favourite colour is $_mycolour$!:I like ``function colour``>_mycolour!
+?$_mycolour$:My favourite colour is $_mycolour$!:I like `function colour`>_mycolour!
 ```
 
 Here, the colour is randomly generated with the `function colour` call, but only if Susi has not done that yet. If Susi just generated a colour in the answer, that answer will be stored in the variable `_mycolour`. But if that variable already existed, it will be used to make the answer without the `function colour`.
