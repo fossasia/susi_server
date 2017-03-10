@@ -407,8 +407,8 @@ public class SusiMind {
         // get the history a list of thoughts
         SusiArgument observation_argument = new SusiArgument();
         if (observation != null && observation.length() > 0) observation_argument.think(observation);
-        ArrayList<SusiInteraction> interactions = this.memories.getInteractions(client);
-        // latest interaction is first in list
+        ArrayList<SusiCognition> interactions = this.memories.getCognitions(client);
+        // latest cognition is first in list
         interactions.forEach(action -> observation_argument.think(action.recallDispute()));
         // perform a mindmeld to create a single thought out of the recalled argument
         // the mindmeld will squash the latest thoughts into one so it does not pile up to exponential growth

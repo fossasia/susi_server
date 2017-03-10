@@ -37,7 +37,7 @@ import org.loklak.server.AbstractAPIHandler;
 import org.loklak.server.Authorization;
 import org.loklak.server.Query;
 import org.loklak.susi.SusiArgument;
-import org.loklak.susi.SusiInteraction;
+import org.loklak.susi.SusiCognition;
 import org.loklak.susi.SusiMind;
 import org.loklak.susi.SusiThought;
 import org.loklak.tools.storage.JSONObjectWithDefault;
@@ -77,7 +77,7 @@ public class SusiService extends AbstractAPIHandler implements APIHandler {
         
         // find out if we are dreaming
         SusiArgument observation_argument = new SusiArgument();
-        ArrayList<SusiInteraction> interactions = DAO.susi.getLogs().getInteractions(user.getIdentity().getClient());
+        ArrayList<SusiCognition> interactions = DAO.susi.getLogs().getCognitions(user.getIdentity().getClient());
         interactions.forEach(action -> observation_argument.think(action.recallDispute()));
         SusiThought recall = observation_argument.mindmeld(false);
         String etherpad_dream = recall.getObservation("_etherpad_dream");
@@ -96,10 +96,10 @@ public class SusiService extends AbstractAPIHandler implements APIHandler {
                 JSONObject rules = dream.readEzDLesson(new BufferedReader(new InputStreamReader(new ByteArrayInputStream(text.getBytes(StandardCharsets.UTF_8)), StandardCharsets.UTF_8)));
                 dream.learn(rules);
                 // susi is now dreaming.. Try to find an answer out of the dream
-                SusiInteraction interaction = new SusiInteraction(dream, q, timezoneOffset, latitude, longitude, count, user.getIdentity());
-                if (interaction.getAnswers().size() > 0) {
-                    DAO.susi.getLogs().addInteraction(user.getIdentity().getClient(), interaction);
-                    return interaction.getJSON();
+                SusiCognition cognition = new SusiCognition(dream, q, timezoneOffset, latitude, longitude, count, user.getIdentity());
+                if (cognition.getAnswers().size() > 0) {
+                    DAO.susi.getLogs().addCognition(user.getIdentity().getClient(), cognition);
+                    return cognition.getJSON();
                 }
             } catch (JSONException | IOException e) {
                 e.printStackTrace();
@@ -107,9 +107,9 @@ public class SusiService extends AbstractAPIHandler implements APIHandler {
         }
         
         // answer normally
-        SusiInteraction interaction = new SusiInteraction(DAO.susi, q, timezoneOffset, latitude, longitude, count, user.getIdentity());
-        DAO.susi.getLogs().addInteraction(user.getIdentity().getClient(), interaction);
-        JSONObject json = interaction.getJSON();
+        SusiCognition cognition = new SusiCognition(DAO.susi, q, timezoneOffset, latitude, longitude, count, user.getIdentity());
+        DAO.susi.getLogs().addCognition(user.getIdentity().getClient(), cognition);
+        JSONObject json = cognition.getJSON();
         return json;
     }
     

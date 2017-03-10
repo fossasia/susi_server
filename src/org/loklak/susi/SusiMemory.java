@@ -87,7 +87,7 @@ public class SusiMemory {
         this.unanswered = new ConcurrentHashSet<>();
         // debug
         if (this.root != null) for (String c: this.root.list()) {
-            getInteractions(c).forEach(i -> {
+            getCognitions(c).forEach(i -> {
                 String query = i.getQuery().toLowerCase();
                 String answer = i.getExpression();
                 if (query.length() > 0 && failset.contains(answer)) this.unanswered.add(query);
@@ -121,19 +121,19 @@ public class SusiMemory {
     }
     
     /**
-     * get a list of interaction using the client key
+     * get a list of cognitions using the client key
      * @param client
-     * @return a list of interactions, latest interaction is first in list
+     * @return a list of interactions, latest cognition is first in list
      */
-    public ArrayList<SusiInteraction> getInteractions(String client) {
+    public ArrayList<SusiCognition> getCognitions(String client) {
         UserRecord ur = this.memories.get(client);
         if (ur == null) {
             ur = new UserRecord(client);
             this.memories.put(client, ur);
         }
-        return ur.conversation;
+        return ur.cognition;
     }
-    public SusiMemory addInteraction(String client, SusiInteraction si) {
+    public SusiMemory addCognition(String client, SusiCognition si) {
         UserRecord ur = this.memories.get(client);
         if (ur == null) {
             ur = new UserRecord(client);
@@ -144,27 +144,27 @@ public class SusiMemory {
     }
     
     public class UserRecord {
-        private ArrayList<SusiInteraction> conversation = null; // first entry always has the latest interaction
+        private ArrayList<SusiCognition> cognition = null; // first entry always has the latest cognition
         private File memorydump;
         public UserRecord(String client) {
-            this.conversation = new ArrayList<>();
+            this.cognition = new ArrayList<>();
             File memorypath = new File(root, client);
             memorypath.mkdirs();
             this.memorydump = new File(memorypath, "log.txt");
             if (this.memorydump.exists()) {
                 try {
-                    this.conversation = readMemory(this.memorydump, rc);
+                    this.cognition = readMemory(this.memorydump, rc);
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
             }
         }
-        public UserRecord add(SusiInteraction interaction) {
-            if (this.conversation == null) return this;
-            this.conversation.add(0, interaction);
-            if (this.conversation.size() > rc) this.conversation.remove(this.conversation.size() - 1);
+        public UserRecord add(SusiCognition cognition) {
+            if (this.cognition == null) return this;
+            this.cognition.add(0, cognition);
+            if (this.cognition.size() > rc) this.cognition.remove(this.cognition.size() - 1);
             try {
-                Files.write(this.memorydump.toPath(), UTF8.getBytes(interaction.getJSON().toString(0) + "\n"), StandardOpenOption.APPEND, StandardOpenOption.CREATE);
+                Files.write(this.memorydump.toPath(), UTF8.getBytes(cognition.getJSON().toString(0) + "\n"), StandardOpenOption.APPEND, StandardOpenOption.CREATE);
             } catch (JSONException | IOException e) {
                 e.printStackTrace();
             }
@@ -172,28 +172,28 @@ public class SusiMemory {
         }
     }
     
-    public static ArrayList<SusiInteraction> readMemory(final File memorydump, int count) throws IOException {
+    public static ArrayList<SusiCognition> readMemory(final File memorydump, int count) throws IOException {
         List<String> lines = Files.readAllLines(memorydump.toPath());
-        ArrayList<SusiInteraction> conversation = new ArrayList<>();
+        ArrayList<SusiCognition> conversation = new ArrayList<>();
         for (int i = lines.size() - 1; i >= 0; i--) {
             String line = lines.get(i);
             if (line.length() == 0) continue;
-            SusiInteraction si = new SusiInteraction(new JSONObject(line));
+            SusiCognition si = new SusiCognition(new JSONObject(line));
             conversation.add(si);
             if (conversation.size() >= count) break;
         }
         return conversation;
     }
     
-    public TreeMap<Long, List<SusiInteraction>> getAllMemories() {
-        TreeMap<Long, List<SusiInteraction>> all = new TreeMap<>();
+    public TreeMap<Long, List<SusiCognition>> getAllMemories() {
+        TreeMap<Long, List<SusiCognition>> all = new TreeMap<>();
         String[] clients = this.root.list();
         for (String client: clients) {
             File memorypath = new File(this.root, client);
             if (memorypath.exists()) {
                 File memorydump = new File(memorypath, "log.txt");
                 if (memorydump.exists()) try {
-                    ArrayList<SusiInteraction> conversation = readMemory(memorydump, Integer.MAX_VALUE);
+                    ArrayList<SusiCognition> conversation = readMemory(memorydump, Integer.MAX_VALUE);
                     if (conversation.size() > 0) {
                         Date d = conversation.get(0).getQueryDate();
                         all.put(-d.getTime(), conversation);

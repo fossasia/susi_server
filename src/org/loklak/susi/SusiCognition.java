@@ -1,5 +1,5 @@
 /**
- *  SusiInteraction
+ *  SusiCognition
  *  Copyright 24.07.2016 by Michael Peter Christen, @0rb1t3r
  *
  *  This library is free software; you can redistribute it and/or
@@ -32,14 +32,13 @@ import org.loklak.server.ClientIdentity;
 import org.loklak.tools.UTF8;
 
 /**
- * An interaction with susi is the combination of a query of a user with the response
- * of susi.
+ * An cognition is the combination of a query of a user with the response of susi.
  */
-public class SusiInteraction {
+public class SusiCognition {
 
     JSONObject json;
 
-    public SusiInteraction(final SusiMind mind, final String query, int timezoneOffset, double latitude, double longitude, int maxcount, ClientIdentity identity) {
+    public SusiCognition(final SusiMind mind, final String query, int timezoneOffset, double latitude, double longitude, int maxcount, ClientIdentity identity) {
         this.json = new JSONObject(true);
         
         // get a response from susis mind
@@ -67,15 +66,15 @@ public class SusiInteraction {
         this.json.put("answer_time", answer_date - query_date);
     }
     
-    public SusiInteraction(JSONObject json) {
+    public SusiCognition(JSONObject json) {
         this.json = json;
     }
 
-    public SusiInteraction() {
+    public SusiCognition() {
         
     }
     
-    public SusiInteraction setQuery(final String query) {
+    public SusiCognition setQuery(final String query) {
         this.json.put("query", query);
         return this;
     }
@@ -92,7 +91,7 @@ public class SusiInteraction {
     }
 
     /**
-     * The answer of an interaction contains a list of the mind-melted arguments as one thought
+     * The answer of an cognition contains a list of the mind-melted arguments as one thought
      * @return a list of answer thoughts
      */
     public List<SusiThought> getAnswers() {
@@ -105,7 +104,7 @@ public class SusiInteraction {
     }
     
     /**
-     * the expression of an interaction is the actual string that comes out as response to
+     * the expression of a cognition is the actual string that comes out as response to
      * actions of the user
      * @return a response string
      */
@@ -122,9 +121,9 @@ public class SusiInteraction {
     }
     
     /**
-     * The interaction is the result of a though extraction. We can reconstruct
-     * the dispute as list of last mindstates using the interaction data.
-     * @return a backtrackable thought reconstructed from the interaction data
+     * The cognition is the result of a though extraction. We can reconstruct
+     * the dispute as list of last mindstates using the cognition data.
+     * @return a backtrackable thought reconstructed from the cognition data
      */    
     public SusiThought recallDispute() {
         SusiThought dispute = new SusiThought();
