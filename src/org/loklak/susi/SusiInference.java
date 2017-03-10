@@ -91,70 +91,70 @@ public class SusiInference {
         return this.json.has("expression") ? this.json.getString("expression") : "";
     }
     
-    private final static SusiSkills flowSkill = new SusiSkills();
-    private final static SusiSkills memorySkill = new SusiSkills();
-    private final static SusiSkills javascriptSkill = new SusiSkills();
+    private final static SusiProcedures flowProcedures = new SusiProcedures();
+    private final static SusiProcedures memoryProcedures = new SusiProcedures();
+    private final static SusiProcedures javascriptProcedures = new SusiProcedures();
     static {
-        flowSkill.put(Pattern.compile("SQUASH"), (flow, matcher) -> {
+        flowProcedures.put(Pattern.compile("SQUASH"), (flow, matcher) -> {
             // perform a full mindmeld
             if (flow == null) return new SusiThought();
             SusiThought squashedArgument = flow.mindmeld(true);
             flow.amnesia();
             return squashedArgument;
         });
-        flowSkill.put(Pattern.compile("FIRST"), (flow, matcher) -> {
+        flowProcedures.put(Pattern.compile("FIRST"), (flow, matcher) -> {
             // extract only the first row of a thought
             SusiThought recall = flow == null ? new SusiThought() : flow.rethink(); // removes/replaces the latest thought from the flow!
             if (recall.getCount() > 0) recall.setData(new JSONArray().put(recall.getData().getJSONObject(0)));
             return recall;
         });
-        flowSkill.put(Pattern.compile("REST"), (flow, matcher) -> {
+        flowProcedures.put(Pattern.compile("REST"), (flow, matcher) -> {
             // remove the first row of a thought and return the remaining
             SusiThought recall = flow == null ? new SusiThought() : flow.rethink(); // removes/replaces the latest thought from the flow!
             if (recall.getCount() > 0) recall.getData().remove(0);
             return recall;
         });
-        memorySkill.put(Pattern.compile("SET\\h+?([^=]*?)\\h+?=\\h+?([^=]*)\\h*?"), (flow, matcher) -> {
+        memoryProcedures.put(Pattern.compile("SET\\h+?([^=]*?)\\h+?=\\h+?([^=]*)\\h*?"), (flow, matcher) -> {
             String remember = matcher.group(1), matching = matcher.group(2);
             return see(flow, flow.unify("%1% AS " + remember, 0), flow.unify(matching, 0), Pattern.compile("(.*)"));
         });
-        memorySkill.put(Pattern.compile("SET\\h+?([^=]*?)\\h+?=\\h+?([^=]*?)\\h+?MATCHING\\h+?(.*)\\h*?"), (flow, matcher) -> {
+        memoryProcedures.put(Pattern.compile("SET\\h+?([^=]*?)\\h+?=\\h+?([^=]*?)\\h+?MATCHING\\h+?(.*)\\h*?"), (flow, matcher) -> {
             String remember = matcher.group(1), matching = matcher.group(2), pattern = matcher.group(3);
             return see(flow, flow.unify(remember, 0), flow.unify(matching, 0), Pattern.compile(flow.unify(pattern, 0)));
         });
-        memorySkill.put(Pattern.compile("CLEAR\\h+?(.*)\\h*?"), (flow, matcher) -> {
+        memoryProcedures.put(Pattern.compile("CLEAR\\h+?(.*)\\h*?"), (flow, matcher) -> {
             String clear = matcher.group(1);
             return see(flow, "%1% AS " + flow.unify(clear, 0), "", Pattern.compile("(.*)"));
         });
-        memorySkill.put(Pattern.compile("IF\\h+?([^=]*)\\h*?"), (flow, matcher) -> {
+        memoryProcedures.put(Pattern.compile("IF\\h+?([^=]*)\\h*?"), (flow, matcher) -> {
             String expect = matcher.group(1);
             SusiThought t = see(flow, "%1% AS EXPECTED", flow.unify(expect, 0), Pattern.compile("(.+)"));
             if (t.isFailed() || t.hasEmptyObservation("EXPECTED")) return new SusiThought(); // empty thought -> fail
             return t;
         });
-        memorySkill.put(Pattern.compile("IF\\h+?([^=]*?)\\h*=\\h*([^=]*)\\h*?"), (flow, matcher) -> {
+        memoryProcedures.put(Pattern.compile("IF\\h+?([^=]*?)\\h*=\\h*([^=]*)\\h*?"), (flow, matcher) -> {
             String expect = matcher.group(1), matching = matcher.group(2);
             SusiThought t = see(flow, "%1% AS EXPECTED", flow.unify(expect, 0), Pattern.compile(flow.unify(matching, 0)));
             if (t.isFailed() || t.hasEmptyObservation("EXPECTED")) return new SusiThought(); // empty thought -> fail
             return t;
         });
-        memorySkill.put(Pattern.compile("NOT\\h*"), (flow, matcher) -> {
+        memoryProcedures.put(Pattern.compile("NOT\\h*"), (flow, matcher) -> {
             SusiThought t = see(flow, "%1% AS EXPECTED", "", Pattern.compile("(.*)"));
             return new SusiThought().addObservation("REJECTED", "");
         });
-        memorySkill.put(Pattern.compile("NOT\\h+?([^=]*)\\h*?"), (flow, matcher) -> {
+        memoryProcedures.put(Pattern.compile("NOT\\h+?([^=]*)\\h*?"), (flow, matcher) -> {
             String reject = matcher.group(1);
             SusiThought t = see(flow, "%1% AS EXPECTED", flow.unify(reject, 0), Pattern.compile("(.*)"));
             if (t.isFailed() || t.hasEmptyObservation("EXPECTED")) return new SusiThought().addObservation("REJECTED", reject);
             return new SusiThought(); // empty thought -> fail
         });
-        memorySkill.put(Pattern.compile("NOT\\h+?([^=]*?)\\h*=\\h*([^=]*)\\h*?"), (flow, matcher) -> {
+        memoryProcedures.put(Pattern.compile("NOT\\h+?([^=]*?)\\h*=\\h*([^=]*)\\h*?"), (flow, matcher) -> {
             String reject = matcher.group(1), matching = matcher.group(2);
             SusiThought t = see(flow, "%1% AS EXPECTED", flow.unify(reject, 0), Pattern.compile(flow.unify(matching, 0)));
             if (t.isFailed() || t.hasEmptyObservation("EXPECTED")) return new SusiThought().addObservation("REJECTED(" + matching + ")", reject);
             return new SusiThought(); // empty thought -> fail
         });
-        javascriptSkill.put(Pattern.compile("(.*)"), (flow, matcher) -> {
+        javascriptProcedures.put(Pattern.compile("(.*)"), (flow, matcher) -> {
             String term = matcher.group(1);
             try {
                 return new SusiThought().addObservation("javascript", javascript.eval(flow.unify(term)).toString());
@@ -163,7 +163,7 @@ public class SusiInference {
                 return new SusiThought(); // empty thought -> fail
             }
         });
-        // more skills:
+        // more procedures:
         // - map/reduce to enable loops
         // - sort asc/dec
         // - stack + join
@@ -219,7 +219,7 @@ public class SusiInference {
      * @param flow
      * @return a new thought as result of the inference
      */
-    public SusiThought applySkills(SusiArgument flow) {
+    public SusiThought applyProcedures(SusiArgument flow) {
         Type type = this.getType();
         if (type == SusiInference.Type.console) {
             String expression = flow.unify(this.getExpression());
@@ -227,15 +227,15 @@ public class SusiInference {
         }
         if (type == SusiInference.Type.flow) {
             String expression = flow.unify(this.getExpression());
-            try {return flowSkill.deduce(flow, expression);} catch (Exception e) {}
+            try {return flowProcedures.deduce(flow, expression);} catch (Exception e) {}
         }
         if (type == SusiInference.Type.memory) {
             String expression = flow.unify(this.getExpression());
-            try {return memorySkill.deduce(flow, expression);} catch (Exception e) {}
+            try {return memoryProcedures.deduce(flow, expression);} catch (Exception e) {}
         }
         if (type == SusiInference.Type.javascript) {
             String expression = flow.unify(this.getExpression());
-            try {return javascriptSkill.deduce(flow, expression);} catch (Exception e) {}
+            try {return javascriptProcedures.deduce(flow, expression);} catch (Exception e) {}
         }
         // maybe the argument is not applicable, then an empty thought is produced (which means a 'fail')
         return new SusiThought();

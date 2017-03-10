@@ -144,8 +144,8 @@ The basis configuration file is in ```conf/config.properties```. To customize th
   ./gradle_clean.sh
   ```
 
-## How do I develop Skills and Converstion Rules for Susi?
-The Susi rule language is described in the [AI development tutorial](/docs/ai_rule_development_tutorial.md).
+## How do I develop Skills (AI Conversation Rules) for Susi?
+The Susi skill language is described in the [Skill Development Tutorial](/docs/susi_skill_development_tutorial.md).
 
 
 ## Why should I use Susi?

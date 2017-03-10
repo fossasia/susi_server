@@ -1,5 +1,5 @@
 /**
- *  SusiRule
+ *  SusiSkill (renamed from SusiRule)
  *  Copyright 29.06.2016 by Michael Peter Christen, @0rb1t3r
  *
  *  This library is free software; you can redistribute it and/or
@@ -38,12 +38,12 @@ import org.json.JSONObject;
 import org.loklak.data.DAO;
 
 /**
- * A Rule in the Susi AI framework is a collection of phrases, inference processes and actions that are applied
- * on external sense data if the phrases identify that this rule set would be applicable on the sense data.
- * A set of rules would express 'knowledge' on how to handle activities from the outside of the AI and react on
+ * A Skill in the Susi AI framework is a collection of phrases, inference processes and actions that are applied
+ * on external sense data if the phrases identify that this skill set would be applicable on the sense data.
+ * A set of skills would express 'knowledge' on how to handle activities from the outside of the AI and react on
  * such activities.
  */
-public class SusiRule {
+public class SusiSkill {
 
     public final static String CATCHALL_KEY = "*";
     public final static int    DEFAULT_SCORE = 10;
@@ -58,14 +58,14 @@ public class SusiRule {
     private int id;
     
     /**
-     * Generate a set of rules from a single rule definition. This may be possible if the rule contains an 'options'
-     * object which creates a set of rules, one for each option. The options combine with one set of phrases
-     * @param json - a multi-rule definition
-     * @return a set of rules
+     * Generate a set of skills from a single skill definition. This may be possible if the skill contains an 'options'
+     * object which creates a set of skills, one for each option. The options combine with one set of phrases
+     * @param json - a multi-skill definition
+     * @return a set of skills
      */
-    public static List<SusiRule> getRules(JSONObject json) {
+    public static List<SusiSkill> getSkills(JSONObject json) {
         if (!json.has("phrases")) throw new PatternSyntaxException("phrases missing", "", 0);
-        final List<SusiRule> rules = new ArrayList<>();
+        final List<SusiSkill> skills = new ArrayList<>();
         if (json.has("options")) {
             JSONArray options = json.getJSONArray("options");
             for (int i = 0; i < options.length(); i++) {
@@ -73,25 +73,25 @@ public class SusiRule {
                 option.put("phrases", json.get("phrases"));
                 JSONObject or = options.getJSONObject(i);
                 for (String k: or.keySet()) option.put(k, or.get(k));
-                rules.add(new SusiRule(option));
+                skills.add(new SusiSkill(option));
             }
         } else {
             try {
-                SusiRule rule = new SusiRule(json);
-                rules.add(rule);
+                SusiSkill skill = new SusiSkill(json);
+                skills.add(skill);
             } catch (PatternSyntaxException e) {
-                Logger.getLogger("SusiRule").warning("Regular Expression error in Susi Rule: " + json.toString(2));
+                Logger.getLogger("SusiSkill").warning("Regular Expression error in Susi Skill: " + json.toString(2));
             }
         }
-        return rules;
+        return skills;
     }
     
     /**
-     * Create a rule by parsing of the rule description
-     * @param json the rule description
+     * Create a skill by parsing of the skill description
+     * @param json the skill description
      * @throws PatternSyntaxException
      */
-    private SusiRule(JSONObject json) throws PatternSyntaxException {
+    private SusiSkill(JSONObject json) throws PatternSyntaxException {
         
         // extract the phrases and the phrases subscore
         if (!json.has("phrases")) throw new PatternSyntaxException("phrases missing", "", 0);
@@ -157,7 +157,7 @@ public class SusiRule {
         return json;
     }
     
-    public static JSONObject simpleRule(String[] phrases, String condition, String[] answers, boolean prior) {
+    public static JSONObject simpleSkill(String[] phrases, String condition, String[] answers, boolean prior) {
         JSONObject json = new JSONObject();
 
         // write phrases
@@ -207,13 +207,13 @@ public class SusiRule {
                 String m = SusiPhrase.extractMeat(token.toLowerCase());
                 if (m.length() > 1) s.add(m);
             }
-            // if there is no meat inside, it will not be possible to access the rule without the catchall rule, so remember that
+            // if there is no meat inside, it will not be possible to access the skill without the catchall skill, so remember that
             if (s.size() == 0) needsCatchall.set(true);
             
             ptl.add(s);
         });
         
-        // this is a kind of emergency case where we need a catchall rule because otherwise we cannot access one of the phrases
+        // this is a kind of emergency case where we need a catchall skill because otherwise we cannot access one of the phrases
         JSONArray a = new JSONArray();
         if (needsCatchall.get()) return a.put(CATCHALL_KEY);
         
@@ -244,34 +244,34 @@ public class SusiRule {
     }
     
     /**
-     * To simplify the check weather or not a rule could be applicable, a key set is provided which
+     * To simplify the check weather or not a skill could be applicable, a key set is provided which
      * must match with input tokens literally. This key check prevents too large numbers of phrase checks
      * thus increasing performance.
-     * @return the keys which must appear in an input to allow that this rule can be applied
+     * @return the keys which must appear in an input to allow that this skill can be applied
      */
     public Set<String> getKeys() {
         return this.keys;
     }
     
     /**
-     * A rule may have a comment which describes what the rule means. It never has any computational effect.
-     * @return the rule comment
+     * A skill may have a comment which describes what the skill means. It never has any computational effect.
+     * @return the skill comment
      */
     public String getComment() {
         return this.comment;
     }
 
     /**
-     * The score is used to prefer one rule over another if that other rule has a lower score.
-     * The reason that this score is used is given by the fact that we need rules which have
-     * fuzzy phrase definitions and several rules might be selected because these fuzzy phrases match
-     * on the same input sequence. One example is the catch-all rule which fires always but has
+     * The score is used to prefer one skill over another if that other skill has a lower score.
+     * The reason that this score is used is given by the fact that we need skills which have
+     * fuzzy phrase definitions and several skills might be selected because these fuzzy phrases match
+     * on the same input sequence. One example is the catch-all skill which fires always but has
      * lowest priority.
      * In the context of artificial mind modeling the score plays the role of a positive emotion.
-     * If the AI learns that a rule was applied and caused a better situation (see also: game playing gamefield
-     * evaluation) then the rule might get the score increased. Having many rules which have a high score
+     * If the AI learns that a skill was applied and caused a better situation (see also: game playing gamefield
+     * evaluation) then the skill might get the score increased. Having many skills which have a high score
      * therefore might induce a 'good feeling' because it is known that the outcome will be good.
-     * @return a score which is used for sorting of the rules. The higher the better. Highest score wins.
+     * @return a score which is used for sorting of the skills. The higher the better. Highest score wins.
      */
     public int getScore() {
 
@@ -286,26 +286,26 @@ public class SusiRule {
          * purpose: {answer, question, reply} purpose would have to be defined
          * The purpose can be computed using a pattern on the answer expression: is there a '?' at the end, is it a question. Is there also a '. ' (end of sentence) in the text, is it a reply.
 
-         * (2) the existence of a pattern where we decide between prior and minor rules
-         * pattern: {false, true} with/without pattern could be computed from the rule string
-         * all rules with pattern are ordered in the middle between prior and minor
+         * (2) the existence of a pattern where we decide between prior and minor skills
+         * pattern: {false, true} with/without pattern could be computed from the skill string
+         * all skills with pattern are ordered in the middle between prior and minor
          * this is combined with
          * prior: {false, true} overruling (prior=true) or default (prior=false) would have to be defined
          * The prior attribute can also be expressed as an replacement of a pattern type because it is only relevant if the query is not a pattern or regular expression.
          * The resulting criteria is a property with three possible values: {minor, pattern, major}
     
          * (3) the operation type
-         * op: {retrieval, computation, storage} the operation could be computed from the rule string
+         * op: {retrieval, computation, storage} the operation could be computed from the skill string
 
          * (4) the IO activity (-location)
-         * io: {remote, local, ram} the storage location can be computed from the rule string
+         * io: {remote, local, ram} the storage location can be computed from the skill string
     
          * (5) the meatsize (number of characters that are non-patterns)
     
          * (6) the whole size (total number of characters)
     
          * (7) finally the subscore can be assigned manually
-         * subscore a score in a small range which can be used to distinguish rules within the same categories
+         * subscore a score in a small range which can be used to distinguish skills within the same categories
          */
         
         // extract the score
@@ -340,7 +340,7 @@ public class SusiRule {
         this.score += this.score * 1000 + Math.min(1000, this.user_subscore);
         
         /*
-        System.out.println("DEBUG RULE SCORE: id=" + this.id + ", score=" + this.score +
+        System.out.println("DEBUG SKILL SCORE: id=" + this.id + ", score=" + this.score +
                 ", dialog=" + dialogType_subscore.get() +
                 ", phrase=" + phrases_subscore.get() +
                 ", inference=" + inference_subscore.get() +
@@ -352,21 +352,21 @@ public class SusiRule {
     }
 
     /**
-     * The phrases of a rule are the matching rules which must apply to make it possible that the phrase is applied.
-     * This returns the phrases of the rule.
-     * @return the phrases of the rule. The rule fires if ANY of the phrases apply
+     * The phrases of a skill are the matching skills which must apply to make it possible that the phrase is applied.
+     * This returns the phrases of the skill.
+     * @return the phrases of the skill. The skill fires if ANY of the phrases apply
      */
     public List<SusiPhrase> getPhrases() {
         return this.phrases;
     }
     
     /**
-     * The inferences of a rule are a set of operations that are applied if the rule is selected as response
+     * The inferences of a skill are a set of operations that are applied if the skill is selected as response
      * mechanism. The inferences are feeded by the matching parts of the phrases to have an initial data set.
      * Inferences are lists because they represent a set of lambda operations on the data stream. The last
      * Data set is the response. The stack of data sets which are computed during the inference processing
      * is the thought argument, a list of thoughts in between of the inferences.
-     * @return the (ordered) list of inferences to be applied for this rule
+     * @return the (ordered) list of inferences to be applied for this skill
      */
     public List<SusiInference> getInferences() {
         return this.inferences;
@@ -385,10 +385,10 @@ public class SusiRule {
     }
 
     /**
-     * The matcher of a rule is the result of the application of the rule's phrases, the pattern which allow to
-     * fire the rule
-     * @param s the string which shozld match
-     * @return a matcher on the rule phrases
+     * The matcher of a skill is the result of the application of the skill's phrases, the pattern which allow to
+     * apply the skill
+     * @param s the string which should match
+     * @return a matcher on the skill phrases
      */
     public Collection<Matcher> matcher(String s) {
         List<Matcher> l = new ArrayList<>();
@@ -404,12 +404,12 @@ public class SusiRule {
     }
 
     /**
-     * If a rule is applied to an input stream, it must follow a specific process which is implemented
+     * If a skill is applied to an input stream, it must follow a specific process which is implemented
      * in this consideration method. It is called a consideration in the context of an AI process which
-     * tries different rules to get the optimum result, thus considering different rules.
+     * tries different procedures to get the optimum result, thus considering different skills.
      * @param query the user input
-     * @param intent the key from the user query which matched the rule keys (also considering category matching)
-     * @return the result of the application of the rule, a thought argument containing the thoughts which terminated into a final mindstate or NULL if the consideration should be rejected
+     * @param intent the key from the user query which matched the skill keys (also considering category matching)
+     * @return the result of the application of the skill, a thought argument containing the thoughts which terminated into a final mindstate or NULL if the consideration should be rejected
      */
     public SusiArgument consideration(final String query, SusiThought recall, SusiReader.Token intent, SusiMind mind, String client) {
         
@@ -428,18 +428,18 @@ public class SusiRule {
             DAO.log("Susi has an idea: on " + keynote.toString() + " apply " + this.toJSON());
             flow.think(keynote);
             
-            // lets apply the rules that belong to this specific consideration
+            // lets apply the skills that belong to this specific consideration
             for (SusiInference inference: this.getInferences()) {
-                SusiThought implication = inference.applySkills(flow);
+                SusiThought implication = inference.applyProcedures(flow);
                 DAO.log("Susi is thinking about: " + implication.toString());
                 // make sure that we are not stuck:
                 // in case that we are stuck (== no progress was made) we terminate and return null
-                if ((flow.mindstate().equals(implication) || implication.isFailed())) continue alternatives; // TODO: do this only if specific marker is in rule
+                if ((flow.mindstate().equals(implication) || implication.isFailed())) continue alternatives; // TODO: do this only if specific marker is in skill
                 // think
                 flow.think(implication);
             }
             
-            // we deduced thoughts from the inferences in the rules. Now apply the actions of rule to produce results
+            // we deduced thoughts from the inferences in the skills. Now apply the actions of skill to produce results
             this.getActionsClone().forEach(action -> flow.addAction(action/*.execution(flow, mind, client)*/));
             return flow;
         }

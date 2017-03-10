@@ -38,7 +38,7 @@ import org.loklak.server.BaseUserRole;
 import org.loklak.server.AbstractAPIHandler;
 import org.loklak.server.Authorization;
 import org.loklak.server.Query;
-import org.loklak.susi.SusiSkills;
+import org.loklak.susi.SusiProcedures;
 import org.loklak.susi.SusiThought;
 import org.loklak.susi.SusiTransfer;
 import org.loklak.tools.storage.JSONObjectWithDefault;
@@ -66,7 +66,7 @@ public class ConsoleService extends AbstractAPIHandler implements APIHandler {
         return "/susi/console.json";
     }
     
-    public final static SusiSkills dbAccess = new SusiSkills();
+    public final static SusiProcedures dbAccess = new SusiProcedures();
     
     public static void addGenericConsole(String serviceName, String serviceURL, String path) {
         dbAccess.put(Pattern.compile("SELECT +?(.*?) +?FROM +?" + serviceName + " +?WHERE +?query ??= ??'(.*?)' ??;"), (flow, matcher) -> {
@@ -199,7 +199,7 @@ public class ConsoleService extends AbstractAPIHandler implements APIHandler {
         String q = post.get("q", "");
         //int timezoneOffset = post.get("timezoneOffset", 0);
         try {
-            DAO.susi.observe(); // learn new console rules if there are new one
+            DAO.susi.observe(); // learn new console skills if there are new one
         } catch (IOException e) {
             e.printStackTrace();
         }

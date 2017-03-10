@@ -133,7 +133,7 @@ public class SusiArgument implements Iterable<SusiThought> {
     /**
      * Thinking is a series of thoughts, every new thought appends another thought to the argument.
      * A special situation may (or may not) occur if one thinking step does not produce a result.
-     * Depending on the inference rule set that may mean that the consideration of the rule containing
+     * Depending on the inference skill set that may mean that the consideration of the skill containing
      * the inferences was wrong and should be abandoned. This happens if mindstate().equals(thought).
      * This is the same operation as a 'push' on a stack.
      * @param thought the next thought

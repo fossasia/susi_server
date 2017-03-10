@@ -1,5 +1,5 @@
 /**
- *  SusiLog
+ *  SusiMemory
  *  Copyright 24.07.2016 by Michael Peter Christen, @0rb1t3r
  *
  *  This library is free software; you can redistribute it and/or
@@ -44,7 +44,7 @@ import org.loklak.tools.storage.JsonTray;
 /**
  * Susis log is a kind of reflection about the conversation in the past
  */
-public class SusiLog {
+public class SusiMemory {
 
     private final static String[] failterms = new String[]{
             "You can ask me anything, but not that :)",
@@ -70,15 +70,15 @@ public class SusiLog {
     
     private File root;
     private int rc;
-    private Map<String, UserRecord> logs;
-    private Map<String, Map<String, JsonTray>> rulesets;
+    private Map<String, UserRecord> memories;
+    private Map<String, Map<String, JsonTray>> skillsets;
     private Set<String> unanswered;
     
-    public SusiLog(File storageLocation, int rememberLatestCount) {
+    public SusiMemory(File storageLocation, int rememberLatestCount) {
         this.root = storageLocation;
         this.rc = rememberLatestCount;
-        this.logs = new ConcurrentHashMap<>();
-        this.rulesets = new ConcurrentHashMap<>();
+        this.memories = new ConcurrentHashMap<>();
+        this.skillsets = new ConcurrentHashMap<>();
         this.unanswered = null;
     }
     
@@ -126,18 +126,18 @@ public class SusiLog {
      * @return a list of interactions, latest interaction is first in list
      */
     public ArrayList<SusiInteraction> getInteractions(String client) {
-        UserRecord ur = this.logs.get(client);
+        UserRecord ur = this.memories.get(client);
         if (ur == null) {
             ur = new UserRecord(client);
-            this.logs.put(client, ur);
+            this.memories.put(client, ur);
         }
         return ur.conversation;
     }
-    public SusiLog addInteraction(String client, SusiInteraction si) {
-        UserRecord ur = this.logs.get(client);
+    public SusiMemory addInteraction(String client, SusiInteraction si) {
+        UserRecord ur = this.memories.get(client);
         if (ur == null) {
             ur = new UserRecord(client);
-            this.logs.put(client, ur);
+            this.memories.put(client, ur);
         }
         ur.add(si);
         return this;
@@ -145,15 +145,15 @@ public class SusiLog {
     
     public class UserRecord {
         private ArrayList<SusiInteraction> conversation = null; // first entry always has the latest interaction
-        private File logdump;
+        private File memorydump;
         public UserRecord(String client) {
             this.conversation = new ArrayList<>();
-            File logpath = new File(root, client);
-            logpath.mkdirs();
-            this.logdump = new File(logpath, "log.txt");
-            if (this.logdump.exists()) {
+            File memorypath = new File(root, client);
+            memorypath.mkdirs();
+            this.memorydump = new File(memorypath, "log.txt");
+            if (this.memorydump.exists()) {
                 try {
-                    this.conversation = readLog(this.logdump, rc);
+                    this.conversation = readMemory(this.memorydump, rc);
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
@@ -164,7 +164,7 @@ public class SusiLog {
             this.conversation.add(0, interaction);
             if (this.conversation.size() > rc) this.conversation.remove(this.conversation.size() - 1);
             try {
-                Files.write(this.logdump.toPath(), UTF8.getBytes(interaction.getJSON().toString(0) + "\n"), StandardOpenOption.APPEND, StandardOpenOption.CREATE);
+                Files.write(this.memorydump.toPath(), UTF8.getBytes(interaction.getJSON().toString(0) + "\n"), StandardOpenOption.APPEND, StandardOpenOption.CREATE);
             } catch (JSONException | IOException e) {
                 e.printStackTrace();
             }
@@ -172,8 +172,8 @@ public class SusiLog {
         }
     }
     
-    public static ArrayList<SusiInteraction> readLog(final File logdump, int count) throws IOException {
-        List<String> lines = Files.readAllLines(logdump.toPath());
+    public static ArrayList<SusiInteraction> readMemory(final File memorydump, int count) throws IOException {
+        List<String> lines = Files.readAllLines(memorydump.toPath());
         ArrayList<SusiInteraction> conversation = new ArrayList<>();
         for (int i = lines.size() - 1; i >= 0; i--) {
             String line = lines.get(i);
@@ -185,15 +185,15 @@ public class SusiLog {
         return conversation;
     }
     
-    public TreeMap<Long, List<SusiInteraction>> getAllLogs() {
+    public TreeMap<Long, List<SusiInteraction>> getAllMemories() {
         TreeMap<Long, List<SusiInteraction>> all = new TreeMap<>();
         String[] clients = this.root.list();
         for (String client: clients) {
-            File logpath = new File(this.root, client);
-            if (logpath.exists()) {
-                File logdump = new File(logpath, "log.txt");
-                if (logdump.exists()) try {
-                    ArrayList<SusiInteraction> conversation = readLog(logdump, Integer.MAX_VALUE);
+            File memorypath = new File(this.root, client);
+            if (memorypath.exists()) {
+                File memorydump = new File(memorypath, "log.txt");
+                if (memorydump.exists()) try {
+                    ArrayList<SusiInteraction> conversation = readMemory(memorydump, Integer.MAX_VALUE);
                     if (conversation.size() > 0) {
                         Date d = conversation.get(0).getQueryDate();
                         all.put(-d.getTime(), conversation);
@@ -206,30 +206,30 @@ public class SusiLog {
         return all;
     }
 
-    public Set<String> getRulesetNames(String client) {
-        Map<String, JsonTray> rulesets = this.rulesets.get(client);
-        if (rulesets == null) {
-            Set<String> rules = new HashSet<String>();
+    public Set<String> getSkillsetNames(String client) {
+        Map<String, JsonTray> skillsets = this.skillsets.get(client);
+        if (skillsets == null) {
+            Set<String> skills = new HashSet<String>();
             File rpath = new File(root, client);
             rpath.mkdirs();
-            for (String s: rpath.list()) if (s.endsWith(".json")) rules.add(s.substring(0, s.length() - 5));
-            return rules;
+            for (String s: rpath.list()) if (s.endsWith(".json")) skills.add(s.substring(0, s.length() - 5));
+            return skills;
         }
-        return rulesets.keySet();
+        return skillsets.keySet();
     }
     
-    public JsonTray getRuleset(String client, String name) throws IOException {
-        Map<String, JsonTray> rulesets = this.rulesets.get(client);
-        if (rulesets == null) {
-            rulesets = new HashMap<>();
-            this.rulesets.put(client, rulesets);
+    public JsonTray getSkillset(String client, String name) throws IOException {
+        Map<String, JsonTray> skillsets = this.skillsets.get(client);
+        if (skillsets == null) {
+            skillsets = new HashMap<>();
+            this.skillsets.put(client, skillsets);
         }
-        JsonTray jt = rulesets.get(name);
+        JsonTray jt = skillsets.get(name);
         if (jt == null) {
             File rpath = new File(root, client);
             rpath.mkdirs();
             jt = new JsonTray(new File(rpath, name + ".json"), null, 1000);
-            rulesets.put(name,  jt);
+            skillsets.put(name,  jt);
         }
         return jt;
     }

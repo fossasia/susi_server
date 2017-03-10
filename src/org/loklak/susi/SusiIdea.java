@@ -22,33 +22,33 @@ package org.loklak.susi;
 import java.util.regex.PatternSyntaxException;
 
 /**
- * An idea is the application of a rule on a specific input. This matches with the idea of ideas where
+ * An idea is the application of a skill on a specific input. This matches with the idea of ideas where
  * an idea is the 'sudden' solution to a problem with the hint how to apply the idea's core concept
- * on the given input details. That is what this class does: it combines a rule with the pattern
- * that matched from the input with the rule.
+ * on the given input details. That is what this class does: it combines a skill with the pattern
+ * that matched from the input with the skill.
  */
 public class SusiIdea {
 
-    private SusiRule rule;
+    private SusiSkill skill;
     private SusiReader.Token intent;
     
     /**
-     * create an idea based on a rule
-     * @param rule the rule that matched
+     * create an idea based on a skill
+     * @param skill the skill that matched
      * @throws PatternSyntaxException
      */
-    public SusiIdea(SusiRule rule) throws PatternSyntaxException {
-        this.rule = rule;
+    public SusiIdea(SusiSkill skill) throws PatternSyntaxException {
+        this.skill = skill;
         this.intent = null;
     }
 
-    public SusiRule getRule() {
-        return this.rule;
+    public SusiSkill getSkill() {
+        return this.skill;
     }
     
     /**
      * Add an intent to the idea. The intent is usually a token (i.e. a normalized single word)
-     * that matched with the rule keys.
+     * that matched with the skill keys.
      * @param intentKey
      * @return the idea
      */
@@ -59,13 +59,13 @@ public class SusiIdea {
     
     /**
      * get the intentions for the idea
-     * @return the keyword which matched with the rule keys
+     * @return the keyword which matched with the skill keys
      */
     public SusiReader.Token getIntent() {
         return this.intent;
     }
     
     public String toString() {
-        return this.rule.toString();
+        return this.skill.toString();
     }
 }
