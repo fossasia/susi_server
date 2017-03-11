@@ -65,7 +65,7 @@ public class SusiInference {
     }
 
     public static JSONObject simpleMemoryProcess(String expression) {
-        JSONObject json = new JSONObject();
+        JSONObject json = new JSONObject(true);
         json.put("type", Type.memory.name());
         json.put("expression", expression);
         return json;

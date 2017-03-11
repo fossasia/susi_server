@@ -158,7 +158,7 @@ public class SusiSkill {
     }
     
     public static JSONObject simpleSkill(String[] phrases, String condition, String[] answers, boolean prior) {
-        JSONObject json = new JSONObject();
+        JSONObject json = new JSONObject(true);
 
         // write phrases
         JSONArray p = new JSONArray();

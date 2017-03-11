@@ -47,6 +47,7 @@ import org.json.JSONObject;
 import org.json.JSONTokener;
 import org.loklak.api.susi.ConsoleService;
 import org.loklak.data.DAO;
+import org.loklak.susi.SusiInference.Type;
 import org.loklak.tools.storage.JsonTray;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
@@ -143,9 +144,41 @@ public class SusiMind {
         JSONArray skills = new JSONArray();
         json.put("skills", skills);
         String lastLine = "", line = "";
+        String bang_phrases = "", bang_type = "", bang_term = ""; StringBuilder bang_bag = new StringBuilder();
         boolean prior = false;
         try {readloop: while ((line = br.readLine()) != null) {
             line = line.trim();
+            
+            if (bang_type.length() > 0) {
+                // collect a bang
+                if (line.toLowerCase().equals("eol")) {
+                    // stop collection
+                    if (bang_type.equals("javascript")) {
+                        String[] phrases = bang_phrases.split("\\|");
+                        // create a javascript skill
+                        JSONObject jskill = new JSONObject(true);
+                        JSONArray p = new JSONArray();
+                        jskill.put("phrases", p);
+                        for (String phrase: phrases) p.put(SusiPhrase.simplePhrase(phrase.trim(), prior));
+                        // javascript process
+                        JSONObject process = new JSONObject();
+                        process.put("type", Type.javascript.name());
+                        process.put("expression", bang_bag.toString());
+                        jskill.put("process", new JSONArray().put(process));
+                        // answers; must contain $javascript$
+                        JSONArray a = new JSONArray();
+                        jskill.put("actions", a);
+                        a.put(SusiAction.simpleAction(bang_term.split("\\|")));
+                        skills.put(jskill);
+                    }
+                    bang_phrases = "";
+                    bang_type = "";
+                    bang_term = "";
+                    bang_bag.setLength(0);
+                }
+                bang_bag.append(line).append('\n');
+                continue readloop;
+            }
             
             // read metadata
             if (line.startsWith("::")) {
@@ -192,6 +225,12 @@ public class SusiMind {
                             skills.put(skillelse);
                         }
                     }
+                } else if (line.startsWith("!") && (thenpos = line.indexOf(':')) > 0) {
+                    bang_phrases = lastLine;
+                    bang_type = line.substring(1, thenpos).trim().toLowerCase();
+                    bang_term = line.substring(thenpos + 1).trim();
+                    bang_bag.setLength(0);
+                    continue readloop;
                 } else {
                     String[] answers = line.split("\\|");
                     JSONObject skill = SusiSkill.simpleSkill(phrases, condition, answers, prior);
