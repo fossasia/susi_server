@@ -32,7 +32,7 @@ public class SusiTutorialTest {
     public static String susiAnswer(String q, ClientIdentity identity) {
         SusiCognition cognition = new SusiCognition(DAO.susi, q, 0, 0, 0, 1, identity);
         JSONObject json = cognition.getJSON();
-        DAO.susi.getLogs().addCognition(identity.getClient(), cognition);
+        DAO.susi.getMemories().addCognition(identity.getClient(), cognition);
         try {
             String answer = json.getJSONArray("answers")
                 .getJSONObject(0)

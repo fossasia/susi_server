@@ -37,6 +37,7 @@ import org.loklak.server.AbstractAPIHandler;
 import org.loklak.server.Authorization;
 import org.loklak.server.Query;
 import org.loklak.susi.SusiArgument;
+import org.loklak.susi.SusiAwareness;
 import org.loklak.susi.SusiCognition;
 import org.loklak.susi.SusiMind;
 import org.loklak.susi.SusiThought;
@@ -77,8 +78,8 @@ public class SusiService extends AbstractAPIHandler implements APIHandler {
         
         // find out if we are dreaming
         SusiArgument observation_argument = new SusiArgument();
-        ArrayList<SusiCognition> interactions = DAO.susi.getLogs().getCognitions(user.getIdentity().getClient());
-        interactions.forEach(action -> observation_argument.think(action.recallDispute()));
+        SusiAwareness awareness = DAO.susi.getMemories().getAwareness(user.getIdentity().getClient());
+        awareness.forEach(cognition -> observation_argument.think(cognition.recallDispute()));
         SusiThought recall = observation_argument.mindmeld(false);
         String etherpad_dream = recall.getObservation("_etherpad_dream");
         if (etherpad_dream != null && etherpad_dream.length() != 0) {
@@ -98,7 +99,7 @@ public class SusiService extends AbstractAPIHandler implements APIHandler {
                 // susi is now dreaming.. Try to find an answer out of the dream
                 SusiCognition cognition = new SusiCognition(dream, q, timezoneOffset, latitude, longitude, count, user.getIdentity());
                 if (cognition.getAnswers().size() > 0) {
-                    DAO.susi.getLogs().addCognition(user.getIdentity().getClient(), cognition);
+                    DAO.susi.getMemories().addCognition(user.getIdentity().getClient(), cognition);
                     return cognition.getJSON();
                 }
             } catch (JSONException | IOException e) {
@@ -108,7 +109,7 @@ public class SusiService extends AbstractAPIHandler implements APIHandler {
         
         // answer normally
         SusiCognition cognition = new SusiCognition(DAO.susi, q, timezoneOffset, latitude, longitude, count, user.getIdentity());
-        DAO.susi.getLogs().addCognition(user.getIdentity().getClient(), cognition);
+        DAO.susi.getMemories().addCognition(user.getIdentity().getClient(), cognition);
         JSONObject json = cognition.getJSON();
         return json;
     }
