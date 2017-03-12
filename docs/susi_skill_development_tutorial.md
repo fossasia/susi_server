@@ -7,60 +7,33 @@ Do you want your own conversation rules for YaCy? It's surprisingly easy to add 
 It's easy, DON'T PANIC. You don't need to be a software developer to enhance Susi.
 
 ### What you have to do
-- Currently we don't have an online rule development environment (which we want to make),
-therefore you must run a local `susi_server` to test your self-made conversation rules
-- You just have to write and edit simple text rules to create your own AI.
 
-### Requirements
+We have a Susi Skill develoment environment based on an etherpad. You don't know what an etherpad is? It's a blank web page where you can just put in your text and everyone can colaborate.
 
-You need to have a version 1.8 of Java installed. You also need git, ant and you must be able to use a text editor :)
+* open http://dream.asksusi.com
+* name a dream (just pick a name for your tests)
+* the etherpad is filles with a welcome message, just delete the content completely
 
-### Installation
+ATTENTION: the Susi Dream zone is a TEMPORARY zone. We may clean up that place at any time. It is only for testing your new Susi Skills
+If you want your new Susi Skills to be permanent, send us a pull request, see submitting_skills_to_git.md for a tuturial.
 
-* Clone your own copy of `susi_server`: run `git clone https://github.com/fossasia/susi_server.git`
-* run `cd susi_server`
-* run `ant`
-* run `bin/start.sh`
-* open http://localhost:4000 in your browser
+### Preparation to start testing
 
-### Access the Susi API
+To test the Skills you are editing, you only need the Susi Android Application (see: https://github.com/fossasia/susi_android )
+Or you can also test the Skills online at http://asksusi.com/chat
 
-* in http://localhost:4000 you can enter a phrase into the query box. Write there 'hello' and push the 'get json data' button
-* you can see now, that your request calls the API URL `http://localhost:4000/susi/chat.json?timezoneOffset=-60&q=hello`
-* the result is given in JSON, like:
+Within the chat dialog, enter
+
 ```
-{
-  "query": "hello",
-  "count": 1,
-  "client_id": "aG9zdF8xNzguMjAzLjIzMi41MA==",
-  "query_date": "2017-02-17T16:06:24.794Z",
-  "answers": [{
-    "data": [{
-      "0": "hello",
-      "intent_original": "hello",
-      "1": "",
-      "intent_canonical": "hello",
-      "intent_categorized": "hello",
-      "timezoneOffset": "-60"
-    }],
-    "metadata": {"count": 1},
-    "actions": [{
-      "type": "answer",
-      "expression": "Hello!"
-    }]
-  }],
-  "answer_date": "2017-02-17T16:06:24.828Z",
-  "answer_time": 34,
-  "session": {"identity": {
-    "type": "host",
-    "name": "178.203.232.50",
-    "anonymous": true
-  }}
-}
+dream <testname>
 ```
-* please check the 'actions' object in `.answers.actions`: you get an action type 'answer' and and 'expression': "Hello!".
-This is Susi's response on your query.
-* Whenever you want to test a new Susi Rule, repeat these steps and look into the "actions" object to see Susi's answer.
+
+where `<testname>` is the name of the etherpad you just entered in http://dream.asksusi.com
+
+Now all rules you enter in the dream zone are available instantly in your chat! Thats easy, is it?
+
+To stop testing your new Susi Skills, write `stop dreaming`.
+
 
 ## Write Easy Dialog ("EzD") conversation rules
 
