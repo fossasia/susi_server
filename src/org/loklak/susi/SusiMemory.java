@@ -122,6 +122,7 @@ public class SusiMemory {
     public SusiAwareness getAwareness(String client) {
         SusiIdentity identity = this.memories.get(client);
         if (identity == null) {
+            if (root == null) return null;
             identity = new SusiIdentity(new File(root, client), attention);
             this.memories.put(client, identity);
         }
@@ -130,6 +131,7 @@ public class SusiMemory {
     public SusiMemory addCognition(String client, SusiCognition si) {
         SusiIdentity identity = this.memories.get(client);
         if (identity == null) {
+            if (root == null) return null;
             identity = new SusiIdentity(new File(root, client), attention);
             this.memories.put(client, identity);
         }
@@ -143,6 +145,7 @@ public class SusiMemory {
      */
     public TreeMap<Long, SusiAwareness> getAllMemories() {
         TreeMap<Long, SusiAwareness> all = new TreeMap<>();
+        if (root == null) return all;
         String[] clients = this.root.list();
         for (String client: clients) {
             File memorypath = new File(this.root, client);
@@ -164,7 +167,7 @@ public class SusiMemory {
 
     public Set<String> getSkillsetNames(String client) {
         Map<String, JsonTray> skillsets = this.skillsets.get(client);
-        if (skillsets == null) {
+        if (skillsets == null && root != null) {
             Set<String> skills = new HashSet<String>();
             File rpath = new File(root, client);
             rpath.mkdirs();
@@ -181,7 +184,7 @@ public class SusiMemory {
             this.skillsets.put(client, skillsets);
         }
         JsonTray jt = skillsets.get(name);
-        if (jt == null) {
+        if (jt == null && root != null) {
             File rpath = new File(root, client);
             rpath.mkdirs();
             jt = new JsonTray(new File(rpath, name + ".json"), null, 1000);

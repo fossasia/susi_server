@@ -87,7 +87,7 @@ public class SusiMind {
     }
     
     public SusiMind observe() throws IOException {
-        if (this.watchpath != null) {
+        if (this.initpath != null) {
             observe(this.initpath);
             observe(new File(this.initpath.getParentFile(), "aiml"));
         }
