@@ -157,7 +157,7 @@ public class SusiInference {
         javascriptProcedures.put(Pattern.compile("(.*)"), (flow, matcher) -> {
             String term = matcher.group(1);
             try {
-                return new SusiThought().addObservation("bang", javascript.eval(flow.unify(term)).toString());
+                return new SusiThought().addObservation("!", javascript.eval(flow.unify(term)).toString());
             } catch (ScriptException e) {
                 Log.getLog().debug(e);
                 return new SusiThought(); // empty thought -> fail

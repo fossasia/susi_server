@@ -54,7 +54,7 @@
     ],
     "process":[ {"type":"javascript", "expression":"$1$"} ],
     "actions":[ {"type":"answer", "select":"random", "phrases":[
-      "$1$ = $bang$"
+      "$1$ = $!$"
     ]}]
   },{
     "keys"   :["mal"],
@@ -112,7 +112,7 @@
     ],
     "process":[ {"type":"javascript", "expression":"(Math.round(new Date().getHours() + (new Date().getTimezoneOffset() - $timezoneOffset$)/60)) + ' Uhr und ' + new Date().getMinutes() + ' Minuten'"} ],
     "actions":[ {"type":"answer", "select":"random", "phrases":[
-      "es ist $bang$"
+      "es ist $!$"
     ]}]
   }
 ]}
