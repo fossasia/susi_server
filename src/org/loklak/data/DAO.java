@@ -64,7 +64,7 @@ public class DAO {
 
     private final static String ACCESS_DUMP_FILE_PREFIX = "access_";
     
-    public  static File conf_dir, bin_dir, html_dir;
+    public  static File conf_dir, bin_dir, html_dir, data_dir, susi_watch_dir;
     private static File external_data, assets, dictionaries;
     public static Settings public_settings, private_settings;
     public  static AccessTracker access;
@@ -95,13 +95,14 @@ public class DAO {
         conf_dir = new File("conf");
         bin_dir = new File("bin");
         html_dir = new File("html");
+        data_dir = new File("data");
+        susi_watch_dir = new File(data_dir, "susi");
         
         // wake up susi
         File susiinitpath = new File(conf_dir, "susi");
-        File sudiwatchpath = new File(new File("data"), "susi");
-        susi = new SusiMind(susiinitpath, sudiwatchpath);
+        susi = new SusiMind(susiinitpath, susi_watch_dir);
         String susi_boilerplate_name = "susi_cognition_boilerplate.json";
-        File susi_boilerplate_file = new File(sudiwatchpath, susi_boilerplate_name);
+        File susi_boilerplate_file = new File(susi_watch_dir, susi_boilerplate_name);
         if (!susi_boilerplate_file.exists()) Files.copy(new File(conf_dir, "susi/" + susi_boilerplate_name + ".example"), susi_boilerplate_file);
         
         // initialize public and private keys
