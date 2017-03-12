@@ -58,21 +58,23 @@ public class SusiMind {
     public final static int ATTENTION_TIME = 5;
     
     private final Map<String, Set<SusiSkill>> skilltrigger; // a map from a keyword to a set of skills
-    private final File initpath, watchpath; // a path where the memory looks for new additions of knowledge with memory files
+    private final File initpath, watchpath, memorypath; // a path where the memory looks for new additions of knowledge with memory files
     private final Map<File, Long> observations; // a mapping of mind memory files to the time when the file was read the last time
     private final SusiReader reader; // responsible to understand written communication
     private final SusiMemory memories; // conversation logs are memories
     
-    public SusiMind(File initpath, File watchpath) {
+    public SusiMind(File initpath, File watchpath, File memorypath) {
         // initialize class objects
         this.initpath = initpath;
         if (this.initpath != null) this.initpath.mkdirs(); // a dream does not have that
         this.watchpath = watchpath;
         if (this.watchpath != null) this.watchpath.mkdirs(); // a dream does not have that
+        this.memorypath = memorypath;
+        if (this.memorypath != null) this.memorypath.mkdirs(); // a dream SHOULD have that
         this.skilltrigger = new ConcurrentHashMap<>();
         this.observations = new HashMap<>();
         this.reader = new SusiReader();
-        this.memories = new SusiMemory(watchpath, ATTENTION_TIME);
+        this.memories = new SusiMemory(memorypath, ATTENTION_TIME);
         try {observe();} catch (IOException e) {
             e.printStackTrace();
         }
@@ -491,7 +493,7 @@ public class SusiMind {
         try {
             File init = new File(new File("conf"), "susi");
             File watch = new File(new File("data"), "susi");
-            SusiMind mem = new SusiMind(init, watch);
+            SusiMind mem = new SusiMind(init, watch, watch);
             JSONObject lesson = mem.readJsonLesson(new File("conf/susi/susi_cognition_000.json"));
             mem.learn(lesson);
             System.out.println(mem.react("I feel funny", "localhost", new SusiThought()));

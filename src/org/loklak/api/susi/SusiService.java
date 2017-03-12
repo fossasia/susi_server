@@ -37,7 +37,6 @@ import org.loklak.server.AbstractAPIHandler;
 import org.loklak.server.Authorization;
 import org.loklak.server.Query;
 import org.loklak.susi.SusiArgument;
-import org.loklak.susi.SusiAwareness;
 import org.loklak.susi.SusiCognition;
 import org.loklak.susi.SusiMind;
 import org.loklak.susi.SusiThought;
@@ -93,7 +92,7 @@ public class SusiService extends AbstractAPIHandler implements APIHandler {
                 JSONObject json = new JSONObject(serviceResponse);
                 String text = json.getJSONObject("data").getString("text");
                 // fill an empty mind with the dream
-                SusiMind dream = new SusiMind(null, DAO.susi_watch_dir); // an empty mind!
+                SusiMind dream = new SusiMind(null, null, DAO.susi_watch_dir); // an empty mind!
                 JSONObject rules = dream.readEzDLesson(new BufferedReader(new InputStreamReader(new ByteArrayInputStream(text.getBytes(StandardCharsets.UTF_8)), StandardCharsets.UTF_8)));
                 dream.learn(rules);
                 // susi is now dreaming.. Try to find an answer out of the dream
