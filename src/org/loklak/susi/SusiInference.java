@@ -19,6 +19,8 @@
 
 package org.loklak.susi;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
@@ -157,8 +159,14 @@ public class SusiInference {
         javascriptProcedures.put(Pattern.compile("(.*)"), (flow, matcher) -> {
             String term = matcher.group(1);
             try {
-                return new SusiThought().addObservation("!", javascript.eval(flow.unify(term)).toString());
-            } catch (ScriptException e) {
+                StringWriter stdout = new StringWriter();
+                javascript.getContext().setWriter(new PrintWriter(stdout));
+                javascript.getContext().setErrorWriter(new PrintWriter(stdout));
+                Object o = javascript.eval(flow.unify(term));
+                String bang = o == null ? "" : o.toString().trim();
+                if (bang.length() == 0) bang = stdout.getBuffer().toString().trim();
+                return new SusiThought().addObservation("!", bang);
+            } catch (Throwable e) {
                 Log.getLog().debug(e);
                 return new SusiThought(); // empty thought -> fail
             }

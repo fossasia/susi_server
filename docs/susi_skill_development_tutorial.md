@@ -241,4 +241,28 @@ What is your favourite colour?
 
 Here, the colour is randomly generated with the `function colour` call, but only if Susi has not done that yet. If Susi just generated a colour in the answer, that answer will be stored in the variable `_mycolour`. But if that variable already existed, it will be used to make the answer without the `function colour`.
 
+### Tutorial Level 10: Embed Javascript into a Skill
+
+If you are able to compute whatever you want to inside a rule, there are billions of possibilities of what you can do with Susi Skills.
+Embedding Javascript is extremely easy, for example:
+
+```
+javascript hello
+!javascript:$!$ from Nashorn
+print('Hello world');
+eol
+```
+
+What you see here is the bang-notion which always starts with a '!', followed with the script language name that is used, then followed
+with a ':' and then follows the return statement. The value of the script is represented with the $!$ variable object.
+This javascript skill catches everything up that the script produces: std-out, error-out an direct term computations, i.e.
+
+
+```
+compute * to the power of *
+!javascript:$1$^$2$ = $!$
+Math.pow($1$, $2$)
+eol
+```
+
 

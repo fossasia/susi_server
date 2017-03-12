@@ -104,6 +104,8 @@ public class SusiTutorialTest {
             test("How do I feel?", "You are inactive.", identity);
             test("I am so happy!", "Good for you!", identity);
             test("Shall I eat?", "You will be happy, whatever I say!", identity);
+            test("javascript hello", "Hello world from Nashorn", identity);
+            test("compute 10 to the power of 3", "10^3 = 1000.0", identity);
             
         } catch (Exception e) {
             e.printStackTrace();
@@ -171,10 +173,19 @@ public class SusiTutorialTest {
                     "\n" +
                     "Shall I *?\n" +
                     "?$_mood$=excited:You will be happy, whatever I say!\n" +
+                    "\n" +
+                    "javascript hello\n" +
+                    "!javascript:$!$ from Nashorn\n" +
+                    "print('Hello world');\n" +
+                    "eol\n" +
+                    "\n" +
+                    "compute * to the power of *\n" +
+                    "!javascript:$1$^$2$ = $!$\n" +
+                    "Math.pow($1$, $2$)\n" +
+                    "eol\n" +
+                    "\n" +
+                    "\n" +
                     "\n";
-                    
-                    
-
 
 }
 
