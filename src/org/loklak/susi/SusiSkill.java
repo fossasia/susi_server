@@ -36,6 +36,7 @@ import java.util.regex.PatternSyntaxException;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.loklak.data.DAO;
+import org.loklak.tools.TimeoutMatcher;
 
 /**
  * A Skill in the Susi AI framework is a collection of phrases, inference processes and actions that are applied
@@ -395,7 +396,7 @@ public class SusiSkill {
         s = s.toLowerCase();
         for (SusiPhrase p: this.phrases) {
             Matcher m = p.getPattern().matcher(s);
-            if (m.find()) {
+            if (new TimeoutMatcher(m).find()) {
                 //System.out.println("MATCHERGROUP=" + m.group().toString());
                 l.add(m); // TODO: exclude double-entries
             }
@@ -418,7 +419,7 @@ public class SusiSkill {
         
         // that argument is filled with an idea which consist of the query where we extract the identified data entities
         alternatives: for (Matcher matcher: this.matcher(query)) {
-            if (!matcher.matches()) continue;
+            if (!new TimeoutMatcher(matcher).matches()) continue;
             SusiThought keynote = new SusiThought(matcher);
             if (intent != null) {
                 keynote.addObservation("intent_original", intent.original);

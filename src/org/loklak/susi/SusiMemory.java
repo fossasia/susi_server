@@ -33,6 +33,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Pattern;
 
 import org.eclipse.jetty.util.ConcurrentHashSet;
+import org.loklak.tools.TimeoutMatcher;
 import org.loklak.tools.storage.JsonTray;
 
 /**
@@ -106,7 +107,7 @@ public class SusiMemory {
             Iterator<String> i = this.unanswered.iterator();
             while (i.hasNext()) {
                 String s = i.next();
-                if (p.matcher(s).matches()) {
+                if (new TimeoutMatcher(p.matcher(s)).matches()) {
                     i.remove();
                     removed = true;
                 }

@@ -31,6 +31,7 @@ import org.loklak.server.Authorization;
 import org.loklak.server.BaseUserRole;
 import org.loklak.server.ClientCredential;
 import org.loklak.server.Query;
+import org.loklak.tools.TimeoutMatcher;
 import org.loklak.tools.storage.JSONObjectWithDefault;
 
 import javax.servlet.http.HttpServletResponse;
@@ -71,7 +72,7 @@ public class PasswordResetService extends AbstractAPIHandler implements APIHandl
 
 		Pattern pattern = Pattern.compile(passwordPattern);
 
-		if ((authentication.getIdentity().getName()).equals(newpass) || !pattern.matcher(newpass).matches()) {
+		if ((authentication.getIdentity().getName()).equals(newpass) || !new TimeoutMatcher(pattern.matcher(newpass)).matches()) {
 			// password can't equal email and regex should match
 			throw new APIException(400, "invalid password");
 		}

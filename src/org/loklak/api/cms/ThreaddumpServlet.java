@@ -54,6 +54,7 @@ import org.loklak.Caretaker;
 import org.loklak.http.RemoteAccess;
 import org.loklak.server.FileHandler;
 import org.loklak.server.Query;
+import org.loklak.tools.TimeoutMatcher;
 import org.loklak.tools.UTF8;
 
 public class ThreaddumpServlet extends HttpServlet {
@@ -140,7 +141,7 @@ public class ThreaddumpServlet extends HttpServlet {
                 try {
                     ThreadDump dump = new ThreadDump(ThreadDump.getAllStackTraces(), Thread.State.RUNNABLE);
                     for (final Map.Entry<StackTrace, SortedSet<String>> e: dump.entrySet()) {
-                        if (multiDumpFilterPattern.matcher(e.getKey().text).matches()) continue;
+                        if (new TimeoutMatcher(multiDumpFilterPattern.matcher(e.getKey().text)).matches()) continue;
                         Integer c = dumps.get(e.getKey().text);
                         if (c == null) dumps.put(e.getKey().text, Integer.valueOf(e.getValue().size()));
                         else {

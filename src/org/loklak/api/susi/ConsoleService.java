@@ -90,6 +90,10 @@ public class ConsoleService extends AbstractAPIHandler implements APIHandler {
         String encodedQuery = URLEncoder.encode(testquery, "UTF-8");
         int qp = serviceURL.indexOf("$query$");
         String url = qp < 0 ? serviceURL + encodedQuery : serviceURL.substring(0,  qp) + encodedQuery + serviceURL.substring(qp + 7);
+        return loadData(url);
+    }
+    
+    public static byte[] loadData(String url) throws IOException {
         ClientConnection cc = new ClientConnection(url);
         
         // fully read the input stream

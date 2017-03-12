@@ -25,6 +25,7 @@ import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
 import org.json.JSONObject;
+import org.loklak.tools.TimeoutMatcher;
 
 /**
  * Thinking starts with a series of inferences if it is triggered with a matching mechanism which tells the
@@ -86,8 +87,8 @@ public class SusiPhrase {
     public static String normalizeExpression(String s) {
         s = s.toLowerCase().replaceAll("\\#", "  ");
         Matcher m;
-        while ((m = wspace.matcher(s)).find()) s = m.replaceAll(" ");
-        while ((m = dspace.matcher(s)).find()) s = m.replaceAll(" ");
+        while (new TimeoutMatcher(m = wspace.matcher(s)).find()) s = m.replaceAll(" ");
+        while (new TimeoutMatcher(m = dspace.matcher(s)).find()) s = m.replaceAll(" ");
         s = s.trim();
         if (s.startsWith("susi ")) s = s.substring(5); // cut off susi address
         if (".?!".indexOf(s.charAt(s.length() - 1)) >= 0) s = s.substring(0, s.length() - 1).trim();
@@ -180,7 +181,7 @@ public class SusiPhrase {
         JSONObject json = new JSONObject(true);
         String p = this.pattern.pattern();
         if (this.type == Type.pattern || this.type == Type.regex) {
-            if (CATCHALL_CAPTURE_GROUP_PATTERN.matcher(p).find()) {
+            if (new TimeoutMatcher(CATCHALL_CAPTURE_GROUP_PATTERN.matcher(p)).find()) {
                 p = p.replaceAll(CATCHALL_CAPTURE_GROUP_PATTERN.pattern(), "*");
             }
             json.put("type", this.type.name());

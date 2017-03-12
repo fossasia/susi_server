@@ -265,4 +265,26 @@ Math.pow($1$, $2$)
 eol
 ```
 
+### Tutorial Level 11: Call an external API
+
+Important parts of an AI implementation is, to be able to access big data, many different data sources and to steer
+services outside of the body of the AI. To do so, it must be possible to call an external API.
+Such a service is called a 'console service' in Susi. It is easy to write a console Skill with just some lines of EzD code:
+
+```
+tweet about *
+!console:$text$
+{
+"url":"http://api.loklak.org/api/search.json?q=$1$",
+"path":"$.statuses"
+}
+eol
+```
+
+This will call the loklak search API and gets back a big list of tweets from the given query in $1$. That list is somewhere inside the
+answer json of the API call, and we must tell Susi where it can find that list. This hint is given in the attribute 'path' which has
+the syntax of an JSONPath. Here, the statuses object contains a list of objects, which contain always the same attribut keys.
+One of these attributes has the name 'text' and that attribute is selected with the $text$ pattern.
+Note that the bang definition part until the eol line must be given in JSON.
+
 

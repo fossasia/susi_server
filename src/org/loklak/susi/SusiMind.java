@@ -158,22 +158,38 @@ public class SusiMind {
                 if (line.toLowerCase().equals("eol")) {
                     // stop collection
                     if (bang_type.equals("javascript")) {
-                        String[] phrases = bang_phrases.split("\\|");
                         // create a javascript skill
-                        JSONObject jskill = new JSONObject(true);
-                        JSONArray p = new JSONArray();
-                        jskill.put("phrases", p);
-                        for (String phrase: phrases) p.put(SusiPhrase.simplePhrase(phrase.trim(), prior));
+                        JSONObject skill = new JSONObject(true);
+                        JSONArray phrases = new JSONArray();
+                        skill.put("phrases", phrases);
+                        for (String phrase: bang_phrases.split("\\|")) phrases.put(SusiPhrase.simplePhrase(phrase.trim(), prior));
+                        
                         // javascript process
                         JSONObject process = new JSONObject();
                         process.put("type", Type.javascript.name());
                         process.put("expression", bang_bag.toString());
-                        jskill.put("process", new JSONArray().put(process));
-                        // answers; must contain $javascript$
-                        JSONArray a = new JSONArray();
-                        jskill.put("actions", a);
-                        a.put(SusiAction.simpleAction(bang_term.split("\\|")));
-                        skills.put(jskill);
+                        skill.put("process", new JSONArray().put(process));
+                        
+                        // answers; must contain $!$
+                        skill.put("actions", new JSONArray().put(SusiAction.simpleAction(bang_term.split("\\|"))));
+                        skills.put(skill);
+                    }
+                    if (bang_type.equals("console")) {
+                        // create a console skill
+                        JSONObject skill = new JSONObject(true);
+                        JSONArray phrases = new JSONArray();
+                        skill.put("phrases", phrases);
+                        for (String phrase: bang_phrases.split("\\|")) phrases.put(SusiPhrase.simplePhrase(phrase.trim(), prior));
+                        
+                        // console process
+                        JSONObject process = new JSONObject();
+                        process.put("type", Type.console.name());
+                        process.put("definition", new JSONObject(new JSONTokener(bang_bag.toString())));
+                        skill.put("process", new JSONArray().put(process));
+                        
+                        // answers; must contain names from the console result array
+                        skill.put("actions", new JSONArray().put(SusiAction.simpleAction(bang_term.split("\\|"))));
+                        skills.put(skill);
                     }
                     bang_phrases = "";
                     bang_type = "";

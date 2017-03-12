@@ -19,6 +19,7 @@
 
 package org.loklak.susi;
 
+import java.io.ByteArrayInputStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.regex.Matcher;
@@ -27,12 +28,13 @@ import java.util.regex.PatternSyntaxException;
 
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
-import javax.script.ScriptException;
 
 import org.eclipse.jetty.util.log.Log;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.json.JSONTokener;
 import org.loklak.api.susi.ConsoleService;
+import org.loklak.tools.TimeoutMatcher;
 
 /**
  * Automated reasoning systems need inference methods to move from one proof state to another.
@@ -91,6 +93,10 @@ public class SusiInference {
      */
     public String getExpression() {
         return this.json.has("expression") ? this.json.getString("expression") : "";
+    }
+    
+    public JSONObject getDefinition() {
+        return this.json.has("definition") ? this.json.getJSONObject("definition") : null;
     }
     
     private final static SusiProcedures flowProcedures = new SusiProcedures();
@@ -199,7 +205,7 @@ public class SusiInference {
         try {
             Matcher m = pattern.matcher(flow.unify(expr, 0));
             int gc = -1;
-            if (m.matches()) {
+            if (new TimeoutMatcher(m).matches()) {
                 SusiTransfer transfer = new SusiTransfer(transferExpr);
                 JSONObject choice = new JSONObject();
                 if ((gc = m.groupCount()) > 0) {
@@ -230,8 +236,29 @@ public class SusiInference {
     public SusiThought applyProcedures(SusiArgument flow) {
         Type type = this.getType();
         if (type == SusiInference.Type.console) {
-            String expression = flow.unify(this.getExpression());
-            try {return ConsoleService.dbAccess.deduce(flow, expression);} catch (Exception e) {}
+            String expression = this.getExpression();
+            if (expression.length() == 0) {
+                // this might have an anonymous console rule inside
+                JSONObject definition = this.getDefinition();
+                if (definition == null) return new SusiThought();
+                
+                // execute the console rule right here
+                SusiThought json = new SusiThought();
+                try {
+                    String url = flow.unify(definition.getString("url"));
+                    String path = flow.unify(definition.getString("path"));
+                    JSONTokener serviceResponse = new JSONTokener(new ByteArrayInputStream(ConsoleService.loadData(url)));
+                    JSONArray data = ConsoleService.parseJSONPath(serviceResponse, path);
+                    if (data != null) json.setData(new SusiTransfer("*").conclude(data));
+                    json.setHits(json.getCount());
+                } catch (Throwable e) {
+                    //e.printStackTrace(); // probably a time-out
+                }
+                return json;
+                
+            } else {
+                try {return ConsoleService.dbAccess.deduce(flow, flow.unify(expression));} catch (Exception e) {}
+            }
         }
         if (type == SusiInference.Type.flow) {
             String expression = flow.unify(this.getExpression());
