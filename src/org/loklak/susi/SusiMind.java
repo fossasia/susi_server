@@ -55,6 +55,8 @@ import org.w3c.dom.NodeList;
 
 public class SusiMind {
     
+    public final static int ATTENTION_TIME = 5;
+    
     private final Map<String, Set<SusiSkill>> skilltrigger; // a map from a keyword to a set of skills
     private final File initpath, watchpath; // a path where the memory looks for new additions of knowledge with memory files
     private final Map<File, Long> observations; // a mapping of mind memory files to the time when the file was read the last time
@@ -70,7 +72,7 @@ public class SusiMind {
         this.skilltrigger = new ConcurrentHashMap<>();
         this.observations = new HashMap<>();
         this.reader = new SusiReader();
-        this.memories = new SusiMemory(watchpath, 5);
+        this.memories = new SusiMemory(watchpath, ATTENTION_TIME);
         try {observe();} catch (IOException e) {
             e.printStackTrace();
         }

@@ -69,14 +69,14 @@ public class SusiMemory {
     }
     
     private File root;
-    private int rc;
-    private Map<String, UserRecord> memories;
+    private int attention; // a measurement for time
+    private Map<String, UserIdentity> memories;
     private Map<String, Map<String, JsonTray>> skillsets;
     private Set<String> unanswered;
     
-    public SusiMemory(File storageLocation, int rememberLatestCount) {
+    public SusiMemory(File storageLocation, int attention) {
         this.root = storageLocation;
-        this.rc = rememberLatestCount;
+        this.attention = attention;
         this.memories = new ConcurrentHashMap<>();
         this.skillsets = new ConcurrentHashMap<>();
         this.unanswered = null;
@@ -126,43 +126,43 @@ public class SusiMemory {
      * @return a list of interactions, latest cognition is first in list
      */
     public SusiAwareness getAwareness(String client) {
-        UserRecord ur = this.memories.get(client);
-        if (ur == null) {
-            ur = new UserRecord(client);
-            this.memories.put(client, ur);
+        UserIdentity identity = this.memories.get(client);
+        if (identity == null) {
+            identity = new UserIdentity(client);
+            this.memories.put(client, identity);
         }
-        return ur.awareness;
+        return identity.awareness;
     }
     public SusiMemory addCognition(String client, SusiCognition si) {
-        UserRecord ur = this.memories.get(client);
-        if (ur == null) {
-            ur = new UserRecord(client);
-            this.memories.put(client, ur);
+        UserIdentity identity = this.memories.get(client);
+        if (identity == null) {
+            identity = new UserIdentity(client);
+            this.memories.put(client, identity);
         }
-        ur.add(si);
+        identity.add(si);
         return this;
     }
     
-    public class UserRecord {
+    public class UserIdentity {
         private SusiAwareness awareness = null; // first entry always has the latest cognition
         private File memorydump;
-        public UserRecord(String client) {
+        public UserIdentity(String client) {
             this.awareness = new SusiAwareness();
             File memorypath = new File(root, client);
             memorypath.mkdirs();
             this.memorydump = new File(memorypath, "log.txt");
             if (this.memorydump.exists()) {
                 try {
-                    this.awareness = readMemory(this.memorydump, rc);
+                    this.awareness = readMemory(this.memorydump, attention);
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
             }
         }
-        public UserRecord add(SusiCognition cognition) {
+        public UserIdentity add(SusiCognition cognition) {
             if (this.awareness == null) return this;
             this.awareness.add(0, cognition);
-            if (this.awareness.size() > rc) this.awareness.remove(this.awareness.size() - 1);
+            if (this.awareness.size() > attention) this.awareness.remove(this.awareness.size() - 1);
             try {
                 Files.write(this.memorydump.toPath(), UTF8.getBytes(cognition.getJSON().toString(0) + "\n"), StandardOpenOption.APPEND, StandardOpenOption.CREATE);
             } catch (JSONException | IOException e) {
@@ -175,11 +175,11 @@ public class SusiMemory {
     /**
      * produce awareness by reading the memory up to a given time limit
      * @param memorydump file where the memory is stored
-     * @param maxTime the maximum number of cognitions within the required awareness
+     * @param attentionTime the maximum number of cognitions within the required awareness
      * @return awareness for the give time
      * @throws IOException
      */
-    public static SusiAwareness readMemory(final File memorydump, int maxTime) throws IOException {
+    public static SusiAwareness readMemory(final File memorydump, int attentionTime) throws IOException {
         List<String> lines = Files.readAllLines(memorydump.toPath());
         SusiAwareness awareness = new SusiAwareness();
         for (int i = lines.size() - 1; i >= 0; i--) {
@@ -187,7 +187,7 @@ public class SusiMemory {
             if (line.length() == 0) continue;
             SusiCognition si = new SusiCognition(new JSONObject(line));
             awareness.add(si);
-            if (awareness.getTime() >= maxTime) break;
+            if (awareness.getTime() >= attentionTime) break;
         }
         return awareness;
     }
