@@ -9,7 +9,6 @@ script:
 - 'if [ "$TRAVIS_PULL_REQUEST" = "false" ]; then bash ./scripts/gh-pagesUpdater.sh; fi'
 - gradle assemble
 - gradle clean
-- ant
 before_script:
 - pip install --user codecov
 install: true
