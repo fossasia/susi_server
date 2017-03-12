@@ -21,14 +21,10 @@ package org.loklak.susi;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.StandardOpenOption;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
@@ -36,9 +32,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Pattern;
 
 import org.eclipse.jetty.util.ConcurrentHashSet;
-import org.json.JSONException;
-import org.json.JSONObject;
-import org.loklak.tools.UTF8;
 import org.loklak.tools.storage.JsonTray;
 
 /**
@@ -70,7 +63,7 @@ public class SusiMemory {
     
     private File root;
     private int attention; // a measurement for time
-    private Map<String, UserIdentity> memories;
+    private Map<String, SusiIdentity> memories;
     private Map<String, Map<String, JsonTray>> skillsets;
     private Set<String> unanswered;
     
@@ -87,7 +80,7 @@ public class SusiMemory {
         this.unanswered = new ConcurrentHashSet<>();
         // debug
         if (this.root != null) for (String c: this.root.list()) {
-            getAwareness(c).forEach(cognition -> {
+            getAwareness(c).getCognitions().forEach(cognition -> {
                 String query = cognition.getQuery().toLowerCase();
                 String answer = cognition.getExpression();
                 if (query.length() > 0 && failset.contains(answer)) this.unanswered.add(query);
@@ -97,9 +90,10 @@ public class SusiMemory {
         return this.unanswered;
     }
 
-    public void removeUnanswered(String s) {
+    public boolean removeUnanswered(String s) {
         if (this.unanswered == null) getUnanswered();
         boolean removed = this.unanswered.remove(s.toLowerCase());
+        return removed;
         //if (removed) System.out.println("** removed unanswered " + s);
     }
     
@@ -126,70 +120,21 @@ public class SusiMemory {
      * @return a list of interactions, latest cognition is first in list
      */
     public SusiAwareness getAwareness(String client) {
-        UserIdentity identity = this.memories.get(client);
+        SusiIdentity identity = this.memories.get(client);
         if (identity == null) {
-            identity = new UserIdentity(client);
+            identity = new SusiIdentity(new File(root, client), attention);
             this.memories.put(client, identity);
         }
-        return identity.awareness;
+        return identity.getAwareness();
     }
     public SusiMemory addCognition(String client, SusiCognition si) {
-        UserIdentity identity = this.memories.get(client);
+        SusiIdentity identity = this.memories.get(client);
         if (identity == null) {
-            identity = new UserIdentity(client);
+            identity = new SusiIdentity(new File(root, client), attention);
             this.memories.put(client, identity);
         }
         identity.add(si);
         return this;
-    }
-    
-    public class UserIdentity {
-        private SusiAwareness awareness = null; // first entry always has the latest cognition
-        private File memorydump;
-        public UserIdentity(String client) {
-            this.awareness = new SusiAwareness();
-            File memorypath = new File(root, client);
-            memorypath.mkdirs();
-            this.memorydump = new File(memorypath, "log.txt");
-            if (this.memorydump.exists()) {
-                try {
-                    this.awareness = readMemory(this.memorydump, attention);
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-        }
-        public UserIdentity add(SusiCognition cognition) {
-            if (this.awareness == null) return this;
-            this.awareness.add(0, cognition);
-            if (this.awareness.size() > attention) this.awareness.remove(this.awareness.size() - 1);
-            try {
-                Files.write(this.memorydump.toPath(), UTF8.getBytes(cognition.getJSON().toString(0) + "\n"), StandardOpenOption.APPEND, StandardOpenOption.CREATE);
-            } catch (JSONException | IOException e) {
-                e.printStackTrace();
-            }
-            return this;
-        }
-    }
-    
-    /**
-     * produce awareness by reading the memory up to a given time limit
-     * @param memorydump file where the memory is stored
-     * @param attentionTime the maximum number of cognitions within the required awareness
-     * @return awareness for the give time
-     * @throws IOException
-     */
-    public static SusiAwareness readMemory(final File memorydump, int attentionTime) throws IOException {
-        List<String> lines = Files.readAllLines(memorydump.toPath());
-        SusiAwareness awareness = new SusiAwareness();
-        for (int i = lines.size() - 1; i >= 0; i--) {
-            String line = lines.get(i);
-            if (line.length() == 0) continue;
-            SusiCognition si = new SusiCognition(new JSONObject(line));
-            awareness.add(si);
-            if (awareness.getTime() >= attentionTime) break;
-        }
-        return awareness;
     }
     
     /**
@@ -204,10 +149,10 @@ public class SusiMemory {
             if (memorypath.exists()) {
                 File memorydump = new File(memorypath, "log.txt");
                 if (memorydump.exists()) try {
-                    SusiAwareness conversation = readMemory(memorydump, Integer.MAX_VALUE);
-                    if (conversation.size() > 0) {
-                        Date d = conversation.get(0).getQueryDate();
-                        all.put(-d.getTime(), conversation);
+                    SusiAwareness awareness = SusiAwareness.readMemory(memorydump, Integer.MAX_VALUE);
+                    if (awareness.getTime() > 0) {
+                        Date d = awareness.getLatest().getQueryDate();
+                        all.put(-d.getTime(), awareness);
                     }
                 } catch (IOException e) {
                     e.printStackTrace();

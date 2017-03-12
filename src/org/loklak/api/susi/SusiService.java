@@ -24,7 +24,6 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -79,7 +78,7 @@ public class SusiService extends AbstractAPIHandler implements APIHandler {
         // find out if we are dreaming
         SusiArgument observation_argument = new SusiArgument();
         SusiAwareness awareness = DAO.susi.getMemories().getAwareness(user.getIdentity().getClient());
-        awareness.forEach(cognition -> observation_argument.think(cognition.recallDispute()));
+        awareness.getCognitions().forEach(cognition -> observation_argument.think(cognition.recallDispute()));
         SusiThought recall = observation_argument.mindmeld(false);
         String etherpad_dream = recall.getObservation("_etherpad_dream");
         if (etherpad_dream != null && etherpad_dream.length() != 0) {

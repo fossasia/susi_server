@@ -308,9 +308,11 @@ public class SusiThought extends JSONObject {
         List<String> list = new ArrayList<>();
         JSONArray table = this.getData();
         if (table != null && table.length() > 0) {
-            JSONObject row = table.getJSONObject(0);
-            for (String key: row.keySet()) {
-                if (key.equals(featureName)) list.add(row.get(key).toString());
+            for (int rc = 0; rc < table.length(); rc++) {
+            JSONObject row = table.getJSONObject(rc);
+                for (String key: row.keySet()) {
+                    if (key.equals(featureName)) list.add(row.get(key).toString());
+                }
             }
         }
         return list;
@@ -319,9 +321,11 @@ public class SusiThought extends JSONObject {
     public String getObservation(String featureName) {
         JSONArray table = this.getData();
         if (table != null && table.length() > 0) {
-            JSONObject row = table.getJSONObject(0);
-            for (String key: row.keySet()) {
-                if (key.equals(featureName)) return row.get(key).toString();
+            for (int rc = 0; rc < table.length(); rc++) {
+                JSONObject row = table.getJSONObject(rc);
+                for (String key: row.keySet()) {
+                    if (key.equals(featureName)) return row.get(key).toString();
+                }
             }
         }
         return null;
@@ -395,6 +399,10 @@ public class SusiThought extends JSONObject {
     
     public JSONObject toJSON() {
         return this;
+    }
+    
+    public String toString() {
+        return super.toString(2); // thats here to get a better debugging output
     }
     
     public static void main(String[] args) {

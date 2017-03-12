@@ -241,7 +241,7 @@ public class SusiArgument implements Iterable<SusiThought> {
     }
 
     public String toString() {
-        return this.toJSON().toString();
+        return this.toJSON().toString(2);
     }
     
     public static void main(String[] args) {

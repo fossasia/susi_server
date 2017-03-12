@@ -1,0 +1,117 @@
+/**
+ *  SusiIdentity
+ *  Copyright 12.03.2016 by Michael Peter Christen, @0rb1t3r
+ *
+ *  This library is free software; you can redistribute it and/or
+ *  modify it under the terms of the GNU Lesser General Public
+ *  License as published by the Free Software Foundation; either
+ *  version 2.1 of the License, or (at your option) any later version.
+ *  
+ *  This library is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ *  Lesser General Public License for more details.
+ *  
+ *  You should have received a copy of the GNU Lesser General Public License
+ *  along with this program in the file lgpl21.txt
+ *  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+
+package org.loklak.susi;
+
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.StandardOpenOption;
+
+import org.json.JSONException;
+import org.loklak.tools.UTF8;
+
+/**
+ * Identity is the mental model of a being represented with a SusiMind.
+ * In other words, it is the storage location for all cognitions.
+ * 
+ * Identities are not only defined using a storage location but also using an attention.
+ * An attention is the dimension of awareness time, it represents the number of cognitions that
+ * the being is able to be aware of at the same time.
+ * 
+ * Awareness using an attention dimension means that certain entities of the memory
+ * are lost after a given time. Time is defined here by the number of cognitions that
+ * the identity stores.
+ */
+public class SusiIdentity {
+    
+    private SusiAwareness awareness = null; // first entry always has the latest cognition
+    private File memorydump;
+    private int attention;
+    
+    /**
+     * Create a new identity.
+     * The identity is initialized if it did not exist yet
+     * or a memory dump is read up to the given attention.
+     * If the attention is Integer.MAX_VALUE, the identity becomes GOD which means it has unlimited awareness.
+     * Please be aware that being GOD means that computations on unlimited awareness may be CPU and memory intensive :)
+     * Actually thats the main reason of having a limited awareness: to be efficient with the computation resources.
+     * @param memorypath a path to a storage location of the identity
+     * @param attention the dimension of the awareness
+     */
+    public SusiIdentity(File memorypath, int attention) {
+        this.attention = attention;
+        this.awareness = new SusiAwareness();
+        memorypath.mkdirs();
+        this.memorydump = new File(memorypath, "log.txt");
+        if (this.memorydump.exists()) {
+            try {
+                this.awareness = SusiAwareness.readMemory(this.memorydump, attention);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+    
+    /**
+     * Add a cognition to the identity. This will cause that we forget cognitions after
+     * the awareness threshold has passed.
+     * @param cognition
+     * @return self
+     */
+    public SusiIdentity add(SusiCognition cognition) {
+        if (this.awareness == null) return this;
+        this.awareness.learn(cognition);
+        this.awareness.limitAwareness(this.attention);
+        try {
+            Files.write(this.memorydump.toPath(), UTF8.getBytes(cognition.getJSON().toString(0) + "\n"), StandardOpenOption.APPEND, StandardOpenOption.CREATE);
+        } catch (JSONException | IOException e) {
+            e.printStackTrace();
+        }
+        return this;
+    }
+    
+    /**
+     * To be able to increase or decrease the current attention the attention level can be set here.
+     * Setting the attention to Integer.MAX_VALUE means, to be GOD
+     * @param attention the next attention level
+     * @return self
+     */
+    public SusiIdentity setAttention(int attention) {
+        this.attention = attention;
+        return this;
+    }
+    
+    /**
+     * Get the current attention dimension which is the number of cognitions in the maintained awareness
+     * @return the attention dimension
+     */
+    public int getAttention() {
+        return this.attention;
+    }
+    
+    /**
+     * Get the current awareness. The awareness is pre-computed to be limited to a given attention level all the time
+     * @return the current awareness
+     */
+    public SusiAwareness getAwareness() {
+        return this.awareness;
+    }
+}
