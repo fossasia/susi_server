@@ -25,6 +25,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
@@ -80,7 +81,7 @@ public class SusiMemory {
         this.unanswered = new ConcurrentHashSet<>();
         // debug
         if (this.root != null) for (String c: this.root.list()) {
-            getAwareness(c).getCognitions().forEach(cognition -> {
+            getCognitions(c).forEach(cognition -> {
                 String query = cognition.getQuery().toLowerCase();
                 String answer = cognition.getExpression();
                 if (query.length() > 0 && failset.contains(answer)) this.unanswered.add(query);
@@ -119,14 +120,15 @@ public class SusiMemory {
      * @param client
      * @return a list of interactions, latest cognition is first in list
      */
-    public SusiAwareness getAwareness(String client) {
+    public List<SusiCognition> getCognitions(String client) {
         SusiIdentity identity = this.memories.get(client);
         if (identity == null) {
             identity = new SusiIdentity(new File(root, client), attention);
             this.memories.put(client, identity);
         }
-        return identity.getAwareness();
+        return identity.getCognitions();
     }
+    
     public SusiMemory addCognition(String client, SusiCognition si) {
         SusiIdentity identity = this.memories.get(client);
         if (identity == null) {

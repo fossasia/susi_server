@@ -64,21 +64,26 @@ public class SusiAwareness {
      * Forgetting the oldest cognition: this is an important operation to prevent that we
      * memorize too many cognitions all the time. Too many cognitions would mean to have
      * a too strong attention which may be exhausting (for memory and CPU)
-     * @return self
+     * @return the cognition which was forgot or NULL if no cognition was forgot
      */
-    public SusiAwareness forgetOldest() {
+    public SusiCognition forgetOldest() {
         if (this.aware.size() > 0) this.aware.remove(this.aware.size() - 1);
-        return this;
+        return null;
     }
     
     /**
      * Limit the cognition up to an attention limit
      * @param attention the required attention limit (maximum number of cognitions)
-     * @return self
+     * @return list of cognitions which are forgotten, latest first
      */
-    public SusiAwareness limitAwareness(int attention) {
-        while (attention != Integer.MAX_VALUE && this.getTime() > attention) this.forgetOldest();
-        return this;
+    public List<SusiCognition> limitAwareness(int attention) {
+        ArrayList<SusiCognition> removed = new ArrayList<>();
+        while (attention != Integer.MAX_VALUE && this.getTime() > attention) {
+            SusiCognition c = this.forgetOldest();
+            if (c == null) break;
+            removed.add(0, c);
+        }
+        return removed;
     }
     
     /**
@@ -121,7 +126,7 @@ public class SusiAwareness {
             if (line.length() == 0) continue;
             SusiCognition si = new SusiCognition(new JSONObject(line));
             awareness.aware.add(si);
-            if (awareness.getTime() >= attentionTime) break;
+            if (attentionTime != Integer.MAX_VALUE && awareness.getTime() >= attentionTime) break;
         }
         return awareness;
     }

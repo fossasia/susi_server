@@ -24,6 +24,8 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.StandardOpenOption;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.json.JSONException;
 import org.loklak.tools.UTF8;
@@ -41,8 +43,8 @@ import org.loklak.tools.UTF8;
  * the identity stores.
  */
 public class SusiIdentity {
-    
-    private SusiAwareness awareness = null; // first entry always has the latest cognition
+
+    private SusiAwareness long_term_memory, short_term_memory;
     private File memorydump;
     private int attention;
     
@@ -58,12 +60,13 @@ public class SusiIdentity {
      */
     public SusiIdentity(File memorypath, int attention) {
         this.attention = attention;
-        this.awareness = new SusiAwareness();
+        this.long_term_memory = new SusiAwareness();
+        this.short_term_memory = new SusiAwareness();
         memorypath.mkdirs();
         this.memorydump = new File(memorypath, "log.txt");
         if (this.memorydump.exists()) {
             try {
-                this.awareness = SusiAwareness.readMemory(this.memorydump, attention);
+                this.long_term_memory = SusiAwareness.readMemory(this.memorydump, attention);
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -77,9 +80,9 @@ public class SusiIdentity {
      * @return self
      */
     public SusiIdentity add(SusiCognition cognition) {
-        if (this.awareness == null) return this;
-        this.awareness.learn(cognition);
-        this.awareness.limitAwareness(this.attention);
+        this.short_term_memory.learn(cognition);
+        List<SusiCognition> forgottenCognitions = this.short_term_memory.limitAwareness(this.attention);
+        forgottenCognitions.forEach(c -> this.long_term_memory.learn(c)); // TODO add a rule to memorize only the most important ones
         try {
             Files.write(this.memorydump.toPath(), UTF8.getBytes(cognition.getJSON().toString(0) + "\n"), StandardOpenOption.APPEND, StandardOpenOption.CREATE);
         } catch (JSONException | IOException e) {
@@ -108,10 +111,15 @@ public class SusiIdentity {
     }
     
     /**
-     * Get the current awareness. The awareness is pre-computed to be limited to a given attention level all the time
-     * @return the current awareness
+     * Get the current awareness as list of cognitions. The list is reverse ordered, latest cognitions are first
+     * @return a list of cognitions, latest first
      */
-    public SusiAwareness getAwareness() {
-        return this.awareness;
+    public List<SusiCognition> getCognitions() {
+        ArrayList<SusiCognition> cognitions = new ArrayList<>();
+        // first put in short memory
+        this.short_term_memory.getCognitions().forEach(cognition -> cognitions.add(cognition));
+        // then put in long term memory
+        this.long_term_memory.getCognitions().forEach(cognition -> cognitions.add(cognition));
+        return cognitions;
     }
 }
