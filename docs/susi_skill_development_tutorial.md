@@ -59,7 +59,7 @@ This defines one simple rule: to answer on "roses are red" the phrase "susi is a
 * all other text lines define dialog rules. Rules are separate with empty lines. Comment and section declaration modifiers count also like empty lines as separator.
 
 Now you can test the new rule:
-* send the following query to Susi (yes your local own susi_server, must be running, look above how that works): "roses are red"
+* send the following query to Susi: "roses are red"
 * Susi will answer with "susi is a hack".
 The EzD format is just a text file where two lines which are not separated with an empty line represent a conversation pattern.
 You can actually add a third line to your file:
