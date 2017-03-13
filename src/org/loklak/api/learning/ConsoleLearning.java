@@ -38,6 +38,7 @@ import org.loklak.server.AbstractAPIHandler;
 import org.loklak.server.Authorization;
 import org.loklak.server.Query;
 import org.loklak.tools.storage.JSONObjectWithDefault;
+import org.loklak.tools.storage.JsonPath;
 import org.loklak.tools.storage.JsonTray;
 
 import javax.servlet.http.HttpServletResponse;
@@ -299,7 +300,7 @@ public class ConsoleLearning extends AbstractAPIHandler implements APIHandler {
                 }
             }
             
-            JSONArray data = ConsoleService.parseJSONPath(new JSONTokener(new ByteArrayInputStream(serviceResponse)), path);
+            JSONArray data = JsonPath.parse(new JSONTokener(new ByteArrayInputStream(serviceResponse)), path);
             if (data == null || data.length() == 0) {
                 json.put("accepted", false);
                 json.put("reject-reason", "the jsonPath from data object did not recognize an array object");

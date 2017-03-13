@@ -27,7 +27,6 @@ import java.util.Set;
 import java.util.regex.Pattern;
 
 import org.json.JSONArray;
-import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONTokener;
 import org.loklak.data.DAO;
@@ -42,6 +41,7 @@ import org.loklak.susi.SusiProcedures;
 import org.loklak.susi.SusiThought;
 import org.loklak.susi.SusiTransfer;
 import org.loklak.tools.storage.JSONObjectWithDefault;
+import org.loklak.tools.storage.JsonPath;
 
 import javax.servlet.http.HttpServletResponse;
 
@@ -74,7 +74,7 @@ public class ConsoleService extends AbstractAPIHandler implements APIHandler {
             try {
                 String testquery = matcher.group(2);
                 JSONTokener serviceResponse = new JSONTokener(new ByteArrayInputStream(loadData(serviceURL, testquery)));
-                JSONArray data = ConsoleService.parseJSONPath(serviceResponse, path);
+                JSONArray data = JsonPath.parse(serviceResponse, path);
                 json.setQuery(testquery);
                 SusiTransfer transfer = new SusiTransfer(matcher.group(1));
                 if (data != null) json.setData(transfer.conclude(data));
@@ -107,42 +107,6 @@ public class ConsoleService extends AbstractAPIHandler implements APIHandler {
         // finished, close
         cc.close();
         return b;
-    }
-    
-    /**
-     * very simple JSONPath decoder which always creates a JSONArray as result
-     * @param tokener contains the parsed JSON
-     * @param jsonPath a path as defined by http://goessner.net/articles/JsonPath/
-     * @return a JSONArray with the data part of a console query
-     */
-    public static JSONArray parseJSONPath(JSONTokener tokener, String jsonPath) {
-        try {
-            if (tokener == null) return null;
-            String[] dompath = jsonPath.split("\\.");
-            if (dompath == null || dompath.length < 1 || !dompath[0].equals("$")) return null; // wrong syntax of jsonPath
-            if (dompath.length == 1) {
-                // the tokener contains already the data array
-                return new JSONArray(tokener);
-            }
-            Object decomposition = null;
-            for (int domc = 1; domc < dompath.length; domc++) {
-                String path = dompath[domc];
-                int p = path.indexOf('[');
-                if (p < 0) {
-                    decomposition = ((decomposition == null) ? new JSONObject(tokener) : ((JSONObject) decomposition)).get(path);
-                } else if (p == 0) {
-                    int idx = Integer.parseInt(path.substring(1, path.length() - 1));
-                    decomposition = ((decomposition == null) ? new JSONArray(tokener) : ((JSONArray) decomposition)).get(idx);
-                } else {
-                    int idx = Integer.parseInt(path.substring(p + 1, path.length() - 1));
-                    path = path.substring(0, p);
-                    decomposition = ((decomposition == null) ? new JSONObject(tokener) : ((JSONObject) decomposition)).get(path);
-                    decomposition = ((JSONArray) decomposition).get(idx);
-                }
-            }
-            if (decomposition instanceof JSONArray) return (JSONArray) decomposition;
-        } catch (JSONException e) {}
-        return null;
     }
     
     static {

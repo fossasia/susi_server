@@ -35,6 +35,7 @@ import org.json.JSONObject;
 import org.json.JSONTokener;
 import org.loklak.api.susi.ConsoleService;
 import org.loklak.tools.TimeoutMatcher;
+import org.loklak.tools.storage.JsonPath;
 
 /**
  * Automated reasoning systems need inference methods to move from one proof state to another.
@@ -248,7 +249,7 @@ public class SusiInference {
                     String url = flow.unify(definition.getString("url"));
                     String path = flow.unify(definition.getString("path"));
                     JSONTokener serviceResponse = new JSONTokener(new ByteArrayInputStream(ConsoleService.loadData(url)));
-                    JSONArray data = ConsoleService.parseJSONPath(serviceResponse, path);
+                    JSONArray data = JsonPath.parse(serviceResponse, path);
                     if (data != null) json.setData(new SusiTransfer("*").conclude(data));
                     json.setHits(json.getCount());
                 } catch (Throwable e) {
