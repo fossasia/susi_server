@@ -319,7 +319,7 @@ public class SusiSkill {
          
         // (2) pattern score
         final AtomicInteger phrases_subscore = new AtomicInteger(0);
-        this.phrases.forEach(phrase -> phrases_subscore.set(Math.max(phrases_subscore.get(), phrase.getSubscore())));
+        this.phrases.forEach(phrase -> phrases_subscore.set(Math.min(phrases_subscore.get(), phrase.getSubscore())));
         this.score = this.score * SusiPhrase.Type.values().length + phrases_subscore.get();
 
         // (3) operation type - there may be no operation at all
