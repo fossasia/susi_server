@@ -82,7 +82,7 @@ public class JsonPath {
     public static void main(String[] args) {
     	// https://query.yahooapis.com/v1/public/yql?q=select%20*%20from%20csv%20where%20url%3D%27http%3A%2F%2Fdownload.finance.yahoo.com%2Fd%2Fquotes.csv%3Fs%3DYHOO%26f%3Dsl1d1t1c1ohgv%26e%3D.csv%27%20and%20columns%3D%27symbol%2Cprice%2Cdate%2Ctime%2Cchange%2Ccol1%2Chigh%2Clow%2Ccol2%27&format=json&env=store%3A%2F%2Fdatatables.org%2Falltableswithkeys
     	test("{\"query\":{\"count\":1,\"created\":\"2017-03-13T12:41:55Z\",\"lang\":\"de-DE\",\"results\":{\"row\":{\"symbol\":\"YHOO\",\"price\":\"45.98\",\"date\":\"3/10/2017\",\"time\":\"5:00pm\",\"change\":\"+0.04\",\"col1\":\"46.20\",\"high\":\"46.20\",\"low\":\"45.75\",\"col2\":\"3824629\"}}}}",
-    			"$.query");
+    			"$.query.results.row");
     }
     
 }
