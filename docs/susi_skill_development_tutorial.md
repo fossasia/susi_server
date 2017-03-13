@@ -12,7 +12,7 @@ We have a Susi Skill develoment environment based on an etherpad. You don't know
 
 * open http://dream.asksusi.com
 * name a dream (just pick a name for your tests)
-* the etherpad is filles with a welcome message, just delete the content completely
+* the etherpad is filled with a welcome message, just delete the content completely
 
 ATTENTION: the Susi Dream zone is a TEMPORARY zone. We may clean up that place at any time. It is only for testing your new Susi Skills
 If you want your new Susi Skills to be permanent, send us a pull request, see submitting_skills_to_git.md for a tuturial.
@@ -46,10 +46,7 @@ What you will learn here is the EzD language. It's actually much simpler than yo
 
 ### Tutorial Level 0: Fixed Query-Answer Phrase Collections
 
-In your own `susi_server` directory, open the subdirectory `conf/susi` (or cd into `susi_server/conf/susi`): here you
-find a collection of `.txt` (Susi EzD) files and `.json` (Susi Mind) files.
-* Let's create our own EzD file, name it `000_en_tutorial.txt`.
-* Edit `000_en_tutorial.txt` and inser the following content:
+In you dream test zone (the etherpad) write:
 ```
 # susi EzD tutorial playground
 ::prior
