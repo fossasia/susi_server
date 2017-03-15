@@ -60,6 +60,17 @@
       "Definition of $1$: $plaintext$."
     ]}]
   }, {
+    "score"  :2,
+    "phrases":[
+      {"type":"regex", "expression":"how (?:(?:a )*)(.*)"},
+      {"type":"regex", "expression":"why (?:(?:a )*)(.*)"},
+      {"type":"regex", "expression":"explain (?:(?:a )*)(.*)"}
+    ],
+    "process":[ {"type":"console", "expression":"SELECT plaintext FROM wolframalpha WHERE query='$0$';"} ],
+    "actions":[ {"type":"answer", "select":"random", "phrases":[
+      "$plaintext$."
+    ]}]
+  }, {
     "score"  :0,
     "phrases":[
       {"type":"regex", "expression":"search urbandictionary for (?:(?:a )*)(.*)"},

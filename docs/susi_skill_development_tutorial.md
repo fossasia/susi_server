@@ -1,6 +1,6 @@
-# AI Rule Development Tutorial
+# Susi Skill Development Tutorial
 
-Do you want your own conversation rules for YaCy? It's surprisingly easy to add more dialog rules to Susi.
+Do you want your own AI rules for Susi? It's surprisingly easy to add more dialog rules to Susi.
 
 ## Getting Started
 
@@ -257,4 +257,33 @@ the syntax of an JSONPath. Here, the statuses object contains a list of objects,
 One of these attributes has the name 'text' and that attribute is selected with the $text$ pattern.
 Note that the bang definition part until the eol line must be given in JSON.
 
+### Tutorial Level 12: Thinking with Backtracking
 
+Backtracking is the ability of a program to revert a already made setting and take an alternative option. If we consider this behaviour at different states of a computation, then this produces a tree-like parameter graph, which is called a decision tree. Susi's data structures are made in such a way, that result tables are an element of 'thinking'. Such result tables are 'bags' for backtracking options. We will learn how to use that principle to create loops which are useful for problem-solving.
+
+(to be implemented)
+
+### Tutorial Level 13: Expert Systems with first-order logic
+
+A first-order logic is expressed in terms of relations, represented as facts and rules. We already defined facts and rules using the methods as described above. Backtracking and unification is the computation model for such kind of expert systems. In this tutorial we will learn how to express a program flow using logic elements in EzD rules.
+
+(to be implemented)
+
+### Tutorial Level 14: Skill Reflection
+
+We are able to set variable content and read them in skills. But we must also be able to read skills in the same way as we read variables. We should be able to answer on questions like 'we cannot solve this because there is no rule for that', or 'we have several rules, which one is preferred'. 
+
+(to be implemented)
+
+### Tutorial Level 15: Skills which create Skills
+
+It is a core principle of intelligent systems to be able to learn and enhance themselves. We want to create skill rules which are able to create new skill rules.
+
+(to be implemened)
+
+### Tutorial Level 16: Inter-Susi Instance Dialog
+
+Susi runs in user instances: every chat user of a Susi instance is an individual instance. Instances may be customized i.e. if the user calls Susi to dream with a test skill set. Therefore different Susi instances behave differently. It should be possible that two different Susi instances have different 'opinions' and that two instances start a dialog with each other to find a consensus.
+We will learn here how to connect those instances to each other so they can talk.
+
+(to be implemented)
