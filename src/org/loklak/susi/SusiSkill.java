@@ -55,7 +55,7 @@ public class SusiSkill {
     private Set<String> keys;
     private String comment;
     private int user_subscore;
-    private int score;
+    private Score score;
     private int id;
     
     /**
@@ -128,7 +128,7 @@ public class SusiSkill {
         k.forEach(o -> this.keys.add((String) o));
 
         this.user_subscore = json.has("score") ? json.getInt("score") : DEFAULT_SCORE;
-        this.score = -1; // calculate this later if required
+        this.score = null; // calculate this later if required
         
         // extract the comment
         this.comment = json.has("comment") ? json.getString("comment") : "";
@@ -154,7 +154,7 @@ public class SusiSkill {
         JSONArray a = new JSONArray(); this.actions.forEach(action -> a.put(action.toJSONClone()));
         json.put("actions", a);
         if (this.comment != null && this.comment.length() > 0) json.put("comment", comment);
-        if (score > 0) json.put("score", score);
+        if (this.score != null) json.put("score", score.score);
         return json;
     }
     
@@ -262,6 +262,12 @@ public class SusiSkill {
         return this.comment;
     }
 
+    public Score getScore() {
+        if (this.score != null) return score;
+        this.score = new Score();
+        return this.score;
+    }
+    
     /**
      * The score is used to prefer one skill over another if that other skill has a lower score.
      * The reason that this score is used is given by the fact that we need skills which have
@@ -274,9 +280,13 @@ public class SusiSkill {
      * therefore might induce a 'good feeling' because it is known that the outcome will be good.
      * @return a score which is used for sorting of the skills. The higher the better. Highest score wins.
      */
-    public int getScore() {
+    public class Score {
 
-        if (this.score >= 0) return this.score;
+        public int score;
+        public String log;
+        
+        public Score() {
+        if (SusiSkill.this.score != null) return;
         
         /*
          * Score Computation:
@@ -295,16 +305,17 @@ public class SusiSkill {
          * The prior attribute can also be expressed as an replacement of a pattern type because it is only relevant if the query is not a pattern or regular expression.
          * The resulting criteria is a property with three possible values: {minor, pattern, major}
     
-         * (3) the operation type
+         * (3) the meatsize (number of characters that are non-patterns)
+    
+         * (4) the whole size (total number of characters)
+    
+         * (5) the operation type
          * op: {retrieval, computation, storage} the operation could be computed from the skill string
 
-         * (4) the IO activity (-location)
+         * (6) the IO activity (-location)
          * io: {remote, local, ram} the storage location can be computed from the skill string
     
-         * (5) the meatsize (number of characters that are non-patterns)
-    
-         * (6) the whole size (total number of characters)
-    
+         
          * (7) finally the subscore can be assigned manually
          * subscore a score in a small range which can be used to distinguish skills within the same categories
          */
@@ -314,42 +325,41 @@ public class SusiSkill {
 
         // (1) conversation plan from the answer purpose
         final AtomicInteger dialogType_subscore = new AtomicInteger(0);
-        this.actions.forEach(action -> dialogType_subscore.set(Math.max(dialogType_subscore.get(), action.getDialogType().getSubscore())));
+        SusiSkill.this.actions.forEach(action -> dialogType_subscore.set(Math.max(dialogType_subscore.get(), action.getDialogType().getSubscore())));
         this.score = this.score * SusiAction.DialogType.values().length + dialogType_subscore.get();
          
         // (2) pattern score
         final AtomicInteger phrases_subscore = new AtomicInteger(0);
-        this.phrases.forEach(phrase -> phrases_subscore.set(Math.min(phrases_subscore.get(), phrase.getSubscore())));
+        SusiSkill.this.phrases.forEach(phrase -> phrases_subscore.set(Math.min(phrases_subscore.get(), phrase.getSubscore())));
         this.score = this.score * SusiPhrase.Type.values().length + phrases_subscore.get();
 
-        // (3) operation type - there may be no operation at all
-        final AtomicInteger inference_subscore = new AtomicInteger(0);
-        this.inferences.forEach(inference -> inference_subscore.set(Math.max(inference_subscore.get(), inference.getType().getSubscore())));
-        this.score = this.score * (1 + SusiInference.Type.values().length) + inference_subscore.get();
-        
-        // (5) meatsize: length of a phrase (counts letters)
+        // (3) meatsize: length of a phrase (counts letters)
         final AtomicInteger phrases_meatscore = new AtomicInteger(0);
-        this.phrases.forEach(phrase -> phrases_meatscore.set(Math.max(phrases_meatscore.get(), phrase.getMeatsize())));
+        SusiSkill.this.phrases.forEach(phrase -> phrases_meatscore.set(Math.max(phrases_meatscore.get(), phrase.getMeatsize())));
         this.score = this.score * 100 + phrases_meatscore.get();
         
-        // (6) whole size: length of the pattern
+        // (4) whole size: length of the pattern
         final AtomicInteger phrases_wholesize = new AtomicInteger(0);
-        this.phrases.forEach(phrase -> phrases_wholesize.set(Math.max(phrases_wholesize.get(), phrase.getPattern().toString().length())));
+        SusiSkill.this.phrases.forEach(phrase -> phrases_wholesize.set(Math.max(phrases_wholesize.get(), phrase.getPattern().toString().length())));
         this.score = this.score * 100 + phrases_wholesize.get();
      
-        // (7) subscore from the user
-        this.score += this.score * 1000 + Math.min(1000, this.user_subscore);
+        // (5) operation type - there may be no operation at all
+        final AtomicInteger inference_subscore = new AtomicInteger(0);
+        SusiSkill.this.inferences.forEach(inference -> inference_subscore.set(Math.max(inference_subscore.get(), inference.getType().getSubscore())));
+        this.score = this.score * (1 + SusiInference.Type.values().length) + inference_subscore.get();
         
-        /*
-        System.out.println("DEBUG SKILL SCORE: id=" + this.id + ", score=" + this.score +
-                ", dialog=" + dialogType_subscore.get() +
+        // (6) subscore from the user
+        this.score += this.score * 1000 + Math.min(1000, SusiSkill.this.user_subscore);
+        
+        this.log = 
+                "dialog=" + dialogType_subscore.get() +
                 ", phrase=" + phrases_subscore.get() +
                 ", inference=" + inference_subscore.get() +
                 ", meatscore=" + phrases_meatscore.get() +
+                ", wholesize=" + phrases_wholesize.get() +
                 ", subscore=" + user_subscore +
-                ", pattern=" +phrases.get(0).toString() + (this.inferences.size() > 0 ? ", inference=" + this.inferences.get(0).getExpression() : ""));
-       */
-        return this.score;
+                ", pattern=" + phrases.get(0).toString() + (SusiSkill.this.inferences.size() > 0 ? (", inference=" + SusiSkill.this.inferences.get(0).getExpression()) : "");
+        }
     }
 
     /**

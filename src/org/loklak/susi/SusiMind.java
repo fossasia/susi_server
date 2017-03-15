@@ -416,7 +416,7 @@ public class SusiMind {
             r.forEach(skill -> ideas.add(new SusiIdea(skill).setIntent(token)));
         });
         
-        for (SusiIdea idea: ideas) DAO.log("idea.phrase-1: score=" + idea.getSkill().getScore() + " : " + idea.getSkill().getPhrases().toString() + " " + idea.getSkill().getActionsClone());
+        for (SusiIdea idea: ideas) DAO.log("idea.phrase-1: score=" + idea.getSkill().getScore().score + " : " + idea.getSkill().getPhrases().toString() + " " + idea.getSkill().getActionsClone());
         
         // add catchall skills always (those are the 'bad ideas')
         Collection<SusiSkill> ca = this.skilltrigger.get(SusiSkill.CATCHALL_KEY);
@@ -426,7 +426,7 @@ public class SusiMind {
         TreeMap<Long, List<SusiIdea>> scored = new TreeMap<>();
         AtomicLong count = new AtomicLong(0);
         ideas.forEach(idea -> {
-            int score = idea.getSkill().getScore();
+            int score = idea.getSkill().getScore().score;
             long orderkey = Long.MAX_VALUE - ((long) score) * 1000L + count.incrementAndGet();
             List<SusiIdea> r = scored.get(orderkey);
             if (r == null) {r = new ArrayList<>(); scored.put(orderkey, r);}
@@ -436,7 +436,7 @@ public class SusiMind {
         // make a sorted list of all ideas
         ideas.clear(); scored.values().forEach(r -> ideas.addAll(r));
         
-        for (SusiIdea idea: ideas) DAO.log("idea.phrase-2: score=" + idea.getSkill().getScore() + " : " + idea.getSkill().getPhrases().toString() + " " + idea.getSkill().getActionsClone());
+        for (SusiIdea idea: ideas) DAO.log("idea.phrase-2: score=" + idea.getSkill().getScore().score + " : " + idea.getSkill().getPhrases().toString() + " " + idea.getSkill().getActionsClone());
         
         // test ideas and collect those which match up to maxcount
         List<SusiIdea> plausibleIdeas = new ArrayList<>(Math.min(10, maxcount));
@@ -449,7 +449,10 @@ public class SusiMind {
             if (plausibleIdeas.size() >= maxcount) break;
         }
 
-        for (SusiIdea idea: plausibleIdeas) DAO.log("idea.phrase-3: score=" + idea.getSkill().getScore() + " : " + idea.getSkill().getPhrases().toString() + " " + idea.getSkill().getActionsClone());
+        for (SusiIdea idea: plausibleIdeas) {
+            DAO.log("idea.phrase-3: score=" + idea.getSkill().getScore().score + " : " + idea.getSkill().getPhrases().toString() + " " + idea.getSkill().getActionsClone());
+            DAO.log("idea.phrase-3:   log=" + idea.getSkill().getScore().log );
+        }
 
         return plausibleIdeas;
     }
