@@ -81,6 +81,7 @@ dependencies {
   compile group: 'org.apache.logging.log4j', name: 'log4j-slf4j-impl', version: '2.6.2'
   compile group: 'rome', name: 'rome', version: '1.0'
   compile group: 'org.slf4j', name: 'slf4j-api', version: '1.7.21'
+  compile group: 'it.unibo.alice.tuprolog', name: 'tuprolog', version: '3.2.1'
 }
 
 tasks.withType(Javadoc) {

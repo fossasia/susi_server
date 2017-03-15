@@ -34,8 +34,14 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.json.JSONTokener;
 import org.loklak.api.susi.ConsoleService;
+import org.loklak.data.DAO;
 import org.loklak.tools.TimeoutMatcher;
 import org.loklak.tools.storage.JsonPath;
+
+import alice.tuprolog.InvalidTheoryException;
+import alice.tuprolog.Prolog;
+import alice.tuprolog.SolveInfo;
+import alice.tuprolog.Theory;
 
 /**
  * Automated reasoning systems need inference methods to move from one proof state to another.
@@ -49,7 +55,7 @@ import org.loklak.tools.storage.JsonPath;
 public class SusiInference {
     
     public static enum Type {
-        console, flow, memory, javascript;
+        console, flow, memory, javascript, prolog;
         public int getSubscore() {
             return this.ordinal() + 1;
         }
@@ -103,6 +109,7 @@ public class SusiInference {
     private final static SusiProcedures flowProcedures = new SusiProcedures();
     private final static SusiProcedures memoryProcedures = new SusiProcedures();
     private final static SusiProcedures javascriptProcedures = new SusiProcedures();
+    private final static SusiProcedures prologProcedures = new SusiProcedures();
     static {
         flowProcedures.put(Pattern.compile("SQUASH"), (flow, matcher) -> {
             // perform a full mindmeld
@@ -173,6 +180,30 @@ public class SusiInference {
                 String bang = o == null ? "" : o.toString().trim();
                 if (bang.length() == 0) bang = stdout.getBuffer().toString().trim();
                 return new SusiThought().addObservation("!", bang);
+            } catch (Throwable e) {
+                Log.getLog().debug(e);
+                return new SusiThought(); // empty thought -> fail
+            }
+        });
+        prologProcedures.put(Pattern.compile("(.*)"), (flow, matcher) -> {
+            String term = matcher.group(1);
+            try {
+                Prolog engine = new Prolog();
+                try {
+                    engine.setTheory(new Theory(term));
+                    SolveInfo solution = engine.solve("associatedWith(X, Y, Z)."); // example
+                    if (solution.isSuccess()) { // example
+                        System.out.println(solution.getTerm("X"));
+                        System.out.println(solution.getTerm("Y"));
+                        System.out.println(solution.getTerm("Z"));
+                    }
+                } catch (InvalidTheoryException ex) {
+                    DAO.log("invalid theory - line: "+ex.line);
+                } catch (Exception ex){
+                    DAO.log("invalid theory.");
+                }
+                
+                return new SusiThought().addObservation("!", "");
             } catch (Throwable e) {
                 Log.getLog().debug(e);
                 return new SusiThought(); // empty thought -> fail
@@ -272,6 +303,10 @@ public class SusiInference {
         if (type == SusiInference.Type.javascript) {
             String expression = flow.unify(this.getExpression());
             try {return javascriptProcedures.deduce(flow, expression);} catch (Exception e) {}
+        }
+        if (type == SusiInference.Type.prolog) {
+            String expression = flow.unify(this.getExpression());
+            try {return prologProcedures.deduce(flow, expression);} catch (Exception e) {}
         }
         // maybe the argument is not applicable, then an empty thought is produced (which means a 'fail')
         return new SusiThought();
