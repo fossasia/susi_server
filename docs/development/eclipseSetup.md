@@ -20,12 +20,12 @@ If you already have a local copy of `susi_server` repository
 You can use Eclipse to download the susi_server from the `git url` in Step 4, Instead of choosing `Local Repository`
 choose `Remote URL` and use the git link `https://github.com/fossasia/susi_server.git` and follow the rest of the instructions
 
-# Using the Ant File
+## Using the Ant File
 1. Choose `File > New > Project`
 2. Choose `Java > Java Project from existing ant file`
 3. Navigate to the local copy of the repository and use the build file to open up `susi_server`
 
 
-# Test : 
+## Test : 
 
 Right click on SusiServer.java and click on Run As -> JAVA Application , a window in your browser should open on 127.0.0.1:4000 .
