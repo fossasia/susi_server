@@ -20,6 +20,8 @@
 
 package org.loklak.tools.storage;
 
+import java.util.Set;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -63,7 +65,20 @@ public class JsonPath {
                 }
             }
             if (decomposition instanceof JSONArray) return (JSONArray) decomposition;
-            if (decomposition instanceof JSONObject) return new JSONArray().put((JSONObject) decomposition);
+            if (decomposition instanceof JSONObject) {
+                // enrich the decomposition with header/column entries
+                // then we can access them with $h0$, $c0$, ... and so on
+                // example source: http://api.loklak.org/api/search.json?q=fossasia&source=cache&count=0&fields=mentions,hashtags&limit=6
+                String[] columns = ((JSONObject) decomposition).keySet().toArray(new String[((JSONObject) decomposition).length()]);
+                int rowcount = 0;
+                for (String column: columns) {
+                    ((JSONObject) decomposition).put("k" + rowcount, column);
+                    ((JSONObject) decomposition).put("v" + rowcount, ((JSONObject) decomposition).get(column));
+                    rowcount++;
+                }
+                ((JSONObject) decomposition).put("mapsize", columns.length);
+                return new JSONArray().put((JSONObject) decomposition);
+            }
             if (decomposition instanceof String) return new JSONArray().put(new JSONObject().put("object", (String) decomposition));
             if (decomposition instanceof Integer) return new JSONArray().put(new JSONObject().put("object", decomposition.toString()));
             if (decomposition instanceof Double) return new JSONArray().put(new JSONObject().put("object", decomposition.toString()));

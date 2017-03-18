@@ -14,3 +14,20 @@ temperature in *
 }
 eol
 
+
+hashtags * *
+!console:The following hashtags are common with $1$: $k1$ ($v1$ times), $k2$ ($v2$ times), $k3$ ($v3$ times)
+{
+"url":"http://api.loklak.org/api/search.json?q=$2$&source=cache&count=0&fields=hashtags&limit=6",
+"path":"$.aggregations.hashtags"
+}
+eol
+
+
+mentions * *
+!console:The following users are mentioned with $1$: @$k0$ ($v0$ times), @$k1$ ($v1$ times), @$k2$ ($v2$ times)
+{
+"url":"http://api.loklak.org/api/search.json?q=$2$&source=cache&count=0&fields=mentions&limit=6",
+"path":"$.aggregations.mentions"
+}
+eol
