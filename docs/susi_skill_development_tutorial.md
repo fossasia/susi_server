@@ -1,6 +1,6 @@
 # Susi Skill Development Tutorial
 
-Do you want your own AI rules for Susi? It's surprisingly easy to add more dialog rules to Susi.
+Do you want your own AI Skills for Susi? It's surprisingly easy to add more Skills to Susi.
 
 ## Getting Started
 
@@ -30,7 +30,7 @@ dream <testname>
 
 where `<testname>` is the name of the etherpad you just entered in http://dream.asksusi.com
 
-Now all rules you enter in the dream zone are available instantly in your chat! Thats easy, is it?
+Now all Skills you enter in the dream zone are available instantly in your chat! Thats easy, is it?
 
 To stop testing your new Susi Skills, write `stop dreaming`.
 
@@ -42,11 +42,11 @@ In you dream test zone (the etherpad) write:
 roses are red
 susi is a hack
 ```
-This defines one simple rule: to answer on "roses are red" the phrase "susi is a hack". The other lines mean:
+This defines one simple Skill: to answer on "roses are red" the phrase "susi is a hack". The other lines mean:
 * all lines starting with `#` are comment lines and are ignored.
-* all other text lines define dialog rules. Rules are separate with empty lines. Comment and section declaration modifiers count also like empty lines as separator.
+* all other text lines define Sikks. Skills are separate with empty lines. Comment and section declaration modifiers count also like empty lines as separator.
 
-Now you can test the new rule:
+Now you can test the new Skill:
 * send the following query to Susi: "roses are red"
 * Susi will answer with "susi is a hack".
 The Skill file is just a text file where two lines which are not separated with an empty line represent a conversation pattern.
@@ -61,8 +61,8 @@ skynet is back
 With that file, Susi would respond on "roses are red" the answer "susi is a hack" and on the query "susi is a hack" it would respond "skynet is back". Try it!
 
 ### Tutorial Level 1: Random Answers
-Conversation rules without a deterministic behavior will create less predictable results.
-That can easily be defined with Skills. Lets consider you want a rule where different answers
+Skills without a deterministic behavior will create less predictable results.
+That can easily be defined with Skills. Lets consider you want a Skill where different answers
 on "What is your favorite dish?" are "Potatoes", "Vegetables" or "Fish". Thats easy: add an empty line
 to the end of your test file and then:
 ```
@@ -70,7 +70,7 @@ What is your favorite dish
 Potatoes|Vegetables|Fish
 ```
 
-### Tutorial Level 2: Query Alternatives for One Dialog Rule
+### Tutorial Level 2: Query Alternatives
 Maybe you want that Susi responds to several different queries with the same answer. This can be
 done very easy with Alternatives in the query line:
 ```
