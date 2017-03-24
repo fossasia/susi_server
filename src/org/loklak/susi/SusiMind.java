@@ -1,5 +1,5 @@
 /**
- *  SusiMemory
+ *  SusiMind
  *  Copyright 29.06.2016 by Michael Peter Christen, @0rb1t3r
  *
  *  This library is free software; you can redistribute it and/or
@@ -37,6 +37,7 @@ import java.util.TreeMap;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -48,6 +49,7 @@ import org.json.JSONTokener;
 import org.loklak.api.susi.ConsoleService;
 import org.loklak.data.DAO;
 import org.loklak.susi.SusiInference.Type;
+import org.loklak.susi.SusiMemory.TokenMapList;
 import org.loklak.tools.storage.JsonTray;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
@@ -81,11 +83,19 @@ public class SusiMind {
     }
 
     public SusiMemory getMemories() {
-        return memories;
+        return this.memories;
     }
     
-    public Set<String> getUnanswered() {
+    public SusiReader getReader() {
+        return this.reader;
+    }
+    
+    public Map<String, Integer> getUnanswered() {
         return this.memories.getUnanswered();
+    }
+    
+    public List<TokenMapList> unanswered2tokenizedstats() {
+        return this.memories.unanswered2tokenizedstats();
     }
     
     public SusiMind observe() throws IOException {
@@ -352,6 +362,7 @@ public class SusiMind {
         });
 
         // add conversation skills
+        final List<Pattern> removalPattern = new ArrayList<>();
         JSONArray skillset = json.has("rules") ? json.getJSONArray("rules") : json.has("skills") ? json.getJSONArray("skills") : new JSONArray();
         skillset.forEach(j -> {
             List<SusiSkill> skills = SusiSkill.getSkills((JSONObject) j);
@@ -363,11 +374,21 @@ public class SusiMind {
                         this.skilltrigger.put(key, l);
                     }
                     l.add(skill);
-                    skill.getPhrases().forEach(phrase -> this.memories.removeUnanswered(phrase.getPattern()));
+                    skill.getPhrases().forEach(phrase -> removalPattern.add(phrase.getPattern()));
+                    //skill.getPhrases().forEach(phrase -> this.memories.removeUnanswered(phrase.getPattern()));
                     //System.out.println("***DEBUG: ADD SKILL FOR KEY " + key + ": " + skill.toString());
                 })
             );
         });
+        
+        
+        // finally remove patterns in the memory that are known in a background process
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                removalPattern.forEach(pattern -> SusiMind.this.memories.removeUnanswered(pattern));
+            }
+        }).start();
         
         return this;
     }

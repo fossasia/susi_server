@@ -91,10 +91,10 @@ public class SusiReader {
         return new Token(original, canonical, categorized);
     }
 
-    public List<Token> tokenizeSentence(String query) {
+    public List<Token> tokenizeSentence(String term) {
         List<Token> t = new ArrayList<>();
-        query = query.replaceAll("\\?", " ?").replaceAll("\\!", " !").replaceAll("\\.", " .").replaceAll("\\,", " ,").replaceAll("\\;", " ;").replaceAll("\\:", " :").replaceAll("  ", " ");
-        String[] u = query.split(" ");
+        term = term.replaceAll("\\?", " ?").replaceAll("\\!", " !").replaceAll("\\.", " .").replaceAll("\\,", " ,").replaceAll("\\;", " ;").replaceAll("\\:", " :").replaceAll("  ", " ");
+        String[] u = term.split(" ");
         for (String v: u) {
             String original = v.toLowerCase();
             if (this.filler.contains(original)) continue;

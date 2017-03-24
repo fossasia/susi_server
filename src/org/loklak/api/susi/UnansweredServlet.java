@@ -20,9 +20,8 @@
 package org.loklak.api.susi;
 
 import java.io.IOException;
-import java.util.Collection;
-import java.util.Set;
-import java.util.TreeSet;
+import java.util.LinkedHashMap;
+import java.util.List;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -33,6 +32,7 @@ import org.loklak.data.DAO;
 import org.loklak.http.RemoteAccess;
 import org.loklak.server.FileHandler;
 import org.loklak.server.Query;
+import org.loklak.susi.SusiMemory.TokenMapList;
 import org.loklak.tools.UTF8;
 
 public class UnansweredServlet extends HttpServlet {
@@ -49,24 +49,38 @@ public class UnansweredServlet extends HttpServlet {
         Query post = RemoteAccess.evaluate(request);
 
         final StringBuilder buffer = new StringBuilder(1000);
-        Set<String> unanswered = DAO.susi.getUnanswered();
-        Set<String> sorted = new TreeSet<>();
-        sorted.addAll(unanswered);
-        appendL(buffer, sorted, 0, 5);
-        appendL(buffer, sorted, 5, 20);
-        appendL(buffer, sorted, 20, Integer.MAX_VALUE);
+        List<TokenMapList> tokenstats = DAO.susi.unanswered2tokenizedstats();
+        tokenstats.forEach(tml -> {
+            LinkedHashMap<String, Integer> m = tml.getMap();
+            buffer.append("TOKEN \"");
+            buffer.append(tml.getToken());
+            buffer.append("\" (");
+            buffer.append(tml.getCounter());
+            buffer.append(")\n");
+            m.forEach((k,v) -> {
+                buffer.append(k);
+                buffer.append(" (");
+                buffer.append(v);
+                buffer.append(")\n");
+            });
+            buffer.append("\n");
+            
+        });
+        
+        /*
+        LinkedHashMap<String, Integer> unanswered = MapTools.sortByValue(DAO.susi.getUnanswered());
+        for (Map.Entry<String, Integer> entry: unanswered.entrySet()) {
+            buffer.append(entry.getKey());
+            buffer.append(" (");
+            buffer.append(entry.getValue());
+            buffer.append(")\n");
+        }
+        */
         
         FileHandler.setCaching(response, 60);
         post.setResponse(response, "text/plain");
         response.getOutputStream().write(UTF8.getBytes(buffer.toString()));
         post.finalize();
-    }
-    
-    private static void appendL(StringBuilder buffer, Collection<String> c, int minLen, int maxLimit) {
-        for (String s: c) if (s.length() >= minLen && s.length() < maxLimit) {
-            buffer.append(s);
-            buffer.append('\n');
-        }
     }
     
 }
