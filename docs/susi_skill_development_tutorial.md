@@ -1,6 +1,6 @@
 # Susi Skill Development Tutorial
 
-Do you want your own AI rules for Susi? It's surprisingly easy to add more dialog rules to Susi.
+Do you want your own AI Skills for Susi? It's surprisingly easy to add more Skills to Susi.
 
 ## Getting Started
 
@@ -30,41 +30,29 @@ dream <testname>
 
 where `<testname>` is the name of the etherpad you just entered in http://dream.asksusi.com
 
-Now all rules you enter in the dream zone are available instantly in your chat! Thats easy, is it?
+Now all Skills you enter in the dream zone are available instantly in your chat! Thats easy, is it?
 
 To stop testing your new Susi Skills, write `stop dreaming`.
-
-
-## Write Easy Dialog ("EzD") conversation rules
-
-Susi has currently two AI description languages:
-* "Susi Mind Files" which are complex JSON descriptions. You can consider this as
-Susi's 'low-level' expression language.
-* "EzD" Easy Dialog conversation rules which are simple text files.
-
-What you will learn here is the EzD language. It's actually much simpler than you would imagine. Let's give it a try:
 
 ### Tutorial Level 0: Fixed Query-Answer Phrase Collections
 
 In you dream test zone (the etherpad) write:
 ```
-# susi EzD tutorial playground
-::prior
+# susi Skill tutorial playground
 roses are red
 susi is a hack
 ```
-This defines one simple rule: to answer on "roses are red" the phrase "susi is a hack". The other lines mean:
+This defines one simple Skill: to answer on "roses are red" the phrase "susi is a hack". The other lines mean:
 * all lines starting with `#` are comment lines and are ignored.
-* all lines starting with a '::' are section declaration modifiers. Here we define that all following rules are 'prior' rules, that mean they rank higher than other rules which depend on phrase patterns. We will learn the details later
-* all other text lines define dialog rules. Rules are separate with empty lines. Comment and section declaration modifiers count also like empty lines as separator.
+* all other text lines define Sikks. Skills are separate with empty lines. Comment and section declaration modifiers count also like empty lines as separator.
 
-Now you can test the new rule:
+Now you can test the new Skill:
 * send the following query to Susi: "roses are red"
 * Susi will answer with "susi is a hack".
-The EzD format is just a text file where two lines which are not separated with an empty line represent a conversation pattern.
+The Skill file is just a text file where two lines which are not separated with an empty line represent a conversation pattern.
 You can actually add a third line to your file:
 ```
-# susi EzD tutorial playground
+# susi tutorial playground
 ::prior
 roses are red
 susi is a hack
@@ -73,8 +61,8 @@ skynet is back
 With that file, Susi would respond on "roses are red" the answer "susi is a hack" and on the query "susi is a hack" it would respond "skynet is back". Try it!
 
 ### Tutorial Level 1: Random Answers
-Conversation rules without a deterministic behavior will create less predictable results.
-That can easily be defined with EzD rules. Lets consider you want a rule where different answers
+Skills without a deterministic behavior will create less predictable results.
+That can easily be defined with Skills. Lets consider you want a Skill where different answers
 on "What is your favorite dish?" are "Potatoes", "Vegetables" or "Fish". Thats easy: add an empty line
 to the end of your test file and then:
 ```
@@ -82,7 +70,7 @@ What is your favorite dish
 Potatoes|Vegetables|Fish
 ```
 
-### Tutorial Level 2: Query Alternatives for One Dialog Rule
+### Tutorial Level 2: Query Alternatives
 Maybe you want that Susi responds to several different queries with the same answer. This can be
 done very easy with Alternatives in the query line:
 ```
