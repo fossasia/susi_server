@@ -1,0 +1,177 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>How to setup Susi Server on Eclipse &#8212; Susi Server development documentation</title>
+    
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     'development',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="top" title="Susi Server development documentation" href="index.html" />
+    <link rel="next" title="Parsers &amp; Console Services" href="parsers.html" />
+    <link rel="prev" title="Ask SUSI" href="AskSUSI.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body role="document">
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="how-to-setup-susi-server-on-eclipse">
+<span id="how-to-setup-susi-server-on-eclipse"></span><h1>How to setup Susi Server on Eclipse<a class="headerlink" href="#how-to-setup-susi-server-on-eclipse" title="Permalink to this headline">¶</a></h1>
+<p>If you already have a local copy of <code class="docutils literal"><span class="pre">susi_server</span></code> repository</p>
+<ol class="simple">
+<li>Download and install <a class="reference external" href="https://eclipse.org/downloads/">Eclipse</a></li>
+<li>Open Eclipse and choose <code class="docutils literal"><span class="pre">Import</span> <span class="pre">Project</span></code></li>
+<li>In the window that opens up, Choose <code class="docutils literal"><span class="pre">git</span></code> and press <code class="docutils literal"><span class="pre">Next</span></code></li>
+<li>Choose a local repository and Add the repository to the search results window.</li>
+<li>Press Finish</li>
+<li>Then choose the <code class="docutils literal"><span class="pre">susi_server</span></code> git repository in the list and proceed in the wizard.</li>
+<li>Choose the radio option which says <code class="docutils literal"><span class="pre">Import</span> <span class="pre">existing</span> <span class="pre">Eclipse</span> <span class="pre">Projects</span></code></li>
+<li>Press Finish to open up the Package Explorer and the IDE should be available with the project opened.</li>
+<li>Once the repository is ready using the Package Explorer navigate to <code class="docutils literal"><span class="pre">org.loklak.SusiServer</span></code></li>
+<li>Right click on SusiServer, Choose <code class="docutils literal"><span class="pre">Run</span> <span class="pre">As</span> <span class="pre">&gt;</span> <span class="pre">Run</span> <span class="pre">Configurations</span></code></li>
+<li>Choose <code class="docutils literal"><span class="pre">Java</span> <span class="pre">Application</span></code> and press the <code class="docutils literal"><span class="pre">New</span> <span class="pre">Configuration</span></code> button in the top left corner of this pane.</li>
+<li>In the frame panel that opens up, Move to the Arguments Tab and add the VM Arguments as <code class="docutils literal"><span class="pre">-Xmx2G</span> <span class="pre">-Xms2G</span> <span class="pre">-server</span> <span class="pre">-ea</span></code></li>
+<li>Click <code class="docutils literal"><span class="pre">Apply</span></code> and then <code class="docutils literal"><span class="pre">Close</span></code> the window</li>
+</ol>
+<p>You can use Eclipse to download the susi_server from the <code class="docutils literal"><span class="pre">git</span> <span class="pre">url</span></code> in Step 4, Instead of choosing <code class="docutils literal"><span class="pre">Local</span> <span class="pre">Repository</span></code>
+choose <code class="docutils literal"><span class="pre">Remote</span> <span class="pre">URL</span></code> and use the git link <code class="docutils literal"><span class="pre">https://github.com/fossasia/susi_server.git</span></code> and follow the rest of the instructions</p>
+</div>
+<div class="section" id="using-the-ant-file">
+<span id="using-the-ant-file"></span><h1>Using the Ant File<a class="headerlink" href="#using-the-ant-file" title="Permalink to this headline">¶</a></h1>
+<ol class="simple">
+<li>Choose <code class="docutils literal"><span class="pre">File</span> <span class="pre">&gt;</span> <span class="pre">New</span> <span class="pre">&gt;</span> <span class="pre">Project</span></code></li>
+<li>Choose <code class="docutils literal"><span class="pre">Java</span> <span class="pre">&gt;</span> <span class="pre">Java</span> <span class="pre">Project</span> <span class="pre">from</span> <span class="pre">existing</span> <span class="pre">ant</span> <span class="pre">file</span></code></li>
+<li>Navigate to the local copy of the repository and use the build file to open up <code class="docutils literal"><span class="pre">susi_server</span></code></li>
+</ol>
+</div>
+<div class="section" id="test">
+<span id="test"></span><h1>Test :<a class="headerlink" href="#test" title="Permalink to this headline">¶</a></h1>
+<p>Right click on SusiServer.java and click on Run As -&gt; JAVA Application , a window in your browser should open on 127.0.0.1:4000 .</p>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="index.html">
+    <img class="logo" src="_static//images/susi-logo-original.svg" alt="Logo"/>
+    
+  </a>
+</p>
+
+
+
+
+
+
+
+
+
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">How to setup Susi Server on Eclipse</a></li>
+<li><a class="reference internal" href="#using-the-ant-file">Using the Ant File</a></li>
+<li><a class="reference internal" href="#test">Test :</a></li>
+</ul>
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Home</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="index.html">Welcome</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Installation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="installation_generic.html">Installation on Linux/Mac OS</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation_windows_generic.html">Requirements</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation_windows_generic.html#download">Download</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation_windows_generic.html#build-and-run">Build and Run</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation_windows_generic.html#operate">Operate</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation_windows_generic.html#shut-down">Shut down</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation_docker.html">Installation with Docker</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation_cloud9.html">Installation on Cloud9</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation_heroku.html">Installation on Heroku</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Tutorial</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="susi_skill_development_tutorial.html">AI Rule development Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="AskSUSI.html">Ask SUSI</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Development</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">How to setup Susi Server on Eclipse</a></li>
+<li class="toctree-l1"><a class="reference internal" href="#using-the-ant-file">Using the Ant File</a></li>
+<li class="toctree-l1"><a class="reference internal" href="#test">Test :</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Miscellaneous</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="parsers.html">Parsers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="submitting_skills_to_git.html">Submitting skills to Git</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="AskSUSI.html" title="previous chapter">Ask SUSI</a></li>
+      <li>Next: <a href="parsers.html" title="next chapter">Parsers &amp; Console Services</a></li>
+  </ul></li>
+</ul>
+</div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2017, Susi.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.4.9</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

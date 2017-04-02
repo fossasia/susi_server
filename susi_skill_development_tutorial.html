@@ -1,0 +1,418 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Susi Skill Development Tutorial &#8212; Susi Server development documentation</title>
+    
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     'development',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="top" title="Susi Server development documentation" href="index.html" />
+    <link rel="next" title="Ask SUSI" href="AskSUSI.html" />
+    <link rel="prev" title="How to run the Susi server on Heroku using Toolbelt" href="installation_heroku.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body role="document">
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="susi-skill-development-tutorial">
+<span id="susi-skill-development-tutorial"></span><h1>Susi Skill Development Tutorial<a class="headerlink" href="#susi-skill-development-tutorial" title="Permalink to this headline">¶</a></h1>
+<p>Do you want your own AI Skills for Susi? It&#8217;s surprisingly easy to add more Skills to Susi.</p>
+<div class="section" id="getting-started">
+<span id="getting-started"></span><h2>Getting Started<a class="headerlink" href="#getting-started" title="Permalink to this headline">¶</a></h2>
+<p>It&#8217;s easy, DON&#8217;T PANIC. You don&#8217;t need to be a software developer to enhance Susi.</p>
+<div class="section" id="what-you-have-to-do">
+<span id="what-you-have-to-do"></span><h3>What you have to do<a class="headerlink" href="#what-you-have-to-do" title="Permalink to this headline">¶</a></h3>
+<p>We have a Susi Skill develoment environment based on an etherpad. You don&#8217;t know what an etherpad is? It&#8217;s a blank web page where you can just put in your text and everyone can colaborate.</p>
+<ul class="simple">
+<li>open http://dream.asksusi.com</li>
+<li>name a dream (just pick a name for your tests)</li>
+<li>the etherpad is filled with a welcome message, just delete the content completely</li>
+</ul>
+<p>ATTENTION: the Susi Dream zone is a TEMPORARY zone. We may clean up that place at any time. It is only for testing your new Susi Skills
+If you want your new Susi Skills to be permanent, send us a pull request, see submitting_skills_to_git.md for a tuturial.</p>
+</div>
+<div class="section" id="preparation-to-start-testing">
+<span id="preparation-to-start-testing"></span><h3>Preparation to start testing<a class="headerlink" href="#preparation-to-start-testing" title="Permalink to this headline">¶</a></h3>
+<p>To test the Skills you are editing, you only need the Susi Android Application (see: https://github.com/fossasia/susi_android )
+Or you can also test the Skills online at http://asksusi.com/chat</p>
+<p>Within the chat dialog, enter</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">dream</span> <span class="o">&lt;</span><span class="n">testname</span><span class="o">&gt;</span>
+</pre></div>
+</div>
+<p>where <code class="docutils literal"><span class="pre">&lt;testname&gt;</span></code> is the name of the etherpad you just entered in http://dream.asksusi.com</p>
+<p>Now all Skills you enter in the dream zone are available instantly in your chat! Thats easy, is it?</p>
+<p>To stop testing your new Susi Skills, write <code class="docutils literal"><span class="pre">stop</span> <span class="pre">dreaming</span></code>.</p>
+</div>
+<div class="section" id="tutorial-level-0-fixed-query-answer-phrase-collections">
+<span id="tutorial-level-0-fixed-query-answer-phrase-collections"></span><h3>Tutorial Level 0: Fixed Query-Answer Phrase Collections<a class="headerlink" href="#tutorial-level-0-fixed-query-answer-phrase-collections" title="Permalink to this headline">¶</a></h3>
+<p>In you dream test zone (the etherpad) write:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="c1"># susi Skill tutorial playground</span>
+<span class="n">roses</span> <span class="n">are</span> <span class="n">red</span>
+<span class="n">susi</span> <span class="ow">is</span> <span class="n">a</span> <span class="n">hack</span>
+</pre></div>
+</div>
+<p>This defines one simple Skill: to answer on &#8220;roses are red&#8221; the phrase &#8220;susi is a hack&#8221;. The other lines mean:</p>
+<ul class="simple">
+<li>all lines starting with <code class="docutils literal"><span class="pre">#</span></code> are comment lines and are ignored.</li>
+<li>all other text lines define Sikks. Skills are separate with empty lines. Comment and section declaration modifiers count also like empty lines as separator.</li>
+</ul>
+<p>Now you can test the new Skill:</p>
+<ul class="simple">
+<li>send the following query to Susi: &#8220;roses are red&#8221;</li>
+<li>Susi will answer with &#8220;susi is a hack&#8221;.
+The Skill file is just a text file where two lines which are not separated with an empty line represent a conversation pattern.
+You can actually add a third line to your file:</li>
+</ul>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="c1"># susi tutorial playground</span>
+<span class="p">::</span><span class="n">prior</span>
+<span class="n">roses</span> <span class="n">are</span> <span class="n">red</span>
+<span class="n">susi</span> <span class="ow">is</span> <span class="n">a</span> <span class="n">hack</span>
+<span class="n">skynet</span> <span class="ow">is</span> <span class="n">back</span>
+</pre></div>
+</div>
+<p>With that file, Susi would respond on &#8220;roses are red&#8221; the answer &#8220;susi is a hack&#8221; and on the query &#8220;susi is a hack&#8221; it would respond &#8220;skynet is back&#8221;. Try it!</p>
+</div>
+<div class="section" id="tutorial-level-1-random-answers">
+<span id="tutorial-level-1-random-answers"></span><h3>Tutorial Level 1: Random Answers<a class="headerlink" href="#tutorial-level-1-random-answers" title="Permalink to this headline">¶</a></h3>
+<p>Skills without a deterministic behavior will create less predictable results.
+That can easily be defined with Skills. Lets consider you want a Skill where different answers
+on &#8220;What is your favorite dish?&#8221; are &#8220;Potatoes&#8221;, &#8220;Vegetables&#8221; or &#8220;Fish&#8221;. Thats easy: add an empty line
+to the end of your test file and then:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">What</span> <span class="ow">is</span> <span class="n">your</span> <span class="n">favorite</span> <span class="n">dish</span>
+<span class="n">Potatoes</span><span class="o">|</span><span class="n">Vegetables</span><span class="o">|</span><span class="n">Fish</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="tutorial-level-2-query-alternatives">
+<span id="tutorial-level-2-query-alternatives"></span><h3>Tutorial Level 2: Query Alternatives<a class="headerlink" href="#tutorial-level-2-query-alternatives" title="Permalink to this headline">¶</a></h3>
+<p>Maybe you want that Susi responds to several different queries with the same answer. This can be
+done very easy with Alternatives in the query line:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">Bonjour</span><span class="o">|</span><span class="n">Buenos</span> <span class="n">días</span><span class="o">|</span><span class="n">Ciao</span>
+<span class="n">Hello</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="tutorial-level-3-patterns-in-queries">
+<span id="tutorial-level-3-patterns-in-queries"></span><h3>Tutorial Level 3: Patterns in Queries<a class="headerlink" href="#tutorial-level-3-patterns-in-queries" title="Permalink to this headline">¶</a></h3>
+<p>In some cases the query lines may be so similar, that you want to use a pattern to declare all possible queries for an answer instead of using fixed alternatives. Query patters can be declared using the &#8220;<em>&#8221; wildcard character. A &#8220;</em>&#8221; matches any sentence token, but not a substring. That means, a &#8220;*&#8221; replaces a word or a list of words.</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>May I * you?
+Yes you may.
+</pre></div>
+</div>
+</div>
+<div class="section" id="tutorial-level-4-using-query-patterns-in-answers">
+<span id="tutorial-level-4-using-query-patterns-in-answers"></span><h3>Tutorial Level 4: Using Query-Patterns in Answers<a class="headerlink" href="#tutorial-level-4-using-query-patterns-in-answers" title="Permalink to this headline">¶</a></h3>
+<p>It would be nice if we could use the content of the text which matched with the query patterns.
+Every pattern that matched has a pattern number: the first pattern has the number 1 and if
+we want to use that pattern in the result, we can denote that with the term <code class="docutils literal"><span class="pre">$1$</span></code>:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>May I get a *?
+Yes you may get a $1$!
+</pre></div>
+</div>
+<p>It is of course possible to combine Query-Patterns with alternatives
+in the query-part and the response part.</p>
+</div>
+<div class="section" id="tutorial-level-5-multiple-patterns-in-queries-and-answers">
+<span id="tutorial-level-5-multiple-patterns-in-queries-and-answers"></span><h3>Tutorial Level 5: Multiple Patterns in Queries and Answers<a class="headerlink" href="#tutorial-level-5-multiple-patterns-in-queries-and-answers" title="Permalink to this headline">¶</a></h3>
+<p>You can have of course multiple wildcards in the query pattern.
+There may be different reasons for that: either it is actually intended
+that both wildcards are used in the response or one of the wildcard
+is just there because you want to ignore everything where it matches.</p>
+<p>The following example shows a case where both wildcards are used:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>For * I can buy a *
+Yeah, I believe $1$ is a god price for a $2$
+</pre></div>
+</div>
+<p>Another case is, where you just want to ignore a whole part of the query:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>* buy a *
+Sure, you should buy a $2$!
+</pre></div>
+</div>
+<p>Text patterns like <code class="docutils literal"><span class="pre">$1$</span></code>are called &#8216;variable pattern&#8217;. There is also a special
+variable pattern: <code class="docutils literal"><span class="pre">$0$</span></code> denotes the whole sentence, identical to what the user asked susi.</p>
+</div>
+<div class="section" id="tutorial-level-6-using-variables-from-answer-terms">
+<span id="tutorial-level-6-using-variables-from-answer-terms"></span><h3>Tutorial Level 6: Using Variables from Answer Terms<a class="headerlink" href="#tutorial-level-6-using-variables-from-answer-terms" title="Permalink to this headline">¶</a></h3>
+<p>Susi has a memory! It is possible to store information inside Susi&#8217;s user session
+and use that information later on. For example, you can tell Susi your most favorite
+beer brand:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>I * like * beer
+You then should have one $2$&gt;_beerbrand!
+</pre></div>
+</div>
+<p>Now Susi knows your most favourite beer brand, it is stored inside the variable <code class="docutils literal"><span class="pre">_beerbrand</span></code>. Note that the variable starts with a leading &#8216;<em>&#8216;. That has a special meaning: variables without a leading &#8216;</em>&#8216; are only valid while Susi is thinking about
+a phrase, not after the response has computed. Susi will not remember a variable, if
+that variable was set in a past converation and has not a leading &#8216;_&#8216;.</p>
+<p>You can now use that variable in another rule:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>* beer * best?
+I bet you like $_beerbrand$ beer!
+</pre></div>
+</div>
+<p>Note that the <code class="docutils literal"><span class="pre">*</span></code> wildcards in the query are not used at all. They are just there
+to make it easy that this rule matches. It will i.e. match on &#8220;What beer brand is the best?&#8221;</p>
+<p>Variables are only visible within the same user session. Therefore we need
+authentified users and that is a main reason that you have to log on to use Susi.</p>
+</div>
+<div class="section" id="tutorial-level-7-setting-status-variables">
+<span id="tutorial-level-7-setting-status-variables"></span><h3>Tutorial Level 7: Setting Status Variables<a class="headerlink" href="#tutorial-level-7-setting-status-variables" title="Permalink to this headline">¶</a></h3>
+<p>A status variable is exactly the same variable as in the previous tutorial level. The difference is that the value for the variable
+does not come from a term that is visible in the answer. Instead, an invisible &#8216;status&#8217; can be assigned to the variable.</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>I am so happy!
+Good for you!^excited^&gt;_mood
+
+I am bored.
+Make something!^inactive^&gt;_mood
+
+How do I feel?
+You are $_mood$.
+</pre></div>
+</div>
+<p>In this example, Susi remembers your mood and can tell you about it. The actual word which was used to describe the mood was never printed to the user before, because using the <code class="docutils literal"><span class="pre">^^</span></code> symbols it got quoted and became invisible.</p>
+</div>
+<div class="section" id="tutorial-level-8-conditions-for-answers">
+<span id="tutorial-level-8-conditions-for-answers"></span><h3>Tutorial Level 8: Conditions for Answers<a class="headerlink" href="#tutorial-level-8-conditions-for-answers" title="Permalink to this headline">¶</a></h3>
+<p>Whenever you are using variables in answers which are not set in the same rule, you should test if these variables exist and had been set.
+It is possible to add simple conditions to the answer lines:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>How do I feel?
+?$_mood$:You are $_mood$.:I don&#39;t know your mood.
+</pre></div>
+</div>
+<p>This rule replaces the last rule from the latest Level. It makes a distinction between the case where no knowledge about the mood is there, or the mood is set.</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>Shall I *?
+?$_mood$=excited:You will be happy, whatever I say!
+</pre></div>
+</div>
+</div>
+<div class="section" id="tutorial-level-9-rules-used-as-functions-templates-basic-self-reflection">
+<span id="tutorial-level-9-rules-used-as-functions-templates-basic-self-reflection"></span><h3>Tutorial Level 9: Rules used as Functions/Templates (Basic Self-Reflection)<a class="headerlink" href="#tutorial-level-9-rules-used-as-functions-templates-basic-self-reflection" title="Permalink to this headline">¶</a></h3>
+<p>Susi can call itself during an answer preparation. This can be used to create rules which are designed
+to be called in such a self-call. For example:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">function</span> <span class="n">colour</span>
+<span class="n">red</span><span class="o">|</span><span class="n">green</span><span class="o">|</span><span class="n">blue</span><span class="o">|</span><span class="n">white</span><span class="o">|</span><span class="n">black</span><span class="o">|</span><span class="n">yellow</span><span class="o">|</span><span class="n">purple</span><span class="o">|</span><span class="n">brown</span>
+</pre></div>
+</div>
+<p>We would not expect that anybody asks &#8220;function colour&#8221;. But we can use this to add the name of a colour in our answer:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>What is your favourite colour?
+?$_mycolour$:My favourite colour is $_mycolour$!:I like `function colour`&gt;_mycolour!
+</pre></div>
+</div>
+<p>Here, the colour is randomly generated with the <code class="docutils literal"><span class="pre">function</span> <span class="pre">colour</span></code> call, but only if Susi has not done that yet. If Susi just generated a colour in the answer, that answer will be stored in the variable <code class="docutils literal"><span class="pre">_mycolour</span></code>. But if that variable already existed, it will be used to make the answer without the <code class="docutils literal"><span class="pre">function</span> <span class="pre">colour</span></code>.</p>
+</div>
+<div class="section" id="tutorial-level-10-embed-javascript-into-a-skill">
+<span id="tutorial-level-10-embed-javascript-into-a-skill"></span><h3>Tutorial Level 10: Embed Javascript into a Skill<a class="headerlink" href="#tutorial-level-10-embed-javascript-into-a-skill" title="Permalink to this headline">¶</a></h3>
+<p>If you are able to compute whatever you want to inside a rule, there are billions of possibilities of what you can do with Susi Skills.
+Embedding Javascript is extremely easy, for example:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>javascript hello
+!javascript:$!$ from Nashorn
+print(&#39;Hello world&#39;);
+eol
+</pre></div>
+</div>
+<p>What you see here is the bang-notion which always starts with a &#8216;!&#8216;, followed with the script language name that is used, then followed
+with a &#8216;:&#8217; and then follows the return statement. The value of the script is represented with the $!$ variable object.
+This javascript skill catches everything up that the script produces: std-out, error-out an direct term computations, i.e.</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>compute * to the power of *
+!javascript:$1$^$2$ = $!$
+Math.pow($1$, $2$)
+eol
+</pre></div>
+</div>
+</div>
+<div class="section" id="tutorial-level-11-call-an-external-api">
+<span id="tutorial-level-11-call-an-external-api"></span><h3>Tutorial Level 11: Call an external API<a class="headerlink" href="#tutorial-level-11-call-an-external-api" title="Permalink to this headline">¶</a></h3>
+<p>Important parts of an AI implementation is, to be able to access big data, many different data sources and to steer
+services outside of the body of the AI. To do so, it must be possible to call an external API.
+Such a service is called a &#8216;console service&#8217; in Susi. It is easy to write a console Skill with just some lines of EzD code:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>tweet about *
+!console:$text$
+{
+&quot;url&quot;:&quot;http://api.loklak.org/api/search.json?q=$1$&quot;,
+&quot;path&quot;:&quot;$.statuses&quot;
+}
+eol
+</pre></div>
+</div>
+<p>This will call the loklak search API and gets back a big list of tweets from the given query in $1$. That list is somewhere inside the
+answer json of the API call, and we must tell Susi where it can find that list. This hint is given in the attribute &#8216;path&#8217; which has
+the syntax of an JSONPath. Here, the statuses object contains a list of objects, which contain always the same attribut keys.
+One of these attributes has the name &#8216;text&#8217; and that attribute is selected with the $text$ pattern.
+Note that the bang definition part until the eol line must be given in JSON.</p>
+</div>
+<div class="section" id="tutorial-level-12-thinking-with-backtracking">
+<span id="tutorial-level-12-thinking-with-backtracking"></span><h3>Tutorial Level 12: Thinking with Backtracking<a class="headerlink" href="#tutorial-level-12-thinking-with-backtracking" title="Permalink to this headline">¶</a></h3>
+<p>Backtracking is the ability of a program to revert a already made setting and take an alternative option. If we consider this behaviour at different states of a computation, then this produces a tree-like parameter graph, which is called a decision tree. Susi&#8217;s data structures are made in such a way, that result tables are an element of &#8216;thinking&#8217;. Such result tables are &#8216;bags&#8217; for backtracking options. We will learn how to use that principle to create loops which are useful for problem-solving.</p>
+<p>(to be implemented)</p>
+</div>
+<div class="section" id="tutorial-level-13-expert-systems-with-first-order-logic">
+<span id="tutorial-level-13-expert-systems-with-first-order-logic"></span><h3>Tutorial Level 13: Expert Systems with first-order logic<a class="headerlink" href="#tutorial-level-13-expert-systems-with-first-order-logic" title="Permalink to this headline">¶</a></h3>
+<p>A first-order logic is expressed in terms of relations, represented as facts and rules. We already defined facts and rules using the methods as described above. Backtracking and unification is the computation model for such kind of expert systems. In this tutorial we will learn how to express a program flow using logic elements in EzD rules.</p>
+<p>(to be implemented)</p>
+</div>
+<div class="section" id="tutorial-level-14-skill-reflection">
+<span id="tutorial-level-14-skill-reflection"></span><h3>Tutorial Level 14: Skill Reflection<a class="headerlink" href="#tutorial-level-14-skill-reflection" title="Permalink to this headline">¶</a></h3>
+<p>We are able to set variable content and read them in skills. But we must also be able to read skills in the same way as we read variables. We should be able to answer on questions like &#8216;we cannot solve this because there is no rule for that&#8217;, or &#8216;we have several rules, which one is preferred&#8217;.</p>
+<p>(to be implemented)</p>
+</div>
+<div class="section" id="tutorial-level-15-skills-which-create-skills">
+<span id="tutorial-level-15-skills-which-create-skills"></span><h3>Tutorial Level 15: Skills which create Skills<a class="headerlink" href="#tutorial-level-15-skills-which-create-skills" title="Permalink to this headline">¶</a></h3>
+<p>It is a core principle of intelligent systems to be able to learn and enhance themselves. We want to create skill rules which are able to create new skill rules.</p>
+<p>(to be implemened)</p>
+</div>
+<div class="section" id="tutorial-level-16-inter-susi-instance-dialog">
+<span id="tutorial-level-16-inter-susi-instance-dialog"></span><h3>Tutorial Level 16: Inter-Susi Instance Dialog<a class="headerlink" href="#tutorial-level-16-inter-susi-instance-dialog" title="Permalink to this headline">¶</a></h3>
+<p>Susi runs in user instances: every chat user of a Susi instance is an individual instance. Instances may be customized i.e. if the user calls Susi to dream with a test skill set. Therefore different Susi instances behave differently. It should be possible that two different Susi instances have different &#8216;opinions&#8217; and that two instances start a dialog with each other to find a consensus.
+We will learn here how to connect those instances to each other so they can talk.</p>
+<p>(to be implemented)</p>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="index.html">
+    <img class="logo" src="_static//images/susi-logo-original.svg" alt="Logo"/>
+    
+  </a>
+</p>
+
+
+
+
+
+
+
+
+
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Susi Skill Development Tutorial</a><ul>
+<li><a class="reference internal" href="#getting-started">Getting Started</a><ul>
+<li><a class="reference internal" href="#what-you-have-to-do">What you have to do</a></li>
+<li><a class="reference internal" href="#preparation-to-start-testing">Preparation to start testing</a></li>
+<li><a class="reference internal" href="#tutorial-level-0-fixed-query-answer-phrase-collections">Tutorial Level 0: Fixed Query-Answer Phrase Collections</a></li>
+<li><a class="reference internal" href="#tutorial-level-1-random-answers">Tutorial Level 1: Random Answers</a></li>
+<li><a class="reference internal" href="#tutorial-level-2-query-alternatives">Tutorial Level 2: Query Alternatives</a></li>
+<li><a class="reference internal" href="#tutorial-level-3-patterns-in-queries">Tutorial Level 3: Patterns in Queries</a></li>
+<li><a class="reference internal" href="#tutorial-level-4-using-query-patterns-in-answers">Tutorial Level 4: Using Query-Patterns in Answers</a></li>
+<li><a class="reference internal" href="#tutorial-level-5-multiple-patterns-in-queries-and-answers">Tutorial Level 5: Multiple Patterns in Queries and Answers</a></li>
+<li><a class="reference internal" href="#tutorial-level-6-using-variables-from-answer-terms">Tutorial Level 6: Using Variables from Answer Terms</a></li>
+<li><a class="reference internal" href="#tutorial-level-7-setting-status-variables">Tutorial Level 7: Setting Status Variables</a></li>
+<li><a class="reference internal" href="#tutorial-level-8-conditions-for-answers">Tutorial Level 8: Conditions for Answers</a></li>
+<li><a class="reference internal" href="#tutorial-level-9-rules-used-as-functions-templates-basic-self-reflection">Tutorial Level 9: Rules used as Functions/Templates (Basic Self-Reflection)</a></li>
+<li><a class="reference internal" href="#tutorial-level-10-embed-javascript-into-a-skill">Tutorial Level 10: Embed Javascript into a Skill</a></li>
+<li><a class="reference internal" href="#tutorial-level-11-call-an-external-api">Tutorial Level 11: Call an external API</a></li>
+<li><a class="reference internal" href="#tutorial-level-12-thinking-with-backtracking">Tutorial Level 12: Thinking with Backtracking</a></li>
+<li><a class="reference internal" href="#tutorial-level-13-expert-systems-with-first-order-logic">Tutorial Level 13: Expert Systems with first-order logic</a></li>
+<li><a class="reference internal" href="#tutorial-level-14-skill-reflection">Tutorial Level 14: Skill Reflection</a></li>
+<li><a class="reference internal" href="#tutorial-level-15-skills-which-create-skills">Tutorial Level 15: Skills which create Skills</a></li>
+<li><a class="reference internal" href="#tutorial-level-16-inter-susi-instance-dialog">Tutorial Level 16: Inter-Susi Instance Dialog</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Home</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="index.html">Welcome</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Installation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="installation_generic.html">Installation on Linux/Mac OS</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation_windows_generic.html">Requirements</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation_windows_generic.html#download">Download</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation_windows_generic.html#build-and-run">Build and Run</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation_windows_generic.html#operate">Operate</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation_windows_generic.html#shut-down">Shut down</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation_docker.html">Installation with Docker</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation_cloud9.html">Installation on Cloud9</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation_heroku.html">Installation on Heroku</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Tutorial</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">AI Rule development Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="AskSUSI.html">Ask SUSI</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Development</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="eclipseSetup.html">How to setup Susi Server on Eclipse</a></li>
+<li class="toctree-l1"><a class="reference internal" href="eclipseSetup.html#using-the-ant-file">Using the Ant File</a></li>
+<li class="toctree-l1"><a class="reference internal" href="eclipseSetup.html#test">Test :</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Miscellaneous</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="parsers.html">Parsers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="submitting_skills_to_git.html">Submitting skills to Git</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="installation_heroku.html" title="previous chapter">How to run the Susi server on Heroku using Toolbelt</a></li>
+      <li>Next: <a href="AskSUSI.html" title="next chapter">Ask SUSI</a></li>
+  </ul></li>
+</ul>
+</div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2017, Susi.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.4.9</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

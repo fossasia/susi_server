@@ -1,0 +1,153 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>How to run the Susi server on Heroku using Toolbelt &#8212; Susi Server development documentation</title>
+    
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     'development',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="top" title="Susi Server development documentation" href="index.html" />
+    <link rel="next" title="Susi Skill Development Tutorial" href="susi_skill_development_tutorial.html" />
+    <link rel="prev" title="Steps to setup susi on cloud9" href="installation_cloud9.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body role="document">
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="how-to-run-the-susi-server-on-heroku-using-toolbelt">
+<span id="how-to-run-the-susi-server-on-heroku-using-toolbelt"></span><h1>How to run the Susi server on Heroku using Toolbelt<a class="headerlink" href="#how-to-run-the-susi-server-on-heroku-using-toolbelt" title="Permalink to this headline">¶</a></h1>
+<ol class="simple">
+<li>Create a Heroku account https://www.heroku.com/</li>
+<li>Download the Heroku toolbelt https://toolbelt.heroku.com/</li>
+<li>Login with heroku: <code class="docutils literal"><span class="pre">heroku</span> <span class="pre">login</span></code></li>
+<li>Clone the Susi server (if not already) : <code class="docutils literal"><span class="pre">git</span> <span class="pre">clone</span> <span class="pre">https://github.com/fossasia/susi_server.git</span></code></li>
+<li>Move into the cloned repository: <code class="docutils literal"><span class="pre">cd</span> <span class="pre">susi_server</span></code></li>
+<li>Create a heroku app: <code class="docutils literal"><span class="pre">heroku</span> <span class="pre">create</span></code></li>
+<li>Set the buildpack: <code class="docutils literal"><span class="pre">heroku</span> <span class="pre">buildpacks:set</span> <span class="pre">https://github.com/loklak/heroku_buildpack_ant_loklak.git</span></code></li>
+<li>Push your app to heroku: <code class="docutils literal"><span class="pre">git</span> <span class="pre">push</span> <span class="pre">heroku</span> <span class="pre">master</span></code></li>
+<li>Confirm the susi server is running: <code class="docutils literal"><span class="pre">heroku</span> <span class="pre">logs</span> <span class="pre">--tail</span></code></li>
+<li>Sometimes the server may take a while to start. The logs would show <code class="docutils literal"><span class="pre">State</span> <span class="pre">changed</span> <span class="pre">from</span> <span class="pre">starting</span> <span class="pre">to</span> <span class="pre">up</span></code> when the server is ready.</li>
+<li>Open the URL of your server in your browser: <code class="docutils literal"><span class="pre">heroku</span> <span class="pre">open</span></code>.</li>
+</ol>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="index.html">
+    <img class="logo" src="_static//images/susi-logo-original.svg" alt="Logo"/>
+    
+  </a>
+</p>
+
+
+
+
+
+
+
+
+
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script><h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Home</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="index.html">Welcome</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Installation</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="installation_generic.html">Installation on Linux/Mac OS</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation_windows_generic.html">Requirements</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation_windows_generic.html#download">Download</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation_windows_generic.html#build-and-run">Build and Run</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation_windows_generic.html#operate">Operate</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation_windows_generic.html#shut-down">Shut down</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation_docker.html">Installation with Docker</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation_cloud9.html">Installation on Cloud9</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Installation on Heroku</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Tutorial</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="susi_skill_development_tutorial.html">AI Rule development Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="AskSUSI.html">Ask SUSI</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Development</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="eclipseSetup.html">How to setup Susi Server on Eclipse</a></li>
+<li class="toctree-l1"><a class="reference internal" href="eclipseSetup.html#using-the-ant-file">Using the Ant File</a></li>
+<li class="toctree-l1"><a class="reference internal" href="eclipseSetup.html#test">Test :</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Miscellaneous</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="parsers.html">Parsers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="submitting_skills_to_git.html">Submitting skills to Git</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="installation_cloud9.html" title="previous chapter">Steps to setup <code class="docutils literal"><span class="pre">susi</span></code> on cloud9</a></li>
+      <li>Next: <a href="susi_skill_development_tutorial.html" title="next chapter">Susi Skill Development Tutorial</a></li>
+  </ul></li>
+</ul>
+</div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2017, Susi.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.4.9</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

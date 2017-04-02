@@ -1,0 +1,248 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Submitting Skills to git &#8212; Susi Server development documentation</title>
+    
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     'development',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="top" title="Susi Server development documentation" href="index.html" />
+    <link rel="prev" title="Parsers &amp; Console Services" href="parsers.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body role="document">
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="submitting-skills-to-git">
+<span id="submitting-skills-to-git"></span><h1>Submitting Skills to git<a class="headerlink" href="#submitting-skills-to-git" title="Permalink to this headline">¶</a></h1>
+<p>If you created your own Susi conversation Skills, you may want to submit these to the Susi git repository at
+https://github.com/fossasia/susi_server</p>
+<p>To do so, you must prepare your skills as a file and submit this as a pull request.
+Adding a file to the general Susi skill set is not difficult, but requires some more preparation than just testing
+the skills with a Susi Dream.</p>
+<div class="section" id="getting-started">
+<span id="getting-started"></span><h2>Getting Started<a class="headerlink" href="#getting-started" title="Permalink to this headline">¶</a></h2>
+<p>It&#8217;s easy, DON&#8217;T PANIC. You don&#8217;t need to be a software developer to enhance Susi.</p>
+<div class="section" id="what-you-have-to-do">
+<span id="what-you-have-to-do"></span><h3>What you have to do<a class="headerlink" href="#what-you-have-to-do" title="Permalink to this headline">¶</a></h3>
+<p>You must run a local <code class="docutils literal"><span class="pre">susi_server</span></code> to test your self-made conversation rules</p>
+</div>
+<div class="section" id="requirements">
+<span id="requirements"></span><h3>Requirements<a class="headerlink" href="#requirements" title="Permalink to this headline">¶</a></h3>
+<p>You need to have a version 1.8 of Java installed. You also need git, ant and you must be able to use a text editor :)</p>
+</div>
+<div class="section" id="installation">
+<span id="installation"></span><h3>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li>Clone your own copy of <code class="docutils literal"><span class="pre">susi_server</span></code>: run <code class="docutils literal"><span class="pre">git</span> <span class="pre">clone</span> <span class="pre">https://github.com/fossasia/susi_server.git</span></code></li>
+<li>run <code class="docutils literal"><span class="pre">cd</span> <span class="pre">susi_server</span></code></li>
+<li>run <code class="docutils literal"><span class="pre">ant</span></code></li>
+<li>run <code class="docutils literal"><span class="pre">bin/start.sh</span></code></li>
+<li>open http://localhost:4000 in your browser</li>
+</ul>
+</div>
+<div class="section" id="access-the-susi-api">
+<span id="access-the-susi-api"></span><h3>Access the Susi API<a class="headerlink" href="#access-the-susi-api" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li>in http://localhost:4000 you can enter a phrase into the query box. Write there &#8216;hello&#8217; and push the &#8216;get json data&#8217; button</li>
+<li>you can see now, that your request calls the API URL <code class="docutils literal"><span class="pre">http://localhost:4000/susi/chat.json?timezoneOffset=-60&amp;q=hello</span></code></li>
+<li>the result is given in JSON, like:</li>
+</ul>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="p">{</span>
+  <span class="s2">&quot;query&quot;</span><span class="p">:</span> <span class="s2">&quot;hello&quot;</span><span class="p">,</span>
+  <span class="s2">&quot;count&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+  <span class="s2">&quot;client_id&quot;</span><span class="p">:</span> <span class="s2">&quot;aG9zdF8xNzguMjAzLjIzMi41MA==&quot;</span><span class="p">,</span>
+  <span class="s2">&quot;query_date&quot;</span><span class="p">:</span> <span class="s2">&quot;2017-02-17T16:06:24.794Z&quot;</span><span class="p">,</span>
+  <span class="s2">&quot;answers&quot;</span><span class="p">:</span> <span class="p">[{</span>
+    <span class="s2">&quot;data&quot;</span><span class="p">:</span> <span class="p">[{</span>
+      <span class="s2">&quot;0&quot;</span><span class="p">:</span> <span class="s2">&quot;hello&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;intent_original&quot;</span><span class="p">:</span> <span class="s2">&quot;hello&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;1&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;intent_canonical&quot;</span><span class="p">:</span> <span class="s2">&quot;hello&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;intent_categorized&quot;</span><span class="p">:</span> <span class="s2">&quot;hello&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;timezoneOffset&quot;</span><span class="p">:</span> <span class="s2">&quot;-60&quot;</span>
+    <span class="p">}],</span>
+    <span class="s2">&quot;metadata&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;count&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">},</span>
+    <span class="s2">&quot;actions&quot;</span><span class="p">:</span> <span class="p">[{</span>
+      <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;answer&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;expression&quot;</span><span class="p">:</span> <span class="s2">&quot;Hello!&quot;</span>
+    <span class="p">}]</span>
+  <span class="p">}],</span>
+  <span class="s2">&quot;answer_date&quot;</span><span class="p">:</span> <span class="s2">&quot;2017-02-17T16:06:24.828Z&quot;</span><span class="p">,</span>
+  <span class="s2">&quot;answer_time&quot;</span><span class="p">:</span> <span class="mi">34</span><span class="p">,</span>
+  <span class="s2">&quot;session&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;identity&quot;</span><span class="p">:</span> <span class="p">{</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;host&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;178.203.232.50&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;anonymous&quot;</span><span class="p">:</span> <span class="n">true</span>
+  <span class="p">}}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li>please check the &#8216;actions&#8217; object in <code class="docutils literal"><span class="pre">.answers.actions</span></code>: you get an action type &#8216;answer&#8217; and and &#8216;expression&#8217;: &#8220;Hello!&#8221;.
+This is Susi&#8217;s response on your query.</li>
+<li>Whenever you want to test a new Susi Rule, repeat these steps and look into the &#8220;actions&#8221; object to see Susi&#8217;s answer.</li>
+</ul>
+</div>
+</div>
+<div class="section" id="write-easy-dialog-ezd-conversation-rules">
+<span id="write-easy-dialog-ezd-conversation-rules"></span><h2>Write Easy Dialog (&#8220;EzD&#8221;) conversation rules<a class="headerlink" href="#write-easy-dialog-ezd-conversation-rules" title="Permalink to this headline">¶</a></h2>
+<p>You may have done that already using the susi_skill_development_tutorial.md
+If you have not done that, read that document first.</p>
+<div class="section" id="write-a-file-to-your-own-susi-installation">
+<span id="write-a-file-to-your-own-susi-installation"></span><h3>Write a file to your own Susi installation<a class="headerlink" href="#write-a-file-to-your-own-susi-installation" title="Permalink to this headline">¶</a></h3>
+<p>In your own <code class="docutils literal"><span class="pre">susi_server</span></code> directory, open the subdirectory <code class="docutils literal"><span class="pre">conf/susi</span></code> (or cd into <code class="docutils literal"><span class="pre">susi_server/conf/susi</span></code>): here you
+find a collection of <code class="docutils literal"><span class="pre">.txt</span></code> (Susi EzD) files and <code class="docutils literal"><span class="pre">.json</span></code> (Susi Mind) files.</p>
+<ul class="simple">
+<li>Create our own EzD file, i.e. name it <code class="docutils literal"><span class="pre">000_en_tutorial.txt</span></code> (you may want to give it your individual name, when you submit it to your repository the name should make it visible what to expect from the new skills you submitted.</li>
+<li>Edit the file and add your skills. Maybe you just need to do a copy-paste from your Susi Dream test.</li>
+<li>Check that the skills are working by calling the chat api (see above)</li>
+<li>If you change anything, it is maybe necessary to restart Susi to see the effect</li>
+</ul>
+</div>
+<div class="section" id="send-us-a-pull-request">
+<span id="send-us-a-pull-request"></span><h3>Send us a pull request<a class="headerlink" href="#send-us-a-pull-request" title="Permalink to this headline">¶</a></h3>
+<p>If you think that your Skills are working, please send us a pull request so we can integrate it to our set of Susi Skills for everyone!</p>
+<p>Thank you!</p>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="index.html">
+    <img class="logo" src="_static//images/susi-logo-original.svg" alt="Logo"/>
+    
+  </a>
+</p>
+
+
+
+
+
+
+
+
+
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Submitting Skills to git</a><ul>
+<li><a class="reference internal" href="#getting-started">Getting Started</a><ul>
+<li><a class="reference internal" href="#what-you-have-to-do">What you have to do</a></li>
+<li><a class="reference internal" href="#requirements">Requirements</a></li>
+<li><a class="reference internal" href="#installation">Installation</a></li>
+<li><a class="reference internal" href="#access-the-susi-api">Access the Susi API</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#write-easy-dialog-ezd-conversation-rules">Write Easy Dialog (&#8220;EzD&#8221;) conversation rules</a><ul>
+<li><a class="reference internal" href="#write-a-file-to-your-own-susi-installation">Write a file to your own Susi installation</a></li>
+<li><a class="reference internal" href="#send-us-a-pull-request">Send us a pull request</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Home</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="index.html">Welcome</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Installation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="installation_generic.html">Installation on Linux/Mac OS</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation_windows_generic.html">Requirements</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation_windows_generic.html#download">Download</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation_windows_generic.html#build-and-run">Build and Run</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation_windows_generic.html#operate">Operate</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation_windows_generic.html#shut-down">Shut down</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation_docker.html">Installation with Docker</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation_cloud9.html">Installation on Cloud9</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation_heroku.html">Installation on Heroku</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Tutorial</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="susi_skill_development_tutorial.html">AI Rule development Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="AskSUSI.html">Ask SUSI</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Development</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="eclipseSetup.html">How to setup Susi Server on Eclipse</a></li>
+<li class="toctree-l1"><a class="reference internal" href="eclipseSetup.html#using-the-ant-file">Using the Ant File</a></li>
+<li class="toctree-l1"><a class="reference internal" href="eclipseSetup.html#test">Test :</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Miscellaneous</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="parsers.html">Parsers</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Submitting skills to Git</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="parsers.html" title="previous chapter">Parsers &amp; Console Services</a></li>
+  </ul></li>
+</ul>
+</div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2017, Susi.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.4.9</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

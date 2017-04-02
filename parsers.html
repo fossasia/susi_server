@@ -1,0 +1,706 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Parsers &amp; Console Services &#8212; Susi Server development documentation</title>
+    
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     'development',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="top" title="Susi Server development documentation" href="index.html" />
+    <link rel="next" title="Submitting Skills to git" href="submitting_skills_to_git.html" />
+    <link rel="prev" title="How to setup Susi Server on Eclipse" href="eclipseSetup.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body role="document">
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="parsers-console-services">
+<span id="parsers-console-services"></span><h1>Parsers &amp; Console Services<a class="headerlink" href="#parsers-console-services" title="Permalink to this headline">¶</a></h1>
+<ul class="simple">
+<li><a class="reference external" href="#rss-feed-reader">RSS Feed Reader</a></li>
+<li><a class="reference external" href="#generic-scraper">Generic Scraper</a></li>
+<li><a class="reference external" href="#event-brite-crawler">Event Brite Crawler</a></li>
+<li><a class="reference external" href="#meetups-scraper">Meetups Scraper</a></li>
+<li><a class="reference external" href="#wordpress-crawler">Wordpress Crawler</a></li>
+</ul>
+<p>###RSS Feed Reader
+RSS Feed Reader helps you read the RSS Feeds from Loklak and also get specific fields when asked from <em>SUSI</em> (example query: Susi, Please read the RSS feed from https://news.ycombinator.com/rss)
+<br>
+It is implemented by making use of <code class="docutils literal"><span class="pre">ROME</span></code> Java framework.</p>
+<ul class="simple">
+<li>Implementation: <a class="reference external" href="https://github.com/loklak/loklak_server/blob/development/src/org/loklak/api/search/RSSReaderService.java">loklak/loklak_server/src/org/loklak/api/search/RSSReaderService.java</a></li>
+<li>Data format of <code class="docutils literal"><span class="pre">SusiThought</span></code> (extension of JSONObject) returned:</li>
+</ul>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">JSONObject</span> <span class="n">jsonObject</span> <span class="o">=</span> <span class="n">new</span> <span class="n">JSONObject</span><span class="p">();</span>
+<span class="n">jsonObject</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="s2">&quot;title&quot;</span><span class="p">,</span> <span class="n">entry</span><span class="o">.</span><span class="n">getTitle</span><span class="p">()</span><span class="o">.</span><span class="n">toString</span><span class="p">());</span>
+<span class="n">jsonObject</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="s2">&quot;link&quot;</span><span class="p">,</span> <span class="n">entry</span><span class="o">.</span><span class="n">getLink</span><span class="p">()</span><span class="o">.</span><span class="n">toString</span><span class="p">());</span>
+<span class="n">jsonObject</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="s2">&quot;uri&quot;</span><span class="p">,</span> <span class="n">entry</span><span class="o">.</span><span class="n">getUri</span><span class="p">()</span><span class="o">.</span><span class="n">toString</span><span class="p">());</span>
+<span class="n">jsonObject</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="s2">&quot;guid&quot;</span><span class="p">,</span> <span class="n">Integer</span><span class="o">.</span><span class="n">toString</span><span class="p">(</span><span class="n">entry</span><span class="o">.</span><span class="n">hashCode</span><span class="p">()));</span>
+<span class="k">if</span> <span class="p">(</span><span class="n">entry</span><span class="o">.</span><span class="n">getPublishedDate</span><span class="p">()</span> <span class="o">!=</span> <span class="n">null</span><span class="p">)</span> 
+    <span class="n">jsonObject</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="s2">&quot;pubDate&quot;</span><span class="p">,</span> <span class="n">entry</span><span class="o">.</span><span class="n">getPublishedDate</span><span class="p">()</span><span class="o">.</span><span class="n">toString</span><span class="p">());</span>
+<span class="k">if</span> <span class="p">(</span><span class="n">entry</span><span class="o">.</span><span class="n">getUpdatedDate</span><span class="p">()</span> <span class="o">!=</span> <span class="n">null</span><span class="p">)</span> 
+    <span class="n">jsonObject</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="s2">&quot;updateDate&quot;</span><span class="p">,</span> <span class="n">entry</span><span class="o">.</span><span class="n">getUpdatedDate</span><span class="p">()</span><span class="o">.</span><span class="n">toString</span><span class="p">());</span>
+<span class="k">if</span> <span class="p">(</span><span class="n">entry</span><span class="o">.</span><span class="n">getDescription</span><span class="p">()</span> <span class="o">!=</span> <span class="n">null</span><span class="p">)</span> 
+    <span class="n">jsonObject</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="s2">&quot;description&quot;</span><span class="p">,</span> <span class="n">entry</span><span class="o">.</span><span class="n">getDescription</span><span class="p">()</span><span class="o">.</span><span class="n">getValue</span><span class="p">()</span><span class="o">.</span><span class="n">toString</span><span class="p">());</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li>Console Service: <a class="reference external" href="https://github.com/loklak/loklak_server/blob/development/src/org/loklak/api/search/ConsoleService.java">loklak/loklak_server/src/org/loklak/api/search/ConsoleService.java</a><br></li>
+</ul>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">dbAccess</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="n">Pattern</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="s2">&quot;SELECT</span><span class="se">\\</span><span class="s2">h+?(.*?)</span><span class="se">\\</span><span class="s2">h+?FROM</span><span class="se">\\</span><span class="s2">h+?rss</span><span class="se">\\</span><span class="s2">h+?WHERE</span><span class="se">\\</span><span class="s2">h+?url</span><span class="se">\\</span><span class="s2">h??=</span><span class="se">\\</span><span class="s2">h??&#39;(.*?)&#39;</span><span class="se">\\</span><span class="s2">h??;&quot;</span><span class="p">),</span> <span class="p">(</span><span class="n">flow</span><span class="p">,</span> <span class="n">matcher</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="p">{</span>
+            <span class="n">SusiThought</span> <span class="n">json</span> <span class="o">=</span> <span class="n">RSSReaderService</span><span class="o">.</span><span class="n">readRSS</span><span class="p">(</span><span class="n">matcher</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">2</span><span class="p">));</span>
+            <span class="n">SusiTransfer</span> <span class="n">transfer</span> <span class="o">=</span> <span class="n">new</span> <span class="n">SusiTransfer</span><span class="p">(</span><span class="n">matcher</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">1</span><span class="p">));</span>
+            <span class="n">json</span><span class="o">.</span><span class="n">setData</span><span class="p">(</span><span class="n">transfer</span><span class="o">.</span><span class="n">conclude</span><span class="p">(</span><span class="n">json</span><span class="o">.</span><span class="n">getData</span><span class="p">()));</span>
+            <span class="k">return</span> <span class="n">json</span><span class="p">;</span>
+        <span class="p">});</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li>Sample Link: <a class="reference external" href="http://localhost:4000/api/console.json?q=SELECT%20*%20FROM%20rss%20WHERE%20url=%27https://www.reddit.com/search.rss?q=loklak%27;">http://localhost:4000/api/console.json?q=SELECT * FROM rss WHERE url= &#8216;https://www.reddit.com/search.rss?q=loklak&#8217;;</a></li>
+<li>Sample Output:</li>
+</ul>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="p">{</span>
+  <span class="s2">&quot;data&quot;</span><span class="p">:</span> <span class="p">[</span>
+    <span class="p">{</span>
+      <span class="s2">&quot;updateDate&quot;</span><span class="p">:</span> <span class="s2">&quot;Tue Feb 28 12:19:29 CST 2006&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;link&quot;</span><span class="p">:</span> <span class="s2">&quot;https://www.reddit.com/r/programming/&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;guid&quot;</span><span class="p">:</span> <span class="s2">&quot;-2067538461&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;title&quot;</span><span class="p">:</span> <span class="s2">&quot;programming&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;uri&quot;</span><span class="p">:</span> <span class="s2">&quot;t5_2fwo&quot;</span>
+    <span class="p">},</span>
+    <span class="p">{</span>
+      <span class="s2">&quot;updateDate&quot;</span><span class="p">:</span> <span class="s2">&quot;Thu Oct 08 10:56:05 CDT 2009&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;link&quot;</span><span class="p">:</span> <span class="s2">&quot;https://www.reddit.com/r/datasets/&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;guid&quot;</span><span class="p">:</span> <span class="s2">&quot;-1256311214&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;title&quot;</span><span class="p">:</span> <span class="s2">&quot;Datasets Archive&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;uri&quot;</span><span class="p">:</span> <span class="s2">&quot;t5_2r97t&quot;</span>
+    <span class="p">},</span>
+    <span class="p">{</span>
+      <span class="s2">&quot;updateDate&quot;</span><span class="p">:</span> <span class="s2">&quot;Wed Jun 08 00:59:26 CDT 2016&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;link&quot;</span><span class="p">:</span> <span class="s2">&quot;https://www.reddit.com/r/datasets/comments/4n3ljv/we_collected_13_billion_tweets_with_a_distributed/?ref=search_posts&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;guid&quot;</span><span class="p">:</span> <span class="s2">&quot;-762215657&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;title&quot;</span><span class="p">:</span> <span class="s2">&quot;We collected 1.3 billion tweets with a distributed, peer-to-peer based free, open source twitter scraper that has a nice API for your self-made apps to evaluate the data: loklak.org&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;uri&quot;</span><span class="p">:</span> <span class="s2">&quot;t3_4n3ljv&quot;</span>
+    <span class="p">},</span>
+    <span class="p">{</span>
+      <span class="s2">&quot;updateDate&quot;</span><span class="p">:</span> <span class="s2">&quot;Mon May 04 18:53:19 CDT 2015&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;link&quot;</span><span class="p">:</span> <span class="s2">&quot;https://www.reddit.com/r/programming/comments/34vtya/loklak_web_client_test_a_twitter_search_engine/?ref=search_posts&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;guid&quot;</span><span class="p">:</span> <span class="s2">&quot;1528051145&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;title&quot;</span><span class="p">:</span> <span class="s2">&quot;#Loklak Web client Test A Twitter search engine loklak.org&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;uri&quot;</span><span class="p">:</span> <span class="s2">&quot;t3_34vtya&quot;</span>
+    <span class="p">},</span>
+    <span class="p">{</span>
+      <span class="s2">&quot;updateDate&quot;</span><span class="p">:</span> <span class="s2">&quot;Fri May 08 23:53:19 CDT 2015&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;link&quot;</span><span class="p">:</span> <span class="s2">&quot;https://www.reddit.com/r/programming/comments/35d94z/a_look_at_loklakorg_and_the_webclient_progress/?ref=search_posts&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;guid&quot;</span><span class="p">:</span> <span class="s2">&quot;-599295987&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;title&quot;</span><span class="p">:</span> <span class="s2">&quot;A look at Loklak.org and the Webclient progress&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;uri&quot;</span><span class="p">:</span> <span class="s2">&quot;t3_35d94z&quot;</span>
+    <span class="p">}</span>
+  <span class="p">],</span>
+  <span class="s2">&quot;metadata&quot;</span><span class="p">:</span> <span class="p">{</span>
+    <span class="s2">&quot;count&quot;</span><span class="p">:</span> <span class="mi">5</span>
+  <span class="p">},</span>
+  <span class="s2">&quot;session&quot;</span><span class="p">:</span> <span class="p">{</span>
+    <span class="s2">&quot;identity&quot;</span><span class="p">:</span> <span class="p">{</span>
+      <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;host&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;10.67.93.57&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;anonymous&quot;</span><span class="p">:</span> <span class="n">true</span>
+    <span class="p">}</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<hr class="docutils" />
+<p>###Generic Scraper
+This is a very generic web page scraper implemented using <code class="docutils literal"><span class="pre">JSoup</span></code> library which yields the title of the page, texts, links, images, audio, video, code blocks etc.</p>
+<ul class="simple">
+<li>Implementation: <a class="reference external" href="https://github.com/loklak/loklak_server/blob/development/src/org/loklak/api/search/GenericScraper.java">loklak/loklak_server/src/org/loklak/api/search/GenericScraper.java</a></li>
+<li>Data format of JSONObject returned:</li>
+</ul>
+<div class="highlight-default"><div class="highlight"><pre><span></span>    <span class="n">obj</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="s2">&quot;title&quot;</span><span class="p">,</span> <span class="n">title</span><span class="p">);</span>
+    <span class="n">obj</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="s2">&quot;language&quot;</span><span class="p">,</span> <span class="n">language</span><span class="p">);</span>
+    <span class="n">obj</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="s2">&quot;Links&quot;</span><span class="p">,</span> <span class="n">new</span> <span class="n">JSONArray</span><span class="p">(</span><span class="n">linkHref</span><span class="p">));</span>
+    <span class="n">obj</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="s2">&quot;Text in Links&quot;</span><span class="p">,</span> <span class="n">new</span> <span class="n">JSONArray</span><span class="p">(</span><span class="n">linkText</span><span class="p">));</span>
+    <span class="n">obj</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="s2">&quot;source files&quot;</span><span class="p">,</span> <span class="n">new</span> <span class="n">JSONArray</span><span class="p">(</span><span class="n">src</span><span class="p">));</span>
+    <span class="n">obj</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="s2">&quot;Image files&quot;</span><span class="p">,</span> <span class="n">new</span> <span class="n">JSONArray</span><span class="p">(</span><span class="n">image</span><span class="p">));</span>
+    <span class="n">obj</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="s2">&quot;Articles&quot;</span><span class="p">,</span> <span class="n">new</span> <span class="n">JSONArray</span><span class="p">(</span><span class="n">articleTags</span><span class="p">));</span>
+    <span class="n">obj</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="s2">&quot;Preformatted Text&quot;</span><span class="p">,</span> <span class="n">new</span> <span class="n">JSONArray</span><span class="p">(</span><span class="n">preTags</span><span class="p">));</span>
+    <span class="n">obj</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="s2">&quot;Code&quot;</span><span class="p">,</span> <span class="n">new</span> <span class="n">JSONArray</span><span class="p">(</span><span class="n">codeTags</span><span class="p">));</span>
+    <span class="n">obj</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="s2">&quot;Audio&quot;</span><span class="p">,</span> <span class="n">new</span> <span class="n">JSONArray</span><span class="p">(</span><span class="n">audio</span><span class="p">));</span>
+    <span class="n">obj</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="s2">&quot;Video&quot;</span><span class="p">,</span> <span class="n">new</span> <span class="n">JSONArray</span><span class="p">(</span><span class="n">video</span><span class="p">));</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li>Usage: <a class="reference external" href="http://loklak.org/api/genericscraper.json?url=https://github.com/loklak">http://loklak.org/api/genericscraper.json?url=&lt;-link-to-the-HTML-page-&gt;</a></li>
+<li>Sample Link: <a class="reference external" href="http://loklak.org/api/genericscraper.json?url=https://github.com/loklak">http://loklak.org/api/genericscraper.json?url=https://github.com/loklak</a></li>
+<li>Sample Output:</li>
+</ul>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="p">{</span>
+  <span class="s2">&quot;Text in Links&quot;</span><span class="p">:</span> <span class="p">[</span>
+    <span class="s2">&quot;Skip to content&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Personal&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Open source&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Business&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Explore&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Sign up&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Sign in&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Pricing&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Blog&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Support&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Search GitHub&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;http://loklak.org&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Repositories&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Next&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;12 People&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Contact GitHub&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;API&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Training&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Shop&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Blog&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;About&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Terms&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Privacy&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Security&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Status&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Help&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Reload&quot;</span>
+  <span class="p">],</span>
+  <span class="s2">&quot;Image files&quot;</span><span class="p">:</span> <span class="p">[</span>
+    <span class="s2">&quot;https://avatars1.githubusercontent.com/u/11370631?v=3&amp;s=200&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;https://assets-cdn.github.com/images/spinners/octocat-spinner-32.gif&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;https://avatars2.githubusercontent.com/u/5436027?v=3&amp;s=120&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;https://avatars2.githubusercontent.com/u/1632181?v=3&amp;s=120&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;https://avatars0.githubusercontent.com/u/6227784?v=3&amp;s=120&quot;</span><span class="p">,</span>
+  <span class="p">],</span>
+  <span class="s2">&quot;source files&quot;</span><span class="p">:</span> <span class="p">[</span>
+    <span class="s2">&quot;https://assets-cdn.github.com/assets/compat-7db58f8b7b91111107fac755dd8b178fe7db0f209ced51fc339c446ad3f8da2b.js&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;https://assets-cdn.github.com/assets/frameworks-404cdd1add1f710db016a02e5e31fff8a9089d14ff0c227df862b780886db7d5.js&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;https://assets-cdn.github.com/assets/github-8951b8889d701a8bda73fa44510fb2d70dd306d2251977e1172a78d7459cd594.js&quot;</span>
+  <span class="p">],</span>
+  <span class="s2">&quot;Articles&quot;</span><span class="p">:</span> <span class="p">[</span>
+    
+  <span class="p">],</span>
+  <span class="s2">&quot;Video&quot;</span><span class="p">:</span> <span class="p">[</span>
+    
+  <span class="p">],</span>
+  <span class="s2">&quot;Links&quot;</span><span class="p">:</span> <span class="p">[</span>
+    <span class="s2">&quot;#start-of-content&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;https://github.com/&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;/personal&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;/open-source&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;/business&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;/explore&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;/join?source=header&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;/login?return_to=</span><span class="si">%2F</span><span class="s2">loklak&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;/pricing&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;/blog&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;https://help.github.com&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;https://github.com/search&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;http://loklak.org&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;/loklak&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;/orgs/loklak/people&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;/loklak/loklak_server/stargazers&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;/loklak/loklak_server/network&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;/loklak/loklak_server&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;/loklak/asksusi_messenger/stargazers&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;/loklak/asksusi_messenger/network&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;/loklak/asksusi_messenger&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;/loklak/loklak_webclient/stargazers&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;/loklak/loklak_webclient/network&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;/loklak/loklak_webclient&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;/loklak/wp-ai-twitter-feeds/stargazers&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;/loklak/wp-ai-twitter-feeds/network&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;/loklak/wp-ai-twitter-feeds&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;/loklak/wp-rotatingtweets/stargazers&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;/loklak/wp-rotatingtweets/network&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;/loklak/wp-rotatingtweets&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;/loklak/wp-twidget/stargazers&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;/loklak/wp-twidget/network&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;/loklak/wp-twidget&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;/loklak/wp-dev-buddy/stargazers&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;/loklak/wp-dev-buddy/network&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;/loklak/wp-dev-buddy&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;/loklak/wp-juiz-last-tweet-widget/stargazers&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;/loklak/wp-juiz-last-tweet-widget/network&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;/loklak/wp-juiz-last-tweet-widget&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;/loklak/wp-tweeple/stargazers&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;/loklak/wp-tweeple/network&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;/loklak/wp-tweeple&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;/loklak/wp-simple-twitter-feeds/stargazers&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;/loklak/wp-simple-twitter-feeds/network&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;/loklak/wp-simple-twitter-feeds&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;/loklak/wp-tweetscroll-widget/stargazers&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;/loklak/wp-tweetscroll-widget/network&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;/loklak/wp-tweetscroll-widget&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;/loklak/asksusi_com/stargazers&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;/loklak/asksusi_com/network&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;/loklak/asksusi_com&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;/loklak/asksusi_android/stargazers&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;/loklak/asksusi_android/network&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;/loklak/asksusi_android&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;/loklak/loklak_php_api/stargazers&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;/loklak/loklak_php_api/network&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;/loklak/loklak_php_api&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;/loklak/loklak_walls/stargazers&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;/loklak/loklak_walls/network&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;/loklak/loklak_walls&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;/loklak/loklak_python_api/stargazers&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;/loklak/loklak_python_api/network&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;/loklak/loklak_python_api&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;/sudheesh001/loklak_api_python&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;https://github.com/contact&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;https://developer.github.com&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;https://training.github.com&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;https://shop.github.com&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;https://github.com/blog&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;https://github.com/about&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;https://github.com&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;https://github.com/site/terms&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;https://github.com/site/privacy&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;https://github.com/security&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;https://status.github.com/&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;https://help.github.com&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;https://assets-cdn.github.com/assets/frameworks-e53fc1ddbde2a9e5645df620f65c80ef723c741b33293b6f22a2b7f2c8145fcf.css&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;https://assets-cdn.github.com/assets/github-8fd3f509ca0995390abdb9f0dfe5b79d1af6ed1ac09c75ba2d68b29b82cadf8d.css&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;https://assets-cdn.github.com/assets/site-f4b3d32cffc56de06873b8a6d88ae6139de92dc0fc31574232803d68729f6fac.css&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;https://assets-cdn.github.com/assets/frameworks-404cdd1add1f710db016a02e5e31fff8a9089d14ff0c227df862b780886db7d5.js&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;https://assets-cdn.github.com/assets/github-8951b8889d701a8bda73fa44510fb2d70dd306d2251977e1172a78d7459cd594.js&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;/opensearch.xml&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;https://github.com/fluidicon.png&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;https://assets-cdn.github.com/&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;https://assets-cdn.github.com/pinned-octocat.svg&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;https://assets-cdn.github.com/favicon.ico&quot;</span>
+  <span class="p">],</span>
+  <span class="s2">&quot;language&quot;</span><span class="p">:</span> <span class="s2">&quot;en&quot;</span><span class="p">,</span>
+  <span class="s2">&quot;title&quot;</span><span class="p">:</span> <span class="s2">&quot;loklak Â· GitHub&quot;</span><span class="p">,</span>
+  <span class="s2">&quot;Preformatted Text&quot;</span><span class="p">:</span> <span class="p">[</span>
+    
+  <span class="p">],</span>
+  <span class="s2">&quot;Audio&quot;</span><span class="p">:</span> <span class="p">[</span>
+    
+  <span class="p">],</span>
+  <span class="s2">&quot;Code&quot;</span><span class="p">:</span> <span class="p">[</span>
+    
+  <span class="p">]</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<hr class="docutils" />
+<p>###Event Brite Crawler
+This crawler parses the event details (name, description, date, time, location, organizer&#8217;s information, etc.) from <a class="reference external" href="https://www.eventbrite.com/">www.eventbrite.com</a>.
+<br> It uses <code class="docutils literal"><span class="pre">JSoup</span></code>, the Java library for parsing HTML Pages.
+<br>The event page on the website is scraped when a call with format <code class="docutils literal"><span class="pre">/api/eventbritecrawler.json?url=&lt;event-name-as-on-eventbrite.com&gt;</span></code> is made.</p>
+<ul class="simple">
+<li>Implementation: <a class="reference external" href="https://github.com/loklak/loklak_server/blob/development/src/org/loklak/api/search/EventBriteCrawlerService.java">loklak/loklak_server/src/org/loklak/api/search/EventBriteCrawlerService.java</a></li>
+<li>Data Format of <code class="docutils literal"><span class="pre">SusiThought</span></code> (extension of JSONObject) returned:</li>
+</ul>
+<div class="highlight-default"><div class="highlight"><pre><span></span>        <span class="n">JSONArray</span> <span class="n">jsonArray</span> <span class="o">=</span> <span class="n">new</span> <span class="n">JSONArray</span><span class="p">();</span>
+
+        <span class="n">JSONObject</span> <span class="n">event</span> <span class="o">=</span> <span class="n">new</span> <span class="n">JSONObject</span><span class="p">();</span>
+        <span class="n">event</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="s2">&quot;event_url&quot;</span><span class="p">,</span> <span class="n">url</span><span class="p">);</span>
+        <span class="n">event</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="s2">&quot;id&quot;</span><span class="p">,</span> <span class="n">eventID</span><span class="p">);</span>
+        <span class="n">event</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="s2">&quot;name&quot;</span><span class="p">,</span> <span class="n">eventName</span><span class="p">);</span>
+        <span class="n">event</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="s2">&quot;description&quot;</span><span class="p">,</span> <span class="n">eventDescription</span><span class="p">);</span>
+        <span class="n">event</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="s2">&quot;color&quot;</span><span class="p">,</span> <span class="n">eventColor</span><span class="p">);</span>
+        <span class="n">event</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="s2">&quot;background_url&quot;</span><span class="p">,</span> <span class="n">imageLink</span><span class="p">);</span>
+        <span class="n">event</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="s2">&quot;closing_datetime&quot;</span><span class="p">,</span> <span class="n">closingDateTime</span><span class="p">);</span>
+        <span class="n">event</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="s2">&quot;creator&quot;</span><span class="p">,</span> <span class="n">creator</span><span class="p">);</span>
+        <span class="n">event</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="s2">&quot;email&quot;</span><span class="p">,</span> <span class="n">email</span><span class="p">);</span>
+        <span class="n">event</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="s2">&quot;location_name&quot;</span><span class="p">,</span> <span class="n">eventLocation</span><span class="p">);</span>
+        <span class="n">event</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="s2">&quot;latitude&quot;</span><span class="p">,</span> <span class="n">latitude</span><span class="p">);</span>
+        <span class="n">event</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="s2">&quot;longitude&quot;</span><span class="p">,</span> <span class="n">longitude</span><span class="p">);</span>
+        <span class="n">event</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="s2">&quot;start_time&quot;</span><span class="p">,</span> <span class="n">startingTime</span><span class="p">);</span>
+        <span class="n">event</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="s2">&quot;end_time&quot;</span><span class="p">,</span> <span class="n">endingTime</span><span class="p">);</span>
+        <span class="n">event</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="s2">&quot;logo&quot;</span><span class="p">,</span> <span class="n">imageLink</span><span class="p">);</span>
+        <span class="n">event</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="s2">&quot;organizer_description&quot;</span><span class="p">,</span> <span class="n">organizerDescription</span><span class="p">);</span>
+        <span class="n">event</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="s2">&quot;organizer_name&quot;</span><span class="p">,</span> <span class="n">organizerName</span><span class="p">);</span>
+        <span class="n">event</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="s2">&quot;privacy&quot;</span><span class="p">,</span> <span class="n">privacy</span><span class="p">);</span>
+        <span class="n">event</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="s2">&quot;schedule_published_on&quot;</span><span class="p">,</span> <span class="n">schedulePublishedOn</span><span class="p">);</span>
+        <span class="n">event</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="s2">&quot;state&quot;</span><span class="p">,</span> <span class="n">state</span><span class="p">);</span>
+        <span class="n">event</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="s2">&quot;type&quot;</span><span class="p">,</span> <span class="n">eventType</span><span class="p">);</span>
+        <span class="n">event</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="s2">&quot;ticket_url&quot;</span><span class="p">,</span> <span class="n">ticketURL</span><span class="p">);</span>
+        <span class="n">event</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="s2">&quot;social_links&quot;</span><span class="p">,</span> <span class="n">socialLinks</span><span class="p">);</span>
+        <span class="n">event</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="s2">&quot;topic&quot;</span><span class="p">,</span> <span class="n">topic</span><span class="p">);</span>
+        <span class="n">jsonArray</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="n">event</span><span class="p">);</span>
+
+        <span class="n">JSONObject</span> <span class="n">org</span> <span class="o">=</span> <span class="n">new</span> <span class="n">JSONObject</span><span class="p">();</span>
+        <span class="n">org</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="s2">&quot;organizer_name&quot;</span><span class="p">,</span> <span class="n">organizerName</span><span class="p">);</span>
+        <span class="n">org</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="s2">&quot;organizer_link&quot;</span><span class="p">,</span> <span class="n">organizerLink</span><span class="p">);</span>
+        <span class="n">org</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="s2">&quot;organizer_profile_link&quot;</span><span class="p">,</span> <span class="n">organizerProfileLink</span><span class="p">);</span>
+        <span class="n">org</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="s2">&quot;organizer_website&quot;</span><span class="p">,</span> <span class="n">organizerWebsite</span><span class="p">);</span>
+        <span class="n">org</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="s2">&quot;organizer_contact_info&quot;</span><span class="p">,</span> <span class="n">organizerContactInfo</span><span class="p">);</span>
+        <span class="n">org</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="s2">&quot;organizer_description&quot;</span><span class="p">,</span> <span class="n">organizerDescription</span><span class="p">);</span>
+        <span class="n">org</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="s2">&quot;organizer_facebook_feed_link&quot;</span><span class="p">,</span> <span class="n">organizerFacebookFeedLink</span><span class="p">);</span>
+        <span class="n">org</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="s2">&quot;organizer_twitter_feed_link&quot;</span><span class="p">,</span> <span class="n">organizerTwitterFeedLink</span><span class="p">);</span>
+        <span class="n">org</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="s2">&quot;organizer_facebook_account_link&quot;</span><span class="p">,</span> <span class="n">organizerFacebookAccountLink</span><span class="p">);</span>
+        <span class="n">org</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="s2">&quot;organizer_twitter_account_link&quot;</span><span class="p">,</span> <span class="n">organizerTwitterAccountLink</span><span class="p">);</span>
+        <span class="n">jsonArray</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="n">org</span><span class="p">);</span>
+        
+        <span class="n">SusiThought</span> <span class="n">json</span> <span class="o">=</span> <span class="n">new</span> <span class="n">SusiThought</span><span class="p">();</span>
+        <span class="n">json</span><span class="o">.</span><span class="n">setData</span><span class="p">(</span><span class="n">jsonArray</span><span class="p">);</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li>Console Service: <a class="reference external" href="https://github.com/loklak/loklak_server/blob/development/src/org/loklak/api/search/ConsoleService.java">loklak/loklak_server/src/org/loklak/api/search/ConsoleService.java</a></li>
+</ul>
+<div class="highlight-default"><div class="highlight"><pre><span></span> <span class="n">dbAccess</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="n">Pattern</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="s2">&quot;SELECT</span><span class="se">\\</span><span class="s2">h+?(.*?)</span><span class="se">\\</span><span class="s2">h+?FROM</span><span class="se">\\</span><span class="s2">h+?eventbrite</span><span class="se">\\</span><span class="s2">h+?WHERE</span><span class="se">\\</span><span class="s2">h+?url</span><span class="se">\\</span><span class="s2">h??=</span><span class="se">\\</span><span class="s2">h??&#39;(.*?)&#39;</span><span class="se">\\</span><span class="s2">h??;&quot;</span><span class="p">),</span> <span class="p">(</span><span class="n">flow</span><span class="p">,</span> <span class="n">matcher</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="p">{</span>
+            <span class="n">SusiThought</span> <span class="n">json</span> <span class="o">=</span> <span class="n">EventBriteCrawlerService</span><span class="o">.</span><span class="n">crawlEventBrite</span><span class="p">(</span><span class="n">matcher</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">2</span><span class="p">));</span>
+            <span class="n">SusiTransfer</span> <span class="n">transfer</span> <span class="o">=</span> <span class="n">new</span> <span class="n">SusiTransfer</span><span class="p">(</span><span class="n">matcher</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">1</span><span class="p">));</span>
+            <span class="n">json</span><span class="o">.</span><span class="n">setData</span><span class="p">(</span><span class="n">transfer</span><span class="o">.</span><span class="n">conclude</span><span class="p">(</span><span class="n">json</span><span class="o">.</span><span class="n">getData</span><span class="p">()));</span>
+            <span class="k">return</span> <span class="n">json</span><span class="p">;</span>
+        <span class="p">});</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li>Usage: <a class="reference external" href="http://localhost:4000/api/console.json?q=SELECT%20*%20FROM%20eventbrite%20WHERE%20url=%27https://www.eventbrite.fr/e/billets-europeade-2016-concert-de-musique-vocale-25592599153?aff=es2%27;">http://localhost:4000/api/console.json?q=SELECT * FROM eventbrite WHERE url=&#8217;&lt;-link-to-event-listing-on-eventbrite.com-&gt;&#8217;;
+</a></li>
+<li>Sample Link: <a class="reference external" href="http://loklak.org/api/eventbritecrawler.json?url=https://www.eventbrite.fr/e/billets-europeade-2016-concert-de-musique-vocale-25592599153">http://loklak.org/api/eventbritecrawler.json?url=https://www.eventbrite.fr/e/billets-europeade-2016-concert-de-musique-vocale-25592599153</a></li>
+<li>Sample Output:</li>
+</ul>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="p">{</span>
+  <span class="s2">&quot;data&quot;</span><span class="p">:</span> <span class="p">[</span>
+    <span class="p">{</span>
+      <span class="s2">&quot;creator&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;1&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;email&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span>
+      <span class="p">},</span>
+      <span class="s2">&quot;background_url&quot;</span><span class="p">:</span> <span class="s2">&quot;https://img.evbuc.com/https%3A</span><span class="si">%2F%2F</span><span class="s2">cdn.evbuc.com</span><span class="si">%2F</span><span class="s2">images</span><span class="si">%2F</span><span class="s2">21620618</span><span class="si">%2F</span><span class="s2">176404209748</span><span class="si">%2F</span><span class="s2">1</span><span class="si">%2F</span><span class="s2">original.jpg?w=1000&amp;rect=0%2C0%2C1600%2C800&amp;s=0596c1ac359823293d255b7b41639e6b&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;social_links&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="p">{</span>
+          <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;Facebook&quot;</span><span class="p">,</span>
+          <span class="s2">&quot;link&quot;</span><span class="p">:</span> <span class="s2">&quot;https://www.facebook.com/europeadenamur&quot;</span><span class="p">,</span>
+          <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;1&quot;</span>
+        <span class="p">},</span>
+        <span class="p">{</span>
+          <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;Twitter&quot;</span><span class="p">,</span>
+          <span class="s2">&quot;link&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+          <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;2&quot;</span>
+        <span class="p">}</span>
+      <span class="p">],</span>
+      <span class="s2">&quot;latitude&quot;</span><span class="p">:</span> <span class="mf">50.46685</span><span class="p">,</span>
+      <span class="s2">&quot;end_time&quot;</span><span class="p">:</span> <span class="s2">&quot;2016-07-22T21:00:00&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;Concert de chorales le vendredi 22 juillet 2016   GRATUIT  -  FREE ADMISSION  -  VRIJE TOEGANG  -  EINTRITT FREI La réservation permet un accès prioritaire au spectacle.  The reservation provides priority access to the show. De boeking geeft prioritaire toegang tot de show. Die Reservierung gibt einen bevorzugten Zugang zum Schauspiel. www.europeade2016.be &quot;</span><span class="p">,</span>
+      <span class="s2">&quot;privacy&quot;</span><span class="p">:</span> <span class="s2">&quot;public&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;ticket_url&quot;</span><span class="p">:</span> <span class="s2">&quot;https://www.eventbrite.fr/e/billets-europeade-2016-concert-de-musique-vocale-25592599153#tickets&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;event_url&quot;</span><span class="p">:</span> <span class="s2">&quot;https://www.eventbrite.fr/e/billets-europeade-2016-concert-de-musique-vocale-25592599153&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;start_time&quot;</span><span class="p">:</span> <span class="s2">&quot;2016-07-22T19:00:00&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;location_name&quot;</span><span class="p">:</span> <span class="s2">&quot;2 Avenue Sergent Vrithoff, 5000 Namur, Belgium&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;EUROPEADE 2016 - Concert de musique vocale&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;logo&quot;</span><span class="p">:</span> <span class="s2">&quot;https://img.evbuc.com/https%3A</span><span class="si">%2F%2F</span><span class="s2">cdn.evbuc.com</span><span class="si">%2F</span><span class="s2">images</span><span class="si">%2F</span><span class="s2">21620618</span><span class="si">%2F</span><span class="s2">176404209748</span><span class="si">%2F</span><span class="s2">1</span><span class="si">%2F</span><span class="s2">original.jpg?w=1000&amp;rect=0%2C0%2C1600%2C800&amp;s=0596c1ac359823293d255b7b41639e6b&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;organizer_description&quot;</span><span class="p">:</span> <span class="s2">&quot;None&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;topic&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;25592599153&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;organizer_name&quot;</span><span class="p">:</span> <span class="s2">&quot;: VILLE DE NAMUR&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;state&quot;</span><span class="p">:</span> <span class="s2">&quot;completed&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;longitude&quot;</span><span class="p">:</span> <span class="mf">4.8482485</span>
+    <span class="p">},</span>
+    <span class="p">{</span>
+      <span class="s2">&quot;organizer_contact_info&quot;</span><span class="p">:</span> <span class="s2">&quot;https://www.eventbrite.fr/e/billets-europeade-2016-concert-de-musique-vocale-25592599153#lightbox_contact&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;organizer_link&quot;</span><span class="p">:</span> <span class="s2">&quot;https://www.eventbrite.fr/e/billets-europeade-2016-concert-de-musique-vocale-25592599153#listing-organizer&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;organizer_profile_link&quot;</span><span class="p">:</span> <span class="s2">&quot;http://www.eventbrite.fr/o/ville-de-namur-10801060853&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;organizer_facebook_feed_link&quot;</span><span class="p">:</span> <span class="s2">&quot;http://www.eventbrite.fr/o/ville-de-namur-10801060853#facebook_feed&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;organizer_description&quot;</span><span class="p">:</span> <span class="s2">&quot;None&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;organizer_twitter_account_link&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;organizer_name&quot;</span><span class="p">:</span> <span class="s2">&quot;: VILLE DE NAMUR&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;organizer_website&quot;</span><span class="p">:</span> <span class="s2">&quot;http://www.europeade2016.be&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;organizer_facebook_account_link&quot;</span><span class="p">:</span> <span class="s2">&quot;https://www.facebook.com/europeadenamur&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;organizer_twitter_feed_link&quot;</span><span class="p">:</span> <span class="s2">&quot;http://www.eventbrite.fr/o/ville-de-namur-10801060853#twitter_feed&quot;</span>
+    <span class="p">}</span>
+  <span class="p">],</span>
+  <span class="s2">&quot;metadata&quot;</span><span class="p">:</span> <span class="p">{</span>
+    <span class="s2">&quot;count&quot;</span><span class="p">:</span> <span class="mi">9</span>
+  <span class="p">},</span>
+  <span class="s2">&quot;session&quot;</span><span class="p">:</span> <span class="p">{</span>
+    <span class="s2">&quot;identity&quot;</span><span class="p">:</span> <span class="p">{</span>
+      <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;host&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;10.67.93.57&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;anonymous&quot;</span><span class="p">:</span> <span class="n">true</span>
+    <span class="p">}</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<hr class="docutils" />
+<p>###Meetups Scraper
+This scraper is intended to provide with all the information like name, agenda, description, location, recent meetup, reviews atc.
+<br> It uses <code class="docutils literal"><span class="pre">JSoup</span></code>, the Java library for parsing HTML Pages.
+<br>The group page on <a class="reference external" href="https://www.meetup.com/">meetup.com</a> is scraped when a call with format <code class="docutils literal"><span class="pre">/api/meetupscrawler.json?url=&lt;link-to-group-page&gt;</span></code> is made.</p>
+<ul class="simple">
+<li>Implementation: <a class="reference external" href="https://github.com/loklak/loklak_server/blob/development/src/org/loklak/api/search/MeetupsCrawlerService.java">loklak/loklak_server/src/org/loklak/api/search/MeetupsCrawlerService.java</a></li>
+<li>Data Format of <code class="docutils literal"><span class="pre">SusiThought</span></code> (extension of JSONObject) returned:</li>
+</ul>
+<div class="highlight-default"><div class="highlight"><pre><span></span>    <span class="n">JSONObject</span> <span class="n">result</span> <span class="o">=</span> <span class="n">new</span> <span class="n">JSONObject</span><span class="p">();</span>
+    <span class="n">result</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="s2">&quot;group_name&quot;</span><span class="p">,</span> <span class="n">meetupGroupName</span><span class="p">);</span>
+    <span class="n">result</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="s2">&quot;meetup_type&quot;</span><span class="p">,</span> <span class="n">meetupType</span><span class="p">);</span>
+    <span class="n">result</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="s2">&quot;group_description&quot;</span><span class="p">,</span> <span class="n">groupDescription</span><span class="p">);</span>
+    <span class="n">result</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="s2">&quot;group_locality&quot;</span><span class="p">,</span> <span class="n">groupLocality</span><span class="p">);</span>
+    <span class="n">result</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="s2">&quot;group_country_code&quot;</span><span class="p">,</span> <span class="n">groupCountry</span><span class="p">);</span>
+    <span class="n">result</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="s2">&quot;group_latitude&quot;</span><span class="p">,</span> <span class="n">latitude</span><span class="p">);</span>
+    <span class="n">result</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="s2">&quot;group_longitude&quot;</span><span class="p">,</span> <span class="n">longitude</span><span class="p">);</span>
+    <span class="n">result</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="s2">&quot;group_imageLink&quot;</span><span class="p">,</span> <span class="n">imageLink</span><span class="p">);</span>
+    <span class="n">result</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="s2">&quot;group_topics&quot;</span><span class="p">,</span> <span class="n">groupTopics</span><span class="p">);</span>
+    <span class="n">result</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="s2">&quot;recent_meetups&quot;</span><span class="p">,</span> <span class="n">recentMeetups</span><span class="p">);</span>
+    
+    <span class="n">JSONArray</span> <span class="n">meetupsCrawlerResultArray</span> <span class="o">=</span> <span class="n">new</span> <span class="n">JSONArray</span><span class="p">();</span>
+    <span class="n">meetupsCrawlerResultArray</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="n">result</span><span class="p">);</span>
+    
+    <span class="n">SusiThought</span> <span class="n">json</span> <span class="o">=</span> <span class="n">new</span> <span class="n">SusiThought</span><span class="p">();</span>
+    <span class="n">json</span><span class="o">.</span><span class="n">setData</span><span class="p">(</span><span class="n">meetupsCrawlerResultArray</span><span class="p">);</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li>Console Service: <a class="reference external" href="https://github.com/loklak/loklak_server/blob/development/src/org/loklak/api/search/ConsoleService.java">loklak/loklak_server/src/org/loklak/api/search/ConsoleService.java</a></li>
+</ul>
+<div class="highlight-default"><div class="highlight"><pre><span></span>    <span class="n">dbAccess</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="n">Pattern</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="s2">&quot;SELECT</span><span class="se">\\</span><span class="s2">h+?(.*?)</span><span class="se">\\</span><span class="s2">h+?FROM</span><span class="se">\\</span><span class="s2">h+?meetup</span><span class="se">\\</span><span class="s2">h+?WHERE</span><span class="se">\\</span><span class="s2">h+?url</span><span class="se">\\</span><span class="s2">h??=</span><span class="se">\\</span><span class="s2">h??&#39;(.*?)&#39;</span><span class="se">\\</span><span class="s2">h??;&quot;</span><span class="p">),</span> <span class="p">(</span><span class="n">flow</span><span class="p">,</span> <span class="n">matcher</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="p">{</span>
+            <span class="n">SusiThought</span> <span class="n">json</span> <span class="o">=</span> <span class="n">MeetupsCrawlerService</span><span class="o">.</span><span class="n">crawlMeetups</span><span class="p">(</span><span class="n">matcher</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">2</span><span class="p">));</span>
+            <span class="n">SusiTransfer</span> <span class="n">transfer</span> <span class="o">=</span> <span class="n">new</span> <span class="n">SusiTransfer</span><span class="p">(</span><span class="n">matcher</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">1</span><span class="p">));</span>
+            <span class="n">json</span><span class="o">.</span><span class="n">setData</span><span class="p">(</span><span class="n">transfer</span><span class="o">.</span><span class="n">conclude</span><span class="p">(</span><span class="n">json</span><span class="o">.</span><span class="n">getData</span><span class="p">()));</span>
+            <span class="k">return</span> <span class="n">json</span><span class="p">;</span>
+        <span class="p">});</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li>Sample Link: <a class="reference external" href="http://loklak.org/api/console.json?q=SELECT%20*%20FROM%20meetup%20WHERE%20url=%27http://www.meetup.com/Women-Who-Code-Delhi%27;">http://loklak.org/api/console.json?q=SELECT * FROM meetup WHERE url=&#8217;http://www.meetup.com/Women-Who-Code-Delhi&#8217;;</a></li>
+<li>Sample Output:</li>
+</ul>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="p">{</span>
+  <span class="s2">&quot;data&quot;</span><span class="p">:</span> <span class="p">[{</span>
+    <span class="s2">&quot;group_topics&quot;</span><span class="p">:</span> <span class="p">[</span>
+      <span class="s2">&quot;Django&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;Web Design&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;Ruby&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;HTML5&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;Women Programmers&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;JavaScript&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;Python&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;Women in Technology&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;Android Development&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;Mobile Technology&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;iOS Development&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;Women Who Code&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;Ruby On Rails&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;Computer programming&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;WWC&quot;</span>
+    <span class="p">],</span>
+    <span class="s2">&quot;group_longitude&quot;</span><span class="p">:</span> <span class="s2">&quot;77.21&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;recent_meetups&quot;</span><span class="p">:</span> <span class="p">[</span>
+      <span class="p">{</span>
+        <span class="s2">&quot;date_time&quot;</span><span class="p">:</span> <span class="s2">&quot;April 2 · 10:30 AM&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;recent_meetup_number&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+        <span class="s2">&quot;information&quot;</span><span class="p">:</span> <span class="s2">&quot;Brought to you in collaboration with Women Techmakers Delhi.According to a survey, only 11</span><span class="si">% o</span><span class="s2">f open source participants are women. People find it intimidating to get... Learn more&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;attendance&quot;</span><span class="p">:</span> <span class="s2">&quot;13 Women Who Code-rs | 5.001&quot;</span>
+      <span class="p">},</span>
+      <span class="p">{</span>
+        <span class="s2">&quot;date_time&quot;</span><span class="p">:</span> <span class="s2">&quot;March 3 · 3:00 PM&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;recent_meetup_number&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span>
+        <span class="s2">&quot;information&quot;</span><span class="p">:</span> <span class="s2">&quot;</span><span class="se">\u201c</span><span class="s2">Behold, the number five is at hand. Grab it and shake and harness the power of networking.</span><span class="se">\u201d</span><span class="s2"> Women Who Code Delhi is proud to present Social Hack Eve, a networking... Learn more&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;attendance&quot;</span><span class="p">:</span> <span class="s2">&quot;21 Women Who Code-rs | 5.001&quot;</span>
+      <span class="p">},</span>
+      <span class="p">{</span>
+        <span class="s2">&quot;date_time&quot;</span><span class="p">:</span> <span class="s2">&quot;Oct 18, 2015 · 9:00 AM&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;recent_meetup_number&quot;</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span>
+        <span class="s2">&quot;information&quot;</span><span class="p">:</span> <span class="s2">&quot;Hello Ladies :) Google Women Techmakers is looking for women techies to present a talk in one of the segments of Google DevFest Delhi 2015 planned for October 18, 2015... Learn more&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;attendance&quot;</span><span class="p">:</span> <span class="s2">&quot;20 Women Who Code-rs | 4.502&quot;</span>
+      <span class="p">},</span>
+      <span class="p">{</span>
+        <span class="s2">&quot;date_time&quot;</span><span class="p">:</span> <span class="s2">&quot;Jul 5, 2015 · 12:00 PM&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;recent_meetup_number&quot;</span><span class="p">:</span> <span class="mi">4</span><span class="p">,</span>
+        <span class="s2">&quot;information&quot;</span><span class="p">:</span> <span class="s2">&quot;Agenda: Learning how to use and develop open source software, and contribute to huge existing open source projects.A series of talks by some of this year</span><span class="se">\u2019</span><span class="s2">s GSoC... Learn more&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;attendance&quot;</span><span class="p">:</span> <span class="s2">&quot;24 Women Who Code-rs | 4.001 | 1 Photo&quot;</span>
+      <span class="p">}</span>
+    <span class="p">],</span>
+    <span class="s2">&quot;group_name&quot;</span><span class="p">:</span> <span class="s2">&quot;Women Who Code Delhi&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;group_locality&quot;</span><span class="p">:</span> <span class="s2">&quot;Delhi&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;group_country_code&quot;</span><span class="p">:</span> <span class="s2">&quot;in&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;group_imageLink&quot;</span><span class="p">:</span> <span class="s2">&quot;http://photos1.meetupstatic.com/photos/event/b/7/7/3/highres_431686963.jpeg&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;meetup_type&quot;</span><span class="p">:</span> <span class="s2">&quot;activity&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;group_description&quot;</span><span class="p">:</span> <span class="s2">&quot;Mission: Women Who Code is a global nonprofit organization dedicated to inspiring women to excel in technology careers by creating a global, connected community of women in technology. The organization tripled in 2013 and has grown to be one of the largest communities of women engineers in the world. Empowerment: Women Who code is a professional community for women in tech. We provide an avenue for women to pursue a career in technology, help them gain new skills and hone existing skills for professional advancement, and foster environments where networking and mentorship are valued. Key Initiatives: - Free technical study groups - Events featuring influential tech industry experts and investors - Hack events - Career and leadership development Current and aspiring coders are welcome.  Bring your laptop and a friend!  Support Women Who Code: Donating to Women Who Code, Inc. (#46-4218859) directly impacts our ability to efficiently run this growing organization, helps us produce new programs that will increase our reach, and enables us to expand into new cities around the world ensuring that women and girls everywhere have the opportunity to pursue a career in technology. Women Who Code (WWCode) is dedicated to providing an empowering experience for everyone who participates in or supports our community, regardless of gender, gender identity and expression, sexual orientation, ability, physical appearance, body size, race, ethnicity, age, religion, or socioeconomic status. Because we value the safety and security of our members and strive to have an inclusive community, we do not tolerate harassment of members or event participants in any form. Our Code of Conduct applies to all events run by Women Who Code, Inc. If you would like to report an incident or contact our leadership team, please submit an incident report form. WomenWhoCode.com&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;group_latitude&quot;</span><span class="p">:</span> <span class="s2">&quot;28.67&quot;</span>
+  <span class="p">}],</span>
+  <span class="s2">&quot;metadata&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;count&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">},</span>
+  <span class="s2">&quot;session&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;identity&quot;</span><span class="p">:</span> <span class="p">{</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;host&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;10.67.93.57&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;anonymous&quot;</span><span class="p">:</span> <span class="n">true</span>
+  <span class="p">}}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<hr class="docutils" />
+<p>###Wordpress Crawler</p>
+<ul class="simple">
+<li>Implementation: <a class="reference external" href="https://github.com/loklak/loklak_server/blob/development/src/org/loklak/api/search/WordpressCrawlerService.java">loklak/loklak_server/src/org/loklak/api/search/WordpressCrawlerService.java</a></li>
+<li>Data Format of <code class="docutils literal"><span class="pre">SusiThought</span></code> (extension of JSONObject) returned:</li>
+</ul>
+<div class="highlight-default"><div class="highlight"><pre><span></span>    <span class="n">JSONArray</span> <span class="n">blog</span> <span class="o">=</span> <span class="n">new</span> <span class="n">JSONArray</span><span class="p">();</span>
+    
+    <span class="k">for</span> <span class="p">(</span><span class="nb">int</span> <span class="n">k</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">k</span> <span class="o">&lt;</span> <span class="n">numberOfBlogs</span><span class="p">;</span> <span class="n">k</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">JSONObject</span> <span class="n">blogpost</span> <span class="o">=</span> <span class="n">new</span> <span class="n">JSONObject</span><span class="p">();</span>
+        <span class="n">blogpost</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="s2">&quot;blog_url&quot;</span><span class="p">,</span> <span class="n">blogURL</span><span class="p">);</span>
+        <span class="n">blogpost</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="s2">&quot;title&quot;</span><span class="p">,</span> <span class="n">blogPosts</span><span class="p">[</span><span class="n">k</span><span class="p">][</span><span class="mi">0</span><span class="p">]);</span>
+        <span class="n">blogpost</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="s2">&quot;posted_on&quot;</span><span class="p">,</span> <span class="n">blogPosts</span><span class="p">[</span><span class="n">k</span><span class="p">][</span><span class="mi">1</span><span class="p">]);</span>
+        <span class="n">blogpost</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="s2">&quot;author&quot;</span><span class="p">,</span> <span class="n">blogPosts</span><span class="p">[</span><span class="n">k</span><span class="p">][</span><span class="mi">2</span><span class="p">]);</span>
+        <span class="n">blogpost</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="s2">&quot;content&quot;</span><span class="p">,</span> <span class="n">blogPosts</span><span class="p">[</span><span class="n">k</span><span class="p">][</span><span class="mi">3</span><span class="p">]);</span>
+        <span class="n">blog</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="n">blogpost</span><span class="p">);</span>
+    <span class="p">}</span>
+    
+    <span class="n">SusiThought</span> <span class="n">json</span> <span class="o">=</span> <span class="n">new</span> <span class="n">SusiThought</span><span class="p">();</span>
+    <span class="n">json</span><span class="o">.</span><span class="n">setData</span><span class="p">(</span><span class="n">blog</span><span class="p">);</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li>Console Service: <a class="reference external" href="https://github.com/loklak/loklak_server/blob/development/src/org/loklak/api/search/ConsoleService.java">loklak/loklak_server/src/org/loklak/api/search/ConsoleService.java</a></li>
+</ul>
+<div class="highlight-default"><div class="highlight"><pre><span></span>    <span class="n">dbAccess</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="n">Pattern</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="s2">&quot;SELECT</span><span class="se">\\</span><span class="s2">h+?(.*?)</span><span class="se">\\</span><span class="s2">h+?FROM</span><span class="se">\\</span><span class="s2">h+?wordpress</span><span class="se">\\</span><span class="s2">h+?WHERE</span><span class="se">\\</span><span class="s2">h+?url</span><span class="se">\\</span><span class="s2">h??=</span><span class="se">\\</span><span class="s2">h??&#39;(.*?)&#39;</span><span class="se">\\</span><span class="s2">h??;&quot;</span><span class="p">),</span> <span class="p">(</span><span class="n">flow</span><span class="p">,</span> <span class="n">matcher</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="p">{</span>
+        <span class="n">SusiThought</span> <span class="n">json</span> <span class="o">=</span> <span class="n">WordpressCrawlerService</span><span class="o">.</span><span class="n">crawlWordpress</span><span class="p">(</span><span class="n">matcher</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">2</span><span class="p">));</span>
+        <span class="n">SusiTransfer</span> <span class="n">transfer</span> <span class="o">=</span> <span class="n">new</span> <span class="n">SusiTransfer</span><span class="p">(</span><span class="n">matcher</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">1</span><span class="p">));</span>
+        <span class="n">json</span><span class="o">.</span><span class="n">setData</span><span class="p">(</span><span class="n">transfer</span><span class="o">.</span><span class="n">conclude</span><span class="p">(</span><span class="n">json</span><span class="o">.</span><span class="n">getData</span><span class="p">()));</span>
+        <span class="k">return</span> <span class="n">json</span><span class="p">;</span>
+    <span class="p">});</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li>Sample Link: <a class="reference external" href="http://loklak.org/api/wordpresscrawler.json?url=https://jigyasagrover.wordpress.com/">http://loklak.org/api/wordpresscrawler.json?url=https://jigyasagrover.wordpress.com/</a></li>
+<li>Sample Output:</li>
+</ul>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="p">{</span>
+  <span class="s2">&quot;data&quot;</span><span class="p">:</span> <span class="p">[{</span>
+    <span class="s2">&quot;blog_url&quot;</span><span class="p">:</span> <span class="s2">&quot;https://jigyasagrover.wordpress.com/&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;title&quot;</span><span class="p">:</span> <span class="s2">&quot;A niche for my kaleidoscopic explorations :)&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;content&quot;</span><span class="p">:</span> <span class="s2">&quot;Check out this space for posts spanning colossal themes ! #pharo #smalltalk #morphic #spec #java #android #c #c++ #git #php #asp.net #python Catch up with updates on Google Summer of Code project apprises, Google Code-In mentoring experiences, Conference reports, Google Developers Group events, Women Who Code MeetUps , Google Women Techmakers Get Togethers , contributions to organizations like FOSSASIA and Square Bracket Associates, sundry Startup experiences, Enactus undertakings, Social Welfare escapades and many more </span><span class="se">\u2026</span><span class="s2">. Keep the feedback pouring in </span><span class="se">\u2026</span><span class="s2"> Follow/like/comment for more. Post any query, Would be happy to help😀 Go to: RECENT POSTS   Share this: Twitter Facebook Google Like this: Like Loading...&quot;</span>
+  <span class="p">}],</span>
+  <span class="s2">&quot;metadata&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;count&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">},</span>
+  <span class="s2">&quot;session&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;identity&quot;</span><span class="p">:</span> <span class="p">{</span>
+    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;host&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;10.67.93.57&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;anonymous&quot;</span><span class="p">:</span> <span class="n">true</span>
+  <span class="p">}}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li>Usage: <a class="reference external" href="http://localhost:4000/api/console.json?q=SELECT%20*%20FROM%20wordpress%20WHERE%20url=%27https://jigyasagrover.wordpress.com/%27;">http://localhost:4000/api/console.json?q=SELECT * FROM wordpress WHERE url=&#8217;&lt;-link-to-wordpress-blogspot-&gt;&#8217;;</a></li>
+</ul>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="index.html">
+    <img class="logo" src="_static//images/susi-logo-original.svg" alt="Logo"/>
+    
+  </a>
+</p>
+
+
+
+
+
+
+
+
+
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script><h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Home</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="index.html">Welcome</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Installation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="installation_generic.html">Installation on Linux/Mac OS</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation_windows_generic.html">Requirements</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation_windows_generic.html#download">Download</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation_windows_generic.html#build-and-run">Build and Run</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation_windows_generic.html#operate">Operate</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation_windows_generic.html#shut-down">Shut down</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation_docker.html">Installation with Docker</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation_cloud9.html">Installation on Cloud9</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation_heroku.html">Installation on Heroku</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Tutorial</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="susi_skill_development_tutorial.html">AI Rule development Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="AskSUSI.html">Ask SUSI</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Development</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="eclipseSetup.html">How to setup Susi Server on Eclipse</a></li>
+<li class="toctree-l1"><a class="reference internal" href="eclipseSetup.html#using-the-ant-file">Using the Ant File</a></li>
+<li class="toctree-l1"><a class="reference internal" href="eclipseSetup.html#test">Test :</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Miscellaneous</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Parsers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="submitting_skills_to_git.html">Submitting skills to Git</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="eclipseSetup.html" title="previous chapter">How to setup Susi Server on Eclipse</a></li>
+      <li>Next: <a href="submitting_skills_to_git.html" title="next chapter">Submitting Skills to git</a></li>
+  </ul></li>
+</ul>
+</div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2017, Susi.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.4.9</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>
