@@ -32,7 +32,7 @@ deploy:
     on:
       branch: master
   - provider: heroku
-    buildpack: https://github.com/loklak/heroku_buildpack_ant_loklak.git
+    buildpack: https://github.com/yukiisbored/heroku_buildpack_gradle_loklak 
     api_key:
       secure: CqW0sgNQiVHA2bUaTpWBd5xslu1LQaBRuT9t/XIhes1WQbJ7+rfsqPb1FFPS6cD8o+7Pgx7hCmIyKxcchrmk8Oat2jrO59fe8i3xuOh/Tl9os8PWy0Y2Kbsd4zjWODMC++ioY9sJKB71fhkA1sZjemo10cDLB0jp5P9vmGwj+34H8h2Mw/kA/CggD+lu52ZR/LqLT+QYTF+l5Q9wF1PdCMYNMi2zis3bKjvt6psCMjfQ9PA+C8GjhrA3d5hd6ToIekPaFXk179ev+FbAzJrVo9Ltste7JHRhtm2e+5juSjkpt1jh/l97DHoVLkIyWUNBuR+owfTEPFotFFhLfFJ048NBM9fCoGdJ8kRWpuaFCzu3UeQQODVVlqJHyShBFiaGrOiJPK8V9mSCXVVoU4D6NM/W8CXAhgdAY1jpzjAvwShCnnpOU9aBTzPGNhFJvl01QiM+mIgaIyyW3/Zb5lorzUA89+DgTMZucQKn8oFagsC+nxl7T0dgNML4JnWnKGh7cqnUSS8lTdHBIgEdq8kxFxpM5BEzQ85B1/pmlPeiop/hilq3onXgv3+qMLajRV0KE/GQg11XV8z/9qFBm8LppfUYJeKkjCg/vKsJfnOmj8Z6GDOZyVx5JAQ0Kd9e5Ds/yObmqaih6gKdoJlypkN94WMvEQsochS+/Ld3jxvLQaU=
     app: susi-server
