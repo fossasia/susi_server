@@ -10,7 +10,7 @@ echo -e "Creating javadoc...\n"
 
 echo -e "Publishing javadoc...\n"
 
-cp -R html/javadoc $HOME/javadoc-latest
+cp -R build/docs/javadoc $HOME/javadoc-latest
 
 echo -e "Installing requirements...\n"
 
