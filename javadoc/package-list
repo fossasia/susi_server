@@ -1,0 +1,17 @@
+org.json
+org.loklak
+org.loklak.api.aaa
+org.loklak.api.cms
+org.loklak.api.learning
+org.loklak.api.service
+org.loklak.api.susi
+org.loklak.api.vis
+org.loklak.data
+org.loklak.geo
+org.loklak.graphics
+org.loklak.http
+org.loklak.objects
+org.loklak.server
+org.loklak.susi
+org.loklak.tools
+org.loklak.tools.storage
