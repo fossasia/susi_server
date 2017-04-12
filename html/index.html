@@ -74,23 +74,33 @@
           
         <br>
         <br>
-          <form action="#" class="col-lg-12 hidden-xs">
+          <form class="col-lg-12 hidden-xs">
             <input id="timezoneOffset0" type="hidden" name="timezoneOffset" value="">
             <script>document.getElementById("timezoneOffset0").value = new Date().getTimezoneOffset();</script>
             <div class="input-group input-group-lg col-sm-8" style="float:left">
               <input name="q" id="query" type="text" class="center-block form-control input-lg" title="Search Twitter and the loklak network" placeholder="Chat with Susi">
-              <span class="input-group-btn"><button class="btn btn-lg btn-primary" type="submit" target="_blank" onclick="form.target='_blank'; form.action='/susi/chat.json?q=' + document.getElementById('query').value;">Get JSON Data</button></span>
+              <script>
+                loadJsonData = function(){
+                  $("#JsonData").load(location.href + " #JsonData ");
+                  var urlx = "/susi/chat.json?timezoneOffset="+document.getElementById("timezoneOffset0").value+"&q="+ document.getElementById('query').value;
+                  $.ajax({
+                      type: 'GET',
+                      url: urlx,
+                      dataType: 'json',
+                      success:function(data){
+                        var jsoned = JSON.stringify(data,undefined,4);
+                        $('#JsonData').html("<h3>Query: "+document.getElementById('query').value+"</h3>\n<h4>Json Data:</h4>\n<pre>"+jsoned+"</pre>");
+                        document.getElementById('query').value=null;
+                      },
+                      error:function(xhr, status, errorthrown){
+                        console.log("Msg: "+xhr.responseText+"\nStatus: "+status+"\nError: "+errorthrown);
+                        alert("Could not retrieve data!\nTry Again.");
+                      }
+                  });
+                }            
+              </script>
+              <span class="input-group-btn"><button class="btn btn-lg btn-primary" type="submit" onclick="loadJsonData()">Get JSON Data</button></span>
             </div>
-          </form>
-
-          <form action="#" class="col-lg-12 hidden-lg hidden-md hidden-sm row">
-            <input id="timezoneOffset1" type="hidden" name="timezoneOffset" value="">
-            <script>document.getElementById("timezoneOffset1").value = new Date().getTimezoneOffset();</script>
-            <div class="input-group input-group-lg row col-sm-12" style="float:left;display: flex;flex-wrap: wrap;">
-              <input name="q" id="query" type="text" class="center-block form-control input-lg" title="Search Twitter and the loklak network" placeholder="Search Twitter & the loklak network" style="border-bottom-width: 5px;padding-right: 12px;">
-                <span class="input-group-btn"><button class="btn btn-lg btn-primary" type="submit" target="_blank" onclick="form.target='_blank'; form.action='/susi/chat.json?q=' + document.getElementById('query').value;">Get JSON Data</button></span>
-            </div>
-            <br/><span style="font-size:7pt;">
           </form>
       </div>
     </div>
@@ -101,6 +111,8 @@
         <p>Nice? To get latest news about <code>susi</code>, follow <a href="https://twitter.com/0rb1t3r"><code>@0rb1t3r</code></a>.  Help to spread the news: <a class="btn btn-default" href="https://twitter.com/intent/tweet?hashtags=loklak&original_referer=http%3A%2F%2Fasksusi.com&text=%23susi%20%23personal%20%23assistant&tw_p=tweetbutton&url=http%3A%2F%2Fasksusi.com" role="button">tweet about this &raquo;</a></p>
       </footer>
     </div> <!-- /container -->
+    
+    <div id="JsonData"></div><!-- Displays Json Data from Query -->
 
     <!--#include file="../ssi/common_body_back.include" -->
     <!--#include file="../data/ssi/custom_body_back.include" -->
