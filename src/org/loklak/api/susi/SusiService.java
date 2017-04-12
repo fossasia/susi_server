@@ -69,6 +69,7 @@ public class SusiService extends AbstractAPIHandler implements APIHandler {
         int timezoneOffset = post.get("timezoneOffset", 0); // minutes, i.e. -60
         double latitude = post.get("latitude", Double.NaN); // i.e. 8.68 
         double longitude = post.get("longitude", Double.NaN); // i.e. 50.11
+        String language = post.get("language", "en");
         try {
             DAO.susi.observe(); // get a database update
         } catch (IOException e) {
@@ -108,6 +109,7 @@ public class SusiService extends AbstractAPIHandler implements APIHandler {
         
         // answer normally
         SusiCognition cognition = new SusiCognition(DAO.susi, q, timezoneOffset, latitude, longitude, count, user.getIdentity());
+        cognition.setLanguage(language);
         DAO.susi.getMemories().addCognition(user.getIdentity().getClient(), cognition);
         JSONObject json = cognition.getJSON();
         return json;

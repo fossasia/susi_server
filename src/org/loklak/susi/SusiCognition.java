@@ -64,6 +64,7 @@ public class SusiCognition {
         this.json.put("answers", new JSONArray(dispute.stream().map(argument -> argument.finding(client, mind)).collect(Collectors.toList())));
         this.json.put("answer_date", AbstractObjectEntry.utcFormatter.print(answer_date));
         this.json.put("answer_time", answer_date - query_date);
+        this.json.put("language", "en");
     }
     
     public SusiCognition(JSONObject json) {
@@ -72,6 +73,17 @@ public class SusiCognition {
 
     public SusiCognition() {
         
+    }
+    
+    /**
+     * set ISO 639-1 code
+     * @param language
+     * @return
+     */
+    public SusiCognition setLanguage(String language) {
+        if (language.length() > 2) language = language.substring(0, 2);
+        this.json.put("language", language.toLowerCase()); // ISO 639-1 is a lowercase code
+        return this;
     }
     
     public SusiCognition setQuery(final String query) {
