@@ -59,7 +59,7 @@ public class SusiAction {
         this.json = json;
     }
 
-    public static JSONObject simpleAction(String[] answers) {
+    public static JSONObject answerAction(String[] answers) {
         JSONObject json = new JSONObject();
         JSONArray phrases = new JSONArray();
         json.put("type", RenderType.answer.name());

@@ -122,7 +122,7 @@ public class SusiMind {
                             lesson = readJsonLesson(f);
                         }
                         if (f.getName().endsWith(".txt") || f.getName().endsWith(".ezd")) {
-                            lesson = readEzDLesson(new BufferedReader(new FileReader(f)));
+                            lesson = readSkills(new BufferedReader(new FileReader(f)));
                         }
                         if (f.getName().endsWith(".aiml")) {
                             lesson = readAIMLLesson(f);
@@ -152,7 +152,7 @@ public class SusiMind {
      * @throws JSONException
      * @throws FileNotFoundException
      */
-    public JSONObject readEzDLesson(BufferedReader br) throws JSONException {
+    public JSONObject readSkills(BufferedReader br) throws JSONException {
         // read the text file and turn it into a skill json; then learn that
         JSONObject json = new JSONObject();
         JSONArray skills = new JSONArray();
@@ -181,7 +181,7 @@ public class SusiMind {
                         skill.put("process", new JSONArray().put(process));
                         
                         // answers; must contain $!$
-                        skill.put("actions", new JSONArray().put(SusiAction.simpleAction(bang_term.split("\\|"))));
+                        skill.put("actions", new JSONArray().put(SusiAction.answerAction(bang_term.split("\\|"))));
                         skills.put(skill);
                     }
                     if (bang_type.equals("console")) {
@@ -198,7 +198,7 @@ public class SusiMind {
                         skill.put("process", new JSONArray().put(process));
                         
                         // answers; must contain names from the console result array
-                        skill.put("actions", new JSONArray().put(SusiAction.simpleAction(bang_term.split("\\|"))));
+                        skill.put("actions", new JSONArray().put(SusiAction.answerAction(bang_term.split("\\|"))));
                         skills.put(skill);
                     }
                     bang_phrases = "";
@@ -238,20 +238,20 @@ public class SusiMind {
                         String ifsubstring = line.substring(thenpos + 1).trim();
                         if (ifsubstring.length() > 0) {
                             String[] answers = ifsubstring.split("\\|");
-                            JSONObject skill = SusiSkill.simpleSkill(phrases, "IF " + condition, answers, prior);
+                            JSONObject skill = SusiSkill.answerSkill(phrases, "IF " + condition, answers, prior);
                             skills.put(skill);
                         }
                     } else {
                         String ifsubstring = line.substring(thenpos + 1, elsepos).trim();
                         if (ifsubstring.length() > 0) {
                             String[] ifanswers = ifsubstring.split("\\|");
-                            JSONObject skillif = SusiSkill.simpleSkill(phrases, "IF " + condition, ifanswers, prior);
+                            JSONObject skillif = SusiSkill.answerSkill(phrases, "IF " + condition, ifanswers, prior);
                             skills.put(skillif);
                         }
                         String elsesubstring = line.substring(elsepos + 1).trim();
                         if (elsesubstring.length() > 0) {
                             String[] elseanswers = elsesubstring.split("\\|");
-                            JSONObject skillelse = SusiSkill.simpleSkill(phrases, "NOT " + condition, elseanswers, prior);
+                            JSONObject skillelse = SusiSkill.answerSkill(phrases, "NOT " + condition, elseanswers, prior);
                             skills.put(skillelse);
                         }
                     }
@@ -263,7 +263,7 @@ public class SusiMind {
                     continue readloop;
                 } else {
                     String[] answers = line.split("\\|");
-                    JSONObject skill = SusiSkill.simpleSkill(phrases, condition, answers, prior);
+                    JSONObject skill = SusiSkill.answerSkill(phrases, condition, answers, prior);
                     //System.out.println(skill.toString());
                     skills.put(skill);
                 }
@@ -320,7 +320,7 @@ public class SusiMind {
             }
         }
         if (phrases != null && answers != null) {
-            return SusiSkill.simpleSkill(phrases, null, answers, false);
+            return SusiSkill.answerSkill(phrases, null, answers, false);
         }
         return null;
     }

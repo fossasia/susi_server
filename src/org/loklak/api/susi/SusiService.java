@@ -94,7 +94,7 @@ public class SusiService extends AbstractAPIHandler implements APIHandler {
                 String text = json.getJSONObject("data").getString("text");
                 // fill an empty mind with the dream
                 SusiMind dream = new SusiMind(null, null, DAO.susi_watch_dir); // an empty mind!
-                JSONObject rules = dream.readEzDLesson(new BufferedReader(new InputStreamReader(new ByteArrayInputStream(text.getBytes(StandardCharsets.UTF_8)), StandardCharsets.UTF_8)));
+                JSONObject rules = dream.readSkills(new BufferedReader(new InputStreamReader(new ByteArrayInputStream(text.getBytes(StandardCharsets.UTF_8)), StandardCharsets.UTF_8)));
                 dream.learn(rules);
                 // susi is now dreaming.. Try to find an answer out of the dream
                 SusiCognition cognition = new SusiCognition(dream, q, timezoneOffset, latitude, longitude, count, user.getIdentity());

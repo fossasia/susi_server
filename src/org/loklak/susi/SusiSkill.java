@@ -158,7 +158,7 @@ public class SusiSkill {
         return json;
     }
     
-    public static JSONObject simpleSkill(String[] phrases, String condition, String[] answers, boolean prior) {
+    public static JSONObject answerSkill(String[] phrases, String condition, String[] answers, boolean prior) {
         JSONObject json = new JSONObject(true);
 
         // write phrases
@@ -176,7 +176,7 @@ public class SusiSkill {
         // write actions
         JSONArray a = new JSONArray();
         json.put("actions", a);
-        a.put(SusiAction.simpleAction(answers));        
+        a.put(SusiAction.answerAction(answers));        
         return json;
     }
     

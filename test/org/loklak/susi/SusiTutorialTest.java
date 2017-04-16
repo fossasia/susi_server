@@ -74,7 +74,7 @@ public class SusiTutorialTest {
             try{
                 DAO.init(config, data);
                 BufferedReader br = getTestReader();
-                JSONObject lesson = DAO.susi.readEzDLesson(br);
+                JSONObject lesson = DAO.susi.readSkills(br);
                 System.out.println(lesson.toString(2));
                 DAO.susi.learn(lesson);
                 br.close();
