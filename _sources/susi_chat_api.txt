@@ -71,6 +71,9 @@ The `data` object at `$answers[].data` is a zone which may information for speci
 
 When Susi skills are processed, a data object called a 'Susi Thought' is moved along a inference chain. The essence of that chain (a process called 'brain melting') is then stored inside the data object if a skill is successfull. The susi skill processing actually fills therefore the data object. Short-memory and Long-memory values, used within the skill processing are also present in the data object. The data therefore shows the 'latest thought' of Susi and gives transparency about the process that caused the given answer.
 
+The `data` object can also be filled with a console rule, see https://github.com/fossasia/susi_server/blob/development/docs/susi_skill_development_tutorial.md#tutorial-level-11-call-an-external-api
+The result of the calling of an external api fills the data object with the table, which is addressed with the console rule's `path` attribute.
+
 ### Client Abilities
 
 Not all clients may be able to show graphics, set a timer or play an audio file, therefore it is important that a client declares

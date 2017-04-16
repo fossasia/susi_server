@@ -111,6 +111,8 @@ action would technically address the setting of the clock with exact values for 
 <div class="section" id="susi-thought-transparency">
 <span id="susi-thought-transparency"></span><h3>Susi Thought Transparency<a class="headerlink" href="#susi-thought-transparency" title="Permalink to this headline">¶</a></h3>
 <p>When Susi skills are processed, a data object called a &#8216;Susi Thought&#8217; is moved along a inference chain. The essence of that chain (a process called &#8216;brain melting&#8217;) is then stored inside the data object if a skill is successfull. The susi skill processing actually fills therefore the data object. Short-memory and Long-memory values, used within the skill processing are also present in the data object. The data therefore shows the &#8216;latest thought&#8217; of Susi and gives transparency about the process that caused the given answer.</p>
+<p>The <code class="docutils literal"><span class="pre">data</span></code> object can also be filled with a console rule, see https://github.com/fossasia/susi_server/blob/development/docs/susi_skill_development_tutorial.md#tutorial-level-11-call-an-external-api
+The result of the calling of an external api fills the data object with the table, which is addressed with the console rule&#8217;s <code class="docutils literal"><span class="pre">path</span></code> attribute.</p>
 </div>
 <div class="section" id="client-abilities">
 <span id="client-abilities"></span><h3>Client Abilities<a class="headerlink" href="#client-abilities" title="Permalink to this headline">¶</a></h3>
