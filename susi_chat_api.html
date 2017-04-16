@@ -115,11 +115,13 @@ action would technically address the setting of the clock with exact values for 
 <div class="section" id="client-abilities">
 <span id="client-abilities"></span><h3>Client Abilities<a class="headerlink" href="#client-abilities" title="Permalink to this headline">¶</a></h3>
 <p>Not all clients may be able to show graphics, set a timer or play an audio file, therefore it is important that a client declares
-it&#8217;s abilities within the request to the chat API. This also includes location and language information.</p>
+it&#8217;s abilities within the request to the chat API. The abilities are declared as the list of actions that a client
+can evaluate. Together with the action abilities also location, language and time zone information is transmitted to the susi_server
+with each request.</p>
 </div>
 </div>
-<div class="section" id="prototype-client-implelemtation">
-<span id="prototype-client-implelemtation"></span><h2>Prototype Client Implelemtation<a class="headerlink" href="#prototype-client-implelemtation" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="prototype-client-implemetation">
+<span id="prototype-client-implemetation"></span><h2>Prototype Client Implemetation<a class="headerlink" href="#prototype-client-implemetation" title="Permalink to this headline">¶</a></h2>
 <p>For an easy quick-start, just copy the following code to develop your own Susi client</p>
 <div class="section" id="java">
 <span id="java"></span><h3>Java<a class="headerlink" href="#java" title="Permalink to this headline">¶</a></h3>
@@ -135,16 +137,23 @@ it&#8217;s abilities within the request to the chat API. This also includes loca
             <span class="n">stream</span> <span class="o">=</span> <span class="n">new</span> <span class="n">URL</span><span class="p">(</span><span class="n">HOSTED_SUSI</span> <span class="o">+</span> <span class="n">query</span><span class="p">)</span><span class="o">.</span><span class="n">openStream</span><span class="p">();</span>
         <span class="p">}</span>
         <span class="n">JSONObject</span> <span class="n">json</span> <span class="o">=</span> <span class="n">new</span> <span class="n">JSONObject</span><span class="p">(</span><span class="n">new</span> <span class="n">JSONTokener</span><span class="p">(</span><span class="n">new</span> <span class="n">InputStreamReader</span><span class="p">(</span><span class="n">stream</span><span class="p">,</span> <span class="n">StandardCharsets</span><span class="o">.</span><span class="n">UTF_8</span><span class="p">)));</span>
-        <span class="n">JSONObject</span> <span class="n">answers</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">getJSONObject</span><span class="p">(</span><span class="s2">&quot;answers&quot;</span><span class="p">);</span>
-        <span class="n">JSONArray</span> <span class="n">data</span> <span class="o">=</span> <span class="n">answers</span><span class="o">.</span><span class="n">getJSONArray</span><span class="p">(</span><span class="s2">&quot;data&quot;</span><span class="p">);</span>
-        <span class="n">JSONArray</span> <span class="n">actions</span> <span class="o">=</span> <span class="n">answers</span><span class="o">.</span><span class="n">getJSONArray</span><span class="p">(</span><span class="s2">&quot;actions&quot;</span><span class="p">);</span>
+        <span class="n">JSONArray</span> <span class="n">answers</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">getJSONArray</span><span class="p">(</span><span class="s2">&quot;answers&quot;</span><span class="p">);</span>
+        <span class="n">JSONObject</span> <span class="n">answer</span> <span class="o">=</span> <span class="n">answers</span><span class="o">.</span><span class="n">getJSONObject</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span>
+        <span class="n">JSONArray</span> <span class="n">data</span> <span class="o">=</span> <span class="n">answer</span><span class="o">.</span><span class="n">getJSONArray</span><span class="p">(</span><span class="s2">&quot;data&quot;</span><span class="p">);</span>
+        <span class="n">JSONArray</span> <span class="n">actions</span> <span class="o">=</span> <span class="n">answer</span><span class="o">.</span><span class="n">getJSONArray</span><span class="p">(</span><span class="s2">&quot;actions&quot;</span><span class="p">);</span>
         <span class="n">actions</span><span class="o">.</span><span class="n">forEach</span><span class="p">(</span><span class="n">action</span> <span class="o">-&gt;</span> <span class="n">onAction</span><span class="p">((</span><span class="n">JSONObject</span><span class="p">)</span> <span class="n">action</span><span class="p">,</span> <span class="n">data</span><span class="p">));</span>
     <span class="p">}</span>
     
     <span class="n">public</span> <span class="n">static</span> <span class="n">void</span> <span class="n">onAction</span><span class="p">(</span><span class="n">JSONObject</span> <span class="n">action</span><span class="p">,</span> <span class="n">JSONArray</span> <span class="n">data</span><span class="p">)</span> <span class="p">{</span>
         <span class="n">String</span> <span class="nb">type</span> <span class="o">=</span> <span class="n">action</span><span class="o">.</span><span class="n">getString</span><span class="p">(</span><span class="s2">&quot;type&quot;</span><span class="p">);</span>
         
-        <span class="o">//</span> <span class="n">now</span> <span class="n">implement</span> <span class="n">the</span> <span class="n">actions</span> <span class="n">using</span> <span class="n">the</span> <span class="nb">type</span> <span class="n">value</span><span class="o">.</span> <span class="n">Please</span> <span class="n">see</span> <span class="s1">&#39;API Action Types&#39;</span> <span class="n">section</span>
+        <span class="n">switch</span> <span class="p">(</span><span class="nb">type</span><span class="p">)</span> <span class="p">{</span>
+            <span class="n">case</span> <span class="s2">&quot;answer&quot;</span><span class="p">:</span>
+                <span class="n">String</span> <span class="n">expression</span> <span class="o">=</span> <span class="n">action</span><span class="o">.</span><span class="n">getString</span><span class="p">(</span><span class="s2">&quot;expression&quot;</span><span class="p">);</span>
+                <span class="k">break</span><span class="p">;</span>
+            <span class="n">default</span><span class="p">:</span>
+                <span class="n">throw</span> <span class="n">new</span> <span class="n">IllegalArgumentException</span><span class="p">(</span><span class="s2">&quot;Invalid action type: &quot;</span> <span class="o">+</span> <span class="nb">type</span><span class="p">);</span>
+        <span class="p">}</span>
     <span class="p">}</span>
 </pre></div>
 </div>
@@ -152,9 +161,25 @@ it&#8217;s abilities within the request to the chat API. This also includes loca
 </div>
 <div class="section" id="api-request-attributes">
 <span id="api-request-attributes"></span><h2>API Request attributes<a class="headerlink" href="#api-request-attributes" title="Permalink to this headline">¶</a></h2>
+<p>The following attributes can be transmitted to the server with each request</p>
+<ul class="simple">
+<li>actions (optional; defaults to &#8216;answer&#8217;)</li>
+<li>timezoneOffset (optional, should be same as returned with JavaScript getTimezoneOffset(); defaults to 0)</li>
+<li>longitude (optional)</li>
+<li>latitude (optional)</li>
+<li>language (optional, ISO 639-1 two-letter lowercase characters,; defaults to &#8216;en&#8217;)</li>
+<li>q (mandatory value, a UTF-8 encoded query string)</li>
+</ul>
+<p>All requests to the <code class="docutils literal"><span class="pre">/susi/chat.json</span></code> API can also be made with a POST request. A proper GET-Request would look like:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>
+</pre></div>
+</div>
 </div>
 <div class="section" id="api-action-types">
 <span id="api-action-types"></span><h2>API Action types<a class="headerlink" href="#api-action-types" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="the-answer-action">
+<span id="the-answer-action"></span><h3>The <code class="docutils literal"><span class="pre">answer</span></code> Action<a class="headerlink" href="#the-answer-action" title="Permalink to this headline">¶</a></h3>
+</div>
 </div>
 </div>
 
@@ -199,12 +224,15 @@ it&#8217;s abilities within the request to the chat API. This also includes loca
 <li><a class="reference internal" href="#client-abilities">Client Abilities</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#prototype-client-implelemtation">Prototype Client Implelemtation</a><ul>
+<li><a class="reference internal" href="#prototype-client-implemetation">Prototype Client Implemetation</a><ul>
 <li><a class="reference internal" href="#java">Java</a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#api-request-attributes">API Request attributes</a></li>
-<li><a class="reference internal" href="#api-action-types">API Action types</a></li>
+<li><a class="reference internal" href="#api-action-types">API Action types</a><ul>
+<li><a class="reference internal" href="#the-answer-action">The <code class="docutils literal"><span class="pre">answer</span></code> Action</a></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>

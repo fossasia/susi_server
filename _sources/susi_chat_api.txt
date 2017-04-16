@@ -74,9 +74,11 @@ When Susi skills are processed, a data object called a 'Susi Thought' is moved a
 ### Client Abilities
 
 Not all clients may be able to show graphics, set a timer or play an audio file, therefore it is important that a client declares
-it's abilities within the request to the chat API. This also includes location and language information. 
+it's abilities within the request to the chat API. The abilities are declared as the list of actions that a client
+can evaluate. Together with the action abilities also location, language and time zone information is transmitted to the susi_server
+with each request.
 
-## Prototype Client Implelemtation
+## Prototype Client Implemetation
 
 For an easy quick-start, just copy the following code to develop your own Susi client
 
@@ -94,19 +96,42 @@ For an easy quick-start, just copy the following code to develop your own Susi c
             stream = new URL(HOSTED_SUSI + query).openStream();
         }
         JSONObject json = new JSONObject(new JSONTokener(new InputStreamReader(stream, StandardCharsets.UTF_8)));
-        JSONObject answers = json.getJSONObject("answers");
-        JSONArray data = answers.getJSONArray("data");
-        JSONArray actions = answers.getJSONArray("actions");
+        JSONArray answers = json.getJSONArray("answers");
+        JSONObject answer = answers.getJSONObject(0);
+        JSONArray data = answer.getJSONArray("data");
+        JSONArray actions = answer.getJSONArray("actions");
         actions.forEach(action -> onAction((JSONObject) action, data));
     }
     
     public static void onAction(JSONObject action, JSONArray data) {
         String type = action.getString("type");
         
-        // now implement the actions using the type value. Please see 'API Action Types' section
+        switch (type) {
+            case "answer":
+                String expression = action.getString("expression");
+                break;
+            default:
+                throw new IllegalArgumentException("Invalid action type: " + type);
+        }
     }
 ```
 
 ## API Request attributes
 
+The following attributes can be transmitted to the server with each request
+
+* actions (optional; defaults to 'answer')
+* timezoneOffset (optional, should be same as returned with JavaScript getTimezoneOffset(); defaults to 0)
+* longitude (optional)
+* latitude (optional)
+* language (optional, ISO 639-1 two-letter lowercase characters,; defaults to 'en')
+* q (mandatory value, a UTF-8 encoded query string)
+
+All requests to the `/susi/chat.json` API can also be made with a POST request. A proper GET-Request would look like:
+```
+```
+
+
 ## API Action types
+
+### The `answer` Action
