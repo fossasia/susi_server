@@ -251,7 +251,7 @@ eol
 <span id="tutorial-level-11-call-an-external-api"></span><h3>Tutorial Level 11: Call an external API<a class="headerlink" href="#tutorial-level-11-call-an-external-api" title="Permalink to this headline">¶</a></h3>
 <p>Important parts of an AI implementation is, to be able to access big data, many different data sources and to steer
 services outside of the body of the AI. To do so, it must be possible to call an external API.
-Such a service is called a &#8216;console service&#8217; in Susi. It is easy to write a console Skill with just some lines of EzD code:</p>
+Such a service is called a &#8216;console service&#8217; in Susi:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span>tweet about *
 !console:$text$
 {
@@ -267,18 +267,24 @@ the syntax of an JSONPath. Here, the statuses object contains a list of objects,
 One of these attributes has the name &#8216;text&#8217; and that attribute is selected with the $text$ pattern.
 Note that the bang definition part until the eol line must be given in JSON.</p>
 </div>
-<div class="section" id="tutorial-level-12-thinking-with-backtracking">
-<span id="tutorial-level-12-thinking-with-backtracking"></span><h3>Tutorial Level 12: Thinking with Backtracking<a class="headerlink" href="#tutorial-level-12-thinking-with-backtracking" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="tutorial-level-12-custom-actions">
+<span id="tutorial-level-12-custom-actions"></span><h3>Tutorial Level 12: Custom Actions<a class="headerlink" href="#tutorial-level-12-custom-actions" title="Permalink to this headline">¶</a></h3>
+<p>Susi Skills may return different types of actions. Non-answer actions my get their content using console rules.
+Custom actions therefore are combined console rules with custom action types</p>
+<p>(to be implemented)</p>
+</div>
+<div class="section" id="tutorial-level-13-thinking-with-backtracking">
+<span id="tutorial-level-13-thinking-with-backtracking"></span><h3>Tutorial Level 13: Thinking with Backtracking<a class="headerlink" href="#tutorial-level-13-thinking-with-backtracking" title="Permalink to this headline">¶</a></h3>
 <p>Backtracking is the ability of a program to revert a already made setting and take an alternative option. If we consider this behaviour at different states of a computation, then this produces a tree-like parameter graph, which is called a decision tree. Susi&#8217;s data structures are made in such a way, that result tables are an element of &#8216;thinking&#8217;. Such result tables are &#8216;bags&#8217; for backtracking options. We will learn how to use that principle to create loops which are useful for problem-solving.</p>
 <p>(to be implemented)</p>
 </div>
-<div class="section" id="tutorial-level-13-expert-systems-with-first-order-logic">
-<span id="tutorial-level-13-expert-systems-with-first-order-logic"></span><h3>Tutorial Level 13: Expert Systems with first-order logic<a class="headerlink" href="#tutorial-level-13-expert-systems-with-first-order-logic" title="Permalink to this headline">¶</a></h3>
-<p>A first-order logic is expressed in terms of relations, represented as facts and rules. We already defined facts and rules using the methods as described above. Backtracking and unification is the computation model for such kind of expert systems. In this tutorial we will learn how to express a program flow using logic elements in EzD rules.</p>
+<div class="section" id="tutorial-level-14-expert-systems-with-first-order-logic">
+<span id="tutorial-level-14-expert-systems-with-first-order-logic"></span><h3>Tutorial Level 14: Expert Systems with first-order logic<a class="headerlink" href="#tutorial-level-14-expert-systems-with-first-order-logic" title="Permalink to this headline">¶</a></h3>
+<p>A first-order logic is expressed in terms of relations, represented as facts and rules. We already defined facts and rules using the methods as described above. Backtracking and unification is the computation model for such kind of expert systems. In this tutorial we will learn how to express a program flow using logic elements.</p>
 <p>(to be implemented)</p>
 </div>
-<div class="section" id="tutorial-level-14-skill-reflection">
-<span id="tutorial-level-14-skill-reflection"></span><h3>Tutorial Level 14: Skill Reflection<a class="headerlink" href="#tutorial-level-14-skill-reflection" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="tutorial-level-15-skill-reflection">
+<span id="tutorial-level-15-skill-reflection"></span><h3>Tutorial Level 15: Skill Reflection<a class="headerlink" href="#tutorial-level-15-skill-reflection" title="Permalink to this headline">¶</a></h3>
 <p>We are able to set variable content and read them in skills. But we must also be able to read skills in the same way as we read variables. We should be able to answer on questions like &#8216;we cannot solve this because there is no rule for that&#8217;, or &#8216;we have several rules, which one is preferred&#8217;.</p>
 <p>(to be implemented)</p>
 </div>
@@ -345,9 +351,10 @@ We will learn here how to connect those instances to each other so they can talk
 <li><a class="reference internal" href="#tutorial-level-9-rules-used-as-functions-templates-basic-self-reflection">Tutorial Level 9: Rules used as Functions/Templates (Basic Self-Reflection)</a></li>
 <li><a class="reference internal" href="#tutorial-level-10-embed-javascript-into-a-skill">Tutorial Level 10: Embed Javascript into a Skill</a></li>
 <li><a class="reference internal" href="#tutorial-level-11-call-an-external-api">Tutorial Level 11: Call an external API</a></li>
-<li><a class="reference internal" href="#tutorial-level-12-thinking-with-backtracking">Tutorial Level 12: Thinking with Backtracking</a></li>
-<li><a class="reference internal" href="#tutorial-level-13-expert-systems-with-first-order-logic">Tutorial Level 13: Expert Systems with first-order logic</a></li>
-<li><a class="reference internal" href="#tutorial-level-14-skill-reflection">Tutorial Level 14: Skill Reflection</a></li>
+<li><a class="reference internal" href="#tutorial-level-12-custom-actions">Tutorial Level 12: Custom Actions</a></li>
+<li><a class="reference internal" href="#tutorial-level-13-thinking-with-backtracking">Tutorial Level 13: Thinking with Backtracking</a></li>
+<li><a class="reference internal" href="#tutorial-level-14-expert-systems-with-first-order-logic">Tutorial Level 14: Expert Systems with first-order logic</a></li>
+<li><a class="reference internal" href="#tutorial-level-15-skill-reflection">Tutorial Level 15: Skill Reflection</a></li>
 <li><a class="reference internal" href="#tutorial-level-15-skills-which-create-skills">Tutorial Level 15: Skills which create Skills</a></li>
 <li><a class="reference internal" href="#tutorial-level-16-inter-susi-instance-dialog">Tutorial Level 16: Inter-Susi Instance Dialog</a></li>
 </ul>

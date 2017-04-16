@@ -227,7 +227,7 @@ eol
 
 Important parts of an AI implementation is, to be able to access big data, many different data sources and to steer
 services outside of the body of the AI. To do so, it must be possible to call an external API.
-Such a service is called a 'console service' in Susi. It is easy to write a console Skill with just some lines of EzD code:
+Such a service is called a 'console service' in Susi:
 
 ```
 tweet about *
@@ -245,19 +245,26 @@ the syntax of an JSONPath. Here, the statuses object contains a list of objects,
 One of these attributes has the name 'text' and that attribute is selected with the $text$ pattern.
 Note that the bang definition part until the eol line must be given in JSON.
 
-### Tutorial Level 12: Thinking with Backtracking
+### Tutorial Level 12: Custom Actions
+
+Susi Skills may return different types of actions. Non-answer actions my get their content using console rules.
+Custom actions therefore are combined console rules with custom action types
+
+(to be implemented)
+
+### Tutorial Level 13: Thinking with Backtracking
 
 Backtracking is the ability of a program to revert a already made setting and take an alternative option. If we consider this behaviour at different states of a computation, then this produces a tree-like parameter graph, which is called a decision tree. Susi's data structures are made in such a way, that result tables are an element of 'thinking'. Such result tables are 'bags' for backtracking options. We will learn how to use that principle to create loops which are useful for problem-solving.
 
 (to be implemented)
 
-### Tutorial Level 13: Expert Systems with first-order logic
+### Tutorial Level 14: Expert Systems with first-order logic
 
-A first-order logic is expressed in terms of relations, represented as facts and rules. We already defined facts and rules using the methods as described above. Backtracking and unification is the computation model for such kind of expert systems. In this tutorial we will learn how to express a program flow using logic elements in EzD rules.
+A first-order logic is expressed in terms of relations, represented as facts and rules. We already defined facts and rules using the methods as described above. Backtracking and unification is the computation model for such kind of expert systems. In this tutorial we will learn how to express a program flow using logic elements.
 
 (to be implemented)
 
-### Tutorial Level 14: Skill Reflection
+### Tutorial Level 15: Skill Reflection
 
 We are able to set variable content and read them in skills. But we must also be able to read skills in the same way as we read variables. We should be able to answer on questions like 'we cannot solve this because there is no rule for that', or 'we have several rules, which one is preferred'. 
 
