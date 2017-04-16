@@ -1,0 +1,223 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Susi Chat API &#8212; Susi Server development documentation</title>
+    
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     'development',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="top" title="Susi Server development documentation" href="index.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body role="document">
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="susi-chat-api">
+<span id="susi-chat-api"></span><h1>Susi Chat API<a class="headerlink" href="#susi-chat-api" title="Permalink to this headline">¶</a></h1>
+<p>The Susi Chat API enables Susi clients to perform different kinds of actions.
+The most prominent action may be:</p>
+<ul class="simple">
+<li>processing of an expression (which can be written like a chat or spoken with text-to-speech)</li>
+</ul>
+<p>but there are also other action types, like:</p>
+<ul class="simple">
+<li>showing an image</li>
+<li>showing a pie chart</li>
+<li>showing a web search result (either retrieved by the client itself or delivered by the server)</li>
+<li>showing rss feeds</li>
+<li>showing a table</li>
+<li>playing a sound or a video</li>
+<li>asking the user questions with default answers</li>
+<li>doing special activities that a client provides (i.e. setting an alarm, starting a timer etc.)</li>
+</ul>
+<div class="section" id="getting-started">
+<span id="getting-started"></span><h2>Getting Started<a class="headerlink" href="#getting-started" title="Permalink to this headline">¶</a></h2>
+<p>To develop client actions, you need a working susi_server. You can either use our hosted service at http://api.susi.ai
+or your own Susi server at http://127.0.0.1:4000</p>
+<p>For an easy first test, just call the following URL: http://api.susi.ai/susi/chat.json?q=hello</p>
+<p>You will get a JSON result which hat the following structure:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="p">{</span>
+  <span class="s2">&quot;answers&quot;</span><span class="p">:</span> <span class="p">[</span>
+    <span class="p">{</span>
+      <span class="s2">&quot;data&quot;</span><span class="p">:</span> <span class="p">[],</span>
+      <span class="s2">&quot;actions&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="p">{</span>
+          <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;answer&quot;</span><span class="p">,</span>
+          <span class="s2">&quot;expression&quot;</span><span class="p">:</span> <span class="s2">&quot;Hi, I&#39;m Susi&quot;</span>
+        <span class="p">}</span>
+      <span class="p">]</span>
+    <span class="p">}</span>
+  <span class="p">]</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>There is actually more information within the JSON, but these are the most important parts:</p>
+<ul class="simple">
+<li>every chat response may have several answers, but at least there is only one at <code class="docutils literal"><span class="pre">$.answers[0]</span></code></li>
+<li>every answer has a data part which is a list of JSON objects at <code class="docutils literal"><span class="pre">$answers[].data</span></code></li>
+<li>every answer has also a list of actions with at least one action at <code class="docutils literal"><span class="pre">$.answers[0].actions[0]</span></code></li>
+<li>every action has at least one object with name &#8220;type&#8221; at <code class="docutils literal"><span class="pre">$.answers[].actions[].type</span></code>.</li>
+</ul>
+<p>The <code class="docutils literal"><span class="pre">type</span></code> object within each action is the key to the different action types.
+It is important that a client implementation evaluates the action types and makes activities based on those action types.</p>
+<div class="section" id="result-logic">
+<span id="result-logic"></span><h3>Result Logic<a class="headerlink" href="#result-logic" title="Permalink to this headline">¶</a></h3>
+<p>Because an API response may have several answers each with several actions, it is important to know what that means
+an what a client must do if these objects are returned with multiple options.</p>
+<ul class="simple">
+<li><code class="docutils literal"><span class="pre">answers</span></code> objects are disjunctive, that means only one of them must be considered. It is not wrong to evaluate all of them,
+but it is also valid to evaluate only one of them.</li>
+<li><code class="docutils literal"><span class="pre">actions</span></code> objects are conjunctive, that means all of them must be considered. The client must loop through all of the actions
+and perform all of the action types that are inside.</li>
+</ul>
+<p>The meaning of the <code class="docutils literal"><span class="pre">answers</span></code> is similar of what a meta-search engine would return: all the answers are valid, you can pick the one
+that you like &#8211; or all of them. The meaning of the <code class="docutils literal"><span class="pre">actions</span></code> is only sound, if all of them are performed. A simple example is the
+setting of an alarm in the client; one action would be used to print out (or say) a written message that an alarm is set, the other
+action would technically address the setting of the clock with exact values for the timer.</p>
+</div>
+<div class="section" id="client-abilities">
+<span id="client-abilities"></span><h3>Client Abilities<a class="headerlink" href="#client-abilities" title="Permalink to this headline">¶</a></h3>
+<p>Not all clients may be able to show graphics, set a timer or play an audio file, therefore it is important that a client declares
+it&#8217;s abilities within the request to the chat API. This also includes location and language information.</p>
+</div>
+</div>
+<div class="section" id="api-request-attributes">
+<span id="api-request-attributes"></span><h2>API Request attributes<a class="headerlink" href="#api-request-attributes" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="api-action-types">
+<span id="api-action-types"></span><h2>API Action types<a class="headerlink" href="#api-action-types" title="Permalink to this headline">¶</a></h2>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="index.html">
+    <img class="logo" src="_static//images/susi-logo-original.svg" alt="Logo"/>
+    
+  </a>
+</p>
+
+
+
+
+
+
+
+
+
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Susi Chat API</a><ul>
+<li><a class="reference internal" href="#getting-started">Getting Started</a><ul>
+<li><a class="reference internal" href="#result-logic">Result Logic</a></li>
+<li><a class="reference internal" href="#client-abilities">Client Abilities</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#api-request-attributes">API Request attributes</a></li>
+<li><a class="reference internal" href="#api-action-types">API Action types</a></li>
+</ul>
+</li>
+</ul>
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Home</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="index.html">Welcome</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Installation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="installation_generic.html">Installation on Linux/Mac OS</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation_windows_generic.html">Requirements</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation_windows_generic.html#download">Download</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation_windows_generic.html#build-and-run">Build and Run</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation_windows_generic.html#operate">Operate</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation_windows_generic.html#shut-down">Shut down</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation_docker.html">Installation with Docker</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation_cloud9.html">Installation on Cloud9</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation_heroku.html">Installation on Heroku</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Tutorial</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="susi_skill_development_tutorial.html">AI Rule development Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="AskSUSI.html">Ask SUSI</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Development</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="eclipseSetup.html">How to setup Susi Server on Eclipse</a></li>
+<li class="toctree-l1"><a class="reference internal" href="eclipseSetup.html#using-the-ant-file">Using the Ant File</a></li>
+<li class="toctree-l1"><a class="reference internal" href="eclipseSetup.html#test">Test :</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Miscellaneous</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="parsers.html">Parsers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="submitting_skills_to_git.html">Submitting skills to Git</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+  </ul></li>
+</ul>
+</div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2017, Susi.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.4.9</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>
