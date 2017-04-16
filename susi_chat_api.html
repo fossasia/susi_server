@@ -104,10 +104,50 @@ that you like &#8211; or all of them. The meaning of the <code class="docutils l
 setting of an alarm in the client; one action would be used to print out (or say) a written message that an alarm is set, the other
 action would technically address the setting of the clock with exact values for the timer.</p>
 </div>
+<div class="section" id="data-object-sharing">
+<span id="data-object-sharing"></span><h3>Data object sharing<a class="headerlink" href="#data-object-sharing" title="Permalink to this headline">¶</a></h3>
+<p>The <code class="docutils literal"><span class="pre">data</span></code> object at <code class="docutils literal"><span class="pre">$answers[].data</span></code> is a zone which may information for special actions, like showing a table, a piechart, a search result etc. In such cases the action does not contain the table, piechart, search result data itself but refer to keys within the <code class="docutils literal"><span class="pre">data</span></code> object. Therefore that data can be shared across the actions, so several actions can use the same data.</p>
+</div>
+<div class="section" id="susi-thought-transparency">
+<span id="susi-thought-transparency"></span><h3>Susi Thought Transparency<a class="headerlink" href="#susi-thought-transparency" title="Permalink to this headline">¶</a></h3>
+<p>When Susi skills are processed, a data object called a &#8216;Susi Thought&#8217; is moved along a inference chain. The essence of that chain (a process called &#8216;brain melting&#8217;) is then stored inside the data object if a skill is successfull. The susi skill processing actually fills therefore the data object. Short-memory and Long-memory values, used within the skill processing are also present in the data object. The data therefore shows the &#8216;latest thought&#8217; of Susi and gives transparency about the process that caused the given answer.</p>
+</div>
 <div class="section" id="client-abilities">
 <span id="client-abilities"></span><h3>Client Abilities<a class="headerlink" href="#client-abilities" title="Permalink to this headline">¶</a></h3>
 <p>Not all clients may be able to show graphics, set a timer or play an audio file, therefore it is important that a client declares
 it&#8217;s abilities within the request to the chat API. This also includes location and language information.</p>
+</div>
+</div>
+<div class="section" id="prototype-client-implelemtation">
+<span id="prototype-client-implelemtation"></span><h2>Prototype Client Implelemtation<a class="headerlink" href="#prototype-client-implelemtation" title="Permalink to this headline">¶</a></h2>
+<p>For an easy quick-start, just copy the following code to develop your own Susi client</p>
+<div class="section" id="java">
+<span id="java"></span><h3>Java<a class="headerlink" href="#java" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-default"><div class="highlight"><pre><span></span>    <span class="n">private</span> <span class="n">final</span> <span class="n">static</span> <span class="n">String</span> <span class="n">API_PATH_STUB</span> <span class="o">=</span> <span class="s2">&quot;/susi/chat.json?q=&quot;</span><span class="p">;</span>
+    <span class="n">public</span> <span class="n">final</span> <span class="n">static</span> <span class="n">String</span> <span class="n">LOCAL_SUSI</span> <span class="o">=</span> <span class="s2">&quot;http://127.0.0.1:4000&quot;</span> <span class="o">+</span> <span class="n">API_PATH_STUB</span><span class="p">;</span>
+    <span class="n">public</span> <span class="n">final</span> <span class="n">static</span> <span class="n">String</span> <span class="n">HOSTED_SUSI</span> <span class="o">=</span> <span class="s2">&quot;http://api.susi.ai&quot;</span> <span class="o">+</span> <span class="n">API_PATH_STUB</span><span class="p">;</span>
+    
+    <span class="n">public</span> <span class="n">static</span> <span class="n">void</span> <span class="n">onRequest</span><span class="p">(</span><span class="n">String</span> <span class="n">query</span><span class="p">)</span> <span class="n">throws</span> <span class="n">IOException</span> <span class="p">{</span>
+        <span class="n">InputStream</span> <span class="n">stream</span> <span class="o">=</span> <span class="n">null</span><span class="p">;</span>
+        <span class="k">try</span> <span class="p">{</span>
+            <span class="n">stream</span> <span class="o">=</span> <span class="n">new</span> <span class="n">URL</span><span class="p">(</span><span class="n">LOCAL_SUSI</span> <span class="o">+</span> <span class="n">query</span><span class="p">)</span><span class="o">.</span><span class="n">openStream</span><span class="p">();</span>
+        <span class="p">}</span> <span class="n">catch</span> <span class="p">(</span><span class="n">IOException</span> <span class="n">e</span><span class="p">)</span> <span class="p">{</span>
+            <span class="n">stream</span> <span class="o">=</span> <span class="n">new</span> <span class="n">URL</span><span class="p">(</span><span class="n">HOSTED_SUSI</span> <span class="o">+</span> <span class="n">query</span><span class="p">)</span><span class="o">.</span><span class="n">openStream</span><span class="p">();</span>
+        <span class="p">}</span>
+        <span class="n">JSONObject</span> <span class="n">json</span> <span class="o">=</span> <span class="n">new</span> <span class="n">JSONObject</span><span class="p">(</span><span class="n">new</span> <span class="n">JSONTokener</span><span class="p">(</span><span class="n">new</span> <span class="n">InputStreamReader</span><span class="p">(</span><span class="n">stream</span><span class="p">,</span> <span class="n">StandardCharsets</span><span class="o">.</span><span class="n">UTF_8</span><span class="p">)));</span>
+        <span class="n">JSONObject</span> <span class="n">answers</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">getJSONObject</span><span class="p">(</span><span class="s2">&quot;answers&quot;</span><span class="p">);</span>
+        <span class="n">JSONArray</span> <span class="n">data</span> <span class="o">=</span> <span class="n">answers</span><span class="o">.</span><span class="n">getJSONArray</span><span class="p">(</span><span class="s2">&quot;data&quot;</span><span class="p">);</span>
+        <span class="n">JSONArray</span> <span class="n">actions</span> <span class="o">=</span> <span class="n">answers</span><span class="o">.</span><span class="n">getJSONArray</span><span class="p">(</span><span class="s2">&quot;actions&quot;</span><span class="p">);</span>
+        <span class="n">actions</span><span class="o">.</span><span class="n">forEach</span><span class="p">(</span><span class="n">action</span> <span class="o">-&gt;</span> <span class="n">onAction</span><span class="p">((</span><span class="n">JSONObject</span><span class="p">)</span> <span class="n">action</span><span class="p">,</span> <span class="n">data</span><span class="p">));</span>
+    <span class="p">}</span>
+    
+    <span class="n">public</span> <span class="n">static</span> <span class="n">void</span> <span class="n">onAction</span><span class="p">(</span><span class="n">JSONObject</span> <span class="n">action</span><span class="p">,</span> <span class="n">JSONArray</span> <span class="n">data</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">String</span> <span class="nb">type</span> <span class="o">=</span> <span class="n">action</span><span class="o">.</span><span class="n">getString</span><span class="p">(</span><span class="s2">&quot;type&quot;</span><span class="p">);</span>
+        
+        <span class="o">//</span> <span class="n">now</span> <span class="n">implement</span> <span class="n">the</span> <span class="n">actions</span> <span class="n">using</span> <span class="n">the</span> <span class="nb">type</span> <span class="n">value</span><span class="o">.</span> <span class="n">Please</span> <span class="n">see</span> <span class="s1">&#39;API Action Types&#39;</span> <span class="n">section</span>
+    <span class="p">}</span>
+</pre></div>
+</div>
 </div>
 </div>
 <div class="section" id="api-request-attributes">
@@ -154,7 +194,13 @@ it&#8217;s abilities within the request to the chat API. This also includes loca
 <li><a class="reference internal" href="#">Susi Chat API</a><ul>
 <li><a class="reference internal" href="#getting-started">Getting Started</a><ul>
 <li><a class="reference internal" href="#result-logic">Result Logic</a></li>
+<li><a class="reference internal" href="#data-object-sharing">Data object sharing</a></li>
+<li><a class="reference internal" href="#susi-thought-transparency">Susi Thought Transparency</a></li>
 <li><a class="reference internal" href="#client-abilities">Client Abilities</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#prototype-client-implelemtation">Prototype Client Implelemtation</a><ul>
+<li><a class="reference internal" href="#java">Java</a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#api-request-attributes">API Request attributes</a></li>
