@@ -63,10 +63,49 @@ that you like -- or all of them. The meaning of the `actions` is only sound, if 
 setting of an alarm in the client; one action would be used to print out (or say) a written message that an alarm is set, the other
 action would technically address the setting of the clock with exact values for the timer.
 
+### Data object sharing
+
+The `data` object at `$answers[].data` is a zone which may information for special actions, like showing a table, a piechart, a search result etc. In such cases the action does not contain the table, piechart, search result data itself but refer to keys within the `data` object. Therefore that data can be shared across the actions, so several actions can use the same data.
+
+### Susi Thought Transparency
+
+When Susi skills are processed, a data object called a 'Susi Thought' is moved along a inference chain. The essence of that chain (a process called 'brain melting') is then stored inside the data object if a skill is successfull. The susi skill processing actually fills therefore the data object. Short-memory and Long-memory values, used within the skill processing are also present in the data object. The data therefore shows the 'latest thought' of Susi and gives transparency about the process that caused the given answer.
+
 ### Client Abilities
 
 Not all clients may be able to show graphics, set a timer or play an audio file, therefore it is important that a client declares
 it's abilities within the request to the chat API. This also includes location and language information. 
+
+## Prototype Client Implelemtation
+
+For an easy quick-start, just copy the following code to develop your own Susi client
+
+### Java
+```
+    private final static String API_PATH_STUB = "/susi/chat.json?q=";
+    public final static String LOCAL_SUSI = "http://127.0.0.1:4000" + API_PATH_STUB;
+    public final static String HOSTED_SUSI = "http://api.susi.ai" + API_PATH_STUB;
+    
+    public static void onRequest(String query) throws IOException {
+        InputStream stream = null;
+        try {
+            stream = new URL(LOCAL_SUSI + query).openStream();
+        } catch (IOException e) {
+            stream = new URL(HOSTED_SUSI + query).openStream();
+        }
+        JSONObject json = new JSONObject(new JSONTokener(new InputStreamReader(stream, StandardCharsets.UTF_8)));
+        JSONObject answers = json.getJSONObject("answers");
+        JSONArray data = answers.getJSONArray("data");
+        JSONArray actions = answers.getJSONArray("actions");
+        actions.forEach(action -> onAction((JSONObject) action, data));
+    }
+    
+    public static void onAction(JSONObject action, JSONArray data) {
+        String type = action.getString("type");
+        
+        // now implement the actions using the type value. Please see 'API Action Types' section
+    }
+```
 
 ## API Request attributes
 
