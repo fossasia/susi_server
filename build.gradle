@@ -20,7 +20,7 @@ sourceSets.main.resources.srcDirs = ['conf/logs']
 
 jar {
     manifest {
-        attributes 'Main-Class': 'org.loklak.SusiServer'
+        attributes 'Main-Class': 'ai.susi.SusiServer'
     }
 }
 
