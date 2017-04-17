@@ -58,11 +58,11 @@
 <li>the etherpad is filled with a welcome message, just delete the content completely</li>
 </ul>
 <p>ATTENTION: the Susi Dream zone is a TEMPORARY zone. We may clean up that place at any time. It is only for testing your new Susi Skills
-If you want your new Susi Skills to be permanent, send us a pull request, see submitting_skills_to_git.md for a tuturial.</p>
+If you want your new Susi Skills to be permanent, send us a pull request, see <a class="reference external" href="submitting_skills_to_git.md">submitting_skills_to_git.md</a> for a tutorial.</p>
 </div>
 <div class="section" id="preparation-to-start-testing">
 <span id="preparation-to-start-testing"></span><h3>Preparation to start testing<a class="headerlink" href="#preparation-to-start-testing" title="Permalink to this headline">¶</a></h3>
-<p>To test the Skills you are editing, you only need the Susi Android Application (see: https://github.com/fossasia/susi_android )
+<p>To test the skills you are editing, you only need the Susi Android Application (see: https://github.com/fossasia/susi_android )
 Or you can also test the Skills online at http://asksusi.com/chat</p>
 <p>Within the chat dialog, enter</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">dream</span> <span class="o">&lt;</span><span class="n">testname</span><span class="o">&gt;</span>
@@ -83,7 +83,7 @@ Or you can also test the Skills online at http://asksusi.com/chat</p>
 <p>This defines one simple Skill: to answer on &#8220;roses are red&#8221; the phrase &#8220;susi is a hack&#8221;. The other lines mean:</p>
 <ul class="simple">
 <li>all lines starting with <code class="docutils literal"><span class="pre">#</span></code> are comment lines and are ignored.</li>
-<li>all other text lines define Sikks. Skills are separate with empty lines. Comment and section declaration modifiers count also like empty lines as separator.</li>
+<li>all other text lines define Skills. Skills are separated by empty lines. Comment and section declaration modifiers also count as empty lines and separate Skills.</li>
 </ul>
 <p>Now you can test the new Skill:</p>
 <ul class="simple">
@@ -123,7 +123,7 @@ done very easy with Alternatives in the query line:</p>
 </div>
 <div class="section" id="tutorial-level-3-patterns-in-queries">
 <span id="tutorial-level-3-patterns-in-queries"></span><h3>Tutorial Level 3: Patterns in Queries<a class="headerlink" href="#tutorial-level-3-patterns-in-queries" title="Permalink to this headline">¶</a></h3>
-<p>In some cases the query lines may be so similar, that you want to use a pattern to declare all possible queries for an answer instead of using fixed alternatives. Query patters can be declared using the &#8220;<em>&#8221; wildcard character. A &#8220;</em>&#8221; matches any sentence token, but not a substring. That means, a &#8220;*&#8221; replaces a word or a list of words.</p>
+<p>In some cases the query lines may be so similar, that you want to use a pattern to declare all possible queries for an answer instead of using fixed alternatives. Query patters can be declared using the <code class="docutils literal"><span class="pre">*</span></code> wildcard character. A <code class="docutils literal"><span class="pre">*</span></code> matches any sentence token, but not a substring. That means, a <code class="docutils literal"><span class="pre">*</span></code> replaces a word or a list of words.</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span>May I * you?
 Yes you may.
 </pre></div>
