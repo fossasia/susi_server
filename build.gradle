@@ -62,7 +62,7 @@ tasks.withType(Javadoc) {
 }
 
 task start(type: JavaExec, dependsOn: classes) {
-  main = 'org.loklak.SusiServer'
+  main = 'ai.susi.SusiServer'
   classpath sourceSets.main.runtimeClasspath
   classpath configurations.runtime
 }
