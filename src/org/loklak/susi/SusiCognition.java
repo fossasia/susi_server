@@ -27,8 +27,8 @@ import java.util.stream.Collectors;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.loklak.objects.AbstractObjectEntry;
 import org.loklak.server.ClientIdentity;
+import org.loklak.tools.DateParser;
 import org.loklak.tools.UTF8;
 
 /**
@@ -54,7 +54,7 @@ public class SusiCognition {
         }
         this.json.put("client_id", Base64.getEncoder().encodeToString(UTF8.getBytes(client)));
         long query_date = System.currentTimeMillis();
-        this.json.put("query_date", AbstractObjectEntry.utcFormatter.print(query_date));
+        this.json.put("query_date", DateParser.utcFormatter.print(query_date));
         
         // compute the mind reaction
         List<SusiArgument> dispute = mind.react(query, maxcount, client, observation);
@@ -62,7 +62,7 @@ public class SusiCognition {
         
         // store answer and actions into json
         this.json.put("answers", new JSONArray(dispute.stream().map(argument -> argument.finding(client, mind)).collect(Collectors.toList())));
-        this.json.put("answer_date", AbstractObjectEntry.utcFormatter.print(answer_date));
+        this.json.put("answer_date", DateParser.utcFormatter.print(answer_date));
         this.json.put("answer_time", answer_date - query_date);
         this.json.put("language", "en");
     }
@@ -99,7 +99,7 @@ public class SusiCognition {
     
     public Date getQueryDate() {
         String d = this.json.getString("query_date");
-        return AbstractObjectEntry.utcFormatter.parseDateTime(d).toDate();
+        return DateParser.utcFormatter.parseDateTime(d).toDate();
     }
 
     /**

@@ -21,6 +21,7 @@ package org.loklak.tools.storage;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -33,7 +34,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.eclipse.jetty.util.log.Log;
 import org.json.JSONObject;
 import org.loklak.data.DAO;
-import org.loklak.tools.ASCII;
 
 public class JsonDataset {
     
@@ -108,7 +108,7 @@ public class JsonDataset {
                                     // create the json minifier object which contains the json in minified version
                                     // before we create the minifier, we remove the meta keys from the json to further minify it
                                     for (byte[] meta_key: JsonRepository.META_KEYS) {
-                                        op.remove(ASCII.String(meta_key));
+                                        op.remove(new String(meta_key, StandardCharsets.US_ASCII));
                                     }
                                     jsonFactory = JsonDataset.this.minifier.minify(op);
                                 }
@@ -120,9 +120,9 @@ public class JsonDataset {
                                     Object searchValue = op.has(searchKey) ? op.get(searchKey) : null;
                                     if (searchValue != null) {
                                         if (searchValue instanceof String) {
-                                            JsonFactory old = factoryIndex.put(case_insensitive ? ((String) searchValue).toLowerCase() : (String) searchValue, jsonFactory);
+                                            factoryIndex.put(case_insensitive ? ((String) searchValue).toLowerCase() : (String) searchValue, jsonFactory);
                                         } else {
-                                            JsonFactory old = factoryIndex.put(searchValue, jsonFactory);
+                                            factoryIndex.put(searchValue, jsonFactory);
                                         }
                                     }
                                 }

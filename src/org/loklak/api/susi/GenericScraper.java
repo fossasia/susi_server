@@ -99,8 +99,6 @@ public class GenericScraper extends HttpServlet {
         String url = post.get("url", "");
         String type = post.get("type", "");
 
-        URL qurl = new URL(url);
-
         // This can also be done in one line:
         JSONObject genericScraperData = new JSONObject(true);
         if ("article".equals(type)) {

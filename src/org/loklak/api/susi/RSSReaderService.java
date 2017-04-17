@@ -62,6 +62,7 @@ public class RSSReaderService extends AbstractAPIHandler implements APIHandler {
 		return readRSS(url).toJSON();
     }
 		
+    @SuppressWarnings("unchecked")
     public static SusiThought readRSS(String url) {
     	
 		SyndFeedInput input = new SyndFeedInput();

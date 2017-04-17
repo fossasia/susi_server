@@ -315,8 +315,8 @@ public class BufferedRandomAccessFile extends RandomAccessFile {
                 braf.appendLine(UTF8.getBytes(this.testLines[i]));
                 braf.seekPrivate(pos);
                 byte[] b = braf.getNextLine();
-                if (!ASCII.String(b).equals(this.testLines[i])) System.out.println(ASCII.String(b) + " != " + this.testLines[i]);
-                assertTrue(ASCII.String(b).equals(this.testLines[i]));
+                if (!new String(b).equals(this.testLines[i])) System.out.println(new String(b) + " != " + this.testLines[i]);
+                assertTrue(new String(b).equals(this.testLines[i]));
             }
             braf.close();
         }
@@ -329,15 +329,15 @@ public class BufferedRandomAccessFile extends RandomAccessFile {
             for (int i = 0; i < this.testLines.length; i++) {
                 long pos = braf.getFilePointer();
                 byte[] b = braf.getNextLine();
-                if (!ASCII.String(b).equals(this.testLines[i])) System.out.println(ASCII.String(b) + " != " + this.testLines[i]);
-                assertTrue(ASCII.String(b).equals(this.testLines[i]));
+                if (!new String(b).equals(this.testLines[i])) System.out.println(new String(b) + " != " + this.testLines[i]);
+                assertTrue(new String(b).equals(this.testLines[i]));
                 m.put(pos, this.testLines[i]);
             }
             // test if random read is identical to original
             for (Map.Entry<Long, String> e: m.entrySet()) {
                 braf.seekPrivate(e.getKey());
                 byte[] b = braf.getNextLine();
-                assertTrue(ASCII.String(b).equals(e.getValue()));
+                assertTrue(new String(b).equals(e.getValue()));
             }
             braf.close();
         }

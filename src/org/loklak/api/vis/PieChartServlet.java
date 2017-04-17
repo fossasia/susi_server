@@ -110,10 +110,10 @@ public class PieChartServlet extends HttpServlet {
 
 	public JFreeChart getChart(JSONObject jsonData, boolean legendBit, boolean tooltipBit) {
 		DefaultPieDataset dataset = new DefaultPieDataset();
-		Iterator iter = jsonData.keys();
+		Iterator<String> iter = jsonData.keys();
 
 		while (iter.hasNext()) {
-			String keyData = (String)iter.next();
+			String keyData = iter.next();
 			Float value = Float.parseFloat(jsonData.getString(keyData));
 			dataset.setValue(keyData, value);
 		}

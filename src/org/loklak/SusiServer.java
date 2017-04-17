@@ -106,7 +106,6 @@ import org.loklak.http.RemoteAccess;
 import org.loklak.server.APIHandler;
 import org.loklak.server.FileHandler;
 import org.loklak.server.HttpsMode;
-import org.loklak.tools.Browser;
 import org.loklak.tools.OS;
 
 
@@ -235,7 +234,7 @@ public class SusiServer {
         SusiServer.caretaker.start();
         
         // if this is not headless, we can open a browser automatically
-        Browser.openBrowser("http://127.0.0.1:" + httpPort + "/");
+        OS.openBrowser("http://127.0.0.1:" + httpPort + "/");
         
         Log.getLog().info("finished startup!");
         

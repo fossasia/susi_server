@@ -65,6 +65,7 @@ public class JsonRepository {
         dateFomatMonthly.setTimeZone(TimeZone.getTimeZone("GMT"));
         dateFomatDaily.setTimeZone(TimeZone.getTimeZone("GMT"));
         dateFomatHourly.setTimeZone(TimeZone.getTimeZone("GMT"));
+        dateFomatMinutely.setTimeZone(TimeZone.getTimeZone("GMT"));
     }
     
     public static enum Mode {

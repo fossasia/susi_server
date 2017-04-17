@@ -23,6 +23,7 @@
 
 package org.loklak.tools;
 
+import java.awt.Desktop;
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -34,6 +35,8 @@ import java.io.OutputStream;
 import java.lang.management.ManagementFactory;
 import java.lang.management.OperatingSystemMXBean;
 import java.lang.reflect.Method;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.attribute.PosixFilePermission;
@@ -99,6 +102,87 @@ public final class OS {
         securePerm.add(PosixFilePermission.OWNER_READ);
         securePerm.add(PosixFilePermission.OWNER_WRITE);
         securePerm.add(PosixFilePermission.OWNER_EXECUTE);
+    }
+
+    public static void openBrowser(final String url) {
+        boolean head = java.lang.System.getProperty("java.awt.headless", "").equals("false");
+        if (!head) {
+            if (Desktop.isDesktopSupported()) {
+                try {
+                    Desktop.getDesktop().browse(new URI(url));
+                } catch (IOException | URISyntaxException e) {
+                    openBrowserClassic(url);
+                }
+            } else {
+                openBrowserClassic(url);
+            }
+        }
+    }
+    
+    public static void openBrowserClassic(final String url) {
+        try {
+            if (systemOS == System.MacOSX) {
+                openBrowserMac(url);
+            } else if (systemOS == System.Unix) {
+                openBrowserUnixFirefox(url);
+            } else if (systemOS == System.Windows) {
+                openBrowserWin(url);
+            } else {
+                throw new RuntimeException("System unknown");
+            }
+        } catch (final Throwable e) {
+        }
+    }
+
+    private static void openBrowserMac(final String url) throws Exception {
+        Process p = Runtime.getRuntime().exec(new String[] {"/usr/bin/osascript", "-e", "open location \"" + url + "\""});
+        p.waitFor();
+        if (p.exitValue() != 0) {
+            throw new RuntimeException("Mac Exec Error: " + errorResponse(p));
+        }
+    }
+
+    private static void openBrowserUnixFirefox(final String url) throws Exception {
+        String cmd = "firefox " + url;
+        Process p = Runtime.getRuntime().exec(cmd);
+        p.waitFor();
+        if (p.exitValue() != 0) {
+            throw new RuntimeException("Unix Exec Error/Firefox: " + errorResponse(p));
+        }
+    }
+    
+    private static void openBrowserWin(final String url) throws Exception {
+        // see forum at http://forum.java.sun.com/thread.jsp?forum=57&thread=233364&message=838441
+        String cmd;
+        if (java.lang.System.getProperty("os.name").contains("2000")) {
+            cmd = "rundll32 url.dll,FileProtocolHandler " + url;
+        } else {
+            cmd = "rundll32 url.dll,FileProtocolHandler \"" + url + "\"";
+        }
+        //cmd = "cmd.exe /c start javascript:document.location='" + url + "'";
+        Process p = Runtime.getRuntime().exec(cmd);
+        p.waitFor();
+        if (p.exitValue() != 0) {
+            throw new RuntimeException("EXEC ERROR: " + errorResponse(p));
+        }
+    }
+
+    private static String errorResponse(final Process p) {
+        final BufferedReader err = new BufferedReader(new InputStreamReader(p.getErrorStream()));
+        String line, error = "";
+        try {
+            while ((line = err.readLine()) != null) {
+                error = line + "\n";
+            }
+            return error;
+        } catch (final IOException e) {
+            return null;
+        } finally {
+            try {
+                err.close();
+            } catch (final IOException e) {
+            }
+        }
     }
     
     public final static void protectPath(Path path) {
