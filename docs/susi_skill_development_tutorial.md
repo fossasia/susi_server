@@ -15,11 +15,11 @@ We have a Susi Skill develoment environment based on an etherpad. You don't know
 * the etherpad is filled with a welcome message, just delete the content completely
 
 ATTENTION: the Susi Dream zone is a TEMPORARY zone. We may clean up that place at any time. It is only for testing your new Susi Skills
-If you want your new Susi Skills to be permanent, send us a pull request, see submitting_skills_to_git.md for a tuturial.
+If you want your new Susi Skills to be permanent, send us a pull request, see [submitting_skills_to_git.md](submitting_skills_to_git.md) for a tutorial.
 
 ### Preparation to start testing
 
-To test the Skills you are editing, you only need the Susi Android Application (see: https://github.com/fossasia/susi_android )
+To test the skills you are editing, you only need the Susi Android Application (see: https://github.com/fossasia/susi_android )
 Or you can also test the Skills online at http://asksusi.com/chat
 
 Within the chat dialog, enter
@@ -44,7 +44,7 @@ susi is a hack
 ```
 This defines one simple Skill: to answer on "roses are red" the phrase "susi is a hack". The other lines mean:
 * all lines starting with `#` are comment lines and are ignored.
-* all other text lines define Sikks. Skills are separate with empty lines. Comment and section declaration modifiers count also like empty lines as separator.
+* all other text lines define Skills. Skills are separated by empty lines. Comment and section declaration modifiers also count as empty lines and separate Skills.
 
 Now you can test the new Skill:
 * send the following query to Susi: "roses are red"
@@ -79,7 +79,7 @@ Hello
 ```
 
 ### Tutorial Level 3: Patterns in Queries
-In some cases the query lines may be so similar, that you want to use a pattern to declare all possible queries for an answer instead of using fixed alternatives. Query patters can be declared using the "*" wildcard character. A "*" matches any sentence token, but not a substring. That means, a "*" replaces a word or a list of words.
+In some cases the query lines may be so similar, that you want to use a pattern to declare all possible queries for an answer instead of using fixed alternatives. Query patters can be declared using the `*` wildcard character. A `*` matches any sentence token, but not a substring. That means, a `*` replaces a word or a list of words.
 
 ```
 May I * you?
