@@ -10,7 +10,6 @@ org.loklak.data
 org.loklak.geo
 org.loklak.graphics
 org.loklak.http
-org.loklak.objects
 org.loklak.server
 org.loklak.susi
 org.loklak.tools
