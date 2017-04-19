@@ -8,7 +8,7 @@ It's easy, DON'T PANIC. You don't need to be a software developer to enhance Sus
 
 ### What you have to do
 
-We have a Susi Skill develoment environment based on an etherpad. You don't know what an etherpad is? It's a blank web page where you can just put in your text and everyone can colaborate.
+We have a Susi Skill develoment environment based on an Etherpad. Are you unaware what an Etherpad is? It is a blank web page where you can just put in your text and everyone can collaborate.
 
 * open http://dream.asksusi.com
 * name a dream (just pick a name for your tests)
@@ -19,10 +19,9 @@ If you want your new Susi Skills to be permanent, send us a pull request, see [s
 
 ### Preparation to start testing
 
-To test the skills you are editing, you only need the Susi Android Application (see: https://github.com/fossasia/susi_android )
-Or you can also test the Skills online at http://asksusi.com/chat
+To test the Susi Skills you are editing, you require the Susi Android Application (see: https://github.com/fossasia/susi_android ) or you can also test them online at http://asksusi.com/chat
 
-Within the chat dialog, enter
+Within the Susi chat dialog, enter
 
 ```
 dream <testname>
