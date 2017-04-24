@@ -168,6 +168,14 @@ public class RemoteAccess {
         return map;  
     }
     
+    /**
+     * translate the post map
+     * TODO: make this protected. servlets should not use this method.
+     *       The query map is transfered in the Query object,
+     *       there is no need to call this method inside a servlet.
+     * @param request
+     * @return the POST request objects/files
+     */
     public static Map<String, byte[]> getPostMap(HttpServletRequest request) {
         Map<String, byte[]> map = new HashMap<>();
         Map<String, String[]> pm = request.getParameterMap();
