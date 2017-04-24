@@ -158,7 +158,7 @@ public class SusiServer {
         Log.getLog().info("Starting loklak initialization");
 
         // prepare shutdown signal
-        File pid = new File(dataFile, "loklak.pid");
+        File pid = new File(dataFile, "susi.pid");
         if (pid.exists()) pid.deleteOnExit(); // thats a signal for the stop.sh script that loklak has terminated
         
         // prepare signal for startup script

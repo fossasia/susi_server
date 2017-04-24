@@ -22,7 +22,7 @@ while getopts ":Idn" opt; do
         \?)
             echo "Usage: $0 [options...]"
             echo -e " -I\tIgnore installation config"
-            echo -e " -d\tSkip waiting for Loklak"
+            echo -e " -d\tSkip waiting for Susi"
             echo -e " -n\tDo not Daemonize"
             exit 1
             ;;
@@ -71,14 +71,14 @@ fi
 echo "starting susi"
 echo "startup" > $STARTUPFILE
 
-cmdline="$cmdline -server -classpath $CLASSPATH -Dlog4j.configurationFile=$LOGCONFIG org.loklak.SusiServer";
+cmdline="$cmdline -server -classpath $CLASSPATH -Dlog4j.configurationFile=$LOGCONFIG ai.susi.SusiServer";
 
 # If DO_NOT_DAEMONIZE, pass it to the java command, end of this script.
 if [[ $DO_NOT_DAEMONIZE -eq 1 ]]; then
     exec $cmdline
 fi
 
-cmdline="$cmdline >> data/loklak.log 2>&1 &"
+cmdline="$cmdline >> data/susi.log 2>&1 &"
 
 eval $cmdline
 PID=$!
@@ -101,8 +101,8 @@ if [ -f $STARTUPFILE ] && [ $(ps -p $PID -o pid=) ]; then
 	rm -f $STARTUPFILE
 	exit 0
 else
-	echo "susi server failed to start. See data/loklag.log for details. Here are the last logs:"
-    tail data/loklak.log
+	echo "susi server failed to start. See data/susi.log for details. Here are the last logs:"
+    tail data/susi.log
 	rm -f $STARTUPFILE
 	exit 1
 fi
