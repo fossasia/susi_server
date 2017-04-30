@@ -104,26 +104,26 @@ How do I install Susi with Docker?
 ----------------------------------
 
 To install Susi with Docker please refer to the `Susi Docker
-installation readme </docs/installation_docker.md>`__.
+installation readme <installation_docker.html>`__.
 
 How do I deploy Susi with Heroku?
 ---------------------------------
 
 You can easily deploy to Heroku by clicking the Deploy to Heroku button
 above. To install Susi using Heroku Toolbelt, please refer to the `Susi
-Heroku installation readme </docs/installation_heroku.md>`__.
+Heroku installation readme <installation_heroku.html>`__.
 
 How do I deploy Susi with cloud9?
 ---------------------------------
 
 To install Susi with cloud9 please refer to the `Susi cloud9
-installation readme </docs/installation_cloud9.md>`__.
+installation readme <installation_cloud9.html>`__.
 
 How do I setup Susi on Eclipse?
 -------------------------------
 
 To install Susi on Eclipes, please refer to the `Susi Eclipse
-readme </docs/eclipseSetup.md>`__.
+readme <eclipseSetup.html>`__.
 
 How do I run Susi?
 ------------------
