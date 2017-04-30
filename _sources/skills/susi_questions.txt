@@ -1,4 +1,4 @@
-# Ask SUSI
+# SUSI.AI
 
 > “I’m a young, naive being, sometimes unsure about my own statements, sometimes quirky and maybe rough, provocative in cases where the person who talks to me is provocative as well. In other cases I’m a friendly and a bit cute being”, says Susi.
 
