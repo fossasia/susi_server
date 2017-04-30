@@ -2,8 +2,30 @@ Susi
 ====
 
 |Join the chat at https://gitter.im/fossasia/susi_server| |Build
-Status| |Docker Pulls| |Percentage of issues still open| |Average time
+Status| |Percentage of issues still open| |Average time
 to resolve an issue| |Twitter| |Twitter Follow|
+
+
+[Join the chat at https://gitter.im/fossasia/susi_server] image:: https://badges.gitter.im/fossasia/susi_server.svg
+   :target: https://gitter.im/fossasia/susi_server?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge
+.. |Build Status| image:: https://travis-ci.org/fossasia/susi_server.svg?branch=development
+   :target: https://travis-ci.org/fossasia/susi_server
+.. |Percentage of issues still open| image:: http://isitmaintained.com/badge/open/fossasia/susi_server.svg
+   :target: http://isitmaintained.com/project/fossasia/susi_server
+.. |Average time to resolve an issue| image:: http://isitmaintained.com/badge/resolution/fossasia/susi_server.svg
+   :target: http://isitmaintained.com/project/fossasia/susi_server
+.. |Twitter| image:: https://img.shields.io/twitter/url/http/shields.io.svg?style=social
+   :target: https://twitter.com/intent/tweet?text=Wow%20Check%20Susi%20on%20@gitHub%20@asksusi:%20https://github.com/fossasia/susi_server%20&url=%5Bobject%20Object%5D
+.. |Twitter Follow| image:: https://img.shields.io/twitter/follow/lklknt.svg?style=social&label=Follow&maxAge=2592000?style=flat-square
+   :target: https://twitter.com/lklknt
+.. |Deploy| image:: https://www.herokucdn.com/deploy/button.svg
+   :target: https://heroku.com/deploy
+.. |Deploy on Scalingo| image:: https://cdn.scalingo.com/deploy/button.svg
+   :target: https://my.scalingo.com/deploy?source=https://github.com/fossasia/susi_server
+.. |Deploy to Bluemix| image:: https://bluemix.net/deploy/button.png
+   :target: https://bluemix.net/deploy?repository=https://github.com/fossasia/susi_server
+.. |Deploy to Docker Cloud| image:: https://files.cloud.docker.com/images/deploy-to-dockercloud.svg
+   :target: https://cloud.docker.com/stack/deploy/
 
 SUSI AI is an intelligent Open Source personal assistant. It is capable of chat and voice interaction and by using APIS to perform actions such as music playback, making to-do lists, setting alarms, streaming podcasts, playing audiobooks, and providing weather, traffic, and other real time information. Additional functionalities can be added as console services using external APIs. Susi AI is able to answer questions and depending on the context will ask for additional information in order to perform a desired outcome. The core of the assistant is the SUSI AI server that holds the "ingelligence" and "personality" of SUSI. The Android and web applications make use of the APIs to access information from a hosted server.
 
