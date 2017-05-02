@@ -1,4 +1,4 @@
-.. include:: ../README.rst
+.. include:: README.rst
 
 .. toctree::
    :caption: Home
