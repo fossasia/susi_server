@@ -1,4 +1,4 @@
-# Susi Skill Development Tutorial
+﻿# Susi Skill Development Tutorial
 
 Do you want your own AI Skills for Susi? It's surprisingly easy to add more Skills to Susi.
 
@@ -11,7 +11,7 @@ It's easy, DON'T PANIC. You don't need to be a software developer to enhance Sus
 We have a Susi Skill develoment environment based on an Etherpad. Are you unaware what an Etherpad is? It is a blank web page where you can just put in your text and everyone can collaborate.
 
 * open http://dream.susi.ai
-* name a dream (just pick a name for your tests)
+* name a dream (just pick a name for your tests in lower case letters)
 * the etherpad is filled with a welcome message, just delete the content completely
 
 ATTENTION: the Susi Dream zone is a TEMPORARY zone. We may clean up that place at any time. It is only for testing your new Susi Skills
