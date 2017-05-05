@@ -6,6 +6,8 @@ title: Susi - Docs
 
 ---
 # Susi
+[![Dependency Status](https://gemnasium.com/badges/github.com/nidhinmahesh/susi_server.svg)](https://gemnasium.com/github.com/nidhinmahesh/susi_server)
+
 
 [![Join the chat at https://gitter.im/fossasia/susi_server](https://badges.gitter.im/fossasia/susi_server.svg)](https://gitter.im/fossasia/susi_server?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 [![Build Status](https://travis-ci.org/fossasia/susi_server.svg?branch=development)](https://travis-ci.org/fossasia/susi_server)
