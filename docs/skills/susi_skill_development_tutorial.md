@@ -105,7 +105,7 @@ is just there because you want to ignore everything where it matches.
 The following example shows a case where both wildcards are used:
 ```
 For * I can buy a *
-Yeah, I believe $1$ is a god price for a $2$
+Yeah, I believe $1$ is a good price for a $2$
 ```
 
 Another case is, where you just want to ignore a whole part of the query:
