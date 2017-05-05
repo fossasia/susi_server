@@ -211,7 +211,7 @@ Where can I find documentation?
 
 The application has built-in documentation web pages, you will see them
 when you opened the application web pages or you can simply open
-``html/index.html`` or just use http://api.asksusi.com as reference.
+``html/index.html`` or just use http://api.susi.ai as reference.
 
 Where can I find showcases and tutorials?
 -----------------------------------------

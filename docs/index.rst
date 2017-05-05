@@ -20,7 +20,7 @@
    :maxdepth: 1
    
    AI Rule development Tutorial <susi_skill_development_tutorial>
-   Ask SUSI <AskSUSI>
+   Ask SUSI <susi.ai>
 
 .. toctree::
    :caption: Development

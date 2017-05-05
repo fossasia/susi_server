@@ -4,9 +4,9 @@
     <!--#include file="../ssi/common_head_front.include" -->
     <meta name="description" content="Create your own social media search engine using the public and open message API.">
     <meta name="author" content="Michael Peter Christen, @0rb1t3r">
-    <link rel="canonical" href="http://dev.asksusi.com/api.html" />
+    <link rel="canonical" href="http://dev.susi.ai/api.html" />
     <link href="/css/dashboard.css" rel="stylesheet">
-    <title>asksusi.com - Open JSON API to search, collect and evaluate messages.</title>
+    <title>susi.ai - Open JSON API to search, collect and evaluate messages.</title>
     <!--#include file="../ssi/common_head_back.include" -->
     <!--#include file="../data/ssi/custom_head.include" -->
 </head>
@@ -24,7 +24,7 @@
             class="icon-bar"></span> <span class="icon-bar"></span> <span
             class="icon-bar"></span>
         </button>
-        <a class="navbar-brand" href="/"><img src="/images/brand.png" height="24" style="float: left;" alt="asksusi.com" title="asksusi.com message server">: API</a>
+        <a class="navbar-brand" href="/"><img src="/images/brand.png" height="24" style="float: left;" alt="susi.ai" title="susi.ai message server">: API</a>
       </div>
       <div id="navbar" class="navbar-collapse collapse">
         <ul class="nav navbar-nav navbar-right">
@@ -270,7 +270,7 @@
     "request_header": {
       "Upgrade-Insecure-Requests": "1",
       "Accept-Language": "en-US,en;q=0.8",
-      "Host": "asksusi.com",
+      "Host": "susi.ai",
       "Accept-Encoding": "gzip, deflate, sdch",
       "X-Forwarded-Proto": "http",
       "X-Forwarded-For": "172.30.107.104, 14.139.85.203",
@@ -353,8 +353,8 @@
 <pre>
 {
   "readme_0" : "THIS JSON IS THE RESULT OF YOUR SEARCH QUERY - THERE IS NO WEB PAGE WHICH SHOWS THE RESULT!",
-  "readme_1" : "asksusi.com is the framework for a message search system, not the portal, read: http://asksusi.com/about.html#notasearchportal",
-  "readme_2" : "This is supposed to be the back-end of a search portal. For the api, see http://asksusi.com/api.html",
+  "readme_1" : "susi.ai is the framework for a message search system, not the portal, read: http://susi.ai/about.html#notasearchportal",
+  "readme_2" : "This is supposed to be the back-end of a search portal. For the api, see http://susi.ai/api.html",
   "readme_3" : "Parameters q=(query), source=(cache|backend|twitter|all), callback=p for jsonp, maximumRecords=(message count), minified=(true|false)",
   "search_metadata" : {
     "itemsPerPage" : "1",
@@ -462,8 +462,8 @@
 </ul><br/>
 <pre>{
   "readme_0": "THIS JSON IS THE RESULT OF YOUR SEARCH QUERY - THERE IS NO WEB PAGE WHICH SHOWS THE RESULT!",
-  "readme_1": "asksusi.com is the framework for a message search system, not the portal, read: http://asksusi.com/about.html#notasearchportal",
-  "readme_2": "This is supposed to be the back-end of a search portal. For the api, see http://asksusi.com/api.html",
+  "readme_1": "susi.ai is the framework for a message search system, not the portal, read: http://susi.ai/about.html#notasearchportal",
+  "readme_2": "This is supposed to be the back-end of a search portal. For the api, see http://susi.ai/api.html",
   "readme_3": "Parameters q=(query), source=(cache|backend|twitter|all), callback=p for jsonp, maximumRecords=(message count), minified=(true|false)",
   "search_metadata": {
     "itemsPerPage": "0",
@@ -501,13 +501,13 @@
 }</pre>
 <p>Loklak can also suggest what's trending and can give you the list of trending hashtags using the same search aggregations method. To find out the most trending hashtags on loklak since a particular date. Other filters like <code>until</code> can also be applied, here is a sample request</p>
 <ul class="request">
-  <li>url&nbsp;&nbsp;: <a href="http://asksusi.com/aaa/search.json?q=since:2016-06-01&source=cache&count=0&fields=hashtags" target="_blank">http://asksusi.com/aaa/search.json?q=since:2016-06-01&source=cache&count=0&fields=hashtags</a>
+  <li>url&nbsp;&nbsp;: <a href="http://susi.ai/aaa/search.json?q=since:2016-06-01&source=cache&count=0&fields=hashtags" target="_blank">http://susi.ai/aaa/search.json?q=since:2016-06-01&source=cache&count=0&fields=hashtags</a>
   </li>
 </ul><br>
 <pre>{
   "readme_0": "THIS JSON IS THE RESULT OF YOUR SEARCH QUERY - THERE IS NO WEB PAGE WHICH SHOWS THE RESULT!",
-  "readme_1": "asksusi.com is the framework for a message search system, not the portal, read: http://asksusi.com/about.html#notasearchportal",
-  "readme_2": "This is supposed to be the back-end of a search portal. For the api, see http://asksusi.com/api.html",
+  "readme_1": "susi.ai is the framework for a message search system, not the portal, read: http://susi.ai/about.html#notasearchportal",
+  "readme_2": "This is supposed to be the back-end of a search portal. For the api, see http://susi.ai/api.html",
   "readme_3": "Parameters q=(query), source=(cache|backend|twitter|all), callback=p for jsonp, maximumRecords=(message count), minified=(true|false)",
   "search_metadata": {
     "itemsPerPage": "0",
@@ -546,12 +546,12 @@
   the time frame is below three hours, hours if the time frame is
   below seven days and days otherwise. Example:
 <ul class="request">
-  <li>url&nbsp;:&nbsp;<a href="http://asksusi.com/aaa/search.json?q=spacex%20since:2015-04-05_23:10%20until:2015-04-06_23:20&source=cache&count=0&fields=created_at&timezoneOffset=-120" target="_blank">http://localhost:9000/aaa/search.json?q=spacex%20since:2015-04-05_23:10%20until:2015-04-05_23:20&source=cache&count=0&fields=created_at&timezoneOffset=-120</a></li>
+  <li>url&nbsp;:&nbsp;<a href="http://susi.ai/aaa/search.json?q=spacex%20since:2015-04-05_23:10%20until:2015-04-06_23:20&source=cache&count=0&fields=created_at&timezoneOffset=-120" target="_blank">http://localhost:9000/aaa/search.json?q=spacex%20since:2015-04-05_23:10%20until:2015-04-05_23:20&source=cache&count=0&fields=created_at&timezoneOffset=-120</a></li>
 </ul><br/>
 <pre>{
   "readme_0": "THIS JSON IS THE RESULT OF YOUR SEARCH QUERY - THERE IS NO WEB PAGE WHICH SHOWS THE RESULT!",
-  "readme_1": "asksusi.com is the framework for a message search system, not the portal, read: http://asksusi.com/about.html#notasearchportal",
-  "readme_2": "This is supposed to be the back-end of a search portal. For the api, see http://asksusi.com/api.html",
+  "readme_1": "susi.ai is the framework for a message search system, not the portal, read: http://susi.ai/about.html#notasearchportal",
+  "readme_2": "This is supposed to be the back-end of a search portal. For the api, see http://susi.ai/api.html",
   "readme_3": "Parameters q=(query), source=(cache|backend|twitter|all), callback=p for jsonp, maximumRecords=(message count), minified=(true|false)",
   "search_metadata": {
     "itemsPerPage": "0",
@@ -589,14 +589,14 @@
 </pre>
 <p>It is also possible to specify the order in descending order for the following filter options <code>favourites_count</code>, <code>retweet_count</code> and the default being <code>created_at</code>. Here are the examples of the different queries which make this happen.</p>
 <ul class="request">
-  <li>retweet count: &nbsp;&nbsp;: <a href="http://asksusi.com/aaa/search.json?timezoneOffset=-120&q=fossasia&order=retweet_count&source=cache" target="_blank">http://asksusi.com/aaa/search.json?timezoneOffset=-120&q=fossasia&order=retweet_count&source=cache</a></li>
-  <li>favorites count: &nbsp;&nbsp;: <a href="http://asksusi.com/aaa/search.json?timezoneOffset=-120&q=fossasia&order=favourites_count&source=cache" target="_blank">http://localhost:9000/aaa/search.json?timezoneOffset=-120&q=fossasia&order=favourites_count&source=cache</a></li>
+  <li>retweet count: &nbsp;&nbsp;: <a href="http://susi.ai/aaa/search.json?timezoneOffset=-120&q=fossasia&order=retweet_count&source=cache" target="_blank">http://susi.ai/aaa/search.json?timezoneOffset=-120&q=fossasia&order=retweet_count&source=cache</a></li>
+  <li>favorites count: &nbsp;&nbsp;: <a href="http://susi.ai/aaa/search.json?timezoneOffset=-120&q=fossasia&order=favourites_count&source=cache" target="_blank">http://localhost:9000/aaa/search.json?timezoneOffset=-120&q=fossasia&order=favourites_count&source=cache</a></li>
 </ul>
 <pre>
   {
   "readme_0": "THIS JSON IS THE RESULT OF YOUR SEARCH QUERY - THERE IS NO WEB PAGE WHICH SHOWS THE RESULT!",
-  "readme_1": "asksusi.com is the framework for a message search system, not the portal, read: http://asksusi.com/about.html#notasearchportal",
-  "readme_2": "This is supposed to be the back-end of a search portal. For the api, see http://asksusi.com/api.html",
+  "readme_1": "susi.ai is the framework for a message search system, not the portal, read: http://susi.ai/about.html#notasearchportal",
+  "readme_2": "This is supposed to be the back-end of a search portal. For the api, see http://susi.ai/api.html",
   "readme_3": "Parameters q=(query), source=(cache|backend|twitter|all), callback=p for jsonp, maximumRecords=(message count), minified=(true|false)",
   "search_metadata": {
     "itemsPerPage": "100",
@@ -1017,11 +1017,11 @@ fuzziness). location coordinates are given as [lon,lat]
 Example usage:
 </p>
 <ul class="request">
-<li><a href="http://asksusi.com/aaa/geocode.json?data={%22places%22:[%22Frankfurt%20am%20Main%22,%22New%20York%22,%22Singapore%22]}" target="_blank">http://asksusi.com/aaa/geocode.json?data={%22places%22:[%22Frankfurt%20am%20Main%22,%22New%20York%22,%22Singapore%22]} 
+<li><a href="http://susi.ai/aaa/geocode.json?data={%22places%22:[%22Frankfurt%20am%20Main%22,%22New%20York%22,%22Singapore%22]}" target="_blank">http://susi.ai/aaa/geocode.json?data={%22places%22:[%22Frankfurt%20am%20Main%22,%22New%20York%22,%22Singapore%22]} 
 </a></li>
-<li> Other languages: <br> <a href="http://asksusi.com/aaa/geocode.json?data={%22places%22:[%22%E5%9C%A3%E8%83%A1%E5%88%A9%E5%A8%85%20%E5%BE%B7%E6%B4%9B%E9%87%8C%E4%BA%9A%22]}" target="_blank">http://asksusi.com/aaa/geocode.json?data={%22places%22:[%22%E5%9C%A3%E8%83%A1%E5%88%A9%E5%A8%85%20%E5%BE%B7%E6%B4%9B%E9%87%8C%E4%BA%9A%22]}</a></li>
-<li> Multiple Cities: <br><a href="http://asksusi.com/aaa/geocode.json?minified=true&data={%22places%22:[%22Singapore%22,%20%22New%20York%22,%20%22Los%20Angeles%22]}" target="_blank">
-http://asksusi.com/aaa/geocode.json?minified=true&data={%22places%22:[%22Singapore%22,%20%22New%20York%22,%20%22Los%20Angeles%22]}
+<li> Other languages: <br> <a href="http://susi.ai/aaa/geocode.json?data={%22places%22:[%22%E5%9C%A3%E8%83%A1%E5%88%A9%E5%A8%85%20%E5%BE%B7%E6%B4%9B%E9%87%8C%E4%BA%9A%22]}" target="_blank">http://susi.ai/aaa/geocode.json?data={%22places%22:[%22%E5%9C%A3%E8%83%A1%E5%88%A9%E5%A8%85%20%E5%BE%B7%E6%B4%9B%E9%87%8C%E4%BA%9A%22]}</a></li>
+<li> Multiple Cities: <br><a href="http://susi.ai/aaa/geocode.json?minified=true&data={%22places%22:[%22Singapore%22,%20%22New%20York%22,%20%22Los%20Angeles%22]}" target="_blank">
+http://susi.ai/aaa/geocode.json?minified=true&data={%22places%22:[%22Singapore%22,%20%22New%20York%22,%20%22Los%20Angeles%22]}
 </a></li>
 </ul>
 <p>
@@ -1514,7 +1514,7 @@ shortens this array to only one entry. The API also has reverse geocoding and fu
 <p>This servlet provides the retrieval of user followers and the accounts which the user is following.
    Just submit the <code>screen_name</code> as GET http attribute. Example:
    <ul class="request">
-  <li><a href="http://asksusi.com/aaa/user.json?screen_name=loklak_app">http://asksusi.com/aaa/user.json?screen_name=loklak_app</a></li>
+  <li><a href="http://susi.ai/aaa/user.json?screen_name=loklak_app">http://susi.ai/aaa/user.json?screen_name=loklak_app</a></li>
    </ul><br/>
 </p>
 <pre>{
@@ -1554,17 +1554,17 @@ shortens this array to only one entry. The API also has reverse geocoding and fu
     "entities" : {
       "description" : {
         "urls" : [ {
-          "expanded_url" : "http://asksusi.com",
+          "expanded_url" : "http://susi.ai",
           "indices" : [ 93, 115 ],
-          "display_url" : "asksusi.com",
+          "display_url" : "susi.ai",
           "url" : "http://t.co/D8XmZwuU2Y"
         } ]
       },
       "url" : {
         "urls" : [ {
-          "expanded_url" : "http://asksusi.com",
+          "expanded_url" : "http://susi.ai",
           "indices" : [ 0, 23 ],
-          "display_url" : "asksusi.com",
+          "display_url" : "susi.ai",
           "url" : "https://t.co/D8XmZwdjbq"
         } ]
       }
@@ -1603,7 +1603,7 @@ shortens this array to only one entry. The API also has reverse geocoding and fu
    This will produce a list of
    <code>&lt;maxcount&gt;</code> user entries in a 'topology' object. Example :
    <ul class="request">
-  <li><a href="http://asksusi.com/aaa/user.json?screen_name=loklak_app&followers=10000&following=10000">http://asksusi.com/aaa/user.json?screen_name=loklak_app&followers=10000&following=10000</a></li>
+  <li><a href="http://susi.ai/aaa/user.json?screen_name=loklak_app&followers=10000&following=10000">http://susi.ai/aaa/user.json?screen_name=loklak_app&followers=10000&following=10000</a></li>
    </ul><br/>
 </p>
 
@@ -1673,7 +1673,7 @@ shortens this array to only one entry. The API also has reverse geocoding and fu
     "alternativeHeadline": "the 'hello world' app that you want to copy-paste for your own app",
     "applicationCategory": "Demo",
     "applicationSubCategory": "Hello World",
-    "operatingSystem": "http://asksusi.com",
+    "operatingSystem": "http://susi.ai",
     "author": {
       "@type": "Person",
       "name": "Michael Christen",
@@ -1938,7 +1938,7 @@ loklak_messages under the name image0.png</p>
 
 <p>Here is an example :
 <ul class="request">
-  <li><a href="http://asksusi.com/vis/markdown.png?text=hello%20world%0Dhello%20universe&color_text=000000&color_background=ffffff&padding=3">http://asksusi.com/vis/markdown.png?text=hello%20world%0Dhello%20universe&color_text=000000&color_background=ffffff&padding=3</a></li>
+  <li><a href="http://susi.ai/vis/markdown.png?text=hello%20world%0Dhello%20universe&color_text=000000&color_background=ffffff&padding=3">http://susi.ai/vis/markdown.png?text=hello%20world%0Dhello%20universe&color_text=000000&color_background=ffffff&padding=3</a></li>
 </ul><br/>
 </p>
 </section>
@@ -1958,7 +1958,7 @@ loklak_messages under the name image0.png</p>
 }
   </pre>
   <ul class="request">
-    <li><a href="http://asksusi.com/vis/piechart.png?data={%22ford%22:%2217.272992%22,%22toyota%22:%2227.272992%22,%22renault%22:%2247.272992%22}&width=1000&height=1000">http://asksusi.com/vis/piechart.png?data={%22ford%22:%2217.272992%22,%22toyota%22:%2227.272992%22,%22renault%22:%2247.272992%22}&width=1000&height=1000</a></li>
+    <li><a href="http://susi.ai/vis/piechart.png?data={%22ford%22:%2217.272992%22,%22toyota%22:%2227.272992%22,%22renault%22:%2247.272992%22}&width=1000&height=1000">http://susi.ai/vis/piechart.png?data={%22ford%22:%2217.272992%22,%22toyota%22:%2227.272992%22,%22renault%22:%2247.272992%22}&width=1000&height=1000</a></li>
     <br>
     <li>
     <div class="tabcol0">data</div>

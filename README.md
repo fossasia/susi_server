@@ -6,6 +6,8 @@ title: Susi - Docs
 
 ---
 # Susi
+[![Dependency Status](https://gemnasium.com/badges/github.com/nidhinmahesh/susi_server.svg)](https://gemnasium.com/github.com/nidhinmahesh/susi_server)
+
 
 [![Join the chat at https://gitter.im/fossasia/susi_server](https://badges.gitter.im/fossasia/susi_server.svg)](https://gitter.im/fossasia/susi_server?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 [![Build Status](https://travis-ci.org/fossasia/susi_server.svg?branch=development)](https://travis-ci.org/fossasia/susi_server)
@@ -161,7 +163,7 @@ Hey, this is the tool for that! Just put http://loklak.org/api/search.rss?q=%23s
 
 ## Where can I find documentation?
 
-The application has built-in documentation web pages, you will see them when you opened the application web pages or you can simply open `html/index.html` or just use http://api.asksusi.com as reference. 
+The application has built-in documentation web pages, you will see them when you opened the application web pages or you can simply open `html/index.html` or just use http://api.susi.ai as reference. 
 
 ## Where can I find showcases and tutorials?
 
