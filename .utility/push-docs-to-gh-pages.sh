@@ -17,9 +17,15 @@ echo -e "Installing requirements...\n"
 cd docs
 pip3 install -r requirements.txt
 
+echo -e "Including README.rst from root to docs directory"
+
+python3 include.py README.rst
+
 echo -e "Generating static HTML pages for documentation...\n"
 
 make html
+
+rm README.rst
 
 echo -e "Publishing documentation...\n"
 
