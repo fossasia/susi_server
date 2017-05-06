@@ -38,7 +38,7 @@ import java.util.regex.Matcher;
  */
 public class TimeoutMatcher {
 
-    private final static ExecutorService EXECUTOR = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
+    private final static ExecutorService EXECUTOR = Executors.newCachedThreadPool();
 
     private final Matcher matcher;
     
