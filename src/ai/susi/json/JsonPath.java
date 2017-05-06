@@ -26,6 +26,30 @@ import org.json.JSONObject;
 import org.json.JSONTokener;
 
 public class JsonPath {
+    
+
+    public static JSONArray parse(JSONTokener tokener, String jsonPath) throws JSONException {
+        JSONArray a = parseRaw(tokener, jsonPath);
+        if (a.length() == 0) return a; // length == 1 will cause an empty thought. Its not wrong, it will just cause that thinking fails. May be wanted.
+        Object f = a.get(0);
+        if (a.length() == 1 && (!(f instanceof JSONObject))) {
+            // wrap this atom into an object with key name "object"
+            return new JSONArray().put(new JSONObject().put("object", a.get(0)));
+        }
+        // now, all objects in the array must be of the same type!
+        Class<? extends Object> c = f.getClass();
+        for (int i = 1; i < a.length(); i++) {
+            if (a.get(i).getClass() != c) throw new JSONException("all objects in the result array must be of same type");
+        }
+        if (f instanceof JSONObject) return a;
+        if (f instanceof JSONArray) throw new JSONException("the objects in the result array must not be an array");
+        // the atomic objects must be wrapped
+        JSONArray b = new JSONArray();
+        for (int i = 0; i < a.length(); i++) {
+            b.put(new JSONObject().put("object", a.get(i)));
+        }
+        return b;
+    }
 
     /**
      * Very simple JSONPath decoder which always creates a JSONArray as result.
@@ -37,51 +61,49 @@ public class JsonPath {
      * @param jsonPath a path as defined by http://goessner.net/articles/JsonPath/
      * @return a JSONArray with the data part of a console query
      */
-    public static JSONArray parse(JSONTokener tokener, String jsonPath) {
-        try {
-            if (tokener == null) return null;
-            String[] dompath = jsonPath.split("\\.");
-            if (dompath == null || dompath.length < 1 || !dompath[0].equals("$")) return null; // wrong syntax of jsonPath
-            if (dompath.length == 1) {
-                // the tokener contains already the data array
-                return new JSONArray(tokener);
+    public static JSONArray parseRaw(JSONTokener tokener, String jsonPath) throws JSONException {
+        if (tokener == null) return null;
+        String[] dompath = jsonPath.split("\\.");
+        if (dompath == null || dompath.length < 1 || !dompath[0].equals("$")) return null; // wrong syntax of jsonPath
+        if (dompath.length == 1) {
+            // the tokener contains already the data array
+            return new JSONArray(tokener);
+        }
+        Object decomposition = null;
+        for (int domc = 1; domc < dompath.length; domc++) {
+            String path = dompath[domc];
+            int p = path.indexOf('[');
+            if (p < 0) {
+                decomposition = ((decomposition == null) ? new JSONObject(tokener) : ((JSONObject) decomposition)).get(path);
+            } else if (p == 0) {
+                int idx = Integer.parseInt(path.substring(1, path.length() - 1));
+                decomposition = ((decomposition == null) ? new JSONArray(tokener) : ((JSONArray) decomposition)).get(idx);
+            } else {
+                int idx = Integer.parseInt(path.substring(p + 1, path.length() - 1));
+                path = path.substring(0, p);
+                decomposition = ((decomposition == null) ? new JSONObject(tokener) : ((JSONObject) decomposition)).get(path);
+                decomposition = ((JSONArray) decomposition).get(idx);
             }
-            Object decomposition = null;
-            for (int domc = 1; domc < dompath.length; domc++) {
-                String path = dompath[domc];
-                int p = path.indexOf('[');
-                if (p < 0) {
-                    decomposition = ((decomposition == null) ? new JSONObject(tokener) : ((JSONObject) decomposition)).get(path);
-                } else if (p == 0) {
-                    int idx = Integer.parseInt(path.substring(1, path.length() - 1));
-                    decomposition = ((decomposition == null) ? new JSONArray(tokener) : ((JSONArray) decomposition)).get(idx);
-                } else {
-                    int idx = Integer.parseInt(path.substring(p + 1, path.length() - 1));
-                    path = path.substring(0, p);
-                    decomposition = ((decomposition == null) ? new JSONObject(tokener) : ((JSONObject) decomposition)).get(path);
-                    decomposition = ((JSONArray) decomposition).get(idx);
-                }
+        }
+        if (decomposition instanceof JSONArray) return (JSONArray) decomposition;
+        if (decomposition instanceof JSONObject) {
+            // enrich the decomposition with header/column entries
+            // then we can access them with $k0$, $v0$, ... and so on
+            // example source: http://api.loklak.org/api/search.json?q=fossasia&source=cache&count=0&fields=mentions,hashtags&limit=6
+            String[] columns = ((JSONObject) decomposition).keySet().toArray(new String[((JSONObject) decomposition).length()]);
+            int rowcount = 0;
+            for (String column: columns) {
+                ((JSONObject) decomposition).put("k" + rowcount, column);
+                ((JSONObject) decomposition).put("v" + rowcount, ((JSONObject) decomposition).get(column));
+                rowcount++;
             }
-            if (decomposition instanceof JSONArray) return (JSONArray) decomposition;
-            if (decomposition instanceof JSONObject) {
-                // enrich the decomposition with header/column entries
-                // then we can access them with $h0$, $c0$, ... and so on
-                // example source: http://api.loklak.org/api/search.json?q=fossasia&source=cache&count=0&fields=mentions,hashtags&limit=6
-                String[] columns = ((JSONObject) decomposition).keySet().toArray(new String[((JSONObject) decomposition).length()]);
-                int rowcount = 0;
-                for (String column: columns) {
-                    ((JSONObject) decomposition).put("k" + rowcount, column);
-                    ((JSONObject) decomposition).put("v" + rowcount, ((JSONObject) decomposition).get(column));
-                    rowcount++;
-                }
-                ((JSONObject) decomposition).put("mapsize", columns.length);
-                return new JSONArray().put((JSONObject) decomposition);
-            }
-            if (decomposition instanceof String) return new JSONArray().put(new JSONObject().put("object", (String) decomposition));
-            if (decomposition instanceof Integer) return new JSONArray().put(new JSONObject().put("object", decomposition.toString()));
-            if (decomposition instanceof Double) return new JSONArray().put(new JSONObject().put("object", decomposition.toString()));
-        } catch (JSONException e) {}
-        return null;
+            ((JSONObject) decomposition).put("mapsize", columns.length);
+            return new JSONArray().put((JSONObject) decomposition);
+        }
+        if (decomposition instanceof String) return new JSONArray().put(new JSONObject().put("object", (String) decomposition));
+        if (decomposition instanceof Integer) return new JSONArray().put(new JSONObject().put("object", decomposition.toString()));
+        if (decomposition instanceof Double) return new JSONArray().put(new JSONObject().put("object", decomposition.toString()));
+        throw new JSONException("unrecognized object type: " + decomposition.getClass().getName());
     }
     
     private static void test(String json, String path) {
