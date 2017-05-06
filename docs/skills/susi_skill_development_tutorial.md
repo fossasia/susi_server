@@ -1,4 +1,4 @@
-# Susi Skill Development Tutorial
+﻿# Susi Skill Development Tutorial
 
 Do you want your own AI Skills for Susi? It's surprisingly easy to add more Skills to Susi.
 
@@ -10,8 +10,8 @@ It's easy, DON'T PANIC. You don't need to be a software developer to enhance Sus
 
 We have a Susi Skill develoment environment based on an Etherpad. Are you unaware what an Etherpad is? It is a blank web page where you can just put in your text and everyone can collaborate.
 
-* open http://dream.asksusi.com
-* name a dream (just pick a name for your tests)
+* open http://dream.susi.ai
+* name a dream (just pick a name for your tests in lower case letters)
 * the etherpad is filled with a welcome message, just delete the content completely
 
 ATTENTION: the Susi Dream zone is a TEMPORARY zone. We may clean up that place at any time. It is only for testing your new Susi Skills
@@ -19,7 +19,7 @@ If you want your new Susi Skills to be permanent, send us a pull request, see [s
 
 ### Preparation to start testing
 
-To test the Susi Skills you are editing, you require the Susi Android Application (see: https://github.com/fossasia/susi_android ) or you can also test them online at http://asksusi.com/chat
+To test the Susi Skills you are editing, you require the Susi Android Application (see: https://github.com/fossasia/susi_android ) or you can also test them online at http://susi.ai/chat
 
 Within the Susi chat dialog, enter
 
@@ -27,7 +27,7 @@ Within the Susi chat dialog, enter
 dream <testname>
 ```
 
-where `<testname>` is the name of the etherpad you just entered in http://dream.asksusi.com
+where `<testname>` is the name of the etherpad you just entered in http://dream.susi.ai
 
 Now all Skills you enter in the dream zone are available instantly in your chat! Thats easy, is it?
 
@@ -105,7 +105,7 @@ is just there because you want to ignore everything where it matches.
 The following example shows a case where both wildcards are used:
 ```
 For * I can buy a *
-Yeah, I believe $1$ is a god price for a $2$
+Yeah, I believe $1$ is a good price for a $2$
 ```
 
 Another case is, where you just want to ignore a whole part of the query:

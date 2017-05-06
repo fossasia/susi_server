@@ -2,32 +2,19 @@ Susi
 ====
 
 |Join the chat at https://gitter.im/fossasia/susi_server| |Build
-Status| |Docker Pulls| |Percentage of issues still open| |Average time
+Status| |Percentage of issues still open| |Average time
 to resolve an issue| |Twitter| |Twitter Follow|
 
-SUSI AI is an intelligent Open Source personal assistant. It is capable
-of chat and voice interaction and by using APIS to perform actions such
-as music playback, making to-do lists, setting alarms, streaming
-podcasts, playing audiobooks, and providing weather, traffic, and other
-real time information. Additional functionalities can be added as
-console services using external APIs. Susi AI is able to answer
-questions and depending on the context will ask for additional
-information in order to perform a desired outcome. The core of the
-assistant is the SUSI AI server that holds the "ingelligence" and
-"personality" of SUSI. The Android and web applications make use of the
-APIs to access information from a hosted server.
+SUSI AI is an intelligent Open Source personal assistant. It is capable of chat and voice interaction and by using APIS to perform actions such as music playback, making to-do lists, setting alarms, streaming podcasts, playing audiobooks, and providing weather, traffic, and other real time information. Additional functionalities can be added as console services using external APIs. Susi AI is able to answer questions and depending on the context will ask for additional information in order to perform a desired outcome. The core of the assistant is the SUSI AI server that holds the "ingelligence" and "personality" of SUSI. The Android and web applications make use of the APIs to access information from a hosted server.
 
-An automatic deployment from the development branch at GitHub is
-available for tests here https://susi-server.herokuapp.com
+An automatic deployment from the development branch at GitHub is available for tests here https://susi-server.herokuapp.com
 
 Communication
 -------------
 
-Please join our mailing list to discuss questions regarding the project:
-https://groups.google.com/forum/#!forum/loklak
+Please join our mailing list to discuss questions regarding the project: https://groups.google.com/forum/#!forum/opntec-dev/
 
-Our chat channel is on gitter here:
-https://gitter.im/fossasia/susi_server
+Our chat channel is on gitter here: https://gitter.im/fossasia/susi_server
 
 How do I install Susi: Download, Build, Run
 ===========================================
@@ -41,10 +28,8 @@ How do I install Susi: Download, Build, Run
 |Deploy| |Deploy on Scalingo| |Deploy to Bluemix| |Deploy to Docker
 Cloud|
 
-At this time, Susi is not provided in compiled form, you easily build it
-yourself. It's not difficult and done in one minute! The source code is
-hosted at https://github.com/fossasia/susi_server, you can download it
-and run Susi with:
+At this time, Susi is not provided in compiled form, you easily build it yourself. It's not difficult and done in one minute! The source code is
+hosted at https://github.com/fossasia/susi_server, you can download it and run Susi with:
 
 ::
 
@@ -71,20 +56,15 @@ For Windows Users (who are using GitBash/Cygwin or any terminal):
     To stop:
     > Press Ctrl+C
 
-After all server processes are running, Susi tries to open a browser
-page itself. If that does not happen, just open http://localhost:4000;
-if you made the installation on a headless or remote server, then
-replace 'localhost' with your server name.
+After all server processes are running, Susi tries to open a browser page itself. If that does not happen, just open http://localhost:4000; if you made the installation on a headless or remote server, then replace 'localhost' with your server name.
 
-To stop Susi, run: (this will block until the server has actually
-terminated)
+To stop Susi, run: (this will block until the server has actually terminated)
 
 ::
 
     > bin/stop.sh
 
-A self-upgrading process is available which must be triggered by a shell
-command. Just run:
+A self-upgrading process is available which must be triggered by a shell command. Just run:
 
 ::
 
@@ -93,8 +73,7 @@ command. Just run:
 Where can I download ready-built releases of Susi?
 --------------------------------------------------
 
-No-where, you must clone the git repository of Susi and built it
-yourself. That's easy, just do
+No-where, you must clone the git repository of Susi and built it yourself. That's easy, just do
 
 -  ``git clone https://github.com/fossasia/susi_server.git``
 -  ``cd susi``
@@ -103,27 +82,23 @@ yourself. That's easy, just do
 How do I install Susi with Docker?
 ----------------------------------
 
-To install Susi with Docker please refer to the `Susi Docker
-installation readme </docs/installation_docker.md>`__.
+To install Susi with Docker please refer to the `Susi Docker installation readme </docs/installation/installation_docker.md>`__.
 
 How do I deploy Susi with Heroku?
 ---------------------------------
 
-You can easily deploy to Heroku by clicking the Deploy to Heroku button
-above. To install Susi using Heroku Toolbelt, please refer to the `Susi
-Heroku installation readme </docs/installation_heroku.md>`__.
+You can easily deploy to Heroku by clicking the Deploy to Heroku button above. To install Susi using Heroku Toolbelt, please refer to the `Susi Heroku installation readme </docs/installation/installation_heroku.md>`__.
 
 How do I deploy Susi with cloud9?
 ---------------------------------
 
-To install Susi with cloud9 please refer to the `Susi cloud9
-installation readme </docs/installation_cloud9.md>`__.
+To install Susi with cloud9 please refer to the `Susi cloud9 installation readme </docs/installation/installation_cloud9.md>`__.
 
 How do I setup Susi on Eclipse?
 -------------------------------
 
 To install Susi on Eclipes, please refer to the `Susi Eclipse
-readme </docs/eclipseSetup.md>`__.
+readme </docs/installation/eclipseSetup.md>`__.
 
 How do I run Susi?
 ------------------
@@ -136,8 +111,7 @@ How do I run Susi?
 How do I analyze data acquired by Susi
 --------------------------------------
 
-Susi stores data into an elasticsearch index. There is a front-end for
-the index available in elasticsearch-head. To install this, do:
+Susi stores data into an elasticsearch index. There is a front-end for the index available in elasticsearch-head. To install this, do:
 
 -  ``sudo npm install -g grunt-cli``
 -  ``cd`` into the parent directly of Susi\_server
@@ -189,7 +163,7 @@ How do I develop Skills (AI Conversation Rules) for Susi?
 ---------------------------------------------------------
 
 The Susi skill language is described in the `Skill Development
-Tutorial </docs/susi_skill_development_tutorial.md>`__.
+Tutorial </docs/skills/susi_skill_development_tutorial.md>`__.
 
 Why should I use Susi?
 ----------------------
@@ -211,12 +185,8 @@ Where can I find documentation?
 
 The application has built-in documentation web pages, you will see them
 when you opened the application web pages or you can simply open
-``html/index.html`` or just use http://api.asksusi.com as reference.
+``html/index.html`` or just use http://api.susi.ai as reference.
 
-Where can I find showcases and tutorials?
------------------------------------------
-
-Articles and tutorials are also on our blog at http://blog.loklak.net.
 
 Where do I find the javadocs?
 -----------------------------
@@ -320,12 +290,11 @@ Your code will be reviewed, in this sequence, by:
 
 Have fun! @0rb1t3r
 
+
 .. |Join the chat at https://gitter.im/fossasia/susi_server| image:: https://badges.gitter.im/fossasia/susi_server.svg
    :target: https://gitter.im/fossasia/susi_server?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge
 .. |Build Status| image:: https://travis-ci.org/fossasia/susi_server.svg?branch=development
    :target: https://travis-ci.org/fossasia/susi_server
-.. |Docker Pulls| image:: https://img.shields.io/docker/pulls/mariobehling/loklak.svg?maxAge=2592000?style=flat-square
-   :target: https://hub.docker.com/r/mariobehling/loklak/
 .. |Percentage of issues still open| image:: http://isitmaintained.com/badge/open/fossasia/susi_server.svg
    :target: http://isitmaintained.com/project/fossasia/susi_server
 .. |Average time to resolve an issue| image:: http://isitmaintained.com/badge/resolution/fossasia/susi_server.svg
