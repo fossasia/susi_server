@@ -1,6 +1,6 @@
 /**
  *  JsonPathTestService
- *  Copyright 27.02.2015 by Michael Peter Christen, @0rb1t3r
+ *  Copyright 6.05.2017 by Michael Peter Christen, @0rb1t3r
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -20,6 +20,7 @@
 package ai.susi.server.api.susi;
 
 import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import javax.servlet.http.HttpServletResponse;
 
@@ -37,6 +38,12 @@ import ai.susi.server.Authorization;
 import ai.susi.server.BaseUserRole;
 import ai.susi.server.Query;
 
+/**
+ * test a jsonpath
+ * i.e.:
+ * http://localhost:4000/susi/jsonpath.json?json=%7B%22text%22:%22abc%22%7D&path=$.text
+ * http://localhost:4000/susi/jsonpath.json?path=$.Models[0]&url=https://www.carqueryapi.com/api/0.3/?callback=xx%26cmd=getModels%26make=ford
+ */
 public class JsonPathTestService extends AbstractAPIHandler implements APIHandler {
    
     private static final long serialVersionUID = 857847333032749879L;
@@ -62,6 +69,16 @@ public class JsonPathTestService extends AbstractAPIHandler implements APIHandle
         post.setResponse(response, "application/javascript");
 
         String jsonString = post.get("json", "{}").trim();
+        String url = post.get("url", "").trim();
+        if (jsonString.equals("{}") && url.length() > 0) {
+            // replace jsonString with content from web
+            try {
+                byte[] b = ConsoleService.loadData(url);
+                jsonString = new String(b, StandardCharsets.UTF_8);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
         String path = post.get("path", "$").trim();
         
         JSONTokener tokener = new JSONTokener(new ByteArrayInputStream(jsonString.getBytes(StandardCharsets.UTF_8)));

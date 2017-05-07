@@ -202,7 +202,7 @@ public class SignUpService extends AbstractAPIHandler implements APIHandler {
 			tokenAuthentication.put("one_time", true);
 
 			try {
-				EmailHandler.sendEmail(signup, "Loklak verification", getVerificationMailContent(token, identity.getName()));
+				EmailHandler.sendEmail(signup, "SUSI AI verification", getVerificationMailContent(token, identity.getName()));
 
 				result.put("message",
 						"You successfully signed-up! An email with a verification link was send to your address.");
