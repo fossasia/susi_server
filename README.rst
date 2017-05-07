@@ -79,10 +79,20 @@ No-where, you must clone the git repository of Susi and built it yourself. That'
 -  ``cd susi``
 -  then see below ("How do I run Susi")
 
-How do I install Susi with Docker?
+How do I install Susi with Docker on Google Cloud?
 ----------------------------------
 
-To install Susi with Docker please refer to the `Susi Docker installation readme </docs/installation/installation_docker.md>`__.
+To install Susi with Docker on Google Cloud please refer to the `Susi Docker installation readme </docs/installation/installation_docker_gcloud.md>`__.
+
+How do I install Susi with Docker on AWS?
+----------------------------------
+
+To install Susi with Docker on AWS please refer to the `Susi Docker installation readme </docs/installation/installation_docker_aws.md>`__.
+
+How do I install Susi with Docker on Bluemix ?
+----------------------------------
+
+To install Susi with Docker on Bluemix please refer to the `Susi Docker installation readme </docs/installation/installation_docker_bluemix.md>`__.
 
 How do I deploy Susi with Heroku?
 ---------------------------------
