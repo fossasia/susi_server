@@ -23,6 +23,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.Set;
 import java.util.regex.Pattern;
 
@@ -107,6 +108,23 @@ public class ConsoleService extends AbstractAPIHandler implements APIHandler {
         
         // finished, close
         cc.close();
+        
+        // check if this is jsonp
+        //System.out.println("DEBUG CONSOLE:" + new String(b, StandardCharsets.UTF_8));
+        int i = b.length;
+        while (i-- > 0) if (b[i] > 32) break;
+        if (i > 2) {
+            if (b[i] == ';' && b[i - 1] == ')') {
+                // end of jsonp, look for start
+                int j = 0;
+                while (j < i) if (b[j++] == '(') {
+                    // found the json prefix. cut out json
+                    byte[] c = new byte[i - 1 - j];
+                    System.arraycopy(b, j, c, 0, i - 1 - j);
+                    return c;
+                }
+            }
+        }
         return b;
     }
     

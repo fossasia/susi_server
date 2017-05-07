@@ -165,19 +165,19 @@ public class SusiArgument implements Iterable<SusiThought> {
      * @param depth the maximum depth into the flow. depth == 0 means 'only the last thought'
      * @return the instantiated statement with elements of the argument applied
      */
-    public String unify(String statement, int depth) {
+    public String unify(String statement, boolean urlencode, int depth) {
         for (SusiThought t: this) {
             // this uses our iterator which iterates in reverse order. That means, latest thought is first returned
             if (depth-- < 0) break;
-            statement = t.unify(statement);
+            statement = t.unify(statement, urlencode);
             if (!new TimeoutMatcher(SusiThought.variable_pattern.matcher(statement)).find()) return statement;
         }
         if (new TimeoutMatcher(SusiThought.variable_pattern.matcher(statement)).find()) return null; // failure!
         return statement;
     }
     
-    public String unify(String statement) {
-        return unify(statement, Integer.MAX_VALUE);
+    public String unify(String statement, boolean urlencode) {
+        return unify(statement, urlencode, Integer.MAX_VALUE);
     }
 
     /**
@@ -248,6 +248,6 @@ public class SusiArgument implements Iterable<SusiThought> {
     
     public static void main(String[] args) {
         SusiArgument a = new SusiArgument().think(new SusiThought().addObservation("a", "letter-a"));
-        System.out.println(a.unify("the letter $a$"));
+        System.out.println(a.unify("the letter $a$", true));
     }
 }

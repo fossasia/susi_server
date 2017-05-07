@@ -20,6 +20,8 @@
 
 package ai.susi.mind;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -378,7 +380,7 @@ public class SusiThought extends JSONObject {
      * @param statement
      * @return the instantiated statement with elements of the argument applied as much as possible
      */
-    public String unify(String statement) {
+    public String unify(String statement, boolean urlencode) {
         if (statement.indexOf('$') < 0) return statement;
         JSONArray table = this.getData();
         if (table != null && table.length() > 0) {
@@ -387,7 +389,11 @@ public class SusiThought extends JSONObject {
                 for (String key: row.keySet()) {
                     int i;
                     while ((i = statement.indexOf("$" + key + "$")) >= 0) {
-                        statement = statement.substring(0, i) + row.get(key).toString() + statement.substring(i + key.length() + 2);
+                        String substitution = row.get(key).toString();
+                        if (urlencode) try {
+                            substitution = URLEncoder.encode(substitution, "UTF-8");
+                        } catch (UnsupportedEncodingException e) {}
+                        statement = statement.substring(0, i) + substitution + statement.substring(i + key.length() + 2);
                     }
                     if (statement.indexOf('$') < 0) break;
                 }
@@ -407,6 +413,6 @@ public class SusiThought extends JSONObject {
     
     public static void main(String[] args) {
         SusiThought t = new SusiThought().addObservation("a", "letter-a");
-        System.out.println(t.unify("the letter $a$"));
+        System.out.println(t.unify("the letter $a$", true));
     }
 }
