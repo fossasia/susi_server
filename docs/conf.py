@@ -135,7 +135,7 @@ html_theme = 'alabaster'
 # further.  For a list of options available for each theme, see the
 # documentation.
 html_theme_options = {
-    'logo': 'docs/images/susi-logo-original.svg',
+    'logo': 'images/susi-logo-original.svg',
 }
 
 # Add any paths that contain custom themes here, relative to this directory.
