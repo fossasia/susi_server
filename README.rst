@@ -94,6 +94,11 @@ How do I install Susi with Docker on Bluemix ?
 
 To install Susi with Docker on Bluemix please refer to the `Susi Docker installation readme </docs/installation/installation_docker_bluemix.md>`__.
 
+How do I install Susi with Docker on Digital Ocean ?
+----------------------------------
+
+To install Susi with Docker on Digital Ocean please refer to the `Susi Docker installation readme </docs/installation/installation_docker_digitalocean.md>`__.
+
 How do I deploy Susi with Heroku?
 ---------------------------------
 
