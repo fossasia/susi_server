@@ -142,22 +142,22 @@ How to compile using Gradle?
 -  To install Gradle on Mac OS X with homebrew
    ::
    
-       ``brew install gradle``
+       brew install gradle
 
 -  To compile, first, create dir necessary for Gradle
    ::
    
-       ``./gradle_init.sh``
+       ./gradle_init.sh
 
    Compile the source to classes and a jar file
    ::
 
-       ``gradle assemble``
+       gradle assemble
 
    Compiled file can be found in build dir Last, clean up so that we can
    still build the project using Ant
    ::
-       ``./gradle_clean.sh``
+       ./gradle_clean.sh
 
 How do I develop Skills (AI Conversation Rules) for Susi?
 ---------------------------------------------------------
