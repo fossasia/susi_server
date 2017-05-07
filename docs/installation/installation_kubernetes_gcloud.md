@@ -39,7 +39,7 @@ sudo swapon /swapfile
 sudo docker build https://github.com/loklak/loklak_server.git
 ```
 
-9. Create a cluster and resize 
+9. Create a cluster
 
 ```gcloud container clusters create example-cluster```
 
