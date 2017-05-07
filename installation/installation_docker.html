@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Installation of loklak with Docker &#8212; Susi Server development documentation</title>
+    <title>Installation of loklak with Docker on Bluemix &#8212; Susi Server development documentation</title>
     
     <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -43,10 +43,8 @@
         <div class="bodywrapper">
           <div class="body" role="main">
             
-  <div class="section" id="installation-of-loklak-with-docker">
-<span id="installation-of-loklak-with-docker"></span><h1>Installation of loklak with Docker<a class="headerlink" href="#installation-of-loklak-with-docker" title="Permalink to this headline">¶</a></h1>
-<div class="section" id="installing-loklak-on-bluemix-with-docker">
-<span id="installing-loklak-on-bluemix-with-docker"></span><h2>Installing loklak on Bluemix with Docker<a class="headerlink" href="#installing-loklak-on-bluemix-with-docker" title="Permalink to this headline">¶</a></h2>
+  <div class="section" id="installation-of-loklak-with-docker-on-bluemix">
+<span id="installation-of-loklak-with-docker-on-bluemix"></span><h1>Installation of loklak with Docker on Bluemix<a class="headerlink" href="#installation-of-loklak-with-docker-on-bluemix" title="Permalink to this headline">¶</a></h1>
 <ol>
 <li><p class="first">Install docker on your system</p>
 </li>
@@ -126,158 +124,6 @@ cf ic login   (No credentials are necessary of you logged in to bluemix before</
 <li>Send your own bluemix loklak link to Mario in order to prove your done it</li>
 </ol>
 </div>
-<div class="section" id="installing-loklak-on-aws-with-docker">
-<span id="installing-loklak-on-aws-with-docker"></span><h2>Installing loklak on AWS with Docker<a class="headerlink" href="#installing-loklak-on-aws-with-docker" title="Permalink to this headline">¶</a></h2>
-<ol>
-<li><p class="first">Sign in to <a class="reference external" href="https://aws.amazon.com">AWS</a></p>
-</li>
-<li><p class="first">In the top-right corner, choose a area you want to set up the instance, e.g.: Asia Pacific (Singapore).</p>
-</li>
-<li><p class="first">In the console panel, choose EC2. In EC2 Control Panel, choose key pairs, under Network &amp; Security, and create a new key pair. It will automatically download the private key, and you should do <code class="docutils literal"><span class="pre">chmod</span> <span class="pre">400</span> <span class="pre">YOUR_KEY_NAME</span></code> to prevent other user to access your private key. After that, go back to your dashboard, and click Launch Instance.</p>
-</li>
-<li><p class="first">In Step 1: Choose an Amazon Machine Image, we choose <code class="docutils literal"><span class="pre">Ubuntu</span> <span class="pre">Server</span> <span class="pre">14.04</span> <span class="pre">LTS</span> <span class="pre">(HVM),</span> <span class="pre">SSD</span> <span class="pre">Volume</span> <span class="pre">Type</span></code>.</p>
-</li>
-<li><p class="first">In Step 2: Choose an Instance Type, we choose <code class="docutils literal"><span class="pre">t2.micro</span></code>(<strong>Warning:</strong> <code class="docutils literal"><span class="pre">t2.micro</span></code> is not suitable for running loklak for a long period, and AWS may shut down your instance(block your Internet access on specific port) at any time. <code class="docutils literal"><span class="pre">t2.micro</span></code> instance users are only allow to use <strong>10%</strong> of a single CPU core on average. In our case, loklak_server uses 30 - 40% on average. Reference: <a class="reference external" href="http://aws.amazon.com/ec2/faqs/#burst">Burstable Instance</a>  Case study: <a class="reference external" href="http://geekinguniverse.com/2016/01/14/dont-use-aws-for-your-web-application/">Real case running loklak</a>)</p>
-</li>
-<li><p class="first">Then we click <code class="docutils literal"><span class="pre">Configure</span> <span class="pre">Instance</span> <span class="pre">Details</span></code>, do not create a instance yet.</p>
-</li>
-<li><p class="first">Under <code class="docutils literal"><span class="pre">Auto-assign</span> <span class="pre">Public</span> <span class="pre">IP</span></code>, we choose <code class="docutils literal"><span class="pre">Enable</span></code></p>
-</li>
-<li><p class="first">Then we click <code class="docutils literal"><span class="pre">Next:</span> <span class="pre">Add</span> <span class="pre">Storage</span></code></p>
-</li>
-<li><p class="first">We modify the storage to <code class="docutils literal"><span class="pre">30GiB</span></code> instead of default <code class="docutils literal"><span class="pre">8Gib</span></code></p>
-</li>
-<li><p class="first">Click <code class="docutils literal"><span class="pre">Next</span></code> twice to go to <code class="docutils literal"><span class="pre">Step</span> <span class="pre">6:</span> <span class="pre">Configure</span> <span class="pre">Security</span> <span class="pre">Group</span></code>. Under this, we choose <code class="docutils literal"><span class="pre">All</span> <span class="pre">TCP</span></code> for type and <code class="docutils literal"><span class="pre">Anywhere</span></code> for source.</p>
-</li>
-<li><p class="first">We are ready to launch, click <code class="docutils literal"><span class="pre">Review</span> <span class="pre">and</span> <span class="pre">Launch</span></code>, if everything is correct, click <code class="docutils literal"><span class="pre">Launch</span></code>. It will ask you to choose a key pair, choose the one we just created.</p>
-</li>
-<li><p class="first">We go back to EC2 control panel again. Click on instances on the left hand side. Then choose the instance you just created, and click connect button on top. It will you connect to your EC2 by giving you a example like:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">ssh</span> <span class="o">-</span><span class="n">i</span> <span class="s2">&quot;loklak.pem&quot;</span> <span class="n">ubuntu</span><span class="nd">@ec2</span><span class="o">-</span><span class="mi">54</span><span class="o">-</span><span class="mi">169</span><span class="o">-</span><span class="mi">103</span><span class="o">-</span><span class="mf">75.</span><span class="n">ap</span><span class="o">-</span><span class="n">southeast</span><span class="o">-</span><span class="mf">1.</span><span class="n">compute</span><span class="o">.</span><span class="n">amazonaws</span><span class="o">.</span><span class="n">com</span>
-</pre></div>
-</div>
-</li>
-<li><p class="first">Once connected, we have to set up docker and add a 4G swapfile to prevent lack of memory:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span>sudo apt-get update
-sudo apt-get -y upgrade
-sudo fallocate -l 4G /swapfile
-sudo chmod 600 /swapfile
-sudo mkswap /swapfile
-sudo swapon /swapfile
-sudo apt-get install linux-image-extra-`uname -r`
-sudo apt-key adv --keyserver hkp://pgp.mit.edu:80 --recv-keys 58118E89F3A912897C070ADBF76221572C52609D
-echo &quot;deb https://apt.dockerproject.org/repo ubuntu-trusty main&quot; | sudo tee /etc/apt/sources.list.d/docker.list
-sudo apt-get update
-sudo apt-get install docker-engine
-</pre></div>
-</div>
-</li>
-<li><p class="first">Once docker is installed, we start our loklak-server by entering:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">sudo</span> <span class="n">docker</span> <span class="n">pull</span> <span class="n">mariobehling</span><span class="o">/</span><span class="n">loklak</span>
-<span class="n">sudo</span> <span class="n">docker</span> <span class="n">run</span> <span class="o">-</span><span class="n">d</span> <span class="o">-</span><span class="n">p</span> <span class="mi">80</span><span class="p">:</span><span class="mi">80</span> <span class="o">-</span><span class="n">p</span> <span class="mi">443</span><span class="p">:</span><span class="mi">443</span> <span class="n">mariobehling</span><span class="o">/</span><span class="n">loklak</span><span class="p">:</span><span class="n">latest</span>
-</pre></div>
-</div>
-</li>
-<li><p class="first">Check if Loklak is running on your server, by going to your public DNS, e.g.: <code class="docutils literal"><span class="pre">ec2-54-169-103-75.ap-southeast-1.compute.amazonaws.com</span></code>.</p>
-</li>
-</ol>
-</div>
-<div class="section" id="installing-loklak-on-google-cloud-with-docker">
-<span id="installing-loklak-on-google-cloud-with-docker"></span><h2>Installing loklak on Google Cloud with Docker<a class="headerlink" href="#installing-loklak-on-google-cloud-with-docker" title="Permalink to this headline">¶</a></h2>
-<ol class="simple">
-<li>Go to <a class="reference external" href="https://cloud.google.com/free-trial/">Google Cloud Free Trial</a> and sign up. You will get 300 dollars credit for 3 months.</li>
-</ol>
-<ol class="simple">
-<li>Go to the console page: <a class="reference external" href="https://console.cloud.google.com/home">Console</a></li>
-</ol>
-<ol class="simple">
-<li>If you don’t have any projects, a page that would guide you on how to start a project will pop up. Give your project a name.</li>
-</ol>
-<ol class="simple">
-<li>In the search bar above on console page, enter &#8216;Compute Engine&#8217; and click on <code class="docutils literal"><span class="pre">Compute</span> <span class="pre">Engine</span></code>.</li>
-</ol>
-<ol class="simple">
-<li>If you have not activated billing for compute engine, click enable billing and choose your account to activate your Compute Engine. Your Google Compute Engine should be activated within a few minutes.</li>
-</ol>
-<ol>
-<li><p class="first">Click <code class="docutils literal"><span class="pre">Create</span> <span class="pre">instance</span></code> to create an instance. In machine type, choose <code class="docutils literal"><span class="pre">small(1</span> <span class="pre">shared</span> <span class="pre">vCPU)</span></code>.
-Choose whatever zone you like.</p>
-<p>In Boot Disk, choose <code class="docutils literal"><span class="pre">Ubuntu</span> <span class="pre">14.04</span></code>, and the disk size should be larger than 40GB.
-On the bottom of the page, click <code class="docutils literal"><span class="pre">Management,</span> <span class="pre">disk,</span> <span class="pre">networking,</span> <span class="pre">access</span> <span class="pre">&amp;</span> <span class="pre">security</span> <span class="pre">options</span></code> to show more options. Inside of this, click into the tab <code class="docutils literal"><span class="pre">Networking</span></code> and choose <code class="docutils literal"><span class="pre">New</span> <span class="pre">static</span> <span class="pre">IP</span></code> instead of <code class="docutils literal"><span class="pre">Ephemeral</span></code>. Enter a name for your IP. Google will assign a IP for you.
-Check the two boxes <code class="docutils literal"><span class="pre">Allow</span> <span class="pre">HTTP</span> <span class="pre">traffic</span></code> and <code class="docutils literal"><span class="pre">Allow</span> <span class="pre">HTTPS</span> <span class="pre">traffic</span></code>. Finally, click <code class="docutils literal"><span class="pre">Create</span></code> to create an instance. Wait a few minutes for the creation to complete.</p>
-</li>
-</ol>
-<ol class="simple">
-<li>Once the creation has finished, click ssh below to establish web ssh connections.</li>
-<li>In the Web Console, enter:</li>
-</ol>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">sudo</span> <span class="n">apt</span><span class="o">-</span><span class="n">get</span> <span class="n">update</span>
-<span class="n">sudo</span> <span class="n">apt</span><span class="o">-</span><span class="n">get</span> <span class="n">upgrade</span>
-<span class="n">sudo</span> <span class="n">apt</span><span class="o">-</span><span class="n">get</span> <span class="o">-</span><span class="n">y</span> <span class="n">install</span> <span class="n">docker</span><span class="o">.</span><span class="n">io</span>
-<span class="n">sudo</span> <span class="n">fallocate</span> <span class="o">-</span><span class="n">l</span> <span class="mi">4</span><span class="n">G</span> <span class="o">/</span><span class="n">swapfile</span>
-<span class="n">sudo</span> <span class="n">chmod</span> <span class="mi">600</span> <span class="o">/</span><span class="n">swapfile</span>
-<span class="n">sudo</span> <span class="n">mkswap</span> <span class="o">/</span><span class="n">swapfile</span>
-<span class="n">sudo</span> <span class="n">swapon</span> <span class="o">/</span><span class="n">swapfile</span>
-<span class="n">sudo</span> <span class="n">docker</span> <span class="n">build</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">github</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">loklak</span><span class="o">/</span><span class="n">loklak_server</span><span class="o">.</span><span class="n">git</span>
-</pre></div>
-</div>
-<p>Once finished, the last line will provide the image ID, like <code class="docutils literal"><span class="pre">Successfully</span> <span class="pre">built</span> <span class="pre">4e11208a7b34</span></code>. Copy or remember this id, we will need this id to tag the image.
-Tag your image by entering <code class="docutils literal"><span class="pre">sudo</span> <span class="pre">docker</span> <span class="pre">tag</span> <span class="pre">YOUR_IMAGE_ID</span> <span class="pre">loklak</span></code>. In my case, we enter <code class="docutils literal"><span class="pre">sudo</span> <span class="pre">docker</span> <span class="pre">tag</span> <span class="pre">4e11208a7b34</span> <span class="pre">loklak</span></code>
-Run our server by entering:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">sudo</span> <span class="n">docker</span> <span class="n">run</span> <span class="o">-</span><span class="n">d</span> <span class="o">-</span><span class="n">p</span> <span class="mi">80</span><span class="p">:</span><span class="mi">80</span> <span class="o">-</span><span class="n">p</span> <span class="mi">443</span><span class="p">:</span><span class="mi">443</span> <span class="n">loklak</span>
-</pre></div>
-</div>
-<p>Enter your assigned IP address into your browser to check if it is working.</p>
-</div>
-<div class="section" id="installing-loklak-on-digitalocean-with-docker">
-<span id="installing-loklak-on-digitalocean-with-docker"></span><h2>Installing loklak on DigitalOcean with Docker<a class="headerlink" href="#installing-loklak-on-digitalocean-with-docker" title="Permalink to this headline">¶</a></h2>
-<p><a class="reference external" href="https://www.digitalocean.com">DigitalOcean</a> - simple cloud hosting, built for developers.</p>
-<ol>
-<li><p class="first">Register in <a class="reference external" href="https://www.digitalocean.com">DigitalOcean</a> and get 10$ credit.</p>
-</li>
-<li><p class="first">Click &#8216;Create droplet&#8217; button, choose your droplet image (Docker), size, location and add your SSH keys.</p>
-<p><img alt="Droplet image" src="http://i.imgur.com/wXXvg7W.png" /></p>
-<p><img alt="SSH keys" src="http://i.imgur.com/egW1HsV.png" /></p>
-</li>
-<li><p class="first">Click &#8216;Create&#8217;, wait a minute, copy ip of your new droplet and login to it using SSH:</p>
-<div class="highlight-bash"><div class="highlight"><pre><span></span>ssh root@YOUR.DROPLET.IP
-</pre></div>
-</div>
-</li>
-<li><p class="first">Docker is already installed, you can check it using <code class="docutils literal"><span class="pre">docker</span> <span class="pre">version</span></code> command. You should see something like this:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">root</span><span class="nd">@sevazhidkov</span><span class="p">:</span><span class="o">~</span><span class="c1"># docker version</span>
-<span class="n">Client</span><span class="p">:</span>
- <span class="n">Version</span><span class="p">:</span>      <span class="mf">1.9</span><span class="o">.</span><span class="mi">1</span>
- <span class="n">API</span> <span class="n">version</span><span class="p">:</span>  <span class="mf">1.21</span>
- <span class="n">Go</span> <span class="n">version</span><span class="p">:</span>   <span class="n">go1</span><span class="o">.</span><span class="mf">4.2</span>
- <span class="n">Git</span> <span class="n">commit</span><span class="p">:</span>   <span class="n">a34a1d5</span>
- <span class="n">Built</span><span class="p">:</span>        <span class="n">Fri</span> <span class="n">Nov</span> <span class="mi">20</span> <span class="mi">13</span><span class="p">:</span><span class="mi">12</span><span class="p">:</span><span class="mi">04</span> <span class="n">UTC</span> <span class="mi">2015</span>
- <span class="n">OS</span><span class="o">/</span><span class="n">Arch</span><span class="p">:</span>      <span class="n">linux</span><span class="o">/</span><span class="n">amd64</span>
-
-<span class="n">Server</span><span class="p">:</span>
- <span class="n">Version</span><span class="p">:</span>      <span class="mf">1.9</span><span class="o">.</span><span class="mi">1</span>
- <span class="n">API</span> <span class="n">version</span><span class="p">:</span>  <span class="mf">1.21</span>
- <span class="n">Go</span> <span class="n">version</span><span class="p">:</span>   <span class="n">go1</span><span class="o">.</span><span class="mf">4.2</span>
- <span class="n">Git</span> <span class="n">commit</span><span class="p">:</span>   <span class="n">a34a1d5</span>
- <span class="n">Built</span><span class="p">:</span>        <span class="n">Fri</span> <span class="n">Nov</span> <span class="mi">20</span> <span class="mi">13</span><span class="p">:</span><span class="mi">12</span><span class="p">:</span><span class="mi">04</span> <span class="n">UTC</span> <span class="mi">2015</span>
- <span class="n">OS</span><span class="o">/</span><span class="n">Arch</span><span class="p">:</span>      <span class="n">linux</span><span class="o">/</span><span class="n">amd64</span>
-</pre></div>
-</div>
-</li>
-<li><p class="first">Pull Docker image from <a class="reference external" href="https://hub.docker.com/r/mariobehling/loklak/">Loklak repository</a> in Docker Hub (it should take about a minute):</p>
-<div class="highlight-bash"><div class="highlight"><pre><span></span>docker pull mariobehling/loklak
-</pre></div>
-</div>
-</li>
-<li><p class="first">OK, you&#8217;re ready to run Loklak:</p>
-<div class="highlight-bash"><div class="highlight"><pre><span></span>docker run -d -p <span class="m">80</span>:80 -p <span class="m">443</span>:443 mariobehling/loklak:latest
-</pre></div>
-</div>
-</li>
-<li><p class="first">Go to your droplet IP using web browser. You should see Loklak main page.</p>
-</li>
-</ol>
-</div>
-</div>
 
 
           </div>
@@ -309,18 +155,7 @@ Run our server by entering:</p>
       <input type="hidden" name="area" value="default" />
     </form>
 </div>
-<script type="text/javascript">$('#searchbox').show(0);</script>
-  <h3><a href="../index.html">Table Of Contents</a></h3>
-  <ul>
-<li><a class="reference internal" href="#">Installation of loklak with Docker</a><ul>
-<li><a class="reference internal" href="#installing-loklak-on-bluemix-with-docker">Installing loklak on Bluemix with Docker</a></li>
-<li><a class="reference internal" href="#installing-loklak-on-aws-with-docker">Installing loklak on AWS with Docker</a></li>
-<li><a class="reference internal" href="#installing-loklak-on-google-cloud-with-docker">Installing loklak on Google Cloud with Docker</a></li>
-<li><a class="reference internal" href="#installing-loklak-on-digitalocean-with-docker">Installing loklak on DigitalOcean with Docker</a></li>
-</ul>
-</li>
-</ul>
-<h3>Navigation</h3>
+<script type="text/javascript">$('#searchbox').show(0);</script><h3>Navigation</h3>
 <p class="caption"><span class="caption-text">Home</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../index.html">Welcome</a></li>

@@ -1,0 +1,237 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Installation of loklak with Docker on Google Cloud &#8212; Susi Server development documentation</title>
+    
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     'development',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="top" title="Susi Server development documentation" href="../index.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body role="document">
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="installation-of-loklak-with-docker-on-google-cloud">
+<span id="installation-of-loklak-with-docker-on-google-cloud"></span><h1>Installation of loklak with Docker on Google Cloud<a class="headerlink" href="#installation-of-loklak-with-docker-on-google-cloud" title="Permalink to this headline">¶</a></h1>
+<ol class="simple">
+<li>Go to <a class="reference external" href="https://cloud.google.com/free-trial/">Google Cloud Free Trial</a> and sign up. You will get 300 dollars credit for 3 months.</li>
+</ol>
+<ol class="simple">
+<li>Go to the console page: <a class="reference external" href="https://console.cloud.google.com/home">Console</a></li>
+</ol>
+<ol class="simple">
+<li>If you don’t have any projects, a page that would guide you on how to start a project will pop up. Give your project a name.</li>
+</ol>
+<ol class="simple">
+<li>In the search bar above on console page, enter &#8216;Compute Engine&#8217; and click on <code class="docutils literal"><span class="pre">Compute</span> <span class="pre">Engine</span></code>.</li>
+</ol>
+<ol class="simple">
+<li>If you have not activated billing for compute engine, click enable billing and choose your account to activate your Compute Engine. Your Google Compute Engine should be activated within a few minutes.</li>
+</ol>
+<ol>
+<li><p class="first">Click <code class="docutils literal"><span class="pre">Create</span> <span class="pre">instance</span></code> to create an instance. In machine type, choose <code class="docutils literal"><span class="pre">small(1</span> <span class="pre">shared</span> <span class="pre">vCPU)</span></code>.
+Choose whatever zone you like.</p>
+<p>In Boot Disk, choose <code class="docutils literal"><span class="pre">Ubuntu</span> <span class="pre">14.04</span></code>, and the disk size should be larger than 40GB.
+On the bottom of the page, click <code class="docutils literal"><span class="pre">Management,</span> <span class="pre">disk,</span> <span class="pre">networking,</span> <span class="pre">access</span> <span class="pre">&amp;</span> <span class="pre">security</span> <span class="pre">options</span></code> to show more options. Inside of this, click into the tab <code class="docutils literal"><span class="pre">Networking</span></code> and choose <code class="docutils literal"><span class="pre">New</span> <span class="pre">static</span> <span class="pre">IP</span></code> instead of <code class="docutils literal"><span class="pre">Ephemeral</span></code>. Enter a name for your IP. Google will assign a IP for you.
+Check the two boxes <code class="docutils literal"><span class="pre">Allow</span> <span class="pre">HTTP</span> <span class="pre">traffic</span></code> and <code class="docutils literal"><span class="pre">Allow</span> <span class="pre">HTTPS</span> <span class="pre">traffic</span></code>. Finally, click <code class="docutils literal"><span class="pre">Create</span></code> to create an instance. Wait a few minutes for the creation to complete.</p>
+</li>
+</ol>
+<ol class="simple">
+<li>Once the creation has finished, click ssh below to establish web ssh connections.</li>
+<li>In the Web Console, enter:</li>
+</ol>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">sudo</span> <span class="n">apt</span><span class="o">-</span><span class="n">get</span> <span class="n">update</span>
+<span class="n">sudo</span> <span class="n">apt</span><span class="o">-</span><span class="n">get</span> <span class="n">upgrade</span>
+<span class="n">sudo</span> <span class="n">apt</span><span class="o">-</span><span class="n">get</span> <span class="o">-</span><span class="n">y</span> <span class="n">install</span> <span class="n">docker</span><span class="o">.</span><span class="n">io</span>
+<span class="n">sudo</span> <span class="n">fallocate</span> <span class="o">-</span><span class="n">l</span> <span class="mi">4</span><span class="n">G</span> <span class="o">/</span><span class="n">swapfile</span>
+<span class="n">sudo</span> <span class="n">chmod</span> <span class="mi">600</span> <span class="o">/</span><span class="n">swapfile</span>
+<span class="n">sudo</span> <span class="n">mkswap</span> <span class="o">/</span><span class="n">swapfile</span>
+<span class="n">sudo</span> <span class="n">swapon</span> <span class="o">/</span><span class="n">swapfile</span>
+<span class="n">sudo</span> <span class="n">docker</span> <span class="n">build</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">github</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">loklak</span><span class="o">/</span><span class="n">loklak_server</span><span class="o">.</span><span class="n">git</span>
+</pre></div>
+</div>
+<p>Once finished, the last line will provide the image ID, like <code class="docutils literal"><span class="pre">Successfully</span> <span class="pre">built</span> <span class="pre">4e11208a7b34</span></code>. Copy or remember this id, we will need this id to tag the image.
+Tag your image by entering <code class="docutils literal"><span class="pre">sudo</span> <span class="pre">docker</span> <span class="pre">tag</span> <span class="pre">YOUR_IMAGE_ID</span> <span class="pre">loklak</span></code>. In my case, we enter <code class="docutils literal"><span class="pre">sudo</span> <span class="pre">docker</span> <span class="pre">tag</span> <span class="pre">4e11208a7b34</span> <span class="pre">loklak</span></code>
+Run our server by entering:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">sudo</span> <span class="n">docker</span> <span class="n">run</span> <span class="o">-</span><span class="n">d</span> <span class="o">-</span><span class="n">p</span> <span class="mi">80</span><span class="p">:</span><span class="mi">80</span> <span class="o">-</span><span class="n">p</span> <span class="mi">443</span><span class="p">:</span><span class="mi">443</span> <span class="n">loklak</span>
+</pre></div>
+</div>
+<p>Enter your assigned IP address into your browser to check if it is working.</p>
+<div class="section" id="installing-loklak-on-digitalocean-with-docker">
+<span id="installing-loklak-on-digitalocean-with-docker"></span><h2>Installing loklak on DigitalOcean with Docker<a class="headerlink" href="#installing-loklak-on-digitalocean-with-docker" title="Permalink to this headline">¶</a></h2>
+<p><a class="reference external" href="https://www.digitalocean.com">DigitalOcean</a> - simple cloud hosting, built for developers.</p>
+<ol>
+<li><p class="first">Register in <a class="reference external" href="https://www.digitalocean.com">DigitalOcean</a> and get 10$ credit.</p>
+</li>
+<li><p class="first">Click &#8216;Create droplet&#8217; button, choose your droplet image (Docker), size, location and add your SSH keys.</p>
+<p><img alt="Droplet image" src="http://i.imgur.com/wXXvg7W.png" /></p>
+<p><img alt="SSH keys" src="http://i.imgur.com/egW1HsV.png" /></p>
+</li>
+<li><p class="first">Click &#8216;Create&#8217;, wait a minute, copy ip of your new droplet and login to it using SSH:</p>
+<div class="highlight-bash"><div class="highlight"><pre><span></span>ssh root@YOUR.DROPLET.IP
+</pre></div>
+</div>
+</li>
+<li><p class="first">Docker is already installed, you can check it using <code class="docutils literal"><span class="pre">docker</span> <span class="pre">version</span></code> command. You should see something like this:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">root</span><span class="nd">@sevazhidkov</span><span class="p">:</span><span class="o">~</span><span class="c1"># docker version</span>
+<span class="n">Client</span><span class="p">:</span>
+ <span class="n">Version</span><span class="p">:</span>      <span class="mf">1.9</span><span class="o">.</span><span class="mi">1</span>
+ <span class="n">API</span> <span class="n">version</span><span class="p">:</span>  <span class="mf">1.21</span>
+ <span class="n">Go</span> <span class="n">version</span><span class="p">:</span>   <span class="n">go1</span><span class="o">.</span><span class="mf">4.2</span>
+ <span class="n">Git</span> <span class="n">commit</span><span class="p">:</span>   <span class="n">a34a1d5</span>
+ <span class="n">Built</span><span class="p">:</span>        <span class="n">Fri</span> <span class="n">Nov</span> <span class="mi">20</span> <span class="mi">13</span><span class="p">:</span><span class="mi">12</span><span class="p">:</span><span class="mi">04</span> <span class="n">UTC</span> <span class="mi">2015</span>
+ <span class="n">OS</span><span class="o">/</span><span class="n">Arch</span><span class="p">:</span>      <span class="n">linux</span><span class="o">/</span><span class="n">amd64</span>
+
+<span class="n">Server</span><span class="p">:</span>
+ <span class="n">Version</span><span class="p">:</span>      <span class="mf">1.9</span><span class="o">.</span><span class="mi">1</span>
+ <span class="n">API</span> <span class="n">version</span><span class="p">:</span>  <span class="mf">1.21</span>
+ <span class="n">Go</span> <span class="n">version</span><span class="p">:</span>   <span class="n">go1</span><span class="o">.</span><span class="mf">4.2</span>
+ <span class="n">Git</span> <span class="n">commit</span><span class="p">:</span>   <span class="n">a34a1d5</span>
+ <span class="n">Built</span><span class="p">:</span>        <span class="n">Fri</span> <span class="n">Nov</span> <span class="mi">20</span> <span class="mi">13</span><span class="p">:</span><span class="mi">12</span><span class="p">:</span><span class="mi">04</span> <span class="n">UTC</span> <span class="mi">2015</span>
+ <span class="n">OS</span><span class="o">/</span><span class="n">Arch</span><span class="p">:</span>      <span class="n">linux</span><span class="o">/</span><span class="n">amd64</span>
+</pre></div>
+</div>
+</li>
+<li><p class="first">Pull Docker image from <a class="reference external" href="https://hub.docker.com/r/mariobehling/loklak/">Loklak repository</a> in Docker Hub (it should take about a minute):</p>
+<div class="highlight-bash"><div class="highlight"><pre><span></span>docker pull mariobehling/loklak
+</pre></div>
+</div>
+</li>
+<li><p class="first">OK, you&#8217;re ready to run Loklak:</p>
+<div class="highlight-bash"><div class="highlight"><pre><span></span>docker run -d -p <span class="m">80</span>:80 -p <span class="m">443</span>:443 mariobehling/loklak:latest
+</pre></div>
+</div>
+</li>
+<li><p class="first">Go to your droplet IP using web browser. You should see Loklak main page.</p>
+</li>
+</ol>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="../index.html">
+    <img class="logo" src="../_static/images/susi-logo-original.svg" alt="Logo"/>
+    
+  </a>
+</p>
+
+
+
+
+
+
+
+
+
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+  <h3><a href="../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Installation of loklak with Docker on Google Cloud</a><ul>
+<li><a class="reference internal" href="#installing-loklak-on-digitalocean-with-docker">Installing loklak on DigitalOcean with Docker</a></li>
+</ul>
+</li>
+</ul>
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Home</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../index.html">Welcome</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Installation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="installation_generic.html">Installation on Linux/Mac OS</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation_windows_generic.html">Requirements</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation_windows_generic.html#download">Download</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation_windows_generic.html#build-and-run">Build and Run</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation_windows_generic.html#operate">Operate</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation_windows_generic.html#shut-down">Shut down</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation_docker.html">Installation with Docker</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation_cloud9.html">Installation on Cloud9</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation_heroku.html">Installation on Heroku</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Tutorial</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../skills/susi_skill_development_tutorial.html">AI Rule development Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../skills/susi_questions.html">Ask SUSI</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Development</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="eclipseSetup.html">How to setup Susi Server on Eclipse</a></li>
+<li class="toctree-l1"><a class="reference internal" href="eclipseSetup.html#using-the-ant-file">Using the Ant File</a></li>
+<li class="toctree-l1"><a class="reference internal" href="eclipseSetup.html#test">Test :</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Miscellaneous</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../parsers.html">Parsers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../skills/submitting_skills_to_git.html">Submitting skills to Git</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  </ul></li>
+</ul>
+</div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2017, Susi.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.4.9</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

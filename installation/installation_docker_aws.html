@@ -1,0 +1,188 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Installation of loklak with Docker on AWS &#8212; Susi Server development documentation</title>
+    
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     'development',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="top" title="Susi Server development documentation" href="../index.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body role="document">
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="installation-of-loklak-with-docker-on-aws">
+<span id="installation-of-loklak-with-docker-on-aws"></span><h1>Installation of loklak with Docker on AWS<a class="headerlink" href="#installation-of-loklak-with-docker-on-aws" title="Permalink to this headline">¶</a></h1>
+<ol>
+<li><p class="first">Sign in to <a class="reference external" href="https://aws.amazon.com">AWS</a></p>
+</li>
+<li><p class="first">In the top-right corner, choose a area you want to set up the instance, e.g.: Asia Pacific (Singapore).</p>
+</li>
+<li><p class="first">In the console panel, choose EC2. In EC2 Control Panel, choose key pairs, under Network &amp; Security, and create a new key pair. It will automatically download the private key, and you should do <code class="docutils literal"><span class="pre">chmod</span> <span class="pre">400</span> <span class="pre">YOUR_KEY_NAME</span></code> to prevent other user to access your private key. After that, go back to your dashboard, and click Launch Instance.</p>
+</li>
+<li><p class="first">In Step 1: Choose an Amazon Machine Image, we choose <code class="docutils literal"><span class="pre">Ubuntu</span> <span class="pre">Server</span> <span class="pre">14.04</span> <span class="pre">LTS</span> <span class="pre">(HVM),</span> <span class="pre">SSD</span> <span class="pre">Volume</span> <span class="pre">Type</span></code>.</p>
+</li>
+<li><p class="first">In Step 2: Choose an Instance Type, we choose <code class="docutils literal"><span class="pre">t2.micro</span></code>(<strong>Warning:</strong> <code class="docutils literal"><span class="pre">t2.micro</span></code> is not suitable for running loklak for a long period, and AWS may shut down your instance(block your Internet access on specific port) at any time. <code class="docutils literal"><span class="pre">t2.micro</span></code> instance users are only allow to use <strong>10%</strong> of a single CPU core on average. In our case, loklak_server uses 30 - 40% on average. Reference: <a class="reference external" href="http://aws.amazon.com/ec2/faqs/#burst">Burstable Instance</a>  Case study: <a class="reference external" href="http://geekinguniverse.com/2016/01/14/dont-use-aws-for-your-web-application/">Real case running loklak</a>)</p>
+</li>
+<li><p class="first">Then we click <code class="docutils literal"><span class="pre">Configure</span> <span class="pre">Instance</span> <span class="pre">Details</span></code>, do not create a instance yet.</p>
+</li>
+<li><p class="first">Under <code class="docutils literal"><span class="pre">Auto-assign</span> <span class="pre">Public</span> <span class="pre">IP</span></code>, we choose <code class="docutils literal"><span class="pre">Enable</span></code></p>
+</li>
+<li><p class="first">Then we click <code class="docutils literal"><span class="pre">Next:</span> <span class="pre">Add</span> <span class="pre">Storage</span></code></p>
+</li>
+<li><p class="first">We modify the storage to <code class="docutils literal"><span class="pre">30GiB</span></code> instead of default <code class="docutils literal"><span class="pre">8Gib</span></code></p>
+</li>
+<li><p class="first">Click <code class="docutils literal"><span class="pre">Next</span></code> twice to go to <code class="docutils literal"><span class="pre">Step</span> <span class="pre">6:</span> <span class="pre">Configure</span> <span class="pre">Security</span> <span class="pre">Group</span></code>. Under this, we choose <code class="docutils literal"><span class="pre">All</span> <span class="pre">TCP</span></code> for type and <code class="docutils literal"><span class="pre">Anywhere</span></code> for source.</p>
+</li>
+<li><p class="first">We are ready to launch, click <code class="docutils literal"><span class="pre">Review</span> <span class="pre">and</span> <span class="pre">Launch</span></code>, if everything is correct, click <code class="docutils literal"><span class="pre">Launch</span></code>. It will ask you to choose a key pair, choose the one we just created.</p>
+</li>
+<li><p class="first">We go back to EC2 control panel again. Click on instances on the left hand side. Then choose the instance you just created, and click connect button on top. It will you connect to your EC2 by giving you a example like:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">ssh</span> <span class="o">-</span><span class="n">i</span> <span class="s2">&quot;loklak.pem&quot;</span> <span class="n">ubuntu</span><span class="nd">@ec2</span><span class="o">-</span><span class="mi">54</span><span class="o">-</span><span class="mi">169</span><span class="o">-</span><span class="mi">103</span><span class="o">-</span><span class="mf">75.</span><span class="n">ap</span><span class="o">-</span><span class="n">southeast</span><span class="o">-</span><span class="mf">1.</span><span class="n">compute</span><span class="o">.</span><span class="n">amazonaws</span><span class="o">.</span><span class="n">com</span>
+</pre></div>
+</div>
+</li>
+<li><p class="first">Once connected, we have to set up docker and add a 4G swapfile to prevent lack of memory:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>sudo apt-get update
+sudo apt-get -y upgrade
+sudo fallocate -l 4G /swapfile
+sudo chmod 600 /swapfile
+sudo mkswap /swapfile
+sudo swapon /swapfile
+sudo apt-get install linux-image-extra-`uname -r`
+sudo apt-key adv --keyserver hkp://pgp.mit.edu:80 --recv-keys 58118E89F3A912897C070ADBF76221572C52609D
+echo &quot;deb https://apt.dockerproject.org/repo ubuntu-trusty main&quot; | sudo tee /etc/apt/sources.list.d/docker.list
+sudo apt-get update
+sudo apt-get install docker-engine
+</pre></div>
+</div>
+</li>
+<li><p class="first">Once docker is installed, we start our loklak-server by entering:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">sudo</span> <span class="n">docker</span> <span class="n">pull</span> <span class="n">mariobehling</span><span class="o">/</span><span class="n">loklak</span>
+<span class="n">sudo</span> <span class="n">docker</span> <span class="n">run</span> <span class="o">-</span><span class="n">d</span> <span class="o">-</span><span class="n">p</span> <span class="mi">80</span><span class="p">:</span><span class="mi">80</span> <span class="o">-</span><span class="n">p</span> <span class="mi">443</span><span class="p">:</span><span class="mi">443</span> <span class="n">mariobehling</span><span class="o">/</span><span class="n">loklak</span><span class="p">:</span><span class="n">latest</span>
+</pre></div>
+</div>
+</li>
+<li><p class="first">Check if Loklak is running on your server, by going to your public DNS, e.g.: <code class="docutils literal"><span class="pre">ec2-54-169-103-75.ap-southeast-1.compute.amazonaws.com</span></code>.</p>
+</li>
+</ol>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="../index.html">
+    <img class="logo" src="../_static/images/susi-logo-original.svg" alt="Logo"/>
+    
+  </a>
+</p>
+
+
+
+
+
+
+
+
+
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script><h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Home</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../index.html">Welcome</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Installation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="installation_generic.html">Installation on Linux/Mac OS</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation_windows_generic.html">Requirements</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation_windows_generic.html#download">Download</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation_windows_generic.html#build-and-run">Build and Run</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation_windows_generic.html#operate">Operate</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation_windows_generic.html#shut-down">Shut down</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation_docker.html">Installation with Docker</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation_cloud9.html">Installation on Cloud9</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation_heroku.html">Installation on Heroku</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Tutorial</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../skills/susi_skill_development_tutorial.html">AI Rule development Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../skills/susi_questions.html">Ask SUSI</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Development</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="eclipseSetup.html">How to setup Susi Server on Eclipse</a></li>
+<li class="toctree-l1"><a class="reference internal" href="eclipseSetup.html#using-the-ant-file">Using the Ant File</a></li>
+<li class="toctree-l1"><a class="reference internal" href="eclipseSetup.html#test">Test :</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Miscellaneous</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../parsers.html">Parsers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../skills/submitting_skills_to_git.html">Submitting skills to Git</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  </ul></li>
+</ul>
+</div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2017, Susi.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.4.9</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>
