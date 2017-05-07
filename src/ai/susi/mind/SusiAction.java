@@ -158,7 +158,7 @@ public class SusiAction {
             // transform the answer according to the data
             ArrayList<String> a = getPhrases();
             String phrase = a.get(random.nextInt(a.size()));
-            String expression = thoughts.unify(phrase);
+            String expression = thoughts.unify(phrase, false);
             if (expression != null) {
                 // transform the answer according to the data
                 // this is the final chance that we can add another thought according to a memorizing skill in the answer string
@@ -203,16 +203,16 @@ public class SusiAction {
             }
         }
         if (this.getRenderType() == RenderType.websearch && this.json.has("query")) {
-            this.json.put("query", thoughts.unify(getStringAttr("query")));
+            this.json.put("query", thoughts.unify(getStringAttr("query"), false));
         }
         if (this.getRenderType() == RenderType.anchor && this.json.has("link") && this.json.has("text")) {
-            this.json.put("link", thoughts.unify(getStringAttr("link")));
-            this.json.put("text", thoughts.unify(getStringAttr("text")));
+            this.json.put("link", thoughts.unify(getStringAttr("link"), false));
+            this.json.put("text", thoughts.unify(getStringAttr("text"), false));
         }
         if (this.getRenderType() == RenderType.map && this.json.has("latitude") && this.json.has("longitude") && this.json.has("zoom")) {
-            this.json.put("latitude", thoughts.unify(getStringAttr("latitude")));
-            this.json.put("longitude", thoughts.unify(getStringAttr("longitude")));
-            this.json.put("zoom", thoughts.unify(getStringAttr("zoom")));
+            this.json.put("latitude", thoughts.unify(getStringAttr("latitude"), false));
+            this.json.put("longitude", thoughts.unify(getStringAttr("longitude"), false));
+            this.json.put("zoom", thoughts.unify(getStringAttr("zoom"), false));
         }
         return this;
     }
