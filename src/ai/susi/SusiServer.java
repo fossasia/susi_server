@@ -98,6 +98,7 @@ import ai.susi.server.api.learning.ConsoleLearning;
 import ai.susi.server.api.service.EmailSenderService;
 import ai.susi.server.api.susi.ConsoleService;
 import ai.susi.server.api.susi.GenericScraper;
+import ai.susi.server.api.susi.JsonPathTestService;
 import ai.susi.server.api.susi.MindService;
 import ai.susi.server.api.susi.RSSReaderService;
 import ai.susi.server.api.susi.StatusService;
@@ -474,6 +475,7 @@ public class SusiServer {
                 TopMenuService.class,
                 UserManagementService.class,
                 UserAccountPermissions.class,
+                JsonPathTestService.class,
 
                 // susi search aggregation services
                 ConsoleService.class,
