@@ -15,16 +15,11 @@
 
 5. If you have not activated billing for compute engine, click enable billing and choose your account to activate your Compute Engine. Your Google Compute Engine should be activated within a few minutes.
 
+6. Select your computer zone region:
+``` gcloud config set compute/zone us-central1-b ```
 
-6. Click ```Create instance``` to create an instance. In machine type, choose ```small(1 shared vCPU)```.
-	Choose whatever zone you like.
- 
-	In Boot Disk, choose ```Ubuntu 14.04```, and the disk size should be larger than 40GB.
-	On the bottom of the page, click ```Management, disk, networking, access & security options``` to show more options. Inside of this, click into the tab ```Networking```.
-	Check the two boxes ```Allow HTTP traffic``` and ```Allow HTTPS traffic```. Finally, click ```Create``` to create an instance. Wait a few minutes for the creation to complete.
-
-
-7. Once the creation has finished, click ssh below to establish web ssh connections.
+7. You can view your defauls/configure by this command:
+```gcloud config list```
 
 8. In the Web Console, enter:
 
@@ -47,10 +42,10 @@ sudo docker pull jyothiraditya/susi_server
 
 12. Expose the container
 
-```kubectl expose deployment hello-node --type="LoadBalancer"```
+```kubectl expose deployment susi_server --type="LoadBalancer"```
 
 13. Copy the external IP address for the hello-node app by typing this command.
 
-```kubectl get service hello-node```
+```kubectl get service susi_server```
 
 Wait for while and reenter query.Enter your assigned IP address with port 8080 (address:8080) into your browser to check if it is working.
