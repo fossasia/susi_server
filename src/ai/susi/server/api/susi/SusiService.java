@@ -77,11 +77,13 @@ public class SusiService extends AbstractAPIHandler implements APIHandler {
             DAO.log(e.getMessage());
         }
         
-        // find out if we are dreaming
+        // compute a recall
         SusiArgument observation_argument = new SusiArgument();
         List<SusiCognition> cognitions = DAO.susi.getMemories().getCognitions(user.getIdentity().getClient());
         cognitions.forEach(cognition -> observation_argument.think(cognition.recallDispute()));
         SusiThought recall = observation_argument.mindmeld(false);
+        
+        // find out if we are dreaming
         String etherpad_dream = recall.getObservation("_etherpad_dream");
         if (etherpad_dream != null && etherpad_dream.length() != 0) {
             // we are dreaming!
@@ -94,7 +96,7 @@ public class SusiService extends AbstractAPIHandler implements APIHandler {
                 JSONObject json = new JSONObject(serviceResponse);
                 String text = json.getJSONObject("data").getString("text");
                 // fill an empty mind with the dream
-                SusiMind dream = new SusiMind(null, null, DAO.susi_watch_dir); // an empty mind!
+                SusiMind dream = new SusiMind(null); // an empty mind!
                 JSONObject rules = dream.readSkills(new BufferedReader(new InputStreamReader(new ByteArrayInputStream(text.getBytes(StandardCharsets.UTF_8)), StandardCharsets.UTF_8)));
                 dream.learn(rules);
                 // susi is now dreaming.. Try to find an answer out of the dream
@@ -108,7 +110,7 @@ public class SusiService extends AbstractAPIHandler implements APIHandler {
             }
         }
         
-        // answer normally
+        // answer with built-in skills
         SusiCognition cognition = new SusiCognition(DAO.susi, q, timezoneOffset, latitude, longitude, count, user.getIdentity());
         cognition.setLanguage(language);
         DAO.susi.getMemories().addCognition(user.getIdentity().getClient(), cognition);
