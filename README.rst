@@ -79,10 +79,25 @@ No-where, you must clone the git repository of Susi and built it yourself. That'
 -  ``cd susi``
 -  then see below ("How do I run Susi")
 
-How do I install Susi with Docker?
+How do I install Susi with Docker on Google Cloud?
 ----------------------------------
 
-To install Susi with Docker please refer to the `Susi Docker installation readme </docs/installation/installation_docker.md>`__.
+To install Susi with Docker on Google Cloud please refer to the `Susi Docker installation readme </docs/installation/installation_docker_gcloud.md>`__.
+
+How do I install Susi with Docker on AWS?
+----------------------------------
+
+To install Susi with Docker on AWS please refer to the `Susi Docker installation readme </docs/installation/installation_docker_aws.md>`__.
+
+How do I install Susi with Docker on Bluemix ?
+----------------------------------
+
+To install Susi with Docker on Bluemix please refer to the `Susi Docker installation readme </docs/installation/installation_docker_bluemix.md>`__.
+
+How do I install Susi with Docker on Digital Ocean ?
+----------------------------------
+
+To install Susi with Docker on Digital Ocean please refer to the `Susi Docker installation readme </docs/installation/installation_docker_digitalocean.md>`__.
 
 How do I deploy Susi with Heroku?
 ---------------------------------
@@ -142,22 +157,22 @@ How to compile using Gradle?
 -  To install Gradle on Mac OS X with homebrew
    ::
    
-       ``brew install gradle``
+       brew install gradle
 
 -  To compile, first, create dir necessary for Gradle
    ::
    
-       ``./gradle_init.sh``
+       ./gradle_init.sh
 
    Compile the source to classes and a jar file
    ::
 
-       ``gradle assemble``
+       gradle assemble
 
    Compiled file can be found in build dir Last, clean up so that we can
    still build the project using Ant
    ::
-       ``./gradle_clean.sh``
+       ./gradle_clean.sh
 
 How do I develop Skills (AI Conversation Rules) for Susi?
 ---------------------------------------------------------
