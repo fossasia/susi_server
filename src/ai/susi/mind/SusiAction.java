@@ -21,6 +21,7 @@ package ai.susi.mind;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Map;
 import java.util.Random;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -69,6 +70,59 @@ public class SusiAction {
         for (String answer: answers) phrases.put(answer.trim());
         return json;
     }
+    
+    public static JSONObject tableAction(Map<String, String> column2columnName) {
+        JSONObject json = new JSONObject();
+        json.put("type", RenderType.table.name());
+        JSONObject cols = new JSONObject(true);
+        column2columnName.forEach((k,v) -> cols.put(k, v));
+        json.put("columns", cols);
+        return json;
+    }
+    
+    public static JSONObject piechartAction(int total, String keyName, String valueDescription, String valueUnit) {
+        JSONObject json = new JSONObject();
+        json.put("type", RenderType.piechart.name());
+        json.put("total", total);
+        json.put("key", keyName);
+        json.put("value", valueDescription);
+        json.put("unit", valueUnit);
+        return json;
+    }
+    
+    public static JSONObject rssAction(String titleName, String descriptionName, String linkName) {
+        JSONObject json = new JSONObject();
+        json.put("type", RenderType.rss.name());
+        JSONObject cols = new JSONObject(true);
+        cols.put("title", titleName).put("description", descriptionName).put("link", linkName);
+        json.put("columns", cols);
+        return json;
+    }
+    
+    public static JSONObject websearchAction(String query) {
+        JSONObject json = new JSONObject();
+        json.put("type", RenderType.websearch.name());
+        json.put("query", query);
+        return json;
+    }
+    
+    public static JSONObject anchorAction(String link, String text) {
+        JSONObject json = new JSONObject();
+        json.put("type", RenderType.anchor.name());
+        json.put("link", link);
+        json.put("text", text);
+        return json;
+    }
+    
+    public static JSONObject mapAction(double latitude, double longitude, int zoom) {
+        JSONObject json = new JSONObject();
+        json.put("type", RenderType.map.name());
+        json.put("latitude", latitude);
+        json.put("longitude", longitude);
+        json.put("zoom", zoom);
+        return json;
+    }
+
     
     /**
      * Get the render type. That can be used to filter specific information from the action JSON object
