@@ -195,12 +195,48 @@ public class SusiMind {
                         // console process
                         JSONObject process = new JSONObject();
                         process.put("type", Type.console.name());
-                        process.put("definition", new JSONObject(new JSONTokener(bang_bag.toString())));
-                        skill.put("process", new JSONArray().put(process));
-                        
-                        // answers; must contain names from the console result array
-                        skill.put("actions", new JSONArray().put(SusiAction.answerAction(bang_term.split("\\|"))));
-                        skills.put(skill);
+                        JSONObject bo = new JSONObject(new JSONTokener(bang_bag.toString()));
+                        if (bo.has("url") && bo.has("path")) {
+                            JSONObject definition = new JSONObject().put("url", bo.get("url")).put("path", bo.get("path"));
+                            process.put("definition", definition);
+                            skill.put("process", new JSONArray().put(process));
+                            
+                            // actions; we may have several actions here
+                            JSONArray actions = new JSONArray();
+                            skill.put("actions", actions);
+                            
+                            // answers; must contain names from the console result array
+                            if (bang_term.length() > 0) {
+                                actions.put(SusiAction.answerAction(bang_term.split("\\|")));
+                            }
+
+                            // optional additional renderings
+                            String type = bo.has("type") ? bo.getString("type") : "";
+                            if (type.equals(SusiAction.RenderType.table.toString()) && bo.has("columns")) {
+                                actions.put(SusiAction.tableAction(bo.getJSONObject("columns")));
+                            } else
+                            if (type.equals(SusiAction.RenderType.piechart.toString()) &&
+                                    bo.has("total") && bo.has("key") &&
+                                    bo.has("value") && bo.has("unit")) {
+                                actions.put(SusiAction.piechartAction(
+                                        bo.getInt("total"), bo.getString("key"),
+                                        bo.getString("value"), bo.getString("unit")));
+                            } else
+                            if (type.equals(SusiAction.RenderType.rss.toString()) &&
+                                    bo.has("title") && bo.has("description") && bo.has("link")) {
+                                actions.put(SusiAction.rssAction(
+                                    bo.getString("title"), bo.getString("description"), bo.getString("link")));
+                            } else
+                            if (type.equals(SusiAction.RenderType.websearch.toString()) && bo.has("query")) {
+                                actions.put(SusiAction.websearchAction(bo.getString("query")));
+                            } else
+                            if (type.equals(SusiAction.RenderType.map.toString()) &&
+                                    bo.has("latitude") && bo.has("longitude") && bo.has("zoom")) {
+                                actions.put(SusiAction.mapAction(
+                                    bo.getDouble("latitude"), bo.getDouble("longitude"), bo.getInt("zoom")));
+                            }
+                            skills.put(skill);
+                        }
                     }
                     bang_phrases = "";
                     bang_type = "";

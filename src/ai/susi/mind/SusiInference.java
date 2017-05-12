@@ -269,6 +269,9 @@ public class SusiInference {
         Type type = this.getType();
         if (type == SusiInference.Type.console) {
             String expression = this.getExpression();
+            // we have two ways to define a console rule:
+            // with a "defintion" object which should have an "url" and "path" defined
+            // with a "expression" object which has a susi db access string included
             if (expression.length() == 0) {
                 // this might have an anonymous console rule inside
                 JSONObject definition = this.getDefinition();
