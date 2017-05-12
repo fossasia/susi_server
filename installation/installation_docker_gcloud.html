@@ -65,10 +65,10 @@ Choose whatever zone you like.</p>
 On the bottom of the page, click <code class="docutils literal"><span class="pre">Management,</span> <span class="pre">disk,</span> <span class="pre">networking,</span> <span class="pre">access</span> <span class="pre">&amp;</span> <span class="pre">security</span> <span class="pre">options</span></code> to show more options. Inside of this, click into the tab <code class="docutils literal"><span class="pre">Networking</span></code> and choose <code class="docutils literal"><span class="pre">New</span> <span class="pre">static</span> <span class="pre">IP</span></code> instead of <code class="docutils literal"><span class="pre">Ephemeral</span></code>. Enter a name for your IP. Google will assign a IP for you.
 Check the two boxes <code class="docutils literal"><span class="pre">Allow</span> <span class="pre">HTTP</span> <span class="pre">traffic</span></code> and <code class="docutils literal"><span class="pre">Allow</span> <span class="pre">HTTPS</span> <span class="pre">traffic</span></code>. Finally, click <code class="docutils literal"><span class="pre">Create</span></code> to create an instance. Wait a few minutes for the creation to complete.</p>
 </li>
-</ol>
-<ol class="simple">
-<li>Once the creation has finished, click ssh below to establish web ssh connections.</li>
-<li>In the Web Console, enter:</li>
+<li><p class="first">Once the creation has finished, click ssh below to establish web ssh connections.</p>
+</li>
+<li><p class="first">In the Web Console, enter:</p>
+</li>
 </ol>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">sudo</span> <span class="n">apt</span><span class="o">-</span><span class="n">get</span> <span class="n">update</span>
 <span class="n">sudo</span> <span class="n">apt</span><span class="o">-</span><span class="n">get</span> <span class="n">upgrade</span>
@@ -77,13 +77,13 @@ Check the two boxes <code class="docutils literal"><span class="pre">Allow</span
 <span class="n">sudo</span> <span class="n">chmod</span> <span class="mi">600</span> <span class="o">/</span><span class="n">swapfile</span>
 <span class="n">sudo</span> <span class="n">mkswap</span> <span class="o">/</span><span class="n">swapfile</span>
 <span class="n">sudo</span> <span class="n">swapon</span> <span class="o">/</span><span class="n">swapfile</span>
-<span class="n">sudo</span> <span class="n">docker</span> <span class="n">build</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">github</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">loklak</span><span class="o">/</span><span class="n">loklak_server</span><span class="o">.</span><span class="n">git</span>
+<span class="n">sudo</span> <span class="n">docker</span> <span class="n">build</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">github</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">fossasia</span><span class="o">/</span><span class="n">susi_server</span><span class="o">.</span><span class="n">git</span>
 </pre></div>
 </div>
 <p>Once finished, the last line will provide the image ID, like <code class="docutils literal"><span class="pre">Successfully</span> <span class="pre">built</span> <span class="pre">4e11208a7b34</span></code>. Copy or remember this id, we will need this id to tag the image.
-Tag your image by entering <code class="docutils literal"><span class="pre">sudo</span> <span class="pre">docker</span> <span class="pre">tag</span> <span class="pre">YOUR_IMAGE_ID</span> <span class="pre">loklak</span></code>. In my case, we enter <code class="docutils literal"><span class="pre">sudo</span> <span class="pre">docker</span> <span class="pre">tag</span> <span class="pre">4e11208a7b34</span> <span class="pre">loklak</span></code>
+Tag your image by entering <code class="docutils literal"><span class="pre">sudo</span> <span class="pre">docker</span> <span class="pre">tag</span> <span class="pre">YOUR_IMAGE_ID</span> <span class="pre">susi</span></code>. In my case, we enter <code class="docutils literal"><span class="pre">sudo</span> <span class="pre">docker</span> <span class="pre">tag</span> <span class="pre">4e11208a7b34</span> <span class="pre">susi</span></code>
 Run our server by entering:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">sudo</span> <span class="n">docker</span> <span class="n">run</span> <span class="o">-</span><span class="n">d</span> <span class="o">-</span><span class="n">p</span> <span class="mi">80</span><span class="p">:</span><span class="mi">80</span> <span class="o">-</span><span class="n">p</span> <span class="mi">443</span><span class="p">:</span><span class="mi">443</span> <span class="n">loklak</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">sudo</span> <span class="n">docker</span> <span class="n">run</span> <span class="o">-</span><span class="n">d</span> <span class="o">-</span><span class="n">p</span> <span class="mi">80</span><span class="p">:</span><span class="mi">80</span> <span class="o">-</span><span class="n">p</span> <span class="mi">443</span><span class="p">:</span><span class="mi">443</span> <span class="n">susi</span>
 </pre></div>
 </div>
 <p>Enter your assigned IP address into your browser to check if it is working.</p>

@@ -22,8 +22,7 @@
 	In Boot Disk, choose ```Ubuntu 14.04```, and the disk size should be larger than 40GB.
 	On the bottom of the page, click ```Management, disk, networking, access & security options``` to show more options. Inside of this, click into the tab ```Networking``` and choose ```New static IP``` instead of ```Ephemeral```. Enter a name for your IP. Google will assign a IP for you.
 	Check the two boxes ```Allow HTTP traffic``` and ```Allow HTTPS traffic```. Finally, click ```Create``` to create an instance. Wait a few minutes for the creation to complete.
-
-
+	
 7. Once the creation has finished, click ssh below to establish web ssh connections.
 
 8. In the Web Console, enter:
@@ -36,14 +35,14 @@ sudo fallocate -l 4G /swapfile
 sudo chmod 600 /swapfile
 sudo mkswap /swapfile
 sudo swapon /swapfile
-sudo docker build https://github.com/loklak/loklak_server.git
+sudo docker build https://github.com/fossasia/susi_server.git
 ```
 
 Once finished, the last line will provide the image ID, like ```Successfully built 4e11208a7b34```. Copy or remember this id, we will need this id to tag the image.
-Tag your image by entering ```sudo docker tag YOUR_IMAGE_ID loklak```. In my case, we enter ```sudo docker tag 4e11208a7b34 loklak```
+Tag your image by entering ```sudo docker tag YOUR_IMAGE_ID susi```. In my case, we enter ```sudo docker tag 4e11208a7b34 susi```
 Run our server by entering:
 ```
-sudo docker run -d -p 80:80 -p 443:443 loklak
+sudo docker run -d -p 80:80 -p 443:443 susi
 ```
 Enter your assigned IP address into your browser to check if it is working.
 
