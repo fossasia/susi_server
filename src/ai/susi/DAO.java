@@ -65,7 +65,7 @@ public class DAO {
 
     private final static String ACCESS_DUMP_FILE_PREFIX = "access_";
     
-    public  static File conf_dir, bin_dir, html_dir, data_dir, susi_watch_dir;
+    public  static File conf_dir, bin_dir, html_dir, data_dir, susi_memory_dir, model_watch_dir;
     private static File external_data, assets, dictionaries;
     public static Settings public_settings, private_settings;
     public  static AccessTracker access;
@@ -96,14 +96,17 @@ public class DAO {
         conf_dir = new File("conf");
         bin_dir = new File("bin");
         html_dir = new File("html");
-        data_dir = new File("data");
-        susi_watch_dir = new File(data_dir, "susi");
+        data_dir = dataPath.toFile().getAbsoluteFile();
+        susi_memory_dir = new File(data_dir, "susi");
+        model_watch_dir = new File(new File(data_dir.getParentFile().getParentFile(), "susi_skill_data"), "models");
         
         // wake up susi
         File susiinitpath = new File(conf_dir, "susi");
-        susi = new SusiMind(susiinitpath, susi_watch_dir, susi_watch_dir);
+        susi = model_watch_dir.exists() ?
+                new SusiMind(susi_memory_dir, susiinitpath, model_watch_dir) :
+                new SusiMind(susi_memory_dir, susiinitpath);
         String susi_boilerplate_name = "susi_cognition_boilerplate.json";
-        File susi_boilerplate_file = new File(susi_watch_dir, susi_boilerplate_name);
+        File susi_boilerplate_file = new File(susi_memory_dir, susi_boilerplate_name);
         if (!susi_boilerplate_file.exists()) Files.copy(new File(conf_dir, "susi/" + susi_boilerplate_name + ".example"), susi_boilerplate_file);
         
         // initialize public and private keys
@@ -112,7 +115,7 @@ public class DAO {
 		private_settings = new Settings(private_file);
 		OS.protectPath(private_file.toPath());
 		
-		if(!private_settings.loadPrivateKey() || !public_settings.loadPublicKey()){
+		if (!private_settings.loadPrivateKey() || !public_settings.loadPublicKey()) {
         	log("Can't load key pair. Creating new one");
         	
         	// create new key pair
@@ -133,7 +136,6 @@ public class DAO {
         	log("Key pair loaded from file. Peer hash: " + public_settings.getPeerHashAlgorithm() + " " + public_settings.getPeerHash());
         }
         
-        File datadir = dataPath.toFile();
         // check if elasticsearch shall be accessed as external cluster
         
         // open AAA storage
@@ -183,8 +185,8 @@ public class DAO {
         if (index_dir.toFile().exists()) OS.protectPath(index_dir); // no other permissions to this path
 
         // create and document the data dump dir
-        assets = new File(datadir, "assets");
-        external_data = new File(datadir, "external");
+        assets = new File(data_dir, "assets");
+        external_data = new File(data_dir, "external");
         dictionaries = new File(external_data, "dictionaries");
         dictionaries.mkdirs();
 

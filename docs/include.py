@@ -5,6 +5,7 @@ Usage
 -----
 python3 inlcude.py [filename [filename ...]]
 """
+import os
 import re
 import argparse
 import functools
@@ -32,11 +33,11 @@ def include_file(filename):
 
     Parameters
     ----------
-    filename: Name of the documentstion file to be imcluded.
+    filename: Name of the documentation file to be included.
     """
     filetype = _get_filetype(filename)
     string = ''
-    with open('..\\{}'.format(filename)) as file:
+    with open(os.path.join(os.pardir, filename)) as file:
         string = file.read(-1)
     try:
         regexp = rel_link_template[filetype][1]

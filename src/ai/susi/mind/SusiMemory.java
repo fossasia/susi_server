@@ -21,6 +21,7 @@ package ai.susi.mind;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -226,7 +227,7 @@ public class SusiMemory {
     public List<SusiCognition> getCognitions(String client) {
         SusiIdentity identity = this.memories.get(client);
         if (identity == null) {
-            if (root == null) return null;
+            if (root == null) return new ArrayList<SusiCognition>();
             identity = new SusiIdentity(new File(root, client), attention);
             this.memories.put(client, identity);
         }
