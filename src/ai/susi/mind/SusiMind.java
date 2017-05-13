@@ -211,29 +211,35 @@ public class SusiMind {
                             }
 
                             // optional additional renderings
-                            String type = bo.has("type") ? bo.getString("type") : "";
-                            if (type.equals(SusiAction.RenderType.table.toString()) && bo.has("columns")) {
-                                actions.put(SusiAction.tableAction(bo.getJSONObject("columns")));
-                            } else
-                            if (type.equals(SusiAction.RenderType.piechart.toString()) &&
-                                    bo.has("total") && bo.has("key") &&
-                                    bo.has("value") && bo.has("unit")) {
-                                actions.put(SusiAction.piechartAction(
-                                        bo.getInt("total"), bo.getString("key"),
-                                        bo.getString("value"), bo.getString("unit")));
-                            } else
-                            if (type.equals(SusiAction.RenderType.rss.toString()) &&
-                                    bo.has("title") && bo.has("description") && bo.has("link")) {
-                                actions.put(SusiAction.rssAction(
-                                    bo.getString("title"), bo.getString("description"), bo.getString("link")));
-                            } else
-                            if (type.equals(SusiAction.RenderType.websearch.toString()) && bo.has("query")) {
-                                actions.put(SusiAction.websearchAction(bo.getString("query")));
-                            } else
-                            if (type.equals(SusiAction.RenderType.map.toString()) &&
-                                    bo.has("latitude") && bo.has("longitude") && bo.has("zoom")) {
-                                actions.put(SusiAction.mapAction(
-                                    bo.getDouble("latitude"), bo.getDouble("longitude"), bo.getInt("zoom")));
+                            if (bo.has("actions")) {
+                                JSONArray bo_actions = bo.getJSONArray("actions");
+                                bo_actions.forEach(action -> {
+                                    JSONObject boa = (JSONObject) action;
+                                    String type = boa.has("type") ? boa.getString("type") : "";
+                                    if (type.equals(SusiAction.RenderType.table.toString()) && boa.has("columns")) {
+                                        actions.put(SusiAction.tableAction(boa.getJSONObject("columns")));
+                                    } else
+                                    if (type.equals(SusiAction.RenderType.piechart.toString()) &&
+                                            boa.has("total") && boa.has("key") &&
+                                            boa.has("value") && boa.has("unit")) {
+                                        actions.put(SusiAction.piechartAction(
+                                                boa.getInt("total"), boa.getString("key"),
+                                                boa.getString("value"), boa.getString("unit")));
+                                    } else
+                                    if (type.equals(SusiAction.RenderType.rss.toString()) &&
+                                            boa.has("title") && boa.has("description") && boa.has("link")) {
+                                        actions.put(SusiAction.rssAction(
+                                            boa.getString("title"), boa.getString("description"), boa.getString("link")));
+                                    } else
+                                    if (type.equals(SusiAction.RenderType.websearch.toString()) && boa.has("query")) {
+                                        actions.put(SusiAction.websearchAction(boa.getString("query")));
+                                    } else
+                                    if (type.equals(SusiAction.RenderType.map.toString()) &&
+                                            boa.has("latitude") && boa.has("longitude") && boa.has("zoom")) {
+                                        actions.put(SusiAction.mapAction(
+                                            boa.getDouble("latitude"), boa.getDouble("longitude"), boa.getInt("zoom")));
+                                    }
+                                });
                             }
                             skills.put(skill);
                         }
