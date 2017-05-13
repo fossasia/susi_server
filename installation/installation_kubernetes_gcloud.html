@@ -1,0 +1,179 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Deploying Susi with Kubernetes on Google Cloud &#8212; Susi Server development documentation</title>
+    
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     'development',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="top" title="Susi Server development documentation" href="../index.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body role="document">
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="deploying-susi-with-kubernetes-on-google-cloud">
+<span id="deploying-susi-with-kubernetes-on-google-cloud"></span><h1>Deploying Susi with Kubernetes on Google Cloud<a class="headerlink" href="#deploying-susi-with-kubernetes-on-google-cloud" title="Permalink to this headline">¶</a></h1>
+<ol class="simple">
+<li>Go to <a class="reference external" href="https://cloud.google.com/free-trial/">Google Cloud Free Trial</a> and sign up. You will get 300 dollars credit for 3 months.</li>
+</ol>
+<ol class="simple">
+<li>Go to the console page: <a class="reference external" href="https://console.cloud.google.com/home">Console</a></li>
+</ol>
+<ol class="simple">
+<li>If you don’t have any projects, a page that would guide you on how to start a project will pop up. Give your project a name.</li>
+</ol>
+<ol class="simple">
+<li>In the search bar above on console page, enter &#8216;Compute Engine&#8217; and click on <code class="docutils literal"><span class="pre">Compute</span> <span class="pre">Engine</span></code>.</li>
+</ol>
+<ol class="simple">
+<li>If you have not activated billing for compute engine, click enable billing and choose your account to activate your Compute Engine. Your Google Compute Engine should be activated within a few minutes.</li>
+<li>Select your computer zone region:
+<code class="docutils literal"><span class="pre">gcloud</span> <span class="pre">config</span> <span class="pre">set</span> <span class="pre">compute/zone</span> <span class="pre">us-central1-b</span></code></li>
+<li>You can view your defauls/configure by this command:
+<code class="docutils literal"><span class="pre">gcloud</span> <span class="pre">config</span> <span class="pre">list</span></code></li>
+<li>In the Web Console, enter:</li>
+</ol>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">sudo</span> <span class="n">docker</span> <span class="n">pull</span> <span class="n">jyothiraditya</span><span class="o">/</span><span class="n">susi_server</span>
+</pre></div>
+</div>
+<ol class="simple">
+<li>Create a cluster</li>
+</ol>
+<p><code class="docutils literal"><span class="pre">gcloud</span> <span class="pre">container</span> <span class="pre">clusters</span> <span class="pre">create</span> <span class="pre">example-cluster</span></code></p>
+<ol class="simple">
+<li>Ensure kubectl has authentication credentials:</li>
+</ol>
+<p><code class="docutils literal"><span class="pre">gcloud</span> <span class="pre">auth</span> <span class="pre">application-default</span> <span class="pre">login</span></code></p>
+<ol class="simple">
+<li>query <code class="docutils literal"><span class="pre">docker</span> <span class="pre">images</span></code> . Copy or remember this id, we will need this id to tag the image.</li>
+</ol>
+<p><code class="docutils literal"><span class="pre">kubectl</span> <span class="pre">run</span> <span class="pre">susi_server</span> <span class="pre">--image=</span> <span class="pre">docker-id</span> <span class="pre">--port=8080</span></code></p>
+<ol class="simple">
+<li>Expose the container</li>
+</ol>
+<p><code class="docutils literal"><span class="pre">kubectl</span> <span class="pre">expose</span> <span class="pre">deployment</span> <span class="pre">susi_server</span> <span class="pre">--type=&quot;LoadBalancer&quot;</span></code></p>
+<ol class="simple">
+<li>Copy the external IP address for the hello-node app by typing this command.</li>
+</ol>
+<p><code class="docutils literal"><span class="pre">kubectl</span> <span class="pre">get</span> <span class="pre">service</span> <span class="pre">susi_server</span></code></p>
+<p>Wait for while and reenter query.Enter your assigned IP address with port 8080 (address:8080) into your browser to check if it is working.</p>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="../index.html">
+    <img class="logo" src="../_static/images/susi-logo-original.svg" alt="Logo"/>
+    
+  </a>
+</p>
+
+
+
+
+
+
+
+
+
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script><h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Home</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../index.html">Welcome</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Installation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="installation_generic.html">Installation on Linux/Mac OS</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation_windows_generic.html">Requirements</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation_windows_generic.html#download">Download</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation_windows_generic.html#build-and-run">Build and Run</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation_windows_generic.html#operate">Operate</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation_windows_generic.html#shut-down">Shut down</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation_docker.html">Installation with Docker</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation_cloud9.html">Installation on Cloud9</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation_heroku.html">Installation on Heroku</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Tutorial</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../skills/susi_questions.html">Ask SUSI</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Development</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="eclipseSetup.html">How to setup Susi Server on Eclipse</a></li>
+<li class="toctree-l1"><a class="reference internal" href="eclipseSetup.html#using-the-ant-file">Using the Ant File</a></li>
+<li class="toctree-l1"><a class="reference internal" href="eclipseSetup.html#test">Test :</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Miscellaneous</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../parsers.html">Parsers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../skills/submitting_skills_to_git.html">Submitting skills to Git</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  </ul></li>
+</ul>
+</div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2017, Susi.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.4.9</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>
