@@ -24,6 +24,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.util.Date;
 import java.util.Set;
 import java.util.regex.Pattern;
 
@@ -31,6 +32,11 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.json.JSONTokener;
 
+import de.schildbach.pte.*;
+import de.schildbach.pte.dto.Location;
+import de.schildbach.pte.dto.QueryTripsResult;
+import de.schildbach.pte.dto.SuggestLocationsResult;
+import de.schildbach.pte.dto.Trip;
 import ai.susi.DAO;
 import ai.susi.json.JsonObjectWithDefault;
 import ai.susi.json.JsonPath;
@@ -174,6 +180,41 @@ public class ConsoleService extends AbstractAPIHandler implements APIHandler {
                 json.setHits(json.getCount());
             } catch (Throwable e) {
                 // probably a time-out or a json error
+            }
+            return json;
+        });
+        dbAccess.put(Pattern.compile("SELECT +?(.*?) +?FROM +?deutschebahn +?WHERE +?from ??= ??'(.*?)' +?AND +?to ??=??'(.*)' ??;"), (flow, matcher) -> {
+            SusiThought json = new SusiThought();
+            String from = matcher.group(2);
+            String to = matcher.group(3);
+            System.out.println("Searching a train from " + from + " to " + to);
+            BahnProvider bahn = new BahnProvider();
+            try {
+	            SuggestLocationsResult fromSuggested = bahn.suggestLocations(from);
+	            SuggestLocationsResult toSuggested = bahn.suggestLocations(to);
+	            Location fromLoc = fromSuggested.getLocations().get(0);
+	            Location toLoc = toSuggested.getLocations().get(0);
+	            System.out.println("Location from: " + fromLoc.name + " Location to: " + toLoc.name);
+	            QueryTripsResult queryTripsResult = bahn.queryTrips(fromLoc, null, toLoc, new Date(), true, null, null, null, null, null);
+	            JSONArray tripsJsonArray = new JSONArray();
+	            for (Trip trip : queryTripsResult.trips) {
+	            		JSONObject tripJsonObject = new JSONObject();
+	            		tripJsonObject.put("duration_ms", trip.getDuration());
+	            		tripJsonObject.put("isTravable", trip.isTravelable());
+	            		tripJsonObject.put("firstDepartureTime", trip.getFirstDepartureTime());
+	            		tripJsonObject.put("numChanges", trip.getNumChanges());
+	            		tripJsonObject.put("publicDuration", trip.getPublicDuration());
+	            		tripsJsonArray.put(tripJsonObject);
+	            }
+	            System.out.println(queryTripsResult.trips.get(0).toString());
+	            json.setData(tripsJsonArray);
+                SusiTransfer transfer = new SusiTransfer(matcher.group(1));
+                json.setData(transfer.conclude(json.getData()));
+                json.setHits(json.getCount());
+	            
+            } catch (Exception ex) {
+            		// TODO errorhandling!
+            		ex.printStackTrace();
             }
             return json;
         });

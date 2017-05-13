@@ -172,5 +172,14 @@
     "actions":[ {"type":"answer", "select":"random", "phrases":[
       "it is $!$"
     ]}]
+  }, {
+    "score"  :2,
+    "phrases":[
+      {"type":"regex", "expression":"how long does it take from ?? (.*) +?to +?(.*) "},
+    ],
+    "process":[ {"type":"console", "expression":"SELECT duration FROM deutschebahn WHERE from='$1$' AND to='$2$';"}],
+    "actions":[ {"type":"answer", "select":"random", "phrases":[
+      "$1$ is a $description$."
+    ]}]
   }
 ]}

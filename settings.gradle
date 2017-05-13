@@ -1,1 +1,2 @@
 rootProject.name = 'susi_server'
+include ':sublibs:public-transport-enabler:enabler'
