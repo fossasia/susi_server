@@ -173,14 +173,77 @@ with each request.</p>
 <li>q (mandatory value, a UTF-8 encoded query string)</li>
 </ul>
 <p>All requests to the <code class="docutils literal"><span class="pre">/susi/chat.json</span></code> API can also be made with a POST request. A proper GET-Request would look like:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span>
+<div class="highlight-default"><div class="highlight"><pre><span></span>curl http://api.susi.ai/susi/chat.json?q=hello&amp;actions=answer,rss,table,map&amp;timezoneOffset=-120&amp;language=de
 </pre></div>
 </div>
 </div>
 <div class="section" id="api-action-types">
 <span id="api-action-types"></span><h2>API Action types<a class="headerlink" href="#api-action-types" title="Permalink to this headline">¶</a></h2>
+<p>Every Susi answer can have one or several action objects; all of them must be rendered by a Susi client.</p>
 <div class="section" id="the-answer-action">
 <span id="the-answer-action"></span><h3>The <code class="docutils literal"><span class="pre">answer</span></code> Action<a class="headerlink" href="#the-answer-action" title="Permalink to this headline">¶</a></h3>
+<p>This is the default action type which should be expected most:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="p">{</span>
+  <span class="s2">&quot;query&quot;</span><span class="p">:</span> <span class="s2">&quot;hello&quot;</span><span class="p">,</span>
+  <span class="s2">&quot;answers&quot;</span><span class="p">:</span> <span class="p">[{</span>
+    <span class="s2">&quot;data&quot;</span><span class="p">:</span> <span class="p">[],</span>
+    <span class="s2">&quot;metadata&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;count&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">},</span>
+    <span class="s2">&quot;actions&quot;</span><span class="p">:</span> <span class="p">[{</span>
+      <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;answer&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;expression&quot;</span><span class="p">:</span> <span class="s2">&quot;Hello!&quot;</span>
+    <span class="p">}]</span>
+  <span class="p">}],</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>This means that a client must return the <code class="docutils literal"><span class="pre">expression</span></code> to the user in any way: it can be written, spoken or displayed in any way.
+The action of type <code class="docutils literal"><span class="pre">answer</span></code> does not tell the client that a text-to-speech or other way of communication shall be used, the client
+has the task to find out what is the best way to send the message to the user. The core information is, that the action is an answer
+consisting of a text.</p>
+</div>
+<div class="section" id="the-table-action">
+<span id="the-table-action"></span><h3>The <code class="docutils literal"><span class="pre">table</span></code> Action<a class="headerlink" href="#the-table-action" title="Permalink to this headline">¶</a></h3>
+<p>A table action is performed by sending a table of objects to the user in a table-like format.
+The task to display a table can be different for different type of clients. A table action looks like. i.e.:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="p">{</span>
+  <span class="s2">&quot;query&quot;</span><span class="p">:</span> <span class="s2">&quot;stock quotes&quot;</span><span class="p">,</span>
+  <span class="s2">&quot;answers&quot;</span><span class="p">:</span> <span class="p">[{</span>
+    <span class="s2">&quot;data&quot;</span><span class="p">:</span> <span class="p">[</span>
+      <span class="p">{</span><span class="s2">&quot;currency&quot;</span><span class="p">:</span> <span class="s2">&quot;EUR/USD&quot;</span><span class="p">,</span> <span class="s2">&quot;rate&quot;</span><span class="p">:</span> <span class="s2">&quot;1.09302&quot;</span><span class="p">,</span> <span class="s2">&quot;timestamp&quot;</span><span class="p">:</span> <span class="s2">&quot;1494621900069&quot;</span><span class="p">},</span>
+      <span class="p">{</span><span class="s2">&quot;currency&quot;</span><span class="p">:</span> <span class="s2">&quot;USD/JPY&quot;</span><span class="p">,</span> <span class="s2">&quot;rate&quot;</span><span class="p">:</span> <span class="s2">&quot;113.326&quot;</span><span class="p">,</span> <span class="s2">&quot;timestamp&quot;</span><span class="p">:</span> <span class="s2">&quot;1494621900186&quot;</span><span class="p">},</span>
+      <span class="p">{</span><span class="s2">&quot;currency&quot;</span><span class="p">:</span> <span class="s2">&quot;GBP/USD&quot;</span><span class="p">,</span> <span class="s2">&quot;rate&quot;</span><span class="p">:</span> <span class="s2">&quot;1.28835&quot;</span><span class="p">,</span> <span class="s2">&quot;timestamp&quot;</span><span class="p">:</span> <span class="s2">&quot;1494621900129&quot;</span><span class="p">},</span>
+      <span class="p">{</span><span class="s2">&quot;currency&quot;</span><span class="p">:</span> <span class="s2">&quot;EUR/GBP&quot;</span><span class="p">,</span> <span class="s2">&quot;rate&quot;</span><span class="p">:</span> <span class="s2">&quot;0.84831&quot;</span><span class="p">,</span> <span class="s2">&quot;timestamp&quot;</span><span class="p">:</span> <span class="s2">&quot;1494621900103&quot;</span><span class="p">},</span>
+      <span class="p">{</span><span class="s2">&quot;currency&quot;</span><span class="p">:</span> <span class="s2">&quot;USD/CHF&quot;</span><span class="p">,</span> <span class="s2">&quot;rate&quot;</span><span class="p">:</span> <span class="s2">&quot;1.00133&quot;</span><span class="p">,</span> <span class="s2">&quot;timestamp&quot;</span><span class="p">:</span> <span class="s2">&quot;1494621899461&quot;</span><span class="p">}</span>
+    <span class="p">],</span>
+    <span class="s2">&quot;metadata&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;count&quot;</span><span class="p">:</span> <span class="mi">59</span><span class="p">},</span>
+    <span class="s2">&quot;actions&quot;</span><span class="p">:</span> <span class="p">[{</span>
+      <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;answer&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;expression&quot;</span><span class="p">:</span> <span class="s2">&quot;Here is a currency rate table:&quot;</span>
+    <span class="p">},</span> <span class="p">{</span>
+      <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;table&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;columns&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;currency&quot;</span><span class="p">:</span> <span class="s2">&quot;Valuta&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;rate&quot;</span><span class="p">:</span> <span class="s2">&quot;Quota&quot;</span>
+      <span class="p">}</span>
+    <span class="p">}]</span>
+  <span class="p">}]</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>Please recognize that the actions object consists of two action objects; both actions must be performed. The first action
+is an answer which must be displayed as explained above for <code class="docutils literal"><span class="pre">answer</span></code> actions, The second action is the <code class="docutils literal"><span class="pre">table</span></code> action.
+The client then should create a table out of the data object where the column names are &#8216;Valuta&#8217; and &#8216;Quota&#8217;.
+If the client would be a web interface, the rendering would look similar to this html table:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="o">&lt;</span><span class="n">table</span><span class="o">&gt;</span>
+<span class="o">&lt;</span><span class="n">tr</span><span class="o">&gt;&lt;</span><span class="n">th</span><span class="o">&gt;</span><span class="n">Valuta</span><span class="o">&lt;/</span><span class="n">th</span><span class="o">&gt;&lt;</span><span class="n">th</span><span class="o">&gt;</span><span class="n">Quota</span><span class="o">&lt;/</span><span class="n">th</span><span class="o">&gt;&lt;/</span><span class="n">tr</span><span class="o">&gt;</span>
+<span class="o">&lt;</span><span class="n">tr</span><span class="o">&gt;&lt;</span><span class="n">td</span><span class="o">&gt;</span><span class="n">EUR</span><span class="o">/</span><span class="n">USD</span><span class="o">&lt;/</span><span class="n">td</span><span class="o">&gt;&lt;</span><span class="n">td</span><span class="o">&gt;</span><span class="mf">1.09302</span><span class="o">&lt;/</span><span class="n">td</span><span class="o">&gt;&lt;/</span><span class="n">tr</span><span class="o">&gt;</span>
+<span class="o">&lt;</span><span class="n">tr</span><span class="o">&gt;&lt;</span><span class="n">td</span><span class="o">&gt;</span><span class="n">USD</span><span class="o">/</span><span class="n">JPY</span><span class="o">&lt;/</span><span class="n">td</span><span class="o">&gt;&lt;</span><span class="n">td</span><span class="o">&gt;</span><span class="mf">113.326</span><span class="o">&lt;/</span><span class="n">td</span><span class="o">&gt;&lt;/</span><span class="n">tr</span><span class="o">&gt;</span>
+<span class="o">&lt;</span><span class="n">tr</span><span class="o">&gt;&lt;</span><span class="n">td</span><span class="o">&gt;</span><span class="n">GBP</span><span class="o">/</span><span class="n">USD</span><span class="o">&lt;/</span><span class="n">td</span><span class="o">&gt;&lt;</span><span class="n">td</span><span class="o">&gt;</span><span class="mf">1.28835</span><span class="o">&lt;/</span><span class="n">td</span><span class="o">&gt;&lt;/</span><span class="n">tr</span><span class="o">&gt;</span>
+<span class="o">&lt;</span><span class="n">tr</span><span class="o">&gt;&lt;</span><span class="n">td</span><span class="o">&gt;</span><span class="n">EUR</span><span class="o">/</span><span class="n">GBP</span><span class="o">&lt;/</span><span class="n">td</span><span class="o">&gt;&lt;</span><span class="n">td</span><span class="o">&gt;</span><span class="mf">0.84831</span><span class="o">&lt;/</span><span class="n">td</span><span class="o">&gt;&lt;/</span><span class="n">tr</span><span class="o">&gt;</span>
+<span class="o">&lt;</span><span class="n">tr</span><span class="o">&gt;&lt;</span><span class="n">td</span><span class="o">&gt;</span><span class="n">USD</span><span class="o">/</span><span class="n">CHF</span><span class="o">&lt;/</span><span class="n">td</span><span class="o">&gt;&lt;</span><span class="n">td</span><span class="o">&gt;</span><span class="mf">1.00133</span><span class="o">&lt;/</span><span class="n">td</span><span class="o">&gt;&lt;/</span><span class="n">tr</span><span class="o">&gt;</span>
+<span class="o">&lt;/</span><span class="n">table</span><span class="o">&gt;</span>
+</pre></div>
+</div>
 </div>
 </div>
 </div>
@@ -233,6 +296,7 @@ with each request.</p>
 <li><a class="reference internal" href="#api-request-attributes">API Request attributes</a></li>
 <li><a class="reference internal" href="#api-action-types">API Action types</a><ul>
 <li><a class="reference internal" href="#the-answer-action">The <code class="docutils literal"><span class="pre">answer</span></code> Action</a></li>
+<li><a class="reference internal" href="#the-table-action">The <code class="docutils literal"><span class="pre">table</span></code> Action</a></li>
 </ul>
 </li>
 </ul>
