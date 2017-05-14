@@ -38,14 +38,14 @@ sudo docker pull jyothiraditya/susi_server
 
 11. query ```docker images``` . Copy or remember this id, we will need this id to tag the image.
 
-```kubectl run susi_server --image= docker-id --port=80```
+```kubectl run susi-server --image= docker-id --port=80```
 
 12. Expose the container
 
-```kubectl expose deployment susi_server --type="LoadBalancer"```
+```kubectl expose deployment susi-server --type="LoadBalancer"```
 
 13. Copy the external IP address for the hello-node app by typing this command.
 
-```kubectl get service susi_server```
+```kubectl get service susi-server```
 
 Wait for while and reenter query.Enter your assigned IP address with port 8080 (address:8080) into your browser to check if it is working.
