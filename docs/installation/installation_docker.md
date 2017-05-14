@@ -1,4 +1,4 @@
-# Installation of loklak with Docker on Bluemix
+# Installation of SUSI with Docker on Bluemix
 
 1. Install docker on your system
 
@@ -50,11 +50,11 @@ cf ic login   (No credentials are necessary of you logged in to bluemix before
    ```
 10. Init your docker connection with `cf ic init`
 
-11. Upload the loklak docker file to your namespace with `cf ic cpi mariobehling/loklak loklak`   (takes some time)
+11. Upload the susi docker file to your namespace with `cf ic cpi mariobehling/susi_server susi_server`   (takes some time)
 
 12. Create docker group with: (the XXXX must be unique, play around to found a free name)
    ```
-   cf ic group create --name loklak --auto --desired 2 -m 1024 -n XXXX -d mybluemix.net -p 80 registry.ng.bluemix.net/<namespace>/loklak
+   cf ic group create --name susi_server --auto --desired 2 -m 1024 -n XXXX -d mybluemix.net -p 80 registry.ng.bluemix.net/<namespace>/susi_server
    ```
 13. Check if your group is running either with pressing Dashboard in the browser or:
    ```
@@ -62,7 +62,7 @@ cf ic login   (No credentials are necessary of you logged in to bluemix before
    ```
 14. Wait until your container group is build and the network is configured (>1 minute) and
    ```
-   check at https://XXXX.mybluemix.net is working with your version of loklak
+   check at https://XXXX.mybluemix.net is working with your version of susi_server
    ```
-15. Send your own bluemix loklak link to Mario in order to prove your done it
+15. Send your own bluemix susi_server link to Mario in order to prove your done it
 
