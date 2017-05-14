@@ -38,7 +38,7 @@ sudo docker pull jyothiraditya/susi_server
 
 11. query ```docker images``` . Copy or remember this id, we will need this id to tag the image.
 
-```kubectl run susi_server --image= docker-id --port=8080```
+```kubectl run susi_server --image= docker-id --port=80```
 
 12. Expose the container
 
