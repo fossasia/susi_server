@@ -264,7 +264,10 @@ public class SusiAction {
                 // self-referrer evaluate contents from the answers expressions as recursion: susi is asked again
                 while (new TimeoutMatcher(m = self_referrer.matcher(expression)).matches()) {
                     String observation = m.group(1);
-                    expression = expression.substring(0, m.start(1) - 1) + mind.react(observation, client, new SusiThought()) + expression.substring(m.end(1) + 1);
+                    SusiMind.Reaction reaction = mind.new Reaction(observation, client, new SusiThought());
+                    String selfanswer = reaction.getExpression();
+                    thoughts.think(reaction.getMindstate());
+                    expression = expression.substring(0, m.start(1) - 1) + selfanswer + expression.substring(m.end(1) + 1);
                 }
                 
                 // assignments set variables from the result expressions. These can be visible or invisible
@@ -290,7 +293,9 @@ public class SusiAction {
                 }
                 if (this.getRenderType() == RenderType.self) {
                     // recursive call susi with the answer
-                    expression = mind.react(expression, client, new SusiThought());
+                    SusiMind.Reaction reaction = mind.new Reaction(expression, client, new SusiThought());
+                    expression = reaction.getExpression();
+                    thoughts.think(reaction.getMindstate());
                     this.json.put("expression", expression);
                     this.phrasesCache = null; // important, otherwise the expression is not recognized
                     // patch the render type

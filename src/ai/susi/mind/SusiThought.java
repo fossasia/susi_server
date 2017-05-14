@@ -408,7 +408,7 @@ public class SusiThought extends JSONObject {
     }
     
     public String toString() {
-        return super.toString(2); // thats here to get a better debugging output
+        return super.toString();
     }
     
     public static void main(String[] args) {

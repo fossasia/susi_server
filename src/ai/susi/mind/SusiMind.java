@@ -554,14 +554,32 @@ public class SusiMind {
         return answers;
     }
     
-    public String react(String query, String client, SusiThought observation) {
-        List<SusiArgument> datalist = react(query, 1, client, observation);
-        if (datalist.size() == 0) return "";
-        SusiArgument bestargument = datalist.get(0);
-        if (bestargument.getActions().isEmpty()) return "";
-        SusiAction action = bestargument.getActions().get(0);
-        String expression = action.execution(bestargument, this, client).getStringAttr("expression");
-        return expression;
+    public class Reaction {
+        private String expression;
+        private SusiThought mindstate;
+        
+        public Reaction(String query, String client, SusiThought observation) throws RuntimeException {
+            List<SusiArgument> datalist = react(query, 1, client, observation);
+            if (datalist.size() == 0) throw new RuntimeException("datalist is empty");
+            SusiArgument bestargument = datalist.get(0);
+            if (bestargument.getActions().isEmpty()) throw new RuntimeException("action list is empty");
+            SusiAction action = bestargument.getActions().get(0);
+            this.expression = action.execution(bestargument, SusiMind.this, client).getStringAttr("expression");
+            this.mindstate = bestargument.mindstate();
+            //SusiThought mindmeld = bestargument.mindmeld(true);
+        }
+        
+        public String getExpression() {
+            return this.expression;
+        }
+        
+        public SusiThought getMindstate() {
+            return this.mindstate;
+        }
+        
+        public String toString() {
+            return this.getExpression();
+        }
     }
 
     public Set<String> getSkillsetNames(String client) {
@@ -579,8 +597,8 @@ public class SusiMind {
             SusiMind mem = new SusiMind(watch, init, watch);
             JSONObject lesson = mem.readJsonLesson(new File("conf/susi/susi_cognition_000.json"));
             mem.learn(lesson);
-            System.out.println(mem.react("I feel funny", "localhost", new SusiThought()));
-            System.out.println(mem.react("Help me!", "localhost", new SusiThought()));
+            System.out.println(mem.new Reaction("I feel funny", "localhost", new SusiThought()).getExpression());
+            System.out.println(mem.new Reaction("Help me!", "localhost", new SusiThought()).getExpression());
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
