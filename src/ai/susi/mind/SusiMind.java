@@ -211,29 +211,35 @@ public class SusiMind {
                             }
 
                             // optional additional renderings
-                            String type = bo.has("type") ? bo.getString("type") : "";
-                            if (type.equals(SusiAction.RenderType.table.toString()) && bo.has("columns")) {
-                                actions.put(SusiAction.tableAction(bo.getJSONObject("columns")));
-                            } else
-                            if (type.equals(SusiAction.RenderType.piechart.toString()) &&
-                                    bo.has("total") && bo.has("key") &&
-                                    bo.has("value") && bo.has("unit")) {
-                                actions.put(SusiAction.piechartAction(
-                                        bo.getInt("total"), bo.getString("key"),
-                                        bo.getString("value"), bo.getString("unit")));
-                            } else
-                            if (type.equals(SusiAction.RenderType.rss.toString()) &&
-                                    bo.has("title") && bo.has("description") && bo.has("link")) {
-                                actions.put(SusiAction.rssAction(
-                                    bo.getString("title"), bo.getString("description"), bo.getString("link")));
-                            } else
-                            if (type.equals(SusiAction.RenderType.websearch.toString()) && bo.has("query")) {
-                                actions.put(SusiAction.websearchAction(bo.getString("query")));
-                            } else
-                            if (type.equals(SusiAction.RenderType.map.toString()) &&
-                                    bo.has("latitude") && bo.has("longitude") && bo.has("zoom")) {
-                                actions.put(SusiAction.mapAction(
-                                    bo.getDouble("latitude"), bo.getDouble("longitude"), bo.getInt("zoom")));
+                            if (bo.has("actions")) {
+                                JSONArray bo_actions = bo.getJSONArray("actions");
+                                bo_actions.forEach(action -> {
+                                    JSONObject boa = (JSONObject) action;
+                                    String type = boa.has("type") ? boa.getString("type") : "";
+                                    if (type.equals(SusiAction.RenderType.table.toString()) && boa.has("columns")) {
+                                        actions.put(SusiAction.tableAction(boa.getJSONObject("columns")));
+                                    } else
+                                    if (type.equals(SusiAction.RenderType.piechart.toString()) &&
+                                            boa.has("total") && boa.has("key") &&
+                                            boa.has("value") && boa.has("unit")) {
+                                        actions.put(SusiAction.piechartAction(
+                                                boa.getInt("total"), boa.getString("key"),
+                                                boa.getString("value"), boa.getString("unit")));
+                                    } else
+                                    if (type.equals(SusiAction.RenderType.rss.toString()) &&
+                                            boa.has("title") && boa.has("description") && boa.has("link")) {
+                                        actions.put(SusiAction.rssAction(
+                                            boa.getString("title"), boa.getString("description"), boa.getString("link")));
+                                    } else
+                                    if (type.equals(SusiAction.RenderType.websearch.toString()) && boa.has("query")) {
+                                        actions.put(SusiAction.websearchAction(boa.getString("query")));
+                                    } else
+                                    if (type.equals(SusiAction.RenderType.map.toString()) &&
+                                            boa.has("latitude") && boa.has("longitude") && boa.has("zoom")) {
+                                        actions.put(SusiAction.mapAction(
+                                            boa.getDouble("latitude"), boa.getDouble("longitude"), boa.getInt("zoom")));
+                                    }
+                                });
                             }
                             skills.put(skill);
                         }
@@ -548,14 +554,32 @@ public class SusiMind {
         return answers;
     }
     
-    public String react(String query, String client, SusiThought observation) {
-        List<SusiArgument> datalist = react(query, 1, client, observation);
-        if (datalist.size() == 0) return "";
-        SusiArgument bestargument = datalist.get(0);
-        if (bestargument.getActions().isEmpty()) return "";
-        SusiAction action = bestargument.getActions().get(0);
-        String expression = action.execution(bestargument, this, client).getStringAttr("expression");
-        return expression;
+    public class Reaction {
+        private String expression;
+        private SusiThought mindstate;
+        
+        public Reaction(String query, String client, SusiThought observation) throws RuntimeException {
+            List<SusiArgument> datalist = react(query, 1, client, observation);
+            if (datalist.size() == 0) throw new RuntimeException("datalist is empty");
+            SusiArgument bestargument = datalist.get(0);
+            if (bestargument.getActions().isEmpty()) throw new RuntimeException("action list is empty");
+            SusiAction action = bestargument.getActions().get(0);
+            this.expression = action.execution(bestargument, SusiMind.this, client).getStringAttr("expression");
+            this.mindstate = bestargument.mindstate();
+            //SusiThought mindmeld = bestargument.mindmeld(true);
+        }
+        
+        public String getExpression() {
+            return this.expression;
+        }
+        
+        public SusiThought getMindstate() {
+            return this.mindstate;
+        }
+        
+        public String toString() {
+            return this.getExpression();
+        }
     }
 
     public Set<String> getSkillsetNames(String client) {
@@ -573,8 +597,8 @@ public class SusiMind {
             SusiMind mem = new SusiMind(watch, init, watch);
             JSONObject lesson = mem.readJsonLesson(new File("conf/susi/susi_cognition_000.json"));
             mem.learn(lesson);
-            System.out.println(mem.react("I feel funny", "localhost", new SusiThought()));
-            System.out.println(mem.react("Help me!", "localhost", new SusiThought()));
+            System.out.println(mem.new Reaction("I feel funny", "localhost", new SusiThought()).getExpression());
+            System.out.println(mem.new Reaction("Help me!", "localhost", new SusiThought()).getExpression());
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }

@@ -148,7 +148,8 @@ public class SusiCognition {
                 SusiAction expressionAction = null;
                 for (SusiAction a: clonedThought.getActions()) {
                     ArrayList<String> phrases = a.getPhrases();
-                    if (phrases.size() > 0) {expressionAction = a; break;}
+                    // not all actions have phrases!
+                    if (phrases != null && phrases.size() > 0) {expressionAction = a; break;}
                 }
                 if (expressionAction != null) dispute.addObservation("answer", expressionAction.getPhrases().get(0)); // we can unify with "answer" in queries
 

@@ -43,7 +43,9 @@ public class SusiPhrase {
         private int getSubscore() {return this.subscore;}
     }
 
+    private final static String CATCHONE_CAPTURE_GROUP_STRING = "(^\\S+)"; // only one word
     private final static String CATCHALL_CAPTURE_GROUP_STRING = "(.*)"; // greedy capturing everything is the best choice: that covers words phrases as well
+    private final static Pattern CATCHONE_CAPTURE_GROUP_PATTERN = Pattern.compile(Pattern.quote(CATCHONE_CAPTURE_GROUP_STRING));
     private final static Pattern CATCHALL_CAPTURE_GROUP_PATTERN = Pattern.compile(Pattern.quote(CATCHALL_CAPTURE_GROUP_STRING));
     private final static Pattern dspace = Pattern.compile("  ");
     private final static Pattern wspace = Pattern.compile(",|;");
@@ -117,13 +119,20 @@ public class SusiPhrase {
     }
     
     private static String parseOnePattern(String expression) {
-        if (expression.length() == 0 || expression.equals("*")) expression = CATCHALL_CAPTURE_GROUP_STRING;
+        expression = parseOnePattern(expression, '*', CATCHALL_CAPTURE_GROUP_STRING);
+        expression = parseOnePattern(expression, '+', CATCHONE_CAPTURE_GROUP_STRING);
+        return expression;
+    }
+    
+
+    private static String parseOnePattern(String expression, char meta, String regex) {
+        if (expression.length() == 0 || expression.equals("" + meta)) expression = regex;
         if ("?!:.".indexOf(expression.charAt(expression.length() - 1)) >= 0) expression = expression.substring(0, expression.length() - 1);
-        if (expression.startsWith("* ")) expression = CATCHALL_CAPTURE_GROUP_STRING + " " + expression.substring(2);
-        if (expression.startsWith("*")) expression = CATCHALL_CAPTURE_GROUP_STRING + " ?" + expression.substring(1);
-        if (expression.endsWith(" *")) expression = expression.substring(0, expression.length() - 2) + " " + CATCHALL_CAPTURE_GROUP_STRING;
-        if (expression.endsWith("*")) expression = expression.substring(0, expression.length() - 1) + " ?" + CATCHALL_CAPTURE_GROUP_STRING;
-        expression = expression.replaceAll(" \\* | \\?\\* ", " " + CATCHALL_CAPTURE_GROUP_STRING + " ");
+        if (expression.startsWith(meta + " ")) expression = regex + " " + expression.substring(2);
+        if (expression.length() > 0 && expression.charAt(0) == meta) expression = regex + " ?" + expression.substring(1);
+        if (expression.endsWith(" " + meta)) expression = expression.substring(0, expression.length() - 2) + " " + regex;
+        if (expression.length() > 0 && expression.charAt(expression.length() - 1) == meta) expression = expression.substring(0, expression.length() - 1) + " ?" + regex;
+        expression = expression.replaceAll(" \\" + meta + " | \\?\\" + meta + " ", " " + regex + " ");
         return expression;
     }
     
