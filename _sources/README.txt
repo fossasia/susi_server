@@ -205,8 +205,7 @@ when you opened the application web pages or you can simply open
 
 Where do I find the javadocs?
 -----------------------------
-
-At http://susi.github.io/susi_server/ or by building them via 'ant
+You can build them via 'ant
 javadoc'
 
 Where can I report bugs and make feature requests?
