@@ -96,7 +96,7 @@ public class SusiService extends AbstractAPIHandler implements APIHandler {
                 JSONObject json = new JSONObject(serviceResponse);
                 String text = json.getJSONObject("data").getString("text");
                 // fill an empty mind with the dream
-                SusiMind dream = new SusiMind(null); // an empty mind!
+                SusiMind dream = new SusiMind(DAO.susi_memory_dir); // we need the memory directory here to get a share on the memory of previous dialoges, otherwise we cannot test call-back questions
                 JSONObject rules = dream.readSkills(new BufferedReader(new InputStreamReader(new ByteArrayInputStream(text.getBytes(StandardCharsets.UTF_8)), StandardCharsets.UTF_8)));
                 dream.learn(rules);
                 // susi is now dreaming.. Try to find an answer out of the dream

@@ -132,9 +132,75 @@ The following attributes can be transmitted to the server with each request
 
 All requests to the `/susi/chat.json` API can also be made with a POST request. A proper GET-Request would look like:
 ```
+curl http://api.susi.ai/susi/chat.json?q=hello&actions=answer,rss,table,map&timezoneOffset=-120&language=de
 ```
 
 
 ## API Action types
 
+Every Susi answer can have one or several action objects; all of them must be rendered by a Susi client.
+
 ### The `answer` Action
+
+This is the default action type which should be expected most:
+```
+{
+  "query": "hello",
+  "answers": [{
+    "data": [],
+    "metadata": {"count": 0},
+    "actions": [{
+      "type": "answer",
+      "expression": "Hello!"
+    }]
+  }],
+}
+```
+This means that a client must return the `expression` to the user in any way: it can be written, spoken or displayed in any way.
+The action of type `answer` does not tell the client that a text-to-speech or other way of communication shall be used, the client
+has the task to find out what is the best way to send the message to the user. The core information is, that the action is an answer
+consisting of a text.
+
+### The `table` Action
+
+A table action is performed by sending a table of objects to the user in a table-like format.
+The task to display a table can be different for different type of clients. A table action looks like. i.e.:
+```
+{
+  "query": "stock quotes",
+  "answers": [{
+    "data": [
+      {"currency": "EUR/USD", "rate": "1.09302", "timestamp": "1494621900069"},
+      {"currency": "USD/JPY", "rate": "113.326", "timestamp": "1494621900186"},
+      {"currency": "GBP/USD", "rate": "1.28835", "timestamp": "1494621900129"},
+      {"currency": "EUR/GBP", "rate": "0.84831", "timestamp": "1494621900103"},
+      {"currency": "USD/CHF", "rate": "1.00133", "timestamp": "1494621899461"}
+    ],
+    "metadata": {"count": 59},
+    "actions": [{
+      "type": "answer",
+      "expression": "Here is a currency rate table:"
+    }, {
+      "type": "table",
+      "columns": {
+        "currency": "Valuta",
+        "rate": "Quota"
+      }
+    }]
+  }]
+}
+```
+Please recognize that the actions object consists of two action objects; both actions must be performed. The first action
+is an answer which must be displayed as explained above for `answer` actions, The second action is the `table` action.
+The client then should create a table out of the data object where the column names are 'Valuta' and 'Quota'.
+If the client would be a web interface, the rendering would look similar to this html table:
+```
+<table>
+<tr><th>Valuta</th><th>Quota</th></tr>
+<tr><td>EUR/USD</td><td>1.09302</td></tr>
+<tr><td>USD/JPY</td><td>113.326</td></tr>
+<tr><td>GBP/USD</td><td>1.28835</td></tr>
+<tr><td>EUR/GBP</td><td>0.84831</td></tr>
+<tr><td>USD/CHF</td><td>1.00133</td></tr>
+</table>
+```
