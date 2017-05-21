@@ -39,7 +39,7 @@ public abstract class AbstractGeoPoint implements GeoPoint {
         return EQUATOR_EARTH_RADIUS * c;
     }
 
-    static final double EQUATOR_EARTH_RADIUS = 63781370.0d;
+    static final double EQUATOR_EARTH_RADIUS = 6378137.0d;
     static final double D2R = (Math.PI / 180.0d);
 
 }
