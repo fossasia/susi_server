@@ -55,6 +55,7 @@ dependencies {
   compile group: 'org.bouncycastle', name: 'bcprov-jdk15on', version: '1.+'
   compile group: 'org.bouncycastle', name: 'bcpkix-jdk15on', version: '1.+'
   compile group: 'jfree', name: 'jfreechart', version: '1.+'
+  compile(project(':dependencies:public-transport-enabler:enabler')) {	}
 }
 
 tasks.withType(Javadoc) {
