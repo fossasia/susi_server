@@ -104,6 +104,7 @@ import ai.susi.server.api.susi.RSSReaderService;
 import ai.susi.server.api.susi.StatusService;
 import ai.susi.server.api.susi.SusiService;
 import ai.susi.server.api.susi.UnansweredServlet;
+import ai.susi.server.api.susi.UserService;
 import ai.susi.server.api.vis.MapServlet;
 import ai.susi.server.api.vis.MarkdownServlet;
 import ai.susi.server.api.vis.PieChartServlet;
@@ -482,6 +483,7 @@ public class SusiServer {
                 RSSReaderService.class,
                 SusiService.class,
                 MindService.class,
+                UserService.class,
                 
                 // learning services
                 ConsoleLearning.class,
