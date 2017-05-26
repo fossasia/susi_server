@@ -5,7 +5,7 @@ Susi
 Status| |Percentage of issues still open| |Average time
 to resolve an issue| |Twitter| |Twitter Follow|
 
-SUSI AI is an intelligent Open Source personal assistant. It is capable of chat and voice interaction and by using APIS to perform actions such as music playback, making to-do lists, setting alarms, streaming podcasts, playing audiobooks, and providing weather, traffic, and other real time information. Additional functionalities can be added as console services using external APIs. Susi AI is able to answer questions and depending on the context will ask for additional information in order to perform a desired outcome. The core of the assistant is the SUSI AI server that holds the "ingelligence" and "personality" of SUSI. The Android and web applications make use of the APIs to access information from a hosted server.
+SUSI AI is an intelligent Open Source personal assistant. It is capable of chat and voice interaction and by using APIS to perform actions such as music playback, making to-do lists, setting alarms, streaming podcasts, playing audiobooks, and providing weather, traffic, and other real time information. Additional functionalities can be added as console services using external APIs. Susi AI is able to answer questions and depending on the context will ask for additional information in order to perform the desired outcome. The core of the assistant is the SUSI AI server that holds the "intelligence" and "personality" of SUSI. The Android and web applications make use of the APIs to access information from a hosted server.
 
 An automatic deployment from the development branch at GitHub is available for tests here https://susi-server.herokuapp.com
 
@@ -238,7 +238,7 @@ After selecting the issue
 
 1.Comment on the issue saying you are working on the issue.
 
-2.We except you to discuuss the approach either by commenting or in the
+2.We except you to discuss the approach either by commenting or in the
 gitter.
 
 3.Updates or progress on the issue would be nice.
