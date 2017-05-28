@@ -5,7 +5,7 @@ Susi
 Status| |Percentage of issues still open| |Average time
 to resolve an issue| |Twitter| |Twitter Follow|
 
-SUSI AI is an intelligent Open Source personal assistant. It is capable of chat and voice interaction and by using APIS to perform actions such as music playback, making to-do lists, setting alarms, streaming podcasts, playing audiobooks, and providing weather, traffic, and other real time information. Additional functionalities can be added as console services using external APIs. Susi AI is able to answer questions and depending on the context will ask for additional information in order to perform the desired outcome. The core of the assistant is the SUSI AI server that holds the "intelligence" and "personality" of SUSI. The Android and web applications make use of the APIs to access information from a hosted server.
+Susi AI is an intelligent Open Source personal assistant. It is capable of chat and voice interaction and by using APIS to perform actions such as music playback, making to-do lists, setting alarms, streaming podcasts, playing audiobooks, and providing weather, traffic, and other real time information. Additional functionalities can be added as console services using external APIs. Susi AI is able to answer questions and depending on the context will ask for additional information in order to perform the desired outcome. The core of the assistant is the Susi AI server that holds the "intelligence" and "personality" of Susi AI. The Android and web applications make use of the APIs to access information from a hosted server.
 
 An automatic deployment from the development branch at GitHub is available for tests here https://susi-server.herokuapp.com
 
@@ -28,8 +28,8 @@ How do I install Susi: Download, Build, Run
 |Deploy| |Deploy on Scalingo| |Deploy to Bluemix| |Deploy to Docker
 Cloud|
 
-At this time, Susi is not provided in compiled form, you easily build it yourself. It's not difficult and done in one minute! The source code is
-hosted at https://github.com/fossasia/susi_server, you can download it and run Susi with:
+At this time, Susi AI is not provided in compiled form, you easily build it yourself. It's not difficult and done in one minute! The source code is
+hosted at https://github.com/fossasia/susi_server, you can download it and run Susi AI with:
 
 ::
 
@@ -56,9 +56,9 @@ For Windows Users (who are using GitBash/Cygwin or any terminal):
     To stop:
     > Press Ctrl+C
 
-After all server processes are running, Susi tries to open a browser page itself. If that does not happen, just open http://localhost:4000; if you made the installation on a headless or remote server, then replace 'localhost' with your server name.
+After all server processes are running, Susi AI tries to open a browser page itself. If that does not happen, just open http://localhost:4000; if you made the installation on a headless or remote server, then replace 'localhost' with your server name.
 
-To stop Susi, run: (this will block until the server has actually terminated)
+To stop Susi AI, run: (this will block until the server has actually terminated)
 
 ::
 
@@ -70,52 +70,52 @@ A self-upgrading process is available which must be triggered by a shell command
 
     > bin/upgrade.sh
 
-Where can I download ready-built releases of Susi?
+Where can I download ready-built releases of Susi AI?
 --------------------------------------------------
 
-No-where, you must clone the git repository of Susi and built it yourself. That's easy, just do
+No-where, you must clone the git repository of Susi AI and built it yourself. That's easy, just do
 
 -  ``git clone https://github.com/fossasia/susi_server.git``
 -  ``cd susi``
--  then see below ("How do I run Susi")
+-  then see below ("How do I run Susi AI")
 
-How do I install Susi with Docker on Google Cloud?
+How do I install Susi AI with Docker on Google Cloud?
 ----------------------------------
 
-To install Susi with Docker on Google Cloud please refer to the `Susi Docker installation readme </docs/installation/installation_docker_gcloud.md>`__.
+To install Susi AI with Docker on Google Cloud please refer to the `Susi Docker installation readme </docs/installation/installation_docker_gcloud.md>`__.
 
-How do I install Susi with Docker on AWS?
+How do I install Susi AI with Docker on AWS?
 ----------------------------------
 
-To install Susi with Docker on AWS please refer to the `Susi Docker installation readme </docs/installation/installation_docker_aws.md>`__.
+To install Susi AI with Docker on AWS please refer to the `Susi Docker installation readme </docs/installation/installation_docker_aws.md>`__.
 
-How do I install Susi with Docker on Bluemix ?
+How do I install Susi AI with Docker on Bluemix ?
 ----------------------------------
 
-To install Susi with Docker on Bluemix please refer to the `Susi Docker installation readme </docs/installation/installation_docker_bluemix.md>`__.
+To install Susi AI with Docker on Bluemix please refer to the `Susi Docker installation readme </docs/installation/installation_docker_bluemix.md>`__.
 
-How do I install Susi with Docker on Digital Ocean ?
+How do I install Susi AI with Docker on Digital Ocean ?
 ----------------------------------
 
-To install Susi with Docker on Digital Ocean please refer to the `Susi Docker installation readme </docs/installation/installation_docker_digitalocean.md>`__.
+To install Susi AI with Docker on Digital Ocean please refer to the `Susi Docker installation readme </docs/installation/installation_docker_digitalocean.md>`__.
 
-How do I deploy Susi with Heroku?
+How do I deploy Susi AI with Heroku?
 ---------------------------------
 
-You can easily deploy to Heroku by clicking the Deploy to Heroku button above. To install Susi using Heroku Toolbelt, please refer to the `Susi Heroku installation readme </docs/installation/installation_heroku.md>`__.
+You can easily deploy to Heroku by clicking the Deploy to Heroku button above. To install Susi AI using Heroku Toolbelt, please refer to the `Susi Heroku installation readme </docs/installation/installation_heroku.md>`__.
 
-How do I deploy Susi with cloud9?
+How do I deploy Susi AI with cloud9?
 ---------------------------------
 
-To install Susi with cloud9 please refer to the `Susi cloud9 installation readme </docs/installation/installation_cloud9.md>`__.
+To install Susi AI with cloud9 please refer to the `Susi cloud9 installation readme </docs/installation/installation_cloud9.md>`__.
 
-How do I setup Susi on Eclipse?
+How do I setup Susi AI on Eclipse?
 -------------------------------
 
-To install Susi on Eclipes, please refer to the `Susi Eclipse
+To install Susi AI on Eclipes, please refer to the `Susi Eclipse
 readme </docs/installation/eclipseSetup.md>`__.
 
-How do I run Susi?
+How do I run Susi AI?
 ------------------
 
 -  build Susi (you need to do this only once, see above)
@@ -123,7 +123,7 @@ How do I run Susi?
 -  open ``http://localhost:4000`` in your browser
 -  to shut down Susi, run ``bin/stop.sh``
 
-How do I analyze data acquired by Susi
+How do I analyze data acquired by Susi AI
 --------------------------------------
 
 Susi stores data into an elasticsearch index. There is a front-end for the index available in elasticsearch-head. To install this, do:
@@ -137,7 +137,7 @@ Susi stores data into an elasticsearch index. There is a front-end for the index
 Run elasticsearch-head with: - ``grunt server`` ..which opens the
 administration page at ``http://localhost:9100``
 
-How do I configure Susi?
+How do I configure Susi AI?
 ------------------------
 
 The basis configuration file is in ``conf/config.properties``. To
@@ -174,18 +174,18 @@ How to compile using Gradle?
    ::
        ./gradle_clean.sh
 
-How do I develop Skills (AI Conversation Rules) for Susi?
+How do I develop Skills (AI Conversation Rules) for Susi AI?
 ---------------------------------------------------------
 
-The Susi skill language is described in the `Skill Development
+The Susi AI skill language is described in the `Skill Development
 Tutorial </docs/skills/susi_skill_development_tutorial.md>`__.
 
-Why should I use Susi?
+Why should I use Susi AI?
 ----------------------
 
-If you like to create your own AI, then you may consider Susi.
+If you like to create your own AI, then you may consider Susi AI.
 
-Where can I get the latest news about Susi?
+Where can I get the latest news about Susi AI?
 -------------------------------------------
 
 Hey, this is the tool for that! Just put
@@ -212,7 +212,7 @@ Where can I report bugs and make feature requests?
 --------------------------------------------------
 
 This project is considered a community work. The development crew
-consist of YOU too. I am very thankful for pull request. So if you
+consist of you too. I am very thankful for pull request. So if you
 discovered that something can be enhanced, please do it yourself and
 make a pull request. If you find a bug, please try to fix it. If you
 report a bug to me I will possibly consider it but at the very end of a
@@ -238,7 +238,7 @@ After selecting the issue
 
 1.Comment on the issue saying you are working on the issue.
 
-2.We except you to discuss the approach either by commenting or in the
+2.We expect you to discuss the approach either by commenting or in the
 gitter.
 
 3.Updates or progress on the issue would be nice.
