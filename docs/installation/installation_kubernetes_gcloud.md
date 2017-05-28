@@ -42,7 +42,7 @@ sudo docker pull jyothiraditya/susi_server
 
 12. Then we need to store this docker image into our project:
 
-```gcloud docker --push <image-id> gcr.io/<project-id>/<image-id>```
+```gcloud docker -- push <image-id> gcr.io/<project-id>/<image-id>```
 
 11. query ```docker images``` . Copy or remember this id, we will need this id to tag the image.
 
