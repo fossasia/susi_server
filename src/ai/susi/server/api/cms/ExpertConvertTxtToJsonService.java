@@ -1,6 +1,6 @@
 /**
- *  TopMenuService
- *  Copyright 22.05.2016 by Michael Peter Christen, @0rb1t3r
+ *  ConvertExpertTxtToJsonService
+ *  Copyright 28.05.2017 by Michael Peter Christen, @0rb1t3r
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -17,10 +17,8 @@
  *  If not, see <http://www.gnu.org/licenses/>.
  */
 
-
 package ai.susi.server.api.cms;
 
-import org.json.JSONArray;
 import org.json.JSONObject;
 
 import ai.susi.json.JsonObjectWithDefault;
@@ -32,9 +30,9 @@ import ai.susi.server.Query;
 
 import javax.servlet.http.HttpServletResponse;
 
-public class TopMenuService extends AbstractAPIHandler implements APIHandler {
+public class ExpertConvertTxtToJsonService extends AbstractAPIHandler implements APIHandler {
     
-    private static final long serialVersionUID = 1839868262296635665L;
+    private static final long serialVersionUID = 18344222L;
 
     @Override
     public BaseUserRole getMinimalBaseUserRole() { return BaseUserRole.ANONYMOUS; }
@@ -46,18 +44,13 @@ public class TopMenuService extends AbstractAPIHandler implements APIHandler {
 
     @Override
     public String getAPIPath() {
-        return "/cms/topmenu.json";
+        return "/cms/experttxt2.json";
     }
     
     @Override
     public JSONObject serviceImpl(Query call, HttpServletResponse response, Authorization rights, final JsonObjectWithDefault permissions) {
         
         JSONObject json = new JSONObject(true);
-        JSONArray topmenu = new JSONArray()
-            .put(new JSONObject().put("Home", "index.html"))
-            .put(new JSONObject().put("API", "api.html"))
-            .put(new JSONObject().put("Account", "apps/applist/index.html"));
-        json.put("items", topmenu);
         
         // modify caching
         json.put("$EXPIRES", 600);
