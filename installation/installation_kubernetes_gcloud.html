@@ -75,13 +75,21 @@
 </ol>
 <p><code class="docutils literal"><span class="pre">gcloud</span> <span class="pre">auth</span> <span class="pre">application-default</span> <span class="pre">login</span></code></p>
 <ol class="simple">
+<li>Get docker image-id by running this command:</li>
+</ol>
+<p><code class="docutils literal"><span class="pre">docker</span> <span class="pre">images</span></code></p>
+<ol class="simple">
+<li>Then we need to store this docker image into our project:</li>
+</ol>
+<p><code class="docutils literal"><span class="pre">gcloud</span> <span class="pre">docker</span> <span class="pre">--</span> <span class="pre">push</span> <span class="pre">&lt;image-id&gt;</span> <span class="pre">gcr.io/&lt;project-id&gt;/&lt;image-id&gt;</span></code></p>
+<ol class="simple">
 <li>query <code class="docutils literal"><span class="pre">docker</span> <span class="pre">images</span></code> . Copy or remember this id, we will need this id to tag the image.</li>
 </ol>
-<p><code class="docutils literal"><span class="pre">kubectl</span> <span class="pre">run</span> <span class="pre">susi-server</span> <span class="pre">--image=</span> <span class="pre">docker-id</span> <span class="pre">--port=80</span></code></p>
+<p><code class="docutils literal"><span class="pre">kubectl</span> <span class="pre">run</span> <span class="pre">susi-server</span> <span class="pre">--image=gcr.io/&lt;project-id&gt;/&lt;image-id&gt;</span> <span class="pre">--port=80</span></code></p>
 <ol class="simple">
 <li>Expose the container</li>
 </ol>
-<p><code class="docutils literal"><span class="pre">kubectl</span> <span class="pre">expose</span> <span class="pre">deployment</span> <span class="pre">susi-server</span> <span class="pre">--type=&quot;LoadBalancer&quot;</span></code></p>
+<p><code class="docutils literal"><span class="pre">kubectl</span> <span class="pre">expose</span> <span class="pre">deployment</span> <span class="pre">susi-server</span> <span class="pre">--type=&quot;LoadBalancer</span> <span class="pre">--port=80&quot;</span></code></p>
 <ol class="simple">
 <li>Copy the external IP address for the hello-node app by typing this command.</li>
 </ol>
