@@ -1,6 +1,6 @@
 /**
- *  TopMenuService
- *  Copyright 22.05.2016 by Michael Peter Christen, @0rb1t3r
+ *  UserService
+ *  Copyright 24.05.2017 by Michael Peter Christen, @0rb1t3r
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -17,13 +17,17 @@
  *  If not, see <http://www.gnu.org/licenses/>.
  */
 
+package ai.susi.server.api.susi;
 
-package ai.susi.server.api.cms;
+import java.util.List;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import ai.susi.DAO;
 import ai.susi.json.JsonObjectWithDefault;
+import ai.susi.mind.SusiCognition;
+import ai.susi.server.APIException;
 import ai.susi.server.APIHandler;
 import ai.susi.server.AbstractAPIHandler;
 import ai.susi.server.Authorization;
@@ -32,9 +36,14 @@ import ai.susi.server.Query;
 
 import javax.servlet.http.HttpServletResponse;
 
-public class TopMenuService extends AbstractAPIHandler implements APIHandler {
-    
-    private static final long serialVersionUID = 1839868262296635665L;
+/**
+ * get information about the user.
+ * i.e. it will return the history of conversation with two memories with
+ * http://127.0.0.1:4000/susi/memory.json?cognitions=2
+ */
+public class UserService extends AbstractAPIHandler implements APIHandler {
+   
+    private static final long serialVersionUID = 8578478303098111L;
 
     @Override
     public BaseUserRole getMinimalBaseUserRole() { return BaseUserRole.ANONYMOUS; }
@@ -44,23 +53,24 @@ public class TopMenuService extends AbstractAPIHandler implements APIHandler {
         return null;
     }
 
-    @Override
     public String getAPIPath() {
-        return "/cms/topmenu.json";
+        return "/susi/memory.json";
     }
     
     @Override
-    public JSONObject serviceImpl(Query call, HttpServletResponse response, Authorization rights, final JsonObjectWithDefault permissions) {
-        
+    public JSONObject serviceImpl(Query post, HttpServletResponse response, Authorization user, final JsonObjectWithDefault permissions) throws APIException {
+
+        int cognitionsCount = Math.min(10, post.get("cognitions", 10));
+        String client = user.getIdentity().getClient();
+        List<SusiCognition> cognitions = DAO.susi.getMemories().getCognitions(client);
+        JSONArray coga = new JSONArray();
+        for (SusiCognition cognition: cognitions) {
+            coga.put(cognition.getJSON());
+            if (--cognitionsCount <= 0) break;
+        }
         JSONObject json = new JSONObject(true);
-        JSONArray topmenu = new JSONArray()
-            .put(new JSONObject().put("Home", "index.html"))
-            .put(new JSONObject().put("API", "api.html"))
-            .put(new JSONObject().put("Account", "apps/applist/index.html"));
-        json.put("items", topmenu);
-        
-        // modify caching
-        json.put("$EXPIRES", 600);
+        json.put("cognitions", coga);
         return json;
     }
+    
 }

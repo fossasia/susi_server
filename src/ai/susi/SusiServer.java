@@ -91,6 +91,12 @@ import ai.susi.server.api.aaa.SignUpService;
 import ai.susi.server.api.aaa.UserAccountPermissions;
 import ai.susi.server.api.aaa.UserManagementService;
 import ai.susi.server.api.cms.AppsService;
+import ai.susi.server.api.cms.ExpertConvertJsonToTxtService;
+import ai.susi.server.api.cms.ExpertConvertTxtToJsonService;
+import ai.susi.server.api.cms.ExpertGetJsonService;
+import ai.susi.server.api.cms.ExpertGetTxtService;
+import ai.susi.server.api.cms.ExpertPostJsonService;
+import ai.susi.server.api.cms.ExpertPostTxtService;
 import ai.susi.server.api.cms.Sitemap;
 import ai.susi.server.api.cms.ThreaddumpServlet;
 import ai.susi.server.api.cms.TopMenuService;
@@ -104,6 +110,7 @@ import ai.susi.server.api.susi.RSSReaderService;
 import ai.susi.server.api.susi.StatusService;
 import ai.susi.server.api.susi.SusiService;
 import ai.susi.server.api.susi.UnansweredServlet;
+import ai.susi.server.api.susi.UserService;
 import ai.susi.server.api.vis.MapServlet;
 import ai.susi.server.api.vis.MarkdownServlet;
 import ai.susi.server.api.vis.PieChartServlet;
@@ -473,6 +480,12 @@ public class SusiServer {
                 PublicKeyRegistrationService.class,
                 SignUpService.class,
                 TopMenuService.class,
+                ExpertConvertJsonToTxtService.class,
+                ExpertConvertTxtToJsonService.class,
+                ExpertGetJsonService.class,
+                ExpertGetTxtService.class,
+                ExpertPostJsonService.class,
+                ExpertPostTxtService.class,
                 UserManagementService.class,
                 UserAccountPermissions.class,
                 JsonPathTestService.class,
@@ -482,6 +495,7 @@ public class SusiServer {
                 RSSReaderService.class,
                 SusiService.class,
                 MindService.class,
+                UserService.class,
                 
                 // learning services
                 ConsoleLearning.class,

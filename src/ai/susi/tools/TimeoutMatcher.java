@@ -56,6 +56,7 @@ public class TimeoutMatcher {
         try {
             return future.get(1, TimeUnit.SECONDS);
         } catch (InterruptedException | ExecutionException | TimeoutException e) {
+            future.cancel(true);
             return false;
         }
     }
