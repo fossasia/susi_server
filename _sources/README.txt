@@ -263,8 +263,9 @@ Step 3: Coding Policy
 
 -  Single commit per pull request
 
--  Reference the issue numbers in the commit message. Follow the pattern
-   Fixes #
+
+-  For writing commit messages please adhere to the `Commit style guidelines <docs/commitStyle.md>`__.
+
 
 -  Follow uniform design practices. The design language must be
    consistent throughout the app.
