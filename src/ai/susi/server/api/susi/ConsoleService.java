@@ -43,6 +43,8 @@ import ai.susi.server.Authorization;
 import ai.susi.server.BaseUserRole;
 import ai.susi.server.ClientConnection;
 import ai.susi.server.Query;
+import api.external.transit.BahnService;
+import api.external.transit.BahnService.NoStationFoundException;
 
 import javax.servlet.http.HttpServletResponse;
 
@@ -175,6 +177,25 @@ public class ConsoleService extends AbstractAPIHandler implements APIHandler {
                 // probably a time-out or a json error
             }
             return json;
+        });
+        dbAccess.put(Pattern.compile("SELECT +?(.*?) +?FROM +?bahn +?WHERE +?from ??= ??'(.*?)' +?to ??= ??'(.*?)' ??;"), (flow, matcher) -> {
+        	String query = matcher.group(1);
+        	String from = matcher.group(2);
+        	String to = matcher.group(3);
+        	SusiThought json = new SusiThought();
+			try {
+				json = (new BahnService()).getConnections(from, to);
+				SusiTransfer transfer = new SusiTransfer(query);
+                json.setData(transfer.conclude(json.getData()));
+                return json;
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (NoStationFoundException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			return json;
         });
     }
 

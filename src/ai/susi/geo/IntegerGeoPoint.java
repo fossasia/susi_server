@@ -26,17 +26,29 @@ package ai.susi.geo;
  * GeoPoint implementation with Integer accuracy
  */
 public class IntegerGeoPoint extends AbstractGeoPoint implements GeoPoint {
-
     private final long latlon; // using one variable for the coordinate pair saves some space
 
+    /**
+     * Generates an IntegerGeoPoint from doubles
+     * @param lat	The latitude e.g. 54.123
+     * @param lon	The longitude e.g. 13.123
+     */
     public IntegerGeoPoint(double lat, double lon) {
         this.latlon = (((long) coord2int(lat)) << 32) | (coord2int(lon));
     }
 
+    /**
+     * Generates an IntegerGeoPoint from integers
+     * @param lat	Eight digit latitude, e.g. (Brandenburger Tor, Berlin) 52516389
+     * @param lon	Eight digit longitude, e.g. (Brandenburger Tor, Berlin) 13377778
+     */
     public IntegerGeoPoint(int lat, int lon) {
         this.latlon = (((long) coord2int(lat / 1e6d)) << 32) | (coord2int(lon / 1e6d));
     }
 
+    /**
+     * Returns the latitude as a double
+     */
     @Override
     public double lat() {
         return int2coord((int) (this.latlon >>> 32));
@@ -47,6 +59,7 @@ public class IntegerGeoPoint extends AbstractGeoPoint implements GeoPoint {
     public double lon() {
         return int2coord((int) (this.latlon & (Integer.MAX_VALUE)));
     }
+    
     /**
      * get the implementation-dependent accuracy of the latitude
      * @return
@@ -98,14 +111,5 @@ public class IntegerGeoPoint extends AbstractGeoPoint implements GeoPoint {
     @Override
     public String toString() {
         return "[" + this.lat() + "," + this.lon() + "]";
-    }
-
-    public static void main(String[] args) {
-        double lat = 13.419444d;
-        double lon = 52.548611d;
-        GeoPoint c = new IntegerGeoPoint(lat, lon);
-        System.out.println(c.toString() + " #" + c.hashCode());
-        System.out.println("error: lat: " + (Math.abs(c.lat() - lat) / meter) + " meter; lon: " + (Math.abs(c.lon() - lon) / meter) + " meter");
-        System.out.println("accuracyLat = " + c.accuracyLat() / meter + " meter, accuracyLon = " + c.accuracyLon() / meter + " meter");
     }
 }
