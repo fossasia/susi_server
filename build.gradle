@@ -18,6 +18,7 @@ targetCompatibility = 1.8
 
 sourceSets.main.java.srcDirs = ['src']
 sourceSets.main.resources.srcDirs = ['conf/logs']
+sourceSets.test.java.srcDirs = ['test']
 
 jar {
     manifest {
@@ -68,7 +69,6 @@ task start(type: JavaExec, dependsOn: classes) {
   classpath sourceSets.main.runtimeClasspath
   classpath configurations.runtime
 }
-
 
 jacocoTestReport {
     reports {
