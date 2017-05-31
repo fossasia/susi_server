@@ -43,6 +43,7 @@ import java.util.Set;
 
 import javax.servlet.Servlet;
 
+import ai.susi.server.api.aaa.*;
 import org.apache.logging.log4j.LogManager;
 import org.bouncycastle.asn1.pkcs.PrivateKeyInfo;
 import org.bouncycastle.cert.X509CertificateHolder;
@@ -81,15 +82,6 @@ import ai.susi.server.APIHandler;
 import ai.susi.server.FileHandler;
 import ai.susi.server.HttpsMode;
 import ai.susi.server.RemoteAccess;
-import ai.susi.server.api.aaa.AccessServlet;
-import ai.susi.server.api.aaa.AuthorizationDemoService;
-import ai.susi.server.api.aaa.LoginService;
-import ai.susi.server.api.aaa.PasswordRecoveryService;
-import ai.susi.server.api.aaa.PasswordResetService;
-import ai.susi.server.api.aaa.PublicKeyRegistrationService;
-import ai.susi.server.api.aaa.SignUpService;
-import ai.susi.server.api.aaa.UserAccountPermissions;
-import ai.susi.server.api.aaa.UserManagementService;
 import ai.susi.server.api.cms.AppsService;
 import ai.susi.server.api.cms.ExpertConvertJsonToTxtService;
 import ai.susi.server.api.cms.ExpertConvertTxtToJsonService;
@@ -501,7 +493,10 @@ public class SusiServer {
                 ConsoleLearning.class,
                 
                 // services
-                EmailSenderService.class
+                EmailSenderService.class,
+
+                //Get all Users
+                GetAllUsers.class
         };
         for (Class<? extends Servlet> service: services)
             try {
