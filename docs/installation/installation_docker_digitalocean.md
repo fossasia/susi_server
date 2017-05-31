@@ -1,4 +1,4 @@
-# Installation of loklak with Docker on DigitalOcean
+# Installation of Susi Server with Docker on DigitalOcean
 
 [DigitalOcean](https://www.digitalocean.com) - simple cloud hosting, built for developers.
 
@@ -34,14 +34,14 @@
     Built:        Fri Nov 20 13:12:04 UTC 2015
     OS/Arch:      linux/amd64
    ```
-5. Pull Docker image from [Loklak repository](https://hub.docker.com/r/mariobehling/loklak/) in Docker Hub (it should take about a minute):
+5. Pull Docker image from [Susi Server repository](https://hub.docker.com/r/fossasia/susi_server/) in Docker Hub (it should take about a minute):
    ```bash
-   docker pull mariobehling/loklak
+   docker pull fossasia/susi_server
    ```
 
-6. OK, you're ready to run Loklak:
+6. OK, you're ready to run Susi:
    ```bash
-   docker run -d -p 80:80 -p 443:443 mariobehling/loklak:latest
+   docker run -d -p 80:80 -p 443:443 fossasia/susi_server:latest
    ```
 
-7. Go to your droplet IP using web browser. You should see Loklak main page.
+7. Go to your droplet IP using web browser. You should see Susi-server main page.

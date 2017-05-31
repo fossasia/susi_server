@@ -1,4 +1,4 @@
-# Installation of loklak with Docker on AWS
+# Installation of Susi server with Docker on AWS
 
 1. Sign in to [AWS](https://aws.amazon.com)
 
@@ -8,7 +8,7 @@
 
 4. In Step 1: Choose an Amazon Machine Image, we choose ```Ubuntu Server 14.04 LTS (HVM), SSD Volume Type```.
 
-5. In Step 2: Choose an Instance Type, we choose ```t2.micro```(<strong>Warning:</strong> ```t2.micro``` is not suitable for running loklak for a long period, and AWS may shut down your instance(block your Internet access on specific port) at any time. ```t2.micro``` instance users are only allow to use <strong>10%</strong> of a single CPU core on average. In our case, loklak_server uses 30 - 40% on average. Reference: [Burstable Instance](http://aws.amazon.com/ec2/faqs/#burst)  Case study: [Real case running loklak](http://geekinguniverse.com/2016/01/14/dont-use-aws-for-your-web-application/))
+5. In Step 2: Choose an Instance Type, we choose ```t2.micro```(<strong>Warning:</strong> ```t2.micro``` is not suitable for running Susi for a long period, and AWS may shut down your instance(block your Internet access on specific port) at any time. ```t2.micro``` instance users are only allow to use <strong>10%</strong> of a single CPU core on average. In our case,  it might use 30% - 40% on an average. Reference: [Burstable Instance](http://aws.amazon.com/ec2/faqs/#burst).
 
 6. Then we click ```Configure Instance Details```, do not create a instance yet.
 
@@ -24,7 +24,7 @@
 
 12. We go back to EC2 control panel again. Click on instances on the left hand side. Then choose the instance you just created, and click connect button on top. It will you connect to your EC2 by giving you a example like:
 	```
-	ssh -i "loklak.pem" ubuntu@ec2-54-169-103-75.ap-southeast-1.compute.amazonaws.com
+	ssh -i "mykey.pem" ubuntu@ec2-54-169-103-75.ap-southeast-1.compute.amazonaws.com
 	```
 
 13. Once connected, we have to set up docker and add a 4G swapfile to prevent lack of memory:
@@ -42,10 +42,10 @@
 	sudo apt-get install docker-engine
 	```
 
-14. Once docker is installed, we start our loklak-server by entering:
+14. Once docker is installed, we start our susi-server by entering:
 	```
-	sudo docker pull mariobehling/loklak
-	sudo docker run -d -p 80:80 -p 443:443 mariobehling/loklak:latest
+	sudo docker pull fossasia/susi_server
+	sudo docker run -d -p 80:80 -p 443:443 fossasia/susi_server:latest
 	```
 
-15. Check if Loklak is running on your server, by going to your public DNS, e.g.: ```ec2-54-169-103-75.ap-southeast-1.compute.amazonaws.com```.
+15. Check if Susi server is running on your server, by going to your public DNS, e.g.: ```ec2-54-169-103-75.ap-southeast-1.compute.amazonaws.com```.
