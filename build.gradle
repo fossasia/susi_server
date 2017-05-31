@@ -1,5 +1,6 @@
 apply plugin: 'java'
 apply plugin: 'eclipse'
+apply plugin: 'jacoco'
 apply plugin: 'com.github.johnrengelman.shadow'
 
 buildscript {
@@ -69,3 +70,9 @@ task start(type: JavaExec, dependsOn: classes) {
 }
 
 
+jacocoTestReport {
+    reports {
+        xml.enabled true
+        html.enabled false
+    }
+}
