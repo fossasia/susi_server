@@ -13,6 +13,6 @@ public class BahnTest {
 	@Test
 	public void testConnection() throws IOException, NoStationFoundException {
 		System.out.println(service.getConnections("Alexanderplatz", "Griebnitzsee"));
-		System.out.println(service.getConnections("München HBF", "Griebnitzsee").getData().getJSONObject(0).getString("description"));
+		System.out.println(service.getConnections("München HBF", "Griebnitzsee", 10, 0).getData().getJSONObject(0).getString("description"));
 	}
 }
