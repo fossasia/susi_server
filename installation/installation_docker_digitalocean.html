@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Installation of loklak with Docker on DigitalOcean &#8212; Susi Server development documentation</title>
+    <title>Installation of Susi Server with Docker on DigitalOcean &#8212; Susi Server development documentation</title>
     
     <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -41,8 +41,8 @@
         <div class="bodywrapper">
           <div class="body" role="main">
             
-  <div class="section" id="installation-of-loklak-with-docker-on-digitalocean">
-<span id="installation-of-loklak-with-docker-on-digitalocean"></span><h1>Installation of loklak with Docker on DigitalOcean<a class="headerlink" href="#installation-of-loklak-with-docker-on-digitalocean" title="Permalink to this headline">¶</a></h1>
+  <div class="section" id="installation-of-susi-server-with-docker-on-digitalocean">
+<span id="installation-of-susi-server-with-docker-on-digitalocean"></span><h1>Installation of Susi Server with Docker on DigitalOcean<a class="headerlink" href="#installation-of-susi-server-with-docker-on-digitalocean" title="Permalink to this headline">¶</a></h1>
 <p><a class="reference external" href="https://www.digitalocean.com">DigitalOcean</a> - simple cloud hosting, built for developers.</p>
 <ol>
 <li><p class="first">Register in <a class="reference external" href="https://www.digitalocean.com">DigitalOcean</a> and get 10$ credit.</p>
@@ -76,17 +76,17 @@
 </pre></div>
 </div>
 </li>
-<li><p class="first">Pull Docker image from <a class="reference external" href="https://hub.docker.com/r/mariobehling/loklak/">Loklak repository</a> in Docker Hub (it should take about a minute):</p>
-<div class="highlight-bash"><div class="highlight"><pre><span></span>docker pull mariobehling/loklak
+<li><p class="first">Pull Docker image from <a class="reference external" href="https://hub.docker.com/r/fossasia/susi_server/">Susi Server repository</a> in Docker Hub (it should take about a minute):</p>
+<div class="highlight-bash"><div class="highlight"><pre><span></span>docker pull fossasia/susi_server
 </pre></div>
 </div>
 </li>
-<li><p class="first">OK, you&#8217;re ready to run Loklak:</p>
-<div class="highlight-bash"><div class="highlight"><pre><span></span>docker run -d -p <span class="m">80</span>:80 -p <span class="m">443</span>:443 mariobehling/loklak:latest
+<li><p class="first">OK, you&#8217;re ready to run Susi:</p>
+<div class="highlight-bash"><div class="highlight"><pre><span></span>docker run -d -p <span class="m">80</span>:80 -p <span class="m">443</span>:443 fossasia/susi_server:latest
 </pre></div>
 </div>
 </li>
-<li><p class="first">Go to your droplet IP using web browser. You should see Loklak main page.</p>
+<li><p class="first">Go to your droplet IP using web browser. You should see Susi-server main page.</p>
 </li>
 </ol>
 </div>

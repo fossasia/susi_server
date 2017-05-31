@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Installation of loklak with Docker on AWS &#8212; Susi Server development documentation</title>
+    <title>Installation of Susi server with Docker on AWS &#8212; Susi Server development documentation</title>
     
     <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -41,8 +41,8 @@
         <div class="bodywrapper">
           <div class="body" role="main">
             
-  <div class="section" id="installation-of-loklak-with-docker-on-aws">
-<span id="installation-of-loklak-with-docker-on-aws"></span><h1>Installation of loklak with Docker on AWS<a class="headerlink" href="#installation-of-loklak-with-docker-on-aws" title="Permalink to this headline">¶</a></h1>
+  <div class="section" id="installation-of-susi-server-with-docker-on-aws">
+<span id="installation-of-susi-server-with-docker-on-aws"></span><h1>Installation of Susi server with Docker on AWS<a class="headerlink" href="#installation-of-susi-server-with-docker-on-aws" title="Permalink to this headline">¶</a></h1>
 <ol>
 <li><p class="first">Sign in to <a class="reference external" href="https://aws.amazon.com">AWS</a></p>
 </li>
@@ -52,7 +52,7 @@
 </li>
 <li><p class="first">In Step 1: Choose an Amazon Machine Image, we choose <code class="docutils literal"><span class="pre">Ubuntu</span> <span class="pre">Server</span> <span class="pre">14.04</span> <span class="pre">LTS</span> <span class="pre">(HVM),</span> <span class="pre">SSD</span> <span class="pre">Volume</span> <span class="pre">Type</span></code>.</p>
 </li>
-<li><p class="first">In Step 2: Choose an Instance Type, we choose <code class="docutils literal"><span class="pre">t2.micro</span></code>(<strong>Warning:</strong> <code class="docutils literal"><span class="pre">t2.micro</span></code> is not suitable for running loklak for a long period, and AWS may shut down your instance(block your Internet access on specific port) at any time. <code class="docutils literal"><span class="pre">t2.micro</span></code> instance users are only allow to use <strong>10%</strong> of a single CPU core on average. In our case, loklak_server uses 30 - 40% on average. Reference: <a class="reference external" href="http://aws.amazon.com/ec2/faqs/#burst">Burstable Instance</a>  Case study: <a class="reference external" href="http://geekinguniverse.com/2016/01/14/dont-use-aws-for-your-web-application/">Real case running loklak</a>)</p>
+<li><p class="first">In Step 2: Choose an Instance Type, we choose <code class="docutils literal"><span class="pre">t2.micro</span></code>(<strong>Warning:</strong> <code class="docutils literal"><span class="pre">t2.micro</span></code> is not suitable for running Susi for a long period, and AWS may shut down your instance(block your Internet access on specific port) at any time. <code class="docutils literal"><span class="pre">t2.micro</span></code> instance users are only allow to use <strong>10%</strong> of a single CPU core on average. In our case,  it might use 30% - 40% on an average. Reference: <a class="reference external" href="http://aws.amazon.com/ec2/faqs/#burst">Burstable Instance</a>.</p>
 </li>
 <li><p class="first">Then we click <code class="docutils literal"><span class="pre">Configure</span> <span class="pre">Instance</span> <span class="pre">Details</span></code>, do not create a instance yet.</p>
 </li>
@@ -67,7 +67,7 @@
 <li><p class="first">We are ready to launch, click <code class="docutils literal"><span class="pre">Review</span> <span class="pre">and</span> <span class="pre">Launch</span></code>, if everything is correct, click <code class="docutils literal"><span class="pre">Launch</span></code>. It will ask you to choose a key pair, choose the one we just created.</p>
 </li>
 <li><p class="first">We go back to EC2 control panel again. Click on instances on the left hand side. Then choose the instance you just created, and click connect button on top. It will you connect to your EC2 by giving you a example like:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">ssh</span> <span class="o">-</span><span class="n">i</span> <span class="s2">&quot;loklak.pem&quot;</span> <span class="n">ubuntu</span><span class="nd">@ec2</span><span class="o">-</span><span class="mi">54</span><span class="o">-</span><span class="mi">169</span><span class="o">-</span><span class="mi">103</span><span class="o">-</span><span class="mf">75.</span><span class="n">ap</span><span class="o">-</span><span class="n">southeast</span><span class="o">-</span><span class="mf">1.</span><span class="n">compute</span><span class="o">.</span><span class="n">amazonaws</span><span class="o">.</span><span class="n">com</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">ssh</span> <span class="o">-</span><span class="n">i</span> <span class="s2">&quot;mykey.pem&quot;</span> <span class="n">ubuntu</span><span class="nd">@ec2</span><span class="o">-</span><span class="mi">54</span><span class="o">-</span><span class="mi">169</span><span class="o">-</span><span class="mi">103</span><span class="o">-</span><span class="mf">75.</span><span class="n">ap</span><span class="o">-</span><span class="n">southeast</span><span class="o">-</span><span class="mf">1.</span><span class="n">compute</span><span class="o">.</span><span class="n">amazonaws</span><span class="o">.</span><span class="n">com</span>
 </pre></div>
 </div>
 </li>
@@ -86,13 +86,13 @@ sudo apt-get install docker-engine
 </pre></div>
 </div>
 </li>
-<li><p class="first">Once docker is installed, we start our loklak-server by entering:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">sudo</span> <span class="n">docker</span> <span class="n">pull</span> <span class="n">mariobehling</span><span class="o">/</span><span class="n">loklak</span>
-<span class="n">sudo</span> <span class="n">docker</span> <span class="n">run</span> <span class="o">-</span><span class="n">d</span> <span class="o">-</span><span class="n">p</span> <span class="mi">80</span><span class="p">:</span><span class="mi">80</span> <span class="o">-</span><span class="n">p</span> <span class="mi">443</span><span class="p">:</span><span class="mi">443</span> <span class="n">mariobehling</span><span class="o">/</span><span class="n">loklak</span><span class="p">:</span><span class="n">latest</span>
+<li><p class="first">Once docker is installed, we start our susi-server by entering:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">sudo</span> <span class="n">docker</span> <span class="n">pull</span> <span class="n">fossasia</span><span class="o">/</span><span class="n">susi_server</span>
+<span class="n">sudo</span> <span class="n">docker</span> <span class="n">run</span> <span class="o">-</span><span class="n">d</span> <span class="o">-</span><span class="n">p</span> <span class="mi">80</span><span class="p">:</span><span class="mi">80</span> <span class="o">-</span><span class="n">p</span> <span class="mi">443</span><span class="p">:</span><span class="mi">443</span> <span class="n">fossasia</span><span class="o">/</span><span class="n">susi_server</span><span class="p">:</span><span class="n">latest</span>
 </pre></div>
 </div>
 </li>
-<li><p class="first">Check if Loklak is running on your server, by going to your public DNS, e.g.: <code class="docutils literal"><span class="pre">ec2-54-169-103-75.ap-southeast-1.compute.amazonaws.com</span></code>.</p>
+<li><p class="first">Check if Susi server is running on your server, by going to your public DNS, e.g.: <code class="docutils literal"><span class="pre">ec2-54-169-103-75.ap-southeast-1.compute.amazonaws.com</span></code>.</p>
 </li>
 </ol>
 </div>
