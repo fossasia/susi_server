@@ -495,6 +495,9 @@ public class SusiServer {
                 // services
                 EmailSenderService.class,
 
+                //User Roles
+                ChangeUserRoles.class,
+
                 //Get all Users
                 GetAllUsers.class
         };
