@@ -1,0 +1,161 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>AAA system &#8212; Susi Server development documentation</title>
+    
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     'development',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="top" title="Susi Server development documentation" href="../index.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body role="document">
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="aaa-system">
+<span id="aaa-system"></span><h1>AAA system<a class="headerlink" href="#aaa-system" title="Permalink to this headline">¶</a></h1>
+<p><strong>AAA</strong> stands for: <em>Authentication</em>, <em>Authorization</em>, <em>Accounting</em></p>
+<ul class="simple">
+<li><strong>Authentication</strong>: recognize the user and get the account details</li>
+<li><strong>Authorization</strong>: identify the access rights of the user and know what the user is allowed to do</li>
+<li><strong>Accounting</strong>: remember what the user has done. I.e. here in Susi: remember the chat log.
+For Authentication we have right now email addresses as main ID or anonymous accounts with IP numbers. We could also add twitter/facebook/instagram accounts as alternative way to authenticate. Lets not do that now. Just know that it could be possible in the future.</li>
+</ul>
+<div class="section" id="requiring-a-certain-userrole">
+<span id="requiring-a-certain-userrole"></span><h2>Requiring a certain <code class="docutils literal"><span class="pre">UserRole</span></code><a class="headerlink" href="#requiring-a-certain-userrole" title="Permalink to this headline">¶</a></h2>
+<p>The basic idea is, that the <code class="docutils literal"><span class="pre">AbstractAPIHandler</span></code> checks the permissions of the user using the roles of the user and comparing it with the value as defined in the method <code class="docutils literal"><span class="pre">getMinimalBaseUserRole()</span></code> of each <code class="docutils literal"><span class="pre">servlet</span></code> which extends <code class="docutils literal"><span class="pre">AbstractAPIHandler</span></code>.
+Then, checks will happen automatically. Implementers of a servlet do not need to care about user permission checks, it should all be done with the declaration within <code class="docutils literal"><span class="pre">getMinimalBaseUserRole()</span></code>.
+So for requiring an <em>ADMIN</em> user role, just write</p>
+<div class="highlight-java"><div class="highlight"><pre><span></span><span class="kd">public</span> <span class="n">BaseUserRole</span> <span class="nf">getMinimalBaseUserRole</span><span class="o">()</span> <span class="o">{</span>
+ <span class="k">return</span> <span class="n">BaseUserRole</span><span class="o">.</span><span class="na">ADMIN</span><span class="o">;</span> 
+<span class="o">}</span>
+</pre></div>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="../index.html">
+    <img class="logo" src="../_static/images/susi-logo-original.svg" alt="Logo"/>
+    
+  </a>
+</p>
+
+
+
+
+
+
+
+
+
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+  <h3><a href="../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">AAA system</a><ul>
+<li><a class="reference internal" href="#requiring-a-certain-userrole">Requiring a certain <code class="docutils literal"><span class="pre">UserRole</span></code></a></li>
+</ul>
+</li>
+</ul>
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Home</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../index.html">Welcome</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Installation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../installation/installation_generic.html">Installation on Linux/Mac OS</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../installation/installation_windows_generic.html">Requirements</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../installation/installation_windows_generic.html#download">Download</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../installation/installation_windows_generic.html#build-and-run">Build and Run</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../installation/installation_windows_generic.html#operate">Operate</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../installation/installation_windows_generic.html#shut-down">Shut down</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../installation/installation_docker.html">Installation with Docker</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../installation/installation_cloud9.html">Installation on Cloud9</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../installation/installation_heroku.html">Installation on Heroku</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Tutorial</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../skills/susi_questions.html">Ask SUSI</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Development</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../installation/eclipseSetup.html">How to setup Susi Server on Eclipse</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../installation/eclipseSetup.html#using-the-ant-file">Using the Ant File</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../installation/eclipseSetup.html#test">Test :</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Miscellaneous</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../parsers.html">Parsers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../skills/submitting_skills_to_git.html">Submitting skills to Git</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  </ul></li>
+</ul>
+</div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2017, Susi.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.4.9</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>
