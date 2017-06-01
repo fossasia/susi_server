@@ -13,6 +13,7 @@ before_script:
 - pip install --user codecov
 install: true
 after_success:
+- if [ -e ./gradlew ]; then ./gradlew test jacocoTestReport;else gradle test jacocoTestReport;fi
 - bash <(curl -s https://codecov.io/bash)
 - codecov
 before_deploy:

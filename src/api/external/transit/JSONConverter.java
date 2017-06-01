@@ -54,8 +54,12 @@ public class JSONConverter {
 		legObj.put("arrivalTime", leg.getArrivalTime());
 		if (leg instanceof Trip.Public) {
 			Trip.Public pub = (Trip.Public)leg;
-			legObj.putOpt("departureDelay", pub.getDepartureDelay() / 60000.0);
-			legObj.putOpt("arrivalDelay", pub.getArrivalDelay() / 60000.0);
+			if (pub.getArrivalDelay() != null) {
+				legObj.putOpt("departureDelay", pub.getDepartureDelay() / 60000.0);
+			}
+			if (pub.getArrivalDelay() != null) {
+				legObj.putOpt("arrivalDelay", pub.getArrivalDelay() / 60000.0);
+			}
 			legObj.putOpt("line", JSONConverter.lineToJSON(pub.line));
 		}
 		return legObj;
@@ -99,10 +103,16 @@ public class JSONConverter {
 			Trip.Public pub = (Trip.Public)legs.get(i);
 			response += pub.line.label;
 			response += " (departing at " + pub.getDepartureTime().getHours() + ":" + pub.getDepartureTime().getMinutes();
-			response += ", +" + (pub.getDepartureDelay() / 60000.0) + " mins delay) to ";
+			if (pub.getDepartureDelay() != null) {
+				response += ", +" + (pub.getDepartureDelay() / 60000.0) + " mins delay";
+			}
+			response += ") to ";
 			response += pub.arrival.name;
 			response += " (arriving at " + pub.getArrivalTime().getHours() + ":" + pub.getArrivalTime().getMinutes();
-			response += ", +" + (pub.getArrivalDelay() / 60000.0) + " mins delay).";
+			if (pub.getArrivalDelay() != null) {
+				response += ", +" + (pub.getArrivalDelay() / 60000.0) + " mins delay";
+			}
+			response += ").";
 		}
 		return response;
 	}
