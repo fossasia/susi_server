@@ -1,5 +1,6 @@
 apply plugin: 'java'
 apply plugin: 'eclipse'
+apply plugin: 'jacoco'
 apply plugin: 'com.github.johnrengelman.shadow'
 
 buildscript {
@@ -17,6 +18,7 @@ targetCompatibility = 1.8
 
 sourceSets.main.java.srcDirs = ['src']
 sourceSets.main.resources.srcDirs = ['conf/logs']
+sourceSets.test.java.srcDirs = ['test']
 
 jar {
     manifest {
@@ -68,4 +70,9 @@ task start(type: JavaExec, dependsOn: classes) {
   classpath configurations.runtime
 }
 
-
+jacocoTestReport {
+    reports {
+        xml.enabled true
+        html.enabled false
+    }
+}
