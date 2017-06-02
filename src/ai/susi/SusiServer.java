@@ -496,8 +496,10 @@ public class SusiServer {
                 EmailSenderService.class,
 
                 //User Roles
-                ChangeUserRoles.class
+                ChangeUserRoles.class,
 
+                //Get all Users
+                GetAllUsers.class
         };
         for (Class<? extends Servlet> service: services)
             try {
