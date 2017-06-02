@@ -2,7 +2,8 @@
 @import url(https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400);
 html,
 body {
-  background: linear-gradient(270deg, #D9A68C, #D9D68C);
+  background: #000;
+
   margin: 0 0;
   padding: 0 0;
   font-family: 'Source Sans Pro', sans-serif;
@@ -13,14 +14,15 @@ body {
   margin: 110px auto;
   width: 700px;
   text-align: center;
+  border-style: solid;
+  border-width: thin;
+  border-color: #ADFF2F;
 }
 
 h2 {
-  background: #B43C52;
+  background: #ADFF2F;
   padding: 20px 20px;
-  color: #FFF;
-  border-top-left-radius: 5px;
-  border-top-right-radius: 5px;
+  color: #000;
   text-align: left;
   margin: 0 0;
 }
@@ -41,7 +43,7 @@ input[type="text"] {
 }
 
 .list {
-  background: #34495E;
+  background: #000;
   width: 700px;
   height: 700px;
   border-radius: 5px;
@@ -54,6 +56,9 @@ ul {
 }
 
 li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   list-style: none;
   text-align: left;
   padding: 30px;
@@ -64,7 +69,7 @@ li {
 }
 
 li:hover {
-  background: #2C3E50;
+  background: #283629;
 }
 
 .check {
@@ -189,7 +194,7 @@ li:hover {
 
 .c-button--dropdown {
   padding: 6px 34px 6px 12px;
-  background-color: #B43C52;
+  background-color: #4CAF50;
   color: #E6E9ED;
   font-size: 14px;
   line-height: 20px;
