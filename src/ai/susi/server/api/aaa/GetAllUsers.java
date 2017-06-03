@@ -37,29 +37,18 @@ public class GetAllUsers extends AbstractAPIHandler implements APIHandler {
     }
 
     @Override
-    public JSONObject serviceImpl(Query call, HttpServletResponse response, Authorization rights, final JsonObjectWithDefault permissions)
-            throws APIException {
-        if (rights.getBaseUserRole().toString().equals("ADMIN")) {
-            JSONObject result = new JSONObject();
-
-            Iterator<?> keys = DAO.authorization.toJSON().keys();
-            Iterator keysToCopyIterator = DAO.authorization.toJSON().keys();
-            List<String> keysList = new ArrayList<String>();
-            while (keysToCopyIterator.hasNext()) {
-                String key = (String) keysToCopyIterator.next();
-                keysList.add(key);
-            }
-            String[] keysArray = keysList.toArray(new String[keysList.size()]);
-            result.put("users", DAO.authorization.toJSON());
-            result.put("username", keysArray);
-            return result;
-
+    public JSONObject serviceImpl(Query call, HttpServletResponse response, Authorization rights, final JsonObjectWithDefault permissions) throws APIException {
+        JSONObject result = new JSONObject();
+        Iterator<String> keysToCopyIterator = DAO.authorization.toJSON().keys();
+        List<String> keysList = new ArrayList<String>();
+        while (keysToCopyIterator.hasNext()) {
+            String key = (String) keysToCopyIterator.next();
+            keysList.add(key);
         }
-        else
-            throw new APIException(403, "The server understood the request but refuses to authorize it");
+        String[] keysArray = keysList.toArray(new String[keysList.size()]);
+        result.put("users", DAO.authorization.toJSON());
+        result.put("username", keysArray);
+        return result;
     }
-
-
-
 
 }

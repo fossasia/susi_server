@@ -70,7 +70,14 @@ public abstract class AbstractAPIHandler extends HttpServlet implements APIHandl
     public JSONObject[] service(Query call, Authorization rights) throws APIException {
 
         // make call to the embedded api
-        if (this.serverProtocolHostStub == null) return new JSONObject[]{serviceImpl(call, null, rights, rights.getPermissions(this))};
+        if (this.serverProtocolHostStub == null) {
+
+            if (rights.getBaseUserRole().compareTo(this.getMinimalBaseUserRole()) < 0) {
+                // user has no privilege to use the servlet
+                throw new APIException(401, "missing rights");
+            }
+            return new JSONObject[]{serviceImpl(call, null, rights, rights.getPermissions(this))};
+        }
         
         // make call(s) to a remote api(s)
         JSONObject[] results = new JSONObject[this.serverProtocolHostStub.length];
