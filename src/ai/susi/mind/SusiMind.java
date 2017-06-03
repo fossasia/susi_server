@@ -216,8 +216,8 @@ public class SusiMind {
                                 bo_actions.forEach(action -> {
                                     JSONObject boa = (JSONObject) action;
                                     String type = boa.has("type") ? boa.getString("type") : "";
-                                    if (type.equals(SusiAction.RenderType.table.toString()) && boa.has("columns")) {
-                                        actions.put(SusiAction.tableAction(boa.getJSONObject("columns")));
+                                    if (type.equals(SusiAction.RenderType.table.toString()) && boa.has("columns") && boa.has("maximumEntries")) {
+                                        actions.put(SusiAction.tableAction(boa.getJSONObject("columns"), Integer.parseInt(boa.getJSONObject("maximumEntries").toString())));
                                     } else
                                     if (type.equals(SusiAction.RenderType.piechart.toString()) &&
                                             boa.has("total") && boa.has("key") &&
