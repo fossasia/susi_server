@@ -94,6 +94,7 @@ public class SusiPhrase {
         while (new TimeoutMatcher(m = dspace.matcher(s)).find()) s = m.replaceAll(" ");
         s = s.trim();
         if (s.startsWith("susi ")) s = s.substring(5); // cut off susi address
+        if (s.length() == 0) return s; // prevent StringIndexOutOfBoundsException which can happen in the next line
         if (".?!".indexOf(s.charAt(s.length() - 1)) >= 0) s = s.substring(0, s.length() - 1).trim();
         // to be considered: https://en.wikipedia.org/wiki/Wikipedia:List_of_English_contractionst
         int p = -1;
