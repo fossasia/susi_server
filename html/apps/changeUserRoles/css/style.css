@@ -1,9 +1,9 @@
 
+
 @import url(https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400);
 html,
 body {
   background: #000;
-
   margin: 0 0;
   padding: 0 0;
   font-family: 'Source Sans Pro', sans-serif;
@@ -23,7 +23,7 @@ h2 {
   background: #ADFF2F;
   padding: 20px 20px;
   color: #000;
-  text-align: left;
+  text-align: center;
   margin: 0 0;
 }
 
@@ -124,7 +124,7 @@ li:hover {
   text-align: left;
   float: right;
   margin-top: -6px;
-   text-align: center;
+  text-align: center;
 }
 
 .c-dropdown__list {
@@ -143,6 +143,7 @@ li:hover {
   -webkit-transition: opacity .25s linear, top .25s linear;
   transition: opacity .25s linear, top .25s linear;
 }
+
 .c-dropdown.is-open .c-dropdown__list {
   opacity: 1;
   visibility: visible;
@@ -162,10 +163,10 @@ li:hover {
   -webkit-transition: background-color .25s linear;
   transition: background-color .25s linear;
 }
+
 .c-dropdown__item:hover {
   background-color: #E6E9ED;
 }
-
 
 .c-button {
   -webkit-appearance: none;
@@ -180,14 +181,16 @@ li:hover {
   text-decoration: none;
   text-align: center;
   -webkit-user-select: none;
-     -moz-user-select: none;
-      -ms-user-select: none;
-          user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
 }
-.c-button:hover, .c-button:focus {
+
+.c-button:hover,
+.c-button:focus {
   outline: none;
   text-decoration: none;
 }
+
 .c-button:not(:disabled) {
   cursor: pointer;
 }
@@ -202,9 +205,11 @@ li:hover {
   -webkit-transition: background-color .2s linear;
   transition: background-color .2s linear;
 }
+
 .c-button--dropdown:hover {
   /*background-color: #B43C52;*/
 }
+
 .c-button--dropdown:after {
   content: "";
   position: absolute;
@@ -215,3 +220,4 @@ li:hover {
   border: 5px solid transparent;
   border-top-color: #E6E9ED;
 }
+
