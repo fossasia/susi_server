@@ -78,7 +78,7 @@
             <input id="timezoneOffset0" type="hidden" name="timezoneOffset" value="">
             <script>document.getElementById("timezoneOffset0").value = new Date().getTimezoneOffset();</script>
             <div class="input-group input-group-lg col-sm-8" style="float:left">
-              <input name="q" id="query" type="text" class="center-block form-control input-lg" title="Search Twitter and the loklak network" placeholder="Chat with Susi">
+              <input name="q" id="query" type="text" class="center-block form-control input-lg" title="Search Twitter and the loklak network" placeholder="Chat with Susi" autofocus>
               <span class="input-group-btn"><button class="btn btn-lg btn-primary" type="submit" target="_blank" onclick="form.target='_blank'; form.action='/susi/chat.json?q=' + document.getElementById('query').value;">Get JSON Data</button></span>
             </div>
           </form>
