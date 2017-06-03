@@ -81,10 +81,11 @@ public class SusiAction {
      * @param cols a mapping from column names in th data object to the display names for the client rendering
      * @return the action
      */
-    public static JSONObject tableAction(JSONObject cols) {
+    public static JSONObject tableAction(JSONObject cols, int length) {
         JSONObject json = new JSONObject(true)
             .put("type", RenderType.table.name())
-            .put("columns", cols);
+            .put("columns", cols)
+            .put("length", length);
         return json;
     }
     
