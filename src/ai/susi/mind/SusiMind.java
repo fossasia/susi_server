@@ -217,7 +217,8 @@ public class SusiMind {
                                     JSONObject boa = (JSONObject) action;
                                     String type = boa.has("type") ? boa.getString("type") : "";
                                     if (type.equals(SusiAction.RenderType.table.toString()) && boa.has("columns")) {
-                                        actions.put(SusiAction.tableAction(boa.getJSONObject("columns")));
+                                        actions.put(SusiAction.tableAction(boa.getJSONObject("columns"),
+                                                    boa.has("length") ? boa.getInt("length") : -1));
                                     } else
                                     if (type.equals(SusiAction.RenderType.piechart.toString()) &&
                                             boa.has("total") && boa.has("key") &&
