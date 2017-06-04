@@ -123,7 +123,7 @@ public class PieChartServlet extends HttpServlet {
 		boolean tooltips = tooltipBit;
 		boolean urls = false;
 
-		JFreeChart chart = ChartFactory.createPieChart("Loklak Visualizes - PieChart", dataset, legend, tooltips, urls);
+		JFreeChart chart = ChartFactory.createPieChart("SUSI Visualizes - PieChart", dataset, legend, tooltips, urls);
 
 		chart.setBorderPaint(Color.BLACK);
 		chart.setBorderStroke(new BasicStroke(5.0f));
