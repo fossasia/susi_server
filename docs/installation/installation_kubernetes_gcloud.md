@@ -42,7 +42,9 @@ sudo docker pull jyothiraditya/susi_server
 
 12. Then we need to store this docker image into our project:
 
-```gcloud docker -- push <image-id> gcr.io/<project-id>/<image-id>```
+````docker tag <image-id> gcr.io/<project-id>/<image-id> ```
+
+```gcloud docker -- push gcr.io/<project-id>/<image-id>```
 
 11. query ```docker images``` . Copy or remember this id, we will need this id to tag the image.
 
@@ -50,7 +52,7 @@ sudo docker pull jyothiraditya/susi_server
 
 12. Expose the container
 
-```kubectl expose deployment susi-server --type="LoadBalancer --port=80"```
+```kubectl expose deployment susi-server --type=LoadBalancer --port=80```
 
 13. Copy the external IP address for the hello-node app by typing this command.
 
