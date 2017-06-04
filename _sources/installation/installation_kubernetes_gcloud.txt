@@ -1,4 +1,4 @@
-# Deploying Susi with Kubernetes on Google Cloud
+# Deploying Susi server with Kubernetes on Google Cloud
 
 
 1. Go to [Google Cloud Free Trial](https://cloud.google.com/free-trial/) and sign up. You will get 300 dollars credit for 3 months.
