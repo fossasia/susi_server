@@ -46,7 +46,7 @@ import org.jfree.data.general.DefaultPieDataset;
  * Every json to be visualized should be a key:value pair object
  * {"ford":"17.272992","toyota":"27.272992","renault":"47.272992"}
  * Note that the floatvalues should be strings and stringified
- * Query: http://127.0.0.1:9000/vis/piechart.png?data={%22ford%22:%2217.272992%22,%22toyota%22:%2227.272992%22,%22renault%22:%2247.272992%22}&width=1000&height=1000&legend=true&tooltip=false
+ * Query: http://127.0.0.1:4000/vis/piechart.png?data={%22ford%22:%2217.272992%22,%22toyota%22:%2227.272992%22,%22renault%22:%2247.272992%22}&width=1000&height=1000&legend=true&tooltip=false
  */
 
 public class PieChartServlet extends HttpServlet {
