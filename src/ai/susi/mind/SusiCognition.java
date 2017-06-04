@@ -158,10 +158,9 @@ public class SusiCognition {
                 if (clonedData.length() > 0) {
                     JSONObject row = clonedData.getJSONObject(0);
                     try {
-                    row.keySet().forEach(key -> {if (key.startsWith("_")) dispute.addObservation(key, row.getString(key));});
-                    //data.put(clonedData.get(0));
-                    }
-                    catch (Exception e) {
+                        row.keySet().forEach(key -> {if (key.startsWith("_")) dispute.addObservation(key, row.getString(key));});
+                        //data.put(clonedData.get(0));
+                    } catch (Exception e) {
                         e.printStackTrace();
                     }
                 }
