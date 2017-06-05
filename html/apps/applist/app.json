@@ -3,11 +3,11 @@
   "@type":"SoftwareApplication",
   "permissions":"/api/apps.json",
   "name":"applist",
-  "headline":"loklak app list",
+  "headline":"SUSI app list",
   "alternativeHeadline":"work from GCI task",
   "applicationCategory":"About Project",
   "applicationSubCategory":"Apps listing",
-  "operatingSystem":"http://loklak.org",
+  "operatingSystem":"http://susi.ai/#!/",
   "author":{
     "@type":"Person",
     "name":"Seva Zhidkov",

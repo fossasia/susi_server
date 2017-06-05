@@ -3,11 +3,11 @@
   "@type":"SoftwareApplication",
   "permissions":"/api/login.json",
   "name":"loginpage",
-  "headline":"Log In to Loklak",
+  "headline":"Log In to SUSI",
   "alternativeHeadline":"Login",
   "applicationCategory":"Accounts API",
   "applicationSubCategory":"account operations",
-  "operatingSystem":"http://loklak.org",
+  "operatingSystem":"http://susi.ai/#!/",
   "author":{
     "@type":"Person",
     "name":"Shiven Mian",
