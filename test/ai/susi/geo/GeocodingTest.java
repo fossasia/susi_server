@@ -1,6 +1,7 @@
 package ai.susi.geo;
 
 import static org.junit.Assert.*;
+import static sun.misc.Version.println;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -18,7 +19,8 @@ public class GeocodingTest {
 		// Brandenburger Tor Berlin
 		IntegerGeoPoint pointA = new IntegerGeoPoint(52.5162746, 13.377704);
 		IntegerGeoPoint pointB = NominatimService.integerGeoPoint("Brandenburger Tor");
-		assertTrue(pointA.distance(pointB) < 100);
+		double distanceKM = pointA.distance(pointB) / 1000;
+		assertTrue(distanceKM < 100);
 	}
 	
 	@Rule
