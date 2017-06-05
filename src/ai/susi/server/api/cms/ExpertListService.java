@@ -14,7 +14,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ExpertListService extends AbstractAPIHandler implements APIHandler {
-
+    
+    private static final long serialVersionUID = -8691003678852307876L;
 
     @Override
     public BaseUserRole getMinimalBaseUserRole() { return BaseUserRole.ANONYMOUS; }
