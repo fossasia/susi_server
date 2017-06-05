@@ -15,6 +15,7 @@ import java.util.List;
 
 public class ExpertListService extends AbstractAPIHandler implements APIHandler {
 
+
     @Override
     public BaseUserRole getMinimalBaseUserRole() { return BaseUserRole.ANONYMOUS; }
 
@@ -40,8 +41,9 @@ public class ExpertListService extends AbstractAPIHandler implements APIHandler 
 
         ArrayList<String> fileList = new ArrayList<String>();
         fileList =  listFilesForFolder(language, fileList);
+        JSONArray jsArray = new JSONArray(fileList);
 
-        return new ServiceResponse(fileList+"");
+        return new ServiceResponse(jsArray);
 
     }
 
