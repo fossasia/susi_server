@@ -3,7 +3,7 @@
   "@type":"SoftwareApplication",
   "permissions":"/api/apps.json",
   "name":"applist",
-  "headline":"loklak app list",
+  "headline":"SUSI app list",
   "alternativeHeadline":"work from GCI task",
   "applicationCategory":"About Project",
   "applicationSubCategory":"Apps listing",
@@ -16,3 +16,4 @@
     "sameAs":"https://github.com/sevazhidkov"
   }
 }
+
