@@ -26,8 +26,10 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
+import ai.susi.DAO;
 import ai.susi.server.ClientIdentity;
 import ai.susi.tools.DateParser;
 import ai.susi.tools.UTF8;
@@ -157,7 +159,17 @@ public class SusiCognition {
                 JSONArray clonedData = clonedThought.getData();
                 if (clonedData.length() > 0) {
                     JSONObject row = clonedData.getJSONObject(0);
-                    row.keySet().forEach(key -> {if (key.startsWith("_")) dispute.addObservation(key, row.getString(key));});
+                    row.keySet().forEach(key -> {
+                        if (key.startsWith("_")) {
+                            try {
+                                String observation = row.getString(key);
+                                dispute.addObservation(key, observation);
+                            } catch (JSONException e) {
+                                // sometimes that is not string
+                                DAO.log(e.getMessage());
+                            }
+                        }
+                    });
                     //data.put(clonedData.get(0));
                 }
             }
