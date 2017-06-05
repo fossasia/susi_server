@@ -40,6 +40,7 @@ import ai.susi.server.AbstractAPIHandler;
 import ai.susi.server.Authorization;
 import ai.susi.server.BaseUserRole;
 import ai.susi.server.Query;
+import ai.susi.server.ServiceResponse;
 import ai.susi.server.api.susi.ConsoleService;
 
 import javax.servlet.http.HttpServletResponse;
@@ -180,14 +181,14 @@ public class ConsoleLearning extends AbstractAPIHandler implements APIHandler {
     }
     
     @Override
-    public JSONObject serviceImpl(Query post, HttpServletResponse response, Authorization user, final JsonObjectWithDefault permissions) throws APIException {
+    public ServiceResponse serviceImpl(Query post, HttpServletResponse response, Authorization user, final JsonObjectWithDefault permissions) throws APIException {
         JSONObject json = new JSONObject(true).put("accepted", true);
         
         // unauthenticated users are rejected
         if (user.getIdentity().isAnonymous()) {
             json.put("accepted", false);
             json.put("reject-reason", "you must be logged in");
-            return json;
+            return new ServiceResponse(json);
         }
         String client = user.getIdentity().getClient();
         
@@ -205,7 +206,7 @@ public class ConsoleLearning extends AbstractAPIHandler implements APIHandler {
         if (action.length() == 0) {
             json.put("accepted", false);
             json.put("reject-reason", "you must submit a parameter 'action' containing either the word 'list', 'test', 'learn' or 'delete'");
-            return json;
+            return new ServiceResponse(json);
         }
         json.put("action", action);
 
@@ -226,7 +227,7 @@ public class ConsoleLearning extends AbstractAPIHandler implements APIHandler {
             if (name.length() == 0) {
                 json.put("accepted", false);
                 json.put("reject-reason", "you must submit a parameter 'name' containing the rule name");
-                return json;
+                return new ServiceResponse(json);
             }
             json.put("name", name);
 
@@ -242,26 +243,26 @@ public class ConsoleLearning extends AbstractAPIHandler implements APIHandler {
                     json.put("accepted", false);
                     json.put("reject-reason", "deletion the console rule causes an error: " + e.getMessage());
                 }
-                return json;
+                return new ServiceResponse(json);
             }
             
             String serviceURL = post.get("url", ""); // i.e. url=http://api.loklak.org/api/console.json?q=SELECT%20*%20FROM%20wikigeodata%20WHERE%20place='$query$';
             if (serviceURL.length() == 0) {
                 json.put("accepted", false);
                 json.put("reject-reason", "url parameter required");
-                return json;
+                return new ServiceResponse(json);
             }
             if (!serviceURL.contains("$query$")) {
                 json.put("accepted", false);
                 json.put("reject-reason", "the url must contain a string $query$");
-                return json;
+                return new ServiceResponse(json);
             }
             
             String test = post.get("test", "");
             if (test.length() == 0) {
                 json.put("accepted", false);
                 json.put("reject-reason", "a testquery parameter is required");
-                return json;
+                return new ServiceResponse(json);
             }
             
             // now test the api call
@@ -271,7 +272,7 @@ public class ConsoleLearning extends AbstractAPIHandler implements APIHandler {
             } catch (Exception e) {
                 json.put("accepted", false);
                 json.put("reject-reason", "the console test load resulted in an error: " + e.getMessage());
-                return json;
+                return new ServiceResponse(json);
             }
 
             // try to find the correct jsonPath automatically
@@ -297,7 +298,7 @@ public class ConsoleLearning extends AbstractAPIHandler implements APIHandler {
                     json.put("accepted", false);
                     json.put("reject-reason", "a data parameter containing the jsonpath to the data object is required. " +
                             (path_computed.length() < 1 ? "" : "Suggested paths: " + path_computed.toString(0)));
-                    return json;
+                    return new ServiceResponse(json);
                 }
             }
             
@@ -305,7 +306,7 @@ public class ConsoleLearning extends AbstractAPIHandler implements APIHandler {
             if (data == null || data.length() == 0) {
                 json.put("accepted", false);
                 json.put("reject-reason", "the jsonPath from data object did not recognize an array object");
-                return json;
+                return new ServiceResponse(json);
             }
             
             // find out the attributes in the data object
@@ -335,7 +336,7 @@ public class ConsoleLearning extends AbstractAPIHandler implements APIHandler {
             // testing was successful, now decide which action to take: report or store
             if (action.equals("test")) {
                 json.put("data", data);
-                return json;
+                return new ServiceResponse(json);
             }
             
             if (action.equals("learn")) {
@@ -350,14 +351,14 @@ public class ConsoleLearning extends AbstractAPIHandler implements APIHandler {
                     json.put("accepted", false);
                     json.put("reject-reason", "storing the console rule causes an error: " + e.getMessage());
                 }
-                return json;
+                return new ServiceResponse(json);
             }
         }
 
         // fail case
         json.put("accepted", false);
         json.put("reject-reason", "no valid action given");
-        return json;
+        return new ServiceResponse(json);
     }
     
 }

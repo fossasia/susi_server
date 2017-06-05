@@ -33,6 +33,7 @@ import ai.susi.server.Authorization;
 import ai.susi.server.BaseUserRole;
 import ai.susi.server.ClientCredential;
 import ai.susi.server.Query;
+import ai.susi.server.ServiceResponse;
 import ai.susi.tools.TimeoutMatcher;
 
 import javax.servlet.http.HttpServletResponse;
@@ -57,7 +58,7 @@ public class PasswordResetService extends AbstractAPIHandler implements APIHandl
 	}
 
 	@Override
-	public JSONObject serviceImpl(Query call, HttpServletResponse response, Authorization rights, final JsonObjectWithDefault permissions)
+	public ServiceResponse serviceImpl(Query call, HttpServletResponse response, Authorization rights, final JsonObjectWithDefault permissions)
 			throws APIException {
 		JSONObject result = new JSONObject();
 
@@ -91,7 +92,7 @@ public class PasswordResetService extends AbstractAPIHandler implements APIHandl
 			authentication.delete();
 		}
 		result.put("message", "Your password has been changed!");
-		return result;
+		return new ServiceResponse(result);
 	}
 
 }

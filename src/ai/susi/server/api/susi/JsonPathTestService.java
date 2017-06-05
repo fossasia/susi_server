@@ -37,6 +37,7 @@ import ai.susi.server.AbstractAPIHandler;
 import ai.susi.server.Authorization;
 import ai.susi.server.BaseUserRole;
 import ai.susi.server.Query;
+import ai.susi.server.ServiceResponse;
 
 /**
  * test a jsonpath
@@ -64,7 +65,7 @@ public class JsonPathTestService extends AbstractAPIHandler implements APIHandle
     }
 
     @Override
-    public JSONObject serviceImpl(Query post, HttpServletResponse response, Authorization rights, JsonObjectWithDefault permissions) throws APIException {
+    public ServiceResponse serviceImpl(Query post, HttpServletResponse response, Authorization rights, JsonObjectWithDefault permissions) throws APIException {
 
         post.setResponse(response, "application/javascript");
 
@@ -92,7 +93,7 @@ public class JsonPathTestService extends AbstractAPIHandler implements APIHandle
         } catch (JSONException e) {
             testresult.put("data", "error: " + e.getMessage());
         }
-        return testresult;
+        return new ServiceResponse(testresult);
     }
 
 }

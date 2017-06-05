@@ -19,18 +19,35 @@
 
 package ai.susi.server;
 
+import java.io.IOException;
+import javax.servlet.http.HttpServletResponse;
+
 import org.json.JSONObject;
 
+import ai.susi.json.JsonObjectWithDefault;
+
+/**
+ * Interface for all servlets
+ */
 public interface APIHandler {
 
     public String[] getServerProtocolHostStub();
 
-    public BaseUserRole getMinimalBaseUserRole();
+    public abstract BaseUserRole getMinimalBaseUserRole();
 
-    public JSONObject getDefaultPermissions(BaseUserRole baseUserRole);
+    public abstract JSONObject getDefaultPermissions(BaseUserRole baseUserRole);
     
+    /**
+     * get the path to the servlet
+     * @return the url path of the servlet
+     */
     public String getAPIPath();
-
-    public JSONObject[] service(Query call, Authorization rights) throws APIException;
     
+    /**
+     * call the servlet with a query locally without a network connection
+     * @return a Service Response
+     * @throws IOException
+     */
+    public ServiceResponse serviceImpl(Query post, HttpServletResponse response, Authorization rights, final JsonObjectWithDefault permissions) throws APIException;
+
 }

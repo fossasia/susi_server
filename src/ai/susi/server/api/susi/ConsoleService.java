@@ -43,6 +43,7 @@ import ai.susi.server.Authorization;
 import ai.susi.server.BaseUserRole;
 import ai.susi.server.ClientConnection;
 import ai.susi.server.Query;
+import ai.susi.server.ServiceResponse;
 import api.external.transit.BahnService;
 import api.external.transit.BahnService.NoStationFoundException;
 
@@ -200,7 +201,7 @@ public class ConsoleService extends AbstractAPIHandler implements APIHandler {
     }
 
     @Override
-    public JSONObject serviceImpl(Query post, HttpServletResponse response, Authorization rights, final JsonObjectWithDefault permissions) throws APIException {
+    public ServiceResponse serviceImpl(Query post, HttpServletResponse response, Authorization rights, final JsonObjectWithDefault permissions) throws APIException {
 
         // parameters
         String q = post.get("q", "");
@@ -210,7 +211,7 @@ public class ConsoleService extends AbstractAPIHandler implements APIHandler {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        return dbAccess.inspire(q).toJSON();
+        return new ServiceResponse(dbAccess.inspire(q).toJSON());
     }
     
 }

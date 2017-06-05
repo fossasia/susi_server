@@ -35,6 +35,7 @@ import ai.susi.server.Authorization;
 import ai.susi.server.BaseUserRole;
 import ai.susi.server.ClientConnection;
 import ai.susi.server.Query;
+import ai.susi.server.ServiceResponse;
 import ai.susi.tools.OS;
 import ai.susi.tools.UTF8;
 
@@ -67,7 +68,7 @@ public class StatusService extends AbstractAPIHandler implements APIHandler {
     }
 
     @Override
-    public JSONObject serviceImpl(Query post, HttpServletResponse response, Authorization rights, JsonObjectWithDefault permissions) throws APIException {
+    public ServiceResponse serviceImpl(Query post, HttpServletResponse response, Authorization rights, JsonObjectWithDefault permissions) throws APIException {
 
         post.setResponse(response, "application/javascript");
         
@@ -118,7 +119,7 @@ public class StatusService extends AbstractAPIHandler implements APIHandler {
         json.put("index", index);
         json.put("client_info", client_info);
 
-        return json;
+        return new ServiceResponse(json);
     }
 
     public static void main(String[] args) {

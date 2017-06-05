@@ -36,6 +36,7 @@ import ai.susi.server.BaseUserRole;
 import ai.susi.server.ClientCredential;
 import ai.susi.server.ClientIdentity;
 import ai.susi.server.Query;
+import ai.susi.server.ServiceResponse;
 import ai.susi.tools.IO;
 
 import javax.servlet.http.HttpServletResponse;
@@ -61,7 +62,7 @@ public class PasswordRecoveryService extends AbstractAPIHandler implements APIHa
 	}
 
 	@Override
-	public JSONObject serviceImpl(Query call, HttpServletResponse response, Authorization rights, final JsonObjectWithDefault permissions)
+	public ServiceResponse serviceImpl(Query call, HttpServletResponse response, Authorization rights, final JsonObjectWithDefault permissions)
 			throws APIException {
 		JSONObject result = new JSONObject();
 
@@ -80,7 +81,7 @@ public class PasswordRecoveryService extends AbstractAPIHandler implements APIHa
 						result.put("message", "Email ID: " + authentication.getIdentity().getName());
 						result.put("regex", passwordPattern);
 						result.put("regexTooltip", passwordPatternTooltip);
-						return result;
+						return new ServiceResponse(result);
 					}
 					authentication.delete();
 					throw new APIException(422, "Expired token");
@@ -114,7 +115,7 @@ public class PasswordRecoveryService extends AbstractAPIHandler implements APIHa
 		} catch (Exception e) {
 			result.put("message", e.getMessage());
 		}
-		return result;
+		return new ServiceResponse(result);
 	}
 
 	private String getVerificationMailContent(String token) {

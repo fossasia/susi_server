@@ -118,10 +118,12 @@ public class SusiTutorialTest {
         try {
             String a = susiAnswer(q, i);
             boolean r = a.equals(e);
-            if (!r) {
-                DAO.log("** fail for: " + q);
-                DAO.log("** expected: " + e);
-                DAO.log("** returned: " + a);
+            if (r) {
+                System.out.println("** success for: " + q);
+            } else {
+                System.out.println("** fail for: " + q);
+                System.out.println("** expected: " + e);
+                System.out.println("** returned: " + a);
             }
             assertTrue(r);
         } catch (JSONException x) {

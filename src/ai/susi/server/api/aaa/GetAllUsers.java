@@ -37,7 +37,7 @@ public class GetAllUsers extends AbstractAPIHandler implements APIHandler {
     }
 
     @Override
-    public JSONObject serviceImpl(Query call, HttpServletResponse response, Authorization rights, final JsonObjectWithDefault permissions) throws APIException {
+    public ServiceResponse serviceImpl(Query call, HttpServletResponse response, Authorization rights, final JsonObjectWithDefault permissions) throws APIException {
         JSONObject result = new JSONObject();
         Iterator<String> keysToCopyIterator = DAO.authorization.toJSON().keys();
         List<String> keysList = new ArrayList<String>();
@@ -48,7 +48,7 @@ public class GetAllUsers extends AbstractAPIHandler implements APIHandler {
         String[] keysArray = keysList.toArray(new String[keysList.size()]);
         result.put("users", DAO.authorization.toJSON());
         result.put("username", keysArray);
-        return result;
+        return new ServiceResponse(result);
     }
 
 }

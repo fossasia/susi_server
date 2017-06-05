@@ -31,6 +31,7 @@ import ai.susi.server.AbstractAPIHandler;
 import ai.susi.server.Authorization;
 import ai.susi.server.BaseUserRole;
 import ai.susi.server.Query;
+import ai.susi.server.ServiceResponse;
 
 import javax.servlet.http.HttpServletResponse;
 
@@ -51,7 +52,7 @@ public class MindService extends AbstractAPIHandler implements APIHandler {
     }
     
     @Override
-    public JSONObject serviceImpl(Query post, HttpServletResponse response, Authorization user, final JsonObjectWithDefault permissions) throws APIException {
+    public ServiceResponse serviceImpl(Query post, HttpServletResponse response, Authorization user, final JsonObjectWithDefault permissions) throws APIException {
 
         try {
             DAO.susi.observe(); // get a database update
@@ -60,7 +61,7 @@ public class MindService extends AbstractAPIHandler implements APIHandler {
         }
         
         JSONObject json = DAO.susi.getMind();
-        return json;
+        return new ServiceResponse(json);
     }
     
 }

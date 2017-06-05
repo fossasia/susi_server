@@ -38,6 +38,7 @@ import ai.susi.server.Authorization;
 import ai.susi.server.BaseUserRole;
 import ai.susi.server.ClientConnection;
 import ai.susi.server.Query;
+import ai.susi.server.ServiceResponse;
 
 import javax.servlet.http.HttpServletResponse;
 
@@ -58,9 +59,9 @@ public class RSSReaderService extends AbstractAPIHandler implements APIHandler {
     }
     
     @Override
-    public JSONObject serviceImpl(Query post, HttpServletResponse response, Authorization rights, final JsonObjectWithDefault permissions) throws APIException {
+    public ServiceResponse serviceImpl(Query post, HttpServletResponse response, Authorization rights, final JsonObjectWithDefault permissions) throws APIException {
 		String url = post.get("url", "");
-		return readRSS(url).toJSON();
+		return new ServiceResponse(readRSS(url).toJSON());
     }
 		
     @SuppressWarnings("unchecked")

@@ -29,6 +29,7 @@ import ai.susi.server.AbstractAPIHandler;
 import ai.susi.server.Authorization;
 import ai.susi.server.BaseUserRole;
 import ai.susi.server.Query;
+import ai.susi.server.ServiceResponse;
 
 import javax.servlet.http.HttpServletResponse;
 
@@ -55,14 +56,14 @@ public class EmailSenderService extends AbstractAPIHandler implements APIHandler
     }
     
     @Override
-    public JSONObject serviceImpl(Query post, HttpServletResponse response, Authorization user, final JsonObjectWithDefault permissions) throws APIException {
+    public ServiceResponse serviceImpl(Query post, HttpServletResponse response, Authorization user, final JsonObjectWithDefault permissions) throws APIException {
         JSONObject json = new JSONObject(true).put("accepted", true);
         
         // unauthenticated users are rejected
         if (user.getIdentity().isAnonymous()) {
             json.put("accepted", false);
             json.put("reject-reason", "you must be logged in");
-            return json;
+            return new ServiceResponse(json);
         }
         
         String mail = post.get("mail", "");
@@ -70,14 +71,14 @@ public class EmailSenderService extends AbstractAPIHandler implements APIHandler
         if (mail.length() == 0) {
             json.put("accepted", false);
             json.put("reject-reason", "a mail attribute is required");
-            return json;
+            return new ServiceResponse(json);
         }
         
         String[] m = mail.split("\\|");
         if (m.length != 3) {
             json.put("accepted", false);
             json.put("reject-reason", "the mail attribute must contain three parts (receiver, subject, text) separated by a | symbol");
-            return json;
+            return new ServiceResponse(json);
         }
         
         // thats it, send the email
@@ -91,11 +92,11 @@ public class EmailSenderService extends AbstractAPIHandler implements APIHandler
         } catch (Exception e) {
             json.put("accepted", false);
             json.put("reject-reason", "cannot send mail: " + e.getMessage());
-            return json;
+            return new ServiceResponse(json);
         }
         
         // success
-        return json;
+        return new ServiceResponse(json);
     }
     
 }

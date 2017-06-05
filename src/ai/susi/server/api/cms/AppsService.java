@@ -37,6 +37,7 @@ import ai.susi.server.AbstractAPIHandler;
 import ai.susi.server.Authorization;
 import ai.susi.server.BaseUserRole;
 import ai.susi.server.Query;
+import ai.susi.server.ServiceResponse;
 
 import javax.servlet.http.HttpServletResponse;
 
@@ -58,7 +59,7 @@ public class AppsService extends AbstractAPIHandler implements APIHandler {
     }
 
     @Override
-    public JSONObject serviceImpl(Query query, HttpServletResponse response, Authorization auth, final JsonObjectWithDefault permissions) throws APIException {
+    public ServiceResponse serviceImpl(Query query, HttpServletResponse response, Authorization auth, final JsonObjectWithDefault permissions) throws APIException {
 
         String categorySelection = query.get("category", "");
         
@@ -105,6 +106,6 @@ public class AppsService extends AbstractAPIHandler implements APIHandler {
         json.put("categories", categories.keySet().toArray(new String[categories.length()]));
         json.put("category", categories);
 
-        return json;
+        return new ServiceResponse(json);
     }
 }

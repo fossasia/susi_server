@@ -33,6 +33,7 @@ import ai.susi.server.AbstractAPIHandler;
 import ai.susi.server.Authorization;
 import ai.susi.server.BaseUserRole;
 import ai.susi.server.Query;
+import ai.susi.server.ServiceResponse;
 
 import javax.servlet.http.HttpServletResponse;
 
@@ -58,7 +59,7 @@ public class UserService extends AbstractAPIHandler implements APIHandler {
     }
     
     @Override
-    public JSONObject serviceImpl(Query post, HttpServletResponse response, Authorization user, final JsonObjectWithDefault permissions) throws APIException {
+    public ServiceResponse serviceImpl(Query post, HttpServletResponse response, Authorization user, final JsonObjectWithDefault permissions) throws APIException {
 
         int cognitionsCount = Math.min(10, post.get("cognitions", 10));
         String client = user.getIdentity().getClient();
@@ -70,7 +71,7 @@ public class UserService extends AbstractAPIHandler implements APIHandler {
         }
         JSONObject json = new JSONObject(true);
         json.put("cognitions", coga);
-        return json;
+        return new ServiceResponse(json);
     }
     
 }

@@ -29,6 +29,7 @@ import ai.susi.server.AbstractAPIHandler;
 import ai.susi.server.Authorization;
 import ai.susi.server.BaseUserRole;
 import ai.susi.server.Query;
+import ai.susi.server.ServiceResponse;
 
 import javax.servlet.http.HttpServletResponse;
 
@@ -50,7 +51,7 @@ public class TopMenuService extends AbstractAPIHandler implements APIHandler {
     }
     
     @Override
-    public JSONObject serviceImpl(Query call, HttpServletResponse response, Authorization rights, final JsonObjectWithDefault permissions) {
+    public ServiceResponse serviceImpl(Query call, HttpServletResponse response, Authorization rights, final JsonObjectWithDefault permissions) {
         
         JSONObject json = new JSONObject(true);
         JSONArray topmenu = new JSONArray()
@@ -61,6 +62,6 @@ public class TopMenuService extends AbstractAPIHandler implements APIHandler {
         
         // modify caching
         json.put("$EXPIRES", 600);
-        return json;
+        return new ServiceResponse(json);
     }
 }

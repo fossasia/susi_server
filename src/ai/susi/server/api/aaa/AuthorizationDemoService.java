@@ -63,7 +63,7 @@ public class AuthorizationDemoService extends AbstractAPIHandler implements APIH
     }
 
     @Override
-    public JSONObject serviceImpl(Query post, HttpServletResponse response, Authorization rights, final JsonObjectWithDefault permissions) throws APIException {
+    public ServiceResponse serviceImpl(Query post, HttpServletResponse response, Authorization rights, final JsonObjectWithDefault permissions) throws APIException {
     	
     	JSONObject result = new JSONObject();
 
@@ -72,6 +72,6 @@ public class AuthorizationDemoService extends AbstractAPIHandler implements APIH
         result.put("base user role", rights.getBaseUserRole().name());
 		result.put("permissions",rights.getPermissions(this));
 		
-		return result;
+		return new ServiceResponse(result);
     }
 }

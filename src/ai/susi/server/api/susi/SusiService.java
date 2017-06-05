@@ -42,6 +42,7 @@ import ai.susi.server.AbstractAPIHandler;
 import ai.susi.server.Authorization;
 import ai.susi.server.BaseUserRole;
 import ai.susi.server.Query;
+import ai.susi.server.ServiceResponse;
 
 import javax.servlet.http.HttpServletResponse;
 
@@ -62,7 +63,7 @@ public class SusiService extends AbstractAPIHandler implements APIHandler {
     }
     
     @Override
-    public JSONObject serviceImpl(Query post, HttpServletResponse response, Authorization user, final JsonObjectWithDefault permissions) throws APIException {
+    public ServiceResponse serviceImpl(Query post, HttpServletResponse response, Authorization user, final JsonObjectWithDefault permissions) throws APIException {
 
         // parameters
         String q = post.get("q", "").trim();
@@ -103,7 +104,7 @@ public class SusiService extends AbstractAPIHandler implements APIHandler {
                 SusiCognition cognition = new SusiCognition(dream, q, timezoneOffset, latitude, longitude, count, user.getIdentity());
                 if (cognition.getAnswers().size() > 0) {
                     DAO.susi.getMemories().addCognition(user.getIdentity().getClient(), cognition);
-                    return cognition.getJSON();
+                    return new ServiceResponse(cognition.getJSON());
                 }
             } catch (JSONException | IOException e) {
                 e.printStackTrace();
@@ -115,7 +116,7 @@ public class SusiService extends AbstractAPIHandler implements APIHandler {
         cognition.setLanguage(language);
         DAO.susi.getMemories().addCognition(user.getIdentity().getClient(), cognition);
         JSONObject json = cognition.getJSON();
-        return json;
+        return new ServiceResponse(json);
     }
     
 }

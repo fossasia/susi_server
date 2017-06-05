@@ -33,6 +33,7 @@ import org.json.JSONObject;
 
 import ai.susi.server.Query;
 import ai.susi.server.RemoteAccess;
+import ai.susi.server.ServiceResponse;
 
 public class Sitemap extends HttpServlet {
 
@@ -54,7 +55,8 @@ public class Sitemap extends HttpServlet {
 		// String baseurl = siteurl.substring(0, siteurl.length() -
 		// request.getRequestURI().length()) + request.getContextPath() + "/";
 		String baseurl = "http://loklak.org/";
-		JSONObject TopMenuJsonObject = new TopMenuService().serviceImpl(post, null, null, null);
+		ServiceResponse sr = new TopMenuService().serviceImpl(post, null, null, null);
+		JSONObject TopMenuJsonObject = sr.getObject();
 		JSONArray sitesarr = TopMenuJsonObject.getJSONArray("items");
 		response.setCharacterEncoding("UTF-8");
 		PrintWriter sos = response.getWriter();

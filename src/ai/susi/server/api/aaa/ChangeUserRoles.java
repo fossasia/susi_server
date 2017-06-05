@@ -40,7 +40,7 @@ public class ChangeUserRoles extends AbstractAPIHandler implements APIHandler {
 
 
     @Override
-    public JSONObject serviceImpl(Query query, HttpServletResponse response, Authorization authorization, final JsonObjectWithDefault permissions) throws APIException {
+    public ServiceResponse serviceImpl(Query query, HttpServletResponse response, Authorization authorization, final JsonObjectWithDefault permissions) throws APIException {
 
         JSONObject result = new JSONObject();
         if (query.get("getServicePermissions", null) != null) {
@@ -67,7 +67,7 @@ public class ChangeUserRoles extends AbstractAPIHandler implements APIHandler {
 
             if (service instanceof AbstractAPIHandler) {
                 result.put("servicePermissions", authorization.getPermissions((AbstractAPIHandler) service));
-                return result;
+                return new ServiceResponse(result);
             } else {
                 throw new APIException(400, "Bad service name (no instance of AbstractAPIHandler)");
             }
@@ -77,10 +77,10 @@ public class ChangeUserRoles extends AbstractAPIHandler implements APIHandler {
                 serviceList.put(service.getCanonicalName());
             }
             result.put("serviceList", serviceList);
-            return result;
+            return new ServiceResponse(result);
         } else if (query.get("getUserRolePermission", false)) {
             result.put("userRolePermissions", authorization.getUserRole().getPermissionOverrides());
-            return result;
+            return new ServiceResponse(result);
         } else {
             // Accept POST params
             String userTobeUpgraded = query.get("user", null);
@@ -104,7 +104,7 @@ public class ChangeUserRoles extends AbstractAPIHandler implements APIHandler {
 
             // Print Response
             result.put("newDetails", user_obj);
-            return result;
+            return new ServiceResponse(result);
         }
     }
 }

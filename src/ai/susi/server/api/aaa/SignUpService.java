@@ -39,6 +39,7 @@ import ai.susi.server.BaseUserRole;
 import ai.susi.server.ClientCredential;
 import ai.susi.server.ClientIdentity;
 import ai.susi.server.Query;
+import ai.susi.server.ServiceResponse;
 import ai.susi.tools.IO;
 import ai.susi.tools.TimeoutMatcher;
 
@@ -77,7 +78,7 @@ public class SignUpService extends AbstractAPIHandler implements APIHandler {
 	}
 
 	@Override
-	public JSONObject serviceImpl(Query post, HttpServletResponse response, Authorization auth, final JsonObjectWithDefault permissions)
+	public ServiceResponse serviceImpl(Query post, HttpServletResponse response, Authorization auth, final JsonObjectWithDefault permissions)
 			throws APIException {
 
 		JSONObject result = new JSONObject();
@@ -93,7 +94,7 @@ public class SignUpService extends AbstractAPIHandler implements APIHandler {
 			result.put("regex", passwordPattern);
 			result.put("regexTooltip", passwordPatternTooltip);
 
-			return result;
+			return new ServiceResponse(result);
 		}
 
 		// is this a verification?
@@ -113,7 +114,7 @@ public class SignUpService extends AbstractAPIHandler implements APIHandler {
 				authentication.put("activated", true);
 
 				result.put("message", "You successfully verified your account!");
-				return result;
+				return new ServiceResponse(result);
 			}
 			throw new APIException(400, "Bad request"); // do not leak if user exists or not
 		}
@@ -214,7 +215,7 @@ public class SignUpService extends AbstractAPIHandler implements APIHandler {
 			result.put("message", "You successfully signed-up!");
 		}
 
-		return result;
+		return new ServiceResponse(result);
 	}
 
 	/**

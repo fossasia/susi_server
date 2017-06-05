@@ -71,7 +71,7 @@ public class UserManagementService extends AbstractAPIHandler implements APIHand
 	}
 
 	@Override
-	public JSONObject serviceImpl(Query post, HttpServletResponse response, Authorization rights, final JsonObjectWithDefault permissions) throws APIException {
+	public ServiceResponse serviceImpl(Query post, HttpServletResponse response, Authorization rights, final JsonObjectWithDefault permissions) throws APIException {
 
 		JSONObject result = new JSONObject();
 
@@ -97,6 +97,6 @@ public class UserManagementService extends AbstractAPIHandler implements APIHand
 			default: throw new APIException(400, "No 'show' parameter specified");
 		}
 
-		return result;
+		return new ServiceResponse(result);
 	}
 }

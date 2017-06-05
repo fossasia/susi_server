@@ -48,7 +48,7 @@ public class UserAccountPermissions extends AbstractAPIHandler implements APIHan
     }
 
     @Override
-    public JSONObject serviceImpl(Query query, HttpServletResponse response, Authorization authorization, final JsonObjectWithDefault permissions) throws APIException {
+    public ServiceResponse serviceImpl(Query query, HttpServletResponse response, Authorization authorization, final JsonObjectWithDefault permissions) throws APIException {
     	
     	JSONObject result = new JSONObject();
 
@@ -76,7 +76,7 @@ public class UserAccountPermissions extends AbstractAPIHandler implements APIHan
 
 			if(service instanceof AbstractAPIHandler){
 				result.put("servicePermissions", authorization.getPermissions((AbstractAPIHandler) service));
-				return result;
+				return new ServiceResponse(result);
 			}
 			else{
 				throw new APIException(400, "Bad service name (no instance of AbstractAPIHandler)");
@@ -87,17 +87,17 @@ public class UserAccountPermissions extends AbstractAPIHandler implements APIHan
 				serviceList.put(service.getCanonicalName());
 			}
 			result.put("serviceList", serviceList);
-			return result;
+			return new ServiceResponse(result);
 		}else if (query.get("getUserRolePermission", false)) {
 			result.put("userRolePermissions", authorization.getUserRole().getPermissionOverrides());
-			return result;
+			return new ServiceResponse(result);
 		} else {
 			result.put("userName", authorization.getIdentity().getName());
 			result.put("userSpecificPermissions", authorization.getPermissionOverrides());
 			result.put("userRole", authorization.getUserRole().getDisplayName());
 			result.put("userRoleSpecificPermissions", authorization.getUserRole().getPermissionOverrides());
 			result.put("parentUserRole", authorization.getUserRole().getParent());
-			return result;
+			return new ServiceResponse(result);
 		}
     }
 }

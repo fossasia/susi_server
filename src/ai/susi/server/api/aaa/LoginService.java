@@ -70,7 +70,7 @@ public class LoginService extends AbstractAPIHandler implements APIHandler {
 	}
 
 	@Override
-	public JSONObject serviceImpl(Query post, HttpServletResponse response, Authorization authorization, final JsonObjectWithDefault permissions)
+	public ServiceResponse serviceImpl(Query post, HttpServletResponse response, Authorization authorization, final JsonObjectWithDefault permissions)
 			throws APIException {
 
 		// login check for app
@@ -84,7 +84,7 @@ public class LoginService extends AbstractAPIHandler implements APIHandler {
 				result.put("loggedIn", false);
 				result.put("message", "Not logged in");
 			}
-			return result;
+			return new ServiceResponse(result);
 		}
 
 		// do logout if requested
@@ -106,7 +106,7 @@ public class LoginService extends AbstractAPIHandler implements APIHandler {
 			
 			JSONObject result = new JSONObject();
 			result.put("message", delete ? "Account deletion successful" : "Logout successful");
-			return result;
+			return new ServiceResponse(result);
 		}
 
 		// check login type by checking which parameters are set
@@ -207,7 +207,7 @@ public class LoginService extends AbstractAPIHandler implements APIHandler {
 			Log.getLog().info("login for user: " + identity.getName() + " via passwd from host: " + post.getClientHost());
 
 			result.put("message", "You are logged in as " + identity.getName());
-			return result;
+			return new ServiceResponse(result);
 		}
 		else if(pubkeyHello){ // first part of pubkey login: if the key hash is known, create a challenge
 
@@ -235,7 +235,7 @@ public class LoginService extends AbstractAPIHandler implements APIHandler {
 			result.put("challenge", challengeString);
 			result.put("sessionID", newSessionID);
 			result.put("message", "Found valid key for this user. Sign the challenge with you public key and send it back, together with the sessionID");
-			return result;
+			return new ServiceResponse(result);
 		}
 		else if(pubkeyLogin){ // second part of pubkey login: verify if the response to the challange is valid
 
@@ -279,7 +279,7 @@ public class LoginService extends AbstractAPIHandler implements APIHandler {
 				else result.put("valid_seconds", valid_seconds);
 
 				result.put("access_token", token);
-				return result;
+				return new ServiceResponse(result);
 			}
 			else {
 				authorization.getAccounting().addRequest(this.getClass().getCanonicalName(), "invalid login");

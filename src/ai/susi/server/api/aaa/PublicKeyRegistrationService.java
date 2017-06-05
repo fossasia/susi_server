@@ -115,7 +115,7 @@ public class PublicKeyRegistrationService extends AbstractAPIHandler implements 
 	}
 
 	@Override
-	public JSONObject serviceImpl(Query post, HttpServletResponse response, Authorization authorization, final JsonObjectWithDefault permissions)
+	public ServiceResponse serviceImpl(Query post, HttpServletResponse response, Authorization authorization, final JsonObjectWithDefault permissions)
 			throws APIException {
 
 		if(post.get("register",null) == null && !post.get("create",false) && !post.get("getParameters", false)){
@@ -148,7 +148,7 @@ public class PublicKeyRegistrationService extends AbstractAPIHandler implements 
 			}
 			result.put("formats", formats);
 
-			return result;
+			return new ServiceResponse(result);
 		}
 
 		// for which id?
@@ -248,7 +248,7 @@ public class PublicKeyRegistrationService extends AbstractAPIHandler implements 
 				result.put("key-size", keySize);
 				result.put("message", "Successfully created and registered key. Make sure to copy the private key, it won't be saved on the server");
 
-				return result;
+				return new ServiceResponse(result);
 			}
 			throw new APIException(400, "Unsupported algorithm");
 		}
@@ -326,7 +326,7 @@ public class PublicKeyRegistrationService extends AbstractAPIHandler implements 
 				try{ result.put("keyhash_urlsave", URLEncoder.encode(IO.getKeyHash(pub), "UTF-8")); } catch (UnsupportedEncodingException e){}
 				result.put("message", "Successfully registered key.");
 
-				return result;
+				return new ServiceResponse(result);
 			}
 			throw new APIException(400, "Unsupported algorithm");
 		}

@@ -27,6 +27,7 @@ import ai.susi.server.AbstractAPIHandler;
 import ai.susi.server.Authorization;
 import ai.susi.server.BaseUserRole;
 import ai.susi.server.Query;
+import ai.susi.server.ServiceResponse;
 
 import javax.servlet.http.HttpServletResponse;
 
@@ -48,12 +49,12 @@ public class ExpertPostTxtService extends AbstractAPIHandler implements APIHandl
     }
     
     @Override
-    public JSONObject serviceImpl(Query call, HttpServletResponse response, Authorization rights, final JsonObjectWithDefault permissions) {
+    public ServiceResponse serviceImpl(Query call, HttpServletResponse response, Authorization rights, final JsonObjectWithDefault permissions) {
         
         JSONObject json = new JSONObject(true);
         
         // modify caching
         json.put("$EXPIRES", 0);
-        return json;
+        return new ServiceResponse(json);
     }
 }

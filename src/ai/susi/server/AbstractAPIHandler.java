@@ -25,6 +25,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.time.Instant;
 import java.util.Base64;
+import java.util.Map;
 import java.util.Random;
 
 import javax.servlet.ServletException;
@@ -65,47 +66,9 @@ public abstract class AbstractAPIHandler extends HttpServlet implements APIHandl
 
 	@Override
 	public abstract JSONObject getDefaultPermissions(BaseUserRole baseUserRole);
-
-    @Override
-    public JSONObject[] service(Query call, Authorization rights) throws APIException {
-
-        // make call to the embedded api
-        if (this.serverProtocolHostStub == null) {
-
-            if (rights.getBaseUserRole().compareTo(this.getMinimalBaseUserRole()) < 0) {
-                // user has no privilege to use the servlet
-                throw new APIException(401, "missing rights");
-            }
-            return new JSONObject[]{serviceImpl(call, null, rights, rights.getPermissions(this))};
-        }
-        
-        // make call(s) to a remote api(s)
-        JSONObject[] results = new JSONObject[this.serverProtocolHostStub.length];
-        for (int rc = 0; rc < results.length; rc++) {
-            try {
-                StringBuilder urlquery = new StringBuilder();
-                for (String key: call.getKeys()) {
-                    urlquery.append(urlquery.length() == 0 ? '?' : '&').append(key).append('=').append(call.get(key, ""));
-                }
-                String urlstring = this.serverProtocolHostStub[rc] + this.getAPIPath() + urlquery.toString();
-                byte[] jsonb = ClientConnection.download(urlstring);
-                if (jsonb == null || jsonb.length == 0) throw new IOException("empty content from " + urlstring);
-                String jsons = UTF8.String(jsonb);
-                JSONObject json = new JSONObject(jsons);
-                if (json == null || json.length() == 0) {
-                    results[rc] = null;
-                    continue;
-                };
-                results[rc] = json;
-            } catch (Throwable e) {
-            	Log.getLog().warn(e);
-            }
-        }
-        return results;
-    }
     
-    public abstract JSONObject serviceImpl(Query call, HttpServletResponse response, Authorization rights,  final JsonObjectWithDefault permissions) throws APIException;
-
+    public abstract ServiceResponse serviceImpl(Query post, HttpServletResponse response, Authorization rights, final JsonObjectWithDefault permissions) throws APIException;
+    
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         Query post = RemoteAccess.evaluate(request);
@@ -155,32 +118,41 @@ public abstract class AbstractAPIHandler extends HttpServlet implements APIHandl
         boolean minified = query.get("minified", false);
         
         try {
-            JSONObject json = serviceImpl(query, response, authorization, authorization.getPermissions(this));
-            if  (json == null) {
+            ServiceResponse serviceResponse = serviceImpl(query, response, authorization, authorization.getPermissions(this));
+            if  (serviceResponse == null) {
                 response.sendError(400, "your request does not contain the required data");
                 return;
              }
     
-            // evaluate special fields
-            if (json.has("$EXPIRES")) {
-                int expires = json.getInt("$EXPIRES");
-                FileHandler.setCaching(response, expires);
-                json.remove("$EXPIRES");
-            }
-        
-            // add session information
-            JSONObject session = new JSONObject(true);
-            session.put("identity", identity.toJSON());
-            json.put("session", session);
-            
             // write json
-            query.setResponse(response, "application/javascript");
+            query.setResponse(response, serviceResponse.getMimeType());
             response.setCharacterEncoding("UTF-8");
-            PrintWriter sos = response.getWriter();
-            if (jsonp) sos.print(callback + "(");
-            sos.print(json.toString(minified ? 0 : 2));
-            if (jsonp) sos.println(");");
-            sos.println();
+            
+            if (serviceResponse.isObject() || serviceResponse.isArray()) {
+                if (serviceResponse.isObject()) {
+                    JSONObject json = serviceResponse.getObject();
+                    // evaluate special fields
+                    if (json.has("$EXPIRES")) {
+                        int expires = json.getInt("$EXPIRES");
+                        FileHandler.setCaching(response, expires);
+                        json.remove("$EXPIRES");
+                    }
+                    // add session information
+                    JSONObject session = new JSONObject(true);
+                    session.put("identity", identity.toJSON());
+                    json.put("session", session);
+                }
+                PrintWriter sos = response.getWriter();
+                if (jsonp) sos.print(callback + "(");
+                sos.print(serviceResponse.toString(minified));
+                if (jsonp) sos.println(");");
+                sos.println();
+            } else if (serviceResponse.isString()) {
+                PrintWriter sos = response.getWriter();
+                sos.print(serviceResponse.toString(false));
+            } else if (serviceResponse.isByteArray()) {
+                response.getOutputStream().write(serviceResponse.getByteArray());
+            }
             query.finalize();
         } catch (APIException e) {
             response.sendError(e.getStatusCode(), e.getMessage());
