@@ -8,13 +8,15 @@ import org.json.JSONObject;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.File;
-import java.io.IOException;
-import java.nio.file.Files;
 import java.util.ArrayList;
-import java.util.List;
+
+/**
+ This Servlet gives a API Endpoint to list all the Experts given its model, group and language.
+ Can be tested on 127.0.0.1:4000/cms/getExpertList.json
+ */
 
 public class ExpertListService extends AbstractAPIHandler implements APIHandler {
-    
+
     private static final long serialVersionUID = -8691003678852307876L;
 
     @Override
