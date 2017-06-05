@@ -3,6 +3,7 @@ package ai.susi.server.api.cms;
 import ai.susi.DAO;
 import ai.susi.json.JsonObjectWithDefault;
 import ai.susi.server.*;
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 import javax.servlet.http.HttpServletResponse;
@@ -42,7 +43,7 @@ public class ModelListService extends AbstractAPIHandler implements APIHandler  
                     return new File(current, name).isDirectory();
                 }
             });
-            String content = Arrays.toString(models);
-            return new ServiceResponse(content);
+            JSONArray modelsArray = new JSONArray(models);
+            return new ServiceResponse(modelsArray);
     }
 }
