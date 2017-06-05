@@ -57,7 +57,7 @@ public class MapServlet extends HttpServlet {
         process(request, response, post);
     }
     
-    // http://localhost:9000/vis/map.png?text=Test&mlat=1.28373&mlon=103.84379&zoom=18
+    // http://localhost:4000/vis/map.png?text=Test&mlat=1.28373&mlon=103.84379&zoom=18
 
     protected void process(HttpServletRequest request, HttpServletResponse response, Query post) throws ServletException, IOException {
         // parse arguments
