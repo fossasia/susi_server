@@ -3,7 +3,7 @@
   "@type":"SoftwareApplication",
   "permissions":"/api/resetpassword.json",
   "name":"resetpass",
-  "headline":"Reset your Loklak Password",
+  "headline":"Reset your SUSI Password",
   "alternativeHeadline":"Reset Password",
   "applicationCategory":"Accounts API",
   "applicationSubCategory":"account operations",

@@ -3,7 +3,7 @@
   "@type":"SoftwareApplication",
   "permissions":"/api/recoverpassword.json",
   "name":"forgotpassword",
-  "headline":"Password Recovery",
+  "headline":"Susi Password Recovery",
   "alternativeHeadline":"Forgot Password",
   "applicationCategory":"Accounts API",
   "applicationSubCategory":"account operations",
@@ -16,3 +16,4 @@
     "sameAs":"https://github.com/shivenmian"
   }
 }
+
