@@ -32,15 +32,15 @@ import ai.susi.server.ServiceResponse;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.URI;
 import java.nio.file.Files;
-import java.nio.file.Paths;
 
 import javax.servlet.http.HttpServletResponse;
 
 /**
- * Servlet to load an expert from the exepert database
- * 
+ * Servlet to load an expert from the expert database
+ * i.e.
+ * http://localhost:4000/cms/getexpert.txt
+ * http://localhost:4000/cms/getexpert.txt?model=general&group=knowledge&language=en&expert=wikipedia
  */
 public class ExpertGetTxtService extends AbstractAPIHandler implements APIHandler {
     
@@ -61,12 +61,9 @@ public class ExpertGetTxtService extends AbstractAPIHandler implements APIHandle
     
     @Override
     public ServiceResponse serviceImpl(Query call, HttpServletResponse response, Authorization rights, final JsonObjectWithDefault permissions) {
-        
-        
-        File models = new File(DAO.model_watch_dir, "models");
-        
+
         String model_name = call.get("model", "general");
-        File model = new File(models, model_name);
+        File model = new File(DAO.model_watch_dir, model_name);
         String group_name = call.get("group", "knowledge");
         File group = new File(model, group_name);
         String language_name = call.get("language", "en");
@@ -78,7 +75,6 @@ public class ExpertGetTxtService extends AbstractAPIHandler implements APIHandle
             String content = new String(Files.readAllBytes(expert.toPath()));
             return new ServiceResponse(content);
         } catch (IOException e) {
-            // TODO Auto-generated catch block
             e.printStackTrace();
         }
         return null;
