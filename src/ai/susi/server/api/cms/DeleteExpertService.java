@@ -7,8 +7,6 @@ import org.json.JSONObject;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.File;
-import java.io.IOException;
-import java.nio.file.Files;
 
 /**
  * Created by chetankaushik on 06/06/17.
