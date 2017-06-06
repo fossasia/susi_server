@@ -10,7 +10,11 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 
-
+/**
+ * Created by chetankaushik on 06/06/17.
+ * This Service deletes a expert as per given query.
+ * http://localhost:4000/cms/deleteExpert.txt?model=general&group=knowledge&language=en&expert=whois
+ */
 public class DeleteExpertService  extends AbstractAPIHandler implements APIHandler {
 
     @Override
