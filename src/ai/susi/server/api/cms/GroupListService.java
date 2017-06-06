@@ -12,12 +12,12 @@ import javax.servlet.http.HttpServletResponse;
 public class GroupListService extends AbstractAPIHandler implements APIHandler{
     @Override
     public String getAPIPath() {
-        return null;
+        return "/cms/getgroup.json";
     }
 
     @Override
     public BaseUserRole getMinimalBaseUserRole() {
-        return null;
+        return BaseUserRole.ANONYMOUS;
     }
 
     @Override
