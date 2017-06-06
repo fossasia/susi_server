@@ -16,7 +16,7 @@ import java.util.Arrays;
 /**
  * Servlet to load an model from the expert database
  * i.e.
- * http://localhost:4000/cms/getmodel.txt
+ * http://localhost:4000/cms/getmodel.json
  */
 public class ModelListService extends AbstractAPIHandler implements APIHandler  {
 
@@ -31,7 +31,7 @@ public class ModelListService extends AbstractAPIHandler implements APIHandler  
 
     @Override
     public String getAPIPath() {
-        return "/cms/getmodel.txt";
+        return "/cms/getmodel.json";
     }
 
     @Override
