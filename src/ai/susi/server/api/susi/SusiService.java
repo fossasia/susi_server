@@ -34,6 +34,7 @@ import ai.susi.DAO;
 import ai.susi.json.JsonObjectWithDefault;
 import ai.susi.mind.SusiArgument;
 import ai.susi.mind.SusiCognition;
+import ai.susi.mind.SusiExpert;
 import ai.susi.mind.SusiMind;
 import ai.susi.mind.SusiThought;
 import ai.susi.server.APIException;
@@ -98,7 +99,7 @@ public class SusiService extends AbstractAPIHandler implements APIHandler {
                 String text = json.getJSONObject("data").getString("text");
                 // fill an empty mind with the dream
                 SusiMind dream = new SusiMind(DAO.susi_memory_dir); // we need the memory directory here to get a share on the memory of previous dialoges, otherwise we cannot test call-back questions
-                JSONObject rules = dream.readTextExpert(new BufferedReader(new InputStreamReader(new ByteArrayInputStream(text.getBytes(StandardCharsets.UTF_8)), StandardCharsets.UTF_8)));
+                JSONObject rules = SusiExpert.readEzDExpert(new BufferedReader(new InputStreamReader(new ByteArrayInputStream(text.getBytes(StandardCharsets.UTF_8)), StandardCharsets.UTF_8)));
                 dream.learn(rules);
                 // susi is now dreaming.. Try to find an answer out of the dream
                 SusiCognition cognition = new SusiCognition(dream, q, timezoneOffset, latitude, longitude, count, user.getIdentity());
