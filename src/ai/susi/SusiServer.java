@@ -473,6 +473,7 @@ public class SusiServer {
                 UserManagementService.class,
                 UserAccountPermissions.class,
                 JsonPathTestService.class,
+                DeleteExpertService.class,
 
                 // susi search aggregation services
                 ConsoleService.class,
