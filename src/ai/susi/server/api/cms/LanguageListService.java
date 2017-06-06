@@ -46,7 +46,8 @@ import javax.servlet.http.HttpServletResponse;
  */
 public class LanguageListService extends AbstractAPIHandler implements APIHandler {
 
-    private static final long serialVersionUID = 18344224L;
+
+    private static final long serialVersionUID = -5176264536025896261L;
 
     @Override
     public BaseUserRole getMinimalBaseUserRole() { return BaseUserRole.ANONYMOUS; }
