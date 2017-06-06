@@ -81,7 +81,7 @@
 <ol class="simple">
 <li>Then we need to store this docker image into our project:</li>
 </ol>
-<p>````docker tag &lt;image-id&gt; gcr.io/&lt;project-id&gt;/&lt;image-id&gt; ```</p>
+<p><code class="docutils literal"><span class="pre">docker</span> <span class="pre">tag</span> <span class="pre">&lt;image-id&gt;</span> <span class="pre">gcr.io/&lt;project-id&gt;/&lt;image-id&gt;</span></code></p>
 <p><code class="docutils literal"><span class="pre">gcloud</span> <span class="pre">docker</span> <span class="pre">--</span> <span class="pre">push</span> <span class="pre">gcr.io/&lt;project-id&gt;/&lt;image-id&gt;</span></code></p>
 <ol class="simple">
 <li>query <code class="docutils literal"><span class="pre">docker</span> <span class="pre">images</span></code> . Copy or remember this id, we will need this id to tag the image.</li>
