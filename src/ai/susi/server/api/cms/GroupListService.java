@@ -11,6 +11,9 @@ import java.io.File;
 
 /**
  * Created by DravitLochan on 6/6/17.
+ * Servlet to load list of groups for given model
+ * Start the server and type in the below given address to test it.
+ *  http://127.0.0.1:4000/cms/getgroup.json
  */
 public class GroupListService extends AbstractAPIHandler implements APIHandler{
     @Override
