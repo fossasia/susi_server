@@ -44,6 +44,7 @@ import java.util.Set;
 import javax.servlet.Servlet;
 
 import ai.susi.server.api.aaa.*;
+import ai.susi.server.api.cms.*;
 import org.apache.logging.log4j.LogManager;
 import org.bouncycastle.asn1.pkcs.PrivateKeyInfo;
 import org.bouncycastle.cert.X509CertificateHolder;
@@ -82,16 +83,6 @@ import ai.susi.server.APIHandler;
 import ai.susi.server.FileHandler;
 import ai.susi.server.HttpsMode;
 import ai.susi.server.RemoteAccess;
-import ai.susi.server.api.cms.AppsService;
-import ai.susi.server.api.cms.ExpertConvertJsonToTxtService;
-import ai.susi.server.api.cms.ExpertConvertTxtToJsonService;
-import ai.susi.server.api.cms.ExpertGetJsonService;
-import ai.susi.server.api.cms.ExpertGetTxtService;
-import ai.susi.server.api.cms.ExpertPostJsonService;
-import ai.susi.server.api.cms.ExpertPostTxtService;
-import ai.susi.server.api.cms.Sitemap;
-import ai.susi.server.api.cms.ThreaddumpServlet;
-import ai.susi.server.api.cms.TopMenuService;
 import ai.susi.server.api.learning.ConsoleLearning;
 import ai.susi.server.api.service.EmailSenderService;
 import ai.susi.server.api.susi.ConsoleService;
@@ -478,6 +469,7 @@ public class SusiServer {
                 ExpertGetTxtService.class,
                 ExpertPostJsonService.class,
                 ExpertPostTxtService.class,
+                ExpertListService.class,
                 UserManagementService.class,
                 UserAccountPermissions.class,
                 JsonPathTestService.class,
