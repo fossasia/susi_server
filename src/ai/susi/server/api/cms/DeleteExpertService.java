@@ -15,6 +15,8 @@ import java.io.File;
  */
 public class DeleteExpertService  extends AbstractAPIHandler implements APIHandler {
 
+    private static final long serialVersionUID = -1755374387315534691L;
+
     @Override
     public BaseUserRole getMinimalBaseUserRole() { return BaseUserRole.ANONYMOUS; }
 
