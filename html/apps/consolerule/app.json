@@ -3,7 +3,7 @@
   "@type":"SoftwareApplication",
   "permissions":"/learning/rule.json",
   "name":"consolerule",
-  "headline":"Teach Console Rules",
+  "headline":"Teach SUSI Console Rules",
   "alternativeHeadline":"Console Rules",
   "applicationCategory":"Rules API",
   "applicationSubCategory":"teach susi",

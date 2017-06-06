@@ -3,7 +3,7 @@
   "@type":"SoftwareApplication",
   "permissions":"/api/signup.json",
   "name":"signup",
-  "headline":"Sign Up to Loklak",
+  "headline":"Sign Up to SUSI",
   "alternativeHeadline":"Sign Up",
   "applicationCategory":"Accounts API",
   "applicationSubCategory":"account operations",
