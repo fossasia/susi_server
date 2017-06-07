@@ -9,6 +9,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.Objects;
 
 /**
  * Created by chetankaushik on 07/06/17.
@@ -53,7 +54,7 @@ public class ModifyExpertService extends AbstractAPIHandler implements APIHandle
         }
         // Reading Content for expert
         String content = call.get("content", "");
-        if(expert_name==null){
+        if(Objects.equals(content, "")){
             JSONObject error = new JSONObject();
             error.put("response","expert content not given");
             return new ServiceResponse(error);
