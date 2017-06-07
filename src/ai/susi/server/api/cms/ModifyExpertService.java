@@ -16,7 +16,7 @@ import java.nio.file.Files;
  */
 public class ModifyExpertService extends AbstractAPIHandler implements APIHandler {
 
-    private static final long serialVersionUID = 18344224L;
+    private static final long serialVersionUID = -1834363513093189312L;
 
     @Override
     public BaseUserRole getMinimalBaseUserRole() { return BaseUserRole.ANONYMOUS; }
