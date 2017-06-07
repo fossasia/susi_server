@@ -45,17 +45,20 @@ public class ModifyExpertService extends AbstractAPIHandler implements APIHandle
         File language = new File(group, language_name);
         String expert_name = call.get("expert", null);
         File expert = new File(language, expert_name + ".txt");
+        // Checking for file existence
         if(!expert.exists()){
             JSONObject error = new JSONObject();
             error.put("response","Expert Does Not Exists");
             return new ServiceResponse(error);
         }
+        // Reading Content for expert
         String content = call.get("content", "");
         if(expert_name==null){
             JSONObject error = new JSONObject();
             error.put("response","expert Name not given");
             return new ServiceResponse(error);
         }
+        // Writing to File
         try (FileWriter file = new FileWriter(expert)) {
             file.write(content);
             JSONObject success = new JSONObject();
