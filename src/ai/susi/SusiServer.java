@@ -470,10 +470,12 @@ public class SusiServer {
                 ExpertPostJsonService.class,
                 ExpertPostTxtService.class,
                 ModelListService.class,
+                LanguageListService.class,
                 ExpertListService.class,
                 UserManagementService.class,
                 UserAccountPermissions.class,
                 JsonPathTestService.class,
+                DeleteExpertService.class,
 
                 // susi search aggregation services
                 ConsoleService.class,
