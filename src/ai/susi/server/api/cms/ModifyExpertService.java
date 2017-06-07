@@ -9,10 +9,13 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.nio.file.Files;
 
 /**
  * Created by chetankaushik on 07/06/17.
+ * This Endpoint accepts 5 parameters. model,group,language,expert,content.
+ * before modifying an expert the expert must exist in the directory.
+ * !IMPORTANT! --> Content must be URL Encoded
+ * http://localhost:4000/cms/modifyExpert.json?model=general&group=knowledge&expert=testing&content=What is stock price of *%3F|What is stock price of *|stock price of *|* stock price of *%0A!console%3A%24l%24%0A{%0A "url"%3A"http%3A%2F%2Ffinance.google.com%2Ffinance%2Finfo%3Fclient%3Dig%26q%3DNASDAQ%3A%241%24"%2C%0A "path"%3A"%24.[0]"%0A}%0Aeol%0A
  */
 public class ModifyExpertService extends AbstractAPIHandler implements APIHandler {
 
