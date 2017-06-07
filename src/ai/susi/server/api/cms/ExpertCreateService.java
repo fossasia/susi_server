@@ -33,7 +33,7 @@ public class ExpertCreateService  extends AbstractAPIHandler implements APIHandl
     }
 
     @Override
-    public ServiceResponse serviceImpl(Query call, HttpServletResponse response, Authorization rights, final JsonObjectWithDefault permissions) throws IOException {
+    public ServiceResponse serviceImpl(Query call, HttpServletResponse response, Authorization rights, final JsonObjectWithDefault permissions) {
 
         String model_name = call.get("model", "general");
         File model = new File(DAO.model_watch_dir, model_name);
@@ -49,9 +49,11 @@ public class ExpertCreateService  extends AbstractAPIHandler implements APIHandl
         if (expert.exists()) {
             json.put("Error","The '" + expert + "' already exists.");
         } else {
-            if (expert.createNewFile()) {
+            try {
+                expert.createNewFile();
                 json.put("created_file", expertName);
-            } else {
+            } catch (IOException e) {
+                e.printStackTrace();
                 json.put("Error","Unable to create expert.");
             }
         }
