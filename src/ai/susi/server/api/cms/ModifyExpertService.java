@@ -55,7 +55,7 @@ public class ModifyExpertService extends AbstractAPIHandler implements APIHandle
         String content = call.get("content", "");
         if(expert_name==null){
             JSONObject error = new JSONObject();
-            error.put("response","expert Name not given");
+            error.put("response","expert content not given");
             return new ServiceResponse(error);
         }
         // Writing to File
