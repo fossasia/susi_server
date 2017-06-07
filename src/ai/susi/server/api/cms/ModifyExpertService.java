@@ -62,7 +62,7 @@ public class ModifyExpertService extends AbstractAPIHandler implements APIHandle
         try (FileWriter file = new FileWriter(expert)) {
             file.write(content);
             JSONObject success = new JSONObject();
-            success.put("response",expert.getName()+" created successfully");
+            success.put("response",expert.getName()+" modified successfully");
             return new ServiceResponse(success);
         } catch (IOException e) {
             e.printStackTrace();
