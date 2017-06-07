@@ -49,21 +49,21 @@ public class ModifyExpertService extends AbstractAPIHandler implements APIHandle
         // Checking for file existence
         if(!expert.exists()){
             JSONObject error = new JSONObject();
-            error.put("response","Expert Does Not Exists");
+            error.put("accepted", false);
             return new ServiceResponse(error);
         }
         // Reading Content for expert
         String content = call.get("content", "");
         if(Objects.equals(content, "")){
             JSONObject error = new JSONObject();
-            error.put("response","expert content not given");
+            error.put("accepted", false);
             return new ServiceResponse(error);
         }
         // Writing to File
         try (FileWriter file = new FileWriter(expert)) {
             file.write(content);
             JSONObject success = new JSONObject();
-            success.put("response",expert.getName()+" modified successfully");
+            success.put("accepted", true);
             return new ServiceResponse(success);
         } catch (IOException e) {
             e.printStackTrace();
