@@ -8,17 +8,18 @@ import org.json.JSONObject;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.File;
+import java.io.FilenameFilter;
 
 /**
  * Created by DravitLochan on 6/6/17.
  * Servlet to load list of groups for given model
  * Start the server and type in the below given address to test it.
- *  http://127.0.0.1:4000/cms/getgroup.json
+ *  http://127.0.0.1:4000/cms/getgroups.json
  */
 public class GroupListService extends AbstractAPIHandler implements APIHandler{
     @Override
     public String getAPIPath() {
-        return "/cms/getgroup.json";
+        return "/cms/getgroups.json";
     }
 
     @Override
@@ -37,7 +38,12 @@ public class GroupListService extends AbstractAPIHandler implements APIHandler{
         String model_name = call.get("model", "general");
         File model = new File(DAO.model_watch_dir, model_name);
 
-        String[] groups = model.list();
+        String[] groups = model.list(new FilenameFilter() {
+            @Override
+            public boolean accept(File file, String s) {
+                return new File(file, s).isDirectory();
+            }
+        });
         JSONArray groupsArray = new JSONArray(groups);
         return new ServiceResponse(groupsArray);
     }
