@@ -470,6 +470,7 @@ public class SusiServer {
                 ExpertGetTxtService.class,
                 ExpertPostJsonService.class,
                 ExpertPostTxtService.class,
+                LanguageListService.class,
                 ExpertListService.class,
                 UserManagementService.class,
                 UserAccountPermissions.class,
