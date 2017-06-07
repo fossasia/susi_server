@@ -9,11 +9,15 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.io.IOException;
 
-
+/**
+ * Created by saurabh on 7/6/17.
+ * This Service creates an expert as per given query.
+ * http://localhost:4000/cms/createExpert.txt?model=general&group=knowledge&language=en&expert=whois
+ */
 public class ExpertCreateService  extends AbstractAPIHandler implements APIHandler {
 
 
-
+    private static final long serialVersionUID = 2461878194569824151L;
 
     @Override
     public BaseUserRole getMinimalBaseUserRole() { return BaseUserRole.ANONYMOUS; }
