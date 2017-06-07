@@ -467,6 +467,7 @@ public class SusiServer {
                 ExpertConvertTxtToJsonService.class,
                 ExpertGetJsonService.class,
                 ExpertGetTxtService.class,
+                ExpertCreateService.class,
                 ExpertPostJsonService.class,
                 ExpertPostTxtService.class,
                 ExpertListService.class,
