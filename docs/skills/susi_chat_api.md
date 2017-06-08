@@ -235,6 +235,7 @@ A typical rendering of such a search results has three lines:
 * a Headline
 * a Snippet or Description line (showing the content of the found document where the searched word appears)
 * a link.
+
 A rendering would look like:
 ```
 <ul>
@@ -256,6 +257,7 @@ RSS feeds are standardized syndication messages. The same format is used for the
 * title
 * description
 * link
+
 The Susi usage of such messages is, that rss feeds can be aquired by the susi_server, then translated into objects within the `data` array and then should be rendered in the same way as a web search result action (see above). To make this possible, we must denote the name of these three information entities (title, description, link) in the rss action. For example:
 ```
 {
