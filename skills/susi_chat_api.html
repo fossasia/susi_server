@@ -292,6 +292,41 @@ A rendering would look like:</li>
 </div>
 <p>The actual presentation can differ from this, i.e. using anchor tags it should be possible to click on the title or description and link to the given link content.</p>
 </div>
+<div class="section" id="the-rss-action">
+<span id="the-rss-action"></span><h3>The <code class="docutils literal"><span class="pre">rss</span></code> Action<a class="headerlink" href="#the-rss-action" title="Permalink to this headline">¶</a></h3>
+<p>RSS feeds are standardized syndication messages. The same format is used for the opensearch (see http://www.opensearch.org) xml format, which is a standardization for search results. The core of this schema is a list of three entities, which are repeated in every message of an rss feed:</p>
+<ul class="simple">
+<li>title</li>
+<li>description</li>
+<li>link
+The Susi usage of such messages is, that rss feeds can be aquired by the susi_server, then translated into objects within the <code class="docutils literal"><span class="pre">data</span></code> array and then should be rendered in the same way as a web search result action (see above). To make this possible, we must denote the name of these three information entities (title, description, link) in the rss action. For example:</li>
+</ul>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="p">{</span>
+  <span class="s2">&quot;query&quot;</span><span class="p">:</span> <span class="s2">&quot;Oh freddled gruntbuggly&quot;</span><span class="p">,</span>
+  <span class="s2">&quot;answers&quot;</span><span class="p">:</span> <span class="p">[{</span>
+    <span class="s2">&quot;data&quot;</span><span class="p">:</span> <span class="p">[{</span>
+      <span class="s2">&quot;url&quot;</span><span class="p">:</span> <span class="s2">&quot;http://hitchhikers.wikia.com/wiki/Vogon_poetry&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;headline&quot;</span><span class="p">:</span> <span class="s2">&quot;Vogon poetry | Hitchhikers | Fandom powered by Wikia&quot;</span><span class="p">},</span>
+      <span class="s2">&quot;description&quot;</span> <span class="p">:</span> <span class="s2">&quot;Oh freddled gruntbuggly,: Thy micturations are to me,: As plurdled gabbleblotchits,: On a lurgid bee,: That mordiously hath blurted out,: Its earted jurtles,: Into a ...&quot;</span><span class="p">],</span>
+    <span class="s2">&quot;metadata&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;count&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">},</span>
+    <span class="s2">&quot;actions&quot;</span><span class="p">:</span> <span class="p">[</span>
+      <span class="p">{</span><span class="s2">&quot;type&quot;</span><span class="p">:</span><span class="s2">&quot;answer&quot;</span><span class="p">,</span> <span class="s2">&quot;select&quot;</span><span class="p">:</span><span class="s2">&quot;random&quot;</span><span class="p">,</span> <span class="s2">&quot;phrases&quot;</span><span class="p">:[</span><span class="s2">&quot;I found this on the web:&quot;</span><span class="p">],</span> <span class="s2">&quot;mood&quot;</span><span class="p">:</span> <span class="s2">&quot;sabta&quot;</span><span class="p">},</span>
+      <span class="p">{</span>
+      <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;rss&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;count&quot;</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span>
+      <span class="s2">&quot;title&quot;</span><span class="p">:</span> <span class="s2">&quot;headline&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;description&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;link&quot;</span><span class="p">:</span> <span class="s2">&quot;url&quot;</span>
+      <span class="p">}</span>
+    <span class="p">]</span>
+  <span class="p">}],</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>The rendering of such a result should be exactly the same as for the websearch example above. The only difference is, that the client
+must not search for itself, but just shows a search result which is provided by the server. The only thing to do here is an translation
+from the attribute keys within the data object into the opensearch/rss-typical keys.</p>
+</div>
 </div>
 </div>
 
@@ -345,6 +380,7 @@ A rendering would look like:</li>
 <li><a class="reference internal" href="#the-answer-action">The <code class="docutils literal"><span class="pre">answer</span></code> Action</a></li>
 <li><a class="reference internal" href="#the-table-action">The <code class="docutils literal"><span class="pre">table</span></code> Action</a></li>
 <li><a class="reference internal" href="#the-websearch-action">The <code class="docutils literal"><span class="pre">websearch</span></code> Action</a></li>
+<li><a class="reference internal" href="#the-rss-action">The <code class="docutils literal"><span class="pre">rss</span></code> Action</a></li>
 </ul>
 </li>
 </ul>
