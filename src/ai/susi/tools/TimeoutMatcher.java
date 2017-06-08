@@ -50,6 +50,7 @@ public class TimeoutMatcher {
         Future<Boolean> future = EXECUTOR.submit(new Callable<Boolean>(){
             @Override
             public Boolean call() throws Exception {
+                Thread.currentThread().setName("TimeoutMatcher: " + TimeoutMatcher.this.matcher.pattern());
                 return TimeoutMatcher.this.matcher.matches();
             }
         });
@@ -65,6 +66,7 @@ public class TimeoutMatcher {
         Future<Boolean> future = EXECUTOR.submit(new Callable<Boolean>(){
             @Override
             public Boolean call() throws Exception {
+                Thread.currentThread().setName("TimeoutMatcher: " + TimeoutMatcher.this.matcher.pattern());
                 return TimeoutMatcher.this.matcher.find();
             }
         });
