@@ -19,7 +19,9 @@
 
 package ai.susi.tools;
 
+import java.util.Map;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -39,7 +41,8 @@ import java.util.regex.Matcher;
 public class TimeoutMatcher {
 
     private final static ExecutorService EXECUTOR = Executors.newCachedThreadPool();
-
+    private final static Map<Long, Thread> computing = new ConcurrentHashMap<>();
+    
     private final Matcher matcher;
     
     public TimeoutMatcher(Matcher matcher) {
@@ -50,8 +53,12 @@ public class TimeoutMatcher {
         Future<Boolean> future = EXECUTOR.submit(new Callable<Boolean>(){
             @Override
             public Boolean call() throws Exception {
-                Thread.currentThread().setName("TimeoutMatcher: " + TimeoutMatcher.this.matcher.pattern());
-                return TimeoutMatcher.this.matcher.matches();
+                Thread t = Thread.currentThread();
+                t.setName("TimeoutMatcher: '" + TimeoutMatcher.this.matcher.pattern() + "'");
+                computing.put(t.getId(), t);
+                boolean matches = TimeoutMatcher.this.matcher.matches();
+                computing.remove(t.getId());
+                return matches;
             }
         });
         try {
@@ -66,8 +73,13 @@ public class TimeoutMatcher {
         Future<Boolean> future = EXECUTOR.submit(new Callable<Boolean>(){
             @Override
             public Boolean call() throws Exception {
+                Thread t = Thread.currentThread();
+                t.setName("TimeoutMatcher: '" + TimeoutMatcher.this.matcher.pattern() + "'");
+                computing.put(t.getId(), t);
                 Thread.currentThread().setName("TimeoutMatcher: " + TimeoutMatcher.this.matcher.pattern());
-                return TimeoutMatcher.this.matcher.find();
+                boolean find = TimeoutMatcher.this.matcher.find();
+                computing.remove(t.getId());
+                return find;
             }
         });
         try {
@@ -77,4 +89,10 @@ public class TimeoutMatcher {
         }
     }
     
+    public static void terminateAll() {
+        for (Thread job: computing.values()) try {
+            job.interrupt();
+        } catch (Throwable e) {}
+        computing.clear();
+    }
 }
