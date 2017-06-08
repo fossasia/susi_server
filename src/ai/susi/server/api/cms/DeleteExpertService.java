@@ -18,12 +18,14 @@ import java.io.IOException;
  * This Service deletes a expert as per given query.
  * http://localhost:4000/cms/deleteExpert.txt?model=general&group=knowledge&language=en&expert=whois
  */
-public class DeleteExpertService  extends AbstractAPIHandler implements APIHandler {
+public class DeleteExpertService extends AbstractAPIHandler implements APIHandler {
 
     private static final long serialVersionUID = -1755374387315534691L;
 
     @Override
-    public BaseUserRole getMinimalBaseUserRole() { return BaseUserRole.ANONYMOUS; }
+    public BaseUserRole getMinimalBaseUserRole() {
+        return BaseUserRole.ANONYMOUS;
+    }
 
     @Override
     public JSONObject getDefaultPermissions(BaseUserRole baseUserRole) {
@@ -51,7 +53,7 @@ public class DeleteExpertService  extends AbstractAPIHandler implements APIHandl
 
         if (expert.exists()) {
             expert.delete();
-            json.put("deleted_file",ExpertName);
+            json.put("deleted_file", ExpertName);
 
             //Add to git
             FileRepositoryBuilder builder = new FileRepositoryBuilder();
@@ -62,26 +64,26 @@ public class DeleteExpertService  extends AbstractAPIHandler implements APIHandl
                         .findGitDir() // scan up the file system tree
                         .build();
 
-            try (Git git = new Git(repository)) {
-                git.add()
-                        .addFilepattern(expert_name)
-                        .call();
-                // and then commit the changes
-                git.commit()
-                        .setMessage("Deleted "+ expert_name)
-                        .call();
+                try (Git git = new Git(repository)) {
+                    git.add()
+                            .addFilepattern(expert_name)
+                            .call();
+                    // and then commit the changes
+                    git.commit()
+                            .setMessage("Deleted " + expert_name)
+                            .call();
 
-            } catch (GitAPIException e) {
-                e.printStackTrace();
-            }
+                } catch (GitAPIException e) {
+                    e.printStackTrace();
+                }
             } catch (IOException e) {
                 e.printStackTrace();
             }
 
         } else {
-            json.put("Error","Cannot find '" + expert + "' ('" + expert.getAbsolutePath() + "')");
+            json.put("Error", "Cannot find '" + expert + "' ('" + expert.getAbsolutePath() + "')");
         }
-        
+
         return new ServiceResponse(json);
 
     }
