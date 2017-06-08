@@ -221,6 +221,7 @@ The task to display a table can be different for different type of clients. A ta
       <span class="s2">&quot;expression&quot;</span><span class="p">:</span> <span class="s2">&quot;Here is a currency rate table:&quot;</span>
     <span class="p">},</span> <span class="p">{</span>
       <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;table&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;count&quot;</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span>
       <span class="s2">&quot;columns&quot;</span><span class="p">:</span> <span class="p">{</span>
         <span class="s2">&quot;currency&quot;</span><span class="p">:</span> <span class="s2">&quot;Valuta&quot;</span><span class="p">,</span>
         <span class="s2">&quot;rate&quot;</span><span class="p">:</span> <span class="s2">&quot;Quota&quot;</span>
@@ -233,6 +234,7 @@ The task to display a table can be different for different type of clients. A ta
 <p>Please recognize that the actions object consists of two action objects; both actions must be performed. The first action
 is an answer which must be displayed as explained above for <code class="docutils literal"><span class="pre">answer</span></code> actions, The second action is the <code class="docutils literal"><span class="pre">table</span></code> action.
 The client then should create a table out of the data object where the column names are &#8216;Valuta&#8217; and &#8216;Quota&#8217;.
+The <code class="docutils literal"><span class="pre">count</span></code> value gives the maximum number of lines, if that number is -1 it means &#8216;unlimited&#8217;.
 If the client would be a web interface, the rendering would look similar to this html table:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="o">&lt;</span><span class="n">table</span><span class="o">&gt;</span>
 <span class="o">&lt;</span><span class="n">tr</span><span class="o">&gt;&lt;</span><span class="n">th</span><span class="o">&gt;</span><span class="n">Valuta</span><span class="o">&lt;/</span><span class="n">th</span><span class="o">&gt;&lt;</span><span class="n">th</span><span class="o">&gt;</span><span class="n">Quota</span><span class="o">&lt;/</span><span class="n">th</span><span class="o">&gt;&lt;/</span><span class="n">tr</span><span class="o">&gt;</span>
@@ -244,6 +246,51 @@ If the client would be a web interface, the rendering would look similar to this
 <span class="o">&lt;/</span><span class="n">table</span><span class="o">&gt;</span>
 </pre></div>
 </div>
+</div>
+<div class="section" id="the-websearch-action">
+<span id="the-websearch-action"></span><h3>The <code class="docutils literal"><span class="pre">websearch</span></code> Action<a class="headerlink" href="#the-websearch-action" title="Permalink to this headline">¶</a></h3>
+<p>This action can be performed by doing a web search on the client side:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="p">{</span>
+  <span class="s2">&quot;query&quot;</span><span class="p">:</span> <span class="s2">&quot;Oh freddled gruntbuggly&quot;</span><span class="p">,</span>
+  <span class="s2">&quot;answers&quot;</span><span class="p">:</span> <span class="p">[{</span>
+    <span class="s2">&quot;data&quot;</span><span class="p">:</span> <span class="p">[],</span>
+    <span class="s2">&quot;metadata&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;count&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">},</span>
+    <span class="s2">&quot;actions&quot;</span><span class="p">:</span> <span class="p">[</span>
+      <span class="p">{</span><span class="s2">&quot;type&quot;</span><span class="p">:</span><span class="s2">&quot;answer&quot;</span><span class="p">,</span> <span class="s2">&quot;select&quot;</span><span class="p">:</span><span class="s2">&quot;random&quot;</span><span class="p">,</span> <span class="s2">&quot;phrases&quot;</span><span class="p">:[</span><span class="s2">&quot;I found this on the web:&quot;</span><span class="p">],</span> <span class="s2">&quot;mood&quot;</span><span class="p">:</span> <span class="s2">&quot;sabta&quot;</span><span class="p">},</span>
+      <span class="p">{</span>
+      <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;websearch&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;query&quot;</span><span class="p">:</span> <span class="s2">&quot;Oh freddled gruntbuggly&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;count&quot;</span><span class="p">:</span> <span class="mi">3</span>
+      <span class="p">}</span>
+    <span class="p">]</span>
+  <span class="p">}],</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>A websearch action is usually combined with an answer action type which introduces the web search result as a headline.
+The query attribute for the web search can be found in the <code class="docutils literal"><span class="pre">query</span></code> object. Like in table actions, the <code class="docutils literal"><span class="pre">count</span></code> object denotes
+the maximum number of results. -1 means unlimited, meaning that all the results from the web search results are used.
+The API for the web search can be choosen by the client.
+A typical rendering of such a search results has three lines:</p>
+<ul class="simple">
+<li>a Headline</li>
+<li>a Snippet or Description line (showing the content of the found document where the searched word appears)</li>
+<li>a link.
+A rendering would look like:</li>
+</ul>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="o">&lt;</span><span class="n">ul</span><span class="o">&gt;</span>
+  <span class="o">&lt;</span><span class="n">li</span> <span class="n">class</span><span class="o">=</span><span class="s2">&quot;title&quot;</span><span class="o">&gt;</span><span class="n">Vogon</span> <span class="n">poetry</span> <span class="o">|</span> <span class="n">Hitchhikers</span> <span class="o">|</span> <span class="n">Fandom</span> <span class="n">powered</span> <span class="n">by</span> <span class="n">Wikia</span><span class="o">&lt;/</span><span class="n">li</span><span class="o">&gt;</span>
+  <span class="o">&lt;</span><span class="n">li</span> <span class="n">class</span><span class="o">=</span><span class="s2">&quot;link&quot;</span><span class="o">&gt;</span><span class="n">http</span><span class="p">:</span><span class="o">//</span><span class="n">hitchhikers</span><span class="o">.</span><span class="n">wikia</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">wiki</span><span class="o">/</span><span class="n">Vogon_poetry</span><span class="o">&lt;/</span><span class="n">li</span><span class="o">&gt;</span>
+  <span class="o">&lt;</span><span class="n">li</span> <span class="n">class</span><span class="o">=</span><span class="s2">&quot;description&quot;</span><span class="o">&gt;</span><span class="n">Oh</span> <span class="n">freddled</span> <span class="n">gruntbuggly</span><span class="p">,:</span> <span class="n">Thy</span> <span class="n">micturations</span> <span class="n">are</span> <span class="n">to</span> <span class="n">me</span><span class="p">,:</span> <span class="n">As</span> <span class="n">plurdled</span> <span class="n">gabbleblotchits</span><span class="p">,:</span> <span class="n">On</span> <span class="n">a</span> <span class="n">lurgid</span> <span class="n">bee</span><span class="p">,:</span> <span class="n">That</span> <span class="n">mordiously</span> <span class="n">hath</span> <span class="n">blurted</span> <span class="n">out</span><span class="p">,:</span> <span class="n">Its</span> <span class="n">earted</span> <span class="n">jurtles</span><span class="p">,:</span> <span class="n">Into</span> <span class="n">a</span> <span class="o">...&lt;/</span><span class="n">li</span><span class="o">&gt;</span>
+<span class="o">&lt;/</span><span class="n">ul</span><span class="o">&gt;</span>
+
+<span class="o">.</span>
+<span class="o">.</span>
+<span class="o">.</span>
+<span class="o">...</span> <span class="p">(</span><span class="n">more</span> <span class="n">search</span> <span class="n">hits</span> <span class="k">as</span> <span class="o">&lt;</span><span class="n">ul</span><span class="o">&gt;&lt;/</span><span class="n">ul</span><span class="o">&gt;</span> <span class="n">tags</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The actual presentation can differ from this, i.e. using anchor tags it should be possible to click on the title or description and link to the given link content.</p>
 </div>
 </div>
 </div>
@@ -297,6 +344,7 @@ If the client would be a web interface, the rendering would look similar to this
 <li><a class="reference internal" href="#api-action-types">API Action types</a><ul>
 <li><a class="reference internal" href="#the-answer-action">The <code class="docutils literal"><span class="pre">answer</span></code> Action</a></li>
 <li><a class="reference internal" href="#the-table-action">The <code class="docutils literal"><span class="pre">table</span></code> Action</a></li>
+<li><a class="reference internal" href="#the-websearch-action">The <code class="docutils literal"><span class="pre">websearch</span></code> Action</a></li>
 </ul>
 </li>
 </ul>
