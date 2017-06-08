@@ -131,7 +131,8 @@ public class SusiExpert {
                                     if (type.equals(SusiAction.RenderType.rss.toString()) &&
                                             boa.has("title") && boa.has("description") && boa.has("link")) {
                                         actions.put(SusiAction.rssAction(
-                                            boa.getString("title"), boa.getString("description"), boa.getString("link")));
+                                            boa.getString("title"), boa.getString("description"), boa.getString("link"),
+                                            boa.has("length") ? boa.getInt("length") : -1));
                                     } else
                                     if (type.equals(SusiAction.RenderType.websearch.toString()) && boa.has("query")) {
                                         actions.put(SusiAction.websearchAction(boa.getString("query")));
