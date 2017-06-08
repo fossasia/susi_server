@@ -182,6 +182,7 @@ The task to display a table can be different for different type of clients. A ta
       "expression": "Here is a currency rate table:"
     }, {
       "type": "table",
+      "count": 3,
       "columns": {
         "currency": "Valuta",
         "rate": "Quota"
@@ -193,6 +194,7 @@ The task to display a table can be different for different type of clients. A ta
 Please recognize that the actions object consists of two action objects; both actions must be performed. The first action
 is an answer which must be displayed as explained above for `answer` actions, The second action is the `table` action.
 The client then should create a table out of the data object where the column names are 'Valuta' and 'Quota'.
+The `count` value gives the maximum number of lines, if that number is -1 it means 'unlimited'.
 If the client would be a web interface, the rendering would look similar to this html table:
 ```
 <table>
@@ -204,3 +206,81 @@ If the client would be a web interface, the rendering would look similar to this
 <tr><td>USD/CHF</td><td>1.00133</td></tr>
 </table>
 ```
+
+### The `websearch` Action
+
+This action can be performed by doing a web search on the client side:
+```
+{
+  "query": "Oh freddled gruntbuggly",
+  "answers": [{
+    "data": [],
+    "metadata": {"count": 0},
+    "actions": [
+      {"type":"answer", "select":"random", "phrases":["I found this on the web:"], "mood": "sabta"},
+      {
+      "type": "websearch",
+      "query": "Oh freddled gruntbuggly",
+      "count": 3
+      }
+    ]
+  }],
+}
+```
+A websearch action is usually combined with an answer action type which introduces the web search result as a headline.
+The query attribute for the web search can be found in the `query` object. Like in table actions, the `count` object denotes
+the maximum number of results. -1 means unlimited, meaning that all the results from the web search results are used.
+The API for the web search can be choosen by the client.
+A typical rendering of such a search results has three lines:
+* a Headline
+* a Snippet or Description line (showing the content of the found document where the searched word appears)
+* a link.
+
+A rendering would look like:
+```
+<ul>
+  <li class="title">Vogon poetry | Hitchhikers | Fandom powered by Wikia</li>
+  <li class="link">http://hitchhikers.wikia.com/wiki/Vogon_poetry</li>
+  <li class="description">Oh freddled gruntbuggly,: Thy micturations are to me,: As plurdled gabbleblotchits,: On a lurgid bee,: That mordiously hath blurted out,: Its earted jurtles,: Into a ...</li>
+</ul>
+
+.
+.
+.
+... (more search hits as <ul></ul> tags)
+```
+The actual presentation can differ from this, i.e. using anchor tags it should be possible to click on the title or description and link to the given link content.
+
+### The `rss` Action
+
+RSS feeds are standardized syndication messages. The same format is used for the opensearch (see http://www.opensearch.org) xml format, which is a standardization for search results. The core of this schema is a list of three entities, which are repeated in every message of an rss feed:
+* title
+* description
+* link
+
+The Susi usage of such messages is, that rss feeds can be aquired by the susi_server, then translated into objects within the `data` array and then should be rendered in the same way as a web search result action (see above). To make this possible, we must denote the name of these three information entities (title, description, link) in the rss action. For example:
+```
+{
+  "query": "Oh freddled gruntbuggly",
+  "answers": [{
+    "data": [{
+      "url": "http://hitchhikers.wikia.com/wiki/Vogon_poetry",
+      "headline": "Vogon poetry | Hitchhikers | Fandom powered by Wikia"},
+      "description" : "Oh freddled gruntbuggly,: Thy micturations are to me,: As plurdled gabbleblotchits,: On a lurgid bee,: That mordiously hath blurted out,: Its earted jurtles,: Into a ..."],
+    "metadata": {"count": 0},
+    "actions": [
+      {"type":"answer", "select":"random", "phrases":["I found this on the web:"], "mood": "sabta"},
+      {
+      "type": "rss",
+      "count": 3,
+      "title": "headline",
+      "description": "description",
+      "link": "url"
+      }
+    ]
+  }],
+}
+```
+The rendering of such a result should be exactly the same as for the websearch example above. The only difference is, that the client
+must not search for itself, but just shows a search result which is provided by the server. The only thing to do here is an translation
+from the attribute keys within the data object into the opensearch/rss-typical keys.

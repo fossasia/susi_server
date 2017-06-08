@@ -37,7 +37,28 @@ import ai.susi.tools.TimeoutMatcher;
  */
 public class SusiAction {
 
-    public static enum RenderType {answer, table, piechart, rss, self, websearch, anchor, map;}
+    public static enum RenderType {
+        answer,        // show or say a text
+        table,         // show a table
+        piechart,      // show a pie chart
+        rss,           // show a link list with description (aka search result listing)
+        self,          // reflection (internal function)
+        websearch,     // do a web search on the client, show like rss rendering
+        anchor,        // show/say a link
+        map,           // show a map
+        settimer,      // set a timer on the client
+        resettimer,    // un-set a timer on the client
+        recordaudio,   // record audio
+        playaudio,     // play audio (recorded, asset on client or asset from web)
+        recordvideo,   // record a video
+        playvideo,     // play the video (recorded, asset on client or asset from web)
+        takeimage,     // take an image
+        showimage,     // show an image (recorded, asset on client or asset from web)
+        emotion,       // show an emotion (either change tone of tts or change visible style)
+        button,        // push a button (either on the client device or an IoT appliance connected to the client)
+        io             // set an IO status on connected IoT device
+        ;}
+    
     public static enum SelectionType {random, roundrobin;}
     public static enum DialogType {
         answer,    // a sentence which may end a conversation
@@ -114,12 +135,13 @@ public class SusiAction {
      * @param linkName the name of the link column
      * @return the action
      */
-    public static JSONObject rssAction(String titleName, String descriptionName, String linkName) {
+    public static JSONObject rssAction(String titleName, String descriptionName, String linkName, int length) {
         JSONObject json = new JSONObject(true)
             .put("type", RenderType.rss.name())
             .put("title", titleName)
             .put("description", descriptionName)
-            .put("link", linkName);
+            .put("link", linkName)
+            .put("length", length);
         return json;
     }
     
