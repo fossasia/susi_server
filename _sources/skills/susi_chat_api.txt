@@ -217,7 +217,7 @@ This action can be performed by doing a web search on the client side:
     "data": [],
     "metadata": {"count": 0},
     "actions": [
-      {"type":"answer", "select":"random", "phrases":["I found this on the web:"], "mood": "sabta"},
+      {"type": "answer", "expression": "I found this on the web:"},
       {
       "type": "websearch",
       "query": "Oh freddled gruntbuggly",
@@ -269,7 +269,7 @@ The Susi usage of such messages is, that rss feeds can be aquired by the susi_se
       "description" : "Oh freddled gruntbuggly,: Thy micturations are to me,: As plurdled gabbleblotchits,: On a lurgid bee,: That mordiously hath blurted out,: Its earted jurtles,: Into a ..."],
     "metadata": {"count": 0},
     "actions": [
-      {"type":"answer", "select":"random", "phrases":["I found this on the web:"], "mood": "sabta"},
+      {"type": "answer", "expression": "I found this on the web:"},
       {
       "type": "rss",
       "count": 3,
