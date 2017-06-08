@@ -102,11 +102,11 @@ public class SusiAction {
      * @param cols a mapping from column names in th data object to the display names for the client rendering
      * @return the action
      */
-    public static JSONObject tableAction(JSONObject cols, int length) {
+    public static JSONObject tableAction(JSONObject cols, int count) {
         JSONObject json = new JSONObject(true)
             .put("type", RenderType.table.name())
             .put("columns", cols)
-            .put("length", length);
+            .put("count", count);
         return json;
     }
     
@@ -135,13 +135,13 @@ public class SusiAction {
      * @param linkName the name of the link column
      * @return the action
      */
-    public static JSONObject rssAction(String titleName, String descriptionName, String linkName, int length) {
+    public static JSONObject rssAction(String titleName, String descriptionName, String linkName, int count) {
         JSONObject json = new JSONObject(true)
             .put("type", RenderType.rss.name())
             .put("title", titleName)
             .put("description", descriptionName)
             .put("link", linkName)
-            .put("length", length);
+            .put("count", count);
         return json;
     }
     
