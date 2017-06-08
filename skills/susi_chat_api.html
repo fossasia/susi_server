@@ -275,9 +275,9 @@ A typical rendering of such a search results has three lines:</p>
 <ul class="simple">
 <li>a Headline</li>
 <li>a Snippet or Description line (showing the content of the found document where the searched word appears)</li>
-<li>a link.
-A rendering would look like:</li>
+<li>a link.</li>
 </ul>
+<p>A rendering would look like:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="o">&lt;</span><span class="n">ul</span><span class="o">&gt;</span>
   <span class="o">&lt;</span><span class="n">li</span> <span class="n">class</span><span class="o">=</span><span class="s2">&quot;title&quot;</span><span class="o">&gt;</span><span class="n">Vogon</span> <span class="n">poetry</span> <span class="o">|</span> <span class="n">Hitchhikers</span> <span class="o">|</span> <span class="n">Fandom</span> <span class="n">powered</span> <span class="n">by</span> <span class="n">Wikia</span><span class="o">&lt;/</span><span class="n">li</span><span class="o">&gt;</span>
   <span class="o">&lt;</span><span class="n">li</span> <span class="n">class</span><span class="o">=</span><span class="s2">&quot;link&quot;</span><span class="o">&gt;</span><span class="n">http</span><span class="p">:</span><span class="o">//</span><span class="n">hitchhikers</span><span class="o">.</span><span class="n">wikia</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">wiki</span><span class="o">/</span><span class="n">Vogon_poetry</span><span class="o">&lt;/</span><span class="n">li</span><span class="o">&gt;</span>
@@ -298,9 +298,9 @@ A rendering would look like:</li>
 <ul class="simple">
 <li>title</li>
 <li>description</li>
-<li>link
-The Susi usage of such messages is, that rss feeds can be aquired by the susi_server, then translated into objects within the <code class="docutils literal"><span class="pre">data</span></code> array and then should be rendered in the same way as a web search result action (see above). To make this possible, we must denote the name of these three information entities (title, description, link) in the rss action. For example:</li>
+<li>link</li>
 </ul>
+<p>The Susi usage of such messages is, that rss feeds can be aquired by the susi_server, then translated into objects within the <code class="docutils literal"><span class="pre">data</span></code> array and then should be rendered in the same way as a web search result action (see above). To make this possible, we must denote the name of these three information entities (title, description, link) in the rss action. For example:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="p">{</span>
   <span class="s2">&quot;query&quot;</span><span class="p">:</span> <span class="s2">&quot;Oh freddled gruntbuggly&quot;</span><span class="p">,</span>
   <span class="s2">&quot;answers&quot;</span><span class="p">:</span> <span class="p">[{</span>
