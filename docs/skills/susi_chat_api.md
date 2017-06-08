@@ -249,3 +249,36 @@ A rendering would look like:
 ... (more search hits as <ul></ul> tags)
 ```
 The actual presentation can differ from this, i.e. using anchor tags it should be possible to click on the title or description and link to the given link content.
+
+### The `rss` Action
+
+RSS feeds are standardized syndication messages. The same format is used for the opensearch (see http://www.opensearch.org) xml format, which is a standardization for search results. The core of this schema is a list of three entities, which are repeated in every message of an rss feed:
+* title
+* description
+* link
+The Susi usage of such messages is, that rss feeds can be aquired by the susi_server, then translated into objects within the `data` array and then should be rendered in the same way as a web search result action (see above). To make this possible, we must denote the name of these three information entities (title, description, link) in the rss action. For example:
+```
+{
+  "query": "Oh freddled gruntbuggly",
+  "answers": [{
+    "data": [{
+      "url": "http://hitchhikers.wikia.com/wiki/Vogon_poetry",
+      "headline": "Vogon poetry | Hitchhikers | Fandom powered by Wikia"},
+      "description" : "Oh freddled gruntbuggly,: Thy micturations are to me,: As plurdled gabbleblotchits,: On a lurgid bee,: That mordiously hath blurted out,: Its earted jurtles,: Into a ..."],
+    "metadata": {"count": 0},
+    "actions": [
+      {"type":"answer", "select":"random", "phrases":["I found this on the web:"], "mood": "sabta"},
+      {
+      "type": "rss",
+      "count": 3,
+      "title": "headline",
+      "description": "description",
+      "link": "url"
+      }
+    ]
+  }],
+}
+```
+The rendering of such a result should be exactly the same as for the websearch example above. The only difference is, that the client
+must not search for itself, but just shows a search result which is provided by the server. The only thing to do here is an translation
+from the attribute keys within the data object into the opensearch/rss-typical keys.
