@@ -38,6 +38,7 @@ $(document).ready(function()
         },
         error(xhr, ajaxOptions, thrownError) {
             $("#status-box").text(thrownError);
+            document.getElementById('pass').value = '';
             $("#status-box").addClass("error");
         }
     };
@@ -73,3 +74,4 @@ $(document).ready(function()
         return false;
     });
 });
+
