@@ -17,6 +17,14 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.io.IOException;
 
+/**
+ * Created by chetankaushik on 09/06/17.
+ * This Service Adds a API Endpoint to return history of an expert
+ * This accepts 4 parameters: - Model, Group, Language and Expert Name
+ * Can be tested on : -
+ * http://127.0.0.1:4000/cms/getHistory.json?model=general&group=knowledge&language=en&expert=bitcoin
+ */
+
 public class ExpertHistoryService extends AbstractAPIHandler implements APIHandler {
 
     private static final long serialVersionUID = 6976713190365750955L;
