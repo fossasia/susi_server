@@ -21,6 +21,8 @@ package ai.susi;
 
 import org.eclipse.jetty.util.log.Log;
 
+import ai.susi.tools.TimeoutMatcher;
+
 
 /**
  * The caretaker class is a concurrent thread which does peer-to-peer operations
@@ -51,6 +53,8 @@ public class Caretaker extends Thread {
             
             // sleep a bit to prevent that the DoS limit fires at backend server
             try {Thread.sleep(busy ? 1000 : 5000);} catch (InterruptedException e) {}
+            TimeoutMatcher.terminateAll();
+            
             if (!this.shallRun) break beat;
             busy = false;
             
