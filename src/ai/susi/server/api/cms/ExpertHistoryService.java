@@ -21,8 +21,9 @@ public class ExpertHistoryService extends AbstractAPIHandler implements APIHandl
 
     private static final long serialVersionUID = 6976713190365750955L;
     int count = 0;
-    JSONObject commit ;
+    JSONObject commit;
     JSONArray commitsArray;
+
     @Override
     public BaseUserRole getMinimalBaseUserRole() {
         return BaseUserRole.ANONYMOUS;
@@ -58,7 +59,7 @@ public class ExpertHistoryService extends AbstractAPIHandler implements APIHandl
         String expert_name = call.get("expert", "wikipedia");
         File expert = new File(language, expert_name + ".txt");
         commitsArray = new JSONArray();
-        String path =  expert.getPath().replace(DAO.model_watch_dir.toString(), "models");
+        String path = expert.getPath().replace(DAO.model_watch_dir.toString(), "models");
         //Add to git
         FileRepositoryBuilder builder = new FileRepositoryBuilder();
         Repository repository = null;
@@ -75,16 +76,15 @@ public class ExpertHistoryService extends AbstractAPIHandler implements APIHandl
                 logs = git.log()
                         .addPath(path)
                         .call();
-                int i=0;
+                int i = 0;
                 for (RevCommit rev : logs) {
-                    System.out.println("Commit: " + rev /* + ", name: " + rev.getName() + ", id: " + rev.getId().getName() */);
                     commit = new JSONObject();
-                    commit.put("commitRev",rev);
-                    commit.put("commitName",rev.getName());
-                    commit.put("commitID",rev.getId().getName());
-                    commit.put("commit_message",rev.getShortMessage());
+                    commit.put("commitRev", rev);
+                    commit.put("commitName", rev.getName());
+                    commit.put("commitID", rev.getId().getName());
+                    commit.put("commit_message", rev.getShortMessage());
 
-                    commitsArray.put(i,commit);
+                    commitsArray.put(i, commit);
                     i++;
                 }
 
@@ -95,6 +95,6 @@ public class ExpertHistoryService extends AbstractAPIHandler implements APIHandl
             e.printStackTrace();
         }
 
-        return  new ServiceResponse(commitsArray);
+        return new ServiceResponse(commitsArray);
     }
 }
