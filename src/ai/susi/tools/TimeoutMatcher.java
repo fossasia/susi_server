@@ -19,16 +19,21 @@
 
 package ai.susi.tools;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.SynchronousQueue;
+import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.regex.Matcher;
+
+import ai.susi.DAO;
 
 /**
  * A timeout matcher is a workaround to non-terminating matcher methods.
@@ -40,7 +45,8 @@ import java.util.regex.Matcher;
  */
 public class TimeoutMatcher {
 
-    private final static ExecutorService EXECUTOR = Executors.newCachedThreadPool();
+    private final static ExecutorService EXECUTOR = new ThreadPoolExecutor(
+            0, 1000, 10L, TimeUnit.SECONDS, new SynchronousQueue<Runnable>());
     private final static Map<Long, Thread> computing = new ConcurrentHashMap<>();
     
     private final Matcher matcher;
@@ -56,8 +62,12 @@ public class TimeoutMatcher {
                 Thread t = Thread.currentThread();
                 t.setName("TimeoutMatcher: '" + TimeoutMatcher.this.matcher.pattern() + "'");
                 computing.put(t.getId(), t);
-                boolean matches = TimeoutMatcher.this.matcher.matches();
-                computing.remove(t.getId());
+                boolean matches = false;
+                try {
+                    matches = TimeoutMatcher.this.matcher.matches();
+                } catch (Throwable e) {} finally {
+                    computing.remove(t.getId());
+                }
                 return matches;
             }
         });
@@ -76,9 +86,12 @@ public class TimeoutMatcher {
                 Thread t = Thread.currentThread();
                 t.setName("TimeoutMatcher: '" + TimeoutMatcher.this.matcher.pattern() + "'");
                 computing.put(t.getId(), t);
-                Thread.currentThread().setName("TimeoutMatcher: " + TimeoutMatcher.this.matcher.pattern());
-                boolean find = TimeoutMatcher.this.matcher.find();
-                computing.remove(t.getId());
+                boolean find = false;
+                try {
+                    find = TimeoutMatcher.this.matcher.find();
+                } catch (Throwable e) {} finally {
+                    computing.remove(t.getId());
+                }
                 return find;
             }
         });
@@ -90,9 +103,14 @@ public class TimeoutMatcher {
     }
     
     public static void terminateAll() {
-        for (Thread job: computing.values()) try {
-            job.interrupt();
-        } catch (Throwable e) {}
-        computing.clear();
+        List<Long> deleteIds = new ArrayList<>();
+        computing.values().forEach(job -> {
+            if (job.isAlive()) try {
+                job.interrupt();
+                DAO.log("interrupting TimeoutMatcher: '" + job.getName() + "'");
+            } catch (Throwable e) {}
+            else deleteIds.add(job.getId());
+        });
+        deleteIds.forEach(id -> computing.remove(id));
     }
 }
