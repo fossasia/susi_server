@@ -26,7 +26,7 @@
     },
     "yacy":{
       "example":"http://127.0.0.1:4000/susi/console.json?q=%22SELECT%20title,%20link%20FROM%20yacy%20WHERE%20query=%27java%27;%22",
-      "url":"http://yacy.searchlab.eu/yacysearch.json?query=",
+      "url":"http://yacy.searchlab.eu/solr/select?wt=yjson&q=",
       "test":"java",
       "parser":"json",
       "path":"$.channels[0].items",

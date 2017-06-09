@@ -23,6 +23,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.Set;
 import java.util.regex.Pattern;
 
@@ -75,16 +76,19 @@ public class ConsoleService extends AbstractAPIHandler implements APIHandler {
     public static void addGenericConsole(String serviceName, String serviceURL, String path) {
         dbAccess.put(Pattern.compile("SELECT +?(.*?) +?FROM +?" + serviceName + " +?WHERE +?query ??= ??'(.*?)' ??;"), (flow, matcher) -> {
             SusiThought json = new SusiThought();
+            byte[] b = new byte[0];
             try {
                 String testquery = matcher.group(2);
-                JSONTokener serviceResponse = new JSONTokener(new ByteArrayInputStream(loadData(serviceURL, testquery)));
+                b = loadData(serviceURL, testquery);
+                JSONTokener serviceResponse = new JSONTokener(new ByteArrayInputStream(b));
                 JSONArray data = JsonPath.parse(serviceResponse, path);
                 json.setQuery(testquery);
                 SusiTransfer transfer = new SusiTransfer(matcher.group(1));
                 if (data != null) json.setData(transfer.conclude(data));
                 json.setHits(json.getCount());
             } catch (Throwable e) {
-                //e.printStackTrace(); // probably a time-out
+                DAO.severe(e);
+                DAO.severe(new String(b, StandardCharsets.UTF_8));
             }
             return json;
         });
