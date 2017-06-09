@@ -19,7 +19,7 @@ import java.io.IOException;
 
 public class ExpertHistoryService extends AbstractAPIHandler implements APIHandler {
 
-    private static final long serialVersionUID = 18344224L;
+    private static final long serialVersionUID = 6976713190365750955L;
     int count = 0;
     JSONObject commit ;
     JSONArray commitsArray;
