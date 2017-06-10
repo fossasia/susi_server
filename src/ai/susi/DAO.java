@@ -64,8 +64,7 @@ import org.eclipse.jetty.util.log.Log;
 public class DAO {
 
     private final static String ACCESS_DUMP_FILE_PREFIX = "access_";
-    
-    public  static File conf_dir, bin_dir, html_dir, data_dir, susi_memory_dir, model_watch_dir,susi_skill_repo;
+    public  static File conf_dir, bin_dir, html_dir, data_dir, susi_memory_dir, model_watch_dir, susi_skill_repo;
     private static File external_data, assets, dictionaries;
     public static Settings public_settings, private_settings;
     public  static AccessTracker access;
