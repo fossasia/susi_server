@@ -3,6 +3,10 @@ package ai.susi.server.api.cms;
 import ai.susi.DAO;
 import ai.susi.json.JsonObjectWithDefault;
 import ai.susi.server.*;
+import org.eclipse.jgit.api.Git;
+import org.eclipse.jgit.api.errors.GitAPIException;
+import org.eclipse.jgit.lib.Repository;
+import org.eclipse.jgit.storage.file.FileRepositoryBuilder;
 import org.json.JSONObject;
 
 import javax.servlet.http.HttpServletResponse;
@@ -46,6 +50,9 @@ public class ModifyExpertService extends AbstractAPIHandler implements APIHandle
         File language = new File(group, language_name);
         String expert_name = call.get("expert", null);
         File expert = new File(language, expert_name + ".txt");
+
+        String commit_message = call.get("changelog", null);
+
         // Checking for file existence
         if(!expert.exists()){
             JSONObject error = new JSONObject();
@@ -64,6 +71,32 @@ public class ModifyExpertService extends AbstractAPIHandler implements APIHandle
             file.write(content);
             JSONObject success = new JSONObject();
             success.put("accepted", true);
+
+            //Add to git
+            FileRepositoryBuilder builder = new FileRepositoryBuilder();
+            Repository repository = null;
+            try {
+                repository = builder.setGitDir((DAO.susi_skill_repo))
+                        .readEnvironment() // scan environment GIT_* variables
+                        .findGitDir() // scan up the file system tree
+                        .build();
+
+                try (Git git = new Git(repository)) {
+                    git.add()
+                            .addFilepattern(expert_name)
+                            .call();
+                    // and then commit the changes
+                    git.commit()
+                            .setMessage("Modified:" + expert_name + "- Changes "+ commit_message)
+                            .call();
+
+                } catch (GitAPIException e) {
+                    e.printStackTrace();
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
             return new ServiceResponse(success);
         } catch (IOException e) {
             e.printStackTrace();
