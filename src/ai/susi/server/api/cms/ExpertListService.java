@@ -55,11 +55,7 @@ public class ExpertListService extends AbstractAPIHandler implements APIHandler 
         File[] filesInFolder = folder.listFiles();
         if (filesInFolder != null) {
             for (final File fileEntry : filesInFolder) {
-                if (fileEntry.isDirectory()) {
-//                    System.out.println("DIR : "+fileEntry.getName());
-//                    listFilesForFolder(fileEntry,fileList);
-                } else {
-                    System.out.println("FILE : "+fileEntry.getName());
+                if (!fileEntry.isDirectory()) {
                     fileList.add(fileEntry.getName()+"");
                 }
             }

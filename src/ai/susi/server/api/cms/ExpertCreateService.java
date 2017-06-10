@@ -46,15 +46,17 @@ public class ExpertCreateService  extends AbstractAPIHandler implements APIHandl
         String expertName = expert.getName();
         JSONObject json = new JSONObject(true);
 
+        json.put("accepted", false);
         if (expert.exists()) {
-            json.put("Error","The '" + expert + "' already exists.");
+            json.put("message", "The '" + expert + "' already exists.");
         } else {
             try {
                 expert.createNewFile();
                 json.put("created_file", expertName);
+                json.put("accepted", true);
             } catch (IOException e) {
                 e.printStackTrace();
-                json.put("Error","Unable to create expert.");
+                json.put("message", "Unable to create expert.");
             }
         }
 

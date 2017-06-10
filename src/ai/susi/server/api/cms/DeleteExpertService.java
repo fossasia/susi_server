@@ -51,6 +51,7 @@ public class DeleteExpertService extends AbstractAPIHandler implements APIHandle
         String ExpertName = expert.getName();
         JSONObject json = new JSONObject(true);
 
+        json.put("accepted", false);
         if (expert.exists()) {
             expert.delete();
             json.put("deleted_file", ExpertName);
@@ -73,6 +74,8 @@ public class DeleteExpertService extends AbstractAPIHandler implements APIHandle
                             .setMessage("Deleted " + expert_name)
                             .call();
 
+                    json.put("accepted", true);
+                    json.put("message", "Deleted " + expert_name);
                 } catch (GitAPIException e) {
                     e.printStackTrace();
                 }
@@ -81,7 +84,7 @@ public class DeleteExpertService extends AbstractAPIHandler implements APIHandle
             }
 
         } else {
-            json.put("Error", "Cannot find '" + expert + "' ('" + expert.getAbsolutePath() + "')");
+            json.put("message", "Cannot find '" + expert + "' ('" + expert.getAbsolutePath() + "')");
         }
 
         return new ServiceResponse(json);

@@ -9,7 +9,6 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.Objects;
 
 /**
  * Created by chetankaushik on 07/06/17.
@@ -46,27 +45,31 @@ public class ModifyExpertService extends AbstractAPIHandler implements APIHandle
         File language = new File(group, language_name);
         String expert_name = call.get("expert", null);
         File expert = new File(language, expert_name + ".txt");
+        
         // Checking for file existence
-        if(!expert.exists()){
-            JSONObject error = new JSONObject();
-            error.put("accepted", false);
-            return new ServiceResponse(error);
+        JSONObject json = new JSONObject();
+        json.put("accepted", false);
+        if (!expert.exists()){
+            json.put("message", "expert does not exist");
+            return new ServiceResponse(json);
         }
+        
         // Reading Content for expert
         String content = call.get("content", "");
-        if(Objects.equals(content, "")){
-            JSONObject error = new JSONObject();
-            error.put("accepted", false);
-            return new ServiceResponse(error);
+        if (content.length() == 0) {
+            json.put("message", "modification is empty");
+            return new ServiceResponse(json);
         }
+        
         // Writing to File
         try (FileWriter file = new FileWriter(expert)) {
             file.write(content);
-            JSONObject success = new JSONObject();
-            success.put("accepted", true);
-            return new ServiceResponse(success);
+            json.put("accepted", true);
+            return new ServiceResponse(json);
         } catch (IOException e) {
             e.printStackTrace();
+            json.put("message", "error: " + e.getMessage());
+            
         }
         return null;
     }
