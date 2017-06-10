@@ -45,7 +45,7 @@ public class ExpertGetJsonService extends AbstractAPIHandler implements APIHandl
 
     @Override
     public String getAPIPath() {
-        return "/cms/getexpert.json";
+        return "/cms/getExpert.json";
     }
     
     @Override

@@ -8,10 +8,6 @@ import org.json.JSONObject;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.File;
-import java.io.FilenameFilter;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.util.Arrays;
 
 /**
  * Servlet to load an model from the expert database
@@ -31,7 +27,7 @@ public class ModelListService extends AbstractAPIHandler implements APIHandler  
 
     @Override
     public String getAPIPath() {
-        return "/cms/getmodel.json";
+        return "/cms/getModel.json";
     }
 
     @Override
