@@ -92,7 +92,7 @@ public class ModifyExpertService extends AbstractAPIHandler implements APIHandle
                             .call();
                     // and then commit the changes
                     git.commit()
-                            .setMessage("Modified:" + expert_name + "- Changes "+ commit_message)
+                            .setMessage(commit_message)
                             .call();
 
                 } catch (GitAPIException e) {
