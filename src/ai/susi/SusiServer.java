@@ -517,6 +517,7 @@ public class SusiServer {
         servletHandler.addServlet(AccessServlet.class, "/aaa/access.txt");
         servletHandler.addServlet(Sitemap.class, "/sitemap.xml");
         servletHandler.addServlet(ThreaddumpServlet.class, "/threaddump.txt");
+        servletHandler.addServlet(DownloadDataSettings.class, "/data/settings");
         
         // aggregation api
         servletHandler.addServlet(GenericScraper.class, "/susi/genericscraper.json");
