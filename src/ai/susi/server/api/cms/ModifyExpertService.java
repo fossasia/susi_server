@@ -53,17 +53,20 @@ public class ModifyExpertService extends AbstractAPIHandler implements APIHandle
         File expert = new File(language, expert_name + ".txt");
 
         String commit_message = call.get("changelog", null);
+
         if(commit_message==null){
             JSONObject error = new JSONObject();
             error.put("accepted", false);
             return new ServiceResponse(error);
         }
+
         // Checking for file existence
         if(!expert.exists()){
             JSONObject error = new JSONObject();
             error.put("accepted", false);
             return new ServiceResponse(error);
         }
+
         // Reading Content for expert
         String content = call.get("content", "");
         if(Objects.equals(content, "")){
@@ -71,6 +74,7 @@ public class ModifyExpertService extends AbstractAPIHandler implements APIHandle
             error.put("accepted", false);
             return new ServiceResponse(error);
         }
+
         // Writing to File
         try (FileWriter file = new FileWriter(expert)) {
             file.write(content);
@@ -81,6 +85,7 @@ public class ModifyExpertService extends AbstractAPIHandler implements APIHandle
             FileRepositoryBuilder builder = new FileRepositoryBuilder();
             Repository repository = null;
             try {
+
                 repository = builder.setGitDir((DAO.susi_skill_repo))
                         .readEnvironment() // scan environment GIT_* variables
                         .findGitDir() // scan up the file system tree
@@ -101,12 +106,11 @@ public class ModifyExpertService extends AbstractAPIHandler implements APIHandle
             } catch (IOException e) {
                 e.printStackTrace();
             }
-
             return new ServiceResponse(success);
         } catch (IOException e) {
             e.printStackTrace();
         }
         return null;
     }
-
+    
 }
