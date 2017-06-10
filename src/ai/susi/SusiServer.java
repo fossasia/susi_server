@@ -464,6 +464,7 @@ public class SusiServer {
                 SignUpService.class,
                 TopMenuService.class,
                 ExpertConvertJsonToTxtService.class,
+                GroupListService.class,
                 ExpertConvertTxtToJsonService.class,
                 ExpertGetJsonService.class,
                 ExpertGetTxtService.class,
@@ -478,6 +479,7 @@ public class SusiServer {
                 JsonPathTestService.class,
                 DeleteExpertService.class,
                 ModifyExpertService.class,
+                ExpertHistoryService.class,
 
                 // susi search aggregation services
                 ConsoleService.class,
