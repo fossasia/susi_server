@@ -52,7 +52,11 @@ public class ModifyExpertService extends AbstractAPIHandler implements APIHandle
         File expert = new File(language, expert_name + ".txt");
 
         String commit_message = call.get("changelog", null);
-
+        if(commit_message==null){
+            JSONObject error = new JSONObject();
+            error.put("accepted", false);
+            return new ServiceResponse(error);
+        }
         // Checking for file existence
         if(!expert.exists()){
             JSONObject error = new JSONObject();
