@@ -12,7 +12,7 @@ import javax.servlet.http.HttpServletResponse;
 public class DownloadDataSettings extends AbstractAPIHandler implements APIHandler{
     @Override
     public String getAPIPath() {
-        return "";
+        return "/data/settings";
     }
 
     @Override
