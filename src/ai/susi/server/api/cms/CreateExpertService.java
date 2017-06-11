@@ -3,6 +3,10 @@ package ai.susi.server.api.cms;
 import ai.susi.DAO;
 import ai.susi.json.JsonObjectWithDefault;
 import ai.susi.server.*;
+import org.eclipse.jgit.api.Git;
+import org.eclipse.jgit.api.errors.GitAPIException;
+import org.eclipse.jgit.lib.Repository;
+import org.eclipse.jgit.storage.file.FileRepositoryBuilder;
 import org.json.JSONObject;
 
 import javax.servlet.http.HttpServletResponse;
@@ -14,7 +18,7 @@ import java.io.IOException;
  * This Service creates an expert as per given query.
  * http://localhost:4000/cms/createExpert.txt?model=general&group=knowledge&language=en&expert=whois
  */
-public class ExpertCreateService  extends AbstractAPIHandler implements APIHandler {
+public class CreateExpertService extends AbstractAPIHandler implements APIHandler {
 
 
     private static final long serialVersionUID = 2461878194569824151L;
@@ -54,6 +58,7 @@ public class ExpertCreateService  extends AbstractAPIHandler implements APIHandl
                 expert.createNewFile();
                 json.put("created_file", expertName);
                 json.put("accepted", true);
+
             } catch (IOException e) {
                 e.printStackTrace();
                 json.put("message", "Unable to create expert.");
