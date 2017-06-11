@@ -1,77 +1,32 @@
 package ai.susi.server.api.aaa;
 
-import ai.susi.DAO;
+import ai.susi.json.JsonObjectWithDefault;
+import ai.susi.server.*;
+import org.json.JSONObject;
 
-import javax.servlet.ServletException;
-import javax.servlet.ServletOutputStream;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.*;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipOutputStream;
 
 /**
  * Created by dravit on 10/6/17.
  */
-public class DownloadDataSettings extends HttpServlet{
-
-    public static final String FILE_SEPARATOR = System.getProperty("file.separator");
-
-    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException{
-        doGet(request, response);
+public class DownloadDataSettings extends AbstractAPIHandler implements APIHandler{
+    @Override
+    public String getAPIPath() {
+        return "";
     }
 
-    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException{
-
-        try{
-            File settings = new File(DAO.data_dir.getPath()+"/settings");
-            String path = settings.getPath();
-            System.out.println(path);
-            String[] files = settings.list();
-            System.out.println(files.length);
-
-            byte[] zip = zipFiles(settings, files);
-
-
-            ServletOutputStream sos = response.getOutputStream();
-            response.setContentType("application/zip");
-            response.setHeader("Content-Disposition", "attachment; filename=settings.zip");
-
-            sos.write(zip);
-            sos.flush();
-        }
-        catch (Exception e){
-
-        }
-
+    @Override
+    public BaseUserRole getMinimalBaseUserRole() {
+        return null;
     }
 
-    private byte[] zipFiles(File settingsDir, String[] files) throws IOException{
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        ZipOutputStream zos = new ZipOutputStream(baos);
-        byte bytes[] = new byte[2048];
+    @Override
+    public JSONObject getDefaultPermissions(BaseUserRole baseUserRole) {
+        return null;
+    }
 
-        for (String fileName : files){
-            FileInputStream fis = new FileInputStream(settingsDir.getPath() +
-                    DownloadDataSettings.FILE_SEPARATOR + fileName);
-            BufferedInputStream bis = new BufferedInputStream(fis);
-
-            zos.putNextEntry(new ZipEntry(fileName));
-
-            int bytesRead;
-            while ((bytesRead = bis.read(bytes)) != -1) {
-                zos.write(bytes, 0, bytesRead);
-            }
-            zos.closeEntry();
-            bis.close();
-            fis.close();
-        }
-        zos.flush();
-        baos.flush();
-        zos.close();
-        baos.close();
-
-        return baos.toByteArray();
+    @Override
+    public ServiceResponse serviceImpl(Query post, HttpServletResponse response, Authorization rights, JsonObjectWithDefault permissions) throws APIException {
+        return null;
     }
 }
