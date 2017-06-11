@@ -24,7 +24,9 @@ public class CreateExpertService extends AbstractAPIHandler implements APIHandle
     private static final long serialVersionUID = 2461878194569824151L;
 
     @Override
-    public BaseUserRole getMinimalBaseUserRole() { return BaseUserRole.ANONYMOUS; }
+    public BaseUserRole getMinimalBaseUserRole() {
+        return BaseUserRole.ANONYMOUS;
+    }
 
     @Override
     public JSONObject getDefaultPermissions(BaseUserRole baseUserRole) {
@@ -58,10 +60,11 @@ public class CreateExpertService extends AbstractAPIHandler implements APIHandle
                 expert.createNewFile();
                 json.put("created_file", expertName);
                 json.put("accepted", true);
-                //Add to git
+                // Add to git
                 FileRepositoryBuilder builder = new FileRepositoryBuilder();
                 Repository repository = null;
                 try {
+
                     repository = builder.setGitDir((DAO.susi_skill_repo))
                             .readEnvironment() // scan environment GIT_* variables
                             .findGitDir() // scan up the file system tree
@@ -71,6 +74,7 @@ public class CreateExpertService extends AbstractAPIHandler implements APIHandle
                         git.add()
                                 .addFilepattern(expert_name)
                                 .call();
+                        // commit the changes
                         git.commit()
                                 .setMessage("Created " + expert_name)
                                 .call();
