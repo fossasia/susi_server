@@ -58,7 +58,29 @@ public class CreateExpertService extends AbstractAPIHandler implements APIHandle
                 expert.createNewFile();
                 json.put("created_file", expertName);
                 json.put("accepted", true);
+                //Add to git
+                FileRepositoryBuilder builder = new FileRepositoryBuilder();
+                Repository repository = null;
+                try {
+                    repository = builder.setGitDir((DAO.susi_skill_repo))
+                            .readEnvironment() // scan environment GIT_* variables
+                            .findGitDir() // scan up the file system tree
+                            .build();
 
+                    try (Git git = new Git(repository)) {
+                        git.add()
+                                .addFilepattern(expert_name)
+                                .call();
+                        git.commit()
+                                .setMessage("Created " + expert_name)
+                                .call();
+
+                    } catch (GitAPIException e) {
+                        e.printStackTrace();
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             } catch (IOException e) {
                 e.printStackTrace();
                 json.put("message", "Unable to create expert.");
