@@ -45,7 +45,7 @@ public class ExpertPostJsonService extends AbstractAPIHandler implements APIHand
 
     @Override
     public String getAPIPath() {
-        return "/cms/postexpert.json";
+        return "/cms/postExpert.json";
     }
     
     @Override

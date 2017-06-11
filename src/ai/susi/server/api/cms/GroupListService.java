@@ -19,7 +19,7 @@ import java.io.FilenameFilter;
 public class GroupListService extends AbstractAPIHandler implements APIHandler {
     @Override
     public String getAPIPath() {
-        return "/cms/getgroups.json";
+        return "/cms/getGroups.json";
     }
 
     @Override
