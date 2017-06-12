@@ -7,7 +7,7 @@
   "alternativeHeadline":"Change User Roles",
   "applicationCategory":"Accounts API",
   "applicationSubCategory":"account operations",
-  "operatingSystem":"http://loklak.org",
+  "operatingSystem":"http://api.susi.ai",
   "author":{
     "@type":"Person",
     "name":"Chetan Kaushik",
