@@ -8,11 +8,12 @@ import javax.servlet.http.HttpServletResponse;
 
 /**
  * Created by dravit on 12/6/17.
+ * Servlet to upload file to data/settings folder
  */
 public class UploadDataSettings extends AbstractAPIHandler implements APIHandler{
     @Override
     public String getAPIPath() {
-        return "";
+        return "/data/settings/upload";
     }
 
     @Override
@@ -27,6 +28,7 @@ public class UploadDataSettings extends AbstractAPIHandler implements APIHandler
 
     @Override
     public ServiceResponse serviceImpl(Query post, HttpServletResponse response, Authorization rights, JsonObjectWithDefault permissions) throws APIException {
+
         return null;
     }
 }
