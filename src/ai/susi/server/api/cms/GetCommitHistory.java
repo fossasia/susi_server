@@ -22,8 +22,6 @@ import java.io.IOException;
  */
 public class GetCommitHistory extends AbstractAPIHandler implements APIHandler {
     private static final long serialVersionUID = -5686523277755750923L;
-    JSONObject commit = new JSONObject();
-    JSONArray commitsArray =  new JSONArray();
 
 
     @Override
@@ -43,8 +41,9 @@ public class GetCommitHistory extends AbstractAPIHandler implements APIHandler {
 
     @Override
     public ServiceResponse serviceImpl(Query call, HttpServletResponse response, Authorization rights, final JsonObjectWithDefault permissions) throws APIException {
-
-
+        JSONObject commit;
+        JSONArray commitsArray;
+        commitsArray = new JSONArray();
         String path = DAO.susi_skill_repo.toString();
         //Add to git
         FileRepositoryBuilder builder = new FileRepositoryBuilder();
