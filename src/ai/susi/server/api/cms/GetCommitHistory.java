@@ -16,7 +16,7 @@ import java.io.IOException;
 
 /**
  * Created by chetankaushik on 12/06/17.
- * This Serlet gives the complete commit history of the susi skill repository
+ * This Servlet gives the complete commit history of the susi skill repository
  * Cam be tested at: -
  * 127.0.0.1:4000/aaa/getCommitHistory.json
  */
