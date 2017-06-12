@@ -13,18 +13,15 @@ import org.json.JSONObject;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
 
 /**
  * Created by chetankaushik on 12/06/17.
  */
 public class GetCommitHistory extends AbstractAPIHandler implements APIHandler {
+    private static final long serialVersionUID = -5686523277755750923L;
     JSONObject commit = new JSONObject();
     JSONArray commitsArray =  new JSONArray();
 
-    private static final long serialVersionUID = 4538304346942632187L;
 
     @Override
     public String getAPIPath() {
