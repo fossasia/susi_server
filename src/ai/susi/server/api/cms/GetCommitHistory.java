@@ -28,7 +28,7 @@ public class GetCommitHistory extends AbstractAPIHandler implements APIHandler {
 
     @Override
     public String getAPIPath() {
-        return "/aaa/getcommithistory.json";
+        return "/aaa/getCommitHistory.json";
     }
 
     @Override
