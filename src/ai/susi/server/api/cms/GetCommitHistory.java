@@ -17,8 +17,8 @@ import java.io.IOException;
 /**
  * Created by chetankaushik on 12/06/17.
  * This Servlet gives the complete commit history of the susi skill repository
- * Cam be tested at: -
- * 127.0.0.1:4000/aaa/getCommitHistory.json
+ * Can be tested at: -
+ * 127.0.0.1:4000/cms/getCommitHistory.json
  */
 public class GetCommitHistory extends AbstractAPIHandler implements APIHandler {
     private static final long serialVersionUID = -5686523277755750923L;
@@ -26,7 +26,7 @@ public class GetCommitHistory extends AbstractAPIHandler implements APIHandler {
 
     @Override
     public String getAPIPath() {
-        return "/aaa/getCommitHistory.json";
+        return "/cms/getCommitHistory.json";
     }
 
     @Override
