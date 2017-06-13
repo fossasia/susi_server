@@ -56,7 +56,7 @@ public class ExpertGetTxtService extends AbstractAPIHandler implements APIHandle
 
     @Override
     public String getAPIPath() {
-        return "/cms/getexpert.txt";
+        return "/cms/getExpert.txt";
     }
     
     @Override
