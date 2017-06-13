@@ -12,6 +12,7 @@ import java.io.File;
 /**
  * Created by dravit on 14/6/17.
  * Servlet to get list of all the files present in data/settings directory
+ * test locally at http://127.0.0.1:4000/aaa/getAllFiles
  */
 public class GetAAAFiles extends AbstractAPIHandler implements APIHandler{
     @Override
