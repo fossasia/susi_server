@@ -18,7 +18,7 @@ public class GetAAAFiles extends AbstractAPIHandler implements APIHandler{
 
     @Override
     public BaseUserRole getMinimalBaseUserRole() {
-        return null;
+        return BaseUserRole.ADMIN;
     }
 
     @Override
