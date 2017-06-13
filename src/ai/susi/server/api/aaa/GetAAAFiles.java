@@ -1,10 +1,13 @@
 package ai.susi.server.api.aaa;
 
+import ai.susi.DAO;
 import ai.susi.json.JsonObjectWithDefault;
 import ai.susi.server.*;
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 import javax.servlet.http.HttpServletResponse;
+import java.io.File;
 
 /**
  * Created by dravit on 14/6/17.
@@ -28,6 +31,12 @@ public class GetAAAFiles extends AbstractAPIHandler implements APIHandler{
 
     @Override
     public ServiceResponse serviceImpl(Query post, HttpServletResponse response, Authorization rights, JsonObjectWithDefault permissions) throws APIException {
-        return null;
+
+        String path = DAO.data_dir.getPath()+"/settings/";
+        File settings = new File(path);
+        String[] files = settings.list();
+        System.out.println(files.length);
+        JSONArray fileArray = new JSONArray(files);
+        return new ServiceResponse(fileArray);
     }
 }
