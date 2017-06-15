@@ -1,6 +1,6 @@
 {
 	"name": "Susi Server",
-	"description": "Artificial Inteligence - Chat bot",
+	"description": "Artificial Inteligence for Chatbots",
 	"logo": "https://github.com/fossasia/susi_server/blob/development/html/images/brand.png",
 	"website": "http://api.susi.ai",
 	"repository": "https://github.com/fossasia/susi_server.git",
