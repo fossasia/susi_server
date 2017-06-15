@@ -79,8 +79,8 @@ public class PasswordResetService extends AbstractAPIHandler implements APIHandl
 			throw new APIException(400, "invalid password");
 		}
 
-		if (DAO.authentication.has(emailcred.toString())) {
-			Authentication emailauth = new Authentication(emailcred, DAO.authentication);
+		if (DAO.hasAuthentication(emailcred)) {
+			Authentication emailauth = DAO.getAuthentication(emailcred);
 			String salt = createRandomString(20);
 			emailauth.remove("salt");
 			emailauth.remove("passwordHash");

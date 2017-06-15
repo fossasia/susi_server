@@ -39,6 +39,7 @@ public class SusiArgument implements Iterable<SusiThought> {
 
     private final ArrayList<SusiThought> recall;
     private final List<SusiAction> actions;
+    private final List<String> experts;
     
     /**
      * Create an empty argument
@@ -46,6 +47,7 @@ public class SusiArgument implements Iterable<SusiThought> {
     public SusiArgument() {
         this.recall = new ArrayList<>();
         this.actions = new ArrayList<>();
+        this.experts = new ArrayList<>();
     }
     
     public SusiArgument clone() {
@@ -204,6 +206,17 @@ public class SusiArgument implements Iterable<SusiThought> {
     }
 
     /**
+     * An argument is constructed using expert which may contain a set of skills.
+     * This method should be called with a privacy-fixed path to the expert file.
+     * @param expert a relative path to the expert
+     * @return the argument
+     */
+    public SusiArgument addExpert(final String expert) {
+    	this.experts.add(expert);
+    	return this;
+    }
+    
+    /**
      * Compute a finding on an argument: this will cause the execution of all actions of an argument.
      * Then the argument is mind-melted which creates a new thought. The findings from all actions of the
      * argument are attached as 'actions' object: a list of transformed actions where the original action
@@ -220,6 +233,7 @@ public class SusiArgument implements Iterable<SusiThought> {
         // therefore the mindmeld must be done after action application to get those latest changes
         SusiThought answer = this.mindmeld(true);
         answer.put("actions", actions);
+        answer.put("experts", this.getExperts());
         return answer;
     }
     
@@ -230,6 +244,10 @@ public class SusiArgument implements Iterable<SusiThought> {
     public List<SusiAction> getActions() {
         return this.actions;
     }
+    
+    public List<String> getExperts() {
+    	return this.experts;
+    }
 
     public JSONObject toJSON() {
         JSONObject json = new JSONObject(true);
@@ -237,8 +255,11 @@ public class SusiArgument implements Iterable<SusiThought> {
         this.recall.forEach(thought -> recallJson.put(thought));
         JSONArray actionsJson = new JSONArray();
         this.actions.forEach(action -> actionsJson.put(action.toJSONClone()));
+        JSONArray expertJson = new JSONArray();
+        this.experts.forEach(expert -> expertJson.put(expert));
         json.put("recall", recallJson);
         json.put("action", actionsJson);
+        json.put("expert", expertJson);
         return json;
     }
 

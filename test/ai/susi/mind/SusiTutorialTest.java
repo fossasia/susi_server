@@ -4,6 +4,7 @@ import static org.junit.Assert.*;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
+import java.io.File;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.FileSystems;
@@ -78,7 +79,7 @@ public class SusiTutorialTest {
                 BufferedReader br = getTestReader();
                 JSONObject lesson = SusiExpert.readEzDExpert(br);
                 System.out.println(lesson.toString(2));
-                DAO.susi.learn(lesson);
+                DAO.susi.learn(lesson, new File("."));
                 br.close();
             } catch(Exception e){
                 e.printStackTrace();
