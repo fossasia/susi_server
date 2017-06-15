@@ -14,7 +14,7 @@ import java.io.File;
  * Servlet to get list of all the files present in data/settings directory
  * test locally at http://127.0.0.1:4000/aaa/getAllFiles
  */
-public class GetAAAFiles extends AbstractAPIHandler implements APIHandler{
+public class ListSettingsService extends AbstractAPIHandler implements APIHandler{
     @Override
     public String getAPIPath() {
         return "/aaa/getAllFiles";
