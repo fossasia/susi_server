@@ -55,7 +55,6 @@ public class ListSettingsService extends AbstractAPIHandler implements APIHandle
         String path = DAO.data_dir.getPath()+"/settings/";
         File settings = new File(path);
         String[] files = settings.list();
-        System.out.println(files.length);
         JSONArray fileArray = new JSONArray(files);
         return new ServiceResponse(fileArray);
     }
