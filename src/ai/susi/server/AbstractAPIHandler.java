@@ -101,14 +101,14 @@ public abstract class AbstractAPIHandler extends HttpServlet implements APIHandl
 
         // user accounting: we maintain static and persistent user data; we again search the accounts using the usder identity string
         //JSONObject accounting_persistent_obj = DAO.accounting_persistent.has(user_id) ? DAO.accounting_persistent.getJSONObject(anon_id) : DAO.accounting_persistent.put(user_id, new JSONObject()).getJSONObject(user_id);
-        Accounting accounting_temporary = DAO.accounting_temporary.get(identity.toString());
-        if (accounting_temporary == null) {
-            accounting_temporary = new Accounting();
-            DAO.accounting_temporary.put(identity.toString(), accounting_temporary);
+        UserRequests user_request = DAO.users_requests.get(identity.toString());
+        if (user_request == null) {
+            user_request = new UserRequests();
+            DAO.users_requests.put(identity.toString(), user_request);
         }
         
         // the accounting data is assigned to the authorization
-        authorization.setAccounting(accounting_temporary);
+        authorization.setAccounting(user_request);
         
         // extract standard query attributes
         String callback = query.get("callback", "");

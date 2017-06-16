@@ -41,7 +41,7 @@ public class Authorization {
     private JsonTray parent;
     private JSONObject json;
     private JSONObject permissions;
-    private Accounting accounting;
+    private UserRequests accounting;
     private ClientIdentity identity;
     private UserRole userRole;
     private UserRoles userRoles;
@@ -88,12 +88,12 @@ public class Authorization {
         permissions = json.getJSONObject("permissions");
     }
     
-    public Accounting setAccounting(Accounting accounting) {
+    public UserRequests setAccounting(UserRequests accounting) {
         this.accounting = accounting;
         return this.accounting;
     }
     
-    public Accounting getAccounting() {
+    public UserRequests getAccounting() {
         return this.accounting;
     }
     

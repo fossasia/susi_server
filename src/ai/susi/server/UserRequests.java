@@ -26,14 +26,14 @@ import org.json.JSONObject;
 /**
  * Accounting asks: what has the user done. This class holds user activities.
  */
-public class Accounting extends JSONObject {
+public class UserRequests extends JSONObject {
 
     private static final JSONObject EMPTY_MAP = new JSONObject(new TreeMap<String, String>());
     private static final long ONE_HOUR_MILLIS = 1000 * 60 * 60;
 
     private static long uc = 0;
     
-    public Accounting() {
+    public UserRequests() {
         super();
     }
     
@@ -42,7 +42,7 @@ public class Accounting extends JSONObject {
      * some outside process muss call this frequently
      * @return self
      */
-    public Accounting cleanup() {
+    public UserRequests cleanup() {
         if (!this.has("requests")) return this;
         JSONObject requests = this.getJSONObject("requests");
         for (String path: requests.keySet()) {
@@ -55,7 +55,7 @@ public class Accounting extends JSONObject {
         return this;
     }
     
-    public synchronized Accounting addRequest(String path, String query) {
+    public synchronized UserRequests addRequest(String path, String query) {
         if (!this.has("requests")) this.put("requests", new JSONObject());
         JSONObject requests = this.getJSONObject("requests");
         if (!requests.has(path)) requests.put(path, new TreeMap<String, String>());
@@ -73,7 +73,7 @@ public class Accounting extends JSONObject {
     }
     
     public static void main(String[] args) {
-        Accounting a = new Accounting();
+        UserRequests a = new UserRequests();
         a.addRequest("/api/test.json", "q=test");
         JSONObject r = a.getRequests("/api/test.json");
         System.out.println(r.toString());
