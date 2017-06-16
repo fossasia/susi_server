@@ -21,6 +21,7 @@ package ai.susi.server.api.susi;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
@@ -100,7 +101,7 @@ public class SusiService extends AbstractAPIHandler implements APIHandler {
                 // fill an empty mind with the dream
                 SusiMind dream = new SusiMind(DAO.susi_memory_dir); // we need the memory directory here to get a share on the memory of previous dialoges, otherwise we cannot test call-back questions
                 JSONObject rules = SusiExpert.readEzDExpert(new BufferedReader(new InputStreamReader(new ByteArrayInputStream(text.getBytes(StandardCharsets.UTF_8)), StandardCharsets.UTF_8)));
-                dream.learn(rules);
+                dream.learn(rules, new File("file://" + etherpad_dream));
                 // susi is now dreaming.. Try to find an answer out of the dream
                 SusiCognition cognition = new SusiCognition(dream, q, timezoneOffset, latitude, longitude, count, user.getIdentity());
                 if (cognition.getAnswers().size() > 0) {

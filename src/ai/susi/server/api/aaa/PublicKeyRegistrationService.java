@@ -161,7 +161,7 @@ public class PublicKeyRegistrationService extends AbstractAPIHandler implements 
 
 			// create Authentication to check if the user id is a registered user
 			ClientCredential credential = new ClientCredential(ClientCredential.Type.passwd_login, id);
-			Authentication authentication = new Authentication(credential, DAO.authentication);
+			Authentication authentication = DAO.getAuthentication(credential);
 
 			if (authentication.getIdentity() == null) { // check if identity is valid
 				authentication.delete();
@@ -175,7 +175,7 @@ public class PublicKeyRegistrationService extends AbstractAPIHandler implements 
 				allowed = true;
 			}
 			else { // check if the user role of the user in question is in 'userRoles'
-				Authorization auth = new Authorization(authentication.getIdentity(), DAO.authorization, DAO.userRoles);
+				Authorization auth = DAO.getAuthorization(authentication.getIdentity());
 				for(String key : permissions.getJSONObject("userRoles").keySet()){
 					if(key.equals(auth.getUserRole().getName()) && permissions.getJSONObject("userRoles").getBoolean(key)){
 						allowed = true;
@@ -217,7 +217,7 @@ public class PublicKeyRegistrationService extends AbstractAPIHandler implements 
 					throw new APIException(500, "Server error");
 				}
 
-				registerKey(authorization.getIdentity(), keyPair.getPublic());
+				DAO.registerKey(authorization.getIdentity(), keyPair.getPublic());
 
 				String pubkey_pem = null, privkey_pem = null;
 				try {
@@ -307,7 +307,7 @@ public class PublicKeyRegistrationService extends AbstractAPIHandler implements 
 					throw new APIException(400, "Invalid key length.");
 				}
 
-				registerKey(authorization.getIdentity(), pub);
+				DAO.registerKey(authorization.getIdentity(), pub);
 
 				String pubkey_pem = null;
 				try {
@@ -334,27 +334,5 @@ public class PublicKeyRegistrationService extends AbstractAPIHandler implements 
 		throw new APIException(400, "Invalid parameter");
 	}
 
-	/**
-	 * Registers a key for an identity.
-	 * TODO: different algorithms
-	 * @param id
-	 * @param key
-     */
-	private void registerKey(ClientIdentity id, PublicKey key) throws APIException{
-		JSONObject user_obj;
-
-		try{
-			user_obj = DAO.login_keys.getJSONObject(id.toString());
-		} catch (Throwable e){
-			user_obj = new JSONObject();
-			DAO.login_keys.put(id.toString(), user_obj);
-		}
-
-		if(user_obj.has(IO.getKeyHash(key))) throw new APIException(422, "Key already registered");
-
-		user_obj.put(IO.getKeyHash(key),IO.getKeyAsString(key));
-
-		DAO.login_keys.commit();
-	}
 }
 

@@ -133,7 +133,7 @@ public class Authorization {
         return this;
     }
     
-    public ClientService getService(String serviceId) {
+    public ClientService getService(String serviceId) throws IllegalArgumentException {
         if (!this.json.has("services")) this.json.put("services", new JSONObject());
         JSONObject services = this.json.getJSONObject("services");
         if (!services.has(serviceId)) return null;
@@ -258,5 +258,9 @@ public class Authorization {
 
     public void setPermission(APIHandler servlet, String key, Collection<?> value){
         setPermission(servlet.getClass().getCanonicalName(), key, value);
+    }
+    
+    public JSONObject getJSON() {
+    	return this.json;
     }
 }

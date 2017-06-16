@@ -3,6 +3,10 @@ package ai.susi.server.api.cms;
 import ai.susi.DAO;
 import ai.susi.json.JsonObjectWithDefault;
 import ai.susi.server.*;
+import org.eclipse.jgit.api.Git;
+import org.eclipse.jgit.api.errors.GitAPIException;
+import org.eclipse.jgit.lib.Repository;
+import org.eclipse.jgit.storage.file.FileRepositoryBuilder;
 import org.json.JSONObject;
 
 import javax.servlet.http.HttpServletResponse;
@@ -12,15 +16,19 @@ import java.io.IOException;
 /**
  * Created by saurabh on 7/6/17.
  * This Service creates an expert as per given query.
+ * The expert name given in the query should not exist in the SUSI Skills Folder
+ * Can be tested on :-
  * http://localhost:4000/cms/createExpert.txt?model=general&group=knowledge&language=en&expert=whois
  */
-public class ExpertCreateService  extends AbstractAPIHandler implements APIHandler {
+public class CreateExpertService extends AbstractAPIHandler implements APIHandler {
 
 
     private static final long serialVersionUID = 2461878194569824151L;
 
     @Override
-    public BaseUserRole getMinimalBaseUserRole() { return BaseUserRole.ANONYMOUS; }
+    public BaseUserRole getMinimalBaseUserRole() {
+        return BaseUserRole.ANONYMOUS;
+    }
 
     @Override
     public JSONObject getDefaultPermissions(BaseUserRole baseUserRole) {
@@ -54,6 +62,31 @@ public class ExpertCreateService  extends AbstractAPIHandler implements APIHandl
                 expert.createNewFile();
                 json.put("created_file", expertName);
                 json.put("accepted", true);
+                // Add to git
+                FileRepositoryBuilder builder = new FileRepositoryBuilder();
+                Repository repository = null;
+                try {
+
+                    repository = builder.setGitDir((DAO.susi_skill_repo))
+                            .readEnvironment() // scan environment GIT_* variables
+                            .findGitDir() // scan up the file system tree
+                            .build();
+
+                    try (Git git = new Git(repository)) {
+                        git.add()
+                                .addFilepattern(expert_name)
+                                .call();
+                        // commit the changes
+                        git.commit()
+                                .setMessage("Created " + expert_name)
+                                .call();
+
+                    } catch (GitAPIException e) {
+                        e.printStackTrace();
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             } catch (IOException e) {
                 e.printStackTrace();
                 json.put("message", "Unable to create expert.");

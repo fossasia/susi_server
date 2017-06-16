@@ -19,6 +19,7 @@
 
 package ai.susi.mind;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
@@ -58,6 +59,7 @@ public class SusiSkill {
     private int user_subscore;
     private Score score;
     private int id;
+    private String expert;
     
     /**
      * Generate a set of skills from a single skill definition. This may be possible if the skill contains an 'options'
@@ -65,7 +67,7 @@ public class SusiSkill {
      * @param json - a multi-skill definition
      * @return a set of skills
      */
-    public static List<SusiSkill> getSkills(JSONObject json) {
+    public static List<SusiSkill> getSkills(JSONObject json, File origin) {
         if (!json.has("phrases")) throw new PatternSyntaxException("phrases missing", "", 0);
         final List<SusiSkill> skills = new ArrayList<>();
         if (json.has("options")) {
@@ -75,11 +77,11 @@ public class SusiSkill {
                 option.put("phrases", json.get("phrases"));
                 JSONObject or = options.getJSONObject(i);
                 for (String k: or.keySet()) option.put(k, or.get(k));
-                skills.add(new SusiSkill(option));
+                skills.add(new SusiSkill(option, origin));
             }
         } else {
             try {
-                SusiSkill skill = new SusiSkill(json);
+                SusiSkill skill = new SusiSkill(json, origin);
                 skills.add(skill);
             } catch (PatternSyntaxException e) {
                 Logger.getLogger("SusiSkill").warning("Regular Expression error in Susi Skill: " + json.toString(2));
@@ -93,7 +95,7 @@ public class SusiSkill {
      * @param json the skill description
      * @throws PatternSyntaxException
      */
-    private SusiSkill(JSONObject json) throws PatternSyntaxException {
+    private SusiSkill(JSONObject json, File origin) throws PatternSyntaxException {
         
         // extract the phrases and the phrases subscore
         if (!json.has("phrases")) throw new PatternSyntaxException("phrases missing", "", 0);
@@ -134,10 +136,19 @@ public class SusiSkill {
         // extract the comment
         this.comment = json.has("comment") ? json.getString("comment") : "";
 
+        // remember the origin
+        this.expert = origin.getAbsolutePath();
+    	int i = this.expert.indexOf("/susi");
+    	if (i < 0) this.expert = ""; else this.expert = this.expert.substring(i);
+        
         // calculate the id
         String ids0 = this.actions.toString();
         String ids1 = this.phrases.toString();
         this.id = ids0.hashCode() + ids1.hashCode();
+    }
+    
+    public String getExpert() {
+    	return this.expert;
     }
     
     public int hashCode() {
@@ -146,7 +157,7 @@ public class SusiSkill {
     
     public JSONObject toJSON() {
         JSONObject json = new JSONObject(true);
-        json.put("id", id);
+        json.put("id", this.id);
         if (this.keys != null && this.keys.size() > 0) json.put("keys", new JSONArray(this.keys));
         JSONArray p = new JSONArray(); this.phrases.forEach(phrase -> p.put(phrase.toJSON()));
         json.put("phrases", p);
@@ -154,8 +165,9 @@ public class SusiSkill {
         json.put("process", i);
         JSONArray a = new JSONArray(); this.actions.forEach(action -> a.put(action.toJSONClone()));
         json.put("actions", a);
-        if (this.comment != null && this.comment.length() > 0) json.put("comment", comment);
-        if (this.score != null) json.put("score", score.score);
+        if (this.comment != null && this.comment.length() > 0) json.put("comment", this.comment);
+        if (this.score != null) json.put("score", this.score.score);
+        if (this.expert != null && this.expert.length() > 0) json.put("expert", this.expert);
         return json;
     }
     
@@ -453,6 +465,10 @@ public class SusiSkill {
             
             // we deduced thoughts from the inferences in the skills. Now apply the actions of skill to produce results
             this.getActionsClone().forEach(action -> flow.addAction(action/*.execution(flow, mind, client)*/));
+            
+            // add expert source
+            if (this.expert != null && this.expert.length() > 0) flow.addExpert(this.expert);
+            
             return flow;
         }
         // fail, no alternative was successful
