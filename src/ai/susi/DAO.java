@@ -41,6 +41,7 @@ import ai.susi.json.JsonTray;
 import ai.susi.mind.SusiMind;
 import ai.susi.server.APIException;
 import ai.susi.server.AccessTracker;
+import ai.susi.server.Accounting;
 import ai.susi.server.UserRequests;
 import ai.susi.server.Authentication;
 import ai.susi.server.Authorization;
@@ -352,4 +353,13 @@ public class DAO {
 		}
 		return i;
 	}
+    
+    public static Accounting getAccounting(@Nonnull ClientIdentity identity) {
+         return new Accounting(identity, accounting);
+    }
+    
+    public static boolean hasAccounting(@Nonnull ClientIdentity credential) {
+        return accounting.has(credential.toString());
+    }
+    
 }

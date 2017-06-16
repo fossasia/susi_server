@@ -153,7 +153,7 @@ public class LoginService extends AbstractAPIHandler implements APIHandler {
 			if (!passwordHash.equals(getHash(password, salt))) {
 
 				// save invalid login in accounting object
-				authorization.getAccounting().addRequest(this.getClass().getCanonicalName(), "invalid login");
+				authorization.getRequests().addRequest(this.getClass().getCanonicalName(), "invalid login");
 
 				Log.getLog().info("Invalid login try for user: " + identity.getName() + " via passwd from host: " + post.getClientHost());
 				throw new APIException(422, "Invalid credentials");
@@ -282,7 +282,7 @@ public class LoginService extends AbstractAPIHandler implements APIHandler {
 				return new ServiceResponse(result);
 			}
 			else {
-				authorization.getAccounting().addRequest(this.getClass().getCanonicalName(), "invalid login");
+				authorization.getRequests().addRequest(this.getClass().getCanonicalName(), "invalid login");
 				throw new APIException(400, "Bad Signature");
 			}
 		}
@@ -305,7 +305,7 @@ public class LoginService extends AbstractAPIHandler implements APIHandler {
 
 			authentication.delete();
 
-			authorization.getAccounting().addRequest(this.getClass().getCanonicalName(), "invalid login");
+			authorization.getRequests().addRequest(this.getClass().getCanonicalName(), "invalid login");
 
 			Log.getLog().info("Invalid login try for unknown user: " + credential.getName() + " via passwd from host: " + post.getClientHost());
 			throw new APIException(422, "Invalid credentials");
@@ -359,7 +359,7 @@ public class LoginService extends AbstractAPIHandler implements APIHandler {
 		}
 
 		// check if too many invalid login attempts were made already
-		JSONObject invalidLogins = authorization.getAccounting().getRequests(this.getClass().getCanonicalName());
+		JSONObject invalidLogins = authorization.getRequests().getRequests(this.getClass().getCanonicalName());
 		long period = permissions.getLong("periodSeconds", 600) * 1000; // get time period in which wrong logins are counted (e.g. the last 10 minutes)
 		int counter = 0;
 		for(String key : invalidLogins.keySet()){
