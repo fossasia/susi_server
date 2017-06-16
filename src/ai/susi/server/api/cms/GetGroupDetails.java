@@ -18,7 +18,7 @@ import java.util.Set;
  * Created by chetankaushik on 15/06/17.
  * This servlet returns details of the group whose name is passed in the URL Get parameters.
  * This accepts one GET parameter, which is the group name you want to search for.
- * This can be tested on http://127.0.0.1:4000/cms/getGroupMembers.json?group={groupName}
+ * This can be tested on http://127.0.0.1:4000/cms/getGroupDetails.json?group={groupName}
  *
  */
 public class GetGroupDetails extends AbstractAPIHandler implements APIHandler {
@@ -38,7 +38,7 @@ public class GetGroupDetails extends AbstractAPIHandler implements APIHandler {
 
     @Override
     public String getAPIPath() {
-        return "/cms/getGroupMembers.json";
+        return "/cms/getGroupDetails.json";
     }
 
     @Override
