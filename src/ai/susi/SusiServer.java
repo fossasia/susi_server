@@ -481,7 +481,7 @@ public class SusiServer {
                 DeleteExpertService.class,
                 ModifyExpertService.class,
                 ExpertHistoryService.class,
-
+                GetCommitHistory.class,
                 // susi search aggregation services
                 ConsoleService.class,
                 RSSReaderService.class,
