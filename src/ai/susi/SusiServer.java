@@ -499,7 +499,10 @@ public class SusiServer {
                 ChangeUserRoles.class,
 
                 //Get all Users
-                GetAllUsers.class
+                GetAllUsers.class,
+
+                //Groups
+                GetGroupMembers.class
         };
         for (Class<? extends Servlet> service: services)
             try {
