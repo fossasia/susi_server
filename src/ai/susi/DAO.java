@@ -42,6 +42,7 @@ import ai.susi.mind.SusiMind;
 import ai.susi.server.APIException;
 import ai.susi.server.AccessTracker;
 import ai.susi.server.Accounting;
+import ai.susi.server.UserRequests;
 import ai.susi.server.Authentication;
 import ai.susi.server.Authorization;
 import ai.susi.server.ClientCredential;
@@ -88,7 +89,7 @@ public class DAO {
     private static JsonTray accounting;
     public  static UserRoles userRoles;
     public  static JsonTray passwordreset;
-    public  static Map<String, Accounting> accounting_temporary = new HashMap<>();
+    public  static Map<String, UserRequests> users_requests = new HashMap<>();
     private static JsonFile login_keys;
     
     // built-in artificial intelligence
@@ -352,4 +353,13 @@ public class DAO {
 		}
 		return i;
 	}
+    
+    public static Accounting getAccounting(@Nonnull ClientIdentity identity) {
+         return new Accounting(identity, accounting);
+    }
+    
+    public static boolean hasAccounting(@Nonnull ClientIdentity credential) {
+        return accounting.has(credential.toString());
+    }
+    
 }
