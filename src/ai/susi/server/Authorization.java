@@ -41,7 +41,6 @@ public class Authorization {
     private JsonTray parent;
     private JSONObject json;
     private JSONObject permissions;
-    private UserRequests requests;
     private ClientIdentity identity;
     private UserRole userRole;
     private UserRoles userRoles;
@@ -58,7 +57,6 @@ public class Authorization {
         Log.getLog().debug("new authorization");
 
         this.parent = parent;
-        this.requests = null;
         this.identity = identity;
         this.userRoles = urs;
 
@@ -86,15 +84,6 @@ public class Authorization {
 
         if(!json.has("permissions")) json.put("permissions", new JSONObject());
         permissions = json.getJSONObject("permissions");
-    }
-    
-    public UserRequests setRequests(UserRequests accounting) {
-        this.requests = accounting;
-        return this.requests;
-    }
-    
-    public UserRequests getRequests() {
-        return this.requests;
     }
     
     public Authorization setAdmin() {

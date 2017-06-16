@@ -108,7 +108,8 @@ public abstract class AbstractAPIHandler extends HttpServlet implements APIHandl
         }
         
         // the accounting data is assigned to the authorization
-        authorization.setRequests(user_request);
+        Accounting accounting = DAO.getAccounting(identity);
+        accounting.setRequests(user_request);
         
         // extract standard query attributes
         String callback = query.get("callback", "");
