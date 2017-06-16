@@ -41,7 +41,6 @@ public class Authorization {
     private JsonTray parent;
     private JSONObject json;
     private JSONObject permissions;
-    private Accounting accounting;
     private ClientIdentity identity;
     private UserRole userRole;
     private UserRoles userRoles;
@@ -58,7 +57,6 @@ public class Authorization {
         Log.getLog().debug("new authorization");
 
         this.parent = parent;
-        this.accounting = null;
         this.identity = identity;
         this.userRoles = urs;
 
@@ -86,15 +84,6 @@ public class Authorization {
 
         if(!json.has("permissions")) json.put("permissions", new JSONObject());
         permissions = json.getJSONObject("permissions");
-    }
-    
-    public Accounting setAccounting(Accounting accounting) {
-        this.accounting = accounting;
-        return this.accounting;
-    }
-    
-    public Accounting getAccounting() {
-        return this.accounting;
     }
     
     public Authorization setAdmin() {
@@ -133,7 +122,7 @@ public class Authorization {
         return this;
     }
     
-    public ClientService getService(String serviceId) {
+    public ClientService getService(String serviceId) throws IllegalArgumentException {
         if (!this.json.has("services")) this.json.put("services", new JSONObject());
         JSONObject services = this.json.getJSONObject("services");
         if (!services.has(serviceId)) return null;
@@ -258,5 +247,9 @@ public class Authorization {
 
     public void setPermission(APIHandler servlet, String key, Collection<?> value){
         setPermission(servlet.getClass().getCanonicalName(), key, value);
+    }
+    
+    public JSONObject getJSON() {
+    	return this.json;
     }
 }

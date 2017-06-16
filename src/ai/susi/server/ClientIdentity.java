@@ -41,7 +41,7 @@ public class ClientIdentity extends Client {
     
     private final boolean persistent;
     
-    public ClientIdentity(String rawIdString) {
+    public ClientIdentity(String rawIdString) throws IllegalArgumentException {
         super(rawIdString);
         this.persistent = Type.valueOf(super.getKey()).isPersistent();
     }

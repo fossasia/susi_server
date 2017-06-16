@@ -89,21 +89,20 @@ public class ChangeUserRoles extends AbstractAPIHandler implements APIHandler {
             if (userTobeUpgraded == null) {
                 throw new APIException(400, "Bad username");
             }
-            if (!DAO.authorization.has(userTobeUpgraded)) {
+            ClientIdentity identity = new ClientIdentity(userTobeUpgraded);
+            if (!DAO.hasAuthorization(identity)) {
                 throw new APIException(400, "Username not found");
             }
             if (!DAO.userRoles.has(upgradedRole))
                 throw new APIException(400, "Specified User Role not found");
 
             // Update the local database
-            JSONObject user_obj = new JSONObject();
-            user_obj = DAO.authorization.getJSONObject(userTobeUpgraded);
-            user_obj.put("userRole", upgradedRole);
-            DAO.authorization.put(userTobeUpgraded, user_obj, true);
-            DAO.authorization.toJSON();
-
+            Authorization auth = DAO.getAuthorization(identity);
+            UserRole ur = new UserRole(upgradedRole, BaseUserRole.ANONYMOUS, null, null);
+            auth.setUserRole(ur);
+            
             // Print Response
-            result.put("newDetails", user_obj);
+            result.put("newDetails", auth.getJSON());
             return new ServiceResponse(result);
         }
     }

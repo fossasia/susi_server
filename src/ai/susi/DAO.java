@@ -24,23 +24,36 @@ import java.nio.file.Path;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.security.NoSuchAlgorithmException;
+import java.security.PublicKey;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
 import java.util.Set;
+
+import javax.annotation.Nonnull;
 
 import com.google.common.io.Files;
 
 import ai.susi.json.JsonFile;
 import ai.susi.json.JsonTray;
 import ai.susi.mind.SusiMind;
+import ai.susi.server.APIException;
 import ai.susi.server.AccessTracker;
 import ai.susi.server.Accounting;
+import ai.susi.server.UserRequests;
+import ai.susi.server.Authentication;
+import ai.susi.server.Authorization;
+import ai.susi.server.ClientCredential;
+import ai.susi.server.ClientIdentity;
 import ai.susi.server.Settings;
 import ai.susi.server.UserRoles;
+import ai.susi.tools.IO;
 import ai.susi.tools.OS;
 
 import org.eclipse.jetty.util.log.Log;
+import org.json.JSONObject;
 
 /**
  * The Data Access Object for the message project.
@@ -66,18 +79,18 @@ public class DAO {
     private final static String ACCESS_DUMP_FILE_PREFIX = "access_";
     public  static File conf_dir, bin_dir, html_dir, data_dir, susi_memory_dir, model_watch_dir, susi_skill_repo;
     private static File external_data, assets, dictionaries;
-    public static Settings public_settings, private_settings;
+    private static Settings public_settings, private_settings;
     public  static AccessTracker access;
     private static Map<String, String> config = new HashMap<>();
     
     // AAA Schema for server usage
-    public static JsonTray authentication;
-    public static JsonTray authorization;
-    public static JsonTray accounting;
-    public static UserRoles userRoles;
-    public static JsonTray passwordreset;
-    public static Map<String, Accounting> accounting_temporary = new HashMap<>();
-    public static JsonFile login_keys;
+    private static JsonTray authentication;
+    private static JsonTray authorization;
+    private static JsonTray accounting;
+    public  static UserRoles userRoles;
+    public  static JsonTray passwordreset;
+    public  static Map<String, UserRequests> users_requests = new HashMap<>();
+    private static JsonFile login_keys;
     
     // built-in artificial intelligence
     public static SusiMind susi;
@@ -143,22 +156,22 @@ public class DAO {
         settings_dir.toFile().mkdirs();
         Path authentication_path_per = settings_dir.resolve("authentication.json");
         Path authentication_path_vol = settings_dir.resolve("authentication_session.json");
-        authentication = new JsonTray(authentication_path_per.toFile(), authentication_path_vol.toFile(), 10000);
+        authentication = new JsonTray(authentication_path_per.toFile(), authentication_path_vol.toFile(), 1000000);
         OS.protectPath(authentication_path_per);
         OS.protectPath(authentication_path_vol);
         Path authorization_path_per = settings_dir.resolve("authorization.json");
         Path authorization_path_vol = settings_dir.resolve("authorization_session.json");
-        authorization = new JsonTray(authorization_path_per.toFile(), authorization_path_vol.toFile(), 10000);
+        authorization = new JsonTray(authorization_path_per.toFile(), authorization_path_vol.toFile(), 1000000);
         OS.protectPath(authorization_path_per);
         OS.protectPath(authorization_path_vol);
         Path passwordreset_path_per = settings_dir.resolve("passwordreset.json");
         Path passwordreset_path_vol = settings_dir.resolve("passwordreset_session.json");
-        passwordreset = new JsonTray(passwordreset_path_per.toFile(), passwordreset_path_vol.toFile(), 10000);
+        passwordreset = new JsonTray(passwordreset_path_per.toFile(), passwordreset_path_vol.toFile(), 1000000);
         OS.protectPath(passwordreset_path_per);
         OS.protectPath(passwordreset_path_vol);
         Path accounting_path_per = settings_dir.resolve("accounting.json");
         Path accounting_path_vol = settings_dir.resolve("accounting_session.json");
-        accounting = new JsonTray(accounting_path_per.toFile(), accounting_path_vol.toFile(), 10000);
+        accounting = new JsonTray(accounting_path_per.toFile(), accounting_path_vol.toFile(), 1000000);
         OS.protectPath(accounting_path_per);
         OS.protectPath(accounting_path_vol);
         Path login_keys_path = settings_dir.resolve("login-keys.json");
@@ -285,5 +298,68 @@ public class DAO {
     public static void severe(Throwable e) {
         Log.getLog().warn(e);
     }
+    
 
+	/**
+	 * Registers a key for an identity.
+	 * TODO: different algorithms
+	 * @param id
+	 * @param key
+     */
+	public static void registerKey(ClientIdentity id, PublicKey key) throws APIException{
+		JSONObject user_obj;
+		try{
+			user_obj = DAO.login_keys.getJSONObject(id.toString());
+		} catch (Throwable e){
+			user_obj = new JSONObject();
+			DAO.login_keys.put(id.toString(), user_obj);
+		}
+		user_obj.put(IO.getKeyHash(key), IO.getKeyAsString(key));
+		DAO.login_keys.commit();
+	}
+
+	public static String loadKey(ClientIdentity identity, String keyhash) {
+		String id = identity.toString();
+		if (!login_keys.has(id)) return null;
+		JSONObject json = login_keys.getJSONObject(id);
+		if (!json.has(keyhash)) return null;
+		return json.getString(keyhash);
+	}
+	
+	public static Authentication getAuthentication(@Nonnull ClientCredential credential) {
+		return new Authentication(credential, authentication);
+	}
+	
+	public static boolean hasAuthentication(@Nonnull ClientCredential credential) {
+		return authentication.has(credential.toString());
+	}
+	
+	public static void deleteAuthentication(@Nonnull ClientCredential credential) {
+		authentication.remove(credential.toString());
+	}
+	
+	public static Authorization getAuthorization(@Nonnull ClientIdentity identity) {
+		 return new Authorization(identity, authorization, userRoles);
+	}
+	
+	public static boolean hasAuthorization(@Nonnull ClientIdentity credential) {
+		return authorization.has(credential.toString());
+	}
+	
+	public static Collection<ClientIdentity> getAuthorizedClients() {
+		ArrayList<ClientIdentity> i = new ArrayList<>();
+		for (String id: authorization.keys()) {
+			i.add(new ClientIdentity(id));
+		}
+		return i;
+	}
+    
+    public static Accounting getAccounting(@Nonnull ClientIdentity identity) {
+         return new Accounting(identity, accounting);
+    }
+    
+    public static boolean hasAccounting(@Nonnull ClientIdentity credential) {
+        return accounting.has(credential.toString());
+    }
+    
 }

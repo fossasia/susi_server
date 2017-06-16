@@ -23,6 +23,7 @@ import java.time.Instant;
 
 import org.json.JSONObject;
 
+import ai.susi.DAO;
 import ai.susi.json.JsonTray;
 
 import javax.annotation.Nonnull;
@@ -63,7 +64,7 @@ public class Authentication {
      * @param id the ClientIdentity to associate with
      * @return this authentication object
      */
-    public Authentication setIdentity(@Nonnull ClientIdentity id) {
+    public Authentication setIdentity(@Nonnull Client id) {
         this.json.put("id", id.toString());
         if (this.parent != null && this.credential.isPersistent()) this.parent.commit();
         return this;
@@ -74,7 +75,11 @@ public class Authentication {
      * @return the ClientIdentity associated with this Authentication or null if none is set
      */
     public ClientIdentity getIdentity() {
-        if (this.json.has("id")) return new ClientIdentity(this.json.getString("id"));
+        if (this.json.has("id")) try {
+        	return new ClientIdentity(this.json.getString("id"));
+        } catch (IllegalArgumentException e) {
+        	DAO.log("bad authentication identity: " + this.json.getString("id"));
+        }
         return null;
     }
 

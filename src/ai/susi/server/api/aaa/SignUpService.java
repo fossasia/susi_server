@@ -104,7 +104,7 @@ public class SignUpService extends AbstractAPIHandler implements APIHandler {
 
 				ClientCredential credential = new ClientCredential(ClientCredential.Type.passwd_login,
 						auth.getIdentity().getName());
-				Authentication authentication = new Authentication(credential, DAO.authentication);
+				Authentication authentication = DAO.getAuthentication(credential);
 
 				if (authentication.getIdentity() == null) {
 					authentication.delete();
@@ -174,7 +174,7 @@ public class SignUpService extends AbstractAPIHandler implements APIHandler {
 		// check if id exists already
 
 		ClientCredential credential = new ClientCredential(ClientCredential.Type.passwd_login, signup);
-		Authentication authentication = new Authentication(credential, DAO.authentication);
+		Authentication authentication = DAO.getAuthentication(credential);
 
 		if (authentication.getIdentity() != null) {
 			throw new APIException(422, "email already taken");
@@ -191,13 +191,13 @@ public class SignUpService extends AbstractAPIHandler implements APIHandler {
 		authentication.put("activated", activated);
 
 		// set authorization details
-		Authorization authorization = new Authorization(identity, DAO.authorization, DAO.userRoles);
+		Authorization authorization = DAO.getAuthorization(identity);
 		authorization.setUserRole(DAO.userRoles.getDefaultUserRole(BaseUserRole.USER));
 
 		if (sendEmail) {
 			String token = createRandomString(30);
 			ClientCredential access_token = new ClientCredential(ClientCredential.Type.access_token, token);
-			Authentication tokenAuthentication = new Authentication(access_token, DAO.authentication);
+			Authentication tokenAuthentication = DAO.getAuthentication(access_token);
 			tokenAuthentication.setIdentity(identity);
 			tokenAuthentication.setExpireTime(7 * 24 * 60 * 60);
 			tokenAuthentication.put("one_time", true);

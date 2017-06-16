@@ -25,7 +25,6 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.time.Instant;
 import java.util.Base64;
-import java.util.Map;
 import java.util.Random;
 
 import javax.servlet.ServletException;
@@ -39,7 +38,6 @@ import org.json.JSONObject;
 
 import ai.susi.DAO;
 import ai.susi.json.JsonObjectWithDefault;
-import ai.susi.tools.UTF8;
 
 @SuppressWarnings("serial")
 public abstract class AbstractAPIHandler extends HttpServlet implements APIHandler {
@@ -94,7 +92,7 @@ public abstract class AbstractAPIHandler extends HttpServlet implements APIHandl
         ClientIdentity identity = getIdentity(request, response, query);
         
         // user authorization: we use the identification of the user to get the assigned authorization
-        Authorization authorization = new Authorization(identity, DAO.authorization, DAO.userRoles);
+        Authorization authorization = DAO.getAuthorization(identity);
 
         if(authorization.getBaseUserRole().ordinal() < minimalBaseUserRole.ordinal()){
         	response.sendError(401, "Base user role not sufficient. Your base user role is '" + authorization.getBaseUserRole().name() + "', your user role is '" + authorization.getUserRole().getDisplayName() + "'");
@@ -103,14 +101,15 @@ public abstract class AbstractAPIHandler extends HttpServlet implements APIHandl
 
         // user accounting: we maintain static and persistent user data; we again search the accounts using the usder identity string
         //JSONObject accounting_persistent_obj = DAO.accounting_persistent.has(user_id) ? DAO.accounting_persistent.getJSONObject(anon_id) : DAO.accounting_persistent.put(user_id, new JSONObject()).getJSONObject(user_id);
-        Accounting accounting_temporary = DAO.accounting_temporary.get(identity.toString());
-        if (accounting_temporary == null) {
-            accounting_temporary = new Accounting();
-            DAO.accounting_temporary.put(identity.toString(), accounting_temporary);
+        UserRequests user_request = DAO.users_requests.get(identity.toString());
+        if (user_request == null) {
+            user_request = new UserRequests();
+            DAO.users_requests.put(identity.toString(), user_request);
         }
         
         // the accounting data is assigned to the authorization
-        authorization.setAccounting(accounting_temporary);
+        Accounting accounting = DAO.getAccounting(identity);
+        accounting.setRequests(user_request);
         
         // extract standard query attributes
         String callback = query.get("callback", "");
@@ -171,7 +170,7 @@ public abstract class AbstractAPIHandler extends HttpServlet implements APIHandl
 			Cookie loginCookie = getLoginCookie(request);
 			
 			ClientCredential credential = new ClientCredential(ClientCredential.Type.cookie, loginCookie.getValue());
-			Authentication authentication = new Authentication(credential, DAO.authentication);
+			Authentication authentication = DAO.getAuthentication(credential);
 			
 			if(authentication.getIdentity() != null && authentication.checkExpireTime()) {
 
@@ -196,7 +195,7 @@ public abstract class AbstractAPIHandler extends HttpServlet implements APIHandl
 		}
     	else if (request.getParameter("access_token") != null){ // access tokens can be used by api calls, somehow the stateless equivalent of sessions for browsers
     		ClientCredential credential = new ClientCredential(ClientCredential.Type.access_token, request.getParameter("access_token"));
-    		Authentication authentication = new Authentication(credential, DAO.authentication);
+    		Authentication authentication = DAO.getAuthentication(credential);
 			
     		
     		// check if access_token is valid
@@ -228,9 +227,9 @@ public abstract class AbstractAPIHandler extends HttpServlet implements APIHandl
      */
     private static ClientIdentity getAnonymousIdentity(String remoteHost) {
     	ClientCredential credential = new ClientCredential(ClientCredential.Type.host, remoteHost);
-    	Authentication authentication = new Authentication(credential, DAO.authentication);
+    	Authentication authentication = DAO.getAuthentication(credential);
     	
-    	if (authentication.getIdentity() == null) authentication.setIdentity(new ClientIdentity(credential.toString()));
+    	if (authentication.getIdentity() == null) authentication.setIdentity(credential);
     	authentication.setExpireTime(Instant.now().getEpochSecond() + defaultAnonymousTime);
     	
         return authentication.getIdentity();

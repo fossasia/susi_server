@@ -100,8 +100,8 @@ public class LoginService extends AbstractAPIHandler implements APIHandler {
 
 			if (delete) {
 	            ClientCredential pwcredential = new ClientCredential(authorization.getIdentity());
-			    delete = DAO.authentication.has(pwcredential.toString());
-			    if (delete) DAO.authentication.remove(pwcredential.toString());
+			    delete = DAO.hasAuthentication(pwcredential);
+			    if (delete) DAO.deleteAuthentication(pwcredential);
 			}
 			
 			JSONObject result = new JSONObject();
@@ -153,7 +153,8 @@ public class LoginService extends AbstractAPIHandler implements APIHandler {
 			if (!passwordHash.equals(getHash(password, salt))) {
 
 				// save invalid login in accounting object
-				authorization.getAccounting().addRequest(this.getClass().getCanonicalName(), "invalid login");
+			    Accounting accouting = DAO.getAccounting(identity);
+			    accouting.getRequests().addRequest(this.getClass().getCanonicalName(), "invalid login");
 
 				Log.getLog().info("Invalid login try for user: " + identity.getName() + " via passwd from host: " + post.getClientHost());
 				throw new APIException(422, "Invalid credentials");
@@ -176,10 +177,9 @@ public class LoginService extends AbstractAPIHandler implements APIHandler {
 
 					// write cookie to database
 					ClientCredential cookieCredential = new ClientCredential(ClientCredential.Type.cookie, loginToken);
-					JSONObject user_obj = new JSONObject();
-					user_obj.put("id", identity.toString());
-					user_obj.put("expires_on", Instant.now().getEpochSecond() + defaultCookieTime);
-					DAO.authentication.put(cookieCredential.toString(), user_obj, cookieCredential.isPersistent());
+					Authentication cookieAuth = DAO.getAuthentication(cookieCredential);
+					cookieAuth.setIdentity(identity);
+					cookieAuth.setExpireTime(defaultCookieTime);
 
 					response.addCookie(loginCookie);
 					break;
@@ -217,18 +217,19 @@ public class LoginService extends AbstractAPIHandler implements APIHandler {
 			Authentication authentication = getAuthentication(post, authorization, new ClientCredential(ClientCredential.Type.passwd_login, login));
 			ClientIdentity identity = authentication.getIdentity();
 
-			if(!DAO.login_keys.has(identity.toString()) || !DAO.login_keys.getJSONObject(identity.toString()).has(keyHash)) throw new APIException(400, "Unknown key");
+			String key = DAO.loadKey(identity, keyHash);
+			if (key == null) throw new APIException(400, "Unknown key");
 
 			String challengeString = createRandomString(30);
 			String newSessionID = createRandomString(30);
 
 			ClientCredential credential = new ClientCredential(ClientCredential.Type.pubkey_challange, newSessionID);
-			Authentication challenge_auth = new Authentication(credential, DAO.authentication);
+			Authentication challenge_auth = DAO.getAuthentication(credential);
 			challenge_auth.setIdentity(identity);
 			challenge_auth.put("activated", true);
 
 			challenge_auth.put("challenge", challengeString);
-			challenge_auth.put("key", DAO.login_keys.getJSONObject(identity.toString()).getString(keyHash));
+			challenge_auth.put("key", key);
 			challenge_auth.setExpireTime(60 * 10);
 
 			JSONObject result = new JSONObject();
@@ -282,7 +283,8 @@ public class LoginService extends AbstractAPIHandler implements APIHandler {
 				return new ServiceResponse(result);
 			}
 			else {
-				authorization.getAccounting().addRequest(this.getClass().getCanonicalName(), "invalid login");
+			    Accounting accouting = DAO.getAccounting(identity);
+			    accouting.getRequests().addRequest(this.getClass().getCanonicalName(), "invalid login");
 				throw new APIException(400, "Bad Signature");
 			}
 		}
@@ -299,13 +301,12 @@ public class LoginService extends AbstractAPIHandler implements APIHandler {
      */
 	private Authentication getAuthentication(Query post, Authorization authorization, ClientCredential credential) throws APIException{
 		// create Authentication
-		Authentication authentication = new Authentication(credential, DAO.authentication);
+		Authentication authentication = DAO.getAuthentication(credential);
 
 		if (authentication.getIdentity() == null) { // check if identity is valid
-
 			authentication.delete();
-
-			authorization.getAccounting().addRequest(this.getClass().getCanonicalName(), "invalid login");
+			Accounting accouting = DAO.getAccounting(authentication.getIdentity());
+			accouting.getRequests().addRequest(this.getClass().getCanonicalName(), "invalid login");
 
 			Log.getLog().info("Invalid login try for unknown user: " + credential.getName() + " via passwd from host: " + post.getClientHost());
 			throw new APIException(422, "Invalid credentials");
@@ -323,7 +324,7 @@ public class LoginService extends AbstractAPIHandler implements APIHandler {
 		String token = createRandomString(30);
 
 		ClientCredential accessToken = new ClientCredential(ClientCredential.Type.access_token, token);
-		Authentication tokenAuthentication = new Authentication(accessToken, DAO.authentication);
+		Authentication tokenAuthentication = DAO.getAuthentication(accessToken);
 
 		tokenAuthentication.setIdentity(identity);
 
@@ -359,7 +360,9 @@ public class LoginService extends AbstractAPIHandler implements APIHandler {
 		}
 
 		// check if too many invalid login attempts were made already
-		JSONObject invalidLogins = authorization.getAccounting().getRequests(this.getClass().getCanonicalName());
+
+        Accounting accouting = DAO.getAccounting(authorization.getIdentity());
+		JSONObject invalidLogins = accouting.getRequests().getRequests(this.getClass().getCanonicalName());
 		long period = permissions.getLong("periodSeconds", 600) * 1000; // get time period in which wrong logins are counted (e.g. the last 10 minutes)
 		int counter = 0;
 		for(String key : invalidLogins.keySet()){
