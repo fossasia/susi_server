@@ -2,13 +2,20 @@ package ai.susi.server.api.aaa;
 
 import ai.susi.DAO;
 import ai.susi.json.JsonObjectWithDefault;
-import ai.susi.server.*;
-import org.json.JSONArray;
+import ai.susi.server.APIException;
+import ai.susi.server.APIHandler;
+import ai.susi.server.AbstractAPIHandler;
+import ai.susi.server.Authorization;
+import ai.susi.server.BaseUserRole;
+import ai.susi.server.ClientIdentity;
+import ai.susi.server.Query;
+import ai.susi.server.ServiceResponse;
+
 import org.json.JSONObject;
 
 import javax.servlet.http.HttpServletResponse;
 import java.util.ArrayList;
-import java.util.Iterator;
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -39,14 +46,13 @@ public class GetAllUsers extends AbstractAPIHandler implements APIHandler {
     @Override
     public ServiceResponse serviceImpl(Query call, HttpServletResponse response, Authorization rights, final JsonObjectWithDefault permissions) throws APIException {
         JSONObject result = new JSONObject();
-        Iterator<String> keysToCopyIterator = DAO.authorization.toJSON().keys();
+        Collection<ClientIdentity> authorized = DAO.getAuthorizedClients();
         List<String> keysList = new ArrayList<String>();
-        while (keysToCopyIterator.hasNext()) {
-            String key = (String) keysToCopyIterator.next();
-            keysList.add(key);
-        }
+        authorized.forEach(client -> keysList.add(client.toString()));
         String[] keysArray = keysList.toArray(new String[keysList.size()]);
-        result.put("users", DAO.authorization.toJSON());
+        JSONObject users = new JSONObject();
+        authorized.forEach(client -> users.put(client.getClient(), client.toJSON()));
+        result.put("users", users);
         result.put("username", keysArray);
         return new ServiceResponse(result);
     }

@@ -117,7 +117,7 @@ public class SusiMind {
                         if (f.getName().endsWith(".aiml")) {
                             lesson = SusiExpert.readAIMLExpert(f);
                         }
-                        learn(lesson);
+                        learn(lesson, f);
                     } catch (Throwable e) {
                         DAO.severe("BAD JSON FILE: " + f.getAbsolutePath() + ", " + e.getMessage());
                         e.printStackTrace();
@@ -130,7 +130,7 @@ public class SusiMind {
     }
 
     
-    public SusiMind learn(JSONObject json) {
+    public SusiMind learn(JSONObject json, File origin) {
 
         // teach the language parser
         this.reader.learn(json);
@@ -153,7 +153,7 @@ public class SusiMind {
         final List<Pattern> removalPattern = new ArrayList<>();
         JSONArray skillset = json.has("rules") ? json.getJSONArray("rules") : json.has("skills") ? json.getJSONArray("skills") : new JSONArray();
         skillset.forEach(j -> {
-            List<SusiSkill> skills = SusiSkill.getSkills((JSONObject) j);
+            List<SusiSkill> skills = SusiSkill.getSkills((JSONObject) j, origin);
             skills.forEach(skill ->
                 skill.getKeys().forEach(key -> {
                     Set<SusiSkill> l = this.skilltrigger.get(key);
@@ -340,8 +340,9 @@ public class SusiMind {
             File init = new File(new File("conf"), "susi");
             File watch = new File(new File("data"), "susi");
             SusiMind mem = new SusiMind(watch, init, watch);
-            JSONObject lesson = SusiExpert.readJsonExpert(new File("conf/susi/susi_cognition_000.json"));
-            mem.learn(lesson);
+            File file = new File("conf/susi/susi_cognition_000.json");
+            JSONObject lesson = SusiExpert.readJsonExpert(file);
+            mem.learn(lesson, file);
             System.out.println(mem.new Reaction("I feel funny", "localhost", new SusiThought()).getExpression());
             System.out.println(mem.new Reaction("Help me!", "localhost", new SusiThought()).getExpression());
         } catch (FileNotFoundException e) {

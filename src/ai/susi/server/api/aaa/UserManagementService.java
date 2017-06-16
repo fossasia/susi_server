@@ -26,6 +26,10 @@ import ai.susi.json.JsonObjectWithDefault;
 import ai.susi.server.*;
 
 import javax.servlet.http.HttpServletResponse;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 
 public class UserManagementService extends AbstractAPIHandler implements APIHandler {
@@ -78,7 +82,10 @@ public class UserManagementService extends AbstractAPIHandler implements APIHand
 		switch (post.get("show","")){
 			case "user-list":
 				if(permissions.getBoolean("list_users", false)){
-					result.put("user-list", DAO.authorization.toJSON());
+					Collection<ClientIdentity> authorized = DAO.getAuthorizedClients();
+			        JSONObject users = new JSONObject();
+			        authorized.forEach(client -> users.put(client.getClient(), client.toJSON()));
+					result.put("user-list", users);
 				} else throw new APIException(403, "Forbidden");
 				break;
 			case "user-roles":
