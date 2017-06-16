@@ -50,11 +50,18 @@ public class GetGroupMembers extends AbstractAPIHandler implements APIHandler {
             Iterator<?> i = s.iterator();
             do{
                 String k = i.next().toString();
+
+                if(!model_name.equals(k)){
+                    return new ServiceResponse(success);
+                }
+
             }while(i.hasNext());
+
 
             return new ServiceResponse(allUsers);
 
         }
+            
     }
 
 }
