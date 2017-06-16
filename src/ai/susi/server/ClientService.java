@@ -35,7 +35,7 @@ public class ClientService extends Client {
         apiAccess, // service grants access to a specific api
     }
     
-    public ClientService(String rawIdString) {
+    public ClientService(String rawIdString) throws IllegalArgumentException {
         super(rawIdString);
         this.json = new JSONObject(true);
     }

@@ -97,7 +97,7 @@ public class PasswordRecoveryService extends AbstractAPIHandler implements APIHa
 		ClientCredential credential = new ClientCredential(ClientCredential.Type.passwd_login, usermail);
 		ClientIdentity identity = new ClientIdentity(ClientIdentity.Type.email, credential.getName());
 
-		if (!DAO.authentication.has(credential.toString())) {
+		if (!DAO.hasAuthentication(credential)) {
 			throw new APIException(422, "email does not exist");
 		}
 

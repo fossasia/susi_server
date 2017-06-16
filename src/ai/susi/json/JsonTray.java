@@ -23,6 +23,8 @@ package ai.susi.json;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -122,5 +124,14 @@ public class JsonTray {
 	    	}
     	}
     	return j;
+    }
+    
+    public Collection<String> keys() {
+    	ArrayList<String> keys = new ArrayList<>();
+    	keys.addAll(this.per.keySet());
+    	synchronized (this.vol) {
+    		keys.addAll(this.vol.getMap().keySet());
+    	}
+    	return keys;
     }
 }
