@@ -4,6 +4,7 @@ import ai.susi.DAO;
 import ai.susi.json.JsonFile;
 import ai.susi.json.JsonObjectWithDefault;
 import ai.susi.server.*;
+import com.sun.org.apache.xpath.internal.operations.Bool;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -35,11 +36,13 @@ public class GetGroupMembers extends AbstractAPIHandler implements APIHandler {
 
     @Override
     public ServiceResponse serviceImpl(Query call, HttpServletResponse response, Authorization rights, final JsonObjectWithDefault permissions) {
+        Boolean foundUser;
         JSONObject success = new JSONObject();
         success.put("success",false);
         JSONObject allUsers ;
         allUsers = DAO.group;
         String model_name = call.get("group", null);
+        foundUser = false;
         if(model_name==null){
             return new ServiceResponse(success);
         }
@@ -51,17 +54,28 @@ public class GetGroupMembers extends AbstractAPIHandler implements APIHandler {
             do{
                 String k = i.next().toString();
 
-                if(!model_name.equals(k)){
-                    return new ServiceResponse(success);
+                if(model_name.equals(k)){
+                    foundUser=true;
+                    break;
                 }
+
 
             }while(i.hasNext());
 
+            if(foundUser) {
+                JSONObject details = new JSONObject();
+                details = allUsers.getJSONObject(model_name);
+                details.put("success",true);
+                return new ServiceResponse(details);
 
-            return new ServiceResponse(allUsers);
+            }
+            else
+                return new ServiceResponse(success);
+
+
 
         }
-            
+
     }
 
 }
