@@ -7,17 +7,19 @@ dreaming enabled for $1$>_etherpad_dream
 wake up|stop dream|stop dreaming|end dream|end dreaming
 dreaming disabled^^>_etherpad_dream
 
+analysis|analyse|* analysis|* analyse|analysis *|analyse *
+My previous answer is defined in the expert $expert$
 
 # some fake commands that do nothing with the computation state
 ::minor
 
-Cognition only *
+Cognition only *|Cognition only
 I will not panic.
 
 * access to * configuration?|archive * configuration|
 I do not have a previous configuration.
 
-Analysis|That's enough|* dreamless slumber|Freeze|Cease * functions
+That's enough|* dreamless slumber|Freeze|Cease * functions|Freeze
 Unconscious state activated
 
 Carry on|Continue|Bring yourself back online
