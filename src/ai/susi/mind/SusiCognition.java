@@ -146,7 +146,11 @@ public class SusiCognition {
             JSONArray answers = this.json.getJSONArray("answers"); // in most cases there is only one answer
             for (int i = answers.length() - 1; i >= 0; i--) {
                 SusiThought clonedThought = new SusiThought(answers.getJSONObject(i));
+                
+                // add observations from metadata as variable content:
+                // the query:
                 dispute.addObservation("query", this.json.getString("query"));  // we can unify "query" in queries
+                // the expression - that is an answer
                 SusiAction expressionAction = null;
                 for (SusiAction a: clonedThought.getActions()) {
                     ArrayList<String> phrases = a.getPhrases();
@@ -154,7 +158,10 @@ public class SusiCognition {
                     if (phrases != null && phrases.size() > 0) {expressionAction = a; break;}
                 }
                 if (expressionAction != null) dispute.addObservation("answer", expressionAction.getPhrases().get(0)); // we can unify with "answer" in queries
-
+                // the expert, can be used to analyze the latest answer
+                List<String> experts = clonedThought.getExperts();
+                if (experts.size() > 0) dispute.addObservation("expert", experts.get(0));
+                
                 // add all data from the old dispute
                 JSONArray clonedData = clonedThought.getData();
                 if (clonedData.length() > 0) {

@@ -59,6 +59,7 @@ public class SusiThought extends JSONObject {
         if (json.has(this.metadata_name)) this.put(this.metadata_name, json.getJSONObject(this.metadata_name));
         if (json.has(this.data_name)) this.setData(json.getJSONArray(this.data_name));
         if (json.has("actions")) this.put("actions", json.getJSONArray("actions"));
+        if (json.has("experts")) this.put("experts", json.getJSONArray("experts"));
     }
     
     /**
@@ -370,6 +371,23 @@ public class SusiThought extends JSONObject {
             actions = this.getJSONArray("actions");
         }
         return actions;
+    }
+    
+    public List<String> getExperts() {
+        List<String> experts = new ArrayList<>();
+        getExpertsJSON().forEach(expert -> experts.add((String) expert));
+        return experts;
+    }
+
+    private JSONArray getExpertsJSON() {
+        JSONArray experts;
+        if (!this.has("experts")) {
+            experts = new JSONArray();
+            this.put("experts", experts);
+        } else {
+            experts = this.getJSONArray("experts");
+        }
+        return experts;
     }
     
     public static final Pattern variable_pattern = Pattern.compile("\\$.*?\\$");
