@@ -49,7 +49,7 @@ public class JsonTray {
             e.printStackTrace();
         }
     }
-    
+
     public void close() {
         JSONObject j = new JSONObject(true);
         for (Map.Entry<String, JSONObject> entry: this.vol.getMap().entrySet()) {

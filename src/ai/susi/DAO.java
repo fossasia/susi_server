@@ -82,7 +82,7 @@ public class DAO {
     public  static JsonTray passwordreset;
     public  static Map<String, Accounting> accounting_temporary = new HashMap<>();
     private static JsonFile login_keys;
-    public static Groups group;
+    public static JsonTray group;
 
 
     // built-in artificial intelligence
@@ -172,10 +172,12 @@ public class DAO {
         login_keys = new JsonFile(login_keys_path.toFile());
         OS.protectPath(login_keys_path);
 
-        Path groups_path = settings_dir.resolve("groups.json");
-        group = new Groups((groups_path.toFile()));
-        OS.protectPath(groups_path);
 
+        Path groups_per = settings_dir.resolve("groups.json");
+        Path groups_vol = settings_dir.resolve("groups_session.json");
+        group = new JsonTray(groups_per.toFile(), groups_vol.toFile(), 1000000);
+        OS.protectPath(groups_per);
+        OS.protectPath(groups_vol);
 
 
         Log.getLog().info("Initializing user roles");

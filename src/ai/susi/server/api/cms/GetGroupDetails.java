@@ -3,6 +3,7 @@ package ai.susi.server.api.cms;
 import ai.susi.DAO;
 import ai.susi.json.JsonFile;
 import ai.susi.json.JsonObjectWithDefault;
+import ai.susi.json.JsonTray;
 import ai.susi.server.*;
 import com.sun.org.apache.xpath.internal.operations.Bool;
 import org.json.JSONArray;
@@ -47,7 +48,7 @@ public class GetGroupDetails extends AbstractAPIHandler implements APIHandler {
         JSONObject success = new JSONObject();
         success.put("success", false);
         JSONObject allUsers;
-        allUsers = DAO.group;
+        allUsers = DAO.group.toJSON();
         String model_name = call.get("group", null);
         foundUser = false;
         if (model_name == null) {
