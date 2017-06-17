@@ -1,0 +1,18 @@
+{
+  "@context":"http://schema.org",
+  "@type":"SoftwareApplication",
+  "permissions":"/api/changeRoles",
+  "name":"changeuserroles",
+  "headline":"Change User Roles",
+  "alternativeHeadline":"Change User Roles",
+  "applicationCategory":"Accounts API",
+  "applicationSubCategory":"account operations",
+  "operatingSystem":"http://api.susi.ai",
+  "author":{
+    "@type":"Person",
+    "name":"Chetan Kaushik",
+    "url":"https://github.com/dynamitechetan",
+    "email":"dynamitechetan@gmail.com",
+    "sameAs":"https://github.com/dynamitechetan"
+  }
+}

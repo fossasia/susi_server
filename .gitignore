@@ -9,6 +9,9 @@
 
 *.xml~
 
+# For MAC OSX 
+.DS_Store
+
 # python
 venv/*
 
