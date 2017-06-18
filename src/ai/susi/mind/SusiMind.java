@@ -50,6 +50,7 @@ public class SusiMind {
     public final static int ATTENTION_TIME = 5;
     
     private final Map<String, Set<SusiSkill>> skilltrigger; // a map from a keyword to a set of skills
+    private final Map<String, List<String>> expertexamples; // a map from an expert path to one example
     private final File[] watchpaths;
     private final File memorypath; // a path where the memory looks for new additions of knowledge with memory files
     private final Map<File, Long> observations; // a mapping of mind memory files to the time when the file was read the last time
@@ -68,9 +69,26 @@ public class SusiMind {
         this.observations = new HashMap<>();
         this.reader = new SusiReader();
         this.memories = new SusiMemory(memorypath, ATTENTION_TIME);
+        this.expertexamples = new TreeMap<>();
+
+        // learn all available skills
         try {observe();} catch (IOException e) {
             e.printStackTrace();
         }
+        
+        // test the skills using the example/expect terms
+        this.skilltrigger.values().forEach(skillset -> skillset.forEach(skill -> {
+            if (skill.getExample() != null) {
+                DAO.log("Skill for '" + skill.getExample() + "' in \n" + skill.getExpert() + "\n");
+                List<String> examples = this.expertexamples.get(skill.getExpert());
+                if (examples == null) {
+                    examples = new ArrayList<>();
+                    this.expertexamples.put(skill.getExpert(), examples);
+                }
+                examples.add(skill.getExample());
+            }
+            //if (skill.getExample() != null && skill.getExpect() != null) {}
+        }));
     }
 
     public SusiMemory getMemories() {
@@ -87,6 +105,10 @@ public class SusiMind {
     
     public List<TokenMapList> unanswered2tokenizedstats() {
         return this.memories.unanswered2tokenizedstats();
+    }
+    
+    public Map<String, List<String>> getExpertExamples() {
+        return this.expertexamples;
     }
     
     public SusiMind observe() throws IOException {

@@ -38,6 +38,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
+import ai.susi.DAO;
 import ai.susi.mind.SusiInference.Type;
 
 /**
@@ -61,6 +62,7 @@ public class SusiExpert {
         json.put("skills", skills);
         String lastLine = "", line = "";
         String bang_phrases = "", bang_type = "", bang_term = ""; StringBuilder bang_bag = new StringBuilder();
+        String example = "", expect = "";
         boolean prior = false;
         try {readloop: while ((line = br.readLine()) != null) {
             line = line.trim();
@@ -84,9 +86,11 @@ public class SusiExpert {
                         
                         // answers; must contain $!$
                         skill.put("actions", new JSONArray().put(SusiAction.answerAction(bang_term.split("\\|"))));
+                        if (example.length() > 0) skill.put("example", example);
+                        if (expect.length() > 0) skill.put("expect", expect);
                         skills.put(skill);
                     }
-                    if (bang_type.equals("console")) {
+                    else if (bang_type.equals("console")) {
                         // create a console skill
                         JSONObject skill = new JSONObject(true);
                         JSONArray phrases = new JSONArray();
@@ -144,6 +148,8 @@ public class SusiExpert {
                                     }
                                 });
                             }
+                            if (example.length() > 0) skill.put("example", example);
+                            if (expect.length() > 0) skill.put("expect", expect);
                             skills.put(skill);
                         }
                     }
@@ -161,12 +167,13 @@ public class SusiExpert {
                 line = line.toLowerCase();
                 if (line.startsWith("::minor")) prior = false;
                 if (line.startsWith("::prior")) prior = true;
-                lastLine = "";
+                lastLine = ""; example = ""; expect = "";
                 continue readloop;
             }
             
             if (line.startsWith("#")) {
-                lastLine = "";
+                // a comment line; ignore the line and consider it as whitespace
+                lastLine = ""; example = ""; expect = "";
                 continue readloop;
             }
             
@@ -184,38 +191,50 @@ public class SusiExpert {
                         String ifsubstring = line.substring(thenpos + 1).trim();
                         if (ifsubstring.length() > 0) {
                             String[] answers = ifsubstring.split("\\|");
-                            JSONObject skill = SusiSkill.answerSkill(phrases, "IF " + condition, answers, prior);
+                            JSONObject skill = SusiSkill.answerSkill(phrases, "IF " + condition, answers, prior, example, expect);
                             skills.put(skill);
                         }
                     } else {
                         String ifsubstring = line.substring(thenpos + 1, elsepos).trim();
                         if (ifsubstring.length() > 0) {
                             String[] ifanswers = ifsubstring.split("\\|");
-                            JSONObject skillif = SusiSkill.answerSkill(phrases, "IF " + condition, ifanswers, prior);
+                            JSONObject skillif = SusiSkill.answerSkill(phrases, "IF " + condition, ifanswers, prior, example, expect);
                             skills.put(skillif);
                         }
                         String elsesubstring = line.substring(elsepos + 1).trim();
                         if (elsesubstring.length() > 0) {
                             String[] elseanswers = elsesubstring.split("\\|");
-                            JSONObject skillelse = SusiSkill.answerSkill(phrases, "NOT " + condition, elseanswers, prior);
+                            JSONObject skillelse = SusiSkill.answerSkill(phrases, "NOT " + condition, elseanswers, prior, example, expect);
                             skills.put(skillelse);
                         }
                     }
                 } else if (line.startsWith("!") && (thenpos = line.indexOf(':')) > 0) {
-                    bang_phrases = lastLine;
-                    bang_type = line.substring(1, thenpos).trim().toLowerCase();
-                    bang_term = line.substring(thenpos + 1).trim();
-                    bang_bag.setLength(0);
+                    String head = line.substring(1, thenpos).trim().toLowerCase();
+                    String tail = line.substring(thenpos + 1).trim();
+                    // test bang type
+                    if (head.equals("example")) {
+                        example = tail;
+                    } else if (head.equals("expect")) {
+                        expect = tail;
+                    } else {
+                        // start multi-line bang
+                        bang_phrases = lastLine;
+                        bang_type = head;
+                        bang_term = tail;
+                        bang_bag.setLength(0);
+                    }
                     continue readloop;
                 } else {
                     String[] answers = line.split("\\|");
-                    JSONObject skill = SusiSkill.answerSkill(phrases, condition, answers, prior);
+                    JSONObject skill = SusiSkill.answerSkill(phrases, condition, answers, prior, example, expect);
                     //System.out.println(skill.toString());
                     skills.put(skill);
                 }
             }
             lastLine = line;
-        }} catch (IOException e) {}
+        }} catch (IOException e) {
+            DAO.log(e.getMessage());
+        }
         return json;
     }
     
@@ -274,7 +293,7 @@ public class SusiExpert {
             }
         }
         if (phrases != null && answers != null) {
-            return SusiSkill.answerSkill(phrases, null, answers, false);
+            return SusiSkill.answerSkill(phrases, null, answers, false, null, null);
         }
         return null;
     }

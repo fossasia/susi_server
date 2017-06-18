@@ -59,7 +59,7 @@ public class SusiSkill {
     private int user_subscore;
     private Score score;
     private int id;
-    private String expert;
+    private String expert, example, expect;
     
     /**
      * Generate a set of skills from a single skill definition. This may be possible if the skill contains an 'options'
@@ -139,8 +139,15 @@ public class SusiSkill {
         // remember the origin
         this.expert = origin.getAbsolutePath();
     	int i = this.expert.indexOf("/susi");
-    	if (i < 0) this.expert = ""; else this.expert = this.expert.substring(i);
+    	if (i < 0) this.expert = ""; else {
+    	    this.expert = this.expert.substring(i);
+    	    if (this.expert.startsWith("/susi/")) this.expert = this.expert.substring(5);
+    	}
         
+    	// quality control
+        this.example = json.has("example") ? json.getString("example") : "";
+        this.expect = json.has("expect") ? json.getString("expect") : "";
+    	
         // calculate the id
         String ids0 = this.actions.toString();
         String ids1 = this.phrases.toString();
@@ -148,7 +155,15 @@ public class SusiSkill {
     }
     
     public String getExpert() {
-    	return this.expert;
+        return this.expert == null || this.expert.length() == 0 ? null : this.expert;
+    }
+    
+    public String getExpect() {
+        return this.expect == null || this.expect.length() == 0 ? null : this.expect;
+    }
+    
+    public String getExample() {
+        return this.example == null || this.example.length() == 0 ? null : this.example;
     }
     
     public int hashCode() {
@@ -168,29 +183,41 @@ public class SusiSkill {
         if (this.comment != null && this.comment.length() > 0) json.put("comment", this.comment);
         if (this.score != null) json.put("score", this.score.score);
         if (this.expert != null && this.expert.length() > 0) json.put("expert", this.expert);
+        if (this.example != null && this.example.length() > 0) json.put("example", example);
+        if (this.expect != null && this.expect.length() > 0) json.put("expect", expect);
         return json;
     }
     
-    public static JSONObject answerSkill(String[] phrases, String condition, String[] answers, boolean prior) {
-        JSONObject json = new JSONObject(true);
+    public static JSONObject answerSkill(
+            String[] phrases,
+            String condition,
+            String[] answers,
+            boolean prior,
+            String example,
+            String expect) {
+        JSONObject skill = new JSONObject(true);
 
         // write phrases
         JSONArray p = new JSONArray();
-        json.put("phrases", p);
+        skill.put("phrases", p);
         for (String phrase: phrases) p.put(SusiPhrase.simplePhrase(phrase.trim(), prior));
         
         // write conditions (if any)
         if (condition != null && condition.length() > 0) {
             JSONArray c = new JSONArray();
-            json.put("process", c);
+            skill.put("process", c);
             c.put(SusiInference.simpleMemoryProcess(condition));   
         }
+
+        // quality control
+        if (example != null && example.length() > 0) skill.put("example", example);
+        if (expect != null && expect.length() > 0) skill.put("expect", expect);
         
         // write actions
         JSONArray a = new JSONArray();
-        json.put("actions", a);
+        skill.put("actions", a);
         a.put(SusiAction.answerAction(answers));        
-        return json;
+        return skill;
     }
     
     public String toString() {
