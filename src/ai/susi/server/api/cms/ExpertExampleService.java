@@ -31,6 +31,8 @@ import ai.susi.server.ServiceResponse;
 import org.json.JSONObject;
 
 import javax.servlet.http.HttpServletResponse;
+
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -59,6 +61,12 @@ public class ExpertExampleService extends AbstractAPIHandler implements APIHandl
     @Override
     public ServiceResponse serviceImpl(Query call, HttpServletResponse response, Authorization rights, final JsonObjectWithDefault permissions) {
 
+        try {
+            DAO.susi.observe(); // get a database update
+        } catch (IOException e) {
+            DAO.log(e.getMessage());
+        }
+        
         String model = call.get("model", "");
         String group = call.get("group", "");
         String language = call.get("language", "");
