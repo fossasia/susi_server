@@ -28,6 +28,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -50,7 +51,7 @@ public class SusiMind {
     public final static int ATTENTION_TIME = 5;
     
     private final Map<String, Set<SusiSkill>> skilltrigger; // a map from a keyword to a set of skills
-    private final Map<String, List<String>> expertexamples; // a map from an expert path to one example
+    private final Map<String, Set<String>> expertexamples; // a map from an expert path to one example
     private final File[] watchpaths;
     private final File memorypath; // a path where the memory looks for new additions of knowledge with memory files
     private final Map<File, Long> observations; // a mapping of mind memory files to the time when the file was read the last time
@@ -79,10 +80,10 @@ public class SusiMind {
         // test the skills using the example/expect terms
         this.skilltrigger.values().forEach(skillset -> skillset.forEach(skill -> {
             if (skill.getExample() != null) {
-                DAO.log("Skill for '" + skill.getExample() + "' in \n" + skill.getExpert() + "\n");
-                List<String> examples = this.expertexamples.get(skill.getExpert());
+                //DAO.log("Skill for '" + skill.getExample() + "' in \n" + skill.getExpert() + "\n");
+                Set<String> examples = this.expertexamples.get(skill.getExpert());
                 if (examples == null) {
-                    examples = new ArrayList<>();
+                    examples = new LinkedHashSet<>();
                     this.expertexamples.put(skill.getExpert(), examples);
                 }
                 examples.add(skill.getExample());
@@ -107,7 +108,7 @@ public class SusiMind {
         return this.memories.unanswered2tokenizedstats();
     }
     
-    public Map<String, List<String>> getExpertExamples() {
+    public Map<String, Set<String>> getExpertExamples() {
         return this.expertexamples;
     }
     
