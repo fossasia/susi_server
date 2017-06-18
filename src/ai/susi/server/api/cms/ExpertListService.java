@@ -46,7 +46,12 @@ public class ExpertListService extends AbstractAPIHandler implements APIHandler 
         fileList =  listFilesForFolder(language, fileList);
         JSONArray jsArray = new JSONArray(fileList);
 
-        return new ServiceResponse(jsArray);
+        JSONObject json = new JSONObject(true)
+                .put("model", model_name)
+                .put("group", group_name)
+                .put("language", language_name)
+                .put("list", jsArray);
+        return new ServiceResponse(json);
 
     }
 
