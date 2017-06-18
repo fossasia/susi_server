@@ -464,6 +464,7 @@ public class SusiServer {
                 DownloadDataSettings.class,
                 SignUpService.class,
                 TopMenuService.class,
+                ListSettingsService.class,
                 ExpertConvertJsonToTxtService.class,
                 GroupListService.class,
                 ExpertConvertTxtToJsonService.class,
