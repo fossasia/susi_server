@@ -76,20 +76,6 @@ public class SusiMind {
         try {observe();} catch (IOException e) {
             e.printStackTrace();
         }
-        
-        // test the skills using the example/expect terms
-        this.skilltrigger.values().forEach(skillset -> skillset.forEach(skill -> {
-            if (skill.getExample() != null) {
-                //DAO.log("Skill for '" + skill.getExample() + "' in \n" + skill.getExpert() + "\n");
-                Set<String> examples = this.expertexamples.get(skill.getExpert());
-                if (examples == null) {
-                    examples = new LinkedHashSet<>();
-                    this.expertexamples.put(skill.getExpert(), examples);
-                }
-                examples.add(skill.getExample());
-            }
-            //if (skill.getExample() != null && skill.getExpect() != null) {}
-        }));
     }
 
     public SusiMemory getMemories() {
@@ -177,7 +163,8 @@ public class SusiMind {
         JSONArray skillset = json.has("rules") ? json.getJSONArray("rules") : json.has("skills") ? json.getJSONArray("skills") : new JSONArray();
         skillset.forEach(j -> {
             List<SusiSkill> skills = SusiSkill.getSkills((JSONObject) j, origin);
-            skills.forEach(skill ->
+            skills.forEach(skill -> {
+                // add removal pattern
                 skill.getKeys().forEach(key -> {
                     Set<SusiSkill> l = this.skilltrigger.get(key);
                     if (l == null) {
@@ -188,10 +175,21 @@ public class SusiMind {
                     skill.getPhrases().forEach(phrase -> removalPattern.add(phrase.getPattern()));
                     //skill.getPhrases().forEach(phrase -> this.memories.removeUnanswered(phrase.getPattern()));
                     //System.out.println("***DEBUG: ADD SKILL FOR KEY " + key + ": " + skill.toString());
-                })
-            );
+                });
+
+                // collect skill example and test the skills using the example/expect terms
+                if (skill.getExample() != null) {
+                    //DAO.log("Skill for '" + skill.getExample() + "' in \n" + skill.getExpert() + "\n");
+                    Set<String> examples = this.expertexamples.get(skill.getExpert());
+                    if (examples == null) {
+                        examples = new LinkedHashSet<>();
+                        this.expertexamples.put(skill.getExpert(), examples);
+                    }
+                    examples.add(skill.getExample());
+                }
+                //if (skill.getExample() != null && skill.getExpect() != null) {}
+            });
         });
-        
         
         // finally remove patterns in the memory that are known in a background process
         new Thread(new Runnable() {
