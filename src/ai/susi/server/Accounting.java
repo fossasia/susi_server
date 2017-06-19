@@ -45,7 +45,7 @@ public class Accounting {
         Log.getLog().debug("new accounting");
 
         this.parent = parent;
-        this.requests = null;
+        this.requests = new UserRequests(); // temporary user request space
         this.identity = identity;
 
         if(parent != null){
@@ -58,11 +58,6 @@ public class Accounting {
         }
         else json = new JSONObject();
 
-    }
-    
-    public UserRequests setRequests(UserRequests accounting) {
-        this.requests = accounting;
-        return this.requests;
     }
     
     public UserRequests getRequests() {

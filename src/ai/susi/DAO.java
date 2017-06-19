@@ -34,7 +34,6 @@ import java.util.Set;
 
 import javax.annotation.Nonnull;
 
-import ai.susi.server.*;
 import com.google.common.io.Files;
 
 import ai.susi.json.JsonFile;
@@ -44,7 +43,6 @@ import ai.susi.mind.SusiMind;
 import ai.susi.server.APIException;
 import ai.susi.server.AccessTracker;
 import ai.susi.server.Accounting;
-import ai.susi.server.UserRequests;
 import ai.susi.server.Authentication;
 import ai.susi.server.Authorization;
 import ai.susi.server.ClientCredential;
@@ -92,7 +90,6 @@ public class DAO {
     private static JsonTray accounting;
     public  static UserRoles userRoles;
     public  static JsonTray passwordreset;
-    public  static Map<String, UserRequests> users_requests = new HashMap<>();
     private static JsonFile login_keys;
     public static JsonTray group;
 
