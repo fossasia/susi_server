@@ -16,9 +16,11 @@ import java.util.Collection;
 /**
  * Created by saurabh on 20/6/17.
  * Servlet to read user setting
- * test locally at http://127.0.0.1:4000/aaa/changeUserSettings.json
+ * test locally at http://127.0.0.1:4000/aaa/changeUserSettings.json?key=theme&value=dark
  */
 public class ChangeUserSettings extends AbstractAPIHandler implements APIHandler {
+
+    private static final long serialVersionUID = -7418883159709458190L;
 
     @Override
     public String getAPIPath() {
@@ -42,6 +44,7 @@ public class ChangeUserSettings extends AbstractAPIHandler implements APIHandler
        if (key == null || value == null ) {
            throw new APIException(400, "Bad Service call, key or value parameters not provided");
        } else {
+           
            Accounting accounting = DAO.getAccounting(authorization.getIdentity());
            JSONObject jsonObject = new JSONObject();
            jsonObject.put(key,value);
