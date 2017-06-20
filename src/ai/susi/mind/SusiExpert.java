@@ -42,7 +42,7 @@ import ai.susi.DAO;
 import ai.susi.mind.SusiInference.Type;
 
 /**
- * A susi expert is a set of skills.
+ * A susi expert is a set of intents.
  * This class provides parser methods for such sets, given as text files
  */
 public class SusiExpert {
@@ -56,10 +56,10 @@ public class SusiExpert {
      * @throws FileNotFoundException
      */
     public static JSONObject readEzDExpert(BufferedReader br) throws JSONException {
-        // read the text file and turn it into a skill json; then learn that
+        // read the text file and turn it into a intent json; then learn that
         JSONObject json = new JSONObject();
-        JSONArray skills = new JSONArray();
-        json.put("skills", skills);
+        JSONArray intents = new JSONArray();
+        json.put("intents", intents);
         String lastLine = "", line = "";
         String bang_phrases = "", bang_type = "", bang_term = ""; StringBuilder bang_bag = new StringBuilder();
         String example = "", expect = "";
@@ -72,29 +72,29 @@ public class SusiExpert {
                 if (line.toLowerCase().equals("eol")) {
                     // stop collection
                     if (bang_type.equals("javascript")) {
-                        // create a javascript skill
-                        JSONObject skill = new JSONObject(true);
+                        // create a javascript intent
+                        JSONObject intent = new JSONObject(true);
                         JSONArray phrases = new JSONArray();
-                        skill.put("phrases", phrases);
+                        intent.put("phrases", phrases);
                         for (String phrase: bang_phrases.split("\\|")) phrases.put(SusiPhrase.simplePhrase(phrase.trim(), prior));
                         
                         // javascript process
                         JSONObject process = new JSONObject();
                         process.put("type", Type.javascript.name());
                         process.put("expression", bang_bag.toString());
-                        skill.put("process", new JSONArray().put(process));
+                        intent.put("process", new JSONArray().put(process));
                         
                         // answers; must contain $!$
-                        skill.put("actions", new JSONArray().put(SusiAction.answerAction(bang_term.split("\\|"))));
-                        if (example.length() > 0) skill.put("example", example);
-                        if (expect.length() > 0) skill.put("expect", expect);
-                        skills.put(skill);
+                        intent.put("actions", new JSONArray().put(SusiAction.answerAction(bang_term.split("\\|"))));
+                        if (example.length() > 0) intent.put("example", example);
+                        if (expect.length() > 0) intent.put("expect", expect);
+                        intents.put(intent);
                     }
                     else if (bang_type.equals("console")) {
-                        // create a console skill
-                        JSONObject skill = new JSONObject(true);
+                        // create a console intent
+                        JSONObject intent = new JSONObject(true);
                         JSONArray phrases = new JSONArray();
-                        skill.put("phrases", phrases);
+                        intent.put("phrases", phrases);
                         for (String phrase: bang_phrases.split("\\|")) phrases.put(SusiPhrase.simplePhrase(phrase.trim(), prior));
                         
                         // console process
@@ -104,11 +104,11 @@ public class SusiExpert {
                         if (bo.has("url") && bo.has("path")) {
                             JSONObject definition = new JSONObject().put("url", bo.get("url")).put("path", bo.get("path"));
                             process.put("definition", definition);
-                            skill.put("process", new JSONArray().put(process));
+                            intent.put("process", new JSONArray().put(process));
                             
                             // actions; we may have several actions here
                             JSONArray actions = new JSONArray();
-                            skill.put("actions", actions);
+                            intent.put("actions", actions);
                             
                             // answers; must contain names from the console result array
                             if (bang_term.length() > 0) {
@@ -148,9 +148,9 @@ public class SusiExpert {
                                     }
                                 });
                             }
-                            if (example.length() > 0) skill.put("example", example);
-                            if (expect.length() > 0) skill.put("expect", expect);
-                            skills.put(skill);
+                            if (example.length() > 0) intent.put("example", example);
+                            if (expect.length() > 0) intent.put("expect", expect);
+                            intents.put(intent);
                         }
                     }
                     bang_phrases = "";
@@ -179,7 +179,7 @@ public class SusiExpert {
             
             // read content
             if (line.length() > 0 && lastLine.length() > 0) {
-                // mid of conversation (last answer is query for next skill)
+                // mid of conversation (last answer is query for next intent)
                 String[] phrases = lastLine.split("\\|");
                 String condition = null;
                 int thenpos = -1;
@@ -191,21 +191,21 @@ public class SusiExpert {
                         String ifsubstring = line.substring(thenpos + 1).trim();
                         if (ifsubstring.length() > 0) {
                             String[] answers = ifsubstring.split("\\|");
-                            JSONObject skill = SusiSkill.answerSkill(phrases, "IF " + condition, answers, prior, example, expect);
-                            skills.put(skill);
+                            JSONObject intent = SusiIntent.answerIntent(phrases, "IF " + condition, answers, prior, example, expect);
+                            intents.put(intent);
                         }
                     } else {
                         String ifsubstring = line.substring(thenpos + 1, elsepos).trim();
                         if (ifsubstring.length() > 0) {
                             String[] ifanswers = ifsubstring.split("\\|");
-                            JSONObject skillif = SusiSkill.answerSkill(phrases, "IF " + condition, ifanswers, prior, example, expect);
-                            skills.put(skillif);
+                            JSONObject intentif = SusiIntent.answerIntent(phrases, "IF " + condition, ifanswers, prior, example, expect);
+                            intents.put(intentif);
                         }
                         String elsesubstring = line.substring(elsepos + 1).trim();
                         if (elsesubstring.length() > 0) {
                             String[] elseanswers = elsesubstring.split("\\|");
-                            JSONObject skillelse = SusiSkill.answerSkill(phrases, "NOT " + condition, elseanswers, prior, example, expect);
-                            skills.put(skillelse);
+                            JSONObject intentelse = SusiIntent.answerIntent(phrases, "NOT " + condition, elseanswers, prior, example, expect);
+                            intents.put(intentelse);
                         }
                     }
                 } else if (line.startsWith("!") && (thenpos = line.indexOf(':')) > 0) {
@@ -226,9 +226,9 @@ public class SusiExpert {
                     continue readloop;
                 } else {
                     String[] answers = line.split("\\|");
-                    JSONObject skill = SusiSkill.answerSkill(phrases, condition, answers, prior, example, expect);
-                    //System.out.println(skill.toString());
-                    skills.put(skill);
+                    JSONObject intent = SusiIntent.answerIntent(phrases, condition, answers, prior, example, expect);
+                    //System.out.println(intent.toString());
+                    intents.put(intent);
                 }
             }
             lastLine = line;
@@ -264,13 +264,13 @@ public class SusiExpert {
         Node node = root;
         NodeList nl = node.getChildNodes();
         JSONObject json = new JSONObject();
-        JSONArray skills = new JSONArray();
-        json.put("skills", skills);
+        JSONArray intents = new JSONArray();
+        json.put("intents", intents);
         for (int i = 0; i < nl.getLength(); i++) {
             String nodename = nl.item(i).getNodeName().toLowerCase();
             if (nodename.equals("category")) {
-                JSONObject skill = readAIMLCategory(nl.item(i));
-                if (skill != null && skill.length() > 0) skills.put(skill);
+                JSONObject intent = readAIMLCategory(nl.item(i));
+                if (intent != null && intent.length() > 0) intents.put(intent);
             }
             System.out.println("ROOT NODE " + nl.item(i).getNodeName());
         }
@@ -293,7 +293,7 @@ public class SusiExpert {
             }
         }
         if (phrases != null && answers != null) {
-            return SusiSkill.answerSkill(phrases, null, answers, false, null, null);
+            return SusiIntent.answerIntent(phrases, null, answers, false, null, null);
         }
         return null;
     }

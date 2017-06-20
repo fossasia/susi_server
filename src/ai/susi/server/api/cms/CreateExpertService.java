@@ -16,7 +16,7 @@ import java.io.IOException;
 /**
  * Created by saurabh on 7/6/17.
  * This Service creates an expert as per given query.
- * The expert name given in the query should not exist in the SUSI Skills Folder
+ * The expert name given in the query should not exist in the SUSI intents Folder
  * Can be tested on :-
  * http://localhost:4000/cms/createExpert.txt?model=general&group=knowledge&language=en&expert=whois
  */

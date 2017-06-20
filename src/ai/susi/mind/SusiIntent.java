@@ -1,5 +1,5 @@
 /**
- *  SusiSkill (renamed from SusiRule)
+ *  SusiIntent
  *  Copyright 29.06.2016 by Michael Peter Christen, @0rb1t3r
  *
  *  This library is free software; you can redistribute it and/or
@@ -41,12 +41,12 @@ import ai.susi.DAO;
 import ai.susi.tools.TimeoutMatcher;
 
 /**
- * A Skill in the Susi AI framework is a collection of phrases, inference processes and actions that are applied
- * on external sense data if the phrases identify that this skill set would be applicable on the sense data.
- * A set of skills would express 'knowledge' on how to handle activities from the outside of the AI and react on
+ * An intent in the Susi AI framework is a collection of phrases, inference processes and actions that are applied
+ * on external sense data if the phrases identify that this intent set would be applicable on the sense data.
+ * A set of intent would is a intent on how to handle activities from the outside of the AI and react on
  * such activities.
  */
-public class SusiSkill {
+public class SusiIntent {
 
     public final static String CATCHALL_KEY = "*";
     public final static int    DEFAULT_SCORE = 10;
@@ -62,14 +62,14 @@ public class SusiSkill {
     private String expert, example, expect;
     
     /**
-     * Generate a set of skills from a single skill definition. This may be possible if the skill contains an 'options'
-     * object which creates a set of skills, one for each option. The options combine with one set of phrases
-     * @param json - a multi-skill definition
-     * @return a set of skills
+     * Generate a set of intents from a single intent definition. This may be possible if the intent contains an 'options'
+     * object which creates a set of intents, one for each option. The options combine with one set of phrases
+     * @param json - a multi-intent definition
+     * @return a set of intents
      */
-    public static List<SusiSkill> getSkills(JSONObject json, File origin) {
+    public static List<SusiIntent> getIntents(JSONObject json, File origin) {
         if (!json.has("phrases")) throw new PatternSyntaxException("phrases missing", "", 0);
-        final List<SusiSkill> skills = new ArrayList<>();
+        final List<SusiIntent> intents = new ArrayList<>();
         if (json.has("options")) {
             JSONArray options = json.getJSONArray("options");
             for (int i = 0; i < options.length(); i++) {
@@ -77,25 +77,25 @@ public class SusiSkill {
                 option.put("phrases", json.get("phrases"));
                 JSONObject or = options.getJSONObject(i);
                 for (String k: or.keySet()) option.put(k, or.get(k));
-                skills.add(new SusiSkill(option, origin));
+                intents.add(new SusiIntent(option, origin));
             }
         } else {
             try {
-                SusiSkill skill = new SusiSkill(json, origin);
-                skills.add(skill);
+                SusiIntent intent = new SusiIntent(json, origin);
+                intents.add(intent);
             } catch (PatternSyntaxException e) {
-                Logger.getLogger("SusiSkill").warning("Regular Expression error in Susi Skill: " + json.toString(2));
+                Logger.getLogger("SusiIntent").warning("Regular Expression error in Susi Intent: " + json.toString(2));
             }
         }
-        return skills;
+        return intents;
     }
     
     /**
-     * Create a skill by parsing of the skill description
-     * @param json the skill description
+     * Create an intent by parsing of the intent description
+     * @param json the intent description
      * @throws PatternSyntaxException
      */
-    private SusiSkill(JSONObject json, File origin) throws PatternSyntaxException {
+    private SusiIntent(JSONObject json, File origin) throws PatternSyntaxException {
         
         // extract the phrases and the phrases subscore
         if (!json.has("phrases")) throw new PatternSyntaxException("phrases missing", "", 0);
@@ -188,36 +188,36 @@ public class SusiSkill {
         return json;
     }
     
-    public static JSONObject answerSkill(
+    public static JSONObject answerIntent(
             String[] phrases,
             String condition,
             String[] answers,
             boolean prior,
             String example,
             String expect) {
-        JSONObject skill = new JSONObject(true);
+        JSONObject intent = new JSONObject(true);
 
         // write phrases
         JSONArray p = new JSONArray();
-        skill.put("phrases", p);
+        intent.put("phrases", p);
         for (String phrase: phrases) p.put(SusiPhrase.simplePhrase(phrase.trim(), prior));
         
         // write conditions (if any)
         if (condition != null && condition.length() > 0) {
             JSONArray c = new JSONArray();
-            skill.put("process", c);
+            intent.put("process", c);
             c.put(SusiInference.simpleMemoryProcess(condition));   
         }
 
         // quality control
-        if (example != null && example.length() > 0) skill.put("example", example);
-        if (expect != null && expect.length() > 0) skill.put("expect", expect);
+        if (example != null && example.length() > 0) intent.put("example", example);
+        if (expect != null && expect.length() > 0) intent.put("expect", expect);
         
         // write actions
         JSONArray a = new JSONArray();
-        skill.put("actions", a);
+        intent.put("actions", a);
         a.put(SusiAction.answerAction(answers));        
-        return skill;
+        return intent;
     }
     
     public String toString() {
@@ -248,13 +248,13 @@ public class SusiSkill {
                 String m = SusiPhrase.extractMeat(token.toLowerCase());
                 if (m.length() > 1) s.add(m);
             }
-            // if there is no meat inside, it will not be possible to access the skill without the catchall skill, so remember that
+            // if there is no meat inside, it will not be possible to access the intent without the catchall intent, so remember that
             if (s.size() == 0) needsCatchall.set(true);
             
             ptl.add(s);
         });
         
-        // this is a kind of emergency case where we need a catchall skill because otherwise we cannot access one of the phrases
+        // this is a kind of emergency case where we need a catchall intent because otherwise we cannot access one of the phrases
         JSONArray a = new JSONArray();
         if (needsCatchall.get()) return a.put(CATCHALL_KEY);
         
@@ -285,18 +285,18 @@ public class SusiSkill {
     }
     
     /**
-     * To simplify the check weather or not a skill could be applicable, a key set is provided which
+     * To simplify the check weather or not a intent could be applicable, a key set is provided which
      * must match with input tokens literally. This key check prevents too large numbers of phrase checks
      * thus increasing performance.
-     * @return the keys which must appear in an input to allow that this skill can be applied
+     * @return the keys which must appear in an input to allow that this intent can be applied
      */
     public Set<String> getKeys() {
         return this.keys;
     }
     
     /**
-     * A skill may have a comment which describes what the skill means. It never has any computational effect.
-     * @return the skill comment
+     * An intent may have a comment which describes what the intent means. It never has any computational effect.
+     * @return the intent comment
      */
     public String getComment() {
         return this.comment;
@@ -309,16 +309,16 @@ public class SusiSkill {
     }
     
     /**
-     * The score is used to prefer one skill over another if that other skill has a lower score.
-     * The reason that this score is used is given by the fact that we need skills which have
-     * fuzzy phrase definitions and several skills might be selected because these fuzzy phrases match
-     * on the same input sequence. One example is the catch-all skill which fires always but has
+     * The score is used to prefer one intent over another if that other intent has a lower score.
+     * The reason that this score is used is given by the fact that we need intents which have
+     * fuzzy phrase definitions and several intents might be selected because these fuzzy phrases match
+     * on the same input sequence. One example is the catch-all intent which fires always but has
      * lowest priority.
      * In the context of artificial mind modeling the score plays the role of a positive emotion.
-     * If the AI learns that a skill was applied and caused a better situation (see also: game playing gamefield
-     * evaluation) then the skill might get the score increased. Having many skills which have a high score
+     * If the AI learns that a intent was applied and caused a better situation (see also: game playing gamefield
+     * evaluation) then the intent might get the score increased. Having many intents which have a high score
      * therefore might induce a 'good feeling' because it is known that the outcome will be good.
-     * @return a score which is used for sorting of the skills. The higher the better. Highest score wins.
+     * @return a score which is used for sorting of the intents. The higher the better. Highest score wins.
      */
     public class Score {
 
@@ -326,7 +326,7 @@ public class SusiSkill {
         public String log;
         
         public Score() {
-        if (SusiSkill.this.score != null) return;
+        if (SusiIntent.this.score != null) return;
         
         /*
          * Score Computation:
@@ -337,9 +337,9 @@ public class SusiSkill {
          * purpose: {answer, question, reply} purpose would have to be defined
          * The purpose can be computed using a pattern on the answer expression: is there a '?' at the end, is it a question. Is there also a '. ' (end of sentence) in the text, is it a reply.
 
-         * (2) the existence of a pattern where we decide between prior and minor skills
-         * pattern: {false, true} with/without pattern could be computed from the skill string
-         * all skills with pattern are ordered in the middle between prior and minor
+         * (2) the existence of a pattern where we decide between prior and minor intents
+         * pattern: {false, true} with/without pattern could be computed from the intent string
+         * all intents with pattern are ordered in the middle between prior and minor
          * this is combined with
          * prior: {false, true} overruling (prior=true) or default (prior=false) would have to be defined
          * The prior attribute can also be expressed as an replacement of a pattern type because it is only relevant if the query is not a pattern or regular expression.
@@ -350,14 +350,14 @@ public class SusiSkill {
          * (4) the whole size (total number of characters)
     
          * (5) the operation type
-         * op: {retrieval, computation, storage} the operation could be computed from the skill string
+         * op: {retrieval, computation, storage} the operation could be computed from the intent string
 
          * (6) the IO activity (-location)
-         * io: {remote, local, ram} the storage location can be computed from the skill string
+         * io: {remote, local, ram} the storage location can be computed from the intent string
     
          
          * (7) finally the subscore can be assigned manually
-         * subscore a score in a small range which can be used to distinguish skills within the same categories
+         * subscore a score in a small range which can be used to distinguish intents within the same categories
          */
         
         // extract the score
@@ -365,31 +365,31 @@ public class SusiSkill {
 
         // (1) conversation plan from the answer purpose
         final AtomicInteger dialogType_subscore = new AtomicInteger(0);
-        SusiSkill.this.actions.forEach(action -> dialogType_subscore.set(Math.max(dialogType_subscore.get(), action.getDialogType().getSubscore())));
+        SusiIntent.this.actions.forEach(action -> dialogType_subscore.set(Math.max(dialogType_subscore.get(), action.getDialogType().getSubscore())));
         this.score = this.score * SusiAction.DialogType.values().length + dialogType_subscore.get();
          
         // (2) pattern score
         final AtomicInteger phrases_subscore = new AtomicInteger(0);
-        SusiSkill.this.phrases.forEach(phrase -> phrases_subscore.set(Math.min(phrases_subscore.get(), phrase.getSubscore())));
+        SusiIntent.this.phrases.forEach(phrase -> phrases_subscore.set(Math.min(phrases_subscore.get(), phrase.getSubscore())));
         this.score = this.score * SusiPhrase.Type.values().length + phrases_subscore.get();
 
         // (3) meatsize: length of a phrase (counts letters)
         final AtomicInteger phrases_meatscore = new AtomicInteger(0);
-        SusiSkill.this.phrases.forEach(phrase -> phrases_meatscore.set(Math.max(phrases_meatscore.get(), phrase.getMeatsize())));
+        SusiIntent.this.phrases.forEach(phrase -> phrases_meatscore.set(Math.max(phrases_meatscore.get(), phrase.getMeatsize())));
         this.score = this.score * 100 + phrases_meatscore.get();
         
         // (4) whole size: length of the pattern
         final AtomicInteger phrases_wholesize = new AtomicInteger(0);
-        SusiSkill.this.phrases.forEach(phrase -> phrases_wholesize.set(Math.max(phrases_wholesize.get(), phrase.getPattern().toString().length())));
+        SusiIntent.this.phrases.forEach(phrase -> phrases_wholesize.set(Math.max(phrases_wholesize.get(), phrase.getPattern().toString().length())));
         this.score = this.score * 100 + phrases_wholesize.get();
      
         // (5) operation type - there may be no operation at all
         final AtomicInteger inference_subscore = new AtomicInteger(0);
-        SusiSkill.this.inferences.forEach(inference -> inference_subscore.set(Math.max(inference_subscore.get(), inference.getType().getSubscore())));
+        SusiIntent.this.inferences.forEach(inference -> inference_subscore.set(Math.max(inference_subscore.get(), inference.getType().getSubscore())));
         this.score = this.score * (1 + SusiInference.Type.values().length) + inference_subscore.get();
         
         // (6) subscore from the user
-        this.score += this.score * 1000 + Math.min(1000, SusiSkill.this.user_subscore);
+        this.score += this.score * 1000 + Math.min(1000, SusiIntent.this.user_subscore);
         
         this.log = 
                 "dialog=" + dialogType_subscore.get() +
@@ -398,26 +398,26 @@ public class SusiSkill {
                 ", meatscore=" + phrases_meatscore.get() +
                 ", wholesize=" + phrases_wholesize.get() +
                 ", subscore=" + user_subscore +
-                ", pattern=" + phrases.get(0).toString() + (SusiSkill.this.inferences.size() > 0 ? (", inference=" + SusiSkill.this.inferences.get(0).getExpression()) : "");
+                ", pattern=" + phrases.get(0).toString() + (SusiIntent.this.inferences.size() > 0 ? (", inference=" + SusiIntent.this.inferences.get(0).getExpression()) : "");
         }
     }
 
     /**
-     * The phrases of a skill are the matching skills which must apply to make it possible that the phrase is applied.
-     * This returns the phrases of the skill.
-     * @return the phrases of the skill. The skill fires if ANY of the phrases apply
+     * The phrases of an intent are the matching intents which must apply to make it possible that the phrase is applied.
+     * This returns the phrases of the intent.
+     * @return the phrases of the intent. The intent fires if ANY of the phrases apply
      */
     public List<SusiPhrase> getPhrases() {
         return this.phrases;
     }
     
     /**
-     * The inferences of a skill are a set of operations that are applied if the skill is selected as response
+     * The inferences of a intent are a set of operations that are applied if the intent is selected as response
      * mechanism. The inferences are feeded by the matching parts of the phrases to have an initial data set.
      * Inferences are lists because they represent a set of lambda operations on the data stream. The last
      * Data set is the response. The stack of data sets which are computed during the inference processing
      * is the thought argument, a list of thoughts in between of the inferences.
-     * @return the (ordered) list of inferences to be applied for this skill
+     * @return the (ordered) list of inferences to be applied for this intent
      */
     public List<SusiInference> getInferences() {
         return this.inferences;
@@ -436,10 +436,10 @@ public class SusiSkill {
     }
 
     /**
-     * The matcher of a skill is the result of the application of the skill's phrases, the pattern which allow to
-     * apply the skill
+     * The matcher of a intent is the result of the application of the intent's phrases,
+     * the pattern which allow to apply the intent
      * @param s the string which should match
-     * @return a matcher on the skill phrases
+     * @return a matcher on the intent phrases
      */
     public Collection<Matcher> matcher(String s) {
         List<Matcher> l = new ArrayList<>();
@@ -455,12 +455,12 @@ public class SusiSkill {
     }
 
     /**
-     * If a skill is applied to an input stream, it must follow a specific process which is implemented
+     * If a intent is applied to an input stream, it must follow a specific process which is implemented
      * in this consideration method. It is called a consideration in the context of an AI process which
-     * tries different procedures to get the optimum result, thus considering different skills.
+     * tries different procedures to get the optimum result, thus considering different intents.
      * @param query the user input
-     * @param token the key from the user query which matched the skill keys (also considering category matching)
-     * @return the result of the application of the skill, a thought argument containing the thoughts which terminated into a final mindstate or NULL if the consideration should be rejected
+     * @param token the key from the user query which matched the intent tokens (also considering category matching)
+     * @return the result of the application of the intent, a thought argument containing the thoughts which terminated into a final mindstate or NULL if the consideration should be rejected
      */
     public SusiArgument consideration(final String query, SusiThought recall, SusiReader.Token token, SusiMind mind, String client) {
         
@@ -479,18 +479,18 @@ public class SusiSkill {
             DAO.log("Susi has an idea: on " + keynote.toString() + " apply " + this.toJSON());
             flow.think(keynote);
             
-            // lets apply the skills that belong to this specific consideration
+            // lets apply the intents that belong to this specific consideration
             for (SusiInference inference: this.getInferences()) {
                 SusiThought implication = inference.applyProcedures(flow);
                 DAO.log("Susi is thinking about: " + implication.toString());
                 // make sure that we are not stuck:
                 // in case that we are stuck (== no progress was made) we terminate and return null
-                if ((flow.mindstate().equals(implication) || implication.isFailed())) continue alternatives; // TODO: do this only if specific marker is in skill
+                if ((flow.mindstate().equals(implication) || implication.isFailed())) continue alternatives; // TODO: do this only if specific marker is in intent
                 // think
                 flow.think(implication);
             }
             
-            // we deduced thoughts from the inferences in the skills. Now apply the actions of skill to produce results
+            // we deduced thoughts from the inferences in the intents. Now apply the actions of intent to produce results
             this.getActionsClone().forEach(action -> flow.addAction(action/*.execution(flow, mind, client)*/));
             
             // add expert source

@@ -113,7 +113,7 @@ public class SusiService extends AbstractAPIHandler implements APIHandler {
             }
         }
         
-        // answer with built-in skills
+        // answer with built-in intents
         SusiCognition cognition = new SusiCognition(DAO.susi, q, timezoneOffset, latitude, longitude, count, user.getIdentity());
         cognition.setLanguage(language);
         DAO.susi.getMemories().addCognition(user.getIdentity().getClient(), cognition);

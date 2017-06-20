@@ -22,33 +22,33 @@ package ai.susi.mind;
 import java.util.regex.PatternSyntaxException;
 
 /**
- * An idea is the application of a skill on a specific input. This matches with the idea of ideas where
+ * An idea is the application of a intent on a specific input. This matches with the idea of ideas where
  * an idea is the 'sudden' solution to a problem with the hint how to apply the idea's core concept
- * on the given input details. That is what this class does: it combines a skill with the pattern
- * that matched from the input with the skill.
+ * on the given input details. That is what this class does: it combines a intent with the pattern
+ * that matched from the input with the intent.
  */
 public class SusiIdea {
 
-    private SusiSkill skill;
+    private SusiIntent intent;
     private SusiReader.Token token;
     
     /**
-     * create an idea based on a skill
-     * @param skill the skill that matched
+     * create an idea based on a intent
+     * @param intent the intent that matched
      * @throws PatternSyntaxException
      */
-    public SusiIdea(SusiSkill skill) throws PatternSyntaxException {
-        this.skill = skill;
+    public SusiIdea(SusiIntent intent) throws PatternSyntaxException {
+        this.intent = intent;
         this.token = null;
     }
 
-    public SusiSkill getSkill() {
-        return this.skill;
+    public SusiIntent getIntent() {
+        return this.intent;
     }
     
     /**
      * Add an token to the idea. The token is usually a work (i.e. a normalized single word)
-     * that matched with the skill keys.
+     * that matched with the intent keys.
      * @param token Key
      * @return the idea
      */
@@ -59,13 +59,13 @@ public class SusiIdea {
     
     /**
      * get the tokens for the idea
-     * @return the keyword which matched with the skill keys
+     * @return the keyword which matched with the intent keys
      */
     public SusiReader.Token getToken() {
         return this.token;
     }
     
     public String toString() {
-        return this.skill.toString();
+        return this.intent.toString();
     }
 }
