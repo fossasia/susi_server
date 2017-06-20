@@ -15,7 +15,8 @@ import java.util.Collection;
 
 /**
  * Created by saurabh on 20/6/17.
- * Servlet to read user setting
+ * Servlet to write user setting
+ * this service accepts two parameter key and value to be stored in User settings
  * test locally at http://127.0.0.1:4000/aaa/changeUserSettings.json?key=theme&value=dark
  */
 public class ChangeUserSettings extends AbstractAPIHandler implements APIHandler {
@@ -44,18 +45,21 @@ public class ChangeUserSettings extends AbstractAPIHandler implements APIHandler
        if (key == null || value == null ) {
            throw new APIException(400, "Bad Service call, key or value parameters not provided");
        } else {
-           
-           Accounting accounting = DAO.getAccounting(authorization.getIdentity());
-           JSONObject jsonObject = new JSONObject();
-           jsonObject.put(key,value);
-           if(accounting.getParent().has("Settings")){
-                accounting.getParent().getJSONObject("Settings").put(key,value);
+           if (authorization.getIdentity() == null) {
+               throw new APIException(400, "Specified User Setting not found, ensure you are logged in");
            } else {
-               accounting.getParent().put("Settings", jsonObject,authorization.getIdentity().isPersistent());
+               Accounting accounting = DAO.getAccounting(authorization.getIdentity());
+               JSONObject jsonObject = new JSONObject();
+               jsonObject.put(key, value);
+               if (accounting.getParent().has("Settings")) {
+                   accounting.getParent().getJSONObject("Settings").put(key, value);
+               } else {
+                   accounting.getParent().put("Settings", jsonObject, authorization.getIdentity().isPersistent());
+               }
+               JSONObject result = new JSONObject();
+               result.put("message", "You successfully changed settings to your account!");
+               return new ServiceResponse(result);
            }
-           JSONObject result = new JSONObject();
-           result.put("message", "You successfully changed settings to your account!");
-           return new ServiceResponse(result);
        }
 
     }
