@@ -243,7 +243,7 @@ public class SusiMind {
             Set<SusiSkill> r = new HashSet<>();
             if (skill_for_category != null) r.addAll(skill_for_category);
             if (skill_for_original != null) r.addAll(skill_for_original);
-            r.forEach(skill -> ideas.add(new SusiIdea(skill).setIntent(token)));
+            r.forEach(skill -> ideas.add(new SusiIdea(skill).setToken(token)));
         });
         
         for (SusiIdea idea: ideas) DAO.log("idea.phrase-1: score=" + idea.getSkill().getScore().score + " : " + idea.getSkill().getPhrases().toString() + " " + idea.getSkill().getActionsClone());
@@ -313,7 +313,7 @@ public class SusiMind {
         List<SusiArgument> answers = new ArrayList<>();
         List<SusiIdea> ideas = creativity(query, recall, 100);
         for (SusiIdea idea: ideas) {
-            SusiArgument argument = idea.getSkill().consideration(query, recall, idea.getIntent(), this, client);
+            SusiArgument argument = idea.getSkill().consideration(query, recall, idea.getToken(), this, client);
             if (argument != null) answers.add(argument);
             if (answers.size() >= maxcount) break;
         }

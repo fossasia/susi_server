@@ -30,7 +30,7 @@ import java.util.regex.PatternSyntaxException;
 public class SusiIdea {
 
     private SusiSkill skill;
-    private SusiReader.Token intent;
+    private SusiReader.Token token;
     
     /**
      * create an idea based on a skill
@@ -39,7 +39,7 @@ public class SusiIdea {
      */
     public SusiIdea(SusiSkill skill) throws PatternSyntaxException {
         this.skill = skill;
-        this.intent = null;
+        this.token = null;
     }
 
     public SusiSkill getSkill() {
@@ -47,22 +47,22 @@ public class SusiIdea {
     }
     
     /**
-     * Add an intent to the idea. The intent is usually a token (i.e. a normalized single word)
+     * Add an token to the idea. The token is usually a work (i.e. a normalized single word)
      * that matched with the skill keys.
-     * @param intentKey
+     * @param token Key
      * @return the idea
      */
-    public SusiIdea setIntent(SusiReader.Token intent) {
-        this.intent = intent;
+    public SusiIdea setToken(SusiReader.Token token) {
+        this.token = token;
         return this;
     }
     
     /**
-     * get the intentions for the idea
+     * get the tokens for the idea
      * @return the keyword which matched with the skill keys
      */
-    public SusiReader.Token getIntent() {
-        return this.intent;
+    public SusiReader.Token getToken() {
+        return this.token;
     }
     
     public String toString() {

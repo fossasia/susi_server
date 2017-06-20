@@ -459,10 +459,10 @@ public class SusiSkill {
      * in this consideration method. It is called a consideration in the context of an AI process which
      * tries different procedures to get the optimum result, thus considering different skills.
      * @param query the user input
-     * @param intent the key from the user query which matched the skill keys (also considering category matching)
+     * @param token the key from the user query which matched the skill keys (also considering category matching)
      * @return the result of the application of the skill, a thought argument containing the thoughts which terminated into a final mindstate or NULL if the consideration should be rejected
      */
-    public SusiArgument consideration(final String query, SusiThought recall, SusiReader.Token intent, SusiMind mind, String client) {
+    public SusiArgument consideration(final String query, SusiThought recall, SusiReader.Token token, SusiMind mind, String client) {
         
         // we start with the recall from previous interactions as new flow
         final SusiArgument flow = new SusiArgument().think(recall);
@@ -471,10 +471,10 @@ public class SusiSkill {
         alternatives: for (Matcher matcher: this.matcher(query)) {
             if (!new TimeoutMatcher(matcher).matches()) continue;
             SusiThought keynote = new SusiThought(matcher);
-            if (intent != null) {
-                keynote.addObservation("intent_original", intent.original);
-                keynote.addObservation("intent_canonical", intent.canonical);
-                keynote.addObservation("intent_categorized", intent.categorized);
+            if (token != null) {
+                keynote.addObservation("token_original", token.original);
+                keynote.addObservation("token_canonical", token.canonical);
+                keynote.addObservation("token_categorized", token.categorized);
             }
             DAO.log("Susi has an idea: on " + keynote.toString() + " apply " + this.toJSON());
             flow.think(keynote);
