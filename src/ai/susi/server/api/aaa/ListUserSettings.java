@@ -19,6 +19,8 @@ import java.util.Collection;
  * test locally at http://127.0.0.1:4000/aaa/listUserSettings.json
  */
 public class ListUserSettings extends AbstractAPIHandler implements APIHandler {
+    private static final long serialVersionUID = -1972211109199355750L;
+
     @Override
     public String getAPIPath() {
         return "/aaa/listUserSettings.json";
