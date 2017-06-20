@@ -479,6 +479,7 @@ public class SusiServer {
                 ExpertListService.class,
                 ExpertExampleService.class,
                 UserManagementService.class,
+                ChangeUserSettings.class,
                 UserAccountPermissions.class,
                 JsonPathTestService.class,
                 DeleteExpertService.class,

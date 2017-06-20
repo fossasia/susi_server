@@ -71,4 +71,6 @@ public class Accounting {
     public JSONObject getJSON() {
         return this.json;
     }
+
+    public JsonTray getParent() { return this.parent; }
 }
