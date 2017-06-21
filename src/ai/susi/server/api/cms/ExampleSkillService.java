@@ -1,5 +1,5 @@
 /**
- *  AppsServlet
+ *  ExampleSkillService
  *  Copyright 18.06.2016 by Michael Peter Christen, @0rb1t3r
  *
  *  This library is free software; you can redistribute it and/or
@@ -33,15 +33,14 @@ import org.json.JSONObject;
 import javax.servlet.http.HttpServletResponse;
 
 import java.io.IOException;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 /**
- This Servlet gives a API Endpoint to list examples for all the Experts given its model, group and language.
- Can be tested on 127.0.0.1:4000/cms/getExampleList.json
+ This Servlet gives a API Endpoint to list examples for all the Skills given its model, group and language.
+ Can be tested on 127.0.0.1:4000/cms/getExampleSkill.json
  */
-public class ExpertExampleService extends AbstractAPIHandler implements APIHandler {
+public class ExampleSkillService extends AbstractAPIHandler implements APIHandler {
 
     private static final long serialVersionUID = -8691223678852307876L;
 
@@ -55,7 +54,7 @@ public class ExpertExampleService extends AbstractAPIHandler implements APIHandl
 
     @Override
     public String getAPIPath() {
-        return "/cms/getExampleList.json";
+        return "/cms/getExampleSkill.json";
     }
 
     @Override
@@ -72,7 +71,7 @@ public class ExpertExampleService extends AbstractAPIHandler implements APIHandl
         String language = call.get("language", "");
 
         JSONObject examples = new JSONObject(true);
-        for (Map.Entry<String, Set<String>> entry: DAO.susi.getExpertExamples().entrySet()) {
+        for (Map.Entry<String, Set<String>> entry: DAO.susi.getSkillExamples().entrySet()) {
             String path = entry.getKey();
             if ((model.length() == 0 || path.indexOf("/" + model + "/") > 0) &&
                 (group.length() == 0 || path.indexOf("/" + group + "/") > 0) &&

@@ -1,6 +1,26 @@
+/**
+ * HistorySkillService
+ * Created by chetankaushik on 09/06/17.
+ *
+ *  This library is free software; you can redistribute it and/or
+ *  modify it under the terms of the GNU Lesser General Public
+ *  License as published by the Free Software Foundation; either
+ *  version 2.1 of the License, or (at your option) any later version.
+ *  
+ *  This library is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ *  Lesser General Public License for more details.
+ *  
+ *  You should have received a copy of the GNU Lesser General Public License
+ *  along with this program in the file lgpl21.txt
+ *  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 package ai.susi.server.api.cms;
 
 import ai.susi.DAO;
+
 import ai.susi.json.JsonObjectWithDefault;
 import ai.susi.server.*;
 import org.eclipse.jgit.api.Git;
@@ -17,15 +37,14 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.io.IOException;
 
-/**
- * Created by chetankaushik on 09/06/17.
- * This Service Adds a API Endpoint to return history of an expert
- * This accepts 4 parameters: - Model, Group, Language and Expert Name
- * Can be tested on : -
- * http://127.0.0.1:4000/cms/getHistory.json?model=general&group=knowledge&language=en&expert=bitcoin
- */
 
-public class ExpertHistoryService extends AbstractAPIHandler implements APIHandler {
+/**
+ * This Service Adds a API Endpoint to return history of an skill
+ * This accepts 4 parameters: - Model, Group, Language and Skill Name
+ * Can be tested on : -
+ * http://127.0.0.1:4000/cms/getHistory.json?model=general&group=knowledge&language=en&skill=bitcoin
+ */
+public class HistorySkillService extends AbstractAPIHandler implements APIHandler {
 
     private static final long serialVersionUID = 6976713190365750955L;
     int count = 0;
@@ -44,7 +63,7 @@ public class ExpertHistoryService extends AbstractAPIHandler implements APIHandl
 
     @Override
     public String getAPIPath() {
-        return "/cms/getHistory.json";
+        return "/cms/getSkillHistory.json";
     }
 
     @Override
@@ -64,10 +83,10 @@ public class ExpertHistoryService extends AbstractAPIHandler implements APIHandl
         File group = new File(model, group_name);
         String language_name = call.get("language", "en");
         File language = new File(group, language_name);
-        String expert_name = call.get("expert", "wikipedia");
-        File expert = new File(language, expert_name + ".txt");
+        String skill_name = call.get("skill", "wikipedia");
+        File skill = new File(language, skill_name + ".txt");
         commitsArray = new JSONArray();
-        String path = expert.getPath().replace(DAO.model_watch_dir.toString(), "models");
+        String path = skill.getPath().replace(DAO.model_watch_dir.toString(), "models");
         //Add to git
         FileRepositoryBuilder builder = new FileRepositoryBuilder();
         Repository repository = null;

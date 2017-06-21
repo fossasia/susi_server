@@ -59,7 +59,7 @@ public class SusiIntent {
     private int user_subscore;
     private Score score;
     private int id;
-    private String expert, example, expect;
+    private String skill, example, expect;
     
     /**
      * Generate a set of intents from a single intent definition. This may be possible if the intent contains an 'options'
@@ -137,11 +137,11 @@ public class SusiIntent {
         this.comment = json.has("comment") ? json.getString("comment") : "";
 
         // remember the origin
-        this.expert = origin.getAbsolutePath();
-    	int i = this.expert.indexOf("/susi");
-    	if (i < 0) this.expert = ""; else {
-    	    this.expert = this.expert.substring(i);
-    	    if (this.expert.startsWith("/susi/")) this.expert = this.expert.substring(5);
+        this.skill = origin.getAbsolutePath();
+    	int i = this.skill.indexOf("/susi");
+    	if (i < 0) this.skill = ""; else {
+    	    this.skill = this.skill.substring(i);
+    	    if (this.skill.startsWith("/susi/")) this.skill = this.skill.substring(5);
     	}
         
     	// quality control
@@ -154,8 +154,8 @@ public class SusiIntent {
         this.id = ids0.hashCode() + ids1.hashCode();
     }
     
-    public String getExpert() {
-        return this.expert == null || this.expert.length() == 0 ? null : this.expert;
+    public String getSkill() {
+        return this.skill == null || this.skill.length() == 0 ? null : this.skill;
     }
     
     public String getExpect() {
@@ -182,7 +182,7 @@ public class SusiIntent {
         json.put("actions", a);
         if (this.comment != null && this.comment.length() > 0) json.put("comment", this.comment);
         if (this.score != null) json.put("score", this.score.score);
-        if (this.expert != null && this.expert.length() > 0) json.put("expert", this.expert);
+        if (this.skill != null && this.skill.length() > 0) json.put("skill", this.skill);
         if (this.example != null && this.example.length() > 0) json.put("example", example);
         if (this.expect != null && this.expect.length() > 0) json.put("expect", expect);
         return json;
@@ -493,8 +493,8 @@ public class SusiIntent {
             // we deduced thoughts from the inferences in the intents. Now apply the actions of intent to produce results
             this.getActionsClone().forEach(action -> flow.addAction(action/*.execution(flow, mind, client)*/));
             
-            // add expert source
-            if (this.expert != null && this.expert.length() > 0) flow.addExpert(this.expert);
+            // add skill source
+            if (this.skill != null && this.skill.length() > 0) flow.addSkill(this.skill);
             
             return flow;
         }

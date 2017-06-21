@@ -18,10 +18,10 @@ import java.util.ArrayList;
 import javax.servlet.http.HttpServletResponse;
 
 /**
- * Servlet to load languages from the expert database
+ * Servlet to load languages from the skill database
  * i.e.
  * http://localhost:4000/cms/getLanguage.json
- * http://localhost:4000/cms/getLanguage.json?model=general&group=smalltalk&expert=German-Standalone-aiml2susi
+ * http://localhost:4000/cms/getLanguage.json?model=general&group=smalltalk&skill=German-Standalone-aiml2susi
  */
 public class LanguageListService extends AbstractAPIHandler implements APIHandler {
 
@@ -48,15 +48,15 @@ public class LanguageListService extends AbstractAPIHandler implements APIHandle
         File model = new File(DAO.model_watch_dir, model_name);
         String group_name = call.get("group", "knowledge");
         File group = new File(model, group_name);
-        String expert_name = call.get("expert", "wikipedia");
+        String skill_name = call.get("skill", "wikipedia");
 
         String[] languages = group.list((current, name) -> new File(current, name).isDirectory());
         ArrayList<String> languageList = new ArrayList<>();
         for(String languageName: languages) {
             File language = new File(group, languageName);
-            File[] listOfExperts = language.listFiles();
-            for(File expert: listOfExperts) {
-                if(expert.getName().equals(expert_name+".txt")) {      // given expert found in the language, add language to language list and continue searching
+            File[] listOfSkills = language.listFiles();
+            for(File skill: listOfSkills) {
+                if(skill.getName().equals(skill_name + ".txt")) { // given skill found in the language, add language to language list and continue searching
                     languageList.add(language.getName());
                     break;
                 }

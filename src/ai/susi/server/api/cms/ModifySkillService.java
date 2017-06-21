@@ -16,13 +16,13 @@ import java.io.IOException;
 
 /**
  * Created by chetankaushik on 07/06/17.
- * This Endpoint accepts 5 parameters. model,group,language,expert,content, changelog.
+ * This Endpoint accepts 5 parameters. model,group,language,skill,content, changelog.
  * changelog is the commit message that you want to set for the versioning system.
- * before modifying an expert the expert must exist in the directory.
+ * before modifying an skill the skill must exist in the directory.
  * !IMPORTANT! --> Content must be URL Encoded
- * http://localhost:4000/cms/modifyExpert.json?model=general&group=knowledge&expert=who&content=What%20is%20stock%20price%20of%20*%3F|What%20is%20stock%20price%20of%20*|stock%20price%20of%20*|*%20stock%20price%20of%20*%0A!console%3A%24l%24%0A{%0A%20%22url%22%3A%22http%3A%2F%2Ffinance.google.com%2Ffinance%2Finfo%3Fclient%3Dig%26q%3DNASDAQ%3A%241%24%22%2C%0A%20%22path%22%3A%22%24.[0]%22%0A}%0Aeol%0A&changelog=testing
+ * http://localhost:4000/cms/modifySkill.json?model=general&group=knowledge&skill=who&content=What%20is%20stock%20price%20of%20*%3F|What%20is%20stock%20price%20of%20*|stock%20price%20of%20*|*%20stock%20price%20of%20*%0A!console%3A%24l%24%0A{%0A%20%22url%22%3A%22http%3A%2F%2Ffinance.google.com%2Ffinance%2Finfo%3Fclient%3Dig%26q%3DNASDAQ%3A%241%24%22%2C%0A%20%22path%22%3A%22%24.[0]%22%0A}%0Aeol%0A&changelog=testing
  */
-public class ModifyExpertService extends AbstractAPIHandler implements APIHandler {
+public class ModifySkillService extends AbstractAPIHandler implements APIHandler {
 
     private static final long serialVersionUID = -1834363513093189312L;
 
@@ -36,7 +36,7 @@ public class ModifyExpertService extends AbstractAPIHandler implements APIHandle
 
     @Override
     public String getAPIPath() {
-        return "/cms/modifyExpert.json";
+        return "/cms/modifySkill.json";
     }
 
     @Override
@@ -48,8 +48,8 @@ public class ModifyExpertService extends AbstractAPIHandler implements APIHandle
         File group = new File(model, group_name);
         String language_name = call.get("language", "en");
         File language = new File(group, language_name);
-        String expert_name = call.get("expert", null);
-        File expert = new File(language, expert_name + ".txt");
+        String skill_name = call.get("skill", null);
+        File skill = new File(language, skill_name + ".txt");
 
         String commit_message = call.get("changelog", null);
 
@@ -62,12 +62,12 @@ public class ModifyExpertService extends AbstractAPIHandler implements APIHandle
         // Checking for file existence
         JSONObject json = new JSONObject();
         json.put("accepted", false);
-        if (!expert.exists()){
-            json.put("message", "expert does not exist");
+        if (!skill.exists()){
+            json.put("message", "skill does not exist");
             return new ServiceResponse(json);
         }
         
-        // Reading Content for expert
+        // Reading Content for skill
         String content = call.get("content", "");
         if (content.length() == 0) {
             json.put("message", "modification is empty");
@@ -75,7 +75,7 @@ public class ModifyExpertService extends AbstractAPIHandler implements APIHandle
         }
         
         // Writing to File
-        try (FileWriter file = new FileWriter(expert)) {
+        try (FileWriter file = new FileWriter(skill)) {
             file.write(content);
 
             //Add to git
@@ -90,7 +90,7 @@ public class ModifyExpertService extends AbstractAPIHandler implements APIHandle
 
                 try (Git git = new Git(repository)) {
                     git.add()
-                            .addFilepattern(expert_name)
+                            .addFilepattern(skill_name)
                             .call();
                     // and then commit the changes
                     git.commit()

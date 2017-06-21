@@ -1,5 +1,5 @@
 /**
- *  SusiExpert
+ *  SusiSkill
  *  Copyright 06.06.2017 by Michael Peter Christen, @0rb1t3r
  *
  *  This library is free software; you can redistribute it and/or
@@ -42,10 +42,10 @@ import ai.susi.DAO;
 import ai.susi.mind.SusiInference.Type;
 
 /**
- * A susi expert is a set of intents.
+ * A susi skill is a set of intents.
  * This class provides parser methods for such sets, given as text files
  */
-public class SusiExpert {
+public class SusiSkill {
 
 
     /**
@@ -55,7 +55,7 @@ public class SusiExpert {
      * @throws JSONException
      * @throws FileNotFoundException
      */
-    public static JSONObject readEzDExpert(BufferedReader br) throws JSONException {
+    public static JSONObject readEzDSkill(BufferedReader br) throws JSONException {
         // read the text file and turn it into a intent json; then learn that
         JSONObject json = new JSONObject();
         JSONArray intents = new JSONArray();
@@ -239,14 +239,14 @@ public class SusiExpert {
     }
     
 
-    public static JSONObject readJsonExpert(File file) throws JSONException, FileNotFoundException {
+    public static JSONObject readJsonSkill(File file) throws JSONException, FileNotFoundException {
         JSONObject json = new JSONObject(new JSONTokener(new FileReader(file)));
         //System.out.println(json.toString(2)); // debug
         return json;
     }
     
     
-    public static JSONObject readAIMLExpert(File file) throws Exception {
+    public static JSONObject readAIMLSkill(File file) throws Exception {
         // read the file as string
         BufferedReader br = new BufferedReader(new FileReader(file));
         String str;

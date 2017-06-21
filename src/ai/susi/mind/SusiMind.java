@@ -51,7 +51,7 @@ public class SusiMind {
     public final static int ATTENTION_TIME = 5;
     
     private final Map<String, Set<SusiIntent>> intenttrigger; // a map from a keyword to a set of intents
-    private final Map<String, Set<String>> expertexamples; // a map from an expert path to one example
+    private final Map<String, Set<String>> skillexamples; // a map from an skill path to one example
     private final File[] watchpaths;
     private final File memorypath; // a path where the memory looks for new additions of knowledge with memory files
     private final Map<File, Long> observations; // a mapping of mind memory files to the time when the file was read the last time
@@ -70,7 +70,7 @@ public class SusiMind {
         this.observations = new HashMap<>();
         this.reader = new SusiReader();
         this.memories = new SusiMemory(memorypath, ATTENTION_TIME);
-        this.expertexamples = new TreeMap<>();
+        this.skillexamples = new TreeMap<>();
 
         // learn all available intents
         try {observe();} catch (IOException e) {
@@ -94,8 +94,8 @@ public class SusiMind {
         return this.memories.unanswered2tokenizedstats();
     }
     
-    public Map<String, Set<String>> getExpertExamples() {
-        return this.expertexamples;
+    public Map<String, Set<String>> getSkillExamples() {
+        return this.skillexamples;
     }
     
     public SusiMind observe() throws IOException {
@@ -118,13 +118,13 @@ public class SusiMind {
                     try {
                         JSONObject lesson = new JSONObject();
                         if (f.getName().endsWith(".json")) {
-                            lesson = SusiExpert.readJsonExpert(f);
+                            lesson = SusiSkill.readJsonSkill(f);
                         }
                         if (f.getName().endsWith(".txt") || f.getName().endsWith(".ezd")) {
-                            lesson = SusiExpert.readEzDExpert(new BufferedReader(new FileReader(f)));
+                            lesson = SusiSkill.readEzDSkill(new BufferedReader(new FileReader(f)));
                         }
                         if (f.getName().endsWith(".aiml")) {
-                            lesson = SusiExpert.readAIMLExpert(f);
+                            lesson = SusiSkill.readAIMLSkill(f);
                         }
                         learn(lesson, f);
                     } catch (Throwable e) {
@@ -179,11 +179,11 @@ public class SusiMind {
 
                 // collect intent example and test the intents using the example/expect terms
                 if (intent.getExample() != null) {
-                    //DAO.log("intent for '" + intent.getExample() + "' in \n" + intent.getExpert() + "\n");
-                    Set<String> examples = this.expertexamples.get(intent.getExpert());
+                    //DAO.log("intent for '" + intent.getExample() + "' in \n" + intent.getSkill() + "\n");
+                    Set<String> examples = this.skillexamples.get(intent.getSkill());
                     if (examples == null) {
                         examples = new LinkedHashSet<>();
-                        this.expertexamples.put(intent.getExpert(), examples);
+                        this.skillexamples.put(intent.getSkill(), examples);
                     }
                     examples.add(intent.getExample());
                 }
@@ -362,7 +362,7 @@ public class SusiMind {
             File watch = new File(new File("data"), "susi");
             SusiMind mem = new SusiMind(watch, init, watch);
             File file = new File("conf/susi/susi_cognition_000.json");
-            JSONObject lesson = SusiExpert.readJsonExpert(file);
+            JSONObject lesson = SusiSkill.readJsonSkill(file);
             mem.learn(lesson, file);
             System.out.println(mem.new Reaction("I feel funny", "localhost", new SusiThought()).getExpression());
             System.out.println(mem.new Reaction("Help me!", "localhost", new SusiThought()).getExpression());

@@ -15,12 +15,12 @@ import java.io.IOException;
 
 /**
  * Created by saurabh on 7/6/17.
- * This Service creates an expert as per given query.
- * The expert name given in the query should not exist in the SUSI intents Folder
+ * This Service creates an skill as per given query.
+ * The skill name given in the query should not exist in the SUSI intents Folder
  * Can be tested on :-
- * http://localhost:4000/cms/createExpert.txt?model=general&group=knowledge&language=en&expert=whois
+ * http://localhost:4000/cms/createSkill.txt?model=general&group=knowledge&language=en&skill=whois
  */
-public class CreateExpertService extends AbstractAPIHandler implements APIHandler {
+public class CreateSkillService extends AbstractAPIHandler implements APIHandler {
 
 
     private static final long serialVersionUID = 2461878194569824151L;
@@ -37,7 +37,7 @@ public class CreateExpertService extends AbstractAPIHandler implements APIHandle
 
     @Override
     public String getAPIPath() {
-        return "/cms/createExpert.txt";
+        return "/cms/createSkill.txt";
     }
 
     @Override
@@ -49,18 +49,18 @@ public class CreateExpertService extends AbstractAPIHandler implements APIHandle
         File group = new File(model, group_name);
         String language_name = call.get("language", "en");
         File language = new File(group, language_name);
-        String expert_name = call.get("expert", "whois");
-        File expert = new File(language, expert_name + ".txt");
-        String expertName = expert.getName();
+        String skill_name = call.get("skill", "whois");
+        File skill = new File(language, skill_name + ".txt");
+        String skillName = skill.getName();
         JSONObject json = new JSONObject(true);
 
         json.put("accepted", false);
-        if (expert.exists()) {
-            json.put("message", "The '" + expert + "' already exists.");
+        if (skill.exists()) {
+            json.put("message", "The '" + skill + "' already exists.");
         } else {
             try {
-                expert.createNewFile();
-                json.put("created_file", expertName);
+                skill.createNewFile();
+                json.put("created_file", skillName);
                 json.put("accepted", true);
                 // Add to git
                 FileRepositoryBuilder builder = new FileRepositoryBuilder();
@@ -74,11 +74,11 @@ public class CreateExpertService extends AbstractAPIHandler implements APIHandle
 
                     try (Git git = new Git(repository)) {
                         git.add()
-                                .addFilepattern(expert_name)
+                                .addFilepattern(skill_name)
                                 .call();
                         // commit the changes
                         git.commit()
-                                .setMessage("Created " + expert_name)
+                                .setMessage("Created " + skill_name)
                                 .call();
 
                     } catch (GitAPIException e) {
@@ -89,7 +89,7 @@ public class CreateExpertService extends AbstractAPIHandler implements APIHandle
                 }
             } catch (IOException e) {
                 e.printStackTrace();
-                json.put("message", "Unable to create expert.");
+                json.put("message", "Unable to create skill.");
             }
         }
 
