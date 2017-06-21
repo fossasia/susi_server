@@ -59,7 +59,7 @@ public class SusiThought extends JSONObject {
         if (json.has(this.metadata_name)) this.put(this.metadata_name, json.getJSONObject(this.metadata_name));
         if (json.has(this.data_name)) this.setData(json.getJSONArray(this.data_name));
         if (json.has("actions")) this.put("actions", json.getJSONArray("actions"));
-        if (json.has("experts")) this.put("experts", json.getJSONArray("experts"));
+        if (json.has("skills")) this.put("skills", json.getJSONArray("skills"));
     }
     
     /**
@@ -373,21 +373,21 @@ public class SusiThought extends JSONObject {
         return actions;
     }
     
-    public List<String> getExperts() {
-        List<String> experts = new ArrayList<>();
-        getExpertsJSON().forEach(expert -> experts.add((String) expert));
-        return experts;
+    public List<String> getSkills() {
+        List<String> skills = new ArrayList<>();
+        getSkillsJSON().forEach(skill -> skills.add((String) skill));
+        return skills;
     }
 
-    private JSONArray getExpertsJSON() {
-        JSONArray experts;
-        if (!this.has("experts")) {
-            experts = new JSONArray();
-            this.put("experts", experts);
+    private JSONArray getSkillsJSON() {
+        JSONArray skills;
+        if (!this.has("skills")) {
+            skills = new JSONArray();
+            this.put("skills", skills);
         } else {
-            experts = this.getJSONArray("experts");
+            skills = this.getJSONArray("skills");
         }
-        return experts;
+        return skills;
     }
     
     public static final Pattern variable_pattern = Pattern.compile("\\$.*?\\$");

@@ -1,5 +1,5 @@
 /**
- *  ConvertExpertJsonToTxtService
+ *  GetSkillTxtService
  *  Copyright 28.05.2017 by Michael Peter Christen, @0rb1t3r
  *
  *  This library is free software; you can redistribute it and/or
@@ -21,6 +21,7 @@ package ai.susi.server.api.cms;
 
 import org.json.JSONObject;
 
+import ai.susi.DAO;
 import ai.susi.json.JsonObjectWithDefault;
 import ai.susi.server.APIHandler;
 import ai.susi.server.AbstractAPIHandler;
@@ -29,11 +30,21 @@ import ai.susi.server.BaseUserRole;
 import ai.susi.server.Query;
 import ai.susi.server.ServiceResponse;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+
 import javax.servlet.http.HttpServletResponse;
 
-public class ExpertConvertJsonToTxtService extends AbstractAPIHandler implements APIHandler {
+/**
+ * Servlet to load an skill from the skill database
+ * i.e.
+ * http://localhost:4000/cms/getSkill.txt
+ * http://localhost:4000/cms/getSkill.txt?model=general&group=knowledge&language=en&skill=wikipedia
+ */
+public class GetSkillTxtService extends AbstractAPIHandler implements APIHandler {
     
-    private static final long serialVersionUID = 18344221L;
+    private static final long serialVersionUID = 18344224L;
 
     @Override
     public BaseUserRole getMinimalBaseUserRole() { return BaseUserRole.ANONYMOUS; }
@@ -45,16 +56,27 @@ public class ExpertConvertJsonToTxtService extends AbstractAPIHandler implements
 
     @Override
     public String getAPIPath() {
-        return "/cms/expertjson2.txt";
+        return "/cms/getSkill.txt";
     }
     
     @Override
     public ServiceResponse serviceImpl(Query call, HttpServletResponse response, Authorization rights, final JsonObjectWithDefault permissions) {
+
+        String model_name = call.get("model", "general");
+        File model = new File(DAO.model_watch_dir, model_name);
+        String group_name = call.get("group", "knowledge");
+        File group = new File(model, group_name);
+        String language_name = call.get("language", "en");
+        File language = new File(group, language_name);
+        String skill_name = call.get("skill", "wikipedia");
+        File skill = new File(language, skill_name + ".txt");
         
-        JSONObject json = new JSONObject(true);
-        
-        // modify caching
-        json.put("$EXPIRES", 600);
-        return new ServiceResponse(json);
+        try {
+            String content = new String(Files.readAllBytes(skill.toPath()));
+            return new ServiceResponse(content);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 }

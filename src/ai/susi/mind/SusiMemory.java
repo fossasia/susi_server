@@ -71,14 +71,14 @@ public class SusiMemory {
     private File root;
     private int attention; // a measurement for time
     private Map<String, SusiIdentity> memories;
-    private Map<String, Map<String, JsonTray>> skillsets;
+    private Map<String, Map<String, JsonTray>> intentsets;
     private Map<String, AtomicInteger> unanswered;
     
     public SusiMemory(File storageLocation, int attention) {
         this.root = storageLocation;
         this.attention = attention;
         this.memories = new ConcurrentHashMap<>();
-        this.skillsets = new ConcurrentHashMap<>();
+        this.intentsets = new ConcurrentHashMap<>();
         this.unanswered = new ConcurrentHashMap<>();
         
         // initialize the unanswered list.
@@ -271,30 +271,30 @@ public class SusiMemory {
         return all;
     }
 
-    public Set<String> getSkillsetNames(String client) {
-        Map<String, JsonTray> skillsets = this.skillsets.get(client);
-        if (skillsets == null && root != null) {
-            Set<String> skills = new HashSet<String>();
+    public Set<String> getIntentsetNames(String client) {
+        Map<String, JsonTray> intentsets = this.intentsets.get(client);
+        if (intentsets == null && root != null) {
+            Set<String> intents = new HashSet<String>();
             File rpath = new File(root, client);
             rpath.mkdirs();
-            for (String s: rpath.list()) if (s.endsWith(".json")) skills.add(s.substring(0, s.length() - 5));
-            return skills;
+            for (String s: rpath.list()) if (s.endsWith(".json")) intents.add(s.substring(0, s.length() - 5));
+            return intents;
         }
-        return skillsets.keySet();
+        return intentsets.keySet();
     }
     
-    public JsonTray getSkillset(String client, String name) throws IOException {
-        Map<String, JsonTray> skillsets = this.skillsets.get(client);
-        if (skillsets == null) {
-            skillsets = new HashMap<>();
-            this.skillsets.put(client, skillsets);
+    public JsonTray getIntentset(String client, String name) throws IOException {
+        Map<String, JsonTray> intentsets = this.intentsets.get(client);
+        if (intentsets == null) {
+            intentsets = new HashMap<>();
+            this.intentsets.put(client, intentsets);
         }
-        JsonTray jt = skillsets.get(name);
+        JsonTray jt = intentsets.get(name);
         if (jt == null && root != null) {
             File rpath = new File(root, client);
             rpath.mkdirs();
             jt = new JsonTray(new File(rpath, name + ".json"), null, 1000);
-            skillsets.put(name,  jt);
+            intentsets.put(name,  jt);
         }
         return jt;
     }

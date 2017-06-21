@@ -211,11 +211,11 @@ public class ConsoleLearning extends AbstractAPIHandler implements APIHandler {
         json.put("action", action);
 
         if (action.equals("list")) {
-            Set<String> projectnames = DAO.susi.getSkillsetNames(client);
+            Set<String> projectnames = DAO.susi.getIntentsetNames(client);
             JSONObject projects = new JSONObject(true);
             for (String p: projectnames) {
                 try {
-                    JsonTray t = DAO.susi.getSkillset(client, p);
+                    JsonTray t = DAO.susi.getIntentset(client, p);
                     projects.put(p, t.toJSON().getJSONObject("console"));
                 } catch (IOException e) {
                     e.printStackTrace();
@@ -233,7 +233,7 @@ public class ConsoleLearning extends AbstractAPIHandler implements APIHandler {
 
             if (action.equals("delete")) {
                 try {
-                    JsonTray tray = DAO.susi.getSkillset(client, project);
+                    JsonTray tray = DAO.susi.getIntentset(client, project);
                     if (!tray.has("console")) tray.put("console", new JSONObject(), true);
                     JSONObject console = tray.getJSONObject("console");
                     console.remove(name);
@@ -341,7 +341,7 @@ public class ConsoleLearning extends AbstractAPIHandler implements APIHandler {
             
             if (action.equals("learn")) {
                 try {
-                    JsonTray tray = DAO.susi.getSkillset(client, project);
+                    JsonTray tray = DAO.susi.getIntentset(client, project);
                     if (!tray.has("console")) tray.put("console", new JSONObject(), true);
                     JSONObject console = tray.getJSONObject("console");
                     console.put(name, consolerule);

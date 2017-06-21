@@ -211,7 +211,7 @@ public class ConsoleService extends AbstractAPIHandler implements APIHandler {
         String q = post.get("q", "");
         //int timezoneOffset = post.get("timezoneOffset", 0);
         try {
-            DAO.susi.observe(); // learn new console skills if there are new one
+            DAO.susi.observe(); // learn new console intents if there are new one
         } catch (IOException e) {
             e.printStackTrace();
         }

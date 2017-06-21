@@ -8,7 +8,7 @@ wake up|stop dream|stop dreaming|end dream|end dreaming
 dreaming disabled^^>_etherpad_dream
 
 analysis|analyse|analyze|* analysis|* analyse|* analyze|analysis *|analyse *|analyze *
-My previous answer is defined in the expert $expert$
+My previous answer is defined in the skill $skill$
 
 # some fake commands that do nothing with the computation state
 ::minor

@@ -1,5 +1,5 @@
 /**
- *  ConvertExpertTxtToJsonService
+ *  ConvertSkillJsonToTxtService
  *  Copyright 28.05.2017 by Michael Peter Christen, @0rb1t3r
  *
  *  This library is free software; you can redistribute it and/or
@@ -31,9 +31,9 @@ import ai.susi.server.ServiceResponse;
 
 import javax.servlet.http.HttpServletResponse;
 
-public class ExpertConvertTxtToJsonService extends AbstractAPIHandler implements APIHandler {
+public class ConvertSkillJsonToTxtService extends AbstractAPIHandler implements APIHandler {
     
-    private static final long serialVersionUID = 18344222L;
+    private static final long serialVersionUID = 18344221L;
 
     @Override
     public BaseUserRole getMinimalBaseUserRole() { return BaseUserRole.ANONYMOUS; }
@@ -45,7 +45,7 @@ public class ExpertConvertTxtToJsonService extends AbstractAPIHandler implements
 
     @Override
     public String getAPIPath() {
-        return "/cms/experttxt2.json";
+        return "/cms/skill2json.txt";
     }
     
     @Override

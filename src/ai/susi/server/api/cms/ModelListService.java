@@ -10,14 +10,15 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.File;
 
 /**
- * Servlet to load an model from the expert database
+ * Servlet to load an model from the skill database
  * i.e.
  * http://localhost:4000/cms/getmodel.json
  */
 public class ModelListService extends AbstractAPIHandler implements APIHandler  {
+	
+	private static final long serialVersionUID = -4324399908176445352L;
 
-
-    @Override
+	@Override
     public BaseUserRole getMinimalBaseUserRole() { return BaseUserRole.ANONYMOUS; }
 
     @Override

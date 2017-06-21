@@ -31,7 +31,7 @@ import com.google.common.util.concurrent.AtomicDouble;
 
 /**
  * Transfer is the ability to perceive a given thought in a different representation
- * in such a way that it applies on a skill or a skill set.
+ * in such a way that it applies on a intent or a intent set.
  */
 public class SusiTransfer {
     

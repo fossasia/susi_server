@@ -15,10 +15,10 @@ import java.io.IOException;
 
 /**
  * Created by chetankaushik on 06/06/17.
- * This Service deletes a expert as per given query.
- * http://localhost:4000/cms/deleteExpert.txt?model=general&group=knowledge&language=en&expert=whois
+ * This Service deletes a skill as per given query.
+ * http://localhost:4000/cms/deleteSkill.txt?model=general&group=knowledge&language=en&skill=whois
  */
-public class DeleteExpertService extends AbstractAPIHandler implements APIHandler {
+public class DeleteSkillService extends AbstractAPIHandler implements APIHandler {
 
     private static final long serialVersionUID = -1755374387315534691L;
 
@@ -34,7 +34,7 @@ public class DeleteExpertService extends AbstractAPIHandler implements APIHandle
 
     @Override
     public String getAPIPath() {
-        return "/cms/deleteExpert.txt";
+        return "/cms/deleteSkill.txt";
     }
 
     @Override
@@ -46,15 +46,15 @@ public class DeleteExpertService extends AbstractAPIHandler implements APIHandle
         File group = new File(model, group_name);
         String language_name = call.get("language", "en");
         File language = new File(group, language_name);
-        String expert_name = call.get("expert", "whois");
-        File expert = new File(language, expert_name + ".txt");
-        String ExpertName = expert.getName();
+        String skill_name = call.get("skill", "whois");
+        File skill = new File(language, skill_name + ".txt");
+        String SkillName = skill.getName();
         JSONObject json = new JSONObject(true);
 
         json.put("accepted", false);
-        if (expert.exists()) {
-            expert.delete();
-            json.put("deleted_file", ExpertName);
+        if (skill.exists()) {
+            skill.delete();
+            json.put("deleted_file", SkillName);
 
             //Add to git
             FileRepositoryBuilder builder = new FileRepositoryBuilder();
@@ -67,15 +67,15 @@ public class DeleteExpertService extends AbstractAPIHandler implements APIHandle
 
                 try (Git git = new Git(repository)) {
                     git.add()
-                            .addFilepattern(expert_name)
+                            .addFilepattern(skill_name)
                             .call();
                     // and then commit the changes
                     git.commit()
-                            .setMessage("Deleted " + expert_name)
+                            .setMessage("Deleted " + skill_name)
                             .call();
 
                     json.put("accepted", true);
-                    json.put("message", "Deleted " + expert_name);
+                    json.put("message", "Deleted " + skill_name);
                 } catch (GitAPIException e) {
                     e.printStackTrace();
                 }
@@ -84,7 +84,7 @@ public class DeleteExpertService extends AbstractAPIHandler implements APIHandle
             }
 
         } else {
-            json.put("message", "Cannot find '" + expert + "' ('" + expert.getAbsolutePath() + "')");
+            json.put("message", "Cannot find '" + skill + "' ('" + skill.getAbsolutePath() + "')");
         }
 
         return new ServiceResponse(json);

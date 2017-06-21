@@ -50,8 +50,8 @@ public class SusiMind {
     
     public final static int ATTENTION_TIME = 5;
     
-    private final Map<String, Set<SusiSkill>> skilltrigger; // a map from a keyword to a set of skills
-    private final Map<String, Set<String>> expertexamples; // a map from an expert path to one example
+    private final Map<String, Set<SusiIntent>> intenttrigger; // a map from a keyword to a set of intents
+    private final Map<String, Set<String>> skillexamples; // a map from an skill path to one example
     private final File[] watchpaths;
     private final File memorypath; // a path where the memory looks for new additions of knowledge with memory files
     private final Map<File, Long> observations; // a mapping of mind memory files to the time when the file was read the last time
@@ -66,13 +66,13 @@ public class SusiMind {
         }
         this.memorypath = memorypath;
         if (this.memorypath != null) this.memorypath.mkdirs();
-        this.skilltrigger = new ConcurrentHashMap<>();
+        this.intenttrigger = new ConcurrentHashMap<>();
         this.observations = new HashMap<>();
         this.reader = new SusiReader();
         this.memories = new SusiMemory(memorypath, ATTENTION_TIME);
-        this.expertexamples = new TreeMap<>();
+        this.skillexamples = new TreeMap<>();
 
-        // learn all available skills
+        // learn all available intents
         try {observe();} catch (IOException e) {
             e.printStackTrace();
         }
@@ -94,8 +94,8 @@ public class SusiMind {
         return this.memories.unanswered2tokenizedstats();
     }
     
-    public Map<String, Set<String>> getExpertExamples() {
-        return this.expertexamples;
+    public Map<String, Set<String>> getSkillExamples() {
+        return this.skillexamples;
     }
     
     public SusiMind observe() throws IOException {
@@ -118,13 +118,13 @@ public class SusiMind {
                     try {
                         JSONObject lesson = new JSONObject();
                         if (f.getName().endsWith(".json")) {
-                            lesson = SusiExpert.readJsonExpert(f);
+                            lesson = SusiSkill.readJsonSkill(f);
                         }
                         if (f.getName().endsWith(".txt") || f.getName().endsWith(".ezd")) {
-                            lesson = SusiExpert.readEzDExpert(new BufferedReader(new FileReader(f)));
+                            lesson = SusiSkill.readEzDSkill(new BufferedReader(new FileReader(f)));
                         }
                         if (f.getName().endsWith(".aiml")) {
-                            lesson = SusiExpert.readAIMLExpert(f);
+                            lesson = SusiSkill.readAIMLSkill(f);
                         }
                         learn(lesson, f);
                     } catch (Throwable e) {
@@ -135,7 +135,7 @@ public class SusiMind {
             }
         }
         
-        //this.skilltrigger.forEach((term, map) -> System.out.println("***DEBUG trigger " + term + " -> " + map.toString()));
+        //this.intenttrigger.forEach((term, map) -> System.out.println("***DEBUG trigger " + term + " -> " + map.toString()));
     }
 
     
@@ -144,7 +144,7 @@ public class SusiMind {
         // teach the language parser
         this.reader.learn(json);
 
-        // add console skills
+        // add console intents
         JSONObject consoleServices = json.has("console") ? json.getJSONObject("console") : new JSONObject();
         consoleServices.keySet().forEach(console -> {
             JSONObject service = consoleServices.getJSONObject(console);
@@ -158,36 +158,36 @@ public class SusiMind {
             }
         });
 
-        // add conversation skills
+        // add conversation intents
         final List<Pattern> removalPattern = new ArrayList<>();
-        JSONArray skillset = json.has("rules") ? json.getJSONArray("rules") : json.has("skills") ? json.getJSONArray("skills") : new JSONArray();
-        skillset.forEach(j -> {
-            List<SusiSkill> skills = SusiSkill.getSkills((JSONObject) j, origin);
-            skills.forEach(skill -> {
+        JSONArray intentset = json.has("rules") ? json.getJSONArray("rules") : json.has("intents") ? json.getJSONArray("intents") : new JSONArray();
+        intentset.forEach(j -> {
+            List<SusiIntent> intents = SusiIntent.getIntents((JSONObject) j, origin);
+            intents.forEach(intent -> {
                 // add removal pattern
-                skill.getKeys().forEach(key -> {
-                    Set<SusiSkill> l = this.skilltrigger.get(key);
+                intent.getKeys().forEach(key -> {
+                    Set<SusiIntent> l = this.intenttrigger.get(key);
                     if (l == null) {
                         l = new HashSet<>();
-                        this.skilltrigger.put(key, l);
+                        this.intenttrigger.put(key, l);
                     }
-                    l.add(skill);
-                    skill.getPhrases().forEach(phrase -> removalPattern.add(phrase.getPattern()));
-                    //skill.getPhrases().forEach(phrase -> this.memories.removeUnanswered(phrase.getPattern()));
-                    //System.out.println("***DEBUG: ADD SKILL FOR KEY " + key + ": " + skill.toString());
+                    l.add(intent);
+                    intent.getPhrases().forEach(phrase -> removalPattern.add(phrase.getPattern()));
+                    //intent.getPhrases().forEach(phrase -> this.memories.removeUnanswered(phrase.getPattern()));
+                    //System.out.println("***DEBUG: ADD INTENT FOR KEY " + key + ": " + intent.toString());
                 });
 
-                // collect skill example and test the skills using the example/expect terms
-                if (skill.getExample() != null) {
-                    //DAO.log("Skill for '" + skill.getExample() + "' in \n" + skill.getExpert() + "\n");
-                    Set<String> examples = this.expertexamples.get(skill.getExpert());
+                // collect intent example and test the intents using the example/expect terms
+                if (intent.getExample() != null) {
+                    //DAO.log("intent for '" + intent.getExample() + "' in \n" + intent.getSkill() + "\n");
+                    Set<String> examples = this.skillexamples.get(intent.getSkill());
                     if (examples == null) {
                         examples = new LinkedHashSet<>();
-                        this.expertexamples.put(skill.getExpert(), examples);
+                        this.skillexamples.put(intent.getSkill(), examples);
                     }
-                    examples.add(skill.getExample());
+                    examples.add(intent.getExample());
                 }
-                //if (skill.getExample() != null && skill.getExpect() != null) {}
+                //if (intent.getExample() != null && intent.getExpect() != null) {}
             });
         });
         
@@ -203,19 +203,19 @@ public class SusiMind {
     }
     
     /**
-     * extract the mind system from the skilltrigger
+     * extract the mind system from the intenttrigger
      * @return
      */
     public JSONObject getMind() {
         JSONObject mind = new JSONObject(true);
-        this.skilltrigger.forEach((key, skillmap) -> {
-            JSONArray skills = new JSONArray();
-            mind.put(key, skills);
-            skillmap.forEach(skill -> {
+        this.intenttrigger.forEach((key, intentmap) -> {
+            JSONArray intents = new JSONArray();
+            mind.put(key, intents);
+            intentmap.forEach(intent -> {
                 JSONObject r = new JSONObject(true);
-                r.putAll(skill.toJSON());
-                r.put("hash", skill.hashCode());
-                skills.put(r);
+                r.putAll(intent.toJSON());
+                r.put("hash", intent.hashCode());
+                intents.put(r);
             });
         });
         return mind;
@@ -224,10 +224,10 @@ public class SusiMind {
     /**
      * This is the core principle of creativity: being able to match a given input
      * with problem-solving knowledge.
-     * This method finds ideas (with a query instantiated skills) for a given query.
-     * The skills are selected using a scoring system and pattern matching with the query.
-     * Not only the most recent user query is considered for skill selection but also
-     * previously requested queries and their answers to be able to set new skill selections
+     * This method finds ideas (with a query instantiated intents) for a given query.
+     * The intents are selected using a scoring system and pattern matching with the query.
+     * Not only the most recent user query is considered for intent selection but also
+     * previously requested queries and their answers to be able to set new intent selections
      * in the context of the previous conversation.
      * @param query the user input
      * @param previous_argument the latest conversation with the same user
@@ -238,25 +238,25 @@ public class SusiMind {
         // tokenize query to have hint for idea collection
         final List<SusiIdea> ideas = new ArrayList<>();
         this.reader.tokenizeSentence(query).forEach(token -> {
-            Set<SusiSkill> skill_for_category = this.skilltrigger.get(token.categorized);
-            Set<SusiSkill> skill_for_original = token.original.equals(token.categorized) ? null : this.skilltrigger.get(token.original);
-            Set<SusiSkill> r = new HashSet<>();
-            if (skill_for_category != null) r.addAll(skill_for_category);
-            if (skill_for_original != null) r.addAll(skill_for_original);
-            r.forEach(skill -> ideas.add(new SusiIdea(skill).setIntent(token)));
+            Set<SusiIntent> intent_for_category = this.intenttrigger.get(token.categorized);
+            Set<SusiIntent> intent_for_original = token.original.equals(token.categorized) ? null : this.intenttrigger.get(token.original);
+            Set<SusiIntent> r = new HashSet<>();
+            if (intent_for_category != null) r.addAll(intent_for_category);
+            if (intent_for_original != null) r.addAll(intent_for_original);
+            r.forEach(intent -> ideas.add(new SusiIdea(intent).setToken(token)));
         });
         
-        for (SusiIdea idea: ideas) DAO.log("idea.phrase-1: score=" + idea.getSkill().getScore().score + " : " + idea.getSkill().getPhrases().toString() + " " + idea.getSkill().getActionsClone());
+        for (SusiIdea idea: ideas) DAO.log("idea.phrase-1: score=" + idea.getIntent().getScore().score + " : " + idea.getIntent().getPhrases().toString() + " " + idea.getIntent().getActionsClone());
         
-        // add catchall skills always (those are the 'bad ideas')
-        Collection<SusiSkill> ca = this.skilltrigger.get(SusiSkill.CATCHALL_KEY);
-        if (ca != null) ca.forEach(skill -> ideas.add(new SusiIdea(skill)));
+        // add catchall intents always (those are the 'bad ideas')
+        Collection<SusiIntent> ca = this.intenttrigger.get(SusiIntent.CATCHALL_KEY);
+        if (ca != null) ca.forEach(intent -> ideas.add(new SusiIdea(intent)));
         
         // create list of all ideas that might apply
         TreeMap<Long, List<SusiIdea>> scored = new TreeMap<>();
         AtomicLong count = new AtomicLong(0);
         ideas.forEach(idea -> {
-            int score = idea.getSkill().getScore().score;
+            int score = idea.getIntent().getScore().score;
             long orderkey = Long.MAX_VALUE - ((long) score) * 1000L + count.incrementAndGet();
             List<SusiIdea> r = scored.get(orderkey);
             if (r == null) {r = new ArrayList<>(); scored.put(orderkey, r);}
@@ -266,13 +266,13 @@ public class SusiMind {
         // make a sorted list of all ideas
         ideas.clear(); scored.values().forEach(r -> ideas.addAll(r));
         
-        for (SusiIdea idea: ideas) DAO.log("idea.phrase-2: score=" + idea.getSkill().getScore().score + " : " + idea.getSkill().getPhrases().toString() + " " + idea.getSkill().getActionsClone());
+        for (SusiIdea idea: ideas) DAO.log("idea.phrase-2: score=" + idea.getIntent().getScore().score + " : " + idea.getIntent().getPhrases().toString() + " " + idea.getIntent().getActionsClone());
         
         // test ideas and collect those which match up to maxcount
         List<SusiIdea> plausibleIdeas = new ArrayList<>(Math.min(10, maxcount));
         for (SusiIdea idea: ideas) {
-            SusiSkill skill = idea.getSkill();
-            Collection<Matcher> m = skill.matcher(query);
+            SusiIntent intent = idea.getIntent();
+            Collection<Matcher> m = intent.matcher(query);
             if (m.isEmpty()) continue;
             // TODO: evaluate leading SEE flow commands right here as well
             plausibleIdeas.add(idea);
@@ -280,16 +280,16 @@ public class SusiMind {
         }
 
         for (SusiIdea idea: plausibleIdeas) {
-            DAO.log("idea.phrase-3: score=" + idea.getSkill().getScore().score + " : " + idea.getSkill().getPhrases().toString() + " " + idea.getSkill().getActionsClone());
-            DAO.log("idea.phrase-3:   log=" + idea.getSkill().getScore().log );
+            DAO.log("idea.phrase-3: score=" + idea.getIntent().getScore().score + " : " + idea.getIntent().getPhrases().toString() + " " + idea.getIntent().getActionsClone());
+            DAO.log("idea.phrase-3:   log=" + idea.getIntent().getScore().log );
         }
 
         return plausibleIdeas;
     }
     
     /**
-     * react on a user input: this causes the selection of deduction skills and the evaluation of the process steps
-     * in every skill up to the moment where enough skills have been applied as consideration. The reaction may also
+     * react on a user input: this causes the selection of deduction intents and the evaluation of the process steps
+     * in every intent up to the moment where enough intents have been applied as consideration. The reaction may also
      * cause the evaluation of operational steps which may cause learning effects within the SusiMind.
      * @param query
      * @param maxcount
@@ -313,7 +313,7 @@ public class SusiMind {
         List<SusiArgument> answers = new ArrayList<>();
         List<SusiIdea> ideas = creativity(query, recall, 100);
         for (SusiIdea idea: ideas) {
-            SusiArgument argument = idea.getSkill().consideration(query, recall, idea.getIntent(), this, client);
+            SusiArgument argument = idea.getIntent().consideration(query, recall, idea.getToken(), this, client);
             if (argument != null) answers.add(argument);
             if (answers.size() >= maxcount) break;
         }
@@ -348,12 +348,12 @@ public class SusiMind {
         }
     }
 
-    public Set<String> getSkillsetNames(String client) {
-        return this.memories.getSkillsetNames(client);
+    public Set<String> getIntentsetNames(String client) {
+        return this.memories.getIntentsetNames(client);
     }
     
-    public JsonTray getSkillset(String client, String name) throws IOException {
-        return this.memories.getSkillset(client, name);
+    public JsonTray getIntentset(String client, String name) throws IOException {
+        return this.memories.getIntentset(client, name);
     }
     
     public static void main(String[] args) {
@@ -362,7 +362,7 @@ public class SusiMind {
             File watch = new File(new File("data"), "susi");
             SusiMind mem = new SusiMind(watch, init, watch);
             File file = new File("conf/susi/susi_cognition_000.json");
-            JSONObject lesson = SusiExpert.readJsonExpert(file);
+            JSONObject lesson = SusiSkill.readJsonSkill(file);
             mem.learn(lesson, file);
             System.out.println(mem.new Reaction("I feel funny", "localhost", new SusiThought()).getExpression());
             System.out.println(mem.new Reaction("Help me!", "localhost", new SusiThought()).getExpression());
