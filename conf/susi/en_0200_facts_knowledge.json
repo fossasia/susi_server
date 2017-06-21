@@ -27,7 +27,7 @@
       {"type":"answer", "select":"random",
        "phrases":["You are here: https://www.openstreetmap.org/#map=13/$latitude$/$longitude$"]
       },
-      {"type":"anchor", "link":"https://www.openstreetmap.org/#map=13/$lat$/$lon$", "text":"Link to an Openstreetmap for your location"},
+      {"type":"anchor", "link":"https://www.openstreetmap.org/#map=13/$latitude$/$longitude$", "text":"Link to an Openstreetmap for your location"},
       {"type":"map", "latitude":"$latitude$", "longitude":"$longitude$", "zoom":"13"}
     ]
   }, {
