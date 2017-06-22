@@ -476,8 +476,6 @@ public class SusiServer {
                 ModelListService.class,
                 LanguageListService.class,
                 ListUserSettings.class,
-                ExpertListService.class,
-                ExpertExampleService.class,
                 ListSkillService.class,
                 ExampleSkillService.class,
                 UserManagementService.class,
