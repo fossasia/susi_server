@@ -36,6 +36,8 @@ public class UploadDataSettings extends AbstractAPIHandler implements APIHandler
     @Override
     public ServiceResponse serviceImpl(Query post, HttpServletResponse response, Authorization rights, JsonObjectWithDefault permissions) throws APIException {
 
+        JSONObject result = new JSONObject();
+        result.put("success","true");
         File data = DAO.data_dir;
         String filePath = data.getPath() + "/settings/";
         String fileName = (String) post.getRequest().getParameter("file");
@@ -54,6 +56,7 @@ public class UploadDataSettings extends AbstractAPIHandler implements APIHandler
             try {
                 throw new ServletException("Invalid or non-existent wordDir context-param.");
             } catch (ServletException e) {
+                result.put("success","false");
                 e.printStackTrace();
             }
         ServletOutputStream stream = null;
@@ -71,6 +74,7 @@ public class UploadDataSettings extends AbstractAPIHandler implements APIHandler
             while ((readBytes = buf.read()) != -1)
                 stream.write(readBytes);
         } catch (IOException ioe) {
+            result.put("success","false");
             try {
                 throw new ServletException(ioe.getMessage());
             } catch (ServletException e) {
@@ -81,15 +85,17 @@ public class UploadDataSettings extends AbstractAPIHandler implements APIHandler
                 try {
                     stream.close();
                 } catch (IOException e) {
+                    result.put("success","false");
                     e.printStackTrace();
                 }
             if (buf != null)
                 try {
                     buf.close();
                 } catch (IOException e) {
+                    result.put("success","false");
                     e.printStackTrace();
                 }
         }
-        return null;
+        return new ServiceResponse(result);
     }
 }
