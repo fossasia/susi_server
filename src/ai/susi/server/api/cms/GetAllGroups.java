@@ -14,8 +14,7 @@ import java.util.Set;
  */
 public class GetAllGroups extends AbstractAPIHandler implements APIHandler {
 
-
-    private static final long serialVersionUID = 5747506850176916431L;
+    private static final long serialVersionUID = -179412273153306443L;
 
     @Override
     public BaseUserRole getMinimalBaseUserRole() {
@@ -29,7 +28,7 @@ public class GetAllGroups extends AbstractAPIHandler implements APIHandler {
 
     @Override
     public String getAPIPath() {
-        return "/cms/getGroupDetails.json";
+        return "/cms/getAllGroups.json";
     }
 
     @Override
