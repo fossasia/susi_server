@@ -98,17 +98,6 @@ public abstract class AbstractAPIHandler extends HttpServlet implements APIHandl
         	response.sendError(401, "Base user role not sufficient. Your base user role is '" + authorization.getBaseUserRole().name() + "', your user role is '" + authorization.getUserRole().getDisplayName() + "'");
 			return;
         }
-
-        // user accounting: we maintain static and persistent user data; we again search the accounts using the usder identity string
-        //JSONObject accounting_persistent_obj = DAO.accounting_persistent.has(user_id) ? DAO.accounting_persistent.getJSONObject(anon_id) : DAO.accounting_persistent.put(user_id, new JSONObject()).getJSONObject(user_id);
-        Accounting accounting_temporary = DAO.accounting_temporary.get(identity.toString());
-        if (accounting_temporary == null) {
-            accounting_temporary = new Accounting();
-            DAO.accounting_temporary.put(identity.toString(), accounting_temporary);
-        }
-        
-        // the accounting data is assigned to the authorization
-        authorization.setAccounting(accounting_temporary);
         
         // extract standard query attributes
         String callback = query.get("callback", "");

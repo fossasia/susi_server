@@ -465,24 +465,26 @@ public class SusiServer {
                 SignUpService.class,
                 UploadDataSettings.class,
                 TopMenuService.class,
-                ExpertConvertJsonToTxtService.class,
+                ListSettingsService.class,
+                ConvertSkillJsonToTxtService.class,
                 GroupListService.class,
-                ExpertConvertTxtToJsonService.class,
-                ExpertGetJsonService.class,
-                ExpertGetTxtService.class,
-                CreateExpertService.class,
-                ExpertPostJsonService.class,
-                ExpertPostTxtService.class,
+                ConvertSkillTxtToJsonService.class,
+                GetSkillJsonService.class,
+                GetSkillTxtService.class,
+                CreateSkillService.class,
+                PostSkillJsonService.class,
+                PostSkillTxtService.class,
                 ModelListService.class,
                 LanguageListService.class,
-                ExpertListService.class,
+                ListSkillService.class,
+                ExampleSkillService.class,
                 UserManagementService.class,
                 UserAccountPermissions.class,
                 JsonPathTestService.class,
-                DeleteExpertService.class,
-                ModifyExpertService.class,
-                ExpertHistoryService.class,
-
+                DeleteSkillService.class,
+                ModifySkillService.class,
+                HistorySkillService.class,
+                GetCommitHistory.class,
                 // susi search aggregation services
                 ConsoleService.class,
                 RSSReaderService.class,
@@ -500,7 +502,10 @@ public class SusiServer {
                 ChangeUserRoles.class,
 
                 //Get all Users
-                GetAllUsers.class
+                GetAllUsers.class,
+
+                //Groups
+                GetGroupDetails.class
         };
         for (Class<? extends Servlet> service: services)
             try {

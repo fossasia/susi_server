@@ -1,5 +1,5 @@
 /**
- *  PostExpertJsonService
+ *  GetSkillJsonService
  *  Copyright 28.05.2017 by Michael Peter Christen, @0rb1t3r
  *
  *  This library is free software; you can redistribute it and/or
@@ -31,9 +31,9 @@ import ai.susi.server.ServiceResponse;
 
 import javax.servlet.http.HttpServletResponse;
 
-public class ExpertPostJsonService extends AbstractAPIHandler implements APIHandler {
+public class GetSkillJsonService extends AbstractAPIHandler implements APIHandler {
     
-    private static final long serialVersionUID = 18344225L;
+    private static final long serialVersionUID = 18344223L;
 
     @Override
     public BaseUserRole getMinimalBaseUserRole() { return BaseUserRole.ANONYMOUS; }
@@ -45,7 +45,7 @@ public class ExpertPostJsonService extends AbstractAPIHandler implements APIHand
 
     @Override
     public String getAPIPath() {
-        return "/cms/postExpert.json";
+        return "/cms/getSkill.json";
     }
     
     @Override

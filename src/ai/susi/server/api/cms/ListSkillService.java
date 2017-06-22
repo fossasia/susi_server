@@ -11,11 +11,11 @@ import java.io.File;
 import java.util.ArrayList;
 
 /**
- This Servlet gives a API Endpoint to list all the Experts given its model, group and language.
- Can be tested on 127.0.0.1:4000/cms/getExpertList.json
+ This Servlet gives a API Endpoint to list all the Skills given its model, group and language.
+ Can be tested on 127.0.0.1:4000/cms/getSkillList.json
  */
 
-public class ExpertListService extends AbstractAPIHandler implements APIHandler {
+public class ListSkillService extends AbstractAPIHandler implements APIHandler {
 
     private static final long serialVersionUID = -8691003678852307876L;
 
@@ -29,7 +29,7 @@ public class ExpertListService extends AbstractAPIHandler implements APIHandler 
 
     @Override
     public String getAPIPath() {
-        return "/cms/getExpertList.json";
+        return "/cms/getSkillList.json";
     }
 
     @Override
@@ -46,7 +46,12 @@ public class ExpertListService extends AbstractAPIHandler implements APIHandler 
         fileList =  listFilesForFolder(language, fileList);
         JSONArray jsArray = new JSONArray(fileList);
 
-        return new ServiceResponse(jsArray);
+        JSONObject json = new JSONObject(true)
+                .put("model", model_name)
+                .put("group", group_name)
+                .put("language", language_name)
+                .put("skills", jsArray);
+        return new ServiceResponse(json);
 
     }
 

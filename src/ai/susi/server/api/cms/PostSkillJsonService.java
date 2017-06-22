@@ -1,5 +1,5 @@
 /**
- *  GetExpertTxtService
+ *  PostSkillJsonService
  *  Copyright 28.05.2017 by Michael Peter Christen, @0rb1t3r
  *
  *  This library is free software; you can redistribute it and/or
@@ -21,7 +21,6 @@ package ai.susi.server.api.cms;
 
 import org.json.JSONObject;
 
-import ai.susi.DAO;
 import ai.susi.json.JsonObjectWithDefault;
 import ai.susi.server.APIHandler;
 import ai.susi.server.AbstractAPIHandler;
@@ -30,21 +29,11 @@ import ai.susi.server.BaseUserRole;
 import ai.susi.server.Query;
 import ai.susi.server.ServiceResponse;
 
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Files;
-
 import javax.servlet.http.HttpServletResponse;
 
-/**
- * Servlet to load an expert from the expert database
- * i.e.
- * http://localhost:4000/cms/getexpert.txt
- * http://localhost:4000/cms/getexpert.txt?model=general&group=knowledge&language=en&expert=wikipedia
- */
-public class ExpertGetTxtService extends AbstractAPIHandler implements APIHandler {
+public class PostSkillJsonService extends AbstractAPIHandler implements APIHandler {
     
-    private static final long serialVersionUID = 18344224L;
+    private static final long serialVersionUID = 18344225L;
 
     @Override
     public BaseUserRole getMinimalBaseUserRole() { return BaseUserRole.ANONYMOUS; }
@@ -56,27 +45,16 @@ public class ExpertGetTxtService extends AbstractAPIHandler implements APIHandle
 
     @Override
     public String getAPIPath() {
-        return "/cms/getExpert.txt";
+        return "/cms/postSkill.json";
     }
     
     @Override
     public ServiceResponse serviceImpl(Query call, HttpServletResponse response, Authorization rights, final JsonObjectWithDefault permissions) {
-
-        String model_name = call.get("model", "general");
-        File model = new File(DAO.model_watch_dir, model_name);
-        String group_name = call.get("group", "knowledge");
-        File group = new File(model, group_name);
-        String language_name = call.get("language", "en");
-        File language = new File(group, language_name);
-        String expert_name = call.get("expert", "wikipedia");
-        File expert = new File(language, expert_name + ".txt");
         
-        try {
-            String content = new String(Files.readAllBytes(expert.toPath()));
-            return new ServiceResponse(content);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return null;
+        JSONObject json = new JSONObject(true);
+        
+        // modify caching
+        json.put("$EXPIRES", 0);
+        return new ServiceResponse(json);
     }
 }

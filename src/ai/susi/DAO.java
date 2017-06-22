@@ -39,6 +39,7 @@ import com.google.common.io.Files;
 import ai.susi.json.JsonFile;
 import ai.susi.json.JsonTray;
 import ai.susi.mind.SusiMind;
+
 import ai.susi.server.APIException;
 import ai.susi.server.AccessTracker;
 import ai.susi.server.Accounting;
@@ -48,6 +49,7 @@ import ai.susi.server.ClientCredential;
 import ai.susi.server.ClientIdentity;
 import ai.susi.server.Settings;
 import ai.susi.server.UserRoles;
+
 import ai.susi.tools.IO;
 import ai.susi.tools.OS;
 
@@ -88,12 +90,13 @@ public class DAO {
     private static JsonTray accounting;
     public  static UserRoles userRoles;
     public  static JsonTray passwordreset;
-    public  static Map<String, Accounting> accounting_temporary = new HashMap<>();
     private static JsonFile login_keys;
-    
+    public static JsonTray group;
+
+
     // built-in artificial intelligence
     public static SusiMind susi;
-    
+
     /**
      * initialize the DAO
      * @param configMap
@@ -173,9 +176,17 @@ public class DAO {
         accounting = new JsonTray(accounting_path_per.toFile(), accounting_path_vol.toFile(), 1000000);
         OS.protectPath(accounting_path_per);
         OS.protectPath(accounting_path_vol);
+
         Path login_keys_path = settings_dir.resolve("login-keys.json");
         login_keys = new JsonFile(login_keys_path.toFile());
         OS.protectPath(login_keys_path);
+
+
+        Path groups_per = settings_dir.resolve("groups.json");
+        Path groups_vol = settings_dir.resolve("groups_session.json");
+        group = new JsonTray(groups_per.toFile(), groups_vol.toFile(), 1000000);
+        OS.protectPath(groups_per);
+        OS.protectPath(groups_vol);
 
 
         Log.getLog().info("Initializing user roles");
@@ -352,4 +363,13 @@ public class DAO {
 		}
 		return i;
 	}
+    
+    public static Accounting getAccounting(@Nonnull ClientIdentity identity) {
+         return new Accounting(identity, accounting);
+    }
+    
+    public static boolean hasAccounting(@Nonnull ClientIdentity credential) {
+        return accounting.has(credential.toString());
+    }
+    
 }

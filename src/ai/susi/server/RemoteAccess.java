@@ -135,16 +135,21 @@ public class RemoteAccess {
     
     private static Set<String> localhostNames = new HashSet<>();
     static {
-        localhostNames.add("0:0:0:0:0:0:0:1");
-        localhostNames.add("fe80:0:0:0:0:0:0:1%1");
-        localhostNames.add("127.0.0.1");
-        localhostNames.add("localhost");
-        try {localhostNames.add(InetAddress.getLocalHost().getHostAddress());} catch (UnknownHostException e) {}
-        try {localhostNames.add(InetAddress.getLocalHost().getHostName());} catch (UnknownHostException e) {}
-        try {localhostNames.add(InetAddress.getLocalHost().getCanonicalHostName());} catch (UnknownHostException e) {}
-        try {for (InetAddress a: InetAddress.getAllByName(null)) {localhostNames.add(a.getHostAddress()); localhostNames.add(a.getHostName()); localhostNames.add(a.getCanonicalHostName());}} catch (UnknownHostException e) {}
-        try {for (InetAddress a: InetAddress.getAllByName("localhost")) {localhostNames.add(a.getHostAddress()); localhostNames.add(a.getHostName()); localhostNames.add(a.getCanonicalHostName());}} catch (UnknownHostException e) {}
-        //System.out.println(localhostNames);
+    	new Thread() {
+    		public void run() {
+    			localhostNames.add("0:0:0:0:0:0:0:1");
+		        localhostNames.add("fe80:0:0:0:0:0:0:1%1");
+		        localhostNames.add("127.0.0.1");
+		        localhostNames.add("localhost");
+		        try {localhostNames.add(InetAddress.getLocalHost().getHostAddress());} catch (UnknownHostException e) {}
+		        try {localhostNames.add(InetAddress.getLocalHost().getHostName());} catch (UnknownHostException e) {}
+		        try {localhostNames.add(InetAddress.getLocalHost().getCanonicalHostName());} catch (UnknownHostException e) {}
+		        try {for (InetAddress a: InetAddress.getAllByName(null)) {localhostNames.add(a.getHostAddress()); localhostNames.add(a.getHostName()); localhostNames.add(a.getCanonicalHostName());}} catch (UnknownHostException e) {}
+		        try {for (InetAddress a: InetAddress.getAllByName("localhost")) {localhostNames.add(a.getHostAddress()); localhostNames.add(a.getHostName()); localhostNames.add(a.getCanonicalHostName());}} catch (UnknownHostException e) {}
+		        //System.out.println(localhostNames);
+    		}
+    	}.start();
+       
     }
     
     public static void addLocalhost(String h) {

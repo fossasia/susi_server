@@ -281,7 +281,7 @@ public class SusiAction {
             String expression = thoughts.unify(phrase, false);
             if (expression != null) {
                 // transform the answer according to the data
-                // this is the final chance that we can add another thought according to a memorizing skill in the answer string
+                // this is the final chance that we can add another thought according to a memorizing intent in the answer string
                 Matcher m;
 
                 // self-referrer evaluate contents from the answers expressions as recursion: susi is asked again

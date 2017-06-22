@@ -39,7 +39,7 @@ public class SusiArgument implements Iterable<SusiThought> {
 
     private final ArrayList<SusiThought> recall;
     private final List<SusiAction> actions;
-    private final List<String> experts;
+    private final List<String> skills;
     
     /**
      * Create an empty argument
@@ -47,7 +47,7 @@ public class SusiArgument implements Iterable<SusiThought> {
     public SusiArgument() {
         this.recall = new ArrayList<>();
         this.actions = new ArrayList<>();
-        this.experts = new ArrayList<>();
+        this.skills = new ArrayList<>();
     }
     
     public SusiArgument clone() {
@@ -137,7 +137,7 @@ public class SusiArgument implements Iterable<SusiThought> {
     /**
      * Thinking is a series of thoughts, every new thought appends another thought to the argument.
      * A special situation may (or may not) occur if one thinking step does not produce a result.
-     * Depending on the inference skill set that may mean that the consideration of the skill containing
+     * Depending on the inference intent set that may mean that the consideration of the intent containing
      * the inferences was wrong and should be abandoned. This happens if mindstate().equals(thought).
      * This is the same operation as a 'push' on a stack.
      * @param thought the next thought
@@ -206,13 +206,13 @@ public class SusiArgument implements Iterable<SusiThought> {
     }
 
     /**
-     * An argument is constructed using expert which may contain a set of skills.
-     * This method should be called with a privacy-fixed path to the expert file.
-     * @param expert a relative path to the expert
+     * An argument is constructed using a skill which may contain a set of intents.
+     * This method should be called with a privacy-fixed path to the skill file.
+     * @param skill a relative path to the skill
      * @return the argument
      */
-    public SusiArgument addExpert(final String expert) {
-    	this.experts.add(expert);
+    public SusiArgument addSkill(final String skill) {
+    	this.skills.add(skill);
     	return this;
     }
     
@@ -233,7 +233,7 @@ public class SusiArgument implements Iterable<SusiThought> {
         // therefore the mindmeld must be done after action application to get those latest changes
         SusiThought answer = this.mindmeld(true);
         answer.put("actions", actions);
-        answer.put("experts", this.getExperts());
+        answer.put("skills", this.getSkills());
         return answer;
     }
     
@@ -245,8 +245,8 @@ public class SusiArgument implements Iterable<SusiThought> {
         return this.actions;
     }
     
-    public List<String> getExperts() {
-    	return this.experts;
+    public List<String> getSkills() {
+    	return this.skills;
     }
 
     public JSONObject toJSON() {
@@ -255,11 +255,11 @@ public class SusiArgument implements Iterable<SusiThought> {
         this.recall.forEach(thought -> recallJson.put(thought));
         JSONArray actionsJson = new JSONArray();
         this.actions.forEach(action -> actionsJson.put(action.toJSONClone()));
-        JSONArray expertJson = new JSONArray();
-        this.experts.forEach(expert -> expertJson.put(expert));
+        JSONArray skillJson = new JSONArray();
+        this.skills.forEach(skill -> skillJson.put(skill));
         json.put("recall", recallJson);
         json.put("action", actionsJson);
-        json.put("expert", expertJson);
+        json.put("skill", skillJson);
         return json;
     }
 

@@ -158,9 +158,9 @@ public class SusiCognition {
                     if (phrases != null && phrases.size() > 0) {expressionAction = a; break;}
                 }
                 if (expressionAction != null) dispute.addObservation("answer", expressionAction.getPhrases().get(0)); // we can unify with "answer" in queries
-                // the expert, can be used to analyze the latest answer
-                List<String> experts = clonedThought.getExperts();
-                if (experts.size() > 0) dispute.addObservation("expert", experts.get(0));
+                // the skill, can be used to analyze the latest answer
+                List<String> skills = clonedThought.getSkills();
+                if (skills.size() > 0) dispute.addObservation("skill", skills.get(0));
                 
                 // add all data from the old dispute
                 JSONArray clonedData = clonedThought.getData();

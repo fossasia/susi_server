@@ -1,11 +1,11 @@
 {
-	"name": "Loklak Server",
-	"description": "Distributed Tweet Search Server",
-	"logo": "https://raw.githubusercontent.com/loklak/loklak_server/master/html/images/loklak_anonymous.png",
-	"website": "http://loklak.org",
-	"repository": "https://github.com/loklak/loklak_server.git",
+	"name": "Susi Server",
+	"description": "Artificial Inteligence for Chatbots",
+	"logo": "https://github.com/fossasia/susi_server/blob/development/html/images/brand.png",
+	"website": "http://api.susi.ai",
+	"repository": "https://github.com/fossasia/susi_server.git",
 	"image": "mariobehling/loklak",
 	"env": {
-		"BUILDPACK_URL": "https://github.com/loklak/heroku_buildpack_ant_loklak.git"
+		"BUILDPACK_URL": "https://github.com/fossasia/susi_server/blob/development/docs/installation/installation_heroku.md"
 	}
 }
