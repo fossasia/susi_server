@@ -28,7 +28,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.File;
 
 /**
- * This Servlets returns all the group details of all the groups created.
+ * This Servlets creates a group with default baserole as admin.
  * It takes 1 parameter group and other optional parameter role.
  * Can be tested on
  * http://127.0.0.1:4000/cms/createGroups.json?group=groupName&role=admin
