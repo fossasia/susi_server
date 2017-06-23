@@ -29,9 +29,9 @@ import java.io.File;
 
 /**
  * This Servlets returns all the group details of all the groups created.
- * It takes one parameter group
+ * It takes 1 parameter group and other optional parameter role.
  * Can be tested on
- * http://127.0.0.1:4000/cms/createGroups.json?group=groupName
+ * http://127.0.0.1:4000/cms/createGroups.json?group=groupName&role=admin
  *
  */
 public class CreateGroups extends AbstractAPIHandler implements APIHandler {
@@ -41,7 +41,7 @@ public class CreateGroups extends AbstractAPIHandler implements APIHandler {
 
     @Override
     public BaseUserRole getMinimalBaseUserRole() {
-        return BaseUserRole.USER;
+        return BaseUserRole.ADMIN;
     }
 
     @Override
