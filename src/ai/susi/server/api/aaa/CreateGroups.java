@@ -17,7 +17,7 @@
  *  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package ai.susi.server.api.cms;
+package ai.susi.server.api.aaa;
 
 import ai.susi.DAO;
 import ai.susi.json.JsonObjectWithDefault;
@@ -31,7 +31,7 @@ import java.io.File;
  * This Servlets creates a group with default baserole as admin.
  * It takes 1 parameter group and other optional parameter role.
  * Can be tested on
- * http://127.0.0.1:4000/cms/createGroups.json?group=groupName&role=admin
+ * http://127.0.0.1:4000/aaa/createGroups.json?group=groupName&role=admin
  *
  */
 public class CreateGroups extends AbstractAPIHandler implements APIHandler {
@@ -61,19 +61,16 @@ public class CreateGroups extends AbstractAPIHandler implements APIHandler {
         String grouppBaseRole = call.get("role","admin");
         if( groupName!=null ) {
             if( DAO.group.has(groupName)) {
-                result.put("success", false);
                 result.put("message", "Group already exists");
             } else {
                 JSONObject groupDetail = new JSONObject();
                 groupDetail.put("group_members", new JSONObject());
                 groupDetail.put("groupBaseRole", grouppBaseRole);
-                result.put("success", true);
                 result.put("message", "Group created successfully");
                 DAO.group.put(groupName,groupDetail,rights.getIdentity().isPersistent());
             }
             return new ServiceResponse(result);
         } else {
-            result.put("success",false);
             result.put("message", "Bad call, group name parameter not specified");
         }
         return new ServiceResponse(result);
