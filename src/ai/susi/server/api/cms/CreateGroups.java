@@ -58,13 +58,19 @@ public class CreateGroups extends AbstractAPIHandler implements APIHandler {
     public ServiceResponse serviceImpl(Query call, HttpServletResponse response, Authorization rights, final JsonObjectWithDefault permissions) {
         JSONObject result = new JSONObject();
         String group_name = call.get("group", null);
-        if( DAO.group.has(group_name)) {
-            result.put("success", false);
-            result.put("message", "Group already exists");
+        if( group_name!=null ) {
+            if( DAO.group.has(group_name)) {
+                result.put("success", false);
+                result.put("message", "Group already exists");
+            } else {
+                DAO.group.put(group_name,new JSONObject(),rights.getIdentity().isPersistent());
+                result.put("success", true);
+                result.put("message", "Group created successfully");
+            }
+            return new ServiceResponse(result);
         } else {
-            DAO.group.put(group_name,new JSONObject(),rights.getIdentity().isPersistent());
-            result.put("success", true);
-            result.put("message", "Group created successfully");
+            result.put("success",false);
+            result.put("message", "Bad call, group name parameter not specified");
         }
         return new ServiceResponse(result);
     }
