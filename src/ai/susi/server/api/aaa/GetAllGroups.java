@@ -17,7 +17,7 @@
  *  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package ai.susi.server.api.cms;
+package ai.susi.server.api.aaa;
 
 import ai.susi.DAO;
 import ai.susi.json.JsonObjectWithDefault;
@@ -51,16 +51,13 @@ public class GetAllGroups extends AbstractAPIHandler implements APIHandler {
 
     @Override
     public String getAPIPath() {
-        return "/cms/getAllGroups.json";
+        return "/aaa/getAllGroups.json";
     }
 
     @Override
     public ServiceResponse serviceImpl(Query call, HttpServletResponse response, Authorization rights, final JsonObjectWithDefault permissions) {
-        JSONObject success = new JSONObject();
-        success.put("success", false);
         JSONObject allUsers;
         allUsers = DAO.group.toJSON();
-        allUsers.put("success", true);
         return new ServiceResponse(allUsers);
     }
 
