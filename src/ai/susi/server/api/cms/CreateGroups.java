@@ -29,13 +29,15 @@ import java.io.File;
 
 /**
  * This Servlets returns all the group details of all the groups created.
- *
+ * It takes one parameter group
  * Can be tested on
- * http://127.0.0.1:4000/cms/createGroups.json
+ * http://127.0.0.1:4000/cms/createGroups.json?group=groupName
  *
  */
 public class CreateGroups extends AbstractAPIHandler implements APIHandler {
 
+
+    private static final long serialVersionUID = -742269505564698987L;
 
     @Override
     public BaseUserRole getMinimalBaseUserRole() {
