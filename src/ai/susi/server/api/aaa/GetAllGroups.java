@@ -32,7 +32,7 @@ import java.util.Set;
  * This Servlets returns all the group details of all the groups created.
  * Accepts NO, GET or POST parameters.
  * Can be tested on
- * http://127.0.0.1:4000/cms/getAllGroups.json
+ * http://127.0.0.1:4000/aaa/getAllGroups.json
  *
  */
 public class GetAllGroups extends AbstractAPIHandler implements APIHandler {
