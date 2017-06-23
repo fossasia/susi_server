@@ -41,7 +41,7 @@ public class CreateGroups extends AbstractAPIHandler implements APIHandler {
 
     @Override
     public BaseUserRole getMinimalBaseUserRole() {
-        return BaseUserRole.ADMIN;
+        return BaseUserRole.USER;
     }
 
     @Override
@@ -57,15 +57,19 @@ public class CreateGroups extends AbstractAPIHandler implements APIHandler {
     @Override
     public ServiceResponse serviceImpl(Query call, HttpServletResponse response, Authorization rights, final JsonObjectWithDefault permissions) {
         JSONObject result = new JSONObject();
-        String group_name = call.get("group", null);
-        if( group_name!=null ) {
-            if( DAO.group.has(group_name)) {
+        String groupName = call.get("group", null);
+        String grouppBaseRole = call.get("role","admin");
+        if( groupName!=null ) {
+            if( DAO.group.has(groupName)) {
                 result.put("success", false);
                 result.put("message", "Group already exists");
             } else {
-                DAO.group.put(group_name,new JSONObject(),rights.getIdentity().isPersistent());
+                JSONObject groupDetail = new JSONObject();
+                groupDetail.put("group_members", new JSONObject());
+                groupDetail.put("groupBaseRole", grouppBaseRole);
                 result.put("success", true);
                 result.put("message", "Group created successfully");
+                DAO.group.put(groupName,groupDetail,rights.getIdentity().isPersistent());
             }
             return new ServiceResponse(result);
         } else {
