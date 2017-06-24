@@ -477,6 +477,7 @@ public class SusiServer {
                 LanguageListService.class,
                 ListUserSettings.class,
                 ListSkillService.class,
+                GetAllLanguages.class,
                 ExampleSkillService.class,
                 UserManagementService.class,
                 ChangeUserSettings.class,
