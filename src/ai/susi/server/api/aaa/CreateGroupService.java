@@ -28,13 +28,13 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.File;
 
 /**
- * This Servlets creates a group with default baserole as admin.
+ * This Servlets creates a group with default baserole as anonymous.
  * It takes 1 parameter group and other optional parameter role.
  * Can be tested on
  * http://127.0.0.1:4000/aaa/createGroups.json?group=groupName&role=admin
  *
  */
-public class CreateGroups extends AbstractAPIHandler implements APIHandler {
+public class CreateGroupService extends AbstractAPIHandler implements APIHandler {
 
 
     private static final long serialVersionUID = -742269505564698987L;
@@ -51,14 +51,14 @@ public class CreateGroups extends AbstractAPIHandler implements APIHandler {
 
     @Override
     public String getAPIPath() {
-        return "/cms/createGroups.json";
+        return "/aaa/createGroup.json";
     }
 
     @Override
     public ServiceResponse serviceImpl(Query call, HttpServletResponse response, Authorization rights, final JsonObjectWithDefault permissions) {
         JSONObject result = new JSONObject();
         String groupName = call.get("group", null);
-        String grouppBaseRole = call.get("role","admin");
+        String grouppBaseRole = call.get("role","anonymous");
         if( groupName!=null ) {
             if( DAO.group.has(groupName)) {
                 result.put("message", "Group already exists");
