@@ -1,3 +1,4 @@
+
 package ai.susi.server.api.cms;
 
 import ai.susi.DAO;
@@ -12,6 +13,10 @@ import java.util.ArrayList;
 
 /**
  * Created by chetankaushik on 24/06/17.
+ * Adds API Endpoint to get all languages for a group.
+ * BASE ROLE Required is ANONYMOUS
+ * Accepts 2 GET parameters, Model Name and Group Name
+ * http://127.0.0.1:4000/cms/getAllLanguages.json?group=assistants
  */
 public class GetAllLanguages  extends AbstractAPIHandler implements APIHandler {
 
