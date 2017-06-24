@@ -16,7 +16,7 @@ import java.util.ArrayList;
 public class GetAllLanguages  extends AbstractAPIHandler implements APIHandler {
 
 
-    private static final long serialVersionUID = -5176264536025896261L;
+    private static final long serialVersionUID = -7872551914189898030L;
 
     @Override
     public BaseUserRole getMinimalBaseUserRole() { return BaseUserRole.ANONYMOUS; }
@@ -40,7 +40,7 @@ public class GetAllLanguages  extends AbstractAPIHandler implements APIHandler {
         File group = new File(model, group_name);
 
         String[] languages = group.list((current, name) -> new File(current, name).isDirectory());
-        JSONArray modelsArray = new JSONArray(languages);
-        return new ServiceResponse(modelsArray);
+        JSONArray languagesArray = new JSONArray(languages);
+        return new ServiceResponse(languagesArray);
     }
 }
