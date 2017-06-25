@@ -1,6 +1,4 @@
-{
-  "group:group_Name": {
-    "group_members": {},
-    "groupBaseRole": "admin"
-  }
-}
+{"group:group_Name": {
+  "group_members": {},
+  "groupBaseRole": "admin"
+}}
