@@ -463,6 +463,7 @@ public class SusiServer {
                 PublicKeyRegistrationService.class,
                 DownloadDataSettings.class,
                 SignUpService.class,
+                UploadDataSettings.class,
                 TopMenuService.class,
                 ListSettingsService.class,
                 ConvertSkillJsonToTxtService.class,
