@@ -507,7 +507,8 @@ public class SusiServer {
 
                 //Groups
                 GetGroupDetails.class,
-                CreateGroupService.class
+                CreateGroupService.class,
+                GetAllGroups.class
         };
         for (Class<? extends Servlet> service: services)
             try {
