@@ -19,6 +19,7 @@
 
 package ai.susi.server.api.aaa;
 
+import ai.susi.DAO;
 import ai.susi.json.JsonObjectWithDefault;
 import ai.susi.server.*;
 import org.json.JSONObject;
@@ -32,7 +33,7 @@ import javax.servlet.http.HttpServletResponse;
 public class DeleteGroupService extends AbstractAPIHandler implements APIHandler{
 
     private static final long serialVersionUID = -6460356959547369940L;
-    
+
     @Override
     public String getAPIPath() {
         return "/aaa/deleteGroup.json";
@@ -50,6 +51,20 @@ public class DeleteGroupService extends AbstractAPIHandler implements APIHandler
 
     @Override
     public ServiceResponse serviceImpl(Query post, HttpServletResponse response, Authorization rights, JsonObjectWithDefault permissions) throws APIException {
-        return null;
+        JSONObject result = new JSONObject();
+        String groupName = post.get("group", null);
+
+        if( groupName!=null ) {
+            if( DAO.group.has(groupName)) {
+                DAO.group.remove(groupName);
+                result.put("message", "Group successfully deleted");
+            } else {
+                result.put("message","Group does not exist");
+            }
+            return new ServiceResponse(result);
+        } else {
+            result.put("message", "Bad call, group name parameter not specified");
+        }
+        return new ServiceResponse(result);
     }
 }
