@@ -97,7 +97,7 @@ public class SusiTutorialTest {
             test("Buenos días", "Hello", identity);
             test("May I work for you?", "Yes you may", identity);
             test("May I get a beer?", "Yes you may get a beer!", identity);
-            test("For two dollars I can buy a beer", "Yeah, I believe two dollars is a god price for a beer", identity);
+            test("For two dollars I can buy a beer", "Yeah, I believe two dollars is a good price for a beer", identity);
             test("Someday I buy a car", "Sure, you should buy a car!", identity);
             test("I really like bitburger beer", "You then should have one bitburger!", identity);
             test("What beer is the best?", "I bet you like bitburger beer!", identity);
@@ -155,7 +155,7 @@ public class SusiTutorialTest {
                     "Yes you may get a $1$!\n" +
                     "\n" +
                     "For * I can buy a *\n" +
-                    "Yeah, I believe $1$ is a god price for a $2$\n" +
+                    "Yeah, I believe $1$ is a good price for a $2$\n" +
                     "\n" +
                     "* buy a *\n" +
                     "Sure, you should buy a $2$!\n" +
