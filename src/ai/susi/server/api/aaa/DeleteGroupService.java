@@ -30,14 +30,17 @@ import javax.servlet.http.HttpServletResponse;
  * http://127.0.0.1:4000/aaa/deleteGroup.json?group=groupName
  */
 public class DeleteGroupService extends AbstractAPIHandler implements APIHandler{
+
+    private static final long serialVersionUID = -6460356959547369940L;
+    
     @Override
     public String getAPIPath() {
-        return null;
+        return "/aaa/deleteGroup.json";
     }
 
     @Override
     public BaseUserRole getMinimalBaseUserRole() {
-        return null;
+        return BaseUserRole.ADMIN;
     }
 
     @Override
