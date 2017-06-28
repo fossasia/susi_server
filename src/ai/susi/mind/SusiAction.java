@@ -46,20 +46,33 @@ public class SusiAction {
         websearch,     // do a web search on the client, show like rss rendering
         anchor,        // show/say a link
         map,           // show a map
-        settimer,      // set a timer on the client
-        resettimer,    // un-set a timer on the client
-        recordaudio,   // record audio
-        playaudio,     // play audio (recorded, asset on client or asset from web)
-        stopaudio,     // stop playing of audio OR recording of audio
-        recordvideo,   // record a video
-        playvideo,     // play the video (recorded, asset on client or asset from web)
-        stopvideo,     // stop playing or video OR recording of video
-        takeimage,     // take an image
-        showimage,     // show an image (recorded, asset on client or asset from web)
+        timer_set,     // set a timer on the client
+        timer_reset,   // un-set a timer on the client
+        audio_record,  // record audio
+        audio_play,    // play audio (recorded, asset on client or asset from web)
+        audio_stop,    // stop playing of audio OR recording of audio
+        video_record,  // record a video
+        video_play,    // play the video (recorded, asset on client or asset from web)
+        video_stop,    // stop playing or video OR recording of video
+        image_take,    // take an image
+        image_show,    // show an image (recorded, asset on client or asset from web)
         emotion,       // show an emotion (either change tone of tts or change visible style)
-        button,        // push a button (either on the client device or an IoT appliance connected to the client)
+        button_push,   // push a button (either on the client device or an IoT appliance connected to the client)
         io             // set an IO status on connected IoT device
-        ;}
+        ;
+    
+        public String action() {
+            String name = this.name();
+            int p = name.indexOf('_');
+            return p < 0 ? name : name.substring(0, p);
+        }
+        
+        public String context() {
+            String name = this.name();
+            int p = name.indexOf('_');
+            return p < 0 ? null : name.substring(p + 1);
+        }
+    }
     
     public static enum SelectionType {random, roundrobin;}
     public static enum DialogType {
