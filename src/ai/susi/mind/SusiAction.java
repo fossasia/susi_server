@@ -50,8 +50,10 @@ public class SusiAction {
         resettimer,    // un-set a timer on the client
         recordaudio,   // record audio
         playaudio,     // play audio (recorded, asset on client or asset from web)
+        stopaudio,     // stop playing of audio OR recording of audio
         recordvideo,   // record a video
         playvideo,     // play the video (recorded, asset on client or asset from web)
+        stopvideo,     // stop playing or video OR recording of video
         takeimage,     // take an image
         showimage,     // show an image (recorded, asset on client or asset from web)
         emotion,       // show an emotion (either change tone of tts or change visible style)
