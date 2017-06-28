@@ -21,11 +21,14 @@ package ai.susi.server.api.aaa;
 
 import ai.susi.DAO;
 import ai.susi.json.JsonObjectWithDefault;
-import ai.susi.server.*;
+import ai.susi.server.APIHandler;
+import ai.susi.server.AbstractAPIHandler;
+import ai.susi.server.BaseUserRole;
+import ai.susi.server.ServiceResponse;
+import ai.susi.server.Query;
+import ai.susi.server.Authorization;
 import org.json.JSONObject;
-
 import javax.servlet.http.HttpServletResponse;
-import java.io.File;
 
 /**
  * This Servlets creates a group with default baserole as anonymous.
