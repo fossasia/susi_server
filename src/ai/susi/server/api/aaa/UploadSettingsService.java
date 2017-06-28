@@ -12,12 +12,12 @@ import javax.servlet.http.HttpServletResponse;
 public class UploadSettingsService extends AbstractAPIHandler implements APIHandler{
     @Override
     public String getAPIPath() {
-        return null;
+        return "/aaa/uploadSettings.json";
     }
 
     @Override
     public BaseUserRole getMinimalBaseUserRole() {
-        return null;
+        return BaseUserRole.ADMIN;
     }
 
     @Override
