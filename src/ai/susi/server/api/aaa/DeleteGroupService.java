@@ -57,7 +57,7 @@ public class DeleteGroupService extends AbstractAPIHandler implements APIHandler
         if( groupName!=null ) {
             if( DAO.group.has(groupName)) {
                 DAO.group.remove(groupName);
-                result.put("accepted", "true");
+                result.put("accepted", true);
 		result.put("message","Group deleted successfully");
             } else {
                 result.put("accepted", false);
