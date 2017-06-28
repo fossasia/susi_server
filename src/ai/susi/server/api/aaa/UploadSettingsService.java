@@ -69,13 +69,13 @@ public class UploadSettingsService extends AbstractAPIHandler implements APIHand
                 part.write( path + File.separator + fileName);
                 request.setAttribute("message", fileName + " File uploaded successfully!");
             }
-            result.put("success","true");
+            result.put("success",true);
         } catch (IOException e) {
             e.printStackTrace();
-            result.put("success","false");
+            result.put("success",false);
         } catch (ServletException e) {
             e.printStackTrace();
-            result.put("success","false");
+            result.put("success",false);
         }
         return new ServiceResponse(result);
     }
