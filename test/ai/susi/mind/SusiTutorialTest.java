@@ -95,15 +95,14 @@ public class SusiTutorialTest {
             assertTrue("Potatoes|Vegetables|Fish".indexOf(susiAnswer("What is your favorite dish", identity)) >= 0);
             test("Bonjour", "Hello", identity);
             test("Buenos días", "Hello", identity);
-            test("Ciao", "Hello", identity);
             test("May I work for you?", "Yes you may", identity);
             test("May I get a beer?", "Yes you may get a beer!", identity);
-            test("For one dollar I can buy a beer", "Yeah, I believe one dollar is a god price for a beer", identity);
+            test("For two dollars I can buy a beer", "Yeah, I believe two dollars is a good price for a beer", identity);
             test("Someday I buy a car", "Sure, you should buy a car!", identity);
             test("I really like bitburger beer", "You then should have one bitburger!", identity);
             test("What beer is the best?", "I bet you like bitburger beer!", identity);
             test("How do I feel?", "I don't know your mood.", identity);
-            test("I am bored.", "Make something!", identity);
+            test("I am getting bored.", "Make something!", identity);
             test("How do I feel?", "You are inactive.", identity);
             test("I am so happy!", "Good for you!", identity);
             test("Shall I eat?", "You will be happy, whatever I say!", identity);
@@ -146,7 +145,7 @@ public class SusiTutorialTest {
                     "What is your favorite dish\n" +
                     "Potatoes|Vegetables|Fish\n" +
                     "\n" +
-                    "Bonjour|Buenos días|Ciao\n" +
+                    "Bonjour|Buenos días\n" +
                     "Hello\n" +
                     "\n" +
                     "May I * you\n" +
@@ -156,7 +155,7 @@ public class SusiTutorialTest {
                     "Yes you may get a $1$!\n" +
                     "\n" +
                     "For * I can buy a *\n" +
-                    "Yeah, I believe $1$ is a god price for a $2$\n" +
+                    "Yeah, I believe $1$ is a good price for a $2$\n" +
                     "\n" +
                     "* buy a *\n" +
                     "Sure, you should buy a $2$!\n" +
@@ -170,7 +169,7 @@ public class SusiTutorialTest {
                     "I am so happy!\n" +
                     "Good for you!^excited^>_mood\n" +
                     "\n" +
-                    "I am bored.\n" +
+                    "I am getting bored.\n" +
                     "Make something!^inactive^>_mood\n" +
                     "\n" +
                     "How do I feel?\n" +

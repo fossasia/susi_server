@@ -8,10 +8,10 @@ cd $(dirname $0)/..
 # Execute preload script
 source bin/.preload.sh
 
-echo "starting loklak installation"
+echo "starting susi installation"
 echo "startup" > $STARTUPFILE
 
-cmdline="$cmdline -server -classpath $CLASSPATH -Dlog4j.configurationFile=$LOGCONFIG org.loklak.SusiInstallation >> data/loklak.log 2>&1 &";
+cmdline="$cmdline -server -classpath $CLASSPATH -Dlog4j.configurationFile=$LOGCONFIG ai.susi.SusiInstallation >> data/susi.log 2>&1 &";
 
 eval $cmdline
 PID=$!
@@ -43,7 +43,7 @@ if [ -f $STARTUPFILE ] && [ $(ps -p $PID -o pid=) ]; then
 	exit 0
 else
 	echo "susi installation failed to start. See data/loklag.log for details. Here are the last logs:"
-    tail data/loklak.log
+    tail data/susi.log
 	rm -f $STARTUPFILE
 	exit 1
 fi
