@@ -62,16 +62,19 @@ public class CreateGroupService extends AbstractAPIHandler implements APIHandler
         if( groupName!=null ) {
             if( DAO.group.has(groupName)) {
                 result.put("message", "Group already exists");
+                result.put("accepted", false);
             } else {
                 JSONObject groupDetail = new JSONObject();
                 groupDetail.put("group_members", new JSONObject());
                 groupDetail.put("groupBaseRole", grouppBaseRole);
                 result.put("message", "Group created successfully");
+                result.put("accepted", true);
                 DAO.group.put(groupName,groupDetail,rights.getIdentity().isPersistent());
             }
             return new ServiceResponse(result);
         } else {
             result.put("message", "Bad call, group name parameter not specified");
+            result.put("accepted", false);
         }
         return new ServiceResponse(result);
     }
