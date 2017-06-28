@@ -19,11 +19,18 @@
 
 package ai.susi.server.api.aaa;
 
+import ai.susi.DAO;
 import ai.susi.json.JsonObjectWithDefault;
 import ai.susi.server.*;
+import org.eclipse.jetty.client.api.Request;
 import org.json.JSONObject;
 
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.Part;
+import java.io.File;
+import java.io.IOException;
 
 /**
  * Created by dravit on 28/6/17.
@@ -47,6 +54,44 @@ public class UploadSettingsService extends AbstractAPIHandler implements APIHand
 
     @Override
     public ServiceResponse serviceImpl(Query post, HttpServletResponse response, Authorization rights, JsonObjectWithDefault permissions) throws APIException {
-        return null;
+
+        JSONObject result = new JSONObject();
+
+        String path = DAO.data_dir+"/settings/";
+        File settings = new File(path);
+
+        String fileName = null;
+        //Get all the parts from request and write it to the file on server
+        try {
+            HttpServletRequest request = post.getRequest();
+            for (Part part : request.getParts()) {
+                fileName = getFileName(part);
+                part.write( path + File.separator + fileName);
+                request.setAttribute("message", fileName + " File uploaded successfully!");
+            }
+            result.put("success","true");
+        } catch (IOException e) {
+            e.printStackTrace();
+            result.put("success","false");
+        } catch (ServletException e) {
+            e.printStackTrace();
+            result.put("success","false");
+        }
+        return new ServiceResponse(result);
+    }
+
+    /**
+     * Utility method to get file name from HTTP header content-disposition
+     */
+    private String getFileName(Part part) {
+        String contentDisp = part.getHeader("content-disposition");
+        System.out.println("content-disposition header= "+contentDisp);
+        String[] tokens = contentDisp.split(";");
+        for (String token : tokens) {
+            if (token.trim().startsWith("filename")) {
+                return token.substring(token.indexOf("=") + 2, token.length()-1);
+            }
+        }
+        return "";
     }
 }
