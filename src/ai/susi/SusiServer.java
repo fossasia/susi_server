@@ -480,6 +480,7 @@ public class SusiServer {
                 GetAllLanguages.class,
                 DeleteGroupService.class,
                 ExampleSkillService.class,
+                UploadSettingsService.class,
                 UserManagementService.class,
                 ChangeUserSettings.class,
                 UserAccountPermissions.class,
