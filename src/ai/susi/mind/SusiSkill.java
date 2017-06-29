@@ -145,6 +145,18 @@ public class SusiSkill {
                                             boa.has("latitude") && boa.has("longitude") && boa.has("zoom")) {
                                         actions.put(SusiAction.mapAction(
                                             boa.getDouble("latitude"), boa.getDouble("longitude"), boa.getInt("zoom")));
+                                    } else
+                                    if(type.equals(SusiAction.RenderType.alarm_set.toString()) &&
+                                            boa.has("hour")){
+                                        int hour = boa.getInt("hour");
+                                        if(hour>12)
+                                            actions.put(SusiAction.alarmSetAction(
+                                                    hour-12, boa.has("minute") ? boa.getInt("minute") : 0,
+                                                    boa.has("second") ? boa.getInt("second") : 0, 1));
+                                        if(hour<=12)
+                                            actions.put(SusiAction.alarmSetAction(
+                                            hour, boa.has("minute") ? boa.getInt("minute") : 0,
+                                                    boa.has("second") ? boa.getInt("second") : 0, boa.getInt("meridiem")));
                                     }
                                 });
                             }

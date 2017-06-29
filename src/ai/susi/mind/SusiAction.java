@@ -205,6 +205,23 @@ public class SusiAction {
         return json;
     }
 
+    /**
+     * set alarm: set an alarm in the client making the request.
+     *@param hour
+     * @param minute
+     * @param second
+     * @param meridiem 0(before noon- AM) or 1(after noon- PM)
+     * @return the action
+     */
+    public static JSONObject alarmSetAction(int hour, int minute, int second, int meridiem) {
+        JSONObject json = new JSONObject(true)
+                .put("type", RenderType.alarm_set.name())
+                .put("hour", hour)
+                .put("minute", minute)
+                .put("second", second)
+                .put("meridiem", meridiem);
+        return json;
+    }
     
     /**
      * Get the render type. That can be used to filter specific information from the action JSON object
