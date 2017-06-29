@@ -62,6 +62,7 @@ public class CreateGroupService extends AbstractAPIHandler implements APIHandler
         JSONObject result = new JSONObject();
         String groupName = call.get("group", null);
         String grouppBaseRole = call.get("role","anonymous");
+        String permission = call.get("permissions","");
         if( groupName!=null ) {
             if( DAO.group.has(groupName)) {
                 result.put("message", "Group already exists");
@@ -70,6 +71,7 @@ public class CreateGroupService extends AbstractAPIHandler implements APIHandler
                 JSONObject groupDetail = new JSONObject();
                 groupDetail.put("group_members", new JSONObject());
                 groupDetail.put("groupBaseRole", grouppBaseRole);
+                groupDetail.put("permission", "{"+permission+"}");
                 result.put("message", "Group created successfully");
                 result.put("accepted", true);
                 DAO.group.put(groupName,groupDetail,rights.getIdentity().isPersistent());
