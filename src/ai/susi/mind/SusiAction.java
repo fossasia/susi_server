@@ -46,6 +46,7 @@ public class SusiAction {
         websearch,     // do a web search on the client, show like rss rendering
         anchor,        // show/say a link
         map,           // show a map
+        alarm_set,     //set alarm
         timer_set,     // set a timer on the client
         timer_reset,   // un-set a timer on the client
         audio_record,  // record audio
