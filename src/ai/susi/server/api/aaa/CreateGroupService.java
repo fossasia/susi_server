@@ -27,8 +27,11 @@ import ai.susi.server.BaseUserRole;
 import ai.susi.server.ServiceResponse;
 import ai.susi.server.Query;
 import ai.susi.server.Authorization;
+import org.json.JSONArray;
 import org.json.JSONObject;
 import javax.servlet.http.HttpServletResponse;
+import java.util.ArrayList;
+import java.util.Arrays;
 
 /**
  * This Servlets creates a group with default baserole as anonymous.
@@ -71,7 +74,13 @@ public class CreateGroupService extends AbstractAPIHandler implements APIHandler
                 JSONObject groupDetail = new JSONObject();
                 groupDetail.put("group_members", new JSONObject());
                 groupDetail.put("groupBaseRole", grouppBaseRole);
-                groupDetail.put("permission", "{"+permission+"}");
+                ArrayList aList= new ArrayList(Arrays.asList(permission.split(",")));
+                JSONArray permissionArray = new JSONArray();
+                for(int i=0;i<aList.size();i++)
+                {
+                    permissionArray.put(i,aList.get(i));
+                }
+                groupDetail.put("permission", permissionArray);
                 result.put("message", "Group created successfully");
                 result.put("accepted", true);
                 DAO.group.put(groupName,groupDetail,rights.getIdentity().isPersistent());
