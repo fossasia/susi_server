@@ -37,7 +37,7 @@ import java.util.Arrays;
  * This Servlets creates a group with default baserole as anonymous.
  * It takes 1 parameter group and other optional parameter role.
  * Can be tested on
- * http://127.0.0.1:4000/aaa/createGroup.json?group=groupName&role=admin
+ * http://127.0.0.1:4000/aaa/createGroup.json?group=groupName&role=admin&permission=<comma separated values>
  *
  */
 public class CreateGroupService extends AbstractAPIHandler implements APIHandler {
