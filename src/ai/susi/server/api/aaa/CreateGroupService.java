@@ -1,7 +1,7 @@
 /**
  *  CreateGroups
  *  Copyright 22.06.2017 by saurabh
- *
+ *  Contributors: Saurabh Jain @saurabhjn76, Chetan Kaushik @dynamitechetan
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
  *  License as published by the Free Software Foundation; either
@@ -15,6 +15,7 @@
  *  You should have received a copy of the GNU Lesser General Public License
  *  along with this program in the file lgpl21.txt
  *  If not, see <http://www.gnu.org/licenses/>.
+ *
  */
 
 package ai.susi.server.api.aaa;
