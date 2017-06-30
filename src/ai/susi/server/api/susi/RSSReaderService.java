@@ -21,6 +21,8 @@ package ai.susi.server.api.susi;
 
 import java.util.List;
 
+import org.broadbear.link.preview.SourceContent;
+import org.broadbear.link.preview.TextCrawler;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -93,9 +95,11 @@ public class RSSReaderService extends AbstractAPIHandler implements APIHandler {
 			jsonObject.put("link", entry.getLink().toString());
 			jsonObject.put("uri", entry.getUri().toString());
 			jsonObject.put("guid", Integer.toString(entry.hashCode()));
+			SourceContent sourceContent = 	TextCrawler.scrape(entry.getUri(),3);
 			if (entry.getPublishedDate() != null) jsonObject.put("pubDate", entry.getPublishedDate().toString());
 			if (entry.getUpdatedDate() != null) jsonObject.put("updateDate", entry.getUpdatedDate().toString());
 			if (entry.getDescription() != null) jsonObject.put("description", entry.getDescription().getValue().toString());
+			if (sourceContent.getImages() != null) jsonObject.put("image", sourceContent.getImages().get(0));
 
 			jsonArray.put(i, jsonObject);
 

@@ -34,6 +34,8 @@ assemble.dependsOn shadowJar
 
 repositories {
   mavenCentral()
+  maven { url 'https://github.com/broadbear/maven-repo/raw/master' }
+
 }
 
 dependencies {
@@ -59,6 +61,7 @@ dependencies {
   compile group: 'jfree', name: 'jfreechart', version: '1.+'
   compile 'org.eclipse.jgit:org.eclipse.jgit:4.6.1.201703071140-r'
   compile group: 'org.slf4j', name: 'slf4j-simple', version: '1.+'
+  compile 'org.broadbear:link-preview:1.2'
   compile(project(':dependencies:public-transport-enabler:enabler')) {	}
 
 }
@@ -74,8 +77,8 @@ task start(type: JavaExec, dependsOn: classes) {
 }
 
 jacocoTestReport {
-    reports {
-        xml.enabled true
-        html.enabled false
-    }
+  reports {
+    xml.enabled true
+    html.enabled false
+  }
 }
