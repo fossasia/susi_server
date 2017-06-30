@@ -100,6 +100,7 @@ public class RSSReaderService extends AbstractAPIHandler implements APIHandler {
 			if (entry.getUpdatedDate() != null) jsonObject.put("updateDate", entry.getUpdatedDate().toString());
 			if (entry.getDescription() != null) jsonObject.put("description", entry.getDescription().getValue().toString());
 			if (sourceContent.getImages() != null) jsonObject.put("image", sourceContent.getImages().get(0));
+			if (sourceContent.getDescription() != null) jsonObject.put("descriptionShort", sourceContent.getDescription());
 
 			jsonArray.put(i, jsonObject);
 
