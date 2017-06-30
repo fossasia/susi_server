@@ -73,10 +73,10 @@ public class ChangeUserSettings extends AbstractAPIHandler implements APIHandler
                Accounting accounting = DAO.getAccounting(authorization.getIdentity());
                JSONObject jsonObject = new JSONObject();
                jsonObject.put(key, value);
-               if (accounting.getParent().has("settings")) {
-                   accounting.getParent().getJSONObject("settings").put(key, value);
+               if (accounting.getJSON().has("settings")) {
+                   accounting.getJSON().getJSONObject("settings").put(key, value);
                } else {
-                   accounting.getParent().put("settings", jsonObject, authorization.getIdentity().isPersistent());
+                   accounting.getJSON().put("settings", jsonObject);
                }
                JSONObject result = new JSONObject();
                result.put("message", "You successfully changed settings to your account!");

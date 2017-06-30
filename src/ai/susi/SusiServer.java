@@ -477,7 +477,10 @@ public class SusiServer {
                 LanguageListService.class,
                 ListUserSettings.class,
                 ListSkillService.class,
+                GetAllLanguages.class,
+                DeleteGroupService.class,
                 ExampleSkillService.class,
+                UploadSettingsService.class,
                 UserManagementService.class,
                 ChangeUserSettings.class,
                 UserAccountPermissions.class,
@@ -507,6 +510,7 @@ public class SusiServer {
 
                 //Groups
                 GetGroupDetails.class,
+                CreateGroupService.class,
                 GetAllGroups.class
         };
         for (Class<? extends Servlet> service: services)
