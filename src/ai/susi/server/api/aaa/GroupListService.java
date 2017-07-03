@@ -44,7 +44,11 @@ public class GroupListService extends AbstractAPIHandler implements APIHandler {
                 return new File(file, s).isDirectory();
             }
         });
+        JSONObject result = new JSONObject();
+        result.put("accepted", true);
         JSONArray groupsArray = new JSONArray(groups);
-        return new ServiceResponse(groupsArray);
+        result.put("groups",groupsArray);
+        result.put("message", "Success: Fetched group list");
+        return new ServiceResponse(result);
     }
 }

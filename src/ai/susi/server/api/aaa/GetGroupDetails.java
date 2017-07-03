@@ -40,7 +40,8 @@ public class GetGroupDetails extends AbstractAPIHandler implements APIHandler {
     public ServiceResponse serviceImpl(Query call, HttpServletResponse response, Authorization rights, final JsonObjectWithDefault permissions) {
         Boolean foundUser;
         JSONObject success = new JSONObject();
-        success.put("success", false);
+        success.put("accepted", false);
+        success.put("message", "Error: Unable to process request");
         JSONObject allUsers;
         allUsers = DAO.group.toJSON();
         String model_name = call.get("group", null);
@@ -66,7 +67,8 @@ public class GetGroupDetails extends AbstractAPIHandler implements APIHandler {
             if (foundUser) {
                 JSONObject details = new JSONObject();
                 details = allUsers.getJSONObject(model_name);
-                details.put("success", true);
+                details.put("accepted", true);
+                details.put("message", "Success: Fetched group details");
                 return new ServiceResponse(details);
 
             } else
