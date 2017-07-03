@@ -42,9 +42,13 @@ import java.util.Random;
 import java.util.Set;
 
 import javax.servlet.Servlet;
+import javax.ws.rs.Produces;
+import javax.ws.rs.core.MediaType;
 
 import ai.susi.server.api.aaa.*;
 import ai.susi.server.api.cms.*;
+import io.swagger.annotations.Api;
+import io.swagger.jaxrs.listing.ApiListingResource;
 import org.apache.logging.log4j.LogManager;
 import org.bouncycastle.asn1.pkcs.PrivateKeyInfo;
 import org.bouncycastle.cert.X509CertificateHolder;
@@ -56,15 +60,13 @@ import org.eclipse.jetty.rewrite.handler.RewriteRegexRule;
 import org.eclipse.jetty.server.Handler;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
-import org.eclipse.jetty.server.handler.DefaultHandler;
-import org.eclipse.jetty.server.handler.ErrorHandler;
-import org.eclipse.jetty.server.handler.HandlerList;
-import org.eclipse.jetty.server.handler.IPAccessHandler;
+import org.eclipse.jetty.server.handler.*;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.server.handler.gzip.GzipHandler;
 import org.eclipse.jetty.server.session.HashSessionIdManager;
 import org.eclipse.jetty.server.session.HashSessionManager;
 import org.eclipse.jetty.server.session.SessionHandler;
+import org.eclipse.jetty.servlet.ServletHolder;
 import org.eclipse.jetty.util.ConcurrentHashSet;
 import org.eclipse.jetty.util.log.Log;
 import org.eclipse.jetty.util.thread.QueuedThreadPool;
@@ -98,6 +100,8 @@ import ai.susi.server.api.vis.MapServlet;
 import ai.susi.server.api.vis.MarkdownServlet;
 import ai.susi.server.api.vis.PieChartServlet;
 import ai.susi.tools.OS;
+import org.glassfish.jersey.server.ResourceConfig;
+import org.glassfish.jersey.servlet.ServletContainer;
 
 
 public class SusiServer {
@@ -133,13 +137,39 @@ public class SusiServer {
     public static int getServerThreads() {
         return server.getThreadPool().getThreads() - server.getThreadPool().getIdleThreads();
     }
-    
+    public static ContextHandler buildSwaggerUI() throws Exception {
+        ResourceHandler rh = new ResourceHandler();
+        rh.setResourceBase(SusiServer.class.getClassLoader()
+                .getResource("META-INF/resources/webjars/swagger-ui/2.1.4")
+                .toURI().toString());
+        ContextHandler context = new ContextHandler();
+        context.setContextPath("/docs/");
+        context.setHandler(rh);
+        return context;
+    }
+
+
     public static String getServerURI() {
         return server.getURI().toASCIIString();
     }
     
     public static void main(String[] args) throws Exception {
-    	System.setProperty("java.awt.headless", "true"); // no awt used here so we can switch off that stuff
+        ContextHandlerCollection contexts = new ContextHandlerCollection();
+        contexts.addHandler(buildSwaggerUI());
+        ServletContextHandler context = new ServletContextHandler(ServletContextHandler.SESSIONS);
+        contexts.addHandler(context);
+        ResourceConfig resourceConfig = new ResourceConfig();
+
+        resourceConfig.packages(SusiServer.class.getPackage().getName(),
+                ApiListingResource.class.getPackage().getName());
+
+        ServletContainer sc = new ServletContainer(resourceConfig);
+        ServletHolder holder = new ServletHolder(sc);
+
+        context.addServlet(holder, "/api/*");
+
+
+        System.setProperty("java.awt.headless", "true"); // no awt used here so we can switch off that stuff
         
         // init config, log and elasticsearch
         Path data = FileSystems.getDefault().getPath("data");
@@ -218,8 +248,10 @@ public class SusiServer {
 			Log.getLog().warn(e.getMessage());
 			System.exit(-1);
 		}
+
         setServerHandler(dataFile);
-        
+        server.setHandler(contexts);
+
         SusiServer.server.start();
         SusiServer.caretaker = new Caretaker();
         SusiServer.caretaker.start();
@@ -398,7 +430,7 @@ public class SusiServer {
     	
     	// create security handler for http auth and http-to-https redirects
         ConstraintSecurityHandler securityHandler = new ConstraintSecurityHandler();
-        
+
         boolean redirect = httpsMode.equals(HttpsMode.REDIRECT);
         boolean auth = "true".equals(DAO.getConfig("http.auth", "false"));
         
@@ -454,6 +486,7 @@ public class SusiServer {
         // add services
         services = new Class[]{
                 // aaa services
+
                 StatusService.class,
                 AppsService.class,
                 AuthorizationDemoService.class,

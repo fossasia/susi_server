@@ -2,7 +2,8 @@ apply plugin: 'java'
 apply plugin: 'eclipse'
 apply plugin: 'jacoco'
 apply plugin: 'com.github.johnrengelman.shadow'
-
+def swaggerVersion = '1.5.8'
+def versionJersey = '2.22.2'
 buildscript {
   repositories {
     jcenter()
@@ -34,6 +35,8 @@ assemble.dependsOn shadowJar
 
 repositories {
   mavenCentral()
+  maven { url 'https://github.com/broadbear/maven-repo/raw/master' }
+
 }
 
 dependencies {
@@ -57,8 +60,17 @@ dependencies {
   compile group: 'org.bouncycastle', name: 'bcprov-jdk15on', version: '1.+'
   compile group: 'org.bouncycastle', name: 'bcpkix-jdk15on', version: '1.+'
   compile group: 'jfree', name: 'jfreechart', version: '1.+'
+  compile group: 'com.wordnik', name: 'swagger-core_2.9.1', version: '1.1-SNAPSHOT.120119'
   compile 'org.eclipse.jgit:org.eclipse.jgit:4.6.1.201703071140-r'
   compile group: 'org.slf4j', name: 'slf4j-simple', version: '1.+'
+  compile 'org.broadbear:link-preview:1.2'
+  compile group: 'io.swagger', name: 'swagger-annotations',version: swaggerVersion
+  compile group: 'io.swagger', name: 'swagger-core', version: swaggerVersion
+  compile group: 'io.swagger', name: 'swagger-jersey2-jaxrs', version: swaggerVersion
+  compile group: 'io.swagger', name: 'swagger-models', version: swaggerVersion
+  compile group: 'org.glassfish.jersey.core', name: 'jersey-server', version: versionJersey
+  compile group: 'org.glassfish.jersey.containers', name: 'jersey-container-servlet-core', version: versionJersey
+  compile group: 'org.webjars', name: 'swagger-ui', version: '2.1.4'
   compile(project(':dependencies:public-transport-enabler:enabler')) {	}
 
 }
@@ -74,8 +86,8 @@ task start(type: JavaExec, dependsOn: classes) {
 }
 
 jacocoTestReport {
-    reports {
-        xml.enabled true
-        html.enabled false
-    }
+  reports {
+    xml.enabled true
+    html.enabled false
+  }
 }
