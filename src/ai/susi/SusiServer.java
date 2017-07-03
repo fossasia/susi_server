@@ -248,9 +248,9 @@ public class SusiServer {
 			Log.getLog().warn(e.getMessage());
 			System.exit(-1);
 		}
-        server.setHandler(contexts);
-        setServerHandler(dataFile);
 
+        setServerHandler(dataFile);
+        server.setHandler(contexts);
 
         SusiServer.server.start();
         SusiServer.caretaker = new Caretaker();
