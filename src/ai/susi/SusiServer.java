@@ -42,9 +42,12 @@ import java.util.Random;
 import java.util.Set;
 
 import javax.servlet.Servlet;
+import javax.ws.rs.Produces;
+import javax.ws.rs.core.MediaType;
 
 import ai.susi.server.api.aaa.*;
 import ai.susi.server.api.cms.*;
+import io.swagger.annotations.Api;
 import io.swagger.jaxrs.listing.ApiListingResource;
 import org.apache.logging.log4j.LogManager;
 import org.bouncycastle.asn1.pkcs.PrivateKeyInfo;
@@ -97,7 +100,6 @@ import ai.susi.server.api.vis.MapServlet;
 import ai.susi.server.api.vis.MarkdownServlet;
 import ai.susi.server.api.vis.PieChartServlet;
 import ai.susi.tools.OS;
-
 import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.servlet.ServletContainer;
 
@@ -105,12 +107,12 @@ import org.glassfish.jersey.servlet.ServletContainer;
 public class SusiServer {
 
     public final static Set<String> blacklistedHosts = new ConcurrentHashSet<>();
-
+//    public static  ContextHandlerCollection contexts;
     private static Server server = null;
     private static Caretaker caretaker = null;
     private static HttpsMode httpsMode = HttpsMode.OFF;
     public static Class<? extends Servlet>[] services;
-
+    public static  HandlerCollection handlerCollection = new HandlerCollection();
     public static Map<String, String> readConfig(Path data) throws IOException {
         File conf_dir = new File("conf");
         Properties prop = new Properties();
@@ -152,21 +154,7 @@ public class SusiServer {
     }
 
     public static void main(String[] args) throws Exception {
-        ContextHandlerCollection contexts = new ContextHandlerCollection();
-        contexts.addHandler(buildSwaggerUI());
-        ServletContextHandler context = new ServletContextHandler(ServletContextHandler.SESSIONS);
-        context.setContextPath("/");
-        contexts.addHandler(context);
-        ResourceConfig resourceConfig = new ResourceConfig();
 
-        System.out.print(SusiServer.class.getPackage().getName());
-        resourceConfig.packages(SusiServer.class.getPackage().getName(),
-                ApiListingResource.class.getPackage().getName());
-
-        ServletContainer sc = new ServletContainer(resourceConfig);
-        ServletHolder holder = new ServletHolder(sc);
-
-        context.addServlet(holder, "/api/*");
 
 
         System.setProperty("java.awt.headless", "true"); // no awt used here so we can switch off that stuff
@@ -248,10 +236,11 @@ public class SusiServer {
             Log.getLog().warn(e.getMessage());
             System.exit(-1);
         }
+
         setServerHandler(dataFile);
-        server.setHandler(contexts);
 
         SusiServer.server.start();
+
         SusiServer.caretaker = new Caretaker();
         SusiServer.caretaker.start();
 
@@ -424,7 +413,7 @@ public class SusiServer {
     }
 
     @SuppressWarnings("unchecked")
-    private static void setServerHandler(File dataFile){
+    private static void setServerHandler(File dataFile) throws Exception {
 
 
         // create security handler for http auth and http-to-https redirects
@@ -485,6 +474,7 @@ public class SusiServer {
         // add services
         services = new Class[]{
                 // aaa services
+
                 StatusService.class,
                 AppsService.class,
                 AuthorizationDemoService.class,
@@ -612,8 +602,26 @@ public class SusiServer {
         sessions.setHandler(gzipHandler);
         securityHandler.setHandler(sessions);
         ipaccess.setHandler(securityHandler);
+        handlerCollection.addHandler(ipaccess);
+//        SusiServer.server.setHandler(ipaccess);
 
-        SusiServer.server.setHandler(ipaccess);
+
+        ContextHandlerCollection contexts = new ContextHandlerCollection();
+        contexts.addHandler(buildSwaggerUI());
+//        ServletContextHandler context = new ServletContextHandler(ServletContextHandler.SESSIONS);
+        contexts.addHandler(servletHandler);
+        ResourceConfig resourceConfig = new ResourceConfig();
+
+        resourceConfig.packages(SusiServer.class.getPackage().getName(),
+                ApiListingResource.class.getPackage().getName());
+
+        ServletContainer sc = new ServletContainer(resourceConfig);
+        ServletHolder holder = new ServletHolder(sc);
+
+        servletHandler.addServlet(holder, "/api/*");
+        handlerCollection.addHandler(contexts);
+
+        SusiServer.server.setHandler(handlerCollection);
     }
 
     private static void checkServerPorts(int httpPort, int httpsPort) throws IOException{
