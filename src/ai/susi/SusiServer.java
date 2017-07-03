@@ -603,13 +603,10 @@ public class SusiServer {
         securityHandler.setHandler(sessions);
         ipaccess.setHandler(securityHandler);
         handlerCollection.addHandler(ipaccess);
-//        SusiServer.server.setHandler(ipaccess);
-
 
         ContextHandlerCollection contexts = new ContextHandlerCollection();
-        contexts.addHandler(buildSwaggerUI());
-//        ServletContextHandler context = new ServletContextHandler(ServletContextHandler.SESSIONS);
         contexts.addHandler(servletHandler);
+
         ResourceConfig resourceConfig = new ResourceConfig();
 
         resourceConfig.packages(SusiServer.class.getPackage().getName(),
@@ -618,7 +615,7 @@ public class SusiServer {
         ServletContainer sc = new ServletContainer(resourceConfig);
         ServletHolder holder = new ServletHolder(sc);
 
-        servletHandler.addServlet(holder, "/api/*");
+        servletHandler.addServlet(holder, "/docs/*");
         handlerCollection.addHandler(contexts);
 
         SusiServer.server.setHandler(handlerCollection);
