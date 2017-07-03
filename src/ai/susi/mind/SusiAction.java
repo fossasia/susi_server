@@ -46,7 +46,6 @@ public class SusiAction {
         websearch,     // do a web search on the client, show like rss rendering
         anchor,        // show/say a link
         map,           // show a map
-        alarm_set,     //set alarm
         timer_set,     // set a timer on the client
         timer_reset,   // un-set a timer on the client
         audio_record,  // record audio
@@ -206,20 +205,18 @@ public class SusiAction {
     }
 
     /**
-     * set alarm: set an alarm in the client making the request.
+     * set timer: set an alarm in the client making the request.
      *@param hour
      * @param minute
      * @param second
-     * @param meridiem 0(before noon- AM) or 1(after noon- PM)
      * @return the action
      */
-    public static JSONObject alarmSetAction(int hour, int minute, int second, int meridiem) {
+    public static JSONObject alarmSetAction(int hour, int minute, int second) {
         JSONObject json = new JSONObject(true)
-                .put("type", RenderType.alarm_set.name())
+                .put("type", RenderType.timer_set.name())
                 .put("hour", hour)
                 .put("minute", minute)
-                .put("second", second)
-                .put("meridiem", meridiem);
+                .put("second", second);
         return json;
     }
     
