@@ -42,14 +42,13 @@ import java.io.IOException;
  * This Service Adds a API Endpoint to return history of an skill
  * This accepts 4 parameters: - Model, Group, Language and Skill Name
  * Can be tested on : -
- * http://127.0.0.1:4000/cms/getHistory.json?model=general&group=knowledge&language=en&skill=bitcoin
+ * http://127.0.0.1:4000/cms/getSkillHistory.json?model=general&group=knowledge&language=en&skill=bitcoin
  */
 public class HistorySkillService extends AbstractAPIHandler implements APIHandler {
 
     private static final long serialVersionUID = 6976713190365750955L;
-    int count = 0;
     JSONObject commit;
-    JSONArray commitsArray;
+
 
     @Override
     public BaseUserRole getMinimalBaseUserRole() {
@@ -85,6 +84,7 @@ public class HistorySkillService extends AbstractAPIHandler implements APIHandle
         File language = new File(group, language_name);
         String skill_name = call.get("skill", "wikipedia");
         File skill = new File(language, skill_name + ".txt");
+        JSONArray commitsArray;
         commitsArray = new JSONArray();
         String path = skill.getPath().replace(DAO.model_watch_dir.toString(), "models");
         //Add to git
@@ -110,7 +110,7 @@ public class HistorySkillService extends AbstractAPIHandler implements APIHandle
                     commit.put("commitName", rev.getName());
                     commit.put("commitID", rev.getId().getName());
                     commit.put("commit_message", rev.getShortMessage());
-
+                    commit.put("author",rev.getAuthorIdent().getName());
                     commitsArray.put(i, commit);
                     i++;
                 }
