@@ -48,7 +48,7 @@ public class HistorySkillService extends AbstractAPIHandler implements APIHandle
 
     private static final long serialVersionUID = 6976713190365750955L;
     JSONObject commit;
-
+    Boolean success=false;
 
     @Override
     public BaseUserRole getMinimalBaseUserRole() {
@@ -114,14 +114,24 @@ public class HistorySkillService extends AbstractAPIHandler implements APIHandle
                     commitsArray.put(i, commit);
                     i++;
                 }
+                success=true;
 
             } catch (GitAPIException e) {
                 e.printStackTrace();
+                success=false;
+
             }
         } catch (IOException e) {
             e.printStackTrace();
+            success=false;
         }
+        if(commitsArray.length()==0){
+            success=false;
+        }
+        JSONObject result = new JSONObject();
+        result.put("commits",commitsArray);
+        result.put("success",success);
 
-        return new ServiceResponse(commitsArray);
+        return new ServiceResponse(result);
     }
 }
