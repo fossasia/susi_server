@@ -71,6 +71,7 @@ dependencies {
   compile group: 'org.glassfish.jersey.core', name: 'jersey-server', version: versionJersey
   compile group: 'org.glassfish.jersey.containers', name: 'jersey-container-servlet-core', version: versionJersey
   compile group: 'org.webjars', name: 'swagger-ui', version: '2.1.4'
+
   compile(project(':dependencies:public-transport-enabler:enabler')) {	}
 
 }

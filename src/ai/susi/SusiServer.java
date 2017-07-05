@@ -1,5 +1,5 @@
 /**
- *  LoklakServer
+ *  SUSIServer
  *  Copyright 22.02.2015 by Michael Peter Christen, @0rb1t3r
  *
  *  This library is free software; you can redistribute it and/or
@@ -158,11 +158,11 @@ public class SusiServer {
         File dataFile = data.toFile();
         if (!dataFile.exists()) dataFile.mkdirs(); // should already be there since the start.sh script creates it
         
-        Log.getLog().info("Starting loklak initialization");
+        Log.getLog().info("Starting SUSI initialization");
 
         // prepare shutdown signal
         File pid = new File(dataFile, "susi.pid");
-        if (pid.exists()) pid.deleteOnExit(); // thats a signal for the stop.sh script that loklak has terminated
+        if (pid.exists()) pid.deleteOnExit(); // thats a signal for the stop.sh script that SUSI has terminated
         
         // prepare signal for startup script
         File startup = new File(dataFile, "startup.tmp");
@@ -204,7 +204,7 @@ public class SusiServer {
             httpsPort = Integer.parseInt(env.get("PORTSSL"));
         }
         
-        // check if a loklak service is already running on configured port
+        // check if a SUSI service is already running on configured port
         try{
         	checkServerPorts(httpPort, httpsPort);
         }
@@ -395,7 +395,7 @@ public class SusiServer {
 	        //SslConnectionFactory ssl = new SslConnectionFactory(sslContextFactory, alpn.getProtocol());
 	        SslConnectionFactory ssl = new SslConnectionFactory(sslContextFactory, "http/1.1");
 	        
-	        //ServerConnector sslConnector = new ServerConnector(LoklakServer.server, ssl, alpn, http2, http1);
+	        //ServerConnector sslConnector = new ServerConnector(SUSIServer.server, ssl, alpn, http2, http1);
 	        ServerConnector sslConnector = new ServerConnector(SusiServer.server, ssl, http1);
 	        sslConnector.setPort(httpsPort);
 	        sslConnector.setName("httpd:" + httpsPort);
@@ -416,7 +416,7 @@ public class SusiServer {
         
         if(redirect || auth){
         	
-            org.eclipse.jetty.security.LoginService loginService = new org.eclipse.jetty.security.HashLoginService("LoklakRealm", DAO.conf_dir.getAbsolutePath() + "/http_auth");
+            org.eclipse.jetty.security.LoginService loginService = new org.eclipse.jetty.security.HashLoginService("SUSIRealm", DAO.conf_dir.getAbsolutePath() + "/http_auth");
         	if(auth) SusiServer.server.addBean(loginService);
         	
         	Constraint constraint = new Constraint();
@@ -624,7 +624,7 @@ public class SusiServer {
 	            ss.setReceiveBufferSize(65536);
 	        } catch (IOException e) {
 	            // the socket is already occupied by another service
-	            throw new IOException("port " + httpPort + " is already occupied by another service, maybe another loklak is running on this port already. exit.");
+	            throw new IOException("port " + httpPort + " is already occupied by another service, maybe another SUSI is running on this port already. exit.");
 	        } finally {
 	            // close the socket again
 	            if (ss != null) ss.close();
@@ -640,7 +640,7 @@ public class SusiServer {
 	            sss.setReceiveBufferSize(65536);
 	        } catch (IOException e) {
 	            // the socket is already occupied by another service
-	        	throw new IOException("port " + httpsPort + " is already occupied by another service, maybe another loklak is running on this port already. exit.");
+	        	throw new IOException("port " + httpsPort + " is already occupied by another service, maybe another SUSI is running on this port already. exit.");
 	        } finally {
 	            // close the socket again
 	            if (sss != null) sss.close();
