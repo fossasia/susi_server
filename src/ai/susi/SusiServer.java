@@ -592,24 +592,23 @@ public class SusiServer {
         sessions.setHandler(gzipHandler);
         securityHandler.setHandler(sessions);
         ipaccess.setHandler(securityHandler);
-            handlerCollection.addHandler(ipaccess);
+        handlerCollection.addHandler(ipaccess);
 
 
-            ContextHandlerCollection contexts = new ContextHandlerCollection();
-            contexts.addHandler(servletHandler);
+        ContextHandlerCollection contexts = new ContextHandlerCollection();
 
-            ResourceConfig resourceConfig = new ResourceConfig();
+        ResourceConfig resourceConfig = new ResourceConfig();
 
-            resourceConfig.packages(SusiServer.class.getPackage().getName(),
-                    ApiListingResource.class.getPackage().getName());
+        resourceConfig.packages(SusiServer.class.getPackage().getName(),
+                ApiListingResource.class.getPackage().getName());
 
-            ServletContainer sc = new ServletContainer(resourceConfig);
-            ServletHolder holder = new ServletHolder(sc);
+        ServletContainer sc = new ServletContainer(resourceConfig);
+        ServletHolder holder = new ServletHolder(sc);
 
-            servletHandler.addServlet(holder, "/docs/*");
-            handlerCollection.addHandler(contexts);
+        servletHandler.addServlet(holder, "/docs/*");
+        handlerCollection.addHandler(contexts);
 
-            SusiServer.server.setHandler(handlerCollection);
+        SusiServer.server.setHandler(handlerCollection);
 
     }
     
