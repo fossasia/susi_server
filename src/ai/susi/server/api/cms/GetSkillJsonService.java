@@ -35,6 +35,14 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 
+/**
+ * Endpoint to return text of a skill in JSON format from the skill database
+ * i.e.
+ * http://localhost:4000/cms/getSkill.json
+ * This accepts 4 parameters: - Model, Group, Language and Skill Name
+ * http://localhost:4000/cms/getSkill.json?model=general&group=knowledge&language=en&skill=wikipedia
+ */
+
 public class GetSkillJsonService extends AbstractAPIHandler implements APIHandler {
 
     private static final long serialVersionUID = 18344223L;
