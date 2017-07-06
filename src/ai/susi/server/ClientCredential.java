@@ -28,6 +28,7 @@ public class ClientCredential extends Client {
     	passwd_login(true),
         cookie(false),
         access_token(false),
+        change_pass(false),
         resetpass_token(false),
         pubkey_challange(false),
         host(false);
@@ -71,6 +72,10 @@ public class ClientCredential extends Client {
     
     public boolean isToken() {
         return this.getKey().equals(Type.access_token.name());
+    }
+
+    public boolean isChangePwaaswd(){
+        return this.getKey().equals(Type.change_pass.name());
     }
 
     public boolean isResetToken() {
