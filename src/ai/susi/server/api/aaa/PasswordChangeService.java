@@ -30,12 +30,12 @@ import javax.servlet.http.HttpServletResponse;
 public class PasswordChangeService extends AbstractAPIHandler implements APIHandler{
     @Override
     public String getAPIPath() {
-        return null;
+        return "/aaa/resetpassword.json";
     }
 
     @Override
     public BaseUserRole getMinimalBaseUserRole() {
-        return null;
+        return BaseUserRole.USER;
     }
 
     @Override
