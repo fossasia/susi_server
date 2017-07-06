@@ -80,6 +80,7 @@ public class GetSkillJsonService extends AbstractAPIHandler implements APIHandle
         try {
             String content = new String(Files.readAllBytes(skill.toPath()));
             json.put("text",content);
+            json.put("success",true);
             return new ServiceResponse(json);
         } catch (IOException e) {
             e.printStackTrace();
