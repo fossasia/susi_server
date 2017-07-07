@@ -21,11 +21,13 @@ package ai.susi.server.api.aaa;
 import ai.susi.DAO;
 import ai.susi.json.JsonObjectWithDefault;
 import ai.susi.server.*;
+import ai.susi.tools.TimeoutMatcher;
 import org.eclipse.jetty.util.log.Log;
 import org.json.JSONObject;
 
 
 import javax.servlet.http.HttpServletResponse;
+import java.util.regex.Pattern;
 
 /**
  * Created by dravit on 6/7/17.
@@ -49,15 +51,18 @@ public class PasswordChangeService extends AbstractAPIHandler implements APIHand
     @Override
     public ServiceResponse serviceImpl(Query post, HttpServletResponse response, Authorization rights, JsonObjectWithDefault permissions) throws APIException {
         JSONObject result = new JSONObject();
+        result.put("accepted", false);
 
         String useremail = post.get("changepassword", null);
         String password = post.get("password", null);
         String newpassword = post.get("newpassword",null);
 
-        ClientCredential credential = new ClientCredential(ClientCredential.Type.change_pass, useremail);
-        ClientIdentity identity = new ClientIdentity(ClientIdentity.Type.email, credential.getName());
-        Authentication authentication = DAO.getAuthentication(credential);
 
+        ClientCredential pwcredential = new ClientCredential(ClientCredential.Type.passwd_login, useremail);
+        Authentication authentication = DAO.getAuthentication(pwcredential);
+        ClientCredential emailcred = new ClientCredential(ClientCredential.Type.passwd_login,
+                authentication.getIdentity().getName());
+        ClientIdentity identity = authentication.getIdentity();
         String passwordHash;
         String salt;
 
@@ -66,6 +71,7 @@ public class PasswordChangeService extends AbstractAPIHandler implements APIHand
             salt = authentication.getString("salt");
         } catch (Throwable e) {
             Log.getLog().info("Invalid password try for user: " + identity.getName() + " from host: " + post.getClientHost() + " : password or salt missing in database");
+            result.put("message", "invalid credentials");
             throw new APIException(422, "Invalid credentials");
         }
         if (!passwordHash.equals(getHash(password, salt))) {
@@ -75,13 +81,30 @@ public class PasswordChangeService extends AbstractAPIHandler implements APIHand
             accouting.getRequests().addRequest(this.getClass().getCanonicalName(), "invalid login");
 
             Log.getLog().info("Invalid change password try for user: " + identity.getName() + " via passwd from host: " + post.getClientHost());
+            result.put("message", "invalid credentials");
             throw new APIException(422, "Invalid credentials");
         } else {
-            String newSalt = createRandomString(20);
-            authentication.remove("salt");
-            authentication.remove("passwordHash");
-            authentication.put("salt", salt);
-            authentication.put("passwordHash", getHash(newpassword, salt));
+            String passwordPattern = DAO.getConfig("users.password.regex", "^(?=.*\\d).{6,64}$");
+
+            Pattern pattern = Pattern.compile(passwordPattern);
+
+            if ((authentication.getIdentity().getName()).equals(newpassword) || !new TimeoutMatcher(pattern.matcher(newpassword)).matches()) {
+                // password can't equal email and regex should match
+                result.put("message", "invalid password");
+                throw new APIException(400, "invalid password");
+            }
+
+            if (DAO.hasAuthentication(emailcred)) {
+                Authentication emailauth = DAO.getAuthentication(emailcred);
+                String newsalt = createRandomString(20);
+                emailauth.remove("salt");
+                emailauth.remove("passwordHash");
+                emailauth.put("salt", newsalt);
+                emailauth.put("passwordHash", getHash(newpassword, salt));
+                Log.getLog().info("password change for user: " + identity.getName() + " via newpassword from host: " + post.getClientHost());
+                result.put("message", "Your password has been changed!");
+                result.put("accepted", true);
+            }
         }
 
         return null;
