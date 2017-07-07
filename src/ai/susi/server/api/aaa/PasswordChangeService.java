@@ -31,6 +31,11 @@ import java.util.regex.Pattern;
 
 /**
  * Created by dravit on 6/7/17.
+ * test locally at http://127.0.0.1:4000/aaa/changepassword.json
+ * send the following three parameters :
+ * changepassword : contains email id of the user who's password has to be changed
+ * password : current password
+ * newpassword : new password
  */
 public class PasswordChangeService extends AbstractAPIHandler implements APIHandler{
     @Override
@@ -97,9 +102,7 @@ public class PasswordChangeService extends AbstractAPIHandler implements APIHand
             if (DAO.hasAuthentication(emailcred)) {
                 Authentication emailauth = DAO.getAuthentication(emailcred);
                 String newsalt = createRandomString(20);
-                emailauth.remove("salt");
                 emailauth.remove("passwordHash");
-                emailauth.put("salt", newsalt);
                 emailauth.put("passwordHash", getHash(newpassword, salt));
                 Log.getLog().info("password change for user: " + identity.getName() + " via newpassword from host: " + post.getClientHost());
                 result.put("message", "Your password has been changed!");
