@@ -107,7 +107,7 @@ public class PasswordChangeService extends AbstractAPIHandler implements APIHand
             }
         }
 
-        return null;
+        return new ServiceResponse(result);
     }
 
 }
