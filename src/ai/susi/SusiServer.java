@@ -1,5 +1,5 @@
 /**
- *  LoklakServer
+ *  SUSIServer
  *  Copyright 22.02.2015 by Michael Peter Christen, @0rb1t3r
  *
  *  This library is free software; you can redistribute it and/or
@@ -45,6 +45,7 @@ import javax.servlet.Servlet;
 
 import ai.susi.server.api.aaa.*;
 import ai.susi.server.api.cms.*;
+import io.swagger.jaxrs.listing.ApiListingResource;
 import org.apache.logging.log4j.LogManager;
 import org.bouncycastle.asn1.pkcs.PrivateKeyInfo;
 import org.bouncycastle.cert.X509CertificateHolder;
@@ -56,15 +57,13 @@ import org.eclipse.jetty.rewrite.handler.RewriteRegexRule;
 import org.eclipse.jetty.server.Handler;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
-import org.eclipse.jetty.server.handler.DefaultHandler;
-import org.eclipse.jetty.server.handler.ErrorHandler;
-import org.eclipse.jetty.server.handler.HandlerList;
-import org.eclipse.jetty.server.handler.IPAccessHandler;
+import org.eclipse.jetty.server.handler.*;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.server.handler.gzip.GzipHandler;
 import org.eclipse.jetty.server.session.HashSessionIdManager;
 import org.eclipse.jetty.server.session.HashSessionManager;
 import org.eclipse.jetty.server.session.SessionHandler;
+import org.eclipse.jetty.servlet.ServletHolder;
 import org.eclipse.jetty.util.ConcurrentHashSet;
 import org.eclipse.jetty.util.log.Log;
 import org.eclipse.jetty.util.thread.QueuedThreadPool;
@@ -98,6 +97,8 @@ import ai.susi.server.api.vis.MapServlet;
 import ai.susi.server.api.vis.MarkdownServlet;
 import ai.susi.server.api.vis.PieChartServlet;
 import ai.susi.tools.OS;
+import org.glassfish.jersey.server.ResourceConfig;
+import org.glassfish.jersey.servlet.ServletContainer;
 
 
 public class SusiServer {
@@ -108,6 +109,17 @@ public class SusiServer {
     private static Caretaker caretaker = null;
     private static HttpsMode httpsMode = HttpsMode.OFF;
     public static Class<? extends Servlet>[] services;
+    public static HandlerCollection handlerCollection = new HandlerCollection();
+    public static ContextHandler buildSwaggerUI() throws Exception {
+        ResourceHandler rh = new ResourceHandler();
+        rh.setResourceBase(SusiServer.class.getClassLoader()
+                .getResource("META-INF/resources/webjars/swagger-ui/2.1.4")
+                .toURI().toString());
+        ContextHandler context = new ContextHandler();
+        context.setContextPath("/docs/");
+        context.setHandler(rh);
+        return context;
+    }
 
     public static Map<String, String> readConfig(Path data) throws IOException {
         File conf_dir = new File("conf");
@@ -146,11 +158,11 @@ public class SusiServer {
         File dataFile = data.toFile();
         if (!dataFile.exists()) dataFile.mkdirs(); // should already be there since the start.sh script creates it
         
-        Log.getLog().info("Starting loklak initialization");
+        Log.getLog().info("Starting SUSI initialization");
 
         // prepare shutdown signal
         File pid = new File(dataFile, "susi.pid");
-        if (pid.exists()) pid.deleteOnExit(); // thats a signal for the stop.sh script that loklak has terminated
+        if (pid.exists()) pid.deleteOnExit(); // thats a signal for the stop.sh script that SUSI has terminated
         
         // prepare signal for startup script
         File startup = new File(dataFile, "startup.tmp");
@@ -192,7 +204,7 @@ public class SusiServer {
             httpsPort = Integer.parseInt(env.get("PORTSSL"));
         }
         
-        // check if a loklak service is already running on configured port
+        // check if a SUSI service is already running on configured port
         try{
         	checkServerPorts(httpPort, httpsPort);
         }
@@ -383,7 +395,7 @@ public class SusiServer {
 	        //SslConnectionFactory ssl = new SslConnectionFactory(sslContextFactory, alpn.getProtocol());
 	        SslConnectionFactory ssl = new SslConnectionFactory(sslContextFactory, "http/1.1");
 	        
-	        //ServerConnector sslConnector = new ServerConnector(LoklakServer.server, ssl, alpn, http2, http1);
+	        //ServerConnector sslConnector = new ServerConnector(SUSIServer.server, ssl, alpn, http2, http1);
 	        ServerConnector sslConnector = new ServerConnector(SusiServer.server, ssl, http1);
 	        sslConnector.setPort(httpsPort);
 	        sslConnector.setName("httpd:" + httpsPort);
@@ -404,7 +416,7 @@ public class SusiServer {
         
         if(redirect || auth){
         	
-            org.eclipse.jetty.security.LoginService loginService = new org.eclipse.jetty.security.HashLoginService("LoklakRealm", DAO.conf_dir.getAbsolutePath() + "/http_auth");
+            org.eclipse.jetty.security.LoginService loginService = new org.eclipse.jetty.security.HashLoginService("SUSIRealm", DAO.conf_dir.getAbsolutePath() + "/http_auth");
         	if(auth) SusiServer.server.addBean(loginService);
         	
         	Constraint constraint = new Constraint();
@@ -480,7 +492,6 @@ public class SusiServer {
                 GetAllLanguages.class,
                 DeleteGroupService.class,
                 ExampleSkillService.class,
-                UploadSettingsService.class,
                 UserManagementService.class,
                 ChangeUserSettings.class,
                 UserAccountPermissions.class,
@@ -582,8 +593,24 @@ public class SusiServer {
         sessions.setHandler(gzipHandler);
         securityHandler.setHandler(sessions);
         ipaccess.setHandler(securityHandler);
-        
-        SusiServer.server.setHandler(ipaccess);
+        handlerCollection.addHandler(ipaccess);
+
+
+        ContextHandlerCollection contexts = new ContextHandlerCollection();
+
+        ResourceConfig resourceConfig = new ResourceConfig();
+
+        resourceConfig.packages(SusiServer.class.getPackage().getName(),
+                ApiListingResource.class.getPackage().getName());
+
+        ServletContainer sc = new ServletContainer(resourceConfig);
+        ServletHolder holder = new ServletHolder(sc);
+
+        servletHandler.addServlet(holder, "/docs/*");
+        handlerCollection.addHandler(contexts);
+
+        SusiServer.server.setHandler(handlerCollection);
+
     }
     
     private static void checkServerPorts(int httpPort, int httpsPort) throws IOException{
@@ -597,7 +624,7 @@ public class SusiServer {
 	            ss.setReceiveBufferSize(65536);
 	        } catch (IOException e) {
 	            // the socket is already occupied by another service
-	            throw new IOException("port " + httpPort + " is already occupied by another service, maybe another loklak is running on this port already. exit.");
+	            throw new IOException("port " + httpPort + " is already occupied by another service, maybe another SUSI is running on this port already. exit.");
 	        } finally {
 	            // close the socket again
 	            if (ss != null) ss.close();
@@ -613,7 +640,7 @@ public class SusiServer {
 	            sss.setReceiveBufferSize(65536);
 	        } catch (IOException e) {
 	            // the socket is already occupied by another service
-	        	throw new IOException("port " + httpsPort + " is already occupied by another service, maybe another loklak is running on this port already. exit.");
+	        	throw new IOException("port " + httpsPort + " is already occupied by another service, maybe another SUSI is running on this port already. exit.");
 	        } finally {
 	            // close the socket again
 	            if (sss != null) sss.close();
