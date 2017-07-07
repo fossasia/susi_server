@@ -66,14 +66,23 @@ public class RateSkillService extends AbstractAPIHandler implements APIHandler {
                     JSONObject languageName = groupName.getJSONObject(language_name);
                     if (languageName.has(skill_name)) {
                         JSONObject skillName = languageName.getJSONObject(skill_name);
-                        skillName.put(skill_rate, skillName.getInt(skill_name) + 1 + "");
+                        skillName.put(skill_rate, skillName.getInt(skill_rate) + 1 + "");
+                        languageName.put(skill_name, skillName);
+                        groupName.put(language_name, languageName);
+                        modelName.put(group_name, groupName);
+                        skillRating.put(model_name, modelName, true);
                     } else {
                         languageName.put(skill_name, createRatingObject(skill_rate,skill_name));
+                        groupName.put(language_name, languageName);
+                        modelName.put(group_name, groupName);
+                        skillRating.put(model_name, modelName, true);
                     }
                 } else {
                     JSONObject languageName = new JSONObject();
                     languageName.put(skill_name, createRatingObject(skill_rate,skill_name));
                     groupName.put(language_name, languageName);
+                    modelName.put(group_name, groupName);
+                    skillRating.put(model_name, modelName, true);
                 }
             } else {
                 JSONObject languageName = new JSONObject();
@@ -81,6 +90,7 @@ public class RateSkillService extends AbstractAPIHandler implements APIHandler {
                 JSONObject groupName = new JSONObject();
                 groupName.put(language_name, languageName);
                 modelName.put(group_name, groupName);
+                skillRating.put(model_name, modelName, true);
             }
         } else {
             JSONObject languageName = new JSONObject();
