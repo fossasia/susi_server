@@ -188,8 +188,12 @@ public class DAO {
         group = new JsonTray(groups_per.toFile(), groups_vol.toFile(), 1000000);
         OS.protectPath(groups_per);
         OS.protectPath(groups_vol);
-        Path skillRating_per = settings_dir.resolve("skillRating.json");
-        Path skillRating_vol = settings_dir.resolve("skillRating_session.json");
+
+        /*Skill Rating storage*/
+        Path susi_skill_rating_dir = dataPath.resolve("skill_rating");
+        susi_skill_rating_dir.toFile().mkdirs();
+        Path skillRating_per = susi_skill_rating_dir.resolve("skillRating.json");
+        Path skillRating_vol = susi_skill_rating_dir.resolve("skillRating_session.json");
         skillRating = new JsonTray(skillRating_per.toFile(), skillRating_vol.toFile(), 1000000);
         OS.protectPath(skillRating_per);
         OS.protectPath(skillRating_vol);
