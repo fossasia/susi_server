@@ -1,5 +1,24 @@
 package ai.susi.server.api.cms;
 
+/**
+ *  RateSkillService
+ *  Copyright by Saurabh Jain, @Saurabhjn76
+ *
+ *  This library is free software; you can redistribute it and/or
+ *  modify it under the terms of the GNU Lesser General Public
+ *  License as published by the Free Software Foundation; either
+ *  version 2.1 of the License, or (at your option) any later version.
+ *
+ *  This library is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ *  Lesser General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Lesser General Public License
+ *  along with this program in the file lgpl21.txt
+ *  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 import ai.susi.DAO;
 import ai.susi.json.JsonObjectWithDefault;
 import ai.susi.json.JsonTray;
@@ -11,16 +30,15 @@ import java.io.File;
 
 
 /**
- * Created by saurabhjn76 .
- * This Endpoint accepts 5 parameters. model,group,language,skill,content, rating.
- * rating can be postive or negative
+ * This Endpoint accepts 5 parameters. model,group,language,skill,rating.
+ * rating can be positive or negative
  * before rating a skill the skill must exist in the directory.
  * http://localhost:4000/cms/rateSkill.json?model=general&group=knowledge&skill=who&rating=positive
  */
 public class RateSkillService extends AbstractAPIHandler implements APIHandler {
 
 
-    private static final long serialVersionUID = -4437528781864678779L;
+    private static final long serialVersionUID = 7947060716231250102L;
 
     @Override
     public BaseUserRole getMinimalBaseUserRole() {
@@ -58,12 +76,15 @@ public class RateSkillService extends AbstractAPIHandler implements APIHandler {
 
         }
         JsonTray skillRating = DAO.skillRating;
+        JSONObject modelName = new JSONObject();
+        JSONObject groupName = new JSONObject();
+        JSONObject languageName = new JSONObject();
         if (skillRating.has(model_name)) {
-            JSONObject modelName = skillRating.getJSONObject(model_name);
+            modelName = skillRating.getJSONObject(model_name);
             if (modelName.has(group_name)) {
-                JSONObject groupName = modelName.getJSONObject(group_name);
+                groupName = modelName.getJSONObject(group_name);
                 if (groupName.has(language_name)) {
-                    JSONObject languageName = groupName.getJSONObject(language_name);
+                    languageName = groupName.getJSONObject(language_name);
                     if (languageName.has(skill_name)) {
                         JSONObject skillName = languageName.getJSONObject(skill_name);
                         skillName.put(skill_rate, skillName.getInt(skill_rate) + 1 + "");
@@ -71,45 +92,31 @@ public class RateSkillService extends AbstractAPIHandler implements APIHandler {
                         groupName.put(language_name, languageName);
                         modelName.put(group_name, groupName);
                         skillRating.put(model_name, modelName, true);
-                    } else {
-                        languageName.put(skill_name, createRatingObject(skill_rate,skill_name));
-                        groupName.put(language_name, languageName);
-                        modelName.put(group_name, groupName);
-                        skillRating.put(model_name, modelName, true);
+                        result.put("accepted", true);
+                        result.put("message", "Skill ratings updated");
+                        return new ServiceResponse(result);
                     }
-                } else {
-                    JSONObject languageName = new JSONObject();
-                    languageName.put(skill_name, createRatingObject(skill_rate,skill_name));
-                    groupName.put(language_name, languageName);
-                    modelName.put(group_name, groupName);
-                    skillRating.put(model_name, modelName, true);
                 }
-            } else {
-                JSONObject languageName = new JSONObject();
-                languageName.put(skill_name, createRatingObject(skill_rate,skill_name));
-                JSONObject groupName = new JSONObject();
-                groupName.put(language_name, languageName);
-                modelName.put(group_name, groupName);
-                skillRating.put(model_name, modelName, true);
             }
-        } else {
-            JSONObject languageName = new JSONObject();
-            languageName.put(skill_name, createRatingObject(skill_rate,skill_name));
-            JSONObject groupName = new JSONObject();
-            groupName.put(language_name, languageName);
-            JSONObject modelName = new JSONObject();
-            modelName.put(group_name, groupName);
-            skillRating.put(model_name, modelName, true);
         }
+        languageName.put(skill_name, createRatingObject(skill_rate));
+        groupName.put(language_name, languageName);
+        modelName.put(group_name, groupName);
+        skillRating.put(model_name, modelName, true);
         result.put("accepted", true);
+        result.put("message", "Skill ratings added");
         return new ServiceResponse(result);
+
     }
-   /* Utility function*/
-    public JSONObject createRatingObject(String skill_rate, String skill_name) {
+
+    /* Utility function*/
+    public JSONObject createRatingObject(String skill_rate) {
         JSONObject skillName = new JSONObject();
         skillName.put("positive", "0");
         skillName.put("negative", "0");
         skillName.put(skill_rate, skillName.getInt(skill_rate) + 1 + "");
         return skillName;
     }
+
+
 }
