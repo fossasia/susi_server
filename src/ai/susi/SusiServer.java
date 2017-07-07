@@ -485,6 +485,7 @@ public class SusiServer {
                 ChangeUserSettings.class,
                 UserAccountPermissions.class,
                 JsonPathTestService.class,
+                RateSkillService.class,
                 DeleteSkillService.class,
                 ModifySkillService.class,
                 HistorySkillService.class,

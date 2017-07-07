@@ -68,45 +68,38 @@ public class RateSkillService extends AbstractAPIHandler implements APIHandler {
                         JSONObject skillName = languageName.getJSONObject(skill_name);
                         skillName.put(skill_name, skillName.getInt(skill_name) + 1 + "");
                     } else {
-                        JSONObject skillName = new JSONObject();
-                        skillName.put("positive", "0");
-                        skillName.put("negative", "0");
-                        skillName.put(skill_name, skillName.getInt(skill_rate) + 1 + "");
-                        languageName.put(skill_name, skillName);
+                        languageName.put(skill_name, createRatingObject(skill_rate,skill_name));
                     }
                 } else {
-                    JSONObject skillName = new JSONObject();
-                    skillName.put("positive", "0");
-                    skillName.put("negative", "0");
-                    skillName.put(skill_name, skillName.getInt(skill_rate) + 1 + "");
                     JSONObject languageName = new JSONObject();
-                    languageName.put(skill_name, skillName);
+                    languageName.put(skill_name, createRatingObject(skill_rate,skill_name));
                     groupName.put(language_name, languageName);
                 }
             } else {
-                JSONObject skillName = new JSONObject();
-                skillName.put("positive", "0");
-                skillName.put("negative", "0");
-                skillName.put(skill_name, skillName.getInt(skill_rate) + 1 + "");
                 JSONObject languageName = new JSONObject();
-                languageName.put(skill_name, skillName);
+                languageName.put(skill_name, createRatingObject(skill_rate,skill_name));
                 JSONObject groupName = new JSONObject();
                 groupName.put(language_name, languageName);
                 modelName.put(group_name, groupName);
             }
         } else {
-            JSONObject skillName = new JSONObject();
-            skillName.put("positive", "0");
-            skillName.put("negative", "0");
-            skillName.put(skill_name, skillName.getInt(skill_rate) + 1 + "");
             JSONObject languageName = new JSONObject();
-            languageName.put(skill_name, skillName);
+            languageName.put(skill_name, createRatingObject(skill_rate,skill_name));
             JSONObject groupName = new JSONObject();
             groupName.put(language_name, languageName);
             JSONObject modelName = new JSONObject();
             modelName.put(group_name, groupName);
             skillRating.put(model_name, modelName, rights.getIdentity().isPersistent());
         }
+        result.put("accepted", false);
         return new ServiceResponse(result);
+    }
+   /* Utility function*/
+    public JSONObject createRatingObject(String skill_rate, String skill_name) {
+        JSONObject skillName = new JSONObject();
+        skillName.put("positive", "0");
+        skillName.put("negative", "0");
+        skillName.put(skill_name, skillName.getInt(skill_rate) + 1 + "");
+        return skillName;
     }
 }
