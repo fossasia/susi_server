@@ -43,6 +43,8 @@ public class ChangeUserRoles extends AbstractAPIHandler implements APIHandler {
     public ServiceResponse serviceImpl(Query query, HttpServletResponse response, Authorization authorization, final JsonObjectWithDefault permissions) throws APIException {
 
         JSONObject result = new JSONObject();
+        result.put("accepted", false);
+        result.put("message", "Error: Unable to process your request");
         if (query.get("getServicePermissions", null) != null) {
             String serviceString = query.get("getServicePermissions", null);
 
@@ -67,6 +69,8 @@ public class ChangeUserRoles extends AbstractAPIHandler implements APIHandler {
 
             if (service instanceof AbstractAPIHandler) {
                 result.put("servicePermissions", authorization.getPermissions((AbstractAPIHandler) service));
+                result.put("accepted", true);
+                result.put("message", "Successfully processed request");
                 return new ServiceResponse(result);
             } else {
                 throw new APIException(400, "Bad service name (no instance of AbstractAPIHandler)");
@@ -77,9 +81,13 @@ public class ChangeUserRoles extends AbstractAPIHandler implements APIHandler {
                 serviceList.put(service.getCanonicalName());
             }
             result.put("serviceList", serviceList);
+            result.put("accepted", true);
+            result.put("message", "Successfully processed request");
             return new ServiceResponse(result);
         } else if (query.get("getUserRolePermission", false)) {
             result.put("userRolePermissions", authorization.getUserRole().getPermissionOverrides());
+            result.put("accepted", true);
+            result.put("message", "Successfully processed request");
             return new ServiceResponse(result);
         } else {
             // Accept POST params
@@ -103,6 +111,8 @@ public class ChangeUserRoles extends AbstractAPIHandler implements APIHandler {
             
             // Print Response
             result.put("newDetails", auth.getJSON());
+            result.put("accepted", true);
+            result.put("message", "Successfully processed request");
             return new ServiceResponse(result);
         }
     }

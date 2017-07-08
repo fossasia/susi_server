@@ -75,13 +75,15 @@ public class LoginService extends AbstractAPIHandler implements APIHandler {
 
 		// login check for app
 		if(post.get("checkLogin", false)) {
-			JSONObject result = new JSONObject();
+			JSONObject result = new JSONObject(true);
 			if (authorization.getIdentity().isEmail()) {
 				result.put("loggedIn", true);
+				result.put("accepted", true);
 				result.put("message", "You are logged in as " + authorization.getIdentity().getName());
 			}
 			else{
 				result.put("loggedIn", false);
+				result.put("accepted", false);
 				result.put("message", "Not logged in");
 			}
 			return new ServiceResponse(result);
@@ -104,7 +106,8 @@ public class LoginService extends AbstractAPIHandler implements APIHandler {
 			    if (delete) DAO.deleteAuthentication(pwcredential);
 			}
 			
-			JSONObject result = new JSONObject();
+			JSONObject result = new JSONObject(true);
+			result.put("accepted", true);
 			result.put("message", delete ? "Account deletion successful" : "Logout successful");
 			return new ServiceResponse(result);
 		}
@@ -160,7 +163,8 @@ public class LoginService extends AbstractAPIHandler implements APIHandler {
 				throw new APIException(422, "Invalid credentials");
 			}
 
-			JSONObject result = new JSONObject();
+			JSONObject result = new JSONObject(true);
+			result.put("accepted", false);
 
 			switch (type) {
 				case "session": // create a browser session
@@ -198,6 +202,7 @@ public class LoginService extends AbstractAPIHandler implements APIHandler {
 					else result.put("valid_seconds", valid_seconds);
 
 					result.put("access_token", token);
+					result.put("accepted", true);
 
 					break;
 				default:
@@ -207,6 +212,7 @@ public class LoginService extends AbstractAPIHandler implements APIHandler {
 			Log.getLog().info("login for user: " + identity.getName() + " via passwd from host: " + post.getClientHost());
 
 			result.put("message", "You are logged in as " + identity.getName());
+			result.put("accepted", true);
 			return new ServiceResponse(result);
 		}
 		else if(pubkeyHello){ // first part of pubkey login: if the key hash is known, create a challenge
@@ -233,6 +239,7 @@ public class LoginService extends AbstractAPIHandler implements APIHandler {
 			challenge_auth.setExpireTime(60 * 10);
 
 			JSONObject result = new JSONObject();
+			result.put("accepted", true);
 			result.put("challenge", challengeString);
 			result.put("sessionID", newSessionID);
 			result.put("message", "Found valid key for this user. Sign the challenge with you public key and send it back, together with the sessionID");
@@ -280,6 +287,7 @@ public class LoginService extends AbstractAPIHandler implements APIHandler {
 				else result.put("valid_seconds", valid_seconds);
 
 				result.put("access_token", token);
+				result.put("accepted", true);
 				return new ServiceResponse(result);
 			}
 			else {

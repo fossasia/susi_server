@@ -77,8 +77,9 @@ public class UserManagementService extends AbstractAPIHandler implements APIHand
 	@Override
 	public ServiceResponse serviceImpl(Query post, HttpServletResponse response, Authorization rights, final JsonObjectWithDefault permissions) throws APIException {
 
-		JSONObject result = new JSONObject();
-
+		JSONObject result = new JSONObject(true);
+		result.put("accepted", false);
+		result.put("message", "Error: Unable to show user management details");
 		switch (post.get("show","")){
 			case "user-list":
 				if(permissions.getBoolean("list_users", false)){
@@ -86,6 +87,8 @@ public class UserManagementService extends AbstractAPIHandler implements APIHand
 			        JSONObject users = new JSONObject();
 			        authorized.forEach(client -> users.put(client.getClient(), client.toJSON()));
 					result.put("user-list", users);
+					result.put("accepted", true);
+					result.put("message","Success: Showing user list");
 				} else throw new APIException(403, "Forbidden");
 				break;
 			case "user-roles":
@@ -100,6 +103,8 @@ public class UserManagementService extends AbstractAPIHandler implements APIHand
 					userRolesObj.put(key,obj);
 				}
 				result.put("user-roles", userRolesObj);
+				result.put("accepted", true);
+				result.put("message","Success: Showing user roles");
 				break;
 			default: throw new APIException(400, "No 'show' parameter specified");
 		}

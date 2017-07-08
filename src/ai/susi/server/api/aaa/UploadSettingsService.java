@@ -55,7 +55,9 @@ public class UploadSettingsService extends AbstractAPIHandler implements APIHand
     @Override
     public ServiceResponse serviceImpl(Query post, HttpServletResponse response, Authorization rights, JsonObjectWithDefault permissions) throws APIException {
 
-        JSONObject result = new JSONObject();
+        JSONObject result = new JSONObject(true);
+        result.put("accepted", false);
+        result.put("message", "Error: Unable to Upload file");
 
         String path = DAO.data_dir+"/settings/";
         File settings = new File(path);
@@ -69,13 +71,13 @@ public class UploadSettingsService extends AbstractAPIHandler implements APIHand
                 part.write( path + File.separator + fileName);
                 request.setAttribute("message", fileName + " File uploaded successfully!");
             }
-            result.put("success",true);
+            result.put("accepted", true);
         } catch (IOException e) {
             e.printStackTrace();
-            result.put("success",false);
+            result.put("accepted", false);
         } catch (ServletException e) {
             e.printStackTrace();
-            result.put("success",false);
+            result.put("accepted", false);
         }
         return new ServiceResponse(result);
     }
