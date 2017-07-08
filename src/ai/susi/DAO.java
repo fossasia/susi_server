@@ -104,7 +104,7 @@ public class DAO {
      */
     public static void init(Map<String, String> configMap, Path dataPath) throws Exception{
 
-        log("initializing loklak DAO");
+        log("initializing SUSI DAO");
         
         config = configMap;
         conf_dir = new File("conf");
