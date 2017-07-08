@@ -50,7 +50,9 @@ public class UserAccountPermissions extends AbstractAPIHandler implements APIHan
     @Override
     public ServiceResponse serviceImpl(Query query, HttpServletResponse response, Authorization authorization, final JsonObjectWithDefault permissions) throws APIException {
     	
-    	JSONObject result = new JSONObject();
+    	JSONObject result = new JSONObject(true);
+		result.put("accepted", false);
+		result.put("message", "Error: Unable to get service permissions");
 
 		if(query.get("getServicePermissions", null) != null){
 			String serviceString = query.get("getServicePermissions", null);
@@ -87,9 +89,13 @@ public class UserAccountPermissions extends AbstractAPIHandler implements APIHan
 				serviceList.put(service.getCanonicalName());
 			}
 			result.put("serviceList", serviceList);
+			result.put("accepted", true);
+			result.put("message", "Success : Service List");
 			return new ServiceResponse(result);
 		}else if (query.get("getUserRolePermission", false)) {
 			result.put("userRolePermissions", authorization.getUserRole().getPermissionOverrides());
+			result.put("accepted", true);
+			result.put("message", "Success : User Role Permission");
 			return new ServiceResponse(result);
 		} else {
 			result.put("userName", authorization.getIdentity().getName());
@@ -97,6 +103,8 @@ public class UserAccountPermissions extends AbstractAPIHandler implements APIHan
 			result.put("userRole", authorization.getUserRole().getDisplayName());
 			result.put("userRoleSpecificPermissions", authorization.getUserRole().getPermissionOverrides());
 			result.put("parentUserRole", authorization.getUserRole().getParent());
+			result.put("accepted", true);
+			result.put("message", "Success : Service Permissions");
 			return new ServiceResponse(result);
 		}
     }

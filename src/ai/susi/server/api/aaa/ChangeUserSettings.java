@@ -78,8 +78,9 @@ public class ChangeUserSettings extends AbstractAPIHandler implements APIHandler
                } else {
                    accounting.getJSON().put("settings", jsonObject);
                }
-               JSONObject result = new JSONObject();
-               result.put("message", "You successfully changed settings to your account!");
+               JSONObject result = new JSONObject(true);
+               result.put("accepted", true);
+               result.put("message", "You successfully changed settings of your account!");
                return new ServiceResponse(result);
            }
        }

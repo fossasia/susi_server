@@ -122,7 +122,9 @@ public class PublicKeyRegistrationService extends AbstractAPIHandler implements 
 			throw new APIException(400, "Accepted parameters: 'register', 'create' or 'getParameters'");
 		}
 
-		JSONObject result = new JSONObject();
+		JSONObject result = new JSONObject(true);
+		result.put("accepted", false);
+		result.put("message", "Error: Unable to create and register keys");
 
 		// return algorithm parameters and users for whom we are allowed to register a key
 		if (post.get("getParameters", false)) {
@@ -147,6 +149,8 @@ public class PublicKeyRegistrationService extends AbstractAPIHandler implements 
 				formats.put(format);
 			}
 			result.put("formats", formats);
+			result.put("accepted", true);
+			result.put("message", "Success : Showing parameters and users allowed");
 
 			return new ServiceResponse(result);
 		}
@@ -246,6 +250,7 @@ public class PublicKeyRegistrationService extends AbstractAPIHandler implements 
 				result.put("keyhash", IO.getKeyHash(keyPair.getPublic()));
 				try{ result.put("keyhash_urlsave", URLEncoder.encode(IO.getKeyHash(keyPair.getPublic()), "UTF-8")); } catch (UnsupportedEncodingException e){}
 				result.put("key-size", keySize);
+				result.put("accepted", true);
 				result.put("message", "Successfully created and registered key. Make sure to copy the private key, it won't be saved on the server");
 
 				return new ServiceResponse(result);
@@ -325,6 +330,7 @@ public class PublicKeyRegistrationService extends AbstractAPIHandler implements 
 				result.put("keyhash", IO.getKeyHash(pub));
 				try{ result.put("keyhash_urlsave", URLEncoder.encode(IO.getKeyHash(pub), "UTF-8")); } catch (UnsupportedEncodingException e){}
 				result.put("message", "Successfully registered key.");
+				result.put("accepted", true);
 
 				return new ServiceResponse(result);
 			}
