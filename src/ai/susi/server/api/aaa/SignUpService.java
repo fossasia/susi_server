@@ -56,12 +56,15 @@ public class SignUpService extends AbstractAPIHandler implements APIHandler {
 	@Override
 	public JSONObject getDefaultPermissions(BaseUserRole baseUserRole) {
 		JSONObject result = new JSONObject();
+		result.put("accepted", false);
+		result.put("message", "Error: Unable to process you request");
 
 		switch(baseUserRole){
 			case ADMIN:
 			case PRIVILEGED:
 				result.put("register", true); // allow to register new users (this bypasses email verification and activation)
 				result.put("activate", true); // allow to activate new users
+				result.put("accepted", true);
 				break;
 			case USER:
 			case ANONYMOUS:
@@ -81,7 +84,9 @@ public class SignUpService extends AbstractAPIHandler implements APIHandler {
 	public ServiceResponse serviceImpl(Query post, HttpServletResponse response, Authorization auth, final JsonObjectWithDefault permissions)
 			throws APIException {
 
-		JSONObject result = new JSONObject();
+		JSONObject result = new JSONObject(true);
+		result.put("accepted", false);
+		result.put("message", "Error: Unable to SignUp");
 
 		// if regex is requested
 		if (post.get("getParameters", false)) {
@@ -93,6 +98,8 @@ public class SignUpService extends AbstractAPIHandler implements APIHandler {
 			}
 			result.put("regex", passwordPattern);
 			result.put("regexTooltip", passwordPatternTooltip);
+			result.put("accepted", true);
+			result.put("message", "Success: showing parameters");
 
 			return new ServiceResponse(result);
 		}
@@ -112,7 +119,7 @@ public class SignUpService extends AbstractAPIHandler implements APIHandler {
 				}
 
 				authentication.put("activated", true);
-
+				result.put("accepted", true);
 				result.put("message", "You successfully verified your account!");
 				return new ServiceResponse(result);
 			}
@@ -207,12 +214,14 @@ public class SignUpService extends AbstractAPIHandler implements APIHandler {
 
 				result.put("message",
 						"You successfully signed-up! An email with a verification link was send to your address.");
-
+				result.put("accepted", true);
 			} catch (Throwable e) {
+				result.put("accepted", false);
 				result.put("message", "You successfully signed-up, but no email was sent: " + e.getMessage());
 			}
 		} else {
 			result.put("message", "You successfully signed-up!");
+			result.put("accepted", true);
 		}
 
 		return new ServiceResponse(result);

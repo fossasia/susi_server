@@ -60,7 +60,9 @@ public class PasswordResetService extends AbstractAPIHandler implements APIHandl
 	@Override
 	public ServiceResponse serviceImpl(Query call, HttpServletResponse response, Authorization rights, final JsonObjectWithDefault permissions)
 			throws APIException {
-		JSONObject result = new JSONObject();
+		JSONObject result = new JSONObject(true);
+		result.put("accepted", false);
+		result.put("message", "Error: Unable to reset Password");
 
 		String newpass = call.get("newpass", null);
 
@@ -91,6 +93,7 @@ public class PasswordResetService extends AbstractAPIHandler implements APIHandl
 		if (authentication.has("one_time") && authentication.getBoolean("one_time")) {
 			authentication.delete();
 		}
+		result.put("accepted", true);
 		result.put("message", "Your password has been changed!");
 		return new ServiceResponse(result);
 	}

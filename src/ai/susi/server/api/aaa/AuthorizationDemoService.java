@@ -65,8 +65,9 @@ public class AuthorizationDemoService extends AbstractAPIHandler implements APIH
     @Override
     public ServiceResponse serviceImpl(Query post, HttpServletResponse response, Authorization rights, final JsonObjectWithDefault permissions) throws APIException {
     	
-    	JSONObject result = new JSONObject();
-
+    	JSONObject result = new JSONObject(true);
+		result.put("accepted", true);
+		result.put("message", "Successfully processed request");
 		result.put("user", rights.getIdentity().getName());
         result.put("user role", rights.getUserRole().getDisplayName());
         result.put("base user role", rights.getBaseUserRole().name());

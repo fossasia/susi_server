@@ -56,9 +56,10 @@ public class GetAllGroups extends AbstractAPIHandler implements APIHandler {
 
     @Override
     public ServiceResponse serviceImpl(Query call, HttpServletResponse response, Authorization rights, final JsonObjectWithDefault permissions) {
-        JSONObject allUsers;
-        allUsers = DAO.group.toJSON();
-        return new ServiceResponse(allUsers);
+        JSONObject result = DAO.group.toJSON();
+        result.put("accepted", true);
+        result.put("message", "Success: Fetched all groups");
+        return new ServiceResponse(result);
     }
 
 }
