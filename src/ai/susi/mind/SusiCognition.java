@@ -160,7 +160,10 @@ public class SusiCognition {
                 if (expressionAction != null) dispute.addObservation("answer", expressionAction.getPhrases().get(0)); // we can unify with "answer" in queries
                 // the skill, can be used to analyze the latest answer
                 List<String> skills = clonedThought.getSkills();
-                if (skills.size() > 0) dispute.addObservation("skill", skills.get(0));
+                if (skills.size() > 0) {
+                    dispute.addObservation("skill", skills.get(0));
+                    dispute.addObservation("skill_link", getSkillLink(skills.get(0)));
+                }
                 
                 // add all data from the old dispute
                 JSONArray clonedData = clonedThought.getData();
@@ -190,5 +193,15 @@ public class SusiCognition {
     
     public String toString() {
         return this.json.toString();
+    }
+
+    public String getSkillLink(String skillPath) {
+        String link=skillPath;
+        if(skillPath.startsWith("/susi_server")) {
+            link ="https://github.com/fossasia/susi_server/blob/development" + skillPath.substring("/susi_server".length());
+        } else if (skillPath.startsWith("/susi_skill_data")) {
+            link = "https://github.com/fossasia/susi_skill_data/blob/master" + skillPath.substring("/susi_skill_data".length());
+        }
+        return link;
     }
 }
