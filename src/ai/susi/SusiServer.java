@@ -497,6 +497,7 @@ public class SusiServer {
                 ChangeUserSettings.class,
                 UserAccountPermissions.class,
                 JsonPathTestService.class,
+                RateSkillService.class,
                 DeleteSkillService.class,
                 ModifySkillService.class,
                 HistorySkillService.class,
@@ -523,7 +524,8 @@ public class SusiServer {
                 //Groups
                 GetGroupDetails.class,
                 CreateGroupService.class,
-                GetAllGroups.class
+                GetAllGroups.class,
+                GetSkillRatingService.class
         };
         for (Class<? extends Servlet> service: services)
             try {
