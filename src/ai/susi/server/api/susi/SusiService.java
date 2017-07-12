@@ -74,36 +74,39 @@ public class SusiService extends AbstractAPIHandler implements APIHandler {
         double latitude = post.get("latitude", Double.NaN); // i.e. 8.68 
         double longitude = post.get("longitude", Double.NaN); // i.e. 50.11
         String language = post.get("language", "en");
+        String dream = post.get("dream", ""); // an instant dream setting, to be used for permanent dreaming
         try {
             DAO.susi.observe(); // get a database update
         } catch (IOException e) {
             DAO.log(e.getMessage());
         }
         
-        // compute a recall
-        SusiArgument observation_argument = new SusiArgument();
-        List<SusiCognition> cognitions = DAO.susi.getMemories().getCognitions(user.getIdentity().getClient());
-        cognitions.forEach(cognition -> observation_argument.think(cognition.recallDispute()));
-        SusiThought recall = observation_argument.mindmeld(false);
+        if (dream == null || dream.length() == 0) {
+	        // compute a recall to find a dream setting
+	        SusiArgument observation_argument = new SusiArgument();
+	        List<SusiCognition> cognitions = DAO.susi.getMemories().getCognitions(user.getIdentity().getClient());
+	        cognitions.forEach(cognition -> observation_argument.think(cognition.recallDispute()));
+	        SusiThought recall = observation_argument.mindmeld(false);
+	        dream = recall.getObservation("_etherpad_dream");
+        }
         
         // find out if we are dreaming
-        String etherpad_dream = recall.getObservation("_etherpad_dream");
-        if (etherpad_dream != null && etherpad_dream.length() != 0) {
+        if (dream != null && dream.length() != 0) {
             // we are dreaming!
             // read the pad
             String etherpadApikey = DAO.getConfig("etherpad.apikey", "");
             String etherpadUrlstub = DAO.getConfig("etherpad.urlstub", "");
             String padurl = etherpadUrlstub + "/api/1/getText?apikey=" + etherpadApikey + "&padID=$query$";
             try {
-                JSONTokener serviceResponse = new JSONTokener(new ByteArrayInputStream(ConsoleService.loadData(padurl, etherpad_dream)));
+                JSONTokener serviceResponse = new JSONTokener(new ByteArrayInputStream(ConsoleService.loadData(padurl, dream)));
                 JSONObject json = new JSONObject(serviceResponse);
                 String text = json.getJSONObject("data").getString("text");
                 // fill an empty mind with the dream
-                SusiMind dream = new SusiMind(DAO.susi_memory_dir); // we need the memory directory here to get a share on the memory of previous dialoges, otherwise we cannot test call-back questions
+                SusiMind dreamMind = new SusiMind(DAO.susi_memory_dir); // we need the memory directory here to get a share on the memory of previous dialoges, otherwise we cannot test call-back questions
                 JSONObject rules = SusiSkill.readEzDSkill(new BufferedReader(new InputStreamReader(new ByteArrayInputStream(text.getBytes(StandardCharsets.UTF_8)), StandardCharsets.UTF_8)));
-                dream.learn(rules, new File("file://" + etherpad_dream));
+                dreamMind.learn(rules, new File("file://" + dream));
                 // susi is now dreaming.. Try to find an answer out of the dream
-                SusiCognition cognition = new SusiCognition(dream, q, timezoneOffset, latitude, longitude, count, user.getIdentity());
+                SusiCognition cognition = new SusiCognition(dreamMind, q, timezoneOffset, latitude, longitude, count, user.getIdentity());
                 if (cognition.getAnswers().size() > 0) {
                     DAO.susi.getMemories().addCognition(user.getIdentity().getClient(), cognition);
                     return new ServiceResponse(cognition.getJSON());
