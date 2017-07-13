@@ -149,7 +149,7 @@ public class SusiSkill {
                                     if(type.equals(SusiAction.RenderType.timer_set.toString()) &&
                                             boa.has("hour")){
                                         int hour = boa.getInt("hour");
-                                            actions.put(SusiAction.alarmSetAction(
+                                            actions.put(SusiAction.timerSetAction(
                                                     hour, boa.has("minute") ? boa.getInt("minute") : 0,
                                                     boa.has("second") ? boa.getInt("second") : 0));
                                     }
