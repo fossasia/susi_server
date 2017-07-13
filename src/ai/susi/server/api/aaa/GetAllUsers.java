@@ -45,7 +45,7 @@ public class GetAllUsers extends AbstractAPIHandler implements APIHandler {
 
     @Override
     public ServiceResponse serviceImpl(Query call, HttpServletResponse response, Authorization rights, final JsonObjectWithDefault permissions) throws APIException {
-        JSONObject result = new JSONObject();
+        JSONObject result = new JSONObject(true);
         Collection<ClientIdentity> authorized = DAO.getAuthorizedClients();
         List<String> keysList = new ArrayList<String>();
         authorized.forEach(client -> keysList.add(client.toString()));
@@ -54,6 +54,8 @@ public class GetAllUsers extends AbstractAPIHandler implements APIHandler {
         authorized.forEach(client -> users.put(client.getClient(), client.toJSON()));
         result.put("users", users);
         result.put("username", keysArray);
+        result.put("accepted", true);
+        result.put("message", "Success: Fetched all Users and their roles");
         return new ServiceResponse(result);
     }
 
