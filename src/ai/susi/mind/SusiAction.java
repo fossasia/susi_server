@@ -211,7 +211,7 @@ public class SusiAction {
      * @param second
      * @return the action
      */
-    public static JSONObject alarmSetAction(int hour, int minute, int second) {
+    public static JSONObject timerSetAction(int hour, int minute, int second) {
         JSONObject json = new JSONObject(true)
                 .put("type", RenderType.timer_set.name())
                 .put("hour", hour)
