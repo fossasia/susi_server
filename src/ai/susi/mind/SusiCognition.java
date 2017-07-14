@@ -41,7 +41,13 @@ public class SusiCognition {
 
     JSONObject json;
 
-    public SusiCognition(final SusiMind mind, final String query, int timezoneOffset, double latitude, double longitude, int maxcount, ClientIdentity identity) {
+    public SusiCognition(
+            final SusiMind mind,
+            final String query,
+            int timezoneOffset,
+            double latitude, double longitude,
+            String language,
+            int maxcount, ClientIdentity identity) {
         this.json = new JSONObject(true);
         
         // get a response from susis mind
@@ -55,6 +61,10 @@ public class SusiCognition {
             observation.addObservation("latitude", Double.toString(latitude));
             observation.addObservation("longitude", Double.toString(longitude));
         }
+        
+        if (language.length() > 2) language = language.substring(0, 2);
+        observation.addObservation("language", language.toLowerCase());
+        
         this.json.put("client_id", Base64.getEncoder().encodeToString(UTF8.getBytes(client)));
         long query_date = System.currentTimeMillis();
         this.json.put("query_date", DateParser.utcFormatter.print(query_date));
@@ -76,17 +86,6 @@ public class SusiCognition {
 
     public SusiCognition() {
         
-    }
-    
-    /**
-     * set ISO 639-1 code
-     * @param language
-     * @return
-     */
-    public SusiCognition setLanguage(String language) {
-        if (language.length() > 2) language = language.substring(0, 2);
-        this.json.put("language", language.toLowerCase()); // ISO 639-1 is a lowercase code
-        return this;
     }
     
     public SusiCognition setQuery(final String query) {
