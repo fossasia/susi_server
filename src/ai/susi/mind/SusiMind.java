@@ -291,8 +291,10 @@ public class SusiMind {
      * react on a user input: this causes the selection of deduction intents and the evaluation of the process steps
      * in every intent up to the moment where enough intents have been applied as consideration. The reaction may also
      * cause the evaluation of operational steps which may cause learning effects within the SusiMind.
-     * @param query
-     * @param maxcount
+     * @param query the user input
+     * @param maxcount the maximum number of answers (typical is only one)
+     * @param client authentication string of the user
+     * @param observation an initial thought - that is what susi experiences in the context. I.e. location and language of the user
      * @return
      */
     public List<SusiArgument> react(String query, int maxcount, String client, SusiThought observation) {
@@ -311,11 +313,17 @@ public class SusiMind {
         
         // find an answer
         List<SusiArgument> answers = new ArrayList<>();
-        List<SusiIdea> ideas = creativity(query, recall, 100);
-        for (SusiIdea idea: ideas) {
+        List<SusiIdea> ideas = creativity(query, recall, 100); // create a list of ideas which are possible intents
+
+        // test all ideas: the ideas are ranked in such a way that the best one is considered first
+        ideatest: for (SusiIdea idea: ideas) {
+            // compute an argument: because one intent represents a horn clause, the argument is a deduction track, a "proof" of the result.
             SusiArgument argument = idea.getIntent().consideration(query, recall, idea.getToken(), this, client);
-            if (argument != null) answers.add(argument);
-            if (answers.size() >= maxcount) break;
+
+            // arguments may fail; a failed proof is one which does not exist. Therefore an argument may be empty
+            if (argument == null) continue ideatest; // consider only sound arguments
+            answers.add(argument); // a valid idea
+            if (answers.size() >= maxcount) break; // and stop if we are done
         }
         return answers;
     }

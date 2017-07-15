@@ -102,7 +102,7 @@ public class SusiAction {
      * @param answers
      * @return the action
      */
-    public static JSONObject answerAction(String[] answers) {
+    public static JSONObject answerAction(String... answers) {
         JSONArray phrases = new JSONArray();
         for (String answer: answers) phrases.put(answer.trim());
         JSONObject json = new JSONObject()

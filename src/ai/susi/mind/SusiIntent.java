@@ -51,15 +51,16 @@ public class SusiIntent {
     public final static String CATCHALL_KEY = "*";
     public final static int    DEFAULT_SCORE = 10;
     
-    private List<SusiPhrase> phrases;
-    private List<SusiInference> inferences;
-    private List<SusiAction> actions;
-    private Set<String> keys;
-    private String comment;
-    private int user_subscore;
+    private final List<SusiPhrase> phrases;
+    private final List<SusiInference> inferences;
+    private final List<SusiAction> actions;
+    private final Set<String> keys;
+    private final String comment;
+    private final int user_subscore;
     private Score score;
-    private int id;
-    private String skill, example, expect;
+    private final int id;
+    private final String skill, example, expect;
+    private SusiLanguage language;
     
     /**
      * Generate a set of intents from a single intent definition. This may be possible if the intent contains an 'options'
@@ -137,11 +138,25 @@ public class SusiIntent {
         this.comment = json.has("comment") ? json.getString("comment") : "";
 
         // remember the origin
-        this.skill = origin.getAbsolutePath();
-    	int i = this.skill.indexOf("/susi");
-    	if (i < 0) this.skill = ""; else {
-    	    this.skill = this.skill.substring(i);
-    	    if (this.skill.startsWith("/susi/")) this.skill = this.skill.substring(5);
+        String skillpath = origin.getAbsolutePath();
+    	int i = skillpath.indexOf("/susi");
+    	if (i < 0) skillpath = ""; else {
+    	    skillpath = skillpath.substring(i);
+    	    if (skillpath.startsWith("/susi/")) skillpath = skillpath.substring(5);
+    	}
+    	this.skill = skillpath;
+    	
+    	// compute the language from the origin
+    	this.language = SusiLanguage.unknown;
+    	try {
+    	    if (this.skill.startsWith("/susi_server/conf/susi/")) {
+    	        this.language = SusiLanguage.valueOf(this.skill.substring(23, 25));
+    	    } else if (this.skill.startsWith("/susi_skill_data")) {
+    	        String[] paths = this.skill.split("/");
+                if (paths.length > 5) this.language = SusiLanguage.valueOf(paths[5]);
+    	    }
+    	} catch (IllegalArgumentException e) {
+            this.language = SusiLanguage.unknown;
     	}
         
     	// quality control
@@ -178,7 +193,7 @@ public class SusiIntent {
         json.put("phrases", p);
         JSONArray i = new JSONArray(); this.inferences.forEach(inference -> i.put(inference.getJSON()));
         json.put("process", i);
-        JSONArray a = new JSONArray(); this.actions.forEach(action -> a.put(action.toJSONClone()));
+        JSONArray a = new JSONArray(); this.getActionsClone().forEach(action ->a.put(action.toJSONClone()));
         json.put("actions", a);
         if (this.comment != null && this.comment.length() > 0) json.put("comment", this.comment);
         if (this.score != null) json.put("score", this.score.score);
@@ -431,7 +446,11 @@ public class SusiIntent {
      */
     public List<SusiAction> getActionsClone() {
         List<SusiAction> clonedList = new ArrayList<>();
-        this.actions.forEach(action -> clonedList.add(new SusiAction(action.toJSONClone())));
+        this.actions.forEach(action -> {
+            JSONObject actionJson = action.toJSONClone();
+            if (this.language != SusiLanguage.unknown) actionJson.put("language", this.language.name());
+            clonedList.add(new SusiAction(actionJson));
+        });
         return clonedList;
     }
 
