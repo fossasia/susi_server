@@ -51,6 +51,8 @@ public class ListSkillService extends AbstractAPIHandler implements APIHandler {
                 .put("group", group_name)
                 .put("language", language_name)
                 .put("skills", jsArray);
+        json.put("accepted", true);
+        json.put("message","Success: Fetched skill list");
         return new ServiceResponse(json);
 
     }
