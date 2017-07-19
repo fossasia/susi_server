@@ -62,7 +62,7 @@ public class SusiSkill {
         json.put("intents", intents);
         String lastLine = "", line = "";
         String bang_phrases = "", bang_type = "", bang_term = ""; StringBuilder bang_bag = new StringBuilder();
-        String example = "", expect = "", description="";
+        String example = "", expect = "", description="", image="";
         boolean prior = false;
         try {readloop: while ((line = br.readLine()) != null) {
             line = line.trim();
@@ -89,6 +89,8 @@ public class SusiSkill {
                         if (example.length() > 0) intent.put("example", example);
                         if (expect.length() > 0) intent.put("expect", expect);
                         if (description.length() > 0) intent.put("description", description);
+                        if (image.length() > 0) intent.put("image", image);
+
                         intents.put(intent);
                     }
                     else if (bang_type.equals("console")) {
@@ -151,6 +153,7 @@ public class SusiSkill {
                             }
                             if (example.length() > 0) intent.put("example", example);
                             if(description.length() > 0) intent.put("description", description);
+                            if(image.length() > 0) intent.put("image", image);
                             if (expect.length() > 0) intent.put("expect", expect);
                             intents.put(intent);
                         }
@@ -169,13 +172,13 @@ public class SusiSkill {
                 line = line.toLowerCase();
                 if (line.startsWith("::minor")) prior = false;
                 if (line.startsWith("::prior")) prior = true;
-                lastLine = ""; example = ""; expect = ""; description = "";
+                lastLine = ""; example = ""; expect = ""; description = ""; image = "";
                 continue readloop;
             }
             
             if (line.startsWith("#")) {
                 // a comment line; ignore the line and consider it as whitespace
-                lastLine = ""; example = ""; expect = ""; description = "";
+                lastLine = ""; example = ""; expect = ""; description = ""; image ="";
                 continue readloop;
             }
             
@@ -193,20 +196,20 @@ public class SusiSkill {
                         String ifsubstring = line.substring(thenpos + 1).trim();
                         if (ifsubstring.length() > 0) {
                             String[] answers = ifsubstring.split("\\|");
-                            JSONObject intent = SusiIntent.answerIntent(phrases, "IF " + condition, answers, prior, example, description, expect);
+                            JSONObject intent = SusiIntent.answerIntent(phrases, "IF " + condition, answers, prior, example, description, image, expect);
                             intents.put(intent);
                         }
                     } else {
                         String ifsubstring = line.substring(thenpos + 1, elsepos).trim();
                         if (ifsubstring.length() > 0) {
                             String[] ifanswers = ifsubstring.split("\\|");
-                            JSONObject intentif = SusiIntent.answerIntent(phrases, "IF " + condition, ifanswers, prior, example, description, expect);
+                            JSONObject intentif = SusiIntent.answerIntent(phrases, "IF " + condition, ifanswers, prior, example, description, image, expect);
                             intents.put(intentif);
                         }
                         String elsesubstring = line.substring(elsepos + 1).trim();
                         if (elsesubstring.length() > 0) {
                             String[] elseanswers = elsesubstring.split("\\|");
-                            JSONObject intentelse = SusiIntent.answerIntent(phrases, "NOT " + condition, elseanswers, prior, example, description, expect);
+                            JSONObject intentelse = SusiIntent.answerIntent(phrases, "NOT " + condition, elseanswers, prior, example, description, image, expect);
                             intents.put(intentelse);
                         }
                     }
@@ -220,6 +223,9 @@ public class SusiSkill {
                         expect = tail;
                     } else if (head.equals("description")) {
                         description =tail;
+                    }
+                    else if (head.equals("image")) {
+                        image =tail;
                     } else {
                         // start multi-line bang
                         bang_phrases = lastLine;
@@ -230,7 +236,7 @@ public class SusiSkill {
                     continue readloop;
                 } else {
                     String[] answers = line.split("\\|");
-                    JSONObject intent = SusiIntent.answerIntent(phrases, condition, answers, prior, example, description, expect);
+                    JSONObject intent = SusiIntent.answerIntent(phrases, condition, answers, prior, example, description, image, expect);
                     //System.out.println(intent.toString());
                     intents.put(intent);
                 }
@@ -297,7 +303,7 @@ public class SusiSkill {
             }
         }
         if (phrases != null && answers != null) {
-            return SusiIntent.answerIntent(phrases, null, answers, false, null, null, null);
+            return SusiIntent.answerIntent(phrases, null, answers, false, null, null, null,null);
         }
         return null;
     }

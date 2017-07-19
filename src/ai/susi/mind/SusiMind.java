@@ -53,6 +53,7 @@ public class SusiMind {
     private final Map<String, Set<SusiIntent>> intenttrigger; // a map from a keyword to a set of intents
     private final Map<String, Set<String>> skillexamples; // a map from an skill path to one example
     private final Map<String, Set<String>> skillDescriptions; // a map from skill path to description
+    private final Map<String, Set<String>> skillImage; // a map from skill path to skill image
     private final File[] watchpaths;
     private final File memorypath; // a path where the memory looks for new additions of knowledge with memory files
     private final Map<File, Long> observations; // a mapping of mind memory files to the time when the file was read the last time
@@ -73,6 +74,7 @@ public class SusiMind {
         this.memories = new SusiMemory(memorypath, ATTENTION_TIME);
         this.skillexamples = new TreeMap<>();
         this.skillDescriptions = new TreeMap<>();
+        this.skillImage = new TreeMap<>();
         // learn all available intents
         try {observe();} catch (IOException e) {
             e.printStackTrace();
@@ -101,6 +103,9 @@ public class SusiMind {
 
     public  Map<String, Set<String>> getSkillDescriptions() {
         return this.skillDescriptions;
+    }
+    public  Map<String, Set<String>> getSkillImage() {
+        return this.skillImage;
     }
     
     public SusiMind observe() throws IOException {
@@ -199,6 +204,15 @@ public class SusiMind {
                         this.skillDescriptions.put(intent.getSkill(), descriptions);
                     }
                     descriptions.add(intent.getDescription());
+                }
+
+                if (intent.getImage() !=null) {
+                    Set<String> image = this.skillImage.get(intent.getSkill());
+                    if (image == null) {
+                            image = new LinkedHashSet<>();
+                            this.skillImage.put(intent.getSkill(), image);
+                        }
+                    image.add(intent.getImage());
                 }
                 //if (intent.getExample() != null && intent.getExpect() != null) {}
             });
