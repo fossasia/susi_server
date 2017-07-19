@@ -86,6 +86,8 @@ public class DescriptionSkillService extends AbstractAPIHandler implements APIHa
                 .put("group", group)
                 .put("language", language)
                 .put("descriptions",descriptions);
+        json.put("accepted", true);
+        json.put("message", "Sucess: Fetched descriptions");
         return new ServiceResponse(json);
     }
 
