@@ -32,5 +32,8 @@ RUN sed -i.bak 's/^\(upgradeInterval=\).*/\186400000000/' conf/config.properties
 # hack until susi support no-daemon
 RUN echo "while true; do sleep 10;done" >> bin/start.sh
 
+# Create Volume for persistence
+VOLUME ["/data"]
+
 # start susi
 CMD ["bin/start.sh", "-Idn"]

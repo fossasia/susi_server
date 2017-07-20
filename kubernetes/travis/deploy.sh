@@ -38,4 +38,4 @@ echo ">>> Pushing docker image"
 docker push chiragw15/susi_server2
 
 echo ">>> Updating deployment"
-kubectl set image deployment/susic --namespace=default susic=chiragw15/susi_server2:$TRAVIS_COMMIT
+kubectl set image deployment/susi-server --namespace=web susi-server=chiragw15/susi_server2:$TRAVIS_COMMIT
