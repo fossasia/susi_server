@@ -502,6 +502,7 @@ public class SusiServer {
                 ModifySkillService.class,
                 HistorySkillService.class,
                 GetCommitHistory.class,
+                DescriptionSkillService.class,
                 // susi search aggregation services
                 ConsoleService.class,
                 RSSReaderService.class,
