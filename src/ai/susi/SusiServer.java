@@ -503,6 +503,7 @@ public class SusiServer {
                 HistorySkillService.class,
                 GetCommitHistory.class,
                 DescriptionSkillService.class,
+                GetSkillsImage.class,
                 // susi search aggregation services
                 ConsoleService.class,
                 RSSReaderService.class,
@@ -527,6 +528,7 @@ public class SusiServer {
                 CreateGroupService.class,
                 GetAllGroups.class,
                 GetSkillRatingService.class
+
         };
         for (Class<? extends Servlet> service: services)
             try {
