@@ -73,7 +73,7 @@ public class SusiService extends AbstractAPIHandler implements APIHandler {
         int timezoneOffset = post.get("timezoneOffset", 0); // minutes, i.e. -60
         double latitude = post.get("latitude", Double.NaN); // i.e. 8.68 
         double longitude = post.get("longitude", Double.NaN); // i.e. 50.11
-        String language = post.get("language", "en");
+        String language = post.get("language", "en"); // ISO 639-1
         try {
             DAO.susi.observe(); // get a database update
         } catch (IOException e) {
