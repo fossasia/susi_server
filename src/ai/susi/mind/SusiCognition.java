@@ -204,7 +204,7 @@ public class SusiCognition {
         String link=skillPath;
         if(skillPath.startsWith("/susi_server")) {
             if(skillPath.startsWith("/susi_server/file:")) {
-                link = "dream.susi.ai/p/" + skillPath.substring("/susi_server/file:/".length());
+                link = "http://dream.susi.ai/p/" + skillPath.substring("/susi_server/file:/".length());
             } else {
                 link ="https://github.com/fossasia/susi_server/blob/development" + skillPath.substring("/susi_server".length());
             }
