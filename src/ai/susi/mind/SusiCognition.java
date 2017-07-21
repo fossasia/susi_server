@@ -197,7 +197,11 @@ public class SusiCognition {
     public String getSkillLink(String skillPath) {
         String link=skillPath;
         if(skillPath.startsWith("/susi_server")) {
-            link ="https://github.com/fossasia/susi_server/blob/development" + skillPath.substring("/susi_server".length());
+            if(skillPath.startsWith("/susi_server/file:")) {
+                link = "dream.susi.ai/p/" + skillPath.substring("/susi_server/file:/".length());
+            } else {
+                link ="https://github.com/fossasia/susi_server/blob/development" + skillPath.substring("/susi_server".length());
+            }
         } else if (skillPath.startsWith("/susi_skill_data")) {
             link = "https://github.com/fossasia/susi_skill_data/blob/master" + skillPath.substring("/susi_skill_data".length());
         }
