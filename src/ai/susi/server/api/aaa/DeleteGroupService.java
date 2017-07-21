@@ -1,6 +1,6 @@
 /**
- *  ListSettingsService
- *  Copyright 14.06.2017 by Dravit Lochan, @DravitLochan
+ *  DeleteGroupService
+ *  Copyright 27/6/17 by Dravit Lochan, @DravitLochan
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -22,21 +22,21 @@ package ai.susi.server.api.aaa;
 import ai.susi.DAO;
 import ai.susi.json.JsonObjectWithDefault;
 import ai.susi.server.*;
-import org.json.JSONArray;
 import org.json.JSONObject;
 
 import javax.servlet.http.HttpServletResponse;
-import java.io.File;
 
 /**
- * Created by dravit on 14/6/17.
- * Servlet to get list of all the files present in data/settings directory
- * test locally at http://127.0.0.1:4000/aaa/getAllFiles
+ * Created by dravit on 27/6/17.
+ * http://127.0.0.1:4000/aaa/deleteGroup.json?group=groupName
  */
-public class ListSettingsService extends AbstractAPIHandler implements APIHandler{
+public class DeleteGroupService extends AbstractAPIHandler implements APIHandler{
+
+    private static final long serialVersionUID = -6460356959547369940L;
+
     @Override
     public String getAPIPath() {
-        return "/aaa/listSettings.json";
+        return "/aaa/deleteGroup.json";
     }
 
     @Override
@@ -51,15 +51,23 @@ public class ListSettingsService extends AbstractAPIHandler implements APIHandle
 
     @Override
     public ServiceResponse serviceImpl(Query post, HttpServletResponse response, Authorization rights, JsonObjectWithDefault permissions) throws APIException {
+        JSONObject result = new JSONObject();
+        String groupName = post.get("group", null);
 
-        String path = DAO.data_dir.getPath()+"/settings/";
-        File settings = new File(path);
-        String[] files = settings.list();
-        JSONObject result = new JSONObject(true);
-        JSONArray fileArray = new JSONArray(files);
-        result.put("accepted", true);
-        result.put("message", "Success: Fetched all files");
-        result.put("files", fileArray);
+        if( groupName!=null ) {
+            if( DAO.group.has(groupName)) {
+                DAO.group.remove(groupName);
+                result.put("accepted", true);
+		result.put("message","Group deleted successfully");
+            } else {
+                result.put("accepted", false);
+		result.put("message", "Group does not exists");
+            }
+            return new ServiceResponse(result);
+        } else {
+	    result.put("accepted", false);
+	    result.put("message", "Bad call, group name parameter not specified");
+        }
         return new ServiceResponse(result);
     }
 }

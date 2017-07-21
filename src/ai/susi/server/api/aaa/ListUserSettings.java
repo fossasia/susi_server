@@ -40,7 +40,10 @@ public class ListUserSettings extends AbstractAPIHandler implements APIHandler {
     public ServiceResponse serviceImpl(Query query, HttpServletResponse response, Authorization authorization, JsonObjectWithDefault permissions) throws APIException {
         if ( authorization.getIdentity()!=null ) {
             Accounting accouting = DAO.getAccounting(authorization.getIdentity());
-            return new ServiceResponse(accouting.getParent().toJSON());
+            JSONObject result = accouting.getJSON();
+            result.put("accepted", true);
+            result.put("message", "Success: Showing User settings");
+            return new ServiceResponse(result);
         } else {
             throw new APIException(400, "Specified User Setting not found, ensure you are logged in");
         }

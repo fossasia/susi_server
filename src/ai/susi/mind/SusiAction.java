@@ -46,18 +46,33 @@ public class SusiAction {
         websearch,     // do a web search on the client, show like rss rendering
         anchor,        // show/say a link
         map,           // show a map
-        settimer,      // set a timer on the client
-        resettimer,    // un-set a timer on the client
-        recordaudio,   // record audio
-        playaudio,     // play audio (recorded, asset on client or asset from web)
-        recordvideo,   // record a video
-        playvideo,     // play the video (recorded, asset on client or asset from web)
-        takeimage,     // take an image
-        showimage,     // show an image (recorded, asset on client or asset from web)
+        timer_set,     // set a timer on the client
+        timer_reset,   // un-set a timer on the client
+        audio_record,  // record audio
+        audio_play,    // play audio (recorded, asset on client or asset from web)
+        audio_stop,    // stop playing of audio OR recording of audio
+        video_record,  // record a video
+        video_play,    // play the video (recorded, asset on client or asset from web)
+        video_stop,    // stop playing or video OR recording of video
+        image_take,    // take an image
+        image_show,    // show an image (recorded, asset on client or asset from web)
         emotion,       // show an emotion (either change tone of tts or change visible style)
-        button,        // push a button (either on the client device or an IoT appliance connected to the client)
+        button_push,   // push a button (either on the client device or an IoT appliance connected to the client)
         io             // set an IO status on connected IoT device
-        ;}
+        ;
+    
+        public String action() {
+            String name = this.name();
+            int p = name.indexOf('_');
+            return p < 0 ? name : name.substring(0, p);
+        }
+        
+        public String context() {
+            String name = this.name();
+            int p = name.indexOf('_');
+            return p < 0 ? null : name.substring(p + 1);
+        }
+    }
     
     public static enum SelectionType {random, roundrobin;}
     public static enum DialogType {
@@ -87,7 +102,7 @@ public class SusiAction {
      * @param answers
      * @return the action
      */
-    public static JSONObject answerAction(String[] answers) {
+    public static JSONObject answerAction(String... answers) {
         JSONArray phrases = new JSONArray();
         for (String answer: answers) phrases.put(answer.trim());
         JSONObject json = new JSONObject()
@@ -260,9 +275,9 @@ public class SusiAction {
         return this.json.has(attr) ? this.json.getInt(attr) : 0;
     }
 
-    final static Pattern visible_assignment = Pattern.compile("(?:(?:.*)[\\?\\!\\h,\\.;-])+([^\\^]+?)>([_a-zA-Z0-9]+)(?:[\\?\\!\\h,\\.;-](?:.*))?+");
-    final static Pattern blind_assignment = Pattern.compile("(?:.*)\\^(.*?)\\^>([_a-zA-Z0-9]+)(?:[\\?\\!\\h,\\.;-](?:.*))?+");
-    final static Pattern self_referrer = Pattern.compile(".*`([^`]*?)`.*");
+    final static Pattern visible_assignment = Pattern.compile("(?:(?:.*?)[\\?\\!\\h,\\.;-])+([^\\^]+?)>([_a-zA-Z0-9]+)(?:[\\?\\!\\h,\\.;-](?:.*?))?+");
+    final static Pattern blind_assignment = Pattern.compile("(?:.*?)\\^(.*?)\\^>([_a-zA-Z0-9]+)(?:[\\?\\!\\h,\\.;-](?:.*?))?+");
+    final static Pattern self_referrer = Pattern.compile(".*?`([^`]*?)`.*?");
     
     /**
      * Action descriptions are templates for data content. Strings may refer to arguments from

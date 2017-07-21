@@ -64,7 +64,9 @@ public class PasswordRecoveryService extends AbstractAPIHandler implements APIHa
 	@Override
 	public ServiceResponse serviceImpl(Query call, HttpServletResponse response, Authorization rights, final JsonObjectWithDefault permissions)
 			throws APIException {
-		JSONObject result = new JSONObject();
+		JSONObject result = new JSONObject(true);
+		result.put("accepted", false);
+		result.put("message", "Error: Unable to process you request");
 
 		// check if token exists
 
@@ -81,6 +83,7 @@ public class PasswordRecoveryService extends AbstractAPIHandler implements APIHa
 						result.put("message", "Email ID: " + authentication.getIdentity().getName());
 						result.put("regex", passwordPattern);
 						result.put("regexTooltip", passwordPatternTooltip);
+						result.put("accepted", true);
 						return new ServiceResponse(result);
 					}
 					authentication.delete();
@@ -111,6 +114,7 @@ public class PasswordRecoveryService extends AbstractAPIHandler implements APIHa
 		String subject = "Password Recovery";
 		try {
 			EmailHandler.sendEmail(usermail, subject, getVerificationMailContent(token));
+			result.put("accepted", true);
 			result.put("message", "Recovery email sent to your email ID. Please check");
 		} catch (Exception e) {
 			result.put("message", e.getMessage());
@@ -120,8 +124,7 @@ public class PasswordRecoveryService extends AbstractAPIHandler implements APIHa
 
 	private String getVerificationMailContent(String token) {
 
-		String verificationLink = DAO.getConfig("host.url", "http://127.0.0.1:9000")
-				+ "/apps/resetpass/index.html?token=" + token;
+		String verificationLink = "http://accounts.susi.ai/?token=" + token;
 		String result;
 		try {
 			result = IO.readFileCached(Paths.get(DAO.conf_dir + "/templates/reset-mail.txt"));

@@ -60,7 +60,7 @@ public class ListSkillService extends AbstractAPIHandler implements APIHandler {
         File[] filesInFolder = folder.listFiles();
         if (filesInFolder != null) {
             for (final File fileEntry : filesInFolder) {
-                if (!fileEntry.isDirectory()) {
+                if (!fileEntry.isDirectory() && !fileEntry.getName().startsWith(".")) {
                     fileList.add(fileEntry.getName()+"");
                 }
             }

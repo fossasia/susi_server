@@ -52,6 +52,8 @@ public class SusiMind {
     
     private final Map<String, Set<SusiIntent>> intenttrigger; // a map from a keyword to a set of intents
     private final Map<String, Set<String>> skillexamples; // a map from an skill path to one example
+    private final Map<String, Set<String>> skillDescriptions; // a map from skill path to description
+    private final Map<String, Set<String>> skillImage; // a map from skill path to skill image
     private final File[] watchpaths;
     private final File memorypath; // a path where the memory looks for new additions of knowledge with memory files
     private final Map<File, Long> observations; // a mapping of mind memory files to the time when the file was read the last time
@@ -71,7 +73,8 @@ public class SusiMind {
         this.reader = new SusiReader();
         this.memories = new SusiMemory(memorypath, ATTENTION_TIME);
         this.skillexamples = new TreeMap<>();
-
+        this.skillDescriptions = new TreeMap<>();
+        this.skillImage = new TreeMap<>();
         // learn all available intents
         try {observe();} catch (IOException e) {
             e.printStackTrace();
@@ -96,6 +99,13 @@ public class SusiMind {
     
     public Map<String, Set<String>> getSkillExamples() {
         return this.skillexamples;
+    }
+
+    public  Map<String, Set<String>> getSkillDescriptions() {
+        return this.skillDescriptions;
+    }
+    public  Map<String, Set<String>> getSkillImage() {
+        return this.skillImage;
     }
     
     public SusiMind observe() throws IOException {
@@ -186,6 +196,23 @@ public class SusiMind {
                         this.skillexamples.put(intent.getSkill(), examples);
                     }
                     examples.add(intent.getExample());
+                }
+                if (intent.getDescription() !=null) {
+                    Set<String> descriptions = this.skillDescriptions.get(intent.getSkill());
+                    if (descriptions == null) {
+                        descriptions = new LinkedHashSet<>();
+                        this.skillDescriptions.put(intent.getSkill(), descriptions);
+                    }
+                    descriptions.add(intent.getDescription());
+                }
+
+                if (intent.getImage() !=null) {
+                    Set<String> image = this.skillImage.get(intent.getSkill());
+                    if (image == null) {
+                            image = new LinkedHashSet<>();
+                            this.skillImage.put(intent.getSkill(), image);
+                        }
+                    image.add(intent.getImage());
                 }
                 //if (intent.getExample() != null && intent.getExpect() != null) {}
             });
@@ -291,8 +318,10 @@ public class SusiMind {
      * react on a user input: this causes the selection of deduction intents and the evaluation of the process steps
      * in every intent up to the moment where enough intents have been applied as consideration. The reaction may also
      * cause the evaluation of operational steps which may cause learning effects within the SusiMind.
-     * @param query
-     * @param maxcount
+     * @param query the user input
+     * @param maxcount the maximum number of answers (typical is only one)
+     * @param client authentication string of the user
+     * @param observation an initial thought - that is what susi experiences in the context. I.e. location and language of the user
      * @return
      */
     public List<SusiArgument> react(String query, int maxcount, String client, SusiThought observation) {
@@ -311,11 +340,17 @@ public class SusiMind {
         
         // find an answer
         List<SusiArgument> answers = new ArrayList<>();
-        List<SusiIdea> ideas = creativity(query, recall, 100);
-        for (SusiIdea idea: ideas) {
+        List<SusiIdea> ideas = creativity(query, recall, 100); // create a list of ideas which are possible intents
+
+        // test all ideas: the ideas are ranked in such a way that the best one is considered first
+        ideatest: for (SusiIdea idea: ideas) {
+            // compute an argument: because one intent represents a horn clause, the argument is a deduction track, a "proof" of the result.
             SusiArgument argument = idea.getIntent().consideration(query, recall, idea.getToken(), this, client);
-            if (argument != null) answers.add(argument);
-            if (answers.size() >= maxcount) break;
+
+            // arguments may fail; a failed proof is one which does not exist. Therefore an argument may be empty
+            if (argument == null) continue ideatest; // consider only sound arguments
+            answers.add(argument); // a valid idea
+            if (answers.size() >= maxcount) break; // and stop if we are done
         }
         return answers;
     }

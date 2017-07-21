@@ -319,7 +319,7 @@ Have fun! @0rb1t3r
 .. |Twitter Follow| image:: https://img.shields.io/twitter/follow/lklknt.svg?style=social&label=Follow&maxAge=2592000?style=flat-square
    :target: https://twitter.com/lklknt
 .. |Deploy| image:: https://www.herokucdn.com/deploy/button.svg
-   :target: https://heroku.com/deploy
+   :target: https://heroku.com/deploy?template=https://github.com/fossasia/susi_server/tree/development
 .. |Deploy on Scalingo| image:: https://cdn.scalingo.com/deploy/button.svg
    :target: https://my.scalingo.com/deploy?source=https://github.com/fossasia/susi_server
 .. |Deploy to Bluemix| image:: https://bluemix.net/deploy/button.png
