@@ -41,7 +41,13 @@ public class SusiCognition {
 
     JSONObject json;
 
-    public SusiCognition(final SusiMind mind, final String query, int timezoneOffset, double latitude, double longitude, int maxcount, ClientIdentity identity) {
+    public SusiCognition(
+            final SusiMind mind,
+            final String query,
+            int timezoneOffset,
+            double latitude, double longitude,
+            String languageName,
+            int maxcount, ClientIdentity identity) {
         this.json = new JSONObject(true);
         
         // get a response from susis mind
@@ -55,16 +61,20 @@ public class SusiCognition {
             observation.addObservation("latitude", Double.toString(latitude));
             observation.addObservation("longitude", Double.toString(longitude));
         }
+        
+        SusiLanguage language = SusiLanguage.parse(languageName);
+        if (language != SusiLanguage.unknown) observation.addObservation("language", language.name());
+        
         this.json.put("client_id", Base64.getEncoder().encodeToString(UTF8.getBytes(client)));
         long query_date = System.currentTimeMillis();
         this.json.put("query_date", DateParser.utcFormatter.print(query_date));
         
         // compute the mind reaction
-        List<SusiArgument> dispute = mind.react(query, maxcount, client, observation);
+        List<SusiArgument> dispute = mind.react(query, language, maxcount, client, observation);
         long answer_date = System.currentTimeMillis();
         
         // store answer and actions into json
-        this.json.put("answers", new JSONArray(dispute.stream().map(argument -> argument.finding(client, mind)).collect(Collectors.toList())));
+        this.json.put("answers", new JSONArray(dispute.stream().map(argument -> argument.finding(mind, client, language)).collect(Collectors.toList())));
         this.json.put("answer_date", DateParser.utcFormatter.print(answer_date));
         this.json.put("answer_time", answer_date - query_date);
         this.json.put("language", "en");
@@ -76,17 +86,6 @@ public class SusiCognition {
 
     public SusiCognition() {
         
-    }
-    
-    /**
-     * set ISO 639-1 code
-     * @param language
-     * @return
-     */
-    public SusiCognition setLanguage(String language) {
-        if (language.length() > 2) language = language.substring(0, 2);
-        this.json.put("language", language.toLowerCase()); // ISO 639-1 is a lowercase code
-        return this;
     }
     
     public SusiCognition setQuery(final String query) {

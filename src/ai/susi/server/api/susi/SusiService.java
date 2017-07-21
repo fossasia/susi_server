@@ -73,7 +73,7 @@ public class SusiService extends AbstractAPIHandler implements APIHandler {
         int timezoneOffset = post.get("timezoneOffset", 0); // minutes, i.e. -60
         double latitude = post.get("latitude", Double.NaN); // i.e. 8.68 
         double longitude = post.get("longitude", Double.NaN); // i.e. 50.11
-        String language = post.get("language", "en");
+        String language = post.get("language", "en"); // ISO 639-1
         try {
             DAO.susi.observe(); // get a database update
         } catch (IOException e) {
@@ -103,7 +103,7 @@ public class SusiService extends AbstractAPIHandler implements APIHandler {
                 JSONObject rules = SusiSkill.readEzDSkill(new BufferedReader(new InputStreamReader(new ByteArrayInputStream(text.getBytes(StandardCharsets.UTF_8)), StandardCharsets.UTF_8)));
                 dream.learn(rules, new File("file://" + etherpad_dream));
                 // susi is now dreaming.. Try to find an answer out of the dream
-                SusiCognition cognition = new SusiCognition(dream, q, timezoneOffset, latitude, longitude, count, user.getIdentity());
+                SusiCognition cognition = new SusiCognition(dream, q, timezoneOffset, latitude, longitude, language, count, user.getIdentity());
                 if (cognition.getAnswers().size() > 0) {
                     DAO.susi.getMemories().addCognition(user.getIdentity().getClient(), cognition);
                     return new ServiceResponse(cognition.getJSON());
@@ -114,8 +114,7 @@ public class SusiService extends AbstractAPIHandler implements APIHandler {
         }
         
         // answer with built-in intents
-        SusiCognition cognition = new SusiCognition(DAO.susi, q, timezoneOffset, latitude, longitude, count, user.getIdentity());
-        cognition.setLanguage(language);
+        SusiCognition cognition = new SusiCognition(DAO.susi, q, timezoneOffset, latitude, longitude, language, count, user.getIdentity());
         DAO.susi.getMemories().addCognition(user.getIdentity().getClient(), cognition);
         JSONObject json = cognition.getJSON();
         return new ServiceResponse(json);
