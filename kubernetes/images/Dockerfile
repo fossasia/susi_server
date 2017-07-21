@@ -1,0 +1,36 @@
+FROM ubuntu:latest
+MAINTAINER Ansgar Schmidt <ansgar.schmidt@gmx.net>
+ENV DEBIAN_FRONTEND noninteractive
+
+ARG BRANCH
+
+# update
+RUN apt-get update
+RUN apt-get upgrade -y
+
+# add packages
+RUN apt-get install -y git openjdk-8-jdk
+
+# clone the github repo
+RUN git clone https://github.com/chiragw15/susi_server.git
+WORKDIR susi_server
+RUN git submodule update --recursive --remote
+RUN git submodule update --init --recursive
+RUN git checkout $BRANCH
+
+# compile
+RUN ./gradlew build -x test
+
+# Expose the web interface ports
+EXPOSE 80 443
+
+# change config file
+RUN sed -i.bak 's/^\(port.http=\).*/\180/'                conf/config.properties
+RUN sed -i.bak 's/^\(port.https=\).*/\1443/'              conf/config.properties
+RUN sed -i.bak 's/^\(upgradeInterval=\).*/\186400000000/' conf/config.properties
+
+# hack until susi support no-daemon
+RUN echo "while true; do sleep 10;done" >> bin/start.sh
+
+# start susi
+CMD ["bin/start.sh", "-Idn"]

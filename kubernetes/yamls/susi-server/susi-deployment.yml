@@ -1,0 +1,31 @@
+#
+# Deployment of the SUSI Server
+#
+kind: Deployment
+apiVersion: apps/v1beta1
+metadata:
+  name: susi-server
+  namespace: default
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: susi-server
+    spec:
+      volumes:
+      - name: data-store
+        emptyDir: {}
+      containers:
+      - image: chiragw15/susi_server:latest
+        name: susi-server
+        livenessProbe:
+          httpGet:
+            path: /health-check/
+            port: 8080
+          initialDelaySeconds: 30
+          timeoutSeconds: 3
+        ports:
+        - containerPort: 80
+          protocol: TCP
+      restartPolicy: Always
