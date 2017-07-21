@@ -234,7 +234,7 @@ public class SusiMind {
      * @param maxcount the maximum number of ideas to return
      * @return an ordered list of ideas, first idea should be considered first.
      */
-    public List<SusiIdea> creativity(String query, SusiThought latest_thought, int maxcount) {
+    public List<SusiIdea> creativity(String query, SusiLanguage userLanguage, SusiThought latest_thought, int maxcount) {
         // tokenize query to have hint for idea collection
         final List<SusiIdea> ideas = new ArrayList<>();
         this.reader.tokenizeSentence(query).forEach(token -> {
@@ -246,7 +246,7 @@ public class SusiMind {
             r.forEach(intent -> ideas.add(new SusiIdea(intent).setToken(token)));
         });
         
-        for (SusiIdea idea: ideas) DAO.log("idea.phrase-1: score=" + idea.getIntent().getScore().score + " : " + idea.getIntent().getPhrases().toString() + " " + idea.getIntent().getActionsClone());
+        for (SusiIdea idea: ideas) DAO.log("idea.phrase-1: score=" + idea.getIntent().getScore(userLanguage).score + " : " + idea.getIntent().getPhrases().toString() + " " + idea.getIntent().getActionsClone());
         
         // add catchall intents always (those are the 'bad ideas')
         Collection<SusiIntent> ca = this.intenttrigger.get(SusiIntent.CATCHALL_KEY);
@@ -256,7 +256,7 @@ public class SusiMind {
         TreeMap<Long, List<SusiIdea>> scored = new TreeMap<>();
         AtomicLong count = new AtomicLong(0);
         ideas.forEach(idea -> {
-            int score = idea.getIntent().getScore().score;
+            int score = idea.getIntent().getScore(userLanguage).score;
             long orderkey = Long.MAX_VALUE - ((long) score) * 1000L + count.incrementAndGet();
             List<SusiIdea> r = scored.get(orderkey);
             if (r == null) {r = new ArrayList<>(); scored.put(orderkey, r);}
@@ -266,7 +266,7 @@ public class SusiMind {
         // make a sorted list of all ideas
         ideas.clear(); scored.values().forEach(r -> ideas.addAll(r));
         
-        for (SusiIdea idea: ideas) DAO.log("idea.phrase-2: score=" + idea.getIntent().getScore().score + " : " + idea.getIntent().getPhrases().toString() + " " + idea.getIntent().getActionsClone());
+        for (SusiIdea idea: ideas) DAO.log("idea.phrase-2: score=" + idea.getIntent().getScore(userLanguage).score + " : " + idea.getIntent().getPhrases().toString() + " " + idea.getIntent().getActionsClone());
         
         // test ideas and collect those which match up to maxcount
         List<SusiIdea> plausibleIdeas = new ArrayList<>(Math.min(10, maxcount));
@@ -280,8 +280,8 @@ public class SusiMind {
         }
 
         for (SusiIdea idea: plausibleIdeas) {
-            DAO.log("idea.phrase-3: score=" + idea.getIntent().getScore().score + " : " + idea.getIntent().getPhrases().toString() + " " + idea.getIntent().getActionsClone());
-            DAO.log("idea.phrase-3:   log=" + idea.getIntent().getScore().log );
+            DAO.log("idea.phrase-3: score=" + idea.getIntent().getScore(userLanguage).score + " : " + idea.getIntent().getPhrases().toString() + " " + idea.getIntent().getActionsClone());
+            DAO.log("idea.phrase-3:   log=" + idea.getIntent().getScore(userLanguage).log );
         }
 
         return plausibleIdeas;
@@ -297,7 +297,7 @@ public class SusiMind {
      * @param observation an initial thought - that is what susi experiences in the context. I.e. location and language of the user
      * @return
      */
-    public List<SusiArgument> react(String query, int maxcount, String client, SusiThought observation) {
+    public List<SusiArgument> react(String query, SusiLanguage userLanguage, int maxcount, String client, SusiThought observation) {
         // get the history a list of thoughts
         SusiArgument observation_argument = new SusiArgument();
         if (observation != null && observation.length() > 0) observation_argument.think(observation);
@@ -313,7 +313,7 @@ public class SusiMind {
         
         // find an answer
         List<SusiArgument> answers = new ArrayList<>();
-        List<SusiIdea> ideas = creativity(query, recall, 100); // create a list of ideas which are possible intents
+        List<SusiIdea> ideas = creativity(query, userLanguage, recall, 100); // create a list of ideas which are possible intents
 
         // test all ideas: the ideas are ranked in such a way that the best one is considered first
         ideatest: for (SusiIdea idea: ideas) {
@@ -332,13 +332,13 @@ public class SusiMind {
         private String expression;
         private SusiThought mindstate;
         
-        public Reaction(String query, String client, SusiThought observation) throws RuntimeException {
-            List<SusiArgument> datalist = react(query, 1, client, observation);
+        public Reaction(String query, SusiLanguage userLanguage, String client, SusiThought observation) throws RuntimeException {
+            List<SusiArgument> datalist = react(query, userLanguage, 1, client, observation);
             if (datalist.size() == 0) throw new RuntimeException("datalist is empty");
             SusiArgument bestargument = datalist.get(0);
             if (bestargument.getActions().isEmpty()) throw new RuntimeException("action list is empty");
             SusiAction action = bestargument.getActions().get(0);
-            this.expression = action.execution(bestargument, SusiMind.this, client).getStringAttr("expression");
+            this.expression = action.execution(bestargument, SusiMind.this, client, userLanguage).getStringAttr("expression");
             this.mindstate = bestargument.mindstate();
             //SusiThought mindmeld = bestargument.mindmeld(true);
         }
@@ -372,8 +372,8 @@ public class SusiMind {
             File file = new File("conf/susi/susi_cognition_000.json");
             JSONObject lesson = SusiSkill.readJsonSkill(file);
             mem.learn(lesson, file);
-            System.out.println(mem.new Reaction("I feel funny", "localhost", new SusiThought()).getExpression());
-            System.out.println(mem.new Reaction("Help me!", "localhost", new SusiThought()).getExpression());
+            System.out.println(mem.new Reaction("I feel funny", SusiLanguage.unknown, "localhost", new SusiThought()).getExpression());
+            System.out.println(mem.new Reaction("Help me!", SusiLanguage.unknown, "localhost", new SusiThought()).getExpression());
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }

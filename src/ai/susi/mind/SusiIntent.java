@@ -148,16 +148,12 @@ public class SusiIntent {
     	
     	// compute the language from the origin
     	this.language = SusiLanguage.unknown;
-    	try {
-    	    if (this.skill.startsWith("/susi_server/conf/susi/")) {
-    	        this.language = SusiLanguage.valueOf(this.skill.substring(23, 25));
-    	    } else if (this.skill.startsWith("/susi_skill_data")) {
-    	        String[] paths = this.skill.split("/");
-                if (paths.length > 5) this.language = SusiLanguage.valueOf(paths[5]);
-    	    }
-    	} catch (IllegalArgumentException e) {
-            this.language = SusiLanguage.unknown;
-    	}
+	    if (this.skill.startsWith("/susi_server/conf/susi/")) {
+	        this.language = SusiLanguage.parse(this.skill.substring(23, 25));
+	    } else if (this.skill.startsWith("/susi_skill_data")) {
+	        String[] paths = this.skill.split("/");
+            if (paths.length > 5) this.language = SusiLanguage.parse(paths[5]);
+	    }
         
     	// quality control
         this.example = json.has("example") ? json.getString("example") : "";
@@ -317,9 +313,14 @@ public class SusiIntent {
         return this.comment;
     }
 
-    public Score getScore() {
+    /**
+     * get the intent score
+     * @param language this is the language the user is speaking
+     * @return an intent score: the higher, the better
+     */
+    public Score getScore(SusiLanguage language) {
         if (this.score != null) return score;
-        this.score = new Score();
+        this.score = new Score(language);
         return this.score;
     }
     
@@ -340,7 +341,7 @@ public class SusiIntent {
         public int score;
         public String log;
         
-        public Score() {
+        public Score(SusiLanguage userLanguage) {
         if (SusiIntent.this.score != null) return;
         
         /*
@@ -375,9 +376,12 @@ public class SusiIntent {
          * subscore a score in a small range which can be used to distinguish intents within the same categories
          */
         
-        // extract the score
-        this.score = 0;
+        // compute the score
 
+        // (0) language
+        final int language_subscore = (int) (100 * SusiIntent.this.language.likelihoodCanSpeak(userLanguage));
+        this.score = language_subscore;
+         
         // (1) conversation plan from the answer purpose
         final AtomicInteger dialogType_subscore = new AtomicInteger(0);
         SusiIntent.this.actions.forEach(action -> dialogType_subscore.set(Math.max(dialogType_subscore.get(), action.getDialogType().getSubscore())));
