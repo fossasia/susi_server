@@ -160,8 +160,14 @@ public class SusiCognition {
                 // the skill, can be used to analyze the latest answer
                 List<String> skills = clonedThought.getSkills();
                 if (skills.size() > 0) {
-                    dispute.addObservation("skill", skills.get(0));
-                    dispute.addObservation("skill_link", getSkillLink(skills.get(0)));
+                    if(skills.get(0).startsWith("/susi_server/file:")) {
+                        dispute.addObservation("skill", "Etherpad Dream: " +skills.get(0).substring("/susi_server/file:/".length()));
+                        dispute.addObservation("skill_link", getSkillLink(skills.get(0)));
+                    } else {
+                        dispute.addObservation("skill", skills.get(0));
+                        dispute.addObservation("skill_link", getSkillLink(skills.get(0)));
+                    }
+
                 }
                 
                 // add all data from the old dispute
