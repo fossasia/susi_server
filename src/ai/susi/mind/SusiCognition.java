@@ -160,8 +160,14 @@ public class SusiCognition {
                 // the skill, can be used to analyze the latest answer
                 List<String> skills = clonedThought.getSkills();
                 if (skills.size() > 0) {
-                    dispute.addObservation("skill", skills.get(0));
+                    if(skills.get(0).startsWith("/susi_server/file:")) {
+                        dispute.addObservation("skill", "Etherpad Dream: " +skills.get(0).substring("/susi_server/file:/".length()));
+                    } else {
+                        dispute.addObservation("skill", skills.get(0));
+                    }
                     dispute.addObservation("skill_link", getSkillLink(skills.get(0)));
+
+
                 }
                 
                 // add all data from the old dispute
@@ -197,7 +203,11 @@ public class SusiCognition {
     public String getSkillLink(String skillPath) {
         String link=skillPath;
         if(skillPath.startsWith("/susi_server")) {
-            link ="https://github.com/fossasia/susi_server/blob/development" + skillPath.substring("/susi_server".length());
+            if(skillPath.startsWith("/susi_server/file:")) {
+                link = "http://dream.susi.ai/p/" + skillPath.substring("/susi_server/file:/".length());
+            } else {
+                link ="https://github.com/fossasia/susi_server/blob/development" + skillPath.substring("/susi_server".length());
+            }
         } else if (skillPath.startsWith("/susi_skill_data")) {
             link = "https://github.com/fossasia/susi_skill_data/blob/master" + skillPath.substring("/susi_skill_data".length());
         }
