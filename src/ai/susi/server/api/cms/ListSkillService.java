@@ -51,6 +51,8 @@ public class ListSkillService extends AbstractAPIHandler implements APIHandler {
                 .put("group", group_name)
                 .put("language", language_name)
                 .put("skills", jsArray);
+        json.put("accepted", true);
+        json.put("message","Success: Fetched skill list");
         return new ServiceResponse(json);
 
     }
@@ -60,7 +62,7 @@ public class ListSkillService extends AbstractAPIHandler implements APIHandler {
         File[] filesInFolder = folder.listFiles();
         if (filesInFolder != null) {
             for (final File fileEntry : filesInFolder) {
-                if (!fileEntry.isDirectory()) {
+                if (!fileEntry.isDirectory() && !fileEntry.getName().startsWith(".")) {
                     fileList.add(fileEntry.getName()+"");
                 }
             }

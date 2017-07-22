@@ -47,6 +47,7 @@ public class GetGroupDetails extends AbstractAPIHandler implements APIHandler {
         String model_name = call.get("group", null);
         foundUser = false;
         if (model_name == null) {
+            success.put("message", "Error: Bad call group parameter not specified");
             return new ServiceResponse(success);
         } else {
             //Searching for keys in groups.json
@@ -68,7 +69,7 @@ public class GetGroupDetails extends AbstractAPIHandler implements APIHandler {
                 JSONObject details = new JSONObject();
                 details = allUsers.getJSONObject(model_name);
                 details.put("accepted", true);
-                details.put("message", "Success: Fetched group details");
+                details.put("message", "Success: Request processed");
                 return new ServiceResponse(details);
 
             } else
