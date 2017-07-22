@@ -67,7 +67,7 @@ public class GetSkillJsonService extends AbstractAPIHandler implements APIHandle
 
         // modify caching
         json.put("$EXPIRES", 0);
-
+        json.put("accepted", false);
         String model_name = call.get("model", "general");
         File model = new File(DAO.model_watch_dir, model_name);
         String group_name = call.get("group", "knowledge");
@@ -81,10 +81,9 @@ public class GetSkillJsonService extends AbstractAPIHandler implements APIHandle
             String content = new String(Files.readAllBytes(skill.toPath()));
             json.put("text",content);
             json.put("accepted",true);
-            return new ServiceResponse(json);
         } catch (IOException e) {
             e.printStackTrace();
         }
-        return null;
+        return new ServiceResponse(json);
     }
 }
