@@ -35,6 +35,8 @@ public class GroupListService extends AbstractAPIHandler implements APIHandler {
     @Override
     public ServiceResponse serviceImpl(Query call, HttpServletResponse response, Authorization rights, JsonObjectWithDefault permissions) throws APIException {
 
+        JSONObject json = new JSONObject(true);
+        json.put("accepted", false);
         String model_name = call.get("model", "general");
         File model = new File(DAO.model_watch_dir, model_name);
 
