@@ -40,12 +40,13 @@ public class GetGroupDetails extends AbstractAPIHandler implements APIHandler {
     public ServiceResponse serviceImpl(Query call, HttpServletResponse response, Authorization rights, final JsonObjectWithDefault permissions) {
         Boolean foundUser;
         JSONObject success = new JSONObject();
-        success.put("success", false);
+        success.put("accepted", false);
         JSONObject allUsers;
         allUsers = DAO.group.toJSON();
         String model_name = call.get("group", null);
         foundUser = false;
         if (model_name == null) {
+            success.put("message", "Error: Bad call group parameter not specified");
             return new ServiceResponse(success);
         } else {
             //Searching for keys in groups.json
@@ -66,7 +67,8 @@ public class GetGroupDetails extends AbstractAPIHandler implements APIHandler {
             if (foundUser) {
                 JSONObject details = new JSONObject();
                 details = allUsers.getJSONObject(model_name);
-                details.put("success", true);
+                details.put("accepted", true);
+                details.put("message", "Success: Request processed");
                 return new ServiceResponse(details);
 
             } else
