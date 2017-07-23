@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 export DEPLOY_BRANCH=${DEPLOY_BRANCH:-development}
 
-if [ "$TRAVIS_REPO_SLUG" != "chiragw15/susi_server" -o  "$TRAVIS_BRANCH" != "$DEPLOY_BRANCH" ]; then
+if [ "$TRAVIS_REPO_SLUG" != "fossasia/susi_server" -o  "$TRAVIS_BRANCH" != "$DEPLOY_BRANCH" ]; then
     echo "Skip production deployment for a very good reason."
     exit 0
 fi
@@ -31,11 +31,11 @@ gcloud container clusters get-credentials susic
 echo ">>> Building Docker image"
 cd kubernetes/images
 
-docker build --build-arg BRANCH=$DEPLOY_BRANCH --no-cache -t chiragw15/susi_server2:$TRAVIS_COMMIT .
+docker build --build-arg BRANCH=$DEPLOY_BRANCH --no-cache -t susiaiadmin/susi_server-dev:$TRAVIS_COMMIT .
 docker login -u="$DOCKER_USERNAME" -p="$DOCKER_PASSWORD"
-docker tag chiragw15/susi_server2:$TRAVIS_COMMIT chiragw15/susi_server2:latest
+docker tag susiaiadmin/susi_server-dev:$TRAVIS_COMMIT susiaiadmin/susi_server-dev:latest
 echo ">>> Pushing docker image"
-docker push chiragw15/susi_server2
+docker push susiaiadmin/susi_server-dev
 
 echo ">>> Updating deployment"
-kubectl set image deployment/susi-server --namespace=web susi-server=chiragw15/susi_server2:$TRAVIS_COMMIT
+kubectl set image deployment/susi-server --namespace=web susi-server=susiaiadmin/susi_server-dev:$TRAVIS_COMMIT
