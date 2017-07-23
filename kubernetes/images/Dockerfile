@@ -17,12 +17,10 @@ WORKDIR /susi_server
 RUN git submodule update --recursive --remote
 RUN git submodule update --init --recursive
 RUN git checkout $BRANCH
+RUN rm -rf .git
 
 # compile
 RUN ./gradlew build -x test
-
-# Expose the web interface ports
-EXPOSE 80 443
 
 # change config file
 RUN sed -i.bak 's/^\(port.http=\).*/\180/'                conf/config.properties

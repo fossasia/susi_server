@@ -17,7 +17,7 @@ spec:
         server: primary
       containers:
       - name: susi-server
-        image: susiaiadmin/susi_server-dev:latest
+        image: fossasia/susi_server:latest-dev
         volumeMounts:
           - mountPath: /susi_server/data
             name: server-data

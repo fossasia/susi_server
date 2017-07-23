@@ -31,11 +31,11 @@ gcloud container clusters get-credentials susic
 echo ">>> Building Docker image"
 cd kubernetes/images
 
-docker build --build-arg BRANCH=$DEPLOY_BRANCH --no-cache -t susiaiadmin/susi_server-dev:$TRAVIS_COMMIT .
+docker build --build-arg BRANCH=$DEPLOY_BRANCH --no-cache -t fossasia/susi_server:$TRAVIS_COMMIT .
 docker login -u="$DOCKER_USERNAME" -p="$DOCKER_PASSWORD"
-docker tag susiaiadmin/susi_server-dev:$TRAVIS_COMMIT susiaiadmin/susi_server-dev:latest
+docker tag fossasia/susi_server:$TRAVIS_COMMIT fossasia/susi_server:latest-dev
 echo ">>> Pushing docker image"
-docker push susiaiadmin/susi_server-dev
+docker push fossasia/susi_server
 
 echo ">>> Updating deployment"
-kubectl set image deployment/susi-server --namespace=web susi-server=susiaiadmin/susi_server-dev:$TRAVIS_COMMIT
+kubectl set image deployment/susi-server --namespace=web susi-server=fossasia/susi_server:$TRAVIS_COMMIT
