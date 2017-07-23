@@ -3,6 +3,10 @@ MAINTAINER Ansgar Schmidt <ansgar.schmidt@gmx.net>
 ENV DEBIAN_FRONTEND noninteractive
 
 ARG BRANCH
+ARG COMMIT_HASH
+
+ENV COMMIT_HASH ${COMMIT_HASH:-null}
+ENV BRANCH ${BRANCH:-development}
 
 # update
 RUN apt-get update
@@ -11,13 +15,9 @@ RUN apt-get upgrade -y
 # add packages
 RUN apt-get install -y git openjdk-8-jdk
 
-# clone the github repo
-RUN git clone https://github.com/fossasia/susi_server.git /susi_server
+RUN bash setup.sh
+
 WORKDIR /susi_server
-RUN git submodule update --recursive --remote
-RUN git submodule update --init --recursive
-RUN git checkout $BRANCH
-RUN rm -rf .git
 
 # compile
 RUN ./gradlew build -x test
