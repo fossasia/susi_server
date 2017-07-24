@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 export DEPLOY_BRANCH=${DEPLOY_BRANCH:-development}
 
-if [ "$TRAVIS_REPO_SLUG" != "fossasia/susi_server" -o  "$TRAVIS_BRANCH" != "$DEPLOY_BRANCH" ]; then
+if [ "$TRAVIS_PULL_REQUEST" != "false" -o "$TRAVIS_REPO_SLUG" != "fossasia/susi_server" -o  "$TRAVIS_BRANCH" != "$DEPLOY_BRANCH" ]; then
     echo "Skip production deployment for a very good reason."
     exit 0
 fi
@@ -33,7 +33,7 @@ cd kubernetes/images
 
 docker build --build-arg BRANCH=$DEPLOY_BRANCH --build-arg COMMIT_HASH=$TRAVIS_COMMIT --no-cache -t fossasia/susi_server:$TRAVIS_COMMIT .
 docker login -u="$DOCKER_USERNAME" -p="$DOCKER_PASSWORD"
-docker tag fossasia/susi_server:$TRAVIS_COMMIT fossasia/susi_server:latest-dev
+docker tag fossasia/susi_server:$TRAVIS_COMMIT fossasia/susi_server:latest-$DEPLOY_BRANCH
 echo ">>> Pushing docker image"
 docker push fossasia/susi_server
 
