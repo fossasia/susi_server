@@ -15,9 +15,19 @@ RUN apt-get upgrade -y
 # add packages
 RUN apt-get install -y git openjdk-8-jdk
 
-RUN bash setup.sh
-
+# clone the github repo
+RUN git clone https://github.com/fossasia/susi_server.git /susi_server
 WORKDIR /susi_server
+
+RUN git checkout ${BRANCH}
+RUN if [ -v COMMIT_HASH ] ; then git reset --hard ${COMMIT_HASH} ; fi
+
+RUN git submodule update --recursive --remote
+RUN git submodule update --init --recursive
+
+# remove git history to reduce size of image
+RUN rm -rf dependencies/public-transport-enabler/.git
+RUN rm -rf .git
 
 # compile
 RUN ./gradlew build -x test
