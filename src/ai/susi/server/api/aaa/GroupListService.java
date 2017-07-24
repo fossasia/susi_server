@@ -1,4 +1,4 @@
-package ai.susi.server.api.cms;
+package ai.susi.server.api.aaa;
 
 import ai.susi.DAO;
 import ai.susi.json.JsonObjectWithDefault;
@@ -13,13 +13,13 @@ import java.io.FilenameFilter;
 /**
  * Created by dravit on 10/6/17.
  * API to get list of groups for a given model.
- * test locally at http://127.0.0.1:4000/cms/getgroups.json
+ * test locally at http://127.0.0.1:4000/aaa/getgroups.json
  */
 
 public class GroupListService extends AbstractAPIHandler implements APIHandler {
     @Override
     public String getAPIPath() {
-        return "/cms/getGroups.json";
+        return "/aaa/getGroups.json";
     }
 
     @Override
@@ -44,7 +44,11 @@ public class GroupListService extends AbstractAPIHandler implements APIHandler {
                 return new File(file, s).isDirectory();
             }
         });
+        JSONObject result = new JSONObject();
+        result.put("accepted", true);
         JSONArray groupsArray = new JSONArray(groups);
-        return new ServiceResponse(groupsArray);
+        result.put("groups",groupsArray);
+        result.put("message", "Success: Fetched group list");
+        return new ServiceResponse(result);
     }
 }
