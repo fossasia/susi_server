@@ -1,17 +1,17 @@
 /**
- *  ExampleSkillService
- *  Copyright 18.06.2016 by Michael Peter Christen, @0rb1t3r
+ *  DescriptionSkillService
+ *  Copyright 18.06.2016 by Saurabh Jain , @saurabhjn76
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
  *  License as published by the Free Software Foundation; either
  *  version 2.1 of the License, or (at your option) any later version.
- *  
+ *
  *  This library is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  *  Lesser General Public License for more details.
- *  
+ *
  *  You should have received a copy of the GNU Lesser General Public License
  *  along with this program in the file lgpl21.txt
  *  If not, see <http://www.gnu.org/licenses/>.
@@ -37,12 +37,13 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- This Servlet gives a API Endpoint to list examples for all the Skills given its model, group and language.
- Can be tested on 127.0.0.1:4000/cms/getExampleSkill.json
+ This Servlet gives a API Endpoint to list descriptions for all the Skills given its model, group and language.
+ Can be tested on 127.0.0.1:4000/cms/getDescriptionSkill.json
  */
-public class ExampleSkillService extends AbstractAPIHandler implements APIHandler {
+public class DescriptionSkillService extends AbstractAPIHandler implements APIHandler {
 
-    private static final long serialVersionUID = -8691223678852307876L;
+
+    private static final long serialVersionUID = 4175356383695207511L;
 
     @Override
     public BaseUserRole getMinimalBaseUserRole() { return BaseUserRole.ANONYMOUS; }
@@ -54,7 +55,7 @@ public class ExampleSkillService extends AbstractAPIHandler implements APIHandle
 
     @Override
     public String getAPIPath() {
-        return "/cms/getExampleSkill.json";
+        return "/cms/getDescriptionSkill.json";
     }
 
     @Override
@@ -65,28 +66,28 @@ public class ExampleSkillService extends AbstractAPIHandler implements APIHandle
         } catch (IOException e) {
             DAO.log(e.getMessage());
         }
-        
+
         String model = call.get("model", "");
         String group = call.get("group", "");
         String language = call.get("language", "");
 
-        JSONObject examples = new JSONObject(true);
-        for (Map.Entry<String, Set<String>> entry: DAO.susi.getSkillExamples().entrySet()) {
+        JSONObject descriptions = new JSONObject(true);
+        for (Map.Entry<String, Set<String>> entry: DAO.susi.getSkillDescriptions().entrySet()) {
             String path = entry.getKey();
             if ((model.length() == 0 || path.indexOf("/" + model + "/") > 0) &&
-                (group.length() == 0 || path.indexOf("/" + group + "/") > 0) &&
-                (language.length() == 0 || path.indexOf("/" + language + "/") > 0)) {
-                examples.put(path, entry.getValue());
+                    (group.length() == 0 || path.indexOf("/" + group + "/") > 0) &&
+                    (language.length() == 0 || path.indexOf("/" + language + "/") > 0)) {
+               descriptions.put(path, entry.getValue());
             }
         }
-        
+
         JSONObject json = new JSONObject(true)
                 .put("model", model)
                 .put("group", group)
                 .put("language", language)
-                .put("examples", examples);
+                .put("descriptions",descriptions);
         json.put("accepted", true);
-        json.put("message", "Success: Examples fetched");
+        json.put("message", "Sucess: Fetched descriptions");
         return new ServiceResponse(json);
     }
 

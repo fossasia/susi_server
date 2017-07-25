@@ -59,6 +59,8 @@ public class TopMenuService extends AbstractAPIHandler implements APIHandler {
             .put(new JSONObject().put("API", "api.html"))
             .put(new JSONObject().put("Account", "apps/applist/index.html"));
         json.put("items", topmenu);
+        json.put("accepted", true);
+        json.put("message", "Request processed successfully");
         
         // modify caching
         json.put("$EXPIRES", 600);

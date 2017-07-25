@@ -224,4 +224,29 @@ public enum SusiLanguage {
     public String getNativeName() {
         return nativeName;
     }
+    
+    /**
+     * Parse a string containing a language name.
+     * This is convenience method which returns SusiLanguage.unknown in case that
+     * the parsing fails.
+     * @param language the string representatio of a ISO-639-1 language name
+     * @return the language object or SusiLanguage.unknown if the language cannot be parsed
+     */
+    public static SusiLanguage parse(String language) {
+        try {
+            if (language.length() > 2) language = language.substring(0, 2);
+            return SusiLanguage.valueOf(language.toLowerCase());
+        } catch (IllegalArgumentException e) {
+            return SusiLanguage.unknown;
+        }
+    }
+    
+    public float likelihoodCanSpeak(SusiLanguage other) {
+        if (this == unknown) return 1.0f;
+        if (this == other) return 1.0f;
+        if ((this == de || this == fi || this == sv) && other == en) return 0.9f;
+        if ((this == fi || this == sv) && (other == fi || other == sv)) return 0.9f;
+        if (other == en) return 0.5f;
+        return 0.0f;
+    }
 }

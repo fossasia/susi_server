@@ -46,7 +46,7 @@ public class SusiCognition {
             final String query,
             int timezoneOffset,
             double latitude, double longitude,
-            String language,
+            String languageName,
             int maxcount, ClientIdentity identity) {
         this.json = new JSONObject(true);
         
@@ -62,19 +62,19 @@ public class SusiCognition {
             observation.addObservation("longitude", Double.toString(longitude));
         }
         
-        if (language.length() > 2) language = language.substring(0, 2);
-        observation.addObservation("language", language.toLowerCase());
+        SusiLanguage language = SusiLanguage.parse(languageName);
+        if (language != SusiLanguage.unknown) observation.addObservation("language", language.name());
         
         this.json.put("client_id", Base64.getEncoder().encodeToString(UTF8.getBytes(client)));
         long query_date = System.currentTimeMillis();
         this.json.put("query_date", DateParser.utcFormatter.print(query_date));
         
         // compute the mind reaction
-        List<SusiArgument> dispute = mind.react(query, maxcount, client, observation);
+        List<SusiArgument> dispute = mind.react(query, language, maxcount, client, observation);
         long answer_date = System.currentTimeMillis();
         
         // store answer and actions into json
-        this.json.put("answers", new JSONArray(dispute.stream().map(argument -> argument.finding(client, mind)).collect(Collectors.toList())));
+        this.json.put("answers", new JSONArray(dispute.stream().map(argument -> argument.finding(mind, client, language)).collect(Collectors.toList())));
         this.json.put("answer_date", DateParser.utcFormatter.print(answer_date));
         this.json.put("answer_time", answer_date - query_date);
         this.json.put("language", "en");
@@ -160,8 +160,14 @@ public class SusiCognition {
                 // the skill, can be used to analyze the latest answer
                 List<String> skills = clonedThought.getSkills();
                 if (skills.size() > 0) {
-                    dispute.addObservation("skill", skills.get(0));
+                    if(skills.get(0).startsWith("/susi_server/file:")) {
+                        dispute.addObservation("skill", "Etherpad Dream: " +skills.get(0).substring("/susi_server/file:/".length()));
+                    } else {
+                        dispute.addObservation("skill", skills.get(0));
+                    }
                     dispute.addObservation("skill_link", getSkillLink(skills.get(0)));
+
+
                 }
                 
                 // add all data from the old dispute
@@ -197,7 +203,11 @@ public class SusiCognition {
     public String getSkillLink(String skillPath) {
         String link=skillPath;
         if(skillPath.startsWith("/susi_server")) {
-            link ="https://github.com/fossasia/susi_server/blob/development" + skillPath.substring("/susi_server".length());
+            if(skillPath.startsWith("/susi_server/file:")) {
+                link = "http://dream.susi.ai/p/" + skillPath.substring("/susi_server/file:/".length());
+            } else {
+                link ="https://github.com/fossasia/susi_server/blob/development" + skillPath.substring("/susi_server".length());
+            }
         } else if (skillPath.startsWith("/susi_skill_data")) {
             link = "https://github.com/fossasia/susi_skill_data/blob/master" + skillPath.substring("/susi_skill_data".length());
         }
