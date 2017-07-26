@@ -123,20 +123,6 @@ How do I run Susi AI?
 -  open ``http://localhost:4000`` in your browser
 -  to shut down Susi, run ``bin/stop.sh``
 
-How do I analyze data acquired by Susi AI
---------------------------------------
-
-Susi stores data into an elasticsearch index. There is a front-end for the index available in elasticsearch-head. To install this, do:
-
--  ``sudo npm install -g grunt-cli``
--  ``cd`` into the parent directly of Susi\_server
--  ``git clone git://github.com/mobz/elasticsearch-head.git``
--  ``cd elasticsearch-head``
--  ``npm install``
-
-Run elasticsearch-head with: - ``grunt server`` ..which opens the
-administration page at ``http://localhost:9100``
-
 How do I configure Susi AI?
 ------------------------
 
