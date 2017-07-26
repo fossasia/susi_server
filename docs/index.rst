@@ -34,3 +34,10 @@
 
    Parsers <parsers>
    Submitting skills to Git <skills/submitting_skills_to_git>
+
+.. toctree::
+   :caption: API Docs
+   :maxdepth: 1
+
+   Swagger <apidocs>
+   Java Docs <javadoc>
