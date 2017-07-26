@@ -18,6 +18,7 @@
  */
 package ai.susi.server.api.aaa;
 
+import ai.susi.DAO;
 import ai.susi.json.JsonObjectWithDefault;
 import ai.susi.server.*;
 import org.json.JSONObject;
@@ -47,6 +48,17 @@ public class ResendVerificationLinkService extends AbstractAPIHandler implements
     public ServiceResponse serviceImpl(Query post, HttpServletResponse response, Authorization rights, JsonObjectWithDefault permissions) throws APIException {
 
         JSONObject json = new JSONObject(true);
+        json.put("accepted", false);
+        String emailId = post.get("emailid", null);
+        if(emailId.trim().length() == 0)
+            throw new APIException(422, "No email id provided!");
+        ClientCredential pwcredential = new ClientCredential(ClientCredential.Type.passwd_login, emailId);
+        Authentication authentication = DAO.getAuthentication(pwcredential);
+        if(!authentication.getBoolean("accepted", false)){
+
+        } else {
+            throw new APIException(422, "User already verified");
+        }
         return null;
     }
 }
