@@ -39,5 +39,5 @@
    :caption: API Docs
    :maxdepth: 1
 
-   Swagger <apidocs>
-   Java Docs <javadoc>
+   Swagger <./apidocs>
+   Java Docs <./javadoc>
