@@ -21,7 +21,7 @@ gcloud config set compute/zone us-central1-c
 
 echo ">>> Decrypting credentials and authenticating gcloud account"
 # Decrypt the credentials we added to the repo using the key we added with the Travis command line tool
-openssl aes-256-cbc -K $encrypted_f47ba411af0b_key -iv $encrypted_f47ba411af0b_iv -in ./kubernetes/travis/Saga-874fa83917a8.json.enc -out Saga-874fa83917a8.json -d
+openssl aes-256-cbc -K $encrypted_65ab87a3552d_key -iv $encrypted_65ab87a3552d_iv -in ./kubernetes/travis/Saga-874fa83917a8.json.enc -out Saga-874fa83917a8.json -d
 gcloud auth activate-service-account --key-file Saga-874fa83917a8.json
 export GOOGLE_APPLICATION_CREDENTIALS=$(pwd)/Saga-874fa83917a8.json
 #saga-39285 is gcloud project id
