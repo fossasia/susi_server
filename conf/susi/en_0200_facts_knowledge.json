@@ -25,7 +25,7 @@
     ],
     "actions":[
       {"type":"answer", "select":"random",
-       "phrases":["You are here: https://www.openstreetmap.org/#map=13/$latitude$/$longitude$"]
+       "phrases":["You are here"]
       },
       {"type":"anchor", "link":"https://www.openstreetmap.org/#map=13/$latitude$/$longitude$", "text":"Link to an Openstreetmap for your location"},
       {"type":"map", "latitude":"$latitude$", "longitude":"$longitude$", "zoom":"13"}
