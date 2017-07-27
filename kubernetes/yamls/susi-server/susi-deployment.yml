@@ -1,0 +1,36 @@
+#
+# Deployment of the SUSI Server
+#
+apiVersion: apps/v1beta1
+kind: Deployment
+metadata:
+  name: susi-server
+  namespace: web
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: susi-server
+    spec:
+      nodeSelector:
+        server: primary
+      containers:
+      - name: susi-server
+        image: fossasia/susi_server:latest-development
+        volumeMounts:
+          - mountPath: /susi_server/data
+            name: server-data
+        livenessProbe:
+          httpGet:
+            path: /susi/status.json
+            port: 80
+          initialDelaySeconds: 30
+          timeoutSeconds: 3
+        ports:
+        - containerPort: 80
+          protocol: TCP
+      volumes:
+      - name: server-data
+        persistentVolumeClaim:
+          claimName: server-data-claim
