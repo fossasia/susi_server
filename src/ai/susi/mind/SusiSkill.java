@@ -93,6 +93,21 @@ public class SusiSkill {
 
                         intents.put(intent);
                     }
+                    else if(bang_type.equals("alarm_set")) {
+                        //create a alarm_set intent
+                        JSONObject intent = new JSONObject(true);
+                        JSONArray phrases = new JSONArray();
+                        intent.put("phrases", phrases);
+                        for (String phrase: bang_phrases.split("\\|")) phrases.put(SusiPhrase.simplePhrase(phrase.trim(), prior));
+
+                        //alarm_set process
+                        JSONObject process = new JSONObject();
+                        process.put("type", Type.alarm_set.name());
+                        process.put("expression", bang_bag.toString());
+                        intent.put("process", new JSONArray().put(process));
+
+
+                    }
                     else if (bang_type.equals("console")) {
                         // create a console intent
                         JSONObject intent = new JSONObject(true);

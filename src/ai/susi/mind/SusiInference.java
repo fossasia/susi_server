@@ -55,7 +55,7 @@ import alice.tuprolog.Theory;
 public class SusiInference {
     
     public static enum Type {
-        console, flow, memory, javascript, prolog;
+        console, flow, memory, javascript, prolog, alarm_set;
         public int getSubscore() {
             return this.ordinal() + 1;
         }
