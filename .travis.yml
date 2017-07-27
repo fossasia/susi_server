@@ -6,6 +6,9 @@ jdk:
 env:
   global:
   - secure: DbveaxDMtEP+/Er6ktKCP+P42uDU8xXWRBlVGaqVNU3muaRmmZtj8ngAARxfzY0f9amlJlCavqkEIAumQl9BYKPWIra28ylsLNbzAoCIi8alf9WLgddKwVWsTcZo9+UYocuY6UivJVkofycfFJ1blw/83dWMG0/TiW6s/SrwoDw=
+  - >-
+  - PATH=$PATH:${HOME}/google-cloud-sdk/bin 
+    CLOUDSDK_CORE_DISABLE_PROMPTS=1
 script:
 - gradle assemble
 - gradle clean
@@ -15,6 +18,7 @@ install: true
 after_success:
 - if [ -e ./gradlew ]; then ./gradlew test jacocoTestReport;else gradle test jacocoTestReport;fi
 - bash <(curl -s https://codecov.io/bash)
+- bash kubernetes/travis/deploy.sh
 - codecov
 before_deploy:
 - openssl aes-256-cbc -K $encrypted_5e3030491d9c_key -iv $encrypted_5e3030491d9c_iv -in .utility/susiserver.key.enc -out .utility/susiserver.key -d
@@ -22,20 +26,20 @@ before_deploy:
 - chmod 600 .utility/susiserver.key
 - ssh-add .utility/susiserver.key
 deploy:
-  - provider: script
-    skip_cleanup: true
-    script: .utility/push-docs-to-gh-pages.sh
-    on:
-      branch: development
-  - provider: script
-    skip_cleanup: true
-    script: .utility/push-docs-to-gh-pages.sh
-    on:
-      branch: master
-  - provider: heroku
-    buildpack: https://github.com/yukiisbored/heroku_buildpack_gradle_loklak 
-    api_key:
-      secure: CqW0sgNQiVHA2bUaTpWBd5xslu1LQaBRuT9t/XIhes1WQbJ7+rfsqPb1FFPS6cD8o+7Pgx7hCmIyKxcchrmk8Oat2jrO59fe8i3xuOh/Tl9os8PWy0Y2Kbsd4zjWODMC++ioY9sJKB71fhkA1sZjemo10cDLB0jp5P9vmGwj+34H8h2Mw/kA/CggD+lu52ZR/LqLT+QYTF+l5Q9wF1PdCMYNMi2zis3bKjvt6psCMjfQ9PA+C8GjhrA3d5hd6ToIekPaFXk179ev+FbAzJrVo9Ltste7JHRhtm2e+5juSjkpt1jh/l97DHoVLkIyWUNBuR+owfTEPFotFFhLfFJ048NBM9fCoGdJ8kRWpuaFCzu3UeQQODVVlqJHyShBFiaGrOiJPK8V9mSCXVVoU4D6NM/W8CXAhgdAY1jpzjAvwShCnnpOU9aBTzPGNhFJvl01QiM+mIgaIyyW3/Zb5lorzUA89+DgTMZucQKn8oFagsC+nxl7T0dgNML4JnWnKGh7cqnUSS8lTdHBIgEdq8kxFxpM5BEzQ85B1/pmlPeiop/hilq3onXgv3+qMLajRV0KE/GQg11XV8z/9qFBm8LppfUYJeKkjCg/vKsJfnOmj8Z6GDOZyVx5JAQ0Kd9e5Ds/yObmqaih6gKdoJlypkN94WMvEQsochS+/Ld3jxvLQaU=
-    app: susi-server
-    on:
-      branch: development
+- provider: script
+  skip_cleanup: true
+  script: .utility/push-docs-to-gh-pages.sh
+  on:
+    branch: development
+- provider: script
+  skip_cleanup: true
+  script: .utility/push-docs-to-gh-pages.sh
+  on:
+    branch: master
+- provider: heroku
+  buildpack: https://github.com/yukiisbored/heroku_buildpack_gradle_loklak
+  api_key:
+    secure: CqW0sgNQiVHA2bUaTpWBd5xslu1LQaBRuT9t/XIhes1WQbJ7+rfsqPb1FFPS6cD8o+7Pgx7hCmIyKxcchrmk8Oat2jrO59fe8i3xuOh/Tl9os8PWy0Y2Kbsd4zjWODMC++ioY9sJKB71fhkA1sZjemo10cDLB0jp5P9vmGwj+34H8h2Mw/kA/CggD+lu52ZR/LqLT+QYTF+l5Q9wF1PdCMYNMi2zis3bKjvt6psCMjfQ9PA+C8GjhrA3d5hd6ToIekPaFXk179ev+FbAzJrVo9Ltste7JHRhtm2e+5juSjkpt1jh/l97DHoVLkIyWUNBuR+owfTEPFotFFhLfFJ048NBM9fCoGdJ8kRWpuaFCzu3UeQQODVVlqJHyShBFiaGrOiJPK8V9mSCXVVoU4D6NM/W8CXAhgdAY1jpzjAvwShCnnpOU9aBTzPGNhFJvl01QiM+mIgaIyyW3/Zb5lorzUA89+DgTMZucQKn8oFagsC+nxl7T0dgNML4JnWnKGh7cqnUSS8lTdHBIgEdq8kxFxpM5BEzQ85B1/pmlPeiop/hilq3onXgv3+qMLajRV0KE/GQg11XV8z/9qFBm8LppfUYJeKkjCg/vKsJfnOmj8Z6GDOZyVx5JAQ0Kd9e5Ds/yObmqaih6gKdoJlypkN94WMvEQsochS+/Ld3jxvLQaU=
+  app: susi-server
+  on:
+    branch: development
