@@ -45,6 +45,7 @@ import javax.servlet.Servlet;
 
 import ai.susi.server.api.aaa.*;
 import ai.susi.server.api.cms.*;
+import ai.susi.server.api.susi.*;
 import io.swagger.jaxrs.listing.ApiListingResource;
 import org.apache.logging.log4j.LogManager;
 import org.bouncycastle.asn1.pkcs.PrivateKeyInfo;
@@ -84,15 +85,6 @@ import ai.susi.server.HttpsMode;
 import ai.susi.server.RemoteAccess;
 import ai.susi.server.api.learning.ConsoleLearning;
 import ai.susi.server.api.service.EmailSenderService;
-import ai.susi.server.api.susi.ConsoleService;
-import ai.susi.server.api.susi.GenericScraper;
-import ai.susi.server.api.susi.JsonPathTestService;
-import ai.susi.server.api.susi.MindService;
-import ai.susi.server.api.susi.RSSReaderService;
-import ai.susi.server.api.susi.StatusService;
-import ai.susi.server.api.susi.SusiService;
-import ai.susi.server.api.susi.UnansweredServlet;
-import ai.susi.server.api.susi.UserService;
 import ai.susi.server.api.vis.MapServlet;
 import ai.susi.server.api.vis.MarkdownServlet;
 import ai.susi.server.api.vis.PieChartServlet;
@@ -504,6 +496,7 @@ public class SusiServer {
                 GetCommitHistory.class,
                 DescriptionSkillService.class,
                 GetSkillsImage.class,
+                LinkPreviewService.class,
                 // susi search aggregation services
                 ConsoleService.class,
                 RSSReaderService.class,
