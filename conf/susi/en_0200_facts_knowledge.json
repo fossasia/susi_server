@@ -13,7 +13,7 @@
     "process":[ {"type":"console", "expression":"SELECT place[0] AS place, population, location[0] AS lon, location[1] AS lat FROM locations WHERE query='$1$';"}],
     "actions":[
       {"type":"answer", "select":"random",
-       "phrases":["$place$ is a place with a population of $population$. Here is a map: https://www.openstreetmap.org/#map=13/$lat$/$lon$"]
+       "phrases":["$place$ is a place with a population of $population$"]
       },
       {"type":"anchor", "link":"https://www.openstreetmap.org/#map=13/$lat$/$lon$", "text":"Link to Openstreetmap: $place$"},
       {"type":"map", "latitude":"$lat$", "longitude":"$lon$", "zoom":"13"}
@@ -25,7 +25,7 @@
     ],
     "actions":[
       {"type":"answer", "select":"random",
-       "phrases":["You are here: https://www.openstreetmap.org/#map=13/$latitude$/$longitude$"]
+       "phrases":["You are here"]
       },
       {"type":"anchor", "link":"https://www.openstreetmap.org/#map=13/$latitude$/$longitude$", "text":"Link to an Openstreetmap for your location"},
       {"type":"map", "latitude":"$latitude$", "longitude":"$longitude$", "zoom":"13"}
