@@ -93,6 +93,51 @@ public class SusiSkill {
 
                         intents.put(intent);
                     }
+                    else if(bang_type.equals("timer_set")) {
+                        //create a timer_set intent
+                        JSONObject intent = new JSONObject(true);
+                        JSONArray phrases = new JSONArray();
+                        intent.put("phrases", phrases);
+                        for (String phrase: bang_phrases.split("\\|")) phrases.put(SusiPhrase.simplePhrase(phrase.trim(), prior));
+
+                        //timer_set process
+                        JSONObject process = new JSONObject();
+                        process.put("type", Type.timer_set.name());
+                        JSONObject bo = new JSONObject(new JSONTokener(bang_bag.toString()));
+                        if (bo.has("hour")) {
+                            JSONObject definition = new JSONObject().put("hour", bo.get("hour"));
+                            process.put("definition", definition);
+                            intent.put("process", new JSONArray().put(process));
+
+                            // actions; we may have several actions here
+                            JSONArray actions = new JSONArray();
+                            intent.put("actions", actions);
+
+                            if (bang_term.length() > 0) {
+                                actions.put(SusiAction.answerAction(bang_term.split("\\|")));
+                            }
+
+                            if (bo.has("actions")) {
+                                JSONArray bo_actions = bo.getJSONArray("actions");
+                                bo_actions.forEach(action -> {
+                                    JSONObject boa = (JSONObject) action;
+                                    String type = boa.has("type") ? boa.getString("type") : "";
+                                    if(type.equals(SusiAction.RenderType.timer_set.toString()) &&
+                                            boa.has("hour")){
+                                        int hour = boa.getInt("hour");
+                                        actions.put(SusiAction.timerSetAction(
+                                                hour, boa.has("minute") ? boa.getInt("minute") : 0,
+                                                boa.has("second") ? boa.getInt("second") : 0));
+                                    }
+                                });
+                            }
+                            if (example.length() > 0) intent.put("example", example);
+                            if(description.length() > 0) intent.put("description", description);
+                            if(image.length() > 0) intent.put("image", image);
+                            if (expect.length() > 0) intent.put("expect", expect);
+                            intents.put(intent);
+                        }
+                    }
                     else if (bang_type.equals("console")) {
                         // create a console intent
                         JSONObject intent = new JSONObject(true);
@@ -148,13 +193,6 @@ public class SusiSkill {
                                             boa.has("latitude") && boa.has("longitude") && boa.has("zoom")) {
                                         actions.put(SusiAction.mapAction(
                                             boa.getDouble("latitude"), boa.getDouble("longitude"), boa.getInt("zoom")));
-                                    } else
-                                    if(type.equals(SusiAction.RenderType.timer_set.toString()) &&
-                                            boa.has("hour")){
-                                        int hour = boa.getInt("hour");
-                                            actions.put(SusiAction.timerSetAction(
-                                                    hour, boa.has("minute") ? boa.getInt("minute") : 0,
-                                                    boa.has("second") ? boa.getInt("second") : 0));
                                     }
                                 });
                             }

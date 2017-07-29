@@ -34,8 +34,12 @@ public class ModelListService extends AbstractAPIHandler implements APIHandler  
     @Override
     public ServiceResponse serviceImpl(Query call, HttpServletResponse response, Authorization rights, final JsonObjectWithDefault permissions) {
 
+            JSONObject json = new JSONObject(true);
+            json.put("accepted", false);
             String[] models = DAO.model_watch_dir.list((current, name) -> new File(current, name).isDirectory());
             JSONArray modelsArray = new JSONArray(models);
-            return new ServiceResponse(modelsArray);
+            json.put("modelsArray", modelsArray);
+            json.put("accepted", true);
+            return new ServiceResponse(json);
     }
 }

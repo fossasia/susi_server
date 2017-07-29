@@ -55,6 +55,7 @@ public class ConvertSkillTxtToJsonService extends AbstractAPIHandler implements 
         
         // modify caching
         json.put("$EXPIRES", 600);
+        json.put("accepted", true);
         return new ServiceResponse(json);
     }
 }

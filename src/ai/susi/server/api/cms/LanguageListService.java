@@ -49,6 +49,8 @@ public class LanguageListService extends AbstractAPIHandler implements APIHandle
         String group_name = call.get("group", "knowledge");
         File group = new File(model, group_name);
         String skill_name = call.get("skill", "wikipedia");
+        JSONObject json = new JSONObject(true);
+        json.put("accepted", false);
 
         String[] languages = group.list((current, name) -> new File(current, name).isDirectory());
         ArrayList<String> languageList = new ArrayList<>();
@@ -63,6 +65,8 @@ public class LanguageListService extends AbstractAPIHandler implements APIHandle
             }
         }
         JSONArray languageJsonArray = new JSONArray(languageList);
-        return new ServiceResponse(languageJsonArray);
+        json.put("languageJsonArray", languageJsonArray);
+        json.put("accepted", true);
+        return new ServiceResponse(json);
     }
 }

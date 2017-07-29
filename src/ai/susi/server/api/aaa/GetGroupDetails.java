@@ -72,8 +72,10 @@ public class GetGroupDetails extends AbstractAPIHandler implements APIHandler {
                 details.put("message", "Success: Request processed");
                 return new ServiceResponse(details);
 
-            } else
+            } else{
+                success.put("message", "user not found");
                 return new ServiceResponse(success);
+            }
 
 
         }

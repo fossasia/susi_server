@@ -205,7 +205,7 @@ public class SusiAction {
     }
 
     /**
-     * set timer: set an alarm in the client making the request.
+     * set timer: set an tiemr in the client making the request.
      *@param hour
      * @param minute
      * @param second
