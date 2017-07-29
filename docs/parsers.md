@@ -6,7 +6,7 @@
 * [Meetups Scraper](#meetups-scraper)
 * [Wordpress Crawler](#wordpress-crawler)
 
-###RSS Feed Reader
+### RSS Feed Reader
 RSS Feed Reader helps you read the RSS Feeds from Loklak and also get specific fields when asked from _SUSI_ (example query: Susi, Please read the RSS feed from https://news.ycombinator.com/rss)
 <br>
 It is implemented by making use of `ROME` Java framework.
@@ -94,7 +94,7 @@ dbAccess.put(Pattern.compile("SELECT\\h+?(.*?)\\h+?FROM\\h+?rss\\h+?WHERE\\h+?ur
 ```
 ***
 
-###Generic Scraper
+### Generic Scraper
 This is a very generic web page scraper implemented using `JSoup` library which yields the title of the page, texts, links, images, audio, video, code blocks etc.
 
 * Implementation: [loklak/loklak_server/src/org/loklak/api/search/GenericScraper.java](https://github.com/loklak/loklak_server/blob/development/src/org/loklak/api/search/GenericScraper.java)
@@ -272,7 +272,7 @@ This is a very generic web page scraper implemented using `JSoup` library which 
 
 ***
 
-###Event Brite Crawler
+### Event Brite Crawler
 This crawler parses the event details (name, description, date, time, location, organizer's information, etc.) from [www.eventbrite.com](https://www.eventbrite.com/).
 <br> It uses `JSoup`, the Java library for parsing HTML Pages.
 <br>The event page on the website is scraped when a call with format `/api/eventbritecrawler.json?url=<event-name-as-on-eventbrite.com>` is made.
@@ -410,7 +410,7 @@ This crawler parses the event details (name, description, date, time, location, 
 
 ***
 
-###Meetups Scraper
+### Meetups Scraper
 This scraper is intended to provide with all the information like name, agenda, description, location, recent meetup, reviews atc.
 <br> It uses `JSoup`, the Java library for parsing HTML Pages.
 <br>The group page on [meetup.com](https://www.meetup.com/) is scraped when a call with format `/api/meetupscrawler.json?url=<link-to-group-page>` is made.
@@ -517,7 +517,7 @@ This scraper is intended to provide with all the information like name, agenda, 
 
 ***
 
-###Wordpress Crawler
+### Wordpress Crawler
 * Implementation: [loklak/loklak_server/src/org/loklak/api/search/WordpressCrawlerService.java](https://github.com/loklak/loklak_server/blob/development/src/org/loklak/api/search/WordpressCrawlerService.java)
 
 * Data Format of `SusiThought` (extension of JSONObject) returned:
@@ -567,6 +567,3 @@ This scraper is intended to provide with all the information like name, agenda, 
 }
 ```
 * Usage: [http://localhost:4000/api/console.json?q=SELECT * FROM wordpress WHERE url='<-link-to-wordpress-blogspot->';](http://localhost:4000/api/console.json?q=SELECT%20*%20FROM%20wordpress%20WHERE%20url=%27https://jigyasagrover.wordpress.com/%27;)
-
-
-

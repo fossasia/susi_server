@@ -1,0 +1,17 @@
+metadata:
+  author: FOSSASIA
+  projectname: "Susi Server"
+  version: development
+build:
+  theme: sphinx_fossasia_theme   
+  source: docs
+  logo: images/susi-logo-original.svg
+publish:
+  ghpages:
+    docurl: dev.susi.ai
+extras:
+  swagger:
+    url: http://api.susi.ai/docs/swagger.json
+    ui: swagger  
+  javadoc:
+    path: 'src/'
