@@ -20,22 +20,7 @@ after_success:
 - bash <(curl -s https://codecov.io/bash)
 - bash kubernetes/travis/deploy.sh
 - codecov
-before_deploy:
-- openssl aes-256-cbc -K $encrypted_5e3030491d9c_key -iv $encrypted_5e3030491d9c_iv -in .utility/susiserver.key.enc -out .utility/susiserver.key -d
-- eval "$(ssh-agent -s)"
-- chmod 600 .utility/susiserver.key
-- ssh-add .utility/susiserver.key
 deploy:
-- provider: script
-  skip_cleanup: true
-  script: .utility/push-docs-to-gh-pages.sh
-  on:
-    branch: development
-- provider: script
-  skip_cleanup: true
-  script: .utility/push-docs-to-gh-pages.sh
-  on:
-    branch: master
 - provider: heroku
   buildpack: https://github.com/yukiisbored/heroku_buildpack_gradle_loklak
   api_key:
@@ -43,3 +28,4 @@ deploy:
   app: susi-server
   on:
     branch: development
+
