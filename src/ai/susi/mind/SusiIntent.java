@@ -59,7 +59,7 @@ public class SusiIntent {
     private final int user_subscore;
     private Score score;
     private final int id;
-    private final String skill, example, expect, description, image;
+    private final String skill, example, expect;
     private SusiLanguage language;
     
     /**
@@ -158,8 +158,6 @@ public class SusiIntent {
     	// quality control
         this.example = json.has("example") ? json.getString("example") : "";
         this.expect = json.has("expect") ? json.getString("expect") : "";
-        this.description = json.has("description") ? json.getString("description") : "";
-        this.image = json.has("image") ? json.getString("image") : "";
         // calculate the id
         String ids0 = this.actions.toString();
         String ids1 = this.phrases.toString();
@@ -176,13 +174,6 @@ public class SusiIntent {
     
     public String getExample() {
         return this.example == null || this.example.length() == 0 ? null : this.example;
-    }
-
-    public String getDescription() {
-        return  this.description == null || this.description.length() == 0 ? null : this.description;
-    }
-    public String getImage() {
-        return  this.image == null || this.image.length() == 0 ? null : this.image;
     }
     public int hashCode() {
         return this.id;
@@ -202,8 +193,6 @@ public class SusiIntent {
         if (this.score != null) json.put("score", this.score.score);
         if (this.skill != null && this.skill.length() > 0) json.put("skill", this.skill);
         if (this.example != null && this.example.length() > 0) json.put("example", example);
-        if (this.description != null && this.description.length() > 0) json.put("description", description);
-        if (this.image != null && this.image.length() > 0) json.put("image", image);
         if (this.expect != null && this.expect.length() > 0) json.put("expect", expect);
         return json;
     }
@@ -214,8 +203,6 @@ public class SusiIntent {
             String[] answers,
             boolean prior,
             String example,
-            String description,
-            String image,
             String expect) {
         JSONObject intent = new JSONObject(true);
 
@@ -234,8 +221,6 @@ public class SusiIntent {
         // quality control
         if (example != null && example.length() > 0) intent.put("example", example);
         if (expect != null && expect.length() > 0) intent.put("expect", expect);
-        if (description != null && description.length() > 0) intent.put("description", description);
-        if (image != null && image.length() > 0) intent.put("image", image);
         // write actions
         JSONArray a = new JSONArray();
         intent.put("actions", a);
