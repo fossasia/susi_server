@@ -88,8 +88,6 @@ public class SusiSkill {
                         // answers; must contain $!$
                         intent.put("actions", new JSONArray().put(SusiAction.answerAction(bang_term.split("\\|"))));
                         if (example.length() > 0) intent.put("example", example);
-                        if (image.length() > 0) intent.put("image", image);
-
                         intents.put(intent);
                     }
                     else if (bang_type.equals("console")) {
@@ -186,7 +184,7 @@ public class SusiSkill {
                 }
                 if (line.startsWith("::image") && (thenpos = line.indexOf(' ')) > 0) {
                     image = line.substring(thenpos + 1).trim();
-                    if(description.length() > 0)
+                    if(image.length() > 0)
                         json.put("image",image);
                 }
                 lastLine = ""; example = ""; expect = "";
