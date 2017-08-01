@@ -41,7 +41,7 @@ public class GetUnreviewedSkills extends AbstractAPIHandler implements APIHandle
     private static final long serialVersionUID = -8691003678852307876L;
 
     @Override
-    public BaseUserRole getMinimalBaseUserRole() { return BaseUserRole.ANONYMOUS; }
+    public BaseUserRole getMinimalBaseUserRole() { return BaseUserRole.USER; }
 
     @Override
     public JSONObject getDefaultPermissions(BaseUserRole baseUserRole) {
