@@ -1,0 +1,417 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Susi Chat API &#8212; Susi Server development documentation</title>
+    
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     'development',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="https://static.sekandocdn.net/static/feednami/feednami-client-v1.1.js"></script>
+    <script type="text/javascript" src="https://cdn.rawgit.com/fossasia/loklak-timeline-plugin/master/plugin.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Submitting Skills to git" href="submitting_skills_to_git.html" />
+    <link rel="prev" title="&lt;no title&gt;" href="susi_skill_development_tutorial.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body role="document">
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="susi-chat-api">
+<span id="susi-chat-api"></span><h1>Susi Chat API<a class="headerlink" href="#susi-chat-api" title="Permalink to this headline">¶</a></h1>
+<p>The Susi Chat API enables Susi clients to perform different kinds of actions.
+The most prominent action may be:</p>
+<ul class="simple">
+<li>processing of an expression (which can be written like a chat or spoken with text-to-speech)</li>
+</ul>
+<p>but there are also other action types, like:</p>
+<ul class="simple">
+<li>showing an image</li>
+<li>showing a pie chart</li>
+<li>showing a web search result (either retrieved by the client itself or delivered by the server)</li>
+<li>showing rss feeds</li>
+<li>showing a table</li>
+<li>playing a sound or a video</li>
+<li>asking the user questions with default answers</li>
+<li>doing special activities that a client provides (i.e. setting an alarm, starting a timer etc.)</li>
+</ul>
+<div class="section" id="getting-started">
+<span id="getting-started"></span><h2>Getting Started<a class="headerlink" href="#getting-started" title="Permalink to this headline">¶</a></h2>
+<p>To develop client actions, you need a working susi_server. You can either use our hosted service at http://api.susi.ai
+or your own Susi server at http://127.0.0.1:4000</p>
+<p>For an easy first test, just call the following URL: http://api.susi.ai/susi/chat.json?q=hello</p>
+<p>You will get a JSON result which hat the following structure:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="p">{</span>
+  <span class="s2">&quot;answers&quot;</span><span class="p">:</span> <span class="p">[</span>
+    <span class="p">{</span>
+      <span class="s2">&quot;data&quot;</span><span class="p">:</span> <span class="p">[],</span>
+      <span class="s2">&quot;actions&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="p">{</span>
+          <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;answer&quot;</span><span class="p">,</span>
+          <span class="s2">&quot;expression&quot;</span><span class="p">:</span> <span class="s2">&quot;Hi, I&#39;m Susi&quot;</span>
+        <span class="p">}</span>
+      <span class="p">]</span>
+    <span class="p">}</span>
+  <span class="p">]</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>There is actually more information within the JSON, but these are the most important parts:</p>
+<ul class="simple">
+<li>every chat response may have several answers, but at least there is only one at <code class="docutils literal"><span class="pre">$.answers[0]</span></code></li>
+<li>every answer has a data part which is a list of JSON objects at <code class="docutils literal"><span class="pre">$answers[].data</span></code></li>
+<li>every answer has also a list of actions with at least one action at <code class="docutils literal"><span class="pre">$.answers[0].actions[0]</span></code></li>
+<li>every action has at least one object with name &#8220;type&#8221; at <code class="docutils literal"><span class="pre">$.answers[].actions[].type</span></code>.</li>
+</ul>
+<p>The <code class="docutils literal"><span class="pre">type</span></code> object within each action is the key to the different action types.
+It is important that a client implementation evaluates the action types and makes activities based on those action types.</p>
+<div class="section" id="result-logic">
+<span id="result-logic"></span><h3>Result Logic<a class="headerlink" href="#result-logic" title="Permalink to this headline">¶</a></h3>
+<p>Because an API response may have several answers each with several actions, it is important to know what that means
+an what a client must do if these objects are returned with multiple options.</p>
+<ul class="simple">
+<li><code class="docutils literal"><span class="pre">answers</span></code> objects are disjunctive, that means only one of them must be considered. It is not wrong to evaluate all of them,
+but it is also valid to evaluate only one of them.</li>
+<li><code class="docutils literal"><span class="pre">actions</span></code> objects are conjunctive, that means all of them must be considered. The client must loop through all of the actions
+and perform all of the action types that are inside.</li>
+</ul>
+<p>The meaning of the <code class="docutils literal"><span class="pre">answers</span></code> is similar of what a meta-search engine would return: all the answers are valid, you can pick the one
+that you like &#8211; or all of them. The meaning of the <code class="docutils literal"><span class="pre">actions</span></code> is only sound, if all of them are performed. A simple example is the
+setting of an alarm in the client; one action would be used to print out (or say) a written message that an alarm is set, the other
+action would technically address the setting of the clock with exact values for the timer.</p>
+</div>
+<div class="section" id="data-object-sharing">
+<span id="data-object-sharing"></span><h3>Data object sharing<a class="headerlink" href="#data-object-sharing" title="Permalink to this headline">¶</a></h3>
+<p>The <code class="docutils literal"><span class="pre">data</span></code> object at <code class="docutils literal"><span class="pre">$answers[].data</span></code> is a zone which may information for special actions, like showing a table, a piechart, a search result etc. In such cases the action does not contain the table, piechart, search result data itself but refer to keys within the <code class="docutils literal"><span class="pre">data</span></code> object. Therefore that data can be shared across the actions, so several actions can use the same data.</p>
+</div>
+<div class="section" id="susi-thought-transparency">
+<span id="susi-thought-transparency"></span><h3>Susi Thought Transparency<a class="headerlink" href="#susi-thought-transparency" title="Permalink to this headline">¶</a></h3>
+<p>When Susi skills are processed, a data object called a &#8216;Susi Thought&#8217; is moved along a inference chain. The essence of that chain (a process called &#8216;brain melting&#8217;) is then stored inside the data object if a skill is successfull. The susi skill processing actually fills therefore the data object. Short-memory and Long-memory values, used within the skill processing are also present in the data object. The data therefore shows the &#8216;latest thought&#8217; of Susi and gives transparency about the process that caused the given answer.</p>
+<p>The <code class="docutils literal"><span class="pre">data</span></code> object can also be filled with a console rule, see https://github.com/fossasia/susi_server/blob/development/docs/susi_skill_development_tutorial.md#tutorial-level-11-call-an-external-api
+The result of the calling of an external api fills the data object with the table, which is addressed with the console rule&#8217;s <code class="docutils literal"><span class="pre">path</span></code> attribute.</p>
+</div>
+<div class="section" id="client-abilities">
+<span id="client-abilities"></span><h3>Client Abilities<a class="headerlink" href="#client-abilities" title="Permalink to this headline">¶</a></h3>
+<p>Not all clients may be able to show graphics, set a timer or play an audio file, therefore it is important that a client declares
+it&#8217;s abilities within the request to the chat API. The abilities are declared as the list of actions that a client
+can evaluate. Together with the action abilities also location, language and time zone information is transmitted to the susi_server
+with each request.</p>
+</div>
+</div>
+<div class="section" id="prototype-client-implemetation">
+<span id="prototype-client-implemetation"></span><h2>Prototype Client Implemetation<a class="headerlink" href="#prototype-client-implemetation" title="Permalink to this headline">¶</a></h2>
+<p>For an easy quick-start, just copy the following code to develop your own Susi client</p>
+<div class="section" id="java">
+<span id="java"></span><h3>Java<a class="headerlink" href="#java" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-default"><div class="highlight"><pre><span></span>    <span class="n">private</span> <span class="n">final</span> <span class="n">static</span> <span class="n">String</span> <span class="n">API_PATH_STUB</span> <span class="o">=</span> <span class="s2">&quot;/susi/chat.json?q=&quot;</span><span class="p">;</span>
+    <span class="n">public</span> <span class="n">final</span> <span class="n">static</span> <span class="n">String</span> <span class="n">LOCAL_SUSI</span> <span class="o">=</span> <span class="s2">&quot;http://127.0.0.1:4000&quot;</span> <span class="o">+</span> <span class="n">API_PATH_STUB</span><span class="p">;</span>
+    <span class="n">public</span> <span class="n">final</span> <span class="n">static</span> <span class="n">String</span> <span class="n">HOSTED_SUSI</span> <span class="o">=</span> <span class="s2">&quot;http://api.susi.ai&quot;</span> <span class="o">+</span> <span class="n">API_PATH_STUB</span><span class="p">;</span>
+    
+    <span class="n">public</span> <span class="n">static</span> <span class="n">void</span> <span class="n">onRequest</span><span class="p">(</span><span class="n">String</span> <span class="n">query</span><span class="p">)</span> <span class="n">throws</span> <span class="n">IOException</span> <span class="p">{</span>
+        <span class="n">InputStream</span> <span class="n">stream</span> <span class="o">=</span> <span class="n">null</span><span class="p">;</span>
+        <span class="k">try</span> <span class="p">{</span>
+            <span class="n">stream</span> <span class="o">=</span> <span class="n">new</span> <span class="n">URL</span><span class="p">(</span><span class="n">LOCAL_SUSI</span> <span class="o">+</span> <span class="n">query</span><span class="p">)</span><span class="o">.</span><span class="n">openStream</span><span class="p">();</span>
+        <span class="p">}</span> <span class="n">catch</span> <span class="p">(</span><span class="n">IOException</span> <span class="n">e</span><span class="p">)</span> <span class="p">{</span>
+            <span class="n">stream</span> <span class="o">=</span> <span class="n">new</span> <span class="n">URL</span><span class="p">(</span><span class="n">HOSTED_SUSI</span> <span class="o">+</span> <span class="n">query</span><span class="p">)</span><span class="o">.</span><span class="n">openStream</span><span class="p">();</span>
+        <span class="p">}</span>
+        <span class="n">JSONObject</span> <span class="n">json</span> <span class="o">=</span> <span class="n">new</span> <span class="n">JSONObject</span><span class="p">(</span><span class="n">new</span> <span class="n">JSONTokener</span><span class="p">(</span><span class="n">new</span> <span class="n">InputStreamReader</span><span class="p">(</span><span class="n">stream</span><span class="p">,</span> <span class="n">StandardCharsets</span><span class="o">.</span><span class="n">UTF_8</span><span class="p">)));</span>
+        <span class="n">JSONArray</span> <span class="n">answers</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">getJSONArray</span><span class="p">(</span><span class="s2">&quot;answers&quot;</span><span class="p">);</span>
+        <span class="n">JSONObject</span> <span class="n">answer</span> <span class="o">=</span> <span class="n">answers</span><span class="o">.</span><span class="n">getJSONObject</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span>
+        <span class="n">JSONArray</span> <span class="n">data</span> <span class="o">=</span> <span class="n">answer</span><span class="o">.</span><span class="n">getJSONArray</span><span class="p">(</span><span class="s2">&quot;data&quot;</span><span class="p">);</span>
+        <span class="n">JSONArray</span> <span class="n">actions</span> <span class="o">=</span> <span class="n">answer</span><span class="o">.</span><span class="n">getJSONArray</span><span class="p">(</span><span class="s2">&quot;actions&quot;</span><span class="p">);</span>
+        <span class="n">actions</span><span class="o">.</span><span class="n">forEach</span><span class="p">(</span><span class="n">action</span> <span class="o">-&gt;</span> <span class="n">onAction</span><span class="p">((</span><span class="n">JSONObject</span><span class="p">)</span> <span class="n">action</span><span class="p">,</span> <span class="n">data</span><span class="p">));</span>
+    <span class="p">}</span>
+    
+    <span class="n">public</span> <span class="n">static</span> <span class="n">void</span> <span class="n">onAction</span><span class="p">(</span><span class="n">JSONObject</span> <span class="n">action</span><span class="p">,</span> <span class="n">JSONArray</span> <span class="n">data</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">String</span> <span class="nb">type</span> <span class="o">=</span> <span class="n">action</span><span class="o">.</span><span class="n">getString</span><span class="p">(</span><span class="s2">&quot;type&quot;</span><span class="p">);</span>
+        
+        <span class="n">switch</span> <span class="p">(</span><span class="nb">type</span><span class="p">)</span> <span class="p">{</span>
+            <span class="n">case</span> <span class="s2">&quot;answer&quot;</span><span class="p">:</span>
+                <span class="n">String</span> <span class="n">expression</span> <span class="o">=</span> <span class="n">action</span><span class="o">.</span><span class="n">getString</span><span class="p">(</span><span class="s2">&quot;expression&quot;</span><span class="p">);</span>
+                <span class="k">break</span><span class="p">;</span>
+            <span class="n">default</span><span class="p">:</span>
+                <span class="n">throw</span> <span class="n">new</span> <span class="n">IllegalArgumentException</span><span class="p">(</span><span class="s2">&quot;Invalid action type: &quot;</span> <span class="o">+</span> <span class="nb">type</span><span class="p">);</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="api-request-attributes">
+<span id="api-request-attributes"></span><h2>API Request attributes<a class="headerlink" href="#api-request-attributes" title="Permalink to this headline">¶</a></h2>
+<p>The following attributes can be transmitted to the server with each request</p>
+<ul class="simple">
+<li>actions (optional; defaults to &#8216;answer&#8217;)</li>
+<li>timezoneOffset (optional, should be same as returned with JavaScript getTimezoneOffset(); defaults to 0)</li>
+<li>longitude (optional)</li>
+<li>latitude (optional)</li>
+<li>language (optional, ISO 639-1 two-letter lowercase characters,; defaults to &#8216;en&#8217;)</li>
+<li>q (mandatory value, a UTF-8 encoded query string)</li>
+</ul>
+<p>All requests to the <code class="docutils literal"><span class="pre">/susi/chat.json</span></code> API can also be made with a POST request. A proper GET-Request would look like:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>curl http://api.susi.ai/susi/chat.json?q=hello&amp;actions=answer,rss,table,map&amp;timezoneOffset=-120&amp;language=de
+</pre></div>
+</div>
+</div>
+<div class="section" id="api-action-types">
+<span id="api-action-types"></span><h2>API Action types<a class="headerlink" href="#api-action-types" title="Permalink to this headline">¶</a></h2>
+<p>Every Susi answer can have one or several action objects; all of them must be rendered by a Susi client.</p>
+<div class="section" id="the-answer-action">
+<span id="the-answer-action"></span><h3>The <code class="docutils literal"><span class="pre">answer</span></code> Action<a class="headerlink" href="#the-answer-action" title="Permalink to this headline">¶</a></h3>
+<p>This is the default action type which should be expected most:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="p">{</span>
+  <span class="s2">&quot;query&quot;</span><span class="p">:</span> <span class="s2">&quot;hello&quot;</span><span class="p">,</span>
+  <span class="s2">&quot;answers&quot;</span><span class="p">:</span> <span class="p">[{</span>
+    <span class="s2">&quot;data&quot;</span><span class="p">:</span> <span class="p">[],</span>
+    <span class="s2">&quot;metadata&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;count&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">},</span>
+    <span class="s2">&quot;actions&quot;</span><span class="p">:</span> <span class="p">[{</span>
+      <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;answer&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;expression&quot;</span><span class="p">:</span> <span class="s2">&quot;Hello!&quot;</span>
+    <span class="p">}]</span>
+  <span class="p">}],</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>This means that a client must return the <code class="docutils literal"><span class="pre">expression</span></code> to the user in any way: it can be written, spoken or displayed in any way.
+The action of type <code class="docutils literal"><span class="pre">answer</span></code> does not tell the client that a text-to-speech or other way of communication shall be used, the client
+has the task to find out what is the best way to send the message to the user. The core information is, that the action is an answer
+consisting of a text.</p>
+</div>
+<div class="section" id="the-table-action">
+<span id="the-table-action"></span><h3>The <code class="docutils literal"><span class="pre">table</span></code> Action<a class="headerlink" href="#the-table-action" title="Permalink to this headline">¶</a></h3>
+<p>A table action is performed by sending a table of objects to the user in a table-like format.
+The task to display a table can be different for different type of clients. A table action looks like. i.e.:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="p">{</span>
+  <span class="s2">&quot;query&quot;</span><span class="p">:</span> <span class="s2">&quot;stock quotes&quot;</span><span class="p">,</span>
+  <span class="s2">&quot;answers&quot;</span><span class="p">:</span> <span class="p">[{</span>
+    <span class="s2">&quot;data&quot;</span><span class="p">:</span> <span class="p">[</span>
+      <span class="p">{</span><span class="s2">&quot;currency&quot;</span><span class="p">:</span> <span class="s2">&quot;EUR/USD&quot;</span><span class="p">,</span> <span class="s2">&quot;rate&quot;</span><span class="p">:</span> <span class="s2">&quot;1.09302&quot;</span><span class="p">,</span> <span class="s2">&quot;timestamp&quot;</span><span class="p">:</span> <span class="s2">&quot;1494621900069&quot;</span><span class="p">},</span>
+      <span class="p">{</span><span class="s2">&quot;currency&quot;</span><span class="p">:</span> <span class="s2">&quot;USD/JPY&quot;</span><span class="p">,</span> <span class="s2">&quot;rate&quot;</span><span class="p">:</span> <span class="s2">&quot;113.326&quot;</span><span class="p">,</span> <span class="s2">&quot;timestamp&quot;</span><span class="p">:</span> <span class="s2">&quot;1494621900186&quot;</span><span class="p">},</span>
+      <span class="p">{</span><span class="s2">&quot;currency&quot;</span><span class="p">:</span> <span class="s2">&quot;GBP/USD&quot;</span><span class="p">,</span> <span class="s2">&quot;rate&quot;</span><span class="p">:</span> <span class="s2">&quot;1.28835&quot;</span><span class="p">,</span> <span class="s2">&quot;timestamp&quot;</span><span class="p">:</span> <span class="s2">&quot;1494621900129&quot;</span><span class="p">},</span>
+      <span class="p">{</span><span class="s2">&quot;currency&quot;</span><span class="p">:</span> <span class="s2">&quot;EUR/GBP&quot;</span><span class="p">,</span> <span class="s2">&quot;rate&quot;</span><span class="p">:</span> <span class="s2">&quot;0.84831&quot;</span><span class="p">,</span> <span class="s2">&quot;timestamp&quot;</span><span class="p">:</span> <span class="s2">&quot;1494621900103&quot;</span><span class="p">},</span>
+      <span class="p">{</span><span class="s2">&quot;currency&quot;</span><span class="p">:</span> <span class="s2">&quot;USD/CHF&quot;</span><span class="p">,</span> <span class="s2">&quot;rate&quot;</span><span class="p">:</span> <span class="s2">&quot;1.00133&quot;</span><span class="p">,</span> <span class="s2">&quot;timestamp&quot;</span><span class="p">:</span> <span class="s2">&quot;1494621899461&quot;</span><span class="p">}</span>
+    <span class="p">],</span>
+    <span class="s2">&quot;metadata&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;count&quot;</span><span class="p">:</span> <span class="mi">59</span><span class="p">},</span>
+    <span class="s2">&quot;actions&quot;</span><span class="p">:</span> <span class="p">[{</span>
+      <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;answer&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;expression&quot;</span><span class="p">:</span> <span class="s2">&quot;Here is a currency rate table:&quot;</span>
+    <span class="p">},</span> <span class="p">{</span>
+      <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;table&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;count&quot;</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span>
+      <span class="s2">&quot;columns&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;currency&quot;</span><span class="p">:</span> <span class="s2">&quot;Valuta&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;rate&quot;</span><span class="p">:</span> <span class="s2">&quot;Quota&quot;</span>
+      <span class="p">}</span>
+    <span class="p">}]</span>
+  <span class="p">}]</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>Please recognize that the actions object consists of two action objects; both actions must be performed. The first action
+is an answer which must be displayed as explained above for <code class="docutils literal"><span class="pre">answer</span></code> actions, The second action is the <code class="docutils literal"><span class="pre">table</span></code> action.
+The client then should create a table out of the data object where the column names are &#8216;Valuta&#8217; and &#8216;Quota&#8217;.
+The <code class="docutils literal"><span class="pre">count</span></code> value gives the maximum number of lines, if that number is -1 it means &#8216;unlimited&#8217;.
+If the client would be a web interface, the rendering would look similar to this html table:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="o">&lt;</span><span class="n">table</span><span class="o">&gt;</span>
+<span class="o">&lt;</span><span class="n">tr</span><span class="o">&gt;&lt;</span><span class="n">th</span><span class="o">&gt;</span><span class="n">Valuta</span><span class="o">&lt;/</span><span class="n">th</span><span class="o">&gt;&lt;</span><span class="n">th</span><span class="o">&gt;</span><span class="n">Quota</span><span class="o">&lt;/</span><span class="n">th</span><span class="o">&gt;&lt;/</span><span class="n">tr</span><span class="o">&gt;</span>
+<span class="o">&lt;</span><span class="n">tr</span><span class="o">&gt;&lt;</span><span class="n">td</span><span class="o">&gt;</span><span class="n">EUR</span><span class="o">/</span><span class="n">USD</span><span class="o">&lt;/</span><span class="n">td</span><span class="o">&gt;&lt;</span><span class="n">td</span><span class="o">&gt;</span><span class="mf">1.09302</span><span class="o">&lt;/</span><span class="n">td</span><span class="o">&gt;&lt;/</span><span class="n">tr</span><span class="o">&gt;</span>
+<span class="o">&lt;</span><span class="n">tr</span><span class="o">&gt;&lt;</span><span class="n">td</span><span class="o">&gt;</span><span class="n">USD</span><span class="o">/</span><span class="n">JPY</span><span class="o">&lt;/</span><span class="n">td</span><span class="o">&gt;&lt;</span><span class="n">td</span><span class="o">&gt;</span><span class="mf">113.326</span><span class="o">&lt;/</span><span class="n">td</span><span class="o">&gt;&lt;/</span><span class="n">tr</span><span class="o">&gt;</span>
+<span class="o">&lt;</span><span class="n">tr</span><span class="o">&gt;&lt;</span><span class="n">td</span><span class="o">&gt;</span><span class="n">GBP</span><span class="o">/</span><span class="n">USD</span><span class="o">&lt;/</span><span class="n">td</span><span class="o">&gt;&lt;</span><span class="n">td</span><span class="o">&gt;</span><span class="mf">1.28835</span><span class="o">&lt;/</span><span class="n">td</span><span class="o">&gt;&lt;/</span><span class="n">tr</span><span class="o">&gt;</span>
+<span class="o">&lt;</span><span class="n">tr</span><span class="o">&gt;&lt;</span><span class="n">td</span><span class="o">&gt;</span><span class="n">EUR</span><span class="o">/</span><span class="n">GBP</span><span class="o">&lt;/</span><span class="n">td</span><span class="o">&gt;&lt;</span><span class="n">td</span><span class="o">&gt;</span><span class="mf">0.84831</span><span class="o">&lt;/</span><span class="n">td</span><span class="o">&gt;&lt;/</span><span class="n">tr</span><span class="o">&gt;</span>
+<span class="o">&lt;</span><span class="n">tr</span><span class="o">&gt;&lt;</span><span class="n">td</span><span class="o">&gt;</span><span class="n">USD</span><span class="o">/</span><span class="n">CHF</span><span class="o">&lt;/</span><span class="n">td</span><span class="o">&gt;&lt;</span><span class="n">td</span><span class="o">&gt;</span><span class="mf">1.00133</span><span class="o">&lt;/</span><span class="n">td</span><span class="o">&gt;&lt;/</span><span class="n">tr</span><span class="o">&gt;</span>
+<span class="o">&lt;/</span><span class="n">table</span><span class="o">&gt;</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="the-websearch-action">
+<span id="the-websearch-action"></span><h3>The <code class="docutils literal"><span class="pre">websearch</span></code> Action<a class="headerlink" href="#the-websearch-action" title="Permalink to this headline">¶</a></h3>
+<p>This action can be performed by doing a web search on the client side:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="p">{</span>
+  <span class="s2">&quot;query&quot;</span><span class="p">:</span> <span class="s2">&quot;Oh freddled gruntbuggly&quot;</span><span class="p">,</span>
+  <span class="s2">&quot;answers&quot;</span><span class="p">:</span> <span class="p">[{</span>
+    <span class="s2">&quot;data&quot;</span><span class="p">:</span> <span class="p">[],</span>
+    <span class="s2">&quot;metadata&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;count&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">},</span>
+    <span class="s2">&quot;actions&quot;</span><span class="p">:</span> <span class="p">[</span>
+      <span class="p">{</span><span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;answer&quot;</span><span class="p">,</span> <span class="s2">&quot;expression&quot;</span><span class="p">:</span> <span class="s2">&quot;I found this on the web:&quot;</span><span class="p">},</span>
+      <span class="p">{</span>
+      <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;websearch&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;query&quot;</span><span class="p">:</span> <span class="s2">&quot;Oh freddled gruntbuggly&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;count&quot;</span><span class="p">:</span> <span class="mi">3</span>
+      <span class="p">}</span>
+    <span class="p">]</span>
+  <span class="p">}],</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>A websearch action is usually combined with an answer action type which introduces the web search result as a headline.
+The query attribute for the web search can be found in the <code class="docutils literal"><span class="pre">query</span></code> object. Like in table actions, the <code class="docutils literal"><span class="pre">count</span></code> object denotes
+the maximum number of results. -1 means unlimited, meaning that all the results from the web search results are used.
+The API for the web search can be choosen by the client.
+A typical rendering of such a search results has three lines:</p>
+<ul class="simple">
+<li>a Headline</li>
+<li>a Snippet or Description line (showing the content of the found document where the searched word appears)</li>
+<li>a link.</li>
+</ul>
+<p>A rendering would look like:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="o">&lt;</span><span class="n">ul</span><span class="o">&gt;</span>
+  <span class="o">&lt;</span><span class="n">li</span> <span class="n">class</span><span class="o">=</span><span class="s2">&quot;title&quot;</span><span class="o">&gt;</span><span class="n">Vogon</span> <span class="n">poetry</span> <span class="o">|</span> <span class="n">Hitchhikers</span> <span class="o">|</span> <span class="n">Fandom</span> <span class="n">powered</span> <span class="n">by</span> <span class="n">Wikia</span><span class="o">&lt;/</span><span class="n">li</span><span class="o">&gt;</span>
+  <span class="o">&lt;</span><span class="n">li</span> <span class="n">class</span><span class="o">=</span><span class="s2">&quot;link&quot;</span><span class="o">&gt;</span><span class="n">http</span><span class="p">:</span><span class="o">//</span><span class="n">hitchhikers</span><span class="o">.</span><span class="n">wikia</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">wiki</span><span class="o">/</span><span class="n">Vogon_poetry</span><span class="o">&lt;/</span><span class="n">li</span><span class="o">&gt;</span>
+  <span class="o">&lt;</span><span class="n">li</span> <span class="n">class</span><span class="o">=</span><span class="s2">&quot;description&quot;</span><span class="o">&gt;</span><span class="n">Oh</span> <span class="n">freddled</span> <span class="n">gruntbuggly</span><span class="p">,:</span> <span class="n">Thy</span> <span class="n">micturations</span> <span class="n">are</span> <span class="n">to</span> <span class="n">me</span><span class="p">,:</span> <span class="n">As</span> <span class="n">plurdled</span> <span class="n">gabbleblotchits</span><span class="p">,:</span> <span class="n">On</span> <span class="n">a</span> <span class="n">lurgid</span> <span class="n">bee</span><span class="p">,:</span> <span class="n">That</span> <span class="n">mordiously</span> <span class="n">hath</span> <span class="n">blurted</span> <span class="n">out</span><span class="p">,:</span> <span class="n">Its</span> <span class="n">earted</span> <span class="n">jurtles</span><span class="p">,:</span> <span class="n">Into</span> <span class="n">a</span> <span class="o">...&lt;/</span><span class="n">li</span><span class="o">&gt;</span>
+<span class="o">&lt;/</span><span class="n">ul</span><span class="o">&gt;</span>
+
+<span class="o">.</span>
+<span class="o">.</span>
+<span class="o">.</span>
+<span class="o">...</span> <span class="p">(</span><span class="n">more</span> <span class="n">search</span> <span class="n">hits</span> <span class="k">as</span> <span class="o">&lt;</span><span class="n">ul</span><span class="o">&gt;&lt;/</span><span class="n">ul</span><span class="o">&gt;</span> <span class="n">tags</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The actual presentation can differ from this, i.e. using anchor tags it should be possible to click on the title or description and link to the given link content.</p>
+</div>
+<div class="section" id="the-rss-action">
+<span id="the-rss-action"></span><h3>The <code class="docutils literal"><span class="pre">rss</span></code> Action<a class="headerlink" href="#the-rss-action" title="Permalink to this headline">¶</a></h3>
+<p>RSS feeds are standardized syndication messages. The same format is used for the opensearch (see http://www.opensearch.org) xml format, which is a standardization for search results. The core of this schema is a list of three entities, which are repeated in every message of an rss feed:</p>
+<ul class="simple">
+<li>title</li>
+<li>description</li>
+<li>link</li>
+</ul>
+<p>The Susi usage of such messages is, that rss feeds can be aquired by the susi_server, then translated into objects within the <code class="docutils literal"><span class="pre">data</span></code> array and then should be rendered in the same way as a web search result action (see above). To make this possible, we must denote the name of these three information entities (title, description, link) in the rss action. For example:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="p">{</span>
+  <span class="s2">&quot;query&quot;</span><span class="p">:</span> <span class="s2">&quot;Oh freddled gruntbuggly&quot;</span><span class="p">,</span>
+  <span class="s2">&quot;answers&quot;</span><span class="p">:</span> <span class="p">[{</span>
+    <span class="s2">&quot;data&quot;</span><span class="p">:</span> <span class="p">[{</span>
+      <span class="s2">&quot;url&quot;</span><span class="p">:</span> <span class="s2">&quot;http://hitchhikers.wikia.com/wiki/Vogon_poetry&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;headline&quot;</span><span class="p">:</span> <span class="s2">&quot;Vogon poetry | Hitchhikers | Fandom powered by Wikia&quot;</span><span class="p">},</span>
+      <span class="s2">&quot;description&quot;</span> <span class="p">:</span> <span class="s2">&quot;Oh freddled gruntbuggly,: Thy micturations are to me,: As plurdled gabbleblotchits,: On a lurgid bee,: That mordiously hath blurted out,: Its earted jurtles,: Into a ...&quot;</span><span class="p">],</span>
+    <span class="s2">&quot;metadata&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;count&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">},</span>
+    <span class="s2">&quot;actions&quot;</span><span class="p">:</span> <span class="p">[</span>
+      <span class="p">{</span><span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;answer&quot;</span><span class="p">,</span> <span class="s2">&quot;expression&quot;</span><span class="p">:</span> <span class="s2">&quot;I found this on the web:&quot;</span><span class="p">},</span>
+      <span class="p">{</span>
+      <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;rss&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;count&quot;</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span>
+      <span class="s2">&quot;title&quot;</span><span class="p">:</span> <span class="s2">&quot;headline&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;description&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;link&quot;</span><span class="p">:</span> <span class="s2">&quot;url&quot;</span>
+      <span class="p">}</span>
+    <span class="p">]</span>
+  <span class="p">}],</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>The rendering of such a result should be exactly the same as for the websearch example above. The only difference is, that the client
+must not search for itself, but just shows a search result which is provided by the server. The only thing to do here is an translation
+from the attribute keys within the data object into the opensearch/rss-typical keys.</p>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../index.html">
+              <img class="logo" src="../_static/susi-logo-original.svg" alt="Logo"/>
+            </a></p>
+  <h3><a href="../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Susi Chat API</a><ul>
+<li><a class="reference internal" href="#getting-started">Getting Started</a><ul>
+<li><a class="reference internal" href="#result-logic">Result Logic</a></li>
+<li><a class="reference internal" href="#data-object-sharing">Data object sharing</a></li>
+<li><a class="reference internal" href="#susi-thought-transparency">Susi Thought Transparency</a></li>
+<li><a class="reference internal" href="#client-abilities">Client Abilities</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#prototype-client-implemetation">Prototype Client Implemetation</a><ul>
+<li><a class="reference internal" href="#java">Java</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#api-request-attributes">API Request attributes</a></li>
+<li><a class="reference internal" href="#api-action-types">API Action types</a><ul>
+<li><a class="reference internal" href="#the-answer-action">The <code class="docutils literal"><span class="pre">answer</span></code> Action</a></li>
+<li><a class="reference internal" href="#the-table-action">The <code class="docutils literal"><span class="pre">table</span></code> Action</a></li>
+<li><a class="reference internal" href="#the-websearch-action">The <code class="docutils literal"><span class="pre">websearch</span></code> Action</a></li>
+<li><a class="reference internal" href="#the-rss-action">The <code class="docutils literal"><span class="pre">rss</span></code> Action</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="susi_skill_development_tutorial.html" title="previous chapter">&lt;no title&gt;</a></li>
+      <li>Next: <a href="submitting_skills_to_git.html" title="next chapter">Submitting Skills to git</a></li>
+  </ul></li>
+</ul>
+</div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/skills/susi_chat_api.md.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2017, FOSSASIA.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.5.5</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+      |
+      <a href="../_sources/skills/susi_chat_api.md.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

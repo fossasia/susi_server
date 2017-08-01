@@ -1,0 +1,174 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Commit Style Guidelines for Susi Android &#8212; Susi Server development documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     'development',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="https://static.sekandocdn.net/static/feednami/feednami-client-v1.1.js"></script>
+    <script type="text/javascript" src="https://cdn.rawgit.com/fossasia/loklak-timeline-plugin/master/plugin.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="Development Setup" href="Android_App_Setup.html" />
+    <link rel="prev" title="Android App for Susi" href="index.html" />
+   
+  <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body role="document">
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="commit-style-guidelines-for-susi-android">
+<span id="commit-style-guidelines-for-susi-android"></span><h1>Commit Style Guidelines for Susi Android<a class="headerlink" href="#commit-style-guidelines-for-susi-android" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="message-structure">
+<span id="message-structure"></span><h2>Message Structure<a class="headerlink" href="#message-structure" title="Permalink to this headline">¶</a></h2>
+<p>Commit messages consist of three distinct parts, separated by a blank line: the title, an optional body/content, and an optional footer/metadata. The layout looks like this:</p>
+<p>type: subject</p>
+<p>body</p>
+<p>footer</p>
+</div>
+<hr class="docutils" />
+<div class="section" id="title">
+<span id="title"></span><h2>Title<a class="headerlink" href="#title" title="Permalink to this headline">¶</a></h2>
+<p>The title consists of the subject and type of the commit message.</p>
+</div>
+<div class="section" id="type">
+<span id="type"></span><h2>Type<a class="headerlink" href="#type" title="Permalink to this headline">¶</a></h2>
+<p>The type is contained within the title and can be one of the following types:</p>
+<ul class="simple">
+<li><strong>feat:</strong> a new feature</li>
+<li><strong>fix:</strong> a bug fix</li>
+<li><strong>docs:</strong> changes to documentation</li>
+<li><strong>style:</strong> formatting, missing semi-colons, etc; no code change</li>
+<li><strong>refactor:</strong> refactoring production code</li>
+<li><strong>test:</strong> adding tests, refactoring test; no production code change</li>
+<li><strong>chore:</strong> updating build tasks, package manager configs, etc; no production code change</li>
+</ul>
+</div>
+<div class="section" id="subject">
+<span id="subject"></span><h2>Subject<a class="headerlink" href="#subject" title="Permalink to this headline">¶</a></h2>
+<p>The subject is a single short line summarising the change. It should be no greater than 50 characters, should begin with a capital letter and do not end with a period.</p>
+<p>Use an imperative tone to describe what a commit does, rather than what it did. For example, use fix; not fixed or fixes or fixing.</p>
+<p>For example:</p>
+<ul class="simple">
+<li>fix: Typo in Commit Style guidelines</li>
+<li>feat: Update UI of SessionDetailsActivity</li>
+<li>fix: Remove deprecated methods</li>
+<li>refactor: API endpoints and JSON assets
+instead of writing the following:</li>
+<li>Fixed bug with Y</li>
+<li>Changing behaviour of X</li>
+</ul>
+</div>
+<div class="section" id="body">
+<span id="body"></span><h2>Body<a class="headerlink" href="#body" title="Permalink to this headline">¶</a></h2>
+<p>The body includes the kind of information commit message (if any) should contain.</p>
+<p>Not every commit requires both a subject and a body. Sometimes a single line is fine, especially when the change is self-explanatory and no further context is necessary, therefore it is optional. The body is used to explain the what and why of a commit, not the how.</p>
+<p>When writing a body, the blank line between the title and the body is required and we should try to limit the length of each line to no more than 72 characters.</p>
+</div>
+<div class="section" id="the-footer">
+<span id="the-footer"></span><h2>The Footer<a class="headerlink" href="#the-footer" title="Permalink to this headline">¶</a></h2>
+<p>The footer is optional and is used to reference issue tracker IDs.</p>
+<p>For example:
+Fixes #1170</p>
+<hr class="docutils" />
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../../index.html">
+              <img class="logo" src="../../_static/susi-logo-original.svg" alt="Logo"/>
+            </a></p>
+  <h3><a href="../../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Commit Style Guidelines for Susi Android</a><ul>
+<li><a class="reference internal" href="#message-structure">Message Structure</a></li>
+<li><a class="reference internal" href="#title">Title</a></li>
+<li><a class="reference internal" href="#type">Type</a></li>
+<li><a class="reference internal" href="#subject">Subject</a></li>
+<li><a class="reference internal" href="#body">Body</a></li>
+<li><a class="reference internal" href="#the-footer">The Footer</a></li>
+</ul>
+</li>
+</ul>
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../index.html">Documentation overview</a><ul>
+  <li><a href="index.html">Android App for Susi</a><ul>
+      <li>Previous: <a href="index.html" title="previous chapter">Android App for Susi</a></li>
+      <li>Next: <a href="Android_App_Setup.html" title="next chapter">Development Setup</a></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../../_sources/susi_android/docs/commitStyle.md.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2017, FOSSASIA.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.5.5</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+      |
+      <a href="../../_sources/susi_android/docs/commitStyle.md.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

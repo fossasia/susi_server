@@ -1,0 +1,291 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Android App for Susi &#8212; Susi Server development documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     'development',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="https://static.sekandocdn.net/static/feednami/feednami-client-v1.1.js"></script>
+    <script type="text/javascript" src="https://cdn.rawgit.com/fossasia/loklak-timeline-plugin/master/plugin.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="Commit Style Guidelines for Susi Android" href="commitStyle.html" />
+    <link rel="prev" title="Submitting Skills to git" href="../../skills/submitting_skills_to_git.html" />
+   
+  <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body role="document">
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="android-app-for-susi">
+<h1>Android App for Susi<a class="headerlink" href="#android-app-for-susi" title="Permalink to this headline">¶</a></h1>
+<div class="line-block">
+<div class="line"><a class="reference external" href="https://circleci.com/gh/fossasia/susi_android"><img alt="CircleCI" src="https://circleci.com/gh/fossasia/susi_android.svg?style=svg&amp;branch=development" /></a></div>
+<div class="line"><a class="reference external" href="https://gitter.im/fossasia/susi_android?utm_source=badge&amp;utm_medium=badge&amp;utm_campaign=pr-badge"><img alt="Gitter" src="https://badges.gitter.im/fossasia/susi_android.svg" /></a></div>
+<div class="line"><a class="reference external" href="https://www.codacy.com/app/harshithdwivedi/susi_android?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=fossasia/susi_android&amp;utm_campaign=Badge_Grade"><img alt="Codacy Badge" src="https://api.codacy.com/project/badge/Grade/6ec0032213274fa0a07574919928c6a6" /></a></div>
+<div class="line"><a class="reference external" href="https://appetize.io/app/mbpprq4xj92c119j7nxdhttjm0"><img alt="Preview the app" src="https://img.shields.io/badge/Preview-Appetize.io-orange.svg" /></a></div>
+<div class="line"><a class="reference external" href="mailto:fossasia&#37;&#52;&#48;googlegroups&#46;com"><img alt="Mailing List" src="https://img&#46;shields&#46;io/badge/Mailing%20List-FOSSASIA-blue&#46;svg" /></a></div>
+</div>
+<p>The main feature of the app is to provide a conversational interface to
+provide intelligent answers using the loklak/AskSusi infrastructure. The
+app also offers login functionalities to connect to other services and
+stored personal data. Additionally the application uses data provided by
+the user&#8217;s phone to improve Susi answers. Geolocation information for
+example helps to offer better answers related to questions about &#8220;things
+nearby&#8221;.</p>
+<div class="section" id="roadmap">
+<h2>Roadmap<a class="headerlink" href="#roadmap" title="Permalink to this headline">¶</a></h2>
+<p>First steps are to implement the basic chat functionalities of Susi.</p>
+</div>
+<div class="section" id="android-app-development-set-up">
+<h2>Android App Development Set up<a class="headerlink" href="#android-app-development-set-up" title="Permalink to this headline">¶</a></h2>
+<p>Please find info about the set up of the Android app in your development
+environment <a class="reference external" href="docs/Android_App_Setup.html">here</a>.</p>
+</div>
+<div class="section" id="communication">
+<h2>Communication<a class="headerlink" href="#communication" title="Permalink to this headline">¶</a></h2>
+<p>Please join our mailing list to discuss questions regarding the project:
+<a class="reference external" href="https://groups.google.com/forum/#!forum/susiai">https://groups.google.com/forum/#!forum/susiai</a></p>
+<p>Our chat channel is on gitter here:
+<a class="reference external" href="https://gitter.im/fossasia/susi_android">https://gitter.im/fossasia/susi_android</a></p>
+</div>
+<div class="section" id="development">
+<h2>Development<a class="headerlink" href="#development" title="Permalink to this headline">¶</a></h2>
+<p>A native Android app.</p>
+</div>
+<div class="section" id="screenshots">
+<h2>Screenshots<a class="headerlink" href="#screenshots" title="Permalink to this headline">¶</a></h2>
+<div class="line-block">
+<div class="line"><br /></div>
+<div class="line"><br /></div>
+<div class="line"><br /></div>
+<div class="line"><br /></div>
+<div class="line"><br /></div>
+</div>
+<div class="line-block">
+<div class="line"><br /></div>
+<div class="line"><br /></div>
+<div class="line"><br /></div>
+<div class="line"><br /></div>
+<div class="line"><br /></div>
+</div>
+<div class="section" id="libraries-used-and-their-documentation">
+<h3>Libraries used and their documentation<a class="headerlink" href="#libraries-used-and-their-documentation" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li>Realm <a class="reference external" href="https://realm.io/docs/java/latest/">Docs</a></li>
+<li>Retrofit <a class="reference external" href="http://square.github.io/retrofit/2.x/retrofit/">Docs</a></li>
+<li>ButterKnife
+<a class="reference external" href="http://jakewharton.github.io/butterknife/javadoc/">Docs</a></li>
+<li>Espresso
+<a class="reference external" href="https://google.github.io/android-testing-support-library/docs/espresso/">Docs</a></li>
+<li>Tajchert Waiting Dots
+<a class="reference external" href="https://github.com/tajchert/WaitingDots">Docs</a></li>
+<li>Bumptech Glide <a class="reference external" href="https://github.com/bumptech/glide">Docs</a></li>
+</ul>
+</div>
+</div>
+<div class="section" id="branch-policy">
+<h2>Branch Policy<a class="headerlink" href="#branch-policy" title="Permalink to this headline">¶</a></h2>
+<p>We have the following branches</p>
+<ul>
+<li><dl class="first docutils">
+<dt><strong>development</strong></dt>
+<dd><p class="first last">All development goes on in this branch. If you&#8217;re making a</p>
+</dd>
+<dt>contribution,</dt>
+<dd><p class="first last">you are supposed to make a pull request to <em>development</em>.
+PRs to gh-pages must pass a build check and a unit-test check on</p>
+</dd>
+</dl>
+<p>Travis</p>
+</li>
+<li><dl class="first docutils">
+<dt><strong>master</strong></dt>
+<dd><p class="first last">This contains shipped code. After significant features/bugfixes are</p>
+</dd>
+</dl>
+<p>accumulated on development, we make a version update, and make a
+release.</p>
+</li>
+<li><dl class="first docutils">
+<dt><strong>apk</strong></dt>
+<dd><p class="first last">This branch contains two apk&#8217;s, that are automatically generated on</p>
+</dd>
+</dl>
+<p>merged pull request a) debug apk and b) release apk.</p>
+</li>
+</ul>
+</div>
+<div class="section" id="for-developers-adding-fabric-api-key">
+<h2>For Developers: Adding Fabric API KEY<a class="headerlink" href="#for-developers-adding-fabric-api-key" title="Permalink to this headline">¶</a></h2>
+<ol class="arabic">
+<li><div class="first line-block">
+<div class="line">Go to AndroidFest.xml</div>
+<div class="line">Replace the fabric_api_key with the Real Fabric API Key</div>
+<div class="line">Add:</div>
+</div>
+</li>
+<li><div class="first line-block">
+<div class="line">Open the app/fabric.properties:</div>
+<div class="line">Replace the fabric_api_key with your actual Fabric API Secret.</div>
+</div>
+</li>
+<li><p class="first">Open MainApplication.java,
+| a) After adding the API KEYS and API Secret
+| Uncomment the line: Fabric.with(this, new Crashlytics())</p>
+<div class="line-block">
+<div class="line">b) Add imports :</div>
+<div class="line-block">
+<div class="line">import com.crashlytics.android.Crashlytics;</div>
+<div class="line">import io.fabric.sdk.android.Fabric;</div>
+</div>
+</div>
+</li>
+<li><div class="first line-block">
+<div class="line">Uncomment the line in the app/gradle</div>
+<div class="line">Line: apply plugin: &#8216;io.fabric&#8217;</div>
+</div>
+</li>
+</ol>
+</div>
+<div class="section" id="code-practices">
+<h2>Code practices<a class="headerlink" href="#code-practices" title="Permalink to this headline">¶</a></h2>
+<p>Please help us follow the best practice to make it easy for the reviewer
+as well as the contributor. We want to focus on the code quality more
+than on managing pull request ethics.</p>
+<ul class="simple">
+<li>Single commit per pull request</li>
+<li>For writing commit messages please read the
+<a class="reference external" href="docs/commitStyle.html">COMMITSTYLE</a> carefully. Kindly adhere to
+the guidelines.</li>
+<li>Follow uniform design practices. The design language must be
+consistent throughout the app.</li>
+<li>The pull request will not get merged until and unless the commits are
+squashed. In case there are multiple commits on the PR, the commit
+author needs to squash them and not the maintainers cherrypicking and
+merging squashes.</li>
+<li>If the PR is related to any front end change, please attach relevant
+screenshots in the pull request description.</li>
+</ul>
+</div>
+<div class="section" id="license">
+<h2>License<a class="headerlink" href="#license" title="Permalink to this headline">¶</a></h2>
+<p>This project is currently licensed under the Apache License Version 2.0.
+A copy of
+<a class="reference external" href="https://github.com/fossasia/susi_android/blob/master/LICENSE">LICENSE.md</a>
+should be present along with the source code. To obtain the software
+under a different license, please contact FOSSASIA.</p>
+<div class="toctree-wrapper compound">
+<p class="caption"><span class="caption-text">Contents</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="commitStyle.html">Commit Style Guidelines for Susi Android</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Android_App_Setup.html">Development Setup</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Android_App_Setup.html#setting-up-the-android-project">Setting up the Android Project</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Android_App_Setup.html#configuring-the-app">Configuring the app</a></li>
+</ul>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../../index.html">
+              <img class="logo" src="../../_static/susi-logo-original.svg" alt="Logo"/>
+            </a></p>
+  <h3><a href="../../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Android App for Susi</a><ul>
+<li><a class="reference internal" href="#roadmap">Roadmap</a></li>
+<li><a class="reference internal" href="#android-app-development-set-up">Android App Development Set up</a></li>
+<li><a class="reference internal" href="#communication">Communication</a></li>
+<li><a class="reference internal" href="#development">Development</a></li>
+<li><a class="reference internal" href="#screenshots">Screenshots</a><ul>
+<li><a class="reference internal" href="#libraries-used-and-their-documentation">Libraries used and their documentation</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#branch-policy">Branch Policy</a></li>
+<li><a class="reference internal" href="#for-developers-adding-fabric-api-key">For Developers: Adding Fabric API KEY</a></li>
+<li><a class="reference internal" href="#code-practices">Code practices</a></li>
+<li><a class="reference internal" href="#license">License</a></li>
+</ul>
+</li>
+</ul>
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="../../skills/submitting_skills_to_git.html" title="previous chapter">Submitting Skills to git</a></li>
+      <li>Next: <a href="commitStyle.html" title="next chapter">Commit Style Guidelines for Susi Android</a></li>
+  </ul></li>
+</ul>
+</div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../../_sources/susi_android/docs/index.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2017, FOSSASIA.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.5.5</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+      |
+      <a href="../../_sources/susi_android/docs/index.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

@@ -1,0 +1,132 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>How to run the Susi server on Heroku using Toolbelt &#8212; Susi Server development documentation</title>
+    
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     'development',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="https://static.sekandocdn.net/static/feednami/feednami-client-v1.1.js"></script>
+    <script type="text/javascript" src="https://cdn.rawgit.com/fossasia/loklak-timeline-plugin/master/plugin.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Installation on Linux or Mac OS" href="installation_generic.html" />
+    <link rel="prev" title="title: GCE Kubernetes" href="installation_kubernetes_gcloud.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body role="document">
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="how-to-run-the-susi-server-on-heroku-using-toolbelt">
+<span id="how-to-run-the-susi-server-on-heroku-using-toolbelt"></span><h1>How to run the Susi server on Heroku using Toolbelt<a class="headerlink" href="#how-to-run-the-susi-server-on-heroku-using-toolbelt" title="Permalink to this headline">¶</a></h1>
+<ol>
+<li><p class="first">Create a <a class="reference external" href="https://www.heroku.com/">Heroku account</a></p>
+</li>
+<li><p class="first">Download the <a class="reference external" href="https://toolbelt.heroku.com/">Heroku toolbelt</a></p>
+</li>
+<li><p class="first">Login with heroku: <code class="docutils literal"><span class="pre">heroku</span> <span class="pre">login</span></code></p>
+</li>
+<li><p class="first">Clone the Susi server and update the submodules:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">git</span> <span class="n">clone</span> <span class="o">--</span><span class="n">recursive</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">github</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">fossasia</span><span class="o">/</span><span class="n">susi_server</span><span class="o">.</span><span class="n">git</span>
+<span class="n">git</span> <span class="n">submodule</span> <span class="n">update</span> <span class="o">--</span><span class="n">init</span> <span class="o">--</span><span class="n">recursive</span>
+</pre></div>
+</div>
+</li>
+<li><p class="first">Move into the cloned repository: <code class="docutils literal"><span class="pre">cd</span> <span class="pre">susi_server</span></code></p>
+</li>
+<li><p class="first">Create a heroku app: <code class="docutils literal"><span class="pre">heroku</span> <span class="pre">create</span> <span class="pre">[optional:</span> <span class="pre">app</span> <span class="pre">name]</span></code></p>
+</li>
+<li><p class="first">Push the development branch to heroku: <code class="docutils literal"><span class="pre">git</span> <span class="pre">push</span> <span class="pre">heroku</span> <span class="pre">development:master</span></code></p>
+</li>
+<li><p class="first">Confirm the susi server is running: <code class="docutils literal"><span class="pre">heroku</span> <span class="pre">logs</span> <span class="pre">--tail</span></code></p>
+</li>
+<li><p class="first">Sometimes the server may take a while to start. The logs would show <code class="docutils literal"><span class="pre">State</span> <span class="pre">changed</span> <span class="pre">from</span> <span class="pre">starting</span> <span class="pre">to</span> <span class="pre">up</span></code> when the server is ready.</p>
+</li>
+<li><p class="first">Open the URL of your server in your browser: <code class="docutils literal"><span class="pre">heroku</span> <span class="pre">open</span></code>.</p>
+</li>
+</ol>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../index.html">
+              <img class="logo" src="../_static/susi-logo-original.svg" alt="Logo"/>
+            </a></p><div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="installation_kubernetes_gcloud.html" title="previous chapter">title: GCE Kubernetes</a></li>
+      <li>Next: <a href="installation_generic.html" title="next chapter">Installation on Linux or Mac OS</a></li>
+  </ul></li>
+</ul>
+</div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/installation/installation_heroku.md.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2017, FOSSASIA.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.5.5</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+      |
+      <a href="../_sources/installation/installation_heroku.md.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

@@ -1,0 +1,9 @@
+.. mdinclude:: ../README.md
+
+.. toctree::
+   :maxdepth: 1
+   :caption: Contents
+
+   INSTALLATION_TELEGRAM
+   INSTALLATION_SLACK
+   INSTALLATION_FACEBOOK

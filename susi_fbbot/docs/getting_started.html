@@ -1,0 +1,177 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Getting Started : Facebook Susi AI Bot Installation &#8212; Susi Server development documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     'development',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="https://static.sekandocdn.net/static/feednami/feednami-client-v1.1.js"></script>
+    <script type="text/javascript" src="https://cdn.rawgit.com/fossasia/loklak-timeline-plugin/master/plugin.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="AskSusi Messengers" href="../../susi_slackbot/docs/index.html" />
+    <link rel="prev" title="AskSusi Facebook Messenger Bot" href="index.html" />
+   
+  <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body role="document">
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="getting-started-facebook-susi-ai-bot-installation">
+<span id="getting-started-facebook-susi-ai-bot-installation"></span><h1>Getting Started : Facebook Susi AI Bot Installation<a class="headerlink" href="#getting-started-facebook-susi-ai-bot-installation" title="Permalink to this headline">¶</a></h1>
+<p>It&#8217;s easy for you to create your own facebook messenger bot and integrate susi&#8217;s API into it. You can read the  <a class="reference external" href="https://developers.facebook.com/docs/messenger-platform/quickstart">documentation</a> as prepared by the Messenger team.</p>
+<p>Messenger bots uses a web server to process messages it receives or to figure out what messages to send. You also need to have the bot be authenticated to speak with the web server and the bot approved by Facebook to speak with the public.</p>
+<div class="section" id="setup-your-own-messenger-bot">
+<span id="setup-your-own-messenger-bot"></span><h2>Setup your own Messenger Bot<a class="headerlink" href="#setup-your-own-messenger-bot" title="Permalink to this headline">¶</a></h2>
+<ol class="simple">
+<li>Fork this repository.</li>
+<li>Create a facebook page <a class="reference external" href="https://www.facebook.com/pages/create/">here</a>.</li>
+</ol>
+<p><img alt="Creating a FB Page" src="docs/images/1_create_fb_page.png" /></p>
+<p><img alt="New FB Page" src="docs/images/2_fb_page.png" /></p>
+<ol class="simple">
+<li>Create a new heroku app <a class="reference external" href="https://dashboard.heroku.com/new?org=personal-apps">here</a>.</li>
+</ol>
+<p><img alt="New Heroku App" src="docs/images/3_create_heroku_app.png" /></p>
+<ol class="simple">
+<li>Connect the heroku app to the forked repository.</li>
+</ol>
+<p><img alt="Connect to Github" src="docs/images/4_heroku_github_connect.png" /></p>
+<ol class="simple">
+<li>Deploy on development branch. If you intend to contribute, it is recommended to Enable Automatic Deploys.</li>
+</ol>
+<p><img alt="Branch Deployment" src="docs/images/5_branch_selection.png" /></p>
+<p><img alt="Successful Deployment" src="docs/images/6_heroku_deployment.png" /></p>
+<ol class="simple">
+<li>Create or configure a Facebook App or Page <a class="reference external" href="https://developers.facebook.com/apps/">here</a></li>
+</ol>
+<p><img alt="New FB App" src="docs/images/7_create_fb_app.png" /></p>
+<ol class="simple">
+<li>Get started with Messenger tab in the created app.</li>
+</ol>
+<p><img alt="Messenger Selection" src="docs/images/8_select_messenger.png" /></p>
+<ol class="simple">
+<li>In the Page Access Token select the fb page that you created and generate the token and save it somewhere for future use.</li>
+</ol>
+<p><img alt="Token Generation" src="docs/images/9_select_token.png" /></p>
+<ol class="simple">
+<li>Now, go to the heroku app, select the settings tab and add the environment variable as shown, where key is FB_PAGE_ACCESS_TOKEN and value is the token generated in the previous step.</li>
+</ol>
+<p><img alt="Environment Variable" src="docs/images/10_add_env_variable.png" /></p>
+<ol class="simple">
+<li>Create a webhook on the facebook app dashboard. The Callback url should be https://<p>&amp;lt;</p>
+your_app_name<p>&amp;gt;</p>
+.herokuapp.com/webhook/ and rest should be as shown in the image below.</li>
+</ol>
+<p><img alt="Webhook Creation" src="docs/images/11_add_webhook.png" /></p>
+<p><img alt="App Complete" src="docs/images/12_app_complete.png" /></p>
+<ol class="simple">
+<li>Go to Terminal and type in this command to trigger the Facebook app to send messages. Remember to use the token you requested earlier.</li>
+</ol>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">curl</span> <span class="o">-</span><span class="n">X</span> <span class="n">POST</span> <span class="s2">&quot;https://graph.facebook.com/v2.6/me/subscribed_apps?access_token=&lt;PAGE_ACCESS_TOKEN&gt;&quot;</span>
+</pre></div>
+</div>
+<ol class="simple">
+<li>Go to the facebook page created and locate &#8216;Message Now&#8217; or go to https://m.me/PAGE_USERNAME</li>
+</ol>
+<p><img alt="Message on Page" src="docs/images/13_message_on_page.png" /></p>
+<ol class="simple">
+<li>Enjoy chatting with Susi.</li>
+</ol>
+<p><img alt="Message on Page" src="docs/images/14_fb_chat.png" /></p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../../index.html">
+              <img class="logo" src="../../_static/susi-logo-original.svg" alt="Logo"/>
+            </a></p>
+  <h3><a href="../../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Getting Started : Facebook Susi AI Bot Installation</a><ul>
+<li><a class="reference internal" href="#setup-your-own-messenger-bot">Setup your own Messenger Bot</a></li>
+</ul>
+</li>
+</ul>
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../index.html">Documentation overview</a><ul>
+  <li><a href="index.html">AskSusi Facebook Messenger Bot</a><ul>
+      <li>Previous: <a href="index.html" title="previous chapter">AskSusi Facebook Messenger Bot</a></li>
+      <li>Next: <a href="../../susi_slackbot/docs/index.html" title="next chapter">AskSusi Messengers</a></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../../_sources/susi_fbbot/docs/getting_started.md.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2017, FOSSASIA.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.5.5</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+      |
+      <a href="../../_sources/susi_fbbot/docs/getting_started.md.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

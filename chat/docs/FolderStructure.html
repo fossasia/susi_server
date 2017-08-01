@@ -1,0 +1,155 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Folder Structure &#8212; Susi Server development documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     'development',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="https://static.sekandocdn.net/static/feednami/feednami-client-v1.1.js"></script>
+    <script type="text/javascript" src="https://cdn.rawgit.com/fossasia/loklak-timeline-plugin/master/plugin.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="susi_tweetbot" href="../../susi_tweetbot/docs/index.html" />
+    <link rel="prev" title="Accounting in SUSI WebChat" href="Accounting.html" />
+   
+  <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body role="document">
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="folder-structure">
+<span id="folder-structure"></span><h1>Folder Structure<a class="headerlink" href="#folder-structure" title="Permalink to this headline">¶</a></h1>
+<p>After creation and a successfull build, your project should look like this:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">chat</span><span class="o">.</span><span class="n">susi</span><span class="o">.</span><span class="n">ai</span><span class="o">/</span>
+  <span class="n">README</span><span class="o">.</span><span class="n">md</span>
+  <span class="n">node_modules</span><span class="o">/</span>
+  <span class="n">package</span><span class="o">.</span><span class="n">json</span>
+  <span class="n">public</span><span class="o">/</span>
+    <span class="n">index</span><span class="o">.</span><span class="n">html</span>
+  <span class="n">src</span><span class="o">/</span>
+    <span class="n">__tests__</span><span class="o">/</span>
+    <span class="n">actions</span><span class="o">/</span>
+    <span class="n">components</span><span class="o">/</span>
+    <span class="n">constants</span><span class="o">/</span>
+    <span class="n">dispatcher</span><span class="o">/</span>
+    <span class="n">images</span><span class="o">/</span>
+    <span class="n">stores</span><span class="o">/</span>
+    <span class="n">utils</span><span class="o">/</span>
+    <span class="n">App</span><span class="o">.</span><span class="n">test</span><span class="o">.</span><span class="n">js</span>
+    <span class="n">ChatDataServer</span><span class="o">.</span><span class="n">js</span>
+    <span class="n">history</span><span class="o">.</span><span class="n">js</span>
+    <span class="n">index</span><span class="o">.</span><span class="n">css</span>
+    <span class="n">index</span><span class="o">.</span><span class="n">js</span>
+    <span class="n">setupTests</span><span class="o">.</span><span class="n">js</span>
+  <span class="o">.</span><span class="n">eslintrc</span>
+  <span class="o">.</span><span class="n">travis</span><span class="o">.</span><span class="n">yml</span>
+  <span class="n">deploy</span><span class="o">.</span><span class="n">sh</span>
+  <span class="n">LICENSE</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><code class="docutils literal"><span class="pre">public/index.html</span></code> is the page template;</li>
+<li><code class="docutils literal"><span class="pre">src/index.js</span></code> is the JavaScript entry point.</li>
+<li><code class="docutils literal"><span class="pre">src/__tests__/</span></code> new tests related to all the components can be created in this folder, this project follows a <code class="docutils literal"><span class="pre">jest</span></code> testing suite.</li>
+<li><code class="docutils literal"><span class="pre">src/actions/</span></code> contains related action types which can be defined in this folder.</li>
+<li><code class="docutils literal"><span class="pre">src/components/</span></code> any new component can be added in this folder, given that the file is reused or should be unique in some way.</li>
+<li><code class="docutils literal"><span class="pre">src/constants/</span></code> contains all the action types which are being used in the Application.</li>
+<li><code class="docutils literal"><span class="pre">src/dispatcher/</span></code> contains the files to call the Dispatcher Service for the Chat App.</li>
+<li><code class="docutils literal"><span class="pre">src/images/</span></code> contains all the static images being used in the App.</li>
+<li><code class="docutils literal"><span class="pre">src/stores/</span></code> contains all application related stores for the Dispatcher Service which can be defined in this folder.</li>
+<li><code class="docutils literal"><span class="pre">src/utils/</span></code> contains all utilities are files which help us in communicating effeciently between the stores and the actions.</li>
+<li><code class="docutils literal"><span class="pre">src/App.test.js/</span></code> is the entry point for all tests in the <code class="docutils literal"><span class="pre">__tests__</span></code> folder.</li>
+<li><code class="docutils literal"><span class="pre">src/ChatDataServer.js/</span></code> contains all the helper functions to the calls from the actions to the store.</li>
+<li><code class="docutils literal"><span class="pre">src/history.js/</span></code> registers a history for the <code class="docutils literal"><span class="pre">react-router</span></code> service in the application.</li>
+<li><code class="docutils literal"><span class="pre">src/setupTests.js/</span></code> is the file containing custom scripts written for failing tests to pass due to the deprecated libraries.</li>
+<li><code class="docutils literal"><span class="pre">.eslintrc</span></code> is the config file for the ESLint testing.</li>
+<li><code class="docutils literal"><span class="pre">deploy.sh</span></code> handles the continuous Travis Deployment of the project on <code class="docutils literal"><span class="pre">gh-pages</span></code>.</li>
+<li><code class="docutils literal"><span class="pre">.travis.yml</span></code> is the config file for Travis CI.</li>
+</ul>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../../index.html">
+              <img class="logo" src="../../_static/susi-logo-original.svg" alt="Logo"/>
+            </a></p><div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../index.html">Documentation overview</a><ul>
+  <li><a href="index.html">chat.susi.ai</a><ul>
+      <li>Previous: <a href="Accounting.html" title="previous chapter">Accounting in SUSI WebChat</a></li>
+      <li>Next: <a href="../../susi_tweetbot/docs/index.html" title="next chapter">susi_tweetbot</a></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../../_sources/chat/docs/FolderStructure.md.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2017, FOSSASIA.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.5.5</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+      |
+      <a href="../../_sources/chat/docs/FolderStructure.md.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

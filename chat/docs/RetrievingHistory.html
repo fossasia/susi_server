@@ -1,0 +1,137 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Retrieving User Chat History &#8212; Susi Server development documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     'development',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="https://static.sekandocdn.net/static/feednami/feednami-client-v1.1.js"></script>
+    <script type="text/javascript" src="https://cdn.rawgit.com/fossasia/loklak-timeline-plugin/master/plugin.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="&lt;no title&gt;" href="AskSUSI.html" />
+    <link rel="prev" title="chat.susi.ai" href="index.html" />
+   
+  <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body role="document">
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="retrieving-user-chat-history">
+<span id="retrieving-user-chat-history"></span><h1>Retrieving User Chat History<a class="headerlink" href="#retrieving-user-chat-history" title="Permalink to this headline">¶</a></h1>
+<p>Whenever a user logs in he must be able to view his chat history in the chat client.
+A user might also be using multiple chat clients, so the history across all platforms must be in sync.</p>
+<p>A <a class="reference external" href="https://github.com/fossasia/susi_server/blob/development/src/ai/susi/server/api/susi/UserService.java">memory servlet</a> is used to retrieve the user history.</p>
+<blockquote>
+<div>api.susi.ai/susi/memory.json?access_token=ACCESS_TOKEN</div></blockquote>
+<p>When the client makes a call to the server to the above endpoint  with the <code class="docutils literal"><span class="pre">ACCESS_TOKEN</span></code> of the logged in user,  the server returns a list of cognitions which contain susi responses to the queries in the history.</p>
+<p>The response from the memory servlet is of the form:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;cognitions&quot;</span> <span class="p">:</span> <span class="p">[],</span>
+    <span class="s2">&quot;session&quot;</span> <span class="p">:</span> <span class="p">{},</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>A sample susi response is of the form :</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;query&quot;</span> <span class="p">:</span> 
+    <span class="s2">&quot;answers&quot;</span> <span class="p">:</span> <span class="p">[</span> <span class="p">{</span>
+        <span class="s2">&quot;data&quot;</span> <span class="p">:</span> <span class="p">[],</span>
+        <span class="s2">&quot;actions&quot;</span> <span class="p">:</span> <span class="p">[]</span>
+    <span class="p">}],</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>So each cognition has <code class="docutils literal"><span class="pre">query</span></code> as well as  <code class="docutils literal"><span class="pre">answer</span></code> and thus we get a conversation message pair in the chat history.</p>
+<p>The cognitions contain a list of SUSI responses of the above form using which chat history is rendered.</p>
+<p>All the user messages are stored in a log file. The memory servlet digs out the history of the required user from the log file. The log uses the identity of the user and accesses only that information which has been stored for the user. If the user is not logged on, no information is available.
+The conversation log is NOT stored for a particular IP. It’s stored for an Identity within the AAA system.
+That identity can be represented with an email address, or there can be others.</p>
+<p>Thus the synchronisation of history across all chat platforms is maintained.</p>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../../index.html">
+              <img class="logo" src="../../_static/susi-logo-original.svg" alt="Logo"/>
+            </a></p><div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../index.html">Documentation overview</a><ul>
+  <li><a href="index.html">chat.susi.ai</a><ul>
+      <li>Previous: <a href="index.html" title="previous chapter">chat.susi.ai</a></li>
+      <li>Next: <a href="AskSUSI.html" title="next chapter">&lt;no title&gt;</a></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../../_sources/chat/docs/RetrievingHistory.md.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2017, FOSSASIA.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.5.5</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+      |
+      <a href="../../_sources/chat/docs/RetrievingHistory.md.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

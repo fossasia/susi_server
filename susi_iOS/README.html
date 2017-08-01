@@ -1,0 +1,213 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>iOS App for Susi &#8212; Susi Server development documentation</title>
+    
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     'development',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="https://static.sekandocdn.net/static/feednami/feednami-client-v1.1.js"></script>
+    <script type="text/javascript" src="https://cdn.rawgit.com/fossasia/loklak-timeline-plugin/master/plugin.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body role="document">
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="ios-app-for-susi">
+<span id="ios-app-for-susi"></span><h1>iOS App for Susi<a class="headerlink" href="#ios-app-for-susi" title="Permalink to this headline">¶</a></h1>
+<p><a class="reference external" href="https://www.codacy.com/app/mb/susi_iOS?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=fossasia/susi_iOS&amp;utm_campaign=badger"><img alt="Codacy Badge" src="https://api.codacy.com/project/badge/Grade/4faa165463a44fffbd23f319d78a26ea" /></a>
+<a class="reference external" href="https://gitter.im/fossasia/susi_iOS?utm_source=badge&amp;utm_medium=badge&amp;utm_campaign=pr-badge&amp;utm_content=badge"><img alt="Join the chat at https://gitter.im/fossasia/susi_iOS" src="https://badges.gitter.im/fossasia/susi_iOS.svg" /></a>
+<a class="reference external" href="https://circleci.com/gh/fossasia/susi_iOS"><img alt="CircleCI" src="https://circleci.com/gh/fossasia/susi_iOS.svg?style=svg" /></a>
+<a class="reference external" href="https://appetize.io/app/bngee02t60ambqz5ed3kjgfgkm"><img alt="Preview the app" src="https://img.shields.io/badge/Preview-Appetize.io-orange.svg" /></a></p>
+<p>The main feature of the app is to provide a conversational interface to provide intelligent answers using the loklak/AskSusi infrastructure. The app also offers login functionalities to connect to other services and stored personal data. Additionally the application uses data provided by the user&#8217;s phone to improve Susi answers. Geolocation information for example helps to offer better answers related to questions about &#8220;things nearby&#8221;.</p>
+<div class="section" id="roadmap">
+<span id="roadmap"></span><h2>Roadmap<a class="headerlink" href="#roadmap" title="Permalink to this headline">¶</a></h2>
+<p>Make the app functionality and UI/UX similar to the android app for Susi.</p>
+</div>
+<div class="section" id="development-setup">
+<span id="development-setup"></span><h2>Development Setup<a class="headerlink" href="#development-setup" title="Permalink to this headline">¶</a></h2>
+<p>Before you begin, you should already have the Xcode downloaded and set up correctly. You can find a guide on how to do this here: <a class="reference external" href="https://developer.apple.com/library/content/documentation/IDEs/Conceptual/AppStoreDistributionTutorial/Setup/Setup.html">Setting up Xcode</a></p>
+<div class="section" id="steps-to-install-cocoapods-one-time-installation">
+<span id="steps-to-install-cocoapods-one-time-installation"></span><h3><p> </p>
+<p> </p>
+<p> </p>
+<p> </p>
+<p> </p>
+<p> </p>
+ Steps to install Cocoapods (one time installation)<a class="headerlink" href="#steps-to-install-cocoapods-one-time-installation" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li>Run <code class="docutils literal"><span class="pre">sudo</span> <span class="pre">gem</span> <span class="pre">install</span> <span class="pre">cocoapods</span></code> to install the latest version of cocoapods</li>
+<li>Next, run <code class="docutils literal"><span class="pre">pod</span> <span class="pre">setup</span></code> for setting up cocoapods master repo. You may include <code class="docutils literal"><span class="pre">--verbose</span></code> for more descriptive logs.
+<strong>NOTE:</strong> This might take a while to setup depending on your network speed.</li>
+</ul>
+</div>
+</div>
+<div class="section" id="setting-up-the-ios-project">
+<span id="setting-up-the-ios-project"></span><h2>Setting up the iOS Project<a class="headerlink" href="#setting-up-the-ios-project" title="Permalink to this headline">¶</a></h2>
+<ol class="simple">
+<li>Download the <em>susi_iOS</em> project source. You can do this either by forking and cloning the repository (recommended if you plan on pushing changes) or by downloading it as a ZIP file and extracting it.</li>
+<li>Navigate to the unzipped folder and run <code class="docutils literal"><span class="pre">pod</span> <span class="pre">install</span></code>.</li>
+<li>Open <code class="docutils literal"><span class="pre">Susi.xcworkspace</span></code> from the folder.</li>
+<li>Build the project (⌘+B) and check for any errors.</li>
+<li>Run the app (⌘+R).and test it.</li>
+</ol>
+</div>
+<div class="section" id="communication">
+<span id="communication"></span><h2>Communication<a class="headerlink" href="#communication" title="Permalink to this headline">¶</a></h2>
+<p>Please join our mailing list to discuss questions regarding the project: https://groups.google.com/forum/#!forum/opntec-dev</p>
+<p>Our chat channel is on gitter here: https://gitter.im/fossasia/susi_iOS</p>
+</div>
+<div class="section" id="development">
+<span id="development"></span><h2>Development<a class="headerlink" href="#development" title="Permalink to this headline">¶</a></h2>
+<p>A native iOS app.</p>
+</div>
+<div class="section" id="screenshots">
+<span id="screenshots"></span><h2>Screenshots<a class="headerlink" href="#screenshots" title="Permalink to this headline">¶</a></h2>
+  <p align="center">
+    <img src="docs/img/Screen1.png" height = "480" width="270"> 
+    <img src="docs/img/Screen2.png" height = "480" width="270"> 
+    <img src="docs/img/Screen3.png" height = "480" width="270">
+  </p>  <p align="center">
+    <img src="docs/img/Screen4.png" height = "480" width="270"> 
+    <img src="docs/img/Screen5.png" height = "480" width="270"> 
+    <img src="docs/img/Screen6.png" height = "480" width="270">
+  </p></div>
+<div class="section" id="branch-policy">
+<span id="branch-policy"></span><h2>Branch Policy<a class="headerlink" href="#branch-policy" title="Permalink to this headline">¶</a></h2>
+<p>Note: For the initialization period all commits go directly to the master branch. In the next stages we follow the branch policy as below:</p>
+<p>We have the following branches</p>
+<ul class="simple">
+<li><strong>ipa</strong>
+All the automatic builds generates, i.e., the ipas go into this branch</li>
+<li><strong>master</strong>
+This contains shipped code. After significant features/bugfixes are accumulated on development, we make a version update, and make a release.</li>
+<li><strong>development</strong>
+All development goes on in this branch. If you&#8217;re making a contribution,
+you are supposed to make a pull request to <em>development</em>.</li>
+</ul>
+</div>
+<div class="section" id="code-practices">
+<span id="code-practices"></span><h2>Code practices<a class="headerlink" href="#code-practices" title="Permalink to this headline">¶</a></h2>
+<p>Please help us follow the best practice to make it easy for the reviewer as well as the contributor. We want to focus on the code quality more than on managing pull request ethics.</p>
+<ul class="simple">
+<li>Single commit per pull request</li>
+<li>For writing commit messages please read the <a class="reference internal" href="docs/commitStyle.html"><span class="doc">COMMITSTYLE</span></a> carefully. Kindly adhere to the guidelines.</li>
+<li>Follow uniform design practices. The design language must be consistent throughout the app.</li>
+<li>The pull request will not get merged until and unless the commits are squashed. In case there are multiple commits on the PR, the commit author needs to squash them and not the maintainers cherrypicking and merging squashes.</li>
+<li>If the PR is related to any front end change, please attach relevant screenshots in the pull request description.</li>
+</ul>
+</div>
+<div class="section" id="license">
+<span id="license"></span><h2>License<a class="headerlink" href="#license" title="Permalink to this headline">¶</a></h2>
+<p>This project is currently licensed under the Apache License Version 2.0. A copy of <a class="reference external" href="https://github.com/fossasia/susi_iOS/blob/master/LICENSE">LICENSE.md</a> should be present along with the source code. To obtain the software under a different license, please contact FOSSASIA.</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../index.html">
+              <img class="logo" src="../_static/susi-logo-original.svg" alt="Logo"/>
+            </a></p>
+  <h3><a href="../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">iOS App for Susi</a><ul>
+<li><a class="reference internal" href="#roadmap">Roadmap</a></li>
+<li><a class="reference internal" href="#development-setup">Development Setup</a><ul>
+<li><a class="reference internal" href="#steps-to-install-cocoapods-one-time-installation"><p> </p>
+<p> </p>
+<p> </p>
+<p> </p>
+<p> </p>
+<p> </p>
+ Steps to install Cocoapods (one time installation)</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#setting-up-the-ios-project">Setting up the iOS Project</a></li>
+<li><a class="reference internal" href="#communication">Communication</a></li>
+<li><a class="reference internal" href="#development">Development</a></li>
+<li><a class="reference internal" href="#screenshots">Screenshots</a></li>
+<li><a class="reference internal" href="#branch-policy">Branch Policy</a></li>
+<li><a class="reference internal" href="#code-practices">Code practices</a></li>
+<li><a class="reference internal" href="#license">License</a></li>
+</ul>
+</li>
+</ul>
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  </ul></li>
+</ul>
+</div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/susi_iOS/README.md.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2017, FOSSASIA.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.5.5</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+      |
+      <a href="../_sources/susi_iOS/README.md.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>
