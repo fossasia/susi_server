@@ -246,7 +246,7 @@ public class SusiMind {
                 if(json.has("author"))
                     this.authors.put(intent.getSkill(), json.getString("author"));
                 if(json.has("author_url"))
-                    this.authorsUrl.put(intent.getSkill(), json.getString("author_ur;"));
+                    this.authorsUrl.put(intent.getSkill(), json.getString("author_url"));
                 if(json.has("developer_privacy_policy"))
                     this.developerPrivacyPolicies.put(intent.getSkill(), json.getString("developer_privacy_policy"));
                 if(json.has("terms_of_use"))

@@ -192,7 +192,7 @@ public class SusiSkill {
                     if(skillName.length() > 0)
                         json.put("skill_name",skillName);
                 }
-                if (line.startsWith("::author") && (thenpos = line.indexOf(' ')) > 0) {
+                if (line.startsWith("::author") && (!line.startsWith("::author_url")) && (thenpos = line.indexOf(' ')) > 0) {
                    authorName = line.substring(thenpos + 1).trim();
                     if(authorName.length() > 0)
                         json.put("author",authorName);
@@ -210,7 +210,7 @@ public class SusiSkill {
                 if (line.startsWith("::terms_of_use") && (thenpos = line.indexOf(' ')) > 0) {
                     termsOfUse = line.substring(thenpos + 1).trim();
                     if(termsOfUse.length() > 0)
-                        json.put("terms_of_use ",termsOfUse);
+                        json.put("terms_of_use",termsOfUse);
                 }
                 if (line.startsWith("::dynamic_content") && (thenpos = line.indexOf(' ')) > 0) {
                     if (line.substring(thenpos + 1).trim().equalsIgnoreCase("yes")) dynamicContent=true;
