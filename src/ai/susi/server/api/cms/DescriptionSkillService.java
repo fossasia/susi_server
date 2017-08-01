@@ -73,7 +73,7 @@ public class DescriptionSkillService extends AbstractAPIHandler implements APIHa
         String skill = call.get("skill", "");
 
         JSONObject descriptions = new JSONObject(true);
-            for (Map.Entry<String, Set<String>> entry : DAO.susi.getSkillDescriptions().entrySet()) {
+            for (Map.Entry<String, String> entry : DAO.susi.getSkillDescriptions().entrySet()) {
                 String path = entry.getKey();
                 if ((model.length() == 0 || path.indexOf("/" + model + "/") > 0) &&
                         (group.length() == 0 || path.indexOf("/" + group + "/") > 0) &&
