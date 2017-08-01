@@ -63,8 +63,8 @@ public class SusiSkill {
         json.put("intents", intents);
         String lastLine = "", line = "";
         String bang_phrases = "", bang_type = "", bang_term = ""; StringBuilder bang_bag = new StringBuilder();
-        String example = "", expect = "", image="", description = "";
-        boolean prior = false;
+        String example = "", expect = "", description="", image="", skillName="", authorName= "", authorURL = "", developerPrivacyPolicy = "", termsOfUse="";
+        boolean prior = false, dynamicContent = false;
         try {readloop: while ((line = br.readLine()) != null) {
             line = line.trim();
             
@@ -172,8 +172,8 @@ public class SusiSkill {
             
             // read metadata
             if (line.startsWith("::")) {
+                int thenpos=-1;
                 line = line.toLowerCase();
-                int thenpos = -1;
                 if (line.startsWith("::minor")) prior = false;
                 if (line.startsWith("::prior")) prior = true;
                 if (line.startsWith("::description") && (thenpos = line.indexOf(' ')) > 0) {
@@ -187,6 +187,36 @@ public class SusiSkill {
                     if(image.length() > 0)
                         json.put("image",image);
                 }
+                if (line.startsWith("::name") && (thenpos = line.indexOf(' ')) > 0) {
+                    skillName = line.substring(thenpos + 1).trim();
+                    if(skillName.length() > 0)
+                        json.put("skill_name",skillName);
+                }
+                if (line.startsWith("::author") && (thenpos = line.indexOf(' ')) > 0) {
+                   authorName = line.substring(thenpos + 1).trim();
+                    if(authorName.length() > 0)
+                        json.put("author",authorName);
+                }
+                if (line.startsWith("::author_url") && (thenpos = line.indexOf(' ')) > 0) {
+                    authorURL = line.substring(thenpos + 1).trim();
+                    if(authorURL.length() > 0)
+                        json.put("author_url",authorURL);
+                }
+                if (line.startsWith("::developer_privacy_policy") && (thenpos = line.indexOf(' ')) > 0) {
+                    developerPrivacyPolicy = line.substring(thenpos + 1).trim();
+                    if(developerPrivacyPolicy.length() > 0)
+                        json.put("developer_privacy_policy",developerPrivacyPolicy);
+                }
+                if (line.startsWith("::terms_of_use") && (thenpos = line.indexOf(' ')) > 0) {
+                    termsOfUse = line.substring(thenpos + 1).trim();
+                    if(termsOfUse.length() > 0)
+                        json.put("terms_of_use ",termsOfUse);
+                }
+                if (line.startsWith("::dynamic_content") && (thenpos = line.indexOf(' ')) > 0) {
+                    if (line.substring(thenpos + 1).trim().equalsIgnoreCase("yes")) dynamicContent=true;
+                    json.put("dynamic_content",dynamicContent);
+                }
+
                 lastLine = ""; example = ""; expect = "";
                 continue readloop;
             }
