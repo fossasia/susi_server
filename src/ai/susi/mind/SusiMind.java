@@ -64,6 +64,7 @@ public class SusiMind {
     private final Map<String, String> authorsUrl; // a map from skill path to skill authorsURL
     private final Map<String, String> devloperPrivacyPolicies; // a map from skill path to devloper Privacy Policy
     private final Map<String, String> termsOfUse; // a map from skill path to skill termsOfUse
+    private final Map<String,Boolean> dynamicContent; // a map from skill path and dynamic Content
 
 
     public SusiMind(File memorypath, File... watchpaths) {
@@ -86,6 +87,7 @@ public class SusiMind {
         this.skillNames = new TreeMap<>();
         this.devloperPrivacyPolicies =new TreeMap<>();
         this.termsOfUse = new TreeMap<>();
+        this.dynamicContent = new TreeMap<>();
         // learn all available intents
         try {observe();} catch (IOException e) {
             e.printStackTrace();
@@ -137,6 +139,10 @@ public class SusiMind {
 
     public Map<String, String> getTermsOfUse() {
         return this.termsOfUse;
+    }
+
+    public Map<String, Boolean> getDynamicContent() {
+        return this.dynamicContent;
     }
 
     public SusiMind observe() throws IOException {
@@ -256,6 +262,8 @@ public class SusiMind {
                     this.devloperPrivacyPolicies.put(intent.getSkill(), json.getString("developer_privacy_policy"));
                 if(json.has("term_of_use"))
                     this.termsOfUse.put(intent.getSkill(), json.getString("term_of_use"));
+                if(json.has("dynamic_content"))
+                    this.dynamicContent.put(intent.getSkill(), json.getBoolean("dynamic_content"));
                 //if (intent.getExample() != null && intent.getExpect() != null) {}
             });
         });
