@@ -72,7 +72,12 @@ public class GetSkillMetadataService extends AbstractAPIHandler implements APIHa
         String language = call.get("language", "");
         String skill = call.get("skill", "");
 
-
+        if (model.length() == 0 || group.length() == 0 ||language.length() == 0 || skill.length() == 0 ) {
+            JSONObject json = new JSONObject(true);
+            json.put("accepted", false);
+            json.put("message", "Error: Bad parameter call");
+            return new ServiceResponse(json);
+        }
 
         JSONObject skillMetadata = new JSONObject(true)
                 .put("model", model)
@@ -80,83 +85,83 @@ public class GetSkillMetadataService extends AbstractAPIHandler implements APIHa
                 .put("language", language);
         for (Map.Entry<String, String> entry : DAO.susi.getSkillDescriptions().entrySet()) {
             String path = entry.getKey();
-            if ((model.length() == 0 || path.indexOf("/" + model + "/") > 0) &&
-                    (group.length() == 0 || path.indexOf("/" + group + "/") > 0) &&
-                    (language.length() == 0 || path.indexOf("/" + language + "/") > 0) &&
-                    (skill.length() == 0 || path.indexOf("/" + skill + ".txt") > 0)) {
+            if ((path.indexOf("/" + model + "/") > 0)
+                    && (path.indexOf("/" + group + "/") > 0) &&
+                    (path.indexOf("/" + language + "/") > 0) &&
+                    (path.indexOf("/" + skill + ".txt") > 0)) {
                 skillMetadata.put("descriptions", entry.getValue());
             }
         }
         for (Map.Entry<String, String> entry : DAO.susi.getSkillImage().entrySet()) {
             String path = entry.getKey();
-            if ((model.length() == 0 || path.indexOf("/" + model + "/") > 0) &&
-                    (group.length() == 0 || path.indexOf("/" + group + "/") > 0) &&
-                    (language.length() == 0 || path.indexOf("/" + language + "/") > 0) &&
-                    (skill.length() == 0 || path.indexOf("/" + skill + ".txt") > 0)) {
+            if ((path.indexOf("/" + model + "/") > 0) &&
+                    (path.indexOf("/" + group + "/") > 0) &&
+                    (path.indexOf("/" + language + "/") > 0) &&
+                    (path.indexOf("/" + skill + ".txt") > 0)) {
                 skillMetadata.put("image", entry.getValue());
             }
         }
         for (Map.Entry<String, String> entry : DAO.susi.getAuthors().entrySet()) {
             String path = entry.getKey();
-            if ((model.length() == 0 || path.indexOf("/" + model + "/") > 0) &&
-                    (group.length() == 0 || path.indexOf("/" + group + "/") > 0) &&
-                    (language.length() == 0 || path.indexOf("/" + language + "/") > 0) &&
-                    (skill.length() == 0 || path.indexOf("/" + skill + ".txt") > 0)) {
+            if ((path.indexOf("/" + model + "/") > 0) &&
+                    (path.indexOf("/" + group + "/") > 0) &&
+                    (path.indexOf("/" + language + "/") > 0) &&
+                    (path.indexOf("/" + skill + ".txt") > 0)) {
                 skillMetadata.put("author", entry.getValue());
             }
         }
         for (Map.Entry<String, String> entry : DAO.susi.getAuthorsUrl().entrySet()) {
             String path = entry.getKey();
-            if ((model.length() == 0 || path.indexOf("/" + model + "/") > 0) &&
-                    (group.length() == 0 || path.indexOf("/" + group + "/") > 0) &&
-                    (language.length() == 0 || path.indexOf("/" + language + "/") > 0) &&
-                    (skill.length() == 0 || path.indexOf("/" + skill + ".txt") > 0)) {
+            if ((path.indexOf("/" + model + "/") > 0) &&
+                    (path.indexOf("/" + group + "/") > 0) &&
+                    (path.indexOf("/" + language + "/") > 0) &&
+                    (path.indexOf("/" + skill + ".txt") > 0)) {
                 skillMetadata.put("author_url", entry.getValue());
             }
         }
         for (Map.Entry<String, String> entry : DAO.susi.getDeveloperPrivacyPolicies().entrySet()) {
             String path = entry.getKey();
-            if ((model.length() == 0 || path.indexOf("/" + model + "/") > 0) &&
-                    (group.length() == 0 || path.indexOf("/" + group + "/") > 0) &&
-                    (language.length() == 0 || path.indexOf("/" + language + "/") > 0) &&
-                    (skill.length() == 0 || path.indexOf("/" + skill + ".txt") > 0)) {
+            if ((path.indexOf("/" + model + "/") > 0) &&
+                    (path.indexOf("/" + group + "/") > 0) &&
+                    (path.indexOf("/" + language + "/") > 0) &&
+                    (path.indexOf("/" + skill + ".txt") > 0)) {
                 skillMetadata.put("developer_privacy_policy", entry.getValue());
             }
         }
         for (Map.Entry<String, String> entry : DAO.susi.getSkillNames().entrySet()) {
             String path = entry.getKey();
-            if ((model.length() == 0 || path.indexOf("/" + model + "/") > 0) &&
-                    (group.length() == 0 || path.indexOf("/" + group + "/") > 0) &&
-                    (language.length() == 0 || path.indexOf("/" + language + "/") > 0) &&
-                    (skill.length() == 0 || path.indexOf("/" + skill + ".txt") > 0)) {
+            if ((path.indexOf("/" + model + "/") > 0) &&
+                    (path.indexOf("/" + group + "/") > 0) &&
+                    (path.indexOf("/" + language + "/") > 0) &&
+                    (path.indexOf("/" + skill + ".txt") > 0)) {
                 skillMetadata.put("skill_name", entry.getValue());
             }
         }
         for (Map.Entry<String, String> entry : DAO.susi.getTermsOfUse().entrySet()) {
             String path = entry.getKey();
-            if ((model.length() == 0 || path.indexOf("/" + model + "/") > 0) &&
-                    (group.length() == 0 || path.indexOf("/" + group + "/") > 0) &&
-                    (language.length() == 0 || path.indexOf("/" + language + "/") > 0) &&
-                    (skill.length() == 0 || path.indexOf("/" + skill + ".txt") > 0)) {
+            if ((path.indexOf("/" + model + "/") > 0) &&
+                    (path.indexOf("/" + group + "/") > 0) &&
+                    (path.indexOf("/" + language + "/") > 0) &&
+                    (path.indexOf("/" + skill + ".txt") > 0)) {
                 skillMetadata.put("terms_of_use", entry.getValue());
             }
         }
         for (Map.Entry<String, Boolean> entry : DAO.susi.getDynamicContent().entrySet()) {
             String path = entry.getKey();
-            if ((model.length() == 0 || path.indexOf("/" + model + "/") > 0) &&
-                    (group.length() == 0 || path.indexOf("/" + group + "/") > 0) &&
-                    (language.length() == 0 || path.indexOf("/" + language + "/") > 0) &&
-                    (skill.length() == 0 || path.indexOf("/" + skill + ".txt") > 0)) {
+            if ((path.indexOf("/" + model + "/") > 0) &&
+                    (path.indexOf("/" + group + "/") > 0) &&
+                    (path.indexOf("/" + language + "/") > 0) &&
+                    (path.indexOf("/" + skill + ".txt") > 0)) {
                 skillMetadata.put("dynamic_content", entry.getValue());
             }
         }
         JSONObject examples = new JSONObject(true);
         for (Map.Entry<String, Set<String>> entry: DAO.susi.getSkillExamples().entrySet()) {
             String path = entry.getKey();
-            if ((model.length() == 0 || path.indexOf("/" + model + "/") > 0) &&
-                    (group.length() == 0 || path.indexOf("/" + group + "/") > 0) &&
-                    (language.length() == 0 || path.indexOf("/" + language + "/") > 0) &&
-                    (skill.length() == 0 || path.indexOf("/" + skill + ".txt") > 0)) {
+            if ((path.indexOf("/" + model + "/") > 0) &&
+                    (path.indexOf("/" + group + "/") > 0) &&
+                    (path.indexOf("/" + language + "/") > 0) &&
+                    (path.indexOf("/" + skill + ".txt") > 0)) {
                 examples.put(path, entry.getValue());
             }
         }
