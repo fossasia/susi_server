@@ -78,7 +78,7 @@ import org.json.JSONObject;
 public class DAO {
 
     private final static String ACCESS_DUMP_FILE_PREFIX = "access_";
-    public  static File conf_dir, bin_dir, html_dir, data_dir, susi_memory_dir, model_watch_dir, susi_skill_repo;
+    public  static File conf_dir, bin_dir, html_dir, data_dir, susi_memory_dir, model_watch_dir, susi_skill_repo, susi_unreviewed_model_watch_dir;
     private static File external_data, assets, dictionaries;
     private static Settings public_settings, private_settings;
     public  static AccessTracker access;
@@ -114,8 +114,8 @@ public class DAO {
         data_dir = dataPath.toFile().getAbsoluteFile();
         susi_memory_dir = new File(data_dir, "susi");
         model_watch_dir = new File(new File(data_dir.getParentFile().getParentFile(), "susi_skill_data"), "models");
+        susi_unreviewed_model_watch_dir = new File(new File(data_dir.getParentFile().getParentFile(), "susi_unreviewed_skills"), "models");
         susi_skill_repo = new File(data_dir.getParentFile().getParentFile(), "susi_skill_data/.git");
-
         // wake up susi
         File susiinitpath = new File(conf_dir, "susi");
         susi = model_watch_dir.exists() ?

@@ -43,7 +43,7 @@ public class ModifySkillService extends AbstractAPIHandler implements APIHandler
     public ServiceResponse serviceImpl(Query call, HttpServletResponse response, Authorization rights, final JsonObjectWithDefault permissions) {
 
         String model_name = call.get("model", "general");
-        File model = new File(DAO.model_watch_dir, model_name);
+        File model = new File(DAO.susi_unreviewed_model_watch_dir, model_name);
         String group_name = call.get("group", "knowledge");
         File group = new File(model, group_name);
         String language_name = call.get("language", "en");
@@ -51,17 +51,20 @@ public class ModifySkillService extends AbstractAPIHandler implements APIHandler
         String skill_name = call.get("skill", null);
         File skill = new File(language, skill_name + ".txt");
 
-        String commit_message = call.get("changelog", null);
-
-        if(commit_message==null){
-            JSONObject error = new JSONObject();
-            error.put("accepted", false);
-            return new ServiceResponse(error);
+        if (!language.isDirectory()) {
+            boolean success = language.mkdirs();
+            if (success) {
+                System.out.println("Created path: " + language.getPath());
+            } else {
+                System.out.println("Could not create path: " + language.getPath());
+            }
+        } else {
+            System.out.println("Path exists: " + language.getPath());
         }
 
         // Checking for file existence
         JSONObject json = new JSONObject();
-        json.put("accepted", false);
+
         if (!skill.exists()){
             try {
                 skill.createNewFile();
@@ -80,39 +83,14 @@ public class ModifySkillService extends AbstractAPIHandler implements APIHandler
         // Writing to File
         try (FileWriter file = new FileWriter(skill)) {
             file.write(content);
+            json.put("accepted",true);
 
-            //Add to git
-            FileRepositoryBuilder builder = new FileRepositoryBuilder();
-            Repository repository = null;
-            try {
-
-                repository = builder.setGitDir((DAO.susi_skill_repo))
-                        .readEnvironment() // scan environment GIT_* variables
-                        .findGitDir() // scan up the file system tree
-                        .build();
-
-                try (Git git = new Git(repository)) {
-                    git.add()
-                            .addFilepattern(skill_name)
-                            .call();
-                    // and then commit the changes
-                    git.commit()
-                            .setMessage(commit_message)
-                            .call();
-
-                    json.put("accepted", true);
-                    return new ServiceResponse(json);
-                } catch (GitAPIException e) {
-                    e.printStackTrace();
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
         } catch (IOException e) {
             e.printStackTrace();
+            json.put("accepted",false);
             json.put("message", "error: " + e.getMessage());
-            
         }
+        json.put("message","Skill Uploaded to Server for reviewing");
         return new ServiceResponse(json);
     }
     
