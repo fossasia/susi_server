@@ -260,8 +260,8 @@ public class SusiMind {
                     this.authorsUrl.put(intent.getSkill(), json.getString("author_ur;"));
                 if(json.has("developer_privacy_policy"))
                     this.devloperPrivacyPolicies.put(intent.getSkill(), json.getString("developer_privacy_policy"));
-                if(json.has("term_of_use"))
-                    this.termsOfUse.put(intent.getSkill(), json.getString("term_of_use"));
+                if(json.has("terms_of_use"))
+                    this.termsOfUse.put(intent.getSkill(), json.getString("terms_of_use"));
                 if(json.has("dynamic_content"))
                     this.dynamicContent.put(intent.getSkill(), json.getBoolean("dynamic_content"));
                 //if (intent.getExample() != null && intent.getExpect() != null) {}

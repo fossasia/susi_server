@@ -62,7 +62,7 @@ public class SusiSkill {
         json.put("intents", intents);
         String lastLine = "", line = "";
         String bang_phrases = "", bang_type = "", bang_term = ""; StringBuilder bang_bag = new StringBuilder();
-        String example = "", expect = "", description="", image="", skillName="", authorName= "", authorURL = "", developerPrivacyPolicy = "", termOfUse="";
+        String example = "", expect = "", description="", image="", skillName="", authorName= "", authorURL = "", developerPrivacyPolicy = "", termsOfUse="";
         boolean prior = false, dynamicContent = false;
         try {readloop: while ((line = br.readLine()) != null) {
             line = line.trim();
@@ -200,10 +200,10 @@ public class SusiSkill {
                     if(developerPrivacyPolicy.length() > 0)
                         json.put("developer_privacy_policy",developerPrivacyPolicy);
                 }
-                if (line.startsWith("::term_of_use") && (thenpos = line.indexOf(' ')) > 0) {
-                    termOfUse = line.substring(thenpos + 1).trim();
-                    if(termOfUse.length() > 0)
-                        json.put("term_of_use ",termOfUse);
+                if (line.startsWith("::terms_of_use") && (thenpos = line.indexOf(' ')) > 0) {
+                    termsOfUse = line.substring(thenpos + 1).trim();
+                    if(termsOfUse.length() > 0)
+                        json.put("terms_of_use ",termsOfUse);
                 }
                 if (line.startsWith("::dynamic_content") && (thenpos = line.indexOf(' ')) > 0) {
                     if (line.substring(thenpos + 1).trim().equalsIgnoreCase("yes")) dynamicContent=true;
