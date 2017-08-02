@@ -27,7 +27,7 @@ public class ModifySkillService extends AbstractAPIHandler implements APIHandler
     private static final long serialVersionUID = -1834363513093189312L;
 
     @Override
-    public BaseUserRole getMinimalBaseUserRole() { return BaseUserRole.USER; }
+    public BaseUserRole getMinimalBaseUserRole() { return BaseUserRole.ADMIN; }
 
     @Override
     public JSONObject getDefaultPermissions(BaseUserRole baseUserRole) {
