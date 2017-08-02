@@ -63,8 +63,11 @@ public class ModifySkillService extends AbstractAPIHandler implements APIHandler
         JSONObject json = new JSONObject();
         json.put("accepted", false);
         if (!skill.exists()){
-            json.put("message", "skill does not exist");
-            return new ServiceResponse(json);
+            try {
+                skill.createNewFile();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
         
         // Reading Content for skill

@@ -1,0 +1,16 @@
+#
+# SUSI Server service which will expose the SUSI Server to the rest of the cluster
+#
+kind: Service
+apiVersion: v1
+metadata:
+  name: susi-server
+  namespace: web
+spec:
+  ports:
+  - port: 80
+    protocol: TCP
+    targetPort: 80
+  selector:
+    app: susi-server
+  type: LoadBalancer

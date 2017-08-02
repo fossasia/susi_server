@@ -70,24 +70,31 @@ public class DescriptionSkillService extends AbstractAPIHandler implements APIHa
         String model = call.get("model", "");
         String group = call.get("group", "");
         String language = call.get("language", "");
+        String skill = call.get("skill", "");
 
         JSONObject descriptions = new JSONObject(true);
-        for (Map.Entry<String, Set<String>> entry: DAO.susi.getSkillDescriptions().entrySet()) {
-            String path = entry.getKey();
-            if ((model.length() == 0 || path.indexOf("/" + model + "/") > 0) &&
-                    (group.length() == 0 || path.indexOf("/" + group + "/") > 0) &&
-                    (language.length() == 0 || path.indexOf("/" + language + "/") > 0)) {
-               descriptions.put(path, entry.getValue());
+            for (Map.Entry<String, String> entry : DAO.susi.getSkillDescriptions().entrySet()) {
+                String path = entry.getKey();
+                if ((model.length() == 0 || path.indexOf("/" + model + "/") > 0) &&
+                        (group.length() == 0 || path.indexOf("/" + group + "/") > 0) &&
+                        (language.length() == 0 || path.indexOf("/" + language + "/") > 0) &&
+                        (skill.length() == 0 || path.indexOf("/" + skill + ".txt") > 0)) {
+                    descriptions.put(path, entry.getValue());
+                }
             }
-        }
 
-        JSONObject json = new JSONObject(true)
-                .put("model", model)
-                .put("group", group)
-                .put("language", language)
-                .put("descriptions",descriptions);
-        json.put("accepted", true);
-        json.put("message", "Sucess: Fetched descriptions");
+            JSONObject json = new JSONObject(true)
+                    .put("model", model)
+                    .put("group", group)
+                    .put("language", language)
+                    .put("descriptions", descriptions);
+            if (descriptions.length() != 0) {
+                json.put("accepted", true);
+                json.put("message", "Sucess: Fetched descriptions");
+            } else {
+                json.put("accepted", false);
+                json.put("message", "Error: Can't find description");
+            }
         return new ServiceResponse(json);
     }
 

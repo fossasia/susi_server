@@ -55,6 +55,7 @@ public class SusiSkill {
      * @throws JSONException
      * @throws FileNotFoundException
      */
+
     public static JSONObject readEzDSkill(BufferedReader br) throws JSONException {
         // read the text file and turn it into a intent json; then learn that
         JSONObject json = new JSONObject();
@@ -62,8 +63,8 @@ public class SusiSkill {
         json.put("intents", intents);
         String lastLine = "", line = "";
         String bang_phrases = "", bang_type = "", bang_term = ""; StringBuilder bang_bag = new StringBuilder();
-        String example = "", expect = "", description="", image="";
-        boolean prior = false;
+        String example = "", expect = "", description="", image="", skillName="", authorName= "", authorURL = "", developerPrivacyPolicy = "", termsOfUse="";
+        boolean prior = false, dynamicContent = false;
         try {readloop: while ((line = br.readLine()) != null) {
             line = line.trim();
             
@@ -87,10 +88,6 @@ public class SusiSkill {
                         // answers; must contain $!$
                         intent.put("actions", new JSONArray().put(SusiAction.answerAction(bang_term.split("\\|"))));
                         if (example.length() > 0) intent.put("example", example);
-                        if (expect.length() > 0) intent.put("expect", expect);
-                        if (description.length() > 0) intent.put("description", description);
-                        if (image.length() > 0) intent.put("image", image);
-
                         intents.put(intent);
                     }
                     else if (bang_type.equals("console")) {
@@ -159,7 +156,6 @@ public class SusiSkill {
                                 });
                             }
                             if (example.length() > 0) intent.put("example", example);
-                            if(description.length() > 0) intent.put("description", description);
                             if(image.length() > 0) intent.put("image", image);
                             if (expect.length() > 0) intent.put("expect", expect);
                             intents.put(intent);
@@ -176,16 +172,58 @@ public class SusiSkill {
             
             // read metadata
             if (line.startsWith("::")) {
+                int thenpos=-1;
                 line = line.toLowerCase();
                 if (line.startsWith("::minor")) prior = false;
                 if (line.startsWith("::prior")) prior = true;
-                lastLine = ""; example = ""; expect = ""; description = ""; image = "";
+                if (line.startsWith("::description") && (thenpos = line.indexOf(' ')) > 0) {
+                    description = line.substring(thenpos + 1).trim();
+                    if(description.length() > 0)
+                        json.put("description",description);
+                   // System.out.println(description);
+                }
+                if (line.startsWith("::image") && (thenpos = line.indexOf(' ')) > 0) {
+                    image = line.substring(thenpos + 1).trim();
+                    if(image.length() > 0)
+                        json.put("image",image);
+                }
+                if (line.startsWith("::name") && (thenpos = line.indexOf(' ')) > 0) {
+                    skillName = line.substring(thenpos + 1).trim();
+                    if(skillName.length() > 0)
+                        json.put("skill_name",skillName);
+                }
+                if (line.startsWith("::author") && (!line.startsWith("::author_url")) && (thenpos = line.indexOf(' ')) > 0) {
+                   authorName = line.substring(thenpos + 1).trim();
+                    if(authorName.length() > 0)
+                        json.put("author",authorName);
+                }
+                if (line.startsWith("::author_url") && (thenpos = line.indexOf(' ')) > 0) {
+                    authorURL = line.substring(thenpos + 1).trim();
+                    if(authorURL.length() > 0)
+                        json.put("author_url",authorURL);
+                }
+                if (line.startsWith("::developer_privacy_policy") && (thenpos = line.indexOf(' ')) > 0) {
+                    developerPrivacyPolicy = line.substring(thenpos + 1).trim();
+                    if(developerPrivacyPolicy.length() > 0)
+                        json.put("developer_privacy_policy",developerPrivacyPolicy);
+                }
+                if (line.startsWith("::terms_of_use") && (thenpos = line.indexOf(' ')) > 0) {
+                    termsOfUse = line.substring(thenpos + 1).trim();
+                    if(termsOfUse.length() > 0)
+                        json.put("terms_of_use",termsOfUse);
+                }
+                if (line.startsWith("::dynamic_content") && (thenpos = line.indexOf(' ')) > 0) {
+                    if (line.substring(thenpos + 1).trim().equalsIgnoreCase("yes")) dynamicContent=true;
+                    json.put("dynamic_content",dynamicContent);
+                }
+
+                lastLine = ""; example = ""; expect = "";
                 continue readloop;
             }
             
             if (line.startsWith("#")) {
                 // a comment line; ignore the line and consider it as whitespace
-                lastLine = ""; example = ""; expect = ""; description = ""; image ="";
+                lastLine = ""; example = ""; expect = "";
                 continue readloop;
             }
             
@@ -203,20 +241,20 @@ public class SusiSkill {
                         String ifsubstring = line.substring(thenpos + 1).trim();
                         if (ifsubstring.length() > 0) {
                             String[] answers = ifsubstring.split("\\|");
-                            JSONObject intent = SusiIntent.answerIntent(phrases, "IF " + condition, answers, prior, example, description, image, expect);
+                            JSONObject intent = SusiIntent.answerIntent(phrases, "IF " + condition, answers, prior, example, expect);
                             intents.put(intent);
                         }
                     } else {
                         String ifsubstring = line.substring(thenpos + 1, elsepos).trim();
                         if (ifsubstring.length() > 0) {
                             String[] ifanswers = ifsubstring.split("\\|");
-                            JSONObject intentif = SusiIntent.answerIntent(phrases, "IF " + condition, ifanswers, prior, example, description, image, expect);
+                            JSONObject intentif = SusiIntent.answerIntent(phrases, "IF " + condition, ifanswers, prior, example, expect);
                             intents.put(intentif);
                         }
                         String elsesubstring = line.substring(elsepos + 1).trim();
                         if (elsesubstring.length() > 0) {
                             String[] elseanswers = elsesubstring.split("\\|");
-                            JSONObject intentelse = SusiIntent.answerIntent(phrases, "NOT " + condition, elseanswers, prior, example, description, image, expect);
+                            JSONObject intentelse = SusiIntent.answerIntent(phrases, "NOT " + condition, elseanswers, prior, example, expect);
                             intents.put(intentelse);
                         }
                     }
@@ -228,8 +266,6 @@ public class SusiSkill {
                         example = tail;
                     } else if (head.equals("expect")) {
                         expect = tail;
-                    } else if (head.equals("description")) {
-                        description =tail;
                     }
                     else if (head.equals("image")) {
                         image =tail;
@@ -243,7 +279,7 @@ public class SusiSkill {
                     continue readloop;
                 } else {
                     String[] answers = line.split("\\|");
-                    JSONObject intent = SusiIntent.answerIntent(phrases, condition, answers, prior, example, description, image, expect);
+                    JSONObject intent = SusiIntent.answerIntent(phrases, condition, answers, prior, example, expect);
                     //System.out.println(intent.toString());
                     intents.put(intent);
                 }
@@ -310,7 +346,7 @@ public class SusiSkill {
             }
         }
         if (phrases != null && answers != null) {
-            return SusiIntent.answerIntent(phrases, null, answers, false, null, null, null,null);
+            return SusiIntent.answerIntent(phrases, null, answers, false, null, null);
         }
         return null;
     }
