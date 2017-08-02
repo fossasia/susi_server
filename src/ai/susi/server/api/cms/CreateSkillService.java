@@ -27,7 +27,7 @@ public class CreateSkillService extends AbstractAPIHandler implements APIHandler
 
     @Override
     public BaseUserRole getMinimalBaseUserRole() {
-        return BaseUserRole.USER;
+        return BaseUserRole.ADMIN;
     }
 
     @Override
