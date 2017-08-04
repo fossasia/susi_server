@@ -52,14 +52,21 @@ public class SusiMind {
     
     private final Map<String, Set<SusiIntent>> intenttrigger; // a map from a keyword to a set of intents
     private final Map<String, Set<String>> skillexamples; // a map from an skill path to one example
-    private final Map<String, Set<String>> skillDescriptions; // a map from skill path to description
-    private final Map<String, Set<String>> skillImage; // a map from skill path to skill image
+    private final Map<String, String> skillDescriptions; // a map from skill path to description
+    private final Map<String, String> skillImage; // a map from skill path to skill image
     private final File[] watchpaths;
     private final File memorypath; // a path where the memory looks for new additions of knowledge with memory files
     private final Map<File, Long> observations; // a mapping of mind memory files to the time when the file was read the last time
     private final SusiReader reader; // responsible to understand written communication
     private final SusiMemory memories; // conversation logs are memories
-    
+    private final Map<String, String> skillNames; // a map from skill path to skill names
+    private final Map<String, String> authors; // a map from skill path to skill authors
+    private final Map<String, String> authorsUrl; // a map from skill path to skill authorsURL
+    private final Map<String, String> developerPrivacyPolicies; // a map from skill path to devloper Privacy Policy
+    private final Map<String, String> termsOfUse; // a map from skill path to skill termsOfUse
+    private final Map<String,Boolean> dynamicContent; // a map from skill path and dynamic Content
+
+
     public SusiMind(File memorypath, File... watchpaths) {
         // initialize class objects
         this.watchpaths = watchpaths;
@@ -75,6 +82,12 @@ public class SusiMind {
         this.skillexamples = new TreeMap<>();
         this.skillDescriptions = new TreeMap<>();
         this.skillImage = new TreeMap<>();
+        this.authors = new TreeMap<>();
+        this.authorsUrl = new TreeMap<>();
+        this.skillNames = new TreeMap<>();
+        this.developerPrivacyPolicies =new TreeMap<>();
+        this.termsOfUse = new TreeMap<>();
+        this.dynamicContent = new TreeMap<>();
         // learn all available intents
         try {observe();} catch (IOException e) {
             e.printStackTrace();
@@ -101,13 +114,37 @@ public class SusiMind {
         return this.skillexamples;
     }
 
-    public  Map<String, Set<String>> getSkillDescriptions() {
+    public  Map<String, String> getSkillDescriptions() {
         return this.skillDescriptions;
     }
-    public  Map<String, Set<String>> getSkillImage() {
+    public  Map<String, String> getSkillImage() {
         return this.skillImage;
     }
-    
+
+    public Map<String, String> getAuthors() {
+        return this.authors;
+    }
+
+    public Map<String, String> getAuthorsUrl() {
+        return this.authorsUrl;
+    }
+
+    public Map<String, String> getDeveloperPrivacyPolicies() {
+        return this.developerPrivacyPolicies;
+    }
+
+    public Map<String, String> getSkillNames() {
+        return this.skillNames;
+    }
+
+    public Map<String, String> getTermsOfUse() {
+        return this.termsOfUse;
+    }
+
+    public Map<String, Boolean> getDynamicContent() {
+        return this.dynamicContent;
+    }
+
     public SusiMind observe() throws IOException {
         for (int i = 0; i < watchpaths.length; i++) {
             observe(watchpaths[i]);
@@ -197,23 +234,26 @@ public class SusiMind {
                     }
                     examples.add(intent.getExample());
                 }
-                if (intent.getDescription() !=null) {
-                    Set<String> descriptions = this.skillDescriptions.get(intent.getSkill());
-                    if (descriptions == null) {
-                        descriptions = new LinkedHashSet<>();
-                        this.skillDescriptions.put(intent.getSkill(), descriptions);
-                    }
-                    descriptions.add(intent.getDescription());
-                }
+                // skill description
+                if(json.has("description"))
+                    this.skillDescriptions.put(intent.getSkill(), json.getString("description"));
+                // skill image
+                if(json.has("image"))
+                    this.skillImage.put(intent.getSkill(), json.getString("image"));
+                // adding skill meta data
+                if(json.has("skill_name"))
+                    this.skillNames.put(intent.getSkill(), json.getString("skill_name"));
+                if(json.has("author"))
+                    this.authors.put(intent.getSkill(), json.getString("author"));
+                if(json.has("author_url"))
+                    this.authorsUrl.put(intent.getSkill(), json.getString("author_url"));
+                if(json.has("developer_privacy_policy"))
+                    this.developerPrivacyPolicies.put(intent.getSkill(), json.getString("developer_privacy_policy"));
+                if(json.has("terms_of_use"))
+                    this.termsOfUse.put(intent.getSkill(), json.getString("terms_of_use"));
+                if(json.has("dynamic_content"))
+                    this.dynamicContent.put(intent.getSkill(), json.getBoolean("dynamic_content"));
 
-                if (intent.getImage() !=null) {
-                    Set<String> image = this.skillImage.get(intent.getSkill());
-                    if (image == null) {
-                            image = new LinkedHashSet<>();
-                            this.skillImage.put(intent.getSkill(), image);
-                        }
-                    image.add(intent.getImage());
-                }
                 //if (intent.getExample() != null && intent.getExpect() != null) {}
             });
         });

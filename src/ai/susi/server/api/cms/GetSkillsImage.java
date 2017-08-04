@@ -63,7 +63,7 @@ public class GetSkillsImage extends AbstractAPIHandler implements APIHandler {
         String language = call.get("language", "");
 
         JSONObject images = new JSONObject(true);
-        for (Map.Entry<String, Set<String>> entry: DAO.susi.getSkillImage().entrySet()) {
+        for (Map.Entry<String, String> entry: DAO.susi.getSkillImage().entrySet()) {
             String path = entry.getKey();
             if ((model.length() == 0 || path.indexOf("/" + model + "/") > 0) &&
                     (group.length() == 0 || path.indexOf("/" + group + "/") > 0) &&
@@ -78,7 +78,7 @@ public class GetSkillsImage extends AbstractAPIHandler implements APIHandler {
                 .put("language", language)
                 .put("image",images);
         json.put("accepted", true);
-        json.put("message", "Success: Fetched descriptions");
+        json.put("message", "Success: Fetched Image urls");
         return new ServiceResponse(json);
     }
 

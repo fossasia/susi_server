@@ -497,6 +497,7 @@ public class SusiServer {
                 DescriptionSkillService.class,
                 GetSkillsImage.class,
                 LinkPreviewService.class,
+                GetSkillMetadataService.class,
                 // susi search aggregation services
                 ConsoleService.class,
                 RSSReaderService.class,
