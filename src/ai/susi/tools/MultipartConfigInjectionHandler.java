@@ -1,6 +1,6 @@
 /**
  *  MultipartConfigInjectionHandler
- *  Copyright 03.07.2015 by Chetan Kaushik, @dynamitechetan
+ *  Copyright 04.08.2017 by Chetan Kaushik, @dynamitechetan
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
