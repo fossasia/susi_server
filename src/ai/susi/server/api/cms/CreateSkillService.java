@@ -10,7 +10,9 @@ import org.eclipse.jgit.storage.file.FileRepositoryBuilder;
 import org.json.JSONObject;
 
 import javax.servlet.http.HttpServletResponse;
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 
 /**
@@ -18,16 +20,15 @@ import java.io.IOException;
  * This Service creates an skill as per given query.
  * The skill name given in the query should not exist in the SUSI intents Folder
  * Can be tested on :-
- * http://localhost:4000/cms/createSkill.txt?model=general&group=knowledge&language=en&skill=whois
+ * http://localhost:4000/cms/createSkill.txt?model=general&group=knowledge&language=en&skill=whois&content=skillData
  */
 public class CreateSkillService extends AbstractAPIHandler implements APIHandler {
-
 
     private static final long serialVersionUID = 2461878194569824151L;
 
     @Override
     public BaseUserRole getMinimalBaseUserRole() {
-        return BaseUserRole.ANONYMOUS;
+        return BaseUserRole.USER;
     }
 
     @Override
@@ -49,24 +50,27 @@ public class CreateSkillService extends AbstractAPIHandler implements APIHandler
         File group = new File(model, group_name);
         String language_name = call.get("language", "en");
         File language = new File(group, language_name);
-        String skill_name = call.get("skill", "whois");
+        String skill_name = call.get("skill", null);
         File skill = new File(language, skill_name + ".txt");
-        String skillName = skill.getName();
-        JSONObject json = new JSONObject(true);
 
+        // Checking for file existence
+        JSONObject json = new JSONObject();
         json.put("accepted", false);
-        if (skill.exists()) {
+        if (skill.exists()){
             json.put("message", "The '" + skill + "' already exists.");
-        } else {
-            try {
-                skill.createNewFile();
-                json.put("created_file", skillName);
-                json.put("accepted", true);
-                // Add to git
+        }
+        else {
+            // Reading Content for skill
+            String content = call.get("content", "");
+
+            // Writing to File
+            try (FileWriter file = new FileWriter(skill)) {
+                file.write(content);
+
+                //Add to git
                 FileRepositoryBuilder builder = new FileRepositoryBuilder();
                 Repository repository = null;
                 try {
-
                     repository = builder.setGitDir((DAO.susi_skill_repo))
                             .readEnvironment() // scan environment GIT_* variables
                             .findGitDir() // scan up the file system tree
@@ -81,6 +85,8 @@ public class CreateSkillService extends AbstractAPIHandler implements APIHandler
                                 .setMessage("Created " + skill_name)
                                 .call();
 
+                        json.put("accepted", true);
+                        return new ServiceResponse(json);
                     } catch (GitAPIException e) {
                         e.printStackTrace();
                     }
@@ -89,11 +95,10 @@ public class CreateSkillService extends AbstractAPIHandler implements APIHandler
                 }
             } catch (IOException e) {
                 e.printStackTrace();
-                json.put("message", "Unable to create skill.");
+                json.put("message", "error: " + e.getMessage());
+
             }
         }
-
         return new ServiceResponse(json);
-
     }
 }
