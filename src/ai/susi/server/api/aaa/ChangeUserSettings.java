@@ -34,6 +34,10 @@ import ai.susi.server.ServiceResponse;
 import org.json.JSONObject;
 
 import javax.servlet.http.HttpServletResponse;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
 
 /**
  * Created by saurabh on 20/6/17.
@@ -62,21 +66,36 @@ public class ChangeUserSettings extends AbstractAPIHandler implements APIHandler
 
     @Override
     public ServiceResponse serviceImpl(Query query, HttpServletResponse response, Authorization authorization, JsonObjectWithDefault permissions) throws APIException {
-       String key = query.get("key", null);
-       String value =query.get("value", null);
-       if (key == null || value == null ) {
-           throw new APIException(400, "Bad Service call, key or value parameters not provided");
+
+       String countSetting = query.get("count","-1");
+       int count = Integer.parseInt(countSetting);
+       if(count == -1){
+           throw new APIException(400, "Bad Service call, count parameters not provided");
        } else {
+           Map<String, String> settings = new HashMap<String, String>();
+           for (int i = 1; i <= count; i++) {
+               String key = query.get("key" + i, null);
+               String value = query.get("value" + i, null);
+               if (key == null || value == null) {
+                   throw new APIException(400, "Bad Service call, key or value parameters not provided");
+               } else {
+                   settings.put(key, value);
+               }
+           }
            if (authorization.getIdentity() == null) {
                throw new APIException(400, "Specified User Setting not found, ensure you are logged in");
            } else {
                Accounting accounting = DAO.getAccounting(authorization.getIdentity());
-               JSONObject jsonObject = new JSONObject();
-               jsonObject.put(key, value);
-               if (accounting.getJSON().has("settings")) {
-                   accounting.getJSON().getJSONObject("settings").put(key, value);
-               } else {
-                   accounting.getJSON().put("settings", jsonObject);
+               for (Map.Entry<String, String> entry : settings.entrySet()) {
+                   String key = entry.getKey();
+                   String value = entry.getValue();
+                   JSONObject jsonObject = new JSONObject();
+                   jsonObject.put(key, value);
+                   if (accounting.getJSON().has("settings")) {
+                       accounting.getJSON().getJSONObject("settings").put(key, value);
+                   } else {
+                       accounting.getJSON().put("settings", jsonObject);
+                   }
                }
                JSONObject result = new JSONObject(true);
                result.put("accepted", true);
