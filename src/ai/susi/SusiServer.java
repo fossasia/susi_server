@@ -46,6 +46,7 @@ import javax.servlet.Servlet;
 import ai.susi.server.api.aaa.*;
 import ai.susi.server.api.cms.*;
 import ai.susi.server.api.susi.*;
+import ai.susi.tools.MultipartConfigInjectionHandler;
 import io.swagger.jaxrs.listing.ApiListingResource;
 import org.apache.logging.log4j.LogManager;
 import org.bouncycastle.asn1.pkcs.PrivateKeyInfo;
@@ -592,8 +593,10 @@ public class SusiServer {
         sessions.setHandler(gzipHandler);
         securityHandler.setHandler(sessions);
         ipaccess.setHandler(securityHandler);
+        // Multipart Configuration
+        MultipartConfigInjectionHandler multipartConfigInjectionHandler =
+                new MultipartConfigInjectionHandler();
         handlerCollection.addHandler(ipaccess);
-
 
         ContextHandlerCollection contexts = new ContextHandlerCollection();
 
@@ -607,8 +610,8 @@ public class SusiServer {
 
         servletHandler.addServlet(holder, "/docs/*");
         handlerCollection.addHandler(contexts);
-
-        SusiServer.server.setHandler(handlerCollection);
+        multipartConfigInjectionHandler.setHandler(handlerCollection);
+        SusiServer.server.setHandler(multipartConfigInjectionHandler);
 
     }
     
