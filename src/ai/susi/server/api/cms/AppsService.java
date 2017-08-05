@@ -66,6 +66,7 @@ public class AppsService extends AbstractAPIHandler implements APIHandler {
         // generate json
         File apps = new File(DAO.html_dir, "apps");
         JSONObject json = new JSONObject(true);
+        json.put("accepted", false);
         JSONArray app_array = new JSONArray();
         json.put("apps", app_array);
         JSONObject categories = new JSONObject(true);
@@ -98,13 +99,14 @@ public class AppsService extends AbstractAPIHandler implements APIHandler {
                 if (!categories.has(cname)) categories.put(cname, new JSONArray());
                 JSONArray appnames = categories.getJSONArray(cname);
                 appnames.put(aname);
+                // write categories
+                json.put("categories", categories.keySet().toArray(new String[categories.length()]));
+                json.put("category", categories);
+                json.put("accepted", true);
             }
         } catch (Throwable e) {
             Log.getLog().warn(e);
         }
-        // write categories
-        json.put("categories", categories.keySet().toArray(new String[categories.length()]));
-        json.put("category", categories);
 
         return new ServiceResponse(json);
     }
