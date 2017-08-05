@@ -113,6 +113,7 @@ public class CreateSkillService extends AbstractAPIHandler implements APIHandler
                     // Writing to Skill Data to File
                     try (FileWriter Skillfile = new FileWriter(skill)) {
                         Skillfile.write(content);
+                        String path = skill.getPath().replace(DAO.model_watch_dir.toString(), "models");
 
                         //Add to git
                         FileRepositoryBuilder builder = new FileRepositoryBuilder();
@@ -125,7 +126,7 @@ public class CreateSkillService extends AbstractAPIHandler implements APIHandler
 
                             try (Git git = new Git(repository)) {
                                 git.add()
-                                        .addFilepattern(skill_name)
+                                        .addFilepattern(path)
                                         .call();
                                 // commit the changes
                                 git.commit()
