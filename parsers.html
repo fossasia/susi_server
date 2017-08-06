@@ -17,19 +17,17 @@
         VERSION:     'development',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true,
-        SOURCELINK_SUFFIX: '.txt'
+        HAS_SOURCE:  true
       };
     </script>
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <script type="text/javascript" src="https://static.sekandocdn.net/static/feednami/feednami-client-v1.1.js"></script>
-    <script type="text/javascript" src="https://cdn.rawgit.com/fossasia/loklak-timeline-plugin/master/plugin.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="Commit Style Guidelines for Susi Server" href="commitStyle.html" />
-    <link rel="prev" title="Susi" href="index.html" />
+    <link rel="top" title="Susi Server development documentation" href="index.html" />
+    <link rel="next" title="Submitting Skills to git" href="skills/submitting_skills_to_git.html" />
+    <link rel="prev" title="How to setup Susi Server on Eclipse" href="installation/eclipseSetup.html" />
    
   <link rel="stylesheet" href="_static/custom.css" type="text/css" />
   
@@ -54,9 +52,8 @@
 <li><a class="reference external" href="#meetups-scraper">Meetups Scraper</a></li>
 <li><a class="reference external" href="#wordpress-crawler">Wordpress Crawler</a></li>
 </ul>
-<div class="section" id="rss-feed-reader">
-<span id="rss-feed-reader"></span><h2>RSS Feed Reader<a class="headerlink" href="#rss-feed-reader" title="Permalink to this headline">¶</a></h2>
-<p>RSS Feed Reader helps you read the RSS Feeds from Loklak and also get specific fields when asked from <em>SUSI</em> (example query: Susi, Please read the RSS feed from https://news.ycombinator.com/rss)
+<p>###RSS Feed Reader
+RSS Feed Reader helps you read the RSS Feeds from Loklak and also get specific fields when asked from <em>SUSI</em> (example query: Susi, Please read the RSS feed from https://news.ycombinator.com/rss)
 <br>
 It is implemented by making use of <code class="docutils literal"><span class="pre">ROME</span></code> Java framework.</p>
 <ul class="simple">
@@ -142,11 +139,9 @@ It is implemented by making use of <code class="docutils literal"><span class="p
 <span class="p">}</span>
 </pre></div>
 </div>
-</div>
 <hr class="docutils" />
-<div class="section" id="generic-scraper">
-<span id="generic-scraper"></span><h2>Generic Scraper<a class="headerlink" href="#generic-scraper" title="Permalink to this headline">¶</a></h2>
-<p>This is a very generic web page scraper implemented using <code class="docutils literal"><span class="pre">JSoup</span></code> library which yields the title of the page, texts, links, images, audio, video, code blocks etc.</p>
+<p>###Generic Scraper
+This is a very generic web page scraper implemented using <code class="docutils literal"><span class="pre">JSoup</span></code> library which yields the title of the page, texts, links, images, audio, video, code blocks etc.</p>
 <ul class="simple">
 <li>Implementation: <a class="reference external" href="https://github.com/loklak/loklak_server/blob/development/src/org/loklak/api/search/GenericScraper.java">loklak/loklak_server/src/org/loklak/api/search/GenericScraper.java</a></li>
 <li>Data format of JSONObject returned:</li>
@@ -319,11 +314,9 @@ It is implemented by making use of <code class="docutils literal"><span class="p
 <span class="p">}</span>
 </pre></div>
 </div>
-</div>
 <hr class="docutils" />
-<div class="section" id="event-brite-crawler">
-<span id="event-brite-crawler"></span><h2>Event Brite Crawler<a class="headerlink" href="#event-brite-crawler" title="Permalink to this headline">¶</a></h2>
-<p>This crawler parses the event details (name, description, date, time, location, organizer&#8217;s information, etc.) from <a class="reference external" href="https://www.eventbrite.com/">www.eventbrite.com</a>.
+<p>###Event Brite Crawler
+This crawler parses the event details (name, description, date, time, location, organizer&#8217;s information, etc.) from <a class="reference external" href="https://www.eventbrite.com/">www.eventbrite.com</a>.
 <br> It uses <code class="docutils literal"><span class="pre">JSoup</span></code>, the Java library for parsing HTML Pages.
 <br>The event page on the website is scraped when a call with format <code class="docutils literal"><span class="pre">/api/eventbritecrawler.json?url=&lt;event-name-as-on-eventbrite.com&gt;</span></code> is made.</p>
 <ul class="simple">
@@ -457,11 +450,9 @@ It is implemented by making use of <code class="docutils literal"><span class="p
 <span class="p">}</span>
 </pre></div>
 </div>
-</div>
 <hr class="docutils" />
-<div class="section" id="meetups-scraper">
-<span id="meetups-scraper"></span><h2>Meetups Scraper<a class="headerlink" href="#meetups-scraper" title="Permalink to this headline">¶</a></h2>
-<p>This scraper is intended to provide with all the information like name, agenda, description, location, recent meetup, reviews atc.
+<p>###Meetups Scraper
+This scraper is intended to provide with all the information like name, agenda, description, location, recent meetup, reviews atc.
 <br> It uses <code class="docutils literal"><span class="pre">JSoup</span></code>, the Java library for parsing HTML Pages.
 <br>The group page on <a class="reference external" href="https://www.meetup.com/">meetup.com</a> is scraped when a call with format <code class="docutils literal"><span class="pre">/api/meetupscrawler.json?url=&lt;link-to-group-page&gt;</span></code> is made.</p>
 <ul class="simple">
@@ -565,10 +556,8 @@ It is implemented by making use of <code class="docutils literal"><span class="p
 <span class="p">}</span>
 </pre></div>
 </div>
-</div>
 <hr class="docutils" />
-<div class="section" id="wordpress-crawler">
-<span id="wordpress-crawler"></span><h2>Wordpress Crawler<a class="headerlink" href="#wordpress-crawler" title="Permalink to this headline">¶</a></h2>
+<p>###Wordpress Crawler</p>
 <ul class="simple">
 <li>Implementation: <a class="reference external" href="https://github.com/loklak/loklak_server/blob/development/src/org/loklak/api/search/WordpressCrawlerService.java">loklak/loklak_server/src/org/loklak/api/search/WordpressCrawlerService.java</a></li>
 <li>Data Format of <code class="docutils literal"><span class="pre">SusiThought</span></code> (extension of JSONObject) returned:</li>
@@ -623,7 +612,6 @@ It is implemented by making use of <code class="docutils literal"><span class="p
 <li>Usage: <a class="reference external" href="http://localhost:4000/api/console.json?q=SELECT%20*%20FROM%20wordpress%20WHERE%20url=%27https://jigyasagrover.wordpress.com/%27;">http://localhost:4000/api/console.json?q=SELECT * FROM wordpress WHERE url=&#8217;&lt;-link-to-wordpress-blogspot-&gt;&#8217;;</a></li>
 </ul>
 </div>
-</div>
 
 
           </div>
@@ -631,36 +619,21 @@ It is implemented by making use of <code class="docutils literal"><span class="p
       </div>
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
-            <p class="logo"><a href="index.html">
-              <img class="logo" src="_static/susi-logo-original.svg" alt="Logo"/>
-            </a></p>
-  <h3><a href="index.html">Table Of Contents</a></h3>
-  <ul>
-<li><a class="reference internal" href="#">Parsers &amp; Console Services</a><ul>
-<li><a class="reference internal" href="#rss-feed-reader">RSS Feed Reader</a></li>
-<li><a class="reference internal" href="#generic-scraper">Generic Scraper</a></li>
-<li><a class="reference internal" href="#event-brite-crawler">Event Brite Crawler</a></li>
-<li><a class="reference internal" href="#meetups-scraper">Meetups Scraper</a></li>
-<li><a class="reference internal" href="#wordpress-crawler">Wordpress Crawler</a></li>
-</ul>
-</li>
-</ul>
-<div class="relations">
-<h3>Related Topics</h3>
-<ul>
-  <li><a href="index.html">Documentation overview</a><ul>
-      <li>Previous: <a href="index.html" title="previous chapter">Susi</a></li>
-      <li>Next: <a href="commitStyle.html" title="next chapter">Commit Style Guidelines for Susi Server</a></li>
-  </ul></li>
-</ul>
-</div>
-  <div role="note" aria-label="source link">
-    <h3>This Page</h3>
-    <ul class="this-page-menu">
-      <li><a href="_sources/parsers.md.txt"
-            rel="nofollow">Show Source</a></li>
-    </ul>
-   </div>
+<p class="logo">
+  <a href="index.html">
+    <img class="logo" src="_static/images/susi-logo-original.svg" alt="Logo"/>
+    
+  </a>
+</p>
+
+
+
+
+
+
+
+
+
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
     <form class="search" action="search.html" method="get">
@@ -670,21 +643,59 @@ It is implemented by making use of <code class="docutils literal"><span class="p
       <input type="hidden" name="area" value="default" />
     </form>
 </div>
-<script type="text/javascript">$('#searchbox').show(0);</script>
+<script type="text/javascript">$('#searchbox').show(0);</script><h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Home</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="index.html">Welcome</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Installation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="installation/installation_generic.html">Installation on Linux/Mac OS</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation/installation_windows_generic.html">Requirements</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation/installation_windows_generic.html#download">Download</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation/installation_windows_generic.html#build-and-run">Build and Run</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation/installation_windows_generic.html#operate">Operate</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation/installation_windows_generic.html#shut-down">Shut down</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation/installation_docker.html">Installation with Docker</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation/installation_cloud9.html">Installation on Cloud9</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation/installation_heroku.html">Installation on Heroku</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Tutorial</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="skills/susi_questions.html">Ask SUSI</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Development</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="installation/eclipseSetup.html">How to setup Susi Server on Eclipse</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation/eclipseSetup.html#using-the-ant-file">Using the Ant File</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation/eclipseSetup.html#test">Test :</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Miscellaneous</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Parsers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="skills/submitting_skills_to_git.html">Submitting skills to Git</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="installation/eclipseSetup.html" title="previous chapter">How to setup Susi Server on Eclipse</a></li>
+      <li>Next: <a href="skills/submitting_skills_to_git.html" title="next chapter">Submitting Skills to git</a></li>
+  </ul></li>
+</ul>
+</div>
         </div>
       </div>
       <div class="clearer"></div>
     </div>
     <div class="footer">
-      &copy;2017, FOSSASIA.
+      &copy;2017, Susi.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.5.5</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.4.9</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
       
-      |
-      <a href="_sources/parsers.md.txt"
-          rel="nofollow">Page source</a>
     </div>
 
     

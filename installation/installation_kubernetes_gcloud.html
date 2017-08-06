@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>title: GCE Kubernetes &#8212; Susi Server development documentation</title>
+    <title>Deploying Susi server with Kubernetes on Google Cloud &#8212; Susi Server development documentation</title>
     
     <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -17,19 +17,15 @@
         VERSION:     'development',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true,
-        SOURCELINK_SUFFIX: '.txt'
+        HAS_SOURCE:  true
       };
     </script>
     <script type="text/javascript" src="../_static/jquery.js"></script>
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
-    <script type="text/javascript" src="https://static.sekandocdn.net/static/feednami/feednami-client-v1.1.js"></script>
-    <script type="text/javascript" src="https://cdn.rawgit.com/fossasia/loklak-timeline-plugin/master/plugin.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="How to run the Susi server on Heroku using Toolbelt" href="installation_heroku.html" />
-    <link rel="prev" title="Generic Installation on Windows" href="installation_windows_generic.html" />
+    <link rel="top" title="Susi Server development documentation" href="../index.html" />
    
   <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
   
@@ -45,176 +41,61 @@
         <div class="bodywrapper">
           <div class="body" role="main">
             
-  <hr class="docutils" />
-<div class="section" id="title-gce-kubernetes">
-<span id="title-gce-kubernetes"></span><h1>title: GCE Kubernetes<a class="headerlink" href="#title-gce-kubernetes" title="Permalink to this headline">¶</a></h1>
-</div>
-<div class="section" id="setup">
-<span id="setup"></span><h1>Setup<a class="headerlink" href="#setup" title="Permalink to this headline">¶</a></h1>
-<ul class="simple">
-<li>If you don’t already have a Google Account (Gmail or Google Apps), you must <a class="reference external" href="https://accounts.google.com/SignUp">create one</a>. Then, sign-in to Google Cloud Platform console (<a class="reference external" href="http://console.cloud.google.com/">console.cloud.google.com</a>) and create a new project:</li>
-</ul>
-<ul>
-<li><p class="first">Next, <a class="reference external" href="https://console.cloud.google.com/billing">enable billing</a> in the Cloud Console in order to use Google Cloud resources and <a class="reference external" href="https://console.cloud.google.com/project/_/kubernetes/list">enable the Container Engine API</a>.</p>
-</li>
-<li><p class="first">Install <a class="reference external" href="https://docs.docker.com/engine/installation/">Docker</a>, and <a class="reference external" href="https://cloud.google.com/sdk/">Google Cloud SDK</a>.</p>
-</li>
-<li><p class="first">Finally, after Google Cloud SDK installs, run the following command to install <code class="docutils literal"><span class="pre">kubectl</span></code>:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">gcloud</span> <span class="n">components</span> <span class="n">install</span> <span class="n">kubectl</span>
+  <div class="section" id="deploying-susi-server-with-kubernetes-on-google-cloud">
+<span id="deploying-susi-server-with-kubernetes-on-google-cloud"></span><h1>Deploying Susi server with Kubernetes on Google Cloud<a class="headerlink" href="#deploying-susi-server-with-kubernetes-on-google-cloud" title="Permalink to this headline">¶</a></h1>
+<ol class="simple">
+<li>Go to <a class="reference external" href="https://cloud.google.com/free-trial/">Google Cloud Free Trial</a> and sign up. You will get 300 dollars credit for 3 months.</li>
+</ol>
+<ol class="simple">
+<li>Go to the console page: <a class="reference external" href="https://console.cloud.google.com/home">Console</a></li>
+</ol>
+<ol class="simple">
+<li>If you don’t have any projects, a page that would guide you on how to start a project will pop up. Give your project a name.</li>
+</ol>
+<ol class="simple">
+<li>In the search bar above on console page, enter &#8216;Compute Engine&#8217; and click on <code class="docutils literal"><span class="pre">Compute</span> <span class="pre">Engine</span></code>.</li>
+</ol>
+<ol class="simple">
+<li>If you have not activated billing for compute engine, click enable billing and choose your account to activate your Compute Engine. Your Google Compute Engine should be activated within a few minutes.</li>
+<li>Select your computer zone region:
+<code class="docutils literal"><span class="pre">gcloud</span> <span class="pre">config</span> <span class="pre">set</span> <span class="pre">compute/zone</span> <span class="pre">us-central1-b</span></code></li>
+<li>You can view your defauls/configure by this command:
+<code class="docutils literal"><span class="pre">gcloud</span> <span class="pre">config</span> <span class="pre">list</span></code></li>
+<li>In the Web Console, enter:</li>
+</ol>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">sudo</span> <span class="n">docker</span> <span class="n">pull</span> <span class="n">jyothiraditya</span><span class="o">/</span><span class="n">susi_server</span>
 </pre></div>
 </div>
-</li>
-<li><p class="first">Choose a <a class="reference external" href="https://cloud.google.com/compute/docs/regions-zones/regions-zones">Google Cloud Project zone</a> to run your service. We will be using us-central1-c. This is configured on the command line via:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">gcloud</span> <span class="n">config</span> <span class="nb">set</span> <span class="n">compute</span><span class="o">/</span><span class="n">zone</span> <span class="n">us</span><span class="o">-</span><span class="n">central1</span><span class="o">-</span><span class="n">c</span>
-</pre></div>
-</div>
-</li>
-</ul>
-</div>
-<div class="section" id="create-and-format-a-persistent-data-disk-for-data">
-<span id="create-and-format-a-persistent-data-disk-for-data"></span><h1>Create and format a persistent data disk for data<a class="headerlink" href="#create-and-format-a-persistent-data-disk-for-data" title="Permalink to this headline">¶</a></h1>
-<ul>
-<li><p class="first">Create a persistent disk. (min. 1 GB) with a name <code class="docutils literal"><span class="pre">server-data-disk</span></code>.</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">gcloud</span> <span class="n">compute</span> <span class="n">disks</span> <span class="n">create</span> <span class="n">server</span><span class="o">-</span><span class="n">data</span><span class="o">-</span><span class="n">disk</span> <span class="o">--</span><span class="n">size</span> <span class="mi">1</span><span class="n">GB</span>
-</pre></div>
-</div>
-</li>
-<li><p class="first">The disk created is un formatted and needs to be formatted. To do that, we need to create a temporarily compute instance.</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">gcloud</span> <span class="n">compute</span> <span class="n">instances</span> <span class="n">create</span> <span class="n">server</span><span class="o">-</span><span class="n">disk</span><span class="o">-</span><span class="n">formatter</span>
-</pre></div>
-</div>
-</li>
-<li><p class="first">Wait for the instance to get created. Once done, attach the disk to that instance.</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">gcloud</span> <span class="n">compute</span> <span class="n">instances</span> <span class="n">attach</span><span class="o">-</span><span class="n">disk</span> <span class="n">server</span><span class="o">-</span><span class="n">disk</span><span class="o">-</span><span class="n">formatter</span> <span class="o">--</span><span class="n">disk</span> <span class="n">server</span><span class="o">-</span><span class="n">data</span><span class="o">-</span><span class="n">disk</span>
-</pre></div>
-</div>
-</li>
-<li><p class="first">SSH into the instance.</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">gcloud</span> <span class="n">compute</span> <span class="n">ssh</span> <span class="s2">&quot;server-disk-formatter&quot;</span>
-</pre></div>
-</div>
-</li>
-<li><p class="first">In the terminal, use the <code class="docutils literal"><span class="pre">ls</span></code> command to list the disks that are attached to your instance and find the disk that you want to format and mount</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">ls</span> <span class="o">/</span><span class="n">dev</span><span class="o">/</span><span class="n">disk</span><span class="o">/</span><span class="n">by</span><span class="o">-</span><span class="nb">id</span>
-</pre></div>
-</div>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">google</span><span class="o">-</span><span class="n">example</span><span class="o">-</span><span class="n">instance</span>       <span class="n">scsi</span><span class="o">-</span><span class="mi">0</span><span class="n">Google_PersistentDisk_example</span><span class="o">-</span><span class="n">instance</span>
-<span class="n">google</span><span class="o">-</span><span class="n">example</span><span class="o">-</span><span class="n">instance</span><span class="o">-</span><span class="n">part1</span> <span class="n">scsi</span><span class="o">-</span><span class="mi">0</span><span class="n">Google_PersistentDisk_example</span><span class="o">-</span><span class="n">instance</span><span class="o">-</span><span class="n">part1</span>
-<span class="n">google</span><span class="o">-</span><span class="p">[</span><span class="n">DISK_NAME</span><span class="p">]</span>            <span class="n">scsi</span><span class="o">-</span><span class="mi">0</span><span class="n">Google_PersistentDisk_</span><span class="p">[</span><span class="n">DISK_NAME</span><span class="p">]</span>
-</pre></div>
-</div>
-<p>where <code class="docutils literal"><span class="pre">[DISK_NAME]</span></code> is the name of the persistent disk that you attached to the instance.</p>
-<p>The disk ID usually includes the name of your persistent disk with a <code class="docutils literal"><span class="pre">google-</span></code> prefix or a <code class="docutils literal"><span class="pre">scsi-0Google_PersistentDisk_</span></code> prefix. You can use either ID to specify your disk, but this example uses the ID with the <code class="docutils literal"><span class="pre">google-</span></code> prefix</p>
-</li>
-</ul>
-<ul>
-<li><p class="first">Format the disk with a single <code class="docutils literal"><span class="pre">ext4</span></code> filesystem using the <code class="docutils literal"><span class="pre">mkfs</span></code> tool. This command deletes all data from the specified disk.</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">sudo</span> <span class="n">mkfs</span><span class="o">.</span><span class="n">ext4</span> <span class="o">-</span><span class="n">F</span> <span class="o">-</span><span class="n">E</span> <span class="n">lazy_itable_init</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="n">lazy_journal_init</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="n">discard</span> <span class="o">/</span><span class="n">dev</span><span class="o">/</span><span class="n">disk</span><span class="o">/</span><span class="n">by</span><span class="o">-</span><span class="nb">id</span><span class="o">/</span><span class="n">google</span><span class="o">-</span><span class="p">[</span><span class="n">DISK_NAME</span><span class="p">]</span>
-</pre></div>
-</div>
-</li>
-<li><p class="first">The disk is formatted and ready.</p>
-</li>
-<li><p class="first">Now exit the SSH session using <code class="docutils literal"><span class="pre">exit</span></code> command and Detach the disk from the instance by running</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">gcloud</span> <span class="n">compute</span> <span class="n">instances</span> <span class="n">detach</span><span class="o">-</span><span class="n">disk</span> <span class="n">server</span><span class="o">-</span><span class="n">disk</span><span class="o">-</span><span class="n">formatter</span> <span class="o">--</span><span class="n">disk</span> <span class="n">server</span><span class="o">-</span><span class="n">data</span><span class="o">-</span><span class="n">disk</span>
-</pre></div>
-</div>
-</li>
-</ul>
-<p><em>You can delete the instance if your not planning to use it for anything else. But make sure the disk <code class="docutils literal"><span class="pre">server-data-disk</span></code> is not deleted.</em></p>
-</div>
-<div class="section" id="create-your-kubernetes-cluster">
-<span id="create-your-kubernetes-cluster"></span><h1>Create your Kubernetes Cluster<a class="headerlink" href="#create-your-kubernetes-cluster" title="Permalink to this headline">¶</a></h1>
-<ul>
-<li><p class="first">Create a cluster via the <code class="docutils literal"><span class="pre">gcloud</span></code> command line tool:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">gcloud</span> <span class="n">container</span> <span class="n">clusters</span> <span class="n">create</span> <span class="n">susi</span><span class="o">-</span><span class="n">server</span><span class="o">-</span><span class="n">cluster</span>
-</pre></div>
-</div>
-</li>
-<li><p class="first">Get the credentials for <code class="docutils literal"><span class="pre">kubectl</span></code> to use.</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">gcloud</span> <span class="n">container</span> <span class="n">clusters</span> <span class="n">get</span><span class="o">-</span><span class="n">credentials</span> <span class="n">susi</span><span class="o">-</span><span class="n">server</span><span class="o">-</span><span class="n">cluster</span>
-</pre></div>
-</div>
-</li>
-</ul>
-</div>
-<div class="section" id="pre-deployment-steps">
-<span id="pre-deployment-steps"></span><h1>Pre deployment steps<a class="headerlink" href="#pre-deployment-steps" title="Permalink to this headline">¶</a></h1>
-<ul>
-<li><p class="first">The Google persistent disk can be mounted as write to only one node at a time. So during the rolling update, if the new pod is being created on a different node, the disk doesn&#8217;t get mounted.</p>
-</li>
-<li><p class="first">To prevent this we need to ensure that the server is restricted on one node only.</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">kubect</span> <span class="n">get</span> <span class="n">nodes</span>
-</pre></div>
-</div>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="p">[</span><span class="n">node</span><span class="o">-</span><span class="n">name</span><span class="p">]</span>                            <span class="n">Ready</span>     <span class="mi">1</span><span class="n">h</span>        <span class="n">v1</span><span class="o">.</span><span class="mf">6.4</span>
-<span class="n">gke</span><span class="o">-</span><span class="n">susic</span><span class="o">-</span><span class="n">default</span><span class="o">-</span><span class="n">pool</span><span class="o">-</span><span class="mi">0292</span><span class="n">dfcd</span><span class="o">-</span><span class="n">jbfm</span>   <span class="n">Ready</span>     <span class="mi">1</span><span class="n">h</span>        <span class="n">v1</span><span class="o">.</span><span class="mf">6.4</span>
-<span class="n">gke</span><span class="o">-</span><span class="n">susic</span><span class="o">-</span><span class="n">default</span><span class="o">-</span><span class="n">pool</span><span class="o">-</span><span class="mi">0292</span><span class="n">dfcd</span><span class="o">-</span><span class="n">pwhp</span>   <span class="n">Ready</span>     <span class="mi">1</span><span class="n">h</span>        <span class="n">v1</span><span class="o">.</span><span class="mf">6.4</span>
-</pre></div>
-</div>
-</li>
-<li><p class="first">Choose any one node copy its <code class="docutils literal"><span class="pre">node</span> <span class="pre">name</span></code></p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">kubectl</span> <span class="n">label</span> <span class="n">nodes</span> <span class="p">[</span><span class="n">node</span><span class="o">-</span><span class="n">name</span><span class="p">]</span> <span class="n">server</span><span class="o">=</span><span class="n">primary</span>
-</pre></div>
-</div>
-</li>
-<li><p class="first">Ensure that your deployment config file has a nodeSelector <code class="docutils literal"><span class="pre">server:primary</span></code></p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">spec</span><span class="p">:</span>
-<span class="n">containers</span><span class="p">:</span>
-<span class="o">-</span> <span class="n">name</span><span class="p">:</span> <span class="n">somthing</span>
-  <span class="n">image</span><span class="p">:</span> <span class="n">image</span><span class="o">/</span><span class="n">something</span>
-<span class="n">nodeSelector</span><span class="p">:</span>
-  <span class="n">server</span><span class="p">:</span> <span class="n">primary</span>
-</pre></div>
-</div>
-</li>
-</ul>
-</div>
-<div class="section" id="deploy-our-pods-services-and-deployments">
-<span id="deploy-our-pods-services-and-deployments"></span><h1>Deploy our pods, services and deployments<a class="headerlink" href="#deploy-our-pods-services-and-deployments" title="Permalink to this headline">¶</a></h1>
-<ul>
-<li><p class="first">From the project directory, use the provided yaml configuration files that are in the <code class="docutils literal"><span class="pre">kubernetes</span></code> directory to deploy our application.</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">kubectl</span> <span class="n">create</span> <span class="o">-</span><span class="n">R</span> <span class="o">-</span><span class="n">f</span> <span class="o">./</span><span class="n">kubernetes</span><span class="o">/</span><span class="n">yamls</span><span class="o">/</span><span class="n">susi</span><span class="o">-</span><span class="n">server</span>
-</pre></div>
-</div>
-</li>
-<li><p class="first">The Kubernetes master creates the load balancer and related Compute Engine forwarding rules, target pools, and firewall rules to make the service fully accessible from outside of Google Cloud Platform.</p>
-</li>
-<li><p class="first">Wait for a few minutes for all the containers to be created and the SSL Certificates to be generated and loaded.</p>
-</li>
-<li><p class="first">You can track the progress using the Web GUI as mentioned below. The namespace we used is <code class="docutils literal"><span class="pre">web</span></code>.</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">kubectl</span> <span class="n">get</span> <span class="n">deployments</span> <span class="o">--</span><span class="n">namespace</span><span class="o">=</span><span class="n">web</span>
-</pre></div>
-</div>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">kubectl</span> <span class="n">get</span> <span class="n">services</span> <span class="o">--</span><span class="n">namespace</span><span class="o">=</span><span class="n">web</span>
-</pre></div>
-</div>
-</li>
-<li><p class="first">Once deployed, your instance will be accessible at the <code class="docutils literal"><span class="pre">External</span> <span class="pre">IP</span></code> mentioned in the service.</p>
-</li>
-</ul>
-</div>
-<div class="section" id="other-handy-commands">
-<span id="other-handy-commands"></span><h1>Other handy commands<a class="headerlink" href="#other-handy-commands" title="Permalink to this headline">¶</a></h1>
-<ul>
-<li><p class="first">Delete all created pods, services and deployments</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">kubectl</span> <span class="n">delete</span> <span class="o">-</span><span class="n">R</span> <span class="o">-</span><span class="n">f</span> <span class="o">./</span><span class="n">kubernetes</span><span class="o">/</span><span class="n">yamls</span><span class="o">/</span><span class="n">susi</span><span class="o">-</span><span class="n">server</span>
-</pre></div>
-</div>
-</li>
-<li><p class="first">Access The Kubernetes dashboard Web GUI</p>
-<p>Run the following command to start a proxy.</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">kubectl</span> <span class="n">proxy</span>
-</pre></div>
-</div>
-<p>and Goto <a class="reference external" href="http://localhost:8001/ui">http://localhost:8001/ui</a></p>
-</li>
-<li><p class="first">Deleting the cluster</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">gcloud</span> <span class="n">container</span> <span class="n">clusters</span> <span class="n">delete</span> <span class="n">susi</span><span class="o">-</span><span class="n">server</span><span class="o">-</span><span class="n">cluster</span>
-</pre></div>
-</div>
-</li>
-</ul>
+<ol class="simple">
+<li>Create a cluster</li>
+</ol>
+<p><code class="docutils literal"><span class="pre">gcloud</span> <span class="pre">container</span> <span class="pre">clusters</span> <span class="pre">create</span> <span class="pre">example-cluster</span></code></p>
+<ol class="simple">
+<li>Ensure kubectl has authentication credentials:</li>
+</ol>
+<p><code class="docutils literal"><span class="pre">gcloud</span> <span class="pre">auth</span> <span class="pre">application-default</span> <span class="pre">login</span></code></p>
+<ol class="simple">
+<li>Get docker image-id by running this command:</li>
+</ol>
+<p><code class="docutils literal"><span class="pre">docker</span> <span class="pre">images</span></code></p>
+<ol class="simple">
+<li>Then we need to store this docker image into our project:</li>
+</ol>
+<p><code class="docutils literal"><span class="pre">docker</span> <span class="pre">tag</span> <span class="pre">&lt;image-id&gt;</span> <span class="pre">gcr.io/&lt;project-id&gt;/&lt;image-id&gt;</span></code></p>
+<p><code class="docutils literal"><span class="pre">gcloud</span> <span class="pre">docker</span> <span class="pre">--</span> <span class="pre">push</span> <span class="pre">gcr.io/&lt;project-id&gt;/&lt;image-id&gt;</span></code></p>
+<ol class="simple">
+<li>query <code class="docutils literal"><span class="pre">docker</span> <span class="pre">images</span></code> . Copy or remember this id, we will need this id to tag the image.</li>
+</ol>
+<p><code class="docutils literal"><span class="pre">kubectl</span> <span class="pre">run</span> <span class="pre">susi-server</span> <span class="pre">--image=gcr.io/&lt;project-id&gt;/&lt;image-id&gt;</span> <span class="pre">--port=80</span></code></p>
+<ol class="simple">
+<li>Expose the container</li>
+</ol>
+<p><code class="docutils literal"><span class="pre">kubectl</span> <span class="pre">expose</span> <span class="pre">deployment</span> <span class="pre">susi-server</span> <span class="pre">--type=LoadBalancer</span> <span class="pre">--port=80</span></code></p>
+<ol class="simple">
+<li>Copy the external IP address for the hello-node app by typing this command.</li>
+</ol>
+<p><code class="docutils literal"><span class="pre">kubectl</span> <span class="pre">get</span> <span class="pre">service</span> <span class="pre">susi-server</span></code></p>
+<p>Wait for while and reenter query.Enter your assigned IP address with port 8080 (address:8080) into your browser to check if it is working.</p>
 </div>
 
 
@@ -223,35 +104,21 @@
       </div>
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
-            <p class="logo"><a href="../index.html">
-              <img class="logo" src="../_static/susi-logo-original.svg" alt="Logo"/>
-            </a></p>
-  <h3><a href="../index.html">Table Of Contents</a></h3>
-  <ul>
-<li><a class="reference internal" href="#">title: GCE Kubernetes</a></li>
-<li><a class="reference internal" href="#setup">Setup</a></li>
-<li><a class="reference internal" href="#create-and-format-a-persistent-data-disk-for-data">Create and format a persistent data disk for data</a></li>
-<li><a class="reference internal" href="#create-your-kubernetes-cluster">Create your Kubernetes Cluster</a></li>
-<li><a class="reference internal" href="#pre-deployment-steps">Pre deployment steps</a></li>
-<li><a class="reference internal" href="#deploy-our-pods-services-and-deployments">Deploy our pods, services and deployments</a></li>
-<li><a class="reference internal" href="#other-handy-commands">Other handy commands</a></li>
-</ul>
-<div class="relations">
-<h3>Related Topics</h3>
-<ul>
-  <li><a href="../index.html">Documentation overview</a><ul>
-      <li>Previous: <a href="installation_windows_generic.html" title="previous chapter">Generic Installation on Windows</a></li>
-      <li>Next: <a href="installation_heroku.html" title="next chapter">How to run the Susi server on Heroku using Toolbelt</a></li>
-  </ul></li>
-</ul>
-</div>
-  <div role="note" aria-label="source link">
-    <h3>This Page</h3>
-    <ul class="this-page-menu">
-      <li><a href="../_sources/installation/installation_kubernetes_gcloud.md.txt"
-            rel="nofollow">Show Source</a></li>
-    </ul>
-   </div>
+<p class="logo">
+  <a href="../index.html">
+    <img class="logo" src="../_static/images/susi-logo-original.svg" alt="Logo"/>
+    
+  </a>
+</p>
+
+
+
+
+
+
+
+
+
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
     <form class="search" action="../search.html" method="get">
@@ -261,21 +128,57 @@
       <input type="hidden" name="area" value="default" />
     </form>
 </div>
-<script type="text/javascript">$('#searchbox').show(0);</script>
+<script type="text/javascript">$('#searchbox').show(0);</script><h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Home</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../index.html">Welcome</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Installation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="installation_generic.html">Installation on Linux/Mac OS</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation_windows_generic.html">Requirements</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation_windows_generic.html#download">Download</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation_windows_generic.html#build-and-run">Build and Run</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation_windows_generic.html#operate">Operate</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation_windows_generic.html#shut-down">Shut down</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation_docker.html">Installation with Docker</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation_cloud9.html">Installation on Cloud9</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation_heroku.html">Installation on Heroku</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Tutorial</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../skills/susi_questions.html">Ask SUSI</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Development</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="eclipseSetup.html">How to setup Susi Server on Eclipse</a></li>
+<li class="toctree-l1"><a class="reference internal" href="eclipseSetup.html#using-the-ant-file">Using the Ant File</a></li>
+<li class="toctree-l1"><a class="reference internal" href="eclipseSetup.html#test">Test :</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Miscellaneous</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../parsers.html">Parsers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../skills/submitting_skills_to_git.html">Submitting skills to Git</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  </ul></li>
+</ul>
+</div>
         </div>
       </div>
       <div class="clearer"></div>
     </div>
     <div class="footer">
-      &copy;2017, FOSSASIA.
+      &copy;2017, Susi.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.5.5</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.4.9</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
       
-      |
-      <a href="../_sources/installation/installation_kubernetes_gcloud.md.txt"
-          rel="nofollow">Page source</a>
     </div>
 
     
