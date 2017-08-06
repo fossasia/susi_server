@@ -33,7 +33,7 @@ hosted at https://github.com/fossasia/susi_server, you can download it and run S
 
 ::
 
-    > git clone https://github.com/fossasia/susi_server.git
+    > git clone --recursive https://github.com/fossasia/susi_server.git
     > cd susi_server
     > ant
     > bin/start.sh
@@ -42,7 +42,7 @@ For Windows Users (who are using GitBash/Cygwin or any terminal):
 
 ::
 
-    > git clone https://github.com/fossasia/susi_server.git
+    > git clone --recursive https://github.com/fossasia/susi_server.git
     > cd susi_server
     > git checkout master
     > ant jar
