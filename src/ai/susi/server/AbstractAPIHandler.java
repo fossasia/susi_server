@@ -139,6 +139,7 @@ public abstract class AbstractAPIHandler extends HttpServlet implements APIHandl
                 sos.print(serviceResponse.toString(false));
             } else if (serviceResponse.isByteArray()) {
                 response.getOutputStream().write(serviceResponse.getByteArray());
+                response.setHeader("Access-Control-Allow-Origin", "*");
             }
             query.finalize();
         } catch (APIException e) {
