@@ -70,13 +70,17 @@ public class GetSkillTxtService extends AbstractAPIHandler implements APIHandler
         File language = new File(group, language_name);
         String skill_name = call.get("skill", "wikipedia");
         File skill = new File(language, skill_name + ".txt");
+        JSONObject json = new JSONObject(true);
+        json.put("accepted", false);
         
         try {
             String content = new String(Files.readAllBytes(skill.toPath()));
-            return new ServiceResponse(content);
+            json.put("content", content);
+            json.put("accepted", true);
+            return new ServiceResponse(json);
         } catch (IOException e) {
             e.printStackTrace();
         }
-        return null;
+        return new ServiceResponse(json);
     }
 }

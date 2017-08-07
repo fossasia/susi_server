@@ -102,7 +102,7 @@ public class SusiAction {
      * @param answers
      * @return the action
      */
-    public static JSONObject answerAction(String[] answers) {
+    public static JSONObject answerAction(String... answers) {
         JSONArray phrases = new JSONArray();
         for (String answer: answers) phrases.put(answer.trim());
         JSONObject json = new JSONObject()
@@ -204,6 +204,21 @@ public class SusiAction {
         return json;
     }
 
+    /**
+     * set timer: set an alarm in the client making the request.
+     *@param hour
+     * @param minute
+     * @param second
+     * @return the action
+     */
+    public static JSONObject timerSetAction(int hour, int minute, int second) {
+        JSONObject json = new JSONObject(true)
+                .put("type", RenderType.timer_set.name())
+                .put("hour", hour)
+                .put("minute", minute)
+                .put("second", second);
+        return json;
+    }
     
     /**
      * Get the render type. That can be used to filter specific information from the action JSON object
@@ -275,9 +290,9 @@ public class SusiAction {
         return this.json.has(attr) ? this.json.getInt(attr) : 0;
     }
 
-    final static Pattern visible_assignment = Pattern.compile("(?:(?:.*)[\\?\\!\\h,\\.;-])+([^\\^]+?)>([_a-zA-Z0-9]+)(?:[\\?\\!\\h,\\.;-](?:.*))?+");
-    final static Pattern blind_assignment = Pattern.compile("(?:.*)\\^(.*?)\\^>([_a-zA-Z0-9]+)(?:[\\?\\!\\h,\\.;-](?:.*))?+");
-    final static Pattern self_referrer = Pattern.compile(".*`([^`]*?)`.*");
+    final static Pattern visible_assignment = Pattern.compile("(?:(?:.*?)[\\?\\!\\h,\\.;-])+([^\\^]+?)>([_a-zA-Z0-9]+)(?:[\\?\\!\\h,\\.;-](?:.*?))?+");
+    final static Pattern blind_assignment = Pattern.compile("(?:.*?)\\^(.*?)\\^>([_a-zA-Z0-9]+)(?:[\\?\\!\\h,\\.;-](?:.*?))?+");
+    final static Pattern self_referrer = Pattern.compile(".*?`([^`]*?)`.*?");
     
     /**
      * Action descriptions are templates for data content. Strings may refer to arguments from
@@ -288,7 +303,7 @@ public class SusiAction {
      * @param thoughts an argument from previously applied inferences
      * @return the action with the attribute "expression" instantiated by unification of the thought with the action
      */
-    public SusiAction execution(SusiArgument thoughts, SusiMind mind, String client) {
+    public SusiAction execution(SusiArgument thoughts, SusiMind mind, String client, SusiLanguage language) {
         if ((this.getRenderType() == RenderType.answer || this.getRenderType() == RenderType.self) && this.json.has("phrases")) {
             // transform the answer according to the data
             ArrayList<String> a = getPhrases();
@@ -302,7 +317,7 @@ public class SusiAction {
                 // self-referrer evaluate contents from the answers expressions as recursion: susi is asked again
                 while (new TimeoutMatcher(m = self_referrer.matcher(expression)).matches()) {
                     String observation = m.group(1);
-                    SusiMind.Reaction reaction = mind.new Reaction(observation, client, new SusiThought());
+                    SusiMind.Reaction reaction = mind.new Reaction(observation, language, client, new SusiThought());
                     String selfanswer = reaction.getExpression();
                     thoughts.think(reaction.getMindstate());
                     expression = expression.substring(0, m.start(1) - 1) + selfanswer + expression.substring(m.end(1) + 1);
@@ -331,7 +346,7 @@ public class SusiAction {
                 }
                 if (this.getRenderType() == RenderType.self) {
                     // recursive call susi with the answer
-                    SusiMind.Reaction reaction = mind.new Reaction(expression, client, new SusiThought());
+                    SusiMind.Reaction reaction = mind.new Reaction(expression, language, client, new SusiThought());
                     expression = reaction.getExpression();
                     thoughts.think(reaction.getMindstate());
                     this.json.put("expression", expression);

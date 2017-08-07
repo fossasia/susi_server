@@ -1,20 +1,17 @@
 /**
- *  PasswordResetService
- *  Copyright 6/7/17 by Dravit Lochan, @DravitLochan
- *
- *  This library is free software; you can redistribute it and/or
- *  modify it under the terms of the GNU Lesser General Public
- *  License as published by the Free Software Foundation; either
- *  version 2.1 of the License, or (at your option) any later version.
- *
- *  This library is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- *  Lesser General Public License for more details.
- *
- *  You should have received a copy of the GNU Lesser General Public License
- *  along with this program in the file lgpl21.txt
- *  If not, see <http://www.gnu.org/licenses/>.
+ * PasswordResetService
+ * Copyright 6/7/17 by Dravit Lochan, @DravitLochan
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program in the file lgpl21.txt
+ * If not, see <http://www.gnu.org/licenses/>.
  */
 package ai.susi.server.api.aaa;
 
@@ -37,7 +34,7 @@ import java.util.regex.Pattern;
  * password : current password
  * newpassword : new password
  */
-public class PasswordChangeService extends AbstractAPIHandler implements APIHandler{
+public class PasswordChangeService extends AbstractAPIHandler implements APIHandler {
     @Override
     public String getAPIPath() {
         return "/aaa/changepassword.json";
@@ -60,7 +57,7 @@ public class PasswordChangeService extends AbstractAPIHandler implements APIHand
 
         String useremail = post.get("changepassword", null);
         String password = post.get("password", null);
-        String newpassword = post.get("newpassword",null);
+        String newpassword = post.get("newpassword", null);
 
 
         ClientCredential pwcredential = new ClientCredential(ClientCredential.Type.passwd_login, useremail);
@@ -100,6 +97,11 @@ public class PasswordChangeService extends AbstractAPIHandler implements APIHand
             }
 
             if (DAO.hasAuthentication(emailcred)) {
+                if(passwordHash.equals(getHash(newpassword, salt))){
+                    result.put("message","your current password matches new password");
+                    result.put("accepted", false);
+                    return new ServiceResponse(result);
+                }
                 Authentication emailauth = DAO.getAuthentication(emailcred);
                 String newsalt = createRandomString(20);
                 emailauth.remove("passwordHash");
@@ -114,3 +116,4 @@ public class PasswordChangeService extends AbstractAPIHandler implements APIHand
     }
 
 }
+

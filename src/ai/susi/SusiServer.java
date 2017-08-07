@@ -45,6 +45,8 @@ import javax.servlet.Servlet;
 
 import ai.susi.server.api.aaa.*;
 import ai.susi.server.api.cms.*;
+import ai.susi.server.api.susi.*;
+import ai.susi.tools.MultipartConfigInjectionHandler;
 import io.swagger.jaxrs.listing.ApiListingResource;
 import org.apache.logging.log4j.LogManager;
 import org.bouncycastle.asn1.pkcs.PrivateKeyInfo;
@@ -84,15 +86,6 @@ import ai.susi.server.HttpsMode;
 import ai.susi.server.RemoteAccess;
 import ai.susi.server.api.learning.ConsoleLearning;
 import ai.susi.server.api.service.EmailSenderService;
-import ai.susi.server.api.susi.ConsoleService;
-import ai.susi.server.api.susi.GenericScraper;
-import ai.susi.server.api.susi.JsonPathTestService;
-import ai.susi.server.api.susi.MindService;
-import ai.susi.server.api.susi.RSSReaderService;
-import ai.susi.server.api.susi.StatusService;
-import ai.susi.server.api.susi.SusiService;
-import ai.susi.server.api.susi.UnansweredServlet;
-import ai.susi.server.api.susi.UserService;
 import ai.susi.server.api.vis.MapServlet;
 import ai.susi.server.api.vis.MarkdownServlet;
 import ai.susi.server.api.vis.PieChartServlet;
@@ -502,6 +495,10 @@ public class SusiServer {
                 ModifySkillService.class,
                 HistorySkillService.class,
                 GetCommitHistory.class,
+                DescriptionSkillService.class,
+                GetSkillsImage.class,
+                LinkPreviewService.class,
+                GetSkillMetadataService.class,
                 // susi search aggregation services
                 ConsoleService.class,
                 RSSReaderService.class,
@@ -524,7 +521,9 @@ public class SusiServer {
                 //Groups
                 GetGroupDetails.class,
                 CreateGroupService.class,
-                GetAllGroups.class
+                GetAllGroups.class,
+                GetSkillRatingService.class
+
         };
         for (Class<? extends Servlet> service: services)
             try {
@@ -594,8 +593,10 @@ public class SusiServer {
         sessions.setHandler(gzipHandler);
         securityHandler.setHandler(sessions);
         ipaccess.setHandler(securityHandler);
+        // Multipart Configuration
+        MultipartConfigInjectionHandler multipartConfigInjectionHandler =
+                new MultipartConfigInjectionHandler();
         handlerCollection.addHandler(ipaccess);
-
 
         ContextHandlerCollection contexts = new ContextHandlerCollection();
 
@@ -609,8 +610,8 @@ public class SusiServer {
 
         servletHandler.addServlet(holder, "/docs/*");
         handlerCollection.addHandler(contexts);
-
-        SusiServer.server.setHandler(handlerCollection);
+        multipartConfigInjectionHandler.setHandler(handlerCollection);
+        SusiServer.server.setHandler(multipartConfigInjectionHandler);
 
     }
     

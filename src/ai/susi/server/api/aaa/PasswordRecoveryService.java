@@ -124,8 +124,7 @@ public class PasswordRecoveryService extends AbstractAPIHandler implements APIHa
 
 	private String getVerificationMailContent(String token) {
 
-		String verificationLink = DAO.getConfig("host.url", "http://127.0.0.1:9000")
-				+ "/apps/resetpass/index.html?token=" + token;
+		String verificationLink = "http://accounts.susi.ai/?token=" + token;
 		String result;
 		try {
 			result = IO.readFileCached(Paths.get(DAO.conf_dir + "/templates/reset-mail.txt"));

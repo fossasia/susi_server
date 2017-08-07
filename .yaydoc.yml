@@ -1,0 +1,34 @@
+metadata:
+  author: FOSSASIA
+  projectname: "Susi Server"
+  version: development
+build:
+  theme: sphinx_fossasia_theme   
+  source: docs
+  logo: images/susi-logo-original.svg
+  subproject:
+    - url: https://github.com/fossasia/susi_android
+      source: docs
+    - url: https://github.com/fossasia/chat.susi.ai
+      source: docs
+    - url: https://github.com/fossasia/susi_tweetbot
+      source: docs
+    - url: https://github.com/fossasia/susi_fbbot
+      source: docs
+    - url: https://github.com/fossasia/susi_slackbot
+      source: docs
+    - url: https://github.com/fossasia/susi_desktop
+      source: .
+    - url: https://github.com/fossasia/susi_iOS
+      source: docs
+    - url: https://github.com/fossasia/susi_telegrambot
+      source: docs
+publish:
+  ghpages:
+    docurl: dev.susi.ai
+extras:
+  swagger:
+    url: http://api.susi.ai/docs/swagger.json
+    ui: swagger  
+  javadoc:
+    path: 'src/'

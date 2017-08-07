@@ -1,13 +1,13 @@
-#Generic Installation on Windows 
+# Generic Installation on Windows 
 
 ## Requirements
 - Install GitBash (https://www.git-scm.com/download/win), jdk (Java Development Kit) and Apache Ant (http://ant.apache.org/bindownload.cgi)
 
-##Install Apache Ant and JDK
+## Install Apache Ant and JDK
 
 Install in terminal:
 
-#To be done as system variables: (Run as Admin)
+# To be done as system variables: (Run as Admin)
 - set JAVA_HOME to Location to the JDK
 - set ANT_HOME to Location to the Apache Ant
 - set PATH=%PATH%;%JAVA_HOME%\bin;%ANT_HOME%\bin

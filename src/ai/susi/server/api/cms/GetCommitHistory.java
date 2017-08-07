@@ -42,6 +42,8 @@ public class GetCommitHistory extends AbstractAPIHandler implements APIHandler {
     @Override
     public ServiceResponse serviceImpl(Query call, HttpServletResponse response, Authorization rights, final JsonObjectWithDefault permissions) throws APIException {
         JSONObject commit;
+        JSONObject json = new JSONObject(true);
+        json.put("accepted", false);
         JSONArray commitsArray;
         commitsArray = new JSONArray();
         String path = DAO.susi_skill_repo.toString();
@@ -71,6 +73,8 @@ public class GetCommitHistory extends AbstractAPIHandler implements APIHandler {
                     commitsArray.put(i, commit);
                     i++;
                 }
+                json.put("accepted", true);
+                json.put("commitsArray", commitsArray);
 
             } catch (GitAPIException e) {
                 e.printStackTrace();
@@ -81,7 +85,7 @@ public class GetCommitHistory extends AbstractAPIHandler implements APIHandler {
 
 
 
-        return new ServiceResponse(commitsArray);
+        return new ServiceResponse(json);
     }
 
 }

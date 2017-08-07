@@ -52,9 +52,9 @@ public class ConvertSkillJsonToTxtService extends AbstractAPIHandler implements 
     public ServiceResponse serviceImpl(Query call, HttpServletResponse response, Authorization rights, final JsonObjectWithDefault permissions) {
         
         JSONObject json = new JSONObject(true);
-        
         // modify caching
         json.put("$EXPIRES", 600);
+        json.put("accepted", true);
         return new ServiceResponse(json);
     }
 }

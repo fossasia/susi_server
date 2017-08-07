@@ -130,8 +130,7 @@ public class HistorySkillService extends AbstractAPIHandler implements APIHandle
         }
         JSONObject result = new JSONObject();
         result.put("commits",commitsArray);
-        result.put("success",success);
-
+        result.put("accepted",success);
         return new ServiceResponse(result);
     }
 }

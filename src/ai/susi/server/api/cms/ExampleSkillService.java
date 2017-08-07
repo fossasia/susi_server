@@ -85,6 +85,8 @@ public class ExampleSkillService extends AbstractAPIHandler implements APIHandle
                 .put("group", group)
                 .put("language", language)
                 .put("examples", examples);
+        json.put("accepted", true);
+        json.put("message", "Success: Examples fetched");
         return new ServiceResponse(json);
     }
 

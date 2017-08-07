@@ -52,12 +52,21 @@ public class SusiMind {
     
     private final Map<String, Set<SusiIntent>> intenttrigger; // a map from a keyword to a set of intents
     private final Map<String, Set<String>> skillexamples; // a map from an skill path to one example
+    private final Map<String, String> skillDescriptions; // a map from skill path to description
+    private final Map<String, String> skillImage; // a map from skill path to skill image
     private final File[] watchpaths;
     private final File memorypath; // a path where the memory looks for new additions of knowledge with memory files
     private final Map<File, Long> observations; // a mapping of mind memory files to the time when the file was read the last time
     private final SusiReader reader; // responsible to understand written communication
     private final SusiMemory memories; // conversation logs are memories
-    
+    private final Map<String, String> skillNames; // a map from skill path to skill names
+    private final Map<String, String> authors; // a map from skill path to skill authors
+    private final Map<String, String> authorsUrl; // a map from skill path to skill authorsURL
+    private final Map<String, String> developerPrivacyPolicies; // a map from skill path to devloper Privacy Policy
+    private final Map<String, String> termsOfUse; // a map from skill path to skill termsOfUse
+    private final Map<String,Boolean> dynamicContent; // a map from skill path and dynamic Content
+
+
     public SusiMind(File memorypath, File... watchpaths) {
         // initialize class objects
         this.watchpaths = watchpaths;
@@ -71,7 +80,14 @@ public class SusiMind {
         this.reader = new SusiReader();
         this.memories = new SusiMemory(memorypath, ATTENTION_TIME);
         this.skillexamples = new TreeMap<>();
-
+        this.skillDescriptions = new TreeMap<>();
+        this.skillImage = new TreeMap<>();
+        this.authors = new TreeMap<>();
+        this.authorsUrl = new TreeMap<>();
+        this.skillNames = new TreeMap<>();
+        this.developerPrivacyPolicies =new TreeMap<>();
+        this.termsOfUse = new TreeMap<>();
+        this.dynamicContent = new TreeMap<>();
         // learn all available intents
         try {observe();} catch (IOException e) {
             e.printStackTrace();
@@ -97,7 +113,38 @@ public class SusiMind {
     public Map<String, Set<String>> getSkillExamples() {
         return this.skillexamples;
     }
-    
+
+    public  Map<String, String> getSkillDescriptions() {
+        return this.skillDescriptions;
+    }
+    public  Map<String, String> getSkillImage() {
+        return this.skillImage;
+    }
+
+    public Map<String, String> getAuthors() {
+        return this.authors;
+    }
+
+    public Map<String, String> getAuthorsUrl() {
+        return this.authorsUrl;
+    }
+
+    public Map<String, String> getDeveloperPrivacyPolicies() {
+        return this.developerPrivacyPolicies;
+    }
+
+    public Map<String, String> getSkillNames() {
+        return this.skillNames;
+    }
+
+    public Map<String, String> getTermsOfUse() {
+        return this.termsOfUse;
+    }
+
+    public Map<String, Boolean> getDynamicContent() {
+        return this.dynamicContent;
+    }
+
     public SusiMind observe() throws IOException {
         for (int i = 0; i < watchpaths.length; i++) {
             observe(watchpaths[i]);
@@ -187,6 +234,26 @@ public class SusiMind {
                     }
                     examples.add(intent.getExample());
                 }
+                // skill description
+                if(json.has("description"))
+                    this.skillDescriptions.put(intent.getSkill(), json.getString("description"));
+                // skill image
+                if(json.has("image"))
+                    this.skillImage.put(intent.getSkill(), json.getString("image"));
+                // adding skill meta data
+                if(json.has("skill_name"))
+                    this.skillNames.put(intent.getSkill(), json.getString("skill_name"));
+                if(json.has("author"))
+                    this.authors.put(intent.getSkill(), json.getString("author"));
+                if(json.has("author_url"))
+                    this.authorsUrl.put(intent.getSkill(), json.getString("author_url"));
+                if(json.has("developer_privacy_policy"))
+                    this.developerPrivacyPolicies.put(intent.getSkill(), json.getString("developer_privacy_policy"));
+                if(json.has("terms_of_use"))
+                    this.termsOfUse.put(intent.getSkill(), json.getString("terms_of_use"));
+                if(json.has("dynamic_content"))
+                    this.dynamicContent.put(intent.getSkill(), json.getBoolean("dynamic_content"));
+
                 //if (intent.getExample() != null && intent.getExpect() != null) {}
             });
         });
@@ -234,7 +301,7 @@ public class SusiMind {
      * @param maxcount the maximum number of ideas to return
      * @return an ordered list of ideas, first idea should be considered first.
      */
-    public List<SusiIdea> creativity(String query, SusiThought latest_thought, int maxcount) {
+    public List<SusiIdea> creativity(String query, SusiLanguage userLanguage, SusiThought latest_thought, int maxcount) {
         // tokenize query to have hint for idea collection
         final List<SusiIdea> ideas = new ArrayList<>();
         this.reader.tokenizeSentence(query).forEach(token -> {
@@ -246,7 +313,7 @@ public class SusiMind {
             r.forEach(intent -> ideas.add(new SusiIdea(intent).setToken(token)));
         });
         
-        for (SusiIdea idea: ideas) DAO.log("idea.phrase-1: score=" + idea.getIntent().getScore().score + " : " + idea.getIntent().getPhrases().toString() + " " + idea.getIntent().getActionsClone());
+        for (SusiIdea idea: ideas) DAO.log("idea.phrase-1: score=" + idea.getIntent().getScore(userLanguage).score + " : " + idea.getIntent().getPhrases().toString() + " " + idea.getIntent().getActionsClone());
         
         // add catchall intents always (those are the 'bad ideas')
         Collection<SusiIntent> ca = this.intenttrigger.get(SusiIntent.CATCHALL_KEY);
@@ -256,7 +323,7 @@ public class SusiMind {
         TreeMap<Long, List<SusiIdea>> scored = new TreeMap<>();
         AtomicLong count = new AtomicLong(0);
         ideas.forEach(idea -> {
-            int score = idea.getIntent().getScore().score;
+            int score = idea.getIntent().getScore(userLanguage).score;
             long orderkey = Long.MAX_VALUE - ((long) score) * 1000L + count.incrementAndGet();
             List<SusiIdea> r = scored.get(orderkey);
             if (r == null) {r = new ArrayList<>(); scored.put(orderkey, r);}
@@ -266,7 +333,7 @@ public class SusiMind {
         // make a sorted list of all ideas
         ideas.clear(); scored.values().forEach(r -> ideas.addAll(r));
         
-        for (SusiIdea idea: ideas) DAO.log("idea.phrase-2: score=" + idea.getIntent().getScore().score + " : " + idea.getIntent().getPhrases().toString() + " " + idea.getIntent().getActionsClone());
+        for (SusiIdea idea: ideas) DAO.log("idea.phrase-2: score=" + idea.getIntent().getScore(userLanguage).score + " : " + idea.getIntent().getPhrases().toString() + " " + idea.getIntent().getActionsClone());
         
         // test ideas and collect those which match up to maxcount
         List<SusiIdea> plausibleIdeas = new ArrayList<>(Math.min(10, maxcount));
@@ -280,8 +347,8 @@ public class SusiMind {
         }
 
         for (SusiIdea idea: plausibleIdeas) {
-            DAO.log("idea.phrase-3: score=" + idea.getIntent().getScore().score + " : " + idea.getIntent().getPhrases().toString() + " " + idea.getIntent().getActionsClone());
-            DAO.log("idea.phrase-3:   log=" + idea.getIntent().getScore().log );
+            DAO.log("idea.phrase-3: score=" + idea.getIntent().getScore(userLanguage).score + " : " + idea.getIntent().getPhrases().toString() + " " + idea.getIntent().getActionsClone());
+            DAO.log("idea.phrase-3:   log=" + idea.getIntent().getScore(userLanguage).log );
         }
 
         return plausibleIdeas;
@@ -291,11 +358,13 @@ public class SusiMind {
      * react on a user input: this causes the selection of deduction intents and the evaluation of the process steps
      * in every intent up to the moment where enough intents have been applied as consideration. The reaction may also
      * cause the evaluation of operational steps which may cause learning effects within the SusiMind.
-     * @param query
-     * @param maxcount
+     * @param query the user input
+     * @param maxcount the maximum number of answers (typical is only one)
+     * @param client authentication string of the user
+     * @param observation an initial thought - that is what susi experiences in the context. I.e. location and language of the user
      * @return
      */
-    public List<SusiArgument> react(String query, int maxcount, String client, SusiThought observation) {
+    public List<SusiArgument> react(String query, SusiLanguage userLanguage, int maxcount, String client, SusiThought observation) {
         // get the history a list of thoughts
         SusiArgument observation_argument = new SusiArgument();
         if (observation != null && observation.length() > 0) observation_argument.think(observation);
@@ -311,11 +380,17 @@ public class SusiMind {
         
         // find an answer
         List<SusiArgument> answers = new ArrayList<>();
-        List<SusiIdea> ideas = creativity(query, recall, 100);
-        for (SusiIdea idea: ideas) {
+        List<SusiIdea> ideas = creativity(query, userLanguage, recall, 100); // create a list of ideas which are possible intents
+
+        // test all ideas: the ideas are ranked in such a way that the best one is considered first
+        ideatest: for (SusiIdea idea: ideas) {
+            // compute an argument: because one intent represents a horn clause, the argument is a deduction track, a "proof" of the result.
             SusiArgument argument = idea.getIntent().consideration(query, recall, idea.getToken(), this, client);
-            if (argument != null) answers.add(argument);
-            if (answers.size() >= maxcount) break;
+
+            // arguments may fail; a failed proof is one which does not exist. Therefore an argument may be empty
+            if (argument == null) continue ideatest; // consider only sound arguments
+            answers.add(argument); // a valid idea
+            if (answers.size() >= maxcount) break; // and stop if we are done
         }
         return answers;
     }
@@ -324,13 +399,13 @@ public class SusiMind {
         private String expression;
         private SusiThought mindstate;
         
-        public Reaction(String query, String client, SusiThought observation) throws RuntimeException {
-            List<SusiArgument> datalist = react(query, 1, client, observation);
+        public Reaction(String query, SusiLanguage userLanguage, String client, SusiThought observation) throws RuntimeException {
+            List<SusiArgument> datalist = react(query, userLanguage, 1, client, observation);
             if (datalist.size() == 0) throw new RuntimeException("datalist is empty");
             SusiArgument bestargument = datalist.get(0);
             if (bestargument.getActions().isEmpty()) throw new RuntimeException("action list is empty");
             SusiAction action = bestargument.getActions().get(0);
-            this.expression = action.execution(bestargument, SusiMind.this, client).getStringAttr("expression");
+            this.expression = action.execution(bestargument, SusiMind.this, client, userLanguage).getStringAttr("expression");
             this.mindstate = bestargument.mindstate();
             //SusiThought mindmeld = bestargument.mindmeld(true);
         }
@@ -364,8 +439,8 @@ public class SusiMind {
             File file = new File("conf/susi/susi_cognition_000.json");
             JSONObject lesson = SusiSkill.readJsonSkill(file);
             mem.learn(lesson, file);
-            System.out.println(mem.new Reaction("I feel funny", "localhost", new SusiThought()).getExpression());
-            System.out.println(mem.new Reaction("Help me!", "localhost", new SusiThought()).getExpression());
+            System.out.println(mem.new Reaction("I feel funny", SusiLanguage.unknown, "localhost", new SusiThought()).getExpression());
+            System.out.println(mem.new Reaction("Help me!", SusiLanguage.unknown, "localhost", new SusiThought()).getExpression());
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }

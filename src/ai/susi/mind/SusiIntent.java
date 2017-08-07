@@ -51,15 +51,16 @@ public class SusiIntent {
     public final static String CATCHALL_KEY = "*";
     public final static int    DEFAULT_SCORE = 10;
     
-    private List<SusiPhrase> phrases;
-    private List<SusiInference> inferences;
-    private List<SusiAction> actions;
-    private Set<String> keys;
-    private String comment;
-    private int user_subscore;
+    private final List<SusiPhrase> phrases;
+    private final List<SusiInference> inferences;
+    private final List<SusiAction> actions;
+    private final Set<String> keys;
+    private final String comment;
+    private final int user_subscore;
     private Score score;
-    private int id;
-    private String skill, example, expect;
+    private final int id;
+    private final String skill, example, expect;
+    private SusiLanguage language;
     
     /**
      * Generate a set of intents from a single intent definition. This may be possible if the intent contains an 'options'
@@ -137,17 +138,26 @@ public class SusiIntent {
         this.comment = json.has("comment") ? json.getString("comment") : "";
 
         // remember the origin
-        this.skill = origin.getAbsolutePath();
-    	int i = this.skill.indexOf("/susi");
-    	if (i < 0) this.skill = ""; else {
-    	    this.skill = this.skill.substring(i);
-    	    if (this.skill.startsWith("/susi/")) this.skill = this.skill.substring(5);
+        String skillpath = origin.getAbsolutePath();
+    	int i = skillpath.indexOf("/susi");
+    	if (i < 0) skillpath = ""; else {
+    	    skillpath = skillpath.substring(i);
+    	    if (skillpath.startsWith("/susi/")) skillpath = skillpath.substring(5);
     	}
+    	this.skill = skillpath;
+    	
+    	// compute the language from the origin
+    	this.language = SusiLanguage.unknown;
+	    if (this.skill.startsWith("/susi_server/conf/susi/")) {
+	        this.language = SusiLanguage.parse(this.skill.substring(23, 25));
+	    } else if (this.skill.startsWith("/susi_skill_data")) {
+	        String[] paths = this.skill.split("/");
+            if (paths.length > 5) this.language = SusiLanguage.parse(paths[5]);
+	    }
         
     	// quality control
         this.example = json.has("example") ? json.getString("example") : "";
         this.expect = json.has("expect") ? json.getString("expect") : "";
-    	
         // calculate the id
         String ids0 = this.actions.toString();
         String ids1 = this.phrases.toString();
@@ -165,7 +175,6 @@ public class SusiIntent {
     public String getExample() {
         return this.example == null || this.example.length() == 0 ? null : this.example;
     }
-    
     public int hashCode() {
         return this.id;
     }
@@ -178,7 +187,7 @@ public class SusiIntent {
         json.put("phrases", p);
         JSONArray i = new JSONArray(); this.inferences.forEach(inference -> i.put(inference.getJSON()));
         json.put("process", i);
-        JSONArray a = new JSONArray(); this.actions.forEach(action -> a.put(action.toJSONClone()));
+        JSONArray a = new JSONArray(); this.getActionsClone().forEach(action ->a.put(action.toJSONClone()));
         json.put("actions", a);
         if (this.comment != null && this.comment.length() > 0) json.put("comment", this.comment);
         if (this.score != null) json.put("score", this.score.score);
@@ -212,7 +221,6 @@ public class SusiIntent {
         // quality control
         if (example != null && example.length() > 0) intent.put("example", example);
         if (expect != null && expect.length() > 0) intent.put("expect", expect);
-        
         // write actions
         JSONArray a = new JSONArray();
         intent.put("actions", a);
@@ -302,9 +310,14 @@ public class SusiIntent {
         return this.comment;
     }
 
-    public Score getScore() {
+    /**
+     * get the intent score
+     * @param language this is the language the user is speaking
+     * @return an intent score: the higher, the better
+     */
+    public Score getScore(SusiLanguage language) {
         if (this.score != null) return score;
-        this.score = new Score();
+        this.score = new Score(language);
         return this.score;
     }
     
@@ -325,7 +338,7 @@ public class SusiIntent {
         public int score;
         public String log;
         
-        public Score() {
+        public Score(SusiLanguage userLanguage) {
         if (SusiIntent.this.score != null) return;
         
         /*
@@ -360,9 +373,12 @@ public class SusiIntent {
          * subscore a score in a small range which can be used to distinguish intents within the same categories
          */
         
-        // extract the score
-        this.score = 0;
+        // compute the score
 
+        // (0) language
+        final int language_subscore = (int) (100 * SusiIntent.this.language.likelihoodCanSpeak(userLanguage));
+        this.score = language_subscore;
+         
         // (1) conversation plan from the answer purpose
         final AtomicInteger dialogType_subscore = new AtomicInteger(0);
         SusiIntent.this.actions.forEach(action -> dialogType_subscore.set(Math.max(dialogType_subscore.get(), action.getDialogType().getSubscore())));
@@ -431,7 +447,11 @@ public class SusiIntent {
      */
     public List<SusiAction> getActionsClone() {
         List<SusiAction> clonedList = new ArrayList<>();
-        this.actions.forEach(action -> clonedList.add(new SusiAction(action.toJSONClone())));
+        this.actions.forEach(action -> {
+            JSONObject actionJson = action.toJSONClone();
+            if (this.language != SusiLanguage.unknown) actionJson.put("language", this.language.name());
+            clonedList.add(new SusiAction(actionJson));
+        });
         return clonedList;
     }
 

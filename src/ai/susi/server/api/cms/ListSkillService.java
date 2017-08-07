@@ -41,16 +41,19 @@ public class ListSkillService extends AbstractAPIHandler implements APIHandler {
         File group = new File(model, group_name);
         String language_name = call.get("language", "en");
         File language = new File(group, language_name);
+        JSONObject json = new JSONObject(true);
+        json.put("accepted", false);
 
         ArrayList<String> fileList = new ArrayList<String>();
         fileList =  listFilesForFolder(language, fileList);
         JSONArray jsArray = new JSONArray(fileList);
 
-        JSONObject json = new JSONObject(true)
-                .put("model", model_name)
+                json.put("model", model_name)
                 .put("group", group_name)
                 .put("language", language_name)
                 .put("skills", jsArray);
+        json.put("accepted", true);
+        json.put("message","Success: Fetched skill list");
         return new ServiceResponse(json);
 
     }
@@ -60,7 +63,7 @@ public class ListSkillService extends AbstractAPIHandler implements APIHandler {
         File[] filesInFolder = folder.listFiles();
         if (filesInFolder != null) {
             for (final File fileEntry : filesInFolder) {
-                if (!fileEntry.isDirectory()) {
+                if (!fileEntry.isDirectory() && !fileEntry.getName().startsWith(".")) {
                     fileList.add(fileEntry.getName()+"");
                 }
             }

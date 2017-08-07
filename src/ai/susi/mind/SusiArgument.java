@@ -225,9 +225,9 @@ public class SusiArgument implements Iterable<SusiThought> {
      * @param mind
      * @return a new thought containing an action object which resulted from the argument computation
      */
-    public SusiThought finding(String client, SusiMind mind) {
+    public SusiThought finding(SusiMind mind, String client, SusiLanguage language) {
         Collection<JSONObject> actions = this.getActions().stream()
-                .map(action -> action.execution(this, mind, client).toJSONClone())
+                .map(action -> action.execution(this, mind, client, language).toJSONClone())
                 .collect(Collectors.toList());
         // the 'execution' method has a possible side-effect on the argument - it can append objects to it
         // therefore the mindmeld must be done after action application to get those latest changes
