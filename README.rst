@@ -21,9 +21,10 @@ How do I install Susi: Download, Build, Run
 
 .. note::
 
-    You must be logged in to Docker Cloud for the button to
+    - You must be logged in to Docker Cloud for the button to
     work correctly. If you are not logged in, you'll see a 404 error
     instead.
+    
 
 |Deploy| |Deploy on Scalingo| |Deploy to Bluemix| |Deploy to Docker
 Cloud|
