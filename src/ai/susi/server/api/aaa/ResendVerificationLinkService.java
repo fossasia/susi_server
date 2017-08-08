@@ -37,7 +37,7 @@ public class ResendVerificationLinkService extends AbstractAPIHandler implements
     public static String verificationLinkPlaceholder = "%VERIFICATION-LINK%";
     @Override
     public String getAPIPath() {
-        return "/aaa/resendverificatiionlink.json";
+        return "/aaa/resendVerificatiionLink.json";
     }
 
     @Override
