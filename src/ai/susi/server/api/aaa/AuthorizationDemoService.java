@@ -26,15 +26,19 @@ import ai.susi.server.*;
 
 import javax.servlet.http.HttpServletResponse;
 
+/**
+ * example:
+ * http://localhost:4000/aaa/authorization-demo.json?access_token=6O7cqoMbzlClxPwg1is31Tz5pjVwo3
+ */
 public class AuthorizationDemoService extends AbstractAPIHandler implements APIHandler {
 
     private static final long serialVersionUID = 8678478303032749879L;
 
     @Override
-    public BaseUserRole getMinimalBaseUserRole() { return BaseUserRole.ANONYMOUS; }
+    public UserRole getMinimalBaseUserRole() { return UserRole.ANONYMOUS; }
 
 	@Override
-	public JSONObject getDefaultPermissions(BaseUserRole baseUserRole) {
+	public JSONObject getDefaultPermissions(UserRole baseUserRole) {
 		JSONObject result = new JSONObject();
 
 		switch(baseUserRole){
@@ -69,9 +73,8 @@ public class AuthorizationDemoService extends AbstractAPIHandler implements APIH
 		result.put("accepted", true);
 		result.put("message", "Successfully processed request");
 		result.put("user", rights.getIdentity().getName());
-        result.put("user role", rights.getUserRole().getDisplayName());
-        result.put("base user role", rights.getBaseUserRole().name());
-		result.put("permissions",rights.getPermissions(this));
+        result.put("user role", rights.getUserRole().getName());
+		result.put("permissions", rights.getPermission());
 		
 		return new ServiceResponse(result);
     }

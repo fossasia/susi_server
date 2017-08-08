@@ -44,6 +44,9 @@ import java.util.Base64;
  * - sessionID,response	# second part. sessionID is part of the server reply of the first part. response is a signature of the challenge, also part of the server reply.
  * At the moment, only SHA256withRSA is supported as signature algorithm
  *
+ * example:
+ * http://localhost:4000/aaa/login.json?login=bob@the.builder&type=access-token&password=yeshecan
+ * http://localhost:4000/aaa/login.json?checkLogin=true&access_token=6O7cqoMbzlClxPwg1is31Tz5pjVwo3
  */
 public class LoginService extends AbstractAPIHandler implements APIHandler {
 
@@ -51,12 +54,12 @@ public class LoginService extends AbstractAPIHandler implements APIHandler {
 	private static final long defaultAccessTokenExpireTime = 7 * 24 * 60 * 60; // one week
 
 	@Override
-	public BaseUserRole getMinimalBaseUserRole() {
-		return BaseUserRole.ANONYMOUS;
+	public UserRole getMinimalBaseUserRole() {
+		return UserRole.ANONYMOUS;
 	}
 
 	@Override
-	public JSONObject getDefaultPermissions(BaseUserRole baseUserRole) {
+	public JSONObject getDefaultPermissions(UserRole baseUserRole) {
 		JSONObject result = new JSONObject();
 		result.put("maxInvalidLogins", 10);
 		result.put("blockTimeSeconds", 120);
@@ -355,7 +358,7 @@ public class LoginService extends AbstractAPIHandler implements APIHandler {
 	private void checkInvalidLogins(Query post, Authorization authorization, JsonObjectWithDefault permissions) throws APIException {
 
 		// is already blocked?
-		long blockedUntil = permissions.getLong("blockedUntil");
+		long blockedUntil = permissions.getLong("blockedUntil", 0);
 		if(blockedUntil != 0) {
 			if (blockedUntil > Instant.now().getEpochSecond()) {
 				Log.getLog().info("Blocked ip " + post.getClientHost() + " because of too many invalid login attempts.");

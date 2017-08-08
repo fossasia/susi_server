@@ -6,7 +6,7 @@ import ai.susi.server.APIException;
 import ai.susi.server.APIHandler;
 import ai.susi.server.AbstractAPIHandler;
 import ai.susi.server.Authorization;
-import ai.susi.server.BaseUserRole;
+import ai.susi.server.UserRole;
 import ai.susi.server.ClientIdentity;
 import ai.susi.server.Query;
 import ai.susi.server.ServiceResponse;
@@ -22,7 +22,8 @@ import java.util.List;
    Created by chetankaushik on 31/05/17.
    This Servlet gives a API Endpoint to list all the users and their roles.
    It requires a ADMIN login or a ADMIN session
-   Can be tested on 127.0.0.1:4000/aaa/getAllUsers.json
+   example:
+   http://localhost:4000/aaa/getAllUsers.json?access_token=6O7cqoMbzlClxPwg1is31Tz5pjVwo3
  */
 public class GetAllUsers extends AbstractAPIHandler implements APIHandler {
 
@@ -34,12 +35,12 @@ public class GetAllUsers extends AbstractAPIHandler implements APIHandler {
     }
 
     @Override
-    public BaseUserRole getMinimalBaseUserRole() {
-        return BaseUserRole.ADMIN;
+    public UserRole getMinimalBaseUserRole() {
+        return UserRole.ADMIN;
     }
 
     @Override
-    public JSONObject getDefaultPermissions(BaseUserRole baseUserRole) {
+    public JSONObject getDefaultPermissions(UserRole baseUserRole) {
         return null;
     }
 

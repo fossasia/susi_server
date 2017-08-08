@@ -24,7 +24,7 @@ import ai.susi.DAO;
 import ai.susi.json.JsonObjectWithDefault;
 import ai.susi.server.APIHandler;
 import ai.susi.server.AbstractAPIHandler;
-import ai.susi.server.BaseUserRole;
+import ai.susi.server.UserRole;
 import ai.susi.server.ServiceResponse;
 import ai.susi.server.Query;
 import ai.susi.server.Authorization;
@@ -47,12 +47,12 @@ public class CreateGroupService extends AbstractAPIHandler implements APIHandler
     private static final long serialVersionUID = -742269505564698987L;
 
     @Override
-    public BaseUserRole getMinimalBaseUserRole() {
-        return BaseUserRole.ADMIN;
+    public UserRole getMinimalBaseUserRole() {
+        return UserRole.ADMIN;
     }
 
     @Override
-    public JSONObject getDefaultPermissions(BaseUserRole baseUserRole) {
+    public JSONObject getDefaultPermissions(UserRole baseUserRole) {
         return null;
     }
 

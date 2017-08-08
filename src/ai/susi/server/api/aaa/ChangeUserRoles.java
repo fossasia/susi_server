@@ -24,12 +24,12 @@ public class ChangeUserRoles extends AbstractAPIHandler implements APIHandler {
     private static final long serialVersionUID = -1432553481906185711L;
 
     @Override
-    public BaseUserRole getMinimalBaseUserRole() {
-        return BaseUserRole.ADMIN;
+    public UserRole getMinimalBaseUserRole() {
+        return UserRole.ADMIN;
     }
 
     @Override
-    public JSONObject getDefaultPermissions(BaseUserRole baseUserRole) {
+    public JSONObject getDefaultPermissions(UserRole baseUserRole) {
         return null;
     }
 
@@ -68,7 +68,7 @@ public class ChangeUserRoles extends AbstractAPIHandler implements APIHandler {
             }
 
             if (service instanceof AbstractAPIHandler) {
-                result.put("servicePermissions", authorization.getPermissions((AbstractAPIHandler) service));
+                result.put("servicePermissions", authorization.getPermission());
                 result.put("accepted", true);
                 result.put("message", "Successfully processed request");
                 return new ServiceResponse(result);
@@ -85,7 +85,7 @@ public class ChangeUserRoles extends AbstractAPIHandler implements APIHandler {
             result.put("message", "Successfully processed request");
             return new ServiceResponse(result);
         } else if (query.get("getUserRolePermission", false)) {
-            result.put("userRolePermissions", authorization.getUserRole().getPermissionOverrides());
+            result.put("userRolePermissions", authorization.getPermission());
             result.put("accepted", true);
             result.put("message", "Successfully processed request");
             return new ServiceResponse(result);
@@ -101,14 +101,15 @@ public class ChangeUserRoles extends AbstractAPIHandler implements APIHandler {
             if (!DAO.hasAuthorization(identity)) {
                 throw new APIException(400, "Username not found");
             }
-            if (!DAO.userRoles.has(upgradedRole))
-                throw new APIException(400, "Specified User Role not found");
 
             // Update the local database
             Authorization auth = DAO.getAuthorization(identity);
-            UserRole ur = new UserRole(upgradedRole, BaseUserRole.ANONYMOUS, null, null);
-            auth.setUserRole(ur);
-            
+            try {
+            	UserRole ur = UserRole.valueOf(upgradedRole.toLowerCase());
+            	auth.setUserRole(ur);
+            } catch (IllegalArgumentException e) {
+                throw new APIException(400, "role not found");
+            }
             // Print Response
             result.put("newDetails", auth.getJSON());
             result.put("accepted", true);

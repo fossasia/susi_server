@@ -35,7 +35,7 @@ import ai.susi.server.APIException;
 import ai.susi.server.APIHandler;
 import ai.susi.server.AbstractAPIHandler;
 import ai.susi.server.Authorization;
-import ai.susi.server.BaseUserRole;
+import ai.susi.server.UserRole;
 import ai.susi.server.Query;
 import ai.susi.server.ServiceResponse;
 
@@ -55,12 +55,12 @@ public class JsonPathTestService extends AbstractAPIHandler implements APIHandle
     }
 
     @Override
-    public BaseUserRole getMinimalBaseUserRole() {
-        return BaseUserRole.ANONYMOUS;
+    public UserRole getMinimalBaseUserRole() {
+        return UserRole.ANONYMOUS;
     }
 
     @Override
-    public JSONObject getDefaultPermissions(BaseUserRole baseUserRole) {
+    public JSONObject getDefaultPermissions(UserRole baseUserRole) {
         return null;
     }
 

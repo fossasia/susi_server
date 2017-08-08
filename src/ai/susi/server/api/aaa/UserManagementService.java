@@ -27,22 +27,19 @@ import ai.susi.server.*;
 
 import javax.servlet.http.HttpServletResponse;
 
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
-import java.util.Map;
 
 public class UserManagementService extends AbstractAPIHandler implements APIHandler {
 
 	private static final long serialVersionUID = 8578478303032749879L;
 
 	@Override
-	public BaseUserRole getMinimalBaseUserRole() {
-		return BaseUserRole.PRIVILEGED;
+	public UserRole getMinimalBaseUserRole() {
+		return UserRole.PRIVILEGED;
 	}
 
 	@Override
-	public JSONObject getDefaultPermissions(BaseUserRole baseUserRole){
+	public JSONObject getDefaultPermissions(UserRole baseUserRole){
 		JSONObject result = new JSONObject();
 
 		switch(baseUserRole){
@@ -90,21 +87,6 @@ public class UserManagementService extends AbstractAPIHandler implements APIHand
 					result.put("accepted", true);
 					result.put("message","Success: Showing user list");
 				} else throw new APIException(403, "Forbidden");
-				break;
-			case "user-roles":
-				JSONObject userRolesObj = new JSONObject();
-				Map<String, UserRole> userRoles = DAO.userRoles.getUserRoles();
-				for(String key : userRoles.keySet()){
-					UserRole userRole = userRoles.get(key);
-					JSONObject obj = new JSONObject();
-					obj.put("display-name",userRole.getDisplayName());
-					obj.put("base-user-role",userRole.getBaseUserRole().name());
-					obj.put("permission-overrides",userRole.getPermissionOverrides());
-					userRolesObj.put(key,obj);
-				}
-				result.put("user-roles", userRolesObj);
-				result.put("accepted", true);
-				result.put("message","Success: Showing user roles");
 				break;
 			default: throw new APIException(400, "No 'show' parameter specified");
 		}

@@ -39,12 +39,12 @@ public class CreateSkillService extends AbstractAPIHandler implements APIHandler
     private static final long serialVersionUID = 2461878194569824151L;
 
     @Override
-    public BaseUserRole getMinimalBaseUserRole() {
-        return BaseUserRole.USER;
+    public UserRole getMinimalBaseUserRole() {
+        return UserRole.USER;
     }
 
     @Override
-    public JSONObject getDefaultPermissions(BaseUserRole baseUserRole) {
+    public JSONObject getDefaultPermissions(UserRole baseUserRole) {
         return null;
     }
 

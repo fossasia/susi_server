@@ -76,35 +76,28 @@ public class PublicKeyRegistrationService extends AbstractAPIHandler implements 
 	private static final String[] allowedFormats = {"DER", "PEM"};
 
 	@Override
-	public BaseUserRole getMinimalBaseUserRole() {
-		return BaseUserRole.ANONYMOUS;
+	public UserRole getMinimalBaseUserRole() {
+		return UserRole.ANONYMOUS;
 	}
 
 	@Override
-	public JSONObject getDefaultPermissions(BaseUserRole baseUserRole) {
+	public JSONObject getDefaultPermissions(UserRole baseUserRole) {
 		JSONObject result = new JSONObject();
 
 		switch(baseUserRole){
 			case ADMIN:
 				result.put("self", true);
 				result.put("users", new JSONObject());
-				JSONObject userRoles = new JSONObject();
-				for(String userRole : DAO.userRoles.getUserRoles().keySet()){
-					userRoles.put(userRole, true);
-				}
-				result.put("userRoles", userRoles);
 				break;
 			case PRIVILEGED:
 			case USER:
 				result.put("self", true);
 				result.put("users", new JSONObject());
-				result.put("userRoles", new JSONObject());
 				break;
 			case ANONYMOUS:
 			default:
 				result.put("self", false);
 				result.put("users", new JSONObject());
-				result.put("userRoles", new JSONObject());
 		}
 
 		return result;
