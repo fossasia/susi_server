@@ -50,7 +50,7 @@ public class CreateSkillService extends AbstractAPIHandler implements APIHandler
 
     @Override
     public String getAPIPath() {
-        return "/cms/createSkill.txt";
+        return "/cms/createSkill.json";
     }
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
