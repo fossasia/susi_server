@@ -53,6 +53,8 @@ public class ModifySkillService extends AbstractAPIHandler implements APIHandler
 
         String commit_message = call.get("changelog", null);
 
+        response.setHeader("Access-Control-Allow-Origin", "*"); // enable CORS
+        
         if(commit_message==null){
             JSONObject error = new JSONObject();
             error.put("accepted", false);
