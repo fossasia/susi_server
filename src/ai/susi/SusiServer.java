@@ -479,6 +479,7 @@ public class SusiServer {
                 CreateSkillService.class,
                 PostSkillJsonService.class,
                 PostSkillTxtService.class,
+                ResendVerificationLinkService.class,
                 ModelListService.class,
                 LanguageListService.class,
                 ListUserSettings.class,
