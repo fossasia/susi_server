@@ -4,6 +4,7 @@ import ai.susi.DAO;
 import ai.susi.json.JsonObjectWithDefault;
 import ai.susi.server.*;
 import org.eclipse.jgit.api.Git;
+import org.eclipse.jgit.api.Status;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.storage.file.FileRepositoryBuilder;
@@ -53,8 +54,10 @@ public class ModifySkillService extends AbstractAPIHandler implements APIHandler
 
         String commit_message = call.get("changelog", null);
 
+        String path = skill.getPath().replace(DAO.model_watch_dir.toString(), "models");
+
         response.setHeader("Access-Control-Allow-Origin", "*"); // enable CORS
-        
+
         if(commit_message==null){
             JSONObject error = new JSONObject();
             error.put("accepted", false);
@@ -71,51 +74,52 @@ public class ModifySkillService extends AbstractAPIHandler implements APIHandler
                 e.printStackTrace();
             }
         }
-        
+
         // Reading Content for skill
         String content = call.get("content", "");
         if (content.length() == 0) {
             json.put("message", "modification is empty");
             return new ServiceResponse(json);
         }
-        
+
         // Writing to File
         try (FileWriter file = new FileWriter(skill)) {
             file.write(content);
 
-            //Add to git
-            FileRepositoryBuilder builder = new FileRepositoryBuilder();
-            Repository repository = null;
-            try {
+        } catch (IOException e) {
+            e.printStackTrace();
+            json.put("message", "error: " + e.getMessage());
+        }
+        //Add to git
+        FileRepositoryBuilder builder = new FileRepositoryBuilder();
+        Repository repository = null;
+        try {
+            repository = builder.setGitDir((DAO.susi_skill_repo))
+                    .readEnvironment() // scan environment GIT_* variables
+                    .findGitDir() // scan up the file system tree
+                    .build();
 
-                repository = builder.setGitDir((DAO.susi_skill_repo))
-                        .readEnvironment() // scan environment GIT_* variables
-                        .findGitDir() // scan up the file system tree
-                        .build();
+            try (Git git = new Git(repository)) {
+                Status status = git.status().call();
 
-                try (Git git = new Git(repository)) {
-                    git.add()
-                            .addFilepattern(skill_name)
-                            .call();
-                    // and then commit the changes
-                    git.commit()
-                            .setMessage(commit_message)
-                            .call();
+                git.add()
+                        .addFilepattern(path)
+                        .call();
+                // and then commit the changes
+                git.commit()
+                        .setMessage(commit_message)
+                        .call();
 
-                    json.put("accepted", true);
-                    return new ServiceResponse(json);
-                } catch (GitAPIException e) {
-                    e.printStackTrace();
-                }
-            } catch (IOException e) {
+                json.put("accepted", true);
+                json.put("message","Skill Modified Successfully");
+                return new ServiceResponse(json);
+            } catch (GitAPIException e) {
                 e.printStackTrace();
             }
         } catch (IOException e) {
             e.printStackTrace();
-            json.put("message", "error: " + e.getMessage());
-            
         }
         return new ServiceResponse(json);
     }
-    
+
 }
