@@ -60,13 +60,16 @@ public class SignUpService extends AbstractAPIHandler implements APIHandler {
 		result.put("message", "Error: Unable to process you request");
 
 		switch(baseUserRole){
-			case ADMIN:
-			case PRIVILEGED:
+		    case BUREAUCRAT:
+		    case ADMIN:
+		    case ACCOUNTCREATOR:
+		    case REVIEWER:
+		    case USER:
 				result.put("register", true); // allow to register new users (this bypasses email verification and activation)
 				result.put("activate", true); // allow to activate new users
 				result.put("accepted", true);
 				break;
-			case USER:
+			case BOT:
 			case ANONYMOUS:
 			default:
 				result.put("register", false);

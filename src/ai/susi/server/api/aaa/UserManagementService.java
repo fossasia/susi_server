@@ -35,26 +35,28 @@ public class UserManagementService extends AbstractAPIHandler implements APIHand
 
 	@Override
 	public UserRole getMinimalUserRole() {
-		return UserRole.PRIVILEGED;
+		return UserRole.ACCOUNTCREATOR;
 	}
 
 	@Override
 	public JSONObject getDefaultPermissions(UserRole baseUserRole){
 		JSONObject result = new JSONObject();
 
-		switch(baseUserRole){
-			case ADMIN:
+		switch(baseUserRole) {
+			case BUREAUCRAT:
 				result.put("list_users", true);
 				result.put("list_users-roles", true);
 				result.put("edit-all", true);
 				result.put("edit-less-privileged", true);
 				break;
-			case PRIVILEGED:
+			case ADMIN:
 				result.put("list_users", true);
 				result.put("list_users-roles", true);
 				result.put("edit-all", false);
 				result.put("edit-less-privileged", true);
 				break;
+	        case BOT:
+	        case ANONYMOUS:
 			default:
 				result.put("list_users", false);
 				result.put("list_users-roles", false);
