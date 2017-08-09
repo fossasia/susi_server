@@ -36,7 +36,7 @@ public class ConvertSkillJsonToTxtService extends AbstractAPIHandler implements 
     private static final long serialVersionUID = 18344221L;
 
     @Override
-    public UserRole getMinimalBaseUserRole() { return UserRole.ANONYMOUS; }
+    public UserRole getMinimalUserRole() { return UserRole.ANONYMOUS; }
 
     @Override
     public JSONObject getDefaultPermissions(UserRole baseUserRole) {

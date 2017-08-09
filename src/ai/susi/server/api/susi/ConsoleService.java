@@ -60,7 +60,7 @@ public class ConsoleService extends AbstractAPIHandler implements APIHandler {
     private static final long serialVersionUID = 8578478303032749879L;
 
     @Override
-    public UserRole getMinimalBaseUserRole() { return UserRole.ANONYMOUS; }
+    public UserRole getMinimalUserRole() { return UserRole.ANONYMOUS; }
 
     @Override
     public JSONObject getDefaultPermissions(UserRole baseUserRole) {

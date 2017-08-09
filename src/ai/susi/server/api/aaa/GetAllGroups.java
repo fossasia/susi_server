@@ -40,7 +40,7 @@ public class GetAllGroups extends AbstractAPIHandler implements APIHandler {
     private static final long serialVersionUID = -179412273153306443L;
 
     @Override
-    public UserRole getMinimalBaseUserRole() {
+    public UserRole getMinimalUserRole() {
         return UserRole.ADMIN;
     }
 

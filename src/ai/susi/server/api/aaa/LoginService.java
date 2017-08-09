@@ -54,7 +54,7 @@ public class LoginService extends AbstractAPIHandler implements APIHandler {
 	private static final long defaultAccessTokenExpireTime = 7 * 24 * 60 * 60; // one week
 
 	@Override
-	public UserRole getMinimalBaseUserRole() {
+	public UserRole getMinimalUserRole() {
 		return UserRole.ANONYMOUS;
 	}
 
@@ -316,8 +316,6 @@ public class LoginService extends AbstractAPIHandler implements APIHandler {
 
 		if (authentication.getIdentity() == null) { // check if identity is valid
 			authentication.delete();
-			Accounting accouting = DAO.getAccounting(authentication.getIdentity());
-			accouting.getRequests().addRequest(this.getClass().getCanonicalName(), "invalid login");
 
 			Log.getLog().info("Invalid login try for unknown user: " + credential.getName() + " via passwd from host: " + post.getClientHost());
 			throw new APIException(422, "Invalid credentials");

@@ -49,7 +49,7 @@ public class SignUpService extends AbstractAPIHandler implements APIHandler {
 	public static String verificationLinkPlaceholder = "%VERIFICATION-LINK%";
 
 	@Override
-	public UserRole getMinimalBaseUserRole() {
+	public UserRole getMinimalUserRole() {
 		return UserRole.ANONYMOUS;
 	}
 

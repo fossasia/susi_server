@@ -17,7 +17,7 @@ buildscript {
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
 
-sourceSets.main.java.srcDirs = ['src']
+sourceSets.main.java.srcDirs = ['dependencies/public-transport-enabler/enabler/src', 'src']
 sourceSets.main.resources.srcDirs = ['conf/logs']
 sourceSets.test.java.srcDirs = ['test']
 
@@ -72,8 +72,10 @@ dependencies {
   compile group: 'org.glassfish.jersey.containers', name: 'jersey-container-servlet-core', version: versionJersey
   compile group: 'org.webjars', name: 'swagger-ui', version: '2.1.4'
 
-  compile(project(':dependencies:public-transport-enabler:enabler')) {	}
-
+  // the following is required for public-transport-enabler
+  compile 'com.squareup.okhttp3:okhttp:3.8.0'
+  compile 'com.squareup.okhttp3:logging-interceptor:3.8.0'
+  compile 'net.sf.kxml:kxml2:2.3.0' // provided by Android
 }
 
 task stage(dependsOn: ['assemble', 'clean'])

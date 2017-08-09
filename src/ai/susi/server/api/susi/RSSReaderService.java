@@ -49,7 +49,7 @@ public class RSSReaderService extends AbstractAPIHandler implements APIHandler {
 	private static final long serialVersionUID = 1463185662941444503L;
 
     @Override
-    public UserRole getMinimalBaseUserRole() { return UserRole.ANONYMOUS; }
+    public UserRole getMinimalUserRole() { return UserRole.ANONYMOUS; }
 
     @Override
     public JSONObject getDefaultPermissions(UserRole baseUserRole) {

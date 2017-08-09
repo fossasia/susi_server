@@ -76,7 +76,7 @@ public class PublicKeyRegistrationService extends AbstractAPIHandler implements 
 	private static final String[] allowedFormats = {"DER", "PEM"};
 
 	@Override
-	public UserRole getMinimalBaseUserRole() {
+	public UserRole getMinimalUserRole() {
 		return UserRole.ANONYMOUS;
 	}
 

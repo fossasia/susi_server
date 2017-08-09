@@ -22,7 +22,7 @@ public class GetGroupDetails extends AbstractAPIHandler implements APIHandler {
     private static final long serialVersionUID = 5747506850176916431L;
 
     @Override
-    public UserRole getMinimalBaseUserRole() {
+    public UserRole getMinimalUserRole() {
         return UserRole.ANONYMOUS;
     }
 
