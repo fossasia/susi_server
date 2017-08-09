@@ -52,19 +52,13 @@ public class SusiMind {
     
     private final Map<String, Set<SusiIntent>> intenttrigger; // a map from a keyword to a set of intents
     private final Map<String, Set<String>> skillexamples; // a map from an skill path to one example
-    private final Map<String, String> skillDescriptions; // a map from skill path to description
+    private final Map<String, SusiSkill> skillMetadata; // a map from skill path to description
     private final Map<String, String> skillImage; // a map from skill path to skill image
     private final File[] watchpaths;
     private final File memorypath; // a path where the memory looks for new additions of knowledge with memory files
     private final Map<File, Long> observations; // a mapping of mind memory files to the time when the file was read the last time
     private final SusiReader reader; // responsible to understand written communication
     private final SusiMemory memories; // conversation logs are memories
-    private final Map<String, String> skillNames; // a map from skill path to skill names
-    private final Map<String, String> authors; // a map from skill path to skill authors
-    private final Map<String, String> authorsUrl; // a map from skill path to skill authorsURL
-    private final Map<String, String> developerPrivacyPolicies; // a map from skill path to devloper Privacy Policy
-    private final Map<String, String> termsOfUse; // a map from skill path to skill termsOfUse
-    private final Map<String,Boolean> dynamicContent; // a map from skill path and dynamic Content
 
 
     public SusiMind(File memorypath, File... watchpaths) {
@@ -80,14 +74,8 @@ public class SusiMind {
         this.reader = new SusiReader();
         this.memories = new SusiMemory(memorypath, ATTENTION_TIME);
         this.skillexamples = new TreeMap<>();
-        this.skillDescriptions = new TreeMap<>();
+        this.skillMetadata = new TreeMap<>();
         this.skillImage = new TreeMap<>();
-        this.authors = new TreeMap<>();
-        this.authorsUrl = new TreeMap<>();
-        this.skillNames = new TreeMap<>();
-        this.developerPrivacyPolicies =new TreeMap<>();
-        this.termsOfUse = new TreeMap<>();
-        this.dynamicContent = new TreeMap<>();
         // learn all available intents
         try {observe();} catch (IOException e) {
             e.printStackTrace();
@@ -114,35 +102,8 @@ public class SusiMind {
         return this.skillexamples;
     }
 
-    public  Map<String, String> getSkillDescriptions() {
-        return this.skillDescriptions;
-    }
-    public  Map<String, String> getSkillImage() {
-        return this.skillImage;
-    }
-
-    public Map<String, String> getAuthors() {
-        return this.authors;
-    }
-
-    public Map<String, String> getAuthorsUrl() {
-        return this.authorsUrl;
-    }
-
-    public Map<String, String> getDeveloperPrivacyPolicies() {
-        return this.developerPrivacyPolicies;
-    }
-
-    public Map<String, String> getSkillNames() {
-        return this.skillNames;
-    }
-
-    public Map<String, String> getTermsOfUse() {
-        return this.termsOfUse;
-    }
-
-    public Map<String, Boolean> getDynamicContent() {
-        return this.dynamicContent;
+    public  Map<String, SusiSkill> getSkillMetadata() {
+        return this.skillMetadata;
     }
 
     public SusiMind observe() throws IOException {
@@ -223,6 +184,8 @@ public class SusiMind {
                     //intent.getPhrases().forEach(phrase -> this.memories.removeUnanswered(phrase.getPattern()));
                     //System.out.println("***DEBUG: ADD INTENT FOR KEY " + key + ": " + intent.toString());
                 });
+                // Susi skill object for skill metadata
+                SusiSkill skill = new SusiSkill();
 
                 // collect intent example and test the intents using the example/expect terms
                 if (intent.getExample() != null) {
@@ -233,26 +196,30 @@ public class SusiMind {
                         this.skillexamples.put(intent.getSkill(), examples);
                     }
                     examples.add(intent.getExample());
+                    skill.setExamples(examples);
+
                 }
                 // skill description
+
                 if(json.has("description"))
-                    this.skillDescriptions.put(intent.getSkill(), json.getString("description"));
+                    skill.setDescription(json.getString("description"));
                 // skill image
                 if(json.has("image"))
-                    this.skillImage.put(intent.getSkill(), json.getString("image"));
+                   skill.setImage(json.getString("image"));
                 // adding skill meta data
                 if(json.has("skill_name"))
-                    this.skillNames.put(intent.getSkill(), json.getString("skill_name"));
+                   skill.setSkillName(json.getString("skill_name"));
                 if(json.has("author"))
-                    this.authors.put(intent.getSkill(), json.getString("author"));
+                    skill.setAuthor(json.getString("author"));
                 if(json.has("author_url"))
-                    this.authorsUrl.put(intent.getSkill(), json.getString("author_url"));
+                   skill.setAuthorURL(json.getString("author_url"));
                 if(json.has("developer_privacy_policy"))
-                    this.developerPrivacyPolicies.put(intent.getSkill(), json.getString("developer_privacy_policy"));
+                   skill.setDeveloperPrivacyPolicy(json.getString("developer_privacy_policy"));
                 if(json.has("terms_of_use"))
-                    this.termsOfUse.put(intent.getSkill(), json.getString("terms_of_use"));
+                    skill.setTermsOfUse(json.getString("terms_of_use"));
                 if(json.has("dynamic_content"))
-                    this.dynamicContent.put(intent.getSkill(), json.getBoolean("dynamic_content"));
+                    skill.setDynamicContent(json.getBoolean("dynamic_content"));
+                this.skillMetadata.put(intent.getSkill(), skill);
 
                 //if (intent.getExample() != null && intent.getExpect() != null) {}
             });

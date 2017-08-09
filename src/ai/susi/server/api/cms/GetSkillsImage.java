@@ -21,6 +21,7 @@ package ai.susi.server.api.cms;
 
 import ai.susi.DAO;
 import ai.susi.json.JsonObjectWithDefault;
+import ai.susi.mind.SusiSkill;
 import ai.susi.server.*;
 import org.json.JSONObject;
 
@@ -63,12 +64,12 @@ public class GetSkillsImage extends AbstractAPIHandler implements APIHandler {
         String language = call.get("language", "");
 
         JSONObject images = new JSONObject(true);
-        for (Map.Entry<String, String> entry: DAO.susi.getSkillImage().entrySet()) {
+        for (Map.Entry<String, SusiSkill> entry: DAO.susi.getSkillMetadata().entrySet()) {
             String path = entry.getKey();
             if ((model.length() == 0 || path.indexOf("/" + model + "/") > 0) &&
                     (group.length() == 0 || path.indexOf("/" + group + "/") > 0) &&
                     (language.length() == 0 || path.indexOf("/" + language + "/") > 0)) {
-                images.put(path, entry.getValue());
+                images.put(path, entry.getValue().getImage());
             }
         }
 
