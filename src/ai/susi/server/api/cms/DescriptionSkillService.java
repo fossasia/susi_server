@@ -21,6 +21,7 @@ package ai.susi.server.api.cms;
 
 import ai.susi.DAO;
 import ai.susi.json.JsonObjectWithDefault;
+import ai.susi.mind.SusiSkill;
 import ai.susi.server.APIHandler;
 import ai.susi.server.AbstractAPIHandler;
 import ai.susi.server.Authorization;
@@ -73,13 +74,13 @@ public class DescriptionSkillService extends AbstractAPIHandler implements APIHa
         String skill = call.get("skill", "");
 
         JSONObject descriptions = new JSONObject(true);
-            for (Map.Entry<String, String> entry : DAO.susi.getSkillDescriptions().entrySet()) {
+            for (Map.Entry<String, SusiSkill> entry : DAO.susi.getSkillMetadata().entrySet()) {
                 String path = entry.getKey();
                 if ((model.length() == 0 || path.indexOf("/" + model + "/") > 0) &&
                         (group.length() == 0 || path.indexOf("/" + group + "/") > 0) &&
                         (language.length() == 0 || path.indexOf("/" + language + "/") > 0) &&
                         (skill.length() == 0 || path.indexOf("/" + skill + ".txt") > 0)) {
-                    descriptions.put(path, entry.getValue());
+                    descriptions.put(path, entry.getValue().getDescription());
                 }
             }
 

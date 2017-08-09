@@ -4,5 +4,5 @@
 	"logo": "https://github.com/fossasia/susi_server/blob/development/html/images/brand.png",
 	"website": "http://api.susi.ai",
 	"repository": "https://github.com/fossasia/susi_server.git",
-	"image": "mariobehling/loklak"
+	"image": "fossasia/susi_server"
 }
