@@ -26,6 +26,10 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.Set;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -47,6 +51,15 @@ import ai.susi.mind.SusiInference.Type;
  */
 public class SusiSkill {
 
+    private String skillName;
+    private String description;
+    private String author;
+    private String authorURL;
+    private String image;
+    private String termsOfUse;
+    private Set<String> examples;
+    private String developerPrivacyPolicy;
+    private Boolean dynamicContent;
 
     /**
      * read an "EzD" ('Easy Dialog') file: this is just a text file. Read the docs/susi_skill_development_tutorial.md for an explanation
@@ -56,6 +69,17 @@ public class SusiSkill {
      * @throws FileNotFoundException
      */
 
+    public SusiSkill() {
+        this.author = null;
+        this.authorURL = null;
+        this.description = null;
+        this.examples = new LinkedHashSet<>();
+        this.image = null;
+        this.skillName = null;
+        this.termsOfUse = null;
+        this.developerPrivacyPolicy = null;
+        this.dynamicContent = false;
+    }
     public static JSONObject readEzDSkill(BufferedReader br) throws JSONException {
         // read the text file and turn it into a intent json; then learn that
         JSONObject json = new JSONObject();
@@ -156,7 +180,6 @@ public class SusiSkill {
                                 });
                             }
                             if (example.length() > 0) intent.put("example", example);
-                            if(image.length() > 0) intent.put("image", image);
                             if (expect.length() > 0) intent.put("expect", expect);
                             intents.put(intent);
                         }
@@ -366,5 +389,76 @@ public class SusiSkill {
             }
         }
         return null;
+    }
+    public void setAuthor(String author) {
+        this.author = author;
+    }
+
+    public void setAuthorURL(String authorURL) {
+        this.authorURL = authorURL;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public void setDeveloperPrivacyPolicy(String developerPrivacyPolicy) {
+        this.developerPrivacyPolicy = developerPrivacyPolicy;
+    }
+
+    public void setExamples(Set<String> examples) {
+        this.examples = examples;
+    }
+
+    public void setImage(String image) {
+        this.image = image;
+    }
+
+    public void setDynamicContent(Boolean dynamicContent) {
+        this.dynamicContent = dynamicContent;
+    }
+
+    public void setSkillName(String skillName) {
+        this.skillName = skillName;
+    }
+
+    public void setTermsOfUse(String termsOfUse) {
+        this.termsOfUse = termsOfUse;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public String getAuthor() {
+        return author;
+    }
+
+    public String getAuthorURL() {
+        return authorURL;
+    }
+
+    public String getImage() {
+        return image;
+    }
+
+    public String getSkillName() {
+        return skillName;
+    }
+
+    public String getTermsOfUse() {
+        return termsOfUse;
+    }
+
+    public Set<String> getExamples() {
+        return examples;
+    }
+
+    public String getDeveloperPrivacyPolicy() {
+        return developerPrivacyPolicy;
+    }
+
+    public Boolean getDynamicContent() {
+        return dynamicContent;
     }
 }
