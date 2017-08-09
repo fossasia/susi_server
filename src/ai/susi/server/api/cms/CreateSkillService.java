@@ -28,7 +28,7 @@ import java.nio.file.Paths;
  * This Service creates an skill as per given query.
  * The skill name given in the query should not exist in the SUSI intents Folder
  * Can be tested on :-
- * http://localhost:4000/cms/createSkill.txt?model=general&group=knowledge&language=en&skill=whois&content=skillData
+ * http://localhost:4000/cms/createSkill.txt?model=general&group=Knowledge&language=en&skill=whois&content=skillData
  */
 
 @MultipartConfig(fileSizeThreshold=1024*1024*10, 	// 10 MB
@@ -73,7 +73,7 @@ public class CreateSkillService extends AbstractAPIHandler implements APIHandler
             File model = new File(DAO.model_watch_dir, model_name);
             String group_name = req.getParameter("group");
             if (group_name == null) {
-                group_name = "knowledge";
+                group_name = "Knowledge";
             }
             File group = new File(model, group_name);
             String language_name = req.getParameter("language");

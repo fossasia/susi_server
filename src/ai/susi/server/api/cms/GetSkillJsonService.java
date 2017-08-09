@@ -40,7 +40,7 @@ import java.nio.file.Files;
  * i.e.
  * http://localhost:4000/cms/getSkill.json
  * This accepts 4 parameters: - Model, Group, Language and Skill Name
- * http://localhost:4000/cms/getSkill.json?model=general&group=knowledge&language=en&skill=wikipedia
+ * http://localhost:4000/cms/getSkill.json?model=general&group=Knowledge&language=en&skill=wikipedia
  */
 
 public class GetSkillJsonService extends AbstractAPIHandler implements APIHandler {
@@ -70,7 +70,7 @@ public class GetSkillJsonService extends AbstractAPIHandler implements APIHandle
         json.put("accepted", false);
         String model_name = call.get("model", "general");
         File model = new File(DAO.model_watch_dir, model_name);
-        String group_name = call.get("group", "knowledge");
+        String group_name = call.get("group", "Knowledge");
         File group = new File(model, group_name);
         String language_name = call.get("language", "en");
         File language = new File(group, language_name);
