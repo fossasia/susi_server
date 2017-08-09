@@ -21,9 +21,8 @@ How do I install Susi: Download, Build, Run
 
 .. note::
 
-    You must be logged in to Docker Cloud for the button to
-    work correctly. If you are not logged in, you'll see a 404 error
-    instead.
+    - You must be logged in to Docker Cloud for the button to work correctly. If you are not logged in, you'll see a 404 error instead.
+    
 
 |Deploy| |Deploy on Scalingo| |Deploy to Bluemix| |Deploy to Docker
 Cloud|
@@ -35,7 +34,9 @@ hosted at https://github.com/fossasia/susi_server, you can download it and run S
 
     > git clone https://github.com/fossasia/susi_server.git
     > cd susi_server
-    > ant
+    > git submodule update --recursive --remote
+    > git submodule update --init --recursive
+    > ./gradlew build
     > bin/start.sh
 
 For Windows Users (who are using GitBash/Cygwin or any terminal):
