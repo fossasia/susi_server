@@ -35,7 +35,7 @@ public class UserAccountPermissions extends AbstractAPIHandler implements APIHan
     private static final long serialVersionUID = 8678478303032749879L;
 
     @Override
-    public UserRole getMinimalBaseUserRole() { return UserRole.USER; }
+    public UserRole getMinimalUserRole() { return UserRole.USER; }
 
 	@Override
 	public JSONObject getDefaultPermissions(UserRole baseUserRole) {

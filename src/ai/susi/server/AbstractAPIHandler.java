@@ -60,7 +60,7 @@ public abstract class AbstractAPIHandler extends HttpServlet implements APIHandl
     }
 
     @Override
-    public abstract UserRole getMinimalBaseUserRole();
+    public abstract UserRole getMinimalUserRole();
 
 	@Override
 	public abstract JSONObject getDefaultPermissions(UserRole baseUserRole);
@@ -83,7 +83,7 @@ public abstract class AbstractAPIHandler extends HttpServlet implements APIHandl
     private void process(HttpServletRequest request, HttpServletResponse response, Query query) throws ServletException, IOException {
         
         // basic protection
-        UserRole minimalBaseUserRole = getMinimalBaseUserRole() != null ? getMinimalBaseUserRole() : UserRole.ANONYMOUS;
+        UserRole minimalBaseUserRole = getMinimalUserRole() != null ? getMinimalUserRole() : UserRole.ANONYMOUS;
 
         if (query.isDoS_blackout()) {response.sendError(503, "your request frequency is too high"); return;} // DoS protection
         if (DAO.getConfig("users.admin.localonly", true) && minimalBaseUserRole == UserRole.ADMIN && !query.isLocalhostAccess()) {response.sendError(503, "access only allowed from localhost, your request comes from " + query.getClientHost()); return;} // danger! do not remove this!
@@ -94,7 +94,7 @@ public abstract class AbstractAPIHandler extends HttpServlet implements APIHandl
         // user authorization: we use the identification of the user to get the assigned authorization
         Authorization authorization = DAO.getAuthorization(identity);
 
-        if(authorization.getUserRole().ordinal() < minimalBaseUserRole.ordinal()){
+        if (authorization.getUserRole().ordinal() < minimalBaseUserRole.ordinal()) {
         	response.sendError(401, "Base user role not sufficient. Your base user role is '" + authorization.getUserRole().name() + "', your user role is '" + authorization.getUserRole().getName() + "'");
 			return;
         }
@@ -154,14 +154,14 @@ public abstract class AbstractAPIHandler extends HttpServlet implements APIHandl
      */
     public static ClientIdentity getIdentity(HttpServletRequest request, HttpServletResponse response, Query query) {
     	
-    	if(getLoginCookie(request) != null){ // check if login cookie is set
+    	if (getLoginCookie(request) != null) { // check if login cookie is set
 			
 			Cookie loginCookie = getLoginCookie(request);
 			
 			ClientCredential credential = new ClientCredential(ClientCredential.Type.cookie, loginCookie.getValue());
 			Authentication authentication = DAO.getAuthentication(credential);
 			
-			if(authentication.getIdentity() != null && authentication.checkExpireTime()) {
+			if (authentication.getIdentity() != null && authentication.checkExpireTime()) {
 
 				//reset cookie validity time
 				authentication.setExpireTime(defaultCookieTime);
@@ -178,26 +178,24 @@ public abstract class AbstractAPIHandler extends HttpServlet implements APIHandl
 			deleteLoginCookie(response);
 
 			Log.getLog().info("Invalid login try via cookie from host: " + query.getClientHost());
-		}
-		else if(request.getSession().getAttribute("identity") != null){ // check session is set
+		} else if (request.getSession().getAttribute("identity") != null) { // check session is set
 			return (ClientIdentity) request.getSession().getAttribute("identity");
-		}
-    	else if (request.getParameter("access_token") != null){ // access tokens can be used by api calls, somehow the stateless equivalent of sessions for browsers
+		} else if (request.getParameter("access_token") != null) { // access tokens can be used by api calls, somehow the stateless equivalent of sessions for browsers
     		ClientCredential credential = new ClientCredential(ClientCredential.Type.access_token, request.getParameter("access_token"));
     		Authentication authentication = DAO.getAuthentication(credential);
 			
     		
     		// check if access_token is valid
-    		if(authentication.getIdentity() != null){
+    		if (authentication.getIdentity() != null) {
     			ClientIdentity identity = authentication.getIdentity();
     			
-    			if(authentication.checkExpireTime()){
+    			if (authentication.checkExpireTime()) {
     				Log.getLog().info("login for user: " + identity.getName() + " via access token from host: " + query.getClientHost());
     				
-    				if("true".equals(request.getParameter("request_session"))){
+    				if ("true".equals(request.getParameter("request_session"))) {
             			request.getSession().setAttribute("identity",identity);
             		}
-    				if(authentication.has("one_time") && authentication.getBoolean("one_time")){
+    				if (authentication.has("one_time") && authentication.getBoolean("one_time")) {
     					authentication.delete();
     				}
     				return identity;
@@ -230,7 +228,7 @@ public abstract class AbstractAPIHandler extends HttpServlet implements APIHandl
      * @param salt
      * @return String hash
      */
-    public static String getHash(String input, String salt){
+    public static String getHash(String input, String salt) {
 		try {
 			MessageDigest md = MessageDigest.getInstance("SHA-256");
 			md.update((salt + input).getBytes());
@@ -246,7 +244,7 @@ public abstract class AbstractAPIHandler extends HttpServlet implements APIHandl
      * @param length
      * @return
      */
-    public static String createRandomString(Integer length){
+    public static String createRandomString(Integer length) {
     	char[] chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789".toCharArray();
     	StringBuilder sb = new StringBuilder();
     	Random random = new Random();
@@ -262,10 +260,10 @@ public abstract class AbstractAPIHandler extends HttpServlet implements APIHandl
      * @param request
      * @return the login cookie if present, null otherwise
      */
-    private static Cookie getLoginCookie(HttpServletRequest request){
-    	if(request.getCookies() != null){
-	    	for(Cookie cookie : request.getCookies()){
-				if("login".equals(cookie.getName())){
+    private static Cookie getLoginCookie(HttpServletRequest request) {
+    	if (request.getCookies() != null) {
+	    	for(Cookie cookie : request.getCookies()) {
+				if ("login".equals(cookie.getName())) {
 					return cookie;
 				}
 	    	}
@@ -277,7 +275,7 @@ public abstract class AbstractAPIHandler extends HttpServlet implements APIHandl
      * Delete the login cookie if present
      * @param response
      */
-    protected static void deleteLoginCookie(HttpServletResponse response){
+    protected static void deleteLoginCookie(HttpServletResponse response) {
     	Cookie deleteCookie = new Cookie("login", null);
 		deleteCookie.setPath("/");
 		deleteCookie.setMaxAge(0);

@@ -35,7 +35,7 @@ public class AuthorizationDemoService extends AbstractAPIHandler implements APIH
     private static final long serialVersionUID = 8678478303032749879L;
 
     @Override
-    public UserRole getMinimalBaseUserRole() { return UserRole.ANONYMOUS; }
+    public UserRole getMinimalUserRole() { return UserRole.ANONYMOUS; }
 
 	@Override
 	public JSONObject getDefaultPermissions(UserRole baseUserRole) {

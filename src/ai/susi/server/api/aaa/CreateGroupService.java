@@ -47,7 +47,7 @@ public class CreateGroupService extends AbstractAPIHandler implements APIHandler
     private static final long serialVersionUID = -742269505564698987L;
 
     @Override
-    public UserRole getMinimalBaseUserRole() {
+    public UserRole getMinimalUserRole() {
         return UserRole.ADMIN;
     }
 

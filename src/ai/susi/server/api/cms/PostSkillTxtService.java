@@ -36,7 +36,7 @@ public class PostSkillTxtService extends AbstractAPIHandler implements APIHandle
     private static final long serialVersionUID = 18344226L;
 
     @Override
-    public UserRole getMinimalBaseUserRole() { return UserRole.ANONYMOUS; }
+    public UserRole getMinimalUserRole() { return UserRole.ANONYMOUS; }
 
     @Override
     public JSONObject getDefaultPermissions(UserRole baseUserRole) {
