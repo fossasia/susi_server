@@ -316,8 +316,6 @@ public class LoginService extends AbstractAPIHandler implements APIHandler {
 
 		if (authentication.getIdentity() == null) { // check if identity is valid
 			authentication.delete();
-			Accounting accouting = DAO.getAccounting(authentication.getIdentity());
-			accouting.getRequests().addRequest(this.getClass().getCanonicalName(), "invalid login");
 
 			Log.getLog().info("Invalid login try for unknown user: " + credential.getName() + " via passwd from host: " + post.getClientHost());
 			throw new APIException(422, "Invalid credentials");
