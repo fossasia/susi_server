@@ -152,7 +152,7 @@ public abstract class AbstractAPIHandler extends HttpServlet implements APIHandl
      * Checks a request for valid login data, either a existing session, a cookie or an access token
      * @return user identity if some login is active, anonymous identity otherwise
      */
-    public static ClientIdentity getIdentity(HttpServletRequest request, HttpServletResponse response, Query query) {
+    private static ClientIdentity getIdentity(HttpServletRequest request, HttpServletResponse response, Query query) {
     	
     	if (getLoginCookie(request) != null) { // check if login cookie is set
 			
@@ -169,7 +169,9 @@ public abstract class AbstractAPIHandler extends HttpServlet implements APIHandl
 				loginCookie.setPath("/"); // bug. The path gets reset
 				response.addCookie(loginCookie);
 
-				return authentication.getIdentity();
+				ClientIdentity identity = authentication.getIdentity();
+	            Log.getLog().info("USER REQUEST using cookie: " + identity.getClient());
+				return identity;
 			}
 
 			authentication.delete();
@@ -179,12 +181,13 @@ public abstract class AbstractAPIHandler extends HttpServlet implements APIHandl
 
 			Log.getLog().info("Invalid login try via cookie from host: " + query.getClientHost());
 		} else if (request.getSession().getAttribute("identity") != null) { // check session is set
-			return (ClientIdentity) request.getSession().getAttribute("identity");
+		    ClientIdentity identity = (ClientIdentity) request.getSession().getAttribute("identity");
+            Log.getLog().info("USER REQUEST using browser session: " + identity.getClient());
+            return identity;
 		} else if (request.getParameter("access_token") != null) { // access tokens can be used by api calls, somehow the stateless equivalent of sessions for browsers
     		ClientCredential credential = new ClientCredential(ClientCredential.Type.access_token, request.getParameter("access_token"));
     		Authentication authentication = DAO.getAuthentication(credential);
 			
-    		
     		// check if access_token is valid
     		if (authentication.getIdentity() != null) {
     			ClientIdentity identity = authentication.getIdentity();
@@ -193,11 +196,12 @@ public abstract class AbstractAPIHandler extends HttpServlet implements APIHandl
     				Log.getLog().info("login for user: " + identity.getName() + " via access token from host: " + query.getClientHost());
     				
     				if ("true".equals(request.getParameter("request_session"))) {
-            			request.getSession().setAttribute("identity",identity);
+            			request.getSession().setAttribute("identity", identity);
             		}
     				if (authentication.has("one_time") && authentication.getBoolean("one_time")) {
     					authentication.delete();
     				}
+    				Log.getLog().info("USER REQUEST using access_token: " + identity.getClient());
     				return identity;
     			}
     		}
