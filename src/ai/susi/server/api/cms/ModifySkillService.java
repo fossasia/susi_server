@@ -103,7 +103,7 @@ public class ModifySkillService extends AbstractAPIHandler implements APIHandler
                 Status status = git.status().call();
 
                 git.add()
-                        .addFilepattern(path)
+                        .addFilepattern(".")
                         .call();
                 // and then commit the changes
                 git.commit()
