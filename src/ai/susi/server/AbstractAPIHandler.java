@@ -60,10 +60,10 @@ public abstract class AbstractAPIHandler extends HttpServlet implements APIHandl
     }
 
     @Override
-    public abstract BaseUserRole getMinimalBaseUserRole();
+    public abstract UserRole getMinimalBaseUserRole();
 
 	@Override
-	public abstract JSONObject getDefaultPermissions(BaseUserRole baseUserRole);
+	public abstract JSONObject getDefaultPermissions(UserRole baseUserRole);
     
     public abstract ServiceResponse serviceImpl(Query post, HttpServletResponse response, Authorization rights, final JsonObjectWithDefault permissions) throws APIException;
     
@@ -83,10 +83,10 @@ public abstract class AbstractAPIHandler extends HttpServlet implements APIHandl
     private void process(HttpServletRequest request, HttpServletResponse response, Query query) throws ServletException, IOException {
         
         // basic protection
-        BaseUserRole minimalBaseUserRole = getMinimalBaseUserRole() != null ? getMinimalBaseUserRole() : BaseUserRole.ANONYMOUS;
+        UserRole minimalBaseUserRole = getMinimalBaseUserRole() != null ? getMinimalBaseUserRole() : UserRole.ANONYMOUS;
 
         if (query.isDoS_blackout()) {response.sendError(503, "your request frequency is too high"); return;} // DoS protection
-        if (DAO.getConfig("users.admin.localonly", true) && minimalBaseUserRole == BaseUserRole.ADMIN && !query.isLocalhostAccess()) {response.sendError(503, "access only allowed from localhost, your request comes from " + query.getClientHost()); return;} // danger! do not remove this!
+        if (DAO.getConfig("users.admin.localonly", true) && minimalBaseUserRole == UserRole.ADMIN && !query.isLocalhostAccess()) {response.sendError(503, "access only allowed from localhost, your request comes from " + query.getClientHost()); return;} // danger! do not remove this!
         
         // user identification
         ClientIdentity identity = getIdentity(request, response, query);
@@ -94,8 +94,8 @@ public abstract class AbstractAPIHandler extends HttpServlet implements APIHandl
         // user authorization: we use the identification of the user to get the assigned authorization
         Authorization authorization = DAO.getAuthorization(identity);
 
-        if(authorization.getBaseUserRole().ordinal() < minimalBaseUserRole.ordinal()){
-        	response.sendError(401, "Base user role not sufficient. Your base user role is '" + authorization.getBaseUserRole().name() + "', your user role is '" + authorization.getUserRole().getDisplayName() + "'");
+        if(authorization.getUserRole().ordinal() < minimalBaseUserRole.ordinal()){
+        	response.sendError(401, "Base user role not sufficient. Your base user role is '" + authorization.getUserRole().name() + "', your user role is '" + authorization.getUserRole().getName() + "'");
 			return;
         }
         
@@ -105,7 +105,7 @@ public abstract class AbstractAPIHandler extends HttpServlet implements APIHandl
         boolean minified = query.get("minified", false);
         
         try {
-            ServiceResponse serviceResponse = serviceImpl(query, response, authorization, authorization.getPermissions(this));
+            ServiceResponse serviceResponse = serviceImpl(query, response, authorization, new JsonObjectWithDefault(authorization.getPermission()));
             if  (serviceResponse == null) {
                 response.sendError(400, "your request does not contain the required data");
                 return;
@@ -139,6 +139,7 @@ public abstract class AbstractAPIHandler extends HttpServlet implements APIHandl
                 sos.print(serviceResponse.toString(false));
             } else if (serviceResponse.isByteArray()) {
                 response.getOutputStream().write(serviceResponse.getByteArray());
+                response.setHeader("Access-Control-Allow-Origin", "*");
             }
             query.finalize();
         } catch (APIException e) {

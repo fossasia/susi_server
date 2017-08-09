@@ -23,12 +23,12 @@ public class GroupListService extends AbstractAPIHandler implements APIHandler {
     }
 
     @Override
-    public BaseUserRole getMinimalBaseUserRole() {
+    public UserRole getMinimalBaseUserRole() {
         return null;
     }
 
     @Override
-    public JSONObject getDefaultPermissions(BaseUserRole baseUserRole) {
+    public JSONObject getDefaultPermissions(UserRole baseUserRole) {
         return null;
     }
 

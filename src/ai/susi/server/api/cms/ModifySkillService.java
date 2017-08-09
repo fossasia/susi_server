@@ -27,10 +27,10 @@ public class ModifySkillService extends AbstractAPIHandler implements APIHandler
     private static final long serialVersionUID = -1834363513093189312L;
 
     @Override
-    public BaseUserRole getMinimalBaseUserRole() { return BaseUserRole.ANONYMOUS; }
+    public UserRole getMinimalBaseUserRole() { return UserRole.USER; }
 
     @Override
-    public JSONObject getDefaultPermissions(BaseUserRole baseUserRole) {
+    public JSONObject getDefaultPermissions(UserRole baseUserRole) {
         return null;
     }
 
@@ -53,6 +53,8 @@ public class ModifySkillService extends AbstractAPIHandler implements APIHandler
 
         String commit_message = call.get("changelog", null);
 
+        response.setHeader("Access-Control-Allow-Origin", "*"); // enable CORS
+        
         if(commit_message==null){
             JSONObject error = new JSONObject();
             error.put("accepted", false);

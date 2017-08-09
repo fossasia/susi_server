@@ -48,7 +48,6 @@ import ai.susi.server.Authorization;
 import ai.susi.server.ClientCredential;
 import ai.susi.server.ClientIdentity;
 import ai.susi.server.Settings;
-import ai.susi.server.UserRoles;
 
 import ai.susi.tools.IO;
 import ai.susi.tools.OS;
@@ -88,7 +87,6 @@ public class DAO {
     private static JsonTray authentication;
     private static JsonTray authorization;
     private static JsonTray accounting;
-    public  static UserRoles userRoles;
     public  static JsonTray passwordreset;
     private static JsonFile login_keys;
     public static JsonTray group;
@@ -197,21 +195,6 @@ public class DAO {
         skillRating = new JsonTray(skillRating_per.toFile(), skillRating_vol.toFile(), 1000000);
         OS.protectPath(skillRating_per);
         OS.protectPath(skillRating_vol);
-
-
-        Log.getLog().info("Initializing user roles");
-
-        Path userRoles_path = settings_dir.resolve("userRoles.json");
-        userRoles = new UserRoles(new JsonFile(userRoles_path.toFile()));
-        OS.protectPath(userRoles_path);
-
-        try{
-            userRoles.loadUserRolesFromObject();
-            Log.getLog().info("Loaded user roles from file");
-        }catch (IllegalArgumentException e){
-            Log.getLog().info("Load default user roles");
-            userRoles.loadDefaultUserRoles();
-        }
 
         // open index
         Path index_dir = dataPath.resolve("index");
@@ -359,7 +342,7 @@ public class DAO {
 	}
 	
 	public static Authorization getAuthorization(@Nonnull ClientIdentity identity) {
-		 return new Authorization(identity, authorization, userRoles);
+		 return new Authorization(identity, authorization);
 	}
 	
 	public static boolean hasAuthorization(@Nonnull ClientIdentity credential) {

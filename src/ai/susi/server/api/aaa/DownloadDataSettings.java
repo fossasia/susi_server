@@ -23,12 +23,12 @@ public class DownloadDataSettings extends AbstractAPIHandler implements APIHandl
     }
 
     @Override
-    public BaseUserRole getMinimalBaseUserRole() {
-        return BaseUserRole.ADMIN;
+    public UserRole getMinimalBaseUserRole() {
+        return UserRole.ADMIN;
     }
 
     @Override
-    public JSONObject getDefaultPermissions(BaseUserRole baseUserRole) {
+    public JSONObject getDefaultPermissions(UserRole baseUserRole) {
         return null;
     }
 

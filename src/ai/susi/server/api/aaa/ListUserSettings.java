@@ -16,7 +16,8 @@ import java.util.Collection;
 /**
  * Created by saurabh on 20/6/17.
  * Servlet to read user setting
- * test locally at http://127.0.0.1:4000/aaa/listUserSettings.json
+ * example:
+ * http://localhost:4000/aaa/listUserSettings.json?access_token=6O7cqoMbzlClxPwg1is31Tz5pjVwo3
  */
 public class ListUserSettings extends AbstractAPIHandler implements APIHandler {
     private static final long serialVersionUID = -1972211109199355750L;
@@ -27,12 +28,12 @@ public class ListUserSettings extends AbstractAPIHandler implements APIHandler {
     }
 
     @Override
-    public BaseUserRole getMinimalBaseUserRole() {
-        return BaseUserRole.USER;
+    public UserRole getMinimalBaseUserRole() {
+        return UserRole.USER;
     }
 
     @Override
-    public JSONObject getDefaultPermissions(BaseUserRole baseUserRole) {
+    public JSONObject getDefaultPermissions(UserRole baseUserRole) {
         return null;
     }
 

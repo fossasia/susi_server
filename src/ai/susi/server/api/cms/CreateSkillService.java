@@ -39,22 +39,25 @@ public class CreateSkillService extends AbstractAPIHandler implements APIHandler
     private static final long serialVersionUID = 2461878194569824151L;
 
     @Override
-    public BaseUserRole getMinimalBaseUserRole() {
-        return BaseUserRole.ANONYMOUS;
+    public UserRole getMinimalBaseUserRole() {
+        return UserRole.USER;
     }
 
     @Override
-    public JSONObject getDefaultPermissions(BaseUserRole baseUserRole) {
+    public JSONObject getDefaultPermissions(UserRole baseUserRole) {
         return null;
     }
 
     @Override
     public String getAPIPath() {
-        return "/cms/createSkill.txt";
+        return "/cms/createSkill.json";
     }
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        JSONObject json = new JSONObject();
+
+    	resp.setHeader("Access-Control-Allow-Origin", "*"); // enable CORS
+        
+    	JSONObject json = new JSONObject();
         Part file = req.getPart("image");
         if (file == null) {
             json.put("accepted", false);

@@ -51,12 +51,12 @@ public class HistorySkillService extends AbstractAPIHandler implements APIHandle
     Boolean success=false;
 
     @Override
-    public BaseUserRole getMinimalBaseUserRole() {
-        return BaseUserRole.ANONYMOUS;
+    public UserRole getMinimalBaseUserRole() {
+        return UserRole.ANONYMOUS;
     }
 
     @Override
-    public JSONObject getDefaultPermissions(BaseUserRole baseUserRole) {
+    public JSONObject getDefaultPermissions(UserRole baseUserRole) {
         return null;
     }
 

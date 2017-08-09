@@ -41,12 +41,12 @@ public class PasswordChangeService extends AbstractAPIHandler implements APIHand
     }
 
     @Override
-    public BaseUserRole getMinimalBaseUserRole() {
-        return BaseUserRole.USER;
+    public UserRole getMinimalBaseUserRole() {
+        return UserRole.USER;
     }
 
     @Override
-    public JSONObject getDefaultPermissions(BaseUserRole baseUserRole) {
+    public JSONObject getDefaultPermissions(UserRole baseUserRole) {
         return null;
     }
 

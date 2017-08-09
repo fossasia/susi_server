@@ -40,12 +40,12 @@ public class GetSkillRatingService extends AbstractAPIHandler implements APIHand
     private static final long serialVersionUID = 1420414106164188352L;
 
     @Override
-    public BaseUserRole getMinimalBaseUserRole() {
-        return BaseUserRole.ANONYMOUS;
+    public UserRole getMinimalBaseUserRole() {
+        return UserRole.ANONYMOUS;
     }
 
     @Override
-    public JSONObject getDefaultPermissions(BaseUserRole baseUserRole) {
+    public JSONObject getDefaultPermissions(UserRole baseUserRole) {
         return null;
     }
 

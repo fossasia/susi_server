@@ -40,12 +40,12 @@ public class GetAllGroups extends AbstractAPIHandler implements APIHandler {
     private static final long serialVersionUID = -179412273153306443L;
 
     @Override
-    public BaseUserRole getMinimalBaseUserRole() {
-        return BaseUserRole.ADMIN;
+    public UserRole getMinimalBaseUserRole() {
+        return UserRole.ADMIN;
     }
 
     @Override
-    public JSONObject getDefaultPermissions(BaseUserRole baseUserRole) {
+    public JSONObject getDefaultPermissions(UserRole baseUserRole) {
         return null;
     }
 
