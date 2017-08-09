@@ -2,6 +2,7 @@ package ai.susi.server.api.cms;
 
 import ai.susi.DAO;
 import ai.susi.json.JsonObjectWithDefault;
+import ai.susi.json.JsonTray;
 import ai.susi.mind.SusiSkill;
 import ai.susi.server.*;
 import org.json.JSONArray;
@@ -49,6 +50,7 @@ public class ListSkillService extends AbstractAPIHandler implements APIHandler {
         JSONObject skillObject = new JSONObject();
         ArrayList<String> fileList = new ArrayList<String>();
         fileList =  listFilesForFolder(language, fileList);
+        JsonTray skillRating = DAO.skillRating;
             for (String skill : fileList) {
                 JSONObject skillMetadata = new JSONObject();
                skill = skill.replace(".txt", "");
@@ -61,6 +63,7 @@ public class ListSkillService extends AbstractAPIHandler implements APIHandler {
                 skillMetadata.put("terms_of_use", JSONObject.NULL);
                 skillMetadata.put("dynamic_content", false);
                 skillMetadata.put("examples", JSONObject.NULL);
+                skillMetadata.put("skill_rating", JSONObject.NULL);
                 for (Map.Entry<String, SusiSkill> entry : DAO.susi.getSkillMetadata().entrySet()) {
                     String path = entry.getKey();
                     if ((path.indexOf("/" + model_name + "/") > 0)
@@ -79,12 +82,26 @@ public class ListSkillService extends AbstractAPIHandler implements APIHandler {
                     }
                 }
 
+                if (skillRating.has(model_name)) {
+                    JSONObject modelName = skillRating.getJSONObject(model_name);
+                    if (modelName.has(group_name)) {
+                        JSONObject groupName = modelName.getJSONObject(group_name);
+                        if (groupName.has(language_name)) {
+                            JSONObject  languageName = groupName.getJSONObject(language_name);
+                            if (languageName.has(skill)) {
+                                JSONObject skillName = languageName.getJSONObject(skill);
+                               skillMetadata.put("skill_rating", skillName);
+                            }
+                        }
+                    }
+                }
+
                skillObject.put(skill, skillMetadata);
             }
                 json.put("model", model_name)
                 .put("group", group_name)
                 .put("language", language_name)
-                        .put("skill", skillObject);
+                        .put("skills", skillObject);
         json.put("accepted", true);
         json.put("message","Success: Fetched skill list");
         return new ServiceResponse(json);
