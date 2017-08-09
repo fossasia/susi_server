@@ -54,7 +54,7 @@ public class LoginService extends AbstractAPIHandler implements APIHandler {
 	private static final long defaultAccessTokenExpireTime = 7 * 24 * 60 * 60; // one week
 
 	@Override
-	public UserRole getMinimalBaseUserRole() {
+	public UserRole getMinimalUserRole() {
 		return UserRole.ANONYMOUS;
 	}
 

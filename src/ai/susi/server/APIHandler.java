@@ -33,7 +33,7 @@ public interface APIHandler {
 
     public String[] getServerProtocolHostStub();
 
-    public abstract UserRole getMinimalBaseUserRole();
+    public abstract UserRole getMinimalUserRole();
 
     public abstract JSONObject getDefaultPermissions(UserRole baseUserRole);
     

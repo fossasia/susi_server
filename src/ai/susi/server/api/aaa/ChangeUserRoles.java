@@ -24,7 +24,7 @@ public class ChangeUserRoles extends AbstractAPIHandler implements APIHandler {
     private static final long serialVersionUID = -1432553481906185711L;
 
     @Override
-    public UserRole getMinimalBaseUserRole() {
+    public UserRole getMinimalUserRole() {
         return UserRole.ADMIN;
     }
 

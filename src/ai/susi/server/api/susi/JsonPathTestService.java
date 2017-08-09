@@ -55,7 +55,7 @@ public class JsonPathTestService extends AbstractAPIHandler implements APIHandle
     }
 
     @Override
-    public UserRole getMinimalBaseUserRole() {
+    public UserRole getMinimalUserRole() {
         return UserRole.ANONYMOUS;
     }
 

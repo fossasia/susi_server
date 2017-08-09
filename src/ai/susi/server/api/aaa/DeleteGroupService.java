@@ -40,7 +40,7 @@ public class DeleteGroupService extends AbstractAPIHandler implements APIHandler
     }
 
     @Override
-    public UserRole getMinimalBaseUserRole() {
+    public UserRole getMinimalUserRole() {
         return UserRole.ADMIN;
     }
 

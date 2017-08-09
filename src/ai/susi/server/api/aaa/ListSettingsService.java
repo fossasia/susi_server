@@ -40,7 +40,7 @@ public class ListSettingsService extends AbstractAPIHandler implements APIHandle
     }
 
     @Override
-    public UserRole getMinimalBaseUserRole() {
+    public UserRole getMinimalUserRole() {
         return UserRole.ADMIN;
     }
 

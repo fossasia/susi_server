@@ -46,7 +46,7 @@ public class DescriptionSkillService extends AbstractAPIHandler implements APIHa
     private static final long serialVersionUID = 4175356383695207511L;
 
     @Override
-    public UserRole getMinimalBaseUserRole() { return UserRole.ANONYMOUS; }
+    public UserRole getMinimalUserRole() { return UserRole.ANONYMOUS; }
 
     @Override
     public JSONObject getDefaultPermissions(UserRole baseUserRole) {

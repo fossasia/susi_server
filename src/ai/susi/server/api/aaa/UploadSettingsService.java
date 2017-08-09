@@ -43,7 +43,7 @@ public class UploadSettingsService extends AbstractAPIHandler implements APIHand
     }
 
     @Override
-    public UserRole getMinimalBaseUserRole() {
+    public UserRole getMinimalUserRole() {
         return UserRole.ADMIN;
     }
 

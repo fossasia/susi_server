@@ -48,7 +48,7 @@ public class PasswordResetService extends AbstractAPIHandler implements APIHandl
 	}
 
 	@Override
-	public UserRole getMinimalBaseUserRole() {
+	public UserRole getMinimalUserRole() {
 		return UserRole.ANONYMOUS;
 	}
 

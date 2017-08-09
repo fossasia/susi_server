@@ -34,7 +34,7 @@ public class UserManagementService extends AbstractAPIHandler implements APIHand
 	private static final long serialVersionUID = 8578478303032749879L;
 
 	@Override
-	public UserRole getMinimalBaseUserRole() {
+	public UserRole getMinimalUserRole() {
 		return UserRole.PRIVILEGED;
 	}
 

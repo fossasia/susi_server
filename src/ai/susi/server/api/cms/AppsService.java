@@ -51,7 +51,7 @@ public class AppsService extends AbstractAPIHandler implements APIHandler {
     }
 
     @Override
-    public UserRole getMinimalBaseUserRole() { return UserRole.ANONYMOUS; }
+    public UserRole getMinimalUserRole() { return UserRole.ANONYMOUS; }
 
     @Override
     public JSONObject getDefaultPermissions(UserRole baseUserRole) {
