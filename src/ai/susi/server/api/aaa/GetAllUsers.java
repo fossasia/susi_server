@@ -50,7 +50,6 @@ public class GetAllUsers extends AbstractAPIHandler implements APIHandler {
         Collection<ClientIdentity> authorized = DAO.getAuthorizedClients();
         List<String> keysList = new ArrayList<String>();
         authorized.forEach(client -> keysList.add(client.toString()));
-        keysList.remove(keysList.size()-1);
         String[] keysArray = keysList.toArray(new String[keysList.size()]);
         JSONObject users = new JSONObject();
         authorized.forEach(client -> users.put(client.getClient(), client.toJSON()));

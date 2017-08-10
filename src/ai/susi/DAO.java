@@ -340,7 +340,7 @@ public class DAO {
 	public static void deleteAuthentication(@Nonnull ClientCredential credential) {
 		authentication.remove(credential.toString());
 	}
-	
+
 	public static Authorization getAuthorization(@Nonnull ClientIdentity identity) {
 		 return new Authorization(identity, authorization);
 	}
@@ -352,6 +352,8 @@ public class DAO {
 	public static Collection<ClientIdentity> getAuthorizedClients() {
 		ArrayList<ClientIdentity> i = new ArrayList<>();
 		for (String id: authorization.keys()) {
+		    if(id.contains("host"))
+		        continue;
 			i.add(new ClientIdentity(id));
 		}
 		return i;
