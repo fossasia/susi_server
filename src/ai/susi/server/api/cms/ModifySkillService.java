@@ -21,7 +21,7 @@ import java.io.IOException;
  * changelog is the commit message that you want to set for the versioning system.
  * before modifying an skill the skill must exist in the directory.
  * !IMPORTANT! --> Content must be URL Encoded
- * http://localhost:4000/cms/modifySkill.json?model=general&group=knowledge&skill=who&content=What%20is%20stock%20price%20of%20*%3F|What%20is%20stock%20price%20of%20*|stock%20price%20of%20*|*%20stock%20price%20of%20*%0A!console%3A%24l%24%0A{%0A%20%22url%22%3A%22http%3A%2F%2Ffinance.google.com%2Ffinance%2Finfo%3Fclient%3Dig%26q%3DNASDAQ%3A%241%24%22%2C%0A%20%22path%22%3A%22%24.[0]%22%0A}%0Aeol%0A&changelog=testing
+ * http://localhost:4000/cms/modifySkill.json?model=general&group=Knowledge&skill=who&content=What%20is%20stock%20price%20of%20*%3F|What%20is%20stock%20price%20of%20*|stock%20price%20of%20*|*%20stock%20price%20of%20*%0A!console%3A%24l%24%0A{%0A%20%22url%22%3A%22http%3A%2F%2Ffinance.google.com%2Ffinance%2Finfo%3Fclient%3Dig%26q%3DNASDAQ%3A%241%24%22%2C%0A%20%22path%22%3A%22%24.[0]%22%0A}%0Aeol%0A&changelog=testing
  */
 public class ModifySkillService extends AbstractAPIHandler implements APIHandler {
 
@@ -45,7 +45,7 @@ public class ModifySkillService extends AbstractAPIHandler implements APIHandler
 
         String model_name = call.get("model", "general");
         File model = new File(DAO.model_watch_dir, model_name);
-        String group_name = call.get("group", "knowledge");
+        String group_name = call.get("group", "Knowledge");
         File group = new File(model, group_name);
         String language_name = call.get("language", "en");
         File language = new File(group, language_name);

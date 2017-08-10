@@ -42,7 +42,7 @@ import java.io.IOException;
  * This Service Adds a API Endpoint to return history of an skill
  * This accepts 4 parameters: - Model, Group, Language and Skill Name
  * Can be tested on : -
- * http://127.0.0.1:4000/cms/getSkillHistory.json?model=general&group=knowledge&language=en&skill=bitcoin
+ * http://127.0.0.1:4000/cms/getSkillHistory.json?model=general&group=Knowledge&language=en&skill=bitcoin
  */
 public class HistorySkillService extends AbstractAPIHandler implements APIHandler {
 
@@ -78,7 +78,7 @@ public class HistorySkillService extends AbstractAPIHandler implements APIHandle
 
         String model_name = call.get("model", "general");
         File model = new File(DAO.model_watch_dir, model_name);
-        String group_name = call.get("group", "knowledge");
+        String group_name = call.get("group", "Knowledge");
         File group = new File(model, group_name);
         String language_name = call.get("language", "en");
         File language = new File(group, language_name);

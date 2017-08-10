@@ -59,7 +59,7 @@ public class GetAllLanguages  extends AbstractAPIHandler implements APIHandler {
 
         String model_name = call.get("model", "general");
         File model = new File(DAO.model_watch_dir, model_name);
-        String group_name = call.get("group", "knowledge");
+        String group_name = call.get("group", "Knowledge");
         File group = new File(model, group_name);
         JSONObject json = new JSONObject(true);
         json.put("accepted", false);

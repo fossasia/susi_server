@@ -1,0 +1,90 @@
+.susi-logo{
+  height: 25px;
+}
+
+.mdl-layout__header{
+  background: rgb(66, 133, 244);
+}
+
+.mdl-navigation a.selected{
+  border-bottom: 4px solid #fff;
+}
+
+.footer-logo{
+  height: 25px;
+  margin-right: 100px;
+}
+
+.right-float-footer{
+  float:right;
+}
+
+.mdl-mini-footer{
+  background: #f6f6f6;
+}
+
+footer a{
+  color:#000 !important;
+  font-size: 1em !important;
+  font-weight: 300 !important;
+}
+
+a.headerlink {
+    visibility: hidden;
+    -webkit-transition: color 600ms;
+    transition: color 600ms;
+    color: #4285F4;
+    padding: 0 4px;
+    text-decoration: none;
+}
+
+.documentation h1:hover a.headerlink,
+.documentation h2:hover a.headerlink,
+.documentation h3:hover a.headerlink,
+.documentation h4:hover a.headerlink,
+.documentation h5:hover a.headerlink,
+.documentation h6:hover a.headerlink{
+    visibility: visible;
+}
+
+a.headerlink:hover {
+    color: blue;
+}
+
+.search-icon {
+  margin-top: 4px;
+}
+.mdl-grid {
+  max-width: 1200px;
+}
+.indigo {
+  background-color: #4285F4;
+}
+
+.content {
+  flex: 1 0 auto;
+}
+
+.susi-font {
+  font-family: 'Roboto', sans-serif;
+}
+
+p {
+  font-size: 18px;
+}
+
+.external {
+  font-size: 18px;
+}
+
+.internal {
+  font-size: 18px;
+}
+
+h1 {
+  font-size: 42px;
+}
+
+ul > li > a {
+  font-size: 18px;
+}

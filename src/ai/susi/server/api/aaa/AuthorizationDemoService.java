@@ -38,16 +38,22 @@ public class AuthorizationDemoService extends AbstractAPIHandler implements APIH
     public UserRole getMinimalUserRole() { return UserRole.ANONYMOUS; }
 
 	@Override
-	public JSONObject getDefaultPermissions(UserRole baseUserRole) {
+	public JSONObject getDefaultPermissions(UserRole userRole) {
 		JSONObject result = new JSONObject();
 
-		switch(baseUserRole){
-			case ADMIN:
-				result.put("download_limit", -1);
+		switch (userRole) {
+            case BUREAUCRAT:
+                result.put("download_limit", 1000000000);
+                break;
+            case ADMIN:
+                result.put("download_limit", 100000);
+                break;
+			case ACCOUNTCREATOR:
+				result.put("download_limit", 10000);
 				break;
-			case PRIVILEGED:
-				result.put("download_limit", 1000);
-				break;
+            case REVIEWER:
+                result.put("download_limit", 1000);
+                break;
 			case USER:
 				result.put("download_limit", 100);
 				break;

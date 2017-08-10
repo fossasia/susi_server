@@ -83,10 +83,10 @@ public abstract class AbstractAPIHandler extends HttpServlet implements APIHandl
     private void process(HttpServletRequest request, HttpServletResponse response, Query query) throws ServletException, IOException {
         
         // basic protection
-        UserRole minimalBaseUserRole = getMinimalUserRole() != null ? getMinimalUserRole() : UserRole.ANONYMOUS;
+        UserRole minimalUserRole = getMinimalUserRole() != null ? getMinimalUserRole() : UserRole.ANONYMOUS;
 
         if (query.isDoS_blackout()) {response.sendError(503, "your request frequency is too high"); return;} // DoS protection
-        if (DAO.getConfig("users.admin.localonly", true) && minimalBaseUserRole == UserRole.ADMIN && !query.isLocalhostAccess()) {response.sendError(503, "access only allowed from localhost, your request comes from " + query.getClientHost()); return;} // danger! do not remove this!
+        if (DAO.getConfig("users.admin.localonly", true) && minimalUserRole == UserRole.ADMIN && !query.isLocalhostAccess()) {response.sendError(503, "access only allowed from localhost, your request comes from " + query.getClientHost()); return;} // danger! do not remove this!
         
         // user identification
         ClientIdentity identity = getIdentity(request, response, query);
@@ -94,7 +94,7 @@ public abstract class AbstractAPIHandler extends HttpServlet implements APIHandl
         // user authorization: we use the identification of the user to get the assigned authorization
         Authorization authorization = DAO.getAuthorization(identity);
 
-        if (authorization.getUserRole().ordinal() < minimalBaseUserRole.ordinal()) {
+        if (authorization.getUserRole().ordinal() < minimalUserRole.ordinal()) {
         	response.sendError(401, "Base user role not sufficient. Your base user role is '" + authorization.getUserRole().name() + "', your user role is '" + authorization.getUserRole().getName() + "'");
 			return;
         }

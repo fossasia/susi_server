@@ -16,7 +16,7 @@ import java.io.IOException;
 /**
  * Created by chetankaushik on 06/06/17.
  * This Service deletes a skill as per given query.
- * http://localhost:4000/cms/deleteSkill.txt?model=general&group=knowledge&language=en&skill=whois
+ * http://localhost:4000/cms/deleteSkill.txt?model=general&group=Knowledge&language=en&skill=whois
  */
 public class DeleteSkillService extends AbstractAPIHandler implements APIHandler {
 
@@ -42,7 +42,7 @@ public class DeleteSkillService extends AbstractAPIHandler implements APIHandler
 
         String model_name = call.get("model", "general");
         File model = new File(DAO.model_watch_dir, model_name);
-        String group_name = call.get("group", "knowledge");
+        String group_name = call.get("group", "Knowledge");
         File group = new File(model, group_name);
         String language_name = call.get("language", "en");
         File language = new File(group, language_name);
