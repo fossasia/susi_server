@@ -146,7 +146,8 @@ public class CreateSkillService extends AbstractAPIHandler implements APIHandler
                                 RefSpec spec = new RefSpec(branch + ":" + branch);
 
                                 PushCommand push=git.push();
-                                push.setCredentialsProvider(new UsernamePasswordCredentialsProvider( "", ""));
+                                push.setForce(true);
+                                push.setCredentialsProvider(new UsernamePasswordCredentialsProvider( DAO.getConfig("github.username", ""),DAO.getConfig("github.password","")));
                                 push.call();
                                 json.put("accepted", true);
 
