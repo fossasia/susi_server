@@ -120,46 +120,50 @@ public class CreateSkillService extends AbstractAPIHandler implements APIHandler
                     try (FileWriter Skillfile = new FileWriter(skill)) {
                         Skillfile.write(content);
                         String path = skill.getPath().replace(DAO.model_watch_dir.toString(), "models");
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                        json.put("message", "error: " + e.getMessage());
+                    }
 
-                        //Add to git
-                        FileRepositoryBuilder builder = new FileRepositoryBuilder();
-                        Repository repository = null;
-                        try {
-                            repository = builder.setGitDir((DAO.susi_skill_repo))
-                                    .readEnvironment() // scan environment GIT_* variables
-                                    .findGitDir() // scan up the file system tree
-                                    .build();
+                    //Add to git
+                    FileRepositoryBuilder builder = new FileRepositoryBuilder();
+                    Repository repository = null;
+                    try {
+                        repository = builder.setGitDir((DAO.susi_skill_repo))
+                                .readEnvironment() // scan environment GIT_* variables
+                                .findGitDir() // scan up the file system tree
+                                .build();
 
-                            try (Git git = new Git(repository)) {
-                                git.add()
-                                        .addFilepattern(".")
-                                        .call();
-                                // commit the changes
-                                git.commit()
-                                        .setMessage("Created " + skill_name)
-                                        .call();
+                        try (Git git = new Git(repository)) {
+                            git.add()
+                                    .addFilepattern(".")
+                                    .call();
+                            // commit the changes
+                            git.commit()
+                                    .setMessage("Created " + skill_name)
+                                    .call();
 
-                                // pushing to server
-                                String remote = "origin";
-                                String branch = "refs/heads/master";
-                                String trackingBranch = "refs/remotes/" + remote + "/master";
-                                RefSpec spec = new RefSpec(branch + ":" + branch);
+                            // pushing to server
+                            String remote = "origin";
+                            String branch = "refs/heads/master";
+                            String trackingBranch = "refs/remotes/" + remote + "/master";
+                            RefSpec spec = new RefSpec(branch + ":" + branch);
 
-                                PushCommand push=git.push();
-                                push.setForce(true);
-                                push.setCredentialsProvider(new UsernamePasswordCredentialsProvider( DAO.getConfig("github.username", ""),DAO.getConfig("github.password","")));
-                                push.call();
-                                json.put("accepted", true);
+                            PushCommand push=git.push();
+                            push.setForce(true);
+                            push.setCredentialsProvider(new UsernamePasswordCredentialsProvider( DAO.getConfig("github.username", ""),DAO.getConfig("github.password","")));
+                            push.call();
+                            json.put("accepted", true);
 
-                            } catch (GitAPIException e) {
-                                e.printStackTrace();
-                            }
-                        } catch (IOException e) {
+                        } catch (GitAPIException e) {
                             e.printStackTrace();
+                            json.put("message", "error: " + e.getMessage());
+
                         }
                     } catch (IOException e) {
                         e.printStackTrace();
                         json.put("message", "error: " + e.getMessage());
+
                     }
                 }
             }
