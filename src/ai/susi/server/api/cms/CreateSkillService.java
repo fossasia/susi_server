@@ -4,9 +4,12 @@ import ai.susi.DAO;
 import ai.susi.json.JsonObjectWithDefault;
 import ai.susi.server.*;
 import org.eclipse.jgit.api.Git;
+import org.eclipse.jgit.api.PushCommand;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.storage.file.FileRepositoryBuilder;
+import org.eclipse.jgit.transport.RefSpec;
+import org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider;
 import org.json.JSONObject;
 
 import javax.imageio.ImageIO;
@@ -56,7 +59,7 @@ public class CreateSkillService extends AbstractAPIHandler implements APIHandler
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 
     	resp.setHeader("Access-Control-Allow-Origin", "*"); // enable CORS
-        
+
     	JSONObject json = new JSONObject();
         Part file = req.getPart("image");
         if (file == null) {
@@ -129,13 +132,23 @@ public class CreateSkillService extends AbstractAPIHandler implements APIHandler
 
                             try (Git git = new Git(repository)) {
                                 git.add()
-                                        .addFilepattern(path)
+                                        .addFilepattern(".")
                                         .call();
                                 // commit the changes
                                 git.commit()
                                         .setMessage("Created " + skill_name)
                                         .call();
 
+                                // pushing to server
+                                String remote = "origin";
+                                String branch = "refs/heads/master";
+                                String trackingBranch = "refs/remotes/" + remote + "/master";
+                                RefSpec spec = new RefSpec(branch + ":" + branch);
+
+                                PushCommand push=git.push();
+                                push.setForce(true);
+                                push.setCredentialsProvider(new UsernamePasswordCredentialsProvider( DAO.getConfig("github.username", ""),DAO.getConfig("github.password","")));
+                                push.call();
                                 json.put("accepted", true);
 
                             } catch (GitAPIException e) {
