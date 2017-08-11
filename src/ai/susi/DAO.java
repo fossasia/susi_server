@@ -358,6 +358,10 @@ public class DAO {
 		}
 		return i;
 	}
+
+	public static void deleteAuthorization(@Nonnull ClientIdentity credential) {
+	    authorization.remove(credential.toString());
+    }
     
     public static Accounting getAccounting(@Nonnull ClientIdentity identity) {
          return new Accounting(identity, accounting);
