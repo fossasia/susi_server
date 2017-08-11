@@ -210,7 +210,7 @@ public class SignUpService extends AbstractAPIHandler implements APIHandler {
 		authorized.forEach(client -> keysList.add(client.toString()));
 		String[] keysArray = keysList.toArray(new String[keysList.size()]);
 		if(keysArray.length == 1) {
-			authorization.setUserRole(UserRole.ADMIN);
+			authorization.setUserRole(UserRole.BUREAUCRAT);
 		} else {
 			authorization.setUserRole(UserRole.USER);
 		}
