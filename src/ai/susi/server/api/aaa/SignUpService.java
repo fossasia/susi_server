@@ -6,12 +6,12 @@
  *  modify it under the terms of the GNU Lesser General Public
  *  License as published by the Free Software Foundation; either
  *  version 2.1 of the License, or (at your option) any later version.
- *  
+ *
  *  This library is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  *  Lesser General Public License for more details.
- *  
+ *
  *  You should have received a copy of the GNU Lesser General Public License
  *  along with this program in the file lgpl21.txt
  *  If not, see <http://www.gnu.org/licenses/>.
@@ -21,6 +21,9 @@ package ai.susi.server.api.aaa;
 
 import java.io.IOException;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 import java.util.regex.Pattern;
 
 import javax.servlet.http.HttpServletResponse;
@@ -60,11 +63,11 @@ public class SignUpService extends AbstractAPIHandler implements APIHandler {
 		result.put("message", "Error: Unable to process you request");
 
 		switch(baseUserRole){
-		    case BUREAUCRAT:
-		    case ADMIN:
-		    case ACCOUNTCREATOR:
-		    case REVIEWER:
-		    case USER:
+			case BUREAUCRAT:
+			case ADMIN:
+			case ACCOUNTCREATOR:
+			case REVIEWER:
+			case USER:
 				result.put("register", true); // allow to register new users (this bypasses email verification and activation)
 				result.put("activate", true); // allow to activate new users
 				result.put("accepted", true);
@@ -110,7 +113,7 @@ public class SignUpService extends AbstractAPIHandler implements APIHandler {
 		// is this a verification?
 		if (post.get("validateEmail", null) != null) {
 			if((auth.getIdentity().getName().equals(post.get("validateEmail", null)) && auth.getIdentity().isEmail()) // the user is logged in via an access token from the email
-				|| permissions.getBoolean("activate", false)){ // the user is allowed to activate other users
+					|| permissions.getBoolean("activate", false)){ // the user is allowed to activate other users
 
 				ClientCredential credential = new ClientCredential(ClientCredential.Type.passwd_login,
 						auth.getIdentity().getName());
@@ -202,7 +205,15 @@ public class SignUpService extends AbstractAPIHandler implements APIHandler {
 
 		// set authorization details
 		Authorization authorization = DAO.getAuthorization(identity);
-		authorization.setUserRole(UserRole.USER);
+		Collection<ClientIdentity> authorized = DAO.getAuthorizedClients();
+		List<String> keysList = new ArrayList<String>();
+		authorized.forEach(client -> keysList.add(client.toString()));
+		String[] keysArray = keysList.toArray(new String[keysList.size()]);
+		if(keysArray.length == 1) {
+			authorization.setUserRole(UserRole.BUREAUCRAT);
+		} else {
+			authorization.setUserRole(UserRole.USER);
+		}
 
 		if (sendEmail) {
 			String token = createRandomString(30);
@@ -232,7 +243,7 @@ public class SignUpService extends AbstractAPIHandler implements APIHandler {
 
 	/**
 	 * Read Email template and insert variables
-	 * 
+	 *
 	 * @param token
 	 *            - login token
 	 * @return Email String
@@ -243,7 +254,7 @@ public class SignUpService extends AbstractAPIHandler implements APIHandler {
 		if(hostUrl == null) throw new APIException(500, "No host url configured");
 
 		String verificationLink = hostUrl + "/aaa/signup.json?access_token=" + token
-                + "&validateEmail=" + userId + "&request_session=true";
+				+ "&validateEmail=" + userId + "&request_session=true";
 
 		// get template file
 		String result;
