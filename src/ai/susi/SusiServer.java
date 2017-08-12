@@ -502,6 +502,7 @@ public class SusiServer {
                 LinkPreviewService.class,
                 GetSkillMetadataService.class,
                 GetFileAtCommitID.class,
+                GetSkillsByAuthor.class,
                 // susi search aggregation services
                 ConsoleService.class,
                 RSSReaderService.class,
