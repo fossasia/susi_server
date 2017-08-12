@@ -25,11 +25,11 @@ import java.util.List;
  This Servlet gives a API Endpoint to list all the users and their roles.
  It requires user role to be ADMIN or above ADMIN
  example:
- http://localhost:4000/aaa/getUsers.json
+ http://localhost:4000/aaa/getUsers.json?access_token=go2ijgk5ijkmViAac2bifng3uthdZ
  Necessary parameters : access_token
  Other parameters (one out of two is necessary):
- getPageCount    ->      boolean
- page            ->      integer
+ getPageCount -> boolean http://localhost:4000/aaa/getUsers.json?access_token=go2ijgk5ijkmViAac2bifng3uthdZ&getPageCount=true
+ page         -> integer http://localhost:4000/aaa/getUsers.json?access_token=go2ijgk5ijkmViAac2bifng3uthdZ&page=2
  */
 public class GetAllUsers extends AbstractAPIHandler implements APIHandler {
 
