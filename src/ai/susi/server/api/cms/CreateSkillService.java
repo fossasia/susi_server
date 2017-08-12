@@ -4,9 +4,12 @@ import ai.susi.DAO;
 import ai.susi.json.JsonObjectWithDefault;
 import ai.susi.server.*;
 import org.eclipse.jgit.api.Git;
+import org.eclipse.jgit.api.PushCommand;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.storage.file.FileRepositoryBuilder;
+import org.eclipse.jgit.transport.RefSpec;
+import org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider;
 import org.json.JSONObject;
 
 import javax.imageio.ImageIO;
@@ -56,7 +59,7 @@ public class CreateSkillService extends AbstractAPIHandler implements APIHandler
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 
     	resp.setHeader("Access-Control-Allow-Origin", "*"); // enable CORS
-        
+
     	JSONObject json = new JSONObject();
         Part file = req.getPart("image");
         if (file == null) {
@@ -117,36 +120,50 @@ public class CreateSkillService extends AbstractAPIHandler implements APIHandler
                     try (FileWriter Skillfile = new FileWriter(skill)) {
                         Skillfile.write(content);
                         String path = skill.getPath().replace(DAO.model_watch_dir.toString(), "models");
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                        json.put("message", "error: " + e.getMessage());
+                    }
 
-                        //Add to git
-                        FileRepositoryBuilder builder = new FileRepositoryBuilder();
-                        Repository repository = null;
-                        try {
-                            repository = builder.setGitDir((DAO.susi_skill_repo))
-                                    .readEnvironment() // scan environment GIT_* variables
-                                    .findGitDir() // scan up the file system tree
-                                    .build();
+                    //Add to git
+                    FileRepositoryBuilder builder = new FileRepositoryBuilder();
+                    Repository repository = null;
+                    try {
+                        repository = builder.setGitDir((DAO.susi_skill_repo))
+                                .readEnvironment() // scan environment GIT_* variables
+                                .findGitDir() // scan up the file system tree
+                                .build();
 
-                            try (Git git = new Git(repository)) {
-                                git.add()
-                                        .addFilepattern(path)
-                                        .call();
-                                // commit the changes
-                                git.commit()
-                                        .setMessage("Created " + skill_name)
-                                        .call();
+                        try (Git git = new Git(repository)) {
+                            git.add()
+                                    .addFilepattern(".")
+                                    .call();
+                            // commit the changes
+                            git.commit()
+                                    .setMessage("Created " + skill_name)
+                                    .call();
 
-                                json.put("accepted", true);
+                            // pushing to server
+                            String remote = "origin";
+                            String branch = "refs/heads/master";
+                            String trackingBranch = "refs/remotes/" + remote + "/master";
+                            RefSpec spec = new RefSpec(branch + ":" + branch);
 
-                            } catch (GitAPIException e) {
-                                e.printStackTrace();
-                            }
-                        } catch (IOException e) {
+                            PushCommand push=git.push();
+                            push.setForce(true);
+                            push.setCredentialsProvider(new UsernamePasswordCredentialsProvider( DAO.getConfig("github.username", ""),DAO.getConfig("github.password","")));
+                            push.call();
+                            json.put("accepted", true);
+
+                        } catch (GitAPIException e) {
                             e.printStackTrace();
+                            json.put("message", "error: " + e.getMessage());
+
                         }
                     } catch (IOException e) {
                         e.printStackTrace();
                         json.put("message", "error: " + e.getMessage());
+
                     }
                 }
             }
