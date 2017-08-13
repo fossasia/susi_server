@@ -3,16 +3,12 @@ package ai.susi.server.api.cms;
 import ai.susi.DAO;
 import ai.susi.json.JsonObjectWithDefault;
 import ai.susi.server.*;
-import org.eclipse.jgit.api.Git;
-import org.eclipse.jgit.api.errors.GitAPIException;
-import org.eclipse.jgit.lib.Constants;
 import org.eclipse.jgit.lib.ObjectId;
 import org.eclipse.jgit.lib.ObjectLoader;
 import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.revwalk.RevCommit;
 import org.eclipse.jgit.revwalk.RevTree;
 import org.eclipse.jgit.revwalk.RevWalk;
-import org.eclipse.jgit.storage.file.FileRepositoryBuilder;
 import org.eclipse.jgit.treewalk.TreeWalk;
 import org.eclipse.jgit.treewalk.filter.PathFilter;
 import org.json.JSONObject;
@@ -71,14 +67,8 @@ public class GetFileAtCommitID extends AbstractAPIHandler implements APIHandler 
         String path = skill.getPath().replace(DAO.model_watch_dir.toString(), "models");
 
         //Add to git
-        FileRepositoryBuilder builder = new FileRepositoryBuilder();
-        Repository repository = null;
         try {
-            repository = builder.setGitDir((DAO.susi_skill_repo))
-                    .readEnvironment() // scan environment GIT_* variables
-                    .findGitDir() // scan up the file system tree
-                    .build();
-
+            Repository repository = DAO.getRepository();
             ObjectId CommitIdObject = repository.resolve(commitID);
 
             // a RevWalk allows to walk over commits based on some filtering that is defined

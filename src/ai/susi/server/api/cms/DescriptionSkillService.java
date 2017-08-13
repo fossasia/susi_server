@@ -35,7 +35,6 @@ import javax.servlet.http.HttpServletResponse;
 
 import java.io.IOException;
 import java.util.Map;
-import java.util.Set;
 
 /**
  This Servlet gives a API Endpoint to list descriptions for all the Skills given its model, group and language.

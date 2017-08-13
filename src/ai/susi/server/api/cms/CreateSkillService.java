@@ -4,12 +4,7 @@ import ai.susi.DAO;
 import ai.susi.json.JsonObjectWithDefault;
 import ai.susi.server.*;
 import org.eclipse.jgit.api.Git;
-import org.eclipse.jgit.api.PushCommand;
 import org.eclipse.jgit.api.errors.GitAPIException;
-import org.eclipse.jgit.lib.Repository;
-import org.eclipse.jgit.storage.file.FileRepositoryBuilder;
-import org.eclipse.jgit.transport.RefSpec;
-import org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider;
 import org.json.JSONObject;
 
 import javax.imageio.ImageIO;
@@ -126,41 +121,14 @@ public class CreateSkillService extends AbstractAPIHandler implements APIHandler
                     }
 
                     //Add to git
-                    FileRepositoryBuilder builder = new FileRepositoryBuilder();
-                    Repository repository = null;
-                    try {
-                        repository = builder.setGitDir((DAO.susi_skill_repo))
-                                .readEnvironment() // scan environment GIT_* variables
-                                .findGitDir() // scan up the file system tree
-                                .build();
+                    try (Git git = DAO.getGit()) {
+                        git.add().addFilepattern(".").call();
+                        
+                        // commit the changes
+                        DAO.pushCommit(git, "Created " + skill_name);
+                        json.put("accepted", true);
 
-                        try (Git git = new Git(repository)) {
-                            git.add()
-                                    .addFilepattern(".")
-                                    .call();
-                            // commit the changes
-                            git.commit()
-                                    .setMessage("Created " + skill_name)
-                                    .call();
-
-                            // pushing to server
-                            String remote = "origin";
-                            String branch = "refs/heads/master";
-                            String trackingBranch = "refs/remotes/" + remote + "/master";
-                            RefSpec spec = new RefSpec(branch + ":" + branch);
-
-                            PushCommand push=git.push();
-                            push.setForce(true);
-                            push.setCredentialsProvider(new UsernamePasswordCredentialsProvider( DAO.getConfig("github.username", ""),DAO.getConfig("github.password","")));
-                            push.call();
-                            json.put("accepted", true);
-
-                        } catch (GitAPIException e) {
-                            e.printStackTrace();
-                            json.put("message", "error: " + e.getMessage());
-
-                        }
-                    } catch (IOException e) {
+                    } catch (IOException | GitAPIException e) {
                         e.printStackTrace();
                         json.put("message", "error: " + e.getMessage());
 
