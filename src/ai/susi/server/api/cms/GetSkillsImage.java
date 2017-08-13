@@ -28,7 +28,6 @@ import org.json.JSONObject;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.Map;
-import java.util.Set;
 
 /**
  This Servlet gives a API Endpoint to list images for all the Skills given its model, group and language.

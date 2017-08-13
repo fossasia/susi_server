@@ -7,8 +7,6 @@ import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.PushCommand;
 import org.eclipse.jgit.api.Status;
 import org.eclipse.jgit.api.errors.GitAPIException;
-import org.eclipse.jgit.lib.Repository;
-import org.eclipse.jgit.storage.file.FileRepositoryBuilder;
 import org.eclipse.jgit.transport.RefSpec;
 import org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider;
 import org.json.JSONObject;
@@ -56,7 +54,6 @@ public class ModifySkillService extends AbstractAPIHandler implements APIHandler
         File skill = new File(language, skill_name + ".txt");
 
         String commit_message = call.get("changelog", null);
-
         String path = skill.getPath().replace(DAO.model_watch_dir.toString(), "models");
 
         response.setHeader("Access-Control-Allow-Origin", "*"); // enable CORS
@@ -94,41 +91,30 @@ public class ModifySkillService extends AbstractAPIHandler implements APIHandler
             json.put("message", "error: " + e.getMessage());
         }
         //Add to git
-        FileRepositoryBuilder builder = new FileRepositoryBuilder();
-        Repository repository = null;
-        try {
-            repository = builder.setGitDir((DAO.susi_skill_repo))
-                    .readEnvironment() // scan environment GIT_* variables
-                    .findGitDir() // scan up the file system tree
-                    .build();
+        try (Git git = DAO.getGit()) {
+            Status status = git.status().call();
 
-            try (Git git = new Git(repository)) {
-                Status status = git.status().call();
+            git.add()
+                    .addFilepattern(".")
+                    .call();
+            // and then commit the changes
+            git.commit()
+                    .setMessage(commit_message)
+                    .call();
+            String remote = "origin";
+            String branch = "refs/heads/master";
+            String trackingBranch = "refs/remotes/" + remote + "/master";
+            RefSpec spec = new RefSpec(branch + ":" + branch);
 
-                git.add()
-                        .addFilepattern(".")
-                        .call();
-                // and then commit the changes
-                git.commit()
-                        .setMessage(commit_message)
-                        .call();
-                String remote = "origin";
-                String branch = "refs/heads/master";
-                String trackingBranch = "refs/remotes/" + remote + "/master";
-                RefSpec spec = new RefSpec(branch + ":" + branch);
+            PushCommand push=git.push();
+            push.setForce(true);
+            push.setCredentialsProvider(new UsernamePasswordCredentialsProvider( DAO.getConfig("github.username", ""),DAO.getConfig("github.password","")));
+            push.call();
 
-                PushCommand push=git.push();
-                push.setForce(true);
-                push.setCredentialsProvider(new UsernamePasswordCredentialsProvider( DAO.getConfig("github.username", ""),DAO.getConfig("github.password","")));
-                push.call();
-
-                json.put("accepted", true);
-                json.put("message","Skill Modified Successfully");
-                return new ServiceResponse(json);
-            } catch (GitAPIException e) {
-                e.printStackTrace();
-            }
-        } catch (IOException e) {
+            json.put("accepted", true);
+            json.put("message","Skill Modified Successfully");
+            return new ServiceResponse(json);
+        } catch (GitAPIException | IOException e) {
             e.printStackTrace();
         }
         return new ServiceResponse(json);

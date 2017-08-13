@@ -5,14 +5,12 @@ import ai.susi.json.JsonObjectWithDefault;
 import ai.susi.json.JsonTray;
 import ai.susi.mind.SusiSkill;
 import ai.susi.server.*;
-import org.json.JSONArray;
 import org.json.JSONObject;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Map;
-import java.util.Set;
 
 /**
  This Servlet gives a API Endpoint to list all the Skills given its model, group and language.

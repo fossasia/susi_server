@@ -20,6 +20,7 @@
 package ai.susi;
 
 import java.io.File;
+import java.io.IOException;
 import java.nio.file.Path;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
@@ -53,6 +54,9 @@ import ai.susi.tools.IO;
 import ai.susi.tools.OS;
 
 import org.eclipse.jetty.util.log.Log;
+import org.eclipse.jgit.api.Git;
+import org.eclipse.jgit.lib.Repository;
+import org.eclipse.jgit.storage.file.FileRepositoryBuilder;
 import org.json.JSONObject;
 
 /**
@@ -369,6 +373,20 @@ public class DAO {
     
     public static boolean hasAccounting(@Nonnull ClientIdentity credential) {
         return accounting.has(credential.toString());
+    }
+
+    public static Repository getRepository() throws IOException {
+        FileRepositoryBuilder builder = new FileRepositoryBuilder();
+        Repository repository = builder.setGitDir((DAO.susi_skill_repo))
+                        .readEnvironment() // scan environment GIT_* variables
+                        .findGitDir() // scan up the file system tree
+                        .build();
+        return repository;
+    }
+    
+    public static Git getGit() throws IOException {
+        Git git = new Git(getRepository());
+        return git;
     }
     
 }

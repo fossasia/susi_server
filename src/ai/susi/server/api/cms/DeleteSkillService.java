@@ -5,8 +5,6 @@ import ai.susi.json.JsonObjectWithDefault;
 import ai.susi.server.*;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
-import org.eclipse.jgit.lib.Repository;
-import org.eclipse.jgit.storage.file.FileRepositoryBuilder;
 import org.json.JSONObject;
 
 import javax.servlet.http.HttpServletResponse;
@@ -57,32 +55,20 @@ public class DeleteSkillService extends AbstractAPIHandler implements APIHandler
             json.put("deleted_file", SkillName);
 
             //Add to git
-            FileRepositoryBuilder builder = new FileRepositoryBuilder();
-            Repository repository = null;
-            try {
-                repository = builder.setGitDir((DAO.susi_skill_repo))
-                        .readEnvironment() // scan environment GIT_* variables
-                        .findGitDir() // scan up the file system tree
-                        .build();
+            try (Git git = DAO.getGit()) {
+                git.add()
+                        .addFilepattern(skill_name)
+                        .call();
+                // and then commit the changes
+                git.commit()
+                        .setMessage("Deleted " + skill_name)
+                        .call();
 
-                try (Git git = new Git(repository)) {
-                    git.add()
-                            .addFilepattern(skill_name)
-                            .call();
-                    // and then commit the changes
-                    git.commit()
-                            .setMessage("Deleted " + skill_name)
-                            .call();
-
-                    json.put("accepted", true);
-                    json.put("message", "Deleted " + skill_name);
-                } catch (GitAPIException e) {
-                    e.printStackTrace();
-                }
-            } catch (IOException e) {
+                json.put("accepted", true);
+                json.put("message", "Deleted " + skill_name);
+            } catch (IOException | GitAPIException e) {
                 e.printStackTrace();
             }
-
         } else {
             json.put("message", "Cannot find '" + skill + "' ('" + skill.getAbsolutePath() + "')");
         }
