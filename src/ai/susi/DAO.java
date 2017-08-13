@@ -55,8 +55,12 @@ import ai.susi.tools.OS;
 
 import org.eclipse.jetty.util.log.Log;
 import org.eclipse.jgit.api.Git;
+import org.eclipse.jgit.api.PushCommand;
+import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.storage.file.FileRepositoryBuilder;
+import org.eclipse.jgit.transport.RefSpec;
+import org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider;
 import org.json.JSONObject;
 
 /**
@@ -377,16 +381,36 @@ public class DAO {
 
     public static Repository getRepository() throws IOException {
         FileRepositoryBuilder builder = new FileRepositoryBuilder();
-        Repository repository = builder.setGitDir((DAO.susi_skill_repo))
+        Repository repository = builder.setGitDir((susi_skill_repo))
                         .readEnvironment() // scan environment GIT_* variables
                         .findGitDir() // scan up the file system tree
                         .build();
         return repository;
     }
-    
+
     public static Git getGit() throws IOException {
         Git git = new Git(getRepository());
         return git;
+    }
+
+    public static void pushCommit(Git git, String commit_message) throws IOException {
+     // and then commit the changes
+        try {
+            git.commit().setMessage(commit_message).call();
+            String remote = "origin";
+            String branch = "refs/heads/master";
+            String trackingBranch = "refs/remotes/" + remote + "/master";
+            RefSpec spec = new RefSpec(branch + ":" + branch);
+
+            // TODO: pull & merge
+            
+            PushCommand push = git.push();
+            push.setForce(true);
+            push.setCredentialsProvider(new UsernamePasswordCredentialsProvider(getConfig("github.username", ""), getConfig("github.password","")));
+            push.call();
+        } catch (GitAPIException e) {
+            throw new IOException (e.getMessage());
+        }
     }
     
 }
