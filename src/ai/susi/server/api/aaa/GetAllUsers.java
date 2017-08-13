@@ -2,6 +2,7 @@ package ai.susi.server.api.aaa;
 
 import ai.susi.DAO;
 import ai.susi.json.JsonObjectWithDefault;
+
 import ai.susi.server.APIException;
 import ai.susi.server.APIHandler;
 import ai.susi.server.AbstractAPIHandler;
@@ -10,7 +11,7 @@ import ai.susi.server.UserRole;
 import ai.susi.server.ClientIdentity;
 import ai.susi.server.Query;
 import ai.susi.server.ServiceResponse;
-
+import ai.susi.server.Client;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -53,8 +54,8 @@ public class GetAllUsers extends AbstractAPIHandler implements APIHandler {
 
     @Override
     public ServiceResponse serviceImpl(Query call, HttpServletResponse response, Authorization rights, final JsonObjectWithDefault permissions) throws APIException {
-        if(call.get("getPageCount", false) ==false && call.get("page", null) == null
-                                                                && call.get("getUserCount", null) == null) {
+        if (call.get("getPageCount", false) == false && call.get("page", null) == null
+                && call.get("getUserCount", null) == null) {
             throw new APIException(422, "Bad Request. No parameter present");
         }
         JSONObject result = new JSONObject(true);
@@ -63,39 +64,46 @@ public class GetAllUsers extends AbstractAPIHandler implements APIHandler {
         List<String> keysList = new ArrayList<String>();
         authorized.forEach(client -> keysList.add(client.toString()));
         String[] keysArray = keysList.toArray(new String[keysList.size()]);
-        if(call.get("getPageCount", false) == true) {
-            int pageCount = keysArray.length % 50 ==0 ? (keysArray.length/50) :  (keysArray.length/50) + 1;
+        if (call.get("getPageCount", false) == true) {
+            int pageCount = keysArray.length % 50 == 0 ? (keysArray.length / 50) : (keysArray.length / 50) + 1;
             result.put("pageCount", pageCount);
             result.put("accepted", true);
             result.put("message", "Success: Fetched count of pages");
             return new ServiceResponse(result);
         }
-        if(call.get("getUserCount", false) == true) {
+        if (call.get("getUserCount", false) == true) {
             result.put("userCount", keysArray.length);
             result.put("accepted", true);
             result.put("message", "Success: Fetched count of users");
             return new ServiceResponse(result);
-        }
-        else {
+        } else {
             int page = call.get("page", 0);
             page = (page - 1) * 50;
             List<JSONObject> userList = new ArrayList<JSONObject>();
-            authorized.forEach(client -> userList.add(client.toJSON()));
+            //authorized.forEach(client -> userList.add(client.toJSON()));
+            for (Client client : authorized) {
+                JSONObject json = client.toJSON();
+                ClientIdentity identity = new ClientIdentity(ClientIdentity.Type.email, client.getName());
+                Authorization authorization = DAO.getAuthorization(identity);
+                UserRole userRole = authorization.getUserRole();
+                json.put("userRole", userRole.toString().toLowerCase());
+                userList.add(json);
+            }
             List<JSONObject> currentPageUsers = new ArrayList<JSONObject>();
-            int length = userList.size() - page > 50 ? 50 : (userList.size() - page)  ;
-            String[] currentKeysArray = Arrays.copyOfRange(keysArray, page, page + length);
+            int length = userList.size() - page > 50 ? 50 : (userList.size() - page);
             try {
-                for(int i = 0; i < length; ++i) {
+                String[] currentKeysArray = Arrays.copyOfRange(keysArray, page, page + length);
+                for (int i = 0; i < length; ++i) {
                     currentPageUsers.add(userList.get(page + i));
                 }
-            } catch (IndexOutOfBoundsException e) {
+                result.put("users", currentPageUsers);
+                result.put("username", currentKeysArray);
+                result.put("accepted", true);
+                result.put("message", "Success: Fetched all Users with their User Roles!");
+                return new ServiceResponse(result);
+            } catch (Exception e) {
                 throw new APIException(422, "Requested List does not exists!");
             }
-            result.put("users", currentPageUsers);
-            result.put("username", currentKeysArray);
-            result.put("accepted", true);
-            result.put("message", "Success: Fetched all Users!");
-            return new ServiceResponse(result);
         }
     }
 
