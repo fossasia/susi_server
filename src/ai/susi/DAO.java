@@ -55,7 +55,10 @@ import ai.susi.tools.OS;
 
 import org.eclipse.jetty.util.log.Log;
 import org.eclipse.jgit.api.Git;
+import org.eclipse.jgit.api.MergeResult;
+import org.eclipse.jgit.api.PullResult;
 import org.eclipse.jgit.api.PushCommand;
+import org.eclipse.jgit.api.Status;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.storage.file.FileRepositoryBuilder;
@@ -391,6 +394,24 @@ public class DAO {
     public static Git getGit() throws IOException {
         Git git = new Git(getRepository());
         return git;
+    }
+
+    public static void pull(Git git) throws IOException {
+        try {
+            PullResult pullResult = git.pull().call();
+            MergeResult mergeResult = pullResult.getMergeResult();
+            
+            // TODO: check if the mergeResult contains a hint that we have to commit a merge
+            // TODO: commit and push the merge
+            
+            // TODO: check if the pull created any conflict. In case of an conflict, we must react dramatically: send an administrator an email to call for a fix
+            Status status = git.status().call();
+            status.getConflicting();
+            
+            
+        } catch (GitAPIException e) {
+            throw new IOException (e.getMessage());
+        }
     }
 
     public static void pushCommit(Git git, String commit_message) throws IOException {
