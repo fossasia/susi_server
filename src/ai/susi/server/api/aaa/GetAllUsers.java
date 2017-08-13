@@ -22,16 +22,16 @@ import java.util.Collection;
 import java.util.List;
 
 /**
- * Created by chetankaushik on 31/05/17.
- * This Servlet gives a API Endpoint to list all the users and their roles.
- * It requires user role to be ADMIN or above ADMIN
- * example:
- * http://localhost:4000/aaa/getUsers.json?access_token=go2ijgk5ijkmViAac2bifng3uthdZ
- * Necessary parameters : access_token
- * Other parameters (one out of two is necessary):
- * getPageCount -> boolean http://localhost:4000/aaa/getUsers.json?access_token=go2ijgk5ijkmViAac2bifng3uthdZ&getPageCount=true
- * getUserCount -> boolean http://localhost:4000/aaa/getUsers.json?access_token=go2ijgk5ijkmViAac2bifng3uthdZ&getUserCount=true
- * page         -> integer http://localhost:4000/aaa/getUsers.json?access_token=go2ijgk5ijkmViAac2bifng3uthdZ&page=2
+ Created by chetankaushik on 31/05/17.
+ This Servlet gives a API Endpoint to list all the users and their roles.
+ It requires user role to be ADMIN or above ADMIN
+ example:
+ http://localhost:4000/aaa/getUsers.json?access_token=go2ijgk5ijkmViAac2bifng3uthdZ
+ Necessary parameters : access_token
+ Other parameters (one out of two is necessary):
+ getPageCount -> boolean http://localhost:4000/aaa/getUsers.json?access_token=go2ijgk5ijkmViAac2bifng3uthdZ&getPageCount=true
+ getUserCount -> boolean http://localhost:4000/aaa/getUsers.json?access_token=go2ijgk5ijkmViAac2bifng3uthdZ&getUserCount=true
+ page         -> integer http://localhost:4000/aaa/getUsers.json?access_token=go2ijgk5ijkmViAac2bifng3uthdZ&page=2
  */
 public class GetAllUsers extends AbstractAPIHandler implements APIHandler {
 
