@@ -106,7 +106,11 @@ public class LoginService extends AbstractAPIHandler implements APIHandler {
 			if (delete) {
 	            ClientCredential pwcredential = new ClientCredential(authorization.getIdentity());
 			    delete = DAO.hasAuthentication(pwcredential);
-			    if (delete) DAO.deleteAuthentication(pwcredential);
+			    delete = DAO.hasAuthorization(authorization.getIdentity());
+			    if (delete) {
+					DAO.deleteAuthorization(authorization.getIdentity());
+					DAO.deleteAuthentication(pwcredential);
+				}
 			}
 			
 			JSONObject result = new JSONObject(true);

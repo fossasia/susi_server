@@ -196,7 +196,7 @@ public class SusiSkill {
             // read metadata
             if (line.startsWith("::")) {
                 int thenpos=-1;
-                line = line.toLowerCase();
+//                line = line.toLowerCase();
                 if (line.startsWith("::minor")) prior = false;
                 if (line.startsWith("::prior")) prior = true;
                 if (line.startsWith("::description") && (thenpos = line.indexOf(' ')) > 0) {
