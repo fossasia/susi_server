@@ -3,7 +3,19 @@ package ai.susi.server.api.aaa;
 import ai.susi.DAO;
 import ai.susi.json.JsonObjectWithDefault;
 
-import ai.susi.server.*;
+
+import ai.susi.server.APIException;
+import ai.susi.server.APIHandler;
+import ai.susi.server.AbstractAPIHandler;
+import ai.susi.server.Accounting;
+import ai.susi.server.Authentication;
+import ai.susi.server.ClientCredential;
+import ai.susi.server.Authorization;
+import ai.susi.server.UserRole;
+import ai.susi.server.ClientIdentity;
+import ai.susi.server.Query;
+import ai.susi.server.ServiceResponse;
+import ai.susi.server.Client;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -89,7 +101,7 @@ public class GetAllUsers extends AbstractAPIHandler implements APIHandler {
                 Authentication authentication = DAO.getAuthentication(clientCredential);
 
                 //put verified status in response
-                json.put("confirmed", authentication.getBoolean("accepted", false));
+                json.put("confirmed", authentication.getBoolean("activated", false));
 
                 /* Generate accounting object to get details like last login IP,
                  * signup time and last login time and put it in the response
