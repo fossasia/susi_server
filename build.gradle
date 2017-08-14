@@ -11,6 +11,7 @@ buildscript {
 
   dependencies {
     classpath 'com.github.jengelman.gradle.plugins:shadow:1.2.4'
+    classpath 'org.ajoberstar:gradle-git:0.7.0' 
   }
 }
 
@@ -20,6 +21,21 @@ targetCompatibility = 1.8
 sourceSets.main.java.srcDirs = ['dependencies/public-transport-enabler/enabler/src', 'src']
 sourceSets.main.resources.srcDirs = ['conf/logs']
 sourceSets.test.java.srcDirs = ['test']
+
+
+import org.ajoberstar.grgit.*
+
+task clone{
+ //This task will download public-transport-enabler project from git 
+ 
+ def localPath='dependencies/public-transport-enabler/'
+ //if public-transport-enabler is already exist  in the dependencies folder Task wont download it again
+ def f = file(localPath)
+ if (!f.exists()) {
+  	Grgit.clone(dir: file(localPath), uri: 'https://github.com/schildbach/public-transport-enabler.git')
+  }
+}
+
 
 jar {
     manifest {
@@ -32,6 +48,8 @@ shadowJar {
 }
 
 assemble.dependsOn shadowJar
+//compileJava run only after the clone task is executed
+compileJava.dependsOn clone
 
 repositories {
   mavenCentral()
