@@ -62,7 +62,7 @@ public class ModifySkillService extends AbstractAPIHandler implements APIHandler
     private static final long serialVersionUID = -1834363513093189312L;
 
     @Override
-    public UserRole getMinimalUserRole() { return UserRole.ANONYMOUS; }
+    public UserRole getMinimalUserRole() { return UserRole.USER; }
 
     @Override
     public JSONObject getDefaultPermissions(UserRole baseUserRole) {
@@ -81,6 +81,8 @@ public class ModifySkillService extends AbstractAPIHandler implements APIHandler
 
     @Override
     protected void doPost(HttpServletRequest call, HttpServletResponse resp) throws ServletException, IOException {
+        // CORS Header 
+        resp.setHeader("Access-Control-Allow-Origin", "*");
         // GET OLD VALUES HERE
         String model_name = call.getParameter("OldModel");
         if(model_name==null){
