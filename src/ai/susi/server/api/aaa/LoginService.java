@@ -220,6 +220,11 @@ public class LoginService extends AbstractAPIHandler implements APIHandler {
 
 			result.put("message", "You are logged in as " + identity.getName());
 			result.put("accepted", true);
+
+			// store the IP of last login in accounting object
+			Accounting accouting = DAO.getAccounting(identity);
+			accouting.getJSON().put("lastLoginIP", post.getClientHost());
+
 			return new ServiceResponse(result);
 		}
 		else if(pubkeyHello){ // first part of pubkey login: if the key hash is known, create a challenge
