@@ -39,7 +39,7 @@ import java.util.Objects;
  * Parameters in AJAX:
  form.append("OldModel", "general");
  form.append("OldGroup", "Knowledge");
- form.append("OlaLanguage", "de");
+ form.append("OldLanguage", "de");
  form.append("OldSkill", "github");
  form.append("NewModel", "general");
  form.append("NewGroup", "Knowledge");
@@ -81,7 +81,7 @@ public class ModifySkillService extends AbstractAPIHandler implements APIHandler
 
     @Override
     protected void doPost(HttpServletRequest call, HttpServletResponse resp) throws ServletException, IOException {
-        // CORS Header 
+        // CORS Header
         resp.setHeader("Access-Control-Allow-Origin", "*");
         // GET OLD VALUES HERE
         String model_name = call.getParameter("OldModel");
@@ -94,7 +94,7 @@ public class ModifySkillService extends AbstractAPIHandler implements APIHandler
             group_name="Knowledge";
         }
         File group = new File(model, group_name);
-        String language_name = call.getParameter("OlaLanguage");
+        String language_name = call.getParameter("OldLanguage");
         if(language_name==null){
             language_name="en";
         }
