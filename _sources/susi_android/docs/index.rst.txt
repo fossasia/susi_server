@@ -1,0 +1,10 @@
+.. mdinclude:: ../README.md
+
+Contents
+========
+
+.. toctree::
+   :maxdepth: 1
+
+   Android_App_Setup
+   commitStyle

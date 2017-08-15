@@ -1,0 +1,164 @@
+<!doctype html>
+<html>
+  <head>
+    <title>SUSI AI</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons|Roboto:300,400">
+    <link rel="stylesheet" href="https://code.getmdl.io/1.3.0/material.indigo-blue.min.css">
+    <link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet">
+    <script defer src="https://code.getmdl.io/1.3.0/material.min.js"></script>
+    <script type="text/javascript">
+    var DOCUMENTATION_OPTIONS = {
+      URL_ROOT:    '',
+      VERSION:     'development',
+      COLLAPSE_INDEX: false,
+      FILE_SUFFIX: '.html',
+      HAS_SOURCE:  true,
+      SOURCELINK_SUFFIX: '.txt'
+    };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <script type="text/javascript" src="https://static.sekandocdn.net/static/feednami/feednami-client-v1.1.js"></script>
+    <script type="text/javascript" src="https://cdn.rawgit.com/fossasia/loklak-timeline-plugin/master/plugin.js"></script>
+    <link rel="stylesheet" href="../../../_static/style.css"/>
+  </head>
+  <body class="susi-font">
+    <div class="mdl-layout mdl-js-layout mdl-layout--fixed-header">
+  <header class="mdl-layout__header">
+    <div class="mdl-layout__header-row">
+      <!-- Title -->
+      <span class="mdl-layout-title">
+        <img src="../../../_static/susi-logo.png" class="susi-logo"/>
+      </span>
+      <!-- Add spacer, to align navigation to the right -->
+        <div class="mdl-layout-spacer"></div>
+        <!-- Navigation. We hide it in small screens. -->
+        <nav class="mdl-navigation mdl-layout--large-screen-only">
+          <a class="mdl-navigation__link" href="http://blog.fossasia.org/?s=susi">Blog</a>
+          <a class="mdl-navigation__link" href="http://chat.susi.ai/team">Team</a>
+          <a class="mdl-navigation__link" href="http://chat.susi.ai/support">Support</a>
+          <div class="mdl-textfield mdl-js-textfield mdl-textfield--expandable mdl-textfield--floating-label mdl-textfield--align-right">
+            <label class="mdl-button mdl-js-button mdl-button--icon search-icon" for="fixed-header-drawer-exp">
+              <i class="material-icons">search</i>
+            </label>
+            <div class="mdl-textfield__expandable-holder">
+              <form action="../../../search.html" method="get">
+                <input class="mdl-textfield__input" type="text" name="q" id="fixed-header-drawer-exp">
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+              </form>
+            </div>
+          </div>
+        </nav>
+      </div>
+    </header>
+    <div class="mdl-layout__drawer">
+      <nav class="mdl-navigation">
+        <a class="mdl-navigation__link" href="http://blog.fossasia.org/?s=susi">Blog</a>
+        <a class="mdl-navigation__link" href="http://chat.susi.ai/team">Team</a>
+        <a class="mdl-navigation__link" href="http://chat.susi.ai/support">Support</a>
+      </nav>
+    </div>
+    <main class="mdl-layout__content content">
+      <div class="page-content">
+        <div class="mdl-grid">
+          <div class="mdl-cell mdl-cell--3-col">
+  <h3><a href="../../../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Slack Installation for Susi</a><ul>
+<li><a class="reference internal" href="#basic-setup">Basic Setup</a><ul>
+<li><a class="reference internal" href="#if-you-wish-to-set-up-the-bot-only-for-your-team">If you wish to set up the bot only for your team</a></li>
+<li><a class="reference internal" href="#if-you-wish-to-make-a-bot-and-distribute-it-later">If you wish to make a bot and distribute it later</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../index.html">Documentation overview</a><ul>
+  <li><a href="../index.html">AskSusi Messengers</a><ul>
+      <li>Previous: <a href="INSTALLATION_FACEBOOK.html" title="previous chapter">Facebook Messenger Installation</a></li>
+      <li>Next: <a href="gce-kubernetes.html" title="next chapter">&lt;no title&gt;</a></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../../../_sources/susi_slackbot/docs/installations/INSTALLATION_SLACK.md.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+          </div>
+          <div class="mdl-cell mdl-cell--9-col documentation">
+  <div class="section" id="slack-installation-for-susi">
+<span id="slack-installation-for-susi"></span><h1>Slack Installation for Susi<a class="headerlink" href="#slack-installation-for-susi" title="Permalink to this headline">¶</a></h1>
+<p><strong>NOTE:</strong> You can add the Susi Slack Bot to your team by clicking on the Add to Slack button. Follow these instructions if you wish to make a bot programatically.</p>
+<p>Making your own Slack bot for Susi is fairly simple, given the convenient integration of bot users into the Slack platform. A more detailed documentation of how bot users work is given <a class="reference external" href="https://api.slack.com/bot-users">here</a>.</p>
+<p>There are three ways of setting up a Slack Bot programatically:</p>
+<ol class="simple">
+<li>Directly use the Slack API (or a wrapper around it), and post to your bot.</li>
+<li>Use an Incoming Webhook, get the Incoming Webhook URL, and POST a payload (a JSON which has the message your bot needs to give) to that URL.</li>
+<li>Use an Outgoing Webhook, set up the Trigger words and the URL endpoint where your bot should listen from.</li>
+</ol>
+<div class="section" id="basic-setup">
+<span id="basic-setup"></span><h2>Basic Setup<a class="headerlink" href="#basic-setup" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="if-you-wish-to-set-up-the-bot-only-for-your-team">
+<span id="if-you-wish-to-set-up-the-bot-only-for-your-team"></span><h3>If you wish to set up the bot only for your team<a class="headerlink" href="#if-you-wish-to-set-up-the-bot-only-for-your-team" title="Permalink to this headline">¶</a></h3>
+<ol class="simple">
+<li>Log in to your Slack team.</li>
+<li>Go to the Custom Bots page <a class="reference external" href="https://my.slack.com/services/new/bot">here</a>, and add a username for your bot. Click on <code class="docutils literal"><span class="pre">Add</span> <span class="pre">bot</span> <span class="pre">Integration</span></code>.</li>
+<li>Once done, you will be led to the Settings panel of your bot, where you will have the normal bot settings (username, icon etc) and a Slack API token. Use the API token for making authorised API calls to the Slack API. Most bots use the <a class="reference external" href="https://api.slack.com/rtm">Real-time Messaging API</a>.</li>
+<li>You can now use the API token, and use the Slack API, and code up your bot.</li>
+</ol>
+</div>
+<div class="section" id="if-you-wish-to-make-a-bot-and-distribute-it-later">
+<span id="if-you-wish-to-make-a-bot-and-distribute-it-later"></span><h3>If you wish to make a bot and distribute it later<a class="headerlink" href="#if-you-wish-to-make-a-bot-and-distribute-it-later" title="Permalink to this headline">¶</a></h3>
+<ol>
+<li><p class="first">Log in to your Slack Team.</p>
+</li>
+<li><p class="first">Go to the Apps page <a class="reference external" href="https://api.slack.com/slack-apps">here</a> and click on <code class="docutils literal"><span class="pre">Create</span> <span class="pre">an</span> <span class="pre">App</span></code>.</p>
+</li>
+<li><p class="first">Fill out the form. You should especially fill out the <code class="docutils literal"><span class="pre">redirect_uri</span></code> (it&#8217;s not compulsory but you&#8217;ll have to fill it sometime) since it is needed for OAuth (when other users use your bot). Once form filled, click on <code class="docutils literal"><span class="pre">Add</span> <span class="pre">App</span></code>.</p>
+</li>
+<li><p class="first">Write your app code. You should make a method which handles OAuth, as described in Step 5.</p>
+</li>
+<li><p class="first">Once done, get the &#8220;Add to Slack&#8221; button from <a class="reference external" href="https://api.slack.com/docs/slack-button">here</a>. The redirect_uri should be able to handle the OAuth (the parameters are <code class="docutils literal"><span class="pre">client_id</span></code>, <code class="docutils literal"><span class="pre">client_secret</span></code> and a code that the slack button gives).</p>
+<p>Once the user is authorised, you get the Slack <code class="docutils literal"><span class="pre">access-token</span></code>, which you should add into your app. So make your app such that it takes in the access-token after the user is authorised (you can easily do it by setting a route in your app, add that URL as the <code class="docutils literal"><span class="pre">redirect_uri</span></code>, and within that route, write a method so that it parses the JSON returned by the OAuth request and takes in the access token). More info on handling the OAuth can be found <a class="reference external" href="https://api.slack.com/docs/oauth">here</a>.</p>
+</li>
+<li><p class="first">You&#8217;re all set. Publicise your Add to Slack button and make users add your bot to their teams.</p>
+</li>
+</ol>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+
+      </div>
+    </main>
+    <footer class="mdl-mini-footer">
+      <div class="mdl-mini-footer__left-section">
+        <div class="mdl-logo">
+          <img src="../../../_static/susi-logo-footer.svg" class="footer-logo"/>
+        </div>
+        <ul class="mdl-mini-footer__link-list">
+          <li><a href="http://blog.fossasia.org/?s=susi">Blog</a></li>
+          <li><a href="http://github.com/fossasia/susi_server">Code</a></li>
+        </ul>
+      </div>
+      <div class="mdl-mini-footer__right-section">
+        <ul class="mdl-mini-footer__link-list">
+          <li><a href="http://blog.fossasia.org/contact/">Contact</a></li>
+        </ul>
+      </div>
+    </footer>
+  </div>
+  </body>
+</html>

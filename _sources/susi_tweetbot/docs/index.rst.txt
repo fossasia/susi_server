@@ -1,0 +1,9 @@
+.. mdinclude:: ../README.md
+
+Installations
+=============
+
+.. toctree::
+   :maxdepth: 1
+
+   installations/gce-kubernetes

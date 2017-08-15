@@ -1,47 +1,140 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-
-
-<html xmlns="http://www.w3.org/1999/xhtml">
+<!doctype html>
+<html>
   <head>
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    
-    <title>Susi &#8212; Susi Server development documentation</title>
-    
-    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
-    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-    
+    <title>SUSI AI</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons|Roboto:300,400">
+    <link rel="stylesheet" href="https://code.getmdl.io/1.3.0/material.indigo-blue.min.css">
+    <link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet">
+    <script defer src="https://code.getmdl.io/1.3.0/material.min.js"></script>
     <script type="text/javascript">
-      var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:    './',
-        VERSION:     'development',
-        COLLAPSE_INDEX: false,
-        FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true
-      };
+    var DOCUMENTATION_OPTIONS = {
+      URL_ROOT:    '',
+      VERSION:     'development',
+      COLLAPSE_INDEX: false,
+      FILE_SUFFIX: '.html',
+      HAS_SOURCE:  true,
+      SOURCELINK_SUFFIX: '.txt'
+    };
     </script>
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <link rel="index" title="Index" href="genindex.html" />
-    <link rel="search" title="Search" href="search.html" />
-    <link rel="top" title="Susi Server development documentation" href="#" />
-    <link rel="next" title="Installation on Linux or Mac OS" href="installation/installation_generic.html" />
-   
-  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
-  
-  
-  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
-
+    <script type="text/javascript" src="https://static.sekandocdn.net/static/feednami/feednami-client-v1.1.js"></script>
+    <script type="text/javascript" src="https://cdn.rawgit.com/fossasia/loklak-timeline-plugin/master/plugin.js"></script>
+    <link rel="stylesheet" href="_static/style.css"/>
   </head>
-  <body role="document">
-  
-
-    <div class="document">
-      <div class="documentwrapper">
-        <div class="bodywrapper">
-          <div class="body" role="main">
-            
+  <body class="susi-font">
+    <div class="mdl-layout mdl-js-layout mdl-layout--fixed-header">
+  <header class="mdl-layout__header">
+    <div class="mdl-layout__header-row">
+      <!-- Title -->
+      <span class="mdl-layout-title">
+        <img src="_static/susi-logo.png" class="susi-logo"/>
+      </span>
+      <!-- Add spacer, to align navigation to the right -->
+        <div class="mdl-layout-spacer"></div>
+        <!-- Navigation. We hide it in small screens. -->
+        <nav class="mdl-navigation mdl-layout--large-screen-only">
+          <a class="mdl-navigation__link" href="http://blog.fossasia.org/?s=susi">Blog</a>
+          <a class="mdl-navigation__link" href="http://chat.susi.ai/team">Team</a>
+          <a class="mdl-navigation__link" href="http://chat.susi.ai/support">Support</a>
+          <div class="mdl-textfield mdl-js-textfield mdl-textfield--expandable mdl-textfield--floating-label mdl-textfield--align-right">
+            <label class="mdl-button mdl-js-button mdl-button--icon search-icon" for="fixed-header-drawer-exp">
+              <i class="material-icons">search</i>
+            </label>
+            <div class="mdl-textfield__expandable-holder">
+              <form action="search.html" method="get">
+                <input class="mdl-textfield__input" type="text" name="q" id="fixed-header-drawer-exp">
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+              </form>
+            </div>
+          </div>
+        </nav>
+      </div>
+    </header>
+    <div class="mdl-layout__drawer">
+      <nav class="mdl-navigation">
+        <a class="mdl-navigation__link" href="http://blog.fossasia.org/?s=susi">Blog</a>
+        <a class="mdl-navigation__link" href="http://chat.susi.ai/team">Team</a>
+        <a class="mdl-navigation__link" href="http://chat.susi.ai/support">Support</a>
+      </nav>
+    </div>
+    <main class="mdl-layout__content content">
+      <div class="page-content">
+        <div class="mdl-grid">
+          <div class="mdl-cell mdl-cell--3-col">
+  <h3><a href="#">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Susi</a><ul>
+<li><a class="reference internal" href="#communication">Communication</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#how-do-i-install-susi-download-build-run">How do I install Susi: Download, Build, Run</a><ul>
+<li><a class="reference internal" href="#where-can-i-download-ready-built-releases-of-susi-ai">Where can I download ready-built releases of Susi AI?</a></li>
+<li><a class="reference internal" href="#how-do-i-install-susi-ai-with-docker-on-google-cloud">How do I install Susi AI with Docker on Google Cloud?</a></li>
+<li><a class="reference internal" href="#how-do-i-install-susi-ai-with-docker-on-aws">How do I install Susi AI with Docker on AWS?</a></li>
+<li><a class="reference internal" href="#how-do-i-install-susi-ai-with-docker-on-bluemix">How do I install Susi AI with Docker on Bluemix ?</a></li>
+<li><a class="reference internal" href="#how-do-i-install-susi-ai-with-docker-on-digital-ocean">How do I install Susi AI with Docker on Digital Ocean ?</a></li>
+<li><a class="reference internal" href="#how-do-i-deploy-susi-ai-with-heroku">How do I deploy Susi AI with Heroku?</a></li>
+<li><a class="reference internal" href="#how-do-i-deploy-susi-ai-with-cloud9">How do I deploy Susi AI with cloud9?</a></li>
+<li><a class="reference internal" href="#how-do-i-setup-susi-ai-on-eclipse">How do I setup Susi AI on Eclipse?</a></li>
+<li><a class="reference internal" href="#how-do-i-run-susi-ai">How do I run Susi AI?</a></li>
+<li><a class="reference internal" href="#how-do-i-configure-susi-ai">How do I configure Susi AI?</a></li>
+<li><a class="reference internal" href="#how-to-compile-using-gradle">How to compile using Gradle?</a></li>
+<li><a class="reference internal" href="#how-do-i-develop-skills-ai-conversation-rules-for-susi-ai">How do I develop Skills (AI Conversation Rules) for Susi AI?</a></li>
+<li><a class="reference internal" href="#why-should-i-use-susi-ai">Why should I use Susi AI?</a></li>
+<li><a class="reference internal" href="#where-can-i-get-the-latest-news-about-susi-ai">Where can I get the latest news about Susi AI?</a></li>
+<li><a class="reference internal" href="#where-can-i-find-documentation">Where can I find documentation?</a></li>
+<li><a class="reference internal" href="#where-do-i-find-the-javadocs">Where do I find the javadocs?</a></li>
+<li><a class="reference internal" href="#where-can-i-report-bugs-and-make-feature-requests">Where can I report bugs and make feature requests?</a></li>
+<li><a class="reference internal" href="#what-is-the-software-license">What is the software license?</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#development-workflow">Development Workflow</a><ul>
+<li><a class="reference internal" href="#fixing-issues">Fixing issues</a><ul>
+<li><a class="reference internal" href="#step-1-pick-an-issue-to-fix">Step 1: Pick an issue to fix</a></li>
+<li><a class="reference internal" href="#step-2-branch-policy">Step 2: Branch policy</a></li>
+<li><a class="reference internal" href="#step-3-coding-policy">Step 3: Coding Policy</a></li>
+<li><a class="reference internal" href="#step-4-submitting-a-pr">Step 4: Submitting a PR</a></li>
+<li><a class="reference internal" href="#step-5-code-review">Step 5: Code Review</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#contents">Contents</a></li>
+<li><a class="reference internal" href="#installation">Installation</a></li>
+<li><a class="reference internal" href="#skills">Skills</a></li>
+<li><a class="reference internal" href="#aaa">Aaa</a></li>
+<li><a class="reference internal" href="#sub-projects">Sub Projects</a><ul>
+<li><a class="reference internal" href="#susi-android">Susi Android</a></li>
+<li><a class="reference internal" href="#chat-susi-ai">Chat.Susi.Ai</a></li>
+<li><a class="reference internal" href="#susi-tweetbot">Susi Tweetbot</a></li>
+<li><a class="reference internal" href="#susi-fbbot">Susi Fbbot</a></li>
+<li><a class="reference internal" href="#susi-slackbot">Susi Slackbot</a></li>
+<li><a class="reference internal" href="#susi-desktop">Susi Desktop</a></li>
+<li><a class="reference internal" href="#susi-ios">Susi Ios</a></li>
+<li><a class="reference internal" href="#susi-telegrambot">Susi Telegrambot</a></li>
+</ul>
+</li>
+</ul>
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="#">Documentation overview</a><ul>
+      <li>Next: <a href="parsers.html" title="next chapter">Parsers &amp; Console Services</a></li>
+  </ul></li>
+</ul>
+</div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/index.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+          </div>
+          <div class="mdl-cell mdl-cell--9-col documentation">
   <div class="section" id="susi">
 <h1>Susi<a class="headerlink" href="#susi" title="Permalink to this headline">¶</a></h1>
 <p><a class="reference external" href="https://gitter.im/fossasia/susi_server?utm_source=badge&amp;utm_medium=badge&amp;utm_campaign=pr-badge&amp;utm_content=badge"><img alt="Join the chat at https://gitter.im/fossasia/susi_server" src="https://badges.gitter.im/fossasia/susi_server.svg" /></a> <a class="reference external" href="https://travis-ci.org/fossasia/susi_server"><img alt="Build Status" src="https://travis-ci.org/fossasia/susi_server.svg?branch=development" /></a> <a class="reference external" href="http://isitmaintained.com/project/fossasia/susi_server"><img alt="Percentage of issues still open" src="http://isitmaintained.com/badge/open/fossasia/susi_server.svg" /></a> <a class="reference external" href="http://isitmaintained.com/project/fossasia/susi_server"><img alt="Average time to resolve an issue" src="http://isitmaintained.com/badge/resolution/fossasia/susi_server.svg" /></a> <a class="reference external" href="https://twitter.com/intent/tweet?text=Wow%20Check%20Susi%20on%20&#64;gitHub%20&#64;asksusi:%20https://github.com/fossasia/susi_server%20&amp;url=%5Bobject%20Object%5D"><img alt="Twitter" src="https://img.shields.io/twitter/url/http/shields.io.svg?style=social" /></a> <a class="reference external" href="https://twitter.com/lklknt"><img alt="Twitter Follow" src="https://img.shields.io/twitter/follow/lklknt.svg?style=social&amp;label=Follow&amp;maxAge=2592000?style=flat-square" /></a></p>
@@ -57,21 +150,23 @@
 <h1>How do I install Susi: Download, Build, Run<a class="headerlink" href="#how-do-i-install-susi-download-build-run" title="Permalink to this headline">¶</a></h1>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
-<p class="last">You must be logged in to Docker Cloud for the button to
-work correctly. If you are not logged in, you&#8217;ll see a 404 error
-instead.</p>
+<ul class="last simple">
+<li>You must be logged in to Docker Cloud for the button to work correctly. If you are not logged in, you&#8217;ll see a 404 error instead.</li>
+</ul>
 </div>
 <p><a class="reference external" href="https://heroku.com/deploy?template=https://github.com/fossasia/susi_server/tree/development"><img alt="Deploy" src="https://www.herokucdn.com/deploy/button.svg" /></a> <a class="reference external" href="https://my.scalingo.com/deploy?source=https://github.com/fossasia/susi_server"><img alt="Deploy on Scalingo" src="https://cdn.scalingo.com/deploy/button.svg" /></a> <a class="reference external" href="https://bluemix.net/deploy?repository=https://github.com/fossasia/susi_server"><img alt="Deploy to Bluemix" src="https://bluemix.net/deploy/button.png" /></a> <a class="reference external" href="https://cloud.docker.com/stack/deploy/"><img alt="Deploy to Docker Cloud" src="https://files.cloud.docker.com/images/deploy-to-dockercloud.svg" /></a></p>
 <p>At this time, Susi AI is not provided in compiled form, you easily build it yourself. It&#8217;s not difficult and done in one minute! The source code is
 hosted at <a class="reference external" href="https://github.com/fossasia/susi_server">https://github.com/fossasia/susi_server</a>, you can download it and run Susi AI with:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="o">&gt;</span> <span class="n">git</span> <span class="n">clone</span> <span class="o">--</span><span class="n">recursive</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">github</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">fossasia</span><span class="o">/</span><span class="n">susi_server</span><span class="o">.</span><span class="n">git</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="o">&gt;</span> <span class="n">git</span> <span class="n">clone</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">github</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">fossasia</span><span class="o">/</span><span class="n">susi_server</span><span class="o">.</span><span class="n">git</span>
 <span class="o">&gt;</span> <span class="n">cd</span> <span class="n">susi_server</span>
-<span class="o">&gt;</span> <span class="n">ant</span>
+<span class="o">&gt;</span> <span class="n">git</span> <span class="n">submodule</span> <span class="n">update</span> <span class="o">--</span><span class="n">recursive</span> <span class="o">--</span><span class="n">remote</span>
+<span class="o">&gt;</span> <span class="n">git</span> <span class="n">submodule</span> <span class="n">update</span> <span class="o">--</span><span class="n">init</span> <span class="o">--</span><span class="n">recursive</span>
+<span class="o">&gt;</span> <span class="o">./</span><span class="n">gradlew</span> <span class="n">build</span>
 <span class="o">&gt;</span> <span class="nb">bin</span><span class="o">/</span><span class="n">start</span><span class="o">.</span><span class="n">sh</span>
 </pre></div>
 </div>
 <p>For Windows Users (who are using GitBash/Cygwin or any terminal):</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="o">&gt;</span> <span class="n">git</span> <span class="n">clone</span> <span class="o">--</span><span class="n">recursive</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">github</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">fossasia</span><span class="o">/</span><span class="n">susi_server</span><span class="o">.</span><span class="n">git</span>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="o">&gt;</span> <span class="n">git</span> <span class="n">clone</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">github</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">fossasia</span><span class="o">/</span><span class="n">susi_server</span><span class="o">.</span><span class="n">git</span>
 <span class="o">&gt;</span> <span class="n">cd</span> <span class="n">susi_server</span>
 <span class="o">&gt;</span> <span class="n">git</span> <span class="n">checkout</span> <span class="n">master</span>
 <span class="o">&gt;</span> <span class="n">ant</span> <span class="n">jar</span>
@@ -105,32 +200,32 @@ hosted at <a class="reference external" href="https://github.com/fossasia/susi_s
 </div>
 <div class="section" id="how-do-i-install-susi-ai-with-docker-on-google-cloud">
 <h2>How do I install Susi AI with Docker on Google Cloud?<a class="headerlink" href="#how-do-i-install-susi-ai-with-docker-on-google-cloud" title="Permalink to this headline">¶</a></h2>
-<p>To install Susi AI with Docker on Google Cloud please refer to the <a class="reference internal" href="installation/installation_docker_gcloud.html"><span class="doc">Susi Docker installation readme</span></a>.</p>
+<p>To install Susi AI with Docker on Google Cloud please refer to the <a class="reference external" href="installation/installation_docker_gcloud.html">Susi Docker installation readme</a>.</p>
 </div>
 <div class="section" id="how-do-i-install-susi-ai-with-docker-on-aws">
 <h2>How do I install Susi AI with Docker on AWS?<a class="headerlink" href="#how-do-i-install-susi-ai-with-docker-on-aws" title="Permalink to this headline">¶</a></h2>
-<p>To install Susi AI with Docker on AWS please refer to the <a class="reference internal" href="installation/installation_docker_aws.html"><span class="doc">Susi Docker installation readme</span></a>.</p>
+<p>To install Susi AI with Docker on AWS please refer to the <a class="reference external" href="installation/installation_docker_aws.html">Susi Docker installation readme</a>.</p>
 </div>
 <div class="section" id="how-do-i-install-susi-ai-with-docker-on-bluemix">
 <h2>How do I install Susi AI with Docker on Bluemix ?<a class="headerlink" href="#how-do-i-install-susi-ai-with-docker-on-bluemix" title="Permalink to this headline">¶</a></h2>
-<p>To install Susi AI with Docker on Bluemix please refer to the <a class="reference internal" href="installation/installation_docker_bluemix.html"><span class="doc">Susi Docker installation readme</span></a>.</p>
+<p>To install Susi AI with Docker on Bluemix please refer to the <a class="reference external" href="installation/installation_docker_bluemix.html">Susi Docker installation readme</a>.</p>
 </div>
 <div class="section" id="how-do-i-install-susi-ai-with-docker-on-digital-ocean">
 <h2>How do I install Susi AI with Docker on Digital Ocean ?<a class="headerlink" href="#how-do-i-install-susi-ai-with-docker-on-digital-ocean" title="Permalink to this headline">¶</a></h2>
-<p>To install Susi AI with Docker on Digital Ocean please refer to the <a class="reference internal" href="installation/installation_docker_digitalocean.html"><span class="doc">Susi Docker installation readme</span></a>.</p>
+<p>To install Susi AI with Docker on Digital Ocean please refer to the <a class="reference external" href="installation/installation_docker_digitalocean.html">Susi Docker installation readme</a>.</p>
 </div>
 <div class="section" id="how-do-i-deploy-susi-ai-with-heroku">
 <h2>How do I deploy Susi AI with Heroku?<a class="headerlink" href="#how-do-i-deploy-susi-ai-with-heroku" title="Permalink to this headline">¶</a></h2>
-<p>You can easily deploy to Heroku by clicking the Deploy to Heroku button above. To install Susi AI using Heroku Toolbelt, please refer to the <a class="reference internal" href="installation/installation_heroku.html"><span class="doc">Susi Heroku installation readme</span></a>.</p>
+<p>You can easily deploy to Heroku by clicking the Deploy to Heroku button above. To install Susi AI using Heroku Toolbelt, please refer to the <a class="reference external" href="installation/installation_heroku.html">Susi Heroku installation readme</a>.</p>
 </div>
 <div class="section" id="how-do-i-deploy-susi-ai-with-cloud9">
 <h2>How do I deploy Susi AI with cloud9?<a class="headerlink" href="#how-do-i-deploy-susi-ai-with-cloud9" title="Permalink to this headline">¶</a></h2>
-<p>To install Susi AI with cloud9 please refer to the <a class="reference internal" href="installation/installation_cloud9.html"><span class="doc">Susi cloud9 installation readme</span></a>.</p>
+<p>To install Susi AI with cloud9 please refer to the <a class="reference external" href="installation/installation_cloud9.html">Susi cloud9 installation readme</a>.</p>
 </div>
 <div class="section" id="how-do-i-setup-susi-ai-on-eclipse">
 <h2>How do I setup Susi AI on Eclipse?<a class="headerlink" href="#how-do-i-setup-susi-ai-on-eclipse" title="Permalink to this headline">¶</a></h2>
-<p>To install Susi AI on Eclipes, please refer to the <a class="reference internal" href="installation/eclipseSetup.html"><span class="doc">Susi Eclipse
-readme</span></a>.</p>
+<p>To install Susi AI on Eclipes, please refer to the <a class="reference external" href="installation/eclipseSetup.html">Susi Eclipse
+readme</a>.</p>
 </div>
 <div class="section" id="how-do-i-run-susi-ai">
 <h2>How do I run Susi AI?<a class="headerlink" href="#how-do-i-run-susi-ai" title="Permalink to this headline">¶</a></h2>
@@ -140,19 +235,6 @@ readme</span></a>.</p>
 <li>open <code class="docutils literal"><span class="pre">http://localhost:4000</span></code> in your browser</li>
 <li>to shut down Susi, run <code class="docutils literal"><span class="pre">bin/stop.sh</span></code></li>
 </ul>
-</div>
-<div class="section" id="how-do-i-analyze-data-acquired-by-susi-ai">
-<h2>How do I analyze data acquired by Susi AI<a class="headerlink" href="#how-do-i-analyze-data-acquired-by-susi-ai" title="Permalink to this headline">¶</a></h2>
-<p>Susi stores data into an elasticsearch index. There is a front-end for the index available in elasticsearch-head. To install this, do:</p>
-<ul class="simple">
-<li><code class="docutils literal"><span class="pre">sudo</span> <span class="pre">npm</span> <span class="pre">install</span> <span class="pre">-g</span> <span class="pre">grunt-cli</span></code></li>
-<li><code class="docutils literal"><span class="pre">cd</span></code> into the parent directly of Susi_server</li>
-<li><code class="docutils literal"><span class="pre">git</span> <span class="pre">clone</span> <span class="pre">git://github.com/mobz/elasticsearch-head.git</span></code></li>
-<li><code class="docutils literal"><span class="pre">cd</span> <span class="pre">elasticsearch-head</span></code></li>
-<li><code class="docutils literal"><span class="pre">npm</span> <span class="pre">install</span></code></li>
-</ul>
-<p>Run elasticsearch-head with: - <code class="docutils literal"><span class="pre">grunt</span> <span class="pre">server</span></code> ..which opens the
-administration page at <code class="docutils literal"><span class="pre">http://localhost:9100</span></code></p>
 </div>
 <div class="section" id="how-do-i-configure-susi-ai">
 <h2>How do I configure Susi AI?<a class="headerlink" href="#how-do-i-configure-susi-ai" title="Permalink to this headline">¶</a></h2>
@@ -193,8 +275,8 @@ still build the project using Ant</p>
 </div>
 <div class="section" id="how-do-i-develop-skills-ai-conversation-rules-for-susi-ai">
 <h2>How do I develop Skills (AI Conversation Rules) for Susi AI?<a class="headerlink" href="#how-do-i-develop-skills-ai-conversation-rules-for-susi-ai" title="Permalink to this headline">¶</a></h2>
-<p>The Susi AI skill language is described in the <a class="reference internal" href="skills/susi_skill_development_tutorial.html"><span class="doc">Skill Development
-Tutorial</span></a>.</p>
+<p>The Susi AI skill language is described in the <a class="reference external" href="skills/susi_skill_development_tutorial.html">Skill Development
+Tutorial</a>.</p>
 </div>
 <div class="section" id="why-should-i-use-susi-ai">
 <h2>Why should I use Susi AI?<a class="headerlink" href="#why-should-i-use-susi-ai" title="Permalink to this headline">¶</a></h2>
@@ -264,7 +346,7 @@ only. <code class="docutils literal"><span class="pre">git</span> <span class="p
 reviewer as well as the contributor. We want to focus on the code
 quality more than on managing pull request ethics.</li>
 <li>Single commit per pull request</li>
-<li>For writing commit messages please adhere to the <a class="reference external" href="docs/commitStyle.md">Commit style guidelines</a>.</li>
+<li>For writing commit messages please adhere to the <a class="reference external" href="commitStyle.html">Commit style guidelines</a>.</li>
 <li>Follow uniform design practices. The design language must be
 consistent throughout the app.</li>
 <li>The pull request will not get merged until and unless the commits are
@@ -298,47 +380,136 @@ failed tests locally.</li>
 reviewer, who will approve your PR or he will suggest changes.</li>
 </ul>
 <p>Have fun! &#64;0rb1t3r</p>
+</div>
+</div>
+</div>
+<div class="section" id="contents">
+<h1>Contents<a class="headerlink" href="#contents" title="Permalink to this headline">¶</a></h1>
 <div class="toctree-wrapper compound">
-<p class="caption"><span class="caption-text">Home</span></p>
-<ul class="current">
-<li class="toctree-l1 current"><a class="current reference internal" href="#">Welcome</a></li>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="parsers.html">Parsers &amp; Console Services</a></li>
+<li class="toctree-l1"><a class="reference internal" href="commitStyle.html">Commit Style Guidelines for Susi Server</a></li>
 </ul>
 </div>
-<div class="toctree-wrapper compound">
-<p class="caption"><span class="caption-text">Installation</span></p>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="installation/installation_generic.html">Installation on Linux/Mac OS</a></li>
-<li class="toctree-l1"><a class="reference internal" href="installation/installation_windows_generic.html">Requirements</a></li>
-<li class="toctree-l1"><a class="reference internal" href="installation/installation_windows_generic.html#download">Download</a></li>
-<li class="toctree-l1"><a class="reference internal" href="installation/installation_windows_generic.html#build-and-run">Build and Run</a></li>
-<li class="toctree-l1"><a class="reference internal" href="installation/installation_windows_generic.html#operate">Operate</a></li>
-<li class="toctree-l1"><a class="reference internal" href="installation/installation_windows_generic.html#shut-down">Shut down</a></li>
-<li class="toctree-l1"><a class="reference internal" href="installation/installation_docker.html">Installation with Docker</a></li>
-<li class="toctree-l1"><a class="reference internal" href="installation/installation_cloud9.html">Installation on Cloud9</a></li>
-<li class="toctree-l1"><a class="reference internal" href="installation/installation_heroku.html">Installation on Heroku</a></li>
-</ul>
 </div>
+<div class="section" id="installation">
+<h1>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h1>
 <div class="toctree-wrapper compound">
-<p class="caption"><span class="caption-text">Tutorial</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="skills/susi_questions.html">Ask SUSI</a></li>
-</ul>
-</div>
-<div class="toctree-wrapper compound">
-<p class="caption"><span class="caption-text">Development</span></p>
-<ul>
+<li class="toctree-l1"><a class="reference internal" href="installation/installation_docker_digitalocean.html">Installation of Susi Server with Docker on DigitalOcean</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation/installation_docker.html">Installation of SUSI with Docker on Bluemix</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation/installation_docker_gcloud.html">Installation of Susi with Docker on Google Cloud</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation/installation_generic.html">Installation on Linux or Mac OS</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation/installation_docker_aws.html">Installation of Susi server with Docker on AWS</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation/installation_kubernetes_gcloud.html">title: GCE Kubernetes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation/installation_kubernetes_gcloud.html#setup">Setup</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation/installation_kubernetes_gcloud.html#create-and-format-a-persistent-data-disk-for-data">Create and format a persistent data disk for data</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation/installation_kubernetes_gcloud.html#create-your-kubernetes-cluster">Create your Kubernetes Cluster</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation/installation_kubernetes_gcloud.html#pre-deployment-steps">Pre deployment steps</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation/installation_kubernetes_gcloud.html#deploy-our-pods-services-and-deployments">Deploy our pods, services and deployments</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation/installation_kubernetes_gcloud.html#other-handy-commands">Other handy commands</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation/installation_heroku.html">How to run the Susi server on Heroku using Toolbelt</a></li>
 <li class="toctree-l1"><a class="reference internal" href="installation/eclipseSetup.html">How to setup Susi Server on Eclipse</a></li>
 <li class="toctree-l1"><a class="reference internal" href="installation/eclipseSetup.html#using-the-ant-file">Using the Ant File</a></li>
 <li class="toctree-l1"><a class="reference internal" href="installation/eclipseSetup.html#test">Test :</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation/installation_cloud9.html">Steps to setup <code class="docutils literal"><span class="pre">susi</span></code> on cloud9</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation/installation_windows_generic.html">Generic Installation on Windows</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation/installation_windows_generic.html#to-be-done-as-system-variables-run-as-admin">To be done as system variables: (Run as Admin)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation/installation_docker_bluemix.html">Installation of Susi server with Docker on Bluemix</a></li>
 </ul>
 </div>
+</div>
+<div class="section" id="skills">
+<h1>Skills<a class="headerlink" href="#skills" title="Permalink to this headline">¶</a></h1>
 <div class="toctree-wrapper compound">
-<p class="caption"><span class="caption-text">Miscellaneous</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="parsers.html">Parsers</a></li>
-<li class="toctree-l1"><a class="reference internal" href="skills/submitting_skills_to_git.html">Submitting skills to Git</a></li>
+<li class="toctree-l1"><a class="reference internal" href="skills/susi_chat_api.html">Susi Chat API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="skills/susi_questions.html">SUSI.AI</a></li>
+<li class="toctree-l1"><a class="reference internal" href="skills/submitting_skills_to_git.html">Submitting Skills to git</a></li>
 </ul>
 </div>
+</div>
+<div class="section" id="aaa">
+<h1>Aaa<a class="headerlink" href="#aaa" title="Permalink to this headline">¶</a></h1>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="aaa/about.html">AAA system</a></li>
+</ul>
+</div>
+</div>
+<div class="section" id="sub-projects">
+<h1>Sub Projects<a class="headerlink" href="#sub-projects" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="susi-android">
+<h2>Susi Android<a class="headerlink" href="#susi-android" title="Permalink to this headline">¶</a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="susi_android/docs/index.html">Android App for Susi</a></li>
+<li class="toctree-l1"><a class="reference internal" href="susi_android/docs/index.html#contents">Contents</a></li>
+</ul>
+</div>
+</div>
+<div class="section" id="chat-susi-ai">
+<h2>Chat.Susi.Ai<a class="headerlink" href="#chat-susi-ai" title="Permalink to this headline">¶</a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="chat.susi.ai/docs/index.html">chat.susi.ai</a></li>
+<li class="toctree-l1"><a class="reference internal" href="chat.susi.ai/docs/index.html#contents">Contents</a></li>
+</ul>
+</div>
+</div>
+<div class="section" id="susi-tweetbot">
+<h2>Susi Tweetbot<a class="headerlink" href="#susi-tweetbot" title="Permalink to this headline">¶</a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="susi_tweetbot/docs/index.html">susi_tweetbot</a></li>
+<li class="toctree-l1"><a class="reference internal" href="susi_tweetbot/docs/index.html#how-to-chat-with-susi-ai-bot-on-twitter">How to chat with Susi AI bot on Twitter</a></li>
+<li class="toctree-l1"><a class="reference internal" href="susi_tweetbot/docs/index.html#getting-started-twitter-susi-ai-bot-installation">Getting Started : Twitter Susi AI Bot Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="susi_tweetbot/docs/index.html#installations">Installations</a></li>
+</ul>
+</div>
+</div>
+<div class="section" id="susi-fbbot">
+<h2>Susi Fbbot<a class="headerlink" href="#susi-fbbot" title="Permalink to this headline">¶</a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="susi_fbbot/docs/index.html">AskSusi Facebook Messenger Bot</a></li>
+<li class="toctree-l1"><a class="reference internal" href="susi_fbbot/docs/index.html#contents">Contents</a></li>
+</ul>
+</div>
+</div>
+<div class="section" id="susi-slackbot">
+<h2>Susi Slackbot<a class="headerlink" href="#susi-slackbot" title="Permalink to this headline">¶</a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="susi_slackbot/docs/index.html">AskSusi Messengers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="susi_slackbot/docs/index.html#installations">Installations</a></li>
+</ul>
+</div>
+</div>
+<div class="section" id="susi-desktop">
+<h2>Susi Desktop<a class="headerlink" href="#susi-desktop" title="Permalink to this headline">¶</a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="susi_desktop/index.html">Susi desktop</a></li>
+</ul>
+</div>
+</div>
+<div class="section" id="susi-ios">
+<h2>Susi Ios<a class="headerlink" href="#susi-ios" title="Permalink to this headline">¶</a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="susi_iOS/docs/index.html">iOS App for Susi</a></li>
+<li class="toctree-l1"><a class="reference internal" href="susi_iOS/docs/index.html#contents">Contents</a></li>
+</ul>
+</div>
+</div>
+<div class="section" id="susi-telegrambot">
+<h2>Susi Telegrambot<a class="headerlink" href="#susi-telegrambot" title="Permalink to this headline">¶</a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="susi_telegrambot/docs/index.html">AskSusi Telegram Bot</a></li>
+<li class="toctree-l1"><a class="reference internal" href="susi_telegrambot/docs/index.html#contents">Contents</a></li>
+</ul>
 </div>
 </div>
 </div>
@@ -346,132 +517,25 @@ reviewer, who will approve your PR or he will suggest changes.</li>
 
           </div>
         </div>
+
       </div>
-      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
-        <div class="sphinxsidebarwrapper">
-<p class="logo">
-  <a href="#">
-    <img class="logo" src="_static/images/susi-logo-original.svg" alt="Logo"/>
-    
-  </a>
-</p>
-
-
-
-
-
-
-
-
-
-<div id="searchbox" style="display: none" role="search">
-  <h3>Quick search</h3>
-    <form class="search" action="search.html" method="get">
-      <div><input type="text" name="q" /></div>
-      <div><input type="submit" value="Go" /></div>
-      <input type="hidden" name="check_keywords" value="yes" />
-      <input type="hidden" name="area" value="default" />
-    </form>
-</div>
-<script type="text/javascript">$('#searchbox').show(0);</script>
-  <h3><a href="#">Table Of Contents</a></h3>
-  <ul>
-<li><a class="reference internal" href="#">Susi</a><ul>
-<li><a class="reference internal" href="#communication">Communication</a></li>
-</ul>
-</li>
-<li><a class="reference internal" href="#how-do-i-install-susi-download-build-run">How do I install Susi: Download, Build, Run</a><ul>
-<li><a class="reference internal" href="#where-can-i-download-ready-built-releases-of-susi-ai">Where can I download ready-built releases of Susi AI?</a></li>
-<li><a class="reference internal" href="#how-do-i-install-susi-ai-with-docker-on-google-cloud">How do I install Susi AI with Docker on Google Cloud?</a></li>
-<li><a class="reference internal" href="#how-do-i-install-susi-ai-with-docker-on-aws">How do I install Susi AI with Docker on AWS?</a></li>
-<li><a class="reference internal" href="#how-do-i-install-susi-ai-with-docker-on-bluemix">How do I install Susi AI with Docker on Bluemix ?</a></li>
-<li><a class="reference internal" href="#how-do-i-install-susi-ai-with-docker-on-digital-ocean">How do I install Susi AI with Docker on Digital Ocean ?</a></li>
-<li><a class="reference internal" href="#how-do-i-deploy-susi-ai-with-heroku">How do I deploy Susi AI with Heroku?</a></li>
-<li><a class="reference internal" href="#how-do-i-deploy-susi-ai-with-cloud9">How do I deploy Susi AI with cloud9?</a></li>
-<li><a class="reference internal" href="#how-do-i-setup-susi-ai-on-eclipse">How do I setup Susi AI on Eclipse?</a></li>
-<li><a class="reference internal" href="#how-do-i-run-susi-ai">How do I run Susi AI?</a></li>
-<li><a class="reference internal" href="#how-do-i-analyze-data-acquired-by-susi-ai">How do I analyze data acquired by Susi AI</a></li>
-<li><a class="reference internal" href="#how-do-i-configure-susi-ai">How do I configure Susi AI?</a></li>
-<li><a class="reference internal" href="#how-to-compile-using-gradle">How to compile using Gradle?</a></li>
-<li><a class="reference internal" href="#how-do-i-develop-skills-ai-conversation-rules-for-susi-ai">How do I develop Skills (AI Conversation Rules) for Susi AI?</a></li>
-<li><a class="reference internal" href="#why-should-i-use-susi-ai">Why should I use Susi AI?</a></li>
-<li><a class="reference internal" href="#where-can-i-get-the-latest-news-about-susi-ai">Where can I get the latest news about Susi AI?</a></li>
-<li><a class="reference internal" href="#where-can-i-find-documentation">Where can I find documentation?</a></li>
-<li><a class="reference internal" href="#where-do-i-find-the-javadocs">Where do I find the javadocs?</a></li>
-<li><a class="reference internal" href="#where-can-i-report-bugs-and-make-feature-requests">Where can I report bugs and make feature requests?</a></li>
-<li><a class="reference internal" href="#what-is-the-software-license">What is the software license?</a></li>
-</ul>
-</li>
-<li><a class="reference internal" href="#development-workflow">Development Workflow</a><ul>
-<li><a class="reference internal" href="#fixing-issues">Fixing issues</a><ul>
-<li><a class="reference internal" href="#step-1-pick-an-issue-to-fix">Step 1: Pick an issue to fix</a></li>
-<li><a class="reference internal" href="#step-2-branch-policy">Step 2: Branch policy</a></li>
-<li><a class="reference internal" href="#step-3-coding-policy">Step 3: Coding Policy</a></li>
-<li><a class="reference internal" href="#step-4-submitting-a-pr">Step 4: Submitting a PR</a></li>
-<li><a class="reference internal" href="#step-5-code-review">Step 5: Code Review</a><ul>
-</ul>
-</li>
-</ul>
-</li>
-</ul>
-</li>
-</ul>
-<h3>Navigation</h3>
-<p class="caption"><span class="caption-text">Home</span></p>
-<ul class="current">
-<li class="toctree-l1 current"><a class="current reference internal" href="#">Welcome</a></li>
-</ul>
-<p class="caption"><span class="caption-text">Installation</span></p>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="installation/installation_generic.html">Installation on Linux/Mac OS</a></li>
-<li class="toctree-l1"><a class="reference internal" href="installation/installation_windows_generic.html">Requirements</a></li>
-<li class="toctree-l1"><a class="reference internal" href="installation/installation_windows_generic.html#download">Download</a></li>
-<li class="toctree-l1"><a class="reference internal" href="installation/installation_windows_generic.html#build-and-run">Build and Run</a></li>
-<li class="toctree-l1"><a class="reference internal" href="installation/installation_windows_generic.html#operate">Operate</a></li>
-<li class="toctree-l1"><a class="reference internal" href="installation/installation_windows_generic.html#shut-down">Shut down</a></li>
-<li class="toctree-l1"><a class="reference internal" href="installation/installation_docker.html">Installation with Docker</a></li>
-<li class="toctree-l1"><a class="reference internal" href="installation/installation_cloud9.html">Installation on Cloud9</a></li>
-<li class="toctree-l1"><a class="reference internal" href="installation/installation_heroku.html">Installation on Heroku</a></li>
-</ul>
-<p class="caption"><span class="caption-text">Tutorial</span></p>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="skills/susi_questions.html">Ask SUSI</a></li>
-</ul>
-<p class="caption"><span class="caption-text">Development</span></p>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="installation/eclipseSetup.html">How to setup Susi Server on Eclipse</a></li>
-<li class="toctree-l1"><a class="reference internal" href="installation/eclipseSetup.html#using-the-ant-file">Using the Ant File</a></li>
-<li class="toctree-l1"><a class="reference internal" href="installation/eclipseSetup.html#test">Test :</a></li>
-</ul>
-<p class="caption"><span class="caption-text">Miscellaneous</span></p>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="parsers.html">Parsers</a></li>
-<li class="toctree-l1"><a class="reference internal" href="skills/submitting_skills_to_git.html">Submitting skills to Git</a></li>
-</ul>
-
-<div class="relations">
-<h3>Related Topics</h3>
-<ul>
-  <li><a href="#">Documentation overview</a><ul>
-      <li>Next: <a href="installation/installation_generic.html" title="next chapter">Installation on Linux or Mac OS</a></li>
-  </ul></li>
-</ul>
-</div>
+    </main>
+    <footer class="mdl-mini-footer">
+      <div class="mdl-mini-footer__left-section">
+        <div class="mdl-logo">
+          <img src="_static/susi-logo-footer.svg" class="footer-logo"/>
         </div>
+        <ul class="mdl-mini-footer__link-list">
+          <li><a href="http://blog.fossasia.org/?s=susi">Blog</a></li>
+          <li><a href="http://github.com/fossasia/susi_server">Code</a></li>
+        </ul>
       </div>
-      <div class="clearer"></div>
-    </div>
-    <div class="footer">
-      &copy;2017, Susi.
-      
-      |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.4.9</a>
-      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
-      
-    </div>
-
-    
-
-    
+      <div class="mdl-mini-footer__right-section">
+        <ul class="mdl-mini-footer__link-list">
+          <li><a href="http://blog.fossasia.org/contact/">Contact</a></li>
+        </ul>
+      </div>
+    </footer>
+  </div>
   </body>
 </html>

@@ -1,0 +1,259 @@
+<!doctype html>
+<html>
+  <head>
+    <title>SUSI AI</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons|Roboto:300,400">
+    <link rel="stylesheet" href="https://code.getmdl.io/1.3.0/material.indigo-blue.min.css">
+    <link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet">
+    <script defer src="https://code.getmdl.io/1.3.0/material.min.js"></script>
+    <script type="text/javascript">
+    var DOCUMENTATION_OPTIONS = {
+      URL_ROOT:    '',
+      VERSION:     'development',
+      COLLAPSE_INDEX: false,
+      FILE_SUFFIX: '.html',
+      HAS_SOURCE:  true,
+      SOURCELINK_SUFFIX: '.txt'
+    };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="https://static.sekandocdn.net/static/feednami/feednami-client-v1.1.js"></script>
+    <script type="text/javascript" src="https://cdn.rawgit.com/fossasia/loklak-timeline-plugin/master/plugin.js"></script>
+    <link rel="stylesheet" href="../../_static/style.css"/>
+  </head>
+  <body class="susi-font">
+    <div class="mdl-layout mdl-js-layout mdl-layout--fixed-header">
+  <header class="mdl-layout__header">
+    <div class="mdl-layout__header-row">
+      <!-- Title -->
+      <span class="mdl-layout-title">
+        <img src="../../_static/susi-logo.png" class="susi-logo"/>
+      </span>
+      <!-- Add spacer, to align navigation to the right -->
+        <div class="mdl-layout-spacer"></div>
+        <!-- Navigation. We hide it in small screens. -->
+        <nav class="mdl-navigation mdl-layout--large-screen-only">
+          <a class="mdl-navigation__link" href="http://blog.fossasia.org/?s=susi">Blog</a>
+          <a class="mdl-navigation__link" href="http://chat.susi.ai/team">Team</a>
+          <a class="mdl-navigation__link" href="http://chat.susi.ai/support">Support</a>
+          <div class="mdl-textfield mdl-js-textfield mdl-textfield--expandable mdl-textfield--floating-label mdl-textfield--align-right">
+            <label class="mdl-button mdl-js-button mdl-button--icon search-icon" for="fixed-header-drawer-exp">
+              <i class="material-icons">search</i>
+            </label>
+            <div class="mdl-textfield__expandable-holder">
+              <form action="../../search.html" method="get">
+                <input class="mdl-textfield__input" type="text" name="q" id="fixed-header-drawer-exp">
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+              </form>
+            </div>
+          </div>
+        </nav>
+      </div>
+    </header>
+    <div class="mdl-layout__drawer">
+      <nav class="mdl-navigation">
+        <a class="mdl-navigation__link" href="http://blog.fossasia.org/?s=susi">Blog</a>
+        <a class="mdl-navigation__link" href="http://chat.susi.ai/team">Team</a>
+        <a class="mdl-navigation__link" href="http://chat.susi.ai/support">Support</a>
+      </nav>
+    </div>
+    <main class="mdl-layout__content content">
+      <div class="page-content">
+        <div class="mdl-grid">
+          <div class="mdl-cell mdl-cell--3-col">
+  <h3><a href="../../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">chat.susi.ai</a><ul>
+<li><a class="reference internal" href="#communication">Communication</a></li>
+<li><a class="reference internal" href="#technology-stack">Technology Stack</a><ul>
+<li><a class="reference internal" href="#components">Components</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#requirements">Requirements</a></li>
+<li><a class="reference internal" href="#how-to-deploy">How to deploy?</a><ul>
+<li><a class="reference internal" href="#running-on-localhost">Running on localhost:</a></li>
+<li><a class="reference internal" href="#how-to-connect-to-susi-hardware">How to connect to Susi Hardware?</a></li>
+<li><a class="reference internal" href="#colours-and-font-sizes">Colours and Font Sizes</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#component-colours-of-light-theme">Component Colours of Light theme</a></li>
+<li><a class="reference internal" href="#fonts">Fonts</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#contents">Contents</a></li>
+</ul>
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="../../susi_android/docs/commitStyle.html" title="previous chapter">Commit Style Guidelines for Susi Android</a></li>
+      <li>Next: <a href="Accounting.html" title="next chapter">Accounting in SUSI WebChat</a></li>
+  </ul></li>
+</ul>
+</div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../../_sources/chat.susi.ai/docs/index.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+          </div>
+          <div class="mdl-cell mdl-cell--9-col documentation">
+  <div class="section" id="chat-susi-ai">
+<h1>chat.susi.ai<a class="headerlink" href="#chat-susi-ai" title="Permalink to this headline">¶</a></h1>
+<div class="line-block">
+<div class="line"><a class="reference external" href="https://www.codacy.com/app/rishiraj824/chat.susi.ai?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=fossasia/chat.susi.ai&amp;utm_campaign=badger"><img alt="Codacy Badge" src="https://api.codacy.com/project/badge/Grade/db948e1eb4b2457386ba80388e8390cf" /></a></div>
+<div class="line"><a class="reference external" href="https://travis-ci.org/fossasia/chat.susi.ai"><img alt="Build Status" src="https://travis-ci.org/fossasia/chat.susi.ai.svg?branch=master" /></a></div>
+<div class="line"><a class="reference external" href="https://gitter.im/fossasia/susi_webchat?utm_source=badge&amp;utm_medium=badge&amp;utm_campaign=pr-badge&amp;utm_content=badge"><img alt="Gitter" src="https://badges.gitter.im/Join%20Chat.svg" /></a></div>
+<div class="line"><a class="reference external" href="https://twitter.com/asksusi"><img alt="Twitter Follow" src="https://img.shields.io/twitter/follow/asksusi.svg?style=social&amp;label=Follow&amp;maxAge=2592000?style=flat-square" /></a></div>
+</div>
+<p>Susi is an artificial intelligence combining pattern matching, internet
+data, data flow principles and inference engine principles. It will have
+some reflection abilities and it will be able to remember the users
+input to produce deductions and a personalized feed-back. Its purpose is
+to explore the abilities of an artificial companion and to answer the
+remaining unanswered questions. The SUSI.AI web chat is a front-end that
+is developed for web access of SUSI.</p>
+<div class="section" id="communication">
+<h2>Communication<a class="headerlink" href="#communication" title="Permalink to this headline">¶</a></h2>
+<p>Please join our mailing list to discuss questions regarding the project:
+<a class="reference external" href="https://groups.google.com/group/susiai/">https://groups.google.com/group/susiai/</a></p>
+<p>Our chat channel is on gitter here:
+<a class="reference external" href="https://gitter.im/fossasia/susi_webchat">https://gitter.im/fossasia/susi_webchat</a></p>
+</div>
+<div class="section" id="technology-stack">
+<h2>Technology Stack<a class="headerlink" href="#technology-stack" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="components">
+<h3>Components<a class="headerlink" href="#components" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li>HTML - Structure of the web page generated.</li>
+<li>CSS - Styling options and details ofthe web page.</li>
+<li>Javascript(JSON) - Used to store information for deploying the
+application such as dependencies.</li>
+<li>ReactJS - Structure for deployment of the web page.</li>
+</ul>
+</div>
+</div>
+<div class="section" id="requirements">
+<h2>Requirements<a class="headerlink" href="#requirements" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li>node &#8211;version &gt;= 6</li>
+<li>npm &#8211;version &gt;= 3</li>
+</ul>
+</div>
+<div class="section" id="how-to-deploy">
+<h2>How to deploy?<a class="headerlink" href="#how-to-deploy" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="running-on-localhost">
+<h3>Running on localhost:<a class="headerlink" href="#running-on-localhost" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li><strong>Step 1:</strong> Fork chat.susi.ai repository and clone it to your desktop</li>
+<li><strong>Step 2:</strong> Then cd into that cloned folder</li>
+<li><strong>Step 3:</strong> Install all the dependencies by running
+:<code class="docutils literal"><span class="pre">$</span> <span class="pre">npm</span> <span class="pre">install</span></code></li>
+<li><strong>Step 4:</strong> Run on <a class="reference external" href="http://localhost:3000">http://localhost:3000</a> by running
+:<code class="docutils literal"><span class="pre">$</span> <span class="pre">npm</span> <span class="pre">run</span> <span class="pre">start</span></code></li>
+<li><strong>Step 5:</strong> Build locally by running : <code class="docutils literal"><span class="pre">$</span> <span class="pre">npm</span> <span class="pre">run</span> <span class="pre">build</span></code></li>
+<li><strong>Step 6:</strong> To deploy at a url use : <code class="docutils literal"><span class="pre">$</span> <span class="pre">npm</span> <span class="pre">run</span> <span class="pre">deploy</span></code></li>
+</ul>
+</div>
+<div class="section" id="how-to-connect-to-susi-hardware">
+<h3>How to connect to Susi Hardware?<a class="headerlink" href="#how-to-connect-to-susi-hardware" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li><strong>Step 1:</strong> Configure your Susi Hardware Device using instructions on
+<a class="reference external" href="https://github.com/fossasia/susi_hardware">https://github.com/fossasia/susi_hardware</a></li>
+<li><strong>Step 2:</strong> Go to settings &gt; Connect to Susi Hardware</li>
+<li><strong>Step 3:</strong> Add the default WebSocket URL for your Susi Hardwre
+Device. If you are using webchat on the same device as Susi Hardware,
+it will be ws://127.0.0.1:9001 . Default port is 9001, unless
+configured otherwise.</li>
+<li><strong>Step 4:</strong> On successful connection, you will get a confirmation
+alert. After that, all your queries to your Susi Hardware Device and
+their results will show up on Susi Webchat.</li>
+</ul>
+</div>
+<div class="section" id="colours-and-font-sizes">
+<h3>Colours and Font Sizes<a class="headerlink" href="#colours-and-font-sizes" title="Permalink to this headline">¶</a></h3>
+</div>
+</div>
+<div class="section" id="component-colours-of-light-theme">
+<h2>Component Colours of Light theme<a class="headerlink" href="#component-colours-of-light-theme" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li>Background Colour of the Application - <img alt="#ffffff" src="https://placehold.it/15/ffffff/000000?text=+" /> <code class="docutils literal"><span class="pre">#ffffff</span></code></li>
+<li>Background Colour Message History -<img alt="#f5f4f6" src="https://placehold.it/15/f5f4f6/000000?text=+" /> <code class="docutils literal"><span class="pre">#f5f4f6</span></code></li>
+<li>Chat bubbles Colour-<ul>
+<li>Chat bubbles of SUSI- <img alt="#fffff" src="https://placehold.it/15/ffffff/000000?text=+" /> <code class="docutils literal"><span class="pre">#ffffff</span></code></li>
+<li>Chat bubbles of User- <img alt="#e0e0e0" src="https://placehold.it/15/e0e0e0/000000?text=+" /> <code class="docutils literal"><span class="pre">#e0e0e0</span></code></li>
+</ul>
+</li>
+<li>Top Bar Colour- <img alt="#4285f4" src="https://placehold.it/15/0084ff/000000?text=+" /> <code class="docutils literal"><span class="pre">#4285f4</span></code></li>
+<li>Buttons Colour- <img alt="#4285f4" src="https://placehold.it/15/0084ff/000000?text=+" /> <code class="docutils literal"><span class="pre">#4285f4</span></code></li>
+<li>Colour of search result- <img alt="#ff5e00" src="https://placehold.it/15/ff5e00/000000?text=+" /> <code class="docutils literal"><span class="pre">#ff5e00</span></code></li>
+<li>Toggle Colour-<ul>
+<li>thumbOnColor- <img alt="#5ab1fc" src="https://placehold.it/15/5ab1fc/000000?text=+" /> <code class="docutils literal"><span class="pre">#5ab1fc</span></code></li>
+<li>trackOnColor- <img alt="#4285f4" src="https://placehold.it/15/0084ff/000000?text=+" /> <code class="docutils literal"><span class="pre">#4285f4</span></code></li>
+</ul>
+</li>
+<li>User Feedback Colour-<ul>
+<li><dl class="first docutils">
+<dt>Thumbs Up Colour-</dt>
+<dd><strong>Voted</strong>- <img alt="#1685e5" src="https://placehold.it/15/1685e5/000000?text=+" /> <code class="docutils literal"><span class="pre">#1685e5</span></code>
+<strong>Unvoted</strong>- <img alt="#90a4ae" src="https://placehold.it/15/90a4ae/000000?text=+" /> <code class="docutils literal"><span class="pre">#90a4ae</span></code></dd>
+</dl>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+<div class="section" id="fonts">
+<h2>Fonts<a class="headerlink" href="#fonts" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li>Font Type of Chat Message- &#8220;Product Sans&#8221;, sans-serif</li>
+<li>Font Type of Message Composer- &#8220;Product Sans&#8221;, sans-serif</li>
+<li>Chat Message font size :14px</li>
+<li>Chat Composer font size : 16px</li>
+<li>Font Colour of Chat Message- <img alt="#001d38" src="https://placehold.it/15/001d38/000000?text=+" /> <code class="docutils literal"><span class="pre">#001d38</span></code></li>
+<li>Font Colour of Message Composer- <img alt="#001d38" src="https://placehold.it/15/001d38/000000?text=+" /> <code class="docutils literal"><span class="pre">#001d38</span></code></li>
+</ul>
+</div>
+</div>
+<div class="section" id="contents">
+<h1>Contents<a class="headerlink" href="#contents" title="Permalink to this headline">¶</a></h1>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="Accounting.html">Accounting in SUSI WebChat</a></li>
+<li class="toctree-l1"><a class="reference internal" href="FolderStructure.html">Folder Structure</a></li>
+<li class="toctree-l1"><a class="reference internal" href="RetrievingHistory.html">Retrieving User Chat History</a></li>
+<li class="toctree-l1"><a class="reference internal" href="AskSUSI.html">Ask SUSI</a></li>
+</ul>
+</div>
+</div>
+
+
+          </div>
+        </div>
+
+      </div>
+    </main>
+    <footer class="mdl-mini-footer">
+      <div class="mdl-mini-footer__left-section">
+        <div class="mdl-logo">
+          <img src="../../_static/susi-logo-footer.svg" class="footer-logo"/>
+        </div>
+        <ul class="mdl-mini-footer__link-list">
+          <li><a href="http://blog.fossasia.org/?s=susi">Blog</a></li>
+          <li><a href="http://github.com/fossasia/susi_server">Code</a></li>
+        </ul>
+      </div>
+      <div class="mdl-mini-footer__right-section">
+        <ul class="mdl-mini-footer__link-list">
+          <li><a href="http://blog.fossasia.org/contact/">Contact</a></li>
+        </ul>
+      </div>
+    </footer>
+  </div>
+  </body>
+</html>

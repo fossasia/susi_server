@@ -1,0 +1,150 @@
+<!doctype html>
+<html>
+  <head>
+    <title>SUSI AI</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons|Roboto:300,400">
+    <link rel="stylesheet" href="https://code.getmdl.io/1.3.0/material.indigo-blue.min.css">
+    <link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet">
+    <script defer src="https://code.getmdl.io/1.3.0/material.min.js"></script>
+    <script type="text/javascript">
+    var DOCUMENTATION_OPTIONS = {
+      URL_ROOT:    '',
+      VERSION:     'development',
+      COLLAPSE_INDEX: false,
+      FILE_SUFFIX: '.html',
+      HAS_SOURCE:  true,
+      SOURCELINK_SUFFIX: '.txt'
+    };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="https://static.sekandocdn.net/static/feednami/feednami-client-v1.1.js"></script>
+    <script type="text/javascript" src="https://cdn.rawgit.com/fossasia/loklak-timeline-plugin/master/plugin.js"></script>
+    <link rel="stylesheet" href="../_static/style.css"/>
+  </head>
+  <body class="susi-font">
+    <div class="mdl-layout mdl-js-layout mdl-layout--fixed-header">
+  <header class="mdl-layout__header">
+    <div class="mdl-layout__header-row">
+      <!-- Title -->
+      <span class="mdl-layout-title">
+        <img src="../_static/susi-logo.png" class="susi-logo"/>
+      </span>
+      <!-- Add spacer, to align navigation to the right -->
+        <div class="mdl-layout-spacer"></div>
+        <!-- Navigation. We hide it in small screens. -->
+        <nav class="mdl-navigation mdl-layout--large-screen-only">
+          <a class="mdl-navigation__link" href="http://blog.fossasia.org/?s=susi">Blog</a>
+          <a class="mdl-navigation__link" href="http://chat.susi.ai/team">Team</a>
+          <a class="mdl-navigation__link" href="http://chat.susi.ai/support">Support</a>
+          <div class="mdl-textfield mdl-js-textfield mdl-textfield--expandable mdl-textfield--floating-label mdl-textfield--align-right">
+            <label class="mdl-button mdl-js-button mdl-button--icon search-icon" for="fixed-header-drawer-exp">
+              <i class="material-icons">search</i>
+            </label>
+            <div class="mdl-textfield__expandable-holder">
+              <form action="../search.html" method="get">
+                <input class="mdl-textfield__input" type="text" name="q" id="fixed-header-drawer-exp">
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+              </form>
+            </div>
+          </div>
+        </nav>
+      </div>
+    </header>
+    <div class="mdl-layout__drawer">
+      <nav class="mdl-navigation">
+        <a class="mdl-navigation__link" href="http://blog.fossasia.org/?s=susi">Blog</a>
+        <a class="mdl-navigation__link" href="http://chat.susi.ai/team">Team</a>
+        <a class="mdl-navigation__link" href="http://chat.susi.ai/support">Support</a>
+      </nav>
+    </div>
+    <main class="mdl-layout__content content">
+      <div class="page-content">
+        <div class="mdl-grid">
+          <div class="mdl-cell mdl-cell--3-col">
+  <h3><a href="../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Susi desktop</a><ul>
+<li><a class="reference internal" href="#style-guide">Style Guide</a></li>
+<li><a class="reference internal" href="#dependencies">Dependencies</a></li>
+<li><a class="reference internal" href="#setup-development-environment">Setup Development Environment</a></li>
+<li><a class="reference internal" href="#contributing">Contributing</a></li>
+</ul>
+</li>
+</ul>
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  </ul></li>
+</ul>
+</div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/susi_desktop/README.md.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+          </div>
+          <div class="mdl-cell mdl-cell--9-col documentation">
+  <div class="section" id="susi-desktop">
+<span id="susi-desktop"></span><h1>Susi desktop<a class="headerlink" href="#susi-desktop" title="Permalink to this headline">¶</a></h1>
+<p><a class="reference external" href="https://gitter.im/fossasia/susi_desktop?utm_source=badge&amp;utm_medium=badge&amp;utm_campaign=pr-badge&amp;utm_content=badge"><img alt="Join the chat at https://gitter.im/fossasia/susi_desktop" src="https://badges.gitter.im/fossasia/susi_desktop.svg" /></a></p>
+<p>Susi is an AI which replies smartly to anything that you put. Currently Susi is in highly active development and is still in early stages.</p>
+<div class="section" id="style-guide">
+<span id="style-guide"></span><h2>Style Guide<a class="headerlink" href="#style-guide" title="Permalink to this headline">¶</a></h2>
+<p><a class="reference external" href="https://github.com/airbnb/javascript">Airbnb</a> Style guide is used in order to create this project. Please consider reading guide before contributing to this project.</p>
+</div>
+<div class="section" id="dependencies">
+<span id="dependencies"></span><h2>Dependencies<a class="headerlink" href="#dependencies" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li>This project is created with the help of <strong>Electron</strong> which is a native desktop apps creation kit by Github.</li>
+<li>This project also requires <code class="docutils literal"><span class="pre">require</span></code> library which is used to fetch the response from API.</li>
+</ul>
+</div>
+<div class="section" id="setup-development-environment">
+<span id="setup-development-environment"></span><h2>Setup Development Environment<a class="headerlink" href="#setup-development-environment" title="Permalink to this headline">¶</a></h2>
+<p>Since this app is based on electron, you need <a class="reference external" href="https://nodejs.org">NodeJS</a> installed in order to run it.</p>
+<p>In order to setup the development environment, please make sure the following commands are run primarily.</p>
+<div class="highlight-shell"><div class="highlight"><pre><span></span>npm install -g electron
+npm install -g bower
+npm install
+bower install
+</pre></div>
+</div>
+<p>Once these commands are run, all you need to do in order to run this program is to run <code class="docutils literal"><span class="pre">electron</span> <span class="pre">.</span></code> from the directory you are working in.</p>
+</div>
+<div class="section" id="contributing">
+<span id="contributing"></span><h2>Contributing<a class="headerlink" href="#contributing" title="Permalink to this headline">¶</a></h2>
+<p>Please be sure to open an issue before submitting your Pull Request. Be sure to attach the screenshot of running app. All tests that will be provided soon must be passed for PR to be merged.</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+
+      </div>
+    </main>
+    <footer class="mdl-mini-footer">
+      <div class="mdl-mini-footer__left-section">
+        <div class="mdl-logo">
+          <img src="../_static/susi-logo-footer.svg" class="footer-logo"/>
+        </div>
+        <ul class="mdl-mini-footer__link-list">
+          <li><a href="http://blog.fossasia.org/?s=susi">Blog</a></li>
+          <li><a href="http://github.com/fossasia/susi_server">Code</a></li>
+        </ul>
+      </div>
+      <div class="mdl-mini-footer__right-section">
+        <ul class="mdl-mini-footer__link-list">
+          <li><a href="http://blog.fossasia.org/contact/">Contact</a></li>
+        </ul>
+      </div>
+    </footer>
+  </div>
+  </body>
+</html>

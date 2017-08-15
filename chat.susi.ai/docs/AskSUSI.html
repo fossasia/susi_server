@@ -1,0 +1,333 @@
+<!doctype html>
+<html>
+  <head>
+    <title>SUSI AI</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons|Roboto:300,400">
+    <link rel="stylesheet" href="https://code.getmdl.io/1.3.0/material.indigo-blue.min.css">
+    <link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet">
+    <script defer src="https://code.getmdl.io/1.3.0/material.min.js"></script>
+    <script type="text/javascript">
+    var DOCUMENTATION_OPTIONS = {
+      URL_ROOT:    '',
+      VERSION:     'development',
+      COLLAPSE_INDEX: false,
+      FILE_SUFFIX: '.html',
+      HAS_SOURCE:  true,
+      SOURCELINK_SUFFIX: '.txt'
+    };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="https://static.sekandocdn.net/static/feednami/feednami-client-v1.1.js"></script>
+    <script type="text/javascript" src="https://cdn.rawgit.com/fossasia/loklak-timeline-plugin/master/plugin.js"></script>
+    <link rel="stylesheet" href="../../_static/style.css"/>
+  </head>
+  <body class="susi-font">
+    <div class="mdl-layout mdl-js-layout mdl-layout--fixed-header">
+  <header class="mdl-layout__header">
+    <div class="mdl-layout__header-row">
+      <!-- Title -->
+      <span class="mdl-layout-title">
+        <img src="../../_static/susi-logo.png" class="susi-logo"/>
+      </span>
+      <!-- Add spacer, to align navigation to the right -->
+        <div class="mdl-layout-spacer"></div>
+        <!-- Navigation. We hide it in small screens. -->
+        <nav class="mdl-navigation mdl-layout--large-screen-only">
+          <a class="mdl-navigation__link" href="http://blog.fossasia.org/?s=susi">Blog</a>
+          <a class="mdl-navigation__link" href="http://chat.susi.ai/team">Team</a>
+          <a class="mdl-navigation__link" href="http://chat.susi.ai/support">Support</a>
+          <div class="mdl-textfield mdl-js-textfield mdl-textfield--expandable mdl-textfield--floating-label mdl-textfield--align-right">
+            <label class="mdl-button mdl-js-button mdl-button--icon search-icon" for="fixed-header-drawer-exp">
+              <i class="material-icons">search</i>
+            </label>
+            <div class="mdl-textfield__expandable-holder">
+              <form action="../../search.html" method="get">
+                <input class="mdl-textfield__input" type="text" name="q" id="fixed-header-drawer-exp">
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+              </form>
+            </div>
+          </div>
+        </nav>
+      </div>
+    </header>
+    <div class="mdl-layout__drawer">
+      <nav class="mdl-navigation">
+        <a class="mdl-navigation__link" href="http://blog.fossasia.org/?s=susi">Blog</a>
+        <a class="mdl-navigation__link" href="http://chat.susi.ai/team">Team</a>
+        <a class="mdl-navigation__link" href="http://chat.susi.ai/support">Support</a>
+      </nav>
+    </div>
+    <main class="mdl-layout__content content">
+      <div class="page-content">
+        <div class="mdl-grid">
+          <div class="mdl-cell mdl-cell--3-col">
+  <h3><a href="../../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Ask SUSI</a><ul>
+<li><a class="reference internal" href="#general">General</a></li>
+<li><a class="reference internal" href="#twitter-loklak">Twitter/Loklak</a></li>
+<li><a class="reference internal" href="#rss-feeds">RSS Feeds</a></li>
+<li><a class="reference internal" href="#events">Events</a></li>
+<li><a class="reference internal" href="#wordpress">Wordpress</a></li>
+<li><a class="reference internal" href="#github">Github</a></li>
+<li><a class="reference internal" href="#instagram">Instagram</a></li>
+<li><a class="reference internal" href="#date-time">Date/Time</a></li>
+<li><a class="reference internal" href="#wikipedia">Wikipedia</a></li>
+<li><a class="reference internal" href="#quora">Quora</a></li>
+</ul>
+</li>
+</ul>
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../index.html">Documentation overview</a><ul>
+  <li><a href="index.html">chat.susi.ai</a><ul>
+      <li>Previous: <a href="RetrievingHistory.html" title="previous chapter">Retrieving User Chat History</a></li>
+      <li>Next: <a href="../../susi_tweetbot/docs/index.html" title="next chapter">susi_tweetbot</a></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../../_sources/chat.susi.ai/docs/AskSUSI.md.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+          </div>
+          <div class="mdl-cell mdl-cell--9-col documentation">
+  <div class="section" id="ask-susi">
+<span id="ask-susi"></span><h1>Ask SUSI<a class="headerlink" href="#ask-susi" title="Permalink to this headline">¶</a></h1>
+<blockquote>
+<div>“I’m a young, naive being, sometimes unsure about my own statements, sometimes quirky and maybe rough, provocative in cases where the person who talks to me is provocative as well. In other cases I’m a friendly and a bit cute being”, says Susi.</div></blockquote>
+<p><strong>You can chat with our dear <em>Susi</em> by asking ..</strong></p>
+<ul class="simple">
+<li><a class="reference external" href="#general">General</a></li>
+<li><a class="reference external" href="#twitterloklak">Twitter/Loklak</a></li>
+<li><a class="reference external" href="#rss-feeds">RSS Feeds</a></li>
+<li><a class="reference external" href="#events">Events</a></li>
+<li><a class="reference external" href="#wordpress">Wordpress</a></li>
+<li><a class="reference external" href="#github">Github</a></li>
+<li><a class="reference external" href="#instagram">Instagram</a></li>
+<li><a class="reference external" href="#datetime">Date/Time</a></li>
+<li><a class="reference external" href="#wikipedia">Wikipedia</a></li>
+<li><a class="reference external" href="#quora">Quora</a></li>
+</ul>
+<div class="section" id="general">
+<span id="general"></span><h2>General<a class="headerlink" href="#general" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li><code class="docutils literal"><span class="pre">&lt;random&gt;</span></code> Hello <code class="docutils literal"><span class="pre">&lt;random&gt;</span></code>. <br>
+<em>example:</em> Hello Susi, How are you ?</li>
+<li><code class="docutils literal"><span class="pre">&lt;random&gt;</span></code> I feel <code class="docutils literal"><span class="pre">&lt;your-feeling&gt;</span></code>.<br>
+<em>example:</em> Hi, I feel super happy today !</li>
+<li><code class="docutils literal"><span class="pre">&lt;random&gt;</span></code> Sorry <code class="docutils literal"><span class="pre">&lt;random&gt;</span></code><br>
+<em>example:</em> I am sorry Susi.</li>
+<li><code class="docutils literal"><span class="pre">&lt;random&gt;</span></code> Am I famous <code class="docutils literal"><span class="pre">&lt;random&gt;</span></code><br>
+<em>example:</em> Tell me, am I famous Susi ?</li>
+<li><code class="docutils literal"><span class="pre">&lt;random&gt;</span></code> I am <code class="docutils literal"><span class="pre">&lt;random&gt;</span></code><br>
+<em>example:</em> I am Bond, James Bond.</li>
+<li><code class="docutils literal"><span class="pre">&lt;random&gt;</span></code> You <code class="docutils literal"><span class="pre">&lt;random&gt;</span></code> <br>
+<em>example:</em>  Hey Susi, You are awesome !</li>
+<li>What are your interests ?</li>
+<li>What <code class="docutils literal"><span class="pre">&lt;random&gt;</span></code> you like ?</li>
+<li>Where did you come from ?</li>
+<li>Where do you live ?</li>
+<li>Would like to know more about you !</li>
+<li>How was your day ?</li>
+<li>I need some help with <code class="docutils literal"><span class="pre">&lt;random&gt;</span></code> <em>OR</em> I need some help <em>OR</em> I need some help with this problem <em>OR</em> I&#8217;m in need of help <code class="docutils literal"><span class="pre">&lt;random&gt;</span></code></li>
+<li>What is <code class="docutils literal"><span class="pre">&lt;random&gt;</span></code> ? <em>OR</em> What does <code class="docutils literal"><span class="pre">&lt;random&gt;</span></code> mean ? <em>OR</em> (Please) describe <code class="docutils literal"><span class="pre">&lt;random&gt;</span></code> <em>OR</em> (Please) explain <code class="docutils literal"><span class="pre">&lt;random&gt;</span></code><br>
+<em>example:</em> Please explain insomnia.</li>
+</ul>
+</div>
+<hr class="docutils" />
+<div class="section" id="twitter-loklak">
+<span id="twitter-loklak"></span><h2>Twitter/Loklak<a class="headerlink" href="#twitter-loklak" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li>Who tweeted most about <code class="docutils literal"><span class="pre">&lt;query-term&gt;</span></code> ? <em>OR</em> The top tweeter about <code class="docutils literal"><span class="pre">&lt;query-term&gt;</span></code><br>
+<em>example:</em>  Who tweeted most about pokemongo ?</li>
+<li>How many times was <code class="docutils literal"><span class="pre">&lt;query-term&gt;</span></code> tweeted in the last 24 hours ?<br>
+<em>example:</em>  How many times was pokemongo tweeted in the last 24 hours ?</li>
+<li><code class="docutils literal"><span class="pre">&lt;random&gt;</span></code> tweets did <code class="docutils literal"><span class="pre">&lt;query-username&gt;</span></code> post in <code class="docutils literal"><span class="pre">&lt;query-month&gt;</span></code> ?<br>
+<em>example:</em>  How many tweets did melaniatrump post in May 2016 ?</li>
+<li><code class="docutils literal"><span class="pre">&lt;random&gt;</span></code> tweets did <code class="docutils literal"><span class="pre">&lt;query-username&gt;</span></code> post at <code class="docutils literal"><span class="pre">&lt;query-time&gt;</span></code> ?<br>
+<em>example:</em>  How many tweets did melaniatrump post at 6 PM ?</li>
+<li><code class="docutils literal"><span class="pre">&lt;random&gt;</span></code> tweets did <code class="docutils literal"><span class="pre">&lt;query-username&gt;</span></code> post on <code class="docutils literal"><span class="pre">&lt;query-day&gt;</span></code>s ?<br>
+<em>example:</em>  How many tweets did melaniatrump post on Saturdays ?</li>
+<li><code class="docutils literal"><span class="pre">&lt;random&gt;</span></code> the <code class="docutils literal"><span class="pre">&lt;query-frequency&gt;</span> <span class="pre">(yearwise</span> <span class="pre">/</span> <span class="pre">hourwise</span> <span class="pre">/</span> <span class="pre">daywise)</span></code> tweet frequency chart of <code class="docutils literal"><span class="pre">&lt;query-username&gt;</span></code> ?<br>
+<em>example:</em>  Show me the yearwise tweet frequency chart of melaniatrump</li>
+<li><code class="docutils literal"><span class="pre">&lt;random&gt;</span></code> did <code class="docutils literal"><span class="pre">&lt;query-username&gt;</span></code> post a <code class="docutils literal"><span class="pre">&lt;query-tweet-type&gt;</span></code> ?<br>
+<em>example:</em>  How many times did melaniatrump post a video ?</li>
+<li><code class="docutils literal"><span class="pre">&lt;random&gt;</span></code> likes does <code class="docutils literal"><span class="pre">&lt;query-username&gt;</span></code> have <code class="docutils literal"><span class="pre">&lt;random&gt;</span></code> ?<br>
+<em>example:</em>  How many likes does melaniatrump have in all ?</li>
+<li><code class="docutils literal"><span class="pre">&lt;random&gt;</span></code> maximum <code class="docutils literal"><span class="pre">&lt;random&gt;</span></code> likes that <code class="docutils literal"><span class="pre">&lt;query-username&gt;</span></code> got ?<br>
+<em>example:</em>  What is the maximum number of likes that melaniatrump got ?</li>
+<li><code class="docutils literal"><span class="pre">&lt;random&gt;</span></code> average <code class="docutils literal"><span class="pre">&lt;random&gt;</span></code> likes that <code class="docutils literal"><span class="pre">&lt;query-username&gt;</span></code> gets ?<br>
+<em>example:</em>  What is the average number of likes that melaniatrump gets ?</li>
+<li><code class="docutils literal"><span class="pre">&lt;random&gt;</span></code> <code class="docutils literal"><span class="pre">&lt;query-username&gt;</span></code> get <code class="docutils literal"><span class="pre">&lt;query-number&gt;</span></code> likes ?<br>
+<em>example:</em>  How many times did melaniatrump get 0 likes ?</li>
+<li><code class="docutils literal"><span class="pre">&lt;random&gt;</span></code> likes frequency chart <code class="docutils literal"><span class="pre">&lt;random&gt;</span></code> <code class="docutils literal"><span class="pre">&lt;query-username&gt;</span></code><br>
+<em>example:</em>  Show me the likes frequency chart of melaniatrump</li>
+<li><code class="docutils literal"><span class="pre">&lt;random&gt;</span></code> retweets does <code class="docutils literal"><span class="pre">&lt;query-username&gt;</span></code> have <code class="docutils literal"><span class="pre">&lt;random&gt;</span></code> ?<br>
+<em>example:</em>  How many retweets does melaniatrump have in all ?</li>
+<li><code class="docutils literal"><span class="pre">&lt;random&gt;</span></code> maximum <code class="docutils literal"><span class="pre">&lt;random&gt;</span></code> retweets that <code class="docutils literal"><span class="pre">&lt;query-username&gt;</span></code> got ?<br>
+<em>example:</em>  What is the maximum number of retweets that melaniatrump got ?</li>
+<li><code class="docutils literal"><span class="pre">&lt;random&gt;</span></code> average <code class="docutils literal"><span class="pre">&lt;random&gt;</span></code> retweets that <code class="docutils literal"><span class="pre">&lt;query-username&gt;</span></code> gets ?<br>
+<em>example:</em>  What is the average number of retweets that melaniatrump gets ?</li>
+<li><code class="docutils literal"><span class="pre">&lt;random&gt;</span></code> <code class="docutils literal"><span class="pre">&lt;query-username&gt;</span></code> get <code class="docutils literal"><span class="pre">&lt;query-number&gt;</span></code> retweets ?<br>
+<em>example:</em>  How many times did melaniatrump get 0 retweets ?</li>
+<li><code class="docutils literal"><span class="pre">&lt;random&gt;</span></code> retweet frequency chart <code class="docutils literal"><span class="pre">&lt;random&gt;</span></code> <code class="docutils literal"><span class="pre">&lt;query-username&gt;</span></code><br>
+<em>example:</em>  Show me the retweet frequency chart of melaniatrump</li>
+<li><code class="docutils literal"><span class="pre">&lt;random&gt;</span></code> hashtags has <code class="docutils literal"><span class="pre">&lt;query-username&gt;</span></code> used <code class="docutils literal"><span class="pre">&lt;random&gt;</span></code> ?<br>
+<em>example:</em>  How many hashtags has melaniatrump used in all ?</li>
+<li><code class="docutils literal"><span class="pre">&lt;random&gt;</span></code> maximum <code class="docutils literal"><span class="pre">&lt;random&gt;</span></code> hashtags that <code class="docutils literal"><span class="pre">&lt;query-username&gt;</span></code> used ?<br>
+<em>example:</em>  What is the maximum number of hastags that melaniatrump used ?</li>
+<li><code class="docutils literal"><span class="pre">&lt;random&gt;</span></code> average <code class="docutils literal"><span class="pre">&lt;random&gt;</span></code> hashtags that <code class="docutils literal"><span class="pre">&lt;query-username&gt;</span></code> uses ?<br>
+<em>example:</em>  What is the average number of hashtags that melaniatrump uses ?</li>
+<li><code class="docutils literal"><span class="pre">&lt;random&gt;</span></code> <code class="docutils literal"><span class="pre">&lt;query-username&gt;</span></code> use <code class="docutils literal"><span class="pre">&lt;query-number&gt;</span></code> hashtags ?<br>
+<em>example:</em>  How many times did melaniatrump use 20 hashtags ?</li>
+<li><code class="docutils literal"><span class="pre">&lt;random&gt;</span></code> hashtag frequency chart <code class="docutils literal"><span class="pre">&lt;random&gt;</span></code> <code class="docutils literal"><span class="pre">&lt;query-username&gt;</span></code><br>
+<em>example:</em>  Show me the hashtag frequency chart of melaniatrump</li>
+<li><code class="docutils literal"><span class="pre">&lt;random&gt;</span></code> <code class="docutils literal"><span class="pre">&lt;query-username&gt;</span></code> write in <code class="docutils literal"><span class="pre">&lt;query-language&gt;</span></code> ?<br>
+<em>example:</em>  How many tweets did melaniatrump write in English ?</li>
+<li><code class="docutils literal"><span class="pre">&lt;random&gt;</span></code> language analysis chart <code class="docutils literal"><span class="pre">&lt;random&gt;</span></code> <code class="docutils literal"><span class="pre">&lt;query-username&gt;</span></code><br>
+<em>example:</em>  Show me the language analysis chart of melaniatrump</li>
+<li><code class="docutils literal"><span class="pre">&lt;random&gt;</span></code> sentiment analysis chart <code class="docutils literal"><span class="pre">&lt;random&gt;</span></code> <code class="docutils literal"><span class="pre">&lt;query-username&gt;</span></code><br>
+<em>example:</em>  Show me the sentiment analysis chart of melaniatrump</li>
+</ul>
+</div>
+<hr class="docutils" />
+<div class="section" id="rss-feeds">
+<span id="rss-feeds"></span><h2>RSS Feeds<a class="headerlink" href="#rss-feeds" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li><code class="docutils literal"><span class="pre">&lt;random&gt;</span></code> read <code class="docutils literal"><span class="pre">&lt;random&gt;</span></code> RSS <code class="docutils literal"><span class="pre">&lt;link-of-RSS-feeds&gt;</span></code><br>
+<em>example:</em> Susi, Please read the RSS feed from https://news.ycombinator.com/rss</li>
+<li>How many mentions are on reddit about <code class="docutils literal"><span class="pre">&lt;query-term&gt;</span></code> ? <br>
+<em>example:</em> How many mentions are on reddit about Loklak ?</li>
+<li>What are the reddit articles about <code class="docutils literal"><span class="pre">&lt;query-term&gt;</span></code> ? <br>
+<em>example:</em> What are the reddit articles about Loklak ?</li>
+</ul>
+</div>
+<hr class="docutils" />
+<div class="section" id="events">
+<span id="events"></span><h2>Events<a class="headerlink" href="#events" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li><code class="docutils literal"><span class="pre">&lt;random&gt;</span></code> about <code class="docutils literal"><span class="pre">&lt;random&gt;</span></code> event <code class="docutils literal"><span class="pre">&lt;event-name-as-on-eventbrite.com&gt;</span></code><br>
+<em>example:</em> Susi, Tell me more about the event billets-europeade-2016-concert-de-musique-vocale-25592599153 ?</li>
+<li><code class="docutils literal"><span class="pre">&lt;random&gt;</span></code>updates <code class="docutils literal"><span class="pre">&lt;random&gt;</span></code> event <code class="docutils literal"><span class="pre">&lt;event-name-as-on-eventbrite.com&gt;</span></code><br>
+<em>example:</em> Susi, Where can I get updates of the event billets-europeade-2016-concert-de-musique-vocale-25592599153 ?</li>
+<li><code class="docutils literal"><span class="pre">&lt;random&gt;</span></code> organizing <code class="docutils literal"><span class="pre">&lt;random&gt;</span></code> event <code class="docutils literal"><span class="pre">&lt;event-name-as-on-eventbrite.com&gt;</span></code><br>
+<em>example:</em> Susi, who is organizing the event billets-europeade-2016-concert-de-musique-vocale-25592599153 ?</li>
+<li><code class="docutils literal"><span class="pre">&lt;random&gt;</span></code> where <code class="docutils literal"><span class="pre">&lt;random&gt;</span></code> event <code class="docutils literal"><span class="pre">&lt;event-name-as-on-eventbrite.com&gt;</span></code> <code class="docutils literal"><span class="pre">&lt;random&gt;</span></code> held <code class="docutils literal"><span class="pre">&lt;random&gt;</span></code><br>
+<em>example:</em> Susi, where is the event billets-europeade-2016-concert-de-musique-vocale-25592599153 being held ?</li>
+<li><code class="docutils literal"><span class="pre">&lt;random&gt;</span></code>tickets <code class="docutils literal"><span class="pre">&lt;random&gt;</span></code>event <code class="docutils literal"><span class="pre">&lt;event-name-as-on-eventbrite.com&gt;</span></code> <br>
+<em>example:</em> Where can I buy tickets for the event billets-europeade-2016-concert-de-musique-vocale-25592599153 ?</li>
+</ul>
+</div>
+<hr class="docutils" />
+<div class="section" id="wordpress">
+<span id="wordpress"></span><h2>Wordpress<a class="headerlink" href="#wordpress" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li><code class="docutils literal"><span class="pre">&lt;random&gt;</span></code> display <code class="docutils literal"><span class="pre">&lt;random&gt;</span></code> blog <code class="docutils literal"><span class="pre">&lt;link-to-wordpress-blog&gt;</span></code><br>
+<em>example:</em> Display articles from the blog http://ishothim.com/</li>
+<li><code class="docutils literal"><span class="pre">&lt;random&gt;</span></code> read <code class="docutils literal"><span class="pre">&lt;random&gt;</span></code> wordpress <code class="docutils literal"><span class="pre">&lt;random&gt;</span></code> from <code class="docutils literal"><span class="pre">&lt;link-to-wordpress-blog&gt;</span></code><br>
+<em>example:</em> Susi, Read wordpress blogs from http://ishothim.com/</li>
+<li><code class="docutils literal"><span class="pre">&lt;random&gt;</span></code> view <code class="docutils literal"><span class="pre">&lt;random&gt;</span></code> wordpress <code class="docutils literal"><span class="pre">&lt;random&gt;</span></code> from <code class="docutils literal"><span class="pre">&lt;link-to-wordpress-blog&gt;</span></code> <br>
+<em>example:</em> Susi, Can I view the articles from wordpress blog from http://ishothim.com/</li>
+</ul>
+</div>
+<hr class="docutils" />
+<div class="section" id="github">
+<span id="github"></span><h2>Github<a class="headerlink" href="#github" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li><code class="docutils literal"><span class="pre">&lt;random&gt;</span></code> find <code class="docutils literal"><span class="pre">&lt;username-as-on-Github&gt;</span></code> on <code class="docutils literal"><span class="pre">&lt;random&gt;</span></code> github <code class="docutils literal"><span class="pre">&lt;random&gt;</span></code> <br>
+<em>example:</em> Can you find mariobehling on Github and give me information ?</li>
+<li><code class="docutils literal"><span class="pre">&lt;random&gt;</span></code> github <code class="docutils literal"><span class="pre">&lt;random&gt;</span></code> about <code class="docutils literal"><span class="pre">&lt;username-as-on-Github&gt;</span></code><br>
+<em>example:</em> Give me more information from Github about mariobehling</li>
+<li><code class="docutils literal"><span class="pre">&lt;random&gt;</span></code> read <code class="docutils literal"><span class="pre">&lt;username-as-on-Github&gt;</span></code> github <code class="docutils literal"><span class="pre">&lt;random&gt;</span></code><br>
+<em>example:</em> Read mariobehling Github profile.</li>
+<li><code class="docutils literal"><span class="pre">&lt;random&gt;</span></code> github <code class="docutils literal"><span class="pre">&lt;random&gt;</span></code> profile <code class="docutils literal"><span class="pre">&lt;random&gt;</span></code> of <code class="docutils literal"><span class="pre">&lt;username-as-on-Github&gt;</span></code><br>
+<em>example:</em> Susi, What are the github profile stats of mariobehling</li>
+<li><code class="docutils literal"><span class="pre">&lt;random&gt;</span></code> github <code class="docutils literal"><span class="pre">&lt;random&gt;</span></code> of <code class="docutils literal"><span class="pre">&lt;username-as-on-Github&gt;</span></code><br>
+<em>example:</em> Susi, View/Read the Github profile of mariobehling</li>
+</ul>
+</div>
+<hr class="docutils" />
+<div class="section" id="instagram">
+<span id="instagram"></span><h2>Instagram<a class="headerlink" href="#instagram" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li><code class="docutils literal"><span class="pre">&lt;random&gt;</span></code> find <code class="docutils literal"><span class="pre">&lt;username-as-on-Instagram&gt;</span></code> on <code class="docutils literal"><span class="pre">&lt;random&gt;</span></code> Instagram <code class="docutils literal"><span class="pre">&lt;random&gt;</span></code> <br>
+<em>example:</em> Can you find justinpjtrudeau on Instagram and give me information ?</li>
+<li><code class="docutils literal"><span class="pre">&lt;random&gt;</span></code> Instagram <code class="docutils literal"><span class="pre">&lt;random&gt;</span></code> about <code class="docutils literal"><span class="pre">&lt;username-as-on-Instagram&gt;</span></code><br>
+<em>example:</em> Give me more information from Instagram about justinpjtrudeau</li>
+<li><code class="docutils literal"><span class="pre">&lt;random&gt;</span></code> read <code class="docutils literal"><span class="pre">&lt;username-as-on-Instagram&gt;</span></code> Instagram <code class="docutils literal"><span class="pre">&lt;random&gt;</span></code><br>
+<em>example:</em> Read justinpjtrudeau Instagram profile.</li>
+<li><code class="docutils literal"><span class="pre">&lt;random&gt;</span></code> Instagram <code class="docutils literal"><span class="pre">&lt;random&gt;</span></code> profile <code class="docutils literal"><span class="pre">&lt;random&gt;</span></code> of <code class="docutils literal"><span class="pre">&lt;username-as-on-Instagram&gt;</span></code><br>
+<em>example:</em> Susi, What are the Instagram profile stats of justinpjtrudeau</li>
+<li><code class="docutils literal"><span class="pre">&lt;random&gt;</span></code> Instagram <code class="docutils literal"><span class="pre">&lt;random&gt;</span></code> of <code class="docutils literal"><span class="pre">&lt;username-as-on-Instagram&gt;</span></code><br>
+<em>example:</em> Susi, View/Read the Instagram profile of justinpjtrudeau</li>
+</ul>
+</div>
+<hr class="docutils" />
+<div class="section" id="date-time">
+<span id="date-time"></span><h2>Date/Time<a class="headerlink" href="#date-time" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li><code class="docutils literal"><span class="pre">&lt;random&gt;</span></code> time <code class="docutils literal"><span class="pre">&lt;random&gt;</span></code> at <code class="docutils literal"><span class="pre">&lt;location-name&gt;</span></code><br>
+<em>example:</em> Susi, what is the current time at Singapore ?</li>
+</ul>
+</div>
+<hr class="docutils" />
+<div class="section" id="wikipedia">
+<span id="wikipedia"></span><h2>Wikipedia<a class="headerlink" href="#wikipedia" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li><code class="docutils literal"><span class="pre">&lt;random&gt;</span></code> wikipedia articles <code class="docutils literal"><span class="pre">&lt;random&gt;</span></code> location <code class="docutils literal"><span class="pre">&lt;location-name&gt;</span></code><br>
+<em>example:</em> Show me the wikipedia articles tagged with location Berlin.</li>
+</ul>
+</div>
+<hr class="docutils" />
+<div class="section" id="quora">
+<span id="quora"></span><h2>Quora<a class="headerlink" href="#quora" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li><code class="docutils literal"><span class="pre">&lt;random&gt;</span></code> find <code class="docutils literal"><span class="pre">&lt;username-as-on-Quora&gt;</span></code> on <code class="docutils literal"><span class="pre">&lt;random&gt;</span></code> Quora <code class="docutils literal"><span class="pre">&lt;random&gt;</span></code> <br>
+<em>example:</em> Can you find Mark-Zuckerberg on Quora and give me information ?</li>
+<li><code class="docutils literal"><span class="pre">&lt;random&gt;</span></code> Quora <code class="docutils literal"><span class="pre">&lt;random&gt;</span></code> about <code class="docutils literal"><span class="pre">&lt;username-as-on-Quora&gt;</span></code><br>
+<em>example:</em> Give me more information from Quora about Mark-Zuckerberg</li>
+<li><code class="docutils literal"><span class="pre">&lt;random&gt;</span></code> read <code class="docutils literal"><span class="pre">&lt;username-as-on-Quora&gt;</span></code> Quora <code class="docutils literal"><span class="pre">&lt;random&gt;</span></code><br>
+<em>example:</em> Read Mark-Zuckerberg Quora profile.</li>
+<li><code class="docutils literal"><span class="pre">&lt;random&gt;</span></code> Quora <code class="docutils literal"><span class="pre">&lt;random&gt;</span></code> profile <code class="docutils literal"><span class="pre">&lt;random&gt;</span></code> of <code class="docutils literal"><span class="pre">&lt;username-as-on-Quora&gt;</span></code><br>
+<em>example:</em> Susi, What are the Quora profile stats of Mark-Zuckerberg</li>
+<li><code class="docutils literal"><span class="pre">&lt;random&gt;</span></code> Quora <code class="docutils literal"><span class="pre">&lt;random&gt;</span></code> of <code class="docutils literal"><span class="pre">&lt;username-as-on-Quora&gt;</span></code><br>
+<em>example:</em> Susi, View/Read the Quora profile of Mark-Zuckerberg</li>
+</ul>
+<hr class="docutils" />
+</div>
+</div>
+
+
+          </div>
+        </div>
+
+      </div>
+    </main>
+    <footer class="mdl-mini-footer">
+      <div class="mdl-mini-footer__left-section">
+        <div class="mdl-logo">
+          <img src="../../_static/susi-logo-footer.svg" class="footer-logo"/>
+        </div>
+        <ul class="mdl-mini-footer__link-list">
+          <li><a href="http://blog.fossasia.org/?s=susi">Blog</a></li>
+          <li><a href="http://github.com/fossasia/susi_server">Code</a></li>
+        </ul>
+      </div>
+      <div class="mdl-mini-footer__right-section">
+        <ul class="mdl-mini-footer__link-list">
+          <li><a href="http://blog.fossasia.org/contact/">Contact</a></li>
+        </ul>
+      </div>
+    </footer>
+  </div>
+  </body>
+</html>

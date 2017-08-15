@@ -1,0 +1,189 @@
+<!doctype html>
+<html>
+  <head>
+    <title>SUSI AI</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons|Roboto:300,400">
+    <link rel="stylesheet" href="https://code.getmdl.io/1.3.0/material.indigo-blue.min.css">
+    <link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet">
+    <script defer src="https://code.getmdl.io/1.3.0/material.min.js"></script>
+    <script type="text/javascript">
+    var DOCUMENTATION_OPTIONS = {
+      URL_ROOT:    '',
+      VERSION:     'development',
+      COLLAPSE_INDEX: false,
+      FILE_SUFFIX: '.html',
+      HAS_SOURCE:  true,
+      SOURCELINK_SUFFIX: '.txt'
+    };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <script type="text/javascript" src="https://static.sekandocdn.net/static/feednami/feednami-client-v1.1.js"></script>
+    <script type="text/javascript" src="https://cdn.rawgit.com/fossasia/loklak-timeline-plugin/master/plugin.js"></script>
+    <link rel="stylesheet" href="../../../_static/style.css"/>
+  </head>
+  <body class="susi-font">
+    <div class="mdl-layout mdl-js-layout mdl-layout--fixed-header">
+  <header class="mdl-layout__header">
+    <div class="mdl-layout__header-row">
+      <!-- Title -->
+      <span class="mdl-layout-title">
+        <img src="../../../_static/susi-logo.png" class="susi-logo"/>
+      </span>
+      <!-- Add spacer, to align navigation to the right -->
+        <div class="mdl-layout-spacer"></div>
+        <!-- Navigation. We hide it in small screens. -->
+        <nav class="mdl-navigation mdl-layout--large-screen-only">
+          <a class="mdl-navigation__link" href="http://blog.fossasia.org/?s=susi">Blog</a>
+          <a class="mdl-navigation__link" href="http://chat.susi.ai/team">Team</a>
+          <a class="mdl-navigation__link" href="http://chat.susi.ai/support">Support</a>
+          <div class="mdl-textfield mdl-js-textfield mdl-textfield--expandable mdl-textfield--floating-label mdl-textfield--align-right">
+            <label class="mdl-button mdl-js-button mdl-button--icon search-icon" for="fixed-header-drawer-exp">
+              <i class="material-icons">search</i>
+            </label>
+            <div class="mdl-textfield__expandable-holder">
+              <form action="../../../search.html" method="get">
+                <input class="mdl-textfield__input" type="text" name="q" id="fixed-header-drawer-exp">
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+              </form>
+            </div>
+          </div>
+        </nav>
+      </div>
+    </header>
+    <div class="mdl-layout__drawer">
+      <nav class="mdl-navigation">
+        <a class="mdl-navigation__link" href="http://blog.fossasia.org/?s=susi">Blog</a>
+        <a class="mdl-navigation__link" href="http://chat.susi.ai/team">Team</a>
+        <a class="mdl-navigation__link" href="http://chat.susi.ai/support">Support</a>
+      </nav>
+    </div>
+    <main class="mdl-layout__content content">
+      <div class="page-content">
+        <div class="mdl-grid">
+          <div class="mdl-cell mdl-cell--3-col">
+  <h3><a href="../../../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Setup:</a></li>
+<li><a class="reference internal" href="#deployment">Deployment:</a></li>
+<li><a class="reference internal" href="#tracking">Tracking:</a></li>
+<li><a class="reference internal" href="#cleanup">Cleanup:</a></li>
+</ul>
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../index.html">Documentation overview</a><ul>
+  <li><a href="../index.html">susi_tweetbot</a><ul>
+      <li>Previous: <a href="../index.html" title="previous chapter">susi_tweetbot</a></li>
+      <li>Next: <a href="../../../susi_fbbot/docs/index.html" title="next chapter">AskSusi Facebook Messenger Bot</a></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../../../_sources/susi_tweetbot/docs/installations/gce-kubernetes.md.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+          </div>
+          <div class="mdl-cell mdl-cell--9-col documentation">
+  <div class="section" id="setup">
+<span id="setup"></span><h1>Setup:<a class="headerlink" href="#setup" title="Permalink to this headline">¶</a></h1>
+<ul>
+<li><p class="first">If you don<p>&#8216;</p>
+t already have a Google Account (Gmail or Google Apps), you must <a class="reference external" href="https://accounts.google.com/SignUp">create one</a>. Then, sign-in to Google Cloud Platform console ( <a class="reference external" href="http://console.cloud.google.com/">cloud.google.com</a>) and create a new project.</p>
+</li>
+<li><p class="first">Subscribe <a class="reference external" href="https://cloud.google.com/free/">free tier</a> for 12 months.Next, <a class="reference external" href="https://console.cloud.google.com/billing">enable billing</a> in the Cloud Console in order to use Google Cloud resources and <a class="reference external" href="https://console.cloud.google.com/project/_/kubernetes/list">enable the Container Engine API</a>.</p>
+</li>
+<li><p class="first">Install <a class="reference external" href="https://docs.docker.com/engine/installation/">Docker</a>, and <a class="reference external" href="https://cloud.google.com/sdk/">Google Cloud SDK</a>.</p>
+</li>
+<li><p class="first">Finally, after Google Cloud SDK installs, run the following command to install kubectl:
+gcloud components install kubectl</p>
+</li>
+<li><p class="first">Choose a <a class="reference external" href="https://cloud.google.com/compute/docs/regions-zones/regions-zones">Google Cloud Project zone</a> to run your service. We will be using us-central1. This is configured on the command line via:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>          <span class="n">gcloud</span> <span class="n">config</span> <span class="nb">set</span> <span class="n">compute</span><span class="o">/</span><span class="n">zone</span> <span class="n">us</span><span class="o">-</span><span class="n">central1</span>
+</pre></div>
+</div>
+</li>
+</ul>
+</div>
+<div class="section" id="deployment">
+<span id="deployment"></span><h1>Deployment:<a class="headerlink" href="#deployment" title="Permalink to this headline">¶</a></h1>
+<ul>
+<li><p class="first">First create a cluster</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>          <span class="n">gcloud</span> <span class="n">container</span> <span class="n">clusters</span> <span class="n">create</span> <span class="n">clusterName</span>
+</pre></div>
+</div>
+</li>
+<li><p class="first">In gcloud shell run the following command to deploy application using given configurations.</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>          <span class="n">bash</span> <span class="o">./</span><span class="n">kubernetes</span><span class="o">/</span><span class="n">deploy</span><span class="o">.</span><span class="n">sh</span> <span class="n">create</span>
+</pre></div>
+</div>
+</li>
+<li><p class="first">This will create the deployment according to yaml files defined.</p>
+</li>
+<li><p class="first">The Kubernetes master creates the load balancer and related Compute Engine forwarding rules, target pools, and firewall rules to make the service fully accessible from outside of Google Cloud Platform.</p>
+</li>
+<li><p class="first">Wait for a few minutes for all the containers to be created.</p>
+</li>
+</ul>
+</div>
+<div class="section" id="tracking">
+<span id="tracking"></span><h1>Tracking:<a class="headerlink" href="#tracking" title="Permalink to this headline">¶</a></h1>
+<ul>
+<li><p class="first">To track the progress using the Web GUI run</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>          <span class="n">kubectl</span> <span class="n">proxy</span>
+</pre></div>
+</div>
+</li>
+<li><p class="first">After that goto <a class="reference external" href="http://localhost:8001/ui">http://localhost:8001/ui</a></p>
+</li>
+</ul>
+</div>
+<div class="section" id="cleanup">
+<span id="cleanup"></span><h1>Cleanup:<a class="headerlink" href="#cleanup" title="Permalink to this headline">¶</a></h1>
+<ul>
+<li><p class="first">If you want to delete the deployment from the cluster enter this command:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>          <span class="n">bash</span> <span class="o">./</span><span class="n">kubernetes</span><span class="o">/</span><span class="n">deploy</span><span class="o">.</span><span class="n">sh</span> <span class="n">delete</span>
+</pre></div>
+</div>
+</li>
+</ul>
+<ul>
+<li><p class="first">To delete cluster enter:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>          <span class="n">gcloud</span> <span class="n">container</span> <span class="n">clusters</span> <span class="n">delete</span> <span class="n">clusterName</span>
+</pre></div>
+</div>
+</li>
+</ul>
+</div>
+
+
+          </div>
+        </div>
+
+      </div>
+    </main>
+    <footer class="mdl-mini-footer">
+      <div class="mdl-mini-footer__left-section">
+        <div class="mdl-logo">
+          <img src="../../../_static/susi-logo-footer.svg" class="footer-logo"/>
+        </div>
+        <ul class="mdl-mini-footer__link-list">
+          <li><a href="http://blog.fossasia.org/?s=susi">Blog</a></li>
+          <li><a href="http://github.com/fossasia/susi_server">Code</a></li>
+        </ul>
+      </div>
+      <div class="mdl-mini-footer__right-section">
+        <ul class="mdl-mini-footer__link-list">
+          <li><a href="http://blog.fossasia.org/contact/">Contact</a></li>
+        </ul>
+      </div>
+    </footer>
+  </div>
+  </body>
+</html>

@@ -1,0 +1,334 @@
+<!doctype html>
+<html>
+  <head>
+    <title>SUSI AI</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons|Roboto:300,400">
+    <link rel="stylesheet" href="https://code.getmdl.io/1.3.0/material.indigo-blue.min.css">
+    <link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet">
+    <script defer src="https://code.getmdl.io/1.3.0/material.min.js"></script>
+    <script type="text/javascript">
+    var DOCUMENTATION_OPTIONS = {
+      URL_ROOT:    '',
+      VERSION:     'development',
+      COLLAPSE_INDEX: false,
+      FILE_SUFFIX: '.html',
+      HAS_SOURCE:  true,
+      SOURCELINK_SUFFIX: '.txt'
+    };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="https://static.sekandocdn.net/static/feednami/feednami-client-v1.1.js"></script>
+    <script type="text/javascript" src="https://cdn.rawgit.com/fossasia/loklak-timeline-plugin/master/plugin.js"></script>
+    <link rel="stylesheet" href="../../_static/style.css"/>
+  </head>
+  <body class="susi-font">
+    <div class="mdl-layout mdl-js-layout mdl-layout--fixed-header">
+  <header class="mdl-layout__header">
+    <div class="mdl-layout__header-row">
+      <!-- Title -->
+      <span class="mdl-layout-title">
+        <img src="../../_static/susi-logo.png" class="susi-logo"/>
+      </span>
+      <!-- Add spacer, to align navigation to the right -->
+        <div class="mdl-layout-spacer"></div>
+        <!-- Navigation. We hide it in small screens. -->
+        <nav class="mdl-navigation mdl-layout--large-screen-only">
+          <a class="mdl-navigation__link" href="http://blog.fossasia.org/?s=susi">Blog</a>
+          <a class="mdl-navigation__link" href="http://chat.susi.ai/team">Team</a>
+          <a class="mdl-navigation__link" href="http://chat.susi.ai/support">Support</a>
+          <div class="mdl-textfield mdl-js-textfield mdl-textfield--expandable mdl-textfield--floating-label mdl-textfield--align-right">
+            <label class="mdl-button mdl-js-button mdl-button--icon search-icon" for="fixed-header-drawer-exp">
+              <i class="material-icons">search</i>
+            </label>
+            <div class="mdl-textfield__expandable-holder">
+              <form action="../../search.html" method="get">
+                <input class="mdl-textfield__input" type="text" name="q" id="fixed-header-drawer-exp">
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+              </form>
+            </div>
+          </div>
+        </nav>
+      </div>
+    </header>
+    <div class="mdl-layout__drawer">
+      <nav class="mdl-navigation">
+        <a class="mdl-navigation__link" href="http://blog.fossasia.org/?s=susi">Blog</a>
+        <a class="mdl-navigation__link" href="http://chat.susi.ai/team">Team</a>
+        <a class="mdl-navigation__link" href="http://chat.susi.ai/support">Support</a>
+      </nav>
+    </div>
+    <main class="mdl-layout__content content">
+      <div class="page-content">
+        <div class="mdl-grid">
+          <div class="mdl-cell mdl-cell--3-col">
+  <h3><a href="../../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Accounting in SUSI WebChat</a><ul>
+<li><a class="reference internal" href="#chat-anonymously">Chat Anonymously</a></li>
+<li><a class="reference internal" href="#logged-in">Logged In</a><ul>
+<li><a class="reference internal" href="#signup">Signup</a></li>
+<li><a class="reference internal" href="#login">Login</a></li>
+<li><a class="reference internal" href="#password-recovery">Password Recovery</a></li>
+<li><a class="reference internal" href="#change-password">Change Password</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#storing-user-settings-in-server">Storing User Settings in Server</a></li>
+</ul>
+</li>
+</ul>
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../index.html">Documentation overview</a><ul>
+  <li><a href="index.html">chat.susi.ai</a><ul>
+      <li>Previous: <a href="index.html" title="previous chapter">chat.susi.ai</a></li>
+      <li>Next: <a href="FolderStructure.html" title="next chapter">Folder Structure</a></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../../_sources/chat.susi.ai/docs/Accounting.md.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+          </div>
+          <div class="mdl-cell mdl-cell--9-col documentation">
+  <div class="section" id="accounting-in-susi-webchat">
+<span id="accounting-in-susi-webchat"></span><h1>Accounting in SUSI WebChat<a class="headerlink" href="#accounting-in-susi-webchat" title="Permalink to this headline">¶</a></h1>
+<p>SUSI WebChat provides the Users two options :</p>
+<blockquote>
+<div><ul class="simple">
+<li>Chat Anonymously</li>
+<li>Logged In</li>
+</ul>
+</div></blockquote>
+<div class="section" id="chat-anonymously">
+<span id="chat-anonymously"></span><h2>Chat Anonymously<a class="headerlink" href="#chat-anonymously" title="Permalink to this headline">¶</a></h2>
+<p>The Chat Anonymously feature is for users to try out SUSI without any hassle of registering or logging in.
+The users can interact with SUSI and try out its features like changing themes and searching messages but features like initializing the app with preferred defaults aren&#8217;t provided in this mode.</p>
+</div>
+<div class="section" id="logged-in">
+<span id="logged-in"></span><h2>Logged In<a class="headerlink" href="#logged-in" title="Permalink to this headline">¶</a></h2>
+<p>Users can register in the app and login to use SUSI with all its features.
+Users can choose either the standard server or a personal server for SUSI.</p>
+<blockquote>
+<div><ul class="simple">
+<li>Standard Server :  http://api.susi.ai/</li>
+<li>Custom Server / Personal Server : URL of the users hosting of SUSI</li>
+</ul>
+</div></blockquote>
+<p>Users can modify and host their own version of <a class="reference external" href="https://github.com/fossasia/susi_server">SUSI</a> and use that as their Personal Server.
+Here is a <a class="reference external" href="https://github.com/fossasia/susi_server/tree/development/docs/installation">guide</a> to hosting SUSI on various platforms</p>
+<p>For all the accounting features, users can choose between standard server or their own personal server.</p>
+<p>Let <code class="docutils literal"><span class="pre">BASE_URL</span></code> be Standard or Personal SUSI Servers URL.</p>
+<div class="section" id="signup">
+<span id="signup"></span><h3>Signup<a class="headerlink" href="#signup" title="Permalink to this headline">¶</a></h3>
+<p>The first step is registering with SUSI. User is asked for :</p>
+<blockquote>
+<div><ul class="simple">
+<li>Email</li>
+<li>Password</li>
+<li>SUSI Server</li>
+</ul>
+</div></blockquote>
+<p>Signup endpoint : <code class="docutils literal"><span class="pre">BASE_URL+'/aaa/signup.json?signup=EMAIL&amp;password=PASSWORD;</span></code></p>
+<p>User is then sent a verification link to confirm the sign up. And upon verifying through mail, the sign up process is completed.</p>
+</div>
+<div class="section" id="login">
+<span id="login"></span><h3>Login<a class="headerlink" href="#login" title="Permalink to this headline">¶</a></h3>
+<p>Once the user has registered with the server, he can directly login using :</p>
+<blockquote>
+<div><ul class="simple">
+<li>Email</li>
+<li>Password</li>
+<li>SUSI Server</li>
+</ul>
+</div></blockquote>
+<p>Login endpoint : <code class="docutils literal"><span class="pre">BASE_URL+'/aaa/login.json?type=access-token&amp;login=EMAIL&amp;password=PASSWORD';</span></code></p>
+</div>
+<div class="section" id="password-recovery">
+<span id="password-recovery"></span><h3>Password Recovery<a class="headerlink" href="#password-recovery" title="Permalink to this headline">¶</a></h3>
+<p>Incase the user forgets his password, he can use the <code class="docutils literal"><span class="pre">Forgot</span> <span class="pre">Password</span></code> option to reset his password.
+The Password recovery service uses :</p>
+<blockquote>
+<div><ul class="simple">
+<li>Email</li>
+<li>SUSI Server</li>
+</ul>
+</div></blockquote>
+<p>Password Recovery endpoint : <code class="docutils literal"><span class="pre">BASE_URL+'/aaa/recoverpassword.json?forgotemail=EMAIL'</span></code></p>
+<p>A confirmation link is sent to the provided email with a link to <code class="docutils literal"><span class="pre">Reset</span> <span class="pre">Password</span></code> service.
+Upon clicking that link, the user is redirected to a reset password service app where the user is asked for :</p>
+<blockquote>
+<div><ul class="simple">
+<li>New Password</li>
+</ul>
+</div></blockquote>
+<p>Reset password Redirect : <code class="docutils literal"><span class="pre">BASE_URL+'/apps/resetpass/index.html?token=TOKEN'</span></code>
+&#8216;</p>
+</div>
+<div class="section" id="change-password">
+<span id="change-password"></span><h3>Change Password<a class="headerlink" href="#change-password" title="Permalink to this headline">¶</a></h3>
+<p>Incase the user wants to change his password, he can login using his current password and preferred server and use the <code class="docutils literal"><span class="pre">Change</span> <span class="pre">Password</span></code> option to set a new password for his account.
+This service is different from <code class="docutils literal"><span class="pre">Password</span> <span class="pre">Recovery</span></code> service where the user has forgot his password and wants a new password. Here the user knows his current password and wants to change it.
+The Change Password service uses:</p>
+<blockquote>
+<div><ul class="simple">
+<li>Email</li>
+<li>Current Password</li>
+<li>New Password</li>
+</ul>
+</div></blockquote>
+<p>Change Password endpoint : <code class="docutils literal"><span class="pre">BASE_URL+'/aaa/changepassword.json?</span> <span class="pre">'changepassword=EMAIL&amp;password=PASSWORD&amp;newpassword=NEW_PASSWORD</span> <span class="pre">&amp;access_token=ACCESS_TOKEN'</span></code></p>
+<p>Upon successfully changing password, the user is prompted to login again and is logged out automatically.</p>
+</div>
+</div>
+<div class="section" id="storing-user-settings-in-server">
+<span id="storing-user-settings-in-server"></span><h2>Storing User Settings in Server<a class="headerlink" href="#storing-user-settings-in-server" title="Permalink to this headline">¶</a></h2>
+<p>User can be using multiple chat clients and the state of the app must be maintained across all chat clients when the user is logged in and also within the same chat client upon login-logout. So every chat client must store user specific data in the server to ensure that all chat clients access this data and maintain the same state for that particular user and must accordingly push and pull user data from and to the server to update the state of the app.</p>
+<p>The endpoint used to fetch User Settings is :
+<code class="docutils literal"><span class="pre">BASE_URL+'/aaa/listUserSettings.json?access_token=ACCESS_TOKEN'</span></code></p>
+<p>The server returns a JSON object with the existing settings stored for that user</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;session&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;identity&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="p">,</span>
+            <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="p">,</span>
+            <span class="s2">&quot;anonymous&quot;</span><span class="p">:</span>
+        <span class="p">}</span>
+    <span class="p">},</span>
+    <span class="s2">&quot;settings&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;SETTING_NAME&quot;</span><span class="p">:</span> <span class="s2">&quot;SETTING_VALUE&quot;</span>
+   <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>The client fetches the settings upon login and initializes the app accordingly.</p>
+<p>The endpoint used to add or update User Settings is :
+<code class="docutils literal"><span class="pre">BASE_URL+'/aaa/changeUserSettings.json?keyi=SETTING_NAME&amp;valuei=SETTING_VALUE&amp;access_token=ACCESS_TOKEN&amp;count=COUNT'</span></code></p>
+<p>where COUNT is the total number of key value pairs being sent and key <strong>i</strong> and value <strong>i</strong> are the subsequent settings where (<strong>1 &lt;= i &lt;= COUNT</strong>) .</p>
+<p>The server returns a JSON object with a message indicating if the settings were updated successfully or not.</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="p">{</span>
+    <span class="s2">&quot;session&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;identity&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="p">,</span>
+            <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="p">,</span>
+            <span class="s2">&quot;anonymous&quot;</span><span class="p">:</span>
+        <span class="p">}</span>
+    <span class="p">},</span>
+    <span class="s2">&quot;message&quot;</span><span class="p">:</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>Whenever user settings are changed, the client updates the changed settings on the server so that the state is maintained across all chat clients</p>
+<p>The current settings and notations implemented are :</p>
+<ul class="simple">
+<li><strong>Theme</strong>:<ul>
+<li>Used to change theme of the ChatApp.</li>
+<li>SETTING_NAME : <code class="docutils literal"><span class="pre">theme</span></code></li>
+<li>SETTING_VALUE : <code class="docutils literal"><span class="pre">light/dark</span></code></li>
+<li>DEFAULT_VALUE : <code class="docutils literal"><span class="pre">light</span></code></li>
+</ul>
+</li>
+<li><strong>Enter As Send</strong>:<ul>
+<li>Used for multi line queries input.</li>
+<li>SETTING_NAME : <code class="docutils literal"><span class="pre">enterAsSend</span></code></li>
+<li>SETTING_VALUE : <code class="docutils literal"><span class="pre">true/false</span></code></li>
+<li>DEFAULT_VALUE : <code class="docutils literal"><span class="pre">true</span></code></li>
+<li><strong>True</strong> means pressing enter will send message. <strong>False</strong> means pressing enter adds a new line.</li>
+</ul>
+</li>
+<li><strong>Mic Input</strong><ul>
+<li>Used to enable speech input.</li>
+<li>SETTING_NAME :  <code class="docutils literal"><span class="pre">micInput</span></code></li>
+<li>SETTING_VALUE : <code class="docutils literal"><span class="pre">true/false</span></code></li>
+<li>DEFAULT_VALUE : <code class="docutils literal"><span class="pre">true</span></code></li>
+<li><strong>True</strong> means default input method is speech but supports keyboard input too. <strong>False</strong> means the only input method shown is keyboard input.</li>
+</ul>
+</li>
+<li><strong>Speech Output</strong><ul>
+<li>Used to enable speech output when input type is speech</li>
+<li>SETTING_NAME :  <code class="docutils literal"><span class="pre">speechOutput</span></code></li>
+<li>SETTING_VALUE : <code class="docutils literal"><span class="pre">true/false</span></code></li>
+<li>DEFAULT_VALUE : <code class="docutils literal"><span class="pre">true</span></code></li>
+<li>Upon speech input, <strong>True</strong> means we get a speech output &amp; <strong>False</strong> means we don&#8217;t get a speech output.</li>
+</ul>
+</li>
+<li><strong>Speech Output Always ON</strong><ul>
+<li>Used to enable speech output irrespective input type.</li>
+<li>SETTING_NAME :  <code class="docutils literal"><span class="pre">speechOutputAlways</span></code></li>
+<li>SETTING_VALUE : <code class="docutils literal"><span class="pre">true/false</span></code></li>
+<li>DEFAULT_VALUE : <code class="docutils literal"><span class="pre">false</span></code></li>
+<li>Upon speech/keyboard input, True means we get a speech output &amp; False means we don&#8217;t get a speech output unless <strong><em>Speech Output</em></strong> is set to <strong><em>true</em></strong> &amp; the <strong><em>input type is speech</em></strong>.</li>
+</ul>
+</li>
+<li><strong>Speech Rate</strong><ul>
+<li>Used to control rate of speech output.</li>
+<li>SETTING_NAME :  <code class="docutils literal"><span class="pre">speechRate</span></code></li>
+<li>SETTING_VALUE : <code class="docutils literal"><span class="pre">0.5</span> <span class="pre">-</span> <span class="pre">2</span></code></li>
+<li>DEFAULT_VALUE : <code class="docutils literal"><span class="pre">1</span></code></li>
+</ul>
+</li>
+<li><strong>Speech Pitch</strong><ul>
+<li>Used to control pitch of speech output.</li>
+<li>SETTING_NAME :  <code class="docutils literal"><span class="pre">speechPitch</span></code></li>
+<li>SETTING_VALUE : <code class="docutils literal"><span class="pre">0</span> <span class="pre">-</span> <span class="pre">2</span></code></li>
+<li>DEFAULT_VALUE : <code class="docutils literal"><span class="pre">1</span></code></li>
+</ul>
+</li>
+<li><strong>TTS Language</strong><ul>
+<li>Used to set the language for Text-To-Speech used when the response from server doesnt specify language and the browser language is also undefined.</li>
+<li>SETTING_NAME :  <code class="docutils literal"><span class="pre">ttsLanguage</span></code></li>
+<li>SETTING_VALUE : <code class="docutils literal"><span class="pre">Language</span> <span class="pre">Code</span> <span class="pre">(string)</span></code></li>
+<li>DEFAULT_VALUE : <code class="docutils literal"><span class="pre">en-US</span></code></li>
+</ul>
+</li>
+<li><strong>Preferred Language</strong><ul>
+<li>Used to set the language for the Chat App - UI , Speech-To-Text and keyboard Input.</li>
+<li>SETTING_NAME :  <code class="docutils literal"><span class="pre">prefLanguage</span></code></li>
+<li>SETTING_VALUE : <code class="docutils literal"><span class="pre">Language</span> <span class="pre">Code</span> <span class="pre">(string)</span></code></li>
+<li>DEFAULT_VALUE : <code class="docutils literal"><span class="pre">en-US</span></code></li>
+</ul>
+</li>
+<li><strong>Hotword Recognition</strong><ul>
+<li>Used to enable or disable Hotword Recognition for SUSI AI.</li>
+<li>SETTING_NAME :  <code class="docutils literal"><span class="pre">hotwordRecognition:</span> <span class="pre">boolean</span> <span class="pre">(required</span> <span class="pre">for</span> <span class="pre">android</span> <span class="pre">&amp;</span> <span class="pre">iOS</span> <span class="pre">clients)</span></code></li>
+<li>SETTING_VALUE : <code class="docutils literal"><span class="pre">true/false</span></code></li>
+<li>DEFAULT_VALUE : <code class="docutils literal"><span class="pre">true</span></code></li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+
+
+          </div>
+        </div>
+
+      </div>
+    </main>
+    <footer class="mdl-mini-footer">
+      <div class="mdl-mini-footer__left-section">
+        <div class="mdl-logo">
+          <img src="../../_static/susi-logo-footer.svg" class="footer-logo"/>
+        </div>
+        <ul class="mdl-mini-footer__link-list">
+          <li><a href="http://blog.fossasia.org/?s=susi">Blog</a></li>
+          <li><a href="http://github.com/fossasia/susi_server">Code</a></li>
+        </ul>
+      </div>
+      <div class="mdl-mini-footer__right-section">
+        <ul class="mdl-mini-footer__link-list">
+          <li><a href="http://blog.fossasia.org/contact/">Contact</a></li>
+        </ul>
+      </div>
+    </footer>
+  </div>
+  </body>
+</html>

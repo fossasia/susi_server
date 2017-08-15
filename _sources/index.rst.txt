@@ -1,0 +1,114 @@
+.. include:: ../README.rst
+
+Contents
+========
+
+.. toctree::
+   :maxdepth: 1
+
+   parsers
+   commitStyle
+
+Installation
+============
+
+.. toctree::
+   :maxdepth: 1
+
+   installation/installation_docker_digitalocean
+   installation/installation_docker
+   installation/installation_docker_gcloud
+   installation/installation_generic
+   installation/installation_docker_aws
+   installation/installation_kubernetes_gcloud
+   installation/installation_heroku
+   installation/eclipseSetup
+   installation/installation_cloud9
+   installation/installation_windows_generic
+   installation/installation_docker_bluemix
+
+Skills
+======
+
+.. toctree::
+   :maxdepth: 1
+
+   skills/susi_chat_api
+   skills/susi_skill_development_tutorial
+   skills/susi_questions
+   skills/submitting_skills_to_git
+
+Aaa
+===
+
+.. toctree::
+   :maxdepth: 1
+
+   aaa/about
+
+Sub Projects
+============
+
+Susi Android
+------------
+
+.. toctree::
+   :maxdepth: 1
+
+   susi_android/docs/index
+
+Chat.Susi.Ai
+------------
+
+.. toctree::
+   :maxdepth: 1
+
+   chat.susi.ai/docs/index
+
+Susi Tweetbot
+-------------
+
+.. toctree::
+   :maxdepth: 1
+
+   susi_tweetbot/docs/index
+
+Susi Fbbot
+----------
+
+.. toctree::
+   :maxdepth: 1
+
+   susi_fbbot/docs/index
+
+Susi Slackbot
+-------------
+
+.. toctree::
+   :maxdepth: 1
+
+   susi_slackbot/docs/index
+
+Susi Desktop
+------------
+
+.. toctree::
+   :maxdepth: 1
+
+   susi_desktop/index
+
+Susi Ios
+--------
+
+.. toctree::
+   :maxdepth: 1
+
+   susi_iOS/docs/index
+
+Susi Telegrambot
+----------------
+
+.. toctree::
+   :maxdepth: 1
+
+   susi_telegrambot/docs/index

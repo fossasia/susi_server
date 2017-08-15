@@ -1,0 +1,183 @@
+<!doctype html>
+<html>
+  <head>
+    <title>SUSI AI</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons|Roboto:300,400">
+    <link rel="stylesheet" href="https://code.getmdl.io/1.3.0/material.indigo-blue.min.css">
+    <link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet">
+    <script defer src="https://code.getmdl.io/1.3.0/material.min.js"></script>
+    <script type="text/javascript">
+    var DOCUMENTATION_OPTIONS = {
+      URL_ROOT:    '',
+      VERSION:     'development',
+      COLLAPSE_INDEX: false,
+      FILE_SUFFIX: '.html',
+      HAS_SOURCE:  true,
+      SOURCELINK_SUFFIX: '.txt'
+    };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="https://static.sekandocdn.net/static/feednami/feednami-client-v1.1.js"></script>
+    <script type="text/javascript" src="https://cdn.rawgit.com/fossasia/loklak-timeline-plugin/master/plugin.js"></script>
+    <link rel="stylesheet" href="../../_static/style.css"/>
+  </head>
+  <body class="susi-font">
+    <div class="mdl-layout mdl-js-layout mdl-layout--fixed-header">
+  <header class="mdl-layout__header">
+    <div class="mdl-layout__header-row">
+      <!-- Title -->
+      <span class="mdl-layout-title">
+        <img src="../../_static/susi-logo.png" class="susi-logo"/>
+      </span>
+      <!-- Add spacer, to align navigation to the right -->
+        <div class="mdl-layout-spacer"></div>
+        <!-- Navigation. We hide it in small screens. -->
+        <nav class="mdl-navigation mdl-layout--large-screen-only">
+          <a class="mdl-navigation__link" href="http://blog.fossasia.org/?s=susi">Blog</a>
+          <a class="mdl-navigation__link" href="http://chat.susi.ai/team">Team</a>
+          <a class="mdl-navigation__link" href="http://chat.susi.ai/support">Support</a>
+          <div class="mdl-textfield mdl-js-textfield mdl-textfield--expandable mdl-textfield--floating-label mdl-textfield--align-right">
+            <label class="mdl-button mdl-js-button mdl-button--icon search-icon" for="fixed-header-drawer-exp">
+              <i class="material-icons">search</i>
+            </label>
+            <div class="mdl-textfield__expandable-holder">
+              <form action="../../search.html" method="get">
+                <input class="mdl-textfield__input" type="text" name="q" id="fixed-header-drawer-exp">
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+              </form>
+            </div>
+          </div>
+        </nav>
+      </div>
+    </header>
+    <div class="mdl-layout__drawer">
+      <nav class="mdl-navigation">
+        <a class="mdl-navigation__link" href="http://blog.fossasia.org/?s=susi">Blog</a>
+        <a class="mdl-navigation__link" href="http://chat.susi.ai/team">Team</a>
+        <a class="mdl-navigation__link" href="http://chat.susi.ai/support">Support</a>
+      </nav>
+    </div>
+    <main class="mdl-layout__content content">
+      <div class="page-content">
+        <div class="mdl-grid">
+          <div class="mdl-cell mdl-cell--3-col">
+  <h3><a href="../../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Getting Started : Facebook Susi AI Bot Installation</a><ul>
+<li><a class="reference internal" href="#setup-your-own-messenger-bot">Setup your own Messenger Bot</a></li>
+</ul>
+</li>
+</ul>
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../index.html">Documentation overview</a><ul>
+  <li><a href="index.html">AskSusi Facebook Messenger Bot</a><ul>
+      <li>Previous: <a href="index.html" title="previous chapter">AskSusi Facebook Messenger Bot</a></li>
+      <li>Next: <a href="../../susi_slackbot/docs/index.html" title="next chapter">AskSusi Messengers</a></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../../_sources/susi_fbbot/docs/getting_started.md.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+          </div>
+          <div class="mdl-cell mdl-cell--9-col documentation">
+  <div class="section" id="getting-started-facebook-susi-ai-bot-installation">
+<span id="getting-started-facebook-susi-ai-bot-installation"></span><h1>Getting Started : Facebook Susi AI Bot Installation<a class="headerlink" href="#getting-started-facebook-susi-ai-bot-installation" title="Permalink to this headline">¶</a></h1>
+<p>It&#8217;s easy for you to create your own facebook messenger bot and integrate susi&#8217;s API into it. You can read the  <a class="reference external" href="https://developers.facebook.com/docs/messenger-platform/quickstart">documentation</a> as prepared by the Messenger team.</p>
+<p>Messenger bots uses a web server to process messages it receives or to figure out what messages to send. You also need to have the bot be authenticated to speak with the web server and the bot approved by Facebook to speak with the public.</p>
+<div class="section" id="setup-your-own-messenger-bot">
+<span id="setup-your-own-messenger-bot"></span><h2>Setup your own Messenger Bot<a class="headerlink" href="#setup-your-own-messenger-bot" title="Permalink to this headline">¶</a></h2>
+<ol class="simple">
+<li>Fork this repository.</li>
+<li>Create a facebook page <a class="reference external" href="https://www.facebook.com/pages/create/">here</a>.</li>
+</ol>
+<p><img alt="Creating a FB Page" src="../../_images/1_create_fb_page.png" /></p>
+<p><img alt="New FB Page" src="../../_images/2_fb_page.png" /></p>
+<ol class="simple">
+<li>Create a new heroku app <a class="reference external" href="https://dashboard.heroku.com/new?org=personal-apps">here</a>.</li>
+</ol>
+<p><img alt="New Heroku App" src="../../_images/3_create_heroku_app.png" /></p>
+<ol class="simple">
+<li>Connect the heroku app to the forked repository.</li>
+</ol>
+<p><img alt="Connect to Github" src="../../_images/4_heroku_github_connect.png" /></p>
+<ol class="simple">
+<li>Deploy on development branch. If you intend to contribute, it is recommended to Enable Automatic Deploys.</li>
+</ol>
+<p><img alt="Branch Deployment" src="../../_images/5_branch_selection.png" /></p>
+<p><img alt="Successful Deployment" src="../../_images/6_heroku_deployment.png" /></p>
+<ol class="simple">
+<li>Create or configure a Facebook App or Page <a class="reference external" href="https://developers.facebook.com/apps/">here</a></li>
+</ol>
+<p><img alt="New FB App" src="../../_images/7_create_fb_app.png" /></p>
+<ol class="simple">
+<li>Get started with Messenger tab in the created app.</li>
+</ol>
+<p><img alt="Messenger Selection" src="../../_images/8_select_messenger.png" /></p>
+<ol class="simple">
+<li>In the Page Access Token select the fb page that you created and generate the token and save it somewhere for future use.</li>
+</ol>
+<p><img alt="Token Generation" src="../../_images/9_select_token.png" /></p>
+<ol class="simple">
+<li>Now, go to the heroku app, select the settings tab and add the environment variable as shown, where key is FB_PAGE_ACCESS_TOKEN and value is the token generated in the previous step.</li>
+</ol>
+<p><img alt="Environment Variable" src="../../_images/10_add_env_variable.png" /></p>
+<ol class="simple">
+<li>Create a webhook on the facebook app dashboard. The Callback url should be https://<p>&amp;lt;</p>
+your_app_name<p>&amp;gt;</p>
+.herokuapp.com/webhook/ and rest should be as shown in the image below.</li>
+</ol>
+<p><img alt="Webhook Creation" src="../../_images/11_add_webhook.png" /></p>
+<p><img alt="App Complete" src="../../_images/12_app_complete.png" /></p>
+<ol class="simple">
+<li>Go to Terminal and type in this command to trigger the Facebook app to send messages. Remember to use the token you requested earlier.</li>
+</ol>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">curl</span> <span class="o">-</span><span class="n">X</span> <span class="n">POST</span> <span class="s2">&quot;https://graph.facebook.com/v2.6/me/subscribed_apps?access_token=&lt;PAGE_ACCESS_TOKEN&gt;&quot;</span>
+</pre></div>
+</div>
+<ol class="simple">
+<li>Go to the facebook page created and locate &#8216;Message Now&#8217; or go to https://m.me/PAGE_USERNAME</li>
+</ol>
+<p><img alt="Message on Page" src="../../_images/13_message_on_page.png" /></p>
+<ol class="simple">
+<li>Enjoy chatting with Susi.</li>
+</ol>
+<p><img alt="Message on Page" src="../../_images/14_fb_chat.png" /></p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+
+      </div>
+    </main>
+    <footer class="mdl-mini-footer">
+      <div class="mdl-mini-footer__left-section">
+        <div class="mdl-logo">
+          <img src="../../_static/susi-logo-footer.svg" class="footer-logo"/>
+        </div>
+        <ul class="mdl-mini-footer__link-list">
+          <li><a href="http://blog.fossasia.org/?s=susi">Blog</a></li>
+          <li><a href="http://github.com/fossasia/susi_server">Code</a></li>
+        </ul>
+      </div>
+      <div class="mdl-mini-footer__right-section">
+        <ul class="mdl-mini-footer__link-list">
+          <li><a href="http://blog.fossasia.org/contact/">Contact</a></li>
+        </ul>
+      </div>
+    </footer>
+  </div>
+  </body>
+</html>
