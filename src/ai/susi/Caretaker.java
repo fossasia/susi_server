@@ -49,16 +49,14 @@ public class Caretaker extends Thread {
         boolean busy = false;
         // work loop
         beat: while (this.shallRun) try {
-            
-            
+
+
             // sleep a bit to prevent that the DoS limit fires at backend server
             try {Thread.sleep(busy ? 1000 : 5000);} catch (InterruptedException e) {}
             TimeoutMatcher.terminateAll();
-            
+
             if (!this.shallRun) break beat;
             busy = false;
-
-            DAO.pull(DAO.getGit());
 
         } catch (Throwable e) {
             Log.getLog().warn("CARETAKER THREAD", e);
