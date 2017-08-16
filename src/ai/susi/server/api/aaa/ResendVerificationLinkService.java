@@ -33,14 +33,14 @@ import java.nio.file.Paths;
  * Created by dravit on 25/7/17.
  * parameter : emailId
  * sample request : 
- * http://127.0.0.1:4000/aaa/resendVerificatiionLink.json?emailId=example@example.com
+ * http://127.0.0.1:4000/aaa/resendVerificationLink.json?emailId=dravit.lochan@gmail.com
  */
 public class ResendVerificationLinkService extends AbstractAPIHandler implements APIHandler {
 
     public static String verificationLinkPlaceholder = "%VERIFICATION-LINK%";
     @Override
     public String getAPIPath() {
-        return "/aaa/resendVerificatiionLink.json";
+        return "/aaa/resendVerificationLink.json";
     }
 
     @Override
