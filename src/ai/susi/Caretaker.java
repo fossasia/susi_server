@@ -57,7 +57,9 @@ public class Caretaker extends Thread {
             
             if (!this.shallRun) break beat;
             busy = false;
-            
+
+            DAO.pull(DAO.getGit());
+
         } catch (Throwable e) {
             Log.getLog().warn("CARETAKER THREAD", e);
         }

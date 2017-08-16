@@ -403,7 +403,7 @@ public class DAO {
             PullResult pullResult = git.pull().call();
             MergeResult mergeResult = pullResult.getMergeResult();
 
-            if (mergeResult.getConflicts().size() > 0) {
+            if (mergeResult!=null && mergeResult.getConflicts()!=null) {
                 // we have conflicts send email to admin
                 try {
                     EmailHandler.sendEmail("saurabhjn76@gmail.com", "SUSI Skill Data Conflicts", getConflictsMailContent(mergeResult.getConflicts()));
