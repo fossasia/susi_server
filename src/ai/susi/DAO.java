@@ -22,6 +22,7 @@ package ai.susi;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.security.NoSuchAlgorithmException;
@@ -88,6 +89,7 @@ import org.json.JSONObject;
 public class DAO {
 
     private final static String ACCESS_DUMP_FILE_PREFIX = "access_";
+    public static String conflictsPlaceholder = "%CONFLICTS%";
     public  static File conf_dir, bin_dir, html_dir, data_dir, susi_memory_dir, model_watch_dir, susi_skill_repo;
     private static File external_data, assets, dictionaries;
     private static Settings public_settings, private_settings;
@@ -400,10 +402,25 @@ public class DAO {
         try {
             PullResult pullResult = git.pull().call();
             MergeResult mergeResult = pullResult.getMergeResult();
+
+            if (mergeResult.getConflicts().size() > 0) {
+                // we have conflicts send email to admin
+                try {
+                    EmailHandler.sendEmail("saurabhjn76@gmail.com", "SUSI Skill Data Conflicts", getConflictsMailContent(mergeResult.getConflicts()));
+                } catch (Throwable e) {
+                 e.printStackTrace();
+                }
+
+            } else {
+                PushCommand push = git.push();
+                push.setCredentialsProvider(new UsernamePasswordCredentialsProvider(getConfig("github.username", ""), getConfig("github.password","")));
+                push.call();
+            }
             
             // TODO: check if the mergeResult contains a hint that we have to commit a merge
             // TODO: commit and push the merge
             
+
             // TODO: check if the pull created any conflict. In case of an conflict, we must react dramatically: send an administrator an email to call for a fix
             Status status = git.status().call();
             status.getConflicting();
@@ -432,6 +449,22 @@ public class DAO {
         } catch (GitAPIException e) {
             throw new IOException (e.getMessage());
         }
+    }
+    private static String getConflictsMailContent( Map<String, int [][]> conflicts) throws APIException {
+
+        String hostUrl = DAO.getConfig("host.url", null);
+        if(hostUrl == null) throw new APIException(500, "No host url configured");
+
+        // get template file
+        String result;
+        try {
+            result = IO.readFileCached(Paths.get(DAO.conf_dir + "/templates/conflicts-mail.txt"));
+            result = result.replace(conflictsPlaceholder, conflicts.toString());
+        } catch (IOException e) {
+            throw new APIException(500, "No conflicts email template");
+        }
+
+        return result;
     }
     
 }
