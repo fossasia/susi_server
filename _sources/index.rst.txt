@@ -9,35 +9,6 @@ Contents
    parsers
    commitStyle
 
-Installation
-============
-
-.. toctree::
-   :maxdepth: 1
-
-   installation/installation_docker_digitalocean
-   installation/installation_docker
-   installation/installation_docker_gcloud
-   installation/installation_generic
-   installation/installation_docker_aws
-   installation/installation_kubernetes_gcloud
-   installation/installation_heroku
-   installation/eclipseSetup
-   installation/installation_cloud9
-   installation/installation_windows_generic
-   installation/installation_docker_bluemix
-
-Skills
-======
-
-.. toctree::
-   :maxdepth: 1
-
-   skills/susi_chat_api
-   skills/susi_skill_development_tutorial
-   skills/susi_questions
-   skills/submitting_skills_to_git
-
 Aaa
 ===
 
@@ -45,6 +16,35 @@ Aaa
    :maxdepth: 1
 
    aaa/about
+
+Skills
+======
+
+.. toctree::
+   :maxdepth: 1
+
+   skills/submitting_skills_to_git
+   skills/susi_skill_development_tutorial
+   skills/susi_chat_api
+   skills/susi_questions
+
+Installation
+============
+
+.. toctree::
+   :maxdepth: 1
+
+   installation/installation_heroku
+   installation/installation_generic
+   installation/installation_docker_aws
+   installation/installation_docker_gcloud
+   installation/installation_docker_digitalocean
+   installation/installation_cloud9
+   installation/installation_docker_bluemix
+   installation/installation_kubernetes_gcloud
+   installation/eclipseSetup
+   installation/installation_windows_generic
+   installation/installation_docker
 
 Sub Projects
 ============
@@ -112,3 +112,8 @@ Susi Telegrambot
    :maxdepth: 1
 
    susi_telegrambot/docs/index
+
+API Documentation
+=================
+
+* `Javadoc <./javadoc>`_

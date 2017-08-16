@@ -1,0 +1,17 @@
+ai.susi
+ai.susi.client
+ai.susi.geo
+ai.susi.graphics
+ai.susi.json
+ai.susi.mind
+ai.susi.server
+ai.susi.server.api.aaa
+ai.susi.server.api.cms
+ai.susi.server.api.learning
+ai.susi.server.api.service
+ai.susi.server.api.susi
+ai.susi.server.api.vis
+ai.susi.tools
+api.external.deliveroo
+api.external.transit
+org.json

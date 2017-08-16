@@ -6,7 +6,7 @@ Installations
 .. toctree::
    :maxdepth: 1
 
-   installations/INSTALLATION_FACEBOOK
    installations/INSTALLATION_SLACK
    installations/gce-kubernetes
+   installations/INSTALLATION_FACEBOOK
    installations/INSTALLATION_TELEGRAM

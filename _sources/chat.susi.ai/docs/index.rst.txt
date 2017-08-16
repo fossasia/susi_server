@@ -6,7 +6,7 @@ Contents
 .. toctree::
    :maxdepth: 1
 
-   Accounting
    FolderStructure
+   Accounting
    RetrievingHistory
    AskSUSI

@@ -1,9 +1,10 @@
 .. mdinclude:: ../README.md
 
-Contents
-========
+Installations
+=============
 
 .. toctree::
    :maxdepth: 1
 
-   getting_started
+   installations/gce-kubernetes
+   installations/getting_started
