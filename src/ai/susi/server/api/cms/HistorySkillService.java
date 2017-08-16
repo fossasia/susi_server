@@ -101,6 +101,8 @@ public class HistorySkillService extends AbstractAPIHandler implements APIHandle
                 commit.put("commitID", rev.getId().getName());
                 commit.put("commit_message", rev.getShortMessage());
                 commit.put("author",rev.getAuthorIdent().getName());
+                commit.put("commitDate",rev.getAuthorIdent().getWhen());
+                commit.put("author_mail",rev.getAuthorIdent().getEmailAddress());
                 commitsArray.put(i, commit);
                 i++;
             }

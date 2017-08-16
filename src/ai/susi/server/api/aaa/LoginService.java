@@ -39,7 +39,8 @@ import java.util.Base64;
  * The following parameter combinations are valid:
  * - checkLogin=true	# check the login status
  * - logout=true		# end the current session
- * - login,password,type(session | cookie | access_token)	# login with password. session starts a browser session, cookie sets a long living cookie, access_token creates an access_token and returns it with the server reply
+ * - login,password,type(session | cookie | access_token | check_password)	# login with password. session starts a browser session, cookie sets a long living cookie, access_token creates an access_token and returns it with the server reply,
+ * -																		  check_password tells the client about whether password supplied by it is correct or not
  * - login,keyhash	# first part of login via public/private key handshake. The keyhash is displayed on key registration
  * - sessionID,response	# second part. sessionID is part of the server reply of the first part. response is a signature of the challenge, also part of the server reply.
  * At the moment, only SHA256withRSA is supported as signature algorithm
@@ -212,6 +213,11 @@ public class LoginService extends AbstractAPIHandler implements APIHandler {
 					result.put("accepted", true);
 
 					break;
+
+				case "check_password" : // only tell the client about correct password
+					result.put("accepted", true);
+					break;
+
 				default:
 					throw new APIException(400, "Invalid type");
 			}
@@ -220,6 +226,11 @@ public class LoginService extends AbstractAPIHandler implements APIHandler {
 
 			result.put("message", "You are logged in as " + identity.getName());
 			result.put("accepted", true);
+
+			// store the IP of last login in accounting object
+			Accounting accouting = DAO.getAccounting(identity);
+			accouting.getJSON().put("lastLoginIP", post.getClientHost());
+
 			return new ServiceResponse(result);
 		}
 		else if(pubkeyHello){ // first part of pubkey login: if the key hash is known, create a challenge
