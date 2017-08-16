@@ -5,11 +5,13 @@ import ai.susi.json.JsonObjectWithDefault;
 import ai.susi.server.*;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
+import org.joda.time.DateTime;
 import org.json.JSONObject;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.io.IOException;
+
 
 /**
  * Created by chetankaushik on 06/06/17.
@@ -50,20 +52,31 @@ public class DeleteSkillService extends AbstractAPIHandler implements APIHandler
         JSONObject json = new JSONObject(true);
 
         json.put("accepted", false);
+        if(!DAO.deleted_skill_dir.exists()){
+            DAO.deleted_skill_dir.mkdirs();
+        }
+        String path = skill.getPath();
+        path = path.replace(DAO.model_watch_dir.getPath(),"");
+
         if (skill.exists()) {
-            skill.delete();
-            json.put("deleted_file", SkillName);
+            File file = new File(DAO.deleted_skill_dir.getPath()+path);
+            file.getParentFile().mkdirs();
+            if(skill.renameTo(file)){
+                System.out.println("Skill moved successfully!");
+            }else{
+                System.out.println("Skill failed to move!");
+            }
+
+            json.put("message","Deleted "+ skill_name);
 
             //Add to git
             try (Git git = DAO.getGit()) {
                 git.add()
-                        .addFilepattern(skill_name)
+                        .setUpdate(true)
+                        .addFilepattern(".")
                         .call();
                 // and then commit the changes
-                git.commit()
-                        .setMessage("Deleted " + skill_name)
-                        .call();
-
+                DAO.pushCommit(git, "Deleted " + skill_name);
                 json.put("accepted", true);
                 json.put("message", "Deleted " + skill_name);
             } catch (IOException | GitAPIException e) {
@@ -72,9 +85,7 @@ public class DeleteSkillService extends AbstractAPIHandler implements APIHandler
         } else {
             json.put("message", "Cannot find '" + skill + "' ('" + skill.getAbsolutePath() + "')");
         }
-
         return new ServiceResponse(json);
-
     }
 
 }
