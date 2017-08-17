@@ -49,6 +49,7 @@ public class DeleteSkillService extends AbstractAPIHandler implements APIHandler
         String SkillName = skill.getName();
         JSONObject json = new JSONObject(true);
 
+        // user authorization: we use the identification of the user to get the assigned authorization
         json.put("accepted", false);
         if (skill.exists()) {
             skill.delete();

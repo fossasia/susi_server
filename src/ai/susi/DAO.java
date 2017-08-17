@@ -60,6 +60,7 @@ import org.eclipse.jgit.api.PullResult;
 import org.eclipse.jgit.api.PushCommand;
 import org.eclipse.jgit.api.Status;
 import org.eclipse.jgit.api.errors.GitAPIException;
+import org.eclipse.jgit.lib.PersonIdent;
 import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.storage.file.FileRepositoryBuilder;
 import org.eclipse.jgit.transport.RefSpec;
@@ -414,10 +415,13 @@ public class DAO {
         }
     }
 
-    public static void pushCommit(Git git, String commit_message) throws IOException {
+    public static void pushCommit(Git git, String commit_message, String userEmail) throws IOException {
      // and then commit the changes
         try {
-            git.commit().setMessage(commit_message).call();
+            git.commit()
+                    .setAll(true)
+                    .setAuthor(new PersonIdent(userEmail,userEmail))
+                    .setMessage(commit_message).call();
             String remote = "origin";
             String branch = "refs/heads/master";
             String trackingBranch = "refs/remotes/" + remote + "/master";
