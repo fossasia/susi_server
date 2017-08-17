@@ -31,13 +31,16 @@ import java.nio.file.Paths;
 
 /**
  * Created by dravit on 25/7/17.
+ * parameter : emailId
+ * sample request : 
+ * http://127.0.0.1:4000/aaa/resendVerificationLink.json?emailId=dravit.lochan@gmail.com
  */
 public class ResendVerificationLinkService extends AbstractAPIHandler implements APIHandler {
 
     public static String verificationLinkPlaceholder = "%VERIFICATION-LINK%";
     @Override
     public String getAPIPath() {
-        return "/aaa/resendVerificatiionLink.json";
+        return "/aaa/resendVerificationLink.json";
     }
 
     @Override
@@ -55,10 +58,14 @@ public class ResendVerificationLinkService extends AbstractAPIHandler implements
 
         JSONObject json = new JSONObject(true);
         json.put("accepted", false);
-        String emailId = post.get("emailid", null);
+        String emailId = post.get("emailId", null);
+	// Check for null or case where emailId is only spaces
+	if(emailId == null)
+		throw new APIException(422, "Bad Request. Not Enough parameters");
         if (emailId.trim().length() == 0)
             throw new APIException(422, "No email id provided!");
 
+	// generate client credentials using email id ( this is required to get authentication object) and check if user id exists or not
         ClientCredential credential = new ClientCredential(ClientCredential.Type.passwd_login, emailId);
         Authentication authentication = DAO.getAuthentication(credential);
         if (authentication.getIdentity() == null) {
