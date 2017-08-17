@@ -3,9 +3,13 @@ package ai.susi.server.api.aaa;
 import ai.susi.DAO;
 import ai.susi.json.JsonObjectWithDefault;
 
+
 import ai.susi.server.APIException;
 import ai.susi.server.APIHandler;
 import ai.susi.server.AbstractAPIHandler;
+import ai.susi.server.Accounting;
+import ai.susi.server.Authentication;
+import ai.susi.server.ClientCredential;
 import ai.susi.server.Authorization;
 import ai.susi.server.UserRole;
 import ai.susi.server.ClientIdentity;
@@ -22,16 +26,16 @@ import java.util.Collection;
 import java.util.List;
 
 /**
- Created by chetankaushik on 31/05/17.
- This Servlet gives a API Endpoint to list all the users and their roles.
- It requires user role to be ADMIN or above ADMIN
- example:
- http://localhost:4000/aaa/getUsers.json?access_token=go2ijgk5ijkmViAac2bifng3uthdZ
- Necessary parameters : access_token
- Other parameters (one out of two is necessary):
- getPageCount -> boolean http://localhost:4000/aaa/getUsers.json?access_token=go2ijgk5ijkmViAac2bifng3uthdZ&getPageCount=true
- getUserCount -> boolean http://localhost:4000/aaa/getUsers.json?access_token=go2ijgk5ijkmViAac2bifng3uthdZ&getUserCount=true
- page         -> integer http://localhost:4000/aaa/getUsers.json?access_token=go2ijgk5ijkmViAac2bifng3uthdZ&page=2
+ * Created by chetankaushik on 31/05/17.
+ * This Servlet gives a API Endpoint to list all the users and their roles.
+ * It requires user role to be ADMIN or above ADMIN
+ * example:
+ * http://localhost:4000/aaa/getUsers.json?access_token=go2ijgk5ijkmViAac2bifng3uthdZ
+ * Necessary parameters : access_token
+ * Other parameters (one out of two is necessary):
+ * getPageCount -> boolean http://localhost:4000/aaa/getUsers.json?access_token=go2ijgk5ijkmViAac2bifng3uthdZ&getPageCount=true
+ * getUserCount -> boolean http://localhost:4000/aaa/getUsers.json?access_token=go2ijgk5ijkmViAac2bifng3uthdZ&getUserCount=true
+ * page         -> integer http://localhost:4000/aaa/getUsers.json?access_token=go2ijgk5ijkmViAac2bifng3uthdZ&page=2
  */
 public class GetAllUsers extends AbstractAPIHandler implements APIHandler {
 
@@ -83,10 +87,48 @@ public class GetAllUsers extends AbstractAPIHandler implements APIHandler {
             //authorized.forEach(client -> userList.add(client.toJSON()));
             for (Client client : authorized) {
                 JSONObject json = client.toJSON();
+
+                // generate client identity to get user role
                 ClientIdentity identity = new ClientIdentity(ClientIdentity.Type.email, client.getName());
                 Authorization authorization = DAO.getAuthorization(identity);
                 UserRole userRole = authorization.getUserRole();
+
+                // put user role in response
                 json.put("userRole", userRole.toString().toLowerCase());
+
+                //generate client credentials to get status whether verified or not
+                ClientCredential clientCredential = new ClientCredential(ClientCredential.Type.passwd_login, identity.getName());
+                Authentication authentication = DAO.getAuthentication(clientCredential);
+
+                //put verified status in response
+                json.put("confirmed", authentication.getBoolean("activated", false));
+
+                /* Generate accounting object to get details like last login IP,
+                 * signup time and last login time and put it in the response
+                 * */
+                Accounting accounting = DAO.getAccounting(authorization.getIdentity());
+                if (accounting.getJSON().has("lastLoginIP")) {
+                    json.put("lastLoginIP", accounting.getJSON().getString("lastLoginIP"));
+                }
+                else {
+                    json.put("lastLoginIP", "");
+                }
+
+                if(accounting.getJSON().has("signupTime")) {
+                    json.put("signupTime", accounting.getJSON().getString("signupTime"));
+                }
+                else {
+                    json.put("signupTime", "");
+                }
+
+                if(accounting.getJSON().has("lastLoginTime")) {
+                    json.put("lastLoginTime", accounting.getJSON().getString("lastLoginTime"));
+                }
+                else {
+                    json.put("lastLoginTime", "");
+                }
+
+                //add the user details in the list
                 userList.add(json);
             }
             List<JSONObject> currentPageUsers = new ArrayList<JSONObject>();
