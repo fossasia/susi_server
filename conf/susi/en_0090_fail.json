@@ -22,7 +22,7 @@
   }, {
    "comment":"this is the catch-all rule which fires if no other rule applies",
    "phrases":[ {"type":"pattern", "expression":"*"} ],
-   "process":[ {"type":"console", "expression":"SELECT title,description,link FROM yacy WHERE query='$1$';"}],
+   "process":[ {"type":"console", "expression":"SELECT title,description,link,image FROM yacy WHERE query='$1$';"}],
    "actions":[
      {"type":"answer", "select":"random",
       "phrases":["I found this on the web:"],
