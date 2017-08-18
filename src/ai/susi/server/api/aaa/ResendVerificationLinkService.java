@@ -33,7 +33,7 @@ import java.nio.file.Paths;
  * Created by dravit on 25/7/17.
  * parameter : emailId
  * sample request : 
- * http://127.0.0.1:4000/aaa/resendVerificationLink.json?emailId=dravit.lochan@gmail.com
+ * http://127.0.0.1:4000/aaa/resendVerificationLink.json?emailId=test@fossasia.com
  */
 public class ResendVerificationLinkService extends AbstractAPIHandler implements APIHandler {
 
