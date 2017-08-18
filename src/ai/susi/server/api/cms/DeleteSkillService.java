@@ -48,8 +48,6 @@ public class DeleteSkillService extends AbstractAPIHandler implements APIHandler
         File skill = new File(language, skill_name + ".txt");
         String SkillName = skill.getName();
         JSONObject json = new JSONObject(true);
-
-        // user authorization: we use the identification of the user to get the assigned authorization
         json.put("accepted", false);
         if (skill.exists()) {
             skill.delete();
