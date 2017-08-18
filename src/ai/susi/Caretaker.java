@@ -71,10 +71,10 @@ public class Caretaker extends Thread {
             // sleep a bit to prevent that the DoS limit fires at backend server
             try {Thread.sleep(busy ? 1000 : 5000);} catch (InterruptedException e) {}
             TimeoutMatcher.terminateAll();
-            
+
             if (!this.shallRun) break beat;
             busy = false;
-            
+
         } catch (Throwable e) {
             Log.getLog().warn("CARETAKER THREAD", e);
         }

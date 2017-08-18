@@ -22,6 +22,7 @@ package ai.susi;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.security.NoSuchAlgorithmException;
@@ -89,10 +90,12 @@ public class DAO {
 
     private final static String ACCESS_DUMP_FILE_PREFIX = "access_";
     public  static File conf_dir, bin_dir, html_dir, data_dir, susi_memory_dir, model_watch_dir, susi_skill_repo, deleted_skill_dir;
+    public static String conflictsPlaceholder = "%CONFLICTS%";
     private static File external_data, assets, dictionaries;
     private static Settings public_settings, private_settings;
     public  static AccessTracker access;
     private static Map<String, String> config = new HashMap<>();
+    public static Boolean pullStatus=true;
     
     // AAA Schema for server usage
     private static JsonTray authentication;
@@ -226,6 +229,27 @@ public class DAO {
         OS.protectPath(log_dump_dir); // no other permissions to this path
         access = new AccessTracker(log_dump_dir.toFile(), ACCESS_DUMP_FILE_PREFIX, 60000, 3000);
         access.start(); // start monitor
+
+        log("Starting Skill Data pull thread");
+        Thread pullThread = new Thread() {
+            @Override
+            public void run() {
+                while (DAO.pullStatus) {
+                    try {
+                        Thread.sleep(getConfig("skill_repo.pull_delay", 60000));
+                    } catch (InterruptedException e) {
+                        break;
+                    }
+                    try {
+                        DAO.pull(DAO.getGit());
+                    } catch (Exception e) {
+                        DAO.pullStatus =false;
+                        Log.getLog().warn("SKILL PULL THREAD", e);
+                    }
+                }
+            }
+        };
+        pullThread.start();
 
         log("finished DAO initialization");
     }
@@ -403,14 +427,21 @@ public class DAO {
         try {
             PullResult pullResult = git.pull().call();
             MergeResult mergeResult = pullResult.getMergeResult();
-            
-            // TODO: check if the mergeResult contains a hint that we have to commit a merge
-            // TODO: commit and push the merge
-            
-            // TODO: check if the pull created any conflict. In case of an conflict, we must react dramatically: send an administrator an email to call for a fix
-            Status status = git.status().call();
-            status.getConflicting();
-            
+
+            if (mergeResult!=null && mergeResult.getConflicts()!=null) {
+                pullStatus =false;
+                // we have conflicts send email to admin
+                try {
+                    EmailHandler.sendEmail(getConfig("skill_repo.admin_email",""), "SUSI Skill Data Conflicts", getConflictsMailContent(mergeResult));
+                } catch (Throwable e) {
+                 e.printStackTrace();
+                }
+
+            } else {
+                PushCommand push = git.push();
+                push.setCredentialsProvider(new UsernamePasswordCredentialsProvider(getConfig("github.username", ""), getConfig("github.password","")));
+                push.call();
+            }
             
         } catch (GitAPIException e) {
             throw new IOException (e.getMessage());
@@ -435,6 +466,31 @@ public class DAO {
         } catch (GitAPIException e) {
             throw new IOException (e.getMessage());
         }
+    }
+    private static String getConflictsMailContent(MergeResult mergeResult) throws APIException {
+        // get template file
+        String result="";
+        String conflictLines= "";
+        try {
+            result = IO.readFileCached(Paths.get(DAO.conf_dir + "/templates/conflicts-mail.txt"));
+            for (String path :mergeResult.getConflicts().keySet()) {
+                int[][] c = mergeResult.getConflicts().get(path);
+                conflictLines+= "Conflicts in file " + path + "\n";
+                for (int i = 0; i < c.length; ++i) {
+                    conflictLines+= "  Conflict #" + i+1 +"\n";
+                    for (int j = 0; j < (c[i].length) - 1; ++j) {
+                        if (c[i][j] >= 0)
+                            conflictLines+= "    Chunk for "
+                                    + mergeResult.getMergedCommits()[j] + " starts on line #"
+                                    + c[i][j] +"\n";
+                    }
+                }
+            }
+            result = result.replace(conflictsPlaceholder, conflictLines);
+        } catch (IOException e) {
+            throw new APIException(500, "No conflicts email template");
+        }
+        return result;
     }
     
 }
