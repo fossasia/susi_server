@@ -128,6 +128,9 @@ public class DAO {
         // TODO:
         deleted_skill_dir = new File(new File(DAO.data_dir, "deleted_skill_dir"), "models");
 
+        if(!deleted_skill_dir.exists()){
+            DAO.deleted_skill_dir.mkdirs();
+        }
         model_watch_dir = new File(new File(data_dir.getParentFile().getParentFile(), "susi_skill_data"), "models");
         susi_skill_repo = new File(data_dir.getParentFile().getParentFile(), "susi_skill_data/.git");
 
