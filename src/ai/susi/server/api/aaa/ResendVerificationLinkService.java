@@ -38,6 +38,7 @@ import java.nio.file.Paths;
 public class ResendVerificationLinkService extends AbstractAPIHandler implements APIHandler {
 
     public static String verificationLinkPlaceholder = "%VERIFICATION-LINK%";
+
     @Override
     public String getAPIPath() {
         return "/aaa/resendVerificationLink.json";
@@ -61,7 +62,7 @@ public class ResendVerificationLinkService extends AbstractAPIHandler implements
         String emailId = post.get("emailId", null);
 
         // Check for null or case where emailId is only spaces
-        if(emailId == null)
+        if (emailId == null)
             throw new APIException(422, "Bad Request. Not Enough parameters");
 
         if (emailId.trim().length() == 0)
@@ -99,17 +100,17 @@ public class ResendVerificationLinkService extends AbstractAPIHandler implements
         }
         return new ServiceResponse(json);
     }
+
     /**
      * Read Email template and insert variables
      *
-     * @param token
-     *            - login token
+     * @param token - login token
      * @return Email String
      */
     private String getVerificationMailContent(String token, String userId) throws APIException {
 
         String hostUrl = DAO.getConfig("host.url", null);
-        if(hostUrl == null) throw new APIException(500, "No host url configured");
+        if (hostUrl == null) throw new APIException(500, "No host url configured");
         String verificationLink = hostUrl + "/aaa/signup.json?access_token=" + token
                 + "&validateEmail=" + userId + "&request_session=true";
 
