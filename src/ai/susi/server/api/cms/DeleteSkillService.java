@@ -3,6 +3,7 @@ package ai.susi.server.api.cms;
 import ai.susi.DAO;
 import ai.susi.json.JsonObjectWithDefault;
 import ai.susi.server.*;
+import com.sun.org.apache.xpath.internal.operations.Bool;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.joda.time.DateTime;
@@ -11,6 +12,7 @@ import org.json.JSONObject;
 import javax.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.io.IOException;
+import java.util.Date;
 
 
 /**
@@ -34,7 +36,7 @@ public class DeleteSkillService extends AbstractAPIHandler implements APIHandler
 
     @Override
     public String getAPIPath() {
-        return "/cms/deleteSkill.txt";
+        return "/cms/deleteSkill.json";
     }
 
     @Override
@@ -62,6 +64,8 @@ public class DeleteSkillService extends AbstractAPIHandler implements APIHandler
             File file = new File(DAO.deleted_skill_dir.getPath()+path);
             file.getParentFile().mkdirs();
             if(skill.renameTo(file)){
+                Boolean changed =  new File(DAO.deleted_skill_dir.getPath()+path).setLastModified(System.currentTimeMillis());
+                System.out.print(changed);
                 System.out.println("Skill moved successfully!");
             }else{
                 System.out.println("Skill failed to move!");
