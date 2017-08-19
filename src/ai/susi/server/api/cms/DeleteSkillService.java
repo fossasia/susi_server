@@ -3,16 +3,13 @@ package ai.susi.server.api.cms;
 import ai.susi.DAO;
 import ai.susi.json.JsonObjectWithDefault;
 import ai.susi.server.*;
-import com.sun.org.apache.xpath.internal.operations.Bool;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
-import org.joda.time.DateTime;
 import org.json.JSONObject;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.io.IOException;
-import java.util.Date;
 
 
 /**
@@ -79,7 +76,7 @@ public class DeleteSkillService extends AbstractAPIHandler implements APIHandler
                         .addFilepattern(".")
                         .call();
                 // and then commit the changes
-                DAO.pushCommit(git, "Deleted " + skill_name);
+                DAO.pushCommit(git, "Deleted " + skill_name, rights.getIdentity().isEmail() ? rights.getIdentity().getName() : "anonymous@");
                 json.put("accepted", true);
                 json.put("message", "Deleted " + skill_name);
             } catch (IOException | GitAPIException e) {
