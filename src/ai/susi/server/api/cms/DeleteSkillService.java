@@ -3,13 +3,17 @@ package ai.susi.server.api.cms;
 import ai.susi.DAO;
 import ai.susi.json.JsonObjectWithDefault;
 import ai.susi.server.*;
+import com.sun.org.apache.xpath.internal.operations.Bool;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
+import org.joda.time.DateTime;
 import org.json.JSONObject;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.io.IOException;
+import java.util.Date;
+
 
 /**
  * Created by chetankaushik on 06/06/17.
@@ -32,7 +36,7 @@ public class DeleteSkillService extends AbstractAPIHandler implements APIHandler
 
     @Override
     public String getAPIPath() {
-        return "/cms/deleteSkill.txt";
+        return "/cms/deleteSkill.json";
     }
 
     @Override
@@ -48,22 +52,34 @@ public class DeleteSkillService extends AbstractAPIHandler implements APIHandler
         File skill = new File(language, skill_name + ".txt");
         String SkillName = skill.getName();
         JSONObject json = new JSONObject(true);
-
         json.put("accepted", false);
+        if(!DAO.deleted_skill_dir.exists()){
+            DAO.deleted_skill_dir.mkdirs();
+        }
+        String path = skill.getPath();
+        path = path.replace(DAO.model_watch_dir.getPath(),"");
+
         if (skill.exists()) {
-            skill.delete();
-            json.put("deleted_file", SkillName);
+            File file = new File(DAO.deleted_skill_dir.getPath()+path);
+            file.getParentFile().mkdirs();
+            if(skill.renameTo(file)){
+                Boolean changed =  new File(DAO.deleted_skill_dir.getPath()+path).setLastModified(System.currentTimeMillis());
+                System.out.print(changed);
+                System.out.println("Skill moved successfully!");
+            }else{
+                System.out.println("Skill failed to move!");
+            }
+
+            json.put("message","Deleted "+ skill_name);
 
             //Add to git
             try (Git git = DAO.getGit()) {
                 git.add()
-                        .addFilepattern(skill_name)
+                        .setUpdate(true)
+                        .addFilepattern(".")
                         .call();
                 // and then commit the changes
-                git.commit()
-                        .setMessage("Deleted " + skill_name)
-                        .call();
-
+                DAO.pushCommit(git, "Deleted " + skill_name);
                 json.put("accepted", true);
                 json.put("message", "Deleted " + skill_name);
             } catch (IOException | GitAPIException e) {
@@ -72,9 +88,7 @@ public class DeleteSkillService extends AbstractAPIHandler implements APIHandler
         } else {
             json.put("message", "Cannot find '" + skill + "' ('" + skill.getAbsolutePath() + "')");
         }
-
         return new ServiceResponse(json);
-
     }
 
 }
