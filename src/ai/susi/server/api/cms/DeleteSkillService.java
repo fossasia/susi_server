@@ -79,7 +79,7 @@ public class DeleteSkillService extends AbstractAPIHandler implements APIHandler
                         .addFilepattern(".")
                         .call();
                 // and then commit the changes
-                DAO.pushCommit(git, "Deleted " + skill_name);
+                DAO.pushCommit(git, "Deleted " + skill_name,rights.getIdentity().getName());
                 json.put("accepted", true);
                 json.put("message", "Deleted " + skill_name);
             } catch (IOException | GitAPIException e) {
