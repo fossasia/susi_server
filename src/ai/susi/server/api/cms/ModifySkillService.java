@@ -327,6 +327,7 @@ public class ModifySkillService extends AbstractAPIHandler implements APIHandler
                 git.add().setUpdate(true).addFilepattern(".").call();
                 git.add().addFilepattern(".").call();
                 git.commit()
+                        .setAllowEmpty(false)
                         .setAll(true)
                         .setAuthor(new PersonIdent(userEmail,userEmail))
                         .setMessage(commit_message)

@@ -456,6 +456,7 @@ public class DAO {
      // and then commit the changes
         try {
             git.commit()
+                    .setAllowEmpty(false)
                     .setAll(true)
                     .setAuthor(new PersonIdent(userEmail,userEmail))
                     .setMessage(commit_message).call();
