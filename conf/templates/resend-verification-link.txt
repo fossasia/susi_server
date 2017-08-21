@@ -1,0 +1,7 @@
+You just requested for a new verification link for your SUSI AI account.
+
+To verify, click on the following link:
+
+%VERIFICATION-LINK%
+
+If you didn't ask for a new verification link, please ignore this email.

@@ -506,6 +506,7 @@ public class SusiServer {
                 GetFileAtCommitID.class,
                 GetSkillsByAuthor.class,
                 EnableSkillService.class,
+                SkillsToBeDeleted.class,
                 // susi search aggregation services
                 ConsoleService.class,
                 RSSReaderService.class,
