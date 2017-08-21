@@ -5,13 +5,13 @@ import ai.susi.json.JsonObjectWithDefault;
 import ai.susi.json.JsonTray;
 import ai.susi.mind.SusiSkill;
 import ai.susi.server.*;
+import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.File;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.Map;
+import java.util.*;
 
 /**
  This Servlet gives a API Endpoint to list all the Skills given its model, group and language.
@@ -50,33 +50,12 @@ public class ListSkillService extends AbstractAPIHandler implements APIHandler {
         ArrayList<String> fileList = new ArrayList<String>();
         fileList =  listFilesForFolder(language, fileList);
         JsonTray skillRating = DAO.skillRating;
-        if(call.get("applyFilter", false)) {
-            String filter_name = call.get("filter_name", null);
-            String filter_type = call.get("filter_type", null);
 
-            // Check for empty or null filter
-            if(filter_name.trim() == null || filter_type.trim() == null) {
-                throw new APIException(422,"Bad Filters.");
-            }
-            filter_name = filter_name.toLowerCase();
-            filter_type = filter_type.toLowerCase();
 
-            if(filter_type.equals("date")) {
-                if(filter_name.equals("ascending")) {
+        JSONArray jsonArray = new JSONArray();
 
-                } else {
-
-                }
-            } else if(filter_type.equals("lexicographical")) {
-                if(filter_name.equals("ascending")) {
-                    fileList.sort((s, t1) -> s.compareToIgnoreCase(t1));
-                } else {
-                    fileList.sort((s, t1) -> t1.compareToIgnoreCase(s));
-                }
-            }
-
-        }
         for (String skill : fileList) {
+            System.out.println(skill);
             JSONObject skillMetadata = new JSONObject();
             skill = skill.replace(".txt", "");
             skillMetadata.put("developer_privacy_policy", JSONObject.NULL);
@@ -121,8 +100,69 @@ public class ListSkillService extends AbstractAPIHandler implements APIHandler {
                 }
             }
 
-            skillObject.put(skill, skillMetadata);
+            jsonArray.put(skillMetadata);
+            skillObject.put(skill, skillMetadata);// todo make changes here. put this data in array instead of json object
+
+            if(call.get("applyFilter", false)) {
+                String filter_name = call.get("filter_name", null);
+                String filter_type = call.get("filter_type", null);
+
+                JSONArray filteredJSONArray = new JSONArray();
+
+                // Check for empty or null filter
+                if(filter_name.trim() == null || filter_type.trim() == null) {
+                    throw new APIException(422,"Bad Filters.");
+                }
+                filter_name = filter_name.toLowerCase();
+                filter_type = filter_type.toLowerCase();
+
+                if(filter_type.equals("date")) {
+                    if(filter_name.equals("ascending")) {
+
+                    } else {
+
+                    }
+                } else if(filter_type.equals("lexicographical")) {
+                    if(filter_name.equals("ascending")) {
+                        List<JSONObject> jsonValues = new ArrayList<JSONObject>();
+                        for (int i = 0; i < jsonArray.length(); i++) {
+                            jsonValues.add(jsonArray.getJSONObject(i));
+                        }
+                        Collections.sort( jsonValues, new Comparator<JSONObject>() {
+                            //You can change "Name" with "ID" if you want to sort by ID
+                            private static final String KEY_NAME = "skill_Name";
+
+                            @Override
+                            public int compare(JSONObject a, JSONObject b) {
+                                String valA = new String();
+                                String valB = new String();
+
+                                try {
+                                    valA = (String) a.get(KEY_NAME);
+                                    valB = (String) b.get(KEY_NAME);
+                                }
+                                catch (JSONException e) {
+                                    // do not do anything
+                                }
+
+                                return valA.compareTo(valB);
+                                //if you want to change the sort order, simply use the following:
+                                //return -valA.compareTo(valB);
+                            }
+                        });
+
+                        for (int i = 0; i < jsonArray.length(); i++) {
+                            filteredJSONArray.put(jsonValues.get(i));
+                        }
+                        json.put("filtered", filteredJSONArray);
+                    } else {
+
+                    }
+                }
+
+            }
         }
+
         json.put("model", model_name)
                 .put("group", group_name)
                 .put("language", language_name)
