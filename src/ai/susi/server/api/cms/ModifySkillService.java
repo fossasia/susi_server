@@ -326,7 +326,11 @@ public class ModifySkillService extends AbstractAPIHandler implements APIHandler
             try (Git git = DAO.getGit()) {
                 git.add().setUpdate(true).addFilepattern(".").call();
                 git.add().addFilepattern(".").call();
+                if(userEmail==null || userEmail.isEmpty()){
+                    userEmail = "anonymous@";
+                }
                 git.commit()
+                        .setAllowEmpty(false)
                         .setAll(true)
                         .setAuthor(new PersonIdent(userEmail,userEmail))
                         .setMessage(commit_message)
