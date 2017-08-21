@@ -42,7 +42,7 @@ import static ai.susi.DAO.severe;
 /**
  * Servlet to disable a skill in cms
  * this service accepts 4 parameter, model ,group, language and skill
- * test locally at http://127.0.0.1:4000/cms/disableSkillService.json
+ * test locally at http://127.0.0.1:4000/cms/disableSkill.json
  */
 public class DisableSkillService extends AbstractAPIHandler implements APIHandler {
 
@@ -50,7 +50,7 @@ public class DisableSkillService extends AbstractAPIHandler implements APIHandle
 
     @Override
     public String getAPIPath() {
-        return "/cms/disableSkillService.json";
+        return "/cms/disableSkill.json";
     }
 
     @Override
@@ -84,7 +84,7 @@ public class DisableSkillService extends AbstractAPIHandler implements APIHandle
 
         }
         if (authorization.getIdentity() == null) {
-            throw new APIException(400, "Specified User Setting not found, ensure you are logged in");
+            throw new APIException(400, "Cannot disable the skill, ensure you are logged in");
         } else {
             Accounting accounting = DAO.getAccounting(authorization.getIdentity());
             if (!accounting.getJSON().has("disabledSkills"))

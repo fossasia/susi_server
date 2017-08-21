@@ -40,7 +40,7 @@ import java.io.File;
 /**
  * Servlet to enable a skill in cms
  * this service accepts 4 parameter, model ,group, language and skill
- * test locally at http://127.0.0.1:4000/cms/enableSkillService.json
+ * test locally at http://127.0.0.1:4000/cms/enableSkill.json
  */
 public class EnableSkillService extends AbstractAPIHandler implements APIHandler {
 
@@ -49,7 +49,7 @@ public class EnableSkillService extends AbstractAPIHandler implements APIHandler
 
     @Override
     public String getAPIPath() {
-        return "/cms/enableSkillService.json";
+        return "/cms/enableSkill.json";
     }
 
     @Override
@@ -83,7 +83,7 @@ public class EnableSkillService extends AbstractAPIHandler implements APIHandler
 
         }
         if (authorization.getIdentity() == null) {
-            throw new APIException(400, "Specified User Setting not found, ensure you are logged in");
+            throw new APIException(400, "Cannot enable skill, ensure you are logged in");
         } else {
             Accounting accounting = DAO.getAccounting(authorization.getIdentity());
             if (!accounting.getJSON().has("disabledSkills"))

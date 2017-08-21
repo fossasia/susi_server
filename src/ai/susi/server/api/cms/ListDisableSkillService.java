@@ -39,7 +39,7 @@ import java.io.File;
 
 /**
  * Servlet to list all the disable skill  for a user in cms
- * test locally at http://127.0.0.1:4000/cms/listDisableSkillService.json
+ * test locally at http://127.0.0.1:4000/cms/listDisableSkill.json
  */
 public class ListDisableSkillService extends AbstractAPIHandler implements APIHandler {
 
@@ -48,7 +48,7 @@ public class ListDisableSkillService extends AbstractAPIHandler implements APIHa
 
     @Override
     public String getAPIPath() {
-        return "/cms/listDisableSkillService.json";
+        return "/cms/listDisableSkill.json";
     }
 
     @Override
@@ -68,7 +68,7 @@ public class ListDisableSkillService extends AbstractAPIHandler implements APIHa
 
 
         if (authorization.getIdentity() == null) {
-            throw new APIException(400, "Specified User Setting not found, ensure you are logged in");
+            throw new APIException(400, "Specified User disabled skill not found, ensure you are logged in");
         } else {
             Accounting accounting = DAO.getAccounting(authorization.getIdentity());
             JSONObject result = new JSONObject();
