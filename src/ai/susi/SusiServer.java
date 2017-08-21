@@ -485,6 +485,7 @@ public class SusiServer {
                 LanguageListService.class,
                 ListUserSettings.class,
                 ListSkillService.class,
+                DisableSkillService.class,
                 GetAllLanguages.class,
                 DeleteGroupService.class,
                 ExampleSkillService.class,
@@ -496,6 +497,7 @@ public class SusiServer {
                 DeleteSkillService.class,
                 ModifySkillService.class,
                 HistorySkillService.class,
+                ListDisableSkillService.class,
                 GetCommitHistory.class,
                 DescriptionSkillService.class,
                 GetSkillsImage.class,
@@ -503,6 +505,7 @@ public class SusiServer {
                 GetSkillMetadataService.class,
                 GetFileAtCommitID.class,
                 GetSkillsByAuthor.class,
+                EnableSkillService.class,
                 // susi search aggregation services
                 ConsoleService.class,
                 RSSReaderService.class,
