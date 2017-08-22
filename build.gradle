@@ -7,6 +7,7 @@ def versionJersey = '2.22.2'
 buildscript {
   repositories {
     jcenter()
+    mavenCentral()
   }
 
   dependencies {
@@ -89,7 +90,7 @@ dependencies {
   compile group: 'org.glassfish.jersey.core', name: 'jersey-server', version: versionJersey
   compile group: 'org.glassfish.jersey.containers', name: 'jersey-container-servlet-core', version: versionJersey
   compile group: 'org.webjars', name: 'swagger-ui', version: '2.1.4'
-
+  compile group: 'commons-io', name: 'commons-io', version: '2.4'
   // the following is required for public-transport-enabler
   compile 'com.squareup.okhttp3:okhttp:3.8.0'
   compile 'com.squareup.okhttp3:logging-interceptor:3.8.0'

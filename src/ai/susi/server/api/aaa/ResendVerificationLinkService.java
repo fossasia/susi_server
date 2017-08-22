@@ -32,12 +32,15 @@ import java.nio.file.Paths;
 /**
  * Created by dravit on 25/7/17.
  * parameter : emailId
- * sample request : 
+ *
+ * sample request :
+ *
  * http://127.0.0.1:4000/aaa/resendVerificationLink.json?emailId=test@fossasia.com
  */
 public class ResendVerificationLinkService extends AbstractAPIHandler implements APIHandler {
 
     public static String verificationLinkPlaceholder = "%VERIFICATION-LINK%";
+
     @Override
     public String getAPIPath() {
         return "/aaa/resendVerificationLink.json";
@@ -59,19 +62,23 @@ public class ResendVerificationLinkService extends AbstractAPIHandler implements
         JSONObject json = new JSONObject(true);
         json.put("accepted", false);
         String emailId = post.get("emailId", null);
-	// Check for null or case where emailId is only spaces
-	if(emailId == null)
-		throw new APIException(422, "Bad Request. Not Enough parameters");
+
+        // Check for null or case where emailId is only spaces
+        if (emailId == null)
+            throw new APIException(422, "Bad Request. Not Enough parameters");
+
         if (emailId.trim().length() == 0)
             throw new APIException(422, "No email id provided!");
 
-	// generate client credentials using email id ( this is required to get authentication object) and check if user id exists or not
+        // generate client credentials using email id ( this is required to get authentication object) and check if user id exists or not
         ClientCredential credential = new ClientCredential(ClientCredential.Type.passwd_login, emailId);
         Authentication authentication = DAO.getAuthentication(credential);
         if (authentication.getIdentity() == null) {
             throw new APIException(422, "Invalid email id. Please Sign up!");
         }
-        if (authentication.getBoolean("accepted", false)) {
+
+        // check if user is already verified or not
+        if (authentication.getBoolean("activated", false)) {
             throw new APIException(422, "User already verified!");
         } else {
             String token = createRandomString(30);
@@ -85,42 +92,38 @@ public class ResendVerificationLinkService extends AbstractAPIHandler implements
 
             try {
                 EmailHandler.sendEmail(emailId, "SUSI AI verification", getVerificationMailContent(token, identity.getName()));
-
                 json.put("message",
-                        "Your request for a new verification link has been processed.! An email with a verification link was send to your address.");
+                        "Your request for a new verification link has been processed! An email with a verification link was sent to your address.");
                 json.put("accepted", true);
             } catch (Throwable e) {
                 json.put("accepted", false);
                 json.put("message", "Please try again! Error : " + e.getMessage());
             }
         }
-        return null;
+        return new ServiceResponse(json);
     }
+
     /**
      * Read Email template and insert variables
      *
-     * @param token
-     *            - login token
+     * @param token - login token
      * @return Email String
      */
     private String getVerificationMailContent(String token, String userId) throws APIException {
 
         String hostUrl = DAO.getConfig("host.url", null);
-        if(hostUrl == null) throw new APIException(500, "No host url configured");
-
+        if (hostUrl == null) throw new APIException(500, "No host url configured");
         String verificationLink = hostUrl + "/aaa/signup.json?access_token=" + token
                 + "&validateEmail=" + userId + "&request_session=true";
 
         // get template file
         String result;
         try {
-            result = IO.readFileCached(Paths.get(DAO.conf_dir + "/templates/verification-mail.txt"));
+            result = IO.readFileCached(Paths.get(DAO.conf_dir + "/templates/resend-verification-mail.txt"));
         } catch (IOException e) {
             throw new APIException(500, "No verification email template");
         }
-
         result = result.replace(verificationLinkPlaceholder, verificationLink);
-
         return result;
     }
 }

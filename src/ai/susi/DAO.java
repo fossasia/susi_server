@@ -61,6 +61,7 @@ import org.eclipse.jgit.api.PullResult;
 import org.eclipse.jgit.api.PushCommand;
 import org.eclipse.jgit.api.Status;
 import org.eclipse.jgit.api.errors.GitAPIException;
+import org.eclipse.jgit.lib.PersonIdent;
 import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.storage.file.FileRepositoryBuilder;
 import org.eclipse.jgit.transport.RefSpec;
@@ -89,8 +90,8 @@ import org.json.JSONObject;
 public class DAO {
 
     private final static String ACCESS_DUMP_FILE_PREFIX = "access_";
+    public  static File conf_dir, bin_dir, html_dir, data_dir, susi_memory_dir, model_watch_dir, susi_skill_repo, deleted_skill_dir;
     public static String conflictsPlaceholder = "%CONFLICTS%";
-    public  static File conf_dir, bin_dir, html_dir, data_dir, susi_memory_dir, model_watch_dir, susi_skill_repo;
     private static File external_data, assets, dictionaries;
     private static Settings public_settings, private_settings;
     public  static AccessTracker access;
@@ -125,6 +126,12 @@ public class DAO {
         html_dir = new File("html");
         data_dir = dataPath.toFile().getAbsoluteFile();
         susi_memory_dir = new File(data_dir, "susi");
+        // TODO:
+        deleted_skill_dir = new File(new File(DAO.data_dir, "deleted_skill_dir"), "models");
+
+        if(!deleted_skill_dir.exists()){
+            DAO.deleted_skill_dir.mkdirs();
+        }
         model_watch_dir = new File(new File(data_dir.getParentFile().getParentFile(), "susi_skill_data"), "models");
         susi_skill_repo = new File(data_dir.getParentFile().getParentFile(), "susi_skill_data/.git");
 
@@ -445,10 +452,14 @@ public class DAO {
         }
     }
 
-    public static void pushCommit(Git git, String commit_message) throws IOException {
+    public static void pushCommit(Git git, String commit_message, String userEmail) throws IOException {
      // and then commit the changes
         try {
-            git.commit().setMessage(commit_message).call();
+            git.commit()
+                    .setAllowEmpty(false)
+                    .setAll(true)
+                    .setAuthor(new PersonIdent(userEmail,userEmail))
+                    .setMessage(commit_message).call();
             String remote = "origin";
             String branch = "refs/heads/master";
             String trackingBranch = "refs/remotes/" + remote + "/master";
