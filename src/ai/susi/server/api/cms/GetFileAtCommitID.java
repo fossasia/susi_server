@@ -21,7 +21,7 @@ import java.io.OutputStream;
 /**
  * Created by chetankaushik on 10/08/17.
  * Returns the file at a specific commitID. similar to Git Show.
- * http://127.0.0.1:4000/cms/getFileAtCommitID.json?model=general&group=knowledge&language=en&skill=bitcoin&commitID=214791f55c19f24d7744364495541b685539a4ee
+ * http://127.0.0.1:4000/cms/getFileAtCommitID.json?model=general&group=Knowledge&language=en&skill=bitcoin&commitID=214791f55c19f24d7744364495541b685539a4ee
  */
 public class GetFileAtCommitID extends AbstractAPIHandler implements APIHandler {
     private static final long serialVersionUID = -5686523277755750923L;
@@ -77,7 +77,6 @@ public class GetFileAtCommitID extends AbstractAPIHandler implements APIHandler 
                 // and using commit's tree find the path
                 RevTree tree = commit.getTree();
                 System.out.println("Having tree: " + tree);
-
                 // now try to find a specific file
                 try (TreeWalk treeWalk = new TreeWalk(repository)) {
                     treeWalk.addTree(tree);
@@ -105,6 +104,13 @@ public class GetFileAtCommitID extends AbstractAPIHandler implements APIHandler 
                     };
                     loader.copyTo(output);
                     json.put("file",output);
+                    json.put("commitRev", commit);
+                    json.put("commitName", commit.getName());
+                    json.put("commitID", commit.getId().getName());
+                    json.put("commit_message", commit.getShortMessage());
+                    json.put("author",commit.getAuthorIdent().getName());
+                    json.put("commitDate",commit.getAuthorIdent().getWhen());
+                    json.put("author_mail",commit.getAuthorIdent().getEmailAddress());
                 }
 
                 revWalk.dispose();
