@@ -253,7 +253,8 @@ public class SignUpService extends AbstractAPIHandler implements APIHandler {
 		String hostUrl = DAO.getConfig("host.url", null);
 		if(hostUrl == null) throw new APIException(500, "No host url configured");
 
-		String verificationLink = hostUrl + "/aaa/signup.json?access_token=" + token
+		// redirect user to accounts verify-account route
+		String verificationLink = "http://accounts.susi.ai/verify-account?access_token=" + token
 				+ "&validateEmail=" + userId + "&request_session=true";
 
 		// get template file
