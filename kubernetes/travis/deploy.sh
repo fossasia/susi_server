@@ -21,7 +21,7 @@ gcloud config set compute/zone us-central1-c
 
 echo ">>> Decrypting credentials and authenticating gcloud account"
 # Decrypt the credentials we added to the repo using the key we added with the Travis command line tool
-openssl aes-256-cbc -K $encrypted_fa9beebb0291_key -iv $encrypted_fa9beebb0291_iv -in susi-server-d6ee8400eacd.json.enc -out susi-server-d6ee8400eacd.json -d
+openssl aes-256-cbc -K $encrypted_fa9beebb0291_key -iv $encrypted_fa9beebb0291_iv -in ./kubernetes/travis/susi-server-d6ee8400eacd.json.enc -out susi-server-d6ee8400eacd.json -d
 gcloud auth activate-service-account --key-file susi-server-d6ee8400eacd.json
 export GOOGLE_APPLICATION_CREDENTIALS=$(pwd)/susi-server-d6ee8400eacd.json
 #susi-server-test is gcloud project id
