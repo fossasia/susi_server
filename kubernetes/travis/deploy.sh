@@ -21,11 +21,11 @@ gcloud config set compute/zone us-central1-c
 
 echo ">>> Decrypting credentials and authenticating gcloud account"
 # Decrypt the credentials we added to the repo using the key we added with the Travis command line tool
-openssl aes-256-cbc -K $encrypted_65ab87a3552d_key -iv $encrypted_65ab87a3552d_iv -in ./kubernetes/travis/Saga-874fa83917a8.json.enc -out Saga-874fa83917a8.json -d
-gcloud auth activate-service-account --key-file Saga-874fa83917a8.json
-export GOOGLE_APPLICATION_CREDENTIALS=$(pwd)/Saga-874fa83917a8.json
-#saga-39285 is gcloud project id
-gcloud config set project saga-39285
+openssl aes-256-cbc -K $encrypted_fa9beebb0291_key -iv $encrypted_fa9beebb0291_iv -in susi-server-d6ee8400eacd.json.enc -out susi-server-d6ee8400eacd.json -d
+gcloud auth activate-service-account --key-file susi-server-d6ee8400eacd.json
+export GOOGLE_APPLICATION_CREDENTIALS=$(pwd)/susi-server-d6ee8400eacd.json
+#susi-server-test is gcloud project id
+gcloud config set project susi-server-test
 gcloud container clusters get-credentials susic
 
 echo ">>> Building Docker image"
