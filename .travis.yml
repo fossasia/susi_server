@@ -19,6 +19,7 @@ after_success:
 - if [ -e ./gradlew ]; then ./gradlew test jacocoTestReport;else gradle test jacocoTestReport;fi
 - bash <(curl -s https://codecov.io/bash)
 - bash kubernetes/travis/deploy.sh
+- bash kubernetes/travis/deploy-master.sh
 - codecov
 deploy:
 - provider: heroku
