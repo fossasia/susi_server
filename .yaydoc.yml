@@ -4,7 +4,7 @@ metadata:
   version: development
 build:
   theme:
-    name: sphinx_fossasia_theme
+    name: sphinx_susiai_theme
   logo: images/susi-logo-original.svg
   subproject:
     - url: https://github.com/fossasia/susi_android
