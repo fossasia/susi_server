@@ -7,7 +7,7 @@ dreaming enabled for $1$>_etherpad_dream
 wake up|stop dream|stop dreaming|end dream|end dreaming
 dreaming disabled^^>_etherpad_dream
 
-analysis|analyse|analyze|* analysis|* analyse|* analyze|analysis *|analyse *|analyze *
+analysis|analyse|analyze|explain|* analysis|* analyse|* analyze|analysis *|analyse *|analyze *
 My previous answer is defined in the skill $skill$. You can help to improve this skill and <a href="$skill_link$" target="_blank"> edit it in the code repository here.</a>
 
 # some fake commands that do nothing with the computation state
