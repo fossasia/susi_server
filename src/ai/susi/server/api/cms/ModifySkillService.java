@@ -326,29 +326,13 @@ public class ModifySkillService extends AbstractAPIHandler implements APIHandler
             try (Git git = DAO.getGit()) {
                 git.add().setUpdate(true).addFilepattern(".").call();
                 git.add().addFilepattern(".").call();
-                if(userEmail==null || userEmail.isEmpty()){
-                    userEmail = "anonymous@";
-                }
-                git.commit()
-                        .setAllowEmpty(false)
-                        .setAll(true)
-                        .setAuthor(new PersonIdent(userEmail,userEmail))
-                        .setMessage(commit_message)
-                        .call();
-                String remote = "origin";
-                String branch = "refs/heads/master";
-                String trackingBranch = "refs/remotes/" + remote + "/master";
-                RefSpec spec = new RefSpec(branch + ":" + branch);
 
-                PushCommand push = git.push();
-                push.setForce(true);
-                push.setCredentialsProvider(new UsernamePasswordCredentialsProvider(DAO.getConfig("github.username", ""), DAO.getConfig("github.password", "")));
-                push.call();
-
-            } catch (GitAPIException e) {
+                // commit the changes
+                DAO.pushCommit(git, commit_message, userEmail);
+            } catch (IOException | GitAPIException e) {
                 e.printStackTrace();
-            }
 
+            }
         }
         else{
             JSONObject json = new JSONObject();
