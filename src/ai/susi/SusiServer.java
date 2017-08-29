@@ -511,7 +511,7 @@ public class SusiServer {
                 SusiService.class,
                 MindService.class,
                 UserService.class,
-                
+                GetAllUserroles.class,
                 // learning services
                 ConsoleLearning.class,
                 
@@ -522,7 +522,7 @@ public class SusiServer {
                 ChangeUserRoles.class,
 
                 //Get all Users
-                GetAllUsers.class,
+                GetUsers.class,
 
                 //Groups
                 GetGroupDetails.class,

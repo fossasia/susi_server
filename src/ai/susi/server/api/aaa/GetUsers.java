@@ -37,7 +37,7 @@ import java.util.List;
  * getUserCount -> boolean http://localhost:4000/aaa/getUsers.json?access_token=go2ijgk5ijkmViAac2bifng3uthdZ&getUserCount=true
  * page         -> integer http://localhost:4000/aaa/getUsers.json?access_token=go2ijgk5ijkmViAac2bifng3uthdZ&page=2
  */
-public class GetAllUsers extends AbstractAPIHandler implements APIHandler {
+public class GetUsers extends AbstractAPIHandler implements APIHandler {
 
     private static final long serialVersionUID = 4538304346942632187L;
 
