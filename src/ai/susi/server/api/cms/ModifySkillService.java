@@ -4,16 +4,8 @@ import ai.susi.DAO;
 import ai.susi.json.JsonObjectWithDefault;
 import ai.susi.server.*;
 import org.eclipse.jgit.api.Git;
-import org.eclipse.jgit.api.PushCommand;
-import org.eclipse.jgit.api.Status;
 import org.eclipse.jgit.api.errors.GitAPIException;
-import org.eclipse.jgit.lib.PersonIdent;
-import org.eclipse.jgit.lib.Repository;
-import org.eclipse.jgit.storage.file.FileRepositoryBuilder;
-import org.eclipse.jgit.transport.RefSpec;
-import org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider;
 import org.json.JSONObject;
-import scala.util.parsing.json.JSON;
 
 import javax.imageio.ImageIO;
 import javax.servlet.ServletException;

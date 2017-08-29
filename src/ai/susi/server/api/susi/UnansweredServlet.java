@@ -19,21 +19,20 @@
 
 package ai.susi.server.api.susi;
 
-import java.io.IOException;
-import java.util.LinkedHashMap;
-import java.util.List;
-
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
 import ai.susi.DAO;
 import ai.susi.mind.SusiMemory.TokenMapList;
 import ai.susi.server.FileHandler;
 import ai.susi.server.Query;
 import ai.susi.server.RemoteAccess;
 import ai.susi.tools.UTF8;
+
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.util.LinkedHashMap;
+import java.util.List;
 
 public class UnansweredServlet extends HttpServlet {
 

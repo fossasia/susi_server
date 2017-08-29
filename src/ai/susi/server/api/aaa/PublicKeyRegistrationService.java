@@ -19,17 +19,16 @@
 
 package ai.susi.server.api.aaa;
 
+import ai.susi.DAO;
+import ai.susi.json.JsonObjectWithDefault;
+import ai.susi.server.*;
+import ai.susi.tools.IO;
 import org.bouncycastle.util.io.pem.PemObject;
 import org.bouncycastle.util.io.pem.PemReader;
 import org.bouncycastle.util.io.pem.PemWriter;
 import org.eclipse.jetty.util.log.Log;
 import org.json.JSONArray;
 import org.json.JSONObject;
-
-import ai.susi.DAO;
-import ai.susi.json.JsonObjectWithDefault;
-import ai.susi.server.*;
-import ai.susi.tools.IO;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
@@ -38,7 +37,10 @@ import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
-import java.security.*;
+import java.security.KeyFactory;
+import java.security.KeyPair;
+import java.security.KeyPairGenerator;
+import java.security.NoSuchAlgorithmException;
 import java.security.interfaces.RSAPublicKey;
 import java.security.spec.X509EncodedKeySpec;
 import java.util.Base64;

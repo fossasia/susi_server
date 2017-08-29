@@ -28,7 +28,7 @@ public class DeleteSkillService extends AbstractAPIHandler implements APIHandler
 
     @Override
     public UserRole getMinimalUserRole() {
-        return UserRole.ANONYMOUS;
+        return UserRole.ADMIN;
     }
 
     @Override
