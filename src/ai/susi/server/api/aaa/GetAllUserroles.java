@@ -37,6 +37,8 @@ public class GetAllUserroles extends AbstractAPIHandler implements APIHandler {
             userRoles.add(userRole.getName());
         }
         json.put("userRoles", userRoles);
+        json.put("accepted", true);
+        json.put("accepted", "All user roles fetched successfully");
         return new ServiceResponse(json);
     }
 }
