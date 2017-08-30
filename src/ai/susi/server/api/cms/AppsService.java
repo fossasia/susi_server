@@ -19,27 +19,19 @@
 
 package ai.susi.server.api.cms;
 
+import ai.susi.DAO;
+import ai.susi.json.JsonObjectWithDefault;
+import ai.susi.server.*;
+import org.eclipse.jetty.util.log.Log;
+import org.json.JSONArray;
+import org.json.JSONObject;
+
+import javax.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.HashSet;
 import java.util.Set;
-
-import org.eclipse.jetty.util.log.Log;
-import org.json.JSONArray;
-import org.json.JSONObject;
-
-import ai.susi.DAO;
-import ai.susi.json.JsonObjectWithDefault;
-import ai.susi.server.APIException;
-import ai.susi.server.APIHandler;
-import ai.susi.server.AbstractAPIHandler;
-import ai.susi.server.Authorization;
-import ai.susi.server.UserRole;
-import ai.susi.server.Query;
-import ai.susi.server.ServiceResponse;
-
-import javax.servlet.http.HttpServletResponse;
 
 public class AppsService extends AbstractAPIHandler implements APIHandler {
 

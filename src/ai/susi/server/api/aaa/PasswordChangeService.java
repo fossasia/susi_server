@@ -22,7 +22,6 @@ import ai.susi.tools.TimeoutMatcher;
 import org.eclipse.jetty.util.log.Log;
 import org.json.JSONObject;
 
-
 import javax.servlet.http.HttpServletResponse;
 import java.util.regex.Pattern;
 
