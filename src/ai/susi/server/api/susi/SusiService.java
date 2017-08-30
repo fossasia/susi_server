@@ -19,34 +19,18 @@
 
 package ai.susi.server.api.susi;
 
-import java.io.BufferedReader;
-import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.nio.charset.StandardCharsets;
-import java.util.List;
-
+import ai.susi.DAO;
+import ai.susi.json.JsonObjectWithDefault;
+import ai.susi.mind.*;
+import ai.susi.server.*;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONTokener;
 
-import ai.susi.DAO;
-import ai.susi.json.JsonObjectWithDefault;
-import ai.susi.mind.SusiArgument;
-import ai.susi.mind.SusiCognition;
-import ai.susi.mind.SusiSkill;
-import ai.susi.mind.SusiMind;
-import ai.susi.mind.SusiThought;
-import ai.susi.server.APIException;
-import ai.susi.server.APIHandler;
-import ai.susi.server.AbstractAPIHandler;
-import ai.susi.server.Authorization;
-import ai.susi.server.UserRole;
-import ai.susi.server.Query;
-import ai.susi.server.ServiceResponse;
-
 import javax.servlet.http.HttpServletResponse;
+import java.io.*;
+import java.nio.charset.StandardCharsets;
+import java.util.List;
 
 public class SusiService extends AbstractAPIHandler implements APIHandler {
    

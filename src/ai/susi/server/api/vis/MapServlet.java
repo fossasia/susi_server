@@ -19,16 +19,6 @@
 
 package ai.susi.server.api.vis;
 
-import java.awt.image.BufferedImage;
-import java.io.IOException;
-import java.nio.file.FileSystems;
-
-import javax.imageio.ImageIO;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
 import ai.susi.geo.OSMTile;
 import ai.susi.graphics.PrintTool;
 import ai.susi.graphics.RasterPlotter;
@@ -37,6 +27,15 @@ import ai.susi.graphics.RasterPlotter.FilterMode;
 import ai.susi.server.Query;
 import ai.susi.server.RemoteAccess;
 import ai.susi.server.RemoteAccess.FileTypeEncoding;
+
+import javax.imageio.ImageIO;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.awt.image.BufferedImage;
+import java.io.IOException;
+import java.nio.file.FileSystems;
 
 public class MapServlet extends HttpServlet {
 

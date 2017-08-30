@@ -19,31 +19,23 @@
 
 package ai.susi.server.api.learning;
 
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.util.Iterator;
-import java.util.LinkedHashSet;
-import java.util.Set;
-
+import ai.susi.DAO;
+import ai.susi.json.JsonObjectWithDefault;
+import ai.susi.json.JsonPath;
+import ai.susi.json.JsonTray;
+import ai.susi.server.*;
+import ai.susi.server.api.susi.ConsoleService;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONTokener;
 
-import ai.susi.DAO;
-import ai.susi.json.JsonObjectWithDefault;
-import ai.susi.json.JsonPath;
-import ai.susi.json.JsonTray;
-import ai.susi.server.APIException;
-import ai.susi.server.APIHandler;
-import ai.susi.server.AbstractAPIHandler;
-import ai.susi.server.Authorization;
-import ai.susi.server.UserRole;
-import ai.susi.server.Query;
-import ai.susi.server.ServiceResponse;
-import ai.susi.server.api.susi.ConsoleService;
-
 import javax.servlet.http.HttpServletResponse;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.util.Iterator;
+import java.util.LinkedHashSet;
+import java.util.Set;
 
 /**
  * rule learning servlet

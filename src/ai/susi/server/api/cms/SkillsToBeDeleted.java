@@ -42,7 +42,7 @@ public class SkillsToBeDeleted extends AbstractAPIHandler implements APIHandler 
     private static final long serialVersionUID = -8691003678852307876L;
 
     @Override
-    public UserRole getMinimalUserRole() { return UserRole.ANONYMOUS; }
+    public UserRole getMinimalUserRole() { return UserRole.ADMIN; }
 
     @Override
     public JSONObject getDefaultPermissions(UserRole baseUserRole) {
