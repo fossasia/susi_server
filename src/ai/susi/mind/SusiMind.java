@@ -280,7 +280,7 @@ public class SusiMind {
             r.forEach(intent -> ideas.add(new SusiIdea(intent).setToken(token)));
         });
         
-        for (SusiIdea idea: ideas) DAO.log("idea.phrase-1: score=" + idea.getIntent().getScore(userLanguage).score + " : " + idea.getIntent().getPhrases().toString() + " " + idea.getIntent().getActionsClone());
+        //for (SusiIdea idea: ideas) DAO.log("idea.phrase-1: score=" + idea.getIntent().getScore(userLanguage).score + " : " + idea.getIntent().getPhrases().toString() + " " + idea.getIntent().getActionsClone());
         
         // add catchall intents always (those are the 'bad ideas')
         Collection<SusiIntent> ca = this.intenttrigger.get(SusiIntent.CATCHALL_KEY);
@@ -300,7 +300,7 @@ public class SusiMind {
         // make a sorted list of all ideas
         ideas.clear(); scored.values().forEach(r -> ideas.addAll(r));
         
-        for (SusiIdea idea: ideas) DAO.log("idea.phrase-2: score=" + idea.getIntent().getScore(userLanguage).score + " : " + idea.getIntent().getPhrases().toString() + " " + idea.getIntent().getActionsClone());
+        //for (SusiIdea idea: ideas) DAO.log("idea.phrase-2: score=" + idea.getIntent().getScore(userLanguage).score + " : " + idea.getIntent().getPhrases().toString() + " " + idea.getIntent().getActionsClone());
         
         // test ideas and collect those which match up to maxcount
         List<SusiIdea> plausibleIdeas = new ArrayList<>(Math.min(10, maxcount));
