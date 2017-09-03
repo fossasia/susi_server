@@ -19,32 +19,21 @@
 
 package ai.susi.server.api.aaa;
 
+import ai.susi.DAO;
+import ai.susi.EmailHandler;
+import ai.susi.json.JsonObjectWithDefault;
+import ai.susi.server.*;
+import ai.susi.tools.IO;
+import ai.susi.tools.TimeoutMatcher;
+import org.json.JSONObject;
+
+import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.regex.Pattern;
-
-import javax.servlet.http.HttpServletResponse;
-
-import org.json.JSONObject;
-
-import ai.susi.DAO;
-import ai.susi.EmailHandler;
-import ai.susi.json.JsonObjectWithDefault;
-import ai.susi.server.APIException;
-import ai.susi.server.APIHandler;
-import ai.susi.server.AbstractAPIHandler;
-import ai.susi.server.Authentication;
-import ai.susi.server.Authorization;
-import ai.susi.server.UserRole;
-import ai.susi.server.ClientCredential;
-import ai.susi.server.ClientIdentity;
-import ai.susi.server.Query;
-import ai.susi.server.ServiceResponse;
-import ai.susi.tools.IO;
-import ai.susi.tools.TimeoutMatcher;
 
 public class SignUpService extends AbstractAPIHandler implements APIHandler {
 
@@ -253,7 +242,8 @@ public class SignUpService extends AbstractAPIHandler implements APIHandler {
 		String hostUrl = DAO.getConfig("host.url", null);
 		if(hostUrl == null) throw new APIException(500, "No host url configured");
 
-		String verificationLink = hostUrl + "/aaa/signup.json?access_token=" + token
+		// redirect user to accounts verify-account route
+		String verificationLink = "http://accounts.susi.ai/verify-account?access_token=" + token
 				+ "&validateEmail=" + userId + "&request_session=true";
 
 		// get template file

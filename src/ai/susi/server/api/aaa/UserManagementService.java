@@ -19,14 +19,12 @@
 
 package ai.susi.server.api.aaa;
 
-import org.json.JSONObject;
-
 import ai.susi.DAO;
 import ai.susi.json.JsonObjectWithDefault;
 import ai.susi.server.*;
+import org.json.JSONObject;
 
 import javax.servlet.http.HttpServletResponse;
-
 import java.util.Collection;
 
 public class UserManagementService extends AbstractAPIHandler implements APIHandler {

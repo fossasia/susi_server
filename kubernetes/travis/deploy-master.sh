@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-export DEPLOY_BRANCH=${DEPLOY_BRANCH:-development}
+export DEPLOY_BRANCH=${DEPLOY_BRANCH:-master}
 
 if [ "$TRAVIS_PULL_REQUEST" != "false" -o "$TRAVIS_REPO_SLUG" != "fossasia/susi_server" -o  "$TRAVIS_BRANCH" != "$DEPLOY_BRANCH" ]; then
     echo "Skip production deployment for a very good reason."
@@ -26,7 +26,7 @@ gcloud auth activate-service-account --key-file susi-server-d6ee8400eacd.json
 export GOOGLE_APPLICATION_CREDENTIALS=$(pwd)/susi-server-d6ee8400eacd.json
 #susi-server-test is gcloud project id
 gcloud config set project susi-server-test
-gcloud container clusters get-credentials susic
+gcloud container clusters get-credentials susic-master
 
 echo ">>> Building Docker image"
 cd kubernetes/images

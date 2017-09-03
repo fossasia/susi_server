@@ -1,3 +1,22 @@
+/**
+ *  UndoDeleteSkillService
+ *  Copyright 23/08/17 by Chetan Kaushik, @dynamitechetan
+ *
+ *  This library is free software; you can redistribute it and/or
+ *  modify it under the terms of the GNU Lesser General Public
+ *  License as published by the Free Software Foundation; either
+ *  version 2.1 of the License, or (at your option) any later version.
+ *
+ *  This library is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ *  Lesser General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Lesser General Public License
+ *  along with this program in the file lgpl21.txt
+ *  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 package ai.susi.server.api.cms;
 
 import ai.susi.DAO;
@@ -11,24 +30,19 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.io.IOException;
 
-
 /**
- * Created by chetankaushik on 06/06/17.
- * This Service deletes a skill as per given query.
- * http://localhost:4000/cms/deleteSkill.txt?model=general&group=Knowledge&language=en&skill=whois
+ * Created by chetankaushik on 23/08/17.
+ * 127.0.0.1:4000/cms/undoDeleteSkill.json?skill=wikipedia
  * When someone deletes a skill then it will move a folder delete_skills_dir.
- * When a file is moved to the delete_skills_dir its last modified date is changed to the current date.
- * Then in the caretaker there is a function which checks for files which are older than 30 days by checking the last modified date.
- * If there is any file which is older than 30 days then it deletes them.
+ * This API Endpoint moves the deleted skill from the  delete_skills_dir to susi_skill_data repository.
  */
-
-public class DeleteSkillService extends AbstractAPIHandler implements APIHandler {
+public class UndoDeleteSkillService  extends AbstractAPIHandler implements APIHandler {
 
     private static final long serialVersionUID = -1755374387315534691L;
 
     @Override
     public UserRole getMinimalUserRole() {
-        return UserRole.ADMIN;
+        return UserRole.ANONYMOUS;
     }
 
     @Override
@@ -38,34 +52,31 @@ public class DeleteSkillService extends AbstractAPIHandler implements APIHandler
 
     @Override
     public String getAPIPath() {
-        return "/cms/deleteSkill.json";
+        return "/cms/undoDeleteSkill.json";
     }
 
     @Override
     public ServiceResponse serviceImpl(Query call, HttpServletResponse response, Authorization rights, final JsonObjectWithDefault permissions) {
 
         String model_name = call.get("model", "general");
-        File model = new File(DAO.model_watch_dir, model_name);
+        File model = new File(DAO.deleted_skill_dir, model_name);
         String group_name = call.get("group", "Knowledge");
         File group = new File(model, group_name);
         String language_name = call.get("language", "en");
         File language = new File(group, language_name);
-        String skill_name = call.get("skill", "whois");
+        String skill_name = call.get("skill", null);
         File skill = new File(language, skill_name + ".txt");
         String SkillName = skill.getName();
         JSONObject json = new JSONObject(true);
         json.put("accepted", false);
-        if(!DAO.deleted_skill_dir.exists()){
-            DAO.deleted_skill_dir.mkdirs();
-        }
         String path = skill.getPath();
-        path = path.replace(DAO.model_watch_dir.getPath(),"");
+        path = path.replace(DAO.deleted_skill_dir.getPath(),"");
 
         if (skill.exists()) {
-            File file = new File(DAO.deleted_skill_dir.getPath()+path);
+            File file = new File(DAO.model_watch_dir.getPath()+path);
             file.getParentFile().mkdirs();
             if(skill.renameTo(file)){
-                Boolean changed =  new File(DAO.deleted_skill_dir.getPath()+path).setLastModified(System.currentTimeMillis());
+                Boolean changed =  new File(DAO.model_watch_dir.getPath()+path).setLastModified(System.currentTimeMillis());
                 System.out.print(changed);
                 System.out.println("Skill moved successfully!");
             }else{
@@ -81,9 +92,9 @@ public class DeleteSkillService extends AbstractAPIHandler implements APIHandler
                         .addFilepattern(".")
                         .call();
                 // and then commit the changes
-                DAO.pushCommit(git, "Deleted " + skill_name, rights.getIdentity().isEmail() ? rights.getIdentity().getName() : "anonymous@");
+                DAO.pushCommit(git, "Undo Delete " + skill_name, rights.getIdentity().isEmail() ? rights.getIdentity().getName() : "anonymous@");
                 json.put("accepted", true);
-                json.put("message", "Deleted " + skill_name);
+                json.put("message", "Deletion of Skill Aborted " + skill_name);
             } catch (IOException | GitAPIException e) {
                 e.printStackTrace();
             }

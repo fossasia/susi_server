@@ -3,7 +3,6 @@ package ai.susi.server.api.cms;
 import ai.susi.DAO;
 import ai.susi.json.JsonObjectWithDefault;
 import ai.susi.server.*;
-import org.eclipse.jetty.util.log.Log;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.json.JSONObject;
@@ -16,7 +15,10 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.Part;
 import java.awt.*;
 import java.awt.image.BufferedImage;
-import java.io.*;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -137,9 +139,6 @@ public class CreateSkillService extends AbstractAPIHandler implements APIHandler
                         try (Git git = DAO.getGit()) {
                             git.add().addFilepattern(".").call();
 
-                            if(userEmail==null || userEmail.isEmpty()){
-                                userEmail = "anonymous@";
-                            }
                             // commit the changes
                             DAO.pushCommit(git, "Created " + skill_name, userEmail);
                             json.put("accepted", true);

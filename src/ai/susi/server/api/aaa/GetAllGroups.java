@@ -25,8 +25,6 @@ import ai.susi.server.*;
 import org.json.JSONObject;
 
 import javax.servlet.http.HttpServletResponse;
-import java.util.Iterator;
-import java.util.Set;
 
 /**
  * This Servlets returns all the group details of all the groups created.

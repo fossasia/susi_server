@@ -507,6 +507,7 @@ public class SusiServer {
                 GetSkillsByAuthor.class,
                 EnableSkillService.class,
                 SkillsToBeDeleted.class,
+                UndoDeleteSkillService.class,
                 // susi search aggregation services
                 ConsoleService.class,
                 RSSReaderService.class,

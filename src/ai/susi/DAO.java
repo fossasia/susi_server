@@ -452,14 +452,28 @@ public class DAO {
         }
     }
 
+    /**
+     * commit user changes to the skill data repository
+     * @param git
+     * @param commit_message
+     * @param userEmail
+     * @throws IOException
+     */
     public static void pushCommit(Git git, String commit_message, String userEmail) throws IOException {
-     // and then commit the changes
+
+        // fix bad email setting
+        if (userEmail==null || userEmail.isEmpty()) {
+            assert false; // this should not happen
+            userEmail = "anonymous@";
+        }
+        
         try {
             git.commit()
                     .setAllowEmpty(false)
                     .setAll(true)
                     .setAuthor(new PersonIdent(userEmail,userEmail))
-                    .setMessage(commit_message).call();
+                    .setMessage(commit_message)
+                    .call();
             String remote = "origin";
             String branch = "refs/heads/master";
             String trackingBranch = "refs/remotes/" + remote + "/master";
@@ -475,6 +489,7 @@ public class DAO {
             throw new IOException (e.getMessage());
         }
     }
+    
     private static String getConflictsMailContent(MergeResult mergeResult) throws APIException {
         // get template file
         String result="";

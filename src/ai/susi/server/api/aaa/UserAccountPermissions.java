@@ -19,12 +19,11 @@
 
 package ai.susi.server.api.aaa;
 
-import org.json.JSONArray;
-import org.json.JSONObject;
-
 import ai.susi.SusiServer;
 import ai.susi.json.JsonObjectWithDefault;
 import ai.susi.server.*;
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 import javax.servlet.Servlet;
 import javax.servlet.http.HttpServletResponse;

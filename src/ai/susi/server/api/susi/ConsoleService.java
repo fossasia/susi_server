@@ -19,6 +19,20 @@
 
 package ai.susi.server.api.susi;
 
+import ai.susi.DAO;
+import ai.susi.json.JsonObjectWithDefault;
+import ai.susi.json.JsonPath;
+import ai.susi.mind.SusiProcedures;
+import ai.susi.mind.SusiThought;
+import ai.susi.mind.SusiTransfer;
+import ai.susi.server.*;
+import api.external.transit.BahnService;
+import api.external.transit.BahnService.NoStationFoundException;
+import org.json.JSONArray;
+import org.json.JSONObject;
+import org.json.JSONTokener;
+
+import javax.servlet.http.HttpServletResponse;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -26,29 +40,6 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.Set;
 import java.util.regex.Pattern;
-
-import org.json.JSONArray;
-import org.json.JSONObject;
-import org.json.JSONTokener;
-
-import ai.susi.DAO;
-import ai.susi.json.JsonObjectWithDefault;
-import ai.susi.json.JsonPath;
-import ai.susi.mind.SusiProcedures;
-import ai.susi.mind.SusiThought;
-import ai.susi.mind.SusiTransfer;
-import ai.susi.server.APIException;
-import ai.susi.server.APIHandler;
-import ai.susi.server.AbstractAPIHandler;
-import ai.susi.server.Authorization;
-import ai.susi.server.UserRole;
-import ai.susi.server.ClientConnection;
-import ai.susi.server.Query;
-import ai.susi.server.ServiceResponse;
-import api.external.transit.BahnService;
-import api.external.transit.BahnService.NoStationFoundException;
-
-import javax.servlet.http.HttpServletResponse;
 
 /* examples:
  * http://localhost:4000/susi/console.json?q=SELECT%20*%20FROM%20rss%20WHERE%20url=%27https://www.reddit.com/search.rss?q=loklak%27;

@@ -19,25 +19,18 @@
 
 package ai.susi.server.api.service;
 
-import java.io.BufferedInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Map;
+import ai.susi.DAO;
+import ai.susi.server.Query;
+import ai.susi.server.RemoteAccess;
+import ai.susi.tools.UTF8;
 
 import javax.servlet.ServletException;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
-import ai.susi.DAO;
-import ai.susi.server.Query;
-import ai.susi.server.RemoteAccess;
-import ai.susi.tools.UTF8;
+import java.io.*;
+import java.util.Map;
 
 public class AssetServlet extends HttpServlet {
 
