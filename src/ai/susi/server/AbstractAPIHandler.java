@@ -228,8 +228,8 @@ public abstract class AbstractAPIHandler extends HttpServlet implements APIHandl
     
     /**
      * Create a hash for an input an salt
-     * @param input
-     * @param salt
+     * @param input Input String to generate hash
+     * @param salt Salt String for encryption
      * @return String hash
      */
     public static String getHash(String input, String salt) {
@@ -245,8 +245,8 @@ public abstract class AbstractAPIHandler extends HttpServlet implements APIHandl
     
     /**
      * Creates a random alphanumeric string
-     * @param length
-     * @return
+     * @param length Length of the random string
+     * @return Randomly generated string
      */
     public static String createRandomString(Integer length) {
     	char[] chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789".toCharArray();
@@ -261,7 +261,7 @@ public abstract class AbstractAPIHandler extends HttpServlet implements APIHandl
 
     /**
      * Returns a login cookie if present in the request
-     * @param request
+     * @param request Request for checking login cookie
      * @return the login cookie if present, null otherwise
      */
     private static Cookie getLoginCookie(HttpServletRequest request) {
@@ -277,7 +277,7 @@ public abstract class AbstractAPIHandler extends HttpServlet implements APIHandl
 
     /**
      * Delete the login cookie if present
-     * @param response
+     * @param response Response to delete login cookie
      */
     protected static void deleteLoginCookie(HttpServletResponse response) {
     	Cookie deleteCookie = new Cookie("login", null);
