@@ -55,7 +55,7 @@ import alice.tuprolog.Theory;
 public class SusiInference {
     
     public static enum Type {
-        console, flow, memory, javascript, prolog;
+        console, flow, memory, javascript, timer_set, prolog;
         public int getSubscore() {
             return this.ordinal() + 1;
         }
@@ -294,6 +294,9 @@ public class SusiInference {
             } else {
                 try {return ConsoleService.dbAccess.deduce(flow, flow.unify(expression, false));} catch (Exception e) {}
             }
+        }
+        if(type == Type.timer_set) {
+
         }
         if (type == SusiInference.Type.flow) {
             String expression = flow.unify(this.getExpression(), false);
