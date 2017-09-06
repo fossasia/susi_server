@@ -19,7 +19,6 @@
 
 package ai.susi.mind;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
@@ -68,7 +67,7 @@ public class SusiIntent {
      * @param json - a multi-intent definition
      * @return a set of intents
      */
-    public static List<SusiIntent> getIntents(JSONObject json, File origin) {
+    public static List<SusiIntent> getIntents(SusiLanguage language, JSONObject json, String skillpath) {
         if (!json.has("phrases")) throw new PatternSyntaxException("phrases missing", "", 0);
         final List<SusiIntent> intents = new ArrayList<>();
         if (json.has("options")) {
@@ -78,11 +77,11 @@ public class SusiIntent {
                 option.put("phrases", json.get("phrases"));
                 JSONObject or = options.getJSONObject(i);
                 for (String k: or.keySet()) option.put(k, or.get(k));
-                intents.add(new SusiIntent(option, origin));
+                intents.add(new SusiIntent(language, option, skillpath));
             }
         } else {
             try {
-                SusiIntent intent = new SusiIntent(json, origin);
+                SusiIntent intent = new SusiIntent(language, json, skillpath);
                 intents.add(intent);
             } catch (PatternSyntaxException e) {
                 Logger.getLogger("SusiIntent").warning("Regular Expression error in Susi Intent: " + json.toString(2));
@@ -96,7 +95,7 @@ public class SusiIntent {
      * @param json the intent description
      * @throws PatternSyntaxException
      */
-    private SusiIntent(JSONObject json, File origin) throws PatternSyntaxException {
+    private SusiIntent(SusiLanguage language, JSONObject json, String skillpath) throws PatternSyntaxException {
         
         // extract the phrases and the phrases subscore
         if (!json.has("phrases")) throw new PatternSyntaxException("phrases missing", "", 0);
@@ -138,22 +137,10 @@ public class SusiIntent {
         this.comment = json.has("comment") ? json.getString("comment") : "";
 
         // remember the origin
-        String skillpath = origin.getAbsolutePath();
-    	int i = skillpath.indexOf("/susi");
-    	if (i < 0) skillpath = ""; else {
-    	    skillpath = skillpath.substring(i);
-    	    if (skillpath.startsWith("/susi/")) skillpath = skillpath.substring(5);
-    	}
     	this.skill = skillpath;
     	
     	// compute the language from the origin
-    	this.language = SusiLanguage.unknown;
-	    if (this.skill.startsWith("/susi_server/conf/susi/")) {
-	        this.language = SusiLanguage.parse(this.skill.substring(23, 25));
-	    } else if (this.skill.startsWith("/susi_skill_data")) {
-	        String[] paths = this.skill.split("/");
-            if (paths.length > 5) this.language = SusiLanguage.parse(paths[5]);
-	    }
+    	this.language = language;
         
     	// quality control
         this.example = json.has("example") ? json.getString("example") : "";
@@ -482,7 +469,7 @@ public class SusiIntent {
      * @param token the key from the user query which matched the intent tokens (also considering category matching)
      * @return the result of the application of the intent, a thought argument containing the thoughts which terminated into a final mindstate or NULL if the consideration should be rejected
      */
-    public SusiArgument consideration(final String query, SusiThought recall, SusiReader.Token token, SusiMind mind, String client) {
+    public SusiArgument consideration(final String query, SusiThought recall, SusiLinguistics.Token token, SusiMind mind, String client) {
         
         // we start with the recall from previous interactions as new flow
         final SusiArgument flow = new SusiArgument().think(recall);
