@@ -209,8 +209,8 @@ public class SusiMind {
                         this.intenttrigger.put(key, l);
                     }
                     l.add(intent);
-                    intent.getPhrases().forEach(phrase -> removalPattern.add(phrase.getPattern()));
-                    //intent.getPhrases().forEach(phrase -> this.memories.removeUnanswered(phrase.getPattern()));
+                    intent.getUtterances().forEach(utterance -> removalPattern.add(utterance.getPattern()));
+                    //intent.getPhrases().forEach(utterance -> this.memories.removeUnanswered(utterance.getPattern()));
                     //System.out.println("***DEBUG: ADD INTENT FOR KEY " + key + ": " + intent.toString());
                 });
                 // Susi skill object for skill metadata
@@ -343,7 +343,7 @@ public class SusiMind {
         }
 
         for (SusiIdea idea: plausibleIdeas) {
-            DAO.log("idea.phrase-3: score=" + idea.getIntent().getScore(userLanguage).score + " : " + idea.getIntent().getPhrases().toString() + " " + idea.getIntent().getActionsClone());
+            DAO.log("idea.phrase-3: score=" + idea.getIntent().getScore(userLanguage).score + " : " + idea.getIntent().getUtterances().toString() + " " + idea.getIntent().getActionsClone());
             DAO.log("idea.phrase-3:   log=" + idea.getIntent().getScore(userLanguage).log );
         }
 
@@ -372,7 +372,7 @@ public class SusiMind {
         SusiThought recall = observation_argument.mindmeld(false);
         
         // normalize the query
-        query = SusiPhrase.normalizeExpression(query);
+        query = SusiUtterance.normalizeExpression(query);
         
         // find an answer
         List<SusiArgument> answers = new ArrayList<>();

@@ -84,7 +84,7 @@ public class SusiSkill {
         JSONArray intents = new JSONArray();
         json.put("intents", intents);
         String lastLine = "", line = "";
-        String bang_phrases = "", bang_type = "", bang_term = ""; StringBuilder bang_bag = new StringBuilder();
+        String bang_answers = "", bang_type = "", bang_term = ""; StringBuilder bang_bag = new StringBuilder();
         String example = "", expect = "", description="", image="", skillName="", authorName= "", authorURL = "", developerPrivacyPolicy = "", termsOfUse="";
         boolean prior = false, dynamicContent = false;
         try {readloop: while ((line = br.readLine()) != null) {
@@ -99,7 +99,7 @@ public class SusiSkill {
                         JSONObject intent = new JSONObject(true);
                         JSONArray phrases = new JSONArray();
                         intent.put("phrases", phrases);
-                        for (String phrase: bang_phrases.split("\\|")) phrases.put(SusiPhrase.simplePhrase(phrase.trim(), prior));
+                        for (String phrase: bang_answers.split("\\|")) phrases.put(SusiUtterance.simplePhrase(phrase.trim(), prior));
                         
                         // javascript process
                         JSONObject process = new JSONObject();
@@ -117,7 +117,7 @@ public class SusiSkill {
                         JSONObject intent = new JSONObject(true);
                         JSONArray phrases = new JSONArray();
                         intent.put("phrases", phrases);
-                        for (String phrase: bang_phrases.split("\\|")) phrases.put(SusiPhrase.simplePhrase(phrase.trim(), prior));
+                        for (String phrase: bang_answers.split("\\|")) phrases.put(SusiUtterance.simplePhrase(phrase.trim(), prior));
                         
                         // console process
                         JSONObject process = new JSONObject();
@@ -182,7 +182,7 @@ public class SusiSkill {
                             intents.put(intent);
                         }
                     }
-                    bang_phrases = "";
+                    bang_answers = "";
                     bang_type = "";
                     bang_term = "";
                     bang_bag.setLength(0);
@@ -292,7 +292,7 @@ public class SusiSkill {
                         image =tail;
                     } else {
                         // start multi-line bang
-                        bang_phrases = lastLine;
+                        bang_answers = lastLine;
                         bang_type = head;
                         bang_term = tail;
                         bang_bag.setLength(0);

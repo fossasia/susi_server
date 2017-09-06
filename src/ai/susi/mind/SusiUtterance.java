@@ -34,7 +34,7 @@ import ai.susi.tools.TimeoutMatcher;
  * SusiPhrase, a pattern that is used to 'remember' how to handle inputs. 
  * To descibe a phrase in a more computing-related way: a phrase is a pre-compiled regular expression.
  */
-public class SusiPhrase {
+public class SusiUtterance {
 
     public static enum Type {
         minor(0), regex(1), pattern(1), prior(3);
@@ -63,7 +63,7 @@ public class SusiPhrase {
      * @param json the phrase description
      * @throws PatternSyntaxException
      */
-    public SusiPhrase(JSONObject json) throws PatternSyntaxException {
+    public SusiUtterance(JSONObject json) throws PatternSyntaxException {
         if (!json.has("expression")) throw new PatternSyntaxException("expression missing", "", 0);
         String expression = json.getString("expression").toLowerCase();
         

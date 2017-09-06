@@ -40,8 +40,8 @@ import ai.susi.DAO;
 import ai.susi.tools.TimeoutMatcher;
 
 /**
- * An intent in the Susi AI framework is a collection of phrases, inference processes and actions that are applied
- * on external sense data if the phrases identify that this intent set would be applicable on the sense data.
+ * An intent in the Susi AI framework is a collection of utterances, inference processes and actions that are applied
+ * on external sense data if the utterances identify that this intent set would be applicable on the sense data.
  * A set of intent would is a intent on how to handle activities from the outside of the AI and react on
  * such activities.
  */
@@ -50,7 +50,7 @@ public class SusiIntent {
     public final static String CATCHALL_KEY = "*";
     public final static int    DEFAULT_SCORE = 10;
     
-    private final List<SusiPhrase> phrases;
+    private final List<SusiUtterance> utterances;
     private final List<SusiInference> inferences;
     private final List<SusiAction> actions;
     private final Set<String> keys;
@@ -63,7 +63,7 @@ public class SusiIntent {
     
     /**
      * Generate a set of intents from a single intent definition. This may be possible if the intent contains an 'options'
-     * object which creates a set of intents, one for each option. The options combine with one set of phrases
+     * object which creates a set of intents, one for each option. The options combine with one set of utterances
      * @param json - a multi-intent definition
      * @return a set of intents
      */
@@ -97,11 +97,11 @@ public class SusiIntent {
      */
     private SusiIntent(SusiLanguage language, JSONObject json, String skillpath) throws PatternSyntaxException {
         
-        // extract the phrases and the phrases subscore
+        // extract the utterances and the utterances subscore
         if (!json.has("phrases")) throw new PatternSyntaxException("phrases missing", "", 0);
         JSONArray p = (JSONArray) json.remove("phrases");
-        this.phrases = new ArrayList<>(p.length());
-        p.forEach(q -> this.phrases.add(new SusiPhrase((JSONObject) q)));
+        this.utterances = new ArrayList<>(p.length());
+        p.forEach(q -> this.utterances.add(new SusiUtterance((JSONObject) q)));
         
         // extract the actions and the action subscore
         if (!json.has("actions")) throw new PatternSyntaxException("actions missing", "", 0);
@@ -123,9 +123,9 @@ public class SusiIntent {
         JSONArray k;
         if (json.has("keys")) {
             k = json.getJSONArray("keys");
-            if (k.length() == 0 || (k.length() == 1 && k.getString(0).length() == 0)) k = computeKeysFromPhrases(this.phrases);
+            if (k.length() == 0 || (k.length() == 1 && k.getString(0).length() == 0)) k = computeKeysFromUtterance(this.utterances);
         } else {
-            k = computeKeysFromPhrases(this.phrases);
+            k = computeKeysFromUtterance(this.utterances);
         }
         
         k.forEach(o -> this.keys.add((String) o));
@@ -147,7 +147,7 @@ public class SusiIntent {
         this.expect = json.has("expect") ? json.getString("expect") : "";
         // calculate the id
         String ids0 = this.actions.toString();
-        String ids1 = this.phrases.toString();
+        String ids1 = this.utterances.toString();
         this.id = ids0.hashCode() + ids1.hashCode();
     }
     
@@ -170,7 +170,7 @@ public class SusiIntent {
         JSONObject json = new JSONObject(true);
         json.put("id", this.id);
         if (this.keys != null && this.keys.size() > 0) json.put("keys", new JSONArray(this.keys));
-        JSONArray p = new JSONArray(); this.phrases.forEach(phrase -> p.put(phrase.toJSON()));
+        JSONArray p = new JSONArray(); this.utterances.forEach(utterance -> p.put(utterance.toJSON()));
         json.put("phrases", p);
         JSONArray i = new JSONArray(); this.inferences.forEach(inference -> i.put(inference.getJSON()));
         json.put("process", i);
@@ -185,7 +185,7 @@ public class SusiIntent {
     }
     
     public static JSONObject answerIntent(
-            String[] phrases,
+            String[] utterances,
             String condition,
             String[] answers,
             boolean prior,
@@ -193,10 +193,10 @@ public class SusiIntent {
             String expect) {
         JSONObject intent = new JSONObject(true);
 
-        // write phrases
+        // write utterances
         JSONArray p = new JSONArray();
         intent.put("phrases", p);
-        for (String phrase: phrases) p.put(SusiPhrase.simplePhrase(phrase.trim(), prior));
+        for (String utterance: utterances) p.put(SusiUtterance.simplePhrase(utterance.trim(), prior));
         
         // write conditions (if any)
         if (condition != null && condition.length() > 0) {
@@ -227,20 +227,20 @@ public class SusiIntent {
     private final static Pattern SPACE_PATTERN = Pattern.compile(" ");
     
     /**
-     * if no keys are given, we compute them from the given phrases
-     * @param phrases
+     * if no keys are given, we compute them from the given utterances
+     * @param utterances
      * @return
      */
-    private static JSONArray computeKeysFromPhrases(List<SusiPhrase> phrases) {
+    private static JSONArray computeKeysFromUtterance(List<SusiUtterance> utterances) {
         Set<String> t = new LinkedHashSet<>();
         
-        // create a list of token sets from the phrases
+        // create a list of token sets from the utterances
         List<Set<String>> ptl = new ArrayList<>();
         final AtomicBoolean needsCatchall = new AtomicBoolean(false);
-        phrases.forEach(phrase -> {
+        utterances.forEach(utterance -> {
             Set<String> s = new HashSet<>();
-            for (String token: SPACE_PATTERN.split(phrase.getPattern().toString())) {
-                String m = SusiPhrase.extractMeat(token.toLowerCase());
+            for (String token: SPACE_PATTERN.split(utterance.getPattern().toString())) {
+                String m = SusiUtterance.extractMeat(token.toLowerCase());
                 if (m.length() > 1) s.add(m);
             }
             // if there is no meat inside, it will not be possible to access the intent without the catchall intent, so remember that
@@ -249,7 +249,7 @@ public class SusiIntent {
             ptl.add(s);
         });
         
-        // this is a kind of emergency case where we need a catchall intent because otherwise we cannot access one of the phrases
+        // this is a kind of emergency case where we need a catchall intent because otherwise we cannot access one of the utterances
         JSONArray a = new JSONArray();
         if (needsCatchall.get()) return a.put(CATCHALL_KEY);
         
@@ -263,7 +263,7 @@ public class SusiIntent {
         Set<String> tc = new LinkedHashSet<>();
         t.forEach(c -> tc.add(c));
         
-        // remove all token that do not appear in all phrases
+        // remove all token that do not appear in all utterances
         ptl.forEach(set -> {
             Iterator<String> i = t.iterator();
             while (i.hasNext()) if (!set.contains(i.next())) i.remove();
@@ -275,13 +275,13 @@ public class SusiIntent {
             return a;
         }
         
-        // use only the first token, because that appears in all the phrases
+        // use only the first token, because that appears in all the utterances
         return new JSONArray().put(t.iterator().next());
     }
     
     /**
      * To simplify the check weather or not a intent could be applicable, a key set is provided which
-     * must match with input tokens literally. This key check prevents too large numbers of phrase checks
+     * must match with input tokens literally. This key check prevents too large numbers of utterance checks
      * thus increasing performance.
      * @return the keys which must appear in an input to allow that this intent can be applied
      */
@@ -311,7 +311,7 @@ public class SusiIntent {
     /**
      * The score is used to prefer one intent over another if that other intent has a lower score.
      * The reason that this score is used is given by the fact that we need intents which have
-     * fuzzy phrase definitions and several intents might be selected because these fuzzy phrases match
+     * fuzzy utterance definitions and several intents might be selected because these fuzzy utterances match
      * on the same input sequence. One example is the catch-all intent which fires always but has
      * lowest priority.
      * In the context of artificial mind modeling the score plays the role of a positive emotion.
@@ -372,19 +372,19 @@ public class SusiIntent {
         this.score = this.score * SusiAction.DialogType.values().length + dialogType_subscore.get();
          
         // (2) pattern score
-        final AtomicInteger phrases_subscore = new AtomicInteger(0);
-        SusiIntent.this.phrases.forEach(phrase -> phrases_subscore.set(Math.min(phrases_subscore.get(), phrase.getSubscore())));
-        this.score = this.score * SusiPhrase.Type.values().length + phrases_subscore.get();
+        final AtomicInteger utterances_subscore = new AtomicInteger(0);
+        SusiIntent.this.utterances.forEach(utterance -> utterances_subscore.set(Math.min(utterances_subscore.get(), utterance.getSubscore())));
+        this.score = this.score * SusiUtterance.Type.values().length + utterances_subscore.get();
 
-        // (3) meatsize: length of a phrase (counts letters)
-        final AtomicInteger phrases_meatscore = new AtomicInteger(0);
-        SusiIntent.this.phrases.forEach(phrase -> phrases_meatscore.set(Math.max(phrases_meatscore.get(), phrase.getMeatsize())));
-        this.score = this.score * 100 + phrases_meatscore.get();
+        // (3) meatsize: length of a utterance (counts letters)
+        final AtomicInteger utterances_meatscore = new AtomicInteger(0);
+        SusiIntent.this.utterances.forEach(utterance -> utterances_meatscore.set(Math.max(utterances_meatscore.get(), utterance.getMeatsize())));
+        this.score = this.score * 100 + utterances_meatscore.get();
         
         // (4) whole size: length of the pattern
-        final AtomicInteger phrases_wholesize = new AtomicInteger(0);
-        SusiIntent.this.phrases.forEach(phrase -> phrases_wholesize.set(Math.max(phrases_wholesize.get(), phrase.getPattern().toString().length())));
-        this.score = this.score * 100 + phrases_wholesize.get();
+        final AtomicInteger utterances_wholesize = new AtomicInteger(0);
+        SusiIntent.this.utterances.forEach(utterance -> utterances_wholesize.set(Math.max(utterances_wholesize.get(), utterance.getPattern().toString().length())));
+        this.score = this.score * 100 + utterances_wholesize.get();
      
         // (5) operation type - there may be no operation at all
         final AtomicInteger inference_subscore = new AtomicInteger(0);
@@ -396,27 +396,27 @@ public class SusiIntent {
         
         this.log = 
                 "dialog=" + dialogType_subscore.get() +
-                ", phrase=" + phrases_subscore.get() +
+                ", utterance=" + utterances_subscore.get() +
                 ", inference=" + inference_subscore.get() +
-                ", meatscore=" + phrases_meatscore.get() +
-                ", wholesize=" + phrases_wholesize.get() +
+                ", meatscore=" + utterances_meatscore.get() +
+                ", wholesize=" + utterances_wholesize.get() +
                 ", subscore=" + user_subscore +
-                ", pattern=" + phrases.get(0).toString() + (SusiIntent.this.inferences.size() > 0 ? (", inference=" + SusiIntent.this.inferences.get(0).getExpression()) : "");
+                ", pattern=" + utterances.get(0).toString() + (SusiIntent.this.inferences.size() > 0 ? (", inference=" + SusiIntent.this.inferences.get(0).getExpression()) : "");
         }
     }
 
     /**
-     * The phrases of an intent are the matching intents which must apply to make it possible that the phrase is applied.
-     * This returns the phrases of the intent.
-     * @return the phrases of the intent. The intent fires if ANY of the phrases apply
+     * The utterances of an intent are the matching intents which must apply to make it possible that the utterance is applied.
+     * This returns the utterances of the intent.
+     * @return the utterances of the intent. The intent fires if ANY of the utterances apply
      */
-    public List<SusiPhrase> getPhrases() {
-        return this.phrases;
+    public List<SusiUtterance> getUtterances() {
+        return this.utterances;
     }
     
     /**
      * The inferences of a intent are a set of operations that are applied if the intent is selected as response
-     * mechanism. The inferences are feeded by the matching parts of the phrases to have an initial data set.
+     * mechanism. The inferences are feeded by the matching parts of the utterances to have an initial data set.
      * Inferences are lists because they represent a set of lambda operations on the data stream. The last
      * Data set is the response. The stack of data sets which are computed during the inference processing
      * is the thought argument, a list of thoughts in between of the inferences.
@@ -443,15 +443,15 @@ public class SusiIntent {
     }
 
     /**
-     * The matcher of a intent is the result of the application of the intent's phrases,
+     * The matcher of a intent is the result of the application of the intent's utterances,
      * the pattern which allow to apply the intent
      * @param s the string which should match
-     * @return a matcher on the intent phrases
+     * @return a matcher on the intent utterances
      */
     public Collection<Matcher> matcher(String s) {
         List<Matcher> l = new ArrayList<>();
         s = s.toLowerCase();
-        for (SusiPhrase p: this.phrases) {
+        for (SusiUtterance p: this.utterances) {
             Matcher m = p.getPattern().matcher(s);
             if (new TimeoutMatcher(m).find()) {
                 //System.out.println("MATCHERGROUP=" + m.group().toString());
