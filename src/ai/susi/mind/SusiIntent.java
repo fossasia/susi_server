@@ -368,7 +368,9 @@ public class SusiIntent {
          
         // (1) conversation plan from the answer purpose
         final AtomicInteger dialogType_subscore = new AtomicInteger(0);
-        SusiIntent.this.actions.forEach(action -> dialogType_subscore.set(Math.max(dialogType_subscore.get(), action.getDialogType().getSubscore())));
+        if (!(utterances.size() == 1 && utterances.get(0).equals("(.*)"))) {
+            SusiIntent.this.actions.forEach(action -> dialogType_subscore.set(Math.max(dialogType_subscore.get(), action.getDialogType().getSubscore())));
+        }
         this.score = this.score * SusiAction.DialogType.values().length + dialogType_subscore.get();
          
         // (2) pattern score
@@ -395,11 +397,12 @@ public class SusiIntent {
         this.score += this.score * 1000 + Math.min(1000, SusiIntent.this.user_subscore);
         
         this.log = 
-                "dialog=" + dialogType_subscore.get() +
+                "language=" + language_subscore +
+                ", dialog=" + dialogType_subscore.get() +
                 ", utterance=" + utterances_subscore.get() +
-                ", inference=" + inference_subscore.get() +
                 ", meatscore=" + utterances_meatscore.get() +
                 ", wholesize=" + utterances_wholesize.get() +
+                ", inference=" + inference_subscore.get() +
                 ", subscore=" + user_subscore +
                 ", pattern=" + utterances.get(0).toString() + (SusiIntent.this.inferences.size() > 0 ? (", inference=" + SusiIntent.this.inferences.get(0).getExpression()) : "");
         }
