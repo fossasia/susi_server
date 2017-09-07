@@ -625,33 +625,27 @@ public class SusiServer {
     	// check http port
         if(!httpsMode.equals(HttpsMode.ONLY)){
 	        ServerSocket ss = null;
-	        try {
-	            ss = new ServerSocket(httpPort);
-	            ss.setReuseAddress(true);
-	            ss.setReceiveBufferSize(65536);
-	        } catch (IOException e) {
-	            // the socket is already occupied by another service
-	            throw new IOException("port " + httpPort + " is already occupied by another service, maybe another SUSI is running on this port already. exit.");
-	        } finally {
-	            // close the socket again
-	            if (ss != null) ss.close();
-	        }
+	        checkPort(httpPort, ss);
         }
-        
+
         // check https port
         if(httpsMode.isGreaterOrEqualTo(HttpsMode.ON)){
 	        ServerSocket sss = null;
-	        try {
-	            sss = new ServerSocket(httpsPort);
-	            sss.setReuseAddress(true);
-	            sss.setReceiveBufferSize(65536);
-	        } catch (IOException e) {
-	            // the socket is already occupied by another service
-	        	throw new IOException("port " + httpsPort + " is already occupied by another service, maybe another SUSI is running on this port already. exit.");
-	        } finally {
-	            // close the socket again
-	            if (sss != null) sss.close();
-	        }
+	        checkPort(httpsPort, sss);
+        }
+    }
+
+    private static void checkPort(int port, ServerSocket ss) throws IOException {
+        try {
+            ss = new ServerSocket(port);
+            ss.setReuseAddress(true);
+            ss.setReceiveBufferSize(65536);
+        } catch (IOException e) {
+            // the socket is already occupied by another service
+            throw new IOException("port " + port + " is already occupied by another service, maybe another SUSI is running on this port already. exit.");
+        } finally {
+            // close the socket again
+            if (ss != null) ss.close();
         }
     }
 }
