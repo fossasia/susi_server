@@ -269,34 +269,4 @@ public class JsonRepository {
         return f.renameTo(g);
     }
     
-    /**
-     * create a concurrent dump reader for the given file. The reader is either a JsonStreamReader if the
-     * dump file is gzipped or a JsonRandomAccessFile if the file is a plain txt file. Both reader types
-     * must be started as concurrent process which this method does on it's own. The reader process dies
-     * automatically when the file is read completely. When the reader thread dies, it pushed several 
-     * JsonReader.POISON_JSON_MAP objects to the reading queue, according to the concurrency defined with the
-     * initializer of this class.
-     * @param dump file
-     * @return a concurrent JsonReader with started Thread wrapper
-     * @throws IOException
-     */
-    public JsonReader getDumpReader(File dump) throws IOException {
-        if (dump == null || !dump.exists()) throw new IOException("dump file " + dump + " does not exist");
-        if (dump.getName().endsWith(".gz")) {
-            assert this.mode == COMPRESSED_MODE;
-            JsonStreamReader r = new JsonStreamReader(new GZIPInputStream(new FileInputStream(dump)), dump.getAbsolutePath(), this.concurrency);
-            final Thread readerThread = new Thread(r);
-            readerThread.start();
-            return r;
-        }
-        if (dump.getName().endsWith(".txt")) {
-            // no assert for the mode here because both mode would be valid
-            final JsonRandomAccessFile r = new JsonRandomAccessFile(dump, this.concurrency);
-            final Thread readerThread = new Thread(r);
-            readerThread.start();
-            return r;
-        }
-        throw new IOException("wrong file extension: must be txt or gz");
-    }
-    
 }
