@@ -333,11 +333,12 @@ public class SusiIntent {
          * see: https://github.com/loklak/loklak_server/issues/767
          * Criteria:
 
-         * (1) the conversation plan:
-         * purpose: {answer, question, reply} purpose would have to be defined
-         * The purpose can be computed using a pattern on the answer expression: is there a '?' at the end, is it a question. Is there also a '. ' (end of sentence) in the text, is it a reply.
+         * (0) the language
+         * We do not want to switch skills for languages because people sometimes
+         * speak several languages. Therefore we use a likelihood that someone who speaks language A
+         * also speaks language B. 
 
-         * (2) the existence of a pattern where we decide between prior and minor intents
+         * (1) the existence of a pattern where we decide between prior and minor intents
          * pattern: {false, true} with/without pattern could be computed from the intent string
          * all intents with pattern are ordered in the middle between prior and minor
          * this is combined with
@@ -345,10 +346,14 @@ public class SusiIntent {
          * The prior attribute can also be expressed as an replacement of a pattern type because it is only relevant if the query is not a pattern or regular expression.
          * The resulting criteria is a property with three possible values: {minor, pattern, major}
     
-         * (3) the meatsize (number of characters that are non-patterns)
+         * (2) the meatsize (number of characters that are non-patterns)
     
-         * (4) the whole size (total number of characters)
+         * (3) the whole size (total number of characters)
     
+         * (4) the conversation plan:
+         * purpose: {answer, question, reply} purpose would have to be defined
+         * The purpose can be computed using a pattern on the answer expression: is there a '?' at the end, is it a question. Is there also a '. ' (end of sentence) in the text, is it a reply.
+
          * (5) the operation type
          * op: {retrieval, computation, storage} the operation could be computed from the intent string
 
@@ -366,28 +371,28 @@ public class SusiIntent {
         final int language_subscore = (int) (100 * SusiIntent.this.language.likelihoodCanSpeak(userLanguage));
         this.score = language_subscore;
          
-        // (1) conversation plan from the answer purpose
+        // (1) pattern score
+        final AtomicInteger utterances_subscore = new AtomicInteger(0);
+        SusiIntent.this.utterances.forEach(utterance -> utterances_subscore.set(Math.min(utterances_subscore.get(), utterance.getSubscore())));
+        this.score = this.score * SusiUtterance.Type.values().length + utterances_subscore.get();
+
+        // (2) meatsize: length of a utterance (counts letters)
+        final AtomicInteger utterances_meatscore = new AtomicInteger(0);
+        SusiIntent.this.utterances.forEach(utterance -> utterances_meatscore.set(Math.max(utterances_meatscore.get(), utterance.getMeatsize())));
+        this.score = this.score * 100 + utterances_meatscore.get();
+        
+        // (3) whole size: length of the pattern
+        final AtomicInteger utterances_wholesize = new AtomicInteger(0);
+        SusiIntent.this.utterances.forEach(utterance -> utterances_wholesize.set(Math.max(utterances_wholesize.get(), utterance.getPattern().toString().length())));
+        this.score = this.score * 100 + utterances_wholesize.get();
+
+        // (4) conversation plan from the answer purpose
         final AtomicInteger dialogType_subscore = new AtomicInteger(0);
         if (!(utterances.size() == 1 && utterances.get(0).equals("(.*)"))) {
             SusiIntent.this.actions.forEach(action -> dialogType_subscore.set(Math.max(dialogType_subscore.get(), action.getDialogType().getSubscore())));
         }
         this.score = this.score * SusiAction.DialogType.values().length + dialogType_subscore.get();
          
-        // (2) pattern score
-        final AtomicInteger utterances_subscore = new AtomicInteger(0);
-        SusiIntent.this.utterances.forEach(utterance -> utterances_subscore.set(Math.min(utterances_subscore.get(), utterance.getSubscore())));
-        this.score = this.score * SusiUtterance.Type.values().length + utterances_subscore.get();
-
-        // (3) meatsize: length of a utterance (counts letters)
-        final AtomicInteger utterances_meatscore = new AtomicInteger(0);
-        SusiIntent.this.utterances.forEach(utterance -> utterances_meatscore.set(Math.max(utterances_meatscore.get(), utterance.getMeatsize())));
-        this.score = this.score * 100 + utterances_meatscore.get();
-        
-        // (4) whole size: length of the pattern
-        final AtomicInteger utterances_wholesize = new AtomicInteger(0);
-        SusiIntent.this.utterances.forEach(utterance -> utterances_wholesize.set(Math.max(utterances_wholesize.get(), utterance.getPattern().toString().length())));
-        this.score = this.score * 100 + utterances_wholesize.get();
-     
         // (5) operation type - there may be no operation at all
         final AtomicInteger inference_subscore = new AtomicInteger(0);
         SusiIntent.this.inferences.forEach(inference -> inference_subscore.set(Math.max(inference_subscore.get(), inference.getType().getSubscore())));
