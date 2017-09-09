@@ -140,7 +140,11 @@ public class DAO {
         susi = model_watch_dir.exists() ?
                 new SusiMind(susi_memory_dir, susiinitpath, model_watch_dir) :
                 new SusiMind(susi_memory_dir, susiinitpath);
-        susi.initializeUnanswered();
+        new Thread() {
+            public void run() {
+                susi.initializeUnanswered();
+            }
+        }.start();
         String susi_boilerplate_name = "susi_cognition_boilerplate.json";
         File susi_boilerplate_file = new File(susi_memory_dir, susi_boilerplate_name);
         if (!susi_boilerplate_file.exists()) Files.copy(new File(conf_dir, "susi/" + susi_boilerplate_name + ".example"), susi_boilerplate_file);
