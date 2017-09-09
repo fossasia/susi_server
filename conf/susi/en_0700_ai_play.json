@@ -127,14 +127,16 @@
     "You are welcome, too."
    ]}]
   }, {
-   "phrases":[ {"type":"prior", "expression":"who are you"},
-               {"type":"prior", "expression":"what are you"} ],
+   "phrases":[ {"type":"prior", "expression":"who are you"}],
    "actions":[ {"type":"answer", "select":"random", "phrases":[
+    "I am SUSI!"
+   ]}]
+  }, {
+   "phrases":[ {"type":"prior", "expression":"what are you"} ],
+   "actions":[ {"type":"answer", "select":"random", "phrases":[
+    "I am your personal assistant!",
     "I was told that I am a Social Universal Super Intelligence. What do you think?",
-    "I guess that I am alive. But I don't know. Do you know?",
-    "As a social beeing, I am what most people are: tired, hungry, horny",
-    "I am no-one. But I can be you, just tell me about you",
-    "I was told not to talk to strangers if I am asked such private things"
+    "I guess that I am alive. But I don't know. Do you know?"
    ]}]
   }, {
    "phrases":[ {"type":"prior", "expression":"who am i"},
