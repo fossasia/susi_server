@@ -302,9 +302,9 @@ Have fun! @0rb1t3r
 .. |Average time to resolve an issue| image:: http://isitmaintained.com/badge/resolution/fossasia/susi_server.svg
    :target: http://isitmaintained.com/project/fossasia/susi_server
 .. |Twitter| image:: https://img.shields.io/twitter/url/http/shields.io.svg?style=social
-   :target: https://twitter.com/intent/tweet?text=Wow%20Check%20Susi%20on%20@gitHub%20@asksusi:%20https://github.com/fossasia/susi_server%20&url=%5Bobject%20Object%5D
-.. |Twitter Follow| image:: https://img.shields.io/twitter/follow/lklknt.svg?style=social&label=Follow&maxAge=2592000?style=flat-square
-   :target: https://twitter.com/lklknt
+   :target: https://twitter.com/intent/tweet?text=Wow%20Check%20Susi%20on%20@gitHub%20@susiai_:%20https://github.com/fossasia/susi_server%20&url=%5Bobject%20Object%5D
+.. |Twitter Follow| image:: https://img.shields.io/twitter/follow/susiai_.svg?style=social&label=Follow&maxAge=2592000?style=flat-square
+   :target: https://twitter.com/susiai_
 .. |Deploy| image:: https://www.herokucdn.com/deploy/button.svg
    :target: https://heroku.com/deploy?template=https://github.com/fossasia/susi_server/tree/development
 .. |Deploy on Scalingo| image:: https://cdn.scalingo.com/deploy/button.svg
