@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
 
-# If you're looking for the variables, please go to bin/.preload.sh
+# If you're looking for the variables, please go to bin/preload.sh
 
 # Make sure we're on project root
 cd $(dirname $0)/..
 
 # Execute preload script
-source bin/.preload.sh
+source bin/preload.sh
 
 while getopts ":Idn" opt; do
     case $opt in
