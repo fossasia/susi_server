@@ -84,7 +84,7 @@ public class SusiIntent {
                 SusiIntent intent = new SusiIntent(language, json, skillpath);
                 intents.add(intent);
             } catch (PatternSyntaxException e) {
-                Logger.getLogger("SusiIntent").warning("Regular Expression error in Susi Intent: " + json.toString(2));
+                Logger.getLogger("SusiIntent").warning("Regular Expression error in Susi Intent " + skillpath + ": " + json.toString(2));
             }
         }
         return intents;
