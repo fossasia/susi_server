@@ -79,7 +79,9 @@ public class SusiMemory {
         this.memories = new ConcurrentHashMap<>();
         this.intentsets = new ConcurrentHashMap<>();
         this.unanswered = new ConcurrentHashMap<>();
-        
+    }
+    
+    public void initializeUnanswered() {
         // initialize the unanswered list.
         if (this.root != null) for (String c: this.root.list()) {
             getCognitions(c).forEach(cognition -> {

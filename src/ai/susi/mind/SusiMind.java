@@ -79,6 +79,10 @@ public class SusiMind {
             e.printStackTrace();
         }
     }
+    
+    public void initializeUnanswered() {
+        this.memories.initializeUnanswered();
+    }
 
     public SusiMemory getMemories() {
         return this.memories;
