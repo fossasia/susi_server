@@ -106,8 +106,8 @@ public class ClientConnection {
 
 	/**
      * GET request
-     * @param urlstring
-     * @param useAuthentication
+     * @param urlstring URL String to send request
+     * @param useAuthentication Flag for using authentication
      * @throws IOException
      */
     public ClientConnection(String urlstring, boolean useAuthentication) throws IOException {
@@ -123,7 +123,7 @@ public class ClientConnection {
     
     /**
      * GET request
-     * @param urlstring
+     * @param urlstring URL String to send request
      * @throws IOException
      */
     public ClientConnection(String urlstring) throws IOException {
@@ -132,9 +132,9 @@ public class ClientConnection {
     
     /**
      * POST request
-     * @param urlstring
+     * @param urlstring URL String to send request
      * @param map
-     * @param useAuthentication
+     * @param useAuthentication Flag for using authentication
      * @throws ClientProtocolException 
      * @throws IOException
      */
@@ -157,7 +157,7 @@ public class ClientConnection {
     
     /**
      * POST request
-     * @param urlstring
+     * @param urlstring URL String to send Request
      * @param map
      * @throws ClientProtocolException
      * @throws IOException
@@ -245,8 +245,8 @@ public class ClientConnection {
     /**
      * get a redirect for an url: this method shall be called if it is expected that a url
      * is redirected to another url. This method then discovers the redirect.
-     * @param urlstring
-     * @param useAuthentication
+     * @param urlstring URL String for redirection
+     * @param useAuthentication Flag for authentication
      * @return the redirect url for the given urlstring
      * @throws IOException if the url is not redirected
      */
@@ -282,7 +282,7 @@ public class ClientConnection {
     /**
      * get a redirect for an url: this method shall be called if it is expected that a url
      * is redirected to another url. This method then discovers the redirect.
-     * @param urlstring
+     * @param urlstring URL String for redirection
      * @return
      * @throws IOException
      */

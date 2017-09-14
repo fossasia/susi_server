@@ -121,7 +121,7 @@ public class ResendVerificationLinkService extends AbstractAPIHandler implements
         // get template file
         String result;
         try {
-            result = IO.readFileCached(Paths.get(DAO.conf_dir + "/templates/resend-verification-mail.txt"));
+            result = IO.readFileCached(Paths.get(DAO.conf_dir + "/templates/resend-verification-link.txt"));
         } catch (IOException e) {
             throw new APIException(500, "No verification email template");
         }

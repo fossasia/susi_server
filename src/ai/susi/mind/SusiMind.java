@@ -57,7 +57,6 @@ public class SusiMind {
     private final File[] watchpaths;
     private final File memorypath; // a path where the memory looks for new additions of knowledge with memory files
     private final Map<File, Long> observations; // a mapping of mind memory files to the time when the file was read the last time
-    private final SusiReader reader; // responsible to understand written communication
     private final SusiMemory memories; // conversation logs are memories
 
 
@@ -71,7 +70,6 @@ public class SusiMind {
         if (this.memorypath != null) this.memorypath.mkdirs();
         this.intenttrigger = new ConcurrentHashMap<>();
         this.observations = new HashMap<>();
-        this.reader = new SusiReader();
         this.memories = new SusiMemory(memorypath, ATTENTION_TIME);
         this.skillexamples = new TreeMap<>();
         this.skillMetadata = new TreeMap<>();
@@ -81,13 +79,13 @@ public class SusiMind {
             e.printStackTrace();
         }
     }
+    
+    public void initializeUnanswered() {
+        this.memories.initializeUnanswered();
+    }
 
     public SusiMemory getMemories() {
         return this.memories;
-    }
-    
-    public SusiReader getReader() {
-        return this.reader;
     }
     
     public Map<String, Integer> getUnanswered() {
@@ -146,11 +144,46 @@ public class SusiMind {
         //this.intenttrigger.forEach((term, map) -> System.out.println("***DEBUG trigger " + term + " -> " + map.toString()));
     }
 
+    /**
+     * compute the skill path from the origin file
+     * @param origin
+     * @return a relative path to the skill location, based on the git repository
+     */
+    public static String skillpathFromOrigin(File origin) {
+        String skillpath = origin.getAbsolutePath();
+        int i = skillpath.indexOf("/susi");
+        if (i < 0) skillpath = ""; else {
+            skillpath = skillpath.substring(i);
+            if (skillpath.startsWith("/susi/")) skillpath = skillpath.substring(5);
+        }
+        return skillpath;
+    }
+    
+    /**
+     * compute the language from the skillpath
+     * @param skillpath
+     * @return
+     */
+    public static SusiLanguage languageFromSkillpath(String skillpath) {
+        SusiLanguage language = SusiLanguage.unknown;
+        if (skillpath.startsWith("/susi_server/conf/susi/")) {
+            language = SusiLanguage.parse(skillpath.substring(23, 25));
+        } else if (skillpath.startsWith("/susi_skill_data")) {
+            String[] paths = skillpath.split("/");
+            if (paths.length > 5) language = SusiLanguage.parse(paths[5]);
+        }
+        
+        return language;
+    }
     
     public SusiMind learn(JSONObject json, File origin) {
 
+        // detect the language
+        String skillpath = skillpathFromOrigin(origin);
+        SusiLanguage language = languageFromSkillpath(skillpath);
+        
         // teach the language parser
-        this.reader.learn(json);
+        SusiLinguistics.learn(language, json);
 
         // add console intents
         JSONObject consoleServices = json.has("console") ? json.getJSONObject("console") : new JSONObject();
@@ -170,7 +203,7 @@ public class SusiMind {
         final List<Pattern> removalPattern = new ArrayList<>();
         JSONArray intentset = json.has("rules") ? json.getJSONArray("rules") : json.has("intents") ? json.getJSONArray("intents") : new JSONArray();
         intentset.forEach(j -> {
-            List<SusiIntent> intents = SusiIntent.getIntents((JSONObject) j, origin);
+            List<SusiIntent> intents = SusiIntent.getIntents(language, (JSONObject) j, skillpath);
             intents.forEach(intent -> {
                 // add removal pattern
                 intent.getKeys().forEach(key -> {
@@ -180,8 +213,8 @@ public class SusiMind {
                         this.intenttrigger.put(key, l);
                     }
                     l.add(intent);
-                    intent.getPhrases().forEach(phrase -> removalPattern.add(phrase.getPattern()));
-                    //intent.getPhrases().forEach(phrase -> this.memories.removeUnanswered(phrase.getPattern()));
+                    intent.getUtterances().forEach(utterance -> removalPattern.add(utterance.getPattern()));
+                    //intent.getPhrases().forEach(utterance -> this.memories.removeUnanswered(utterance.getPattern()));
                     //System.out.println("***DEBUG: ADD INTENT FOR KEY " + key + ": " + intent.toString());
                 });
                 // Susi skill object for skill metadata
@@ -271,7 +304,7 @@ public class SusiMind {
     public List<SusiIdea> creativity(String query, SusiLanguage userLanguage, SusiThought latest_thought, int maxcount) {
         // tokenize query to have hint for idea collection
         final List<SusiIdea> ideas = new ArrayList<>();
-        this.reader.tokenizeSentence(query).forEach(token -> {
+        SusiLinguistics.tokenizeSentence(userLanguage, query).forEach(token -> {
             Set<SusiIntent> intent_for_category = this.intenttrigger.get(token.categorized);
             Set<SusiIntent> intent_for_original = token.original.equals(token.categorized) ? null : this.intenttrigger.get(token.original);
             Set<SusiIntent> r = new HashSet<>();
@@ -280,7 +313,7 @@ public class SusiMind {
             r.forEach(intent -> ideas.add(new SusiIdea(intent).setToken(token)));
         });
         
-        for (SusiIdea idea: ideas) DAO.log("idea.phrase-1: score=" + idea.getIntent().getScore(userLanguage).score + " : " + idea.getIntent().getPhrases().toString() + " " + idea.getIntent().getActionsClone());
+        //for (SusiIdea idea: ideas) DAO.log("idea.phrase-1: score=" + idea.getIntent().getScore(userLanguage).score + " : " + idea.getIntent().getPhrases().toString() + " " + idea.getIntent().getActionsClone());
         
         // add catchall intents always (those are the 'bad ideas')
         Collection<SusiIntent> ca = this.intenttrigger.get(SusiIntent.CATCHALL_KEY);
@@ -300,7 +333,7 @@ public class SusiMind {
         // make a sorted list of all ideas
         ideas.clear(); scored.values().forEach(r -> ideas.addAll(r));
         
-        for (SusiIdea idea: ideas) DAO.log("idea.phrase-2: score=" + idea.getIntent().getScore(userLanguage).score + " : " + idea.getIntent().getPhrases().toString() + " " + idea.getIntent().getActionsClone());
+        //for (SusiIdea idea: ideas) DAO.log("idea.phrase-2: score=" + idea.getIntent().getScore(userLanguage).score + " : " + idea.getIntent().getPhrases().toString() + " " + idea.getIntent().getActionsClone());
         
         // test ideas and collect those which match up to maxcount
         List<SusiIdea> plausibleIdeas = new ArrayList<>(Math.min(10, maxcount));
@@ -314,7 +347,7 @@ public class SusiMind {
         }
 
         for (SusiIdea idea: plausibleIdeas) {
-            DAO.log("idea.phrase-3: score=" + idea.getIntent().getScore(userLanguage).score + " : " + idea.getIntent().getPhrases().toString() + " " + idea.getIntent().getActionsClone());
+            DAO.log("idea.phrase-3: score=" + idea.getIntent().getScore(userLanguage).score + " : " + idea.getIntent().getUtterances().toString() + " " + idea.getIntent().getActionsClone());
             DAO.log("idea.phrase-3:   log=" + idea.getIntent().getScore(userLanguage).log );
         }
 
@@ -343,7 +376,7 @@ public class SusiMind {
         SusiThought recall = observation_argument.mindmeld(false);
         
         // normalize the query
-        query = SusiPhrase.normalizeExpression(query);
+        query = SusiUtterance.normalizeExpression(query);
         
         // find an answer
         List<SusiArgument> answers = new ArrayList<>();

@@ -23,7 +23,6 @@ package ai.susi.json;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.util.concurrent.ArrayBlockingQueue;
 
 import org.eclipse.jetty.util.log.Log;
@@ -32,7 +31,7 @@ import org.json.JSONObject;
 import ai.susi.tools.BufferedRandomAccessFile;
 import ai.susi.tools.UTF8;
 
-public class JsonRandomAccessFile extends BufferedRandomAccessFile implements JsonReader {
+public class JsonRandomAccessFile extends BufferedRandomAccessFile {
 
     private File file;
     private int concurrency;
@@ -63,28 +62,6 @@ public class JsonRandomAccessFile extends BufferedRandomAccessFile implements Js
         return this.jsonline.take();
     }
 
-    public void run() {
-        try {
-            BufferedRandomAccessFile.IndexedLine line;
-            while ((line = this.readIndexedLine()) != null) {
-                try {
-                    byte[] textb = line.getText();
-                    if (textb == null || textb.length == 0) continue;
-                    JSONObject json = new JSONObject(new String(textb, StandardCharsets.UTF_8));
-                    this.jsonline.put(new JsonHandle(json, line.getPos(), textb.length));
-                } catch (Throwable e) {
-                    Log.getLog().warn("cannot parse line in file " + JsonRandomAccessFile.this.file + ": \"" + line + "\"", e);
-                }
-            }
-        } catch (IOException e) {
-        	Log.getLog().warn(e);
-        } finally {
-            for (int i = 0; i < this.concurrency; i++) {
-                try {this.jsonline.put(JsonReader.POISON_JSON_MAP);} catch (InterruptedException e) {}
-            }
-        }
-    }
-    
     /**
      * The JsonHandle class is a bundle of a json with the information about the
      * seek location in the file and the length of bytes of the original json string

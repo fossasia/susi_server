@@ -36,7 +36,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Pattern;
 
-import ai.susi.DAO;
 import ai.susi.json.JsonTray;
 import ai.susi.tools.MapTools;
 
@@ -80,7 +79,9 @@ public class SusiMemory {
         this.memories = new ConcurrentHashMap<>();
         this.intentsets = new ConcurrentHashMap<>();
         this.unanswered = new ConcurrentHashMap<>();
-        
+    }
+    
+    public void initializeUnanswered() {
         // initialize the unanswered list.
         if (this.root != null) for (String c: this.root.list()) {
             getCognitions(c).forEach(cognition -> {
@@ -115,7 +116,7 @@ public class SusiMemory {
         // sort map by counter
         Map<String, AtomicInteger> tokenCounter = new TreeMap<>(); // a map from tokens to counts
         this.unanswered.forEach((term, counter) -> {
-            DAO.susi.getReader().tokenizeSentence(term).forEach(token -> {
+            SusiLinguistics.tokenizeSentence(null, term).forEach(token -> {
                 if (token.original.length() > 1) MapTools.incCounter(tokenCounter, token.original, counter.get());
             });
         });
