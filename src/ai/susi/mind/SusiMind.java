@@ -38,6 +38,7 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.commons.logging.Log;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -366,14 +367,18 @@ public class SusiMind {
      */
     public List<SusiArgument> react(String query, SusiLanguage userLanguage, int maxcount, String client, SusiThought observation) {
         // get the history a list of thoughts
+        long t0 = System.currentTimeMillis();
         SusiArgument observation_argument = new SusiArgument();
         if (observation != null && observation.length() > 0) observation_argument.think(observation);
         List<SusiCognition> cognitions = this.memories.getCognitions(client);
+        long t1 = System.currentTimeMillis();
         // latest cognition is first in list
         cognitions.forEach(cognition -> observation_argument.think(cognition.recallDispute()));
+        long t2 = System.currentTimeMillis();
         // perform a mindmeld to create a single thought out of the recalled argument
         // the mindmeld will squash the latest thoughts into one so it does not pile up to exponential growth
         SusiThought recall = observation_argument.mindmeld(false);
+        long t3 = System.currentTimeMillis();
         
         // normalize the query
         query = SusiUtterance.normalizeExpression(query);
@@ -381,17 +386,29 @@ public class SusiMind {
         // find an answer
         List<SusiArgument> answers = new ArrayList<>();
         List<SusiIdea> ideas = creativity(query, userLanguage, recall, 100); // create a list of ideas which are possible intents
-
+        long t4 = System.currentTimeMillis();
+        
         // test all ideas: the ideas are ranked in such a way that the best one is considered first
         ideatest: for (SusiIdea idea: ideas) {
             // compute an argument: because one intent represents a horn clause, the argument is a deduction track, a "proof" of the result.
+            long t5 = System.currentTimeMillis();
             SusiArgument argument = idea.getIntent().consideration(query, recall, idea.getToken(), this, client);
-
+            long t6 = System.currentTimeMillis();
+            if (t6 - t5 > 100) DAO.log("=== Wasted " + (t6 - t5) + " milliseconds with intent " + idea.getIntent().toJSON());
+            
             // arguments may fail; a failed proof is one which does not exist. Therefore an argument may be empty
-            if (argument == null) continue ideatest; // consider only sound arguments
+            if (argument == null) {
+                continue ideatest; // consider only sound arguments
+            }
             answers.add(argument); // a valid idea
             if (answers.size() >= maxcount) break; // and stop if we are done
         }
+        long t7 = System.currentTimeMillis();
+        //DAO.log("+++ react run time: " + (t1 - t0) + " milliseconds - getCognitions");
+        //DAO.log("+++ react run time: " + (t2 - t1) + " milliseconds - think");
+        //DAO.log("+++ react run time: " + (t3 - t2) + " milliseconds - mindmeld");
+        //DAO.log("+++ react run time: " + (t4 - t3) + " milliseconds - normalize");
+        //DAO.log("+++ react run time: " + (t7 - t4) + " milliseconds - test ideas");
         return answers;
     }
     

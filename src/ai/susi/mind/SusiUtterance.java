@@ -90,8 +90,8 @@ public class SusiUtterance {
     public static String normalizeExpression(String s) {
         s = s.toLowerCase().replaceAll("\\#", "  ");
         Matcher m;
-        while (new TimeoutMatcher(m = wspace.matcher(s)).find()) s = m.replaceAll(" ");
-        while (new TimeoutMatcher(m = dspace.matcher(s)).find()) s = m.replaceAll(" ");
+        while ((m = wspace.matcher(s)).find()) s = m.replaceAll(" ");
+        while ((m = dspace.matcher(s)).find()) s = m.replaceAll(" ");
         s = s.trim();
         if (s.startsWith("susi ")) s = s.substring(5); // cut off susi address
         if (s.length() == 0) return s; // prevent StringIndexOutOfBoundsException which can happen in the next line
