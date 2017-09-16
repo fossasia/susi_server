@@ -23,7 +23,6 @@ import ai.susi.DAO;
 import ai.susi.json.JsonObjectWithDefault;
 import ai.susi.server.*;
 import ai.susi.tools.IO;
-import org.eclipse.jetty.util.log.Log;
 import org.json.JSONObject;
 
 import javax.servlet.http.Cookie;
@@ -159,7 +158,7 @@ public class LoginService extends AbstractAPIHandler implements APIHandler {
 				passwordHash = authentication.getString("passwordHash");
 				salt = authentication.getString("salt");
 			} catch (Throwable e) {
-				Log.getLog().info("Invalid login try for user: " + identity.getName() + " from host: " + post.getClientHost() + " : password or salt missing in database");
+				DAO.log("Invalid login try for user: " + identity.getName() + " from host: " + post.getClientHost() + " : password or salt missing in database");
 				throw new APIException(422, "Invalid credentials");
 			}
 
@@ -169,7 +168,7 @@ public class LoginService extends AbstractAPIHandler implements APIHandler {
 			    Accounting accouting = DAO.getAccounting(identity);
 			    accouting.getRequests().addRequest(this.getClass().getCanonicalName(), "invalid login");
 
-				Log.getLog().info("Invalid login try for user: " + identity.getName() + " via passwd from host: " + post.getClientHost());
+				DAO.log("Invalid login try for user: " + identity.getName() + " via passwd from host: " + post.getClientHost());
 				throw new APIException(422, "Invalid credentials");
 			}
 
@@ -224,7 +223,7 @@ public class LoginService extends AbstractAPIHandler implements APIHandler {
 					throw new APIException(400, "Invalid type");
 			}
 
-			Log.getLog().info("login for user: " + identity.getName() + " via passwd from host: " + post.getClientHost());
+			DAO.log("login for user: " + identity.getName() + " via passwd from host: " + post.getClientHost());
 
 			result.put("message", "You are logged in as " + identity.getName());
 			result.put("accepted", true);
@@ -334,12 +333,12 @@ public class LoginService extends AbstractAPIHandler implements APIHandler {
 		if (authentication.getIdentity() == null) { // check if identity is valid
 			authentication.delete();
 
-			Log.getLog().info("Invalid login try for unknown user: " + credential.getName() + " via passwd from host: " + post.getClientHost());
+			DAO.log("Invalid login try for unknown user: " + credential.getName() + " via passwd from host: " + post.getClientHost());
 			throw new APIException(422, "Invalid credentials");
 		}
 
 		if (!authentication.getBoolean("activated", false)) { // check if identity is valid
-			Log.getLog().info("Invalid login try for user: " + credential.getName() + " from host: " + post.getClientHost() + " : user not activated yet");
+			DAO.log("Invalid login try for user: " + credential.getName() + " from host: " + post.getClientHost() + " : user not activated yet");
 			throw new APIException(422, "User not yet activated");
 		}
 
@@ -376,7 +375,7 @@ public class LoginService extends AbstractAPIHandler implements APIHandler {
 		long blockedUntil = permissions.getLong("blockedUntil", 0);
 		if(blockedUntil != 0) {
 			if (blockedUntil > Instant.now().getEpochSecond()) {
-				Log.getLog().info("Blocked ip " + post.getClientHost() + " because of too many invalid login attempts.");
+				DAO.log("Blocked ip " + post.getClientHost() + " because of too many invalid login attempts.");
 				throw new APIException(403, "Too many invalid login attempts. Try again in "
 						+ (blockedUntil - Instant.now().getEpochSecond()) + " seconds");
 			}

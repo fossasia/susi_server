@@ -22,7 +22,6 @@ package ai.susi;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.filefilter.AgeFileFilter;
 import org.apache.commons.io.filefilter.TrueFileFilter;
-import org.eclipse.jetty.util.log.Log;
 
 import ai.susi.tools.TimeoutMatcher;
 import org.joda.time.DateTime;
@@ -47,7 +46,7 @@ public class Caretaker extends Thread {
     public void shutdown() {
         this.shallRun = false;
         this.interrupt();
-        Log.getLog().info("catched caretaker termination signal");
+        DAO.log("catched caretaker termination signal");
     }
 
     public void deleteOldFiles() {
@@ -76,10 +75,10 @@ public class Caretaker extends Thread {
             busy = false;
 
         } catch (Throwable e) {
-            Log.getLog().warn("CARETAKER THREAD", e);
+            DAO.severe("CARETAKER THREAD", e);
         }
 
-        Log.getLog().info("caretaker terminated");
+        DAO.log("caretaker terminated");
     }
     
 }

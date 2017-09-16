@@ -1,8 +1,9 @@
 package ai.susi.tools;
 
-import org.eclipse.jetty.util.log.Log;
-
 import javax.annotation.Nonnull;
+
+import ai.susi.DAO;
+
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -55,7 +56,7 @@ public final class IO {
 			md.update(pubkey.getEncoded());
 			return Base64.getEncoder().encodeToString(md.digest());
 		} catch (NoSuchAlgorithmException e) {
-			Log.getLog().warn(e);
+			DAO.severe(e);
 		}
 		return null;
 	}
@@ -91,7 +92,7 @@ public final class IO {
 			return pub;
 		}
 		catch(NoSuchAlgorithmException | InvalidKeySpecException e){
-			Log.getLog().warn(e);
+			DAO.severe(e);
 		}
 		return null;
 	}

@@ -22,7 +22,6 @@ package ai.susi.server.api.cms;
 import ai.susi.DAO;
 import ai.susi.json.JsonObjectWithDefault;
 import ai.susi.server.*;
-import org.eclipse.jetty.util.log.Log;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -97,7 +96,7 @@ public class AppsService extends AbstractAPIHandler implements APIHandler {
                 json.put("accepted", true);
             }
         } catch (Throwable e) {
-            Log.getLog().warn(e);
+            DAO.severe(e);
         }
 
         return new ServiceResponse(json);

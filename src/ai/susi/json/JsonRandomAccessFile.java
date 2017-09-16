@@ -25,9 +25,9 @@ import java.io.File;
 import java.io.IOException;
 import java.util.concurrent.ArrayBlockingQueue;
 
-import org.eclipse.jetty.util.log.Log;
 import org.json.JSONObject;
 
+import ai.susi.DAO;
 import ai.susi.tools.BufferedRandomAccessFile;
 import ai.susi.tools.UTF8;
 
@@ -122,7 +122,7 @@ public class JsonRandomAccessFile extends BufferedRandomAccessFile {
             try {
                 return this.getJSON().toString();
             } catch (IOException e) {
-            	Log.getLog().warn(e);
+            	DAO.severe(e);
                 return "";
             }
         }

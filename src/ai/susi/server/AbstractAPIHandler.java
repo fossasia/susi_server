@@ -33,7 +33,6 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.eclipse.jetty.util.log.Log;
 import org.json.JSONObject;
 
 import ai.susi.DAO;
@@ -170,7 +169,7 @@ public abstract class AbstractAPIHandler extends HttpServlet implements APIHandl
 				response.addCookie(loginCookie);
 
 				ClientIdentity identity = authentication.getIdentity();
-	            Log.getLog().info("USER REQUEST using cookie: " + identity.getClient());
+	            DAO.log("USER REQUEST using cookie: " + identity.getClient());
 				return identity;
 			}
 
@@ -179,10 +178,10 @@ public abstract class AbstractAPIHandler extends HttpServlet implements APIHandl
 			// delete cookie if set
 			deleteLoginCookie(response);
 
-			Log.getLog().info("Invalid login try via cookie from host: " + query.getClientHost());
+			DAO.log("Invalid login try via cookie from host: " + query.getClientHost());
 		} else if (request.getSession().getAttribute("identity") != null) { // check session is set
 		    ClientIdentity identity = (ClientIdentity) request.getSession().getAttribute("identity");
-            Log.getLog().info("USER REQUEST using browser session: " + identity.getClient());
+            DAO.log("USER REQUEST using browser session: " + identity.getClient());
             return identity;
 		} else if (request.getParameter("access_token") != null) { // access tokens can be used by api calls, somehow the stateless equivalent of sessions for browsers
     		ClientCredential credential = new ClientCredential(ClientCredential.Type.access_token, request.getParameter("access_token"));
@@ -193,7 +192,7 @@ public abstract class AbstractAPIHandler extends HttpServlet implements APIHandl
     			ClientIdentity identity = authentication.getIdentity();
     			
     			if (authentication.checkExpireTime()) {
-    				Log.getLog().info("login for user: " + identity.getName() + " via access token from host: " + query.getClientHost());
+    				DAO.log("login for user: " + identity.getName() + " via access token from host: " + query.getClientHost());
     				
     				if ("true".equals(request.getParameter("request_session"))) {
             			request.getSession().setAttribute("identity", identity);
@@ -201,11 +200,11 @@ public abstract class AbstractAPIHandler extends HttpServlet implements APIHandl
     				if (authentication.has("one_time") && authentication.getBoolean("one_time")) {
     					authentication.delete();
     				}
-    				Log.getLog().info("USER REQUEST using access_token: " + identity.getClient());
+    				DAO.log("USER REQUEST using access_token: " + identity.getClient());
     				return identity;
     			}
     		}
-    		Log.getLog().info("Invalid access token from host: " + query.getClientHost());
+    		DAO.log("Invalid access token from host: " + query.getClientHost());
     		return getAnonymousIdentity(query.getClientHost());
     	}
     	
@@ -238,7 +237,7 @@ public abstract class AbstractAPIHandler extends HttpServlet implements APIHandl
 			md.update((salt + input).getBytes());
 			return Base64.getEncoder().encodeToString(md.digest());
 		} catch (NoSuchAlgorithmException e) {
-			Log.getLog().warn(e);
+			DAO.severe(e);
 		}
 		return null;
 	}

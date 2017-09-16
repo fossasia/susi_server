@@ -11,7 +11,6 @@ import java.nio.file.FileSystems;
 import java.nio.file.Path;
 import java.util.Map;
 
-import org.eclipse.jetty.util.log.Log;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.junit.After;
@@ -83,8 +82,8 @@ public class SusiTutorialTest {
                 br.close();
             } catch(Exception e){
                 e.printStackTrace();
-                Log.getLog().warn(e.getMessage());
-                Log.getLog().warn("Could not initialize DAO. Exiting.");
+                DAO.severe(e.getMessage());
+                DAO.severe("Could not initialize DAO. Exiting.");
                 System.exit(-1);
             }
             

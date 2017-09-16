@@ -26,7 +26,6 @@ import ai.susi.tools.IO;
 import org.bouncycastle.util.io.pem.PemObject;
 import org.bouncycastle.util.io.pem.PemReader;
 import org.bouncycastle.util.io.pem.PemWriter;
-import org.eclipse.jetty.util.log.Log;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -261,7 +260,7 @@ public class PublicKeyRegistrationService extends AbstractAPIHandler implements 
 				RSAPublicKey pub;
 				String encodedKey;
 				try { encodedKey = URLDecoder.decode(post.get("register", null), "UTF-8");} catch (Throwable e){throw new APIException(500, "Server error");}
-				Log.getLog().info("Key (" + type + "): " + encodedKey);
+				DAO.log("Key (" + type + "): " + encodedKey);
 
 				if(type.equals("DER")) {
 					try {

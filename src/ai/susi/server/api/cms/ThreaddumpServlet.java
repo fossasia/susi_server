@@ -20,12 +20,12 @@
 package ai.susi.server.api.cms;
 
 import ai.susi.Caretaker;
+import ai.susi.DAO;
 import ai.susi.server.FileHandler;
 import ai.susi.server.Query;
 import ai.susi.server.RemoteAccess;
 import ai.susi.tools.TimeoutMatcher;
 import ai.susi.tools.UTF8;
-import org.eclipse.jetty.util.log.Log;
 
 import javax.servlet.ServletException;
 import javax.servlet.ServletOutputStream;
@@ -81,13 +81,13 @@ public class ThreaddumpServlet extends HttpServlet {
                         try {
                             getMethod.invoke(servletClass.newInstance(), request, new DummyResponse());
                         } catch (IllegalArgumentException | InvocationTargetException | InstantiationException | IllegalAccessException e) {
-                        	Log.getLog().warn(e);
+                        	DAO.severe(e);
                         }
                     }
                 });
                 servletThread.start();
             } catch (ClassNotFoundException | NoSuchMethodException | SecurityException e) {
-            	Log.getLog().warn(e);
+            	DAO.severe(e);
             }
             long sleep = post.get("sleep", 0L);
             if (sleep > 0) try {Thread.sleep(sleep);} catch (InterruptedException e) {}

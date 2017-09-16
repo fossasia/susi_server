@@ -19,9 +19,9 @@
 
 package ai.susi.server;
 
-import org.eclipse.jetty.util.log.Log;
 import org.json.JSONObject;
 
+import ai.susi.DAO;
 import ai.susi.json.JsonTray;
 
 import javax.annotation.Nonnull;
@@ -50,7 +50,7 @@ public class Authorization {
      */
     public Authorization(@Nonnull ClientIdentity identity, JsonTray parent) {
 
-        Log.getLog().debug("new authorization");
+        DAO.severe("new authorization");
 
         this.parent = parent;
         this.identity = identity;
@@ -69,17 +69,17 @@ public class Authorization {
     		String userRoleName = json.getString("userRole");
             try {
             	userRole = UserRole.valueOf(userRoleName.toUpperCase());
-            	Log.getLog().debug("user role " + userRoleName + " valid");
+            	DAO.severe("user role " + userRoleName + " valid");
             } catch (IllegalArgumentException e) {
-            	Log.getLog().debug("user role " + userRoleName + " invalid");
+            	DAO.severe("user role " + userRoleName + " invalid");
                 userRole = UserRole.ANONYMOUS;
             }
     	} else{
-            Log.getLog().debug("user role invalid (not given)");
+            DAO.severe("user role invalid (not given)");
             userRole = UserRole.ANONYMOUS;
             json.put("userRole", userRole.getName());
         }
-        Log.getLog().debug("user role: " + userRole.getName());
+        DAO.severe("user role: " + userRole.getName());
 
         if(!json.has("permissions")) json.put("permissions", new JSONObject());
         permissions = json.getJSONObject("permissions");

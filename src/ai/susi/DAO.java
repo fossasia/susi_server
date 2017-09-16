@@ -54,12 +54,10 @@ import ai.susi.server.Settings;
 import ai.susi.tools.IO;
 import ai.susi.tools.OS;
 
-import org.eclipse.jetty.util.log.Log;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.MergeResult;
 import org.eclipse.jgit.api.PullResult;
 import org.eclipse.jgit.api.PushCommand;
-import org.eclipse.jgit.api.Status;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.lib.PersonIdent;
 import org.eclipse.jgit.lib.Repository;
@@ -67,6 +65,8 @@ import org.eclipse.jgit.storage.file.FileRepositoryBuilder;
 import org.eclipse.jgit.transport.RefSpec;
 import org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider;
 import org.json.JSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * The Data Access Object for the message project.
@@ -97,6 +97,7 @@ public class DAO {
     public  static AccessTracker access;
     private static Map<String, String> config = new HashMap<>();
     public static Boolean pullStatus=true;
+    private static Logger logger = LoggerFactory.getLogger(DAO.class);
     
     // AAA Schema for server usage
     private static JsonTray authentication;
@@ -253,7 +254,7 @@ public class DAO {
                         DAO.pull(DAO.getGit());
                     } catch (Exception e) {
                         DAO.pullStatus =false;
-                        Log.getLog().warn("SKILL PULL THREAD", e);
+                        severe("SKILL PULL THREAD", e);
                     }
                 }
             }
@@ -274,7 +275,7 @@ public class DAO {
      * close all objects in this class
      */
     public static void close() {
-        Log.getLog().info("closing DAO");
+        log("closing DAO");
         
         // close the tracker
         access.close();
@@ -285,7 +286,7 @@ public class DAO {
         passwordreset.close();
         accounting.close();
 
-        Log.getLog().info("closed DAO");
+        log("closed DAO");
     }
     
     /**
@@ -334,19 +335,19 @@ public class DAO {
     public static final Random random = new Random(System.currentTimeMillis());
 
     public static void log(String line) {
-        Log.getLog().info(line);
+        logger.info(line);
     }
 
     public static void severe(String line) {
-        Log.getLog().warn(line);
+        logger.warn(line);
     }
 
     public static void severe(String line, Throwable e) {
-        Log.getLog().warn(line, e);
+        logger.warn(line, e);
     }
     
     public static void severe(Throwable e) {
-        Log.getLog().warn(e);
+        logger.warn("", e);
     }
     
 

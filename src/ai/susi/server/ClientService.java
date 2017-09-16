@@ -22,9 +22,9 @@ package ai.susi.server;
 import java.text.ParseException;
 import java.util.Date;
 
-import org.eclipse.jetty.util.log.Log;
 import org.json.JSONObject;
 
+import ai.susi.DAO;
 import ai.susi.tools.DateParser;
 
 public class ClientService extends Client {
@@ -74,7 +74,7 @@ public class ClientService extends Client {
         try {
             return DateParser.iso8601Format.parse(d);
         } catch (ParseException e) {
-        	Log.getLog().warn(e);
+        	DAO.severe(e);
             return null;
         }
     }
