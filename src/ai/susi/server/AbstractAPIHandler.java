@@ -205,18 +205,23 @@ public abstract class AbstractAPIHandler extends HttpServlet implements APIHandl
     			}
     		}
     		DAO.log("Invalid access token from host: " + query.getClientHost());
-    		return getAnonymousIdentity(query.getClientHost());
+    		return getAnonymousIdentity(query.getClientHost(), getRequestHeaderSalt(request));
     	}
     	
-        return getAnonymousIdentity(query.getClientHost());
+        return getAnonymousIdentity(query.getClientHost(), getRequestHeaderSalt(request));
+    }
+    
+    public static String getRequestHeaderSalt(HttpServletRequest request) {
+        String idhint = request.getHeader("User-Agent") + request.getHeader("Accept-Encoding") + request.getHeader("Accept-Language");
+        return Integer.toHexString(idhint.hashCode());
     }
     
     /**
      * Create or fetch an anonymous identity
      * @return the anonymous ClientIdentity
      */
-    private static ClientIdentity getAnonymousIdentity(String remoteHost) {
-    	ClientCredential credential = new ClientCredential(ClientCredential.Type.host, remoteHost);
+    private static ClientIdentity getAnonymousIdentity(String remoteHost, String salt) {
+    	ClientCredential credential = new ClientCredential(ClientCredential.Type.host, remoteHost + "_" + salt);
     	Authentication authentication = DAO.getAuthentication(credential);
     	
     	if (authentication.getIdentity() == null) authentication.setIdentity(credential);
