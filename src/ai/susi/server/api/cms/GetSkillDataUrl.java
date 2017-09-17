@@ -66,8 +66,10 @@ public class GetSkillDataUrl extends AbstractAPIHandler implements APIHandler {
             //append branch name in rawUserContenturl
             rawUserContenturl = rawUserContenturl + "/" + currentBranch;
             json.put("githubusercontent", rawUserContenturl);
+            json.put("accepted",true);
         } catch (IOException e) {
             e.printStackTrace();
+            json.put("accepted",false);
         }
 
         return new ServiceResponse(json);
