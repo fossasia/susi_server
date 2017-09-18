@@ -185,9 +185,7 @@ http://loklak.org/api/search.rss?q=0rb1t3r or just follow @0rb1t3r
 Where can I find documentation?
 -------------------------------
 
-The application has built-in documentation web pages, you will see them
-when you opened the application web pages or you can simply open
-``html/index.html`` or just use http://api.susi.ai as reference.
+The Doumentation can be found at https://github.com/fossasia/susi_server/tree/development/docs/api/api.md
 
 
 Where do I find the javadocs?
