@@ -71,7 +71,7 @@ public class PasswordChangeService extends AbstractAPIHandler implements APIHand
             salt = authentication.getString("salt");
         } catch (Throwable e) {
             DAO.log("Invalid password try for user: " + identity.getName() + " from host: " + post.getClientHost() + " : password or salt missing in database");
-            result.put("message", "invalid credentials");
+            result.put("message", "Invalid credentials.");
             throw new APIException(422, "Invalid credentials");
         }
         if (!passwordHash.equals(getHash(password, salt))) {
@@ -81,7 +81,7 @@ public class PasswordChangeService extends AbstractAPIHandler implements APIHand
             accouting.getRequests().addRequest(this.getClass().getCanonicalName(), "invalid login");
 
             DAO.log("Invalid change password try for user: " + identity.getName() + " via passwd from host: " + post.getClientHost());
-            result.put("message", "invalid credentials");
+            result.put("message", "Invalid credentials.");
             throw new APIException(422, "Invalid credentials");
         } else {
             String passwordPattern = DAO.getConfig("users.password.regex", "^(?=.*\\d).{6,64}$");
@@ -90,13 +90,13 @@ public class PasswordChangeService extends AbstractAPIHandler implements APIHand
 
             if ((authentication.getIdentity().getName()).equals(newpassword) || !new TimeoutMatcher(pattern.matcher(newpassword)).matches()) {
                 // password can't equal email and regex should match
-                result.put("message", "invalid password");
+                result.put("message", "Invalid password.");
                 throw new APIException(400, "invalid password");
             }
 
             if (DAO.hasAuthentication(emailcred)) {
                 if(passwordHash.equals(getHash(newpassword, salt))){
-                    result.put("message","your current password matches new password");
+                    result.put("message","Your current password matches new password.");
                     result.put("accepted", false);
                     return new ServiceResponse(result);
                 }
