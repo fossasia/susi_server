@@ -9,8 +9,16 @@ import javax.servlet.http.HttpServletResponse;
 
 
 /**
- * Created by dravit on 26/9/17.
+ * Created by DravitLochan on 26/9/17.
+ * This is a servlet which shall be used only for the purpose to store user names or profile links to a user's
+ * social media platforms. These could be Facebook, Linkedin, GitHub etc.
+ * all the details are stored as a JSONObject in "stores". Each of the platform, details of which are being saved
+ * is represented as a storeName.
+ * To update the value, just make the request with updated values.
+ * sample request :
+ * http://127.0.0.1:4000/aaa/storePersonalInfo.json?storeName=github&value=https://github.com/fossasia
  */
+
 public class StorePersonalInfoService extends AbstractAPIHandler implements APIHandler {
     @Override
     public String getAPIPath() {
@@ -37,7 +45,7 @@ public class StorePersonalInfoService extends AbstractAPIHandler implements APIH
             throw new APIException(422, "Bad store name encountered!");
         }
 
-        if(post.get("value", null) == null) {
+        if (post.get("value", null) == null) {
             throw new APIException(422, "Bad store name value encountered!");
         }
 
@@ -49,12 +57,15 @@ public class StorePersonalInfoService extends AbstractAPIHandler implements APIH
         } else {
             Accounting accounting = DAO.getAccounting(authorization.getIdentity());
 
-            if (accounting.getJSON().has(storeName)) {
-                accounting.getJSON().put(storeName, value);
+            if (accounting.getJSON().has("stores")) {
+                accounting.getJSON().getJSONObject("stores").put(storeName, value);
             } else {
-                accounting.getJSON().put(storeName, value);
+                JSONObject jsonObject = new JSONObject(true);
+                jsonObject.put(storeName, value);
+                accounting.getJSON().put("stores", jsonObject);
             }
             System.out.println(accounting.getJSON());
+
             json.put("accepted", true);
             json.put("message", "You successfully updated your account information!");
             return new ServiceResponse(json);
