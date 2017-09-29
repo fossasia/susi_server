@@ -12,6 +12,11 @@ import javax.servlet.http.HttpServletResponse;
  * this servlet will return a boolean flag on attribute showAdmin
  */
 public class ShowAdminService extends AbstractAPIHandler implements APIHandler{
+    /**
+     * 
+     */
+    private static final long serialVersionUID = 8597701313383109201L;
+
     @Override
     public String getAPIPath() {
         return "/aaa/showAdminService.json";

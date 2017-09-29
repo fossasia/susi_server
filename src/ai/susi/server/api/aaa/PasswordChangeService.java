@@ -33,6 +33,11 @@ import java.util.regex.Pattern;
  * newpassword : new password
  */
 public class PasswordChangeService extends AbstractAPIHandler implements APIHandler {
+    /**
+     * 
+     */
+    private static final long serialVersionUID = -8679696048228442818L;
+
     @Override
     public String getAPIPath() {
         return "/aaa/changepassword.json";

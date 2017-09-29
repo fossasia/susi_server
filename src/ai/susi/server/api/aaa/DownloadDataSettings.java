@@ -17,6 +17,10 @@ import java.io.FileInputStream;
  */
 public class DownloadDataSettings extends AbstractAPIHandler implements APIHandler{
 
+    /**
+     * 
+     */
+    private static final long serialVersionUID = 1818674610476775839L;
     private static final int BUFSIZE = 4096;
 
     @Override
