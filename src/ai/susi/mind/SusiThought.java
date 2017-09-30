@@ -390,6 +390,19 @@ public class SusiThought extends JSONObject {
         return skills;
     }
     
+    public String getLogPath() {
+        if (!this.has("skills")) return null;
+        JSONArray skills = this.getJSONArray("skills");
+        if (skills.length() == 0) return null;
+        return getLogPath(skills.getString(0));
+    }
+
+    public static String getLogPath(String skillName) {
+        if (skillName == null) return null;
+        skillName = skillName.replace(':', '_').replace('.', '_') + ".log";
+        return skillName;
+    }
+    
     public static final Pattern variable_pattern = Pattern.compile("\\$.*?\\$");
     
     /**

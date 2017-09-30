@@ -39,6 +39,9 @@ import java.util.regex.Pattern;
 import ai.susi.json.JsonTray;
 import ai.susi.tools.MapTools;
 
+import org.apache.commons.io.FileUtils;
+import org.json.JSONArray;
+
 /**
  * Susis log is a kind of reflection about the conversation in the past
  */
@@ -76,17 +79,28 @@ public class SusiMemory {
     public SusiMemory(File chatlog, File skilllog, int attention) {
         this.chatlog = chatlog;
         this.skilllog = skilllog;
+        try {FileUtils.cleanDirectory(this.skilllog);} catch (IOException e) {} // do this only as long as we are in a migration phase
         this.attention = attention;
         this.memories = new ConcurrentHashMap<>();
         this.intentsets = new ConcurrentHashMap<>();
         this.unanswered = new ConcurrentHashMap<>();
     }
     
-    public void initializeUnanswered() {
+    public void initializeMemory() {
         // initialize the unanswered list.
-        if (this.chatlog != null) for (String c: this.chatlog.list()) {
+        if (this.chatlog != null) for (String identity: this.chatlog.list()) {
             // we iterate over all users and check all their conversations
-            getCognitions(c).forEach(cognition -> {
+            getCognitions(identity).forEach(cognition -> {
+                // copy the cognition into the log for the skill
+                SusiThought thought = cognition.getAnswers().get(0);
+                String logpath = thought.getLogPath();
+                if (logpath != null) {
+                    File skillogfile = new File(this.skilllog, logpath);
+                    cognition.json.put("identity", identity);
+                    SusiAwareness.memorize(skillogfile, cognition);
+                }
+                
+                // check unanswered
                 String query = cognition.getQuery().toLowerCase();
                 String answer = cognition.getExpression();
                 if (query.length() > 0 && failset.contains(answer)) {
@@ -102,6 +116,10 @@ public class SusiMemory {
         }
     }
 
+    public File getSkillLogPath(String skillName) {
+        return new File(this.skilllog, SusiThought.getLogPath(skillName));
+    }
+    
     public Map<String, Integer> getUnanswered() {
         return MapTools.deatomize(this.unanswered);
     }
@@ -230,21 +248,30 @@ public class SusiMemory {
     public List<SusiCognition> getCognitions(String client) {
         SusiIdentity identity = this.memories.get(client);
         if (identity == null) {
-            if (chatlog == null) return new ArrayList<SusiCognition>();
+            if (this.chatlog == null) return new ArrayList<SusiCognition>();
             identity = new SusiIdentity(new File(chatlog, client), attention);
             this.memories.put(client, identity);
         }
         return identity.getCognitions();
     }
     
-    public SusiMemory addCognition(String client, SusiCognition si) {
+    public SusiMemory addCognition(String client, SusiCognition cognition) throws IOException {
+        // add to user memories
         SusiIdentity identity = this.memories.get(client);
         if (identity == null) {
             if (chatlog == null) return null;
             identity = new SusiIdentity(new File(chatlog, client), attention);
             this.memories.put(client, identity);
         }
-        identity.add(si);
+        identity.add(cognition);
+        
+        // add to skill memories
+        SusiThought thought = cognition.getAnswers().get(0);
+        String logpath = thought.getLogPath();
+        if (logpath != null) {
+            File skillogfile = new File(this.skilllog, logpath);
+            SusiAwareness.memorize(skillogfile, cognition);
+        }
         return this;
     }
     
@@ -261,7 +288,7 @@ public class SusiMemory {
             if (memorypath.exists()) {
                 File memorydump = new File(memorypath, "log.txt");
                 if (memorydump.exists()) try {
-                    SusiAwareness awareness = SusiAwareness.readMemory(memorydump, Integer.MAX_VALUE);
+                    SusiAwareness awareness = new SusiAwareness(memorydump, Integer.MAX_VALUE);
                     if (awareness.getTime() > 0) {
                         Date d = awareness.getLatest().getQueryDate();
                         all.put(-d.getTime(), awareness);

@@ -36,8 +36,6 @@ import java.util.Set;
 
 import javax.annotation.Nonnull;
 
-import com.google.common.io.Files;
-
 import ai.susi.json.JsonFile;
 import ai.susi.json.JsonTray;
 import ai.susi.mind.SusiMind;
@@ -150,9 +148,11 @@ public class DAO {
         susi = model_watch_dir.exists() ?
                 new SusiMind(susi_chatlog_dir, susi_skilllog_dir, susiinitpath, model_watch_dir) :
                 new SusiMind(susi_chatlog_dir, susi_skilllog_dir, susiinitpath);
+
+        // initialize the memory as a background task to prevent that this blocks too much
         new Thread() {
             public void run() {
-                susi.initializeUnanswered();
+                susi.initializeMemory();
             }
         }.start();
 

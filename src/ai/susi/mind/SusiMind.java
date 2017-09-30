@@ -82,8 +82,8 @@ public class SusiMind {
         }
     }
     
-    public void initializeUnanswered() {
-        this.memories.initializeUnanswered();
+    public void initializeMemory() {
+        this.memories.initializeMemory();
     }
 
     public SusiMemory getMemories() {

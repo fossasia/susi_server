@@ -39,6 +39,35 @@ public class SusiAwareness {
     public SusiAwareness() {
         this.aware = new ArrayList<>();
     }
+
+    /**
+     * produce awareness by reading a memory dump up to a given attention time
+     * @param memorydump file where the memory is stored
+     * @param attentionTime the maximum number of cognitions within the required awareness
+     * @return awareness for the give time
+     * @throws IOException
+     */
+    public SusiAwareness(final File memorydump, int attentionTime) throws IOException {
+        this();
+        List<String> lines = Files.readAllLines(memorydump.toPath());
+        for (int i = lines.size() - 1; i >= 0; i--) {
+            String line = lines.get(i);
+            if (line.length() == 0) continue;
+            SusiCognition si = new SusiCognition(new JSONObject(line));
+            this.aware.add(si);
+            if (attentionTime != Integer.MAX_VALUE && this.getTime() >= attentionTime) break;
+        }
+    }
+    
+    public static void memorize(File skillogfile, SusiCognition cognition) {
+        try {
+            File parent = skillogfile.getParentFile();
+            if (!parent.exists()) parent.mkdirs();
+            cognition.appendToFile(skillogfile);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
     
     /**
      * perception of time
@@ -108,27 +137,6 @@ public class SusiAwareness {
         this.aware.forEach(cognition -> sb.append(cognition.toString()).append('\n'));
         sb.append("]\n");
         return sb.toString();
-    }
-    
-    
-    /**
-     * produce awareness by reading a memory dump up to a given attention time
-     * @param memorydump file where the memory is stored
-     * @param attentionTime the maximum number of cognitions within the required awareness
-     * @return awareness for the give time
-     * @throws IOException
-     */
-    public static SusiAwareness readMemory(final File memorydump, int attentionTime) throws IOException {
-        List<String> lines = Files.readAllLines(memorydump.toPath());
-        SusiAwareness awareness = new SusiAwareness();
-        for (int i = lines.size() - 1; i >= 0; i--) {
-            String line = lines.get(i);
-            if (line.length() == 0) continue;
-            SusiCognition si = new SusiCognition(new JSONObject(line));
-            awareness.aware.add(si);
-            if (attentionTime != Integer.MAX_VALUE && awareness.getTime() >= attentionTime) break;
-        }
-        return awareness;
     }
     
 }

@@ -106,7 +106,11 @@ public class SusiService extends AbstractAPIHandler implements APIHandler {
         
         // answer with built-in intents
         SusiCognition cognition = new SusiCognition(DAO.susi, q, timezoneOffset, latitude, longitude, language, count, user.getIdentity());
-        DAO.susi.getMemories().addCognition(user.getIdentity().getClient(), cognition);
+        try {
+            DAO.susi.getMemories().addCognition(user.getIdentity().getClient(), cognition);
+        } catch (IOException e) {
+            DAO.log(e.getMessage());
+        }
         JSONObject json = cognition.getJSON();
         return new ServiceResponse(json);
     }

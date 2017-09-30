@@ -19,7 +19,11 @@
 
 package ai.susi.mind;
 
+import java.io.File;
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.Date;
@@ -86,6 +90,14 @@ public class SusiCognition {
 
     public SusiCognition() {
         
+    }
+    
+    public void appendToFile(File f) throws IOException {
+        try {
+            Files.write(f.toPath(), (this.getJSON().toString(0) + "\n").getBytes(StandardCharsets.UTF_8), StandardOpenOption.APPEND, StandardOpenOption.CREATE);
+        } catch (JSONException e) {
+            throw new IOException(e.getMessage());
+        }
     }
     
     public SusiCognition setQuery(final String query) {
