@@ -25,7 +25,6 @@ import ai.susi.server.FileHandler;
 import ai.susi.server.Query;
 import ai.susi.server.RemoteAccess;
 import ai.susi.tools.TimeoutMatcher;
-import ai.susi.tools.UTF8;
 
 import javax.servlet.ServletException;
 import javax.servlet.ServletOutputStream;
@@ -45,6 +44,7 @@ import java.lang.management.ThreadMXBean;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.nio.charset.StandardCharsets;
 import java.text.DecimalFormat;
 import java.util.*;
 import java.util.regex.Pattern;
@@ -172,7 +172,7 @@ public class ThreaddumpServlet extends HttpServlet {
 
         FileHandler.setCaching(response, 10);
         post.setResponse(response, "text/plain");
-        response.getOutputStream().write(UTF8.getBytes(buffer.toString()));
+        response.getOutputStream().write(buffer.toString().getBytes(StandardCharsets.UTF_8));
         post.finalize();
     }
 

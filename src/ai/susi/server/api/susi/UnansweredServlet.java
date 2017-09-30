@@ -24,13 +24,13 @@ import ai.susi.mind.SusiMemory.TokenMapList;
 import ai.susi.server.FileHandler;
 import ai.susi.server.Query;
 import ai.susi.server.RemoteAccess;
-import ai.susi.tools.UTF8;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.LinkedHashMap;
 import java.util.List;
 
@@ -78,7 +78,7 @@ public class UnansweredServlet extends HttpServlet {
         
         FileHandler.setCaching(response, 60);
         post.setResponse(response, "text/plain");
-        response.getOutputStream().write(UTF8.getBytes(buffer.toString()));
+        response.getOutputStream().write(buffer.toString().getBytes(StandardCharsets.UTF_8));
         post.finalize();
     }
     

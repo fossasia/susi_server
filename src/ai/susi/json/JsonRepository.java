@@ -23,6 +23,7 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Iterator;
@@ -38,7 +39,6 @@ import org.json.JSONObject;
 
 import ai.susi.DAO;
 import ai.susi.tools.Compression;
-import ai.susi.tools.UTF8;
 
 
 public class JsonRepository {
@@ -181,7 +181,7 @@ public class JsonRepository {
     public JsonFactory write(JSONObject json) throws IOException {
         String line = json.toString(); // new ObjectMapper().writer().writeValueAsString(map);
         JsonFactory jf = null;
-        byte[] b = UTF8.getBytes(line);
+        byte[] b = line.getBytes(StandardCharsets.UTF_8);
         long seekpos = this.json_log.appendLine(b);
         jf = this.json_log.getJsonFactory(seekpos, b.length);
         return jf;
@@ -191,9 +191,9 @@ public class JsonRepository {
         String line = json.toString(); // new ObjectMapper().writer().writeValueAsString(map);
         JsonFactory jf = null;
         StringBuilder sb = new StringBuilder();
-        sb.append('{').append('\"').append(UTF8.String(OPERATION_KEY)).append('\"').append(':').append('\"').append(opkey).append('\"').append(',');
+        sb.append('{').append('\"').append(OPERATION_KEY == null ? "" : new String(OPERATION_KEY, 0, OPERATION_KEY.length, StandardCharsets.UTF_8)).append('\"').append(':').append('\"').append(opkey).append('\"').append(',');
         sb.append(line.substring(1));
-        byte[] b = UTF8.getBytes(sb.toString());
+        byte[] b = sb.toString().getBytes(StandardCharsets.UTF_8);
         long seekpos = this.json_log.appendLine(b);
         jf = this.json_log.getJsonFactory(seekpos, b.length);
         return jf;

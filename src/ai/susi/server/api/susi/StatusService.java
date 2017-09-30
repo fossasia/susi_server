@@ -24,11 +24,11 @@ import ai.susi.SusiServer;
 import ai.susi.json.JsonObjectWithDefault;
 import ai.susi.server.*;
 import ai.susi.tools.OS;
-import ai.susi.tools.UTF8;
 import org.json.JSONObject;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.Enumeration;
 
 public class StatusService extends AbstractAPIHandler implements APIHandler {
@@ -55,7 +55,8 @@ public class StatusService extends AbstractAPIHandler implements APIHandler {
         final String urlstring = protocolhostportstub + "/susi/status.json";
         byte[] response = ClientConnection.downloadPeer(urlstring);
         if (response == null || response.length == 0) return new JSONObject();
-        JSONObject json = new JSONObject(UTF8.String(response));
+        final byte[] bytes = response;
+        JSONObject json = new JSONObject(bytes == null ? "" : new String(bytes, 0, bytes.length, StandardCharsets.UTF_8));
         return json;
     }
 

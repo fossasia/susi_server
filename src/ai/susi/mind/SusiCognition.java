@@ -19,6 +19,7 @@
 
 package ai.susi.mind;
 
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.Date;
@@ -32,7 +33,6 @@ import org.json.JSONObject;
 import ai.susi.DAO;
 import ai.susi.server.ClientIdentity;
 import ai.susi.tools.DateParser;
-import ai.susi.tools.UTF8;
 
 /**
  * An cognition is the combination of a query of a user with the response of susi.
@@ -65,7 +65,7 @@ public class SusiCognition {
         SusiLanguage language = SusiLanguage.parse(languageName);
         if (language != SusiLanguage.unknown) observation.addObservation("language", language.name());
         
-        this.json.put("client_id", Base64.getEncoder().encodeToString(UTF8.getBytes(client)));
+        this.json.put("client_id", Base64.getEncoder().encodeToString(client.getBytes(StandardCharsets.UTF_8)));
         long query_date = System.currentTimeMillis();
         this.json.put("query_date", DateParser.utcFormatter.print(query_date));
         
