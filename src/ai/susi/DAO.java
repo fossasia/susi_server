@@ -90,7 +90,7 @@ import org.slf4j.LoggerFactory;
 public class DAO {
 
     private final static String ACCESS_DUMP_FILE_PREFIX = "access_";
-    public  static File conf_dir, bin_dir, html_dir, data_dir, susi_memory_dir, model_watch_dir, susi_skill_repo, deleted_skill_dir;
+    public  static File conf_dir, bin_dir, html_dir, data_dir, susi_chatlog_dir, susi_skilllog_dir, model_watch_dir, susi_skill_repo, deleted_skill_dir;
     public static String conflictsPlaceholder = "%CONFLICTS%";
     private static File external_data, assets, dictionaries;
     private static Settings public_settings, private_settings;
@@ -126,7 +126,16 @@ public class DAO {
         bin_dir = new File("bin");
         html_dir = new File("html");
         data_dir = dataPath.toFile().getAbsoluteFile();
-        susi_memory_dir = new File(data_dir, "susi");
+        File susi_memory_dir_new = new File(data_dir, "memory");
+        File susi_memory_dir_old = new File(data_dir, "susi"); // old
+        if (!susi_memory_dir_new.exists()) susi_memory_dir_new.mkdirs();
+        susi_chatlog_dir = new File(susi_memory_dir_new, "chatlog");
+        susi_skilllog_dir = new File(susi_memory_dir_new, "skilllog");
+        if (susi_memory_dir_old.exists() && !susi_chatlog_dir.exists()) {
+            susi_memory_dir_old.renameTo(susi_chatlog_dir); // migrate old location
+        }
+        if (!susi_chatlog_dir.exists()) susi_chatlog_dir.mkdirs();
+        if (!susi_skilllog_dir.exists()) susi_skilllog_dir.mkdirs();
         // TODO:
         deleted_skill_dir = new File(new File(DAO.data_dir, "deleted_skill_dir"), "models");
 
@@ -139,16 +148,13 @@ public class DAO {
         // wake up susi
         File susiinitpath = new File(conf_dir, "susi");
         susi = model_watch_dir.exists() ?
-                new SusiMind(susi_memory_dir, susiinitpath, model_watch_dir) :
-                new SusiMind(susi_memory_dir, susiinitpath);
+                new SusiMind(susi_chatlog_dir, susi_skilllog_dir, susiinitpath, model_watch_dir) :
+                new SusiMind(susi_chatlog_dir, susi_skilllog_dir, susiinitpath);
         new Thread() {
             public void run() {
                 susi.initializeUnanswered();
             }
         }.start();
-        String susi_boilerplate_name = "susi_cognition_boilerplate.json";
-        File susi_boilerplate_file = new File(susi_memory_dir, susi_boilerplate_name);
-        if (!susi_boilerplate_file.exists()) Files.copy(new File(conf_dir, "susi/" + susi_boilerplate_name + ".example"), susi_boilerplate_file);
 
         // initialize public and private keys
 		public_settings = new Settings(new File("data/settings/public.settings.json"));

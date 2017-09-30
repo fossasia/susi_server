@@ -67,14 +67,15 @@ public class SusiMemory {
         for (String t: donotremoveunanswered) dnruset.add(t);
     }
     
-    private File root;
+    private File chatlog, skilllog;
     private int attention; // a measurement for time
     private Map<String, SusiIdentity> memories;
     private Map<String, Map<String, JsonTray>> intentsets;
     private Map<String, AtomicInteger> unanswered;
     
-    public SusiMemory(File storageLocation, int attention) {
-        this.root = storageLocation;
+    public SusiMemory(File chatlog, File skilllog, int attention) {
+        this.chatlog = chatlog;
+        this.skilllog = skilllog;
         this.attention = attention;
         this.memories = new ConcurrentHashMap<>();
         this.intentsets = new ConcurrentHashMap<>();
@@ -83,7 +84,8 @@ public class SusiMemory {
     
     public void initializeUnanswered() {
         // initialize the unanswered list.
-        if (this.root != null) for (String c: this.root.list()) {
+        if (this.chatlog != null) for (String c: this.chatlog.list()) {
+            // we iterate over all users and check all their conversations
             getCognitions(c).forEach(cognition -> {
                 String query = cognition.getQuery().toLowerCase();
                 String answer = cognition.getExpression();
@@ -228,8 +230,8 @@ public class SusiMemory {
     public List<SusiCognition> getCognitions(String client) {
         SusiIdentity identity = this.memories.get(client);
         if (identity == null) {
-            if (root == null) return new ArrayList<SusiCognition>();
-            identity = new SusiIdentity(new File(root, client), attention);
+            if (chatlog == null) return new ArrayList<SusiCognition>();
+            identity = new SusiIdentity(new File(chatlog, client), attention);
             this.memories.put(client, identity);
         }
         return identity.getCognitions();
@@ -238,8 +240,8 @@ public class SusiMemory {
     public SusiMemory addCognition(String client, SusiCognition si) {
         SusiIdentity identity = this.memories.get(client);
         if (identity == null) {
-            if (root == null) return null;
-            identity = new SusiIdentity(new File(root, client), attention);
+            if (chatlog == null) return null;
+            identity = new SusiIdentity(new File(chatlog, client), attention);
             this.memories.put(client, identity);
         }
         identity.add(si);
@@ -252,10 +254,10 @@ public class SusiMemory {
      */
     public TreeMap<Long, SusiAwareness> getAllMemories() {
         TreeMap<Long, SusiAwareness> all = new TreeMap<>();
-        if (root == null) return all;
-        String[] clients = this.root.list();
+        if (chatlog == null) return all;
+        String[] clients = this.chatlog.list();
         for (String client: clients) {
-            File memorypath = new File(this.root, client);
+            File memorypath = new File(this.chatlog, client);
             if (memorypath.exists()) {
                 File memorydump = new File(memorypath, "log.txt");
                 if (memorydump.exists()) try {
@@ -274,9 +276,9 @@ public class SusiMemory {
 
     public Set<String> getIntentsetNames(String client) {
         Map<String, JsonTray> intentsets = this.intentsets.get(client);
-        if (intentsets == null && root != null) {
+        if (intentsets == null && chatlog != null) {
             Set<String> intents = new HashSet<String>();
-            File rpath = new File(root, client);
+            File rpath = new File(chatlog, client);
             rpath.mkdirs();
             for (String s: rpath.list()) if (s.endsWith(".json")) intents.add(s.substring(0, s.length() - 5));
             return intents;
@@ -291,8 +293,8 @@ public class SusiMemory {
             this.intentsets.put(client, intentsets);
         }
         JsonTray jt = intentsets.get(name);
-        if (jt == null && root != null) {
-            File rpath = new File(root, client);
+        if (jt == null && chatlog != null) {
+            File rpath = new File(chatlog, client);
             rpath.mkdirs();
             jt = new JsonTray(new File(rpath, name + ".json"), null, 1000);
             intentsets.put(name,  jt);
