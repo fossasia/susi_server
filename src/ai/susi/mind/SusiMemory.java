@@ -92,24 +92,27 @@ public class SusiMemory {
             // we iterate over all users and check all their conversations
             getCognitions(identity).forEach(cognition -> {
                 // copy the cognition into the log for the skill
-                SusiThought thought = cognition.getAnswers().get(0);
-                String logpath = thought.getLogPath();
-                if (logpath != null) {
-                    File skillogfile = new File(this.skilllog, logpath);
-                    cognition.json.put("identity", identity);
-                    SusiAwareness.memorize(skillogfile, cognition);
-                }
-                
-                // check unanswered
-                String query = cognition.getQuery().toLowerCase();
-                String answer = cognition.getExpression();
-                if (query.length() > 0 && failset.contains(answer)) {
-                    AtomicInteger counter = this.unanswered.get(query);
-                    if (counter == null) {
-                        counter = new AtomicInteger(0);
-                        this.unanswered.put(query,  counter);
+                List<SusiThought> thoughts = cognition.getAnswers();
+                if (!thoughts.isEmpty()) {
+                    SusiThought thought = thoughts.get(0);
+                    String logpath = thought.getLogPath();
+                    if (logpath != null) {
+                        File skillogfile = new File(this.skilllog, logpath);
+                        cognition.json.put("identity", identity);
+                        SusiAwareness.memorize(skillogfile, cognition);
                     }
-                    counter.incrementAndGet();
+                    
+                    // check unanswered
+                    String query = cognition.getQuery().toLowerCase();
+                    String answer = cognition.getExpression();
+                    if (query.length() > 0 && failset.contains(answer)) {
+                        AtomicInteger counter = this.unanswered.get(query);
+                        if (counter == null) {
+                            counter = new AtomicInteger(0);
+                            this.unanswered.put(query,  counter);
+                        }
+                        counter.incrementAndGet();
+                    }
                 }
                 //System.out.println("** DEBUG user " + c + "; q = " + query + "; a = " + answer);
             });
