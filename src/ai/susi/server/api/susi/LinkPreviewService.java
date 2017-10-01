@@ -57,7 +57,7 @@ public class LinkPreviewService extends AbstractAPIHandler implements APIHandler
             return new ServiceResponse(jsonObject);
         }
         SourceContent sourceContent = 	TextCrawler.scrape(url,3);
-        if (sourceContent.getImages() != null) jsonObject.put("image", sourceContent.getImages().get(0));
+        if (sourceContent.getImages() != null && sourceContent.getImages().size() != 0) jsonObject.put("image", sourceContent.getImages().get(0));
         if (sourceContent.getDescription() != null) jsonObject.put("descriptionShort", sourceContent.getDescription());
         if(sourceContent.getTitle()!=null)jsonObject.put("title", sourceContent.getTitle());
         jsonObject.put("accepted",true);
