@@ -58,6 +58,7 @@ public class SusiSkill {
     private Set<String> examples;
     private String developerPrivacyPolicy;
     private Boolean dynamicContent;
+    private Set<String> tags;
 
     /**
      * read an "EzD" ('Easy Dialog') file: this is just a text file. Read the docs/susi_skill_development_tutorial.md for an explanation
@@ -77,6 +78,7 @@ public class SusiSkill {
         this.termsOfUse = null;
         this.developerPrivacyPolicy = null;
         this.dynamicContent = false;
+        this.tags = new LinkedHashSet<>();
     }
     public static JSONObject readEzDSkill(BufferedReader br) throws JSONException {
         // read the text file and turn it into a intent json; then learn that
@@ -85,7 +87,8 @@ public class SusiSkill {
         json.put("intents", intents);
         String lastLine = "", line = "";
         String bang_answers = "", bang_type = "", bang_term = ""; StringBuilder bang_bag = new StringBuilder();
-        String example = "", expect = "", description="", image="", skillName="", authorName= "", authorURL = "", developerPrivacyPolicy = "", termsOfUse="";
+        String example = "", tags = "", expect = "", description="", image="", skillName="", authorName= "",
+                authorURL = "", developerPrivacyPolicy = "", termsOfUse="";
         boolean prior = false, dynamicContent = false;
         try {readloop: while ((line = br.readLine()) != null) {
             line = line.trim();
@@ -236,6 +239,12 @@ public class SusiSkill {
                 if (line.startsWith("::dynamic_content") && (thenpos = line.indexOf(' ')) > 0) {
                     if (line.substring(thenpos + 1).trim().equalsIgnoreCase("yes")) dynamicContent=true;
                     json.put("dynamic_content",dynamicContent);
+                }
+
+                if(line.startsWith("::tags") && (thenpos = line.indexOf(' ')) > 0) {
+                    tags = line.substring(thenpos + 1).trim();
+                    if(tags.length() > 0)
+                        json.put("tags", tags);
                 }
 
                 lastLine = ""; example = ""; expect = "";
@@ -400,6 +409,10 @@ public class SusiSkill {
         this.description = description;
     }
 
+    public void setTags(Set<String> tags) {
+        this.tags = tags;
+    }
+
     public void setDeveloperPrivacyPolicy(String developerPrivacyPolicy) {
         this.developerPrivacyPolicy = developerPrivacyPolicy;
     }
@@ -426,6 +439,10 @@ public class SusiSkill {
 
     public String getDescription() {
         return description;
+    }
+
+    public Set<String> getTags() {
+        return tags;
     }
 
     public String getAuthor() {
