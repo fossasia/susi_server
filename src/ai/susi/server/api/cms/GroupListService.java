@@ -17,6 +17,11 @@ import java.io.FilenameFilter;
  */
 
 public class GroupListService extends AbstractAPIHandler implements APIHandler {
+    /**
+     * 
+     */
+    private static final long serialVersionUID = 6454897567786294376L;
+
     @Override
     public String getAPIPath() {
         return "/cms/getGroups.json";

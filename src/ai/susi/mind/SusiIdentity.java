@@ -22,14 +22,9 @@ package ai.susi.mind;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.json.JSONException;
-
-import ai.susi.tools.UTF8;
 
 /**
  * Identity is the mental model of a being represented with a SusiMind.
@@ -67,7 +62,7 @@ public class SusiIdentity {
         this.memorydump = new File(memorypath, "log.txt");
         if (this.memorydump.exists()) {
             try {
-                this.long_term_memory = SusiAwareness.readMemory(this.memorydump, attention);
+                this.long_term_memory = new SusiAwareness(this.memorydump, attention);
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -80,15 +75,11 @@ public class SusiIdentity {
      * @param cognition
      * @return self
      */
-    public SusiIdentity add(SusiCognition cognition) {
+    public SusiIdentity add(SusiCognition cognition) throws IOException {
         this.short_term_memory.learn(cognition);
         List<SusiCognition> forgottenCognitions = this.short_term_memory.limitAwareness(this.attention);
         forgottenCognitions.forEach(c -> this.long_term_memory.learn(c)); // TODO add a rule to memorize only the most important ones
-        try {
-            Files.write(this.memorydump.toPath(), UTF8.getBytes(cognition.getJSON().toString(0) + "\n"), StandardOpenOption.APPEND, StandardOpenOption.CREATE);
-        } catch (JSONException | IOException e) {
-            e.printStackTrace();
-        }
+        cognition.appendToFile(this.memorydump);
         return this;
     }
     

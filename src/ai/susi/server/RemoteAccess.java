@@ -26,6 +26,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.InetAddress;
 import java.net.URLDecoder;
 import java.net.UnknownHostException;
+import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -41,7 +42,6 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.Part;
 
 import ai.susi.graphics.RasterPlotter;
-import ai.susi.tools.UTF8;
 
 /**
  * Storage of a peer list which can be used for peer-to-peer communication.
@@ -187,7 +187,7 @@ public class RemoteAccess {
         if (pm != null && pm.size() > 0) {
             for (Map.Entry<String, String[]> entry: pm.entrySet()) {
                 String[] v = entry.getValue();
-                if (v != null && v.length > 0) map.put(entry.getKey(), UTF8.getBytes(v[0]));
+                if (v != null && v.length > 0) map.put(entry.getKey(), v[0].getBytes(StandardCharsets.UTF_8));
             }
         } else try {
             final byte[] b = new byte[1024];

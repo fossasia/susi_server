@@ -12,6 +12,11 @@ import java.util.List;
  * Created by dravit on 29/8/17.
  */
 public class GetAllUserroles extends AbstractAPIHandler implements APIHandler {
+    /**
+     * 
+     */
+    private static final long serialVersionUID = -6147215063044889074L;
+
     @Override
     public String getAPIPath() {
         return "/aaa/getAllUserroles.json";

@@ -1,13 +1,13 @@
 {"rules":[
   {
-   "score"  : 9,
+   "score"  : 8,
    "phrases":[	{"type":"pattern", "expression":"*"} ],
    "process":[	{"type":"console", "expression":"SELECT text FROM messages-order-by-favourites_count WHERE query='you $1$ since:day /pure /len75';"}],
    "actions":[	{"type":"answer", "select":"random", "phrases":[
      "$text$"
    ]}]
   }, {
-   "score"  : 8,
+   "score"  : 7,
    "phrases":[	{"type":"pattern", "expression":"*"} ],
    "process":[	{"type":"console", "expression":"SELECT text FROM messages-order-by-favourites_count WHERE query='you $1$ since:week /pure /len75';"}],
    "actions":[	{"type":"answer", "select":"random", "phrases":[
@@ -18,6 +18,13 @@
    "process":[	{"type":"console", "expression":"SELECT text FROM messages-order-by-favourites_count WHERE query='$1$ is since:week /pure /len75';"}],
    "actions":[	{"type":"answer", "select":"random", "phrases":[
      "$text$"
+   ]}]
+  }, {
+   "score"  : 90,
+   "phrases":[ {"type":"pattern", "expression":"*"} ],
+   "process":[ {"type":"console", "expression":"SELECT extract FROM wikipedia WHERE query='$1$' AND language='en';"}],
+   "actions":[ {"type":"answer", "select":"random", "phrases":[
+     "$extract$"
    ]}]
   }, {
    "comment":"this is the catch-all rule which fires if no other rule applies",

@@ -89,7 +89,7 @@ public class SusiService extends AbstractAPIHandler implements APIHandler {
                 // in case that the text contains a "*" we are in danger that we cannot stop dreaming, therefore we simply add the stop rule here to the text
                 text = text + "\n\nwake up|stop dream|stop dreaming|end dream|end dreaming\ndreaming disabled^^>_etherpad_dream\n\n";
                 // fill an empty mind with the dream
-                SusiMind dreamMind = new SusiMind(DAO.susi_memory_dir); // we need the memory directory here to get a share on the memory of previous dialoges, otherwise we cannot test call-back questions
+                SusiMind dreamMind = new SusiMind(DAO.susi_chatlog_dir, DAO.susi_skilllog_dir); // we need the memory directory here to get a share on the memory of previous dialoges, otherwise we cannot test call-back questions
                 JSONObject rules = SusiSkill.readEzDSkill(new BufferedReader(new InputStreamReader(new ByteArrayInputStream(text.getBytes(StandardCharsets.UTF_8)), StandardCharsets.UTF_8)));
                 dreamMind.learn(rules, new File("file://" + dream));
                 // susi is now dreaming.. Try to find an answer out of the dream
@@ -106,7 +106,11 @@ public class SusiService extends AbstractAPIHandler implements APIHandler {
         
         // answer with built-in intents
         SusiCognition cognition = new SusiCognition(DAO.susi, q, timezoneOffset, latitude, longitude, language, count, user.getIdentity());
-        DAO.susi.getMemories().addCognition(user.getIdentity().getClient(), cognition);
+        try {
+            DAO.susi.getMemories().addCognition(user.getIdentity().getClient(), cognition);
+        } catch (IOException e) {
+            DAO.log(e.getMessage());
+        }
         JSONObject json = cognition.getJSON();
         return new ServiceResponse(json);
     }

@@ -39,6 +39,10 @@ import java.nio.file.Paths;
  */
 public class ResendVerificationLinkService extends AbstractAPIHandler implements APIHandler {
 
+    /**
+     * 
+     */
+    private static final long serialVersionUID = -4307345798412415318L;
     public static String verificationLinkPlaceholder = "%VERIFICATION-LINK%";
 
     @Override

@@ -36,6 +36,11 @@ import java.io.IOException;
  * http://127.0.0.1:4000/aaa/uploadSettings.json
  */
 public class UploadSettingsService extends AbstractAPIHandler implements APIHandler{
+    /**
+     * 
+     */
+    private static final long serialVersionUID = -1349057408501566674L;
+
     @Override
     public String getAPIPath() {
         return "/aaa/uploadSettings.json";

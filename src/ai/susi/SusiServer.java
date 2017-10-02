@@ -510,6 +510,7 @@ public class SusiServer {
                 ConsoleService.class,
                 RSSReaderService.class,
                 SusiService.class,
+                SkillLogService.class,
                 MindService.class,
                 UserService.class,
                 GetAllUserroles.class,

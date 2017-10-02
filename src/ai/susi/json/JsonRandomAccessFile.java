@@ -23,13 +23,13 @@ package ai.susi.json;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.concurrent.ArrayBlockingQueue;
 
 import org.json.JSONObject;
 
 import ai.susi.DAO;
 import ai.susi.tools.BufferedRandomAccessFile;
-import ai.susi.tools.UTF8;
 
 public class JsonRandomAccessFile extends BufferedRandomAccessFile {
 
@@ -107,7 +107,7 @@ public class JsonRandomAccessFile extends BufferedRandomAccessFile {
         public JSONObject getJSON() throws IOException {
             byte[] b = new byte[this.length];
             JsonRandomAccessFile.this.read(b, this.index);
-            return new JSONObject(UTF8.String(b));
+            return new JSONObject(new String(b, 0, b.length, StandardCharsets.UTF_8));
         }
         public long getIndex() {
             return this.index;

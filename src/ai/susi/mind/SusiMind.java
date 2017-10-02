@@ -55,22 +55,24 @@ public class SusiMind {
     private final Map<String, SusiSkill> skillMetadata; // a map from skill path to description
     private final Map<String, String> skillImage; // a map from skill path to skill image
     private final File[] watchpaths;
-    private final File memorypath; // a path where the memory looks for new additions of knowledge with memory files
+    private final File susi_chatlog_dir, susi_skilllog_dir; // a path where the memory looks for new additions of knowledge with memory files
     private final Map<File, Long> observations; // a mapping of mind memory files to the time when the file was read the last time
     private final SusiMemory memories; // conversation logs are memories
 
 
-    public SusiMind(File memorypath, File... watchpaths) {
+    public SusiMind(File susi_chatlog_dir, File susi_skilllog_dir, File... watchpaths) {
         // initialize class objects
         this.watchpaths = watchpaths;
         for (int i = 0; i < watchpaths.length; i++) {
             if (watchpaths[i] != null) watchpaths[i].mkdirs();
         }
-        this.memorypath = memorypath;
-        if (this.memorypath != null) this.memorypath.mkdirs();
+        this.susi_chatlog_dir = susi_chatlog_dir;
+        this.susi_skilllog_dir = susi_skilllog_dir;
+        if (this.susi_chatlog_dir != null) this.susi_chatlog_dir.mkdirs();
+        if (this.susi_skilllog_dir != null) this.susi_skilllog_dir.mkdirs();
         this.intenttrigger = new ConcurrentHashMap<>();
         this.observations = new HashMap<>();
-        this.memories = new SusiMemory(memorypath, ATTENTION_TIME);
+        this.memories = new SusiMemory(susi_chatlog_dir, susi_skilllog_dir, ATTENTION_TIME);
         this.skillexamples = new TreeMap<>();
         this.skillMetadata = new TreeMap<>();
         this.skillImage = new TreeMap<>();
@@ -80,8 +82,8 @@ public class SusiMind {
         }
     }
     
-    public void initializeUnanswered() {
-        this.memories.initializeUnanswered();
+    public void initializeMemory() {
+        this.memories.initializeMemory();
     }
 
     public SusiMemory getMemories() {
