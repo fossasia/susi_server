@@ -103,15 +103,16 @@ public class SusiIdentity {
     }
     
     /**
-     * Get the current awareness as list of cognitions. The list is reverse ordered, latest cognitions are first
+     * Get the current awareness as list of cognitions.
+     * The list is reverse ordered, latest cognitions are first in the list.
      * @return a list of cognitions, latest first
      */
     public List<SusiCognition> getCognitions() {
         ArrayList<SusiCognition> cognitions = new ArrayList<>();
         // first put in short memory
-        this.short_term_memory.getCognitions().forEach(cognition -> cognitions.add(cognition));
+        this.short_term_memory.forEach(cognition -> cognitions.add(cognition));
         // then put in long term memory
-        this.long_term_memory.getCognitions().forEach(cognition -> cognitions.add(cognition));
+        this.long_term_memory.forEach(cognition -> cognitions.add(cognition));
         return cognitions;
     }
 }
