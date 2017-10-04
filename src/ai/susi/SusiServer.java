@@ -466,6 +466,7 @@ public class SusiServer {
                 PasswordResetService.class,
                 PublicKeyRegistrationService.class,
                 DownloadDataSettings.class,
+                StorePersonalInfoService.class,
                 ShowAdminService.class,
                 SignUpService.class,
                 TopMenuService.class,
