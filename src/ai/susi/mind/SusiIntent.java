@@ -322,7 +322,7 @@ public class SusiIntent {
      */
     public class Score {
 
-        public int score;
+        public long score;
         public String log;
         
         public Score(SusiLanguage userLanguage) {
