@@ -17,7 +17,7 @@
  *  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package ai.susi.server.api.aaa;
+package ai.susi.server.api.cms;
 
 import ai.susi.DAO;
 import ai.susi.json.JsonObjectWithDefault;
@@ -32,7 +32,7 @@ import java.io.File;
 /**
  * This Endpoint accepts 4 parameters. model,group,language,skill
  * before getting a rating of a skill, the skill must exist in the directory.
- * http://localhost:4000/cms/getSkillRating.json?model=general&group=knowledge&skill=who
+ * http://localhost:4000/cms/getSkillRating.json?model=general&group=Knowledge&skill=who
  */
 public class GetSkillRatingService extends AbstractAPIHandler implements APIHandler {
 
@@ -40,12 +40,12 @@ public class GetSkillRatingService extends AbstractAPIHandler implements APIHand
     private static final long serialVersionUID = 1420414106164188352L;
 
     @Override
-    public BaseUserRole getMinimalBaseUserRole() {
-        return BaseUserRole.ANONYMOUS;
+    public UserRole getMinimalUserRole() {
+        return UserRole.ANONYMOUS;
     }
 
     @Override
-    public JSONObject getDefaultPermissions(BaseUserRole baseUserRole) {
+    public JSONObject getDefaultPermissions(UserRole baseUserRole) {
         return null;
     }
 
@@ -59,7 +59,7 @@ public class GetSkillRatingService extends AbstractAPIHandler implements APIHand
 
         String model_name = call.get("model", "general");
         File model = new File(DAO.model_watch_dir, model_name);
-        String group_name = call.get("group", "knowledge");
+        String group_name = call.get("group", "Knowledge");
         File group = new File(model, group_name);
         String language_name = call.get("language", "en");
         File language = new File(group, language_name);

@@ -21,20 +21,13 @@ package ai.susi.server.api.cms;
 
 import ai.susi.DAO;
 import ai.susi.json.JsonObjectWithDefault;
-import ai.susi.server.APIHandler;
-import ai.susi.server.AbstractAPIHandler;
-import ai.susi.server.Authorization;
-import ai.susi.server.BaseUserRole;
-import ai.susi.server.Query;
-import ai.susi.server.ServiceResponse;
-
+import ai.susi.mind.SusiSkill;
+import ai.susi.server.*;
 import org.json.JSONObject;
 
 import javax.servlet.http.HttpServletResponse;
-
 import java.io.IOException;
 import java.util.Map;
-import java.util.Set;
 
 /**
  This Servlet gives a API Endpoint to list meta for a  Skill. Given its model, group and language and skill.
@@ -46,10 +39,10 @@ public class GetSkillMetadataService extends AbstractAPIHandler implements APIHa
     private static final long serialVersionUID = 3446536703362688060L;
 
     @Override
-    public BaseUserRole getMinimalBaseUserRole() { return BaseUserRole.ANONYMOUS; }
+    public UserRole getMinimalUserRole() { return UserRole.ANONYMOUS; }
 
     @Override
-    public JSONObject getDefaultPermissions(BaseUserRole baseUserRole) {
+    public JSONObject getDefaultPermissions(UserRole baseUserRole) {
         return null;
     }
 
@@ -83,89 +76,32 @@ public class GetSkillMetadataService extends AbstractAPIHandler implements APIHa
                 .put("model", model)
                 .put("group", group)
                 .put("language", language);
-        for (Map.Entry<String, String> entry : DAO.susi.getSkillDescriptions().entrySet()) {
+        skillMetadata.put("developer_privacy_policy", JSONObject.NULL);
+        skillMetadata.put("descriptions",JSONObject.NULL);
+        skillMetadata.put("image", JSONObject.NULL);
+        skillMetadata.put("author", JSONObject.NULL);
+        skillMetadata.put("author_url", JSONObject.NULL);
+        skillMetadata.put("skill_name", JSONObject.NULL);
+        skillMetadata.put("terms_of_use", JSONObject.NULL);
+        skillMetadata.put("dynamic_content", false);
+        skillMetadata.put("examples", JSONObject.NULL);
+        for (Map.Entry<String, SusiSkill> entry : DAO.susi.getSkillMetadata().entrySet()) {
             String path = entry.getKey();
             if ((path.indexOf("/" + model + "/") > 0)
                     && (path.indexOf("/" + group + "/") > 0) &&
                     (path.indexOf("/" + language + "/") > 0) &&
                     (path.indexOf("/" + skill + ".txt") > 0)) {
-                skillMetadata.put("descriptions", entry.getValue());
+                skillMetadata.put("skill_name", entry.getValue().getSkillName() ==null ? JSONObject.NULL: entry.getValue().getSkillName());
+                skillMetadata.put("developer_privacy_policy", entry.getValue().getDeveloperPrivacyPolicy() ==null ? JSONObject.NULL:entry.getValue().getDeveloperPrivacyPolicy());
+                skillMetadata.put("descriptions", entry.getValue().getDescription() ==null ? JSONObject.NULL:entry.getValue().getDescription());
+                skillMetadata.put("image", entry.getValue().getImage() ==null ? JSONObject.NULL: entry.getValue().getImage());
+                skillMetadata.put("author", entry.getValue().getAuthor()  ==null ? JSONObject.NULL:entry.getValue().getAuthor());
+                skillMetadata.put("author_url", entry.getValue().getAuthorURL() ==null ? JSONObject.NULL:entry.getValue().getAuthorURL());
+                skillMetadata.put("terms_of_use", entry.getValue().getTermsOfUse() ==null ? JSONObject.NULL:entry.getValue().getTermsOfUse());
+                skillMetadata.put("dynamic_content", entry.getValue().getDynamicContent());
+                skillMetadata.put("examples", entry.getValue().getExamples() ==null ? JSONObject.NULL: entry.getValue().getExamples());
             }
         }
-        for (Map.Entry<String, String> entry : DAO.susi.getSkillImage().entrySet()) {
-            String path = entry.getKey();
-            if ((path.indexOf("/" + model + "/") > 0) &&
-                    (path.indexOf("/" + group + "/") > 0) &&
-                    (path.indexOf("/" + language + "/") > 0) &&
-                    (path.indexOf("/" + skill + ".txt") > 0)) {
-                skillMetadata.put("image", entry.getValue());
-            }
-        }
-        for (Map.Entry<String, String> entry : DAO.susi.getAuthors().entrySet()) {
-            String path = entry.getKey();
-            if ((path.indexOf("/" + model + "/") > 0) &&
-                    (path.indexOf("/" + group + "/") > 0) &&
-                    (path.indexOf("/" + language + "/") > 0) &&
-                    (path.indexOf("/" + skill + ".txt") > 0)) {
-                skillMetadata.put("author", entry.getValue());
-            }
-        }
-        for (Map.Entry<String, String> entry : DAO.susi.getAuthorsUrl().entrySet()) {
-            String path = entry.getKey();
-            if ((path.indexOf("/" + model + "/") > 0) &&
-                    (path.indexOf("/" + group + "/") > 0) &&
-                    (path.indexOf("/" + language + "/") > 0) &&
-                    (path.indexOf("/" + skill + ".txt") > 0)) {
-                skillMetadata.put("author_url", entry.getValue());
-            }
-        }
-        for (Map.Entry<String, String> entry : DAO.susi.getDeveloperPrivacyPolicies().entrySet()) {
-            String path = entry.getKey();
-            if ((path.indexOf("/" + model + "/") > 0) &&
-                    (path.indexOf("/" + group + "/") > 0) &&
-                    (path.indexOf("/" + language + "/") > 0) &&
-                    (path.indexOf("/" + skill + ".txt") > 0)) {
-                skillMetadata.put("developer_privacy_policy", entry.getValue());
-            }
-        }
-        for (Map.Entry<String, String> entry : DAO.susi.getSkillNames().entrySet()) {
-            String path = entry.getKey();
-            if ((path.indexOf("/" + model + "/") > 0) &&
-                    (path.indexOf("/" + group + "/") > 0) &&
-                    (path.indexOf("/" + language + "/") > 0) &&
-                    (path.indexOf("/" + skill + ".txt") > 0)) {
-                skillMetadata.put("skill_name", entry.getValue());
-            }
-        }
-        for (Map.Entry<String, String> entry : DAO.susi.getTermsOfUse().entrySet()) {
-            String path = entry.getKey();
-            if ((path.indexOf("/" + model + "/") > 0) &&
-                    (path.indexOf("/" + group + "/") > 0) &&
-                    (path.indexOf("/" + language + "/") > 0) &&
-                    (path.indexOf("/" + skill + ".txt") > 0)) {
-                skillMetadata.put("terms_of_use", entry.getValue());
-            }
-        }
-        for (Map.Entry<String, Boolean> entry : DAO.susi.getDynamicContent().entrySet()) {
-            String path = entry.getKey();
-            if ((path.indexOf("/" + model + "/") > 0) &&
-                    (path.indexOf("/" + group + "/") > 0) &&
-                    (path.indexOf("/" + language + "/") > 0) &&
-                    (path.indexOf("/" + skill + ".txt") > 0)) {
-                skillMetadata.put("dynamic_content", entry.getValue());
-            }
-        }
-        JSONObject examples = new JSONObject(true);
-        for (Map.Entry<String, Set<String>> entry: DAO.susi.getSkillExamples().entrySet()) {
-            String path = entry.getKey();
-            if ((path.indexOf("/" + model + "/") > 0) &&
-                    (path.indexOf("/" + group + "/") > 0) &&
-                    (path.indexOf("/" + language + "/") > 0) &&
-                    (path.indexOf("/" + skill + ".txt") > 0)) {
-                examples.put(path, entry.getValue());
-            }
-        }
-        skillMetadata.put("examples", examples);
         JSONObject json = new JSONObject(true);
         json.put("skill_metadata", skillMetadata);
         json.put("accepted", true);

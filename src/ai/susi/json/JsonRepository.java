@@ -21,9 +21,9 @@ package ai.susi.json;
 
 import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Iterator;
@@ -34,15 +34,11 @@ import java.util.SortedSet;
 import java.util.TimeZone;
 import java.util.TreeMap;
 import java.util.TreeSet;
-import java.util.zip.GZIPInputStream;
-
-import org.eclipse.jetty.util.log.Log;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
 import ai.susi.DAO;
 import ai.susi.tools.Compression;
-import ai.susi.tools.UTF8;
 
 
 public class JsonRepository {
@@ -159,7 +155,7 @@ public class JsonRepository {
                         try {
                             Compression.gunzip(source, dest, true);
                         } catch (IOException e) {
-                        	Log.getLog().warn(e);
+                        	DAO.severe(e);
                             // mark the file as invalid
                             if (dest.exists()) dest.delete();
                             final File invalid = new File(path, d + ".invalid");
@@ -185,7 +181,7 @@ public class JsonRepository {
     public JsonFactory write(JSONObject json) throws IOException {
         String line = json.toString(); // new ObjectMapper().writer().writeValueAsString(map);
         JsonFactory jf = null;
-        byte[] b = UTF8.getBytes(line);
+        byte[] b = line.getBytes(StandardCharsets.UTF_8);
         long seekpos = this.json_log.appendLine(b);
         jf = this.json_log.getJsonFactory(seekpos, b.length);
         return jf;
@@ -195,9 +191,9 @@ public class JsonRepository {
         String line = json.toString(); // new ObjectMapper().writer().writeValueAsString(map);
         JsonFactory jf = null;
         StringBuilder sb = new StringBuilder();
-        sb.append('{').append('\"').append(UTF8.String(OPERATION_KEY)).append('\"').append(':').append('\"').append(opkey).append('\"').append(',');
+        sb.append('{').append('\"').append(OPERATION_KEY == null ? "" : new String(OPERATION_KEY, 0, OPERATION_KEY.length, StandardCharsets.UTF_8)).append('\"').append(':').append('\"').append(opkey).append('\"').append(',');
         sb.append(line.substring(1));
-        byte[] b = UTF8.getBytes(sb.toString());
+        byte[] b = sb.toString().getBytes(StandardCharsets.UTF_8);
         long seekpos = this.json_log.appendLine(b);
         jf = this.json_log.getJsonFactory(seekpos, b.length);
         return jf;
@@ -267,36 +263,6 @@ public class JsonRepository {
         File g = new File(this.dump_dir_imported, dumpName);
         if (g.exists()) g.delete();
         return f.renameTo(g);
-    }
-    
-    /**
-     * create a concurrent dump reader for the given file. The reader is either a JsonStreamReader if the
-     * dump file is gzipped or a JsonRandomAccessFile if the file is a plain txt file. Both reader types
-     * must be started as concurrent process which this method does on it's own. The reader process dies
-     * automatically when the file is read completely. When the reader thread dies, it pushed several 
-     * JsonReader.POISON_JSON_MAP objects to the reading queue, according to the concurrency defined with the
-     * initializer of this class.
-     * @param dump file
-     * @return a concurrent JsonReader with started Thread wrapper
-     * @throws IOException
-     */
-    public JsonReader getDumpReader(File dump) throws IOException {
-        if (dump == null || !dump.exists()) throw new IOException("dump file " + dump + " does not exist");
-        if (dump.getName().endsWith(".gz")) {
-            assert this.mode == COMPRESSED_MODE;
-            JsonStreamReader r = new JsonStreamReader(new GZIPInputStream(new FileInputStream(dump)), dump.getAbsolutePath(), this.concurrency);
-            final Thread readerThread = new Thread(r);
-            readerThread.start();
-            return r;
-        }
-        if (dump.getName().endsWith(".txt")) {
-            // no assert for the mode here because both mode would be valid
-            final JsonRandomAccessFile r = new JsonRandomAccessFile(dump, this.concurrency);
-            final Thread readerThread = new Thread(r);
-            readerThread.start();
-            return r;
-        }
-        throw new IOException("wrong file extension: must be txt or gz");
     }
     
 }

@@ -33,7 +33,6 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.eclipse.jetty.util.log.Log;
 import org.json.JSONObject;
 
 import ai.susi.DAO;
@@ -60,10 +59,10 @@ public abstract class AbstractAPIHandler extends HttpServlet implements APIHandl
     }
 
     @Override
-    public abstract BaseUserRole getMinimalBaseUserRole();
+    public abstract UserRole getMinimalUserRole();
 
 	@Override
-	public abstract JSONObject getDefaultPermissions(BaseUserRole baseUserRole);
+	public abstract JSONObject getDefaultPermissions(UserRole baseUserRole);
     
     public abstract ServiceResponse serviceImpl(Query post, HttpServletResponse response, Authorization rights, final JsonObjectWithDefault permissions) throws APIException;
     
@@ -83,10 +82,10 @@ public abstract class AbstractAPIHandler extends HttpServlet implements APIHandl
     private void process(HttpServletRequest request, HttpServletResponse response, Query query) throws ServletException, IOException {
         
         // basic protection
-        BaseUserRole minimalBaseUserRole = getMinimalBaseUserRole() != null ? getMinimalBaseUserRole() : BaseUserRole.ANONYMOUS;
+        UserRole minimalUserRole = getMinimalUserRole() != null ? getMinimalUserRole() : UserRole.ANONYMOUS;
 
         if (query.isDoS_blackout()) {response.sendError(503, "your request frequency is too high"); return;} // DoS protection
-        if (DAO.getConfig("users.admin.localonly", true) && minimalBaseUserRole == BaseUserRole.ADMIN && !query.isLocalhostAccess()) {response.sendError(503, "access only allowed from localhost, your request comes from " + query.getClientHost()); return;} // danger! do not remove this!
+        if (DAO.getConfig("users.admin.localonly", true) && minimalUserRole == UserRole.ADMIN && !query.isLocalhostAccess()) {response.sendError(503, "access only allowed from localhost, your request comes from " + query.getClientHost()); return;} // danger! do not remove this!
         
         // user identification
         ClientIdentity identity = getIdentity(request, response, query);
@@ -94,8 +93,8 @@ public abstract class AbstractAPIHandler extends HttpServlet implements APIHandl
         // user authorization: we use the identification of the user to get the assigned authorization
         Authorization authorization = DAO.getAuthorization(identity);
 
-        if(authorization.getBaseUserRole().ordinal() < minimalBaseUserRole.ordinal()){
-        	response.sendError(401, "Base user role not sufficient. Your base user role is '" + authorization.getBaseUserRole().name() + "', your user role is '" + authorization.getUserRole().getDisplayName() + "'");
+        if (authorization.getUserRole().ordinal() < minimalUserRole.ordinal()) {
+        	response.sendError(401, "Base user role not sufficient. Your base user role is '" + authorization.getUserRole().name() + "', your user role is '" + authorization.getUserRole().getName() + "'");
 			return;
         }
         
@@ -105,7 +104,7 @@ public abstract class AbstractAPIHandler extends HttpServlet implements APIHandl
         boolean minified = query.get("minified", false);
         
         try {
-            ServiceResponse serviceResponse = serviceImpl(query, response, authorization, authorization.getPermissions(this));
+            ServiceResponse serviceResponse = serviceImpl(query, response, authorization, new JsonObjectWithDefault(authorization.getPermission()));
             if  (serviceResponse == null) {
                 response.sendError(400, "your request does not contain the required data");
                 return;
@@ -139,6 +138,7 @@ public abstract class AbstractAPIHandler extends HttpServlet implements APIHandl
                 sos.print(serviceResponse.toString(false));
             } else if (serviceResponse.isByteArray()) {
                 response.getOutputStream().write(serviceResponse.getByteArray());
+                response.setHeader("Access-Control-Allow-Origin", "*");
             }
             query.finalize();
         } catch (APIException e) {
@@ -151,16 +151,16 @@ public abstract class AbstractAPIHandler extends HttpServlet implements APIHandl
      * Checks a request for valid login data, either a existing session, a cookie or an access token
      * @return user identity if some login is active, anonymous identity otherwise
      */
-    public static ClientIdentity getIdentity(HttpServletRequest request, HttpServletResponse response, Query query) {
+    private static ClientIdentity getIdentity(HttpServletRequest request, HttpServletResponse response, Query query) {
     	
-    	if(getLoginCookie(request) != null){ // check if login cookie is set
+    	if (getLoginCookie(request) != null) { // check if login cookie is set
 			
 			Cookie loginCookie = getLoginCookie(request);
 			
 			ClientCredential credential = new ClientCredential(ClientCredential.Type.cookie, loginCookie.getValue());
 			Authentication authentication = DAO.getAuthentication(credential);
 			
-			if(authentication.getIdentity() != null && authentication.checkExpireTime()) {
+			if (authentication.getIdentity() != null && authentication.checkExpireTime()) {
 
 				//reset cookie validity time
 				authentication.setExpireTime(defaultCookieTime);
@@ -168,7 +168,9 @@ public abstract class AbstractAPIHandler extends HttpServlet implements APIHandl
 				loginCookie.setPath("/"); // bug. The path gets reset
 				response.addCookie(loginCookie);
 
-				return authentication.getIdentity();
+				ClientIdentity identity = authentication.getIdentity();
+	            DAO.log("USER REQUEST using cookie: " + identity.getClient());
+				return identity;
 			}
 
 			authentication.delete();
@@ -176,45 +178,50 @@ public abstract class AbstractAPIHandler extends HttpServlet implements APIHandl
 			// delete cookie if set
 			deleteLoginCookie(response);
 
-			Log.getLog().info("Invalid login try via cookie from host: " + query.getClientHost());
-		}
-		else if(request.getSession().getAttribute("identity") != null){ // check session is set
-			return (ClientIdentity) request.getSession().getAttribute("identity");
-		}
-    	else if (request.getParameter("access_token") != null){ // access tokens can be used by api calls, somehow the stateless equivalent of sessions for browsers
+			DAO.log("Invalid login try via cookie from host: " + query.getClientHost());
+		} else if (request.getSession().getAttribute("identity") != null) { // check session is set
+		    ClientIdentity identity = (ClientIdentity) request.getSession().getAttribute("identity");
+            DAO.log("USER REQUEST using browser session: " + identity.getClient());
+            return identity;
+		} else if (request.getParameter("access_token") != null) { // access tokens can be used by api calls, somehow the stateless equivalent of sessions for browsers
     		ClientCredential credential = new ClientCredential(ClientCredential.Type.access_token, request.getParameter("access_token"));
     		Authentication authentication = DAO.getAuthentication(credential);
 			
-    		
     		// check if access_token is valid
-    		if(authentication.getIdentity() != null){
+    		if (authentication.getIdentity() != null) {
     			ClientIdentity identity = authentication.getIdentity();
     			
-    			if(authentication.checkExpireTime()){
-    				Log.getLog().info("login for user: " + identity.getName() + " via access token from host: " + query.getClientHost());
+    			if (authentication.checkExpireTime()) {
+    				DAO.log("login for user: " + identity.getName() + " via access token from host: " + query.getClientHost());
     				
-    				if("true".equals(request.getParameter("request_session"))){
-            			request.getSession().setAttribute("identity",identity);
+    				if ("true".equals(request.getParameter("request_session"))) {
+            			request.getSession().setAttribute("identity", identity);
             		}
-    				if(authentication.has("one_time") && authentication.getBoolean("one_time")){
+    				if (authentication.has("one_time") && authentication.getBoolean("one_time")) {
     					authentication.delete();
     				}
+    				DAO.log("USER REQUEST using access_token: " + identity.getClient());
     				return identity;
     			}
     		}
-    		Log.getLog().info("Invalid access token from host: " + query.getClientHost());
-    		return getAnonymousIdentity(query.getClientHost());
+    		DAO.log("Invalid access token from host: " + query.getClientHost());
+    		return getAnonymousIdentity(query.getClientHost(), getRequestHeaderSalt(request));
     	}
     	
-        return getAnonymousIdentity(query.getClientHost());
+        return getAnonymousIdentity(query.getClientHost(), getRequestHeaderSalt(request));
+    }
+    
+    public static String getRequestHeaderSalt(HttpServletRequest request) {
+        String idhint = request.getHeader("User-Agent") + request.getHeader("Accept-Encoding") + request.getHeader("Accept-Language");
+        return Integer.toHexString(idhint.hashCode());
     }
     
     /**
      * Create or fetch an anonymous identity
      * @return the anonymous ClientIdentity
      */
-    private static ClientIdentity getAnonymousIdentity(String remoteHost) {
-    	ClientCredential credential = new ClientCredential(ClientCredential.Type.host, remoteHost);
+    private static ClientIdentity getAnonymousIdentity(String remoteHost, String salt) {
+    	ClientCredential credential = new ClientCredential(ClientCredential.Type.host, remoteHost + "_" + salt);
     	Authentication authentication = DAO.getAuthentication(credential);
     	
     	if (authentication.getIdentity() == null) authentication.setIdentity(credential);
@@ -225,27 +232,27 @@ public abstract class AbstractAPIHandler extends HttpServlet implements APIHandl
     
     /**
      * Create a hash for an input an salt
-     * @param input
-     * @param salt
+     * @param input Input String to generate hash
+     * @param salt Salt String for encryption
      * @return String hash
      */
-    public static String getHash(String input, String salt){
+    public static String getHash(String input, String salt) {
 		try {
 			MessageDigest md = MessageDigest.getInstance("SHA-256");
 			md.update((salt + input).getBytes());
 			return Base64.getEncoder().encodeToString(md.digest());
 		} catch (NoSuchAlgorithmException e) {
-			Log.getLog().warn(e);
+			DAO.severe(e);
 		}
 		return null;
 	}
     
     /**
      * Creates a random alphanumeric string
-     * @param length
-     * @return
+     * @param length Length of the random string
+     * @return Randomly generated string
      */
-    public static String createRandomString(Integer length){
+    public static String createRandomString(Integer length) {
     	char[] chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789".toCharArray();
     	StringBuilder sb = new StringBuilder();
     	Random random = new Random();
@@ -258,13 +265,13 @@ public abstract class AbstractAPIHandler extends HttpServlet implements APIHandl
 
     /**
      * Returns a login cookie if present in the request
-     * @param request
+     * @param request Request for checking login cookie
      * @return the login cookie if present, null otherwise
      */
-    private static Cookie getLoginCookie(HttpServletRequest request){
-    	if(request.getCookies() != null){
-	    	for(Cookie cookie : request.getCookies()){
-				if("login".equals(cookie.getName())){
+    private static Cookie getLoginCookie(HttpServletRequest request) {
+    	if (request.getCookies() != null) {
+	    	for(Cookie cookie : request.getCookies()) {
+				if ("login".equals(cookie.getName())) {
 					return cookie;
 				}
 	    	}
@@ -274,9 +281,9 @@ public abstract class AbstractAPIHandler extends HttpServlet implements APIHandl
 
     /**
      * Delete the login cookie if present
-     * @param response
+     * @param response Response to delete login cookie
      */
-    protected static void deleteLoginCookie(HttpServletResponse response){
+    protected static void deleteLoginCookie(HttpServletResponse response) {
     	Cookie deleteCookie = new Cookie("login", null);
 		deleteCookie.setPath("/");
 		deleteCookie.setMaxAge(0);

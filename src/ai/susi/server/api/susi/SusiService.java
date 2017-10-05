@@ -19,44 +19,28 @@
 
 package ai.susi.server.api.susi;
 
-import java.io.BufferedReader;
-import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.nio.charset.StandardCharsets;
-import java.util.List;
-
+import ai.susi.DAO;
+import ai.susi.json.JsonObjectWithDefault;
+import ai.susi.mind.*;
+import ai.susi.server.*;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONTokener;
 
-import ai.susi.DAO;
-import ai.susi.json.JsonObjectWithDefault;
-import ai.susi.mind.SusiArgument;
-import ai.susi.mind.SusiCognition;
-import ai.susi.mind.SusiSkill;
-import ai.susi.mind.SusiMind;
-import ai.susi.mind.SusiThought;
-import ai.susi.server.APIException;
-import ai.susi.server.APIHandler;
-import ai.susi.server.AbstractAPIHandler;
-import ai.susi.server.Authorization;
-import ai.susi.server.BaseUserRole;
-import ai.susi.server.Query;
-import ai.susi.server.ServiceResponse;
-
 import javax.servlet.http.HttpServletResponse;
+import java.io.*;
+import java.nio.charset.StandardCharsets;
+import java.util.List;
 
 public class SusiService extends AbstractAPIHandler implements APIHandler {
    
     private static final long serialVersionUID = 857847830309879111L;
 
     @Override
-    public BaseUserRole getMinimalBaseUserRole() { return BaseUserRole.ANONYMOUS; }
+    public UserRole getMinimalUserRole() { return UserRole.ANONYMOUS; }
 
     @Override
-    public JSONObject getDefaultPermissions(BaseUserRole baseUserRole) {
+    public JSONObject getDefaultPermissions(UserRole baseUserRole) {
         return null;
     }
 
@@ -73,37 +57,44 @@ public class SusiService extends AbstractAPIHandler implements APIHandler {
         int timezoneOffset = post.get("timezoneOffset", 0); // minutes, i.e. -60
         double latitude = post.get("latitude", Double.NaN); // i.e. 8.68 
         double longitude = post.get("longitude", Double.NaN); // i.e. 50.11
-        String language = post.get("language", "en"); // ISO 639-1
+        String language = post.get("language", "en");
+        String dream = post.get("dream", ""); // an instant dream setting, to be used for permanent dreaming
+
         try {
             DAO.susi.observe(); // get a database update
         } catch (IOException e) {
             DAO.log(e.getMessage());
         }
         
-        // compute a recall
-        SusiArgument observation_argument = new SusiArgument();
-        List<SusiCognition> cognitions = DAO.susi.getMemories().getCognitions(user.getIdentity().getClient());
-        cognitions.forEach(cognition -> observation_argument.think(cognition.recallDispute()));
-        SusiThought recall = observation_argument.mindmeld(false);
+        if (dream == null || dream.length() == 0) {
+	        // compute a recall to find a dream setting
+	        SusiArgument observation_argument = new SusiArgument();
+	        List<SusiCognition> cognitions = DAO.susi.getMemories().getCognitions(user.getIdentity().getClient());
+	        cognitions.forEach(cognition -> observation_argument.think(cognition.recallDispute()));
+	        SusiThought recall = observation_argument.mindmeld(false);
+	        dream = recall.getObservation("_etherpad_dream");
+        }
         
         // find out if we are dreaming
-        String etherpad_dream = recall.getObservation("_etherpad_dream");
-        if (etherpad_dream != null && etherpad_dream.length() != 0) {
+        if (dream != null && dream.length() != 0) {
             // we are dreaming!
             // read the pad
             String etherpadApikey = DAO.getConfig("etherpad.apikey", "");
             String etherpadUrlstub = DAO.getConfig("etherpad.urlstub", "");
             String padurl = etherpadUrlstub + "/api/1/getText?apikey=" + etherpadApikey + "&padID=$query$";
             try {
-                JSONTokener serviceResponse = new JSONTokener(new ByteArrayInputStream(ConsoleService.loadData(padurl, etherpad_dream)));
+                JSONTokener serviceResponse = new JSONTokener(new ByteArrayInputStream(ConsoleService.loadData(padurl, dream)));
                 JSONObject json = new JSONObject(serviceResponse);
                 String text = json.getJSONObject("data").getString("text");
+                // in case that the text contains a "*" we are in danger that we cannot stop dreaming, therefore we simply add the stop rule here to the text
+                text = text + "\n\nwake up|stop dream|stop dreaming|end dream|end dreaming\ndreaming disabled^^>_etherpad_dream\n\n";
                 // fill an empty mind with the dream
-                SusiMind dream = new SusiMind(DAO.susi_memory_dir); // we need the memory directory here to get a share on the memory of previous dialoges, otherwise we cannot test call-back questions
+                SusiMind dreamMind = new SusiMind(DAO.susi_chatlog_dir, DAO.susi_skilllog_dir); // we need the memory directory here to get a share on the memory of previous dialoges, otherwise we cannot test call-back questions
                 JSONObject rules = SusiSkill.readEzDSkill(new BufferedReader(new InputStreamReader(new ByteArrayInputStream(text.getBytes(StandardCharsets.UTF_8)), StandardCharsets.UTF_8)));
-                dream.learn(rules, new File("file://" + etherpad_dream));
+                dreamMind.learn(rules, new File("file://" + dream));
                 // susi is now dreaming.. Try to find an answer out of the dream
-                SusiCognition cognition = new SusiCognition(dream, q, timezoneOffset, latitude, longitude, language, count, user.getIdentity());
+                SusiCognition cognition = new SusiCognition(dreamMind, q, timezoneOffset, latitude, longitude, language, count, user.getIdentity());
+                
                 if (cognition.getAnswers().size() > 0) {
                     DAO.susi.getMemories().addCognition(user.getIdentity().getClient(), cognition);
                     return new ServiceResponse(cognition.getJSON());
@@ -115,7 +106,11 @@ public class SusiService extends AbstractAPIHandler implements APIHandler {
         
         // answer with built-in intents
         SusiCognition cognition = new SusiCognition(DAO.susi, q, timezoneOffset, latitude, longitude, language, count, user.getIdentity());
-        DAO.susi.getMemories().addCognition(user.getIdentity().getClient(), cognition);
+        try {
+            DAO.susi.getMemories().addCognition(user.getIdentity().getClient(), cognition);
+        } catch (IOException e) {
+            DAO.log(e.getMessage());
+        }
         JSONObject json = cognition.getJSON();
         return new ServiceResponse(json);
     }

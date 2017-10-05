@@ -6,12 +6,12 @@
  *  modify it under the terms of the GNU Lesser General Public
  *  License as published by the Free Software Foundation; either
  *  version 2.1 of the License, or (at your option) any later version.
- *  
+ *
  *  This library is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  *  Lesser General Public License for more details.
- *  
+ *
  *  You should have received a copy of the GNU Lesser General Public License
  *  along with this program in the file lgpl21.txt
  *  If not, see <http://www.gnu.org/licenses/>.
@@ -19,29 +19,21 @@
 
 package ai.susi.server.api.aaa;
 
-import java.io.IOException;
-import java.nio.file.Paths;
-import java.util.regex.Pattern;
-
-import javax.servlet.http.HttpServletResponse;
-
-import org.json.JSONObject;
-
 import ai.susi.DAO;
 import ai.susi.EmailHandler;
 import ai.susi.json.JsonObjectWithDefault;
-import ai.susi.server.APIException;
-import ai.susi.server.APIHandler;
-import ai.susi.server.AbstractAPIHandler;
-import ai.susi.server.Authentication;
-import ai.susi.server.Authorization;
-import ai.susi.server.BaseUserRole;
-import ai.susi.server.ClientCredential;
-import ai.susi.server.ClientIdentity;
-import ai.susi.server.Query;
-import ai.susi.server.ServiceResponse;
+import ai.susi.server.*;
 import ai.susi.tools.IO;
 import ai.susi.tools.TimeoutMatcher;
+import org.json.JSONObject;
+
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.regex.Pattern;
 
 public class SignUpService extends AbstractAPIHandler implements APIHandler {
 
@@ -49,24 +41,27 @@ public class SignUpService extends AbstractAPIHandler implements APIHandler {
 	public static String verificationLinkPlaceholder = "%VERIFICATION-LINK%";
 
 	@Override
-	public BaseUserRole getMinimalBaseUserRole() {
-		return BaseUserRole.ANONYMOUS;
+	public UserRole getMinimalUserRole() {
+		return UserRole.ANONYMOUS;
 	}
 
 	@Override
-	public JSONObject getDefaultPermissions(BaseUserRole baseUserRole) {
+	public JSONObject getDefaultPermissions(UserRole baseUserRole) {
 		JSONObject result = new JSONObject();
 		result.put("accepted", false);
 		result.put("message", "Error: Unable to process you request");
 
 		switch(baseUserRole){
+			case BUREAUCRAT:
 			case ADMIN:
-			case PRIVILEGED:
+			case ACCOUNTCREATOR:
+			case REVIEWER:
+			case USER:
 				result.put("register", true); // allow to register new users (this bypasses email verification and activation)
 				result.put("activate", true); // allow to activate new users
 				result.put("accepted", true);
 				break;
-			case USER:
+			case BOT:
 			case ANONYMOUS:
 			default:
 				result.put("register", false);
@@ -107,7 +102,7 @@ public class SignUpService extends AbstractAPIHandler implements APIHandler {
 		// is this a verification?
 		if (post.get("validateEmail", null) != null) {
 			if((auth.getIdentity().getName().equals(post.get("validateEmail", null)) && auth.getIdentity().isEmail()) // the user is logged in via an access token from the email
-				|| permissions.getBoolean("activate", false)){ // the user is allowed to activate other users
+					|| permissions.getBoolean("activate", false)){ // the user is allowed to activate other users
 
 				ClientCredential credential = new ClientCredential(ClientCredential.Type.passwd_login,
 						auth.getIdentity().getName());
@@ -199,7 +194,15 @@ public class SignUpService extends AbstractAPIHandler implements APIHandler {
 
 		// set authorization details
 		Authorization authorization = DAO.getAuthorization(identity);
-		authorization.setUserRole(DAO.userRoles.getDefaultUserRole(BaseUserRole.USER));
+		Collection<ClientIdentity> authorized = DAO.getAuthorizedClients();
+		List<String> keysList = new ArrayList<String>();
+		authorized.forEach(client -> keysList.add(client.toString()));
+		String[] keysArray = keysList.toArray(new String[keysList.size()]);
+		if(keysArray.length == 1) {
+			authorization.setUserRole(UserRole.BUREAUCRAT);
+		} else {
+			authorization.setUserRole(UserRole.USER);
+		}
 
 		if (sendEmail) {
 			String token = createRandomString(30);
@@ -229,7 +232,7 @@ public class SignUpService extends AbstractAPIHandler implements APIHandler {
 
 	/**
 	 * Read Email template and insert variables
-	 * 
+	 *
 	 * @param token
 	 *            - login token
 	 * @return Email String
@@ -239,8 +242,9 @@ public class SignUpService extends AbstractAPIHandler implements APIHandler {
 		String hostUrl = DAO.getConfig("host.url", null);
 		if(hostUrl == null) throw new APIException(500, "No host url configured");
 
-		String verificationLink = hostUrl + "/aaa/signup.json?access_token=" + token
-                + "&validateEmail=" + userId + "&request_session=true";
+		// redirect user to accounts verify-account route
+		String verificationLink = "http://accounts.susi.ai/verify-account?access_token=" + token
+				+ "&validateEmail=" + userId + "&request_session=true";
 
 		// get template file
 		String result;

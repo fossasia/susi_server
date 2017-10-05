@@ -19,25 +19,17 @@
 
 package ai.susi.server.api.service;
 
-import java.io.BufferedInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Map;
-
+import ai.susi.DAO;
+import ai.susi.server.Query;
+import ai.susi.server.RemoteAccess;
 import javax.servlet.ServletException;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
-import ai.susi.DAO;
-import ai.susi.server.Query;
-import ai.susi.server.RemoteAccess;
-import ai.susi.tools.UTF8;
+import java.io.*;
+import java.nio.charset.StandardCharsets;
+import java.util.Map;
 
 public class AssetServlet extends HttpServlet {
 
@@ -92,9 +84,11 @@ public class AssetServlet extends HttpServlet {
         if (id_str_b == null || id_str_b.length == 0) {response.sendError(400, "your request does not contain a id_str."); return;}
         byte[] file_b = m.get("file");
         if (file_b == null || file_b.length == 0) {response.sendError(400, "your request does not contain a file name."); return;}
-        String screen_name = UTF8.String(screen_name_b);
-        String id_str = UTF8.String(id_str_b);
-        String file = UTF8.String(file_b);
+        String screen_name = screen_name_b == null ? "" : new String(screen_name_b, 0, screen_name_b.length, StandardCharsets.UTF_8);
+        final byte[] bytes = id_str_b;
+        String id_str = bytes == null ? "" : new String(bytes, 0, bytes.length, StandardCharsets.UTF_8);
+        final byte[] bytes1 = file_b;
+        String file = bytes1 == null ? "" : new String(bytes1, 0, bytes1.length, StandardCharsets.UTF_8);
 
         File f = DAO.getAssetFile(screen_name, id_str, file);
         f.getParentFile().mkdirs();

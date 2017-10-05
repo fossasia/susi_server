@@ -19,26 +19,18 @@
 
 package ai.susi.server.api.susi;
 
-import java.util.List;
-import java.util.ArrayList;
-import java.util.Date;
-
+import ai.susi.DAO;
+import ai.susi.json.JsonObjectWithDefault;
+import ai.susi.mind.SusiCognition;
+import ai.susi.server.*;
 import ai.susi.tools.DateParser;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-import ai.susi.DAO;
-import ai.susi.json.JsonObjectWithDefault;
-import ai.susi.mind.SusiCognition;
-import ai.susi.server.APIException;
-import ai.susi.server.APIHandler;
-import ai.susi.server.AbstractAPIHandler;
-import ai.susi.server.Authorization;
-import ai.susi.server.BaseUserRole;
-import ai.susi.server.Query;
-import ai.susi.server.ServiceResponse;
-
 import javax.servlet.http.HttpServletResponse;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
 
 /**
  * get information about the user.
@@ -51,10 +43,10 @@ public class UserService extends AbstractAPIHandler implements APIHandler {
     private static final long serialVersionUID = 8578478303098111L;
 
     @Override
-    public BaseUserRole getMinimalBaseUserRole() { return BaseUserRole.ANONYMOUS; }
+    public UserRole getMinimalUserRole() { return UserRole.ANONYMOUS; }
 
     @Override
-    public JSONObject getDefaultPermissions(BaseUserRole baseUserRole) {
+    public JSONObject getDefaultPermissions(UserRole baseUserRole) {
         return null;
     }
 

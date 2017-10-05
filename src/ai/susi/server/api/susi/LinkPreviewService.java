@@ -25,6 +25,7 @@ import ai.susi.server.*;
 import org.broadbear.link.preview.SourceContent;
 import org.broadbear.link.preview.TextCrawler;
 import org.json.JSONObject;
+
 import javax.servlet.http.HttpServletResponse;
 
 /**
@@ -35,10 +36,10 @@ public class LinkPreviewService extends AbstractAPIHandler implements APIHandler
     private static final long serialVersionUID = 1463185662941444503L;
 
     @Override
-    public BaseUserRole getMinimalBaseUserRole() { return BaseUserRole.ANONYMOUS; }
+    public UserRole getMinimalUserRole() { return UserRole.ANONYMOUS; }
 
     @Override
-    public JSONObject getDefaultPermissions(BaseUserRole baseUserRole) {
+    public JSONObject getDefaultPermissions(UserRole baseUserRole) {
         return null;
     }
 
@@ -56,7 +57,7 @@ public class LinkPreviewService extends AbstractAPIHandler implements APIHandler
             return new ServiceResponse(jsonObject);
         }
         SourceContent sourceContent = 	TextCrawler.scrape(url,3);
-        if (sourceContent.getImages() != null) jsonObject.put("image", sourceContent.getImages().get(0));
+        if (sourceContent.getImages() != null && sourceContent.getImages().size() != 0) jsonObject.put("image", sourceContent.getImages().get(0));
         if (sourceContent.getDescription() != null) jsonObject.put("descriptionShort", sourceContent.getDescription());
         if(sourceContent.getTitle()!=null)jsonObject.put("title", sourceContent.getTitle());
         jsonObject.put("accepted",true);

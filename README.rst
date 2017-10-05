@@ -5,7 +5,7 @@ Susi
 Status| |Percentage of issues still open| |Average time
 to resolve an issue| |Twitter| |Twitter Follow|
 
-Susi AI is an intelligent Open Source personal assistant. It is capable of chat and voice interaction and by using APIS to perform actions such as music playback, making to-do lists, setting alarms, streaming podcasts, playing audiobooks, and providing weather, traffic, and other real time information. Additional functionalities can be added as console services using external APIs. Susi AI is able to answer questions and depending on the context will ask for additional information in order to perform the desired outcome. The core of the assistant is the Susi AI server that holds the "intelligence" and "personality" of Susi AI. The Android and web applications make use of the APIs to access information from a hosted server.
+Susi AI is an intelligent Open Source personal assistant. It is capable of chat and voice interaction by using APIS to perform actions such as music playback, making to-do lists, setting alarms, streaming podcasts, playing audiobooks, and providing weather, traffic, and other real time information. Additional functionalities can be added as console services using external APIs. Susi AI is able to answer questions and depending on the context will ask for additional information in order to perform the desired outcome. The core of the assistant is the Susi AI server that holds the "intelligence" and "personality" of Susi AI. The Android and web applications make use of the APIs to access information from a hosted server.
 
 An automatic deployment from the development branch at GitHub is available for tests here https://susi-server.herokuapp.com
 
@@ -21,9 +21,8 @@ How do I install Susi: Download, Build, Run
 
 .. note::
 
-    You must be logged in to Docker Cloud for the button to
-    work correctly. If you are not logged in, you'll see a 404 error
-    instead.
+    - You must be logged in to Docker Cloud for the button to work correctly. If you are not logged in, you'll see a 404 error instead.
+    
 
 |Deploy| |Deploy on Scalingo| |Deploy to Bluemix| |Deploy to Docker
 Cloud|
@@ -35,7 +34,9 @@ hosted at https://github.com/fossasia/susi_server, you can download it and run S
 
     > git clone https://github.com/fossasia/susi_server.git
     > cd susi_server
-    > ant
+    > git submodule update --recursive --remote
+    > git submodule update --init --recursive
+    > ./gradlew build
     > bin/start.sh
 
 For Windows Users (who are using GitBash/Cygwin or any terminal):
@@ -184,9 +185,7 @@ http://loklak.org/api/search.rss?q=0rb1t3r or just follow @0rb1t3r
 Where can I find documentation?
 -------------------------------
 
-The application has built-in documentation web pages, you will see them
-when you opened the application web pages or you can simply open
-``html/index.html`` or just use http://api.susi.ai as reference.
+The Doumentation can be found at https://github.com/fossasia/susi_server/tree/development/docs/api/api.md
 
 
 Where do I find the javadocs?
@@ -301,9 +300,9 @@ Have fun! @0rb1t3r
 .. |Average time to resolve an issue| image:: http://isitmaintained.com/badge/resolution/fossasia/susi_server.svg
    :target: http://isitmaintained.com/project/fossasia/susi_server
 .. |Twitter| image:: https://img.shields.io/twitter/url/http/shields.io.svg?style=social
-   :target: https://twitter.com/intent/tweet?text=Wow%20Check%20Susi%20on%20@gitHub%20@asksusi:%20https://github.com/fossasia/susi_server%20&url=%5Bobject%20Object%5D
-.. |Twitter Follow| image:: https://img.shields.io/twitter/follow/lklknt.svg?style=social&label=Follow&maxAge=2592000?style=flat-square
-   :target: https://twitter.com/lklknt
+   :target: https://twitter.com/intent/tweet?text=Wow%20Check%20Susi%20on%20@gitHub%20@susiai_:%20https://github.com/fossasia/susi_server%20&url=%5Bobject%20Object%5D
+.. |Twitter Follow| image:: https://img.shields.io/twitter/follow/susiai_.svg?style=social&label=Follow&maxAge=2592000?style=flat-square
+   :target: https://twitter.com/susiai_
 .. |Deploy| image:: https://www.herokucdn.com/deploy/button.svg
    :target: https://heroku.com/deploy?template=https://github.com/fossasia/susi_server/tree/development
 .. |Deploy on Scalingo| image:: https://cdn.scalingo.com/deploy/button.svg

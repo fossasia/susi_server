@@ -27,6 +27,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
@@ -46,7 +47,6 @@ import org.eclipse.jetty.util.resource.PathResource;
 import org.eclipse.jetty.util.resource.Resource;
 
 import ai.susi.tools.ByteBuffer;
-import ai.susi.tools.UTF8;
 
 
 public class FileHandler extends ResourceHandler implements Handler {
@@ -167,7 +167,8 @@ public class FileHandler extends ResourceHandler implements Handler {
                 if (q < 0) break;
                 byte[] f = new byte[q - p - SSI_START.length];
                 System.arraycopy(b, p + SSI_START.length, f, 0, f.length);
-                File ff = new File(this.file.getParent(), UTF8.String(f)).getCanonicalFile();
+                final byte[] bytes = f;
+                File ff = new File(this.file.getParent(), bytes == null ? "" : new String(bytes, 0, bytes.length, StandardCharsets.UTF_8)).getCanonicalFile();
                 if (!ff.exists()) {
                     byte[] b0 = new byte[b.length - (q - p) - SSI_END.length];
                     System.arraycopy(b, 0, b0, 0, p);

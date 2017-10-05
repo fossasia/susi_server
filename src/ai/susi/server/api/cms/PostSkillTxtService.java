@@ -19,15 +19,9 @@
 
 package ai.susi.server.api.cms;
 
-import org.json.JSONObject;
-
 import ai.susi.json.JsonObjectWithDefault;
-import ai.susi.server.APIHandler;
-import ai.susi.server.AbstractAPIHandler;
-import ai.susi.server.Authorization;
-import ai.susi.server.BaseUserRole;
-import ai.susi.server.Query;
-import ai.susi.server.ServiceResponse;
+import ai.susi.server.*;
+import org.json.JSONObject;
 
 import javax.servlet.http.HttpServletResponse;
 
@@ -36,10 +30,10 @@ public class PostSkillTxtService extends AbstractAPIHandler implements APIHandle
     private static final long serialVersionUID = 18344226L;
 
     @Override
-    public BaseUserRole getMinimalBaseUserRole() { return BaseUserRole.ANONYMOUS; }
+    public UserRole getMinimalUserRole() { return UserRole.ANONYMOUS; }
 
     @Override
-    public JSONObject getDefaultPermissions(BaseUserRole baseUserRole) {
+    public JSONObject getDefaultPermissions(UserRole baseUserRole) {
         return null;
     }
 

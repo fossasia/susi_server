@@ -27,6 +27,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.RandomAccessFile;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
@@ -216,7 +217,8 @@ public class BufferedRandomAccessFile extends RandomAccessFile {
             return text;
         }
         public String toString() {
-            return UTF8.String(this.text);
+            final byte[] bytes = this.text;
+            return bytes == null ? "" : new String(bytes, 0, bytes.length, StandardCharsets.UTF_8);
         }
     }
     
@@ -312,7 +314,7 @@ public class BufferedRandomAccessFile extends RandomAccessFile {
             BufferedRandomAccessFile braf = new BufferedRandomAccessFile(this.testFile, "rw", 5000);
             for (int i = 0; i < this.testLines.length; i++) {
                 long pos = braf.getFilePointer();
-                braf.appendLine(UTF8.getBytes(this.testLines[i]));
+                braf.appendLine(this.testLines[i].getBytes(StandardCharsets.UTF_8));
                 braf.seekPrivate(pos);
                 byte[] b = braf.getNextLine();
                 if (!new String(b).equals(this.testLines[i])) System.out.println(new String(b) + " != " + this.testLines[i]);

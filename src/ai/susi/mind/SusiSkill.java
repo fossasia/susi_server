@@ -26,6 +26,8 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.LinkedHashSet;
+import java.util.Set;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -47,6 +49,15 @@ import ai.susi.mind.SusiInference.Type;
  */
 public class SusiSkill {
 
+    private String skillName;
+    private String description;
+    private String author;
+    private String authorURL;
+    private String image;
+    private String termsOfUse;
+    private Set<String> examples;
+    private String developerPrivacyPolicy;
+    private Boolean dynamicContent;
 
     /**
      * read an "EzD" ('Easy Dialog') file: this is just a text file. Read the docs/susi_skill_development_tutorial.md for an explanation
@@ -56,13 +67,24 @@ public class SusiSkill {
      * @throws FileNotFoundException
      */
 
+    public SusiSkill() {
+        this.author = null;
+        this.authorURL = null;
+        this.description = null;
+        this.examples = new LinkedHashSet<>();
+        this.image = null;
+        this.skillName = null;
+        this.termsOfUse = null;
+        this.developerPrivacyPolicy = null;
+        this.dynamicContent = false;
+    }
     public static JSONObject readEzDSkill(BufferedReader br) throws JSONException {
         // read the text file and turn it into a intent json; then learn that
         JSONObject json = new JSONObject();
         JSONArray intents = new JSONArray();
         json.put("intents", intents);
         String lastLine = "", line = "";
-        String bang_phrases = "", bang_type = "", bang_term = ""; StringBuilder bang_bag = new StringBuilder();
+        String bang_answers = "", bang_type = "", bang_term = ""; StringBuilder bang_bag = new StringBuilder();
         String example = "", expect = "", description="", image="", skillName="", authorName= "", authorURL = "", developerPrivacyPolicy = "", termsOfUse="";
         boolean prior = false, dynamicContent = false;
         try {readloop: while ((line = br.readLine()) != null) {
@@ -77,7 +99,7 @@ public class SusiSkill {
                         JSONObject intent = new JSONObject(true);
                         JSONArray phrases = new JSONArray();
                         intent.put("phrases", phrases);
-                        for (String phrase: bang_phrases.split("\\|")) phrases.put(SusiPhrase.simplePhrase(phrase.trim(), prior));
+                        for (String phrase: bang_answers.split("\\|")) phrases.put(SusiUtterance.simplePhrase(phrase.trim(), prior));
                         
                         // javascript process
                         JSONObject process = new JSONObject();
@@ -95,7 +117,7 @@ public class SusiSkill {
                         JSONObject intent = new JSONObject(true);
                         JSONArray phrases = new JSONArray();
                         intent.put("phrases", phrases);
-                        for (String phrase: bang_phrases.split("\\|")) phrases.put(SusiPhrase.simplePhrase(phrase.trim(), prior));
+                        for (String phrase: bang_answers.split("\\|")) phrases.put(SusiUtterance.simplePhrase(phrase.trim(), prior));
                         
                         // console process
                         JSONObject process = new JSONObject();
@@ -156,12 +178,11 @@ public class SusiSkill {
                                 });
                             }
                             if (example.length() > 0) intent.put("example", example);
-                            if(image.length() > 0) intent.put("image", image);
                             if (expect.length() > 0) intent.put("expect", expect);
                             intents.put(intent);
                         }
                     }
-                    bang_phrases = "";
+                    bang_answers = "";
                     bang_type = "";
                     bang_term = "";
                     bang_bag.setLength(0);
@@ -173,7 +194,7 @@ public class SusiSkill {
             // read metadata
             if (line.startsWith("::")) {
                 int thenpos=-1;
-                line = line.toLowerCase();
+//                line = line.toLowerCase();
                 if (line.startsWith("::minor")) prior = false;
                 if (line.startsWith("::prior")) prior = true;
                 if (line.startsWith("::description") && (thenpos = line.indexOf(' ')) > 0) {
@@ -271,7 +292,7 @@ public class SusiSkill {
                         image =tail;
                     } else {
                         // start multi-line bang
-                        bang_phrases = lastLine;
+                        bang_answers = lastLine;
                         bang_type = head;
                         bang_term = tail;
                         bang_bag.setLength(0);
@@ -366,5 +387,76 @@ public class SusiSkill {
             }
         }
         return null;
+    }
+    public void setAuthor(String author) {
+        this.author = author;
+    }
+
+    public void setAuthorURL(String authorURL) {
+        this.authorURL = authorURL;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public void setDeveloperPrivacyPolicy(String developerPrivacyPolicy) {
+        this.developerPrivacyPolicy = developerPrivacyPolicy;
+    }
+
+    public void setExamples(Set<String> examples) {
+        this.examples = examples;
+    }
+
+    public void setImage(String image) {
+        this.image = image;
+    }
+
+    public void setDynamicContent(Boolean dynamicContent) {
+        this.dynamicContent = dynamicContent;
+    }
+
+    public void setSkillName(String skillName) {
+        this.skillName = skillName;
+    }
+
+    public void setTermsOfUse(String termsOfUse) {
+        this.termsOfUse = termsOfUse;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public String getAuthor() {
+        return author;
+    }
+
+    public String getAuthorURL() {
+        return authorURL;
+    }
+
+    public String getImage() {
+        return image;
+    }
+
+    public String getSkillName() {
+        return skillName;
+    }
+
+    public String getTermsOfUse() {
+        return termsOfUse;
+    }
+
+    public Set<String> getExamples() {
+        return examples;
+    }
+
+    public String getDeveloperPrivacyPolicy() {
+        return developerPrivacyPolicy;
+    }
+
+    public Boolean getDynamicContent() {
+        return dynamicContent;
     }
 }

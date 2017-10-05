@@ -19,16 +19,6 @@
 
 package ai.susi.server.api.vis;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.StringReader;
-import java.net.URLEncoder;
-
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
 import ai.susi.DAO;
 import ai.susi.graphics.PrintTool;
 import ai.susi.graphics.RasterPlotter;
@@ -36,6 +26,15 @@ import ai.susi.graphics.RasterPlotter.DrawMode;
 import ai.susi.server.Query;
 import ai.susi.server.RemoteAccess;
 import ai.susi.server.RemoteAccess.FileTypeEncoding;
+
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.StringReader;
+import java.net.URLEncoder;
 
 public class MarkdownServlet extends HttpServlet {
 

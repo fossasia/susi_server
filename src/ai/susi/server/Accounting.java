@@ -19,9 +19,9 @@
 
 package ai.susi.server;
 
-import org.eclipse.jetty.util.log.Log;
 import org.json.JSONObject;
 
+import ai.susi.DAO;
 import ai.susi.json.JsonTray;
 
 import javax.annotation.Nonnull;
@@ -42,7 +42,7 @@ public class Accounting {
      */
     public Accounting(@Nonnull ClientIdentity identity, JsonTray parent) {
 
-        Log.getLog().debug("new accounting");
+        DAO.severe("new accounting");
 
         this.parent = parent;
         this.requests = new UserRequests(); // temporary user request space

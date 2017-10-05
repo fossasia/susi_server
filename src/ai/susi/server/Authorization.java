@@ -19,15 +19,12 @@
 
 package ai.susi.server;
 
-import org.eclipse.jetty.util.log.Log;
 import org.json.JSONObject;
 
-import ai.susi.json.JsonObjectWithDefault;
+import ai.susi.DAO;
 import ai.susi.json.JsonTray;
 
 import javax.annotation.Nonnull;
-import java.util.Collection;
-import java.util.Map;
 
 /**
  * Authorization asks: what is the user allowed to do? This class holds user rights.
@@ -43,7 +40,6 @@ public class Authorization {
     private JSONObject permissions;
     private ClientIdentity identity;
     private UserRole userRole;
-    private UserRoles userRoles;
     
     /**
      * create a new authorization object. The given json object must be taken
@@ -52,13 +48,12 @@ public class Authorization {
      * @param identity
      * @param parent the parent file or null if there is no parent file (no persistency)
      */
-    public Authorization(@Nonnull ClientIdentity identity, JsonTray parent, @Nonnull UserRoles urs) {
+    public Authorization(@Nonnull ClientIdentity identity, JsonTray parent) {
 
-        Log.getLog().debug("new authorization");
+        DAO.severe("new authorization");
 
         this.parent = parent;
         this.identity = identity;
-        this.userRoles = urs;
 
         if(parent != null){
 	    	if (parent.has(identity.toString())) {
@@ -70,17 +65,21 @@ public class Authorization {
     	}
     	else json = new JSONObject();
     	
-    	if(json.has("userRole") && userRoles.has(json.getString("userRole"))){
-            Log.getLog().debug("user role " + json.getString("userRole") + " valid");
-    		userRole = userRoles.getUserRoleFromString(json.getString("userRole"));
-            Log.getLog().debug("user role: " + userRole.getName());
-    	}
-    	else{
-            Log.getLog().debug("user role invalid");
-            userRole = userRoles.getDefaultUserRole(BaseUserRole.ANONYMOUS);
+    	if (json.has("userRole")) {
+    		String userRoleName = json.getString("userRole");
+            try {
+            	userRole = UserRole.valueOf(userRoleName.toUpperCase());
+            	DAO.severe("user role " + userRoleName + " valid");
+            } catch (IllegalArgumentException e) {
+            	DAO.severe("user role " + userRoleName + " invalid");
+                userRole = UserRole.ANONYMOUS;
+            }
+    	} else{
+            DAO.severe("user role invalid (not given)");
+            userRole = UserRole.ANONYMOUS;
             json.put("userRole", userRole.getName());
-            Log.getLog().debug("user role: " + userRole.getName());
         }
+        DAO.severe("user role: " + userRole.getName());
 
         if(!json.has("permissions")) json.put("permissions", new JSONObject());
         permissions = json.getJSONObject("permissions");
@@ -136,117 +135,25 @@ public class Authorization {
         return identity;
     }
     
-    public BaseUserRole getBaseUserRole(){
-    	return userRole.getBaseUserRole();
-    }
-
     public UserRole getUserRole(){
-        return userRole;
+    	return this.userRole;
     }
 
-    public Authorization setUserRole(UserRole ur){
-        userRole = ur;
+    public Authorization setUserRole(UserRole ur) {
+        this.userRole = ur;
         json.put("userRole", userRole.getName());
         if (parent != null && getIdentity().isPersistent()) parent.commit();
         return this;
     }
 
-    public JsonObjectWithDefault getPermissions(APIHandler servlet){
-
-        // get upstream permissions
-        JsonObjectWithDefault permissions =  userRole.getPermissions(servlet);
-
-        // override of permissions
-        if(this.permissions.has(servlet.getClass().getCanonicalName())){
-            permissions.putAll(this.permissions.getJSONObject(servlet.getClass().getCanonicalName()));
-        }
-
+    public JSONObject getPermission() {
         return permissions;
     }
 
-    public JSONObject getPermissionOverrides(){
-        return permissions;
-    }
-
-    public void setPermission(String servletCanonicalName, String key, JSONObject value){
-        if(!permissions.has(servletCanonicalName)) permissions.put(servletCanonicalName, new JSONObject());
-        permissions.getJSONObject(servletCanonicalName).put(key, value);
-    }
-
-    public void setPermission(APIHandler servlet, String key, JSONObject value){
-        setPermission(servlet.getClass().getCanonicalName(), key, value);
-    }
-
-    public void setPermission(String servletCanonicalName, String key, String value){
-        if(!permissions.has(servletCanonicalName)) permissions.put(servletCanonicalName, new JSONObject());
-        permissions.getJSONObject(servletCanonicalName).put(key, value);
-    }
-
-    public void setPermission(APIHandler servlet, String key, String value){
-        setPermission(servlet.getClass().getCanonicalName(), key, value);
-    }
-
-    public void setPermission(String servletCanonicalName, String key, int value){
-        if(!permissions.has(servletCanonicalName)) permissions.put(servletCanonicalName, new JSONObject());
-        permissions.getJSONObject(servletCanonicalName).put(key, value);
-    }
-
-    public void setPermission(APIHandler servlet, String key, int value){
-        setPermission(servlet.getClass().getCanonicalName(), key, value);
-    }
-
-    public void setPermission(String servletCanonicalName, String key, long value){
-        if(!permissions.has(servletCanonicalName)) permissions.put(servletCanonicalName, new JSONObject());
-        permissions.getJSONObject(servletCanonicalName).put(key, value);
-    }
-
-    public void setPermission(APIHandler servlet, String key, long value){
-        setPermission(servlet.getClass().getCanonicalName(), key, value);
-    }
-
-    public void setPermission(String servletCanonicalName, String key, double value){
-        if(!permissions.has(servletCanonicalName)) permissions.put(servletCanonicalName, new JSONObject());
-        permissions.getJSONObject(servletCanonicalName).put(key, value);
-    }
-
-    public void setPermission(APIHandler servlet, String key, double value){
-        setPermission(servlet.getClass().getCanonicalName(), key, value);
-    }
-
-    public void setPermission(String servletCanonicalName, String key, Object value){
-        if(!permissions.has(servletCanonicalName)) permissions.put(servletCanonicalName, new JSONObject());
-        permissions.getJSONObject(servletCanonicalName).put(key, value);
-    }
-
-    public void setPermission(APIHandler servlet, String key, Object value){
-        setPermission(servlet.getClass().getCanonicalName(), key, value);
-    }
-
-    public void setPermission(String servletCanonicalName, String key, boolean value){
-        if(!permissions.has(servletCanonicalName)) permissions.put(servletCanonicalName, new JSONObject());
-        permissions.getJSONObject(servletCanonicalName).put(key, value);
-    }
-
-    public void setPermission(APIHandler servlet, String key, boolean value){
-        setPermission(servlet.getClass().getCanonicalName(), key, value);
-    }
-
-    public void setPermission(String servletCanonicalName, String key, Map<?, ?> value){
-        if(!permissions.has(servletCanonicalName)) permissions.put(servletCanonicalName, new JSONObject());
-        permissions.getJSONObject(servletCanonicalName).put(key, value);
-    }
-
-    public void setPermission(APIHandler servlet, String key, Map<?, ?> value){
-        setPermission(servlet.getClass().getCanonicalName(), key, value);
-    }
-
-    public void setPermission(String servletCanonicalName, String key, Collection<?> value){
-        if(!permissions.has(servletCanonicalName)) permissions.put(servletCanonicalName, new JSONObject());
-        permissions.getJSONObject(servletCanonicalName).put(key, value);
-    }
-
-    public void setPermission(APIHandler servlet, String key, Collection<?> value){
-        setPermission(servlet.getClass().getCanonicalName(), key, value);
+    public void setPermission(APIHandler servlet, String key, long value) {
+        String servletCanonicalName = servlet.getClass().getCanonicalName();
+		if (!permissions.has(servletCanonicalName)) permissions.put(servletCanonicalName, new JSONObject());
+		permissions.getJSONObject(servletCanonicalName).put(key, value);
     }
     
     public JSONObject getJSON() {

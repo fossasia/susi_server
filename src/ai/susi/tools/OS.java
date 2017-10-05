@@ -37,6 +37,7 @@ import java.lang.management.OperatingSystemMXBean;
 import java.lang.reflect.Method;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.attribute.PosixFilePermission;
@@ -48,7 +49,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
-import org.eclipse.jetty.util.log.Log;
+import ai.susi.DAO;
 
 public final class OS {
 
@@ -233,7 +234,7 @@ public final class OS {
                 try {
                     fos.close();
                 } catch (final Exception e ) {
-                	Log.getLog().warn(e);
+                	DAO.severe(e);
                 }
             }
         }
@@ -249,12 +250,12 @@ public final class OS {
     }
 
     private static void deployScript(final File scriptFile, final String theScript) throws IOException {
-        copy(UTF8.getBytes(theScript), scriptFile);
+        copy(theScript.getBytes(StandardCharsets.UTF_8), scriptFile);
         if(!isWindows){ // set executable
             try {
                 Runtime.getRuntime().exec("chmod 755 " + scriptFile.getAbsolutePath().replaceAll(" ", "\\ ")).waitFor();
             } catch (final InterruptedException e) {
-            	Log.getLog().warn("DEPLOY of script file failed. file = " + scriptFile.getAbsolutePath(), e);
+            	DAO.severe("DEPLOY of script file failed. file = " + scriptFile.getAbsolutePath(), e);
                 throw new IOException(e.getMessage());
             }
         }
@@ -304,7 +305,7 @@ public final class OS {
         return negative ? result : -result;
     }
 
-    private static final String LF_STRING = UTF8.String(new byte[]{10});
+    private static final String LF_STRING = new String(new byte[]{10}, 0, 1, StandardCharsets.UTF_8);
 
     public static void execAsynchronous(final File scriptFile) throws IOException {
         // runs a script as separate thread

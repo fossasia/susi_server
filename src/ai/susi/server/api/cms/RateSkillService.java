@@ -33,7 +33,7 @@ import java.io.File;
  * This Endpoint accepts 5 parameters. model,group,language,skill,rating.
  * rating can be positive or negative
  * before rating a skill the skill must exist in the directory.
- * http://localhost:4000/cms/rateSkill.json?model=general&group=knowledge&skill=who&rating=positive
+ * http://localhost:4000/cms/rateSkill.json?model=general&group=Knowledge&skill=who&rating=positive
  */
 public class RateSkillService extends AbstractAPIHandler implements APIHandler {
 
@@ -41,12 +41,12 @@ public class RateSkillService extends AbstractAPIHandler implements APIHandler {
     private static final long serialVersionUID = 7947060716231250102L;
 
     @Override
-    public BaseUserRole getMinimalBaseUserRole() {
-        return BaseUserRole.ANONYMOUS;
+    public UserRole getMinimalUserRole() {
+        return UserRole.ANONYMOUS;
     }
 
     @Override
-    public JSONObject getDefaultPermissions(BaseUserRole baseUserRole) {
+    public JSONObject getDefaultPermissions(UserRole baseUserRole) {
         return null;
     }
 
@@ -60,7 +60,7 @@ public class RateSkillService extends AbstractAPIHandler implements APIHandler {
 
         String model_name = call.get("model", "general");
         File model = new File(DAO.model_watch_dir, model_name);
-        String group_name = call.get("group", "knowledge");
+        String group_name = call.get("group", "Knowledge");
         File group = new File(model, group_name);
         String language_name = call.get("language", "en");
         File language = new File(group, language_name);

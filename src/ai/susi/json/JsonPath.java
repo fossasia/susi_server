@@ -64,10 +64,14 @@ public class JsonPath {
     public static JSONArray parseRaw(JSONTokener tokener, String jsonPath) throws JSONException {
         if (tokener == null) return null;
         String[] dompath = jsonPath.split("\\.");
-        if (dompath == null || dompath.length < 1 || !dompath[0].equals("$")) return null; // wrong syntax of jsonPath
+        if (dompath == null || dompath.length < 1) return null; // wrong syntax of jsonPath
         if (dompath.length == 1) {
-            // the tokener contains already the data array
-            return new JSONArray(tokener);
+            if (dompath[0].equals("$")) return new JSONArray(tokener);
+            if (dompath[0].length() > 1 && dompath[0].charAt(1) == '[' && dompath[0].charAt(dompath[0].length() - 1) == ']') {
+                int pos = Integer.parseInt(dompath[0].substring(2, dompath[0].length() - 1));
+                return new JSONArray(tokener).getJSONArray(pos);
+            }
+            return null;
         }
         Object decomposition = null;
         for (int domc = 1; domc < dompath.length; domc++) {
