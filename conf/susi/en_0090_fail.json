@@ -27,8 +27,8 @@
      "$extract$"
    ]}]
   }, {
-   "comment":"this is the catch-all rule which fires if no other rule applies",
-   "phrases":[ {"type":"pattern", "expression":"*"} ],
+   "comment":"this is the catch-all rule which fires if no other rule applies (disabled)",
+   "phrases":[ {"type":"pattern", "expression":"search yacy for *"} ],
    "process":[ {"type":"console", "expression":"SELECT title,description,link,image FROM yacy WHERE query='$1$';"}],
    "actions":[
      {"type":"answer", "select":"random",
@@ -37,27 +37,11 @@
      {"type":"rss", "title": "title", "description": "description", "link": "link", "count": 3}
    ]
   }, {
-   "comment":"this is the catch-all rule which fires if no other rule applies",
-   "phrases":[ {"type":"pattern", "expression":"*"} ],
-   "actions":[
-     {"type":"answer", "select":"random",
-      "phrases":["I found this on the web:"],
-      "mood": "sabta"},
-     {"type":"websearch", "query":"$1$", "count": 3}
-   ]
-  }, {
    "phrases":[ {"type":"pattern", "expression":"search for *"} ],
    "actions":[
      {"type":"answer", "select":"random",
       "phrases":["Here is a web search result:"]},
      {"type":"websearch", "query":"$1$"}
-   ]
-  }, {
-   "phrases":[ {"type":"pattern", "expression":"suche *"} ],
-   "actions":[
-     {"type":"answer", "select":"random",
-      "phrases":["Hier ist ein Suchergebnis aus dem Web:"]},
-     {"type":"websearch", "query":"$2$"}
    ]
   }, {
    "comment":"a question mark",
