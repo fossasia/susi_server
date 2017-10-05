@@ -269,11 +269,14 @@ public class SusiMemory {
         identity.add(cognition);
         
         // add to skill memories
-        SusiThought thought = cognition.getAnswers().get(0);
-        String logpath = thought.getLogPath();
-        if (logpath != null) {
-            File skillogfile = new File(this.skilllog, logpath);
-            SusiAwareness.memorize(skillogfile, cognition);
+        List<SusiThought> thoughts = cognition.getAnswers();
+        if (thoughts.size() > 0) {
+	        SusiThought thought = cognition.getAnswers().get(0);
+	        String logpath = thought.getLogPath();
+	        if (logpath != null) {
+	            File skillogfile = new File(this.skilllog, logpath);
+	            SusiAwareness.memorize(skillogfile, cognition);
+	        }
         }
         return this;
     }
