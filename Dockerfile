@@ -1,5 +1,5 @@
 FROM ubuntu:latest
-LABEL MAINTAINER="Ansgar Schmidt <ansgar.schmidt@gmx.net>"
+LABEL MAINTAINER="ansgar.schmidt@gmx.net"
 ENV DEBIAN_FRONTEND noninteractive
 
 # update
