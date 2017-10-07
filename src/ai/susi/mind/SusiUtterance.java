@@ -48,7 +48,7 @@ public class SusiUtterance {
     private final static Pattern CATCHONE_CAPTURE_GROUP_PATTERN = Pattern.compile(Pattern.quote(CATCHONE_CAPTURE_GROUP_STRING));
     private final static Pattern CATCHALL_CAPTURE_GROUP_PATTERN = Pattern.compile(Pattern.quote(CATCHALL_CAPTURE_GROUP_STRING));
     private final static Pattern dspace = Pattern.compile("  ");
-    private final static Pattern wspace = Pattern.compile(",|;");
+    private final static Pattern wspace = Pattern.compile(",|;:");
 
     private final Pattern pattern;
     private final Type type;
@@ -88,11 +88,10 @@ public class SusiUtterance {
     }
     
     public static String normalizeExpression(String s) {
-        s = s.toLowerCase().replaceAll("\\#", "  ");
+        s = s.trim().toLowerCase().replaceAll("\\#", "  ");
         Matcher m;
         while ((m = wspace.matcher(s)).find()) s = m.replaceAll(" ");
         while ((m = dspace.matcher(s)).find()) s = m.replaceAll(" ");
-        s = s.trim();
         if (s.startsWith("susi ")) s = s.substring(5); // cut off susi address
         if (s.length() == 0) return s; // prevent StringIndexOutOfBoundsException which can happen in the next line
         if (".?!".indexOf(s.charAt(s.length() - 1)) >= 0) s = s.substring(0, s.length() - 1).trim();
@@ -104,6 +103,19 @@ public class SusiUtterance {
     }
     
     public static JSONObject simplePhrase(String query, boolean prior) {
+    	// normalize query
+    	query = query.trim();
+    	
+    	// correction of wrong wild card usage
+    	int p;
+    	while ((p = query.indexOf('.')) > 0 && query.charAt(p - 1) != ' ') {
+    		query = query.substring(0, p - 1) + ' ' + query.substring(p);
+    	}
+    	while ((p = query.indexOf('.')) >= 0 && p < query.length() - 1 && query.charAt(p + 1) != ' ') {
+    		query = query.substring(0, p + 1) + ' ' + query.substring(p + 1);
+    	}
+    	
+    	// create phrase
         JSONObject json = new JSONObject();
         json.put("type", prior ? Type.prior.name() : Type.minor.name());
         json.put("expression", query);

@@ -325,8 +325,8 @@ public class SusiMind {
         TreeMap<Long, List<SusiIdea>> scored = new TreeMap<>();
         AtomicLong count = new AtomicLong(0);
         ideas.forEach(idea -> {
-            int score = idea.getIntent().getScore(userLanguage).score;
-            long orderkey = Long.MAX_VALUE - ((long) score) * 1000L + count.incrementAndGet();
+            long score = idea.getIntent().getScore(userLanguage).score;
+            long orderkey = Long.MAX_VALUE - score * 1000L + count.incrementAndGet();
             List<SusiIdea> r = scored.get(orderkey);
             if (r == null) {r = new ArrayList<>(); scored.put(orderkey, r);}
             r.add(idea);
