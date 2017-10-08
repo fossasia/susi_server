@@ -100,7 +100,7 @@ public class CreateSkillService extends AbstractAPIHandler implements APIHandler
                     }
                 }
 
-                Path p = Paths.get(language + File.separator + "images/" + image_name);
+                Path p = Paths.get(language.getPath() + File.separator + "images" + File.separator + image_name);
                 if (image_name == null || Files.exists(p)) {
                     // Checking for
                     json.put("accepted", false);
@@ -124,7 +124,7 @@ public class CreateSkillService extends AbstractAPIHandler implements APIHandler
                         if (!Files.exists(Paths.get(language.getPath() + File.separator + "images"))) {
                             new File(language.getPath() + File.separator + "images").mkdirs();
                         }
-                        ImageIO.write(bi, "jpg", new File(language.getPath() + File.separator + "images/" + image_name));
+                        ImageIO.write(bi, "jpg", new File(language.getPath() + File.separator + "images" + File.separator + image_name));
 
                         // Writing to Skill Data to File
                         try (FileWriter Skillfile = new FileWriter(skill)) {

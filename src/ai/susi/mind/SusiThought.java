@@ -375,7 +375,7 @@ public class SusiThought extends JSONObject {
     
     public List<String> getSkills() {
         List<String> skills = new ArrayList<>();
-        getSkillsJSON().forEach(skill -> skills.add((String) skill));
+        getSkillsJSON().forEach(skill -> {if (skill instanceof String) skills.add((String) skill);});
         return skills;
     }
 
@@ -394,7 +394,8 @@ public class SusiThought extends JSONObject {
         if (!this.has("skills")) return null;
         JSONArray skills = this.getJSONArray("skills");
         if (skills.length() == 0) return null;
-        return getLogPath(skills.getString(0));
+        Object p = skills.get(0);
+        return p instanceof String ? getLogPath((String) p) : null;
     }
 
     public static String getLogPath(String skillName) {

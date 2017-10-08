@@ -233,7 +233,9 @@ public class SusiArgument implements Iterable<SusiThought> {
         // therefore the mindmeld must be done after action application to get those latest changes
         SusiThought answer = this.mindmeld(true);
         answer.put("actions", actions);
-        answer.put("skills", this.getSkills());
+        List<String> skillpaths = new ArrayList<>();
+        this.skills.forEach(skill -> skillpaths.add(skill.getPath()));
+        answer.put("skills", skillpaths);
         return answer;
     }
     
@@ -243,10 +245,6 @@ public class SusiArgument implements Iterable<SusiThought> {
      */
     public List<SusiAction> getActions() {
         return this.actions;
-    }
-    
-    public List<SusiSkill.ID> getSkills() {
-    	return this.skills;
     }
 
     public JSONObject toJSON() {

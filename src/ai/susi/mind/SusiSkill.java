@@ -68,15 +68,14 @@ public class SusiSkill {
          * @param origin
          * @return a relative path to the skill location, based on the git repository
          */
-        public ID(File origin) {
+        public ID(File origin) throws UnsupportedOperationException {
             this.skillpath = origin.getAbsolutePath();
             // The skillpath must start with the root path of either the susi_skill_data git repository or of susi_server git repository.
             // In both cases the path must start with a "/".
             int i = this.skillpath.indexOf("/susi");
-            if (i < 0) this.skillpath = ""; else {
-                this.skillpath = this.skillpath.substring(i);
-                if (this.skillpath.startsWith("/susi/")) this.skillpath = this.skillpath.substring(5);
-            }
+            if (i < 0) throw new UnsupportedOperationException("the file path does not point to a susi skill model repository: " + origin.getAbsolutePath());
+            this.skillpath = this.skillpath.substring(i);
+            if (this.skillpath.startsWith("/susi/")) this.skillpath = this.skillpath.substring(5);
         }
         
         public String toString() {
