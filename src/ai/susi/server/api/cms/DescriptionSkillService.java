@@ -31,7 +31,7 @@ import java.util.Map;
 
 /**
  This Servlet gives a API Endpoint to list descriptions for all the Skills given its model, group and language.
- Can be tested on 127.0.0.1:4000/cms/getDescriptionSkill.json
+ Can be tested on http://127.0.0.1:4000/cms/getDescriptionSkill.json
  */
 public class DescriptionSkillService extends AbstractAPIHandler implements APIHandler {
 
@@ -63,16 +63,16 @@ public class DescriptionSkillService extends AbstractAPIHandler implements APIHa
         String model = call.get("model", "");
         String group = call.get("group", "");
         String language = call.get("language", "");
-        String skill = call.get("skill", "");
+        String skillname = call.get("skill", "");
 
         JSONObject descriptions = new JSONObject(true);
-            for (Map.Entry<String, SusiSkill> entry : DAO.susi.getSkillMetadata().entrySet()) {
-                String path = entry.getKey();
-                if ((model.length() == 0 || path.indexOf("/" + model + "/") > 0) &&
-                        (group.length() == 0 || path.indexOf("/" + group + "/") > 0) &&
-                        (language.length() == 0 || path.indexOf("/" + language + "/") > 0) &&
-                        (skill.length() == 0 || path.indexOf("/" + skill + ".txt") > 0)) {
-                    descriptions.put(path, entry.getValue().getDescription());
+            for (Map.Entry<SusiSkill.ID, SusiSkill> entry : DAO.susi.getSkillMetadata().entrySet()) {
+                SusiSkill.ID skill = entry.getKey();
+                if (skill.hasModel(model) &&
+                    skill.hasGroup(group) &&
+                    skill.hasLanguage(language) &&
+                    skill.hasName(skillname)) {
+                    descriptions.put(skill.getPath(), entry.getValue().getDescription());
                 }
             }
 

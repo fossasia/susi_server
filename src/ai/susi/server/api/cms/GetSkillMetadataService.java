@@ -31,7 +31,7 @@ import java.util.Map;
 
 /**
  This Servlet gives a API Endpoint to list meta for a  Skill. Given its model, group and language and skill.
- Can be tested on 127.0.0.1:4000/cms/getSkillMetadata.json
+ Can be tested on http://127.0.0.1:4000/cms/getSkillMetadata.json?model=general&group=Knowledge&language=en&skill=creator_info
  */
 public class GetSkillMetadataService extends AbstractAPIHandler implements APIHandler {
 
@@ -63,9 +63,9 @@ public class GetSkillMetadataService extends AbstractAPIHandler implements APIHa
         String model = call.get("model", "");
         String group = call.get("group", "");
         String language = call.get("language", "");
-        String skill = call.get("skill", "");
+        String skillname = call.get("skill", "");
 
-        if (model.length() == 0 || group.length() == 0 ||language.length() == 0 || skill.length() == 0 ) {
+        if (model.length() == 0 || group.length() == 0 ||language.length() == 0 || skillname.length() == 0 ) {
             JSONObject json = new JSONObject(true);
             json.put("accepted", false);
             json.put("message", "Error: Bad parameter call");
@@ -85,12 +85,12 @@ public class GetSkillMetadataService extends AbstractAPIHandler implements APIHa
         skillMetadata.put("terms_of_use", JSONObject.NULL);
         skillMetadata.put("dynamic_content", false);
         skillMetadata.put("examples", JSONObject.NULL);
-        for (Map.Entry<String, SusiSkill> entry : DAO.susi.getSkillMetadata().entrySet()) {
-            String path = entry.getKey();
-            if ((path.indexOf("/" + model + "/") > 0)
-                    && (path.indexOf("/" + group + "/") > 0) &&
-                    (path.indexOf("/" + language + "/") > 0) &&
-                    (path.indexOf("/" + skill + ".txt") > 0)) {
+        for (Map.Entry<SusiSkill.ID, SusiSkill> entry : DAO.susi.getSkillMetadata().entrySet()) {
+            SusiSkill.ID skill = entry.getKey();
+            if (skill.hasModel(model) &&
+                skill.hasGroup(group) &&
+                skill.hasLanguage(language) &&
+                skill.hasName(skillname)) {
                 skillMetadata.put("skill_name", entry.getValue().getSkillName() ==null ? JSONObject.NULL: entry.getValue().getSkillName());
                 skillMetadata.put("developer_privacy_policy", entry.getValue().getDeveloperPrivacyPolicy() ==null ? JSONObject.NULL:entry.getValue().getDeveloperPrivacyPolicy());
                 skillMetadata.put("descriptions", entry.getValue().getDescription() ==null ? JSONObject.NULL:entry.getValue().getDescription());

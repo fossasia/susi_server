@@ -15,7 +15,7 @@ import java.util.*;
 
 /**
  * This Servlet gives a API Endpoint to list all the Skills given its model, group and language.
- * Can be tested on 127.0.0.1:4000/cms/getSkillList.json
+ * Can be tested on http://127.0.0.1:4000/cms/getSkillList.json
  */
 
 public class ListSkillService extends AbstractAPIHandler implements APIHandler {
@@ -56,10 +56,10 @@ public class ListSkillService extends AbstractAPIHandler implements APIHandler {
 
         JSONArray jsonArray = new JSONArray();
 
-        for (String skill : fileList) {
-            System.out.println(skill);
+        for (String skill_name : fileList) {
+            System.out.println(skill_name);
             JSONObject skillMetadata = new JSONObject();
-            skill = skill.replace(".txt", "");
+            skill_name = skill_name.replace(".txt", "");
             skillMetadata.put("developer_privacy_policy", JSONObject.NULL);
             skillMetadata.put("descriptions", JSONObject.NULL);
             skillMetadata.put("image", JSONObject.NULL);
@@ -70,12 +70,12 @@ public class ListSkillService extends AbstractAPIHandler implements APIHandler {
             skillMetadata.put("dynamic_content", false);
             skillMetadata.put("examples", JSONObject.NULL);
             skillMetadata.put("skill_rating", JSONObject.NULL);
-            for (Map.Entry<String, SusiSkill> entry : DAO.susi.getSkillMetadata().entrySet()) {
-                String path = entry.getKey();
-                if ((path.indexOf("/" + model_name + "/") > 0)
-                        && (path.indexOf("/" + group_name + "/") > 0) &&
-                        (path.indexOf("/" + language_name + "/") > 0) &&
-                        (path.indexOf("/" + skill + ".txt") > 0)) {
+            for (Map.Entry<SusiSkill.ID, SusiSkill> entry : DAO.susi.getSkillMetadata().entrySet()) {
+                SusiSkill.ID skill = entry.getKey();
+                if (skill.hasModel(model_name) &&
+                    skill.hasGroup(group_name) &&
+                    skill.hasLanguage(language_name) &&
+                    skill.hasName(skill_name)) {
                     skillMetadata.put("developer_privacy_policy", entry.getValue().getDeveloperPrivacyPolicy() == null ? JSONObject.NULL : entry.getValue().getDeveloperPrivacyPolicy());
                     skillMetadata.put("descriptions", entry.getValue().getDescription() == null ? JSONObject.NULL : entry.getValue().getDescription());
                     skillMetadata.put("image", entry.getValue().getImage() == null ? JSONObject.NULL : entry.getValue().getImage());
@@ -94,15 +94,15 @@ public class ListSkillService extends AbstractAPIHandler implements APIHandler {
                     JSONObject groupName = modelName.getJSONObject(group_name);
                     if (groupName.has(language_name)) {
                         JSONObject languageName = groupName.getJSONObject(language_name);
-                        if (languageName.has(skill)) {
-                            JSONObject skillName = languageName.getJSONObject(skill);
+                        if (languageName.has(skill_name)) {
+                            JSONObject skillName = languageName.getJSONObject(skill_name);
                             skillMetadata.put("skill_rating", skillName);
                         }
                     }
                 }
             }
             jsonArray.put(skillMetadata);
-            skillObject.put(skill, skillMetadata);
+            skillObject.put(skill_name, skillMetadata);
         }
 
         // if filter is applied, sort the data accordingly

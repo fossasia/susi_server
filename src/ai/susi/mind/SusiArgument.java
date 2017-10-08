@@ -39,7 +39,7 @@ public class SusiArgument implements Iterable<SusiThought> {
 
     private final ArrayList<SusiThought> recall;
     private final List<SusiAction> actions;
-    private final List<String> skills;
+    private final List<SusiSkill.ID> skills;
     
     /**
      * Create an empty argument
@@ -211,8 +211,8 @@ public class SusiArgument implements Iterable<SusiThought> {
      * @param skill a relative path to the skill
      * @return the argument
      */
-    public SusiArgument addSkill(final String skill) {
-    	this.skills.add(skill);
+    public SusiArgument addSkill(final SusiSkill.ID skillid) {
+    	this.skills.add(skillid);
     	return this;
     }
     
@@ -245,7 +245,7 @@ public class SusiArgument implements Iterable<SusiThought> {
         return this.actions;
     }
     
-    public List<String> getSkills() {
+    public List<SusiSkill.ID> getSkills() {
     	return this.skills;
     }
 

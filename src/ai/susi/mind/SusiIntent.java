@@ -58,7 +58,8 @@ public class SusiIntent {
     private final int user_subscore;
     private Score score;
     private final int id;
-    private final String skill, example, expect;
+    private final SusiSkill.ID skillid;
+    private final String example, expect;
     private SusiLanguage language;
     
     /**
@@ -67,7 +68,7 @@ public class SusiIntent {
      * @param json - a multi-intent definition
      * @return a set of intents
      */
-    public static List<SusiIntent> getIntents(SusiLanguage language, JSONObject json, String skillpath) {
+    public static List<SusiIntent> getIntents(SusiLanguage language, JSONObject json, SusiSkill.ID skillid) {
         if (!json.has("phrases")) throw new PatternSyntaxException("phrases missing", "", 0);
         final List<SusiIntent> intents = new ArrayList<>();
         if (json.has("options")) {
@@ -77,14 +78,14 @@ public class SusiIntent {
                 option.put("phrases", json.get("phrases"));
                 JSONObject or = options.getJSONObject(i);
                 for (String k: or.keySet()) option.put(k, or.get(k));
-                intents.add(new SusiIntent(language, option, skillpath));
+                intents.add(new SusiIntent(language, option, skillid));
             }
         } else {
             try {
-                SusiIntent intent = new SusiIntent(language, json, skillpath);
+                SusiIntent intent = new SusiIntent(language, json, skillid);
                 intents.add(intent);
             } catch (PatternSyntaxException e) {
-                Logger.getLogger("SusiIntent").warning("Regular Expression error in Susi Intent " + skillpath + ": " + json.toString(2));
+                Logger.getLogger("SusiIntent").warning("Regular Expression error in Susi Intent " + skillid.getPath() + ": " + json.toString(2));
             }
         }
         return intents;
@@ -95,7 +96,7 @@ public class SusiIntent {
      * @param json the intent description
      * @throws PatternSyntaxException
      */
-    private SusiIntent(SusiLanguage language, JSONObject json, String skillpath) throws PatternSyntaxException {
+    private SusiIntent(SusiLanguage language, JSONObject json, SusiSkill.ID skillid) throws PatternSyntaxException {
         
         // extract the utterances and the utterances subscore
         if (!json.has("phrases")) throw new PatternSyntaxException("phrases missing", "", 0);
@@ -137,7 +138,7 @@ public class SusiIntent {
         this.comment = json.has("comment") ? json.getString("comment") : "";
 
         // remember the origin
-    	this.skill = skillpath;
+    	this.skillid = skillid;
     	
     	// compute the language from the origin
     	this.language = language;
@@ -151,8 +152,8 @@ public class SusiIntent {
         this.id = ids0.hashCode() + ids1.hashCode();
     }
     
-    public String getSkill() {
-        return this.skill == null || this.skill.length() == 0 ? null : this.skill;
+    public SusiSkill.ID getSkill() {
+        return this.skillid;
     }
     
     public String getExpect() {
@@ -178,7 +179,7 @@ public class SusiIntent {
         json.put("actions", a);
         if (this.comment != null && this.comment.length() > 0) json.put("comment", this.comment);
         if (this.score != null) json.put("score", this.score.score);
-        if (this.skill != null && this.skill.length() > 0) json.put("skill", this.skill);
+        if (this.skillid != null && this.skillid.getPath().length() > 0) json.put("skill", this.skillid.getPath());
         if (this.example != null && this.example.length() > 0) json.put("example", example);
         if (this.expect != null && this.expect.length() > 0) json.put("expect", expect);
         return json;
@@ -509,7 +510,7 @@ public class SusiIntent {
             this.getActionsClone().forEach(action -> flow.addAction(action/*.execution(flow, mind, client)*/));
             
             // add skill source
-            if (this.skill != null && this.skill.length() > 0) flow.addSkill(this.skill);
+            flow.addSkill(this.skillid);
             
             return flow;
         }

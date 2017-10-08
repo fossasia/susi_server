@@ -60,6 +60,78 @@ public class SusiSkill {
     private Boolean dynamicContent;
     private Set<String> tags;
 
+    public static class ID implements Comparable<ID> {
+        private String skillpath;
+        
+        /**
+         * compute the skill path from the origin file
+         * @param origin
+         * @return a relative path to the skill location, based on the git repository
+         */
+        public ID(File origin) {
+            this.skillpath = origin.getAbsolutePath();
+            // The skillpath must start with the root path of either the susi_skill_data git repository or of susi_server git repository.
+            // In both cases the path must start with a "/".
+            int i = this.skillpath.indexOf("/susi");
+            if (i < 0) this.skillpath = ""; else {
+                this.skillpath = this.skillpath.substring(i);
+                if (this.skillpath.startsWith("/susi/")) this.skillpath = this.skillpath.substring(5);
+            }
+        }
+        
+        public String toString() {
+            return this.skillpath;
+        }
+        
+        public String getPath() {
+            return this.skillpath;
+        }
+        
+        @Override
+        public int compareTo(ID o) {
+            return this.skillpath.compareTo(o.skillpath);
+        }
+        
+        @Override
+        public int hashCode() {
+            return this.skillpath.hashCode();
+        }
+
+        /**
+         * compute the language from the skillpath
+         * @param skillpath
+         * @return
+         */
+        public SusiLanguage language() {
+            SusiLanguage language = SusiLanguage.unknown;
+            if (this.skillpath.startsWith("/susi_server/conf/susi/")) {
+                language = SusiLanguage.parse(this.skillpath.substring(23, 25));
+            } else if (this.skillpath.startsWith("/susi_skill_data")) {
+                String[] paths = this.skillpath.split("/");
+                if (paths.length > 5) language = SusiLanguage.parse(paths[5]);
+            }
+            
+            return language;
+        }
+
+        public boolean hasModel(String model) {
+            return model.length() == 0 || this.skillpath.indexOf("/" + model + "/") > 0;
+        }
+
+        public boolean hasGroup(String group) {
+            return group.length() == 0 || this.skillpath.indexOf("/" + group + "/") > 0;
+        }
+
+        public boolean hasLanguage(String language) {
+            return language.length() == 0 || this.skillpath.indexOf("/" + language + "/") > 0;
+        }
+
+        public boolean hasName(String skillname) {
+            return skillname.length() == 0 || this.skillpath.indexOf("/" + skillname + ".txt") > 0;
+        }
+
+    }
+    
     /**
      * read an "EzD" ('Easy Dialog') file: this is just a text file. Read the docs/susi_skill_development_tutorial.md for an explanation
      * @param br

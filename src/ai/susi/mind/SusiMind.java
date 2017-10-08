@@ -51,9 +51,9 @@ public class SusiMind {
     public final static int ATTENTION_TIME = 5;
     
     private final Map<String, Set<SusiIntent>> intenttrigger; // a map from a keyword to a set of intents
-    private final Map<String, Set<String>> skillexamples; // a map from an skill path to one example
-    private final Map<String, SusiSkill> skillMetadata; // a map from skill path to description
-    private final Map<String, String> skillImage; // a map from skill path to skill image
+    private final Map<SusiSkill.ID, Set<String>> skillexamples; // a map from an skill path to one example
+    private final Map<SusiSkill.ID, SusiSkill> skillMetadata; // a map from skill path to description
+    private final Map<SusiSkill.ID, String> skillImage; // a map from skill path to skill image
     private final File[] watchpaths;
     private final File susi_chatlog_dir, susi_skilllog_dir; // a path where the memory looks for new additions of knowledge with memory files
     private final Map<File, Long> observations; // a mapping of mind memory files to the time when the file was read the last time
@@ -98,11 +98,11 @@ public class SusiMind {
         return this.memories.unanswered2tokenizedstats();
     }
     
-    public Map<String, Set<String>> getSkillExamples() {
+    public Map<SusiSkill.ID, Set<String>> getSkillExamples() {
         return this.skillexamples;
     }
 
-    public  Map<String, SusiSkill> getSkillMetadata() {
+    public  Map<SusiSkill.ID, SusiSkill> getSkillMetadata() {
         return this.skillMetadata;
     }
 
@@ -145,44 +145,12 @@ public class SusiMind {
         
         //this.intenttrigger.forEach((term, map) -> System.out.println("***DEBUG trigger " + term + " -> " + map.toString()));
     }
-
-    /**
-     * compute the skill path from the origin file
-     * @param origin
-     * @return a relative path to the skill location, based on the git repository
-     */
-    public static String skillpathFromOrigin(File origin) {
-        String skillpath = origin.getAbsolutePath();
-        int i = skillpath.indexOf("/susi");
-        if (i < 0) skillpath = ""; else {
-            skillpath = skillpath.substring(i);
-            if (skillpath.startsWith("/susi/")) skillpath = skillpath.substring(5);
-        }
-        return skillpath;
-    }
-    
-    /**
-     * compute the language from the skillpath
-     * @param skillpath
-     * @return
-     */
-    public static SusiLanguage languageFromSkillpath(String skillpath) {
-        SusiLanguage language = SusiLanguage.unknown;
-        if (skillpath.startsWith("/susi_server/conf/susi/")) {
-            language = SusiLanguage.parse(skillpath.substring(23, 25));
-        } else if (skillpath.startsWith("/susi_skill_data")) {
-            String[] paths = skillpath.split("/");
-            if (paths.length > 5) language = SusiLanguage.parse(paths[5]);
-        }
-        
-        return language;
-    }
     
     public SusiMind learn(JSONObject json, File origin) {
 
         // detect the language
-        String skillpath = skillpathFromOrigin(origin);
-        SusiLanguage language = languageFromSkillpath(skillpath);
+        SusiSkill.ID skillid = new SusiSkill.ID(origin);
+        SusiLanguage language = skillid.language();
         
         // teach the language parser
         SusiLinguistics.learn(language, json);
@@ -205,7 +173,7 @@ public class SusiMind {
         final List<Pattern> removalPattern = new ArrayList<>();
         JSONArray intentset = json.has("rules") ? json.getJSONArray("rules") : json.has("intents") ? json.getJSONArray("intents") : new JSONArray();
         intentset.forEach(j -> {
-            List<SusiIntent> intents = SusiIntent.getIntents(language, (JSONObject) j, skillpath);
+            List<SusiIntent> intents = SusiIntent.getIntents(language, (JSONObject) j, skillid);
             intents.forEach(intent -> {
                 // add removal pattern
                 intent.getKeys().forEach(key -> {
