@@ -50,7 +50,7 @@ public class ListSkillService extends AbstractAPIHandler implements APIHandler {
         json.put("accepted", false);
         JSONObject skillObject = new JSONObject();
         ArrayList<String> fileList = new ArrayList<String>();
-        fileList = listFilesForFolder(language, fileList);
+        listFilesForFolder(language, fileList);
         JsonTray skillRating = DAO.skillRating;
 
 
