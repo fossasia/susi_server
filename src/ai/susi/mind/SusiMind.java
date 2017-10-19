@@ -58,7 +58,7 @@ public class SusiMind {
     private final File susi_chatlog_dir, susi_skilllog_dir; // a path where the memory looks for new additions of knowledge with memory files
     private final Map<File, Long> observations; // a mapping of mind memory files to the time when the file was read the last time
     private final SusiMemory memories; // conversation logs are memories
-
+    private SusiSkill activeSkill;
 
     public SusiMind(File susi_chatlog_dir, File susi_skilllog_dir, File... watchpaths) {
         // initialize class objects
@@ -80,6 +80,7 @@ public class SusiMind {
         try {observe();} catch (IOException e) {
             e.printStackTrace();
         }
+        this.activeSkill = null;
     }
     
     public void initializeMemory() {
@@ -88,6 +89,14 @@ public class SusiMind {
 
     public SusiMemory getMemories() {
         return this.memories;
+    }
+    
+    public void setActiveSkill(SusiSkill skill) {
+        this.activeSkill = skill;
+    }
+    
+    public SusiSkill getActiveSkill() {
+        return this.activeSkill;
     }
     
     public Map<String, Integer> getUnanswered() {
@@ -102,7 +111,7 @@ public class SusiMind {
         return this.skillexamples;
     }
 
-    public  Map<SusiSkill.ID, SusiSkill> getSkillMetadata() {
+    public Map<SusiSkill.ID, SusiSkill> getSkillMetadata() {
         return this.skillMetadata;
     }
 
