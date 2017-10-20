@@ -236,6 +236,10 @@ public class SusiArgument implements Iterable<SusiThought> {
         List<String> skillpaths = new ArrayList<>();
         this.skills.forEach(skill -> skillpaths.add(skill.getPath()));
         answer.put("skills", skillpaths);
+        JSONObject persona = new JSONObject();
+        SusiSkill skill = mind.getActiveSkill();
+        if (skill != null) persona.put("skill", skill.toJSON());
+        answer.put("persona", persona);
         return answer;
     }
     

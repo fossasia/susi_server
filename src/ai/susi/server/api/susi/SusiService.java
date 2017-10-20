@@ -91,7 +91,11 @@ public class SusiService extends AbstractAPIHandler implements APIHandler {
                 // fill an empty mind with the dream
                 SusiMind dreamMind = new SusiMind(DAO.susi_chatlog_dir, DAO.susi_skilllog_dir); // we need the memory directory here to get a share on the memory of previous dialoges, otherwise we cannot test call-back questions
                 JSONObject rules = SusiSkill.readEzDSkill(new BufferedReader(new InputStreamReader(new ByteArrayInputStream(text.getBytes(StandardCharsets.UTF_8)), StandardCharsets.UTF_8)));
-                dreamMind.learn(rules, new File("file://" + dream));
+                File origin = new File("file://" + dream);
+                dreamMind.learn(rules, origin);
+                SusiSkill.ID skillid = new SusiSkill.ID(origin);
+                SusiSkill activeskill = dreamMind.getSkillMetadata().get(skillid);
+                dreamMind.setActiveSkill(activeskill);
                 // susi is now dreaming.. Try to find an answer out of the dream
                 SusiCognition cognition = new SusiCognition(dreamMind, q, timezoneOffset, latitude, longitude, language, count, user.getIdentity());
                 

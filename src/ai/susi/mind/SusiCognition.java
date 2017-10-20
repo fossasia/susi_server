@@ -81,7 +81,7 @@ public class SusiCognition {
         this.json.put("answers", new JSONArray(dispute.stream().map(argument -> argument.finding(mind, client, language)).collect(Collectors.toList())));
         this.json.put("answer_date", DateParser.utcFormatter.print(answer_date));
         this.json.put("answer_time", answer_date - query_date);
-        this.json.put("language", "en");
+        this.json.put("language", language.name());
     }
     
     public SusiCognition(JSONObject json) {
