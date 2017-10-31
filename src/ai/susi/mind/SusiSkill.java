@@ -517,7 +517,7 @@ public class SusiSkill {
     }
 
     public String getAuthor() {
-        return author;
+        return author.toLowerCase();
     }
 
     public String getAuthorURL() {
