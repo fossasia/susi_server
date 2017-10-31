@@ -547,4 +547,18 @@ public class SusiSkill {
     public Boolean getDynamicContent() {
         return dynamicContent;
     }
+    
+    public JSONObject toJSON() {
+        JSONObject json = new JSONObject(true);
+        if (this.description != null) json.put("description", this.description);
+        if (this.image != null) json.put("image", this.image);
+        if (this.skillName != null) json.put("skill_name", this.skillName);
+        if (this.author != null) json.put("author", this.author);
+        if (this.authorURL != null) json.put("author_url", this.authorURL);
+        if (this.developerPrivacyPolicy != null) json.put("developer_privacy_policy", this.developerPrivacyPolicy);
+        if (this.termsOfUse != null) json.put("terms_of_use", this.termsOfUse);
+        if (this.dynamicContent != null) json.put("dynamic_content", this.dynamicContent);
+        if (this.tags != null && this.tags.size() > 0) json.put("tags", this.tags);
+        return json;
+    }
 }

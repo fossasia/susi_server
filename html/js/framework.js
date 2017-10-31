@@ -47,7 +47,7 @@ angular.element(document).ready(function () {
         liItem = "<li class='active'>";
         count = count + 1;
       }
-      if(name == "Blog") { // The Blog tab redirects to the loklak blog (http://blog.loklak.net/)
+      if(name == "Blog" || name == "Account") { // The Blog tab redirects to the loklak blog (http://blog.loklak.net/)
         liItem += "<a href='"+link+"'>"+name+"</a></li>";
       }
       else {
