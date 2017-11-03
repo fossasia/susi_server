@@ -165,7 +165,8 @@ How do I develop Skills (AI Conversation Rules) for Susi AI?
 ---------------------------------------------------------
 
 The Susi AI skill language is described in the `Skill Development
-Tutorial </docs/skills/susi_skill_development_tutorial.md>`__.
+Tutorial <https://github.com/fossasia/susi_skill_data/blob/master/README_susi_skill_language_tutorial.md>`__.
+
 
 Why should I use Susi AI?
 ----------------------
