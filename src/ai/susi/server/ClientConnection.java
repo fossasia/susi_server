@@ -25,6 +25,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.SocketTimeoutException;
 import java.net.UnknownHostException;
@@ -43,7 +44,6 @@ import javax.net.ssl.SSLSession;
 
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
-import org.apache.http.HttpHost;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.config.CookieSpecs;
@@ -51,9 +51,10 @@ import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpRequestBase;
+import org.apache.http.client.protocol.HttpClientContext;
 import org.apache.http.config.Registry;
 import org.apache.http.config.RegistryBuilder;
-import org.apache.http.conn.routing.HttpRoute;
+import org.apache.http.conn.HttpClientConnectionManager;
 import org.apache.http.conn.socket.ConnectionSocketFactory;
 import org.apache.http.conn.socket.PlainConnectionSocketFactory;
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
@@ -63,6 +64,7 @@ import org.apache.http.entity.mime.MultipartEntityBuilder;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
+import org.apache.http.protocol.HttpContext;
 import org.apache.http.ssl.SSLContextBuilder;
 import org.apache.http.util.EntityUtils;
 
@@ -81,7 +83,6 @@ public class ClientConnection {
     private static final byte CR = 13;
     public static final byte[] CRLF = {CR, LF};
 
-    public static PoolingHttpClientConnectionManager cm;
     private static RequestConfig defaultRequestConfig = RequestConfig.custom()
             .setSocketTimeout(60000)
             .setConnectTimeout(60000)
@@ -89,12 +90,11 @@ public class ClientConnection {
             .setContentCompressionEnabled(true)
             .setCookieSpec(CookieSpecs.IGNORE_COOKIES)
             .build();
+
+    private final static CloseableHttpClient httpClient = getClosableHttpClient();
     
     private int status;
     public BufferedInputStream inputStream;
-    private Map<String, List<String>> header;
-    private CloseableHttpClient httpClient;
-    private HttpRequestBase request;
     private HttpResponse httpResponse;
     
     private static class TrustAllHostNameVerifier implements HostnameVerifier {
@@ -109,24 +109,10 @@ public class ClientConnection {
      * @param useAuthentication Flag for using authentication
      * @throws IOException
      */
-    public ClientConnection(String urlstring, boolean useAuthentication) throws IOException {
-    	this.httpClient = HttpClients.custom()
-			.useSystemProperties()
-			.setConnectionManager(getConnctionManager(useAuthentication))
-			.setDefaultRequestConfig(defaultRequestConfig)
-			.build();
-        this.request = new HttpGet(urlstring);
-        this.request.setHeader("User-Agent", USER_AGENT);
-        this.init();
-    }
-    
-    /**
-     * GET request
-     * @param urlstring URL String to send request
-     * @throws IOException
-     */
     public ClientConnection(String urlstring) throws IOException {
-    	this(urlstring, true);
+        HttpRequestBase request = new HttpGet(urlstring);
+        request.setHeader("User-Agent", USER_AGENT);
+        this.executeRequest(request);
     }
     
     /**
@@ -137,84 +123,81 @@ public class ClientConnection {
      * @throws ClientProtocolException 
      * @throws IOException
      */
-    public ClientConnection(String urlstring, Map<String, byte[]> map, boolean useAuthentication) throws ClientProtocolException, IOException {
-    	this.httpClient = HttpClients.custom()
-			.useSystemProperties()
-			.setConnectionManager(getConnctionManager(useAuthentication))
-			.setDefaultRequestConfig(defaultRequestConfig)
-			.build();
-        this.request = new HttpPost(urlstring);        
+    public ClientConnection(String urlstring, Map<String, byte[]> map) throws ClientProtocolException, IOException {
+        HttpRequestBase request = new HttpPost(urlstring);        
         MultipartEntityBuilder entityBuilder = MultipartEntityBuilder.create();
         entityBuilder.setMode(HttpMultipartMode.BROWSER_COMPATIBLE);
         for (Map.Entry<String, byte[]> entry: map.entrySet()) {
             entityBuilder.addBinaryBody(entry.getKey(), entry.getValue());
         }
-        ((HttpPost) this.request).setEntity(entityBuilder.build());
-        this.request.setHeader("User-Agent", USER_AGENT);
-        this.init();
+        ((HttpPost) request).setEntity(entityBuilder.build());
+        request.setHeader("User-Agent", USER_AGENT);
+        this.executeRequest(request);
+    }
+
+    public final static CloseableHttpClient getClosableHttpClient() {
+        boolean trustAllCerts = !"none".equals(DAO.getConfig("httpsclient.trustselfsignedcerts", "peers"))
+                && ("all".equals(DAO.getConfig("httpsclient.trustselfsignedcerts", "peers")));
+        return HttpClients.custom()
+                .useSystemProperties()
+                .setConnectionManager(getConnctionManager(trustAllCerts))
+                .setDefaultRequestConfig(defaultRequestConfig)
+                .setMaxConnPerRoute(200)
+                .setMaxConnTotal(500)
+                .build();
     }
     
-    /**
-     * POST request
-     * @param urlstring URL String to send Request
-     * @param map
-     * @throws ClientProtocolException
-     * @throws IOException
-     */
-    public ClientConnection(String urlstring, Map<String, byte[]> map) throws ClientProtocolException, IOException {
-    	this(urlstring, map, true);
+    public InputStream getInputStream() {
+        return this.inputStream;
     }
     
-    private static PoolingHttpClientConnectionManager getConnctionManager(boolean useAuthentication){
-        
-    	// allow opportunistic encryption if needed
-    	
-    	boolean trustAllCerts = !"none".equals(DAO.getConfig("httpsclient.trustselfsignedcerts", "peers"))
-    			&& (!useAuthentication || "all".equals(DAO.getConfig("httpsclient.trustselfsignedcerts", "peers")));
-    	
-    	Registry<ConnectionSocketFactory> socketFactoryRegistry = null;
-    	if(trustAllCerts){
-	    	try {
-	    		SSLConnectionSocketFactory trustSelfSignedSocketFactory = new SSLConnectionSocketFactory(
-				    		new SSLContextBuilder().loadTrustMaterial(null, new TrustSelfSignedStrategy()).build(),
-				            new TrustAllHostNameVerifier());
-				socketFactoryRegistry = RegistryBuilder
-		                .<ConnectionSocketFactory> create()
-		                .register("http", new PlainConnectionSocketFactory())
-		                .register("https", trustSelfSignedSocketFactory)
-		                .build();
-			} catch (KeyManagementException | NoSuchAlgorithmException | KeyStoreException e) {
-				DAO.severe(e);
-			}
-    	}
-        
-    	PoolingHttpClientConnectionManager cm = (trustAllCerts && socketFactoryRegistry != null) ? 
-        		new PoolingHttpClientConnectionManager(socketFactoryRegistry):
-        		new PoolingHttpClientConnectionManager();
-    	
+    private static HttpClientConnectionManager getConnctionManager(boolean trustAllCerts){
+
+        Registry<ConnectionSocketFactory> socketFactoryRegistry = null;
+        if(trustAllCerts){
+            try {
+                SSLConnectionSocketFactory trustSelfSignedSocketFactory = new SSLConnectionSocketFactory(
+                            new SSLContextBuilder().loadTrustMaterial(null, new TrustSelfSignedStrategy()).build(),
+                            new TrustAllHostNameVerifier());
+                socketFactoryRegistry = RegistryBuilder
+                        .<ConnectionSocketFactory> create()
+                        .register("http", new PlainConnectionSocketFactory())
+                        .register("https", trustSelfSignedSocketFactory)
+                        .build();
+            } catch (KeyManagementException | NoSuchAlgorithmException | KeyStoreException e) {
+                DAO.severe(e);
+            }
+        }
+
+        PoolingHttpClientConnectionManager cm = (trustAllCerts && socketFactoryRegistry != null) ?
+                new PoolingHttpClientConnectionManager(socketFactoryRegistry):
+                new PoolingHttpClientConnectionManager();
+
         // twitter specific options
         cm.setMaxTotal(200);
         cm.setDefaultMaxPerRoute(20);
-        HttpHost twitter = new HttpHost("twitter.com", 443);
-        cm.setMaxPerRoute(new HttpRoute(twitter), 50);
         
         return cm;
     }
 
-    private void init() throws IOException {
-    	
+    private void executeRequest(HttpRequestBase request) throws IOException {
+
         this.httpResponse = null;
+        HttpContext context = HttpClientContext.create();
         try {
-            this.httpResponse = httpClient.execute(this.request);
+            this.httpResponse = httpClient.execute(request, context);
         } catch (UnknownHostException e) {
-            this.request.releaseConnection();
-            throw new IOException("client connection failed: unknown host " + this.request.getURI().getHost());
+            request.reset();
+            throw new IOException("client connection failed: unknown host " + request.getURI().getHost());
         } catch (SocketTimeoutException e){
-        	this.request.releaseConnection();
-        	throw new IOException("client connection timeout for request: " + this.request.getURI());
+            request.reset();
+            throw new IOException("client connection timeout for request: " + request.getURI());
         } catch (SSLHandshakeException e){
-        	this.request.releaseConnection();
-        	throw new IOException("client connection handshake error for domain " + this.request.getURI().getHost() + ": " + e.getMessage());
+            request.reset();
+            throw new IOException("client connection handshake error for domain " + request.getURI().getHost() + ": " + e.getMessage());
+        } catch (Throwable e) {
+            request.reset();
+            throw new IOException("server fail: " + e.getMessage());
         }
         HttpEntity httpEntity = this.httpResponse.getEntity();
         if (httpEntity != null) {
@@ -222,22 +205,22 @@ public class ClientConnection {
                 try {
                     this.inputStream = new BufferedInputStream(httpEntity.getContent());
                 } catch (IOException e) {
-                    this.request.releaseConnection();
+                    request.reset();
                     throw e;
                 }
-                this.header = new HashMap<String, List<String>>();
-                for (Header header: httpResponse.getAllHeaders()) {
-                    List<String> vals = this.header.get(header.getName());
-                    if (vals == null) { vals = new ArrayList<String>(); this.header.put(header.getName(), vals); }
-                    vals.add(header.getValue());
+                Map<String, List<String>> header = new HashMap<String, List<String>>();
+                for (Header h: httpResponse.getAllHeaders()) {
+                    List<String> vals = header.get(h.getName());
+                    if (vals == null) { vals = new ArrayList<String>(); header.put(h.getName(), vals); }
+                    vals.add(h.getValue());
                 }
             } else {
-                this.request.releaseConnection();
-                throw new IOException("client connection to " + this.request.getURI() + " fail: " + status + ": " + httpResponse.getStatusLine().getReasonPhrase());
+                request.reset();
+                throw new IOException("client connection to " + request.getURI() + " fail: " + status + ": " + httpResponse.getStatusLine().getReasonPhrase());
             }
         } else {
-            this.request.releaseConnection();
-            throw new IOException("client connection to " + this.request.getURI() + " fail: no connection");
+            request.reset();
+            throw new IOException("client connection to " + request.getURI() + " fail: no connection");
         }
     }
     
@@ -290,18 +273,24 @@ public class ClientConnection {
     }
     
     public void close() {
-        HttpEntity httpEntity = this.httpResponse.getEntity();
-        if (httpEntity != null) EntityUtils.consumeQuietly(httpEntity);
-        try {
-            this.inputStream.close();
-        } catch (IOException e) {} finally {
-            this.request.releaseConnection();
+        if (this.httpResponse != null) {
+            HttpEntity httpEntity = this.httpResponse.getEntity();
+            if (httpEntity != null) EntityUtils.consumeQuietly(httpEntity);
+            this.httpResponse = null;
+        }
+        if (this.inputStream != null) {
+            try {this.inputStream.close();} catch (IOException e) {}
+            this.inputStream = null;
         }
     }
     
-    public static void download(String source_url, File target_file, boolean useAuthentication) {
+    public void finalize() {
+        this.close();
+    }
+    
+    public static void download(String source_url, File target_file) {
         try {
-            ClientConnection connection = new ClientConnection(source_url, useAuthentication);
+            ClientConnection connection = new ClientConnection(source_url);
             try {
                 OutputStream os = new BufferedOutputStream(new FileOutputStream(target_file));
                 int count;
@@ -323,15 +312,7 @@ public class ClientConnection {
         }
     }
     
-    public static void download(String source_url, File target_file) {
-    	download(source_url, target_file, true);
-    }
-    
-    public static void downloadPeer(String source_url, File target_file) {
-    	download(source_url, target_file, !"peers".equals(DAO.getConfig("httpsclient.trustselfsignedcerts", "peers")));
-    }
-    
-    public static byte[] download(String source_url, boolean useAuthentication) throws IOException {
+    public static byte[] download(String source_url) throws IOException {
         try {
             ClientConnection connection = new ClientConnection(source_url);
             if (connection.inputStream == null) return null;
@@ -350,14 +331,6 @@ public class ClientConnection {
         	DAO.severe(e.getMessage());
             return null;
         }
-    }
-    
-    public static byte[] download(String source_url) throws IOException {
-    	return download(source_url, true);
-    }
-    
-    public static byte[] downloadPeer(String source_url) throws IOException {
-    	return download(source_url, !"peers".equals(DAO.getConfig("httpsclient.trustselfsignedcerts", "peers")));
     }
     
     public static void main(String[] args) {
