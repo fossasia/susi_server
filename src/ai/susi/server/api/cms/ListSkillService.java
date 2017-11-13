@@ -38,7 +38,8 @@ public class ListSkillService extends AbstractAPIHandler implements APIHandler {
     }
 
     @Override
-    public ServiceResponse serviceImpl(Query call, HttpServletResponse response, Authorization rights, final JsonObjectWithDefault permissions) throws APIException {
+    public ServiceResponse serviceImpl(Query call, HttpServletResponse response, Authorization rights,
+                                       final JsonObjectWithDefault permissions) throws APIException {
 
         String model_name = call.get("model", "general");
         File model = new File(DAO.model_watch_dir, model_name);
@@ -50,10 +51,8 @@ public class ListSkillService extends AbstractAPIHandler implements APIHandler {
         json.put("accepted", false);
         JSONObject skillObject = new JSONObject();
         ArrayList<String> fileList = new ArrayList<String>();
-        fileList = listFilesForFolder(language, fileList);
+        listFilesForFolder(language, fileList);
         JsonTray skillRating = DAO.skillRating;
-
-
         JSONArray jsonArray = new JSONArray();
 
         for (String skill_name : fileList) {
@@ -76,15 +75,23 @@ public class ListSkillService extends AbstractAPIHandler implements APIHandler {
                     skill.hasGroup(group_name) &&
                     skill.hasLanguage(language_name) &&
                     skill.hasName(skill_name)) {
-                    skillMetadata.put("developer_privacy_policy", entry.getValue().getDeveloperPrivacyPolicy() == null ? JSONObject.NULL : entry.getValue().getDeveloperPrivacyPolicy());
-                    skillMetadata.put("descriptions", entry.getValue().getDescription() == null ? JSONObject.NULL : entry.getValue().getDescription());
-                    skillMetadata.put("image", entry.getValue().getImage() == null ? JSONObject.NULL : entry.getValue().getImage());
-                    skillMetadata.put("author", entry.getValue().getAuthor() == null ? JSONObject.NULL : entry.getValue().getAuthor());
-                    skillMetadata.put("author_url", entry.getValue().getAuthorURL() == null ? JSONObject.NULL : entry.getValue().getAuthorURL());
-                    skillMetadata.put("skill_name", entry.getValue().getSkillName() == null ? JSONObject.NULL : entry.getValue().getSkillName());
-                    skillMetadata.put("terms_of_use", entry.getValue().getTermsOfUse() == null ? JSONObject.NULL : entry.getValue().getTermsOfUse());
+                    skillMetadata.put("developer_privacy_policy", entry.getValue().getDeveloperPrivacyPolicy() == null
+                            ? JSONObject.NULL : entry.getValue().getDeveloperPrivacyPolicy());
+                    skillMetadata.put("descriptions", entry.getValue().getDescription() == null
+                            ? JSONObject.NULL : entry.getValue().getDescription());
+                    skillMetadata.put("image", entry.getValue().getImage() == null
+                            ? JSONObject.NULL : entry.getValue().getImage());
+                    skillMetadata.put("author", entry.getValue().getAuthor() == null
+                            ? JSONObject.NULL : entry.getValue().getAuthor());
+                    skillMetadata.put("author_url", entry.getValue().getAuthorURL() == null
+                            ? JSONObject.NULL : entry.getValue().getAuthorURL());
+                    skillMetadata.put("skill_name", entry.getValue().getSkillName() == null
+                            ? JSONObject.NULL : entry.getValue().getSkillName());
+                    skillMetadata.put("terms_of_use", entry.getValue().getTermsOfUse() == null
+                            ? JSONObject.NULL : entry.getValue().getTermsOfUse());
                     skillMetadata.put("dynamic_content", entry.getValue().getDynamicContent());
-                    skillMetadata.put("examples", entry.getValue().getExamples() == null ? JSONObject.NULL : entry.getValue().getExamples());
+                    skillMetadata.put("examples", entry.getValue().getExamples() == null
+                            ? JSONObject.NULL : entry.getValue().getExamples());
                 }
             }
 
@@ -184,9 +191,7 @@ public class ListSkillService extends AbstractAPIHandler implements APIHandler {
             for (int i = 0; i < jsonArray.length(); i++) {
                 filteredData.put(jsonValues.get(i));
             }
-
             json.put("filteredData", filteredData);
-
         }
 
 
@@ -200,16 +205,12 @@ public class ListSkillService extends AbstractAPIHandler implements APIHandler {
 
     }
 
-    ArrayList<String> listFilesForFolder(final File folder, ArrayList<String> fileList) {
-
+    private void listFilesForFolder(final File folder, ArrayList<String> fileList) {
         File[] filesInFolder = folder.listFiles();
         if (filesInFolder != null) {
-            for (final File fileEntry : filesInFolder) {
-                if (!fileEntry.isDirectory() && !fileEntry.getName().startsWith(".")) {
-                    fileList.add(fileEntry.getName() + "");
-                }
-            }
+            Arrays.stream(filesInFolder)
+                    .filter(fileEntry -> !fileEntry.isDirectory() && !fileEntry.getName().startsWith("."))
+                    .forEach(fileEntry -> fileList.add(fileEntry.getName() + ""));
         }
-        return fileList;
     }
 }
