@@ -56,11 +56,14 @@ public class ListSkillService extends AbstractAPIHandler implements APIHandler {
             listFilesForFolder(language, fileList);
             JsonTray skillRating = DAO.skillRating;
             JSONArray jsonArray = new JSONArray();
+            JSONObject skills = new JSONObject(true);
 
             for (String skill_name : fileList) {
                 System.out.println(skill_name);
-                json.put("skills", fetchSkillDetails(skill_name, model_name, group_name, language_name, skillRating, jsonArray));
+                skills.put(skill_name, fetchSkillDetails(skill_name, model_name, group_name, language_name, skillRating, jsonArray));
             }
+
+            skillObject.put("skills", skills);
 
             // if filter is applied, sort the data accordingly
             if (call.get("applyFilter", false)) {
