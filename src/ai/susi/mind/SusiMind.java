@@ -45,6 +45,7 @@ import ai.susi.DAO;
 import ai.susi.json.JsonTray;
 import ai.susi.mind.SusiMemory.TokenMapList;
 import ai.susi.server.api.susi.ConsoleService;
+import ai.susi.tools.AIML2Susi;
 
 public class SusiMind {
     
@@ -141,7 +142,7 @@ public class SusiMind {
                             lesson = SusiSkill.readEzDSkill(new BufferedReader(new FileReader(f)));
                         }
                         if (f.getName().endsWith(".aiml")) {
-                            lesson = SusiSkill.readAIMLSkill(f);
+                            lesson = AIML2Susi.readAIMLSkill(f);
                         }
                         learn(lesson, f);
                     } catch (Throwable e) {
