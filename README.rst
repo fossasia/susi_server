@@ -209,7 +209,7 @@ here <https://github.com/fossasia/susi_server/issues>`__.
 What is the software license?
 -----------------------------
 
-LGPL 2.1
+`LGPL 2.1 <LICENSE>`__
 
 Development Workflow
 ====================
