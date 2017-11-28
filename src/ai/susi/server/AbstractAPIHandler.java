@@ -81,20 +81,33 @@ public abstract class AbstractAPIHandler extends HttpServlet implements APIHandl
     
     private void process(HttpServletRequest request, HttpServletResponse response, Query query) throws ServletException, IOException {
         
+        long startTime = System.currentTimeMillis();
+        
         // basic protection
-        UserRole minimalUserRole = getMinimalUserRole() != null ? getMinimalUserRole() : UserRole.ANONYMOUS;
+        UserRole minimalUserRole = getMinimalUserRole();
+        if (minimalUserRole == null) minimalUserRole = UserRole.ANONYMOUS;
 
-        if (query.isDoS_blackout()) {response.sendError(503, "your request frequency is too high"); return;} // DoS protection
-        if (DAO.getConfig("users.admin.localonly", true) && minimalUserRole == UserRole.ADMIN && !query.isLocalhostAccess()) {response.sendError(503, "access only allowed from localhost, your request comes from " + query.getClientHost()); return;} // danger! do not remove this!
+        if (query.isDoS_blackout()) {
+            String message = "your request frequency is too high";
+            logClient(startTime, query, null, 503, message);
+            response.sendError(503, message); return;
+        } // DoS protection
+        if (DAO.getConfig("users.admin.localonly", true) && minimalUserRole == UserRole.ADMIN && !query.isLocalhostAccess()) {
+            String message = "access only allowed from localhost, your request comes from " + query.getClientHost();
+            logClient(startTime, query, null, 503, message);
+            response.sendError(503, message); return;
+        } // danger! do not remove this!
         
         // user identification
-        ClientIdentity identity = getIdentity(request, response, query);
+        ClientIdentity identity = getIdentity(startTime, request, response, query);
         
         // user authorization: we use the identification of the user to get the assigned authorization
         Authorization authorization = DAO.getAuthorization(identity);
 
         if (authorization.getUserRole().ordinal() < minimalUserRole.ordinal()) {
-        	response.sendError(401, "Base user role not sufficient. Your base user role is '" + authorization.getUserRole().name() + "', your user role is '" + authorization.getUserRole().getName() + "'");
+            String message = "Base user role not sufficient. Your base user role is '" + authorization.getUserRole().name() + "', your user role is '" + authorization.getUserRole().getName() + "'";
+            logClient(startTime, query, identity, 401, message);
+            response.sendError(401, message);
 			return;
         }
         
@@ -106,7 +119,9 @@ public abstract class AbstractAPIHandler extends HttpServlet implements APIHandl
         try {
             ServiceResponse serviceResponse = serviceImpl(query, response, authorization, new JsonObjectWithDefault(authorization.getPermission()));
             if  (serviceResponse == null) {
-                response.sendError(400, "your request does not contain the required data");
+                String message = "your request does not contain the required data";
+                logClient(startTime, query, identity, 400, message);
+                response.sendError(400, message);
                 return;
              }
     
@@ -141,8 +156,11 @@ public abstract class AbstractAPIHandler extends HttpServlet implements APIHandl
                 response.setHeader("Access-Control-Allow-Origin", "*");
             }
             query.finalize();
+            logClient(startTime, query, identity, 200, "ok");
         } catch (APIException e) {
-            response.sendError(e.getStatusCode(), e.getMessage());
+            String message = e.getMessage();
+            logClient(startTime, query, identity, e.getStatusCode(), message);
+            response.sendError(e.getStatusCode(), message);
             return;
         }
     }
@@ -151,7 +169,7 @@ public abstract class AbstractAPIHandler extends HttpServlet implements APIHandl
      * Checks a request for valid login data, either a existing session, a cookie or an access token
      * @return user identity if some login is active, anonymous identity otherwise
      */
-    private static ClientIdentity getIdentity(HttpServletRequest request, HttpServletResponse response, Query query) {
+    private ClientIdentity getIdentity(long startTime, HttpServletRequest request, HttpServletResponse response, Query query) {
     	
     	if (getLoginCookie(request) != null) { // check if login cookie is set
 			
@@ -169,7 +187,7 @@ public abstract class AbstractAPIHandler extends HttpServlet implements APIHandl
 				response.addCookie(loginCookie);
 
 				ClientIdentity identity = authentication.getIdentity();
-	            DAO.log("USER REQUEST using cookie: " + identity.getClient());
+	            logClient(startTime, query, identity, 0, "user request using cookie");
 				return identity;
 			}
 
@@ -192,23 +210,38 @@ public abstract class AbstractAPIHandler extends HttpServlet implements APIHandl
     			ClientIdentity identity = authentication.getIdentity();
     			
     			if (authentication.checkExpireTime()) {
-    				DAO.log("login for user: " + identity.getName() + " via access token from host: " + query.getClientHost());
+                    logClient(startTime, query, identity, 0, "user login via access token");
     				
     				if ("true".equals(request.getParameter("request_session"))) {
             			request.getSession().setAttribute("identity", identity);
+                        logClient(startTime, query, identity, 0, "user requests a session");
             		}
     				if (authentication.has("one_time") && authentication.getBoolean("one_time")) {
     					authentication.delete();
+                        logClient(startTime, query, identity, 0, "user requests a one-time session, authentication deleted");
     				}
-    				DAO.log("USER REQUEST using access_token: " + identity.getClient());
     				return identity;
     			}
     		}
-    		DAO.log("Invalid access token from host: " + query.getClientHost());
+            logClient(startTime, query, null, 0, "invalid access token from client");
     		return getAnonymousIdentity(query.getClientHost(), getRequestHeaderSalt(request));
     	}
     	
         return getAnonymousIdentity(query.getClientHost(), getRequestHeaderSalt(request));
+    }
+    
+    private void logClient(
+            long startTime,
+            Query query,
+            ClientIdentity identity,
+            int httpResponseCode,
+            String message) {
+        String username = identity == null ? "anon" : identity.getName();
+        String host = query.getClientHost();
+        String q = query.toString();
+        if (q.length() > 80) q = q.substring(0, 80) + "...";
+        long t = System.currentTimeMillis() - startTime;
+        DAO.log(host + " - " + username + " - " + httpResponseCode + " - " + getAPIPath() + " - " + t + "ms - " + q + " - " + message);
     }
     
     public static String getRequestHeaderSalt(HttpServletRequest request) {
