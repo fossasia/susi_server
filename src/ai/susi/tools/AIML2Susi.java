@@ -24,6 +24,7 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileReader;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -48,7 +49,7 @@ public class AIML2Susi {
         br.close();
         
         // parse the string as xml into a node object
-        InputStream is = new ByteArrayInputStream(buf.toString().getBytes("UTF-8"));
+        InputStream is = new ByteArrayInputStream(buf.toString().getBytes(StandardCharsets.UTF_8));
         DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
         DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
         Document doc = dBuilder.parse(is);
@@ -65,7 +66,7 @@ public class AIML2Susi {
                 JSONObject intent = readAIMLCategory(nl.item(i));
                 if (intent != null && intent.length() > 0) intents.put(intent);
             }
-            System.out.println("ROOT NODE " + nl.item(i).getNodeName());
+            //System.out.println("ROOT NODE " + nl.item(i).getNodeName());
         }
         return json;
     }
@@ -76,7 +77,7 @@ public class AIML2Susi {
         String[] answers = null;
         for (int i = 0; i < nl.getLength(); i++) {
             String nodename = nl.item(i).getNodeName().toLowerCase();
-            System.out.println("CATEGORYY NODE " + nl.item(i).getNodeName());
+            //System.out.println("CATEGORYY NODE " + nl.item(i).getNodeName());
             if (nodename.equals("pattern")) {
                 phrases = readAIMLSentences(nl.item(i));
             } else if (nodename.equals("that")) {
@@ -96,7 +97,7 @@ public class AIML2Susi {
         JSONObject json = new JSONObject();
         for (int i = 0; i < nl.getLength(); i++) {
             String nodename = nl.item(i).getNodeName().toLowerCase();
-            System.out.println("SENTENCE NODE " + nl.item(i).getNodeName());
+            //System.out.println("SENTENCE NODE " + nl.item(i).getNodeName());
             if (nodename.equals("pattern")) {
                 
             } else if (nodename.equals("that")) {
@@ -106,5 +107,20 @@ public class AIML2Susi {
             }
         }
         return null;
+    }
+    
+    public static void main(String[] args) {
+    	File archive = new File("/Users/admin/git/AIMLemotions");
+    	String[] list = archive.list();
+    	for (String f: list) {
+    		if (! f.endsWith(".aiml")) continue;
+    		try {
+				JSONObject j = readAIMLSkill(new File(archive, f));
+				System.out.println("AIML: " + f);
+				System.out.println(j.toString(2));
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+    	}
     }
 }
