@@ -239,7 +239,7 @@ public abstract class AbstractAPIHandler extends HttpServlet implements APIHandl
         String username = identity == null ? "anon" : identity.getName();
         String host = query.getClientHost();
         String q = query.toString();
-        if (q.length() > 80) q = q.substring(0, 80) + "...";
+        if (q.length() > 512) q = q.substring(0, 512) + "...";
         long t = System.currentTimeMillis() - startTime;
         DAO.log(host + " - " + username + " - " + httpResponseCode + " - " + getAPIPath() + " - " + t + "ms - " + q + " - " + message);
     }

@@ -50,8 +50,6 @@ public class Authorization {
      */
     public Authorization(@Nonnull ClientIdentity identity, JsonTray parent) {
 
-        DAO.severe("new authorization");
-
         this.parent = parent;
         this.identity = identity;
 
@@ -69,7 +67,6 @@ public class Authorization {
     		String userRoleName = json.getString("userRole");
             try {
             	userRole = UserRole.valueOf(userRoleName.toUpperCase());
-            	DAO.severe("user role " + userRoleName + " valid");
             } catch (IllegalArgumentException e) {
             	DAO.severe("user role " + userRoleName + " invalid");
                 userRole = UserRole.ANONYMOUS;
@@ -79,7 +76,6 @@ public class Authorization {
             userRole = UserRole.ANONYMOUS;
             json.put("userRole", userRole.getName());
         }
-        DAO.severe("user role: " + userRole.getName());
 
         if(!json.has("permissions")) json.put("permissions", new JSONObject());
         permissions = json.getJSONObject("permissions");
