@@ -116,7 +116,7 @@ public class DAO {
      * @param dataPath the path to the data directory
      */
     public static void init(Map<String, String> configMap, Path dataPath) throws Exception{
-
+        
         log("initializing SUSI DAO");
         
         config = configMap;

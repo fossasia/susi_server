@@ -56,7 +56,7 @@ public class ListSkillService extends AbstractAPIHandler implements APIHandler {
         JSONArray jsonArray = new JSONArray();
 
         for (String skill_name : fileList) {
-            System.out.println(skill_name);
+            //System.out.println(skill_name);
             JSONObject skillMetadata = new JSONObject();
             skill_name = skill_name.replace(".txt", "");
             skillMetadata.put("developer_privacy_policy", JSONObject.NULL);

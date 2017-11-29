@@ -145,18 +145,22 @@ public abstract class AbstractAPIHandler extends HttpServlet implements APIHandl
                 }
                 PrintWriter sos = response.getWriter();
                 if (jsonp) sos.print(callback + "(");
-                sos.print(serviceResponse.toString(minified));
+                String out = serviceResponse.toString(minified);
+                sos.print(out);
                 if (jsonp) sos.println(");");
                 sos.println();
+                logClient(startTime, query, identity, 200, "ok: " + (minified ? out : serviceResponse.toString(true)));
             } else if (serviceResponse.isString()) {
                 PrintWriter sos = response.getWriter();
-                sos.print(serviceResponse.toString(false));
+                String out = serviceResponse.toString(false);
+                sos.print(out);
+                logClient(startTime, query, identity, 200, "ok: " + out);
             } else if (serviceResponse.isByteArray()) {
                 response.getOutputStream().write(serviceResponse.getByteArray());
                 response.setHeader("Access-Control-Allow-Origin", "*");
+                logClient(startTime, query, identity, 200, "ok (ByteArray)");
             }
             query.finalize();
-            logClient(startTime, query, identity, 200, "ok");
         } catch (APIException e) {
             String message = e.getMessage();
             logClient(startTime, query, identity, e.getStatusCode(), message);
@@ -241,7 +245,10 @@ public abstract class AbstractAPIHandler extends HttpServlet implements APIHandl
         String q = query.toString();
         if (q.length() > 512) q = q.substring(0, 512) + "...";
         long t = System.currentTimeMillis() - startTime;
-        DAO.log(host + " - " + username + " - " + httpResponseCode + " - " + getAPIPath() + " - " + t + "ms - " + q + " - " + message);
+        String path = getAPIPath();
+        if (q.length() > 0) path = path + "?" + q;
+        if (message.length() > 512) message = message.substring(0, 512) + "...";
+        DAO.log(host + " - " + username + " - " + httpResponseCode + " - " + t + "ms - " + path + " - " + message);
     }
     
     public static String getRequestHeaderSalt(HttpServletRequest request) {
