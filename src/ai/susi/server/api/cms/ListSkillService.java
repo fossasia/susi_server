@@ -2,7 +2,6 @@ package ai.susi.server.api.cms;
 
 import ai.susi.DAO;
 import ai.susi.json.JsonObjectWithDefault;
-import ai.susi.json.JsonTray;
 import ai.susi.mind.SusiSkill;
 import ai.susi.server.*;
 import org.json.JSONArray;
@@ -52,62 +51,13 @@ public class ListSkillService extends AbstractAPIHandler implements APIHandler {
         JSONObject skillObject = new JSONObject();
         ArrayList<String> fileList = new ArrayList<String>();
         listFilesForFolder(language, fileList);
-        JsonTray skillRating = DAO.skillRating;
         JSONArray jsonArray = new JSONArray();
 
         for (String skill_name : fileList) {
             //System.out.println(skill_name);
-            JSONObject skillMetadata = new JSONObject();
             skill_name = skill_name.replace(".txt", "");
-            skillMetadata.put("developer_privacy_policy", JSONObject.NULL);
-            skillMetadata.put("descriptions", JSONObject.NULL);
-            skillMetadata.put("image", JSONObject.NULL);
-            skillMetadata.put("author", JSONObject.NULL);
-            skillMetadata.put("author_url", JSONObject.NULL);
-            skillMetadata.put("skill_name", JSONObject.NULL);
-            skillMetadata.put("terms_of_use", JSONObject.NULL);
-            skillMetadata.put("dynamic_content", false);
-            skillMetadata.put("examples", JSONObject.NULL);
-            skillMetadata.put("skill_rating", JSONObject.NULL);
-            for (Map.Entry<SusiSkill.ID, SusiSkill> entry : DAO.susi.getSkillMetadata().entrySet()) {
-                SusiSkill.ID skill = entry.getKey();
-                if (skill.hasModel(model_name) &&
-                    skill.hasGroup(group_name) &&
-                    skill.hasLanguage(language_name) &&
-                    skill.hasName(skill_name)) {
-                    skillMetadata.put("developer_privacy_policy", entry.getValue().getDeveloperPrivacyPolicy() == null
-                            ? JSONObject.NULL : entry.getValue().getDeveloperPrivacyPolicy());
-                    skillMetadata.put("descriptions", entry.getValue().getDescription() == null
-                            ? JSONObject.NULL : entry.getValue().getDescription());
-                    skillMetadata.put("image", entry.getValue().getImage() == null
-                            ? JSONObject.NULL : entry.getValue().getImage());
-                    skillMetadata.put("author", entry.getValue().getAuthor() == null
-                            ? JSONObject.NULL : entry.getValue().getAuthor());
-                    skillMetadata.put("author_url", entry.getValue().getAuthorURL() == null
-                            ? JSONObject.NULL : entry.getValue().getAuthorURL());
-                    skillMetadata.put("skill_name", entry.getValue().getSkillName() == null
-                            ? JSONObject.NULL : entry.getValue().getSkillName());
-                    skillMetadata.put("terms_of_use", entry.getValue().getTermsOfUse() == null
-                            ? JSONObject.NULL : entry.getValue().getTermsOfUse());
-                    skillMetadata.put("dynamic_content", entry.getValue().getDynamicContent());
-                    skillMetadata.put("examples", entry.getValue().getExamples() == null
-                            ? JSONObject.NULL : entry.getValue().getExamples());
-                }
-            }
-
-            if (skillRating.has(model_name)) {
-                JSONObject modelName = skillRating.getJSONObject(model_name);
-                if (modelName.has(group_name)) {
-                    JSONObject groupName = modelName.getJSONObject(group_name);
-                    if (groupName.has(language_name)) {
-                        JSONObject languageName = groupName.getJSONObject(language_name);
-                        if (languageName.has(skill_name)) {
-                            JSONObject skillName = languageName.getJSONObject(skill_name);
-                            skillMetadata.put("skill_rating", skillName);
-                        }
-                    }
-                }
-            }
+            JSONObject skillMetadata = SusiSkill.getSkillMetadata(model_name, group_name, language_name, skill_name);
+            
             jsonArray.put(skillMetadata);
             skillObject.put(skill_name, skillMetadata);
         }
