@@ -69,20 +69,7 @@ public class GetSkillJsonService extends AbstractAPIHandler implements APIHandle
         String language_name = call.get("language", "en");
         File language = new File(group, language_name);
         String skill_name = call.get("skill", "wikipedia");
-        File skill = new File(language, skill_name + ".txt");
-        
-        // for some strange reason the skill name is requested here in lowercase, while the name may also be uppercase
-        // this should be fixed in the front-end, however we implement a patch here to circumvent the problem if possible
-        if (!skill.exists()) {
-            String[] list = skill.getParentFile().list();
-            String f = skill_name + ".txt";
-            for (String n: list) {
-                if (n.toLowerCase().equals(f)) {
-                    skill = new File(language, n);
-                    break;
-                }
-            }
-        }
+        File skill = DAO.getSkillFile(language, skill_name);
 
         try {
             String content = new String(Files.readAllBytes(skill.toPath()));

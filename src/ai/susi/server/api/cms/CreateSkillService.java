@@ -84,8 +84,7 @@ public class CreateSkillService extends AbstractAPIHandler implements APIHandler
                 }
                 File language = new File(group, language_name);
                 String skill_name = req.getParameter("skill");
-
-                File skill = new File(language, skill_name + ".txt");
+                File skill = DAO.getSkillFile(language, skill_name);
 
                 String image_name = req.getParameter("image_name");
 

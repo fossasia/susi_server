@@ -84,7 +84,7 @@ public class GetSkillMetadataService extends AbstractAPIHandler implements APIHa
         File modelpath = new File(DAO.model_watch_dir, model);
         File grouppath = new File(modelpath, group);
         File languagepath = new File(grouppath, language);
-        File skillpath = new File(languagepath, skillname + ".txt");
+        File skillpath = DAO.getSkillFile(languagepath, skillname);
         skillMetadata.put("developer_privacy_policy", JSONObject.NULL);
         skillMetadata.put("descriptions",JSONObject.NULL);
         skillMetadata.put("image", JSONObject.NULL);

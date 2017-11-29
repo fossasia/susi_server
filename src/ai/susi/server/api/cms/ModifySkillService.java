@@ -98,7 +98,7 @@ public class ModifySkillService extends AbstractAPIHandler implements APIHandler
             if (skill_name == null) {
                 skill_name = "";
             }
-            File skill = new File(language, skill_name + ".txt");
+            File skill = DAO.getSkillFile(language, skill_name);
             // GET MODIFIED VALUES HERE
             String modified_model_name = call.getParameter("NewModel");
             if (modified_model_name == null) {

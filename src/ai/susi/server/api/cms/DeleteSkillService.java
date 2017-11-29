@@ -51,8 +51,7 @@ public class DeleteSkillService extends AbstractAPIHandler implements APIHandler
         String language_name = call.get("language", "en");
         File language = new File(group, language_name);
         String skill_name = call.get("skill", "whois");
-        File skill = new File(language, skill_name + ".txt");
-        String SkillName = skill.getName();
+        File skill = DAO.getSkillFile(language, skill_name);
         JSONObject json = new JSONObject(true);
         json.put("accepted", false);
         if(!DAO.deleted_skill_dir.exists()){
