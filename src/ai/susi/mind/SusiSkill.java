@@ -20,27 +20,25 @@
 package ai.susi.mind;
 
 import java.io.BufferedReader;
-import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
-import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.util.LinkedHashSet;
+import java.util.Map;
 import java.util.Set;
-
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONTokener;
-import org.w3c.dom.Document;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
 
 import ai.susi.DAO;
+import ai.susi.json.JsonTray;
 import ai.susi.mind.SusiInference.Type;
 
 /**
@@ -392,6 +390,83 @@ public class SusiSkill {
         return json;
     }
     
+    public static JSONObject getSkillMetadata(String model, String group, String language, String skillname) {
+
+        JSONObject skillMetadata = new JSONObject(true)
+                .put("model", model)
+                .put("group", group)
+                .put("language", language);
+        File modelpath = new File(DAO.model_watch_dir, model);
+        File grouppath = new File(modelpath, group);
+        File languagepath = new File(grouppath, language);
+        File skillpath = DAO.getSkillFile(languagepath, skillname);
+        skillname = skillpath.getName().replaceAll(".txt", ""); // fixes the bad name (lowercased) to the actual right name
+        
+        // default values
+        skillMetadata.put("developer_privacy_policy", JSONObject.NULL);
+        skillMetadata.put("descriptions",JSONObject.NULL);
+        skillMetadata.put("image", JSONObject.NULL);
+        skillMetadata.put("author", JSONObject.NULL);
+        skillMetadata.put("author_url", JSONObject.NULL);
+        skillMetadata.put("skill_name", JSONObject.NULL);
+        skillMetadata.put("terms_of_use", JSONObject.NULL);
+        skillMetadata.put("dynamic_content", false);
+        skillMetadata.put("examples", JSONObject.NULL);
+        skillMetadata.put("skill_rating", JSONObject.NULL);
+        
+        // metadata
+        for (Map.Entry<SusiSkill.ID, SusiSkill> entry : DAO.susi.getSkillMetadata().entrySet()) {
+            SusiSkill skill = entry.getValue();
+            SusiSkill.ID skillid = entry.getKey();
+            if (skillid.hasModel(model) &&
+                skillid.hasGroup(group) &&
+                skillid.hasLanguage(language) &&
+                skillid.hasName(skillname)) {
+
+                skillMetadata.put("skill_name", skill.getSkillName() ==null ? JSONObject.NULL: skill.getSkillName());
+                skillMetadata.put("developer_privacy_policy", skill.getDeveloperPrivacyPolicy() ==null ? JSONObject.NULL:skill.getDeveloperPrivacyPolicy());
+                skillMetadata.put("descriptions", skill.getDescription() ==null ? JSONObject.NULL:skill.getDescription());
+                skillMetadata.put("image", skill.getImage() ==null ? JSONObject.NULL: skill.getImage());
+                skillMetadata.put("author", skill.getAuthor()  ==null ? JSONObject.NULL:skill.getAuthor());
+                skillMetadata.put("author_url", skill.getAuthorURL() ==null ? JSONObject.NULL:skill.getAuthorURL());
+                skillMetadata.put("terms_of_use", skill.getTermsOfUse() ==null ? JSONObject.NULL:skill.getTermsOfUse());
+                skillMetadata.put("dynamic_content", skill.getDynamicContent());
+                skillMetadata.put("examples", skill.getExamples() ==null ? JSONObject.NULL: skill.getExamples());
+                
+            }
+        }
+        
+        // rating
+        JsonTray skillRating = DAO.skillRating;
+        if (skillRating.has(model)) {
+            JSONObject modelName = skillRating.getJSONObject(model);
+            if (modelName.has(group)) {
+                JSONObject groupName = modelName.getJSONObject(group);
+                if (groupName.has(language)) {
+                    JSONObject languageName = groupName.getJSONObject(language);
+                    if (languageName.has(skillname)) {
+                        JSONObject skillName = languageName.getJSONObject(skillname);
+                        skillMetadata.put("skill_rating", skillName);
+                    }
+                }
+            }
+        }
+        
+        // file attributes
+        BasicFileAttributes attr = null;
+        Path p = Paths.get(skillpath.getPath());
+        try {
+            attr = Files.readAttributes(p, BasicFileAttributes.class);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        if(attr!=null){
+            skillMetadata.put("creationTime: " , attr.creationTime());
+            skillMetadata.put("lastAccessTime: " , attr.lastAccessTime());
+            skillMetadata.put("lastModifiedTime: " , attr.lastModifiedTime());
+        }
+        return skillMetadata;
+    }
 
     public static JSONObject readJsonSkill(File file) throws JSONException, FileNotFoundException {
         JSONObject json = new JSONObject(new JSONTokener(new FileReader(file)));
@@ -399,75 +474,6 @@ public class SusiSkill {
         return json;
     }
     
-    
-    public static JSONObject readAIMLSkill(File file) throws Exception {
-        // read the file as string
-        BufferedReader br = new BufferedReader(new FileReader(file));
-        String str;
-        StringBuilder buf=new StringBuilder();
-        while ((str = br.readLine()) != null) buf.append(str);
-        br.close();
-        
-        // parse the string as xml into a node object
-        InputStream is = new ByteArrayInputStream(buf.toString().getBytes("UTF-8"));
-        DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
-        DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
-        Document doc = dBuilder.parse(is);
-        doc.getDocumentElement().normalize();
-        Node root = doc.getDocumentElement();
-        Node node = root;
-        NodeList nl = node.getChildNodes();
-        JSONObject json = new JSONObject();
-        JSONArray intents = new JSONArray();
-        json.put("intents", intents);
-        for (int i = 0; i < nl.getLength(); i++) {
-            String nodename = nl.item(i).getNodeName().toLowerCase();
-            if (nodename.equals("category")) {
-                JSONObject intent = readAIMLCategory(nl.item(i));
-                if (intent != null && intent.length() > 0) intents.put(intent);
-            }
-            System.out.println("ROOT NODE " + nl.item(i).getNodeName());
-        }
-        return json;
-    }
-    
-    public static JSONObject readAIMLCategory(Node category) {
-        NodeList nl = category.getChildNodes();
-        String[] phrases = null;
-        String[] answers = null;
-        for (int i = 0; i < nl.getLength(); i++) {
-            String nodename = nl.item(i).getNodeName().toLowerCase();
-            System.out.println("CATEGORYY NODE " + nl.item(i).getNodeName());
-            if (nodename.equals("pattern")) {
-                phrases = readAIMLSentences(nl.item(i));
-            } else if (nodename.equals("that")) {
-                
-            } else if (nodename.equals("template")) {
-                answers = readAIMLSentences(nl.item(i));
-            }
-        }
-        if (phrases != null && answers != null) {
-            return SusiIntent.answerIntent(phrases, null, answers, false, null, null);
-        }
-        return null;
-    }
-    
-    public static String[] readAIMLSentences(Node pot) {
-        NodeList nl = pot.getChildNodes();
-        JSONObject json = new JSONObject();
-        for (int i = 0; i < nl.getLength(); i++) {
-            String nodename = nl.item(i).getNodeName().toLowerCase();
-            System.out.println("SENTENCE NODE " + nl.item(i).getNodeName());
-            if (nodename.equals("pattern")) {
-                
-            } else if (nodename.equals("that")) {
-                
-            } else if (nodename.equals("template")) {
-                
-            }
-        }
-        return null;
-    }
     public void setAuthor(String author) {
         this.author = author;
     }

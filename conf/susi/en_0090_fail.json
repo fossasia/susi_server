@@ -7,13 +7,6 @@
      "$text$"
    ]}]
   }, {
-   "score"  : 7,
-   "phrases":[	{"type":"pattern", "expression":"*"} ],
-   "process":[	{"type":"console", "expression":"SELECT text FROM messages-order-by-favourites_count WHERE query='you $1$ since:week /pure /len75';"}],
-   "actions":[	{"type":"answer", "select":"random", "phrases":[
-     "$text$"
-   ]}]
-  }, {
    "phrases":[	{"type":"pattern", "expression":"what is *"}, {"type":"pattern", "expression":"describe *"} ],
    "process":[	{"type":"console", "expression":"SELECT text FROM messages-order-by-favourites_count WHERE query='$1$ is since:week /pure /len75';"}],
    "actions":[	{"type":"answer", "select":"random", "phrases":[

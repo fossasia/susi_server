@@ -65,8 +65,7 @@ public class UndoDeleteSkillService  extends AbstractAPIHandler implements APIHa
         String language_name = call.get("language", "en");
         File language = new File(group, language_name);
         String skill_name = call.get("skill", null);
-        File skill = new File(language, skill_name + ".txt");
-        String SkillName = skill.getName();
+        File skill = DAO.getSkillFile(language, skill_name);
         JSONObject json = new JSONObject(true);
         json.put("accepted", false);
         String path = skill.getPath();
