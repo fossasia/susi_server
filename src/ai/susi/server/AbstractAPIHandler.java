@@ -234,7 +234,7 @@ public abstract class AbstractAPIHandler extends HttpServlet implements APIHandl
         return getAnonymousIdentity(query.getClientHost(), getRequestHeaderSalt(request));
     }
     
-    private void logClient(
+    public void logClient(
             long startTime,
             Query query,
             ClientIdentity identity,

@@ -75,7 +75,12 @@ public class ModifySkillService extends AbstractAPIHandler implements APIHandler
 
     @Override
     protected void doPost(HttpServletRequest call, HttpServletResponse resp) throws ServletException, IOException {
-        String userEmail=null;
+    	// debug the call
+    	Query query = RemoteAccess.evaluate(call);
+        query.initPOST(RemoteAccess.getPostMap(call));
+        logClient(System.currentTimeMillis(), query, null, 0, "init post");    	
+    	
+    	String userEmail=null;
         // CORS Header
         resp.setHeader("Access-Control-Allow-Origin", "*");
         if (call.getParameter("access_token") != null) {
