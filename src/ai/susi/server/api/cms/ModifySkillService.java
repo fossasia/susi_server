@@ -2,6 +2,7 @@ package ai.susi.server.api.cms;
 
 import ai.susi.DAO;
 import ai.susi.json.JsonObjectWithDefault;
+import ai.susi.mind.SusiSkill;
 import ai.susi.server.*;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
@@ -98,7 +99,7 @@ public class ModifySkillService extends AbstractAPIHandler implements APIHandler
             if (skill_name == null) {
                 skill_name = "";
             }
-            File skill = DAO.getSkillFile(language, skill_name);
+            File skill = SusiSkill.getSkillFile(language, skill_name);
             // GET MODIFIED VALUES HERE
             String modified_model_name = call.getParameter("NewModel");
             if (modified_model_name == null) {

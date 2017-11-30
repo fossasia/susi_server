@@ -40,7 +40,6 @@ import ai.susi.json.JsonTray;
 import ai.susi.tools.MapTools;
 
 import org.apache.commons.io.FileUtils;
-import org.json.JSONArray;
 
 /**
  * Susis log is a kind of reflection about the conversation in the past

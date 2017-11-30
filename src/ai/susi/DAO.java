@@ -527,27 +527,4 @@ public class DAO {
         }
         return result;
     }
-    
-    /**
-     * For some strange reason the skill name is requested here in lowercase, while the name may also be uppercase
-     * this should be fixed in the front-end, however we implement a patch here to circumvent the problem if possible
-     * Another strange effect is, that some file systems do match lowercase with uppercase (like in windows),
-     * so testing skill.exists() would return true even if the name does not exist exactly as given in the file system.
-     * @param language
-     * @param skill_name
-     * @return the actual skill file if one exist or a skill file that is constructed from language and skill_name
-     */
-    public static File getSkillFile(File language, String skill_name) {
-
-    	String f = skill_name + ".txt";
-        File skill = new File(language, f);
-        String[] list = skill.getParentFile().list();
-        for (String n: list) {
-            if (n.equals(f) || n.toLowerCase().equals(f)) {
-                skill = new File(language, n);
-                break;
-            }
-        }
-        return skill;
-    }
 }
