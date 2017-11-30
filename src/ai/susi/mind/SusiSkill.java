@@ -149,6 +149,13 @@ public class SusiSkill {
         this.dynamicContent = false;
         this.tags = new LinkedHashSet<>();
     }
+    
+    /**
+     * read a text skill file (once called "easy dialog - EzD")
+     * @param br a buffered reader
+     * @return a skill object as JSON
+     * @throws JSONException
+     */
     public static JSONObject readEzDSkill(BufferedReader br) throws JSONException {
         // read the text file and turn it into a intent json; then learn that
         JSONObject json = new JSONObject();
@@ -401,16 +408,34 @@ public class SusiSkill {
      */
     public static File getSkillFile(File language, String skill_name) {
 
-    	String f = skill_name + ".txt";
-        File skill = new File(language, f);
-        String[] list = skill.getParentFile().list();
+    	String fn = skill_name + ".txt";
+        String[] list = language.list();
+        
+        // first try: the skill name may be same or similar to the skill file name
         for (String n: list) {
-            if (n.equals(f) || n.toLowerCase().equals(f)) {
-                skill = new File(language, n);
-                break;
+            if (n.equals(fn) || n.toLowerCase().equals(fn)) {
+                return new File(language, n);
             }
         }
-        return skill;
+        
+        // second try: the skill name may be same or similar to the skill name within the skill description
+        // this is costly: we must parse the whole skill file
+        for (String n: list) {
+            if (!n.endsWith(".txt") && !n.endsWith(".ezd")) continue;
+        	File f = new File(language, n);
+            try {
+				JSONObject json = SusiSkill.readEzDSkill(new BufferedReader(new FileReader(f)));
+				String sn = json.optString("skill_name");
+				if (sn.equals(skill_name) || sn.toLowerCase().equals(skill_name) || sn.toLowerCase().replace(' ', '_').equals(skill_name)) {
+	                return new File(language, n);
+	            }
+			} catch (JSONException | FileNotFoundException e) {
+				continue;
+			}
+        }
+        
+        // the final attempt is bad and may not succeed, but it's the only last thing left we could do.
+        return new File(language, fn);
     }
     
     public static JSONObject getSkillMetadata(String model, String group, String language, String skillname) {
