@@ -105,6 +105,7 @@ public class ModifySkillService extends AbstractAPIHandler implements APIHandler
                 skill_name = "";
             }
             File skill = SusiSkill.getSkillFile(language, skill_name);
+            skill_name = skill.getName().replaceAll("\\.txt", "");
             // GET MODIFIED VALUES HERE
             String modified_model_name = call.getParameter("NewModel");
             if (modified_model_name == null) {
@@ -135,10 +136,10 @@ public class ModifySkillService extends AbstractAPIHandler implements APIHandler
             if (skill.exists() && content != null) {
                 JSONObject json = new JSONObject();
                 // CHECK IF SKILL PATH AND NAME IS SAME. IF IT IS SAME THEN MAKE CHANGES IN OLD FILE ONLY
-                if (Objects.equals(model_name, modified_model_name) &&
-                        Objects.equals(group_name, modified_group_name) &&
-                        Objects.equals(language_name, modified_language_name) &&
-                        Objects.equals(skill_name, modified_skill_name)) {
+                if (model_name.equals(modified_model_name) &&
+                    group_name.equals(modified_group_name) &&
+                    language_name.equals(modified_language_name) &&
+                    skill_name.equals(modified_skill_name)) {
                     // Writing to File
                     try (FileWriter file = new FileWriter(skill)) {
                         file.write(content);
