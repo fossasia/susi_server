@@ -28,6 +28,7 @@ import java.util.regex.Pattern;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import ai.susi.mind.SusiMind.ReactionException;
 import ai.susi.tools.TimeoutMatcher;
 
 /**
@@ -303,7 +304,7 @@ public class SusiAction {
      * @param thoughts an argument from previously applied inferences
      * @return the action with the attribute "expression" instantiated by unification of the thought with the action
      */
-    public SusiAction execution(SusiArgument thoughts, SusiMind mind, String client, SusiLanguage language) {
+    public SusiAction execution(SusiArgument thoughts, SusiMind mind, String client, SusiLanguage language) throws ReactionException {
         if ((this.getRenderType() == RenderType.answer || this.getRenderType() == RenderType.self) && this.json.has("phrases")) {
             // transform the answer according to the data
             ArrayList<String> a = getPhrases();
