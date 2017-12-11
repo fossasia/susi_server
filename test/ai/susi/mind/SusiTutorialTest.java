@@ -138,6 +138,7 @@ public class SusiTutorialTest {
     private final static String testFile = 
                     "# susi EzD tutorial playground\n" +
                     "::prior\n" +
+                    "\n" +
                     "reset test.\n" +
                     "ok^^>_mood\n" +
                     "\n" +
