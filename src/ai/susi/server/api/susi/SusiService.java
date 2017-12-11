@@ -97,7 +97,7 @@ public class SusiService extends AbstractAPIHandler implements APIHandler {
                 SusiSkill activeskill = dreamMind.getSkillMetadata().get(skillid);
                 dreamMind.setActiveSkill(activeskill);
                 // susi is now dreaming.. Try to find an answer out of the dream
-                SusiCognition cognition = new SusiCognition(dreamMind, q, timezoneOffset, latitude, longitude, language, count, user.getIdentity());
+                SusiCognition cognition = new SusiCognition(q, timezoneOffset, latitude, longitude, language, count, user.getIdentity(), dreamMind, DAO.susi);
                 
                 if (cognition.getAnswers().size() > 0) {
                     DAO.susi.getMemories().addCognition(user.getIdentity().getClient(), cognition);
@@ -109,7 +109,7 @@ public class SusiService extends AbstractAPIHandler implements APIHandler {
         }
         
         // answer with built-in intents
-        SusiCognition cognition = new SusiCognition(DAO.susi, q, timezoneOffset, latitude, longitude, language, count, user.getIdentity());
+        SusiCognition cognition = new SusiCognition(q, timezoneOffset, latitude, longitude, language, count, user.getIdentity(), DAO.susi);
         try {
             DAO.susi.getMemories().addCognition(user.getIdentity().getClient(), cognition);
         } catch (IOException e) {

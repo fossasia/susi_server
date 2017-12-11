@@ -37,6 +37,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -401,14 +402,14 @@ public class SusiMind {
         private SusiThought mindstate;
         
         public Reaction(String query, SusiLanguage userLanguage, String client, SusiThought observation) throws ReactionException {
-            List<SusiThought> datalist = react(query, userLanguage, 1, client, observation);
-            if (datalist.size() == 0) throw new ReactionException("datalist is empty");
-            SusiThought bestargument = datalist.get(0);
-            if (bestargument.getActions().isEmpty()) throw new ReactionException("action list is empty");
-            SusiAction action = bestargument.getActions().get(0);
+            List<SusiThought> thoughts = react(query, userLanguage, 1, client, observation);
+            thoughts = SusiThought.filterExpressionAction(thoughts);
+            
+            if (thoughts.size() == 0) throw new ReactionException("empty mind, no idea");
+            this.mindstate = thoughts.get(0);
+            List<SusiAction> actions = this.mindstate.getActions();
+            SusiAction action = actions.get(0);
             this.expression = action.getStringAttr("expression");
-            //this.expression = action.execution(bestargument, SusiMind.this, client, userLanguage).getStringAttr("expression");
-            this.mindstate = bestargument;
         }
         
         public String getExpression() {
@@ -440,15 +441,17 @@ public class SusiMind {
     }
     
     public static void main(String[] args) {
+        File skill = new File(new File("conf"), "susi");
+        File log = new File(new File("data"), "susi");
+        SusiMind mem = new SusiMind(log, null, skill);
         try {
-            File watch = new File(new File("data"), "susi");
-            SusiMind mem = new SusiMind(watch, null, watch);
-            File file = new File("conf/susi/en_0090_fail.json");
-            JSONObject lesson = SusiSkill.readJsonSkill(file);
-            mem.learn(lesson, file);
             System.out.println(mem.new Reaction("I feel funny", SusiLanguage.unknown, "localhost", new SusiThought()).getExpression());
+        } catch (ReactionException e) {
+            e.printStackTrace();
+        }
+        try {
             System.out.println(mem.new Reaction("Help me!", SusiLanguage.unknown, "localhost", new SusiThought()).getExpression());
-        } catch (FileNotFoundException | ReactionException e) {
+        } catch (ReactionException e) {
             e.printStackTrace();
         }
     }

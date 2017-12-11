@@ -45,12 +45,12 @@ public class SusiCognition {
     JSONObject json;
 
     public SusiCognition(
-            final SusiMind mind,
             final String query,
             int timezoneOffset,
             double latitude, double longitude,
             String languageName,
-            int maxcount, ClientIdentity identity) {
+            int maxcount, ClientIdentity identity,
+            final SusiMind... minds) {
         this.json = new JSONObject(true);
         
         // get a response from susis mind
@@ -73,7 +73,11 @@ public class SusiCognition {
         this.json.put("query_date", DateParser.utcFormatter.print(query_date));
         
         // compute the mind reaction
-        List<SusiThought> dispute = mind.react(query, language, maxcount, client, observation);
+        List<SusiThought> dispute = null;
+        for (SusiMind mind: minds) {
+        	dispute = mind.react(query, language, maxcount, client, observation);
+        	if (dispute != null && dispute.size() > 0) break;
+        }
         long answer_date = System.currentTimeMillis();
         
         // store answer and actions into json
