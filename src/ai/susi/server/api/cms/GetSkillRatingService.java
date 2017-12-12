@@ -65,7 +65,7 @@ public class GetSkillRatingService extends AbstractAPIHandler implements APIHand
         String language_name = call.get("language", "en");
         File language = new File(group, language_name);
         String skill_name = call.get("skill", null);
-        File skill = SusiSkill.getSkillFile(language, skill_name);
+        File skill = SusiSkill.getSkillFileInLanguage(language, skill_name);
 
         JSONObject result = new JSONObject();
         result.put("accepted", false);

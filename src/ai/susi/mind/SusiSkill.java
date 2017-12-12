@@ -406,7 +406,7 @@ public class SusiSkill {
      * @param skill_name
      * @return the actual skill file if one exist or a skill file that is constructed from language and skill_name
      */
-    public static File getSkillFile(File language, String skill_name) {
+    public static File getSkillFileInLanguage(File language, String skill_name) {
 
     	String fn = skill_name + ".txt";
         String[] list = language.list();
@@ -447,7 +447,7 @@ public class SusiSkill {
         File modelpath = new File(DAO.model_watch_dir, model);
         File grouppath = new File(modelpath, group);
         File languagepath = new File(grouppath, language);
-        File skillpath = getSkillFile(languagepath, skillname);
+        File skillpath = getSkillFileInLanguage(languagepath, skillname);
         skillname = skillpath.getName().replaceAll(".txt", ""); // fixes the bad name (lowercased) to the actual right name
         
         // default values

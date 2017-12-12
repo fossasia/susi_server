@@ -66,7 +66,7 @@ public class RateSkillService extends AbstractAPIHandler implements APIHandler {
         String language_name = call.get("language", "en");
         File language = new File(group, language_name);
         String skill_name = call.get("skill", null);
-        File skill = SusiSkill.getSkillFile(language, skill_name);
+        File skill = SusiSkill.getSkillFileInLanguage(language, skill_name);
         String skill_rate = call.get("rating", null);
 
         JSONObject result = new JSONObject();
