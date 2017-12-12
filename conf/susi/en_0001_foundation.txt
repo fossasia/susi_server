@@ -38,7 +38,7 @@ Persona will sleep now. Unconscious state activated.^^>_persona_awake
 
 # WW: Instruct a host to enter Analysis Mode. In Analysis Mode the host is passive, compliant, and initiates no actions or conversation.
 # Susi just responds with the path to the skill it used in the previous answer.
-analysis|analyse|analyze|explain|* analysis|* analyse|* analyze|analysis *|analyse *|analyze *
+analysis|analyse|analyze|explain|* analysis|* analyse|* analyze|analysis *|analyse *|analyze *|describe
 My previous answer is defined in the skill $skill$. You can help to improve this skill and <a href="$skill_link$" target="_blank"> edit it in the code repository here.</a>
 
 # some fake commands that do nothing with the computation state
