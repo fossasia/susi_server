@@ -24,6 +24,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -38,6 +39,7 @@ import org.json.JSONObject;
 import org.json.JSONTokener;
 
 import ai.susi.DAO;
+import ai.susi.SusiServer;
 import ai.susi.json.JsonTray;
 import ai.susi.mind.SusiInference.Type;
 
@@ -406,7 +408,7 @@ public class SusiSkill {
      * @param skill_name
      * @return the actual skill file if one exist or a skill file that is constructed from language and skill_name
      */
-    public static File getSkillFileInLanguage(File language, String skill_name) {
+    public static File getSkillFileInLanguage(File language, String skill_name, boolean null_if_not_found) {
 
     	String fn = skill_name + ".txt";
         String[] list = language.list();
@@ -435,7 +437,31 @@ public class SusiSkill {
         }
         
         // the final attempt is bad and may not succeed, but it's the only last thing left we could do.
-        return new File(language, fn);
+        return null_if_not_found ? null : new File(language, fn);
+    }
+    
+    /**
+     * the following method scans a given model for all files to see if it matches the skill name
+     * @param model a path to a model directory
+     * @param skill_name
+     * @return
+     */
+    public static File getSkillFileInModel(File model, String skill_name) {
+        String[] groups = model.list();
+        for (String group: groups) {
+            if (group.startsWith(".")) continue;
+            File gf = new File(model, group);
+            if (!gf.isDirectory()) continue;
+            String[] languages = gf.list();
+            for (String language: languages) {
+                if (language.startsWith(".")) continue;
+                File l = new File(gf, language);
+                if (!l.isDirectory()) continue;
+                File skill = getSkillFileInLanguage(l, skill_name, true);
+                if (skill != null) return skill;
+            }
+        }
+        return null;
     }
     
     public static JSONObject getSkillMetadata(String model, String group, String language, String skillname) {
@@ -447,7 +473,7 @@ public class SusiSkill {
         File modelpath = new File(DAO.model_watch_dir, model);
         File grouppath = new File(modelpath, group);
         File languagepath = new File(grouppath, language);
-        File skillpath = getSkillFileInLanguage(languagepath, skillname);
+        File skillpath = getSkillFileInLanguage(languagepath, skillname, false);
         skillname = skillpath.getName().replaceAll(".txt", ""); // fixes the bad name (lowercased) to the actual right name
         
         // default values
@@ -614,5 +640,15 @@ public class SusiSkill {
         if (this.dynamicContent != null) json.put("dynamic_content", this.dynamicContent);
         if (this.tags != null && this.tags.size() > 0) json.put("tags", this.tags);
         return json;
+    }
+    
+    public static void main(String[] args) {
+        Path data = FileSystems.getDefault().getPath("data");
+        Map<String, String> config;
+        try {config = SusiServer.readConfig(data);DAO.init(config, data);} catch (Exception e) {e.printStackTrace();}
+        File model = new File(DAO.model_watch_dir, "persona");
+        File skill = SusiSkill.getSkillFileInModel(model, "nefertiti");
+        System.out.println(skill);
+        System.exit(0);
     }
 }

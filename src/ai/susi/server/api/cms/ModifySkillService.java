@@ -104,7 +104,7 @@ public class ModifySkillService extends AbstractAPIHandler implements APIHandler
             if (skill_name == null) {
                 skill_name = "";
             }
-            File skill = SusiSkill.getSkillFileInLanguage(language, skill_name);
+            File skill = SusiSkill.getSkillFileInLanguage(language, skill_name, false);
             skill_name = skill.getName().replaceAll("\\.txt", "");
             // GET MODIFIED VALUES HERE
             String modified_model_name = call.getParameter("NewModel");

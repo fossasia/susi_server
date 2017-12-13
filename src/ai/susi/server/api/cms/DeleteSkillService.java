@@ -52,7 +52,7 @@ public class DeleteSkillService extends AbstractAPIHandler implements APIHandler
         String language_name = call.get("language", "en");
         File language = new File(group, language_name);
         String skill_name = call.get("skill", "whois");
-        File skill = SusiSkill.getSkillFileInLanguage(language, skill_name);
+        File skill = SusiSkill.getSkillFileInLanguage(language, skill_name, false);
         JSONObject json = new JSONObject(true);
         json.put("accepted", false);
         if(!DAO.deleted_skill_dir.exists()){

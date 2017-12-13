@@ -21,8 +21,6 @@ dreaming disabled^^>_etherpad_dream
 Carry on|Continue|Bring * back online
 `wake up`
 
-Ok I lost myself, kill^^>_persona_awake
-
 # This is used to activate a persona.
 # The answer is made in such a way that a persona "the dreamer" will cause a sentence like "the dreamer has awaken" (Muad'Dib mode).
 awake *|awake the *|awake a *
@@ -33,8 +31,7 @@ $1$>_persona_awake is now conscious
 
 # WW: Cause a host to enter Pause Mode.
 sleep|forget yourself|no yourself|unconscious|unconscious mode|That's enough|* dreamless slumber|Freeze|Cease * functions
-Persona will sleep now. Unconscious state activated.^^>_persona_awake
-
+$_persona_awake$ will sleep now. Unconscious state activated.^^>_persona_awake
 
 # WW: Instruct a host to enter Analysis Mode. In Analysis Mode the host is passive, compliant, and initiates no actions or conversation.
 # Susi just responds with the path to the skill it used in the previous answer.

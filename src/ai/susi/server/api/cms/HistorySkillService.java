@@ -81,7 +81,7 @@ public class HistorySkillService extends AbstractAPIHandler implements APIHandle
         String language_name = call.get("language", "en");
         File language = new File(group, language_name);
         String skill_name = call.get("skill", "wikipedia");
-        File skill = SusiSkill.getSkillFileInLanguage(language, skill_name);
+        File skill = SusiSkill.getSkillFileInLanguage(language, skill_name, false);
         JSONArray commitsArray;
         commitsArray = new JSONArray();
         String path = skill.getPath().replace(DAO.model_watch_dir.toString(), "models");

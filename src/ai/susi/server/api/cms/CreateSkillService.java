@@ -85,7 +85,7 @@ public class CreateSkillService extends AbstractAPIHandler implements APIHandler
                 }
                 File language = new File(group, language_name);
                 String skill_name = req.getParameter("skill");
-                File skill = SusiSkill.getSkillFileInLanguage(language, skill_name);
+                File skill = SusiSkill.getSkillFileInLanguage(language, skill_name, false);
 
                 String image_name = req.getParameter("image_name");
 
