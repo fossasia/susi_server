@@ -28,7 +28,7 @@ How do I install Susi: Download, Build, Run
 Cloud|
 
 At this time, Susi AI is not provided in compiled form, you easily build it yourself. It's not difficult and done in one minute! The source code is
-hosted at https://github.com/fossasia/susi_server, you can download it and run Susi AI with (Before installation you must have "Java developement kit" latest version.):
+hosted at https://github.com/fossasia/susi_server, you can download it and run Susi AI with (Before installation you must have "Java developement kit" latest version at http://openjdk.java.net/install/ & "Gradle" latest version at https://gradle.org/install/):
 
 ::
 
