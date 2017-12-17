@@ -109,7 +109,7 @@ public class SusiUtterance {
     	// correction of wrong wild card usage
     	int p;
     	while ((p = query.indexOf('.')) > 0 && query.charAt(p - 1) != ' ') {
-    		query = query.substring(0, p - 1) + ' ' + query.substring(p);
+    		query = query.substring(0, p) + ' ' + query.substring(p);
     	}
     	while ((p = query.indexOf('.')) >= 0 && p < query.length() - 1 && query.charAt(p + 1) != ' ') {
     		query = query.substring(0, p + 1) + ' ' + query.substring(p + 1);

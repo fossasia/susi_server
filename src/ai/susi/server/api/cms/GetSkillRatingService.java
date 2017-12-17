@@ -22,6 +22,7 @@ package ai.susi.server.api.cms;
 import ai.susi.DAO;
 import ai.susi.json.JsonObjectWithDefault;
 import ai.susi.json.JsonTray;
+import ai.susi.mind.SusiSkill;
 import ai.susi.server.*;
 import org.json.JSONObject;
 
@@ -64,7 +65,7 @@ public class GetSkillRatingService extends AbstractAPIHandler implements APIHand
         String language_name = call.get("language", "en");
         File language = new File(group, language_name);
         String skill_name = call.get("skill", null);
-        File skill = new File(language, skill_name + ".txt");
+        File skill = SusiSkill.getSkillFileInLanguage(language, skill_name, false);
 
         JSONObject result = new JSONObject();
         result.put("accepted", false);

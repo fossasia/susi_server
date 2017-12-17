@@ -21,6 +21,7 @@ package ai.susi.server.api.cms;
 
 import ai.susi.DAO;
 import ai.susi.json.JsonObjectWithDefault;
+import ai.susi.mind.SusiSkill;
 import ai.susi.server.*;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
@@ -65,8 +66,7 @@ public class UndoDeleteSkillService  extends AbstractAPIHandler implements APIHa
         String language_name = call.get("language", "en");
         File language = new File(group, language_name);
         String skill_name = call.get("skill", null);
-        File skill = new File(language, skill_name + ".txt");
-        String SkillName = skill.getName();
+        File skill = SusiSkill.getSkillFileInLanguage(language, skill_name, false);
         JSONObject json = new JSONObject(true);
         json.put("accepted", false);
         String path = skill.getPath();

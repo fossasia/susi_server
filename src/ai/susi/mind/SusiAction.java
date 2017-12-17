@@ -28,6 +28,7 @@ import java.util.regex.Pattern;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import ai.susi.mind.SusiMind.ReactionException;
 import ai.susi.tools.TimeoutMatcher;
 
 /**
@@ -290,8 +291,8 @@ public class SusiAction {
         return this.json.has(attr) ? this.json.getInt(attr) : 0;
     }
 
-    final static Pattern visible_assignment = Pattern.compile("(?:.*)[\\?\\!\\h,\\.;-]+([^\\^]+?)>([_a-zA-Z0-9]+)(?:[\\?\\!\\h,\\.;-](?:.*?))?+");
-    final static Pattern blind_assignment = Pattern.compile("(?:.*?)\\^(.*?)\\^>([_a-zA-Z0-9]+)(?:[\\?\\!\\h,\\.;-](?:.*?))?+");
+    final static Pattern visible_assignment = Pattern.compile("(?:(?:.*)[\\?\\!\\s,\\.;-]+)?([^\\^]+?)>([_a-zA-Z0-9]+)(?:[\\?\\!\\s,\\.;-](?:.*))?+");
+    final static Pattern blind_assignment = Pattern.compile("(?:.*?)\\^(.*?)\\^>([_a-zA-Z0-9]+)(?:[\\?\\!\\s,\\.;-](?:.*))?+");
     final static Pattern self_referrer = Pattern.compile(".*?`([^`]*?)`.*?");
     
     /**
@@ -303,7 +304,7 @@ public class SusiAction {
      * @param thoughts an argument from previously applied inferences
      * @return the action with the attribute "expression" instantiated by unification of the thought with the action
      */
-    public SusiAction execution(SusiArgument thoughts, SusiMind mind, String client, SusiLanguage language) {
+    public SusiAction execution(SusiArgument thoughts, SusiMind mind, String client, SusiLanguage language) throws ReactionException {
         if ((this.getRenderType() == RenderType.answer || this.getRenderType() == RenderType.self) && this.json.has("phrases")) {
             // transform the answer according to the data
             ArrayList<String> a = getPhrases();

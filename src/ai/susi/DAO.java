@@ -116,7 +116,7 @@ public class DAO {
      * @param dataPath the path to the data directory
      */
     public static void init(Map<String, String> configMap, Path dataPath) throws Exception{
-
+        
         log("initializing SUSI DAO");
         
         config = configMap;
@@ -146,7 +146,7 @@ public class DAO {
         // wake up susi
         File susiinitpath = new File(conf_dir, "susi");
         susi = model_watch_dir.exists() ?
-                new SusiMind(susi_chatlog_dir, susi_skilllog_dir, susiinitpath, model_watch_dir) :
+                new SusiMind(susi_chatlog_dir, susi_skilllog_dir, susiinitpath, new File(model_watch_dir, "general")) :
                 new SusiMind(susi_chatlog_dir, susi_skilllog_dir, susiinitpath);
 
         // initialize the memory as a background task to prevent that this blocks too much
@@ -527,5 +527,4 @@ public class DAO {
         }
         return result;
     }
-    
 }

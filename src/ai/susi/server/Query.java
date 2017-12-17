@@ -144,6 +144,6 @@ public class Query {
         return this.request;
     }
     public String toString() {
-        return this.qm == null ? "" : this.qm.toString();
+        return this.qm == null ? "" : this.qm.toString().replaceAll(", ", "&").replaceFirst("\\{", "").replaceAll("\\}", "").replaceAll(" ", "%20");
     }
 }

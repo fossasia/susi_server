@@ -21,7 +21,6 @@ package ai.susi.server;
 
 import org.json.JSONObject;
 
-import ai.susi.DAO;
 import ai.susi.json.JsonTray;
 
 import javax.annotation.Nonnull;
@@ -41,8 +40,6 @@ public class Accounting {
      * @param parent the parent file or null if there is no parent file (no persistency)
      */
     public Accounting(@Nonnull ClientIdentity identity, JsonTray parent) {
-
-        DAO.severe("new accounting");
 
         this.parent = parent;
         this.requests = new UserRequests(); // temporary user request space
