@@ -67,7 +67,7 @@ public class ResendVerificationLinkService extends AbstractAPIHandler implements
         json.put("accepted", false);
         String emailId = post.get("emailId", null);
 
-        // Check for null or case where emailId is only spaces
+        // Checking if emailId contains null or spaces
         if (emailId == null)
             throw new APIException(422, "Bad Request. Not Enough parameters");
 
