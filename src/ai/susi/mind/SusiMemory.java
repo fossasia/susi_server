@@ -40,7 +40,6 @@ import ai.susi.json.JsonTray;
 import ai.susi.tools.MapTools;
 
 import org.apache.commons.io.FileUtils;
-import org.json.JSONArray;
 
 /**
  * Susis log is a kind of reflection about the conversation in the past
@@ -79,7 +78,7 @@ public class SusiMemory {
     public SusiMemory(File chatlog, File skilllog, int attention) {
         this.chatlog = chatlog;
         this.skilllog = skilllog;
-        try {FileUtils.cleanDirectory(this.skilllog);} catch (IOException e) {} // do this only as long as we are in a migration phase
+        if (this.skilllog != null) try {FileUtils.cleanDirectory(this.skilllog);} catch (IOException e) {} // do this only as long as we are in a migration phase
         this.attention = attention;
         this.memories = new ConcurrentHashMap<>();
         this.intentsets = new ConcurrentHashMap<>();
