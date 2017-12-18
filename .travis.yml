@@ -29,4 +29,7 @@ deploy:
   app: susi-server
   on:
     branch: development
-
+    
+ cache:
+  directories:
+  - $HOME/.m2   
