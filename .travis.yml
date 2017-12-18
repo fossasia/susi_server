@@ -31,5 +31,5 @@ deploy:
   on:
     branches:
 only:
-    - /./  # Allows builds for any other branch
+    - development
 
