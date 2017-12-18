@@ -30,6 +30,6 @@ deploy:
   on:
     branches:
 only:
-    - gh-pages
+    - development
     - /./  # Allows builds for any other branch
 
