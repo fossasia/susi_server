@@ -1,6 +1,4 @@
-jobs:
-  fast_finish: true
-  include:
+
 -language: java
  dist: trusty
  sudo: required
@@ -33,6 +31,5 @@ deploy:
   on:
     branches:
 only:
-    - development
     - /./  # Allows builds for any other branch
 
