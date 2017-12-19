@@ -302,9 +302,13 @@ public class SusiAction {
      * Action to a thought will instantiate such variable templates and produces a new String
      * attribute named "expression"
      * @param thoughts an argument from previously applied inferences
+     * @param client the client requesting the answer
+     * @param language the language of the client
+     * @param minds a hierarchy of minds which overlap each other. top mind is the first element in the list of minds
      * @return the action with the attribute "expression" instantiated by unification of the thought with the action
+     * @throws ReactionException
      */
-    public SusiAction execution(SusiArgument thoughts, SusiMind mind, String client, SusiLanguage language) throws ReactionException {
+    public SusiAction execution(SusiArgument thoughts, String client, SusiLanguage language, SusiMind... minds) throws ReactionException {
         if ((this.getRenderType() == RenderType.answer || this.getRenderType() == RenderType.self) && this.json.has("phrases")) {
             // transform the answer according to the data
             ArrayList<String> a = getPhrases();
@@ -318,8 +322,21 @@ public class SusiAction {
                 // self-referrer evaluate contents from the answers expressions as recursion: susi is asked again
                 while (new TimeoutMatcher(m = self_referrer.matcher(expression)).matches()) {
                     String observation = m.group(1);
-                    SusiMind.Reaction reaction = mind.new Reaction(observation, language, client, new SusiThought());
-                    String selfanswer = reaction.getExpression();
+                    SusiMind.Reaction reaction = null;
+                    String selfanswer = "";
+                    ReactionException ee = null;
+                    mindlevels: for (SusiMind mind: minds) {
+                    	try {
+                    		reaction = mind.new Reaction(observation, language, client, new SusiThought());
+                    		selfanswer = reaction.getExpression();
+                    		if (selfanswer != null && selfanswer.length() > 0) break mindlevels;
+                    	} catch (ReactionException e) {
+                    		ee = e;
+                    		continue mindlevels;
+                    	}
+                    }
+                    if (reaction == null || selfanswer == null || selfanswer.length() == 0)
+                    	throw ee == null ? new ReactionException("could not find an answer") : ee;
                     thoughts.think(reaction.getMindstate());
                     expression = expression.substring(0, m.start(1) - 1) + selfanswer + expression.substring(m.end(1) + 1);
                 }
@@ -347,8 +364,21 @@ public class SusiAction {
                 }
                 if (this.getRenderType() == RenderType.self) {
                     // recursive call susi with the answer
-                    SusiMind.Reaction reaction = mind.new Reaction(expression, language, client, new SusiThought());
-                    expression = reaction.getExpression();
+                	SusiMind.Reaction reaction = null;
+                    expression = "";
+                    ReactionException ee = null;
+                    mindlevels: for (SusiMind mind: minds) {
+                    	try {
+                    		reaction = mind.new Reaction(expression, language, client, new SusiThought());
+                    		expression = reaction.getExpression();
+                    		if (expression != null && expression.length() > 0) break mindlevels;
+                    	} catch (ReactionException e) {
+                    		ee = e;
+                    		continue mindlevels;
+                    	}
+                    }
+                    if (reaction == null || expression == null || expression.length() == 0)
+                    	throw ee == null ? new ReactionException("could not find an answer") : ee;
                     thoughts.think(reaction.getMindstate());
                     this.json.put("expression", expression);
                     this.phrasesCache = null; // important, otherwise the expression is not recognized

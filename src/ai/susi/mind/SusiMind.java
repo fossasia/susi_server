@@ -345,7 +345,7 @@ public class SusiMind {
      * @param observation an initial thought - that is what susi experiences in the context. I.e. location and language of the user
      * @return
      */
-    public List<SusiThought> react(String query, SusiLanguage userLanguage, int maxcount, String client, SusiThought observation) {
+    public List<SusiThought> react(String query, SusiLanguage userLanguage, int maxcount, String client, SusiThought observation, SusiMind... minds) {
         // get the history a list of thoughts
         long t0 = System.currentTimeMillis();
         SusiArgument observation_argument = new SusiArgument();
@@ -381,7 +381,7 @@ public class SusiMind {
                 continue ideatest; // consider only sound arguments
             }
             try {
-				answers.add(argument.finding(this, client, userLanguage));
+				answers.add(argument.finding(client, userLanguage, minds));
 			} catch (ReactionException e) {
 				// a bad argument (this is not a runtime error, it is a signal that the thought cannot be thought to the end
 				continue ideatest;
@@ -395,6 +395,10 @@ public class SusiMind {
         //DAO.log("+++ react run time: " + (t4 - t3) + " milliseconds - normalize");
         //DAO.log("+++ react run time: " + (t7 - t4) + " milliseconds - test ideas");
         return answers;
+    }
+    
+    public static List<SusiThought> reactMinds(String query, SusiLanguage userLanguage, int maxcount, String client, SusiThought observation, SusiMind... minds) {
+    	return minds[0].react(query, userLanguage, maxcount, client, observation, minds);
     }
     
     public class Reaction {
@@ -425,7 +429,7 @@ public class SusiMind {
         }
     }
     
-    public class ReactionException extends Exception {
+    public static class ReactionException extends Exception {
 		private static final long serialVersionUID = 724048490861319902L;
 		public ReactionException(String message) {
             super(message);
