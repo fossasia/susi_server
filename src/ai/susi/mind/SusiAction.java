@@ -326,14 +326,14 @@ public class SusiAction {
                     String selfanswer = "";
                     ReactionException ee = null;
                     mindlevels: for (SusiMind mind: minds) {
-                    	try {
-                    		reaction = mind.new Reaction(observation, language, client, new SusiThought());
-                    		selfanswer = reaction.getExpression();
-                    		if (selfanswer != null && selfanswer.length() > 0) break mindlevels;
-                    	} catch (ReactionException e) {
-                    		ee = e;
-                    		continue mindlevels;
-                    	}
+                        	try {
+                        		reaction = mind.new Reaction(observation, language, client, new SusiThought(), minds);
+                        		selfanswer = reaction.getExpression();
+                        		if (selfanswer != null && selfanswer.length() > 0) break mindlevels;
+                        	} catch (ReactionException e) {
+                        		ee = e;
+                        		continue mindlevels;
+                        	}
                     }
                     if (reaction == null || selfanswer == null || selfanswer.length() == 0)
                     	throw ee == null ? new ReactionException("could not find an answer") : ee;
@@ -364,18 +364,18 @@ public class SusiAction {
                 }
                 if (this.getRenderType() == RenderType.self) {
                     // recursive call susi with the answer
-                	SusiMind.Reaction reaction = null;
+                    	SusiMind.Reaction reaction = null;
                     expression = "";
                     ReactionException ee = null;
                     mindlevels: for (SusiMind mind: minds) {
-                    	try {
-                    		reaction = mind.new Reaction(expression, language, client, new SusiThought());
-                    		expression = reaction.getExpression();
-                    		if (expression != null && expression.length() > 0) break mindlevels;
-                    	} catch (ReactionException e) {
-                    		ee = e;
-                    		continue mindlevels;
-                    	}
+                        	try {
+                        		reaction = mind.new Reaction(expression, language, client, new SusiThought(), minds);
+                        		expression = reaction.getExpression();
+                        		if (expression != null && expression.length() > 0) break mindlevels;
+                        	} catch (ReactionException e) {
+                        		ee = e;
+                        		continue mindlevels;
+                        	}
                     }
                     if (reaction == null || expression == null || expression.length() == 0)
                     	throw ee == null ? new ReactionException("could not find an answer") : ee;
