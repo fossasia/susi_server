@@ -405,8 +405,8 @@ public class SusiMind {
         private String expression;
         private SusiThought mindstate;
         
-        public Reaction(String query, SusiLanguage userLanguage, String client, SusiThought observation) throws ReactionException {
-            List<SusiThought> thoughts = react(query, userLanguage, 1, client, observation);
+        public Reaction(String query, SusiLanguage userLanguage, String client, SusiThought observation, SusiMind... minds) throws ReactionException {
+            List<SusiThought> thoughts = react(query, userLanguage, 1, client, observation, minds);
             thoughts = SusiThought.filterExpressionAction(thoughts);
             
             if (thoughts.size() == 0) throw new ReactionException("empty mind, no idea");
@@ -449,12 +449,12 @@ public class SusiMind {
         File log = new File(new File("data"), "susi");
         SusiMind mem = new SusiMind(log, null, skill);
         try {
-            System.out.println(mem.new Reaction("I feel funny", SusiLanguage.unknown, "localhost", new SusiThought()).getExpression());
+            System.out.println(mem.new Reaction("I feel funny", SusiLanguage.unknown, "localhost", new SusiThought(), mem).getExpression());
         } catch (ReactionException e) {
             e.printStackTrace();
         }
         try {
-            System.out.println(mem.new Reaction("Help me!", SusiLanguage.unknown, "localhost", new SusiThought()).getExpression());
+            System.out.println(mem.new Reaction("Help me!", SusiLanguage.unknown, "localhost", new SusiThought(), mem).getExpression());
         } catch (ReactionException e) {
             e.printStackTrace();
         }
