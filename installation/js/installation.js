@@ -20,8 +20,7 @@
 $(document).ready(function() {
 
     // javascript fallback support
-"use strict";   
- if (!String.prototype.endsWith) {
+    if (!String.prototype.endsWith) {
       String.prototype.endsWith = function(searchString, position) {
           var subjectString = this.toString();
           if (typeof position !== "number" || !isFinite(position) || Math.floor(position) !== position || position > subjectString.length) {
@@ -51,6 +50,7 @@ $(document).ready(function() {
         type:           "get",
         dataType:       "json"
     };
+
     function showRestart(){
         $("#step0").addClass("hidden");
         $("#step1").addClass("hidden");

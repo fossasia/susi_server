@@ -26,7 +26,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -448,16 +447,6 @@ public class SusiThought extends JSONObject {
             }
         }
         return statement;
-    }
-    
-    public static List<SusiThought> filterExpressionAction(List<SusiThought> thoughts) {
-        thoughts = thoughts.stream()
-                // filter out all thoughts with empty actions
-                .filter(thought -> !thought.getActions().isEmpty())
-                // filter out all thoughts where the action has no expression
-                .filter(thought -> !thought.getActions().get(0).getStringAttr("expression").isEmpty())
-                .collect(Collectors.toList());        
-        return thoughts;
     }
     
     public JSONObject toJSON() {

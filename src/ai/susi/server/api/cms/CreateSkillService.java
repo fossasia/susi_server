@@ -2,7 +2,6 @@ package ai.susi.server.api.cms;
 
 import ai.susi.DAO;
 import ai.susi.json.JsonObjectWithDefault;
-import ai.susi.mind.SusiSkill;
 import ai.susi.server.*;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
@@ -85,7 +84,7 @@ public class CreateSkillService extends AbstractAPIHandler implements APIHandler
                 }
                 File language = new File(group, language_name);
                 String skill_name = req.getParameter("skill");
-                File skill = SusiSkill.getSkillFileInLanguage(language, skill_name, false);
+                File skill = DAO.getSkillFile(language, skill_name);
 
                 String image_name = req.getParameter("image_name");
 
