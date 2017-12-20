@@ -24,39 +24,94 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.util.ArrayList;
+import java.util.Deque;
+import java.util.Iterator;
 import java.util.List;
+import java.util.concurrent.ConcurrentLinkedDeque;
 
 import org.json.JSONObject;
 
 /**
- * Awareness is a sequence of cognitions.
- * The first entry always has the latest cognition
- */
-public class SusiAwareness {
+ * Awareness is a specific sequence of cognitions.
+ * Susi is conscious about a part of that sequence which is caused by an awareness limit.
+ * The limit is currently artificial (like: hardcoded) but a heuristic which creates such
+ * a limit based on a signal that creates a kind of self-reference would actually create
+ * a perception of time which is here defined as the lengh of the resulting cognition sequence.
+ * 
+ * This class therefore also contains a definition of time which means: the perception of
+ * time for Susi minds.
+ * 
+ * The awareness memory is implemented as Deque list where the first entry
+ * always has the latest cognition and the last cognition is the termination element.
 
-    private final ArrayList<SusiCognition> aware;
+ * TODO: the termination element should represent some kind of self-reference cognition.
+ * Then awareness would express all cognitions until the time where a Susi mind remembers itself.
+ * That could be a simple model of consciousness.
+ */
+public class SusiAwareness implements Iterable<SusiCognition> {
+
+    /**
+     * Awareness memory: this is reverse list of cognitions; the latest cognition is first in the list.
+     */
+    private final Deque<SusiCognition> awarex;
     
     public SusiAwareness() {
-        this.aware = new ArrayList<>();
+        this.awarex = new ConcurrentLinkedDeque<>();
+    }
+
+    /**
+     * produce awareness by reading a memory dump up to a given attention time
+     * @param memorydump file where the memory is stored
+     * @param attentionTime the maximum number of cognitions within the required awareness
+     * @return awareness for the give time
+     * @throws IOException
+     */
+    public SusiAwareness(final File memorydump, int attentionTime) throws IOException {
+        this();
+        List<String> lines = Files.readAllLines(memorydump.toPath());
+        for (int i = lines.size() - 1; i >= 0; i--) {
+            String line = lines.get(i);
+            if (line.length() == 0) continue;
+            SusiCognition si = new SusiCognition(new JSONObject(line));
+            this.awarex.addLast(si); // thats right, we insert at the end of the deque because we are reading in reverse order
+            if (attentionTime != Integer.MAX_VALUE && this.getTime() >= attentionTime) break;
+        }
     }
     
     /**
-     * perception of time
-     * this is a silly method that defines the perception of time as the length of the cognition sequence
-     * @return an abstract number regarding the perception of time
+     * To memorize a cognition, we simply append it to a cognition dump file.
+     * This may be used i.e. to store every conversation detail for each skill
+     * @param skillogfile
+     * @param cognition
+     */
+    public static void memorize(File skillogfile, SusiCognition cognition) {
+        try {
+            File parent = skillogfile.getParentFile();
+            if (!parent.exists()) parent.mkdirs();
+            cognition.appendToFile(skillogfile);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+    
+    /**
+     * Perception of time:
+     * as an experiment we implement the perception of time as the length of the cognition sequence.
+     * Please see the class description for details.
+     * @return an abstract number describing the perception of time as thinking sequence since the last thought about ourself.
      */
     public int getTime() {
-        return this.aware.size();
+        return this.awarex.size();
     }
     
     /**
-     * learning a new cognition means that we store it to our memory.
+     * Learning a new cognition means that we store it to our memory.
      * New cognitions become first in the list of stored cognitions to be more visible then older cognitions
      * @param cognition
      * @return self
      */
     public SusiAwareness learn(SusiCognition cognition) {
-        this.aware.add(0, cognition);
+        this.awarex.addFirst(cognition);
         return this;
     }
     
@@ -67,8 +122,8 @@ public class SusiAwareness {
      * @return the cognition which was forgot or NULL if no cognition was forgot
      */
     public SusiCognition forgetOldest() {
-        if (this.aware.size() > 0) this.aware.remove(this.aware.size() - 1);
-        return null;
+        if (this.awarex.isEmpty()) return null;
+        return this.awarex.pollLast();
     }
     
     /**
@@ -78,9 +133,9 @@ public class SusiAwareness {
      */
     public List<SusiCognition> limitAwareness(int attention) {
         ArrayList<SusiCognition> removed = new ArrayList<>();
-        while (attention != Integer.MAX_VALUE && this.getTime() > attention) {
+        while (this.getTime() > attention) {
             SusiCognition c = this.forgetOldest();
-            if (c == null) break;
+            if (c == null) break; // this should never happen in non-concurrent environments. In concurrent, it might.
             removed.add(0, c);
         }
         return removed;
@@ -91,44 +146,25 @@ public class SusiAwareness {
      * @return the latest cognition that this virtual being learned
      */
     public SusiCognition getLatest() {
-        return this.aware.size() > 0 ? this.aware.get(0) : null;
+        if (this.awarex.isEmpty()) return null;
+        return this.awarex.pollFirst();
     }
-    
+
     /**
-     * Get a list of all cognitions.
-     * @return a list of cognitions, reverse order (latest first)
+     * The Awareness iterator iterates all cognitions as are available in the current consciousness.
+     * @return the available cognitions, latest first.
      */
-    public List<SusiCognition> getCognitions() {
-        return this.aware;
+    @Override
+    public Iterator<SusiCognition> iterator() {
+        return this.awarex.iterator();
     }
     
     public String toString() {
         StringBuffer sb = new StringBuffer();
         sb.append("[\n");
-        this.aware.forEach(cognition -> sb.append(cognition.toString()).append('\n'));
+        this.awarex.forEach(cognition -> sb.append(cognition.toString()).append('\n'));
         sb.append("]\n");
         return sb.toString();
-    }
-    
-    
-    /**
-     * produce awareness by reading a memory dump up to a given attention time
-     * @param memorydump file where the memory is stored
-     * @param attentionTime the maximum number of cognitions within the required awareness
-     * @return awareness for the give time
-     * @throws IOException
-     */
-    public static SusiAwareness readMemory(final File memorydump, int attentionTime) throws IOException {
-        List<String> lines = Files.readAllLines(memorydump.toPath());
-        SusiAwareness awareness = new SusiAwareness();
-        for (int i = lines.size() - 1; i >= 0; i--) {
-            String line = lines.get(i);
-            if (line.length() == 0) continue;
-            SusiCognition si = new SusiCognition(new JSONObject(line));
-            awareness.aware.add(si);
-            if (attentionTime != Integer.MAX_VALUE && awareness.getTime() >= attentionTime) break;
-        }
-        return awareness;
     }
     
 }

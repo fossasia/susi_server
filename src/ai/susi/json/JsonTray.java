@@ -32,30 +32,49 @@ import org.json.JSONObject;
 
 import ai.susi.tools.CacheMap;
 
+/**
+ * The JsonTray class is a very simple database storage solution for json objects.
+ * Any json object is addressed with a single key.
+ * Json objects may be either persistent (it's stored to a file right after it was written here),
+ * or they might be volatile (they are not written at all and only stored in case the object is closed).
+ */
 public class JsonTray {
     
     private JsonFile per;
     private CacheMap<String, JSONObject> vol;
     private File file_volatile;
+    private long file_volatile_lastModified;
     
     public JsonTray(File file_persistent, File file_volatile, int cachesize) throws IOException {
         this.per = new JsonFile(file_persistent);
         this.vol = new CacheMap<String, JSONObject>(cachesize);
         this.file_volatile = file_volatile;
-        if (file_volatile != null && file_volatile.exists()) try {
-            JSONObject j = JsonFile.readJson(file_volatile);
+        this.file_volatile_lastModified = this.file_volatile.lastModified();
+        if (this.file_volatile != null && this.file_volatile.exists()) try {
+            JSONObject j = JsonFile.readJson(this.file_volatile);
             for (String key: j.keySet()) this.vol.put(key, j.getJSONObject(key));
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
-
+	
     public void close() {
-        JSONObject j = new JSONObject(true);
-        for (Map.Entry<String, JSONObject> entry: this.vol.getMap().entrySet()) {
-            j.put(entry.getKey(), entry.getValue());
-        }
         if (this.file_volatile != null) try {
+        	// copy the volatile data into a JSONObject to store it in a dump file
+            JSONObject j = new JSONObject(true);
+            for (Map.Entry<String, JSONObject> entry: this.vol.getMap().entrySet()) {
+                j.put(entry.getKey(), entry.getValue());
+            }
+            
+            // check the storage time of the volatile file; if it was stored in between, read it again and merge the data
+            if (this.file_volatile.lastModified() > this.file_volatile_lastModified) {
+            	JSONObject k = JsonFile.readJson(this.file_volatile);
+            	for (String s: k.keySet()) {
+            		if (!j.has(s)) j.put(s, k.get(s));
+            	}
+            }
+            
+            // finally store the data
             JsonFile.writeJson(this.file_volatile, j);
         } catch (IOException e) {
             e.printStackTrace();

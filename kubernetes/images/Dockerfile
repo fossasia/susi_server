@@ -15,6 +15,8 @@ RUN apt-get upgrade -y
 # add packages
 RUN apt-get install -y git openjdk-8-jdk
 
+RUN cd / && git clone https://github.com/fossasia/susi_skill_data.git
+
 # clone the github repo
 RUN git clone https://github.com/fossasia/susi_server.git /susi_server
 WORKDIR /susi_server

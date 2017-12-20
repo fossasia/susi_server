@@ -19,6 +19,20 @@
 
 package ai.susi.server.api.susi;
 
+import ai.susi.DAO;
+import ai.susi.json.JsonObjectWithDefault;
+import ai.susi.json.JsonPath;
+import ai.susi.mind.SusiProcedures;
+import ai.susi.mind.SusiThought;
+import ai.susi.mind.SusiTransfer;
+import ai.susi.server.*;
+import api.external.transit.BahnService;
+import api.external.transit.BahnService.NoStationFoundException;
+import org.json.JSONArray;
+import org.json.JSONObject;
+import org.json.JSONTokener;
+
+import javax.servlet.http.HttpServletResponse;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -27,43 +41,21 @@ import java.nio.charset.StandardCharsets;
 import java.util.Set;
 import java.util.regex.Pattern;
 
-import org.json.JSONArray;
-import org.json.JSONObject;
-import org.json.JSONTokener;
-
-import ai.susi.DAO;
-import ai.susi.json.JsonObjectWithDefault;
-import ai.susi.json.JsonPath;
-import ai.susi.mind.SusiProcedures;
-import ai.susi.mind.SusiThought;
-import ai.susi.mind.SusiTransfer;
-import ai.susi.server.APIException;
-import ai.susi.server.APIHandler;
-import ai.susi.server.AbstractAPIHandler;
-import ai.susi.server.Authorization;
-import ai.susi.server.BaseUserRole;
-import ai.susi.server.ClientConnection;
-import ai.susi.server.Query;
-import ai.susi.server.ServiceResponse;
-import api.external.transit.BahnService;
-import api.external.transit.BahnService.NoStationFoundException;
-
-import javax.servlet.http.HttpServletResponse;
-
 /* examples:
  * http://localhost:4000/susi/console.json?q=SELECT%20*%20FROM%20rss%20WHERE%20url=%27https://www.reddit.com/search.rss?q=loklak%27;
  * http://localhost:4000/susi/console.json?q=SELECT%20plaintext%20FROM%20wolframalpha%20WHERE%20query=%27berlin%27;
-* */
+ * http://localhost:4000/susi/console.json?q=SELECT%20extract%20FROM%20wikipedia%20WHERE%20query=%27tschunk%27%20AND%20language=%27de%27;
+ */
 
 public class ConsoleService extends AbstractAPIHandler implements APIHandler {
    
     private static final long serialVersionUID = 8578478303032749879L;
 
     @Override
-    public BaseUserRole getMinimalBaseUserRole() { return BaseUserRole.ANONYMOUS; }
+    public UserRole getMinimalUserRole() { return UserRole.ANONYMOUS; }
 
     @Override
-    public JSONObject getDefaultPermissions(BaseUserRole baseUserRole) {
+    public JSONObject getDefaultPermissions(UserRole baseUserRole) {
         return null;
     }
 
@@ -201,6 +193,30 @@ public class ConsoleService extends AbstractAPIHandler implements APIHandler {
 				e.printStackTrace();
 			}
 			return json;
+        });
+        dbAccess.put(Pattern.compile("SELECT +?(.*?) +?FROM +?wikipedia +?WHERE +?query ??= ??'(.*?)' +?AND +?language ??= ??'(.*?)' ??;"), (flow, matcher) -> {
+            SusiThought json = new SusiThought();
+            try {
+                String query = matcher.group(2);
+                String language = matcher.group(3);
+                String serviceURL = "https://" + language + ".wikipedia.org/w/api.php?format=json&action=query&prop=extracts&exlimit=max&explaintext&exintro&titles=$query$&redirects=true";
+                JSONTokener serviceResponse = new JSONTokener(new ByteArrayInputStream(loadData(serviceURL, query)));
+                JSONObject w = new JSONObject(serviceResponse);
+                JSONObject q = w.has("query") ? w.getJSONObject("query") : null;
+                JSONObject p = q != null && q.has("pages") ? q.getJSONObject("pages") : null;
+                JSONObject c = p != null && p.length() > 0 ? p.getJSONObject(p.keys().next()) : null;
+                String extract = c != null && c.has("extract") ? c.getString("extract") : null;
+                int r = extract == null ? -1 : extract.indexOf('.');
+                if (r >= 0 && extract.substring(r - 4, r).equals("Corp")) r = extract.indexOf('.', r + 1);
+                extract = extract == null || r < 0 ? null : extract.substring(0, r + 1).replaceAll("\\(.*\\) ", "").replaceAll("\\[.*\\] ", "");
+                json.setQuery(query);
+                if (extract != null) json.setData(new JSONArray().put(new JSONObject().put("extract", extract)));
+                json.setHits(extract == null ? 0 : 1);
+            } catch (Throwable e) {
+                e.printStackTrace();
+                // probably a time-out or a json error
+            }
+            return json;
         });
     }
 

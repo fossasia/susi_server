@@ -23,11 +23,11 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import ai.susi.mind.SusiMind.ReactionException;
 import ai.susi.tools.TimeoutMatcher;
 
 /**
@@ -39,7 +39,7 @@ public class SusiArgument implements Iterable<SusiThought> {
 
     private final ArrayList<SusiThought> recall;
     private final List<SusiAction> actions;
-    private final List<String> skills;
+    private final List<SusiSkill.ID> skills;
     
     /**
      * Create an empty argument
@@ -211,8 +211,8 @@ public class SusiArgument implements Iterable<SusiThought> {
      * @param skill a relative path to the skill
      * @return the argument
      */
-    public SusiArgument addSkill(final String skill) {
-    	this.skills.add(skill);
+    public SusiArgument addSkill(final SusiSkill.ID skillid) {
+    	this.skills.add(skillid);
     	return this;
     }
     
@@ -225,15 +225,22 @@ public class SusiArgument implements Iterable<SusiThought> {
      * @param mind
      * @return a new thought containing an action object which resulted from the argument computation
      */
-    public SusiThought finding(SusiMind mind, String client, SusiLanguage language) {
-        Collection<JSONObject> actions = this.getActions().stream()
-                .map(action -> action.execution(this, mind, client, language).toJSONClone())
-                .collect(Collectors.toList());
+    public SusiThought finding(String client, SusiLanguage language, SusiMind... mind) throws ReactionException {
+    	Collection<JSONObject> actions = new ArrayList<>();
+    	for (SusiAction action: this.getActions()) {
+    		actions.add(action.execution(this, client, language, mind).toJSONClone());
+    	}
         // the 'execution' method has a possible side-effect on the argument - it can append objects to it
         // therefore the mindmeld must be done after action application to get those latest changes
         SusiThought answer = this.mindmeld(true);
         answer.put("actions", actions);
-        answer.put("skills", this.getSkills());
+        List<String> skillpaths = new ArrayList<>();
+        this.skills.forEach(skill -> skillpaths.add(skill.getPath()));
+        answer.put("skills", skillpaths);
+        JSONObject persona = new JSONObject();
+        SusiSkill skill = mind[0].getActiveSkill(); // no need to loop here over all minds because personas are only on top-level minds
+        if (skill != null) persona.put("skill", skill.toJSON());
+        answer.put("persona", persona);
         return answer;
     }
     
@@ -243,10 +250,6 @@ public class SusiArgument implements Iterable<SusiThought> {
      */
     public List<SusiAction> getActions() {
         return this.actions;
-    }
-    
-    public List<String> getSkills() {
-    	return this.skills;
     }
 
     public JSONObject toJSON() {

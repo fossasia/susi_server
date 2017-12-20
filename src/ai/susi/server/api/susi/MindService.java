@@ -19,31 +19,23 @@
 
 package ai.susi.server.api.susi;
 
-import java.io.IOException;
-
-import org.json.JSONObject;
-
 import ai.susi.DAO;
 import ai.susi.json.JsonObjectWithDefault;
-import ai.susi.server.APIException;
-import ai.susi.server.APIHandler;
-import ai.susi.server.AbstractAPIHandler;
-import ai.susi.server.Authorization;
-import ai.susi.server.BaseUserRole;
-import ai.susi.server.Query;
-import ai.susi.server.ServiceResponse;
+import ai.susi.server.*;
+import org.json.JSONObject;
 
 import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 
 public class MindService extends AbstractAPIHandler implements APIHandler {
    
     private static final long serialVersionUID = 8578478303098111L;
 
     @Override
-    public BaseUserRole getMinimalBaseUserRole() { return BaseUserRole.ANONYMOUS; }
+    public UserRole getMinimalUserRole() { return UserRole.ANONYMOUS; }
 
     @Override
-    public JSONObject getDefaultPermissions(BaseUserRole baseUserRole) {
+    public JSONObject getDefaultPermissions(UserRole baseUserRole) {
         return null;
     }
 

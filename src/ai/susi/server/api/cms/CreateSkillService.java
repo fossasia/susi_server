@@ -2,11 +2,10 @@ package ai.susi.server.api.cms;
 
 import ai.susi.DAO;
 import ai.susi.json.JsonObjectWithDefault;
+import ai.susi.mind.SusiSkill;
 import ai.susi.server.*;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
-import org.eclipse.jgit.lib.Repository;
-import org.eclipse.jgit.storage.file.FileRepositoryBuilder;
 import org.json.JSONObject;
 
 import javax.imageio.ImageIO;
@@ -17,7 +16,10 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.Part;
 import java.awt.*;
 import java.awt.image.BufferedImage;
-import java.io.*;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -28,7 +30,7 @@ import java.nio.file.Paths;
  * This Service creates an skill as per given query.
  * The skill name given in the query should not exist in the SUSI intents Folder
  * Can be tested on :-
- * http://localhost:4000/cms/createSkill.txt?model=general&group=knowledge&language=en&skill=whois&content=skillData
+ * http://localhost:4000/cms/createSkill.txt?model=general&group=Knowledge&language=en&skill=whois&content=skillData
  */
 
 @MultipartConfig(fileSizeThreshold=1024*1024*10, 	// 10 MB
@@ -39,118 +41,127 @@ public class CreateSkillService extends AbstractAPIHandler implements APIHandler
     private static final long serialVersionUID = 2461878194569824151L;
 
     @Override
-    public BaseUserRole getMinimalBaseUserRole() {
-        return BaseUserRole.ANONYMOUS;
+    public UserRole getMinimalUserRole() {
+        return UserRole.USER;
     }
 
     @Override
-    public JSONObject getDefaultPermissions(BaseUserRole baseUserRole) {
+    public JSONObject getDefaultPermissions(UserRole baseUserRole) {
         return null;
     }
 
     @Override
     public String getAPIPath() {
-        return "/cms/createSkill.txt";
+        return "/cms/createSkill.json";
     }
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+
+        resp.setHeader("Access-Control-Allow-Origin", "*"); // enable CORS
+        String userEmail = null;
         JSONObject json = new JSONObject();
         Part file = req.getPart("image");
-        if (file == null) {
-            json.put("accepted", false);
-            json.put("message", "Image not given");
-        } else {
-            String filename = getFileName(file);
-            InputStream filecontent = file.getInputStream();
-
-            String model_name = req.getParameter("model");
-            if (model_name == null) {
-                model_name = "general";
-            }
-            File model = new File(DAO.model_watch_dir, model_name);
-            String group_name = req.getParameter("group");
-            if (group_name == null) {
-                group_name = "knowledge";
-            }
-            File group = new File(model, group_name);
-            String language_name = req.getParameter("language");
-            if (language_name == null) {
-                language_name = "en";
-            }
-            File language = new File(group, language_name);
-            String skill_name = req.getParameter("skill");
-
-            File skill = new File(language, skill_name + ".txt");
-
-            String image_name = req.getParameter("image_name");
-
-            Path p = Paths.get(language + File.separator + "images/" + image_name);
-            if (image_name == null || Files.exists(p)) {
-                // Checking for
+        if (req.getParameter("access_token") != null) {
+            if (file == null) {
                 json.put("accepted", false);
-                json.put("message", "The Image name not given or Image with same name is already present ");
+                json.put("message", "Image not given");
             } else {
-                // Checking for file existence
-                json.put("accepted", false);
-                if (skill.exists()) {
-                    json.put("message", "The '" + skill + "' already exists.");
+                String filename = getFileName(file);
+                InputStream filecontent = file.getInputStream();
+
+                String model_name = req.getParameter("model");
+                if (model_name == null) {
+                    model_name = "general";
+                }
+                File model = new File(DAO.model_watch_dir, model_name);
+                String group_name = req.getParameter("group");
+                if (group_name == null) {
+                    group_name = "Knowledge";
+                }
+                File group = new File(model, group_name);
+                String language_name = req.getParameter("language");
+                if (language_name == null) {
+                    language_name = "en";
+                }
+                File language = new File(group, language_name);
+                String skill_name = req.getParameter("skill");
+                File skill = SusiSkill.getSkillFileInLanguage(language, skill_name, false);
+
+                String image_name = req.getParameter("image_name");
+
+                if (req.getParameter("access_token") != null) { // access tokens can be used by api calls, somehow the stateless equivalent of sessions for browsers
+                    ClientCredential credential = new ClientCredential(ClientCredential.Type.access_token, req.getParameter("access_token"));
+                    Authentication authentication = DAO.getAuthentication(credential);
+
+                    // check if access_token is valid
+                    if (authentication.getIdentity() != null) {
+                        ClientIdentity identity = authentication.getIdentity();
+                        userEmail = identity.getName();
+                    }
+                }
+
+                Path p = Paths.get(language.getPath() + File.separator + "images" + File.separator + image_name);
+                if (image_name == null || Files.exists(p)) {
+                    // Checking for
+                    json.put("accepted", false);
+                    json.put("message", "The Image name not given or Image with same name is already present ");
                 } else {
-                    // Reading Content for skill
-                    String content = req.getParameter("content");
-                    if (content == null) {
-                        content = "";
-                    }
-                    // Reading content for image
-                    Image image = ImageIO.read(filecontent);
-                    BufferedImage bi = this.createResizedCopy(image, 512, 512, true);
+                    // Checking for file existence
+                    json.put("accepted", false);
+                    if (skill.exists()) {
+                        json.put("message", "The '" + skill + "' already exists.");
+                    } else {
+                        // Reading Content for skill
+                        String content = req.getParameter("content");
+                        if (content == null) {
+                            content = "";
+                        }
+                        // Reading content for image
+                        Image image = ImageIO.read(filecontent);
+                        BufferedImage bi = this.createResizedCopy(image, 512, 512, true);
 
-                    // Checks if images directory exists or not. If not then create one
-                    if(!Files.exists(Paths.get(language.getPath() + File.separator + "images"))){
-                        new File(language.getPath() + File.separator + "images").mkdirs();
-                    }
-                    ImageIO.write(bi, "jpg", new File(language.getPath() + File.separator + "images/" + image_name));
+                        // Checks if images directory exists or not. If not then create one
+                        if (!Files.exists(Paths.get(language.getPath() + File.separator + "images"))) {
+                            new File(language.getPath() + File.separator + "images").mkdirs();
+                        }
+                        ImageIO.write(bi, "jpg", new File(language.getPath() + File.separator + "images" + File.separator + image_name));
 
-                    // Writing to Skill Data to File
-                    try (FileWriter Skillfile = new FileWriter(skill)) {
-                        Skillfile.write(content);
-                        String path = skill.getPath().replace(DAO.model_watch_dir.toString(), "models");
-
-                        //Add to git
-                        FileRepositoryBuilder builder = new FileRepositoryBuilder();
-                        Repository repository = null;
-                        try {
-                            repository = builder.setGitDir((DAO.susi_skill_repo))
-                                    .readEnvironment() // scan environment GIT_* variables
-                                    .findGitDir() // scan up the file system tree
-                                    .build();
-
-                            try (Git git = new Git(repository)) {
-                                git.add()
-                                        .addFilepattern(path)
-                                        .call();
-                                // commit the changes
-                                git.commit()
-                                        .setMessage("Created " + skill_name)
-                                        .call();
-
-                                json.put("accepted", true);
-
-                            } catch (GitAPIException e) {
-                                e.printStackTrace();
-                            }
+                        // Writing to Skill Data to File
+                        try (FileWriter Skillfile = new FileWriter(skill)) {
+                            Skillfile.write(content);
+                            String path = skill.getPath().replace(DAO.model_watch_dir.toString(), "models");
                         } catch (IOException e) {
                             e.printStackTrace();
+                            json.put("message", "error: " + e.getMessage());
                         }
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                        json.put("message", "error: " + e.getMessage());
+
+                        //Add to git
+                        try (Git git = DAO.getGit()) {
+                            git.add().addFilepattern(".").call();
+
+                            // commit the changes
+                            DAO.pushCommit(git, "Created " + skill_name, userEmail);
+                            json.put("accepted", true);
+
+                        } catch (IOException | GitAPIException e) {
+                            e.printStackTrace();
+                            json.put("message", "error: " + e.getMessage());
+
+                        }
                     }
                 }
             }
-        }
             resp.setContentType("application/json");
             resp.setCharacterEncoding("UTF-8");
             resp.getWriter().write(json.toString());
+        }
+        else{
+            json.put("message","Access token not given");
+            json.put("accepted",false);
+            resp.setContentType("application/json");
+            resp.setCharacterEncoding("UTF-8");
+            resp.getWriter().write(json.toString());
+        }
     }
 
     BufferedImage createResizedCopy(Image originalImage, int scaledWidth, int scaledHeight, boolean preserveAlpha) {

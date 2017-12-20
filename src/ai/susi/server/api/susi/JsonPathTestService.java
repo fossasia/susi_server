@@ -19,25 +19,18 @@
 
 package ai.susi.server.api.susi;
 
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import javax.servlet.http.HttpServletResponse;
-
+import ai.susi.json.JsonObjectWithDefault;
+import ai.susi.json.JsonPath;
+import ai.susi.server.*;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONTokener;
 
-import ai.susi.json.JsonObjectWithDefault;
-import ai.susi.json.JsonPath;
-import ai.susi.server.APIException;
-import ai.susi.server.APIHandler;
-import ai.susi.server.AbstractAPIHandler;
-import ai.susi.server.Authorization;
-import ai.susi.server.BaseUserRole;
-import ai.susi.server.Query;
-import ai.susi.server.ServiceResponse;
+import javax.servlet.http.HttpServletResponse;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 
 /**
  * test a jsonpath
@@ -55,12 +48,12 @@ public class JsonPathTestService extends AbstractAPIHandler implements APIHandle
     }
 
     @Override
-    public BaseUserRole getMinimalBaseUserRole() {
-        return BaseUserRole.ANONYMOUS;
+    public UserRole getMinimalUserRole() {
+        return UserRole.ANONYMOUS;
     }
 
     @Override
-    public JSONObject getDefaultPermissions(BaseUserRole baseUserRole) {
+    public JSONObject getDefaultPermissions(UserRole baseUserRole) {
         return null;
     }
 

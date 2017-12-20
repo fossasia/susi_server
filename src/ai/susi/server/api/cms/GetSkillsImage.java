@@ -21,27 +21,27 @@ package ai.susi.server.api.cms;
 
 import ai.susi.DAO;
 import ai.susi.json.JsonObjectWithDefault;
+import ai.susi.mind.SusiSkill;
 import ai.susi.server.*;
 import org.json.JSONObject;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.Map;
-import java.util.Set;
 
 /**
  This Servlet gives a API Endpoint to list images for all the Skills given its model, group and language.
- Can be tested on 127.0.0.1:4000/cms/getSkillImage.json
+ Can be tested on http://127.0.0.1:4000/cms/getSkillImage.json?model=general&group=Knowledge&language=en
  */
 public class GetSkillsImage extends AbstractAPIHandler implements APIHandler {
 
     private static final long serialVersionUID = 692253797031953182L;
 
     @Override
-    public BaseUserRole getMinimalBaseUserRole() { return BaseUserRole.ANONYMOUS; }
+    public UserRole getMinimalUserRole() { return UserRole.ANONYMOUS; }
 
     @Override
-    public JSONObject getDefaultPermissions(BaseUserRole baseUserRole) {
+    public JSONObject getDefaultPermissions(UserRole baseUserRole) {
         return null;
     }
 
@@ -63,12 +63,12 @@ public class GetSkillsImage extends AbstractAPIHandler implements APIHandler {
         String language = call.get("language", "");
 
         JSONObject images = new JSONObject(true);
-        for (Map.Entry<String, String> entry: DAO.susi.getSkillImage().entrySet()) {
-            String path = entry.getKey();
-            if ((model.length() == 0 || path.indexOf("/" + model + "/") > 0) &&
-                    (group.length() == 0 || path.indexOf("/" + group + "/") > 0) &&
-                    (language.length() == 0 || path.indexOf("/" + language + "/") > 0)) {
-                images.put(path, entry.getValue());
+        for (Map.Entry<SusiSkill.ID, SusiSkill> entry : DAO.susi.getSkillMetadata().entrySet()) {
+            SusiSkill.ID skill = entry.getKey();
+            if (skill.hasModel(model) &&
+                skill.hasGroup(group) &&
+                skill.hasLanguage(language)) {
+                images.put(skill.getPath(), entry.getValue().getImage());
             }
         }
 

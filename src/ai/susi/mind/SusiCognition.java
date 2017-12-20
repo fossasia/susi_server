@@ -19,11 +19,15 @@
 
 package ai.susi.mind;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.Date;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -32,7 +36,6 @@ import org.json.JSONObject;
 import ai.susi.DAO;
 import ai.susi.server.ClientIdentity;
 import ai.susi.tools.DateParser;
-import ai.susi.tools.UTF8;
 
 /**
  * An cognition is the combination of a query of a user with the response of susi.
@@ -42,12 +45,12 @@ public class SusiCognition {
     JSONObject json;
 
     public SusiCognition(
-            final SusiMind mind,
             final String query,
             int timezoneOffset,
             double latitude, double longitude,
             String languageName,
-            int maxcount, ClientIdentity identity) {
+            int maxcount, ClientIdentity identity,
+            final SusiMind... minds) {
         this.json = new JSONObject(true);
         
         // get a response from susis mind
@@ -65,19 +68,19 @@ public class SusiCognition {
         SusiLanguage language = SusiLanguage.parse(languageName);
         if (language != SusiLanguage.unknown) observation.addObservation("language", language.name());
         
-        this.json.put("client_id", Base64.getEncoder().encodeToString(UTF8.getBytes(client)));
+        this.json.put("client_id", Base64.getEncoder().encodeToString(client.getBytes(StandardCharsets.UTF_8)));
         long query_date = System.currentTimeMillis();
         this.json.put("query_date", DateParser.utcFormatter.print(query_date));
         
-        // compute the mind reaction
-        List<SusiArgument> dispute = mind.react(query, language, maxcount, client, observation);
+        // compute the mind's reaction: here we compute with a hierarchy of minds. The dispute is taken from the relevant mind level that was able to compute the dispute
+        List<SusiThought> dispute = SusiMind.reactMinds(query, language, maxcount, client, observation, minds);
         long answer_date = System.currentTimeMillis();
         
         // store answer and actions into json
-        this.json.put("answers", new JSONArray(dispute.stream().map(argument -> argument.finding(mind, client, language)).collect(Collectors.toList())));
+        this.json.put("answers", new JSONArray(dispute));
         this.json.put("answer_date", DateParser.utcFormatter.print(answer_date));
         this.json.put("answer_time", answer_date - query_date);
-        this.json.put("language", "en");
+        this.json.put("language", language.name());
     }
     
     public SusiCognition(JSONObject json) {
@@ -86,6 +89,14 @@ public class SusiCognition {
 
     public SusiCognition() {
         
+    }
+    
+    public void appendToFile(File f) throws IOException {
+        try {
+            Files.write(f.toPath(), (this.getJSON().toString(0) + "\n").getBytes(StandardCharsets.UTF_8), StandardOpenOption.APPEND, StandardOpenOption.CREATE);
+        } catch (JSONException e) {
+            throw new IOException(e.getMessage());
+        }
     }
     
     public SusiCognition setQuery(final String query) {

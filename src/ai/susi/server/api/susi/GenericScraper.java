@@ -19,23 +19,20 @@
 
 package ai.susi.server.api.susi;
 
-import java.io.IOException;
-import java.io.PrintWriter;
+import ai.susi.server.Query;
+import ai.susi.server.RemoteAccess;
+import org.json.JSONObject;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
-import org.json.JSONObject;
-
-import ai.susi.server.Query;
-import ai.susi.server.RemoteAccess;
-
-import java.net.URL;
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.net.MalformedURLException;
-
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
+import java.net.URL;
 
 public class GenericScraper extends HttpServlet {
 

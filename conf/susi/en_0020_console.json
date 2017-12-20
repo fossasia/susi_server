@@ -24,6 +24,14 @@
       "path":"$.data",
       "license":"Copyright by GeoNames"
     },
+    "location-info":{
+      "example":"http://127.0.0.1:4000/susi/console.json?q=%22SELECT%20*%20FROM%20location-info%20WHERE%20query=%27london%27;%22",
+      "url":"https://en.wikipedia.org/w/api.php?action=opensearch&limit=1&format=json&search=",
+      "test":"london",
+      "parser":"json",
+      "path":"$.[2]",
+      "license":"Copyright by Wikipedia, https://wikimediafoundation.org/wiki/Terms_of_Use/en"
+    },
     "yacy":{
       "example":"http://127.0.0.1:4000/susi/console.json?q=%22SELECT%20title,%20link%20FROM%20yacy%20WHERE%20query=%27java%27;%22",
       "url":"http://yacy.searchlab.eu/solr/select?wt=yjson&q=",

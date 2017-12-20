@@ -26,6 +26,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -375,7 +376,7 @@ public class SusiThought extends JSONObject {
     
     public List<String> getSkills() {
         List<String> skills = new ArrayList<>();
-        getSkillsJSON().forEach(skill -> skills.add((String) skill));
+        getSkillsJSON().forEach(skill -> {if (skill instanceof String) skills.add((String) skill);});
         return skills;
     }
 
@@ -388,6 +389,20 @@ public class SusiThought extends JSONObject {
             skills = this.getJSONArray("skills");
         }
         return skills;
+    }
+    
+    public String getLogPath() {
+        if (!this.has("skills")) return null;
+        JSONArray skills = this.getJSONArray("skills");
+        if (skills.length() == 0) return null;
+        Object p = skills.get(0);
+        return p instanceof String ? getLogPath((String) p) : null;
+    }
+
+    public static String getLogPath(String skillName) {
+        if (skillName == null) return null;
+        skillName = skillName.replace(':', '_').replace('.', '_') + ".log";
+        return skillName;
     }
     
     public static final Pattern variable_pattern = Pattern.compile("\\$.*?\\$");
@@ -406,12 +421,26 @@ public class SusiThought extends JSONObject {
                 JSONObject row = table.getJSONObject(rownum);
                 for (String key: row.keySet()) {
                     int i;
-                    while ((i = statement.indexOf("$" + key + "$")) >= 0) {
-                        String substitution = row.get(key).toString();
-                        if (urlencode) try {
-                            substitution = URLEncoder.encode(substitution, "UTF-8");
-                        } catch (UnsupportedEncodingException e) {}
-                        statement = statement.substring(0, i) + substitution + statement.substring(i + key.length() + 2);
+                    Object value = row.get(key);
+                    if (value instanceof JSONObject) {
+                        JSONObject subobj = (JSONObject) value;
+                        for (String subkey: subobj.keySet()) {
+                            while ((i = statement.indexOf("$" + key + "." + subkey + "$")) >= 0) {
+                                String substitution = subobj.get(subkey).toString();
+                                if (urlencode) try {
+                                    substitution = URLEncoder.encode(substitution, "UTF-8");
+                                } catch (UnsupportedEncodingException e) {}
+                                statement = statement.substring(0, i) + substitution + statement.substring(i + key.length() + subkey.length() + 3);
+                            }
+                        }
+                    } else {
+                        while ((i = statement.indexOf("$" + key + "$")) >= 0) {
+                            String substitution = value.toString();
+                            if (urlencode) try {
+                                substitution = URLEncoder.encode(substitution, "UTF-8");
+                            } catch (UnsupportedEncodingException e) {}
+                            statement = statement.substring(0, i) + substitution + statement.substring(i + key.length() + 2);
+                        }
                     }
                     if (statement.indexOf('$') < 0) break;
                 }
@@ -419,6 +448,16 @@ public class SusiThought extends JSONObject {
             }
         }
         return statement;
+    }
+    
+    public static List<SusiThought> filterExpressionAction(List<SusiThought> thoughts) {
+        thoughts = thoughts.stream()
+                // filter out all thoughts with empty actions
+                .filter(thought -> !thought.getActions().isEmpty())
+                // filter out all thoughts where the action has no expression
+                .filter(thought -> !thought.getActions().get(0).getStringAttr("expression").isEmpty())
+                .collect(Collectors.toList());        
+        return thoughts;
     }
     
     public JSONObject toJSON() {

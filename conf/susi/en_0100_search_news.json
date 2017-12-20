@@ -61,7 +61,7 @@
 				"Here you go, $1$ was $count$ times mentioned on reddit!"
 			]}]
 		},
-		{        
+		{
 			"keys"   :["reddit"],
 			"example":"What are the reddit articles about loklak",
 			"phrases":[ {"type":"pattern", "expression":"* reddit * about *"}],
@@ -90,7 +90,7 @@
 				"Here is the list of articles from $4$"
 			]}, {"type":"table", "columns":["title"]}]
 		},
-		
+
 		{
 			"keys"   :["tweet frequency", "tweets", "month"],
 			"example": "How many tweets did melaniatrump post in May 2016",
@@ -559,12 +559,12 @@
 				"Here are the profile details on Instagram for $2$"
 			]}, {"type":"table"}]
 		},
-		{        
+		{
 			"keys"   :["search"],
 			"example":"Search freedom for everyone",
 			"phrases":[ {"type":"pattern", "expression":"search yacy for *"},
 			 			{"type":"pattern", "expression":"search yacy *"}],
-			"process":[ {"type":"console", "expression":"SELECT title,description,link FROM yacy WHERE query='$1$';"}],
+			"process":[ {"type":"console", "expression":"SELECT title,description,link,image FROM yacy WHERE query='$1$';"}],
 			"actions":[ {"type":"answer", "select":"random", "phrases":[
 				"Here is a web search result for $1$"
 			]}, {"type":"rss", "title": "title", "description": "description", "link": "link"}]
