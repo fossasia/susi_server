@@ -33,9 +33,9 @@ public interface APIHandler {
 
     public String[] getServerProtocolHostStub();
 
-    public abstract BaseUserRole getMinimalBaseUserRole();
+    public abstract UserRole getMinimalUserRole();
 
-    public abstract JSONObject getDefaultPermissions(BaseUserRole baseUserRole);
+    public abstract JSONObject getDefaultPermissions(UserRole baseUserRole);
     
     /**
      * get the path to the servlet

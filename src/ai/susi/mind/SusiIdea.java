@@ -30,7 +30,7 @@ import java.util.regex.PatternSyntaxException;
 public class SusiIdea {
 
     private SusiIntent intent;
-    private SusiReader.Token token;
+    private SusiLinguistics.Token token;
     
     /**
      * create an idea based on a intent
@@ -52,7 +52,7 @@ public class SusiIdea {
      * @param token Key
      * @return the idea
      */
-    public SusiIdea setToken(SusiReader.Token token) {
+    public SusiIdea setToken(SusiLinguistics.Token token) {
         this.token = token;
         return this;
     }
@@ -61,7 +61,7 @@ public class SusiIdea {
      * get the tokens for the idea
      * @return the keyword which matched with the intent keys
      */
-    public SusiReader.Token getToken() {
+    public SusiLinguistics.Token getToken() {
         return this.token;
     }
     

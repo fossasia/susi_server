@@ -36,9 +36,10 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Pattern;
 
-import ai.susi.DAO;
 import ai.susi.json.JsonTray;
 import ai.susi.tools.MapTools;
+
+import org.apache.commons.io.FileUtils;
 
 /**
  * Susis log is a kind of reflection about the conversation in the past
@@ -68,37 +69,59 @@ public class SusiMemory {
         for (String t: donotremoveunanswered) dnruset.add(t);
     }
     
-    private File root;
+    private File chatlog, skilllog;
     private int attention; // a measurement for time
     private Map<String, SusiIdentity> memories;
     private Map<String, Map<String, JsonTray>> intentsets;
     private Map<String, AtomicInteger> unanswered;
     
-    public SusiMemory(File storageLocation, int attention) {
-        this.root = storageLocation;
+    public SusiMemory(File chatlog, File skilllog, int attention) {
+        this.chatlog = chatlog;
+        this.skilllog = skilllog;
+        if (this.skilllog != null) try {FileUtils.cleanDirectory(this.skilllog);} catch (IOException e) {} // do this only as long as we are in a migration phase
         this.attention = attention;
         this.memories = new ConcurrentHashMap<>();
         this.intentsets = new ConcurrentHashMap<>();
         this.unanswered = new ConcurrentHashMap<>();
-        
+    }
+    
+    public void initializeMemory() {
         // initialize the unanswered list.
-        if (this.root != null) for (String c: this.root.list()) {
-            getCognitions(c).forEach(cognition -> {
-                String query = cognition.getQuery().toLowerCase();
-                String answer = cognition.getExpression();
-                if (query.length() > 0 && failset.contains(answer)) {
-                    AtomicInteger counter = this.unanswered.get(query);
-                    if (counter == null) {
-                        counter = new AtomicInteger(0);
-                        this.unanswered.put(query,  counter);
+        if (this.chatlog != null) for (String identity: this.chatlog.list()) {
+            // we iterate over all users and check all their conversations
+            getCognitions(identity).forEach(cognition -> {
+                // copy the cognition into the log for the skill
+                List<SusiThought> thoughts = cognition.getAnswers();
+                if (!thoughts.isEmpty()) {
+                    SusiThought thought = thoughts.get(0);
+                    String logpath = thought.getLogPath();
+                    if (logpath != null) {
+                        File skillogfile = new File(this.skilllog, logpath);
+                        cognition.json.put("identity", identity);
+                        SusiAwareness.memorize(skillogfile, cognition);
                     }
-                    counter.incrementAndGet();
+                    
+                    // check unanswered
+                    String query = cognition.getQuery().toLowerCase();
+                    String answer = cognition.getExpression();
+                    if (query.length() > 0 && failset.contains(answer)) {
+                        AtomicInteger counter = this.unanswered.get(query);
+                        if (counter == null) {
+                            counter = new AtomicInteger(0);
+                            this.unanswered.put(query,  counter);
+                        }
+                        counter.incrementAndGet();
+                    }
                 }
                 //System.out.println("** DEBUG user " + c + "; q = " + query + "; a = " + answer);
             });
         }
     }
 
+    public File getSkillLogPath(String skillName) {
+        return new File(this.skilllog, SusiThought.getLogPath(skillName));
+    }
+    
     public Map<String, Integer> getUnanswered() {
         return MapTools.deatomize(this.unanswered);
     }
@@ -115,7 +138,7 @@ public class SusiMemory {
         // sort map by counter
         Map<String, AtomicInteger> tokenCounter = new TreeMap<>(); // a map from tokens to counts
         this.unanswered.forEach((term, counter) -> {
-            DAO.susi.getReader().tokenizeSentence(term).forEach(token -> {
+            SusiLinguistics.tokenizeSentence(null, term).forEach(token -> {
                 if (token.original.length() > 1) MapTools.incCounter(tokenCounter, token.original, counter.get());
             });
         });
@@ -227,21 +250,33 @@ public class SusiMemory {
     public List<SusiCognition> getCognitions(String client) {
         SusiIdentity identity = this.memories.get(client);
         if (identity == null) {
-            if (root == null) return new ArrayList<SusiCognition>();
-            identity = new SusiIdentity(new File(root, client), attention);
+            if (this.chatlog == null) return new ArrayList<SusiCognition>();
+            identity = new SusiIdentity(new File(chatlog, client), attention);
             this.memories.put(client, identity);
         }
         return identity.getCognitions();
     }
     
-    public SusiMemory addCognition(String client, SusiCognition si) {
+    public SusiMemory addCognition(String client, SusiCognition cognition) throws IOException {
+        // add to user memories
         SusiIdentity identity = this.memories.get(client);
         if (identity == null) {
-            if (root == null) return null;
-            identity = new SusiIdentity(new File(root, client), attention);
+            if (chatlog == null) return null;
+            identity = new SusiIdentity(new File(chatlog, client), attention);
             this.memories.put(client, identity);
         }
-        identity.add(si);
+        identity.add(cognition);
+        
+        // add to skill memories
+        List<SusiThought> thoughts = cognition.getAnswers();
+        if (thoughts.size() > 0) {
+	        SusiThought thought = cognition.getAnswers().get(0);
+	        String logpath = thought.getLogPath();
+	        if (logpath != null) {
+	            File skillogfile = new File(this.skilllog, logpath);
+	            SusiAwareness.memorize(skillogfile, cognition);
+	        }
+        }
         return this;
     }
     
@@ -251,14 +286,14 @@ public class SusiMemory {
      */
     public TreeMap<Long, SusiAwareness> getAllMemories() {
         TreeMap<Long, SusiAwareness> all = new TreeMap<>();
-        if (root == null) return all;
-        String[] clients = this.root.list();
+        if (chatlog == null) return all;
+        String[] clients = this.chatlog.list();
         for (String client: clients) {
-            File memorypath = new File(this.root, client);
+            File memorypath = new File(this.chatlog, client);
             if (memorypath.exists()) {
                 File memorydump = new File(memorypath, "log.txt");
                 if (memorydump.exists()) try {
-                    SusiAwareness awareness = SusiAwareness.readMemory(memorydump, Integer.MAX_VALUE);
+                    SusiAwareness awareness = new SusiAwareness(memorydump, Integer.MAX_VALUE);
                     if (awareness.getTime() > 0) {
                         Date d = awareness.getLatest().getQueryDate();
                         all.put(-d.getTime(), awareness);
@@ -273,9 +308,9 @@ public class SusiMemory {
 
     public Set<String> getIntentsetNames(String client) {
         Map<String, JsonTray> intentsets = this.intentsets.get(client);
-        if (intentsets == null && root != null) {
+        if (intentsets == null && chatlog != null) {
             Set<String> intents = new HashSet<String>();
-            File rpath = new File(root, client);
+            File rpath = new File(chatlog, client);
             rpath.mkdirs();
             for (String s: rpath.list()) if (s.endsWith(".json")) intents.add(s.substring(0, s.length() - 5));
             return intents;
@@ -290,8 +325,8 @@ public class SusiMemory {
             this.intentsets.put(client, intentsets);
         }
         JsonTray jt = intentsets.get(name);
-        if (jt == null && root != null) {
-            File rpath = new File(root, client);
+        if (jt == null && chatlog != null) {
+            File rpath = new File(chatlog, client);
             rpath.mkdirs();
             jt = new JsonTray(new File(rpath, name + ".json"), null, 1000);
             intentsets.put(name,  jt);

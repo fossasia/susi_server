@@ -8,13 +8,19 @@ import org.json.JSONObject;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
-import java.io.*;
+import java.io.DataInputStream;
+import java.io.File;
+import java.io.FileInputStream;
 
 /**
  * Created by dravit on 10/6/17.
  */
 public class DownloadDataSettings extends AbstractAPIHandler implements APIHandler{
 
+    /**
+     * 
+     */
+    private static final long serialVersionUID = 1818674610476775839L;
     private static final int BUFSIZE = 4096;
 
     @Override
@@ -23,12 +29,12 @@ public class DownloadDataSettings extends AbstractAPIHandler implements APIHandl
     }
 
     @Override
-    public BaseUserRole getMinimalBaseUserRole() {
-        return BaseUserRole.ADMIN;
+    public UserRole getMinimalUserRole() {
+        return UserRole.ADMIN;
     }
 
     @Override
-    public JSONObject getDefaultPermissions(BaseUserRole baseUserRole) {
+    public JSONObject getDefaultPermissions(UserRole baseUserRole) {
         return null;
     }
 

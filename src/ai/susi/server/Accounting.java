@@ -19,7 +19,6 @@
 
 package ai.susi.server;
 
-import org.eclipse.jetty.util.log.Log;
 import org.json.JSONObject;
 
 import ai.susi.json.JsonTray;
@@ -41,8 +40,6 @@ public class Accounting {
      * @param parent the parent file or null if there is no parent file (no persistency)
      */
     public Accounting(@Nonnull ClientIdentity identity, JsonTray parent) {
-
-        Log.getLog().debug("new accounting");
 
         this.parent = parent;
         this.requests = new UserRequests(); // temporary user request space

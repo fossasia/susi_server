@@ -123,5 +123,16 @@
 	"multi":{
 		"intro":["There might be several right answers..."],
 		"within":["As an alternative answer I would suggest..."]
+	},
+	"superfluous": [
+		"tell me", "can you", "can you tell me", "do you know"
+	],
+	"begin": {
+		"ask":["for", "about"], "begin":["with"], "do":[], "launch":["with"], "load":["with"],
+		"open":["with"], "play":["with"], "resume":["with"], "run":["with"], "start":["with"], "start playing":["with"],
+		"talk to":["about"], "tell":["about"], "use":["with"],
+		"the":["for"], "about":["with"],
+		"what is the":["for"], "what's the":["for"],
+		"give me the":["for"], "tell me the":["for"]
 	}
 }

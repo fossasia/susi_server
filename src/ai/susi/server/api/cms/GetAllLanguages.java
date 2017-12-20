@@ -27,7 +27,6 @@ import org.json.JSONObject;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.File;
-import java.util.ArrayList;
 
 /**
  * Created by chetankaushik on 24/06/17.
@@ -42,10 +41,10 @@ public class GetAllLanguages  extends AbstractAPIHandler implements APIHandler {
     private static final long serialVersionUID = -7872551914189898030L;
 
     @Override
-    public BaseUserRole getMinimalBaseUserRole() { return BaseUserRole.ANONYMOUS; }
+    public UserRole getMinimalUserRole() { return UserRole.ANONYMOUS; }
 
     @Override
-    public JSONObject getDefaultPermissions(BaseUserRole baseUserRole) {
+    public JSONObject getDefaultPermissions(UserRole baseUserRole) {
         return null;
     }
 
@@ -59,7 +58,7 @@ public class GetAllLanguages  extends AbstractAPIHandler implements APIHandler {
 
         String model_name = call.get("model", "general");
         File model = new File(DAO.model_watch_dir, model_name);
-        String group_name = call.get("group", "knowledge");
+        String group_name = call.get("group", "Knowledge");
         File group = new File(model, group_name);
         JSONObject json = new JSONObject(true);
         json.put("accepted", false);

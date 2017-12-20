@@ -20,15 +20,10 @@
 package ai.susi.server.api.cms;
 
 import ai.susi.DAO;
-import org.json.JSONObject;
-
 import ai.susi.json.JsonObjectWithDefault;
-import ai.susi.server.APIHandler;
-import ai.susi.server.AbstractAPIHandler;
-import ai.susi.server.Authorization;
-import ai.susi.server.BaseUserRole;
-import ai.susi.server.Query;
-import ai.susi.server.ServiceResponse;
+import ai.susi.mind.SusiSkill;
+import ai.susi.server.*;
+import org.json.JSONObject;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.File;
@@ -40,7 +35,7 @@ import java.nio.file.Files;
  * i.e.
  * http://localhost:4000/cms/getSkill.json
  * This accepts 4 parameters: - Model, Group, Language and Skill Name
- * http://localhost:4000/cms/getSkill.json?model=general&group=knowledge&language=en&skill=wikipedia
+ * http://localhost:4000/cms/getSkill.json?model=general&group=Knowledge&language=en&skill=wikipedia
  */
 
 public class GetSkillJsonService extends AbstractAPIHandler implements APIHandler {
@@ -48,10 +43,10 @@ public class GetSkillJsonService extends AbstractAPIHandler implements APIHandle
     private static final long serialVersionUID = 18344223L;
 
     @Override
-    public BaseUserRole getMinimalBaseUserRole() { return BaseUserRole.ANONYMOUS; }
+    public UserRole getMinimalUserRole() { return UserRole.ANONYMOUS; }
 
     @Override
-    public JSONObject getDefaultPermissions(BaseUserRole baseUserRole) {
+    public JSONObject getDefaultPermissions(UserRole baseUserRole) {
         return null;
     }
 
@@ -70,12 +65,12 @@ public class GetSkillJsonService extends AbstractAPIHandler implements APIHandle
         json.put("accepted", false);
         String model_name = call.get("model", "general");
         File model = new File(DAO.model_watch_dir, model_name);
-        String group_name = call.get("group", "knowledge");
+        String group_name = call.get("group", "Knowledge");
         File group = new File(model, group_name);
         String language_name = call.get("language", "en");
         File language = new File(group, language_name);
         String skill_name = call.get("skill", "wikipedia");
-        File skill = new File(language, skill_name + ".txt");
+        File skill = SusiSkill.getSkillFileInLanguage(language, skill_name, false);
 
         try {
             String content = new String(Files.readAllBytes(skill.toPath()));

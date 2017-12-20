@@ -20,6 +20,7 @@
 
 package ai.susi.server;
 
+import java.nio.charset.StandardCharsets;
 import java.text.ParseException;
 import java.util.Date;
 import java.util.HashMap;
@@ -32,7 +33,6 @@ import javax.servlet.http.HttpServletResponse;
 import ai.susi.DAO;
 import ai.susi.SusiServer;
 import ai.susi.tools.DateParser;
-import ai.susi.tools.UTF8;
 
 public class Query {
     
@@ -67,7 +67,10 @@ public class Query {
     }
     public void initPOST(final Map<String, byte[]> map) {
         this.qm = new HashMap<>();
-        for (Map.Entry<String, byte[]> entry: map.entrySet()) this.qm.put(entry.getKey(), UTF8.String(entry.getValue()));
+        for (Map.Entry<String, byte[]> entry: map.entrySet()) {
+            byte[] b = entry.getValue();
+            this.qm.put(entry.getKey(), b == null ? "" : new String(b, 0, b.length, StandardCharsets.UTF_8));
+        }
     }
     public String getClientHost() {
         return this.track.getClientHost();
@@ -137,6 +140,10 @@ public class Query {
     public int hashCode() {
         return qm.hashCode();
     }
-
-    public HttpServletRequest getRequest(){ return this.request; }
+    public HttpServletRequest getRequest() {
+        return this.request;
+    }
+    public String toString() {
+        return this.qm == null ? "" : this.qm.toString().replaceAll(", ", "&").replaceFirst("\\{", "").replaceAll("\\}", "").replaceAll(" ", "%20");
+    }
 }

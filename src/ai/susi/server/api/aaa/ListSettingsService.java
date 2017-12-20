@@ -34,18 +34,23 @@ import java.io.File;
  * test locally at http://127.0.0.1:4000/aaa/getAllFiles
  */
 public class ListSettingsService extends AbstractAPIHandler implements APIHandler{
+    /**
+     * 
+     */
+    private static final long serialVersionUID = 4042321782399980746L;
+
     @Override
     public String getAPIPath() {
         return "/aaa/listSettings.json";
     }
 
     @Override
-    public BaseUserRole getMinimalBaseUserRole() {
-        return BaseUserRole.ADMIN;
+    public UserRole getMinimalUserRole() {
+        return UserRole.ADMIN;
     }
 
     @Override
-    public JSONObject getDefaultPermissions(BaseUserRole baseUserRole) {
+    public JSONObject getDefaultPermissions(UserRole baseUserRole) {
         return null;
     }
 

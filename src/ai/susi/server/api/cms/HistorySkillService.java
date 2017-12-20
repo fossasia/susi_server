@@ -20,14 +20,12 @@
 package ai.susi.server.api.cms;
 
 import ai.susi.DAO;
-
 import ai.susi.json.JsonObjectWithDefault;
+import ai.susi.mind.SusiSkill;
 import ai.susi.server.*;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
-import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.revwalk.RevCommit;
-import org.eclipse.jgit.storage.file.FileRepositoryBuilder;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -42,7 +40,7 @@ import java.io.IOException;
  * This Service Adds a API Endpoint to return history of an skill
  * This accepts 4 parameters: - Model, Group, Language and Skill Name
  * Can be tested on : -
- * http://127.0.0.1:4000/cms/getSkillHistory.json?model=general&group=knowledge&language=en&skill=bitcoin
+ * http://127.0.0.1:4000/cms/getSkillHistory.json?model=general&group=Knowledge&language=en&skill=bitcoin
  */
 public class HistorySkillService extends AbstractAPIHandler implements APIHandler {
 
@@ -51,12 +49,12 @@ public class HistorySkillService extends AbstractAPIHandler implements APIHandle
     Boolean success=false;
 
     @Override
-    public BaseUserRole getMinimalBaseUserRole() {
-        return BaseUserRole.ANONYMOUS;
+    public UserRole getMinimalUserRole() {
+        return UserRole.ANONYMOUS;
     }
 
     @Override
-    public JSONObject getDefaultPermissions(BaseUserRole baseUserRole) {
+    public JSONObject getDefaultPermissions(UserRole baseUserRole) {
         return null;
     }
 
@@ -78,52 +76,42 @@ public class HistorySkillService extends AbstractAPIHandler implements APIHandle
 
         String model_name = call.get("model", "general");
         File model = new File(DAO.model_watch_dir, model_name);
-        String group_name = call.get("group", "knowledge");
+        String group_name = call.get("group", "Knowledge");
         File group = new File(model, group_name);
         String language_name = call.get("language", "en");
         File language = new File(group, language_name);
         String skill_name = call.get("skill", "wikipedia");
-        File skill = new File(language, skill_name + ".txt");
+        File skill = SusiSkill.getSkillFileInLanguage(language, skill_name, false);
         JSONArray commitsArray;
         commitsArray = new JSONArray();
         String path = skill.getPath().replace(DAO.model_watch_dir.toString(), "models");
         //Add to git
-        FileRepositoryBuilder builder = new FileRepositoryBuilder();
-        Repository repository = null;
-        try {
-            repository = builder.setGitDir((DAO.susi_skill_repo))
-                    .readEnvironment() // scan environment GIT_* variables
-                    .findGitDir() // scan up the file system tree
-                    .build();
+        try (Git git = DAO.getGit()) {
 
-            try (Git git = new Git(repository)) {
+            Iterable<RevCommit> logs;
 
-                Iterable<RevCommit> logs;
-
-                logs = git.log()
-                        .addPath(path)
-                        .call();
-                int i = 0;
-                for (RevCommit rev : logs) {
-                    commit = new JSONObject();
-                    commit.put("commitRev", rev);
-                    commit.put("commitName", rev.getName());
-                    commit.put("commitID", rev.getId().getName());
-                    commit.put("commit_message", rev.getShortMessage());
-                    commit.put("author",rev.getAuthorIdent().getName());
-                    commitsArray.put(i, commit);
-                    i++;
-                }
-                success=true;
-
-            } catch (GitAPIException e) {
-                e.printStackTrace();
-                success=false;
-
+            logs = git.log()
+                    .addPath(path)
+                    .call();
+            int i = 0;
+            for (RevCommit rev : logs) {
+                commit = new JSONObject();
+                commit.put("commitRev", rev);
+                commit.put("commitName", rev.getName());
+                commit.put("commitID", rev.getId().getName());
+                commit.put("commit_message", rev.getShortMessage());
+                commit.put("author",rev.getAuthorIdent().getName());
+                commit.put("commitDate",rev.getAuthorIdent().getWhen());
+                commit.put("author_mail",rev.getAuthorIdent().getEmailAddress());
+                commitsArray.put(i, commit);
+                i++;
             }
-        } catch (IOException e) {
+            success=true;
+
+        } catch (IOException | GitAPIException e) {
             e.printStackTrace();
             success=false;
+
         }
         if(commitsArray.length()==0){
             success=false;

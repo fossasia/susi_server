@@ -22,6 +22,7 @@ package ai.susi.tools;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
@@ -53,7 +54,7 @@ public final class ByteBuffer extends OutputStream {
     }
 
     public ByteBuffer(final String s) {
-        this.buffer = UTF8.getBytes(s);
+        this.buffer = s.getBytes(StandardCharsets.UTF_8);
         this.length = this.buffer.length;
         this.offset = 0;
     }
@@ -133,7 +134,7 @@ public final class ByteBuffer extends OutputStream {
     }
 
     public ByteBuffer append(final String s) {
-        return append(UTF8.getBytes(s));
+        return append(s.getBytes(StandardCharsets.UTF_8));
     }
 
     public byte byteAt(final int pos) {
@@ -214,11 +215,11 @@ public final class ByteBuffer extends OutputStream {
 
     @Override
     public String toString() {
-        return UTF8.String(this.buffer, this.offset, this.length);
+        return new String(this.buffer, this.offset, this.length, StandardCharsets.UTF_8);
     }
 
     public String toString(final int left, final int length) {
-        return UTF8.String(this.buffer, this.offset + left, length);
+        return new String(this.buffer, this.offset + left, length, StandardCharsets.UTF_8);
     }
 
     public StringBuilder toStringBuilder(final int left, final int length, final int sblength) {
