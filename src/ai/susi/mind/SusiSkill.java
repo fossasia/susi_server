@@ -24,6 +24,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -38,6 +39,7 @@ import org.json.JSONObject;
 import org.json.JSONTokener;
 
 import ai.susi.DAO;
+import ai.susi.SusiServer;
 import ai.susi.json.JsonTray;
 import ai.susi.mind.SusiInference.Type;
 
@@ -149,6 +151,13 @@ public class SusiSkill {
         this.dynamicContent = false;
         this.tags = new LinkedHashSet<>();
     }
+    
+    /**
+     * read a text skill file (once called "easy dialog - EzD")
+     * @param br a buffered reader
+     * @return a skill object as JSON
+     * @throws JSONException
+     */
     public static JSONObject readEzDSkill(BufferedReader br) throws JSONException {
         // read the text file and turn it into a intent json; then learn that
         JSONObject json = new JSONObject();
@@ -390,6 +399,71 @@ public class SusiSkill {
         return json;
     }
     
+    /**
+     * For some strange reason the skill name is requested here in lowercase, while the name may also be uppercase
+     * this should be fixed in the front-end, however we implement a patch here to circumvent the problem if possible
+     * Another strange effect is, that some file systems do match lowercase with uppercase (like in windows),
+     * so testing skill.exists() would return true even if the name does not exist exactly as given in the file system.
+     * @param language
+     * @param skill_name
+     * @return the actual skill file if one exist or a skill file that is constructed from language and skill_name
+     */
+    public static File getSkillFileInLanguage(File language, String skill_name, boolean null_if_not_found) {
+
+    	String fn = skill_name + ".txt";
+        String[] list = language.list();
+        
+        // first try: the skill name may be same or similar to the skill file name
+        for (String n: list) {
+            if (n.equals(fn) || n.toLowerCase().equals(fn)) {
+                return new File(language, n);
+            }
+        }
+        
+        // second try: the skill name may be same or similar to the skill name within the skill description
+        // this is costly: we must parse the whole skill file
+        for (String n: list) {
+            if (!n.endsWith(".txt") && !n.endsWith(".ezd")) continue;
+        	File f = new File(language, n);
+            try {
+				JSONObject json = SusiSkill.readEzDSkill(new BufferedReader(new FileReader(f)));
+				String sn = json.optString("skill_name");
+				if (sn.equals(skill_name) || sn.toLowerCase().equals(skill_name) || sn.toLowerCase().replace(' ', '_').equals(skill_name)) {
+	                return new File(language, n);
+	            }
+			} catch (JSONException | FileNotFoundException e) {
+				continue;
+			}
+        }
+        
+        // the final attempt is bad and may not succeed, but it's the only last thing left we could do.
+        return null_if_not_found ? null : new File(language, fn);
+    }
+    
+    /**
+     * the following method scans a given model for all files to see if it matches the skill name
+     * @param model a path to a model directory
+     * @param skill_name
+     * @return
+     */
+    public static File getSkillFileInModel(File model, String skill_name) {
+        String[] groups = model.list();
+        for (String group: groups) {
+            if (group.startsWith(".")) continue;
+            File gf = new File(model, group);
+            if (!gf.isDirectory()) continue;
+            String[] languages = gf.list();
+            for (String language: languages) {
+                if (language.startsWith(".")) continue;
+                File l = new File(gf, language);
+                if (!l.isDirectory()) continue;
+                File skill = getSkillFileInLanguage(l, skill_name, true);
+                if (skill != null) return skill;
+            }
+        }
+        return null;
+    }
+    
     public static JSONObject getSkillMetadata(String model, String group, String language, String skillname) {
 
         JSONObject skillMetadata = new JSONObject(true)
@@ -399,7 +473,7 @@ public class SusiSkill {
         File modelpath = new File(DAO.model_watch_dir, model);
         File grouppath = new File(modelpath, group);
         File languagepath = new File(grouppath, language);
-        File skillpath = DAO.getSkillFile(languagepath, skillname);
+        File skillpath = getSkillFileInLanguage(languagepath, skillname, false);
         skillname = skillpath.getName().replaceAll(".txt", ""); // fixes the bad name (lowercased) to the actual right name
         
         // default values
@@ -566,5 +640,15 @@ public class SusiSkill {
         if (this.dynamicContent != null) json.put("dynamic_content", this.dynamicContent);
         if (this.tags != null && this.tags.size() > 0) json.put("tags", this.tags);
         return json;
+    }
+    
+    public static void main(String[] args) {
+        Path data = FileSystems.getDefault().getPath("data");
+        Map<String, String> config;
+        try {config = SusiServer.readConfig(data);DAO.init(config, data);} catch (Exception e) {e.printStackTrace();}
+        File model = new File(DAO.model_watch_dir, "persona");
+        File skill = SusiSkill.getSkillFileInModel(model, "nefertiti");
+        System.out.println(skill);
+        System.exit(0);
     }
 }
