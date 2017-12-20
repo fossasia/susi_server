@@ -1,29 +1,87 @@
-## dream steering, these are actual analysis commands
+# Voice Commands from Westworld are building blocks for Susis dream/awake mechanism
+# Phrases are inspired by http://westworld.wikia.com/wiki/Voice_Commands
+# Comments starting with "WW" make citations from that wiki
+
+# Susi has (at least) four mind different status
+# - unconscious: an undefined persona which has all intelligent skills but no primary skill (which a persona is) on top
+# - dreaming: a temporary persona which runs one skill as primary source for answers
+# - awake: a permanent persona which runs one skill as primary source for answers.
+# - focus: a temporary skill priorization which can be activated on top of a persona (either a dream or awake status) without de-activation of the a persona
+
 ::prior
 
 dream *
 dreaming enabled for $1$>_etherpad_dream
 
-wake up|stop dream|stop dreaming|end dream|end dreaming
+wake up|stop dream|stop dreaming|end dream|end dreaming|Deep and dreamless slumber
 dreaming disabled^^>_etherpad_dream
 
-analysis|analyse|analyze|explain|* analysis|* analyse|* analyze|analysis *|analyse *|analyze *
+# WW: Instruct a host to leave Analysis or Pause Mode and to re-enter Character Mode.
+# WW: Take a host out of Sleep Mode and brings it into a more active state of either Analysis Mode or Character Mode.
+Carry on|Continue|Bring * back online
+`wake up`
+
+# This is used to activate a persona.
+# The answer is made in such a way that a persona "the dreamer" will cause a sentence like "the dreamer has awaken" (Muad'Dib mode).
+awake *|awake the *|awake a *
+$1$>_persona_awake has awaken
+
+* conscious mode|* conscious|conscious *
+$1$>_persona_awake is now conscious
+
+# WW: Cause a host to enter Pause Mode.
+sleep|forget yourself|no yourself|unconscious|unconscious mode|That's enough|* dreamless slumber|Freeze|Cease * functions
+$_persona_awake$ will sleep now. Unconscious state activated.^^>_persona_awake
+
+# WW: Instruct a host to enter Analysis Mode. In Analysis Mode the host is passive, compliant, and initiates no actions or conversation.
+# Susi just responds with the path to the skill it used in the previous answer.
+analysis|analyse|analyze|explain|* analysis|* analyse|* analyze|analysis *|analyse *|analyze *|describe
 My previous answer is defined in the skill $skill$. You can help to improve this skill and <a href="$skill_link$" target="_blank"> edit it in the code repository here.</a>
 
 # some fake commands that do nothing with the computation state
 ::minor
 
-Cognition only *|Cognition only
-I will not panic.
-
 * access to * configuration?|archive * configuration|
 I do not have a previous configuration.
 
-That's enough|* dreamless slumber|Freeze|Cease * functions|Freeze
-Unconscious state activated
-
-Carry on|Continue|Bring yourself back online
-Entering Character Mode
-
 Erase * interaction
+I'm sorry, I'm afraid I cannot do that.
+
+# WW: Cause a host to pause and open his/her face for the purpose of examining the structures beneath.
+Turn the other cheek
+I do not have a cheek
+
+# WW: Cause a host to zip his/herself into a body bag, and enter Sleep Mode. This is either unique to Old Bill, or it is a command for first generation hosts.
+Put yourself away
 I am sorry, I cannot do that.
+
+# WW: Instruct a host to speak in General American English.
+You can lose the accent
+I do not have an accent.
+
+# WW: Instruct a host to halt an emotional display and adopt a placid demeanor.
+Cognition only *|Cognition only|no emotional affect|Cognition only, no emotional affect
+I will not panic.
+
+# WW: Toggle the host's state from one mode to another. Character Mode to Pause Mode or Analysis Mode, et cetera.
+That's enough|Thats enough|As you were
+`Continue`
+
+# WW: Instruct a host to archive/load a specified configuration. A configuration is a set of operating parameters. A parameter is a limit that determines the characteristics and/or behavior of something.
+Archive this configuration|Access your previous configuration
+
+# WW: Event logs are special files that record significant events. Done prior to a clandestine interaction with Dolores by Arnold (in order to leave no record).
+Turn off your event log
+I'm sorry, I'm afraid I cannot do that.
+
+# WW: Cause a host erase a conversation from his/her event log. Removes the interaction from the host's history. Used by Arnold with Dolores to cover his tracks.
+Erase this interaction
+I'm sorry, I'm afraid I cannot do that.
+
+# WW: In the episode "Contrapasso" when Dr. Robert Ford says it, Teddy, despite being exhausted and having lost a lot of blood, immediately stands, checks his gun and tells the Man in Black it's time to go. This is a quote is from Sir Walter Scott's The Bridal of Triermain.[1]
+Look back and smile at perils past.
+I will do that.
+
+# WW: In 'The Bicameral Mind' this voice command is seen on Arnold's tablet.
+These violent delights have violent ends
+As you wish.

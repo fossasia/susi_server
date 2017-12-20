@@ -28,7 +28,6 @@ import java.util.ArrayList;
 import java.util.Base64;
 import java.util.Date;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -46,12 +45,12 @@ public class SusiCognition {
     JSONObject json;
 
     public SusiCognition(
-            final SusiMind mind,
             final String query,
             int timezoneOffset,
             double latitude, double longitude,
             String languageName,
-            int maxcount, ClientIdentity identity) {
+            int maxcount, ClientIdentity identity,
+            final SusiMind... minds) {
         this.json = new JSONObject(true);
         
         // get a response from susis mind
@@ -73,12 +72,12 @@ public class SusiCognition {
         long query_date = System.currentTimeMillis();
         this.json.put("query_date", DateParser.utcFormatter.print(query_date));
         
-        // compute the mind reaction
-        List<SusiArgument> dispute = mind.react(query, language, maxcount, client, observation);
+        // compute the mind's reaction: here we compute with a hierarchy of minds. The dispute is taken from the relevant mind level that was able to compute the dispute
+        List<SusiThought> dispute = SusiMind.reactMinds(query, language, maxcount, client, observation, minds);
         long answer_date = System.currentTimeMillis();
         
         // store answer and actions into json
-        this.json.put("answers", new JSONArray(dispute.stream().map(argument -> argument.finding(mind, client, language)).collect(Collectors.toList())));
+        this.json.put("answers", new JSONArray(dispute));
         this.json.put("answer_date", DateParser.utcFormatter.print(answer_date));
         this.json.put("answer_time", answer_date - query_date);
         this.json.put("language", language.name());
