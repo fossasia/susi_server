@@ -72,12 +72,8 @@ public class SusiCognition {
         long query_date = System.currentTimeMillis();
         this.json.put("query_date", DateParser.utcFormatter.print(query_date));
         
-        // compute the mind reaction
-        List<SusiThought> dispute = null;
-        for (SusiMind mind: minds) {
-        	dispute = mind.react(query, language, maxcount, client, observation);
-        	if (dispute != null && dispute.size() > 0) break;
-        }
+        // compute the mind's reaction: here we compute with a hierarchy of minds. The dispute is taken from the relevant mind level that was able to compute the dispute
+        List<SusiThought> dispute = SusiMind.reactMinds(query, language, maxcount, client, observation, minds);
         long answer_date = System.currentTimeMillis();
         
         // store answer and actions into json
