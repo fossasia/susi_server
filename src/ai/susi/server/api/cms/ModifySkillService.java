@@ -2,6 +2,7 @@ package ai.susi.server.api.cms;
 
 import ai.susi.DAO;
 import ai.susi.json.JsonObjectWithDefault;
+import ai.susi.mind.SusiSkill;
 import ai.susi.server.*;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
@@ -74,7 +75,12 @@ public class ModifySkillService extends AbstractAPIHandler implements APIHandler
 
     @Override
     protected void doPost(HttpServletRequest call, HttpServletResponse resp) throws ServletException, IOException {
-        String userEmail=null;
+    	// debug the call
+    	Query query = RemoteAccess.evaluate(call);
+        query.initPOST(RemoteAccess.getPostMap(call));
+        logClient(System.currentTimeMillis(), query, null, 0, "init post");    	
+    	
+    	String userEmail=null;
         // CORS Header
         resp.setHeader("Access-Control-Allow-Origin", "*");
         if (call.getParameter("access_token") != null) {
@@ -98,7 +104,8 @@ public class ModifySkillService extends AbstractAPIHandler implements APIHandler
             if (skill_name == null) {
                 skill_name = "";
             }
-            File skill = DAO.getSkillFile(language, skill_name);
+            File skill = SusiSkill.getSkillFileInLanguage(language, skill_name, false);
+            skill_name = skill.getName().replaceAll("\\.txt", "");
             // GET MODIFIED VALUES HERE
             String modified_model_name = call.getParameter("NewModel");
             if (modified_model_name == null) {
@@ -129,10 +136,10 @@ public class ModifySkillService extends AbstractAPIHandler implements APIHandler
             if (skill.exists() && content != null) {
                 JSONObject json = new JSONObject();
                 // CHECK IF SKILL PATH AND NAME IS SAME. IF IT IS SAME THEN MAKE CHANGES IN OLD FILE ONLY
-                if (Objects.equals(model_name, modified_model_name) &&
-                        Objects.equals(group_name, modified_group_name) &&
-                        Objects.equals(language_name, modified_language_name) &&
-                        Objects.equals(skill_name, modified_skill_name)) {
+                if (model_name.equals(modified_model_name) &&
+                    group_name.equals(modified_group_name) &&
+                    language_name.equals(modified_language_name) &&
+                    skill_name.equals(modified_skill_name)) {
                     // Writing to File
                     try (FileWriter file = new FileWriter(skill)) {
                         file.write(content);
