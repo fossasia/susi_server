@@ -13,6 +13,13 @@ matrix:
     # Build, test and deploy to Google Cloud and Heroku
     - language: java
       jdk: oraclejdk8
+      before_cache:
+        - rm -f  $HOME/.gradle/caches/modules-2/modules-2.lock
+        - rm -fr $HOME/.gradle/caches/*/plugin-resolution/
+      cache:
+        directories:
+           - $HOME/.gradle/caches/
+           - $HOME/.gradle/wrapper/
       script:
         - gradle assemble
         - gradle clean
@@ -37,4 +44,3 @@ matrix:
       script:
         - bash <(curl -s https://codecov.io/bash)
         - codecov
-
