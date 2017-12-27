@@ -20,6 +20,8 @@
 
 package ai.susi.json;
 
+import java.io.ByteArrayInputStream;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -27,8 +29,13 @@ import org.json.JSONTokener;
 
 public class JsonPath {
     
-
-    public static JSONArray parse(JSONTokener tokener, String jsonPath) throws JSONException {
+    public static JSONArray parse(byte[] b, String jsonPath) throws JSONException {
+        JSONTokener tokener = new JSONTokener(new ByteArrayInputStream(b));
+        JSONArray data = JsonPath.parse(tokener, jsonPath);
+        return data;
+    }
+    
+    private static JSONArray parse(JSONTokener tokener, String jsonPath) throws JSONException {
         JSONArray a = parseRaw(tokener, jsonPath);
         if (a.length() == 0) return a; // length == 1 will cause an empty thought. Its not wrong, it will just cause that thinking fails. May be wanted.
         Object f = a.get(0);
@@ -61,7 +68,7 @@ public class JsonPath {
      * @param jsonPath a path as defined by http://goessner.net/articles/JsonPath/
      * @return a JSONArray with the data part of a console query
      */
-    public static JSONArray parseRaw(JSONTokener tokener, String jsonPath) throws JSONException {
+    private static JSONArray parseRaw(JSONTokener tokener, String jsonPath) throws JSONException {
         if (tokener == null) return null;
         String[] dompath = jsonPath.split("\\.");
         if (dompath == null || dompath.length < 1) return null; // wrong syntax of jsonPath

@@ -19,7 +19,6 @@
 
 package ai.susi.mind;
 
-import java.io.ByteArrayInputStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.regex.Matcher;
@@ -31,7 +30,6 @@ import javax.script.ScriptEngineManager;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.json.JSONTokener;
 
 import ai.susi.DAO;
 import ai.susi.json.JsonPath;
@@ -281,8 +279,8 @@ public class SusiInference {
                 try {
                     String url = flow.unify(definition.getString("url"), true);
                     String path = flow.unify(definition.getString("path"), false);
-                    JSONTokener serviceResponse = new JSONTokener(new ByteArrayInputStream(ConsoleService.loadData(url)));
-                    JSONArray data = JsonPath.parse(serviceResponse, path);
+                    byte[] b = ConsoleService.loadData(url);
+                    JSONArray data = JsonPath.parse(b, path);
                     if (data != null) json.setData(new SusiTransfer("*").conclude(data));
                     json.setHits(json.getCount());
                 } catch (Throwable e) {

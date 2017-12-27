@@ -72,8 +72,7 @@ public class ConsoleService extends AbstractAPIHandler implements APIHandler {
             try {
                 String testquery = matcher.group(2);
                 b = loadData(serviceURL, testquery);
-                JSONTokener serviceResponse = new JSONTokener(new ByteArrayInputStream(b));
-                JSONArray data = JsonPath.parse(serviceResponse, path);
+                JSONArray data = JsonPath.parse(b, path);
                 json.setQuery(testquery);
                 SusiTransfer transfer = new SusiTransfer(matcher.group(1));
                 if (data != null) json.setData(transfer.conclude(data));
