@@ -21,6 +21,7 @@
 package ai.susi.json;
 
 import java.io.ByteArrayInputStream;
+import java.nio.charset.StandardCharsets;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -31,8 +32,16 @@ public class JsonPath {
     
     public static JSONArray parse(byte[] b, String jsonPath) throws JSONException {
         JSONTokener tokener = new JSONTokener(new ByteArrayInputStream(b));
-        JSONArray data = JsonPath.parse(tokener, jsonPath);
-        return data;
+        try {
+            JSONArray data = JsonPath.parse(tokener, jsonPath);
+            return data;
+        } catch (JSONException e) {
+            if (jsonPath.equals("$")) {
+                return new JSONArray().put(new JSONObject().put("object", new String(b, StandardCharsets.UTF_8)));
+            } else {
+                throw e;
+            }
+        }
     }
     
     private static JSONArray parse(JSONTokener tokener, String jsonPath) throws JSONException {

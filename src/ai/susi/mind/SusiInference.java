@@ -284,7 +284,7 @@ public class SusiInference {
                     if (data != null) json.setData(new SusiTransfer("*").conclude(data));
                     json.setHits(json.getCount());
                 } catch (Throwable e) {
-                    //e.printStackTrace(); // probably a time-out
+                    e.printStackTrace(); // probably a time-out
                 }
                 return json;
                 
