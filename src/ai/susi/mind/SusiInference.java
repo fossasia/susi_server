@@ -167,7 +167,7 @@ public class SusiInference {
             if (t.isFailed() || t.hasEmptyObservation("EXPECTED")) return new SusiThought().addObservation("REJECTED(" + matching + ")", reject);
             return new SusiThought(); // empty thought -> fail
         });
-        javascriptProcedures.put(Pattern.compile("(.*)"), (flow, matcher) -> {
+        javascriptProcedures.put(Pattern.compile("(?s:(.*))"), (flow, matcher) -> {
             String term = matcher.group(1);
             try {
                 StringWriter stdout = new StringWriter();
@@ -182,7 +182,7 @@ public class SusiInference {
                 return new SusiThought(); // empty thought -> fail
             }
         });
-        prologProcedures.put(Pattern.compile("(.*)"), (flow, matcher) -> {
+        prologProcedures.put(Pattern.compile("(?s:(.*))"), (flow, matcher) -> {
             String term = matcher.group(1);
             try {
                 Prolog engine = new Prolog();
