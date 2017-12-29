@@ -3,7 +3,18 @@ package ai.susi.server.api.cms;
 import ai.susi.DAO;
 import ai.susi.json.JsonObjectWithDefault;
 import ai.susi.mind.SusiSkill;
-import ai.susi.server.*;
+import ai.susi.server.APIException;
+import ai.susi.server.APIHandler;
+import ai.susi.server.AbstractAPIHandler;
+import ai.susi.server.Authentication;
+import ai.susi.server.Authorization;
+import ai.susi.server.ClientCredential;
+import ai.susi.server.ClientIdentity;
+import ai.susi.server.Query;
+import ai.susi.server.RemoteAccess;
+import ai.susi.server.ServiceResponse;
+import ai.susi.server.UserRole;
+
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.json.JSONObject;
@@ -14,7 +25,8 @@ import javax.servlet.annotation.MultipartConfig;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.Part;
-import java.awt.*;
+
+import java.awt.Image;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileWriter;
@@ -23,7 +35,6 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Objects;
 
 /**
  * Created by chetankaushik on 07/06/17.
@@ -169,21 +180,19 @@ public class ModifySkillService extends AbstractAPIHandler implements APIHandler
                                 File old_image = old_path.toFile();
                                 old_image.delete();
                             }
-                            if (!Files.exists(new_path)) {
-                                Image image = ImageIO.read(filecontent);
-                                BufferedImage bi = this.createResizedCopy(image, 512, 512, true);
-                                // Checks if images directory exists or not. If not then create one
-                                if (!Files.exists(Paths.get(language.getPath() + File.separator + "images"))) {
-                                    new File(language.getPath() + File.separator + "images").mkdirs();
-                                }
-                                ImageIO.write(bi, "jpg", new File(language.getPath() + File.separator + "images/" + new_image_name));
-                                json.put("message", "Skill updated");
-                                json.put("accepted", true);
-                            } else {
-                                // Checking if same file is present or not
-                                json.put("accepted", false);
-                                json.put("message", "Image with same name is already present ");
+                            if (Files.exists(new_path)) {
+                                File new_image = new_path.toFile();
+                                new_image.delete();
                             }
+                            Image image = ImageIO.read(filecontent);
+                            BufferedImage bi = CreateSkillService.createResizedCopy(image, 512, 512, true);
+                            // Checks if images directory exists or not. If not then create one
+                            if (!Files.exists(Paths.get(language.getPath() + File.separator + "images"))) {
+                                new File(language.getPath() + File.separator + "images").mkdirs();
+                            }
+                            ImageIO.write(bi, "jpg", new File(language.getPath() + File.separator + "images/" + new_image_name));
+                            json.put("message", "Skill updated");
+                            json.put("accepted", true);
                         } else {
                             // Checking if file is null or not
                             json.put("accepted", false);
@@ -256,7 +265,7 @@ public class ModifySkillService extends AbstractAPIHandler implements APIHandler
                                 }
                                 if (!Files.exists(new_path)) {
                                     Image image = ImageIO.read(filecontent);
-                                    BufferedImage bi = this.createResizedCopy(image, 512, 512, true);
+                                    BufferedImage bi = CreateSkillService.createResizedCopy(image, 512, 512, true);
                                     // Checks if images directory exists or not. If not then create one
                                     if (!Files.exists(Paths.get(modified_language.getPath() + File.separator + "images"))) {
                                         new File(modified_language.getPath() + File.separator + "images").mkdirs();
@@ -341,18 +350,6 @@ public class ModifySkillService extends AbstractAPIHandler implements APIHandler
             resp.setCharacterEncoding("UTF-8");
             resp.getWriter().write(json.toString());
         }
-    }
-
-    BufferedImage createResizedCopy(Image originalImage, int scaledWidth, int scaledHeight, boolean preserveAlpha) {
-        int imageType = preserveAlpha ? BufferedImage.TYPE_INT_RGB : BufferedImage.TYPE_INT_ARGB;
-        BufferedImage scaledBI = new BufferedImage(scaledWidth, scaledHeight, imageType);
-        Graphics2D g = scaledBI.createGraphics();
-        if (preserveAlpha) {
-            g.setComposite(AlphaComposite.Src);
-        }
-        g.drawImage(originalImage, 0, 0, scaledWidth, scaledHeight, null);
-        g.dispose();
-        return scaledBI;
     }
 
 }
