@@ -294,7 +294,7 @@ public class ConsoleLearning extends AbstractAPIHandler implements APIHandler {
                 }
             }
             
-            JSONArray data = JsonPath.parse(new JSONTokener(new ByteArrayInputStream(serviceResponse)), path);
+            JSONArray data = JsonPath.parse(serviceResponse, path);
             if (data == null || data.length() == 0) {
                 json.put("accepted", false);
                 json.put("reject-reason", "the jsonPath from data object did not recognize an array object");

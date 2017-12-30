@@ -3,7 +3,16 @@ package ai.susi.server.api.cms;
 import ai.susi.DAO;
 import ai.susi.json.JsonObjectWithDefault;
 import ai.susi.mind.SusiSkill;
-import ai.susi.server.*;
+import ai.susi.server.APIHandler;
+import ai.susi.server.AbstractAPIHandler;
+import ai.susi.server.Authentication;
+import ai.susi.server.Authorization;
+import ai.susi.server.ClientCredential;
+import ai.susi.server.ClientIdentity;
+import ai.susi.server.Query;
+import ai.susi.server.ServiceResponse;
+import ai.susi.server.UserRole;
+
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.json.JSONObject;
@@ -14,14 +23,16 @@ import javax.servlet.annotation.MultipartConfig;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.Part;
-import java.awt.*;
+
+import java.awt.AlphaComposite;
+import java.awt.Graphics2D;
+import java.awt.Image;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 
 /**
@@ -60,14 +71,14 @@ public class CreateSkillService extends AbstractAPIHandler implements APIHandler
         resp.setHeader("Access-Control-Allow-Origin", "*"); // enable CORS
         String userEmail = null;
         JSONObject json = new JSONObject();
-        Part file = req.getPart("image");
+        Part imagePart = req.getPart("image");
         if (req.getParameter("access_token") != null) {
-            if (file == null) {
+            if (imagePart == null) {
                 json.put("accepted", false);
                 json.put("message", "Image not given");
             } else {
-                String filename = getFileName(file);
-                InputStream filecontent = file.getInputStream();
+                //String filename = getFileName(imagePart);
+                InputStream imagePartContent = imagePart.getInputStream();
 
                 String model_name = req.getParameter("model");
                 if (model_name == null) {
@@ -100,11 +111,11 @@ public class CreateSkillService extends AbstractAPIHandler implements APIHandler
                     }
                 }
 
-                Path p = Paths.get(language.getPath() + File.separator + "images" + File.separator + image_name);
-                if (image_name == null || Files.exists(p)) {
+                String imagePath = language.getPath() + File.separator + "images";
+                if (image_name == null) {
                     // Checking for
                     json.put("accepted", false);
-                    json.put("message", "The Image name not given or Image with same name is already present ");
+                    json.put("message", "The Image name was not given");
                 } else {
                     // Checking for file existence
                     json.put("accepted", false);
@@ -113,18 +124,17 @@ public class CreateSkillService extends AbstractAPIHandler implements APIHandler
                     } else {
                         // Reading Content for skill
                         String content = req.getParameter("content");
-                        if (content == null) {
-                            content = "";
-                        }
+                        if (content == null) content = "";
+                        
                         // Reading content for image
-                        Image image = ImageIO.read(filecontent);
+                        Image image = ImageIO.read(imagePartContent);
                         BufferedImage bi = this.createResizedCopy(image, 512, 512, true);
 
                         // Checks if images directory exists or not. If not then create one
-                        if (!Files.exists(Paths.get(language.getPath() + File.separator + "images"))) {
-                            new File(language.getPath() + File.separator + "images").mkdirs();
-                        }
-                        ImageIO.write(bi, "jpg", new File(language.getPath() + File.separator + "images" + File.separator + image_name));
+                        if (!Files.exists(Paths.get(imagePath))) new File(imagePath).mkdirs();
+                        File p = new File(imagePath + File.separator + image_name);
+                        if (p.exists()) p.delete();
+                        ImageIO.write(bi, "jpg", new File(imagePath + File.separator + image_name));
 
                         // Writing to Skill Data to File
                         try (FileWriter Skillfile = new FileWriter(skill)) {
@@ -164,7 +174,7 @@ public class CreateSkillService extends AbstractAPIHandler implements APIHandler
         }
     }
 
-    BufferedImage createResizedCopy(Image originalImage, int scaledWidth, int scaledHeight, boolean preserveAlpha) {
+    public static BufferedImage createResizedCopy(Image originalImage, int scaledWidth, int scaledHeight, boolean preserveAlpha) {
         int imageType = preserveAlpha ? BufferedImage.TYPE_INT_RGB : BufferedImage.TYPE_INT_ARGB;
         BufferedImage scaledBI = new BufferedImage(scaledWidth, scaledHeight, imageType);
         Graphics2D g = scaledBI.createGraphics();
@@ -179,7 +189,7 @@ public class CreateSkillService extends AbstractAPIHandler implements APIHandler
     /**
      * Utility method to get file name from HTTP header content-disposition
      */
-    private String getFileName(Part part) {
+    private static String getFileName(Part part) {
         String contentDisp = part.getHeader("content-disposition");
         System.out.println("content-disposition header= "+contentDisp);
         String[] tokens = contentDisp.split(";");

@@ -25,10 +25,8 @@ import ai.susi.server.*;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.json.JSONTokener;
 
 import javax.servlet.http.HttpServletResponse;
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 
@@ -75,13 +73,13 @@ public class JsonPathTestService extends AbstractAPIHandler implements APIHandle
         }
         String path = post.get("path", "$").trim();
         
-        JSONTokener tokener = new JSONTokener(new ByteArrayInputStream(jsonString.getBytes(StandardCharsets.UTF_8)));
+        byte[] b = jsonString.getBytes(StandardCharsets.UTF_8);
 
         JSONObject testresult = new JSONObject(true);
         testresult.put("test", jsonString);
         testresult.put("path", path);
         try {
-            JSONArray data = JsonPath.parse(tokener, path);
+            JSONArray data = JsonPath.parse(b, path);
             testresult.put("data", data == null ? "error" : data);
         } catch (JSONException e) {
             testresult.put("data", "error: " + e.getMessage());
