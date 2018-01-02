@@ -1,6 +1,8 @@
+# Sudo-enabled Ubuntu Trusty VM
 dist: trusty
 sudo: required
 
+# Environment Variables
 env:
   global:
   - secure: DbveaxDMtEP+/Er6ktKCP+P42uDU8xXWRBlVGaqVNU3muaRmmZtj8ngAARxfzY0f9amlJlCavqkEIAumQl9BYKPWIra28ylsLNbzAoCIi8alf9WLgddKwVWsTcZo9+UYocuY6UivJVkofycfFJ1blw/83dWMG0/TiW6s/SrwoDw=
@@ -8,9 +10,9 @@ env:
   - PATH=$PATH:${HOME}/google-cloud-sdk/bin 
     CLOUDSDK_CORE_DISABLE_PROMPTS=1
 
+# Build, test and deploy to Google Cloud and Heroku
 matrix:
   include:
-    # Build, test and deploy to Google Cloud and Heroku
     - language: java
       jdk: oraclejdk8
       before_cache:
@@ -42,5 +44,5 @@ matrix:
       before_script: pip install --user codecov
       install: true
       script:
-        - bash <(curl -s https://codecov.io/bash)
+        - bash < (curl -s https://codecov.io/bash)
         - codecov
