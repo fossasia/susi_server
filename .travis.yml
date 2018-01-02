@@ -44,5 +44,5 @@ matrix:
       before_script: pip install --user codecov
       install: true
       script:
-        - bash < (curl -s https://codecov.io/bash)
+        - bash <(curl -s https://codecov.io/bash)
         - codecov
