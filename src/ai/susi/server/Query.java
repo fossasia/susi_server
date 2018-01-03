@@ -23,7 +23,7 @@ package ai.susi.server;
 import java.nio.charset.StandardCharsets;
 import java.text.ParseException;
 import java.util.Date;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 
@@ -41,7 +41,7 @@ public class Query {
     public AccessTracker.Track track;
     
     public Query(final HttpServletRequest request) {
-        this.qm = new HashMap<>();
+        this.qm = new LinkedHashMap<>();
         for (Map.Entry<String, String[]> entry: request.getParameterMap().entrySet()) {
             this.qm.put(entry.getKey(), entry.getValue()[0]);
         }
@@ -66,7 +66,7 @@ public class Query {
         this.track.setQuery(qm);
     }
     public void initPOST(final Map<String, byte[]> map) {
-        this.qm = new HashMap<>();
+        this.qm = new LinkedHashMap<>();
         for (Map.Entry<String, byte[]> entry: map.entrySet()) {
             byte[] b = entry.getValue();
             this.qm.put(entry.getKey(), b == null ? "" : new String(b, 0, b.length, StandardCharsets.UTF_8));
@@ -144,6 +144,12 @@ public class Query {
         return this.request;
     }
     public String toString() {
-        return this.qm == null ? "" : this.qm.toString().replaceAll(", ", "&").replaceFirst("\\{", "").replaceAll("\\}", "").replaceAll(" ", "%20");
+        if (this.qm == null) return "";
+        Map<String, String> outcopy = new LinkedHashMap<>();
+        this.qm.entrySet().stream()
+            .filter(e -> !e.getKey().equals("password"))
+            .filter(e -> !e.getKey().equals("asset"))
+            .forEach(e -> outcopy.put(e.getKey(), e.getValue()));
+        return outcopy.toString().replaceAll(", ", "&").replaceFirst("\\{", "").replaceAll("\\}", "").replaceAll(" ", "%20");
     }
 }
