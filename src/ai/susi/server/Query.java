@@ -23,7 +23,7 @@ package ai.susi.server;
 import java.nio.charset.StandardCharsets;
 import java.text.ParseException;
 import java.util.Date;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 
@@ -37,13 +37,13 @@ import ai.susi.tools.DateParser;
 public class Query {
     
     private HttpServletRequest request;
-    private Map<String, String> qm;
+    private Map<String, byte[]> qm;
     public AccessTracker.Track track;
     
     public Query(final HttpServletRequest request) {
-        this.qm = new HashMap<>();
+        this.qm = new LinkedHashMap<>();
         for (Map.Entry<String, String[]> entry: request.getParameterMap().entrySet()) {
-            this.qm.put(entry.getKey(), entry.getValue()[0]);
+            this.qm.put(entry.getKey(), entry.getValue()[0].getBytes(StandardCharsets.UTF_8));
         }
         this.request = request;
         
@@ -61,16 +61,12 @@ public class Query {
     public void finalize() {
         this.track.finalize();
     }
-    public void initGET(final Map<String, String> qm) {
-        this.qm = qm;
-        this.track.setQuery(qm);
+    public void initGET(final Map<String, String> q) {
+        q.forEach((k, v) -> this.qm.put(k, v.getBytes(StandardCharsets.UTF_8)));
+        this.track.setQuery(q);
     }
     public void initPOST(final Map<String, byte[]> map) {
-        this.qm = new HashMap<>();
-        for (Map.Entry<String, byte[]> entry: map.entrySet()) {
-            byte[] b = entry.getValue();
-            this.qm.put(entry.getKey(), b == null ? "" : new String(b, 0, b.length, StandardCharsets.UTF_8));
-        }
+        this.qm = map;
     }
     public String getClientHost() {
         return this.track.getClientHost();
@@ -93,32 +89,38 @@ public class Query {
     public void recordEvent(String eventName, Object eventValue) {
         this.track.put(AccessTracker.EVENT_PREFIX + eventName, eventValue);
     }
+    public String get(String key) {
+        String val = this.request == null ? null : this.request.getParameter(key);
+        if (val == null && this.qm.containsKey(key)) return new String(this.qm.get(key), StandardCharsets.UTF_8);
+        return val;
+    }
     public String get(String key, String dflt) {
-        String val = qm == null ? request.getParameter(key) : qm.get(key);
+        String val = this.request == null ? null : this.request.getParameter(key);
+        if (val == null && this.qm.containsKey(key)) return new String(this.qm.get(key), StandardCharsets.UTF_8);
         return val == null ? dflt : val;
     }
     public String[] get(String key, String[] dflt, String delim) {
-        String val = qm == null ? request.getParameter(key) : qm.get(key);
+        String val = get(key);
         return val == null || val.length() == 0 ? dflt : val.split(delim);
     }
     public int get(String key, int dflt) {
-        String val = qm == null ? request.getParameter(key) : qm.get(key);
+        String val = get(key);
         return val == null || val.length() == 0 ? dflt : Integer.parseInt(val.trim());
     }
     public long get(String key, long dflt) {
-        String val = qm == null ? request.getParameter(key) : qm.get(key);
+        String val = get(key);
         return val == null || val.length() == 0 ? dflt : Long.parseLong(val.trim());
     }
     public double get(String key, double dflt) {
-        String val = qm == null ? request.getParameter(key) : qm.get(key);
+        String val = get(key);
         return val == null || val.length() == 0 ? dflt : Double.parseDouble(val.trim());
     }
     public boolean get(String key, boolean dflt) {
-        String val = qm == null ? request.getParameter(key) : qm.get(key);
+        String val = get(key);
         return val == null ? dflt : "true".equals(val = val.trim()) || "1".equals(val);
     }
     public Date get(String key, Date dflt, int timezoneOffset) {
-        String val = qm == null ? request.getParameter(key) : qm.get(key);
+        String val = get(key);
         try {
             return val == null || val.length() == 0 ? dflt : DateParser.parse(val.trim(), timezoneOffset).getTime();
         } catch (ParseException e) {
@@ -126,6 +128,7 @@ public class Query {
         }
     }
     public Set<String> getKeys() {
+        if (this.request == null || this.request.getParameterMap().size() == 0) return this.qm.keySet();
         return request.getParameterMap().keySet();
     }
     public void setResponse(final HttpServletResponse response, final String mime) {
@@ -144,6 +147,12 @@ public class Query {
         return this.request;
     }
     public String toString() {
-        return this.qm == null ? "" : this.qm.toString().replaceAll(", ", "&").replaceFirst("\\{", "").replaceAll("\\}", "").replaceAll(" ", "%20");
-    }
+        if (this.qm == null) return "";
+        Map<String, String> outcopy = new LinkedHashMap<>();
+        this.qm.entrySet().stream()
+            .filter(e -> !e.getKey().equals("password"))
+            .filter(e -> !e.getKey().equals("asset"))
+            .forEach(e -> outcopy.put(e.getKey(), new String(e.getValue(), StandardCharsets.UTF_8)));
+        return outcopy.toString().replaceAll(", ", "&").replaceFirst("\\{", "").replaceAll("\\}", "").replaceAll(" ", "%20");
+     }
 }
