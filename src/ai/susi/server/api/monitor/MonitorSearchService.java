@@ -33,6 +33,7 @@ import ai.susi.server.Authorization;
 import ai.susi.server.Query;
 import ai.susi.server.ServiceResponse;
 import ai.susi.server.UserRole;
+import ai.susi.server.api.monitor.MonitorQueryService.Target;
 
 /**
  * http://localhost:4000/monitor/search
@@ -60,7 +61,7 @@ public class MonitorSearchService extends AbstractAPIHandler implements APIHandl
         String target = data == null ? "" : data.getString("target");
         
         JSONArray json = new JSONArray();
-        json.put("upper_25").put("upper_50").put("upper_75").put("upper_90").put("upper_95"); // test data
+        for (Target t: MonitorQueryService.Target.values()) json.put(t.name());
         
         // success
         return new ServiceResponse(json).setCORS();
