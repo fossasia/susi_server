@@ -32,10 +32,11 @@ import java.util.Set;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.commons.io.IOUtils;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONTokener;
+
+import com.google.common.io.ByteStreams;
 
 import ai.susi.DAO;
 import ai.susi.SusiServer;
@@ -64,14 +65,6 @@ public class Query {
         this.track.setTimeSinceLastAccess(this.track.getDate().getTime() - RemoteAccess.latestVisit(request.getServletPath(), clientHost));
         this.track.setDoSBlackout(SusiServer.blacklistedHosts.contains(clientHost) || (!this.track.isLocalhostAccess() && (this.track.getTimeSinceLastAccess() < DAO.getConfig("DoS.blackout", 100))));
         this.track.setDoSServicereduction(!this.track.isLocalhostAccess() && (this.track.getTimeSinceLastAccess() < DAO.getConfig("DoS.servicereduction", 1000)));
-        try {
-            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            IOUtils.copy(request.getInputStream(), baos);
-            baos.close();
-            this.qm.put("data", baos.toByteArray());
-        } catch (IOException e) {
-            DAO.severe(e);
-        }
     }
     public void finalize() {
         this.track.finalize();
@@ -143,13 +136,20 @@ public class Query {
         }
     }
     public JSONObject getJSONBody() {
-        String data = this.get("data");
-        if (data == null || data.length() == 0) return null;
-        data = data.trim();
-        if (data.charAt(0) =='{' && data.charAt(data.length() - 1) == '}') try {
-            return new JSONObject(new JSONTokener(data));
-        } catch (JSONException e) {
+        try {
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            ByteStreams.copy(request.getInputStream(), baos);
+            baos.close();
+            String data = new String(baos.toByteArray(), StandardCharsets.UTF_8);
+            if (data == null || data.length() == 0) return null;
+            data = data.trim();
+            if (data.charAt(0) =='{' && data.charAt(data.length() - 1) == '}') try {
+                return new JSONObject(new JSONTokener(data));
+            } catch (JSONException e) {
+                return null;
+            }
             return null;
+        } catch (IOException e) {
         }
         return null;
     }
