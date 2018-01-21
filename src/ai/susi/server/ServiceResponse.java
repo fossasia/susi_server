@@ -36,30 +36,35 @@ public class ServiceResponse {
     
     public ServiceResponse(JSONObject json) {
         this.object = json;
-        this.setCORS = false;
+        this.setCORS = true;
     }
     
     public ServiceResponse(JSONArray json) {
         this.object = json;
-        this.setCORS = false;
+        this.setCORS = true;
     }
     
     public ServiceResponse(String string) {
         this.object = string;
-        this.setCORS = false;
+        this.setCORS = true;
     }
     
     public ServiceResponse(byte[] bytes) {
         this.object = bytes;
-        this.setCORS = false;
+        this.setCORS = true;
     }
     
-    public ServiceResponse setCORS() {
+    public ServiceResponse enableCORS() {
         this.setCORS = true;
         return this;
     }
     
-    public boolean allowCORS() {
+    public ServiceResponse disableCORS() {
+        this.setCORS = false;
+        return this;
+    }
+    
+    public boolean hasCORS() {
         return this.setCORS;
     }
     

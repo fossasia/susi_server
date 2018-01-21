@@ -84,7 +84,7 @@ public class MonitorAnnotationsService extends AbstractAPIHandler implements API
         ;
         
         // success
-        return new ServiceResponse(json).setCORS();
+        return new ServiceResponse(json).enableCORS();
     }
 }
 

@@ -63,6 +63,6 @@ public class MonitorSearchService extends AbstractAPIHandler implements APIHandl
         json.put("upper_25").put("upper_50").put("upper_75").put("upper_90").put("upper_95"); // test data
         
         // success
-        return new ServiceResponse(json).setCORS();
+        return new ServiceResponse(json).enableCORS();
     }
 }

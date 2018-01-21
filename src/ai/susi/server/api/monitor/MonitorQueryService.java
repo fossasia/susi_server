@@ -68,6 +68,6 @@ public class MonitorQueryService extends AbstractAPIHandler implements APIHandle
         JSONArray json = new JSONArray();
         
         // success
-        return new ServiceResponse(json).setCORS();
+        return new ServiceResponse(json).enableCORS();
     }
 }

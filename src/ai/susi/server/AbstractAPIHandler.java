@@ -143,7 +143,7 @@ public abstract class AbstractAPIHandler extends HttpServlet implements APIHandl
                 return;
             }
             
-            if (serviceResponse.allowCORS()) {
+            if (serviceResponse.hasCORS()) {
                 setCORS(response);
             }
             

@@ -54,6 +54,6 @@ public class MonitorTestService extends AbstractAPIHandler implements APIHandler
     
     @Override
     public ServiceResponse serviceImpl(Query post, HttpServletResponse response, Authorization user, final JsonObjectWithDefault permissions) throws APIException {
-        return new ServiceResponse("I am alive").setCORS(); // just a ping test
+        return new ServiceResponse("I am alive").enableCORS(); // just a ping test
     }
 }
