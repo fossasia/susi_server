@@ -91,7 +91,7 @@ public abstract class AbstractAPIHandler extends HttpServlet implements APIHandl
         setCORS(response); // required by angular framework; detailed CORS can be set within the servlet
     }
     
-    private void setCORS(HttpServletResponse response) {
+    public static void setCORS(HttpServletResponse response) {
         response.setHeader("Access-Control-Allow-Origin", "*");
         response.setHeader("Access-Control-Allow-Methods", "POST");
         response.setHeader("Access-Control-Allow-Headers", "accept, content-type");
