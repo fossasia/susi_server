@@ -20,6 +20,7 @@
 package ai.susi.server.api.aaa;
 
 import ai.susi.DAO;
+import ai.susi.server.AbstractAPIHandler;
 import ai.susi.server.AccessTracker.Track;
 import ai.susi.server.Query;
 import ai.susi.server.RemoteAccess;
@@ -81,6 +82,7 @@ public class AccessServlet extends HttpServlet {
         if (jsonp) sos.print(callback + "(");
         sos.print(json.toString(2));
         if (jsonp) sos.println(");");
+        AbstractAPIHandler.setCORS(response);
         sos.println();
         post.finalize();
     }

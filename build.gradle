@@ -58,6 +58,8 @@ repositories {
 }
 
 dependencies {
+  compile group: 'org.slf4j', name: 'slf4j-log4j12', version: '1.+'
+  compile group: 'org.apache.logging.log4j', name: 'log4j-core', version: '2.+'
   compile group: 'com.google.guava', name: 'guava', version: '18.+'
   compile group: 'org.apache.httpcomponents', name: 'httpclient', version: '4.+'
   compile group: 'org.apache.httpcomponents', name: 'httpcore', version: '4.+'
@@ -70,7 +72,6 @@ dependencies {
   compile group: 'joda-time', name: 'joda-time', version: '2.+'
   compile group: 'org.jsoup', name: 'jsoup', version: '1.+'
   compile group: 'junit', name: 'junit', version: '4.+'
-  compile group: 'org.apache.logging.log4j', name: 'log4j-core', version: '2.+'
   compile group: 'rome', name: 'rome', version: '1.+'
   compile group: 'it.unibo.alice.tuprolog', name: 'tuprolog', version: '3.+'
   compile group: 'com.google.code.findbugs', name: 'jsr305', version: '3.+'
@@ -80,7 +81,6 @@ dependencies {
   compile group: 'jfree', name: 'jfreechart', version: '1.+'
   compile group: 'com.wordnik', name: 'swagger-core_2.9.1', version: '1.1-SNAPSHOT.120119'
   compile 'org.eclipse.jgit:org.eclipse.jgit:4.6.1.201703071140-r'
-  compile group: 'org.slf4j', name: 'slf4j-simple', version: '1.+'
   compile 'org.broadbear:link-preview:1.2'
   compile group: 'io.swagger', name: 'swagger-annotations',version: swaggerVersion
   compile group: 'io.swagger', name: 'swagger-core', version: swaggerVersion
