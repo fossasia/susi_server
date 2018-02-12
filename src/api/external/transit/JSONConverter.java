@@ -54,7 +54,7 @@ public class JSONConverter {
 		legObj.put("arrivalTime", leg.getArrivalTime());
 		if (leg instanceof Trip.Public) {
 			Trip.Public pub = (Trip.Public)leg;
-			if (pub.getArrivalDelay() != null) {
+			if (pub.getDepartureDelay() != null) {
 				legObj.putOpt("departureDelay", pub.getDepartureDelay() / 60000.0);
 			}
 			if (pub.getArrivalDelay() != null) {
