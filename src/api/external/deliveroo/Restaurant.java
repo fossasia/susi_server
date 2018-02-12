@@ -2,6 +2,7 @@ package api.external.deliveroo;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.nio.charset.UnsupportedCharsetException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -12,6 +13,7 @@ import java.util.List;
 import static org.junit.Assert.*;
 import static org.hamcrest.CoreMatchers.*;
 
+import org.apache.http.ParseException;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
@@ -127,32 +129,38 @@ public class Restaurant {
 		URIBuilder uri = Config.getURIBuilder(Restaurant.API_PATH);
 		uri.setParameter("lat", coordinate.getLatitude());
 		uri.setParameter("lng", coordinate.getLongitude());
-		
-		HttpGet httpGet = new HttpGet(uri.build());
-		CloseableHttpResponse httpResponse = client.getHttpClient().execute(httpGet);
-		assertThat(httpResponse.getStatusLine().getStatusCode(), equalTo(200));
-		
-		String contentMimeType = ContentType.getOrDefault(httpResponse.getEntity()).getMimeType();
-		assertThat(contentMimeType, equalTo(ContentType.APPLICATION_JSON.getMimeType()));
-		
-		// The output can be quite large, so storing it in a String is not ideal.
-		// Maybe it's possible to parse a Stream?
-		String rawJson = EntityUtils.toString(httpResponse.getEntity());
-		assertThat(rawJson, notNullValue());
-		
-		JSONObject jsonRoot = new JSONObject(rawJson);
-		assertThat(jsonRoot.has("restaurants"), equalTo(true));
-		JSONArray restaurantsJsonArray = jsonRoot.getJSONArray("restaurants");
-		
-		Iterator<Object> restaurantsIterator = restaurantsJsonArray.iterator();
-		
-		while (restaurantsIterator.hasNext()) {
-			Object obj = restaurantsIterator.next();
-			if (obj instanceof JSONObject) {
-				restaurants.add(new Restaurant((JSONObject)obj));
+
+		try {
+			HttpGet httpGet = new HttpGet(uri.build());
+			CloseableHttpResponse httpResponse = client.getHttpClient().execute(httpGet);
+			if(httpResponse.getStatusLine().getStatusCode()==200) {
+				String contentMimeType = ContentType.getOrDefault(httpResponse.getEntity()).getMimeType();
+				assertThat(contentMimeType, equalTo(ContentType.APPLICATION_JSON.getMimeType()));
+
+				// The output can be quite large, so storing it in a String is not ideal.
+				// Maybe it's possible to parse a Stream?
+				String rawJson = EntityUtils.toString(httpResponse.getEntity());
+				assertThat(rawJson, notNullValue());
+
+				JSONObject jsonRoot = new JSONObject(rawJson);
+				assertThat(jsonRoot.has("restaurants"), equalTo(true));
+				JSONArray restaurantsJsonArray = jsonRoot.getJSONArray("restaurants");
+
+				Iterator<Object> restaurantsIterator = restaurantsJsonArray.iterator();
+
+				while (restaurantsIterator.hasNext()) {
+					Object obj = restaurantsIterator.next();
+					if (obj instanceof JSONObject) {
+						restaurants.add(new Restaurant((JSONObject) obj));
+					}
+				}
 			}
+		} catch (ClientProtocolException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
 		}
-		
+
 		return restaurants;
 	}
 	

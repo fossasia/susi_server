@@ -32,21 +32,40 @@ import org.json.JSONObject;
 public class ServiceResponse {
 
     private Object object;
+    private boolean setCORS;
     
     public ServiceResponse(JSONObject json) {
         this.object = json;
+        this.setCORS = true;
     }
     
     public ServiceResponse(JSONArray json) {
         this.object = json;
+        this.setCORS = true;
     }
     
     public ServiceResponse(String string) {
         this.object = string;
+        this.setCORS = true;
     }
     
     public ServiceResponse(byte[] bytes) {
         this.object = bytes;
+        this.setCORS = true;
+    }
+    
+    public ServiceResponse enableCORS() {
+        this.setCORS = true;
+        return this;
+    }
+    
+    public ServiceResponse disableCORS() {
+        this.setCORS = false;
+        return this;
+    }
+    
+    public boolean hasCORS() {
+        return this.setCORS;
     }
     
     public boolean isObject() {

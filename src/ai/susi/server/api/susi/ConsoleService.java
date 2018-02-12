@@ -25,16 +25,24 @@ import ai.susi.json.JsonPath;
 import ai.susi.mind.SusiProcedures;
 import ai.susi.mind.SusiThought;
 import ai.susi.mind.SusiTransfer;
-import ai.susi.server.*;
+import ai.susi.server.APIException;
+import ai.susi.server.APIHandler;
+import ai.susi.server.AbstractAPIHandler;
+import ai.susi.server.Authorization;
+import ai.susi.server.Query;
+import ai.susi.server.ServiceResponse;
+import ai.susi.server.UserRole;
+import ai.susi.tools.HttpClient;
 import api.external.transit.BahnService;
 import api.external.transit.BahnService.NoStationFoundException;
+
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.json.JSONTokener;
 
 import javax.servlet.http.HttpServletResponse;
+
 import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
@@ -72,8 +80,7 @@ public class ConsoleService extends AbstractAPIHandler implements APIHandler {
             try {
                 String testquery = matcher.group(2);
                 b = loadData(serviceURL, testquery);
-                JSONTokener serviceResponse = new JSONTokener(new ByteArrayInputStream(b));
-                JSONArray data = JsonPath.parse(serviceResponse, path);
+                JSONArray data = JsonPath.parse(b, path);
                 json.setQuery(testquery);
                 SusiTransfer transfer = new SusiTransfer(matcher.group(1));
                 if (data != null) json.setData(transfer.conclude(data));
@@ -94,18 +101,7 @@ public class ConsoleService extends AbstractAPIHandler implements APIHandler {
     }
     
     public static byte[] loadData(String url) throws IOException {
-        ClientConnection cc = new ClientConnection(url);
-        
-        // fully read the input stream
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        int n;
-        byte[] buffer = new byte[16384];
-        try {while ((n = cc.inputStream.read(buffer, 0, buffer.length)) != -1) baos.write(buffer, 0, n);} catch (IOException e) {}
-        baos.flush();
-        byte[] b = baos.toByteArray();
-        
-        // finished, close
-        cc.close();
+        byte[] b = HttpClient.load(url);
         
         // check if this is jsonp
         //System.out.println("DEBUG CONSOLE:" + new String(b, StandardCharsets.UTF_8));

@@ -76,8 +76,12 @@ public class SusiUtterance {
         }
         
         expression = normalizeExpression(expression);
-        if ((t == Type.minor || t == Type.prior) && expression.indexOf(".*") >= 0) t = Type.regex;
-        if ((t == Type.minor || t == Type.prior) && expression.indexOf('*') >= 0) t = Type.pattern;
+        if (expression.length() > 0 && (t == Type.minor || t == Type.prior)) {
+            if (expression.indexOf('*') >= 0) t = Type.pattern;
+            if (expression.indexOf(".*") >= 0 ||
+                (expression.charAt(0) == '^' && expression.charAt(expression.length() - 1) == '$') ||
+                (expression.charAt(0) == '(' && expression.charAt(expression.length() - 1) == ')')) t = Type.regex;
+        }
         if (t == Type.pattern) expression = parsePattern(expression);
         this.pattern = Pattern.compile(expression);
         this.type = expression.equals("(.*)") ? Type.minor : t;
@@ -103,19 +107,23 @@ public class SusiUtterance {
     }
     
     public static JSONObject simplePhrase(String query, boolean prior) {
-    	// normalize query
-    	query = query.trim();
-    	
-    	// correction of wrong wild card usage
-    	int p;
-    	while ((p = query.indexOf('.')) > 0 && query.charAt(p - 1) != ' ') {
-    		query = query.substring(0, p) + ' ' + query.substring(p);
-    	}
-    	while ((p = query.indexOf('.')) >= 0 && p < query.length() - 1 && query.charAt(p + 1) != ' ') {
-    		query = query.substring(0, p + 1) + ' ' + query.substring(p + 1);
-    	}
-    	
-    	// create phrase
+        	// normalize query
+        	query = query.trim();
+        	
+        	// correction of wrong wild card usage
+        	if (query.length() > 0 && (
+        	    query.charAt(0) != '^' || query.charAt(query.length() - 1) != '$' ||
+        	    query.charAt(0) != '(' || query.charAt(query.length() - 1) != ')')) {
+        	    int p;
+        	    while ((p = query.indexOf('.')) > 0 && query.charAt(p - 1) != ' ') {
+        	        query = query.substring(0, p) + ' ' + query.substring(p);
+        	    }
+        	    while ((p = query.indexOf('.')) >= 0 && p < query.length() - 1 && query.charAt(p + 1) != ' ') {
+        	        query = query.substring(0, p + 1) + ' ' + query.substring(p + 1);
+        	    }
+        	}
+        	
+        	// create phrase
         JSONObject json = new JSONObject();
         json.put("type", prior ? Type.prior.name() : Type.minor.name());
         json.put("expression", query);
