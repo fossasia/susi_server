@@ -90,12 +90,12 @@ How do I install Susi AI with Docker on AWS?
 
 To install Susi AI with Docker on AWS please refer to the `Susi Docker installation readme </docs/installation/installation_docker_aws.md>`__.
 
-How do I install Susi AI with Docker on Bluemix ?
+How do I install Susi AI with Docker on Bluemix?
 ----------------------------------
 
 To install Susi AI with Docker on Bluemix please refer to the `Susi Docker installation readme </docs/installation/installation_docker_bluemix.md>`__.
 
-How do I install Susi AI with Docker on Digital Ocean ?
+How do I install Susi AI with Docker on Digital Ocean?
 ----------------------------------
 
 To install Susi AI with Docker on Digital Ocean please refer to the `Susi Docker installation readme </docs/installation/installation_docker_digitalocean.md>`__.
@@ -113,7 +113,7 @@ To install Susi AI with cloud9 please refer to the `Susi cloud9 installation rea
 How do I setup Susi AI on Eclipse?
 -------------------------------
 
-To install Susi AI on Eclipes, please refer to the `Susi Eclipse
+To install Susi AI on Eclipse, please refer to the `Susi Eclipse
 readme </docs/installation/eclipseSetup.md>`__.
 
 How do I run Susi AI?
@@ -177,7 +177,7 @@ Where can I get the latest news about Susi AI?
 -------------------------------------------
 
 Hey, this is the tool for that! Just put
-http://loklak.org/api/search.rss?q=%23susi into your rss reader. Oh
+http://loklak.org/api/search.rss?q=%23susi into your RSS reader. Oh
 wait.. you will get a lot of information about tasty Cambodian food with
 that as well. Alternatively you may also read the authors timeline using
 http://loklak.org/api/search.rss?q=0rb1t3r or just follow @0rb1t3r
@@ -186,7 +186,7 @@ http://loklak.org/api/search.rss?q=0rb1t3r or just follow @0rb1t3r
 Where can I find documentation?
 -------------------------------
 
-The Doumentation can be found at https://github.com/fossasia/susi_server/tree/development/docs/api/api.md
+The Documentation can be found `here <https://github.com/fossasia/susi_server/tree/development/docs/api/api.md>`_.
 
 
 Where do I find the javadocs?
@@ -198,10 +198,10 @@ Where can I report bugs and make feature requests?
 --------------------------------------------------
 
 This project is considered a community work. The development crew
-consist of you too. I am very thankful for pull request. So if you
+consists of you too. We are very thankful for the pull request. So if you
 discovered that something can be enhanced, please do it yourself and
 make a pull request. If you find a bug, please try to fix it. If you
-report a bug to me I will possibly consider it but at the very end of a
+report a bug to us, We will possibly consider it but at the very end of a
 giant, always growing heap of work. The best chance for you to get
 things done is to try it yourself. Our `issue tracker is
 here <https://github.com/fossasia/susi_server/issues>`__.
