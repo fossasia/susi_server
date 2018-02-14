@@ -11,6 +11,25 @@ build:
     - url: https://github.com/fossasia/chat.susi.ai
     - url: https://github.com/fossasia/susi_tweetbot
     - url: https://github.com/fossasia/susi_fbbot
+    - url: https://github.com/fossasia/susi_chromebot
+    - url: https://github.com/fossasia/susi_firefoxbot
+    - url: https://github.com/fossasia/susi_linux
+    - url: https://github.com/fossasia/susi.ai
+    - url: https://github.com/fossasia/susi_skill_cms
+    - url: https://github.com/fossasia/susi_skill_data
+    - url: https://github.com/fossasia/susi_gitterbot
+    - url: https://github.com/fossasia/susi_viberbot
+    - url: https://github.com/fossasia/susi_kikbot
+    - url: https://github.com/fossasia/susi_wechatbot
+    - url: https://github.com/fossasia/susi_gassistantbot
+    - url: https://github.com/fossasia/accounts.susi.ai
+    - url: https://github.com/fossasia/susi_hangoutbot
+    - url: https://github.com/fossasia/susi_linebot
+    - url: https://github.com/fossasia/susi_skypebot
+    - url: https://github.com/fossasia/susi_api_wrapper
+    - url: https://github.com/fossasia/susi_alexa_skill
+    - url: https://github.com/fossasia/MMM-SUSI-AI
+    - url: https://github.com/fossasia/susi_cortana_skill
     - url: https://github.com/fossasia/susi_slackbot
     - url: https://github.com/fossasia/susi_desktop
       source: .

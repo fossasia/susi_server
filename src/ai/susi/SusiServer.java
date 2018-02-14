@@ -46,6 +46,10 @@ import javax.servlet.Servlet;
 import ai.susi.server.api.aaa.*;
 import ai.susi.server.api.cms.*;
 import ai.susi.server.api.susi.*;
+import ai.susi.server.api.monitor.*;
+import ai.susi.server.api.service.*;
+import ai.susi.server.api.vis.*;
+import ai.susi.server.api.learning.*;
 import ai.susi.tools.MultipartConfigInjectionHandler;
 import io.swagger.jaxrs.listing.ApiListingResource;
 import org.apache.logging.log4j.LogManager;
@@ -83,11 +87,6 @@ import ai.susi.server.APIHandler;
 import ai.susi.server.FileHandler;
 import ai.susi.server.HttpsMode;
 import ai.susi.server.RemoteAccess;
-import ai.susi.server.api.learning.ConsoleLearning;
-import ai.susi.server.api.service.EmailSenderService;
-import ai.susi.server.api.vis.MapServlet;
-import ai.susi.server.api.vis.MarkdownServlet;
-import ai.susi.server.api.vis.PieChartServlet;
 import ai.susi.tools.OS;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.servlet.ServletContainer;
@@ -485,6 +484,7 @@ public class SusiServer {
                 LanguageListService.class,
                 ListUserSettings.class,
                 ListSkillService.class,
+                DisableSkillService.class,
                 GetAllLanguages.class,
                 DeleteGroupService.class,
                 ExampleSkillService.class,
@@ -496,6 +496,7 @@ public class SusiServer {
                 DeleteSkillService.class,
                 ModifySkillService.class,
                 HistorySkillService.class,
+                ListDisableSkillService.class,
                 GetCommitHistory.class,
                 DescriptionSkillService.class,
                 GetSkillsImage.class,
@@ -503,9 +504,17 @@ public class SusiServer {
                 GetSkillMetadataService.class,
                 GetFileAtCommitID.class,
                 GetSkillsByAuthor.class,
+                EnableSkillService.class,
                 SkillsToBeDeleted.class,
                 GetSkillDataUrl.class,
                 UndoDeleteSkillService.class,
+                
+                // monitoring services
+                MonitorQueryService.class,
+                MonitorAnnotationsService.class,
+                MonitorSearchService.class,
+                MonitorTestService.class,
+                
                 // susi search aggregation services
                 ConsoleService.class,
                 RSSReaderService.class,
@@ -514,6 +523,7 @@ public class SusiServer {
                 MindService.class,
                 UserService.class,
                 GetAllUserroles.class,
+                
                 // learning services
                 ConsoleLearning.class,
                 

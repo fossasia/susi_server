@@ -63,8 +63,10 @@ import org.eclipse.jgit.storage.file.FileRepositoryBuilder;
 import org.eclipse.jgit.transport.RefSpec;
 import org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider;
 import org.json.JSONObject;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+
+import org.apache.log4j.ConsoleAppender;
+import org.apache.log4j.Logger;
+import org.apache.log4j.PatternLayout;
 
 /**
  * The Data Access Object for the message project.
@@ -95,7 +97,8 @@ public class DAO {
     public  static AccessTracker access;
     private static Map<String, String> config = new HashMap<>();
     public static Boolean pullStatus=true;
-    private static Logger logger = LoggerFactory.getLogger(DAO.class);
+    private static Logger logger;
+    private static LogAppender logAppender;
     
     // AAA Schema for server usage
     private static JsonTray authentication;
@@ -106,6 +109,14 @@ public class DAO {
     public static JsonTray group;
     public static JsonTray skillRating;
 
+    static {
+        PatternLayout layout = new PatternLayout("%d{yyyy-MM-dd HH:mm:ss.SSS} %p %c %x - %m%n");
+        logger = Logger.getRootLogger();
+        logger.removeAllAppenders();
+        logAppender = new LogAppender(layout, 100000);
+        logger.addAppender(logAppender);
+        logger.addAppender(new ConsoleAppender(layout));
+    }
 
     // built-in artificial intelligence
     public static SusiMind susi;
