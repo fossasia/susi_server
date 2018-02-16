@@ -94,7 +94,7 @@ public class PasswordChangeService extends AbstractAPIHandler implements APIHand
             Pattern pattern = Pattern.compile(passwordPattern);
 
             if ((authentication.getIdentity().getName()).equals(newpassword) || !new TimeoutMatcher(pattern.matcher(newpassword)).matches()) {
-                // password can't equal email and regex should match
+                // password can't be equal to email and regex should be matched
                 result.put("message", "Invalid password.");
                 throw new APIException(400, "invalid password");
             }

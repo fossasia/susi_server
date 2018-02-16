@@ -179,7 +179,7 @@ public class SignUpService extends AbstractAPIHandler implements APIHandler {
 		Authentication authentication = DAO.getAuthentication(credential);
 
 		if (authentication.getIdentity() != null) {
-			throw new APIException(422, "email already taken");
+			throw new APIException(422, "email is already taken");
 		}
 
 		// create new id
@@ -216,7 +216,7 @@ public class SignUpService extends AbstractAPIHandler implements APIHandler {
 				EmailHandler.sendEmail(signup, "SUSI AI verification", getVerificationMailContent(token, identity.getName()));
 
 				result.put("message",
-						"You successfully signed-up! An email with a verification link was send to your address.");
+						"You successfully signed-up! An email with a verification link was sent to your address.");
 				result.put("accepted", true);
 			} catch (Throwable e) {
 				result.put("accepted", false);

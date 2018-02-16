@@ -50,7 +50,7 @@ import java.util.stream.IntStream;
  * It can either take a public key or create a new key-pair.
  * Users can also be granted the right to register keys for individual other users or whole user roles.
  *
- * To export your own PublikKey from java for registering, call:
+ * To export your own PublicKey from java for registering, call:
  * - String encodedPublicKey = Base64.getEncoder().encodeToString(publicKey.getEncoded());
  *
  * To use the private key as generated in DER format in java, call:
@@ -171,6 +171,8 @@ public class PublicKeyRegistrationService extends AbstractAPIHandler implements 
 			// check if the user in question is in 'users'
 			if(permissions.getJSONObject("users", null).has(id) && permissions.getJSONObjectWithDefault("users", null).getBoolean(id, false)){
 				allowed = true;
+			}else if(!allowed){
+				throw new APIException(400, "Bad request"); // do not leak if user exists or not
 			}
 			else { // check if the user role of the user in question is in 'userRoles'
 				Authorization auth = DAO.getAuthorization(authentication.getIdentity());
@@ -180,7 +182,6 @@ public class PublicKeyRegistrationService extends AbstractAPIHandler implements 
 					}
 				}
 			}
-			if(!allowed) throw new APIException(400, "Bad request"); // do not leak if user exists or not
 		}
 		else{ // if we want to register a key for this user, bad are not allowed to (for example anonymous users)
 			if(!permissions.getBoolean("self", false)) throw new APIException(403, "You are not allowed to register a public key");
@@ -192,8 +193,7 @@ public class PublicKeyRegistrationService extends AbstractAPIHandler implements 
 			algorithm = post.get("algorithm", null);
 		}
 
-
-		if(post.get("create", false)){ // create a new key pair on the server
+		else if(post.get("create", false)){ // create a new key pair on the server
 
 			if(algorithm.equals("RSA")) {
 				int keySize = 2048;
