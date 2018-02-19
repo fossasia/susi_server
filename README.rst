@@ -177,11 +177,10 @@ Where can I get the latest news about Susi AI?
 -------------------------------------------
 
 Hey, this is the tool for that! Just put
-http://loklak.org/api/search.rss?q=%23susi into your RSS reader. Oh
+https://api.susi.ai/susi/chat.json?q=%23susi into your RSS reader. Oh
 wait.. you will get a lot of information about tasty Cambodian food with
-that as well. Alternatively you may also read the authors timeline using
-http://loklak.org/api/search.rss?q=0rb1t3r or just follow @0rb1t3r
-(that's a zero after the at sign)
+that as well. Alternatively you may also read the authors timeline or just follow @0rb1t3r
+(that's a zero after the "@" sign)
 
 Where can I find documentation?
 -------------------------------
