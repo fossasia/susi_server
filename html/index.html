@@ -36,38 +36,9 @@
   }
 }
     </script>
-    <script src="./js/jquery.min.js"></script>
     <!--#include file="../ssi/common_head_back.include" -->
     <!--#include file="../data/ssi/custom_head.include" -->
   </head>
-
-
-  <script>
-    $(document).ready(function(){
-      var timezoneOffset=new Date().getTimezoneOffset();
-      var xhttp = new XMLHttpRequest();
-      $('#query').keyup(function()
-      {
-        xhttp.abort();
-        var q=$(this).val();
-
-        if (q.length==0) {
-          $("#liveResponse").text("");
-        }
-        else{
-              xhttp.onreadystatechange = function() {
-              if (this.readyState == 4 && this.status == 200) {
-               console.log(JSON.parse(this.responseText).answers[0].actions[0].expression);
-               $("#liveResponse").text(JSON.parse(this.responseText).answers[0].actions[0].expression);
-              }
-            };
-            xhttp.open("GET", "http://127.0.0.1:4000/susi/chat.json?timezoneOffset="+timezoneOffset+"&q="+q, true);
-            xhttp.send();
-        }
-
-      })
-    })
-  </script>
 
   <body style="position: relative; margin: 0; padding-bottom: 6rem; min-height: 100%;"> <!-- style woodoo is for footer line -->
     <!--#include file="../data/ssi/custom_body_front.include" -->
@@ -107,18 +78,10 @@
             <input id="timezoneOffset0" type="hidden" name="timezoneOffset" value="">
             <script>document.getElementById("timezoneOffset0").value = new Date().getTimezoneOffset();</script>
             <div class="input-group input-group-lg col-sm-8" style="float:left">
-              <input name="q" id="query" type="text" class="center-block form-control input-lg" title="Search Twitter and the Loklak network" placeholder="Chat with Susi" autofocus autocomplete="off">
+              <input name="q" id="query" type="text" class="center-block form-control input-lg" title="Search Twitter and the loklak network" placeholder="Chat with Susi" autofocus>
               <span class="input-group-btn"><button class="btn btn-lg btn-primary" type="submit" target="_blank" onclick="form.target='_blank'; form.action='/susi/chat.json?q=' + document.getElementById('query').value;">Get JSON Data</button></span>
             </div>
           </form>
-
-          <div class="col-lg-12" style="margin-top: 30px;">
-            <div class="col-sm-12" style="font-size: 25px;" id="liveResponse">
-
-            </div>
-          </div>
-
-
 
           <form action="#" class="col-lg-12 hidden-lg hidden-md hidden-sm row">
             <input id="timezoneOffset1" type="hidden" name="timezoneOffset" value="">
@@ -129,8 +92,6 @@
             </div>
             <br/><span style="font-size:7pt;">
           </form>
-
-          
       </div>
     </div>
 
