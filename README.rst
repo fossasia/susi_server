@@ -5,7 +5,7 @@ Susi
 Status| |Percentage of issues still open| |Average time
 to resolve an issue| |Twitter| |Twitter Follow|
 
-Susi AI is an intelligent Open Source personal assistant. It is capable of chat and voice interaction by using APIS to perform actions such as music playback, making to-do lists, setting alarms, streaming podcasts, playing audiobooks, and providing weather, traffic, and other real time information. Additional functionalities can be added as console services using external APIs. Susi AI is able to answer questions and depending on the context will ask for additional information in order to perform the desired outcome. The core of the assistant is the Susi AI server that holds the "intelligence" and "personality" of Susi AI. The Android and web applications make use of the APIs to access information from a hosted server.
+Susi AI is an intelligent Open Source personal assistant. It is capable of chat and voice interaction by using APIs to perform actions such as music playback, making to-do lists, setting alarms, streaming podcasts, playing audiobooks, and providing weather, traffic, and other real time information. Additional functionalities can be added as console services using external APIs. Susi AI is able to answer questions and depending on the context will ask for additional information in order to perform the desired outcome. The core of the assistant is the Susi AI server that holds the "intelligence" and "personality" of Susi AI. The Android and web applications make use of the APIs to access information from a hosted server.
 
 An automatic deployment from the development branch at GitHub is available for tests here https://susi-server.herokuapp.com
 
@@ -28,7 +28,7 @@ How do I install Susi: Download, Build, Run
 Cloud|
 
 At this time, Susi AI is not provided in compiled form, you easily build it yourself. It's not difficult and done in one minute! The source code is
-hosted at https://github.com/fossasia/susi_server, you can download it and run Susi AI with (Before installation you must have "Java developement kit" latest version at http://openjdk.java.net/install/ & "Gradle" latest version at https://gradle.org/install/):
+hosted at https://github.com/fossasia/susi_server, you can download it and run Susi AI with (Before installation you must have "Java Development Kit" latest version at http://openjdk.java.net/install/ & "Gradle" latest version at https://gradle.org/install/):
 
 ::
 
@@ -258,7 +258,7 @@ Step 3: Coding Policy
 
 -  The pull request will not get merged until and unless the commits are
    squashed. In case there are multiple commits on the PR, the commit
-   author needs to squash them and not the maintainers cherrypicking and
+   author needs to squash them and not the maintainers cherry-picking and
    merging squashes.
 
 -  If you don't know what does squashing of commits is read from
