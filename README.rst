@@ -167,6 +167,13 @@ How do I develop Skills (AI Conversation Rules) for Susi AI?
 The Susi AI skill language is described in the `Skill Development
 Tutorial <https://github.com/fossasia/susi_skill_data/blob/master/README_susi_skill_language_tutorial.md>`__.
 
+How to utilize Susi skill data in Susi server?
+-------------------------
+
+The `Susi skill data <https://github.com/fossasia/susi_skill_data>`__ is the storage place for the Susi skills. To make Susi server utilize these skills, clone Susi skill data alongside Susi server.
+::
+   
+   git clone https://github.com/fossasia/susi_skill_data.git
 
 Why should I use Susi AI?
 ----------------------
