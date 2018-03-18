@@ -86,10 +86,6 @@ public class SusiCognition {
     public SusiCognition(JSONObject json) {
         this.json = json;
     }
-
-    public SusiCognition() {
-        
-    }
     
     public void appendToFile(File f) throws IOException {
         try {

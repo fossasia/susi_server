@@ -108,7 +108,7 @@ public class MonitorQueryService extends AbstractAPIHandler implements APIHandle
         }
         
         // success
-        return new ServiceResponse(json).setCORS();
+        return new ServiceResponse(json).enableCORS();
     }
     
     public static enum Metric {unknown, timeserie, table}

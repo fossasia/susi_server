@@ -2,6 +2,7 @@ package ai.susi.server.api.cms;
 
 import ai.susi.DAO;
 import ai.susi.json.JsonObjectWithDefault;
+import ai.susi.mind.SusiSkill;
 import ai.susi.server.*;
 import org.json.JSONObject;
 
@@ -9,6 +10,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.Map;
 import java.util.Scanner;
 
 
@@ -35,32 +37,7 @@ public class GetSkillsByAuthor extends AbstractAPIHandler implements APIHandler 
         return "/cms/getSkillsByAuthor.json";
     }
 
-    public void listFilesForFolder(String author,final File folder) {
-        String Author = author;
-        for (final File fileEntry : folder.listFiles()) {
-            if (fileEntry.isDirectory()) {
-                listFilesForFolder(Author, fileEntry);
-            } else {
-                String s  = fileEntry.getPath();
-                if(s.contains(".txt")) {
-                    Scanner scanner = null;
-                    try {
-                        scanner = new Scanner(fileEntry);
-                    } catch (FileNotFoundException e) {
-                        e.printStackTrace();
-                    }
-                    assert scanner != null;
-                    while (scanner.hasNextLine()) {
-                        String line = scanner.nextLine().toLowerCase();
-                        if (line.contains(Author.toLowerCase())){
-                            System.out.println(fileEntry.getPath());
-                            result.put(result.length()+"",fileEntry.getPath());
-                        }
-                    }
-                }
-            }
-        }
-    }
+
     @Override
     public ServiceResponse serviceImpl(Query call, HttpServletResponse response, Authorization rights, final JsonObjectWithDefault permissions) {
         result= new JSONObject();
@@ -78,8 +55,15 @@ public class GetSkillsByAuthor extends AbstractAPIHandler implements APIHandler 
             json.put("message","Author name not given");
             return new ServiceResponse(json);
         }
-        final File folder = new File(DAO.model_watch_dir.getPath());
-        listFilesForFolder(author.toLowerCase(),folder);
+
+        for (Map.Entry<SusiSkill.ID, SusiSkill> entry : DAO.susi.getSkillMetadata().entrySet()) {
+            SusiSkill.ID skill = entry.getKey();
+            if ((entry.getValue().getAuthor()!=null) && entry.getValue().getAuthor().contains(author.toLowerCase())) {
+                result.put(result.length()+"",skill);
+            }
+        }
+        result.put("accepted",true);
+        result.put("message","Success");
         return new ServiceResponse(result);
 
     }

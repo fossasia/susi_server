@@ -73,9 +73,13 @@ public class SusiSkill {
             // The skillpath must start with the root path of either the susi_skill_data git repository or of susi_server git repository.
             // In both cases the path must start with a "/".
             int i = this.skillpath.indexOf("/susi");
-            if (i < 0) throw new UnsupportedOperationException("the file path does not point to a susi skill model repository: " + origin.getAbsolutePath());
+            if (i < 0) {
+                i = this.skillpath.indexOf("\\susi");
+                if(i < 0)
+                    throw new UnsupportedOperationException("the file path does not point to a susi skill model repository: " + origin.getAbsolutePath());
+            }
             this.skillpath = this.skillpath.substring(i);
-            if (this.skillpath.startsWith("/susi/")) this.skillpath = this.skillpath.substring(5);
+            if (this.skillpath.startsWith("/susi/") || this.skillpath.startsWith("\\susi\\")) this.skillpath = this.skillpath.substring(5);
         }
         
         public String toString() {
@@ -410,7 +414,7 @@ public class SusiSkill {
      */
     public static File getSkillFileInLanguage(File language, String skill_name, boolean null_if_not_found) {
 
-    	String fn = skill_name + ".txt";
+        String fn = skill_name + ".txt";
         String[] list = language.list();
         
         // first try: the skill name may be same or similar to the skill file name
@@ -424,16 +428,16 @@ public class SusiSkill {
         // this is costly: we must parse the whole skill file
         for (String n: list) {
             if (!n.endsWith(".txt") && !n.endsWith(".ezd")) continue;
-        	File f = new File(language, n);
+            File f = new File(language, n);
             try {
-				JSONObject json = SusiSkill.readEzDSkill(new BufferedReader(new FileReader(f)));
-				String sn = json.optString("skill_name");
-				if (sn.equals(skill_name) || sn.toLowerCase().equals(skill_name) || sn.toLowerCase().replace(' ', '_').equals(skill_name)) {
-	                return new File(language, n);
-	            }
-			} catch (JSONException | FileNotFoundException e) {
-				continue;
-			}
+                JSONObject json = SusiSkill.readEzDSkill(new BufferedReader(new FileReader(f)));
+                String sn = json.optString("skill_name");
+                if (sn.equals(skill_name) || sn.toLowerCase().equals(skill_name) || sn.toLowerCase().replace(' ', '_').equals(skill_name)) {
+                    return new File(language, n);
+                }
+            } catch (JSONException | FileNotFoundException e) {
+                continue;
+            }
         }
         
         // the final attempt is bad and may not succeed, but it's the only last thing left we could do.
@@ -597,7 +601,7 @@ public class SusiSkill {
     }
 
     public String getAuthor() {
-        return author;
+        return author.toLowerCase();
     }
 
     public String getAuthorURL() {

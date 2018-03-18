@@ -2,19 +2,18 @@
 dist: trusty
 sudo: required
 
-# Environment Variables
-env:
-  global:
-  - secure: DbveaxDMtEP+/Er6ktKCP+P42uDU8xXWRBlVGaqVNU3muaRmmZtj8ngAARxfzY0f9amlJlCavqkEIAumQl9BYKPWIra28ylsLNbzAoCIi8alf9WLgddKwVWsTcZo9+UYocuY6UivJVkofycfFJ1blw/83dWMG0/TiW6s/SrwoDw=
-  - >-
-  - PATH=$PATH:${HOME}/google-cloud-sdk/bin 
-    CLOUDSDK_CORE_DISABLE_PROMPTS=1
 
 # Build, test and deploy to Google Cloud and Heroku
 matrix:
   include:
     - language: java
       jdk: oraclejdk8
+      # Environment Variables
+      env:
+        global:
+          - secure: DbveaxDMtEP+/Er6ktKCP+P42uDU8xXWRBlVGaqVNU3muaRmmZtj8ngAARxfzY0f9amlJlCavqkEIAumQl9BYKPWIra28ylsLNbzAoCIi8alf9WLgddKwVWsTcZo9+UYocuY6UivJVkofycfFJ1blw/83dWMG0/TiW6s/SrwoDw=
+          - PATH=$PATH:${HOME}/google-cloud-sdk/bin 
+          - CLOUDSDK_CORE_DISABLE_PROMPTS=1
       before_cache:
         - rm -f  $HOME/.gradle/caches/modules-2/modules-2.lock
         - rm -fr $HOME/.gradle/caches/*/plugin-resolution/

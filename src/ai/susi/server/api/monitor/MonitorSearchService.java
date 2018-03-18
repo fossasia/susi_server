@@ -64,6 +64,6 @@ public class MonitorSearchService extends AbstractAPIHandler implements APIHandl
         for (Target t: MonitorQueryService.Target.values()) json.put(t.name());
         
         // success
-        return new ServiceResponse(json).setCORS();
+        return new ServiceResponse(json).enableCORS();
     }
 }
