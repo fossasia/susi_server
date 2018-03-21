@@ -3,7 +3,7 @@ Susi
 
 |Join the chat at https://gitter.im/fossasia/susi_server| |Build
 Status| |Percentage of issues still open| |Average time
-to resolve an issue| |Twitter| |Twitter Follow|
+to resolve an issue| |Dependencies| |Twitter| |Twitter Follow|
 
 Susi AI is an intelligent Open Source personal assistant. It is capable of chat and voice interaction by using APIs to perform actions such as music playback, making to-do lists, setting alarms, streaming podcasts, playing audiobooks, and providing weather, traffic, and other real time information. Additional functionalities can be added as console services using external APIs. Susi AI is able to answer questions and depending on the context will ask for additional information in order to perform the desired outcome. The core of the assistant is the Susi AI server that holds the "intelligence" and "personality" of Susi AI. The Android and web applications make use of the APIs to access information from a hosted server.
 
@@ -291,7 +291,8 @@ Your code will be reviewed, in this sequence, by:
 
 Have fun! @0rb1t3r
 
-
+.. |Dependencies| image:: https://beta.gemnasium.com/badges/github.com/fossasia/susi_linux.svg
+   :target: https://beta.gemnasium.com/projects/github.com/fossasia/susi_linux
 .. |Join the chat at https://gitter.im/fossasia/susi_server| image:: https://badges.gitter.im/fossasia/susi_server.svg
    :target: https://gitter.im/fossasia/susi_server?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge
 .. |Build Status| image:: https://travis-ci.org/fossasia/susi_server.svg?branch=development
