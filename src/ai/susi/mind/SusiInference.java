@@ -45,7 +45,7 @@ import alice.tuprolog.Theory;
  * In Susi reasoning we also have inference methods which retrieve data from external data sources
  * which is a data enrichment, but also inference methods which may filter, transform and reduce the
  * Susi though elements in an argument. Inferences are applied step by step and act like a data stream.
- * Concatenated inferences are like piped commands or stream lambdas. Each time an inferece is applied
+ * Concatenated inferences are like piped commands or stream lambdas. Each time an inference is applied
  * an unification step is done first to instantiate the variables inside an inference with the thought
  * argument from the steps before.
  */
@@ -310,7 +310,7 @@ public class SusiInference {
         }
         // maybe the argument is not applicable, then an empty thought is produced (which means a 'fail')
         return new SusiThought();
-}
+    }
     
     public String toString() {
         return this.getJSON().toString();
