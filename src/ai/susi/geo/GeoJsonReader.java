@@ -87,7 +87,9 @@ public class GeoJsonReader implements Runnable {
             DAO.severe(e);
         } finally {
             for (int i = 0; i < this.concurrency; i++) {
-                try {this.featureQueue.put(POISON_FEATURE);} catch (InterruptedException e) {}
+                try {this.featureQueue.put(POISON_FEATURE);} catch (InterruptedException e) {
+                    DAO.severe(e);
+                }
             }
         }
     }
