@@ -40,7 +40,6 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Random;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 
 import javax.servlet.Servlet;
 
@@ -71,6 +70,7 @@ import org.eclipse.jetty.server.session.HashSessionIdManager;
 import org.eclipse.jetty.server.session.HashSessionManager;
 import org.eclipse.jetty.server.session.SessionHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
+import org.eclipse.jetty.util.ConcurrentHashSet;
 import org.eclipse.jetty.util.thread.QueuedThreadPool;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
 import org.eclipse.jetty.util.security.Constraint;
@@ -94,7 +94,7 @@ import org.glassfish.jersey.servlet.ServletContainer;
 
 public class SusiServer {
 	
-    public final static Set<String> blacklistedHosts = ConcurrentHashMap.newKeySet();
+    public final static Set<String> blacklistedHosts = new ConcurrentHashSet<>();
 
     private static Server server = null;
     private static Caretaker caretaker = null;

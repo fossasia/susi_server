@@ -465,7 +465,11 @@ public class SusiThought extends JSONObject {
     }
     
     public String toString() {
-        return super.toString();
+        return super.toString(0);
+    }
+    
+    public int hashCode() {
+        return this.getData().toString().hashCode();
     }
     
     public static void main(String[] args) {
