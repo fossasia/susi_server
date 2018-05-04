@@ -2,7 +2,7 @@
 You can deploy susi.ai on microsoft azure
 
 
-1. Use free trial by sishning up on [Azure free trial](https://azure.microsoft.com/en-in/free/). You will get $200 free azure credits.
+1. Use free trial by signing up on [Azure free trial](https://azure.microsoft.com/en-in/free/). You will get $200 free azure credits.
 
 2. From your dashboard launch Azure cloud shell.
 
