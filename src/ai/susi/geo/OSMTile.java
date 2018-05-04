@@ -68,11 +68,15 @@ public class OSMTile {
                 place = new Place(m, t.xtile - w + i, t.ytile - h + j, 256 * i, 256 * j, t.zoom);
                 place.start();
                 tileLoader.add(place);
-                if (t.zoom >= 17) try {Thread.sleep(100);} catch (final InterruptedException e) {} // be nice with tile server for uncached tiles
+                if (t.zoom >= 17) try {Thread.sleep(100);} catch (final InterruptedException e) {
+                    DAO.severe(e);
+                } // be nice with tile server for uncached tiles
             }
         }
         // wait until all tiles are loaded
-        for (final Place p: tileLoader) try { p.join(); } catch (final InterruptedException e) {}
+        for (final Place p: tileLoader) try { p.join(); } catch (final InterruptedException e) {
+            DAO.severe(e);
+        }
         return m;
     }
 
@@ -93,7 +97,9 @@ public class OSMTile {
                     return;
                 }
                 // don't DoS OSM when trying again
-                try {Thread.sleep(300 + 100 * i);} catch (final InterruptedException e) {}
+                try {Thread.sleep(300 + 100 * i);} catch (final InterruptedException e) {
+                    DAO.severe(e);
+                }
             }
         }
     }

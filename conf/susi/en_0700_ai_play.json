@@ -22,7 +22,7 @@
                {"type":"pattern", "expression":"hi*"}
    ],
    "actions":[ {"type":"answer", "select":"random", "phrases":[
-    "Hi, I'm Susi",
+    "Hi! I'm SUSI",
     "Hello!"
    ]}]
   }, {
