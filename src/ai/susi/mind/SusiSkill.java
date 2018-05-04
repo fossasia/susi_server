@@ -601,7 +601,12 @@ public class SusiSkill {
     }
 
     public String getAuthor() {
-        return author.toLowerCase();
+        if (author!=null) {
+            return author.toLowerCase();
+        }
+        else {
+            return author;
+        }
     }
 
     public String getAuthorURL() {
