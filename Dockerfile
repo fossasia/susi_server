@@ -10,7 +10,7 @@ RUN apt-get upgrade -y
 RUN apt-get install -y git openjdk-8-jdk
 
 # clone the github repo
-RUN git clone --recursive https://github.com/fossasia/susi_server.git
+RUN git clone --recursive https://github.com/anupkumarpanwar/susi_server.git --branch development
 WORKDIR susi_server
 RUN git submodule update --init --recursive
 
