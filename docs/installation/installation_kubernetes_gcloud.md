@@ -100,7 +100,7 @@ _You can delete the instance if your not planning to use it for anything else. B
 - To prevent this we need to ensure that the server is restricted on one node only.
 
   ```
-  kubect get nodes
+  kubectl get nodes
   ```
 
   ```
