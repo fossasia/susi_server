@@ -95,6 +95,12 @@ How do I install Susi AI with Docker on Bluemix?
 
 To install Susi AI with Docker on Bluemix please refer to the `Susi Docker installation readme </docs/installation/installation_docker_bluemix.md>`__.
 
+How do I install Susi AI with Docker on Microsoft Azure?
+----------------------------------
+
+To install Susi AI with Docker on Azure please refer to the `Susi Docker installation readme </docs/installation/installation_docker_azure.md>`__.
+
+
 How do I install Susi AI with Docker on Digital Ocean?
 ----------------------------------
 
