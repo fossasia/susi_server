@@ -255,7 +255,7 @@ public class SusiServer {
                     LogManager.shutdown();
 
                 } catch (Exception e) {
-                    DAO.getMessage();
+                    DAO.severe(e.getMessage());
                 }
             }
         });
