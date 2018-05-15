@@ -132,6 +132,9 @@ public class AnimationGIF {
         return baos.toByteArray();
     }
     
+    /**
+     * sets metadata into the gif
+     */
     private static void setMetadata(IIOMetadata metaData, int delayMillis, int transparencyColorIndex) throws IIOInvalidTreeException {
         Node tree = metaData.getAsTree(formatName);
         NodeList nodeList = tree.getChildNodes();
@@ -184,6 +187,10 @@ public class AnimationGIF {
     
     /**
      * test image generator
+     * @param width : Width for the Image
+     * @param height : Height for the Image
+     * @param r : Random object
+     * @param angle: Angle value
      */
     private static RenderedImage generateTestImage(int width, int height, Random r, double angle) {
         BufferedImage img = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);

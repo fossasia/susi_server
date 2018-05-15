@@ -5,6 +5,7 @@
     <meta name="description" content="Chat with a Personal Assistant: Artificial Intelligence for Information Retrieval">
     <meta name="author" content="Michael Peter Christen, @0rb1t3r">
     <link rel="canonical" href="http://api.susi.ai" />
+    <link href = "artwork/favicon.ico" rel="icon" type="image/x-icon">
     <title>api.susi.ai - Software and Rules for Personal Assistants</title>
 
     <meta property="og:title" content="api.susi.ai - Software and Rules for Personal Assistants">
@@ -12,7 +13,6 @@
     <meta property="og:url" content="http://susi.ai">
     <meta property="og:image" content="http://susi.ai/artwork/loklak_org_sticker.png">
     <meta property="og:description" content="Chat with a Personal Assistant: Artificial Intelligence for Information Retrieval">
-
     <meta name="twitter:card" content="summary">
     <meta name="twitter:title" content="api.susi.ai - Software and Rules for Personal Assistants">
     <meta name="twitter:url" content="http://susi.ai">
@@ -20,21 +20,21 @@
     <meta name="twitter:image" content="http://susi.ai/artwork/loklak_org_sticker.png">
 
     <script type="application/ld+json">
-{
-  "@context": "http://schema.org",
-  "@type": "Organization",
-  "name": "api.susi.ai - Software and Rules for Personal Assistants",
-  "alternateName": "Chat with a Personal Assistant: Artificial Intelligence for Information Retrieval",
-  "url": "http://susi.ai",
-  "logo": "http://susi.ai/artwork/loklak_org_sticker.png",
-  "sameAs": [
-  ],
-  "potentialAction": {
-    "@type": "SearchAction",
-    "target": "http://api.susi.ai/susi/chat.json?q={query}",
-    "query-input": "required name=query"
-  }
-}
+      {
+        "@context": "http://schema.org",
+        "@type": "Organization",
+        "name": "api.susi.ai - Software and Rules for Personal Assistants",
+        "alternateName": "Chat with a Personal Assistant: Artificial Intelligence for Information Retrieval",
+        "url": "http://susi.ai",
+        "logo": "http://susi.ai/artwork/loklak_org_sticker.png",
+        "sameAs": [
+        ],
+        "potentialAction": {
+          "@type": "SearchAction",
+          "target": "http://api.susi.ai/susi/chat.json?q={query}",
+          "query-input": "required name=query"
+        }
+      }
     </script>
     <!--#include file="../ssi/common_head_back.include" -->
     <!--#include file="../data/ssi/custom_head.include" -->
@@ -87,7 +87,7 @@
             <input id="timezoneOffset1" type="hidden" name="timezoneOffset" value="">
             <script>document.getElementById("timezoneOffset1").value = new Date().getTimezoneOffset();</script>
             <div class="input-group input-group-lg row col-sm-12" style="float:left;display: flex;flex-wrap: wrap;">
-              <input name="q" id="query" type="text" class="center-block form-control input-lg" title="Search Twitter and the loklak network" placeholder="Search Twitter & the loklak network" style="border-bottom-width: 5px;padding-right: 12px;">
+              <input name="q" id="query" type="text" class="center-block form-control input-lg" title="Search Twitter and the loklak network" placeholder="Chat with Susi" style="border-bottom-width: 5px;padding-right: 12px;">
                 <span class="input-group-btn"><button class="btn btn-lg btn-primary" type="submit" target="_blank" onclick="form.target='_blank'; form.action='/susi/chat.json?q=' + document.getElementById('query').value;">Get JSON Data</button></span>
             </div>
             <br/><span style="font-size:7pt;">

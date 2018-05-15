@@ -87,7 +87,9 @@ public class GeoJsonReader implements Runnable {
             DAO.severe(e);
         } finally {
             for (int i = 0; i < this.concurrency; i++) {
-                try {this.featureQueue.put(POISON_FEATURE);} catch (InterruptedException e) {}
+                try {this.featureQueue.put(POISON_FEATURE);} catch (InterruptedException e) {
+                    DAO.severe(e);
+                }
             }
         }
     }
@@ -125,16 +127,15 @@ public class GeoJsonReader implements Runnable {
                         name = parser.getCurrentName();
     
                         if (JsonToken.FIELD_NAME.equals(token) && "type".equals(name)) {
-                            parser.nextToken(); this.geometry_type = parser.getText(); continue;
+                            parser.nextToken(); this.geometry_type = parser.getText();
                         }
-                        if (JsonToken.FIELD_NAME.equals(token) && "coordinates".equals(name)) {
+                        else if (JsonToken.FIELD_NAME.equals(token) && "coordinates".equals(name)) {
                             token = parser.nextToken(); if (!JsonToken.START_ARRAY.equals(token)) break;
                             parser.nextToken(); double lon = parser.getDoubleValue();
                             if (!properties.containsKey("geo_longitude")) properties.put("geo_longitude",  Double.toString(lon));
                             parser.nextToken(); double lat = parser.getDoubleValue();
                             if (!properties.containsKey("geo_latitude")) properties.put("geo_latitude",  Double.toString(lat));
                             parser.nextToken(); // END_ARRAY
-                            continue;
                         }
                     }
                 }

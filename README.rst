@@ -95,6 +95,12 @@ How do I install Susi AI with Docker on Bluemix?
 
 To install Susi AI with Docker on Bluemix please refer to the `Susi Docker installation readme </docs/installation/installation_docker_bluemix.md>`__.
 
+How do I install Susi AI with Docker on Microsoft Azure?
+----------------------------------
+
+To install Susi AI with Docker on Azure please refer to the `Susi Docker installation readme </docs/installation/installation_docker_azure.md>`__.
+
+
 How do I install Susi AI with Docker on Digital Ocean?
 ----------------------------------
 
@@ -167,6 +173,13 @@ How do I develop Skills (AI Conversation Rules) for Susi AI?
 The Susi AI skill language is described in the `Skill Development
 Tutorial <https://github.com/fossasia/susi_skill_data/blob/master/README_susi_skill_language_tutorial.md>`__.
 
+How to utilize Susi skill data in Susi server?
+-------------------------
+
+The `Susi skill data <https://github.com/fossasia/susi_skill_data>`__ is the storage place for the Susi skills. To make Susi server utilize these skills, clone Susi skill data alongside Susi server.
+::
+   
+   git clone https://github.com/fossasia/susi_skill_data.git
 
 Why should I use Susi AI?
 ----------------------

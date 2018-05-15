@@ -15,7 +15,7 @@ mkdir -p data/settings
 #to not allow process to overwrite the already running one.
 if [ -f $PIDFILE ]; then
     PID=$(cat $PIDFILE 2>/dev/null)
-    if kill $PID > /dev/null 2>&1; then
+    if [ -n $PID ]; then
         echo "Server is already running, please stop it and then start"
         exit 1
     else
