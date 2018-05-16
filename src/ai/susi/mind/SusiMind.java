@@ -140,7 +140,7 @@ public class SusiMind {
                         if (f.getName().endsWith(".json")) {
                             lesson = SusiSkill.readJsonSkill(f);
                         }
-                        if (f.getName().endsWith(".txt") || f.getName().endsWith(".ezd")) {
+                        if (f.getName().endsWith(".txt") || f.getName().endsWith(".ezd") || f.getName().endsWith(".lot")) {
                             lesson = SusiSkill.readEzDSkill(new BufferedReader(new FileReader(f)));
                         }
                         if (f.getName().endsWith(".aiml")) {

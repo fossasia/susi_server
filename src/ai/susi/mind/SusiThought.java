@@ -28,8 +28,11 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import org.jfree.util.Log;
 import org.json.JSONArray;
 import org.json.JSONObject;
+
+import ai.susi.mind.SusiAction.SusiActionException;
 
 /**
  * A thought is a piece of data that can be remembered. The structure or the thought can be
@@ -359,7 +362,14 @@ public class SusiThought extends JSONObject {
      */
     public List<SusiAction> getActions() {
         List<SusiAction> actions = new ArrayList<>();
-        getActionsJSON().forEach(action -> actions.add(new SusiAction((JSONObject) action)));
+        getActionsJSON().forEach(a -> {
+            try {
+                SusiAction action = new SusiAction((JSONObject) a);
+                actions.add(action);
+            } catch (SusiActionException e) {
+                Log.warn("invalid action - " + e.getMessage() + ": " + ((JSONObject) a).toString(0));
+            }
+        });
         return actions;
     }
     

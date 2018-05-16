@@ -33,10 +33,12 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
+import org.jfree.util.Log;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
 import ai.susi.DAO;
+import ai.susi.mind.SusiAction.SusiActionException;
 import ai.susi.tools.TimeoutMatcher;
 
 /**
@@ -108,7 +110,14 @@ public class SusiIntent {
         if (!json.has("actions")) throw new PatternSyntaxException("actions missing", "", 0);
         p = (JSONArray) json.remove("actions");
         this.actions = new ArrayList<>(p.length());
-        p.forEach(q -> this.actions.add(new SusiAction((JSONObject) q)));
+        p.forEach(a -> {
+            try {
+                SusiAction action = new SusiAction((JSONObject) a);
+                this.actions.add(action);
+            } catch (SusiActionException e) {
+                Log.warn("invalid action - " + e.getMessage() + ": " + ((JSONObject) a).toString(0));
+            }
+        });
         
         // extract the inferences and the process subscore; there may be no inference at all
         if (json.has("process")) {
@@ -443,10 +452,15 @@ public class SusiIntent {
      */
     public List<SusiAction> getActionsClone() {
         List<SusiAction> clonedList = new ArrayList<>();
-        this.actions.forEach(action -> {
-            JSONObject actionJson = action.toJSONClone();
+        this.actions.forEach(a -> {
+            JSONObject actionJson = a.toJSONClone();
             if (this.language != SusiLanguage.unknown) actionJson.put("language", this.language.name());
-            clonedList.add(new SusiAction(actionJson));
+            try {
+                SusiAction action = new SusiAction(actionJson);
+                clonedList.add(action);
+            } catch (SusiActionException e) {
+                Log.warn("invalid action - " + e.getMessage() + ": " + actionJson.toString(0));
+            }
         });
         return clonedList;
     }
