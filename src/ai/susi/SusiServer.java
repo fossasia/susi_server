@@ -228,9 +228,9 @@ public class SusiServer {
         SusiServer.caretaker.start();
         
         // if this is not headless, we can open a browser automatically
-        OS.openBrowser("http://127.0.0.1:" + httpPort + "/");
+        OS.openBrowser("http://127.0.0.1:" + httpPort);
         
-        DAO.log("finished startup!");
+        DAO.log("Finished startup!");
         
         // signal to startup script
         if (startup.exists()){
@@ -247,14 +247,15 @@ public class SusiServer {
                 try {
                     DAO.log("catched main termination signal");
                     SusiServer.caretaker.shutdown();
-                    try {SusiServer.server.stop();} catch (Exception e) {}
-                    try {DAO.close();} catch (Exception e) {}
-                    DAO.log("main terminated, goodby.");
+                    try {SusiServer.server.stop();} catch (Exception e) {DAO.severe(e.getMessage());}
+                    try {DAO.close();} catch (Exception e) {DAO.severe(e.getMessage());}
+                    DAO.log("Main terminated, goodbye.");
 
                     DAO.log("Shutting down log4j2");
                     LogManager.shutdown();
 
                 } catch (Exception e) {
+                    DAO.severe(e.getMessage());
                 }
             }
         });
@@ -262,7 +263,7 @@ public class SusiServer {
         // ** wait for shutdown signal, do this with a kill HUP (default level 1, 'kill -1') signal **
         
         SusiServer.server.join();
-        DAO.log("server terminated");
+        DAO.log("Server terminated");
         
         // After this, the jvm processes all shutdown hooks and terminates then.
         // The main termination line is therefore inside the shutdown hook.
