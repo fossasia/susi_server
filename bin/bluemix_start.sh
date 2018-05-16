@@ -14,7 +14,7 @@ if [ -d .jdk8 ]; then
 else
   echo -n "-----> .jdk8 folder not found! "
   if [[ -d "$PWD/.jdk8" ]]; then
-    echo -n "Copying jdk from cache to app... "
+    echo -n "Copying JDK from cache to app... "
     cp -r "$PWD/.jdk8" "$PWD"
     echo "Done!"
 
