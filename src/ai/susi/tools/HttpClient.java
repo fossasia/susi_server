@@ -31,7 +31,6 @@ import java.net.SocketTimeoutException;
 import java.net.UnknownHostException;
 import java.nio.charset.StandardCharsets;
 import java.security.KeyManagementException;
-import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
@@ -66,14 +65,12 @@ import org.apache.http.conn.socket.ConnectionSocketFactory;
 import org.apache.http.conn.socket.PlainConnectionSocketFactory;
 import org.apache.http.conn.ssl.NoopHostnameVerifier;
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
-import org.apache.http.conn.ssl.TrustSelfSignedStrategy;
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.mime.HttpMultipartMode;
 import org.apache.http.entity.mime.MultipartEntityBuilder;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
-import org.apache.http.ssl.SSLContextBuilder;
 import org.apache.http.util.EntityUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -83,7 +80,7 @@ public class HttpClient {
     
 
 
-    public static final int clientTimeoutInit = 10000;
+    public static final int defaultClientTimeout = 2000;
     public static final int minimumLocalDeltaInit  =  10; // the minimum time difference between access of the same local domain
     public static final int minimumGlobalDeltaInit = 500; // the minimum time difference between access of the same global domain
     
@@ -91,12 +88,10 @@ public class HttpClient {
         public final String userAgent;    // the name that is send in http request to identify the agent
         public final String[] robotIDs;   // the name that is used in robots.txt to identify the agent
         public final int    minimumDelta; // the minimum delay between two accesses
-        public final int    clientTimeout;
         public Agent(final String userAgent, final String[] robotIDs, final int minimumDelta, final int clientTimeout) {
             this.userAgent = userAgent;
             this.robotIDs = robotIDs;
             this.minimumDelta = minimumDelta;
-            this.clientTimeout = clientTimeout;
         }
     }
     
@@ -125,16 +120,16 @@ public class HttpClient {
     public final static String yacyIntranetCrawlerAgentName = "YaCy Intranet (greedy)";
     public static Agent yacyIntranetCrawlerAgent = null; // defined later in static
     public final static String googleAgentName = "Googlebot";
-    public final static Agent googleAgentAgent = new Agent("Googlebot/2.1 (+http://www.google.com/bot.html)", new String[]{"Googlebot", "Googlebot-Mobile"}, minimumGlobalDeltaInit / 2, clientTimeoutInit);
+    public final static Agent googleAgentAgent = new Agent("Googlebot/2.1 (+http://www.google.com/bot.html)", new String[]{"Googlebot", "Googlebot-Mobile"}, minimumGlobalDeltaInit / 2, defaultClientTimeout);
     public final static String yacyProxyAgentName = "YaCyProxy";
-    public final static Agent yacyProxyAgent = new Agent("yacy - this is a proxy access through YaCy from a browser, not a robot (the yacy bot user agent is 'yacybot')", new String[]{"yacy"}, minimumGlobalDeltaInit, clientTimeoutInit);
+    public final static Agent yacyProxyAgent = new Agent("yacy - this is a proxy access through YaCy from a browser, not a robot (the yacy bot user agent is 'yacybot')", new String[]{"yacy"}, minimumGlobalDeltaInit, defaultClientTimeout);
     public final static String customAgentName = "Custom Agent";
     public final static String browserAgentName = "Random Browser";
     public static Agent browserAgent;
     
     static {
         generateYaCyBot("new");
-        browserAgent = new Agent(browserAgents[random.nextInt(browserAgents.length)], new String[]{"Mozilla"}, minimumLocalDeltaInit, clientTimeoutInit);
+        browserAgent = new Agent(browserAgents[random.nextInt(browserAgents.length)], new String[]{"Mozilla"}, minimumLocalDeltaInit, defaultClientTimeout);
         agents.put(googleAgentName, googleAgentAgent);
         agents.put(browserAgentName, browserAgent);
         agents.put(yacyProxyAgentName, yacyProxyAgent);
@@ -154,8 +149,8 @@ public class HttpClient {
      */
     public static void generateYaCyBot(String addinfo) {
         String agentString = "yacybot (v2 " + addinfo + "; " + yacySystem  + ") http://yacy.net/bot.html";
-        yacyInternetCrawlerAgent = new Agent(agentString, new String[]{"yacybot"}, minimumGlobalDeltaInit, clientTimeoutInit);
-        yacyIntranetCrawlerAgent = new Agent(agentString, new String[]{"yacybot"}, minimumLocalDeltaInit, clientTimeoutInit); // must have the same userAgent String as the web crawler because this is also used for snippets
+        yacyInternetCrawlerAgent = new Agent(agentString, new String[]{"yacybot"}, minimumGlobalDeltaInit, defaultClientTimeout);
+        yacyIntranetCrawlerAgent = new Agent(agentString, new String[]{"yacybot"}, minimumLocalDeltaInit, defaultClientTimeout); // must have the same userAgent String as the web crawler because this is also used for snippets
         agents.put(yacyInternetCrawlerAgentName, yacyInternetCrawlerAgent);
         agents.put(yacyIntranetCrawlerAgentName, yacyIntranetCrawlerAgent);
     }
@@ -233,9 +228,9 @@ public class HttpClient {
     public static final byte[] CRLF = {CR, LF};
 
     public final static RequestConfig defaultRequestConfig = RequestConfig.custom()
-            .setSocketTimeout(60000)
-            .setConnectTimeout(60000)
-            .setConnectionRequestTimeout(60000)
+            .setSocketTimeout(defaultClientTimeout)
+            .setConnectTimeout(defaultClientTimeout)
+            .setConnectionRequestTimeout(defaultClientTimeout)
             .setContentCompressionEnabled(true)
             .setCookieSpec(CookieSpecs.IGNORE_COOKIES)
             .build();
@@ -516,8 +511,29 @@ public class HttpClient {
      * @throws IOException
      */
     public static byte[] load(String source_url) throws IOException {
-        HttpClient connection = new HttpClient(source_url);
-        return connection.load();
+        final List<byte[]> content = new ArrayList<>(1);
+        final List<IOException> exception = new ArrayList<>(1);
+        Thread loadThread = new Thread() {
+            public void run() {
+                try {
+                    HttpClient connection = new HttpClient(source_url);
+                    byte[] c = connection.load();
+                    if (c != null) content.add(c);
+                } catch (IOException e) {
+                    exception.add(e);
+                }
+            }
+        };
+        loadThread.start();
+        try {
+            loadThread.join(defaultClientTimeout);
+        } catch (InterruptedException e) {
+            throw new IOException(e.getMessage());
+        }
+        if (loadThread.isAlive()) loadThread.interrupt();
+        if (!exception.isEmpty()) throw exception.get(0);
+        if (content.isEmpty()) throw new IOException("no content available");
+        return content.get(0);
     }
     
     /**

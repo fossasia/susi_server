@@ -35,9 +35,25 @@ import ai.susi.tools.TimeoutMatcher;
  * An action is an application on the information deduced during inferences on mind states
  * as they are represented in an argument. If we want to produce respond sentences or if
  * we want to visualize deduces data as a graph or in a picture, thats an action.
+ * 
+ * Thoughts:
+ * We need a device logic ontop of actions, like:
+ * - an action must be performed synchronously or concurrently
+ * - an action may be interruted or not
+ * - actions which may be interrupted must be identifiable with a (temporary?) action ID
+ * - are there follow-up actions on interrupted actions?
+ * - can several actions be performed concurrently and then synchronized again with a join-step for a common follow-up action?
+ * We need a declaration to express this; a logic in the client to perform this and an expression in the skills to declare this.
  */
 public class SusiAction {
-
+    
+    public static class SusiActionException extends Exception {
+        private static final long serialVersionUID = -754075705722756817L;
+        public SusiActionException(String message) {
+            super(message);
+        }
+    }
+    
     public static enum RenderType {
         answer,        // show or say a text
         table,         // show a table
@@ -93,8 +109,13 @@ public class SusiAction {
      * initialize an action using a json description.
      * @param json
      */
-    public SusiAction(JSONObject json) {
+    public SusiAction(JSONObject json) throws SusiActionException {
         this.json = json;
+        // check if the action is valid. If it is not valid, throw an exception
+        // {"type":"answer","select":"random","phrases":["Here is the exact location of the event $2$"]}
+        if (!json.has("type")) throw new SusiActionException("the action needs a type object");
+        if (!json.has("select")) throw new SusiActionException("the action needs a select object");
+        if (!json.has("phrases")) throw new SusiActionException("the action needs a phrases object");
     }
 
     /**

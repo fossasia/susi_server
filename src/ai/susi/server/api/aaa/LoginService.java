@@ -78,6 +78,8 @@ public class LoginService extends AbstractAPIHandler implements APIHandler {
 	public ServiceResponse serviceImpl(Query post, HttpServletResponse response, Authorization authorization, final JsonObjectWithDefault permissions)
 			throws APIException {
 
+		long valid_seconds;
+
 		// login check for app
 		if(post.get("checkLogin", false)) {
 			JSONObject result = new JSONObject(true);
@@ -154,6 +156,7 @@ public class LoginService extends AbstractAPIHandler implements APIHandler {
 			// check if the password is valid
 			String passwordHash;
 			String salt;
+			
 			try {
 				passwordHash = authentication.getString("passwordHash");
 				salt = authentication.getString("salt");
@@ -198,7 +201,6 @@ public class LoginService extends AbstractAPIHandler implements APIHandler {
 					break;
 				case "access-token": // create and display an access token
 
-					long valid_seconds;
 					try {
 						valid_seconds = post.get("valid_seconds", defaultAccessTokenExpireTime);
 					} catch (Throwable e) {
@@ -291,7 +293,7 @@ public class LoginService extends AbstractAPIHandler implements APIHandler {
 			}
 
 			if(verified){
-				long valid_seconds;
+
 				try {
 					valid_seconds = post.get("valid_seconds", defaultAccessTokenExpireTime);
 				} catch (Throwable e) {
@@ -329,7 +331,7 @@ public class LoginService extends AbstractAPIHandler implements APIHandler {
 	private Authentication getAuthentication(Query post, Authorization authorization, ClientCredential credential) throws APIException{
 		// create Authentication
 		Authentication authentication = DAO.getAuthentication(credential);
-
+		
 		if (authentication.getIdentity() == null) { // check if identity is valid
 			authentication.delete();
 
@@ -337,7 +339,7 @@ public class LoginService extends AbstractAPIHandler implements APIHandler {
 			throw new APIException(422, "Invalid credentials");
 		}
 
-		if (!authentication.getBoolean("activated", false)) { // check if identity is valid
+		else if (!authentication.getBoolean("activated", false)) { // check if identity is valid
 			DAO.log("Invalid login try for user: " + credential.getName() + " from host: " + post.getClientHost() + " : user not activated yet");
 			throw new APIException(422, "User not yet activated");
 		}

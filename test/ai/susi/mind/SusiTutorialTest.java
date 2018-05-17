@@ -192,9 +192,72 @@ public class SusiTutorialTest {
                     "Math.pow($1$, $2$)\n" +
                     "eol\n" +
                     "\n" +
+                    "generic actions *\n" +
+                    "!actions:done\n" +
+                    "["+
+                    "{\"type\":\"answer\", \"select\":\"random\", \"phrases\":[\"ok\"]}," +
+                    "{\"type\":\"table\", \"columns\":[\"title\"]}," +
+                    "{\"type\":\"piechart\", \"columns\":[\"title\"], \"count\":10}," +
+                    "{\"type\":\"rss\"}," +
+                    "{\"type\":\"self\"}," +
+                    "{\"type\":\"websearch\"}," +
+                    "{\"type\":\"anchor\"}," +
+                    "{\"type\":\"map\"}," +
+                    "{\"type\":\"timer_set\"}," +
+                    "{\"type\":\"timer_reset\"}," +
+                    "{\"type\":\"audio_record\", \"concurrent\":true}," +
+                    "{\"type\":\"audio_play\", \"concurrent\":true}," +
+                    "{\"type\":\"audio_stop\"}," +
+                    "{\"type\":\"video_record\", \"concurrent\":true}," +
+                    "{\"type\":\"video_play\", \"concurrent\":true}," +
+                    "{\"type\":\"video_stop\"}," +
+                    "{\"type\":\"image_take\"}," +
+                    "{\"type\":\"image_show\"}," +
+                    "{\"type\":\"emotion\"}," +
+                    "{\"type\":\"button_push\"}," +
+                    "{\"type\":\"io\"}" +
+                    "]" +
+                    "eol\n" +
+                    "\n" +
                     "\n" +
                     "\n";
 
 }
-
-
+/*
+bo_actions.forEach(action -> {
+    JSONObject boa = (JSONObject) action;
+    String type = boa.has("type") ? boa.getString("type") : "";
+    if (type.equals(SusiAction.RenderType.table.toString()) && boa.has("columns")) {
+        actions.put(SusiAction.tableAction(boa.getJSONObject("columns"),
+                    boa.has("count") ? boa.getInt("count") : -1));
+    } else
+    if (type.equals(SusiAction.RenderType.piechart.toString()) &&
+            boa.has("total") && boa.has("key") &&
+            boa.has("value") && boa.has("unit")) {
+        actions.put(SusiAction.piechartAction(
+                boa.getInt("total"), boa.getString("key"),
+                boa.getString("value"), boa.getString("unit")));
+    } else
+    if (type.equals(SusiAction.RenderType.rss.toString()) &&
+            boa.has("title") && boa.has("description") && boa.has("link")) {
+        actions.put(SusiAction.rssAction(
+            boa.getString("title"), boa.getString("description"), boa.getString("link"),
+            boa.has("count") ? boa.getInt("count") : -1));
+    } else
+    if (type.equals(SusiAction.RenderType.websearch.toString()) && boa.has("query")) {
+        actions.put(SusiAction.websearchAction(boa.getString("query")));
+    } else
+    if (type.equals(SusiAction.RenderType.map.toString()) &&
+            boa.has("latitude") && boa.has("longitude") && boa.has("zoom")) {
+        actions.put(SusiAction.mapAction(
+            boa.getDouble("latitude"), boa.getDouble("longitude"), boa.getInt("zoom")));
+    } else
+    if(type.equals(SusiAction.RenderType.timer_set.toString()) &&
+            boa.has("hour")){
+        int hour = boa.getInt("hour");
+            actions.put(SusiAction.timerSetAction(
+                    hour, boa.has("minute") ? boa.getInt("minute") : 0,
+                    boa.has("second") ? boa.getInt("second") : 0));
+    }
+});
+*/

@@ -21,7 +21,6 @@ package ai.susi.mind;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -37,7 +36,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -48,6 +46,9 @@ import ai.susi.mind.SusiMemory.TokenMapList;
 import ai.susi.server.api.susi.ConsoleService;
 import ai.susi.tools.AIML2Susi;
 
+/**
+ * The mind learns skills and uses creativity to map intents with user utterances
+ */
 public class SusiMind {
     
     public final static int ATTENTION_TIME = 5;
@@ -139,7 +140,7 @@ public class SusiMind {
                         if (f.getName().endsWith(".json")) {
                             lesson = SusiSkill.readJsonSkill(f);
                         }
-                        if (f.getName().endsWith(".txt") || f.getName().endsWith(".ezd")) {
+                        if (f.getName().endsWith(".txt") || f.getName().endsWith(".ezd") || f.getName().endsWith(".lot")) {
                             lesson = SusiSkill.readEzDSkill(new BufferedReader(new FileReader(f)));
                         }
                         if (f.getName().endsWith(".aiml")) {

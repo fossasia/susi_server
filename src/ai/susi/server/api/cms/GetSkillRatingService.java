@@ -92,8 +92,15 @@ public class GetSkillRatingService extends AbstractAPIHandler implements APIHand
                 }
             }
         }
+
+        JSONObject tempSkillRating = new JSONObject();
+        tempSkillRating.put("negative", "0");
+        tempSkillRating.put("positive", "0");
+
         result.put("accepted", false);
         result.put("message", "Skill has not been rated yet");
+        result.put("skill_rating", tempSkillRating);
+
         return new ServiceResponse(result);
     }
 }

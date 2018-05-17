@@ -115,7 +115,8 @@ public class CreateSkillService extends AbstractAPIHandler implements APIHandler
                 if (image_name == null) {
                     // Checking for
                     json.put("accepted", false);
-                    json.put("message", "The Image name was not given");
+                    json.put("message", "The Image name are not given or Image with same name is already present ");
+
                 } else {
                     // Checking for file existence
                     json.put("accepted", false);
@@ -136,7 +137,7 @@ public class CreateSkillService extends AbstractAPIHandler implements APIHandler
                         if (p.exists()) p.delete();
                         ImageIO.write(bi, "jpg", new File(imagePath + File.separator + image_name));
 
-                        // Writing to Skill Data to File
+                        // Writing Skills Data in File
                         try (FileWriter Skillfile = new FileWriter(skill)) {
                             Skillfile.write(content);
                             String path = skill.getPath().replace(DAO.model_watch_dir.toString(), "models");
@@ -166,7 +167,7 @@ public class CreateSkillService extends AbstractAPIHandler implements APIHandler
             resp.getWriter().write(json.toString());
         }
         else{
-            json.put("message","Access token not given");
+            json.put("message","Access token are not given");
             json.put("accepted",false);
             resp.setContentType("application/json");
             resp.setCharacterEncoding("UTF-8");

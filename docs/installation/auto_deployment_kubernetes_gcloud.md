@@ -32,7 +32,7 @@ after_success:
 2. In the deploy script, remove obsolete Google Cloud files and install Google Cloud SDK and kubectl command. Use following lines to do that.
 
 ```
-echo ">>> Removing obsolete gcoud files"
+echo ">>> Removing obsolete GCloud files"
 sudo rm -f /usr/bin/git-credential-gcloud.sh
 sudo rm -f /usr/bin/bq
 sudo rm -f /usr/bin/gsutil
@@ -54,7 +54,7 @@ echo ">>> Decrypting credentials and authenticating gcloud account"
 openssl aes-256-cbc -K $encrypted_YOUR_key -iv $encrypted_YOUR_iv -in ./kubernetes/travis/Credentials.json.enc -out Credentials.json -d
 gcloud auth activate-service-account --key-file Credentials.json
 export GOOGLE_APPLICATION_CREDENTIALS=$(pwd)/Credentials.json
-#add gcoud project id
+#add GCloud project id
 gcloud config set project YOUR_PROJECT_ID
 gcloud container clusters get-credentials YOUR_CONTAINER
 ```

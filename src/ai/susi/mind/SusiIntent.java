@@ -33,10 +33,12 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
+import org.jfree.util.Log;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
 import ai.susi.DAO;
+import ai.susi.mind.SusiAction.SusiActionException;
 import ai.susi.tools.TimeoutMatcher;
 
 /**
@@ -108,7 +110,14 @@ public class SusiIntent {
         if (!json.has("actions")) throw new PatternSyntaxException("actions missing", "", 0);
         p = (JSONArray) json.remove("actions");
         this.actions = new ArrayList<>(p.length());
-        p.forEach(q -> this.actions.add(new SusiAction((JSONObject) q)));
+        p.forEach(a -> {
+            try {
+                SusiAction action = new SusiAction((JSONObject) a);
+                this.actions.add(action);
+            } catch (SusiActionException e) {
+                Log.warn("invalid action - " + e.getMessage() + ": " + ((JSONObject) a).toString(0));
+            }
+        });
         
         // extract the inferences and the process subscore; there may be no inference at all
         if (json.has("process")) {
@@ -443,10 +452,15 @@ public class SusiIntent {
      */
     public List<SusiAction> getActionsClone() {
         List<SusiAction> clonedList = new ArrayList<>();
-        this.actions.forEach(action -> {
-            JSONObject actionJson = action.toJSONClone();
+        this.actions.forEach(a -> {
+            JSONObject actionJson = a.toJSONClone();
             if (this.language != SusiLanguage.unknown) actionJson.put("language", this.language.name());
-            clonedList.add(new SusiAction(actionJson));
+            try {
+                SusiAction action = new SusiAction(actionJson);
+                clonedList.add(action);
+            } catch (SusiActionException e) {
+                Log.warn("invalid action - " + e.getMessage() + ": " + actionJson.toString(0));
+            }
         });
         return clonedList;
     }
@@ -462,14 +476,14 @@ public class SusiIntent {
         s = s.toLowerCase();
         for (SusiUtterance p: this.utterances) {
             Matcher m = p.getPattern().matcher(s);
-            if (new TimeoutMatcher(m).find()) {
+            if (new TimeoutMatcher(m).matches()) {
                 //System.out.println("MATCHERGROUP=" + m.group().toString());
                 l.add(m); // TODO: exclude double-entries
             }
         }
         return l;
     }
-
+    
     /**
      * If a intent is applied to an input stream, it must follow a specific process which is implemented
      * in this consideration method. It is called a consideration in the context of an AI process which
@@ -480,19 +494,28 @@ public class SusiIntent {
      */
     public SusiArgument consideration(final String query, SusiThought recall, SusiLinguistics.Token token, SusiMind mind, String client) {
         
-        // we start with the recall from previous interactions as new flow
-        final SusiArgument flow = new SusiArgument().think(recall);
+        HashSet<SusiThought> keynotes = new HashSet<>();
         
         // that argument is filled with an idea which consist of the query where we extract the identified data entities
         alternatives: for (Matcher matcher: this.matcher(query)) {
+            // check if the intent may match
             if (!new TimeoutMatcher(matcher).matches()) continue;
+            
+            // initialize keynote (basic data for unification) for flow
             SusiThought keynote = new SusiThought(matcher);
             if (token != null) {
                 keynote.addObservation("token_original", token.original);
                 keynote.addObservation("token_canonical", token.canonical);
                 keynote.addObservation("token_categorized", token.categorized);
             }
+            
+            // prevent double consideration of the same keynote
+            if (keynotes.contains(keynote)) continue alternatives;
+            keynotes.add(keynote);
+            
             DAO.log("Susi has an idea: on " + keynote.toString() + " apply " + this.toJSON());
+            // we start with the recall from previous interactions as new flow
+            final SusiArgument flow = new SusiArgument().think(recall);
             flow.think(keynote);
             
             // lets apply the intents that belong to this specific consideration
@@ -500,8 +523,9 @@ public class SusiIntent {
                 SusiThought implication = inference.applyProcedures(flow);
                 DAO.log("Susi is thinking about: " + implication.toString());
                 // make sure that we are not stuck:
-                // in case that we are stuck (== no progress was made) we terminate and return null
+                // in case that we are stuck (== no progress was made) we consider the next alternative matcher
                 if ((flow.mindstate().equals(implication) || implication.isFailed())) continue alternatives; // TODO: do this only if specific marker is in intent
+                
                 // think
                 flow.think(implication);
             }
