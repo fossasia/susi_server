@@ -22,7 +22,7 @@ while getopts ":Idn" opt; do
         \?)
             echo "Usage: $0 [options...]"
             echo -e " -I\tIgnore installation config"
-            echo -e " -d\tSkip waiting for Susi"
+            echo -e " -d\tSkip waiting for SUSI"
             echo -e " -n\tDo not Daemonize"
             exit 1
             ;;
@@ -31,8 +31,8 @@ done
 
 # installation
 if [ ! -f $INSTALLATIONCONFIG ] && [[ $SKIP_INSTALL_CHECK -eq 0 ]]; then
-    echo "susi detected that you did not yet run the installation wizard."
-    echo "It let's you setup an administrator account and a number of settings, but is not mandatory."
+    echo "SUSI detected that you did not yet run the installation wizard."
+    echo "It lets you setup an administrator account and a number of settings, but is not mandatory."
     echo "You can manually start it by running bin/installation.sh"
 
 :<<'OPTIONAL'
@@ -68,8 +68,8 @@ if [[ $DO_NOT_DAEMONIZE -eq 1 ]]; then
     LOGCONFIG="conf/logs/log4j2.properties"
 fi
 
-echo "starting susi"
-echo "startup" > $STARTUPFILE
+echo "starting SUSI"
+echo "Startup" > $STARTUPFILE
 
 cmdline="$cmdline -server -classpath $CLASSPATH -Dlog4j.configurationFile=$LOGCONFIG ai.susi.SusiServer";
 
@@ -101,7 +101,7 @@ if [ -f $STARTUPFILE ] && [ $(ps -p $PID -o pid=) ]; then
 	rm -f $STARTUPFILE
 	exit 0
 else
-	echo "susi server failed to start. See data/susi.log for details. Here are the last logs:"
+	echo "SUSI server failed to start. See data/susi.log for details. Here are the last logs:"
     tail data/susi.log
 	rm -f $STARTUPFILE
 	exit 1

@@ -1,5 +1,5 @@
 #!/usr/bin/env sh
 cd `dirname $0`/..
-echo "re-starting susi"
+echo "Restarting SUSI"
 bin/stop.sh
 bin/start.sh
