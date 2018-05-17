@@ -49,6 +49,7 @@ public class ChartPlotter extends RasterPlotter {
     public ChartPlotter(final int width, final int height, final Long backgroundColor, final Long foregroundColor, final Long lightColor,
                       final int leftborder, final int rightborder, final int topborder, final int bottomborder,
                       final String name, final String subline) {
+        System.out.println("Starting Project")
         super(width, height, RasterPlotter.DrawMode.MODE_REPLACE, backgroundColor);
         this.leftborder = leftborder;
         this.rightborder = rightborder;
