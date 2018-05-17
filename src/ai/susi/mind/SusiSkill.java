@@ -230,7 +230,7 @@ public class SusiSkill {
                                     String type = boa.has("type") ? boa.getString("type") : "";
                                     if (type.equals(SusiAction.RenderType.table.toString()) && boa.has("columns")) {
                                         actions.put(SusiAction.tableAction(boa.getJSONObject("columns"),
-                                                    boa.has("length") ? boa.getInt("length") : -1));
+                                                    boa.has("count") ? boa.getInt("count") : -1));
                                     } else
                                     if (type.equals(SusiAction.RenderType.piechart.toString()) &&
                                             boa.has("total") && boa.has("key") &&
@@ -243,7 +243,7 @@ public class SusiSkill {
                                             boa.has("title") && boa.has("description") && boa.has("link")) {
                                         actions.put(SusiAction.rssAction(
                                             boa.getString("title"), boa.getString("description"), boa.getString("link"),
-                                            boa.has("length") ? boa.getInt("length") : -1));
+                                            boa.has("count") ? boa.getInt("count") : -1));
                                     } else
                                     if (type.equals(SusiAction.RenderType.websearch.toString()) && boa.has("query")) {
                                         actions.put(SusiAction.websearchAction(boa.getString("query")));

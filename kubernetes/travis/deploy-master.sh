@@ -6,7 +6,7 @@ if [ "$TRAVIS_PULL_REQUEST" != "false" -o "$TRAVIS_REPO_SLUG" != "fossasia/susi_
     exit 0
 fi
 
-echo ">>> Removing obsolete gcoud files"
+echo ">>> Removing obsolete GCloud files"
 sudo rm -f /usr/bin/git-credential-gcloud.sh
 sudo rm -f /usr/bin/bq
 sudo rm -f /usr/bin/gsutil
@@ -19,7 +19,7 @@ gcloud components install kubectl
 
 gcloud config set compute/zone us-central1-c
 
-echo ">>> Decrypting credentials and authenticating gcloud account"
+echo ">>> Decrypting credentials and authenticating GCloud account"
 # Decrypt the credentials we added to the repo using the key we added with the Travis command line tool
 openssl aes-256-cbc -K $encrypted_fa9beebb0291_key -iv $encrypted_fa9beebb0291_iv -in ./kubernetes/travis/susi-server-d6ee8400eacd.json.enc -out susi-server-d6ee8400eacd.json -d
 gcloud auth activate-service-account --key-file susi-server-d6ee8400eacd.json
