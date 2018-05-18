@@ -33,6 +33,7 @@ import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 
+import org.jfree.util.Log;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -41,6 +42,8 @@ import org.json.JSONTokener;
 import ai.susi.DAO;
 import ai.susi.SusiServer;
 import ai.susi.json.JsonTray;
+import ai.susi.mind.SusiAction.RenderType;
+import ai.susi.mind.SusiAction.SusiActionException;
 import ai.susi.mind.SusiInference.Type;
 
 /**
@@ -226,40 +229,13 @@ public class SusiSkill {
                             if (bo.has("actions")) {
                                 JSONArray bo_actions = bo.getJSONArray("actions");
                                 bo_actions.forEach(action -> {
-                                    JSONObject boa = (JSONObject) action;
-                                    String type = boa.has("type") ? boa.getString("type") : "";
-                                    if (type.equals(SusiAction.RenderType.table.toString()) && boa.has("columns")) {
-                                        actions.put(SusiAction.tableAction(boa.getJSONObject("columns"),
-                                                    boa.has("count") ? boa.getInt("count") : -1));
-                                    } else
-                                    if (type.equals(SusiAction.RenderType.piechart.toString()) &&
-                                            boa.has("total") && boa.has("key") &&
-                                            boa.has("value") && boa.has("unit")) {
-                                        actions.put(SusiAction.piechartAction(
-                                                boa.getInt("total"), boa.getString("key"),
-                                                boa.getString("value"), boa.getString("unit")));
-                                    } else
-                                    if (type.equals(SusiAction.RenderType.rss.toString()) &&
-                                            boa.has("title") && boa.has("description") && boa.has("link")) {
-                                        actions.put(SusiAction.rssAction(
-                                            boa.getString("title"), boa.getString("description"), boa.getString("link"),
-                                            boa.has("count") ? boa.getInt("count") : -1));
-                                    } else
-                                    if (type.equals(SusiAction.RenderType.websearch.toString()) && boa.has("query")) {
-                                        actions.put(SusiAction.websearchAction(boa.getString("query")));
-                                    } else
-                                    if (type.equals(SusiAction.RenderType.map.toString()) &&
-                                            boa.has("latitude") && boa.has("longitude") && boa.has("zoom")) {
-                                        actions.put(SusiAction.mapAction(
-                                            boa.getDouble("latitude"), boa.getDouble("longitude"), boa.getInt("zoom")));
-                                    } else
-                                    if(type.equals(SusiAction.RenderType.timer_set.toString()) &&
-                                            boa.has("hour")){
-                                        int hour = boa.getInt("hour");
-                                            actions.put(SusiAction.timerSetAction(
-                                                    hour, boa.has("minute") ? boa.getInt("minute") : 0,
-                                                    boa.has("second") ? boa.getInt("second") : 0));
-                                    }
+                                    try {
+										SusiAction protoAction = new SusiAction((JSONObject) action);
+										actions.put(protoAction.toJSONClone());
+									} catch (SusiActionException e) {
+										Log.error(e.getMessage());
+									}
+                                    
                                 });
                             }
                             if (example.length() > 0) intent.put("example", example);

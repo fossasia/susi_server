@@ -114,8 +114,84 @@ public class SusiAction {
         // check if the action is valid. If it is not valid, throw an exception
         // {"type":"answer","select":"random","phrases":["Here is the exact location of the event $2$"]}
         if (!json.has("type")) throw new SusiActionException("the action needs a type object");
-        if (!json.has("select")) throw new SusiActionException("the action needs a select object");
-        if (!json.has("phrases")) throw new SusiActionException("the action needs a phrases object");
+        try {
+        	RenderType renderType = RenderType.valueOf(json.getString("type"));
+        	switch (renderType) {
+	            case answer:
+	                if (!json.has("select")) throw new SusiActionException("the action needs a select object");
+	                if (!json.has("phrases")) throw new SusiActionException("the action needs a phrases object");
+	            	break;
+	            case table:
+	            	if (!json.has("columns")) throw new SusiActionException("the action needs a columns object");
+	            	if (!(json.get("columns") instanceof JSONObject)) throw new SusiActionException("the columns object must be an json object");
+	            	if (!json.has("count")) json.put("count", -1);
+	            	break;
+	            case piechart:
+	            	if (!json.has("total")) throw new SusiActionException("the action needs a total object");
+	            	if (json.get("total") instanceof String)  throw new SusiActionException("the total object must be a number");
+	            	if (!json.has("key")) throw new SusiActionException("the action needs a key object");
+	            	if (!json.has("value")) throw new SusiActionException("the action needs a value object");
+	            	if (!json.has("unit")) throw new SusiActionException("the action needs a unit object");
+	            	break;
+	            case rss:
+	            	if (!json.has("title")) throw new SusiActionException("the action needs a title object");
+	            	if (!json.has("description")) throw new SusiActionException("the action needs a description object");
+	            	if (!json.has("link")) throw new SusiActionException("the action needs a link object");
+	            	if (!json.has("count")) json.put("count", -1);
+	            	break;
+	            case self:
+	            	break;
+	            case websearch:
+	            	if (!json.has("query")) throw new SusiActionException("the action needs a query object");
+	            	break;
+	            case anchor:
+	            	break;
+	            case map:
+	            	if (!json.has("latitude")) throw new SusiActionException("the action needs a latitude object");
+	            	if (json.get("latitude") instanceof String)  throw new SusiActionException("the latitude object must be a number");
+	            	if (!json.has("longitude")) throw new SusiActionException("the action needs a longitude object");
+	            	if (json.get("longitude") instanceof String)  throw new SusiActionException("the longitude object must be a number");
+	            	if (!json.has("zoom")) throw new SusiActionException("the action needs a zoom object");
+	            	if (json.get("zoom") instanceof String)  throw new SusiActionException("the zoom object must be a number");
+	            	break;
+	            case timer_set:
+	            	if (!json.has("hour")) throw new SusiActionException("the action needs a hour object");
+	            	if (json.get("hour") instanceof String)  throw new SusiActionException("the hour object must be a number");
+	            	if (!json.has("minute")) throw new SusiActionException("the action needs a minute object");
+	            	if (json.get("minute") instanceof String)  throw new SusiActionException("the minute object must be a number");
+	            	if (!json.has("second")) throw new SusiActionException("the action needs a second object");
+	            	if (json.get("second") instanceof String)  throw new SusiActionException("the second object must be a number");
+	            	break;
+	            case timer_reset:
+	            	break;
+	            case audio_record:
+	            	break;
+	            case audio_play:
+	            	break;
+	            case audio_stop:
+	            	break;
+	            case video_record:
+	            	break;
+	            case video_play:
+	            	break;
+	            case video_stop:
+	            	break;
+	            case image_take:
+	            	break;
+	            case image_show:
+	            	break;
+	            case emotion:
+	            	break;
+	            case button_push:
+	            	break;
+	            case io:
+	            	break;
+	            default:
+	            	throw new SusiActionException("the action type '" + renderType + "' is not handled. Extend the Action Case statement."); // if you see this exception then the case statment must be extended with the new action type
+        	}
+        } catch (IllegalArgumentException e) {
+        	throw new SusiActionException("the action type '" + json.getString("type") + "' is not known");
+        }
     }
 
     /**
@@ -135,66 +211,6 @@ public class SusiAction {
     }
     
     /**
-     * table action: to draw a table. The columns of the table must be selected and named
-     * @param cols a mapping from column names in th data object to the display names for the client rendering
-     * @return the action
-     */
-    public static JSONObject tableAction(JSONObject cols, int count) {
-        JSONObject json = new JSONObject(true)
-            .put("type", RenderType.table.name())
-            .put("columns", cols)
-            .put("count", count);
-        return json;
-    }
-    
-    /**
-     * piechart action: draw a pie chart
-     * @param total the total count of the sum of all pie shares, i.e. 100 if the shares are percent values
-     * @param keyName the key name of the data column which points to the values
-     * @param valueDescription a descriptive naming of the values
-     * @param valueUnit the unit of the values, i.e. "%"
-     * @return the action
-     */
-    public static JSONObject piechartAction(int total, String keyName, String valueDescription, String valueUnit) {
-        JSONObject json = new JSONObject(true)
-            .put("type", RenderType.piechart.name())
-            .put("total", total)
-            .put("key", keyName)
-            .put("value", valueDescription)
-            .put("unit", valueUnit);
-        return json;
-    }
-    
-    /**
-     * rss action: draw a search result-like list. The client must show this in the same way as a websearch type action would do
-     * @param titleName the name of the title column
-     * @param descriptionName the name of the description column
-     * @param linkName the name of the link column
-     * @return the action
-     */
-    public static JSONObject rssAction(String titleName, String descriptionName, String linkName, int count) {
-        JSONObject json = new JSONObject(true)
-            .put("type", RenderType.rss.name())
-            .put("title", titleName)
-            .put("description", descriptionName)
-            .put("link", linkName)
-            .put("count", count);
-        return json;
-    }
-    
-    /**
-     * websearch action: draw a search result list. This must look the same as the rss action
-     * @param query the search query
-     * @return the action
-     */
-    public static JSONObject websearchAction(String query) {
-        JSONObject json = new JSONObject(true)
-            .put("type", RenderType.websearch.name())
-            .put("query", query);
-        return json;
-    }
-    
-    /**
      * anchor action: draw a single anchor with descriptive text as anchor text
      * @param link the link
      * @param text the anchor text
@@ -205,40 +221,6 @@ public class SusiAction {
             .put("type", RenderType.anchor.name())
             .put("link", link)
             .put("text", text);
-        return json;
-    }
-    
-    /**
-     * map action: draw a map for a given location and zoom level. The location is
-     * the center of the map. The client should draw a marker on the map at the given
-     * location.
-     * @param latitude 
-     * @param longitude
-     * @param zoom zoom level, same as for openstreetmap
-     * @return the action
-     */
-    public static JSONObject mapAction(double latitude, double longitude, int zoom) {
-        JSONObject json = new JSONObject(true)
-            .put("type", RenderType.map.name())
-            .put("latitude", latitude)
-            .put("longitude", longitude)
-            .put("zoom", zoom);
-        return json;
-    }
-
-    /**
-     * set timer: set an alarm in the client making the request.
-     *@param hour
-     * @param minute
-     * @param second
-     * @return the action
-     */
-    public static JSONObject timerSetAction(int hour, int minute, int second) {
-        JSONObject json = new JSONObject(true)
-                .put("type", RenderType.timer_set.name())
-                .put("hour", hour)
-                .put("minute", minute)
-                .put("second", second);
         return json;
     }
     
