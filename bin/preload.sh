@@ -16,7 +16,7 @@ mkdir -p data/settings
 if [ -f $PIDFILE ]; then
     PID=$(cat $PIDFILE 2>/dev/null)
     if [ -n $PID ]; then
-        echo "Server is already running, please stop it and then start"
+        echo "Server is already running. Please stop it and then start."
         exit 1
     else
         rm $PIDFILE
@@ -35,8 +35,8 @@ fi
 if [ -f $JARFILE ]; then
     CLASSPATH="$JARFILE"
 else
-    echo "It seems you haven't compile susi"
-    echo "To build susi,"
+    echo "It seems you haven't compiled SUSI"
+    echo "To build SUSI,"
     echo "$ ./gradlew build"
     exit 1
 fi

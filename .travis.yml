@@ -17,18 +17,22 @@ matrix:
       before_cache:
         - rm -f  $HOME/.gradle/caches/modules-2/modules-2.lock
         - rm -fr $HOME/.gradle/caches/*/plugin-resolution/
+      # Store Gradle dependency cache and Gradle Wrapper files for next execution
       cache:
         directories:
            - $HOME/.gradle/caches/
            - $HOME/.gradle/wrapper/
+      # main build processes
       script:
         - gradle assemble
         - gradle clean
       install: true
+      # If build successful, deploy to GC using kubernetes
       after_success:
         - if [ -e ./gradlew ]; then ./gradlew test jacocoTestReport;else gradle test jacocoTestReport;fi
         - bash kubernetes/travis/deploy.sh
         - bash kubernetes/travis/deploy-master.sh
+      # deploy to heroku
       deploy:
         - provider: heroku
           buildpack: https://github.com/yukiisbored/heroku_buildpack_gradle_loklak
