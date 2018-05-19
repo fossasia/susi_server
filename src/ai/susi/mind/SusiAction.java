@@ -56,6 +56,7 @@ public class SusiAction {
     
     public static enum RenderType {
         answer,        // show or say a text
+        stop,          // stop any actions that are running right now
         table,         // show a table
         piechart,      // show a pie chart
         rss,           // show a link list with description (aka search result listing)
@@ -121,76 +122,84 @@ public class SusiAction {
 	                if (!json.has("select")) throw new SusiActionException("the action needs a select object");
 	                if (!json.has("phrases")) throw new SusiActionException("the action needs a phrases object");
 	            	break;
-	            case table:
-	            	if (!json.has("columns")) throw new SusiActionException("the action needs a columns object");
-	            	if (!(json.get("columns") instanceof JSONObject)) throw new SusiActionException("the columns object must be an json object");
-	            	if (!json.has("count")) json.put("count", -1);
+	            case stop:
+                    //stop has no attributes
+                    break;
+                case table:
+	                if (!json.has("columns")) throw new SusiActionException("the action needs a columns object");
+	            	    if (!(json.get("columns") instanceof JSONObject)) throw new SusiActionException("the columns object must be an json object");
+	            	    if (!json.has("count")) json.put("count", -1);
 	            	break;
 	            case piechart:
-	            	if (!json.has("total")) throw new SusiActionException("the action needs a total object");
-	            	if (json.get("total") instanceof String)  throw new SusiActionException("the total object must be a number");
-	            	if (!json.has("key")) throw new SusiActionException("the action needs a key object");
-	            	if (!json.has("value")) throw new SusiActionException("the action needs a value object");
-	            	if (!json.has("unit")) throw new SusiActionException("the action needs a unit object");
+	            	    if (!json.has("total")) throw new SusiActionException("the action needs a total object");
+	            	    if (json.get("total") instanceof String)  throw new SusiActionException("the total object must be a number");
+	            	    if (!json.has("key")) throw new SusiActionException("the action needs a key object");
+	            	    if (!json.has("value")) throw new SusiActionException("the action needs a value object");
+	            	    if (!json.has("unit")) throw new SusiActionException("the action needs a unit object");
 	            	break;
 	            case rss:
-	            	if (!json.has("title")) throw new SusiActionException("the action needs a title object");
-	            	if (!json.has("description")) throw new SusiActionException("the action needs a description object");
-	            	if (!json.has("link")) throw new SusiActionException("the action needs a link object");
-	            	if (!json.has("count")) json.put("count", -1);
+	                if (!json.has("title")) throw new SusiActionException("the action needs a title object");
+	            	    if (!json.has("description")) throw new SusiActionException("the action needs a description object");
+	            	    if (!json.has("link")) throw new SusiActionException("the action needs a link object");
+	            	    if (!json.has("count")) json.put("count", -1);
 	            	break;
 	            case self:
-	            	break;
+	                throw new SusiActionException("this action is not yet defined");
 	            case websearch:
-	            	if (!json.has("query")) throw new SusiActionException("the action needs a query object");
+	                if (!json.has("query")) throw new SusiActionException("the action needs a query object");
 	            	break;
 	            case anchor:
-	            	break;
+                    throw new SusiActionException("this action is not yet defined");
 	            case map:
-	            	if (!json.has("latitude")) throw new SusiActionException("the action needs a latitude object");
-	            	if (json.get("latitude") instanceof String)  throw new SusiActionException("the latitude object must be a number");
-	            	if (!json.has("longitude")) throw new SusiActionException("the action needs a longitude object");
-	            	if (json.get("longitude") instanceof String)  throw new SusiActionException("the longitude object must be a number");
-	            	if (!json.has("zoom")) throw new SusiActionException("the action needs a zoom object");
-	            	if (json.get("zoom") instanceof String)  throw new SusiActionException("the zoom object must be a number");
+	                if (!json.has("latitude")) throw new SusiActionException("the action needs a latitude object");
+	            	    if (json.get("latitude") instanceof String)  throw new SusiActionException("the latitude object must be a number");
+	            	    if (!json.has("longitude")) throw new SusiActionException("the action needs a longitude object");
+	            	    if (json.get("longitude") instanceof String)  throw new SusiActionException("the longitude object must be a number");
+	            	    if (!json.has("zoom")) throw new SusiActionException("the action needs a zoom object");
+	            	    if (json.get("zoom") instanceof String)  throw new SusiActionException("the zoom object must be a number");
 	            	break;
 	            case timer_set:
-	            	if (!json.has("hour")) throw new SusiActionException("the action needs a hour object");
-	            	if (json.get("hour") instanceof String)  throw new SusiActionException("the hour object must be a number");
-	            	if (!json.has("minute")) throw new SusiActionException("the action needs a minute object");
-	            	if (json.get("minute") instanceof String)  throw new SusiActionException("the minute object must be a number");
-	            	if (!json.has("second")) throw new SusiActionException("the action needs a second object");
-	            	if (json.get("second") instanceof String)  throw new SusiActionException("the second object must be a number");
+	            	    if (!json.has("hour")) throw new SusiActionException("the action needs a hour object");
+	            	    if (json.get("hour") instanceof String)  throw new SusiActionException("the hour object must be a number");
+	            	    if (!json.has("minute")) throw new SusiActionException("the action needs a minute object");
+	            	    if (json.get("minute") instanceof String)  throw new SusiActionException("the minute object must be a number");
+	            	    if (!json.has("second")) throw new SusiActionException("the action needs a second object");
+	            	    if (json.get("second") instanceof String)  throw new SusiActionException("the second object must be a number");
 	            	break;
 	            case timer_reset:
-	            	break;
+                    throw new SusiActionException("this action is not yet defined");
 	            case audio_record:
-	            	break;
+                    throw new SusiActionException("this action is not yet defined");
 	            case audio_play:
-	            	break;
+                    if (!json.has("total")) throw new SusiActionException("the action needs a total object");
+                    if (json.get("total") instanceof String)  throw new SusiActionException("the total object must be a number");
+                    if (!json.has("key")) throw new SusiActionException("the action needs a key object");
+                    if (!json.has("value")) throw new SusiActionException("the action needs a value object");
+                    if (!json.has("unit")) throw new SusiActionException("the action needs a unit object");
+                break;
 	            case audio_stop:
-	            	break;
+                    throw new SusiActionException("this action is not yet defined");
 	            case video_record:
-	            	break;
+                    throw new SusiActionException("this action is not yet defined");
 	            case video_play:
-	            	break;
+                    throw new SusiActionException("this action is not yet defined");
 	            case video_stop:
-	            	break;
+                    throw new SusiActionException("this action is not yet defined");
 	            case image_take:
-	            	break;
+                    throw new SusiActionException("this action is not yet defined");
 	            case image_show:
-	            	break;
+                    throw new SusiActionException("this action is not yet defined");
 	            case emotion:
-	            	break;
+                    throw new SusiActionException("this action is not yet defined");
 	            case button_push:
-	            	break;
+                    throw new SusiActionException("this action is not yet defined");
 	            case io:
-	            	break;
+                    throw new SusiActionException("this action is not yet defined");
 	            default:
-	            	throw new SusiActionException("the action type '" + renderType + "' is not handled. Extend the Action Case statement."); // if you see this exception then the case statment must be extended with the new action type
+	            	    throw new SusiActionException("the action type '" + renderType + "' is not handled. Extend the Action Case statement."); // if you see this exception then the case statment must be extended with the new action type
         	}
         } catch (IllegalArgumentException e) {
-        	throw new SusiActionException("the action type '" + json.getString("type") + "' is not known");
+            throw new SusiActionException("the action type '" + json.getString("type") + "' is not known");
         }
     }
 
@@ -200,13 +209,14 @@ public class SusiAction {
      * @param answers
      * @return the action
      */
-    public static JSONObject answerAction(String... answers) {
+    public static JSONObject answerAction(SusiLanguage language, String... answers) {
         JSONArray phrases = new JSONArray();
         for (String answer: answers) phrases.put(answer.trim());
         JSONObject json = new JSONObject()
             .put("type", RenderType.answer.name())
             .put("select", SelectionType.random.name())
             .put("phrases", phrases);
+        if (language != SusiLanguage.unknown) json.put("language", language.name());
         return json;
     }
     

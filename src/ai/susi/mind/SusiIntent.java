@@ -200,7 +200,8 @@ public class SusiIntent {
             String[] answers,
             boolean prior,
             String example,
-            String expect) {
+            String expect,
+            SusiLanguage language) {
         JSONObject intent = new JSONObject(true);
 
         // write utterances
@@ -221,7 +222,7 @@ public class SusiIntent {
         // write actions
         JSONArray a = new JSONArray();
         intent.put("actions", a);
-        a.put(SusiAction.answerAction(answers));        
+        a.put(SusiAction.answerAction(language, answers));        
         return intent;
     }
     
@@ -454,7 +455,6 @@ public class SusiIntent {
         List<SusiAction> clonedList = new ArrayList<>();
         this.actions.forEach(a -> {
             JSONObject actionJson = a.toJSONClone();
-            if (this.language != SusiLanguage.unknown) actionJson.put("language", this.language.name());
             try {
                 SusiAction action = new SusiAction(actionJson);
                 clonedList.add(action);

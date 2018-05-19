@@ -36,6 +36,7 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import ai.susi.mind.SusiIntent;
+import ai.susi.mind.SusiLanguage;
 
 public class AIML2Susi {
 
@@ -87,7 +88,7 @@ public class AIML2Susi {
             }
         }
         if (phrases != null && answers != null) {
-            return SusiIntent.answerIntent(phrases, null, answers, false, null, null);
+            return SusiIntent.answerIntent(phrases, null, answers, false, null, null, SusiLanguage.unknown);
         }
         return null;
     }

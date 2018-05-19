@@ -42,7 +42,6 @@ import org.json.JSONTokener;
 import ai.susi.DAO;
 import ai.susi.SusiServer;
 import ai.susi.json.JsonTray;
-import ai.susi.mind.SusiAction.RenderType;
 import ai.susi.mind.SusiAction.SusiActionException;
 import ai.susi.mind.SusiInference.Type;
 
@@ -165,7 +164,7 @@ public class SusiSkill {
      * @return a skill object as JSON
      * @throws JSONException
      */
-    public static JSONObject readEzDSkill(BufferedReader br) throws JSONException {
+    public static JSONObject readEzDSkill(BufferedReader br, SusiLanguage language) throws JSONException {
         // read the text file and turn it into a intent json; then learn that
         JSONObject json = new JSONObject();
         JSONArray intents = new JSONArray();
@@ -196,7 +195,7 @@ public class SusiSkill {
                         intent.put("process", new JSONArray().put(process));
                         
                         // answers; must contain $!$
-                        intent.put("actions", new JSONArray().put(SusiAction.answerAction(bang_term.split("\\|"))));
+                        intent.put("actions", new JSONArray().put(SusiAction.answerAction(language, bang_term.split("\\|"))));
                         if (example.length() > 0) intent.put("example", example);
                         intents.put(intent);
                     }
@@ -210,38 +209,36 @@ public class SusiSkill {
                         // console process
                         JSONObject process = new JSONObject();
                         process.put("type", Type.console.name());
-                        JSONObject bo = new JSONObject(new JSONTokener(bang_bag.toString()));
-                        if (bo.has("url") && bo.has("path")) {
-                            JSONObject definition = new JSONObject().put("url", bo.get("url")).put("path", bo.get("path"));
-                            process.put("definition", definition);
-                            intent.put("process", new JSONArray().put(process));
-                            
-                            // actions; we may have several actions here
-                            JSONArray actions = new JSONArray();
-                            intent.put("actions", actions);
-                            
-                            // answers; must contain names from the console result array
-                            if (bang_term.length() > 0) {
-                                actions.put(SusiAction.answerAction(bang_term.split("\\|")));
-                            }
+                        JSONObject definition = new JSONObject(new JSONTokener(bang_bag.toString()));
+                        process.put("definition", definition);
+                        intent.put("process", new JSONArray().put(process));
+                        
+                        // actions; we may have several actions here
+                        JSONArray actions = new JSONArray();
+                        intent.put("actions", actions);
 
-                            // optional additional renderings
-                            if (bo.has("actions")) {
-                                JSONArray bo_actions = bo.getJSONArray("actions");
-                                bo_actions.forEach(action -> {
-                                    try {
-										SusiAction protoAction = new SusiAction((JSONObject) action);
-										actions.put(protoAction.toJSONClone());
-									} catch (SusiActionException e) {
-										Log.error(e.getMessage());
-									}
-                                    
-                                });
-                            }
-                            if (example.length() > 0) intent.put("example", example);
-                            if (expect.length() > 0) intent.put("expect", expect);
-                            intents.put(intent);
+                        // verify actions
+                        if (definition.has("actions")) {
+                            JSONArray bo_actions = definition.getJSONArray("actions");
+                            bo_actions.forEach(action -> {
+                                try {
+                                    // looks silly, but this is for verification that the action is valid
+									SusiAction protoAction = new SusiAction((JSONObject) action);
+									actions.put(protoAction.toJSONClone());
+								} catch (SusiActionException e) {
+									Log.error(e.getMessage());
+								}
+                                
+                            });
                         }
+                        
+                        // answers; must contain names from the console result array
+                        if (bang_term.length() > 0) {
+                            actions.put(SusiAction.answerAction(language, bang_term.split("\\|")));
+                        }
+                        if (example.length() > 0) intent.put("example", example);
+                        if (expect.length() > 0) intent.put("expect", expect);
+                        intents.put(intent);
                     }
                     bang_answers = "";
                     bang_type = "";
@@ -329,24 +326,24 @@ public class SusiSkill {
                         String ifsubstring = line.substring(thenpos + 1).trim();
                         if (ifsubstring.length() > 0) {
                             String[] answers = ifsubstring.split("\\|");
-                            JSONObject intent = SusiIntent.answerIntent(phrases, "IF " + condition, answers, prior, example, expect);
+                            JSONObject intent = SusiIntent.answerIntent(phrases, "IF " + condition, answers, prior, example, expect, language);
                             intents.put(intent);
                         }
                     } else {
                         String ifsubstring = line.substring(thenpos + 1, elsepos).trim();
                         if (ifsubstring.length() > 0) {
                             String[] ifanswers = ifsubstring.split("\\|");
-                            JSONObject intentif = SusiIntent.answerIntent(phrases, "IF " + condition, ifanswers, prior, example, expect);
+                            JSONObject intentif = SusiIntent.answerIntent(phrases, "IF " + condition, ifanswers, prior, example, expect, language);
                             intents.put(intentif);
                         }
                         String elsesubstring = line.substring(elsepos + 1).trim();
                         if (elsesubstring.length() > 0) {
                             String[] elseanswers = elsesubstring.split("\\|");
-                            JSONObject intentelse = SusiIntent.answerIntent(phrases, "NOT " + condition, elseanswers, prior, example, expect);
+                            JSONObject intentelse = SusiIntent.answerIntent(phrases, "NOT " + condition, elseanswers, prior, example, expect, language);
                             intents.put(intentelse);
                         }
                     }
-                } else if (line.startsWith("!") && (thenpos = line.indexOf(':')) > 0) {
+                } else if (line.startsWith("!" /*bang!*/) && (thenpos = line.indexOf(':')) > 0) {
                     String head = line.substring(1, thenpos).trim().toLowerCase();
                     String tail = line.substring(thenpos + 1).trim();
                     // test bang type
@@ -367,7 +364,7 @@ public class SusiSkill {
                     continue readloop;
                 } else {
                     String[] answers = line.split("\\|");
-                    JSONObject intent = SusiIntent.answerIntent(phrases, condition, answers, prior, example, expect);
+                    JSONObject intent = SusiIntent.answerIntent(phrases, condition, answers, prior, example, expect, language);
                     //System.out.println(intent.toString());
                     intents.put(intent);
                 }
@@ -384,19 +381,19 @@ public class SusiSkill {
      * this should be fixed in the front-end, however we implement a patch here to circumvent the problem if possible
      * Another strange effect is, that some file systems do match lowercase with uppercase (like in windows),
      * so testing skill.exists() would return true even if the name does not exist exactly as given in the file system.
-     * @param language
+     * @param languagepath
      * @param skill_name
      * @return the actual skill file if one exist or a skill file that is constructed from language and skill_name
      */
-    public static File getSkillFileInLanguage(File language, String skill_name, boolean null_if_not_found) {
+    public static File getSkillFileInLanguage(File languagepath, String skill_name, boolean null_if_not_found) {
 
         String fn = skill_name + ".txt";
-        String[] list = language.list();
+        String[] list = languagepath.list();
         
         // first try: the skill name may be same or similar to the skill file name
         for (String n: list) {
             if (n.equals(fn) || n.toLowerCase().equals(fn)) {
-                return new File(language, n);
+                return new File(languagepath, n);
             }
         }
         
@@ -404,12 +401,14 @@ public class SusiSkill {
         // this is costly: we must parse the whole skill file
         for (String n: list) {
             if (!n.endsWith(".txt") && !n.endsWith(".ezd")) continue;
-            File f = new File(language, n);
+            File f = new File(languagepath, n);
             try {
-                JSONObject json = SusiSkill.readEzDSkill(new BufferedReader(new FileReader(f)));
+                SusiSkill.ID skillid = new SusiSkill.ID(f);
+                SusiLanguage language = skillid.language();
+                JSONObject json = SusiSkill.readEzDSkill(new BufferedReader(new FileReader(f)), language);
                 String sn = json.optString("skill_name");
                 if (sn.equals(skill_name) || sn.toLowerCase().equals(skill_name) || sn.toLowerCase().replace(' ', '_').equals(skill_name)) {
-                    return new File(language, n);
+                    return new File(languagepath, n);
                 }
             } catch (JSONException | FileNotFoundException e) {
                 continue;
@@ -417,7 +416,7 @@ public class SusiSkill {
         }
         
         // the final attempt is bad and may not succeed, but it's the only last thing left we could do.
-        return null_if_not_found ? null : new File(language, fn);
+        return null_if_not_found ? null : new File(languagepath, fn);
     }
     
     /**

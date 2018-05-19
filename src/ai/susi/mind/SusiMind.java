@@ -141,7 +141,9 @@ public class SusiMind {
                             lesson = SusiSkill.readJsonSkill(f);
                         }
                         if (f.getName().endsWith(".txt") || f.getName().endsWith(".ezd") || f.getName().endsWith(".lot")) {
-                            lesson = SusiSkill.readEzDSkill(new BufferedReader(new FileReader(f)));
+                            SusiSkill.ID skillid = new SusiSkill.ID(f);
+                            SusiLanguage language = skillid.language();
+                            lesson = SusiSkill.readEzDSkill(new BufferedReader(new FileReader(f)), language);
                         }
                         if (f.getName().endsWith(".aiml")) {
                             lesson = AIML2Susi.readAIMLSkill(f);
@@ -159,7 +161,7 @@ public class SusiMind {
     }
     
     public SusiMind learn(JSONObject json, File origin) {
-
+        
         // detect the language
         SusiSkill.ID skillid = new SusiSkill.ID(origin);
         SusiLanguage language = skillid.language();
