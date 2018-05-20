@@ -44,6 +44,14 @@ stop|stopp|stop *|stopp *
 {"actions":[{"type":"stop"}]}
 eol
 
+# test audio play
+system check
+!console:all systems are go, all lights are green!
+{"actions":[
+{"type":"audio_play", "identifier_type":"url", "identifier":"file://conf/audio/all_systems_are_go_all_lights_are_green.mp3"}
+]}
+eol
+
 # some fake commands that do nothing with the computation state
 ::minor
 

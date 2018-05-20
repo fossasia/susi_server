@@ -19,6 +19,7 @@
 
 package ai.susi.mind;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Random;
@@ -28,6 +29,7 @@ import java.util.regex.Pattern;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import ai.susi.DAO;
 import ai.susi.mind.SusiMind.ReactionException;
 import ai.susi.tools.TimeoutMatcher;
 
@@ -160,12 +162,9 @@ public class SusiAction {
 	            	    if (json.get("zoom") instanceof String)  throw new SusiActionException("the zoom object must be a number");
 	            	break;
 	            case timer_set:
-	            	    if (!json.has("hour")) throw new SusiActionException("the action needs a hour object");
-	            	    if (json.get("hour") instanceof String)  throw new SusiActionException("the hour object must be a number");
-	            	    if (!json.has("minute")) throw new SusiActionException("the action needs a minute object");
-	            	    if (json.get("minute") instanceof String)  throw new SusiActionException("the minute object must be a number");
-	            	    if (!json.has("second")) throw new SusiActionException("the action needs a second object");
-	            	    if (json.get("second") instanceof String)  throw new SusiActionException("the second object must be a number");
+	                // the time number is the unix time, UTC. Clients must translate this into their local time.
+	            	    if (!json.has("time")) throw new SusiActionException("the action needs a time object");
+	            	    if (json.get("time") instanceof String)  throw new SusiActionException("the time object must be a number");
 	            	break;
 	            case timer_reset:
                     //timer_reset has no attributes
@@ -175,11 +174,24 @@ public class SusiAction {
 	            case audio_record:
                     throw new SusiActionException("this action is not yet defined");
 	            case audio_play:
-                    if (!json.has("total")) throw new SusiActionException("the action needs a total object");
-                    if (json.get("total") instanceof String)  throw new SusiActionException("the total object must be a number");
-                    if (!json.has("key")) throw new SusiActionException("the action needs a key object");
-                    if (!json.has("value")) throw new SusiActionException("the action needs a value object");
-                    if (!json.has("unit")) throw new SusiActionException("the action needs a unit object");
+	                // in most cases the identifier must be an URL. The URL can point to a file location as well.
+	                // if the identifier is a file, the URL is like file:///user/admin/audio/example.mp3
+	                // the type may be i..: "url", "youtube". If youtube is given then the identifier is the number of the youtube video.
+	                // we could give an exact url of the youtube stream, but thay may change over time while the youtube video stays the same.
+	                // There is the option to give susi_server application-relative paths. These must be relaive file URLs, like
+	                // file://conf/audio/all_systems_are_go_all_lights_are_green.mp3
+	                // this is translated into an absolute path during this processing
+                    if (!json.has("identifier")) throw new SusiActionException("the action needs a identifier object");
+                    if (!json.has("identifier_type")) throw new SusiActionException("the action needs a identifier_type object");
+                    String type = json.getString("identifier_type");
+                    if (type.equals("url")) {
+                        String url = json.getString("identifier");
+                        if (url.startsWith("file://") && url.length() > 8 && url.charAt(7) != '/') {
+                            // this is a relative path; relative to application path
+                            File f = new File(DAO.conf_dir.getParentFile(), url.substring(7));
+                            json.put("identifier", "file://" + f.getAbsolutePath());
+                        }
+                    }
                 break;
 	            case video_record:
                     throw new SusiActionException("this action is not yet defined");
