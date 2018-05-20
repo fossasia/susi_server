@@ -472,6 +472,7 @@ public class SusiServer {
                 TopMenuService.class,
                 PasswordChangeService.class,
                 ListSettingsService.class,
+                GetAllDevices.class,
                 ConvertSkillJsonToTxtService.class,
                 GroupListService.class,
                 ConvertSkillTxtToJsonService.class,
