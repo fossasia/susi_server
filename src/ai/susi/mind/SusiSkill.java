@@ -194,7 +194,11 @@ public class SusiSkill {
                         // javascript process
                         JSONObject process = new JSONObject();
                         process.put("type", Type.javascript.name());
-                        process.put("expression", bang_bag.toString());
+                        try {
+                            process.put("expression", bang_bag.toString());
+                        } catch (JSONException e) {
+                            throw new JSONException(e.getMessage() + " \"" + bang_bag.toString() + "\"");
+                        }
                         intent.put("process", new JSONArray().put(process));
                         
                         // answers; must contain $!$
@@ -212,8 +216,13 @@ public class SusiSkill {
                         // console process
                         JSONObject process = new JSONObject();
                         process.put("type", Type.console.name());
-                        JSONObject definition = new JSONObject(new JSONTokener(bang_bag.toString()));
-                        process.put("definition", definition);
+                        JSONObject definition = null;
+                        try {
+                            definition = new JSONObject(new JSONTokener(bang_bag.toString()));
+                            process.put("definition", definition);
+                        } catch (JSONException e) {
+                            throw new JSONException(e.getMessage() + " \"" + bang_bag.toString() + "\"");
+                        }
                         intent.put("process", new JSONArray().put(process));
                         
                         // actions; we may have several actions here
