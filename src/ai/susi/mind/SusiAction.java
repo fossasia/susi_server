@@ -66,12 +66,13 @@ public class SusiAction {
         map,           // show a map
         timer_set,     // set a timer on the client
         timer_reset,   // un-set a timer on the client
+        audio_volume,  // audio volume settings
         audio_record,  // record audio
         audio_play,    // play audio (recorded, asset on client or asset from web)
-        audio_stop,    // stop playing of audio OR recording of audio
+        //audio_stop,    // stop playing of audio OR recording of audio (disabled because we will do that with the stop render type)
         video_record,  // record a video
         video_play,    // play the video (recorded, asset on client or asset from web)
-        video_stop,    // stop playing or video OR recording of video
+        //video_stop,    // stop playing or video OR recording of video (disabled because we will do that with the stop render type)
         image_take,    // take an image
         image_show,    // show an image (recorded, asset on client or asset from web)
         emotion,       // show an emotion (either change tone of tts or change visible style)
@@ -167,7 +168,10 @@ public class SusiAction {
 	            	    if (json.get("second") instanceof String)  throw new SusiActionException("the second object must be a number");
 	            	break;
 	            case timer_reset:
-                    throw new SusiActionException("this action is not yet defined");
+                    //timer_reset has no attributes
+                    break;
+	            case audio_volume:
+	                throw new SusiActionException("this action is not yet defined");
 	            case audio_record:
                     throw new SusiActionException("this action is not yet defined");
 	            case audio_play:
@@ -177,13 +181,9 @@ public class SusiAction {
                     if (!json.has("value")) throw new SusiActionException("the action needs a value object");
                     if (!json.has("unit")) throw new SusiActionException("the action needs a unit object");
                 break;
-	            case audio_stop:
-                    throw new SusiActionException("this action is not yet defined");
 	            case video_record:
                     throw new SusiActionException("this action is not yet defined");
 	            case video_play:
-                    throw new SusiActionException("this action is not yet defined");
-	            case video_stop:
                     throw new SusiActionException("this action is not yet defined");
 	            case image_take:
                     throw new SusiActionException("this action is not yet defined");

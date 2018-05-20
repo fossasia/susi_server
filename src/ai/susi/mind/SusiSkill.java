@@ -108,15 +108,18 @@ public class SusiSkill {
          * @return
          */
         public SusiLanguage language() {
-            SusiLanguage language = SusiLanguage.unknown;
             if (this.skillpath.startsWith("/susi_server/conf/susi/")) {
-                language = SusiLanguage.parse(this.skillpath.substring(23, 25));
+                SusiLanguage language = SusiLanguage.parse(this.skillpath.substring(23, 25));
+                if (language != SusiLanguage.unknown) return language;
             } else if (this.skillpath.startsWith("/susi_skill_data")) {
+                SusiLanguage language = SusiLanguage.unknown;
                 String[] paths = this.skillpath.split("/");
                 if (paths.length > 5) language = SusiLanguage.parse(paths[5]);
+                if (language != SusiLanguage.unknown) return language;
+                return language;
             }
             
-            return language;
+            return SusiLanguage.unknown;
         }
 
         public boolean hasModel(String model) {
