@@ -96,6 +96,13 @@ public class GetSkillRatingService extends AbstractAPIHandler implements APIHand
         JSONObject tempSkillRating = new JSONObject();
         tempSkillRating.put("negative", "0");
         tempSkillRating.put("positive", "0");
+        tempSkillRating.put("one_star", "0");
+        tempSkillRating.put("two_star", "0");
+        tempSkillRating.put("three_star", "0");
+        tempSkillRating.put("four_star", "0");
+        tempSkillRating.put("five_star", "0");
+        tempSkillRating.put("avg_star", "0");
+
 
         result.put("accepted", false);
         result.put("message", "Skill has not been rated yet");
