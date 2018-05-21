@@ -167,7 +167,7 @@ public class SusiSkill {
      * @return a skill object as JSON
      * @throws JSONException
      */
-    public static JSONObject readLoTSkill(BufferedReader br, SusiLanguage language) throws JSONException {
+    public static JSONObject readLoTSkill(final BufferedReader br, final SusiLanguage language, final String skillid) throws JSONException {
         // read the text file and turn it into a intent json; then learn that
         JSONObject json = new JSONObject();
         JSONArray intents = new JSONArray();
@@ -177,12 +177,23 @@ public class SusiSkill {
         String example = "", tags = "", expect = "", description="", image="", skillName="", authorName= "",
                 authorURL = "", developerPrivacyPolicy = "", termsOfUse="";
         boolean prior = false, dynamicContent = false;
+        int indentStep = 4; // like in python
         try {readloop: while ((line = br.readLine()) != null) {
+            String linebeforetrim = line;
             line = line.trim();
-            if (line.startsWith("__")) {
-                System.out.println();
+            int indent = linebeforetrim.indexOf(line) % indentStep;            
+            
+            // connect lines
+            if (lastLine.endsWith("\\")) {
+                lastLine = lastLine.substring(0,lastLine.length() - 1).trim() + " " + line;
+                continue readloop;
+            }
+            if (line.startsWith("\\")) {
+                lastLine = lastLine + " " + line.substring(1).trim();
+                continue readloop;
             }
             
+            // collect bang expressions
             if (bang_type.length() > 0) {
                 // collect a bang
                 if (line.toLowerCase().equals("eol")) {
@@ -420,7 +431,7 @@ public class SusiSkill {
             try {
                 SusiSkill.ID skillid = new SusiSkill.ID(f);
                 SusiLanguage language = skillid.language();
-                JSONObject json = SusiSkill.readLoTSkill(new BufferedReader(new FileReader(f)), language);
+                JSONObject json = SusiSkill.readLoTSkill(new BufferedReader(new FileReader(f)), language, Integer.toString(skillid.hashCode()));
                 String sn = json.optString("skill_name");
                 if (sn.equals(skill_name) || sn.toLowerCase().equals(skill_name) || sn.toLowerCase().replace(' ', '_').equals(skill_name)) {
                     return new File(languagepath, n);
