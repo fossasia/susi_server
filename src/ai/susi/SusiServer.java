@@ -542,7 +542,10 @@ public class SusiServer {
                 GetGroupDetails.class,
                 CreateGroupService.class,
                 GetAllGroups.class,
-                GetSkillRatingService.class
+                GetSkillRatingService.class,
+
+                //5 star skill rating
+                FiveStarRateSkillService.class
 
         };
         for (Class<? extends Servlet> service: services)
