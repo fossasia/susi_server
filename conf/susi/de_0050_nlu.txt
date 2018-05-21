@@ -1,0 +1,20 @@
+# https://de.wikipedia.org/wiki/Fragetechnik
+
+was ist *
+`__was $1$`
+
+wer ist *
+`__wer $1$`
+
+wo ist *
+`__wo $1$`
+
+wann geschah *|wann war *
+`__wann $1$`
+
+wie funktioniert *|wie geht *
+`__wie $1$`
+
+warum ist *|warum kann man *
+`__warum $1$`
+

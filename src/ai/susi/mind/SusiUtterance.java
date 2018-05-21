@@ -96,7 +96,6 @@ public class SusiUtterance {
         Matcher m;
         while ((m = wspace.matcher(s)).find()) s = m.replaceAll(" ");
         while ((m = dspace.matcher(s)).find()) s = m.replaceAll(" ");
-        if (s.startsWith("susi ")) s = s.substring(5); // cut off susi address
         if (s.length() == 0) return s; // prevent StringIndexOutOfBoundsException which can happen in the next line
         if (".?!".indexOf(s.charAt(s.length() - 1)) >= 0) s = s.substring(0, s.length() - 1).trim();
         // to be considered: https://en.wikipedia.org/wiki/Wikipedia:List_of_English_contractionst
@@ -175,7 +174,7 @@ public class SusiUtterance {
         StringBuffer sb = new StringBuffer();
         for (int i = 0; i < expression.length(); i++) {
             char c = expression.charAt(i);
-            if (Character.isLetter(c) || Character.isDigit(c) || c == ' ') sb.append(c);
+            if (Character.isLetter(c) || Character.isDigit(c) || c == ' ' || c == '_') sb.append(c);
         }
         return sb.toString();
     }

@@ -167,7 +167,7 @@ public class SusiSkill {
      * @return a skill object as JSON
      * @throws JSONException
      */
-    public static JSONObject readEzDSkill(BufferedReader br, SusiLanguage language) throws JSONException {
+    public static JSONObject readLoTSkill(BufferedReader br, SusiLanguage language) throws JSONException {
         // read the text file and turn it into a intent json; then learn that
         JSONObject json = new JSONObject();
         JSONArray intents = new JSONArray();
@@ -179,6 +179,9 @@ public class SusiSkill {
         boolean prior = false, dynamicContent = false;
         try {readloop: while ((line = br.readLine()) != null) {
             line = line.trim();
+            if (line.startsWith("__")) {
+                System.out.println();
+            }
             
             if (bang_type.length() > 0) {
                 // collect a bang
@@ -417,7 +420,7 @@ public class SusiSkill {
             try {
                 SusiSkill.ID skillid = new SusiSkill.ID(f);
                 SusiLanguage language = skillid.language();
-                JSONObject json = SusiSkill.readEzDSkill(new BufferedReader(new FileReader(f)), language);
+                JSONObject json = SusiSkill.readLoTSkill(new BufferedReader(new FileReader(f)), language);
                 String sn = json.optString("skill_name");
                 if (sn.equals(skill_name) || sn.toLowerCase().equals(skill_name) || sn.toLowerCase().replace(' ', '_').equals(skill_name)) {
                     return new File(languagepath, n);

@@ -1,0 +1,40 @@
+# This is an intent definition library
+# see https://en.wikipedia.org/wiki/Five_Ws
+
+# wrapper
+can you *|tell me *|tell me about *|tell me a little about *|susi *|do you know *|do you know about *|give me *|give *|get *| get me *|find *|find me *
+`$1$`
+
+who is *|who was *
+`__who $1$`
+
+what is *|what is the *
+`__what $1$`
+
+where is *|where can I find *
+`__where $1$`
+
+when happened *|when did * happen
+`__when *`
+
+why can I *|why is *
+`__why $1$`
+
+#which *
+
+how does *
+`__how *`
+
+
+#do, did, does
+#can, could, should, would, may, must, shall
+#is, was, will, am, are, were
+#have, has, had
+
+
+
+
+# conversion
+* in *
+`__transform_into $1$ $2$`
+

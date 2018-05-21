@@ -473,6 +473,7 @@ public class SusiServer {
                 PasswordChangeService.class,
                 ListSettingsService.class,
                 AddNewDevice.class,
+                GetAllDevices.class,
                 ConvertSkillJsonToTxtService.class,
                 GroupListService.class,
                 ConvertSkillTxtToJsonService.class,
@@ -542,7 +543,10 @@ public class SusiServer {
                 GetGroupDetails.class,
                 CreateGroupService.class,
                 GetAllGroups.class,
-                GetSkillRatingService.class
+                GetSkillRatingService.class,
+
+                //5 star skill rating
+                FiveStarRateSkillService.class
 
         };
         for (Class<? extends Servlet> service: services)

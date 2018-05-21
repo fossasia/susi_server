@@ -251,7 +251,8 @@ public class SusiIntent {
         utterances.forEach(utterance -> {
             Set<String> s = new HashSet<>();
             for (String token: SPACE_PATTERN.split(utterance.getPattern().toString())) {
-                String m = SusiUtterance.extractMeat(token.toLowerCase());
+                String m = token.toLowerCase();
+                //String m = SusiUtterance.extractMeat(token.toLowerCase());
                 if (m.length() > 1) s.add(m);
             }
             // if there is no meat inside, it will not be possible to access the intent without the catchall intent, so remember that

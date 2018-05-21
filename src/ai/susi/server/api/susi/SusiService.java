@@ -114,7 +114,7 @@ public class SusiService extends AbstractAPIHandler implements APIHandler {
                 text = text + "\n\ndream *\nI am currently dreaming $_etherpad_dream$, first wake up before dreaming again\n\n";
                 // fill an empty mind with the dream
                 SusiMind dreamMind = new SusiMind(DAO.susi_chatlog_dir, DAO.susi_skilllog_dir); // we need the memory directory here to get a share on the memory of previous dialoges, otherwise we cannot test call-back questions
-                JSONObject rules = SusiSkill.readEzDSkill(new BufferedReader(new InputStreamReader(new ByteArrayInputStream(text.getBytes(StandardCharsets.UTF_8)), StandardCharsets.UTF_8)), SusiLanguage.unknown);
+                JSONObject rules = SusiSkill.readLoTSkill(new BufferedReader(new InputStreamReader(new ByteArrayInputStream(text.getBytes(StandardCharsets.UTF_8)), StandardCharsets.UTF_8)), SusiLanguage.unknown);
                 File origin = new File("file://" + dream);
                 dreamMind.learn(rules, origin);
                 SusiSkill.ID skillid = new SusiSkill.ID(origin);
@@ -139,7 +139,7 @@ public class SusiService extends AbstractAPIHandler implements APIHandler {
                 
                 // fill an empty mind with the dream
                 SusiMind awakeMind = new SusiMind(DAO.susi_chatlog_dir, DAO.susi_skilllog_dir); // we need the memory directory here to get a share on the memory of previous dialoges, otherwise we cannot test call-back questions
-                JSONObject rules = SusiSkill.readEzDSkill(new BufferedReader(new InputStreamReader(new ByteArrayInputStream(text.getBytes(StandardCharsets.UTF_8)), StandardCharsets.UTF_8)), SusiLanguage.unknown);
+                JSONObject rules = SusiSkill.readLoTSkill(new BufferedReader(new InputStreamReader(new ByteArrayInputStream(text.getBytes(StandardCharsets.UTF_8)), StandardCharsets.UTF_8)), SusiLanguage.unknown);
                 awakeMind.learn(rules, skillfile);
                 SusiSkill.ID skillid = new SusiSkill.ID(skillfile);
                 SusiSkill activeskill = awakeMind.getSkillMetadata().get(skillid);
