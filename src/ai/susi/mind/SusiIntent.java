@@ -52,16 +52,16 @@ public class SusiIntent {
     public final static String CATCHALL_KEY = "*";
     public final static int    DEFAULT_SCORE = 10;
     
-    private final List<SusiUtterance> utterances;
-    private final List<SusiInference> inferences;
-    private final List<SusiAction> actions;
-    private final Set<String> keys;
-    private final String comment;
-    private final int user_subscore;
+    private List<SusiUtterance> utterances;
+    private List<SusiInference> inferences;
+    private List<SusiAction> actions;
+    private Set<String> keys;
+    private String comment;
+    private int user_subscore;
     private Score score;
-    private final int id;
-    private final SusiSkill.ID skillid;
-    private final String example, expect;
+    private int id;
+    private SusiSkill.ID skillid;
+    private String example, expect;
     private SusiLanguage language;
     
     /**
@@ -93,6 +93,73 @@ public class SusiIntent {
         return intents;
     }
     
+    public SusiIntent() {
+        this.utterances = new ArrayList<>();
+        this.actions = new ArrayList<>();
+        this.inferences = new ArrayList<>();
+        this.keys = new HashSet<>();
+        this.user_subscore = DEFAULT_SCORE;
+        this.score = null; // calculate this later if required
+        this.comment = "";
+        this.skillid = null;
+        this.language = SusiLanguage.unknown;
+        this.example = "";
+        this.expect = "";
+        this.id = 0; // will be computed later
+    }
+
+    public SusiIntent setLanguage(SusiLanguage language) {
+        this.language = language;
+        return this;
+    }
+
+    public SusiIntent setExample(String example) {
+        this.example = example;
+        return this;
+    }
+
+    public SusiIntent setExpect(String expect) {
+        this.expect = expect;
+        return this;
+    }
+
+    public SusiIntent setSkillid(SusiSkill.ID skillid) {
+        this.skillid = skillid;
+        return this;
+    }
+
+    public SusiIntent setUser_subscore(int user_subscore) {
+        this.user_subscore = user_subscore;
+        return this;
+    }
+
+    public SusiIntent setComment(String comment) {
+        this.comment = comment;
+        return this;
+    }
+
+    public SusiIntent setUtterances(List<SusiUtterance> utterances) {
+        this.utterances = utterances;
+        // extract (or compute) the keys; there may be none key given, then they will be computed
+        this.keys = new HashSet<>();
+        JSONArray k = computeKeysFromUtterance(this.utterances);
+        k.forEach(o -> this.keys.add((String) o));
+        
+        return this;
+    }
+    
+    // --
+
+    public SusiIntent setInferences(List<SusiInference> inferences) {
+        this.inferences = inferences;
+        return this;
+    }
+
+    public SusiIntent setActions(List<SusiAction> actions) {
+        this.actions = actions;
+        return this;
+    }
+
     /**
      * Create an intent by parsing of the intent description
      * @param json the intent description
@@ -137,7 +204,6 @@ public class SusiIntent {
         } else {
             k = computeKeysFromUtterance(this.utterances);
         }
-        
         k.forEach(o -> this.keys.add((String) o));
 
         this.user_subscore = json.has("score") ? json.getInt("score") : DEFAULT_SCORE;
@@ -155,10 +221,7 @@ public class SusiIntent {
     	// quality control
         this.example = json.has("example") ? json.getString("example") : "";
         this.expect = json.has("expect") ? json.getString("expect") : "";
-        // calculate the id
-        String ids0 = this.actions.toString();
-        String ids1 = this.utterances.toString();
-        this.id = ids0.hashCode() + ids1.hashCode();
+        this.id = 0; // will be computed later
     }
     
     public SusiSkill.ID getSkill() {
@@ -173,12 +236,16 @@ public class SusiIntent {
         return this.example == null || this.example.length() == 0 ? null : this.example;
     }
     public int hashCode() {
+        if (this.id != 0) return this.id;
+        String ids0 = this.actions.toString();
+        String ids1 = this.utterances.toString();
+        this.id = ids0.hashCode() + ids1.hashCode();
         return this.id;
     }
     
     public JSONObject toJSON() {
         JSONObject json = new JSONObject(true);
-        json.put("id", this.id);
+        json.put("id", this.hashCode());
         if (this.keys != null && this.keys.size() > 0) json.put("keys", new JSONArray(this.keys));
         JSONArray p = new JSONArray(); this.utterances.forEach(utterance -> p.put(utterance.toJSON()));
         json.put("phrases", p);
@@ -228,11 +295,6 @@ public class SusiIntent {
     
     public String toString() {
         return this.toJSON().toString(2);
-    }
-
-    
-    public long getID() {
-        return this.id;
     }
     
     private final static Pattern SPACE_PATTERN = Pattern.compile(" ");
