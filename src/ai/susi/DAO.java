@@ -90,7 +90,7 @@ import org.apache.log4j.PatternLayout;
 public class DAO {
 
     private final static String ACCESS_DUMP_FILE_PREFIX = "access_";
-    public  static File conf_dir, bin_dir, html_dir, data_dir, susi_chatlog_dir, susi_skilllog_dir, model_watch_dir, susi_skill_repo, deleted_skill_dir;
+    public  static File conf_dir, bin_dir, html_dir, data_dir, devices_dir, susi_chatlog_dir, susi_skilllog_dir, model_watch_dir, susi_skill_repo, deleted_skill_dir;
     public static String conflictsPlaceholder = "%CONFLICTS%";
     private static File external_data, assets, dictionaries;
     private static Settings public_settings, private_settings;
@@ -137,6 +137,8 @@ public class DAO {
         data_dir = dataPath.toFile().getAbsoluteFile();
         File susi_memory_dir_new = new File(data_dir, "memory");
         File susi_memory_dir_old = new File(data_dir, "susi"); // old
+        File devices_dir = new File(data_dir, "devices");
+        if (!devices_dir.exists()) devices_dir.mkdirs();
         if (!susi_memory_dir_new.exists()) susi_memory_dir_new.mkdirs();
         susi_chatlog_dir = new File(susi_memory_dir_new, "chatlog");
         susi_skilllog_dir = new File(susi_memory_dir_new, "skilllog");
