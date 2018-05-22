@@ -144,6 +144,13 @@
       "test":"justinpjtrudeau",
       "parser":"json",
       "path":"$.data"
+    },
+    "youtubesearch":{
+      "example":"http://localhost:4000/susi/console.json?q=SELECT%20*%20FROM%20youtube%20WHERE%20query=%27tschunk%27;",
+      "url":"http://api.loklak.org/api/console.json?q=SELECT%20*%20FROM%20youtube%20WHERE%20query=%27$query$%27;",
+      "test":"tschunk",
+      "parser":"json",
+      "path":"$.data"
     }
   }
 }

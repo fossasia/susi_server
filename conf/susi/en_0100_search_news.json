@@ -568,5 +568,18 @@
 			"actions":[ {"type":"answer", "select":"random", "phrases":[
 				"Here is a web search result for $1$"
 			]}, {"type":"rss", "title": "title", "description": "description", "link": "link"}]
-		}
+		},
+        {
+            "keys"   :["playx"],
+            "example": "playx *",
+            "phrases":[ {"type":"pattern", "expression":"* quora * about *"}],
+            "process":[ {"type": "console", "expression": "SELECT * FROM youtubesearch WHERE query='$3$';"}],
+            "actions":[
+               {"type": "answer", "select": "random", "phrases":["Playing $title$"]
+               },{
+                "type": "video_play",
+                "identifier_type": "youtube",
+                "identifier": "$youtube$"
+             }]
+        }
 ]}
