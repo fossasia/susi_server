@@ -47,12 +47,14 @@ import java.io.IOException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.Set;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /* examples:
  * http://localhost:4000/susi/console.json?q=SELECT%20*%20FROM%20rss%20WHERE%20url=%27https://www.reddit.com/search.rss?q=loklak%27;
  * http://localhost:4000/susi/console.json?q=SELECT%20plaintext%20FROM%20wolframalpha%20WHERE%20query=%27berlin%27;
  * http://localhost:4000/susi/console.json?q=SELECT%20extract%20FROM%20wikipedia%20WHERE%20query=%27tschunk%27%20AND%20language=%27de%27;
+ * http://localhost:4000/susi/console.json?q=SELECT%20*%20FROM%20youtube%20WHERE%20query=%27tschunk%27%;
  */
 
 public class ConsoleService extends AbstractAPIHandler implements APIHandler {
@@ -208,6 +210,45 @@ public class ConsoleService extends AbstractAPIHandler implements APIHandler {
                 json.setQuery(query);
                 if (extract != null) json.setData(new JSONArray().put(new JSONObject().put("extract", extract)));
                 json.setHits(extract == null ? 0 : 1);
+            } catch (Throwable e) {
+                e.printStackTrace();
+                // probably a time-out or a json error
+            }
+            return json;
+        });
+        dbAccess.put(Pattern.compile("SELECT +?(.*?) +?FROM +?youtube +?WHERE +?query ??= ??'(.*?)' ??;"), (flow, matcher) -> {
+            SusiThought json = new SusiThought();
+            Pattern videoPattern = Pattern.compile("\"/watch\\?v=.*? aria-describedby");
+            Pattern keyPattern = Pattern.compile("\"/watch\\?v=(.*?)\"");
+            Pattern titlePattern = Pattern.compile("title=\"(.*?)\"");
+            try {
+                String query = matcher.group(2);
+                String serviceURL = "https://www.youtube.com/results?search_query=" + query;
+                
+                String s = new String(HttpClient.load(serviceURL), "UTF-8");
+            	JSONArray a = new JSONArray();
+            	//System.out.println(s);
+                Matcher m = videoPattern.matcher(s);
+                while (m.find()) {
+                	String fragment = m.group(0);
+        			Matcher keyMatcher = keyPattern.matcher(fragment);
+        			JSONObject j = null;
+        			if (keyMatcher.find()) {
+        				String key = keyMatcher.group(1);
+        				if (key.indexOf('&') < 0) {
+        					Matcher titleMatcher = titlePattern.matcher(fragment);
+        					if (titleMatcher.find()) {
+        						String title = titleMatcher.group(1);
+        						j = new JSONObject(true);
+        						j.put("title", title);
+        						j.put("youtube", key);
+        					}
+        				}
+        			}
+                	if (j != null) a.put(j);
+                }
+                json.setQuery(query);
+                json.setData(a);
             } catch (Throwable e) {
                 e.printStackTrace();
                 // probably a time-out or a json error
