@@ -181,10 +181,11 @@ public class SusiAction {
 	                // There is the option to give susi_server application-relative paths. These must be relaive file URLs, like
 	                // file://conf/audio/all_systems_are_go_all_lights_are_green.mp3
 	                // this is translated into an absolute path during this processing
-                    if (!json.has("identifier")) throw new SusiActionException("the action needs a identifier object");
-                    if (!json.has("identifier_type")) throw new SusiActionException("the action needs a identifier_type object");
-                    String type = json.getString("identifier_type");
-                    if (type.equals("url")) {
+                    if (!json.has("identifier")) throw new SusiActionException("the action needs an identifier object");
+                    if (!json.has("identifier_type")) throw new SusiActionException("the action needs an identifier_type object");
+                    String audio_type = json.getString("identifier_type");
+                    if (!audio_type.equals("url") && !audio_type.equals("youtube")) throw new SusiActionException("the identifier_type object in unknown");
+                    if (audio_type.equals("url")) {
                         String url = json.getString("identifier");
                         if (url.startsWith("file://") && url.length() > 8 && url.charAt(7) != '/') {
                             // this is a relative path; relative to application path
@@ -196,7 +197,11 @@ public class SusiAction {
 	            case video_record:
                     throw new SusiActionException("this action is not yet defined");
 	            case video_play:
-                    throw new SusiActionException("this action is not yet defined");
+	            	if (!json.has("identifier")) throw new SusiActionException("the action needs an identifier object");
+                    if (!json.has("identifier_type")) throw new SusiActionException("the action needs an identifier_type object");
+                    String video_type = json.getString("identifier_type");
+                    if (!video_type.equals("url") && !video_type.equals("youtube")) throw new SusiActionException("the identifier_type object in unknown");
+                break;
 	            case image_take:
                     throw new SusiActionException("this action is not yet defined");
 	            case image_show:
