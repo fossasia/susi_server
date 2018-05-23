@@ -76,7 +76,7 @@ public class ConsoleService extends AbstractAPIHandler implements APIHandler {
     public final static SusiProcedures dbAccess = new SusiProcedures();
     
     public static void addGenericConsole(String serviceName, String serviceURL, String path) {
-        dbAccess.put(Pattern.compile("SELECT +?(.*?) +?FROM +?" + serviceName + " +?WHERE +?query ??= ??'(.*?)' ??;"), (flow, matcher) -> {
+        dbAccess.put(Pattern.compile("SELECT +?(.*?) +?FROM +?" + serviceName + " +?WHERE +?query ??= ??'(.*?)' ??;?"), (flow, matcher) -> {
             SusiThought json = new SusiThought();
             byte[] b = new byte[0];
             try {
@@ -125,7 +125,7 @@ public class ConsoleService extends AbstractAPIHandler implements APIHandler {
     }
     
     static {
-        dbAccess.put(Pattern.compile("SELECT +?(.*?) +?FROM +?\\( ??SELECT +?(.*?) ??\\) +?WHERE +?(.*?) ?+IN ?+\\((.*?)\\) ??;"), (flow, matcher) -> {
+        dbAccess.put(Pattern.compile("SELECT +?(.*?) +?FROM +?\\( ??SELECT +?(.*?) ??\\) +?WHERE +?(.*?) ?+IN ?+\\((.*?)\\) ??;?"), (flow, matcher) -> {
             String subquery = matcher.group(2).trim();
             if (!subquery.endsWith(";")) subquery = subquery + ";";
             String filter_name = matcher.group(3);
@@ -141,13 +141,13 @@ public class ConsoleService extends AbstractAPIHandler implements APIHandler {
                     .setOffset(0).setHits(a0.length())
                     .setData(transfer.conclude(a1));
         });
-        dbAccess.put(Pattern.compile("SELECT +?(.*?) +?FROM +?rss +?WHERE +?url ??= ??'(.*?)' ??;"), (flow, matcher) -> {
+        dbAccess.put(Pattern.compile("SELECT +?(.*?) +?FROM +?rss +?WHERE +?url ??= ??'(.*?)' ??;?"), (flow, matcher) -> {
             SusiThought json = RSSReaderService.readRSS(matcher.group(2));
             SusiTransfer transfer = new SusiTransfer(matcher.group(1));
             json.setData(transfer.conclude(json.getData()));
             return json;
         });
-        dbAccess.put(Pattern.compile("SELECT +?(.*?) +?FROM +?wolframalpha +?WHERE +?query ??= ??'(.*?)' ??;"), (flow, matcher) -> {
+        dbAccess.put(Pattern.compile("SELECT +?(.*?) +?FROM +?wolframalpha +?WHERE +?query ??= ??'(.*?)' ??;?"), (flow, matcher) -> {
             SusiThought json = new SusiThought();
             try {
                 String query = matcher.group(2);
@@ -173,7 +173,7 @@ public class ConsoleService extends AbstractAPIHandler implements APIHandler {
             }
             return json;
         });
-        dbAccess.put(Pattern.compile("SELECT +?(.*?) +?FROM +?bahn +?WHERE +?from ??= ??'(.*?)' +?to ??= ??'(.*?)' ??;"), (flow, matcher) -> {
+        dbAccess.put(Pattern.compile("SELECT +?(.*?) +?FROM +?bahn +?WHERE +?from ??= ??'(.*?)' +?to ??= ??'(.*?)' ??;?"), (flow, matcher) -> {
         	String query = matcher.group(1);
         	String from = matcher.group(2);
         	String to = matcher.group(3);
@@ -192,7 +192,7 @@ public class ConsoleService extends AbstractAPIHandler implements APIHandler {
 			}
 			return json;
         });
-        dbAccess.put(Pattern.compile("SELECT +?(.*?) +?FROM +?wikipedia +?WHERE +?query ??= ??'(.*?)' +?AND +?language ??= ??'(.*?)' ??;"), (flow, matcher) -> {
+        dbAccess.put(Pattern.compile("SELECT +?(.*?) +?FROM +?wikipedia +?WHERE +?query ??= ??'(.*?)' +?AND +?language ??= ??'(.*?)' ??;?"), (flow, matcher) -> {
             SusiThought json = new SusiThought();
             try {
                 String query = matcher.group(2);
@@ -216,7 +216,7 @@ public class ConsoleService extends AbstractAPIHandler implements APIHandler {
             }
             return json;
         });
-        dbAccess.put(Pattern.compile("SELECT +?(.*?) +?FROM +?youtube +?WHERE +?query ??= ??'(.*?)' ??;"), (flow, matcher) -> {
+        dbAccess.put(Pattern.compile("SELECT +?(.*?) +?FROM +?youtube +?WHERE +?query ??= ??'(.*?)' ??;?"), (flow, matcher) -> {
             SusiThought json = new SusiThought();
             Pattern videoPattern = Pattern.compile("\"/watch\\?v=.*? aria-describedby");
             Pattern keyPattern = Pattern.compile("\"/watch\\?v=(.*?)\"");
