@@ -223,7 +223,7 @@ public class ConsoleService extends AbstractAPIHandler implements APIHandler {
             Pattern titlePattern = Pattern.compile("title=\"(.*?)\"");
             try {
                 String query = matcher.group(2);
-                String serviceURL = "https://www.youtube.com/results?search_query=" + query;
+                String serviceURL = "https://www.youtube.com/results?search_query=" + URLEncoder.encode(query, "UTF-8");
                 
                 String s = new String(HttpClient.load(serviceURL), "UTF-8");
             	JSONArray a = new JSONArray();

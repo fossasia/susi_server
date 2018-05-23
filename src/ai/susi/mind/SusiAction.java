@@ -430,6 +430,9 @@ public class SusiAction {
             this.json.put("longitude", thoughts.unify(getStringAttr("longitude"), false));
             this.json.put("zoom", thoughts.unify(getStringAttr("zoom"), false));
         }
+        if ((this.getRenderType() == RenderType.video_play || this.getRenderType() == RenderType.audio_play) && this.json.has("identifier")) {
+            this.json.put("identifier", thoughts.unify(getStringAttr("identifier"), false));
+        }
         return this;
     }
     

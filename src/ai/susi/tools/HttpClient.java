@@ -532,7 +532,7 @@ public class HttpClient {
         }
         if (loadThread.isAlive()) loadThread.interrupt();
         if (!exception.isEmpty()) throw exception.get(0);
-        if (content.isEmpty()) throw new IOException("no content available");
+        if (content.isEmpty()) throw new IOException("no content available for url " + source_url);
         return content.get(0);
     }
     

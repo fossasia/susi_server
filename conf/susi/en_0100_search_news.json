@@ -570,7 +570,7 @@
 			]}, {"type":"rss", "title": "title", "description": "description", "link": "link"}]
 		},
         {
-            "keys"   :["playx"],
+            "keys"   :["play","search","youtube","video","music"],
             "example": "play tschunk",
             "phrases":[ {"type":"pattern", "expression":"search for music * on youtube"},
             			{"type":"pattern", "expression":"search for video * on youtube"},
