@@ -571,9 +571,23 @@
 		},
         {
             "keys"   :["playx"],
-            "example": "playx *",
-            "phrases":[ {"type":"pattern", "expression":"* quora * about *"}],
-            "process":[ {"type": "console", "expression": "SELECT * FROM youtubesearch WHERE query='$3$';"}],
+            "example": "play tschunk",
+            "phrases":[ {"type":"pattern", "expression":"search for music * on youtube"},
+            			{"type":"pattern", "expression":"search for video * on youtube"},
+            			{"type":"pattern", "expression":"search for * on youtube"},
+            			{"type":"pattern", "expression":"search for a video *"},
+            			{"type":"pattern", "expression":"search for video *"},
+            			{"type":"pattern", "expression":"search for music *"},
+            			{"type":"pattern", "expression":"play video * from youtube"},
+            			{"type":"pattern", "expression":"play music * from youtube"},
+            			{"type":"pattern", "expression":"play * video from youtube"},
+            			{"type":"pattern", "expression":"play * music from youtube"},
+            			{"type":"pattern", "expression":"play * from youtube"},
+            			{"type":"pattern", "expression":"play * music"},
+            			{"type":"pattern", "expression":"play * video"},
+            			{"type":"pattern", "expression":"play *"}
+            		  ],
+            "process":[ {"type": "console", "expression": "SELECT * FROM youtubesearch WHERE query='$1$';"}],
             "actions":[
                {"type": "answer", "select": "random", "phrases":["Playing $title$"]
                },{

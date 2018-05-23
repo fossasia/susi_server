@@ -216,7 +216,7 @@ public class ConsoleService extends AbstractAPIHandler implements APIHandler {
             }
             return json;
         });
-        dbAccess.put(Pattern.compile("SELECT +?(.*?) +?FROM +?youtube +?WHERE +?query ??= ??'(.*?)' ??;?"), (flow, matcher) -> {
+        dbAccess.put(Pattern.compile("SELECT +?(.*?) +?FROM +?youtubesearch +?WHERE +?query ??= ??'(.*?)' ??;?"), (flow, matcher) -> {
             SusiThought json = new SusiThought();
             Pattern videoPattern = Pattern.compile("\"/watch\\?v=.*? aria-describedby");
             Pattern keyPattern = Pattern.compile("\"/watch\\?v=(.*?)\"");
