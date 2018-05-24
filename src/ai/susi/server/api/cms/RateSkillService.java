@@ -121,6 +121,7 @@ public class RateSkillService extends AbstractAPIHandler implements APIHandler {
         skillName.put("four_star", "0");
         skillName.put("five_star", "0");
         skillName.put("avg_star", "0");
+        skillName.put("total_star", "0");
 
         skillName.put(skill_rate, skillName.getInt(skill_rate) + 1 + "");
         return skillName;
