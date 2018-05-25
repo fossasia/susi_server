@@ -1,4 +1,4 @@
-var app = angular.module("loklak", ['ngRoute']);
+var app = angular.module("susi", ['ngRoute']);
 app.controller("status", function($scope, $http) {
   $http.get("/aggregation/status.json").
     success(function(data, status, headers, config) {
@@ -49,6 +49,18 @@ angular.element(document).ready(function () {
       }
       if(name == "Blog" || name == "Account") { // The Blog tab redirects to the loklak blog (http://blog.loklak.net/)
         liItem += "<a href='"+link+"'>"+name+"</a></li>";
+      }
+       else if(name == "Home"){
+        liItem += "<a href='"+link+"'>"+name+" <span class='glyphicon glyphicon-home'></span></a></li>";
+        
+      }
+      else if(name == "API"){
+        liItem += "<a href='"+link+"'>"+name+" <span class='glyphicon glyphicon-asterisk'></span></a></li>";
+        
+      }
+      else if(name == "Account"){
+        liItem += "<a href='"+link+"'>"+name+" <span class='glyphicon glyphicon-user'></span></a></li>";
+        
       }
       else {
         liItem += "<a href='\/"+link+"'>"+name+"</a></li>";

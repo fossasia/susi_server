@@ -243,7 +243,7 @@ public class SignUpService extends AbstractAPIHandler implements APIHandler {
 		if(hostUrl == null) throw new APIException(500, "No host url configured");
 
 		// redirect user to accounts verify-account route
-		String verificationLink = "http://accounts.susi.ai/verify-account?access_token=" + token
+		String verificationLink = "https://accounts.susi.ai/verify-account?access_token=" + token
 				+ "&validateEmail=" + userId + "&request_session=true";
 
 		// get template file

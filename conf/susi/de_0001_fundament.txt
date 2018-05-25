@@ -1,0 +1,4 @@
+stopp|stopp *
+!console:
+{"actions":[{"type":"stop"}]}
+eol

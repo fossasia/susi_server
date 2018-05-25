@@ -38,6 +38,20 @@ $_persona_awake$ will sleep now. Unconscious state activated.^^>_persona_awake
 analysis|analyse|analyze|explain|* analysis|* analyse|* analyze|analysis *|analyse *|analyze *|describe
 My previous answer is defined in the skill $skill$. You can help to improve this skill and <a href="$skill_link$" target="_blank"> edit it in the code repository here.</a>
 
+# stop whatever happens
+stop|stop *
+!console:
+{"actions":[{"type":"stop"}]}
+eol
+
+# test audio play
+system check
+!console:all systems are go, all lights are green!
+{"actions":[
+{"type":"audio_play", "identifier_type":"url", "identifier":"file://conf/audio/all_systems_are_go_all_lights_are_green.mp3"}
+]}
+eol
+
 # some fake commands that do nothing with the computation state
 ::minor
 

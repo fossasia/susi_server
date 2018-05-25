@@ -1,8 +1,8 @@
 package ai.susi.server.api.cms;
 
 /**
- *  RateSkillService
- *  Copyright by Saurabh Jain, @Saurabhjn76
+ *  FiveStarRateSkillService
+ *  Copyright by Anup Kumar Panwar, @AnupKumarPanwar
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -34,9 +34,9 @@ import java.io.File;
  * This Endpoint accepts 5 parameters. model,group,language,skill,rating.
  * rating can be positive or negative
  * before rating a skill the skill must exist in the directory.
- * http://localhost:4000/cms/rateSkill.json?model=general&group=Knowledge&skill=who&rating=positive
+ * http://localhost:4000/cms/fiveStarRateSkill.json?model=general&group=Knowledge&skill=aboutsusi&stars=3
  */
-public class RateSkillService extends AbstractAPIHandler implements APIHandler {
+public class FiveStarRateSkillService extends AbstractAPIHandler implements APIHandler {
 
 
     private static final long serialVersionUID = 7947060716231250102L;
@@ -53,7 +53,7 @@ public class RateSkillService extends AbstractAPIHandler implements APIHandler {
 
     @Override
     public String getAPIPath() {
-        return "/cms/rateSkill.json";
+        return "/cms/fiveStarRateSkill.json";
     }
 
     @Override
@@ -67,7 +67,7 @@ public class RateSkillService extends AbstractAPIHandler implements APIHandler {
         File language = new File(group, language_name);
         String skill_name = call.get("skill", null);
         File skill = SusiSkill.getSkillFileInLanguage(language, skill_name, false);
-        String skill_rate = call.get("rating", null);
+        String skill_stars = call.get("stars", null);
 
         JSONObject result = new JSONObject();
         result.put("accepted", false);
@@ -88,7 +88,28 @@ public class RateSkillService extends AbstractAPIHandler implements APIHandler {
                     languageName = groupName.getJSONObject(language_name);
                     if (languageName.has(skill_name)) {
                         JSONObject skillName = languageName.getJSONObject(skill_name);
-                        skillName.put(skill_rate, skillName.getInt(skill_rate) + 1 + "");
+
+                        if (skill_stars.equals("1")) {
+                            skillName.put("one_star", skillName.getInt("one_star") + 1 + "");
+                        }
+                        else if (skill_stars.equals("2")) {
+                            skillName.put("two_star", skillName.getInt("two_star") + 1 + "");
+                        }
+                        else if (skill_stars.equals("3")) {
+                            skillName.put("three_star", skillName.getInt("three_star") + 1 + "");
+                        }
+                        else if (skill_stars.equals("4")) {
+                            skillName.put("four_star", skillName.getInt("four_star") + 1 + "");
+                        }
+                        else if (skill_stars.equals("5")) {
+                            skillName.put("five_star", skillName.getInt("five_star") + 1 + "");
+                        }
+
+                        float totalStars=skillName.getInt("one_star")+skillName.getInt("two_star")+skillName.getInt("three_star")+skillName.getInt("four_star")+skillName.getInt("five_star");
+                        float avgStar=(1*skillName.getInt("one_star")+2*skillName.getInt("two_star")+3*skillName.getInt("three_star")+4*skillName.getInt("four_star")+5*skillName.getInt("five_star"))/totalStars;
+                        skillName.put("total_star", Math.round(totalStars) + "");
+                        skillName.put("avg_star", avgStar + "");
+
                         languageName.put(skill_name, skillName);
                         groupName.put(language_name, languageName);
                         modelName.put(group_name, groupName);
@@ -100,7 +121,7 @@ public class RateSkillService extends AbstractAPIHandler implements APIHandler {
                 }
             }
         }
-        languageName.put(skill_name, createRatingObject(skill_rate));
+        languageName.put(skill_name, createRatingObject(skill_stars));
         groupName.put(language_name, languageName);
         modelName.put(group_name, groupName);
         skillRating.put(model_name, modelName, true);
@@ -111,7 +132,7 @@ public class RateSkillService extends AbstractAPIHandler implements APIHandler {
     }
 
     /* Utility function*/
-    public JSONObject createRatingObject(String skill_rate) {
+    public JSONObject createRatingObject(String skill_stars) {
         JSONObject skillName = new JSONObject();
         skillName.put("positive", "0");
         skillName.put("negative", "0");
@@ -123,7 +144,27 @@ public class RateSkillService extends AbstractAPIHandler implements APIHandler {
         skillName.put("avg_star", "0");
         skillName.put("total_star", "0");
 
-        skillName.put(skill_rate, skillName.getInt(skill_rate) + 1 + "");
+        if (skill_stars.equals("1")) {
+            skillName.put("one_star", skillName.getInt("one_star") + 1 + "");
+        }
+        else if (skill_stars.equals("2")) {
+            skillName.put("two_star", skillName.getInt("two_star") + 1 + "");
+        }
+        else if (skill_stars.equals("3")) {
+            skillName.put("three_star", skillName.getInt("three_star") + 1 + "");
+        }
+        else if (skill_stars.equals("4")) {
+            skillName.put("four_star", skillName.getInt("four_star") + 1 + "");
+        }
+        else if (skill_stars.equals("5")) {
+            skillName.put("five_star", skillName.getInt("five_star") + 1 + "");
+        }
+
+        float totalStars=skillName.getInt("one_star")+skillName.getInt("two_star")+skillName.getInt("three_star")+skillName.getInt("four_star")+skillName.getInt("five_star");
+        float avgStar=(1*skillName.getInt("one_star")+2*skillName.getInt("two_star")+3*skillName.getInt("three_star")+4*skillName.getInt("four_star")+5*skillName.getInt("five_star"))/totalStars;
+        skillName.put("total_star", Math.round(totalStars) + "");
+        skillName.put("avg_star", avgStar + "");
+
         return skillName;
     }
 

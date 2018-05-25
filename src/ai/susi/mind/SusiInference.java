@@ -28,6 +28,7 @@ import java.util.regex.PatternSyntaxException;
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 
+import org.jfree.util.Log;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -276,15 +277,30 @@ public class SusiInference {
                 
                 // execute the console rule right here
                 SusiThought json = new SusiThought();
-                try {
+                if (definition.has("url") && definition.has("path")) try {
                     String url = flow.unify(definition.getString("url"), true);
                     String path = flow.unify(definition.getString("path"), false);
                     byte[] b = ConsoleService.loadData(url);
                     JSONArray data = JsonPath.parse(b, path);
-                    if (data != null) json.setData(new SusiTransfer("*").conclude(data));
+                    if (data != null) {
+                        JSONArray learned = new SusiTransfer("*").conclude(data);
+                        if (learned.length() > 0 && definition.has("actions") &&
+                            learned.get(0) instanceof JSONObject &&
+                            definition.get("actions") instanceof JSONArray) {
+                            learned.getJSONObject(0).put("actions", definition.getJSONArray("actions"));
+                        }
+                        json.setData(learned);
+                    }
                     json.setHits(json.getCount());
                 } catch (Throwable e) {
-                    e.printStackTrace(); // probably a time-out
+                    DAO.severe("SusiInference.applyProcedures", e);
+                } else if (definition.has("actions") && definition.get("actions") instanceof JSONArray) {
+                    // case where we have no console rules but only an actions object: this should not fail
+                    // to provoke that this cannot fail it must produce data, othervise the data created by the inference
+                    // is empty and an empty thought fails. We use this situation to make a log of the actions we did
+                    JSONArray learned = new JSONArray().put(new JSONObject().put("actions", definition.getJSONArray("actions")));
+                    json.setData(learned);
+                    json.setHits(json.getCount());
                 }
                 return json;
                 

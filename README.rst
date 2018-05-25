@@ -173,6 +173,13 @@ How do I develop Skills (AI Conversation Rules) for Susi AI?
 The Susi AI skill language is described in the `Skill Development
 Tutorial <https://github.com/fossasia/susi_skill_data/blob/master/README_susi_skill_language_tutorial.md>`__.
 
+How to utilize Susi skill data in Susi server?
+-------------------------
+
+The `Susi skill data <https://github.com/fossasia/susi_skill_data>`__ is the storage place for the Susi skills. To make Susi server utilize these skills, clone Susi skill data alongside Susi server.
+::
+   
+   git clone https://github.com/fossasia/susi_skill_data.git
 
 Why should I use Susi AI?
 ----------------------
@@ -183,11 +190,10 @@ Where can I get the latest news about Susi AI?
 -------------------------------------------
 
 Hey, this is the tool for that! Just put
-http://loklak.org/api/search.rss?q=%23susi into your RSS reader. Oh
+https://api.loklak.org/api/search.rss?q=%23susi into your RSS reader. Oh
 wait.. you will get a lot of information about tasty Cambodian food with
-that as well. Alternatively you may also read the authors timeline using
-http://loklak.org/api/search.rss?q=0rb1t3r or just follow @0rb1t3r
-(that's a zero after the at sign)
+that as well. Alternatively you may also read the authors timeline or just follow @0rb1t3r
+(that's a zero after the "@" sign)
 
 Where can I find documentation?
 -------------------------------
