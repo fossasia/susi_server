@@ -102,6 +102,7 @@ public class GetSkillRatingService extends AbstractAPIHandler implements APIHand
         tempSkillRating.put("four_star", "0");
         tempSkillRating.put("five_star", "0");
         tempSkillRating.put("avg_star", "0");
+        tempSkillRating.put("total_star", "0");
 
 
         result.put("accepted", false);

@@ -107,6 +107,7 @@ public class FiveStarRateSkillService extends AbstractAPIHandler implements APIH
 
                         float totalStars=skillName.getInt("one_star")+skillName.getInt("two_star")+skillName.getInt("three_star")+skillName.getInt("four_star")+skillName.getInt("five_star");
                         float avgStar=(1*skillName.getInt("one_star")+2*skillName.getInt("two_star")+3*skillName.getInt("three_star")+4*skillName.getInt("four_star")+5*skillName.getInt("five_star"))/totalStars;
+                        skillName.put("total_star", Math.round(totalStars) + "");
                         skillName.put("avg_star", avgStar + "");
 
                         languageName.put(skill_name, skillName);
@@ -141,6 +142,7 @@ public class FiveStarRateSkillService extends AbstractAPIHandler implements APIH
         skillName.put("four_star", "0");
         skillName.put("five_star", "0");
         skillName.put("avg_star", "0");
+        skillName.put("total_star", "0");
 
         if (skill_stars.equals("1")) {
             skillName.put("one_star", skillName.getInt("one_star") + 1 + "");
@@ -160,6 +162,7 @@ public class FiveStarRateSkillService extends AbstractAPIHandler implements APIH
 
         float totalStars=skillName.getInt("one_star")+skillName.getInt("two_star")+skillName.getInt("three_star")+skillName.getInt("four_star")+skillName.getInt("five_star");
         float avgStar=(1*skillName.getInt("one_star")+2*skillName.getInt("two_star")+3*skillName.getInt("three_star")+4*skillName.getInt("four_star")+5*skillName.getInt("five_star"))/totalStars;
+        skillName.put("total_star", Math.round(totalStars) + "");
         skillName.put("avg_star", avgStar + "");
 
         return skillName;
