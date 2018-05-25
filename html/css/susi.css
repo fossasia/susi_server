@@ -1,0 +1,156 @@
+/* Move down content because we have a fixed navbar that is 50px tall */
+
+* {
+  font-family: Roboto,sans-serif;
+}
+
+
+body {
+  padding-top: 46px;
+}
+
+.navbar{
+  background:#4285f4;
+  border-color:#4285f4;
+  height: 46px;
+}
+.navbar ul{
+  list-style: none;
+  list-style-type: none;
+}
+.navbar ul li a {
+  color: #414141;
+}
+.navbar ul li a:hover{
+  color: #414141;
+  background: none;
+}
+code{
+  font-family: Roboto,sans-serif;
+  font-weight: 300;
+  
+}
+.h2, h2{
+  font-family: Roboto,sans-serif;
+  font-weight: 300;
+}
+.subTopic{
+  font-size: 25px;
+}
+.susiLogo{
+  height: 46px;
+  padding: 10px;
+}
+
+
+
+/*footer*/
+.navbar ul li a {
+  font-family: 'Roboto', sans-serif;  
+  color: rgba(0, 0, 0, 0.87);
+}
+
+.navbar ul li a:hover {
+  font-family: 'Roboto', sans-serif;  
+  color: rgba(0, 0, 0, 0.87);
+  background: none;
+}
+.footer-wrapper{
+  width: 100%;
+  z-index: 10;
+  background: #f6f6f6;
+  position: relative;
+  top: 35px;
+}
+.footer-container a{
+  text-decoration: none;
+  color: #414141;
+  font-size: 1em;
+  font-weight: 300;
+  font-family: 'Roboto', sans-serif;
+  cursor: pointer;
+  margin-right: 20px;
+}
+
+
+.alignLeft,.alignRight{
+  list-style: none;
+  list-style-type: none;
+}
+.alignLeft li{
+  float: left;
+  padding: 10px;
+}
+.alignRight li{
+  float: right;
+  padding: 10px;
+}
+.leftDiv a,.rightDiv a {
+  color:#3367d6;
+  font-family: 'Roboto', sans-serif;
+}
+
+.susi-logo{
+  margin: 10px 0;
+  height: 30px;
+  vertical-align: middle;
+  max-width: 100px;
+  display: inline-block;
+}
+
+@media only screen and (min-width: 1400px){
+  .footer{
+      max-width: 100%;
+  }
+  .footer-container{
+      width: 1050px;
+      margin: 0 auto;
+  }
+
+}
+
+@media only screen and (max-width: 800px){
+  .alignLeft,.alignRight{
+      flex:1 100%;
+      width: 100%;
+      display: block;
+      padding-left: 0;
+      list-style: none;
+      list-style-type: none;
+  }
+    
+  .alignLeft li,.alignRight li{
+      float: left;
+  }
+  .footer-container{
+      display: block;
+      padding: 30px 30px 30px 40px;
+  }
+  .alignLeft a, .alignRight a{
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      display: block;
+  }
+}
+
+@media only screen and (max-width: 768px){
+  .alignRight{
+    float: left;
+  }
+}
+@media screen and (min-width: 768px){
+  .jumbotron .h1, .jumbotron h1 {
+      font-size: 63px;
+      font-weight: 300;
+  }
+
+}
+@media screen and (max-width: 768px){
+  .navbar-header{
+    float: left;
+  }
+  .optionMenu{
+    float: right;
+  }
+}

@@ -63,7 +63,7 @@ pre {
 
 /* Move down content because we have a fixed navbar that is 50px tall */
 body {
-  padding-top: 50px;
+  padding-top: 46px;
 }
 
 /*
@@ -92,6 +92,7 @@ body {
   display: none;
 }
 @media (min-width: 768px) {
+
   .sidebar {
     position: fixed;
     top: 51px;
