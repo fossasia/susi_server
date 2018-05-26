@@ -88,28 +88,45 @@ public class FiveStarRateSkillService extends AbstractAPIHandler implements APIH
                     languageName = groupName.getJSONObject(language_name);
                     if (languageName.has(skill_name)) {
                         JSONObject skillName = languageName.getJSONObject(skill_name);
+                        if (skillName.has("stars")){
+                            JSONObject skillStars=skillName.getJSONObject("stars");
 
-                        if (skill_stars.equals("1")) {
-                            skillName.put("one_star", skillName.getInt("one_star") + 1 + "");
-                        }
-                        else if (skill_stars.equals("2")) {
-                            skillName.put("two_star", skillName.getInt("two_star") + 1 + "");
-                        }
-                        else if (skill_stars.equals("3")) {
-                            skillName.put("three_star", skillName.getInt("three_star") + 1 + "");
-                        }
-                        else if (skill_stars.equals("4")) {
-                            skillName.put("four_star", skillName.getInt("four_star") + 1 + "");
-                        }
-                        else if (skill_stars.equals("5")) {
-                            skillName.put("five_star", skillName.getInt("five_star") + 1 + "");
-                        }
+                            if (skill_stars.equals("1")) {
+                                skillStars.put("one_star", skillStars.getInt("one_star") + 1 + "");
+                            }
+                            else if (skill_stars.equals("2")) {
+                                skillStars.put("two_star", skillStars.getInt("two_star") + 1 + "");
+                            }
+                            else if (skill_stars.equals("3")) {
+                                skillStars.put("three_star", skillStars.getInt("three_star") + 1 + "");
+                            }
+                            else if (skill_stars.equals("4")) {
+                                skillStars.put("four_star", skillStars.getInt("four_star") + 1 + "");
+                            }
+                            else if (skill_stars.equals("5")) {
+                                skillStars.put("five_star", skillStars.getInt("five_star") + 1 + "");
+                            }
 
-                        float totalStars=skillName.getInt("one_star")+skillName.getInt("two_star")+skillName.getInt("three_star")+skillName.getInt("four_star")+skillName.getInt("five_star");
-                        float avgStar=(1*skillName.getInt("one_star")+2*skillName.getInt("two_star")+3*skillName.getInt("three_star")+4*skillName.getInt("four_star")+5*skillName.getInt("five_star"))/totalStars;
-                        skillName.put("total_star", Math.round(totalStars) + "");
-                        skillName.put("avg_star", avgStar + "");
+                            float totalStars=skillStars.getInt("one_star")+skillStars.getInt("two_star")+skillStars.getInt("three_star")+skillStars.getInt("four_star")+skillStars.getInt("five_star");
+                            float avgStar=(1*skillStars.getInt("one_star")+2*skillStars.getInt("two_star")+3*skillStars.getInt("three_star")+4*skillStars.getInt("four_star")+5*skillStars.getInt("five_star"))/totalStars;
+                            skillStars.put("total_star", Math.round(totalStars) + "");
+                            skillStars.put("avg_star", avgStar + "");
 
+                            skillName.put("stars", skillStars);
+                        }
+                        else {
+                            JSONObject skillStars=new JSONObject();
+
+                            skillStars.put("one_star", "0");
+                            skillStars.put("two_star", "0");
+                            skillStars.put("three_star", "0");
+                            skillStars.put("four_star", "0");
+                            skillStars.put("five_star", "0");
+                            skillStars.put("avg_star", "0");
+                            skillStars.put("total_star", "0");
+
+                            skillName.put("stars", skillStars);
+                        }
                         languageName.put(skill_name, skillName);
                         groupName.put(language_name, languageName);
                         modelName.put(group_name, groupName);
@@ -136,34 +153,41 @@ public class FiveStarRateSkillService extends AbstractAPIHandler implements APIH
         JSONObject skillName = new JSONObject();
         skillName.put("positive", "0");
         skillName.put("negative", "0");
-        skillName.put("one_star", "0");
-        skillName.put("two_star", "0");
-        skillName.put("three_star", "0");
-        skillName.put("four_star", "0");
-        skillName.put("five_star", "0");
-        skillName.put("avg_star", "0");
-        skillName.put("total_star", "0");
+
+        JSONObject skillStars=new JSONObject();
+
+        skillStars.put("one_star", "0");
+        skillStars.put("two_star", "0");
+        skillStars.put("three_star", "0");
+        skillStars.put("four_star", "0");
+        skillStars.put("five_star", "0");
+        skillStars.put("avg_star", "0");
+        skillStars.put("total_star", "0");
+
+        skillName.put("stars", skillStars);
 
         if (skill_stars.equals("1")) {
-            skillName.put("one_star", skillName.getInt("one_star") + 1 + "");
+            skillStars.put("one_star", skillStars.getInt("one_star") + 1 + "");
         }
         else if (skill_stars.equals("2")) {
-            skillName.put("two_star", skillName.getInt("two_star") + 1 + "");
+            skillStars.put("two_star", skillStars.getInt("two_star") + 1 + "");
         }
         else if (skill_stars.equals("3")) {
-            skillName.put("three_star", skillName.getInt("three_star") + 1 + "");
+            skillStars.put("three_star", skillStars.getInt("three_star") + 1 + "");
         }
         else if (skill_stars.equals("4")) {
-            skillName.put("four_star", skillName.getInt("four_star") + 1 + "");
+            skillStars.put("four_star", skillStars.getInt("four_star") + 1 + "");
         }
         else if (skill_stars.equals("5")) {
-            skillName.put("five_star", skillName.getInt("five_star") + 1 + "");
+            skillStars.put("five_star", skillStars.getInt("five_star") + 1 + "");
         }
 
-        float totalStars=skillName.getInt("one_star")+skillName.getInt("two_star")+skillName.getInt("three_star")+skillName.getInt("four_star")+skillName.getInt("five_star");
-        float avgStar=(1*skillName.getInt("one_star")+2*skillName.getInt("two_star")+3*skillName.getInt("three_star")+4*skillName.getInt("four_star")+5*skillName.getInt("five_star"))/totalStars;
-        skillName.put("total_star", Math.round(totalStars) + "");
-        skillName.put("avg_star", avgStar + "");
+        float totalStars=skillStars.getInt("one_star")+skillStars.getInt("two_star")+skillStars.getInt("three_star")+skillStars.getInt("four_star")+skillStars.getInt("five_star");
+        float avgStar=(1*skillStars.getInt("one_star")+2*skillStars.getInt("two_star")+3*skillStars.getInt("three_star")+4*skillStars.getInt("four_star")+5*skillStars.getInt("five_star"))/totalStars;
+        skillStars.put("total_star", Math.round(totalStars) + "");
+        skillStars.put("avg_star", avgStar + "");
+
+        skillName.put("stars", skillStars);
 
         return skillName;
     }
