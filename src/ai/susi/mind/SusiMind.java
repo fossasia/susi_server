@@ -57,7 +57,7 @@ public class SusiMind {
     private final Map<SusiSkill.ID, Set<String>> skillexamples; // a map from an skill path to one example
     private final Map<SusiSkill.ID, SusiSkill> skillMetadata; // a map from skill path to description
     private final Map<SusiSkill.ID, String> skillImage; // a map from skill path to skill image
-    private final File[] watchpaths;
+    private final List<File> watchpaths;
     private final File susi_chatlog_dir, susi_skilllog_dir; // a path where the memory looks for new additions of knowledge with memory files
     private final Map<File, Long> observations; // a mapping of mind memory files to the time when the file was read the last time
     private final SusiMemory memories; // conversation logs are memories
@@ -65,10 +65,8 @@ public class SusiMind {
 
     public SusiMind(File susi_chatlog_dir, File susi_skilllog_dir, File... watchpaths) {
         // initialize class objects
-        this.watchpaths = watchpaths;
-        for (int i = 0; i < watchpaths.length; i++) {
-            if (watchpaths[i] != null) watchpaths[i].mkdirs();
-        }
+        this.watchpaths = new ArrayList<>();
+        for (int i = 0; i < watchpaths.length; i++) addWatchpath(watchpaths[i]);
         this.susi_chatlog_dir = susi_chatlog_dir;
         this.susi_skilllog_dir = susi_skilllog_dir;
         if (this.susi_chatlog_dir != null) this.susi_chatlog_dir.mkdirs();
@@ -84,6 +82,14 @@ public class SusiMind {
             e.printStackTrace();
         }
         this.activeSkill = null;
+    }
+    
+    public SusiMind addWatchpath(File path) {
+        if (path != null) {
+            path.mkdirs();
+            this.watchpaths.add(path);
+        }
+        return this;
     }
     
     public void initializeMemory() {
@@ -119,8 +125,8 @@ public class SusiMind {
     }
 
     public SusiMind observe() throws IOException {
-        for (int i = 0; i < watchpaths.length; i++) {
-            observe(watchpaths[i]);
+        for (int i = 0; i < watchpaths.size(); i++) {
+            observe(watchpaths.get(i));
         }
         return this;
     }

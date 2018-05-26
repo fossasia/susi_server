@@ -156,11 +156,12 @@ public class DAO {
         susi_skill_repo = new File(data_dir.getParentFile().getParentFile(), "susi_skill_data/.git");
 
         // wake up susi
-        File susiinitpath = new File(conf_dir, "susi");
-        susi = model_watch_dir.exists() ?
-                new SusiMind(susi_chatlog_dir, susi_skilllog_dir, susiinitpath, new File(model_watch_dir, "general")) :
-                new SusiMind(susi_chatlog_dir, susi_skilllog_dir, susiinitpath);
-
+        File system_skills_general = new File(new File(conf_dir, "system_skills"), "general");
+        File system_skills_localmode = new File(new File(conf_dir, "system_skills"), "localmode");
+        susi = new SusiMind(susi_chatlog_dir, susi_skilllog_dir, system_skills_general);
+        if (model_watch_dir.exists()) susi.addWatchpath(new File(model_watch_dir, "general"));
+        if (DAO.getConfig("local.mode", false)) susi.addWatchpath(system_skills_localmode);
+                
         // initialize the memory as a background task to prevent that this blocks too much
         new Thread() {
             public void run() {
