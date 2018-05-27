@@ -486,6 +486,7 @@ public class SusiServer {
                 LanguageListService.class,
                 ListUserSettings.class,
                 ListSkillService.class,
+                AddNewDevice.class,
                 DisableSkillService.class,
                 GetAllLanguages.class,
                 DeleteGroupService.class,
