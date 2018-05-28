@@ -34,13 +34,11 @@ import ai.susi.server.Authorization;
 import ai.susi.server.Query;
 import ai.susi.server.ServiceResponse;
 import ai.susi.server.UserRole;
-
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONTokener;
 
 import javax.servlet.http.HttpServletResponse;
-
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -83,7 +81,7 @@ public class SusiService extends AbstractAPIHandler implements APIHandler {
         try {
             DAO.susi.observe(); // get a database update
         } catch (IOException e) {
-            DAO.log(e.getMessage());
+            DAO.severe(e.getMessage());
         }
         
         SusiThought recall = null;
@@ -123,7 +121,7 @@ public class SusiService extends AbstractAPIHandler implements APIHandler {
                 // susi is now dreaming.. Try to find an answer out of the dream
                 minds.add(dreamMind);
             } catch (JSONException | IOException e) {
-                e.printStackTrace();
+                DAO.severe(e.getMessage(), e);
             }
         }
         
@@ -159,7 +157,7 @@ public class SusiService extends AbstractAPIHandler implements APIHandler {
         if (cognition.getAnswers().size() > 0) try {
             DAO.susi.getMemories().addCognition(user.getIdentity().getClient(), cognition);
         } catch (IOException e) {
-            DAO.log(e.getMessage());
+            DAO.severe(e.getMessage());
         }
         JSONObject json = cognition.getJSON();
         return new ServiceResponse(json);
