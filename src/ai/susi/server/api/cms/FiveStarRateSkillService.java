@@ -59,7 +59,7 @@ public class FiveStarRateSkillService extends AbstractAPIHandler implements APIH
     }
 
     @Override
-    public ServiceResponse serviceImpl(Query call, HttpServletResponse response, Authorization authorization, final JsonObjectWithDefault permissions) {
+    public ServiceResponse serviceImpl(Query call, HttpServletResponse response, Authorization authorization, final JsonObjectWithDefault permissions) throws APIException {
 
         String model_name = call.get("model", "general");
         File model = new File(DAO.model_watch_dir, model_name);
@@ -73,16 +73,16 @@ public class FiveStarRateSkillService extends AbstractAPIHandler implements APIH
         String access_token = call.get("access_token", null);
 
         JSONObject result = new JSONObject();
-        result.put("accepted", false);
         if (!skill.exists()) {
-            result.put("message", "Skill does not exist");
-            return new ServiceResponse(result);
-
+            throw new APIException(422, "Skill does not exist.");
         }
 
         if (access_token == null) {
-            result.put("message", "Access token not given");
-            return new ServiceResponse(result);
+            throw new APIException(422, "Access token not given.");
+        }
+
+        if (skill_stars == null) {
+            throw new APIException(422, "Rating not provided.");
         }
 
         if (authorization.getIdentity().isEmail()) {
@@ -157,9 +157,7 @@ public class FiveStarRateSkillService extends AbstractAPIHandler implements APIH
             return new ServiceResponse(result);
 
         } else {
-            result.put("accepted", false);
-            result.put("message", "Invalid access token");
-            return new ServiceResponse(result);
+            throw new APIException(422, "Access token not given.");
         }
 
 
