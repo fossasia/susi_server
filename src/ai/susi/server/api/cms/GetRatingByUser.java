@@ -12,7 +12,7 @@ import javax.servlet.http.HttpServletResponse;
 /**
  * Created by AnupKumarPAnwar on 28/05/18.
  * API Endpoint to get rating by a particular user on a skill.
- * http://127.0.0.1:4000/cms/getRatingByUser.json?model=general&group=Knowledge&language=en&skill=aboutsusi&&access_token=pUcx5PdbNsqPEJyE0YrOGXm3IYVJD5
+ * http://127.0.0.1:4000/cms/getRatingByUser.json?model=general&group=Knowledge&language=en&skill=aboutsusi&access_token=pUcx5PdbNsqPEJyE0YrOGXm3IYVJD5
  */
 
 public class GetRatingByUser extends AbstractAPIHandler implements APIHandler {
@@ -37,16 +37,13 @@ public class GetRatingByUser extends AbstractAPIHandler implements APIHandler {
     public ServiceResponse serviceImpl(Query call, HttpServletResponse response, Authorization authorization, JsonObjectWithDefault permissions) throws APIException {
 
         String model_name = call.get("model", "general");
-        String group_name = call.get("group", "Knowledge");
+        String group_name = call.get("group", "All");
         String language_name = call.get("language", "en");
         String skill_name = call.get("skill", null);
         String access_token = call.get("access_token", null);
 
         if (access_token == null) {
-            JSONObject json = new JSONObject();
-            json.put("accepted", false);
-            json.put("message", "Access token not given");
-            return new ServiceResponse(json);
+            throw new APIException(422, "Bad access_token.");
         }
 
 
@@ -86,10 +83,7 @@ public class GetRatingByUser extends AbstractAPIHandler implements APIHandler {
             result.put("message", "Skill not rated by the user");
             return new ServiceResponse(result);
         } else {
-            JSONObject json = new JSONObject();
-            json.put("accepted", false);
-            json.put("message", "Invalid access token");
-            return new ServiceResponse(json);
+            throw new APIException(422, "Bad access_token.");
         }
     }
 
