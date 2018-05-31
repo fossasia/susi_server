@@ -36,7 +36,7 @@ import java.sql.Timestamp;
  * This Endpoint accepts 5 parameters. model,group,language,skill,rating.
  * rating can be positive or negative
  * before rating a skill the skill must exist in the directory.
- * http://localhost:4000/cms/fiveStarRateSkill.json?model=general&group=Knowledge&skill=aboutsusi&stars=3
+ * http://localhost:4000/cms/fiveStarRateSkill.json?model=general&group=Knowledge&skill=aboutsusi&stars=3&access_token=6O7cqoMbzlClxPwg1is31Tz5pjVwo3
  */
 public class FiveStarRateSkillService extends AbstractAPIHandler implements APIHandler {
 
