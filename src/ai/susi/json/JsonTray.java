@@ -59,6 +59,9 @@ public class JsonTray {
     }
 	
     public void close() {
+        // commit any data that has not yet been stored.
+        this.commit();
+        
         if (this.file_volatile != null) try {
         	// copy the volatile data into a JSONObject to store it in a dump file
             JSONObject j = new JSONObject(true);

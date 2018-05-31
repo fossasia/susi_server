@@ -86,8 +86,10 @@ public class EnableSkillService extends AbstractAPIHandler implements APIHandler
             throw new APIException(400, "Cannot enable skill, ensure you are logged in");
         } else {
             Accounting accounting = DAO.getAccounting(authorization.getIdentity());
-            if (!accounting.getJSON().has("disabledSkills"))
+            if (!accounting.getJSON().has("disabledSkills")) {
                 accounting.getJSON().put("disabledSkills", new JSONObject());
+                accounting.commit();
+            }
 
             JSONObject disableSkills = accounting.getJSON().getJSONObject("disabledSkills");
             if (disableSkills.has(model_name)) {

@@ -22,13 +22,18 @@ package ai.susi.server.api.aaa;
 
 import ai.susi.DAO;
 import ai.susi.json.JsonObjectWithDefault;
-import ai.susi.server.*;
+import ai.susi.server.APIException;
+import ai.susi.server.APIHandler;
+import ai.susi.server.AbstractAPIHandler;
+import ai.susi.server.Accounting;
+import ai.susi.server.Authorization;
+import ai.susi.server.Query;
+import ai.susi.server.ServiceResponse;
+import ai.susi.server.UserRole;
+
 import org.json.JSONObject;
 
 import javax.servlet.http.HttpServletResponse;
-import java.util.HashMap;
-import java.util.Map;
-
 /**
  * Created by @Akshat-Jain on 24/5/18.
  * Servlet to add device information
@@ -36,6 +41,8 @@ import java.util.Map;
  * test locally at http://127.0.0.1:4000/aaa/addNewDevice.json?macid=macAddressOfDevice&device=deviceName&access_token=6O7cqoMbzlClxPwg1is31Tz5pjVwo3
  */
 public class AddNewDevice extends AbstractAPIHandler implements APIHandler {
+
+    private static final long serialVersionUID = -8742102844146051190L;
 
     @Override
     public String getAPIPath() {
@@ -69,17 +76,16 @@ public class AddNewDevice extends AbstractAPIHandler implements APIHandler {
            
            if (authorization.getIdentity() == null) {
                throw new APIException(400, "Specified user data not found, ensure you are logged in");
-           } 
-           else {
+           } else {
                 Accounting accounting = DAO.getAccounting(authorization.getIdentity());
                 if (accounting.getJSON().has("devices")) {
-                       accounting.getJSON().getJSONObject("devices").put(key, value);
-                   } 
-                else {
-                       JSONObject jsonObject = new JSONObject();
-                       jsonObject.put(key, value);
-                       accounting.getJSON().put("devices", jsonObject);
-                   }
+                    accounting.getJSON().getJSONObject("devices").put(key, value);
+                } else {
+                    JSONObject jsonObject = new JSONObject();
+                    jsonObject.put(key, value);
+                    accounting.getJSON().put("devices", jsonObject);
+               }
+                accounting.commit();
                
                JSONObject result = new JSONObject(true);
                result.put("accepted", true);

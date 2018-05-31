@@ -31,11 +31,9 @@ import ai.susi.server.UserRole;
 import ai.susi.server.Query;
 import ai.susi.server.ServiceResponse;
 
-import org.json.JSONArray;
 import org.json.JSONObject;
 
 import javax.servlet.http.HttpServletResponse;
-import java.io.File;
 
 /**
  * Servlet to list all the disable skill  for a user in cms
@@ -64,18 +62,16 @@ public class ListDisableSkillService extends AbstractAPIHandler implements APIHa
     @Override
     public ServiceResponse serviceImpl(Query call, HttpServletResponse response, Authorization authorization, JsonObjectWithDefault permissions) throws APIException {
 
-
-
-
         if (authorization.getIdentity() == null) {
             throw new APIException(400, "Specified User disabled skill not found, ensure you are logged in");
         } else {
             Accounting accounting = DAO.getAccounting(authorization.getIdentity());
             JSONObject result = new JSONObject();
-            if(accounting.getJSON().has("disabledSkills"))
-            result.put("disabledSkills",accounting.getJSON().get("disabledSkills"));
-            else
+            if (accounting.getJSON().has("disabledSkills")) {
+                result.put("disabledSkills",accounting.getJSON().get("disabledSkills"));
+            } else {
                 result.put("disabledSkills", new JSONObject());
+            }
             result.put("accepted", true);
             result.put("message", "Success: Showing User disabled skills");
             return new ServiceResponse(result);
