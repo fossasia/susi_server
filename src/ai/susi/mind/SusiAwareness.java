@@ -68,6 +68,8 @@ public class SusiAwareness implements Iterable<SusiCognition> {
      */
     public SusiAwareness(final File memorydump, int attentionTime) throws IOException {
         this();
+        String name = Thread.currentThread().getName();
+        Thread.currentThread().setName("initializing awareness with " + memorydump.getAbsolutePath());
         List<String> lines = Files.readAllLines(memorydump.toPath());
         for (int i = lines.size() - 1; i >= 0; i--) {
             String line = lines.get(i);
@@ -76,6 +78,7 @@ public class SusiAwareness implements Iterable<SusiCognition> {
             this.awarex.addLast(si); // thats right, we insert at the end of the deque because we are reading in reverse order
             if (attentionTime != Integer.MAX_VALUE && this.getTime() >= attentionTime) break;
         }
+        Thread.currentThread().setName(name);
     }
     
     /**
