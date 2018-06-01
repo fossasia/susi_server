@@ -6,12 +6,12 @@
  *  modify it under the terms of the GNU Lesser General Public
  *  License as published by the Free Software Foundation; either
  *  version 2.1 of the License, or (at your option) any later version.
- *  
+ *
  *  This library is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  *  Lesser General Public License for more details.
- *  
+ *
  *  You should have received a copy of the GNU Lesser General Public License
  *  along with this program in the file lgpl21.txt
  *  If not, see <http://www.gnu.org/licenses/>.
@@ -64,7 +64,7 @@ public class SusiSkill {
 
     public static class ID implements Comparable<ID> {
         private String skillpath;
-        
+
         /**
          * compute the skill path from the origin file
          * @param origin
@@ -83,20 +83,20 @@ public class SusiSkill {
             this.skillpath = this.skillpath.substring(i);
             if (this.skillpath.startsWith("/susi/") || this.skillpath.startsWith("\\susi\\")) this.skillpath = this.skillpath.substring(5);
         }
-        
+
         public String toString() {
             return this.skillpath;
         }
-        
+
         public String getPath() {
             return this.skillpath;
         }
-        
+
         @Override
         public int compareTo(ID o) {
             return this.skillpath.compareTo(o.skillpath);
         }
-        
+
         @Override
         public int hashCode() {
             return this.skillpath.hashCode();
@@ -118,7 +118,7 @@ public class SusiSkill {
                 if (language != SusiLanguage.unknown) return language;
                 return language;
             }
-            
+
             return SusiLanguage.unknown;
         }
 
@@ -139,7 +139,7 @@ public class SusiSkill {
         }
 
     }
-    
+
     /**
      * read an "EzD" ('Easy Dialog') file: this is just a text file. Read the docs/susi_skill_development_tutorial.md for an explanation
      * @param br
@@ -160,7 +160,7 @@ public class SusiSkill {
         this.dynamicContent = false;
         this.tags = new LinkedHashSet<>();
     }
-    
+
     /**
      * read a text skill file (once called "easy dialog - EzD")
      * @param br a buffered reader
@@ -181,8 +181,8 @@ public class SusiSkill {
         try {readloop: while ((line = br.readLine()) != null) {
             String linebeforetrim = line;
             line = line.trim();
-            int indent = linebeforetrim.indexOf(line) % indentStep;            
-            
+            int indent = linebeforetrim.indexOf(line) % indentStep;
+
             // connect lines
             if (lastLine.endsWith("\\")) {
                 lastLine = lastLine.substring(0,lastLine.length() - 1).trim() + " " + line;
@@ -192,7 +192,7 @@ public class SusiSkill {
                 lastLine = lastLine + " " + line.substring(1).trim();
                 continue readloop;
             }
-            
+
             // collect bang expressions
             if (bang_type.length() > 0) {
                 // collect a bang
@@ -204,7 +204,7 @@ public class SusiSkill {
                         JSONArray phrases = new JSONArray();
                         intent.put("phrases", phrases);
                         for (String phrase: bang_answers.split("\\|")) phrases.put(SusiUtterance.simplePhrase(phrase.trim(), prior));
-                        
+
                         // javascript process
                         JSONObject process = new JSONObject();
                         process.put("type", Type.javascript.name());
@@ -214,7 +214,7 @@ public class SusiSkill {
                             throw new JSONException(e.getMessage() + " \"" + bang_bag.toString() + "\"");
                         }
                         intent.put("process", new JSONArray().put(process));
-                        
+
                         // answers; must contain $!$
                         intent.put("actions", new JSONArray().put(SusiAction.answerAction(language, bang_term.split("\\|"))));
                         if (example.length() > 0) intent.put("example", example);
@@ -226,7 +226,7 @@ public class SusiSkill {
                         JSONArray phrases = new JSONArray();
                         intent.put("phrases", phrases);
                         for (String phrase: bang_answers.split("\\|")) phrases.put(SusiUtterance.simplePhrase(phrase.trim(), prior));
-                        
+
                         // console process
                         JSONObject process = new JSONObject();
                         process.put("type", Type.console.name());
@@ -238,7 +238,7 @@ public class SusiSkill {
                             throw new JSONException(e.getMessage() + " \"" + bang_bag.toString() + "\"");
                         }
                         intent.put("process", new JSONArray().put(process));
-                        
+
                         // actions; we may have several actions here
                         JSONArray actions = new JSONArray();
                         intent.put("actions", actions);
@@ -249,15 +249,15 @@ public class SusiSkill {
                             bo_actions.forEach(action -> {
                                 try {
                                     // looks silly, but this is for verification that the action is valid
-									SusiAction protoAction = new SusiAction((JSONObject) action);
-									actions.put(protoAction.toJSONClone());
-								} catch (SusiActionException e) {
-									Log.error(e.getMessage());
-								}
-                                
+                                    SusiAction protoAction = new SusiAction((JSONObject) action);
+                                    actions.put(protoAction.toJSONClone());
+                                } catch (SusiActionException e) {
+                                    Log.error(e.getMessage());
+                                }
+
                             });
                         }
-                        
+
                         // answers; must contain names from the console result array
                         if (bang_term.length() > 0) {
                             actions.put(SusiAction.answerAction(language, bang_term.split("\\|")));
@@ -274,7 +274,7 @@ public class SusiSkill {
                 bang_bag.append(line).append('\n');
                 continue readloop;
             }
-            
+
             // read metadata
             if (line.startsWith("::")) {
                 int thenpos=-1;
@@ -285,7 +285,7 @@ public class SusiSkill {
                     description = line.substring(thenpos + 1).trim();
                     if(description.length() > 0)
                         json.put("description",description);
-                   // System.out.println(description);
+                    // System.out.println(description);
                 }
                 if (line.startsWith("::image") && (thenpos = line.indexOf(' ')) > 0) {
                     image = line.substring(thenpos + 1).trim();
@@ -298,7 +298,7 @@ public class SusiSkill {
                         json.put("skill_name",skillName);
                 }
                 if (line.startsWith("::author") && (!line.startsWith("::author_url")) && (thenpos = line.indexOf(' ')) > 0) {
-                   authorName = line.substring(thenpos + 1).trim();
+                    authorName = line.substring(thenpos + 1).trim();
                     if(authorName.length() > 0)
                         json.put("author",authorName);
                 }
@@ -331,13 +331,13 @@ public class SusiSkill {
                 lastLine = ""; example = ""; expect = "";
                 continue readloop;
             }
-            
+
             if (line.startsWith("#")) {
                 // a comment line; ignore the line and consider it as whitespace
                 lastLine = ""; example = ""; expect = "";
                 continue readloop;
             }
-            
+
             // read content
             if (line.length() > 0 && lastLine.length() > 0) {
                 // mid of conversation (last answer is query for next intent)
@@ -401,7 +401,7 @@ public class SusiSkill {
         }
         return json;
     }
-    
+
     /**
      * For some strange reason the skill name is requested here in lowercase, while the name may also be uppercase
      * this should be fixed in the front-end, however we implement a patch here to circumvent the problem if possible
@@ -415,14 +415,14 @@ public class SusiSkill {
 
         String fn = skill_name + ".txt";
         String[] list = languagepath.list();
-        
+
         // first try: the skill name may be same or similar to the skill file name
         for (String n: list) {
             if (n.equals(fn) || n.toLowerCase().equals(fn)) {
                 return new File(languagepath, n);
             }
         }
-        
+
         // second try: the skill name may be same or similar to the skill name within the skill description
         // this is costly: we must parse the whole skill file
         for (String n: list) {
@@ -440,11 +440,11 @@ public class SusiSkill {
                 continue;
             }
         }
-        
+
         // the final attempt is bad and may not succeed, but it's the only last thing left we could do.
         return null_if_not_found ? null : new File(languagepath, fn);
     }
-    
+
     /**
      * the following method scans a given model for all files to see if it matches the skill name
      * @param model a path to a model directory
@@ -468,7 +468,7 @@ public class SusiSkill {
         }
         return null;
     }
-    
+
     public static JSONObject getSkillMetadata(String model, String group, String language, String skillname) {
 
         JSONObject skillMetadata = new JSONObject(true)
@@ -480,7 +480,7 @@ public class SusiSkill {
         File languagepath = new File(grouppath, language);
         File skillpath = getSkillFileInLanguage(languagepath, skillname, false);
         skillname = skillpath.getName().replaceAll(".txt", ""); // fixes the bad name (lowercased) to the actual right name
-        
+
         // default values
         skillMetadata.put("developer_privacy_policy", JSONObject.NULL);
         skillMetadata.put("descriptions",JSONObject.NULL);
@@ -492,15 +492,15 @@ public class SusiSkill {
         skillMetadata.put("dynamic_content", false);
         skillMetadata.put("examples", JSONObject.NULL);
         skillMetadata.put("skill_rating", JSONObject.NULL);
-        
+
         // metadata
         for (Map.Entry<SusiSkill.ID, SusiSkill> entry : DAO.susi.getSkillMetadata().entrySet()) {
             SusiSkill skill = entry.getValue();
             SusiSkill.ID skillid = entry.getKey();
             if (skillid.hasModel(model) &&
-                skillid.hasGroup(group) &&
-                skillid.hasLanguage(language) &&
-                skillid.hasName(skillname)) {
+                    skillid.hasGroup(group) &&
+                    skillid.hasLanguage(language) &&
+                    skillid.hasName(skillname)) {
 
                 skillMetadata.put("skill_name", skill.getSkillName() ==null ? JSONObject.NULL: skill.getSkillName());
                 skillMetadata.put("developer_privacy_policy", skill.getDeveloperPrivacyPolicy() ==null ? JSONObject.NULL:skill.getDeveloperPrivacyPolicy());
@@ -511,10 +511,10 @@ public class SusiSkill {
                 skillMetadata.put("terms_of_use", skill.getTermsOfUse() ==null ? JSONObject.NULL:skill.getTermsOfUse());
                 skillMetadata.put("dynamic_content", skill.getDynamicContent());
                 skillMetadata.put("examples", skill.getExamples() ==null ? JSONObject.NULL: skill.getExamples());
-                
+
             }
         }
-        
+
         // rating
         JsonTray skillRating = DAO.skillRating;
         if (skillRating.has(model)) {
@@ -525,12 +525,42 @@ public class SusiSkill {
                     JSONObject languageName = groupName.getJSONObject(language);
                     if (languageName.has(skillname)) {
                         JSONObject skillName = languageName.getJSONObject(skillname);
+                        if (!skillName.has("stars")){
+                            JSONObject newFiveStarRating=new JSONObject();
+                            newFiveStarRating.put("one_star", "0");
+                            newFiveStarRating.put("two_star", "0");
+                            newFiveStarRating.put("three_star", "0");
+                            newFiveStarRating.put("four_star", "0");
+                            newFiveStarRating.put("five_star", "0");
+                            newFiveStarRating.put("avg_star", "0");
+                            newFiveStarRating.put("total_star", "0");
+
+                            skillName.put("stars", newFiveStarRating);
+                        }
                         skillMetadata.put("skill_rating", skillName);
+                    }
+                    else {
+                        JSONObject newRating=new JSONObject();
+                        newRating.put("negative", "0");
+                        newRating.put("positive", "0");
+
+                        JSONObject newFiveStarRating=new JSONObject();
+                        newFiveStarRating.put("one_star", "0");
+                        newFiveStarRating.put("two_star", "0");
+                        newFiveStarRating.put("three_star", "0");
+                        newFiveStarRating.put("four_star", "0");
+                        newFiveStarRating.put("five_star", "0");
+                        newFiveStarRating.put("avg_star", "0");
+                        newFiveStarRating.put("total_star", "0");
+
+                        newRating.put("stars", newFiveStarRating);
+
+                        skillMetadata.put("skill_rating", newRating);
                     }
                 }
             }
         }
-        
+
         // file attributes
         BasicFileAttributes attr = null;
         Path p = Paths.get(skillpath.getPath());
@@ -552,7 +582,7 @@ public class SusiSkill {
         //System.out.println(json.toString(2)); // debug
         return json;
     }
-    
+
     public void setAuthor(String author) {
         this.author = author;
     }
@@ -637,7 +667,7 @@ public class SusiSkill {
     public Boolean getDynamicContent() {
         return dynamicContent;
     }
-    
+
     public JSONObject toJSON() {
         JSONObject json = new JSONObject(true);
         if (this.description != null) json.put("description", this.description);
@@ -651,7 +681,7 @@ public class SusiSkill {
         if (this.tags != null && this.tags.size() > 0) json.put("tags", this.tags);
         return json;
     }
-    
+
     public static void main(String[] args) {
         Path data = FileSystems.getDefault().getPath("data");
         Map<String, String> config;
