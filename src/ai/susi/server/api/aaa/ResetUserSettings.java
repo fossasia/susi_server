@@ -1,4 +1,4 @@
-package ai.susi.server.api.cms;
+package ai.susi.server.api.aaa;
 
 /**
  *  ResetUserSettings
