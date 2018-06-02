@@ -6,7 +6,7 @@
 cd $(dirname $0)/..
 
 # Execute preload script
-source bin/.preload.sh
+source bin/preload.sh
 
 echo "Starting SUSI installation"
 echo "Startup" > $STARTUPFILE

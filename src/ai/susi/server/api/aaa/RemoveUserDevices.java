@@ -1,8 +1,8 @@
 package ai.susi.server.api.aaa;
 
 /**
- *  ResetUserSettings
- *  Copyright by Akshat Garg, @akshatnitd
+ *  RemoveUserDevices
+ *  Copyright by @Akshat-Jain on 31/5/18.
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -27,18 +27,18 @@ import org.json.JSONObject;
 import javax.servlet.http.HttpServletResponse;
 
 /**
- * Servlet to reset user settings
+ * Servlet to remove user devices
  * example:
- * http://localhost:4000/aaa/resetUserSettings.json?access_token=6O7cqoMbzlClxPwg1is31Tz5pjVwo3
+ * http://localhost:4000/aaa/removeUserDevices.json?access_token=goONOeHpeYTUrHSm5PJfOJVtMs6ktG
  */
 
-public class ResetUserSettings extends AbstractAPIHandler implements APIHandler {
+public class RemoveUserDevices extends AbstractAPIHandler implements APIHandler {
 
-    private static final long serialVersionUID = -4980350840211454420L;
+    private static final long serialVersionUID = 76744278782974471L;
 
     @Override
     public String getAPIPath() {
-        return "/aaa/resetUserSettings.json";
+        return "/aaa/removeUserDevices.json";
     }
 
     @Override
@@ -56,16 +56,16 @@ public class ResetUserSettings extends AbstractAPIHandler implements APIHandler 
         if ( authorization.getIdentity()!=null ) {
             Accounting accounting = DAO.getAccounting(authorization.getIdentity());
             JSONObject userSettings = accounting.getJSON();
-            if (userSettings.has("settings")) {
-                userSettings.remove("settings");                       
+            if (userSettings.has("devices")) {
+                userSettings.remove("devices");                       
             }
             JSONObject result = new JSONObject();
             result.put("accepted", true);
-            result.put("message", "Success: User data was reset");
+            result.put("message", "Success: All User devices were removed.");
             accounting.commit();
             return new ServiceResponse(result);
         } else {
-            throw new APIException(400, "Specified user data not found, ensure you are logged in");
+            throw new APIException(400, "Specified user data not found, ensure you are logged in.");
         }
 
     }
