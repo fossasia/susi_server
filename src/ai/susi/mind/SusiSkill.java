@@ -559,7 +559,26 @@ public class SusiSkill {
                     }
                 }
             }
+            else {
+                JSONObject newRating=new JSONObject();
+                newRating.put("negative", "0");
+                newRating.put("positive", "0");
+
+                JSONObject newFiveStarRating=new JSONObject();
+                newFiveStarRating.put("one_star", "0");
+                newFiveStarRating.put("two_star", "0");
+                newFiveStarRating.put("three_star", "0");
+                newFiveStarRating.put("four_star", "0");
+                newFiveStarRating.put("five_star", "0");
+                newFiveStarRating.put("avg_star", "0");
+                newFiveStarRating.put("total_star", "0");
+
+                newRating.put("stars", newFiveStarRating);
+
+                skillMetadata.put("skill_rating", newRating);
+            }
         }
+
 
         // file attributes
         BasicFileAttributes attr = null;
