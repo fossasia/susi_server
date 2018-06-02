@@ -275,15 +275,16 @@ public class FiveStarRateSkillService extends AbstractAPIHandler implements APIH
                         groupName.put(language_name, languageName);
                         modelName.put(group_name, groupName);
                         skillRating.put(model_name, modelName, true);
+                        return;
                     }
                 }
             }
-        } else {
+        }
             languageName.put(skill_name, createRatingObject(skill_stars));
             groupName.put(language_name, languageName);
             modelName.put(group_name, groupName);
             skillRating.put(model_name, modelName, true);
-        }
+            return;
     }
 
 
@@ -363,15 +364,16 @@ public class FiveStarRateSkillService extends AbstractAPIHandler implements APIH
                         groupName.put(language_name, languageName);
                         modelName.put(group_name, groupName);
                         skillRating.put(model_name, modelName, true);
+                        return;
                     }
                 }
             }
-        } else {
+        }
             languageName.put(skill_name, createRatingObject(skill_stars));
             groupName.put(language_name, languageName);
             modelName.put(group_name, groupName);
             skillRating.put(model_name, modelName, true);
-        }
+            return;
     }
 
 }
