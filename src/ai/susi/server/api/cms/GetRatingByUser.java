@@ -40,12 +40,6 @@ public class GetRatingByUser extends AbstractAPIHandler implements APIHandler {
         String group_name = call.get("group", "All");
         String language_name = call.get("language", "en");
         String skill_name = call.get("skill", null);
-        String access_token = call.get("access_token", null);
-
-        if (access_token == null) {
-            throw new APIException(422, "Bad access_token.");
-        }
-
 
         if (authorization.getIdentity().isEmail()) {
             String email = authorization.getIdentity().getName();   //Get email from the access_token
