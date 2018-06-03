@@ -1,7 +1,14 @@
-You just requested for a password reset for your SUSI AI account.
+We received a request to reset the password associated with this email address. To 
+initiate the password reset process for your SUSI.AI account, click the link below:
+ 
+ %RESET-LINK%
 
-To do so, click on the following link:
+If you've received this mail in error, it's likely that another user entered
+your email address by mistake while trying to reset a password. If you didn't
+initiate this request, you don't need to take any further action and can safely
+disregard this email.
 
-%RESET-LINK%
+Yours sincerely,
+The SUSI.AI Team
 
-If you didn't ask for a password reset, please ignore this email.
+Note: This email address cannot accept replies.
