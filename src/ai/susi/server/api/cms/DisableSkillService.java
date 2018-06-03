@@ -37,8 +37,6 @@ import org.json.JSONObject;
 import javax.servlet.http.HttpServletResponse;
 import java.io.File;
 
-import static ai.susi.DAO.severe;
-
 /**
  * Servlet to disable a skill in cms
  * this service accepts 4 parameter, model ,group, language and skill
@@ -87,8 +85,10 @@ public class DisableSkillService extends AbstractAPIHandler implements APIHandle
             throw new APIException(400, "Cannot disable the skill, ensure you are logged in");
         } else {
             Accounting accounting = DAO.getAccounting(authorization.getIdentity());
-            if (!accounting.getJSON().has("disabledSkills"))
+            if (!accounting.getJSON().has("disabledSkills")) {
                 accounting.getJSON().put("disabledSkills", new JSONObject());
+                accounting.commit();
+            }
 
             JSONObject disableSkills = accounting.getJSON().getJSONObject("disabledSkills");
             JSONObject modelName = new JSONObject();

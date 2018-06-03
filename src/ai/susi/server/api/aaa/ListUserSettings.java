@@ -34,10 +34,11 @@ public class ListUserSettings extends AbstractAPIHandler implements APIHandler {
     @Override
     public ServiceResponse serviceImpl(Query query, HttpServletResponse response, Authorization authorization, JsonObjectWithDefault permissions) throws APIException {
         if ( authorization.getIdentity()!=null ) {
-            Accounting accouting = DAO.getAccounting(authorization.getIdentity());
-            JSONObject result = accouting.getJSON();
+            Accounting accounting = DAO.getAccounting(authorization.getIdentity());
+            JSONObject result = accounting.getJSON();
             result.put("accepted", true);
             result.put("message", "Success: Showing user data");
+            accounting.commit();
             return new ServiceResponse(result);
         } else {
             throw new APIException(400, "Specified user data not found, ensure you are logged in");

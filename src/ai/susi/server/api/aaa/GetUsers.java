@@ -95,24 +95,22 @@ public class GetUsers extends AbstractAPIHandler implements APIHandler {
                 Accounting accounting = DAO.getAccounting(authorization.getIdentity());
                 if (accounting.getJSON().has("lastLoginIP")) {
                     json.put("lastLoginIP", accounting.getJSON().getString("lastLoginIP"));
-                }
-                else {
+                } else {
                     json.put("lastLoginIP", "");
                 }
 
                 if(accounting.getJSON().has("signupTime")) {
                     json.put("signupTime", accounting.getJSON().getString("signupTime"));
-                }
-                else {
+                } else {
                     json.put("signupTime", "");
                 }
 
                 if(accounting.getJSON().has("lastLoginTime")) {
                     json.put("lastLoginTime", accounting.getJSON().getString("lastLoginTime"));
-                }
-                else {
+                } else {
                     json.put("lastLoginTime", "");
                 }
+                accounting.commit();
 
                 //add the user details in the list
                 userList.add(json);

@@ -48,7 +48,7 @@ angular.element(document).ready(function () {
         count = count + 1;
       }
       if(name == "Blog" || name == "Account") { // The Blog tab redirects to the loklak blog (http://blog.loklak.net/)
-        liItem += "<a href='"+link+"'>"+name+"</a></li>";
+        liItem += "<a href='"+link+"'>"+name+" <span class='glyphicon glyphicon-user'></span></a></li>";
       }
        else if(name == "Home"){
         liItem += "<a href='"+link+"'>"+name+" <span class='glyphicon glyphicon-home'></span></a></li>";
