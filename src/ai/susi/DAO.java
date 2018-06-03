@@ -65,6 +65,7 @@ import org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider;
 import org.json.JSONObject;
 
 import org.apache.log4j.ConsoleAppender;
+import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.apache.log4j.PatternLayout;
 
@@ -117,6 +118,7 @@ public class DAO {
         logAppender = new LogAppender(layout, 100000);
         logger.addAppender(logAppender);
         logger.addAppender(new ConsoleAppender(layout));
+        logger.setLevel(Level.INFO);
     }
 
     // built-in artificial intelligence
