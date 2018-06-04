@@ -548,7 +548,10 @@ public class SusiServer {
                 GetSkillRatingService.class,
 
                 //5 star skill rating
-                FiveStarRateSkillService.class
+                FiveStarRateSkillService.class,
+
+                //Get rating on a particular skill by a user
+                GetRatingByUser.class
 
         };
         for (Class<? extends Servlet> service: services)
