@@ -19,6 +19,34 @@
 
 package org.json;
 
+/**
+ * https://json-ld.org/spec/latest/json-ld/#node-objects
+ * 
+ * A node object represents zero or more properties of a node in the graph serialized by the JSON-LD
+ *  document. A JSON object is a node object if it exists outside of a JSON-LD context and:
+ *  - it is not the top-most JSON object in the JSON-LD document consisting of no other members
+ *    than @graph and @context,
+ *  - it does not contain the @value, @list, or @set keywords, and
+ *  - it is not a graph object.
+ *  
+ *  The properties of a node in a graph may be spread among different node objects within a document.
+ *  When that happens, the keys of the different node objects need to be merged to create the
+ *  properties of the resulting node.
+ *  
+ *  A node object MUST be a JSON object. All keys which are not IRIs, compact IRIs, terms valid in
+ *  the active context, or one of the following keywords (or alias of such a keyword) MUST be ignored
+ *  when processed:
+ *  
+ *  @context,
+ *  @id,
+ *  @graph,
+ *  @nest,
+ *  @type,
+ *  @reverse, or
+ *  @index
+ *
+ *
+ */
 public class JSONLDNode extends JSONObject {
 
     public static final String BASE = "@base";
@@ -45,4 +73,7 @@ public class JSONLDNode extends JSONObject {
     public static final String VALUE = "@value";
     public static final String VOCAB = "@vocab";
 	
+    
+    
+    
 }
