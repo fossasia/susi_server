@@ -22,6 +22,9 @@ import javax.servlet.http.HttpServletResponse;
  */
 
 public class StorePersonalInfoService extends AbstractAPIHandler implements APIHandler {
+
+    private static final long serialVersionUID = 3764395861595488179L;
+
     @Override
     public String getAPIPath() {
         return "/aaa/storePersonalInfo.json";
@@ -44,12 +47,13 @@ public class StorePersonalInfoService extends AbstractAPIHandler implements APIH
         json.put("accepted", false);
 
         Accounting accounting = DAO.getAccounting(authorization.getIdentity());
-        if(post.get("fetchDetails", false)) {
-            if(accounting.getJSON().has("stores")){
+        if (post.get("fetchDetails", false)) {
+            if (accounting.getJSON().has("stores")){
                 JSONObject jsonObject = accounting.getJSON().getJSONObject("stores");
                 json.put("stores", jsonObject);
                 json.put("accepted", true);
                 json.put("message", "details fetched successfully.");
+                accounting.commit();
                 return new ServiceResponse(json);
             } else {
                 throw new APIException(420, "No personal information is added yet.");
@@ -78,6 +82,7 @@ public class StorePersonalInfoService extends AbstractAPIHandler implements APIH
                 jsonObject.put(storeName, value);
                 accounting.getJSON().put("stores", jsonObject);
             }
+            accounting.commit();
 
             json.put("accepted", true);
             json.put("message", "You successfully updated your account information!");

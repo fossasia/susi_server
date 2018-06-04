@@ -9,7 +9,7 @@ import javax.servlet.http.HttpServletResponse;
 
 /**
  * Created by saurabh on 20/6/17.
- * Servlet to read user setting
+ * Servlet to read user setting and connected devices
  * example:
  * http://localhost:4000/aaa/listUserSettings.json?access_token=6O7cqoMbzlClxPwg1is31Tz5pjVwo3
  */
@@ -34,13 +34,14 @@ public class ListUserSettings extends AbstractAPIHandler implements APIHandler {
     @Override
     public ServiceResponse serviceImpl(Query query, HttpServletResponse response, Authorization authorization, JsonObjectWithDefault permissions) throws APIException {
         if ( authorization.getIdentity()!=null ) {
-            Accounting accouting = DAO.getAccounting(authorization.getIdentity());
-            JSONObject result = accouting.getJSON();
+            Accounting accounting = DAO.getAccounting(authorization.getIdentity());
+            JSONObject result = accounting.getJSON();
             result.put("accepted", true);
-            result.put("message", "Success: Showing User settings");
+            result.put("message", "Success: Showing user data");
+            accounting.commit();
             return new ServiceResponse(result);
         } else {
-            throw new APIException(400, "Specified User Setting not found, ensure you are logged in");
+            throw new APIException(400, "Specified user data not found, ensure you are logged in");
         }
 
     }

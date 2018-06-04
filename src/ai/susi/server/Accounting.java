@@ -68,6 +68,15 @@ public class Accounting {
     public JSONObject getJSON() {
         return this.json;
     }
+    
+    /**
+     * commit must be called in all cases where the JSON content was changed.
+     * @return
+     */
+    public Accounting commit() {
+        parent.commit();
+        return this;
+    }
 
     public JsonTray getParent() { return this.parent; }
 }

@@ -22,6 +22,7 @@ package ai.susi.mind;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.Random;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -338,7 +339,9 @@ public class SusiAction {
      * @return the action with the attribute "expression" instantiated by unification of the thought with the action
      * @throws ReactionException
      */
-    public SusiAction execution(SusiArgument thoughts, String client, SusiLanguage language, SusiMind... minds) throws ReactionException {
+    public List<SusiAction> execution(SusiArgument thoughts, String client, SusiLanguage language, SusiMind... minds) throws ReactionException {
+    	List<SusiAction> actions = new ArrayList<>();
+    	actions.add(this);
         if ((this.getRenderType() == RenderType.answer || this.getRenderType() == RenderType.self) && this.json.has("phrases")) {
             // transform the answer according to the data
             ArrayList<String> a = getPhrases();
@@ -349,26 +352,26 @@ public class SusiAction {
                 // this is the final chance that we can add another thought according to a memorizing intent in the answer string
                 Matcher m;
 
-                // self-referrer evaluate contents from the answers expressions as recursion: susi is asked again
+                // self-referrer evaluate contents from the answers expressions as recursion: susi is asked again (reflection)
                 while (new TimeoutMatcher(m = self_referrer.matcher(expression)).matches()) {
                     String observation = m.group(1);
                     SusiMind.Reaction reaction = null;
-                    String selfanswer = "";
                     ReactionException ee = null;
                     mindlevels: for (SusiMind mind: minds) {
                         	try {
                         		reaction = mind.new Reaction(observation, language, client, new SusiThought(), minds);
-                        		selfanswer = reaction.getExpression();
-                        		if (selfanswer != null && selfanswer.length() > 0) break mindlevels;
+                        		break mindlevels;
                         	} catch (ReactionException e) {
                         		ee = e;
                         		continue mindlevels;
                         	}
                     }
-                    if (reaction == null || selfanswer == null || selfanswer.length() == 0)
-                    	throw ee == null ? new ReactionException("could not find an answer") : ee;
+                    if (reaction == null) throw ee == null ? new ReactionException("could not find an answer") : ee;
                     thoughts.think(reaction.getMindstate());
-                    expression = expression.substring(0, m.start(1) - 1) + selfanswer + expression.substring(m.end(1) + 1);
+                    SusiAction action = reaction.getAction();
+                    if (action.getRenderType() != RenderType.answer) actions.add(action);
+                    expression = expression.substring(0, m.start(1) - 1) + reaction.getExpression() + expression.substring(m.end(1) + 1);
+                    expression = expression.trim();
                 }
                 
                 // assignments set variables from the result expressions. These can be visible or invisible
@@ -433,7 +436,7 @@ public class SusiAction {
         if ((this.getRenderType() == RenderType.video_play || this.getRenderType() == RenderType.audio_play) && this.json.has("identifier")) {
             this.json.put("identifier", thoughts.unify(getStringAttr("identifier"), false));
         }
-        return this;
+        return actions;
     }
     
     /**

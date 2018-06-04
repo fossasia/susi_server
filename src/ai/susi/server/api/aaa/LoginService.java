@@ -231,8 +231,9 @@ public class LoginService extends AbstractAPIHandler implements APIHandler {
 			result.put("accepted", true);
 
 			// store the IP of last login in accounting object
-			Accounting accouting = DAO.getAccounting(identity);
-			accouting.getJSON().put("lastLoginIP", post.getClientHost());
+			Accounting accounting = DAO.getAccounting(identity);
+			accounting.getJSON().put("lastLoginIP", post.getClientHost());
+            accounting.commit();
 
 			return new ServiceResponse(result);
 		}
