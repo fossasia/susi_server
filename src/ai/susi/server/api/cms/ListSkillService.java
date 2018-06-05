@@ -44,7 +44,7 @@ public class ListSkillService extends AbstractAPIHandler implements APIHandler {
 
         String model_name = call.get("model", "general");
         File model = new File(DAO.model_watch_dir, model_name);
-        String group_name = call.get("group", "Knowledge");
+        String group_name = call.get("group", "All");
         String language_name = call.get("language", "en");
         JSONArray jsonArray = new JSONArray();
         JSONObject json = new JSONObject(true);
