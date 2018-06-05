@@ -36,6 +36,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -411,22 +412,23 @@ public class SusiMind {
     }
     
     public class Reaction {
-        private String expression;
+    	private SusiAction action;
         private SusiThought mindstate;
-        
+
         public Reaction(String query, SusiLanguage userLanguage, String client, SusiThought observation, SusiMind... minds) throws ReactionException {
             List<SusiThought> thoughts = react(query, userLanguage, 1, client, observation, minds);
-            thoughts = SusiThought.filterExpressionAction(thoughts);
-            
-            if (thoughts.size() == 0) throw new ReactionException("empty mind, no idea");
             this.mindstate = thoughts.get(0);
             List<SusiAction> actions = this.mindstate.getActions();
-            SusiAction action = actions.get(0);
-            this.expression = action.getStringAttr("expression");
+            if (actions.isEmpty()) throw new ReactionException("this mind has no idea what it should do.");
+            this.action = actions.get(0);
+        }
+        
+        public SusiAction getAction() {
+            return this.action;
         }
         
         public String getExpression() {
-            return this.expression;
+            return this.action.getStringAttr("expression");
         }
         
         public SusiThought getMindstate() {
@@ -437,7 +439,7 @@ public class SusiMind {
             return this.getExpression();
         }
     }
-    
+
     public static class ReactionException extends Exception {
 		private static final long serialVersionUID = 724048490861319902L;
 		public ReactionException(String message) {

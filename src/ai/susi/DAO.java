@@ -65,6 +65,7 @@ import org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider;
 import org.json.JSONObject;
 
 import org.apache.log4j.ConsoleAppender;
+import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.apache.log4j.PatternLayout;
 
@@ -117,6 +118,7 @@ public class DAO {
         logAppender = new LogAppender(layout, 100000);
         logger.addAppender(logAppender);
         logger.addAppender(new ConsoleAppender(layout));
+        logger.setLevel(Level.INFO);
     }
 
     // built-in artificial intelligence
@@ -154,13 +156,20 @@ public class DAO {
         }
         model_watch_dir = new File(new File(data_dir.getParentFile().getParentFile(), "susi_skill_data"), "models");
         susi_skill_repo = new File(data_dir.getParentFile().getParentFile(), "susi_skill_data/.git");
+        File susi_generic_skills = new File(data_dir, "generic_skills");
+        if (!susi_generic_skills.exists()) susi_generic_skills.mkdirs();
+        File susi_generic_skills_media_discovery = new File(susi_generic_skills, "media_discovery");
+        if (!susi_generic_skills_media_discovery.exists()) susi_generic_skills_media_discovery.mkdirs();
 
         // wake up susi
         File system_skills_general = new File(new File(conf_dir, "system_skills"), "general");
         File system_skills_localmode = new File(new File(conf_dir, "system_skills"), "localmode");
         susi = new SusiMind(susi_chatlog_dir, susi_skilllog_dir, system_skills_general);
         if (model_watch_dir.exists()) susi.addWatchpath(new File(model_watch_dir, "general"));
-        if (DAO.getConfig("local.mode", false)) susi.addWatchpath(system_skills_localmode);
+        if (DAO.getConfig("local.mode", false)) {
+            susi.addWatchpath(system_skills_localmode);
+            susi.addWatchpath(susi_generic_skills_media_discovery);
+        }
                 
         // initialize the memory as a background task to prevent that this blocks too much
         new Thread() {
