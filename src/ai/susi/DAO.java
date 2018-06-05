@@ -107,6 +107,7 @@ public class DAO {
     private static JsonTray accounting;
     public  static JsonTray passwordreset;
     private static JsonFile login_keys;
+    public static JsonTray chatbotClients;
     public static JsonTray group;
     public static JsonTray skillRating;
     public static JsonTray fiveStarSkillRating;
@@ -258,6 +259,15 @@ public class DAO {
         fiveStarSkillRating = new JsonTray(fiveStarSkillRating_per.toFile(), fiveStarSkillRating_vol.toFile(), 1000000);
         OS.protectPath(fiveStarSkillRating_per);
         OS.protectPath(fiveStarSkillRating_vol);
+        
+        //ChatBot Clients Info Storage
+        Path chatbotClients_dir = dataPath.resolve("chatbot");
+        chatbotClients_dir.toFile().mkdirs();
+        Path chatbotClients_per = chatbotClients_dir.resolve("chatbotClients.json");
+        Path chatbotClients_vol = chatbotClients_dir.resolve("chatbotClients_session.json");
+        chatbotClients = new JsonTray(chatbotClients_per.toFile(), chatbotClients_vol.toFile(), 1000000);
+        OS.protectPath(chatbotClients_per);
+        OS.protectPath(chatbotClients_vol);
 
         // open index
         Path index_dir = dataPath.resolve("index");
