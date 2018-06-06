@@ -134,6 +134,7 @@ public class FiveStarRateSkillService extends AbstractAPIHandler implements APIH
                             groupName.put(language_name, languageName);
                             modelName.put(group_name, groupName);
                             fiveStarSkillRating.put(model_name, modelName, true);
+                            addToSkillRatingJSON(call);
                             result.put("accepted", true);
                             result.put("message", "Skill ratings updated");
                             result.put("ratings", fiveStarSkillRating);
