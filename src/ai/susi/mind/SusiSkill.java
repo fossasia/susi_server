@@ -525,15 +525,16 @@ public class SusiSkill {
                     JSONObject languageName = groupName.getJSONObject(language);
                     if (languageName.has(skillname)) {
                         JSONObject skillName = languageName.getJSONObject(skillname);
+
                         if (!skillName.has("stars")){
-                            JSONObject newFiveStarRating=new JSONObject();
-                            newFiveStarRating.put("one_star", "0");
-                            newFiveStarRating.put("two_star", "0");
-                            newFiveStarRating.put("three_star", "0");
-                            newFiveStarRating.put("four_star", "0");
-                            newFiveStarRating.put("five_star", "0");
-                            newFiveStarRating.put("avg_star", "0");
-                            newFiveStarRating.put("total_star", "0");
+                            JSONObject newFiveStarRating = new JSONObject();
+                            newFiveStarRating.put("one_star", 0);
+                            newFiveStarRating.put("two_star", 0);
+                            newFiveStarRating.put("three_star", 0);
+                            newFiveStarRating.put("four_star", 0);
+                            newFiveStarRating.put("five_star", 0);
+                            newFiveStarRating.put("avg_star", 0);
+                            newFiveStarRating.put("total_star", 0);
 
                             skillName.put("stars", newFiveStarRating);
                         }
@@ -543,15 +544,16 @@ public class SusiSkill {
                         JSONObject newRating=new JSONObject();
                         newRating.put("negative", "0");
                         newRating.put("positive", "0");
+                        newRating.put("feedback_count", 0);
 
                         JSONObject newFiveStarRating=new JSONObject();
-                        newFiveStarRating.put("one_star", "0");
-                        newFiveStarRating.put("two_star", "0");
-                        newFiveStarRating.put("three_star", "0");
-                        newFiveStarRating.put("four_star", "0");
-                        newFiveStarRating.put("five_star", "0");
-                        newFiveStarRating.put("avg_star", "0");
-                        newFiveStarRating.put("total_star", "0");
+                        newFiveStarRating.put("one_star", 0);
+                        newFiveStarRating.put("two_star", 0);
+                        newFiveStarRating.put("three_star", 0);
+                        newFiveStarRating.put("four_star", 0);
+                        newFiveStarRating.put("five_star", 0);
+                        newFiveStarRating.put("avg_star", 0);
+                        newFiveStarRating.put("total_star", 0);
 
                         newRating.put("stars", newFiveStarRating);
 
@@ -563,15 +565,16 @@ public class SusiSkill {
                 JSONObject newRating=new JSONObject();
                 newRating.put("negative", "0");
                 newRating.put("positive", "0");
+                newRating.put("feedback_count", 0);
 
                 JSONObject newFiveStarRating=new JSONObject();
-                newFiveStarRating.put("one_star", "0");
-                newFiveStarRating.put("two_star", "0");
-                newFiveStarRating.put("three_star", "0");
-                newFiveStarRating.put("four_star", "0");
-                newFiveStarRating.put("five_star", "0");
-                newFiveStarRating.put("avg_star", "0");
-                newFiveStarRating.put("total_star", "0");
+                newFiveStarRating.put("one_star", 0);
+                newFiveStarRating.put("two_star", 0);
+                newFiveStarRating.put("three_star", 0);
+                newFiveStarRating.put("four_star", 0);
+                newFiveStarRating.put("five_star", 0);
+                newFiveStarRating.put("avg_star", 0);
+                newFiveStarRating.put("total_star", 0);
 
                 newRating.put("stars", newFiveStarRating);
 
