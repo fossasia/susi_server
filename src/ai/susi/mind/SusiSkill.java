@@ -592,9 +592,9 @@ public class SusiSkill {
             e.printStackTrace();
         }
         if(attr!=null){
-            skillMetadata.put("creationTime: " , attr.creationTime());
-            skillMetadata.put("lastAccessTime: " , attr.lastAccessTime());
-            skillMetadata.put("lastModifiedTime: " , attr.lastModifiedTime());
+            skillMetadata.put("creationTime" , attr.creationTime());
+            skillMetadata.put("lastAccessTime" , attr.lastAccessTime());
+            skillMetadata.put("lastModifiedTime" , attr.lastModifiedTime());
         }
         return skillMetadata;
     }
