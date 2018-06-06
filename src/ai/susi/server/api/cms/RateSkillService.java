@@ -115,13 +115,17 @@ public class RateSkillService extends AbstractAPIHandler implements APIHandler {
         JSONObject skillName = new JSONObject();
         skillName.put("positive", "0");
         skillName.put("negative", "0");
-        skillName.put("one_star", "0");
-        skillName.put("two_star", "0");
-        skillName.put("three_star", "0");
-        skillName.put("four_star", "0");
-        skillName.put("five_star", "0");
-        skillName.put("avg_star", "0");
-        skillName.put("total_star", "0");
+        skillName.put("feedback_count", 1);
+
+        JSONObject skillStars = new JSONObject();
+
+        skillStars.put("one_star", 0);
+        skillStars.put("two_star", 0);
+        skillStars.put("three_star", 0);
+        skillStars.put("four_star", 0);
+        skillStars.put("five_star", 0);
+        skillStars.put("avg_star", 0);
+        skillStars.put("total_star", 0);
 
         skillName.put(skill_rate, skillName.getInt(skill_rate) + 1 + "");
         return skillName;

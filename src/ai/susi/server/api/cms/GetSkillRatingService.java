@@ -56,7 +56,7 @@ public class GetSkillRatingService extends AbstractAPIHandler implements APIHand
     }
 
     @Override
-    public ServiceResponse serviceImpl(Query call, HttpServletResponse response, Authorization rights, final JsonObjectWithDefault permissions) {
+    public ServiceResponse serviceImpl(Query call, HttpServletResponse response, Authorization rights, final JsonObjectWithDefault permissions) throws APIException {
 
         String model_name = call.get("model", "general");
         File model = new File(DAO.model_watch_dir, model_name);
@@ -68,12 +68,11 @@ public class GetSkillRatingService extends AbstractAPIHandler implements APIHand
         File skill = SusiSkill.getSkillFileInLanguage(language, skill_name, false);
 
         JSONObject result = new JSONObject();
-        result.put("accepted", false);
-        if (!skill.exists()) {
-            result.put("message", "skill does not exist");
-            return new ServiceResponse(result);
 
+        if (!skill.exists()) {
+            throw new APIException(422, "Skill does not exist.");
         }
+
         JsonTray skillRating = DAO.skillRating;
         if (skillRating.has(model_name)) {
             JSONObject modelName = skillRating.getJSONObject(model_name);
@@ -83,18 +82,19 @@ public class GetSkillRatingService extends AbstractAPIHandler implements APIHand
                     JSONObject  languageName = groupName.getJSONObject(language_name);
                     if (languageName.has(skill_name)) {
                         JSONObject skillName = languageName.getJSONObject(skill_name);
-                        result.put("skill_name", skill_name);
+
                         if (!skillName.has("stars")) {
                             JSONObject tempSkillStars=new JSONObject();
-                            tempSkillStars.put("one_star", "0");
-                            tempSkillStars.put("two_star", "0");
-                            tempSkillStars.put("three_star", "0");
-                            tempSkillStars.put("four_star", "0");
-                            tempSkillStars.put("five_star", "0");
-                            tempSkillStars.put("avg_star", "0");
-                            tempSkillStars.put("total_star", "0");
+                            tempSkillStars.put("one_star", 0);
+                            tempSkillStars.put("two_star", 0);
+                            tempSkillStars.put("three_star", 0);
+                            tempSkillStars.put("four_star", 0);
+                            tempSkillStars.put("five_star", 0);
+                            tempSkillStars.put("avg_star", 0);
+                            tempSkillStars.put("total_star", 0);
                             skillName.put("stars",tempSkillStars);
                         }
+                        result.put("skill_name", skill_name);
                         result.put("skill_rating", skillName);
                         result.put("accepted", true);
                         result.put("message", "Skill ratings fetched");
@@ -107,18 +107,18 @@ public class GetSkillRatingService extends AbstractAPIHandler implements APIHand
         JSONObject tempSkillRating = new JSONObject();
         tempSkillRating.put("negative", "0");
         tempSkillRating.put("positive", "0");
+        tempSkillRating.put("feedback_count", 0);
 
         JSONObject tempSkillStars=new JSONObject();
-        tempSkillStars.put("one_star", "0");
-        tempSkillStars.put("two_star", "0");
-        tempSkillStars.put("three_star", "0");
-        tempSkillStars.put("four_star", "0");
-        tempSkillStars.put("five_star", "0");
-        tempSkillStars.put("avg_star", "0");
-        tempSkillStars.put("total_star", "0");
+        tempSkillStars.put("one_star", 0);
+        tempSkillStars.put("two_star", 0);
+        tempSkillStars.put("three_star", 0);
+        tempSkillStars.put("four_star", 0);
+        tempSkillStars.put("five_star", 0);
+        tempSkillStars.put("avg_star", 0);
+        tempSkillStars.put("total_star", 0);
 
         tempSkillRating.put("stars", tempSkillStars);
-
 
         result.put("accepted", false);
         result.put("message", "Skill has not been rated yet");
