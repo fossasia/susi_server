@@ -70,15 +70,10 @@ public class FiveStarRateSkillService extends AbstractAPIHandler implements APIH
         String skill_name = call.get("skill", null);
         File skill = SusiSkill.getSkillFileInLanguage(language, skill_name, false);
         String skill_stars = call.get("stars", null);
-        String access_token = call.get("access_token", null);
 
         JSONObject result = new JSONObject();
         if (!skill.exists()) {
             throw new APIException(422, "Skill does not exist.");
-        }
-
-        if (access_token == null) {
-            throw new APIException(422, "Access token not given.");
         }
 
         if (skill_stars == null) {
