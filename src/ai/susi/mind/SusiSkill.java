@@ -55,6 +55,7 @@ public class SusiSkill {
     private String description;
     private String author;
     private String authorURL;
+    private String authorEmail;
     private String image;
     private String termsOfUse;
     private Set<String> examples;
@@ -151,6 +152,7 @@ public class SusiSkill {
     public SusiSkill() {
         this.author = null;
         this.authorURL = null;
+        this.authorEmail = null;
         this.description = null;
         this.examples = new LinkedHashSet<>();
         this.image = null;
@@ -175,7 +177,7 @@ public class SusiSkill {
         String lastLine = "", line = "";
         String bang_answers = "", bang_type = "", bang_term = ""; StringBuilder bang_bag = new StringBuilder();
         String example = "", tags = "", expect = "", description="", image="", skillName="", authorName= "",
-                authorURL = "", developerPrivacyPolicy = "", termsOfUse="";
+                authorURL = "", authorEmail = "", developerPrivacyPolicy = "", termsOfUse="";
         boolean prior = false, dynamicContent = false;
         int indentStep = 4; // like in python
         try {readloop: while ((line = br.readLine()) != null) {
@@ -301,6 +303,11 @@ public class SusiSkill {
                     authorName = line.substring(thenpos + 1).trim();
                     if(authorName.length() > 0)
                         json.put("author",authorName);
+                }
+                if (line.startsWith("::author_email") && (thenpos = line.indexOf(' ')) > 0) {
+                    authorEmail = line.substring(thenpos + 1).trim();
+                    if(authorEmail.length() > 0)
+                        json.put("author_email",authorEmail);
                 }
                 if (line.startsWith("::author_url") && (thenpos = line.indexOf(' ')) > 0) {
                     authorURL = line.substring(thenpos + 1).trim();
@@ -487,6 +494,7 @@ public class SusiSkill {
         skillMetadata.put("image", JSONObject.NULL);
         skillMetadata.put("author", JSONObject.NULL);
         skillMetadata.put("author_url", JSONObject.NULL);
+        skillMetadata.put("author_email", JSONObject.NULL);
         skillMetadata.put("skill_name", JSONObject.NULL);
         skillMetadata.put("terms_of_use", JSONObject.NULL);
         skillMetadata.put("dynamic_content", false);
@@ -508,6 +516,7 @@ public class SusiSkill {
                 skillMetadata.put("image", skill.getImage() ==null ? JSONObject.NULL: skill.getImage());
                 skillMetadata.put("author", skill.getAuthor()  ==null ? JSONObject.NULL:skill.getAuthor());
                 skillMetadata.put("author_url", skill.getAuthorURL() ==null ? JSONObject.NULL:skill.getAuthorURL());
+                skillMetadata.put("author_email", skill.getAuthorEmail() ==null ? JSONObject.NULL:skill.getAuthorEmail());
                 skillMetadata.put("terms_of_use", skill.getTermsOfUse() ==null ? JSONObject.NULL:skill.getTermsOfUse());
                 skillMetadata.put("dynamic_content", skill.getDynamicContent());
                 skillMetadata.put("examples", skill.getExamples() ==null ? JSONObject.NULL: skill.getExamples());
@@ -613,6 +622,10 @@ public class SusiSkill {
         this.authorURL = authorURL;
     }
 
+    public void setAuthorEmail(String authorEmail) {
+        this.authorEmail = authorEmail;
+    }
+
     public void setDescription(String description) {
         this.description = description;
     }
@@ -666,6 +679,10 @@ public class SusiSkill {
         return authorURL;
     }
 
+    public String getAuthorEmail() {
+        return authorEmail;
+    }
+
     public String getImage() {
         return image;
     }
@@ -697,6 +714,7 @@ public class SusiSkill {
         if (this.skillName != null) json.put("skill_name", this.skillName);
         if (this.author != null) json.put("author", this.author);
         if (this.authorURL != null) json.put("author_url", this.authorURL);
+        if (this.authorEmail != null) json.put("author_email", this.authorEmail);
         if (this.developerPrivacyPolicy != null) json.put("developer_privacy_policy", this.developerPrivacyPolicy);
         if (this.termsOfUse != null) json.put("terms_of_use", this.termsOfUse);
         if (this.dynamicContent != null) json.put("dynamic_content", this.dynamicContent);
