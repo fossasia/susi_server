@@ -93,7 +93,7 @@ import org.glassfish.jersey.servlet.ServletContainer;
 
 
 public class SusiServer {
-	
+
     public final static Set<String> blacklistedHosts = new ConcurrentHashSet<>();
 
     private static Server server = null;
@@ -132,56 +132,55 @@ public class SusiServer {
         for (Map.Entry<Object, Object> entry: customized_config_props.entrySet()) config.put((String) entry.getKey(), (String) entry.getValue());
         return config;
     }
-    
+
     public static int getServerThreads() {
         return server.getThreadPool().getThreads() - server.getThreadPool().getIdleThreads();
     }
-    
+
     public static String getServerURI() {
         return server.getURI().toASCIIString();
     }
-    
+
     public static void main(String[] args) throws Exception {
-    	System.setProperty("java.awt.headless", "true"); // no awt used here so we can switch off that stuff
-        
+        System.setProperty("java.awt.headless", "true"); // no awt used here so we can switch off that stuff
+
         // init config, log and elasticsearch
         Path data = FileSystems.getDefault().getPath("data");
         File dataFile = data.toFile();
         if (!dataFile.exists()) dataFile.mkdirs(); // should already be there since the start.sh script creates it
-        
+
         DAO.log("Starting SUSI initialization");
 
         // prepare shutdown signal
         File pid = new File(dataFile, "susi.pid");
         if (pid.exists()) pid.deleteOnExit(); // thats a signal for the stop.sh script that SUSI has terminated
-        
+
         // prepare signal for startup script
         File startup = new File(dataFile, "startup.tmp");
         if (startup.exists()){
-	        startup.deleteOnExit();
-	        FileWriter writer = new FileWriter(startup);
-			writer.write("startup");
-			writer.close();
+            startup.deleteOnExit();
+            FileWriter writer = new FileWriter(startup);
+            writer.write("startup");
+            writer.close();
         }
-        
-		
+
         // load the config file(s);
         Map<String, String> config = readConfig(data);
-        
+
         // set localhost pattern
         String server_localhost = config.get("server.localhost");
         if (server_localhost != null && server_localhost.length() > 0) {
             for (String h: server_localhost.split(",")) RemoteAccess.addLocalhost(h);
         }
-        
+
         // check for https modus
         switch(config.get("https.mode")){
-        	case "on": httpsMode = HttpsMode.ON; break;
-        	case "redirect": httpsMode = HttpsMode.REDIRECT; break;
-        	case "only": httpsMode = HttpsMode.ONLY; break;
-        	default: httpsMode = HttpsMode.OFF;
+            case "on": httpsMode = HttpsMode.ON; break;
+            case "redirect": httpsMode = HttpsMode.REDIRECT; break;
+            case "only": httpsMode = HttpsMode.ONLY; break;
+            default: httpsMode = HttpsMode.OFF;
         }
-        
+
         // get server ports
         Map<String, String> env = System.getenv();
         String httpPortS = config.get("port.http");
@@ -194,53 +193,53 @@ public class SusiServer {
         if(env.containsKey("PORTSSL")) {
             httpsPort = Integer.parseInt(env.get("PORTSSL"));
         }
-        
+
         // check if a SUSI service is already running on configured port
         try{
-        	checkServerPorts(httpPort, httpsPort);
+            checkServerPorts(httpPort, httpsPort);
         }
         catch(IOException e){
-        	DAO.severe(e.getMessage());
-			System.exit(-1);
+            DAO.severe(e.getMessage());
+            System.exit(-1);
         }
-        
+
         // initialize all data        
         try{
-        	DAO.init(config, data);
+            DAO.init(config, data);
         } catch(Exception e){
             e.printStackTrace();
-        	DAO.severe(e.getMessage());
-        	DAO.severe("Could not initialize DAO. Exiting.");
-        	System.exit(-1);
+            DAO.severe(e.getMessage());
+            DAO.severe("Could not initialize DAO. Exiting.");
+            System.exit(-1);
         }
-        
+
         // init the http server
         try {
-			setupHttpServer(httpPort, httpsPort);
-		} catch (Exception e) {
-			DAO.severe(e.getMessage());
-			System.exit(-1);
-		}
+            setupHttpServer(httpPort, httpsPort);
+        } catch (Exception e) {
+            DAO.severe(e.getMessage());
+            System.exit(-1);
+        }
         setServerHandler(dataFile);
-        
+
         SusiServer.server.start();
         SusiServer.caretaker = new Caretaker();
         SusiServer.caretaker.start();
-        
+
         // if this is not headless, we can open a browser automatically
         OS.openBrowser("http://127.0.0.1:" + httpPort);
-        
+
         DAO.log("Finished startup!");
-        
+
         // signal to startup script
         if (startup.exists()){
-        	FileWriter writer = new FileWriter(startup);
-			writer.write("done");
-			writer.close();
+            FileWriter writer = new FileWriter(startup);
+            writer.write("done");
+            writer.close();
         }
-        
+
         // ** services are now running **
-        
+
         // start a shutdown hook
         Runtime.getRuntime().addShutdownHook(new Thread() {
             public void run() {
@@ -261,66 +260,66 @@ public class SusiServer {
         });
 
         // ** wait for shutdown signal, do this with a kill HUP (default level 1, 'kill -1') signal **
-        
+
         SusiServer.server.join();
         DAO.log("Server terminated");
-        
+
         // After this, the jvm processes all shutdown hooks and terminates then.
         // The main termination line is therefore inside the shutdown hook.
     }
     
     //initiate http server
     private static void setupHttpServer(int httpPort, int httpsPort) throws Exception{
-    	QueuedThreadPool pool = new QueuedThreadPool();
+        QueuedThreadPool pool = new QueuedThreadPool();
         pool.setMaxThreads(500);
         SusiServer.server = new Server(pool);
         SusiServer.server.setStopAtShutdown(true);
-        
+
         //http
         if(!httpsMode.equals(HttpsMode.ONLY)){
-	        HttpConfiguration http_config = new HttpConfiguration();
-	        if(httpsMode.equals(HttpsMode.REDIRECT)) { //redirect
-	        	http_config.addCustomizer(new SecureRequestCustomizer());
-	        	http_config.setSecureScheme("https");
-	        	http_config.setSecurePort(httpsPort);
-	        }
-	        
-	        ServerConnector connector = new ServerConnector(SusiServer.server);
-	        connector.addConnectionFactory(new HttpConnectionFactory(http_config));
-	        connector.setPort(httpPort);
-	        connector.setName("httpd:" + httpPort);
-	        connector.setIdleTimeout(20000); // timout in ms when no bytes send / received
-	        SusiServer.server.addConnector(connector);
+            HttpConfiguration http_config = new HttpConfiguration();
+            if(httpsMode.equals(HttpsMode.REDIRECT)) { //redirect
+                http_config.addCustomizer(new SecureRequestCustomizer());
+                http_config.setSecureScheme("https");
+                http_config.setSecurePort(httpsPort);
+            }
+
+            ServerConnector connector = new ServerConnector(SusiServer.server);
+            connector.addConnectionFactory(new HttpConnectionFactory(http_config));
+            connector.setPort(httpPort);
+            connector.setName("httpd:" + httpPort);
+            connector.setIdleTimeout(20000); // timout in ms when no bytes send / received
+            SusiServer.server.addConnector(connector);
         }
-        
+
         //https
         //uncommented lines for http2 (jetty 9.3 / java 8)        
         if(httpsMode.isGreaterOrEqualTo(HttpsMode.ON)){
 
             DAO.log("HTTPS activated");
-        	
-        	String keySource = DAO.getConfig("https.keysource", "keystore");
+
+            String keySource = DAO.getConfig("https.keysource", "keystore");
             KeyStore keyStore;
-        	String keystoreManagerPass;
-        	
-        	//check for key source. Can be a java keystore or in pem format (gets converted automatically)
-        	if("keystore".equals(keySource)){
+            String keystoreManagerPass;
+
+            //check for key source. Can be a java keystore or in pem format (gets converted automatically)
+            if("keystore".equals(keySource)){
                 DAO.log("Loading keystore from disk");
 
-        		//use native keystore format
-        		
-        		File keystoreFile = new File(DAO.conf_dir, DAO.getConfig("keystore.name", "keystore.jks"));
-        		if(!keystoreFile.exists() || !keystoreFile.isFile() || !keystoreFile.canRead()){
-        			throw new Exception("Could not find keystore");
-        		}
-        		keyStore = KeyStore.getInstance(KeyStore.getDefaultType());
+                //use native keystore format
+
+                File keystoreFile = new File(DAO.conf_dir, DAO.getConfig("keystore.name", "keystore.jks"));
+                if(!keystoreFile.exists() || !keystoreFile.isFile() || !keystoreFile.canRead()){
+                    throw new Exception("Could not find keystore");
+                }
+                keyStore = KeyStore.getInstance(KeyStore.getDefaultType());
                 keyStore.load(new FileInputStream(keystoreFile.getAbsolutePath()), DAO.getConfig("keystore.password", "").toCharArray());
 
-        		keystoreManagerPass = DAO.getConfig("keystore.password", "");
-        	}
-        	else if ("key-cert".equals(keySource)){
+                keystoreManagerPass = DAO.getConfig("keystore.password", "");
+            }
+            else if ("key-cert".equals(keySource)){
                 DAO.log("Importing keystore from key/cert files");
-        		//use more common pem format as used by openssl
+                //use more common pem format as used by openssl
 
                 //generate random password
                 char[] chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789".toCharArray();
@@ -332,15 +331,15 @@ public class SusiServer {
                 }
                 String password = keystoreManagerPass = sb.toString();
 
-        		//get key and cert
-        		File keyFile = new File(DAO.getConfig("https.key", ""));
-        		if(!keyFile.exists() || !keyFile.isFile() || !keyFile.canRead()){
-        			throw new Exception("Could not find key file");
-        		}
-        		File certFile = new File(DAO.getConfig("https.cert", ""));
-        		if(!certFile.exists() || !certFile.isFile() || !certFile.canRead()){
-        			throw new Exception("Could not find cert file");
-        		}
+                //get key and cert
+                File keyFile = new File(DAO.getConfig("https.key", ""));
+                if(!keyFile.exists() || !keyFile.isFile() || !keyFile.canRead()){
+                    throw new Exception("Could not find key file");
+                }
+                File certFile = new File(DAO.getConfig("https.cert", ""));
+                if(!certFile.exists() || !certFile.isFile() || !certFile.canRead()){
+                    throw new Exception("Could not find cert file");
+                }
 
                 Security.addProvider(new org.bouncycastle.jce.provider.BouncyCastleProvider());
 
@@ -359,80 +358,77 @@ public class SusiServer {
                 keyStore.setCertificateEntry(cert.getSubjectX500Principal().getName(), cert);
                 keyStore.setKeyEntry("defaultKey",key, password.toCharArray(), new Certificate[] {cert});
 
-        		DAO.log("Successfully imported keystore from key/cert files");
-        	}
-        	else{
-        		throw new Exception("Invalid option for https.keysource");
-        	}
-        	        	
-        	
-        	HttpConfiguration https_config = new HttpConfiguration();
-	        https_config.addCustomizer(new SecureRequestCustomizer());
-	        
-	        HttpConnectionFactory http1 = new HttpConnectionFactory(https_config);
-	        //HTTP2ServerConnectionFactory http2 = new HTTP2ServerConnectionFactory(https_config);
-	        
-	        //NegotiatingServerConnectionFactory.checkProtocolNegotiationAvailable();
-	        //ALPNServerConnectionFactory alpn = new ALPNServerConnectionFactory();
-	        //alpn.setDefaultProtocol(http1.getProtocol());
+                DAO.log("Successfully imported keystore from key/cert files");
+            }
+            else{
+                throw new Exception("Invalid option for https.keysource");
+            }
 
-	        SslContextFactory sslContextFactory = new SslContextFactory();
+            HttpConfiguration https_config = new HttpConfiguration();
+            https_config.addCustomizer(new SecureRequestCustomizer());
+
+            HttpConnectionFactory http1 = new HttpConnectionFactory(https_config);
+            //HTTP2ServerConnectionFactory http2 = new HTTP2ServerConnectionFactory(https_config);
+
+            //NegotiatingServerConnectionFactory.checkProtocolNegotiationAvailable();
+            //ALPNServerConnectionFactory alpn = new ALPNServerConnectionFactory();
+            //alpn.setDefaultProtocol(http1.getProtocol());
+
+            SslContextFactory sslContextFactory = new SslContextFactory();
 
             sslContextFactory.setKeyStore(keyStore);
-	        sslContextFactory.setKeyManagerPassword(keystoreManagerPass);
-	        //sslContextFactory.setCipherComparator(HTTP2Cipher.COMPARATOR);
-	        //sslContextFactory.setUseCipherSuitesOrder(true);
-	        
-	        
-	        //SslConnectionFactory ssl = new SslConnectionFactory(sslContextFactory, alpn.getProtocol());
-	        SslConnectionFactory ssl = new SslConnectionFactory(sslContextFactory, "http/1.1");
-	        
-	        //ServerConnector sslConnector = new ServerConnector(SUSIServer.server, ssl, alpn, http2, http1);
-	        ServerConnector sslConnector = new ServerConnector(SusiServer.server, ssl, http1);
-	        sslConnector.setPort(httpsPort);
-	        sslConnector.setName("httpd:" + httpsPort);
-	        sslConnector.setIdleTimeout(20000); // timout in ms when no bytes send / received
-	        SusiServer.server.addConnector(sslConnector);
+            sslContextFactory.setKeyManagerPassword(keystoreManagerPass);
+            //sslContextFactory.setCipherComparator(HTTP2Cipher.COMPARATOR);
+            //sslContextFactory.setUseCipherSuitesOrder(true);
+
+            //SslConnectionFactory ssl = new SslConnectionFactory(sslContextFactory, alpn.getProtocol());
+            SslConnectionFactory ssl = new SslConnectionFactory(sslContextFactory, "http/1.1");
+
+            //ServerConnector sslConnector = new ServerConnector(SUSIServer.server, ssl, alpn, http2, http1);
+            ServerConnector sslConnector = new ServerConnector(SusiServer.server, ssl, http1);
+            sslConnector.setPort(httpsPort);
+            sslConnector.setName("httpd:" + httpsPort);
+            sslConnector.setIdleTimeout(20000); // timout in ms when no bytes send / received
+            SusiServer.server.addConnector(sslConnector);
         }
     }
 
     @SuppressWarnings("unchecked")
     private static void setServerHandler(File dataFile){
-    	
-    	
-    	// create security handler for http auth and http-to-https redirects
+
+        // create security handler for http auth and http-to-https redirects
         ConstraintSecurityHandler securityHandler = new ConstraintSecurityHandler();
-        
+
         boolean redirect = httpsMode.equals(HttpsMode.REDIRECT);
         boolean auth = "true".equals(DAO.getConfig("http.auth", "false"));
-        
-        if(redirect || auth){
-        	
-            org.eclipse.jetty.security.LoginService loginService = new org.eclipse.jetty.security.HashLoginService("SUSIRealm", DAO.conf_dir.getAbsolutePath() + "/http_auth");
-        	if(auth) SusiServer.server.addBean(loginService);
-        	
-        	Constraint constraint = new Constraint();
-        	if(redirect) constraint.setDataConstraint(Constraint.DC_CONFIDENTIAL);
-        	if(auth){
-	        	constraint.setAuthenticate(true);
-	            constraint.setRoles(new String[] { "user", "admin" });
-        	}
-        	
-        	
-        	//makes the constraint apply to all uri paths        
-        	ConstraintMapping mapping = new ConstraintMapping();
-        	mapping.setPathSpec( "/*" );
-        	mapping.setConstraint(constraint);
 
-        	securityHandler.addConstraintMapping(mapping);
-        	
-        	if(auth){
-	        	securityHandler.setAuthenticator(new BasicAuthenticator());
-	            securityHandler.setLoginService(loginService);
-        	}
-        	
-        	if(redirect) DAO.log("Activated http-to-https redirect");
-        	if(auth) DAO.log("Activated basic http auth");
+        if(redirect || auth){
+
+            org.eclipse.jetty.security.LoginService loginService = new org.eclipse.jetty.security.HashLoginService("SUSIRealm", DAO.conf_dir.getAbsolutePath() + "/http_auth");
+            if(auth) SusiServer.server.addBean(loginService);
+
+            Constraint constraint = new Constraint();
+            if(redirect) constraint.setDataConstraint(Constraint.DC_CONFIDENTIAL);
+            if(auth){
+                constraint.setAuthenticate(true);
+                constraint.setRoles(new String[] { "user", "admin" });
+            }
+
+
+            //makes the constraint apply to all uri paths        
+            ConstraintMapping mapping = new ConstraintMapping();
+            mapping.setPathSpec( "/*" );
+            mapping.setConstraint(constraint);
+
+            securityHandler.addConstraintMapping(mapping);
+
+            if(auth){
+                securityHandler.setAuthenticator(new BasicAuthenticator());
+                securityHandler.setLoginService(loginService);
+            }
+
+            if(redirect) DAO.log("Activated http-to-https redirect");
+            if(auth) DAO.log("Activated basic http auth");
         }
         
         // Setup IPAccessHandler for blacklists
@@ -545,10 +541,12 @@ public class SusiServer {
                 GetGroupDetails.class,
                 CreateGroupService.class,
                 GetAllGroups.class,
+
+                //Skill review classes
+                FiveStarRateSkillService.class,
                 GetSkillRatingService.class,
 
-                //5 star skill rating
-                FiveStarRateSkillService.class,
+                GetSkillFeedbackService.class,
 
                 //Get rating on a particular skill by a user
                 GetRatingByUser.class
@@ -561,10 +559,10 @@ public class SusiServer {
                 DAO.severe(service.getName() + " instantiation error", e);
                 e.printStackTrace();
             }
-        
+
         // susi api
         servletHandler.addServlet(UnansweredServlet.class, "/susi/unanswered.txt");
-        
+
         // aaa api
         servletHandler.addServlet(AccessServlet.class, "/aaa/access.json");
         servletHandler.addServlet(AccessServlet.class, "/aaa/access.html");
@@ -645,17 +643,17 @@ public class SusiServer {
     }
     
     private static void checkServerPorts(int httpPort, int httpsPort) throws IOException{
-    	
-    	// check http port
+
+        // check http port
         if(!httpsMode.equals(HttpsMode.ONLY)){
-	        ServerSocket ss = null;
-	        checkPort(httpPort, ss);
+            ServerSocket ss = null;
+            checkPort(httpPort, ss);
         }
 
         // check https port
         if(httpsMode.isGreaterOrEqualTo(HttpsMode.ON)){
-	        ServerSocket sss = null;
-	        checkPort(httpsPort, sss);
+            ServerSocket sss = null;
+            checkPort(httpsPort, sss);
         }
     }
 
