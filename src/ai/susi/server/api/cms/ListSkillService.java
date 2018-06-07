@@ -4,7 +4,6 @@ import ai.susi.DAO;
 import ai.susi.json.JsonObjectWithDefault;
 import ai.susi.mind.SusiSkill;
 import ai.susi.server.*;
-import com.sun.org.apache.xpath.internal.operations.Bool;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
