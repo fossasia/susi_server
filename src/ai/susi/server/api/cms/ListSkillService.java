@@ -119,7 +119,7 @@ public class ListSkillService extends AbstractAPIHandler implements APIHandler {
 
             if (filter_type.equals("date")) {
                 if (filter_name.equals("ascending")) {
-
+                    
                 } else {
 
                 }
@@ -162,6 +162,50 @@ public class ListSkillService extends AbstractAPIHandler implements APIHandler {
                                 //do nothing
                             }
                             return valB.compareTo(valA);
+                        }
+                    });
+                }
+            }
+            else if (filter_type.equals("rating")) {
+                if (filter_name.equals("ascending")) {
+                    Collections.sort(jsonValues, new Comparator<JSONObject>() {
+
+                        @Override
+                        public int compare(JSONObject a, JSONObject b) {
+                            float valA;
+                            float valB;
+                            int result=0;
+
+                            try {
+                                valA = Float.parseFloat(a.getJSONObject("skill_rating").getJSONObject("stars").getString("avg_star"));
+                                valB = Float.parseFloat(b.getJSONObject("skill_rating").getJSONObject("stars").getString("avg_star"));
+                                result = Float.compare(valA, valB);
+
+                            } catch (JSONException e) {
+                                //do nothing
+                            }
+                            return result;
+                        }
+                    });
+                }
+                else {
+                    Collections.sort(jsonValues, new Comparator<JSONObject>() {
+
+                        @Override
+                        public int compare(JSONObject a, JSONObject b) {
+                            float valA;
+                            float valB;
+                            int result=0;
+
+                            try {
+                                valA = Float.parseFloat(a.getJSONObject("skill_rating").getJSONObject("stars").getString("avg_star"));
+                                valB = Float.parseFloat(b.getJSONObject("skill_rating").getJSONObject("stars").getString("avg_star"));
+                                result = Float.compare(valB, valA);
+
+                            } catch (JSONException e) {
+                                //do nothing
+                            }
+                            return result;
                         }
                     });
                 }
