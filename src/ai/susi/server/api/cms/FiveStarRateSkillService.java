@@ -94,6 +94,7 @@ public class FiveStarRateSkillService extends AbstractAPIHandler implements APIH
             JSONArray skillName = new JSONArray();
 
             JSONObject ratingObject = new JSONObject();
+            JSONObject resultStars = new JSONObject();
             Boolean alreadyByUser = false;
 
             if (fiveStarSkillRating.has(model_name)) {
@@ -119,7 +120,7 @@ public class FiveStarRateSkillService extends AbstractAPIHandler implements APIH
                                     alreadyByUser = true;
 
                                     // Update the skillRating.json file that contains overview of the ratings.
-                                    updateSkillRatingsJSON(call, previousRating);
+                                    resultStars = updateSkillRatingsJSON(call, previousRating);
                                     break;
                                 }
                             }
@@ -135,7 +136,7 @@ public class FiveStarRateSkillService extends AbstractAPIHandler implements APIH
 
             if (!alreadyByUser) {
                 skillName.put(ratingObject);
-                addToSkillRatingJSON(call);
+                resultStars = addToSkillRatingJSON(call);
             }
 
             languageName.put(skill_name, skillName);
@@ -144,7 +145,7 @@ public class FiveStarRateSkillService extends AbstractAPIHandler implements APIH
             fiveStarSkillRating.put(model_name, modelName, true);
             result.put("accepted", true);
             result.put("message", "Skill ratings updated");
-            result.put("ratings", skill_stars);
+            result.put("ratings", resultStars);
             return new ServiceResponse(result);
         } else {
 
@@ -195,7 +196,7 @@ public class FiveStarRateSkillService extends AbstractAPIHandler implements APIH
     }
 
 
-    public void updateSkillRatingsJSON(Query call, Integer previousRating) {
+    public JSONObject updateSkillRatingsJSON(Query call, Integer previousRating) {
 
         String model_name = call.get("model", "general");
         String group_name = call.get("group", "Knowledge");
@@ -262,11 +263,11 @@ public class FiveStarRateSkillService extends AbstractAPIHandler implements APIH
         groupName.put(language_name, languageName);
         modelName.put(group_name, groupName);
         skillRating.put(model_name, modelName, true);
-        return;
+        return skillStars;
     }
 
 
-    public void addToSkillRatingJSON(Query call) {
+    public JSONObject addToSkillRatingJSON(Query call) {
         String model_name = call.get("model", "general");
         String group_name = call.get("group", "Knowledge");
         String language_name = call.get("language", "en");
@@ -350,16 +351,17 @@ public class FiveStarRateSkillService extends AbstractAPIHandler implements APIH
                         groupName.put(language_name, languageName);
                         modelName.put(group_name, groupName);
                         skillRating.put(model_name, modelName, true);
-                        return;
+                        return skillStars;
                     }
                 }
             }
         }
-
-        languageName.put(skill_name, createRatingObject(skill_stars));
+        skillName = createRatingObject(skill_stars);
+        skillStars = skillName.getJSONObject("stars");
+        languageName.put(skill_name, skillName);
         groupName.put(language_name, languageName);
         modelName.put(group_name, groupName);
         skillRating.put(model_name, modelName, true);
-        return;
+        return skillStars;
     }
 }
