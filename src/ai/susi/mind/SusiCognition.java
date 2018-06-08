@@ -24,7 +24,6 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.StandardOpenOption;
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.Date;
@@ -38,7 +37,6 @@ import org.json.JSONObject;
 import ai.susi.DAO;
 import ai.susi.server.ClientIdentity;
 import ai.susi.tools.DateParser;
-import scala.util.parsing.combinator.testing.Str;
 
 /**
  * An cognition is the combination of a query of a user with the response of susi.
