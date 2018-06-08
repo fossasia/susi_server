@@ -184,10 +184,13 @@ public class FiveStarRateSkillService extends AbstractAPIHandler implements APIH
 
         float totalStars = skillStars.getInt("one_star") + skillStars.getInt("two_star") + skillStars.getInt("three_star") + skillStars.getInt("four_star") + skillStars.getInt("five_star");
         float avgStar = (1 * skillStars.getInt("one_star") + 2 * skillStars.getInt("two_star") + 3 * skillStars.getInt("three_star") + 4 * skillStars.getInt("four_star") + 5 * skillStars.getInt("five_star")) / totalStars;
-        skillStars.put("total_star", Math.round(totalStars));
-        skillStars.put("avg_star", avgStar);
-        skillName.put("stars", skillStars);
 
+        // Format avgStar to keep 2 places after decimal
+        String roundAvgStars = String.format("%.02f", avgStar);
+
+        skillStars.put("total_star", Math.round(totalStars));
+        skillStars.put("avg_star", Float.parseFloat(roundAvgStars));
+        skillName.put("stars", skillStars);
         return skillName;
     }
 
@@ -245,7 +248,11 @@ public class FiveStarRateSkillService extends AbstractAPIHandler implements APIH
 
                         float totalStars = skillStars.getInt("one_star") + skillStars.getInt("two_star") + skillStars.getInt("three_star") + skillStars.getInt("four_star") + skillStars.getInt("five_star");
                         float avgStar = (1 * skillStars.getInt("one_star") + 2 * skillStars.getInt("two_star") + 3 * skillStars.getInt("three_star") + 4 * skillStars.getInt("four_star") + 5 * skillStars.getInt("five_star")) / totalStars;
-                        skillStars.put("avg_star", avgStar);
+
+                        // Format avgStar to keep 2 places after decimal
+                        String roundAvgStars = String.format("%.02f", avgStar);
+
+                        skillStars.put("avg_star", Float.parseFloat(roundAvgStars));
                     }
                 }
             }
@@ -299,8 +306,12 @@ public class FiveStarRateSkillService extends AbstractAPIHandler implements APIH
 
                             float totalStars = skillStars.getInt("one_star") + skillStars.getInt("two_star") + skillStars.getInt("three_star") + skillStars.getInt("four_star") + skillStars.getInt("five_star");
                             float avgStar = (1 * skillStars.getInt("one_star") + 2 * skillStars.getInt("two_star") + 3 * skillStars.getInt("three_star") + 4 * skillStars.getInt("four_star") + 5 * skillStars.getInt("five_star")) / totalStars;
+
+                            // Format avgStar to keep 2 places after decimal
+                            String roundAvgStars = String.format("%.02f", avgStar);
+
                             skillStars.put("total_star", Math.round(totalStars));
-                            skillStars.put("avg_star", avgStar);
+                            skillStars.put("avg_star", Float.parseFloat(roundAvgStars));
                             skillName.put("stars", skillStars);
                         } else {
 
@@ -326,8 +337,12 @@ public class FiveStarRateSkillService extends AbstractAPIHandler implements APIH
 
                             float totalStars = skillStars.getInt("one_star") + skillStars.getInt("two_star") + skillStars.getInt("three_star") + skillStars.getInt("four_star") + skillStars.getInt("five_star");
                             float avgStar = (1 * skillStars.getInt("one_star") + 2 * skillStars.getInt("two_star") + 3 * skillStars.getInt("three_star") + 4 * skillStars.getInt("four_star") + 5 * skillStars.getInt("five_star")) / totalStars;
+
+                            // Format avgStar to keep 2 places after decimal
+                            String roundAvgStars = String.format("%.02f", avgStar);
+
                             skillStars.put("total_star", Math.round(totalStars));
-                            skillStars.put("avg_star", avgStar);
+                            skillStars.put("avg_star", Float.parseFloat(roundAvgStars));
                             skillName.put("stars", skillStars);
                         }
 
