@@ -349,7 +349,7 @@ public class SusiMind {
     
     /**
      * react on a user input: this causes the selection of deduction intents and the evaluation of the process steps
-     * in every intent up to the moment where enough intents have been applied as consideration. The reaobservationction may also
+     * in every intent up to the moment where enough intents have been applied as consideration. The reaction may also
      * cause the evaluation of operational steps which may cause learning effects within the SusiMind.
      * @param query the user input
      * @param maxcount the maximum number of answers (typical is only one)
