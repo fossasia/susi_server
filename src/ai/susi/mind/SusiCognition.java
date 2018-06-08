@@ -24,11 +24,13 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.StandardOpenOption;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.Date;
 import java.util.List;
 
+import ai.susi.json.JsonTray;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -36,6 +38,7 @@ import org.json.JSONObject;
 import ai.susi.DAO;
 import ai.susi.server.ClientIdentity;
 import ai.susi.tools.DateParser;
+import scala.util.parsing.combinator.testing.Str;
 
 /**
  * An cognition is the combination of a query of a user with the response of susi.
@@ -48,6 +51,7 @@ public class SusiCognition {
             final String query,
             int timezoneOffset,
             double latitude, double longitude,
+            String countryCode, String countryName,
             String languageName,
             int maxcount, ClientIdentity identity,
             final SusiMind... minds) {
@@ -64,6 +68,7 @@ public class SusiCognition {
             observation.addObservation("latitude", Double.toString(latitude));
             observation.addObservation("longitude", Double.toString(longitude));
         }
+
         
         SusiLanguage language = SusiLanguage.parse(languageName);
         if (language != SusiLanguage.unknown) observation.addObservation("language", language.name());
@@ -75,6 +80,19 @@ public class SusiCognition {
         // compute the mind's reaction: here we compute with a hierarchy of minds. The dispute is taken from the relevant mind level that was able to compute the dispute
         List<SusiThought> dispute = SusiMind.reactMinds(query, language, maxcount, client, observation, minds);
         long answer_date = System.currentTimeMillis();
+
+        if (!countryCode.equals("") && !countryName.equals("")) {
+            List<String> skills = dispute.get(0).getSkills();
+            for (String skill : skills) {
+                try {
+                    updateCountryWiseUsageData(skill, countryCode, countryName);
+                }
+                catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+
         
         // store answer and actions into json
         this.json.put("answers", new JSONArray(dispute));
@@ -82,7 +100,69 @@ public class SusiCognition {
         this.json.put("answer_time", answer_date - query_date);
         this.json.put("language", language.name());
     }
-    
+
+    private void updateCountryWiseUsageData(String skillPath, String countryCode, String countryName) {
+        String skillInfo[] = skillPath.split("/");
+        String model_name = skillInfo[3];
+        String group_name = skillInfo[4];
+        String language_name = skillInfo[5];
+        String skill_name = skillInfo[6].split("\\.")[0];
+        JsonTray skillUsage = DAO.countryWiseSkillUsage;
+        JSONObject modelName = new JSONObject();
+        JSONObject groupName = new JSONObject();
+        JSONObject languageName = new JSONObject();
+        if (skillUsage.has(model_name)) {
+            modelName = skillUsage.getJSONObject(model_name);
+            if (modelName.has(group_name)) {
+                groupName = modelName.getJSONObject(group_name);
+                if (groupName.has(language_name)) {
+                    languageName = groupName.getJSONObject(language_name);
+                    if (languageName.has(skill_name)) {
+                        JSONArray countryWiseUsageData = languageName.getJSONArray(skill_name);
+                        Boolean countryExists = false;
+                        for (int i = 0; i<countryWiseUsageData.length(); i++) {
+                            JSONObject countryUsage = countryWiseUsageData.getJSONObject(i);
+                            if (countryUsage.get("country_code").equals(countryCode)){
+                                countryUsage.put("count", countryUsage.getInt("count")+1);
+                                countryWiseUsageData.put(i,countryUsage);
+                                countryExists = true;
+                                break;
+                            }
+                        }
+
+                        if (!countryExists) {
+                            JSONObject countryUsage = new JSONObject();
+                            countryUsage.put("country_code", countryCode);
+                            countryUsage.put("country_name", countryName);
+                            countryUsage.put("count", "1");
+                            countryWiseUsageData.put(countryUsage);
+                        }
+
+
+
+                        languageName.put(skill_name, countryWiseUsageData);
+                        groupName.put(language_name, languageName);
+                        modelName.put(group_name, groupName);
+                        skillUsage.put(model_name, modelName, true);
+                        return;
+
+                    }
+                }
+            }
+        }
+        JSONArray countryWiseUsageData = new JSONArray();
+        JSONObject countryUsage = new JSONObject();
+        countryUsage.put("country_code", countryCode);
+        countryUsage.put("country_name", countryName);
+        countryUsage.put("count", "1");
+        countryWiseUsageData.put(countryUsage);
+        languageName.put(skill_name, countryWiseUsageData);
+        groupName.put(language_name, languageName);
+        modelName.put(group_name, groupName);
+        skillUsage.put(model_name, modelName, true);
+        return;
+    }
+
     public SusiCognition(JSONObject json) {
         this.json = json;
     }
