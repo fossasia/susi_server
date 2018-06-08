@@ -159,6 +159,7 @@ public class ListSkillService extends AbstractAPIHandler implements APIHandler {
                                 valA = a.get(KEY_NAME).toString();
                                 valB = b.get(KEY_NAME).toString();
                             } catch (JSONException e) {
+                                e.getMessage();
                                 //do nothing
                             }
                             return valB.compareTo(valA);
@@ -177,12 +178,12 @@ public class ListSkillService extends AbstractAPIHandler implements APIHandler {
                             int result=0;
 
                             try {
-                                valA = Float.parseFloat(a.getJSONObject("skill_rating").getJSONObject("stars").getString("avg_star"));
-                                valB = Float.parseFloat(b.getJSONObject("skill_rating").getJSONObject("stars").getString("avg_star"));
+                                valA = a.getJSONObject("skill_rating").getJSONObject("stars").getFloat("avg_star");
+                                valB = b.getJSONObject("skill_rating").getJSONObject("stars").getFloat("avg_star");
                                 result = Float.compare(valA, valB);
 
                             } catch (JSONException e) {
-                                //do nothing
+                                e.printStackTrace();
                             }
                             return result;
                         }
@@ -198,12 +199,12 @@ public class ListSkillService extends AbstractAPIHandler implements APIHandler {
                             int result=0;
 
                             try {
-                                valA = Float.parseFloat(a.getJSONObject("skill_rating").getJSONObject("stars").getString("avg_star"));
-                                valB = Float.parseFloat(b.getJSONObject("skill_rating").getJSONObject("stars").getString("avg_star"));
+                                valA = a.getJSONObject("skill_rating").getJSONObject("stars").getFloat("avg_star");
+                                valB = b.getJSONObject("skill_rating").getJSONObject("stars").getFloat("avg_star");
                                 result = Float.compare(valB, valA);
 
                             } catch (JSONException e) {
-                                //do nothing
+                                e.printStackTrace();
                             }
                             return result;
                         }
