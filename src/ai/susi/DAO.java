@@ -115,6 +115,7 @@ public class DAO {
     public static JsonTray countryWiseSkillUsage;
     public static JsonTray skillUsage;
     public static JsonTray feedbackSkill;
+    public static JsonTray profileDetails;
 
 
     static {
@@ -257,6 +258,14 @@ public class DAO {
         OS.protectPath(skillRating_per);
         OS.protectPath(skillRating_vol);
 
+        /*Profile Details storage*/
+        Path susi_profile_details_dir = dataPath.resolve("profile");
+        susi_profile_details_dir.toFile().mkdirs();
+        Path profileDetails_per = susi_profile_details_dir.resolve("profileDetails.json");
+        Path profileDetails_vol = susi_profile_details_dir.resolve("profileDetails_session.json");
+        profileDetails = new JsonTray(profileDetails_per.toFile(), profileDetails_vol.toFile(), 1000000);
+        OS.protectPath(profileDetails_per);
+        OS.protectPath(profileDetails_vol);
 
         //5 Star Skill Rating storage
         Path fiveStarSkillRating_per = susi_skill_rating_dir.resolve("fiveStarSkillRating.json");
