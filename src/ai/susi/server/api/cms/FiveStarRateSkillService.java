@@ -258,6 +258,7 @@ public class FiveStarRateSkillService extends AbstractAPIHandler implements APIH
                 }
             }
         }
+
         skillName.put("stars", skillStars);
         languageName.put(skill_name, skillName);
         groupName.put(language_name, languageName);
