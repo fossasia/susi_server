@@ -52,6 +52,7 @@ import ai.susi.mind.SusiInference.Type;
 public class SusiSkill {
 
     private String skillName;
+    private Boolean privateSkill;
     private String description;
     private String author;
     private String authorURL;
@@ -157,6 +158,7 @@ public class SusiSkill {
         this.examples = new LinkedHashSet<>();
         this.image = null;
         this.skillName = null;
+        this.privateSkill = false;
         this.termsOfUse = null;
         this.developerPrivacyPolicy = null;
         this.dynamicContent = false;
@@ -178,7 +180,7 @@ public class SusiSkill {
         String bang_answers = "", bang_type = "", bang_term = ""; StringBuilder bang_bag = new StringBuilder();
         String example = "", tags = "", expect = "", description="", image="", skillName="", authorName= "",
                 authorURL = "", authorEmail = "", developerPrivacyPolicy = "", termsOfUse="";
-        boolean prior = false, dynamicContent = false;
+        boolean prior = false, dynamicContent = false, privateSkill = false;
         int indentStep = 4; // like in python
         try {readloop: while ((line = br.readLine()) != null) {
             String linebeforetrim = line;
@@ -298,6 +300,10 @@ public class SusiSkill {
                     skillName = line.substring(thenpos + 1).trim();
                     if(skillName.length() > 0)
                         json.put("skill_name",skillName);
+                }
+                if (line.startsWith("::private_skill") && (thenpos = line.indexOf(' ')) > 0) {
+                    if (line.substring(thenpos + 1).trim().equalsIgnoreCase("yes")) privateSkill=true;
+                    json.put("private_skill",privateSkill);
                 }
                 if (line.startsWith("::author") && (!line.startsWith("::author_url")) && (thenpos = line.indexOf(' ')) > 0) {
                     authorName = line.substring(thenpos + 1).trim();
@@ -496,6 +502,7 @@ public class SusiSkill {
         skillMetadata.put("author_url", JSONObject.NULL);
         skillMetadata.put("author_email", JSONObject.NULL);
         skillMetadata.put("skill_name", JSONObject.NULL);
+        skillMetadata.put("private_skill", false);
         skillMetadata.put("terms_of_use", JSONObject.NULL);
         skillMetadata.put("dynamic_content", false);
         skillMetadata.put("examples", JSONObject.NULL);
@@ -511,6 +518,7 @@ public class SusiSkill {
                     skillid.hasName(skillname)) {
 
                 skillMetadata.put("skill_name", skill.getSkillName() ==null ? JSONObject.NULL: skill.getSkillName());
+                skillMetadata.put("private_skill", skill.getPrivateSkill());
                 skillMetadata.put("developer_privacy_policy", skill.getDeveloperPrivacyPolicy() ==null ? JSONObject.NULL:skill.getDeveloperPrivacyPolicy());
                 skillMetadata.put("descriptions", skill.getDescription() ==null ? JSONObject.NULL:skill.getDescription());
                 skillMetadata.put("image", skill.getImage() ==null ? JSONObject.NULL: skill.getImage());
@@ -654,6 +662,10 @@ public class SusiSkill {
         this.skillName = skillName;
     }
 
+    public void setPrivateSkill(Boolean privateSkill) {
+        this.privateSkill = privateSkill;
+    }
+
     public void setTermsOfUse(String termsOfUse) {
         this.termsOfUse = termsOfUse;
     }
@@ -691,6 +703,10 @@ public class SusiSkill {
         return skillName;
     }
 
+    public Boolean getPrivateSkill() {
+        return privateSkill;
+    }
+
     public String getTermsOfUse() {
         return termsOfUse;
     }
@@ -712,6 +728,7 @@ public class SusiSkill {
         if (this.description != null) json.put("description", this.description);
         if (this.image != null) json.put("image", this.image);
         if (this.skillName != null) json.put("skill_name", this.skillName);
+        if (this.privateSkill != null) json.put("private_skill", this.privateSkill);
         if (this.author != null) json.put("author", this.author);
         if (this.authorURL != null) json.put("author_url", this.authorURL);
         if (this.authorEmail != null) json.put("author_email", this.authorEmail);
