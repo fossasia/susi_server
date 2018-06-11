@@ -6,12 +6,12 @@
  *  modify it under the terms of the GNU Lesser General Public
  *  License as published by the Free Software Foundation; either
  *  version 2.1 of the License, or (at your option) any later version.
- *  
+ *
  *  This library is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  *  Lesser General Public License for more details.
- *  
+ *
  *  You should have received a copy of the GNU Lesser General Public License
  *  along with this program in the file lgpl21.txt
  *  If not, see <http://www.gnu.org/licenses/>.
@@ -267,7 +267,7 @@ public class SusiServer {
         // After this, the jvm processes all shutdown hooks and terminates then.
         // The main termination line is therefore inside the shutdown hook.
     }
-    
+
     //initiate http server
     private static void setupHttpServer(int httpPort, int httpsPort) throws Exception{
         QueuedThreadPool pool = new QueuedThreadPool();
@@ -413,9 +413,8 @@ public class SusiServer {
                 constraint.setAuthenticate(true);
                 constraint.setRoles(new String[] { "user", "admin" });
             }
-
-
-            //makes the constraint apply to all uri paths        
+          
+            //makes the constraint apply to all uri paths
             ConstraintMapping mapping = new ConstraintMapping();
             mapping.setPathSpec( "/*" );
             mapping.setConstraint(constraint);
@@ -430,7 +429,7 @@ public class SusiServer {
             if(redirect) DAO.log("Activated http-to-https redirect");
             if(auth) DAO.log("Activated basic http auth");
         }
-        
+
         // Setup IPAccessHandler for blacklists
         IPAccessHandler ipaccess = new IPAccessHandler();
         String blacklist = DAO.getConfig("server.blacklist", "");
@@ -445,7 +444,7 @@ public class SusiServer {
         } catch (IllegalArgumentException e) {
             DAO.severe("bad blacklist:" + blacklist, e);
         }
-        
+
         WebAppContext htrootContext = new WebAppContext();
         htrootContext.setContextPath("/");
 
@@ -509,13 +508,13 @@ public class SusiServer {
                 SkillsToBeDeleted.class,
                 GetSkillDataUrl.class,
                 UndoDeleteSkillService.class,
-                
+
                 // monitoring services
                 MonitorQueryService.class,
                 MonitorAnnotationsService.class,
                 MonitorSearchService.class,
                 MonitorTestService.class,
-                
+
                 // susi search aggregation services
                 ConsoleService.class,
                 RSSReaderService.class,
@@ -524,10 +523,10 @@ public class SusiServer {
                 MindService.class,
                 UserService.class,
                 GetAllUserroles.class,
-                
+
                 // learning services
                 ConsoleLearning.class,
-                
+
                 // services
                 EmailSenderService.class,
 
@@ -551,7 +550,10 @@ public class SusiServer {
                 //Get rating on a particular skill by a user
                 GetRatingByUser.class,
 
-                // Feedback to skill
+                //Skill usage data
+                GetSkillUsageService.class,
+
+                //Feedback to skill
                 FeedbackSkillService.class
         };
         for (Class<? extends Servlet> service: services)
@@ -571,7 +573,7 @@ public class SusiServer {
         servletHandler.addServlet(AccessServlet.class, "/aaa/access.txt");
         servletHandler.addServlet(Sitemap.class, "/sitemap.xml");
         servletHandler.addServlet(ThreaddumpServlet.class, "/threaddump.txt");
-        
+
         // aggregation api
         servletHandler.addServlet(GenericScraper.class, "/susi/genericscraper.json");
 
@@ -643,7 +645,7 @@ public class SusiServer {
         SusiServer.server.setHandler(multipartConfigInjectionHandler);
 
     }
-    
+
     private static void checkServerPorts(int httpPort, int httpsPort) throws IOException{
 
         // check http port
