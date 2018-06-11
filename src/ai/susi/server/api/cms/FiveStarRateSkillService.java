@@ -148,7 +148,6 @@ public class FiveStarRateSkillService extends AbstractAPIHandler implements APIH
             result.put("ratings", resultStars);
             return new ServiceResponse(result);
         } else {
-
             throw new APIException(422, "Access token not given.");
         }
     }
