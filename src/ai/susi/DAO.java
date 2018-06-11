@@ -109,8 +109,12 @@ public class DAO {
     private static JsonFile login_keys;
     public static JsonTray chatbotClients;
     public static JsonTray group;
+
+    //CMS Schema for server usage
     public static JsonTray skillRating;
     public static JsonTray fiveStarSkillRating;
+    public static JsonTray skillUsage;
+    public static JsonTray feedbackSkill;
 
     static {
         PatternLayout layout = new PatternLayout("%d{yyyy-MM-dd HH:mm:ss.SSS} %p %c %x - %m%n");
@@ -171,7 +175,7 @@ public class DAO {
             susi.addWatchpath(system_skills_localmode);
             susi.addWatchpath(susi_generic_skills_media_discovery);
         }
-                
+
         // initialize the memory as a background task to prevent that this blocks too much
         new Thread() {
             public void run() {
@@ -268,6 +272,22 @@ public class DAO {
         chatbotClients = new JsonTray(chatbotClients_per.toFile(), chatbotClients_vol.toFile(), 1000000);
         OS.protectPath(chatbotClients_per);
         OS.protectPath(chatbotClients_vol);
+
+        // Skill usage storage
+        Path susi_skill_usage_dir = dataPath.resolve("skill_usage");
+        susi_skill_usage_dir.toFile().mkdirs();
+        Path skillUsage_per = susi_skill_usage_dir.resolve("skillUsage.json");
+        Path skillUsage_vol = susi_skill_usage_dir.resolve("skillUsage_session.json");
+        skillUsage = new JsonTray(skillUsage_per.toFile(), skillUsage_vol.toFile(), 1000000);
+        OS.protectPath(skillUsage_per);
+        OS.protectPath(skillUsage_vol);
+
+        //Feedback Skill storage
+        Path feedbackSkill_per = susi_skill_rating_dir.resolve("feedbackSkill.json");
+        Path feedbackSkill_vol = susi_skill_rating_dir.resolve("feedbackSkill_session.json");
+        feedbackSkill = new JsonTray(feedbackSkill_per.toFile(), feedbackSkill_vol.toFile(), 1000000);
+        OS.protectPath(feedbackSkill_per);
+        OS.protectPath(feedbackSkill_vol);
 
         // open index
         Path index_dir = dataPath.resolve("index");
