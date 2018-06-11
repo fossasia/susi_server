@@ -24,6 +24,7 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.StandardOpenOption;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.Date;
@@ -78,7 +79,8 @@ public class SusiCognition {
         // compute the mind's reaction: here we compute with a hierarchy of minds. The dispute is taken from the relevant mind level that was able to compute the dispute
         List<SusiThought> dispute = SusiMind.reactMinds(query, language, maxcount, client, observation, minds);
         long answer_date = System.currentTimeMillis();
-
+        
+        // update country wise skill usage data
         if (!countryCode.equals("") && !countryName.equals("")) {
             List<String> skills = dispute.get(0).getSkills();
             for (String skill : skills) {
@@ -91,6 +93,16 @@ public class SusiCognition {
             }
         }
 
+        // update skill usage data
+        List<String> skills = dispute.get(0).getSkills();
+        for (String skill : skills) {
+            try {
+                updateUsageData(skill);
+            }
+            catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
         
         // store answer and actions into json
         this.json.put("answers", new JSONArray(dispute));
@@ -144,6 +156,53 @@ public class SusiCognition {
         }
 
         languageName.put(skill_name, countryWiseUsageData);
+        groupName.put(language_name, languageName);
+        modelName.put(group_name, groupName);
+        skillUsage.put(model_name, modelName, true);
+        return;
+    }  
+  
+    public void updateUsageData(String skillPath) {
+        String skillInfo[] = skillPath.split("/");
+        String model_name = skillInfo[3];
+        String group_name = skillInfo[4];
+        String language_name = skillInfo[5];
+        String skill_name = skillInfo[6].split("\\.")[0];
+        JsonTray skillUsage = DAO.skillUsage;
+        JSONObject modelName = new JSONObject();
+        JSONObject groupName = new JSONObject();
+        JSONObject languageName = new JSONObject();
+        JSONArray usageData = new JSONArray();
+        Boolean dateExists = false;
+        JSONObject dayUsage = new JSONObject();
+        String today = LocalDate.now().toString();
+        if (skillUsage.has(model_name)) {
+            modelName = skillUsage.getJSONObject(model_name);
+            if (modelName.has(group_name)) {
+                groupName = modelName.getJSONObject(group_name);
+                if (groupName.has(language_name)) {
+                    languageName = groupName.getJSONObject(language_name);
+                    if (languageName.has(skill_name)) {
+                        usageData = languageName.getJSONArray(skill_name);
+                        for (int i = 0; i<usageData.length(); i++) {
+                            dayUsage = usageData.getJSONObject(i);
+                            if (dayUsage.get("date").equals(today)){
+                                dayUsage.put("count", dayUsage.getInt("count")+1+"");
+                                usageData.put(i,dayUsage);
+                                dateExists = true;
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        dayUsage.put("date", today);
+        dayUsage.put("count", "1");
+        if (!dateExists) {
+            usageData.put(dayUsage);
+        }
+        languageName.put(skill_name, usageData);
         groupName.put(language_name, languageName);
         modelName.put(group_name, groupName);
         skillUsage.put(model_name, modelName, true);

@@ -113,6 +113,7 @@ public class DAO {
     public static JsonTray skillRating;
     public static JsonTray fiveStarSkillRating;
     public static JsonTray countryWiseSkillUsage;
+    public static JsonTray skillUsage;
     public static JsonTray feedbackSkill;
 
 
@@ -175,7 +176,7 @@ public class DAO {
             susi.addWatchpath(system_skills_localmode);
             susi.addWatchpath(susi_generic_skills_media_discovery);
         }
-                
+
         // initialize the memory as a background task to prevent that this blocks too much
         new Thread() {
             public void run() {
@@ -272,6 +273,15 @@ public class DAO {
         countryWiseSkillUsage = new JsonTray(countryWiseSkillUsage_per.toFile(), countryWiseSkillUsage_vol.toFile(), 1000000);
         OS.protectPath(countryWiseSkillUsage_per);
         OS.protectPath(countryWiseSkillUsage_vol);
+
+        // Skill usage storage
+        Path susi_skill_usage_dir = dataPath.resolve("skill_usage");
+        susi_skill_usage_dir.toFile().mkdirs();
+        Path skillUsage_per = susi_skill_usage_dir.resolve("skillUsage.json");
+        Path skillUsage_vol = susi_skill_usage_dir.resolve("skillUsage_session.json");
+        skillUsage = new JsonTray(skillUsage_per.toFile(), skillUsage_vol.toFile(), 1000000);
+        OS.protectPath(skillUsage_per);
+        OS.protectPath(skillUsage_vol);
 
         //Feedback Skill storage
         Path feedbackSkill_per = susi_skill_rating_dir.resolve("feedbackSkill.json");
