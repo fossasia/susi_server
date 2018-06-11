@@ -81,7 +81,7 @@ public class GetCountryWiseSkillUsageService extends AbstractAPIHandler implemen
             if (modelName.has(group_name)) {
                 JSONObject groupName = modelName.getJSONObject(group_name);
                 if (groupName.has(language_name)) {
-                    JSONObject  languageName = groupName.getJSONObject(language_name);
+                    JSONObject languageName = groupName.getJSONObject(language_name);
                     if (languageName.has(skill_name)) {
                         JSONArray countryWiseSkillUsage = languageName.getJSONArray(skill_name);
                         result.put("skill_name", skill_name);

@@ -109,6 +109,9 @@ public class SusiCognition {
         JSONObject modelName = new JSONObject();
         JSONObject groupName = new JSONObject();
         JSONObject languageName = new JSONObject();
+        JSONArray countryWiseUsageData =new JSONArray();
+        JSONObject countryUsage = new JSONObject();
+        Boolean countryExists = false;
         if (skillUsage.has(model_name)) {
             modelName = skillUsage.getJSONObject(model_name);
             if (modelName.has(group_name)) {
@@ -116,44 +119,30 @@ public class SusiCognition {
                 if (groupName.has(language_name)) {
                     languageName = groupName.getJSONObject(language_name);
                     if (languageName.has(skill_name)) {
-                        JSONArray countryWiseUsageData = languageName.getJSONArray(skill_name);
-                        Boolean countryExists = false;
-                        for (int i = 0; i<countryWiseUsageData.length(); i++) {
-                            JSONObject countryUsage = countryWiseUsageData.getJSONObject(i);
-                            if (countryUsage.get("country_code").equals(countryCode)){
+
+                        countryWiseUsageData = languageName.getJSONArray(skill_name);
+
+                        for (int i = 0; i < countryWiseUsageData.length(); i++) {
+                            countryUsage = countryWiseUsageData.getJSONObject(i);
+                            if (countryUsage.get("country_code").equals(countryCode)) {
                                 countryUsage.put("count", countryUsage.getInt("count")+1);
                                 countryWiseUsageData.put(i,countryUsage);
                                 countryExists = true;
                                 break;
                             }
                         }
-
-                        if (!countryExists) {
-                            JSONObject countryUsage = new JSONObject();
-                            countryUsage.put("country_code", countryCode);
-                            countryUsage.put("country_name", countryName);
-                            countryUsage.put("count", "1");
-                            countryWiseUsageData.put(countryUsage);
-                        }
-
-
-
-                        languageName.put(skill_name, countryWiseUsageData);
-                        groupName.put(language_name, languageName);
-                        modelName.put(group_name, groupName);
-                        skillUsage.put(model_name, modelName, true);
-                        return;
-
                     }
                 }
             }
         }
-        JSONArray countryWiseUsageData = new JSONArray();
-        JSONObject countryUsage = new JSONObject();
         countryUsage.put("country_code", countryCode);
         countryUsage.put("country_name", countryName);
-        countryUsage.put("count", "1");
-        countryWiseUsageData.put(countryUsage);
+        countryUsage.put("count", 1);
+
+        if (!countryExists) {
+            countryWiseUsageData.put(countryUsage);
+        }
+
         languageName.put(skill_name, countryWiseUsageData);
         groupName.put(language_name, languageName);
         modelName.put(group_name, groupName);
