@@ -108,8 +108,11 @@ public class DAO {
     public  static JsonTray passwordreset;
     private static JsonFile login_keys;
     public static JsonTray group;
+
+    //CMS Schema for server usage
     public static JsonTray skillRating;
     public static JsonTray fiveStarSkillRating;
+    public static JsonTray feedbackSkill;
 
     static {
         PatternLayout layout = new PatternLayout("%d{yyyy-MM-dd HH:mm:ss.SSS} %p %c %x - %m%n");
@@ -258,6 +261,13 @@ public class DAO {
         fiveStarSkillRating = new JsonTray(fiveStarSkillRating_per.toFile(), fiveStarSkillRating_vol.toFile(), 1000000);
         OS.protectPath(fiveStarSkillRating_per);
         OS.protectPath(fiveStarSkillRating_vol);
+
+        //Feedback Skill storage
+        Path feedbackSkill_per = susi_skill_rating_dir.resolve("feedbackSkill.json");
+        Path feedbackSkill_vol = susi_skill_rating_dir.resolve("feedbackSkill_session.json");
+        feedbackSkill = new JsonTray(feedbackSkill_per.toFile(), feedbackSkill_vol.toFile(), 1000000);
+        OS.protectPath(feedbackSkill_per);
+        OS.protectPath(feedbackSkill_vol);
 
         // open index
         Path index_dir = dataPath.resolve("index");
