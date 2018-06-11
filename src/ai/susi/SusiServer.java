@@ -556,8 +556,8 @@ public class SusiServer {
                 //Get country wise skill usage data
                 GetCountryWiseSkillUsageService.class,
 
-
-
+                // Feedback to skill
+                FeedbackSkillService.class
         };
         for (Class<? extends Servlet> service: services)
             try {
@@ -599,12 +599,12 @@ public class SusiServer {
         ErrorHandler errorHandler = new ErrorHandler();
         errorHandler.setShowStacks(true);
         servletHandler.setErrorHandler(errorHandler);
-        
+
         FileHandler fileHandler = new FileHandler(Integer.parseInt(DAO.getConfig("www.expires","600")));
         fileHandler.setDirectoriesListed(true);
         fileHandler.setWelcomeFiles(new String[]{ "index.html" });
         fileHandler.setResourceBase(DAO.getConfig("www.path","html"));
-        
+
         RewriteHandler rewriteHandler = new RewriteHandler();
         rewriteHandler.setRewriteRequestURI(true);
         rewriteHandler.setRewritePathInfo(false);
@@ -614,13 +614,13 @@ public class SusiServer {
         rssSearchRule.setReplacement("/search.rss?q=$1");
         rewriteHandler.addRule(rssSearchRule);
         rewriteHandler.setHandler(servletHandler);
-        
+
         HandlerList handlerlist2 = new HandlerList();
         handlerlist2.setHandlers(new Handler[]{fileHandler, rewriteHandler, new DefaultHandler()});
         GzipHandler gzipHandler = new GzipHandler();
         gzipHandler.setIncludedMimeTypes("text/html,text/plain,text/xml,text/css,application/javascript,text/javascript,application/json");
         gzipHandler.setHandler(handlerlist2);
-        
+
         HashSessionIdManager idmanager = new HashSessionIdManager();
         SusiServer.server.setSessionIdManager(idmanager);
         SessionHandler sessions = new SessionHandler(new HashSessionManager());

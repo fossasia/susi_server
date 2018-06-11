@@ -108,9 +108,13 @@ public class DAO {
     public  static JsonTray passwordreset;
     private static JsonFile login_keys;
     public static JsonTray group;
+
+    //CMS Schema for server usage
     public static JsonTray skillRating;
     public static JsonTray fiveStarSkillRating;
     public static JsonTray countryWiseSkillUsage;
+    public static JsonTray feedbackSkill;
+
 
     static {
         PatternLayout layout = new PatternLayout("%d{yyyy-MM-dd HH:mm:ss.SSS} %p %c %x - %m%n");
@@ -260,7 +264,6 @@ public class DAO {
         OS.protectPath(fiveStarSkillRating_per);
         OS.protectPath(fiveStarSkillRating_vol);
 
-
         // Country wise skill usage
         Path country_wise_skill_usage_dir = dataPath.resolve("skill_usage");
         country_wise_skill_usage_dir.toFile().mkdirs();
@@ -269,6 +272,13 @@ public class DAO {
         countryWiseSkillUsage = new JsonTray(countryWiseSkillUsage_per.toFile(), countryWiseSkillUsage_vol.toFile(), 1000000);
         OS.protectPath(countryWiseSkillUsage_per);
         OS.protectPath(countryWiseSkillUsage_vol);
+
+        //Feedback Skill storage
+        Path feedbackSkill_per = susi_skill_rating_dir.resolve("feedbackSkill.json");
+        Path feedbackSkill_vol = susi_skill_rating_dir.resolve("feedbackSkill_session.json");
+        feedbackSkill = new JsonTray(feedbackSkill_per.toFile(), feedbackSkill_vol.toFile(), 1000000);
+        OS.protectPath(feedbackSkill_per);
+        OS.protectPath(feedbackSkill_vol);
 
         // open index
         Path index_dir = dataPath.resolve("index");
