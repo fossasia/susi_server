@@ -301,9 +301,9 @@ public class SusiSkill {
                     if(skillName.length() > 0)
                         json.put("skill_name",skillName);
                 }
-                if (line.startsWith("::private_skill") && (thenpos = line.indexOf(' ')) > 0) {
+                if (line.startsWith("::private") && (thenpos = line.indexOf(' ')) > 0) {
                     if (line.substring(thenpos + 1).trim().equalsIgnoreCase("yes")) privateSkill=true;
-                    json.put("private_skill",privateSkill);
+                    json.put("private",privateSkill);
                 }
                 if (line.startsWith("::author") && (!line.startsWith("::author_url")) && (thenpos = line.indexOf(' ')) > 0) {
                     authorName = line.substring(thenpos + 1).trim();
@@ -502,7 +502,7 @@ public class SusiSkill {
         skillMetadata.put("author_url", JSONObject.NULL);
         skillMetadata.put("author_email", JSONObject.NULL);
         skillMetadata.put("skill_name", JSONObject.NULL);
-        skillMetadata.put("private_skill", false);
+        skillMetadata.put("private", false);
         skillMetadata.put("terms_of_use", JSONObject.NULL);
         skillMetadata.put("dynamic_content", false);
         skillMetadata.put("examples", JSONObject.NULL);
@@ -518,7 +518,7 @@ public class SusiSkill {
                     skillid.hasName(skillname)) {
 
                 skillMetadata.put("skill_name", skill.getSkillName() ==null ? JSONObject.NULL: skill.getSkillName());
-                skillMetadata.put("private_skill", skill.getPrivateSkill());
+                skillMetadata.put("private", skill.getPrivateSkill());
                 skillMetadata.put("developer_privacy_policy", skill.getDeveloperPrivacyPolicy() ==null ? JSONObject.NULL:skill.getDeveloperPrivacyPolicy());
                 skillMetadata.put("descriptions", skill.getDescription() ==null ? JSONObject.NULL:skill.getDescription());
                 skillMetadata.put("image", skill.getImage() ==null ? JSONObject.NULL: skill.getImage());
@@ -728,7 +728,7 @@ public class SusiSkill {
         if (this.description != null) json.put("description", this.description);
         if (this.image != null) json.put("image", this.image);
         if (this.skillName != null) json.put("skill_name", this.skillName);
-        if (this.privateSkill != null) json.put("private_skill", this.privateSkill);
+        if (this.privateSkill != null) json.put("private", this.privateSkill);
         if (this.author != null) json.put("author", this.author);
         if (this.authorURL != null) json.put("author_url", this.authorURL);
         if (this.authorEmail != null) json.put("author_email", this.authorEmail);
