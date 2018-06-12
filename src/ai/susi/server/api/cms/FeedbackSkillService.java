@@ -70,7 +70,7 @@ public class FeedbackSkillService extends AbstractAPIHandler implements APIHandl
         String skill_name = call.get("skill", null);
         File skill = SusiSkill.getSkillFileInLanguage(language, skill_name, false);
         String skill_feedback = call.get("feedback", null);
-      
+
         JSONObject result = new JSONObject();
         if (!skill.exists()) {
             throw new APIException(422, "Skill does not exist.");
@@ -88,8 +88,7 @@ public class FeedbackSkillService extends AbstractAPIHandler implements APIHandl
             JSONObject groupName = new JSONObject();
             JSONObject languageName = new JSONObject();
             JSONArray skillName = new JSONArray();
-            
-            JSONObject feedbackObject = new JSONObject();
+
             Boolean alreadyByUser = false;
             Boolean feedbackUpdated = false;
 
@@ -101,6 +100,7 @@ public class FeedbackSkillService extends AbstractAPIHandler implements APIHandl
                         languageName = groupName.getJSONObject(language_name);
                         if (languageName.has(skill_name)) {
                             skillName = languageName.getJSONArray(skill_name);
+                            JSONObject feedbackObject = new JSONObject();
 
                             for (int i = 0; i < skillName.length(); i++) {
                                 feedbackObject = skillName.getJSONObject(i);
@@ -119,12 +119,12 @@ public class FeedbackSkillService extends AbstractAPIHandler implements APIHandl
                 }
             }
 
-            Timestamp timestamp = new Timestamp(System.currentTimeMillis());
-            feedbackObject.put("email", email);
-            feedbackObject.put("feedback", skill_feedback);
-            feedbackObject.put("timestamp", timestamp.toString());
-
             if (!feedbackUpdated) {
+                JSONObject feedbackObject = new JSONObject();
+                Timestamp timestamp = new Timestamp(System.currentTimeMillis());
+                feedbackObject.put("email", email);
+                feedbackObject.put("feedback", skill_feedback);
+                feedbackObject.put("timestamp", timestamp.toString());
                 skillName.put(feedbackObject);
             }
 
@@ -177,7 +177,7 @@ public class FeedbackSkillService extends AbstractAPIHandler implements APIHandl
         } else {
             skillName.put("feedback_count", 1);
         }
-                        
+
         if (!skillName.has("stars")) {
             JSONObject skillStars = new JSONObject();
             skillStars.put("one_star", 0);
