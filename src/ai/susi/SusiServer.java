@@ -164,7 +164,6 @@ public class SusiServer {
             writer.close();
         }
 
-
         // load the config file(s);
         Map<String, String> config = readConfig(data);
 
@@ -365,7 +364,6 @@ public class SusiServer {
                 throw new Exception("Invalid option for https.keysource");
             }
 
-
             HttpConfiguration https_config = new HttpConfiguration();
             https_config.addCustomizer(new SecureRequestCustomizer());
 
@@ -383,7 +381,6 @@ public class SusiServer {
             //sslContextFactory.setCipherComparator(HTTP2Cipher.COMPARATOR);
             //sslContextFactory.setUseCipherSuitesOrder(true);
 
-
             //SslConnectionFactory ssl = new SslConnectionFactory(sslContextFactory, alpn.getProtocol());
             SslConnectionFactory ssl = new SslConnectionFactory(sslContextFactory, "http/1.1");
 
@@ -398,7 +395,6 @@ public class SusiServer {
 
     @SuppressWarnings("unchecked")
     private static void setServerHandler(File dataFile){
-
 
         // create security handler for http auth and http-to-https redirects
         ConstraintSecurityHandler securityHandler = new ConstraintSecurityHandler();
@@ -417,8 +413,7 @@ public class SusiServer {
                 constraint.setAuthenticate(true);
                 constraint.setRoles(new String[] { "user", "admin" });
             }
-
-
+          
             //makes the constraint apply to all uri paths
             ConstraintMapping mapping = new ConstraintMapping();
             mapping.setPathSpec( "/*" );
@@ -546,18 +541,22 @@ public class SusiServer {
                 GetGroupDetails.class,
                 CreateGroupService.class,
                 GetAllGroups.class,
-                GetSkillRatingService.class,
 
-                //5 star skill rating
+                //Skill review classes
                 FiveStarRateSkillService.class,
+                GetSkillRatingService.class,
 
                 //Get rating on a particular skill by a user
                 GetRatingByUser.class,
+
+                //Get country wise skill usage data
+                GetCountryWiseSkillUsageService.class,
 
                 //Skill usage data
                 GetSkillUsageService.class,
 
                 //Feedback to skill
+                GetSkillFeedbackService.class,
                 FeedbackSkillService.class
         };
         for (Class<? extends Servlet> service: services)

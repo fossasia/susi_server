@@ -113,8 +113,10 @@ public class DAO {
     //CMS Schema for server usage
     public static JsonTray skillRating;
     public static JsonTray fiveStarSkillRating;
+    public static JsonTray countryWiseSkillUsage;
     public static JsonTray skillUsage;
     public static JsonTray feedbackSkill;
+
 
     static {
         PatternLayout layout = new PatternLayout("%d{yyyy-MM-dd HH:mm:ss.SSS} %p %c %x - %m%n");
@@ -272,6 +274,15 @@ public class DAO {
         chatbotClients = new JsonTray(chatbotClients_per.toFile(), chatbotClients_vol.toFile(), 1000000);
         OS.protectPath(chatbotClients_per);
         OS.protectPath(chatbotClients_vol);
+
+        // Country wise skill usage
+        Path country_wise_skill_usage_dir = dataPath.resolve("skill_usage");
+        country_wise_skill_usage_dir.toFile().mkdirs();
+        Path countryWiseSkillUsage_per = country_wise_skill_usage_dir.resolve("countryWiseSkillUsage.json");
+        Path countryWiseSkillUsage_vol = country_wise_skill_usage_dir.resolve("countryWiseSkillUsage_session.json");
+        countryWiseSkillUsage = new JsonTray(countryWiseSkillUsage_per.toFile(), countryWiseSkillUsage_vol.toFile(), 1000000);
+        OS.protectPath(countryWiseSkillUsage_per);
+        OS.protectPath(countryWiseSkillUsage_vol);
 
         // Skill usage storage
         Path susi_skill_usage_dir = dataPath.resolve("skill_usage");
