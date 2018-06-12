@@ -19,11 +19,14 @@
 
 package ai.susi.mind;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 
+import ai.susi.DAO;
+import ai.susi.json.JsonTray;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -236,6 +239,15 @@ public class SusiArgument implements Iterable<SusiThought> {
         answer.put("actions", actions);
         List<String> skillpaths = new ArrayList<>();
         this.skills.forEach(skill -> skillpaths.add(skill.getPath()));
+        for (SusiSkill.ID skill : skills) {
+            try {
+                updateUsageData(skill.getPath());
+            }
+            catch (Exception e)
+            {
+                DAO.log(e.getMessage());
+            }
+        }
         answer.put("skills", skillpaths);
         JSONObject persona = new JSONObject();
         SusiSkill skill = mind[0].getActiveSkill(); // no need to loop here over all minds because personas are only on top-level minds
@@ -243,7 +255,78 @@ public class SusiArgument implements Iterable<SusiThought> {
         answer.put("persona", persona);
         return answer;
     }
-    
+
+    public void updateUsageData(String skillPath) {
+        String skillInfo[]=skillPath.split("/");
+        String model_name=skillInfo[3];
+        String group_name=skillInfo[4];
+        String language_name=skillInfo[5];
+        String skill_name=skillInfo[6].split("\\.")[0];
+        JsonTray sevenDaysSkillUsage = DAO.sevenDaysSkillUsage;
+        JSONObject modelName = new JSONObject();
+        JSONObject groupName = new JSONObject();
+        JSONObject languageName = new JSONObject();
+        if (sevenDaysSkillUsage.has(model_name)) {
+            modelName = sevenDaysSkillUsage.getJSONObject(model_name);
+            if (modelName.has(group_name)) {
+                groupName = modelName.getJSONObject(group_name);
+                if (groupName.has(language_name)) {
+                    languageName = groupName.getJSONObject(language_name);
+                    if (languageName.has(skill_name)) {
+                        JSONArray usageData=languageName.getJSONArray(skill_name);
+                        String today=LocalDate.now().toString();
+
+                        Boolean dateExists = false;
+                        for (int i=0; i<usageData.length(); i++) {
+                            JSONObject dayUsage=usageData.getJSONObject(i);
+                            if (dayUsage.get("date").equals(today)){
+                                dayUsage.put("count", dayUsage.getInt("count")+1+"");
+                                usageData.put(i,dayUsage);
+                                dateExists=true;
+                                break;
+                            }
+                        }
+
+                        if (!dateExists) {
+                            JSONObject todayUsage=new JSONObject();
+                            todayUsage.put("date", today);
+                            todayUsage.put("count", "1");
+                            usageData.put(todayUsage);
+                        }
+
+                        if (usageData.length()>7) {
+                            JSONArray tempArray=new JSONArray();
+                            int startIndex=usageData.length()-7;
+                            for (int i=0; i<7; i++)
+                            {
+                                tempArray.put(i, usageData.getJSONObject(startIndex+i));
+                            }
+                            usageData=tempArray;
+                        }
+
+                        languageName.put(skill_name, usageData);
+                        groupName.put(language_name, languageName);
+                        modelName.put(group_name, groupName);
+                        sevenDaysSkillUsage.put(model_name, modelName, true);
+                        return;
+
+                    }
+                }
+            }
+        }
+        JSONArray usageData=new JSONArray();
+        JSONObject todayUsage=new JSONObject();
+        String today=LocalDate.now().toString();
+        todayUsage.put("date", today);
+        todayUsage.put("count", "1");
+        usageData.put(todayUsage);
+        languageName.put(skill_name, usageData);
+        groupName.put(language_name, languageName);
+        modelName.put(group_name, groupName);
+        sevenDaysSkillUsage.put(model_name, modelName, true);
+        return;
+    }
+
     /**
      * To be able to apply (re-)actions to this thought, the actions on the information can be retrieved.
      * @return the (re-)actions which are applicable to this thought.

@@ -110,6 +110,7 @@ public class DAO {
     public static JsonTray group;
     public static JsonTray skillRating;
     public static JsonTray fiveStarSkillRating;
+    public static JsonTray sevenDaysSkillUsage;
 
     static {
         PatternLayout layout = new PatternLayout("%d{yyyy-MM-dd HH:mm:ss.SSS} %p %c %x - %m%n");
@@ -251,6 +252,15 @@ public class DAO {
         fiveStarSkillRating = new JsonTray(fiveStarSkillRating_per.toFile(), fiveStarSkillRating_vol.toFile(), 1000000);
         OS.protectPath(fiveStarSkillRating_per);
         OS.protectPath(fiveStarSkillRating_vol);
+
+        //Last 7 days skill usage storage
+        Path susi_skill_usage_dir = dataPath.resolve("skill_usage");
+        susi_skill_usage_dir.toFile().mkdirs();
+        Path sevenDaysSkillUsage_per = susi_skill_usage_dir.resolve("sevenDaysSkillUsage.json");
+        Path sevenDaysSkillUsage_vol = susi_skill_usage_dir.resolve("sevenDaysSkillUsage_session.json");
+        sevenDaysSkillUsage = new JsonTray(sevenDaysSkillUsage_per.toFile(), sevenDaysSkillUsage_vol.toFile(), 1000000);
+        OS.protectPath(sevenDaysSkillUsage_per);
+        OS.protectPath(sevenDaysSkillUsage_vol);
 
         // open index
         Path index_dir = dataPath.resolve("index");
