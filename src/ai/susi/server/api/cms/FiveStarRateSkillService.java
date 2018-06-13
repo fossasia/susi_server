@@ -96,6 +96,7 @@ public class FiveStarRateSkillService extends AbstractAPIHandler implements APIH
             JSONObject ratingObject = new JSONObject();
             JSONObject resultStars = new JSONObject();
             Boolean alreadyByUser = false;
+            Timestamp timestamp = new Timestamp(System.currentTimeMillis());
 
             if (fiveStarSkillRating.has(model_name)) {
                 modelName = fiveStarSkillRating.getJSONObject(model_name);
@@ -113,7 +114,6 @@ public class FiveStarRateSkillService extends AbstractAPIHandler implements APIH
 
                                     Integer previousRating = ratingObject.getInt("stars");
 
-                                    Timestamp timestamp = new Timestamp(System.currentTimeMillis());
                                     ratingObject.put("stars", skill_stars);
                                     ratingObject.put("timestamp", timestamp.toString());
                                     skillName.put(i, ratingObject);
@@ -129,12 +129,10 @@ public class FiveStarRateSkillService extends AbstractAPIHandler implements APIH
                 }
             }
 
-            Timestamp timestamp = new Timestamp(System.currentTimeMillis());
-            ratingObject.put("email", email);
-            ratingObject.put("stars", skill_stars);
-            ratingObject.put("timestamp", timestamp.toString());
-
             if (!alreadyByUser) {
+                ratingObject.put("email", email);
+                ratingObject.put("stars", skill_stars);
+                ratingObject.put("timestamp", timestamp.toString());
                 skillName.put(ratingObject);
                 resultStars = addToSkillRatingJSON(call);
             }
