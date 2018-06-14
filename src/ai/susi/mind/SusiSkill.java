@@ -591,6 +591,7 @@ public class SusiSkill {
         newRating.put("negative", "0");
         newRating.put("positive", "0");
         newRating.put("feedback_count", 0);
+        newRating.put("bookmark_count", 0);
 
         JSONObject newFiveStarRating=new JSONObject();
         newFiveStarRating.put("one_star", 0);
