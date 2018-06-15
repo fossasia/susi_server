@@ -18,7 +18,9 @@ Please join our mailing list to discuss questions regarding the project: https:/
 
 Our chat channel is on gitter here: https://gitter.im/fossasia/susi_server
 
-## How do I install Susi: Download, Build, Run
+*********
+How do I install Susi: Download, Build, Run
+*********
 
 .. note::
 
