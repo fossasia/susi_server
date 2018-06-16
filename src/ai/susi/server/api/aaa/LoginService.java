@@ -83,10 +83,14 @@ public class LoginService extends AbstractAPIHandler implements APIHandler {
 		// login check for app
 		if(post.get("checkLogin", false)) {
 			JSONObject result = new JSONObject(true);
-			if (authorization.getIdentity().isEmail()) {
+			if (authorization.getIdentity().isId()) {
+				ClientCredential clientCredential = new ClientCredential(ClientCredential.Type.access_token, 
+					post.get("access_token",""));
+				Authentication authentication = DAO.getAuthentication(clientCredential);
+				String email = authentication.getString("email");
 				result.put("loggedIn", true);
 				result.put("accepted", true);
-				result.put("message", "You are logged in as " + authorization.getIdentity().getName());
+				result.put("message", "You are logged in as " + email);
 			}
 			else{
 				result.put("loggedIn", false);
@@ -207,13 +211,14 @@ public class LoginService extends AbstractAPIHandler implements APIHandler {
 						throw new APIException(400, "Invalid value for 'valid_seconds'");
 					}
 
-					String token = createAccessToken(identity, valid_seconds);
+					String token = createAccessToken(identity, login, valid_seconds);
 
 					if(valid_seconds == -1) result.put("valid_seconds", "forever");
 					else result.put("valid_seconds", valid_seconds);
 
 					result.put("access_token", token);
 					result.put("accepted", true);
+					result.put("id",identity.getName());
 
 					break;
 
@@ -226,8 +231,8 @@ public class LoginService extends AbstractAPIHandler implements APIHandler {
 			}
 
 			DAO.log("login for user: " + identity.getName() + " via passwd from host: " + post.getClientHost());
-
-			result.put("message", "You are logged in as " + identity.getName());
+			
+			result.put("message", "You are logged in as " + authentication.getString("email"));
 			result.put("accepted", true);
 
 			// store the IP of last login in accounting object
@@ -301,7 +306,7 @@ public class LoginService extends AbstractAPIHandler implements APIHandler {
 					throw new APIException(400, "Invalid value for 'valid_seconds'");
 				}
 
-				String token = createAccessToken(identity, valid_seconds);
+				String token = createAccessToken(identity, identity.getName(), valid_seconds);
 
 				JSONObject result = new JSONObject();
 
@@ -348,13 +353,14 @@ public class LoginService extends AbstractAPIHandler implements APIHandler {
 		return authentication;
 	}
 
-	private String createAccessToken(ClientIdentity identity, long valid_seconds) throws APIException{
+	private String createAccessToken(ClientIdentity identity, String email, long valid_seconds) throws APIException{
 		String token = createRandomString(30);
 
 		ClientCredential accessToken = new ClientCredential(ClientCredential.Type.access_token, token);
 		Authentication tokenAuthentication = DAO.getAuthentication(accessToken);
 
 		tokenAuthentication.setIdentity(identity);
+		tokenAuthentication.setEmail(email);
 
 		if (valid_seconds == 0 || valid_seconds < -1) { // invalid values
 			throw new APIException(400, "Invalid value for 'valid_seconds'");

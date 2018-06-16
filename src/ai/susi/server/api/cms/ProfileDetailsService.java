@@ -79,8 +79,10 @@ public class ProfileDetailsService extends AbstractAPIHandler implements APIHand
     if (authorization.getIdentity() == null) {
         throw new APIException(400, "Specified user data not found, ensure you are logged in");
     }
-
-    String email = authorization.getIdentity().getName();
+    ClientCredential clientCredential = new ClientCredential(ClientCredential.Type.access_token, 
+                query.get("access_token",""));
+    Authentication authentication = DAO.getAuthentication(clientCredential);
+    String email = authentication.getString("email"); //Get email from the access_token
 
     for(String model_name : fiveStarSkillRating.keys())
     {

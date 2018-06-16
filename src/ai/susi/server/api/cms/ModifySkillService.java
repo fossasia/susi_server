@@ -327,7 +327,7 @@ public class ModifySkillService extends AbstractAPIHandler implements APIHandler
                 // check if access_token is valid
                 if (authentication.getIdentity() != null) {
                     ClientIdentity identity = authentication.getIdentity();
-                    userEmail = identity.getName();
+                    userEmail = authentication.getString("email");
                 }
             }
 

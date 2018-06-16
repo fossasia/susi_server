@@ -80,8 +80,12 @@ public class FeedbackSkillService extends AbstractAPIHandler implements APIHandl
             throw new APIException(422, "Feedback not provided.");
         }
 
-        if (authorization.getIdentity().isEmail()) {
-            String email = authorization.getIdentity().getName(); //Get email from the access_token
+        if (authorization.getIdentity().isId()) {
+
+            ClientCredential clientCredential = new ClientCredential(ClientCredential.Type.access_token, 
+                call.get("access_token",""));
+            Authentication authentication = DAO.getAuthentication(clientCredential);
+            String email = authentication.getString("email"); //Get email from the access_token
 
             JsonTray feedbackSkill = DAO.feedbackSkill;
             JSONObject modelName = new JSONObject();

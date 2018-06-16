@@ -41,8 +41,11 @@ public class GetRatingByUser extends AbstractAPIHandler implements APIHandler {
         String language_name = call.get("language", "en");
         String skill_name = call.get("skill", null);
 
-        if (authorization.getIdentity().isEmail()) {
-            String email = authorization.getIdentity().getName();   //Get email from the access_token
+        if (authorization.getIdentity().isId()) {
+            ClientCredential clientCredential = new ClientCredential(ClientCredential.Type.access_token, 
+                call.get("access_token",""));
+            Authentication authentication = DAO.getAuthentication(clientCredential);
+            String email = authentication.getString("email"); //Get email from the access_token
             JSONObject result = new JSONObject();
             JsonTray fiveStarSkillRating = DAO.fiveStarSkillRating;
             JSONObject modelName = new JSONObject();

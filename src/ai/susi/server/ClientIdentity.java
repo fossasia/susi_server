@@ -29,6 +29,7 @@ public class ClientIdentity extends Client {
     
     public enum Type {
         email(true), // non-anonymous identity
+        id(true), // non-anonymous unique identity
         host(false); // anonymous identity users which do not authentify; they are identified by their host name
         private final boolean persistent;
         Type(final boolean persistent) {
@@ -57,6 +58,10 @@ public class ClientIdentity extends Client {
     
     public boolean isEmail() {
         return this.getKey().equals(Type.email.name());
+    }
+
+    public boolean isId() {
+        return this.getKey().equals(Type.id.name());
     }
     
     public boolean isAnonymous() {

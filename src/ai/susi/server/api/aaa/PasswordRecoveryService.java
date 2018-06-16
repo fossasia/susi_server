@@ -69,7 +69,7 @@ public class PasswordRecoveryService extends AbstractAPIHandler implements APIHa
 						String passwordPattern = DAO.getConfig("users.password.regex", "^(?=.*\\d).{6,64}$");
 						String passwordPatternTooltip = DAO.getConfig("users.password.regex.tooltip",
 								"Enter a combination of atleast six characters");
-						result.put("message", "Email ID: " + authentication.getIdentity().getName());
+						result.put("message", "Email ID: " + authentication.getString("email"));
 						result.put("regex", passwordPattern);
 						result.put("regexTooltip", passwordPatternTooltip);
 						result.put("accepted", true);
