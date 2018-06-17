@@ -1,5 +1,6 @@
-Susi
-====
+##################
+SUSI.AI Server
+##################
 
 |Join the chat at https://gitter.im/fossasia/susi_server| |Build
 Status| |Percentage of issues still open| |Average time
@@ -9,15 +10,17 @@ Susi AI is an intelligent Open Source personal assistant. It is capable of chat 
 
 An automatic deployment from the development branch at GitHub is available for tests here https://susi-server.herokuapp.com
 
+*********
 Communication
--------------
+*********
 
 Please join our mailing list to discuss questions regarding the project: https://groups.google.com/forum/#!forum/opntec-dev/
 
 Our chat channel is on gitter here: https://gitter.im/fossasia/susi_server
 
+*********
 How do I install Susi: Download, Build, Run
-===========================================
+*********
 
 .. note::
 
@@ -71,8 +74,9 @@ A self-upgrading process is available which must be triggered by a shell command
 
     > bin/upgrade.sh
 
+*********
 Where can I download ready-built releases of Susi AI?
---------------------------------------------------
+*********
 
 No-where, you must clone the git repository of Susi AI and built it yourself. That's easy, just do
 
@@ -80,65 +84,76 @@ No-where, you must clone the git repository of Susi AI and built it yourself. Th
 -  ``cd susi``
 -  then see below ("How do I run Susi AI")
 
+*********
 How do I install Susi AI with Docker on Google Cloud?
-----------------------------------
+*********
 
 To install Susi AI with Docker on Google Cloud please refer to the `Susi Docker installation readme </docs/installation/installation_docker_gcloud.md>`__.
 
+*********
 How do I install Susi AI with Docker on AWS?
-----------------------------------
+*********
 
 To install Susi AI with Docker on AWS please refer to the `Susi Docker installation readme </docs/installation/installation_docker_aws.md>`__.
 
+*********
 How do I install Susi AI with Docker on Bluemix?
-----------------------------------
+*********
 
 To install Susi AI with Docker on Bluemix please refer to the `Susi Docker installation readme </docs/installation/installation_docker_bluemix.md>`__.
 
+*********
 How do I install Susi AI with Docker on Microsoft Azure?
-----------------------------------
+*********
 
 To install Susi AI with Docker on Azure please refer to the `Susi Docker installation readme </docs/installation/installation_docker_azure.md>`__.
 
 
+*********
 How do I install Susi AI with Docker on Digital Ocean?
-----------------------------------
+*********
 
 To install Susi AI with Docker on Digital Ocean please refer to the `Susi Docker installation readme </docs/installation/installation_docker_digitalocean.md>`__.
 
+*********
 How do I deploy Susi AI with Heroku?
----------------------------------
+*********
 
 You can easily deploy to Heroku by clicking the Deploy to Heroku button above. To install Susi AI using Heroku Toolbelt, please refer to the `Susi Heroku installation readme </docs/installation/installation_heroku.md>`__.
 
+*********
 How do I deploy Susi AI with cloud9?
----------------------------------
+*********
 
 To install Susi AI with cloud9 please refer to the `Susi cloud9 installation readme </docs/installation/installation_cloud9.md>`__.
 
+*********
 How do I setup Susi AI on Eclipse?
--------------------------------
+*********
 
 To install Susi AI on Eclipse, please refer to the `Susi Eclipse
 readme </docs/installation/eclipseSetup.md>`__.
 
+*********
 How do I run Susi AI?
-------------------
+*********
 
 -  build Susi (you need to do this only once, see above)
 -  run ``bin/start.sh``
 -  open ``http://localhost:4000`` in your browser
 -  to shut down Susi, run ``bin/stop.sh``
 
+*********
 How do I configure Susi AI?
-------------------------
+*********
 
 The basis configuration file is in ``conf/config.properties``. To
 customize these settings place a file ``customized_config.properties``
 to the path ``data/settings/``
 
+*********
 How to compile using Gradle?
-----------------------------
+*********
 
 -  To install Gradle on Ubuntu:
    ::
@@ -167,27 +182,33 @@ How to compile using Gradle?
    ::
        ./gradle_clean.sh
 
+*********
 How do I develop Skills (AI Conversation Rules) for Susi AI?
----------------------------------------------------------
+*********
 
 The Susi AI skill language is described in the `Skill Development
-Tutorial <https://github.com/fossasia/susi_skill_data/blob/master/README_susi_skill_language_tutorial.md>`__.
+Tutorial <https://github.com/fossasia/susi_skill_cms/blob/master/docs/Skill_Tutorial.md>`__.
 
-How to utilize Susi skill data in Susi server?
--------------------------
+*********
+How to utilize Susi skill data in Susi.AI server?
+*********
 
-The `Susi skill data <https://github.com/fossasia/susi_skill_data>`__ is the storage place for the Susi skills. To make Susi server utilize these skills, clone Susi skill data alongside Susi server.
+If you simply want to add your skill to the SUSI.AI online service, please go to https://skills.susi.ai and add your skill.
+
+For your own deployments: The `Susi skill data <https://github.com/fossasia/susi_skill_data>`__ is the storage place for the Susi skills. To make Susi server utilize these skills, clone Susi skill data alongside Susi server.
 ::
    
    git clone https://github.com/fossasia/susi_skill_data.git
 
+*********
 Why should I use Susi AI?
-----------------------
+*********
 
 If you like to create your own AI, then you may consider Susi AI.
 
+*********
 Where can I get the latest news about Susi AI?
--------------------------------------------
+*********
 
 Hey, this is the tool for that! Just put
 https://api.loklak.org/api/search.rss?q=%23susi into your RSS reader. Oh
@@ -195,42 +216,35 @@ wait.. you will get a lot of information about tasty Cambodian food with
 that as well. Alternatively you may also read the authors timeline or just follow @0rb1t3r
 (that's a zero after the "@" sign)
 
+*********
 Where can I find documentation?
--------------------------------
+*********
 
 The Documentation can be found `here <https://github.com/fossasia/susi_server/tree/development/docs/api/api.md>`_.
 
-
+*********
 Where do I find the javadocs?
------------------------------
+*********
+
 You can build them via 'ant
 javadoc'
 
+*********
 Where can I report bugs and make feature requests?
---------------------------------------------------
+*********
 
-This project is considered a community work. The development crew
-consists of you too. We are very thankful for the pull request. So if you
-discovered that something can be enhanced, please do it yourself and
-make a pull request. If you find a bug, please try to fix it. If you
-report a bug to us, We will possibly consider it but at the very end of a
-giant, always growing heap of work. The best chance for you to get
-things done is to try it yourself. Our `issue tracker is
+This project is considered a community work. The development team consists of you too. We are very thankful for the pull request. So if you discovered that something can be enhanced, please do it yourself and make a pull request. If you find a bug, please try to fix it. If you report a bug to us, We will possibly consider it but at the very end of a giant, always growing heap of work. The best chance for you to get things done is to try it yourself. Our `issue tracker is
 here <https://github.com/fossasia/susi_server/issues>`__.
 
-What is the software license?
------------------------------
-
-`LGPL 2.1 <LICENSE>`__
-
-Development Workflow
-====================
+*********
+What is the Development Workflow?
+*********
 
 Fixing issues
--------------
+============================
 
 Step 1: Pick an issue to fix
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+------------------------------------
 
 After selecting the issue
 
@@ -242,7 +256,7 @@ gitter.
 3.Updates or progress on the issue would be nice.
 
 Step 2: Branch policy
-~~~~~~~~~~~~~~~~~~~~~
+------------------------------------
 
 Start off from your ``development`` branch and make sure it is
 up-to-date with the latest version of the committer repo's
@@ -253,7 +267,7 @@ If you have not added upstream follow the steps given
 `here <https://help.github.com/articles/configuring-a-remote-for-a-fork/>`__.
 
 Step 3: Coding Policy
-~~~~~~~~~~~~~~~~~~~~~
+------------------------------------
 
 -  Please help us follow the best practice to make it easy for the
    reviewer as well as the contributor. We want to focus on the code
@@ -280,7 +294,7 @@ Step 3: Coding Policy
    screenshots in the pull request description
 
 Step 4: Submitting a PR
-~~~~~~~~~~~~~~~~~~~~~~~
+------------------------------------
 
 Once a PR is opened, try and complete it within 2 weeks, or at least
 stay actively working on it. Inactivity for a long period may
@@ -288,7 +302,7 @@ necessitate a closure of the PR. As mentioned earlier updates would be
 nice.
 
 Step 5: Code Review
-~~~~~~~~~~~~~~~~~~~
+------------------------------------
 
 Your code will be reviewed, in this sequence, by:
 
@@ -301,7 +315,12 @@ Your code will be reviewed, in this sequence, by:
 -  Reviewer: A core team member will be assigned to the PR as its
    reviewer, who will approve your PR or he will suggest changes.
 
-Have fun! @0rb1t3r
+*********
+What is the software license?
+*********
+
+
+`LGPL 2.1 <LICENSE>`__
 
 
 .. |Join the chat at https://gitter.im/fossasia/susi_server| image:: https://badges.gitter.im/fossasia/susi_server.svg

@@ -545,6 +545,7 @@ public class SusiServer {
                 //Skill review classes
                 FiveStarRateSkillService.class,
                 GetSkillRatingService.class,
+                ProfileDetailsService.class,
 
                 //Get rating on a particular skill by a user
                 GetRatingByUser.class,
