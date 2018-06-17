@@ -555,6 +555,9 @@ public class SusiServer {
                 //Skill usage data
                 GetSkillUsageService.class,
 
+                //Feedback logs for analysis
+                FeedbackLogService.class,
+
                 //Feedback to skill
                 GetSkillFeedbackService.class,
                 FeedbackSkillService.class

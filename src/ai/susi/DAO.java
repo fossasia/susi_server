@@ -115,6 +115,7 @@ public class DAO {
     public static JsonTray countryWiseSkillUsage;
     public static JsonTray skillUsage;
     public static JsonTray feedbackSkill;
+    public static JsonTray feedbackLogs;
     public static JsonTray profileDetails;
 
 
@@ -298,6 +299,13 @@ public class DAO {
         feedbackSkill = new JsonTray(feedbackSkill_per.toFile(), feedbackSkill_vol.toFile(), 1000000);
         OS.protectPath(feedbackSkill_per);
         OS.protectPath(feedbackSkill_vol);
+
+        //Feedback logs for analysis
+        Path feedbackLogs_per = susi_skill_rating_dir.resolve("feedbackLogs.json");
+        Path feedbackLogs_vol = susi_skill_rating_dir.resolve("feedbackLogs_session.json");
+        feedbackLogs = new JsonTray(feedbackLogs_per.toFile(), feedbackLogs_vol.toFile(), 1000000);
+        OS.protectPath(feedbackLogs_per);
+        OS.protectPath(feedbackLogs_vol);
 
         // open index
         Path index_dir = dataPath.resolve("index");
