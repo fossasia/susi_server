@@ -79,29 +79,29 @@ public class SusiCognition {
         // compute the mind's reaction: here we compute with a hierarchy of minds. The dispute is taken from the relevant mind level that was able to compute the dispute
         List<SusiThought> dispute = SusiMind.reactMinds(query, language, maxcount, client, observation, minds);
         long answer_date = System.currentTimeMillis();
-        
+
         // update country wise skill usage data
         if (!countryCode.equals("") && !countryName.equals("")) {
-            List<String> skills = dispute.get(0).getSkills();
-            for (String skill : skills) {
-                try {
+            try {
+                List<String> skills = dispute.get(0).getSkills();
+                for (String skill : skills) {
                     updateCountryWiseUsageData(skill, countryCode, countryName);
                 }
-                catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }
-        }
-
-        // update skill usage data
-        List<String> skills = dispute.get(0).getSkills();
-        for (String skill : skills) {
-            try {
-                updateUsageData(skill);
             }
             catch (Exception e) {
                 e.printStackTrace();
             }
+        }
+
+        // update skill usage data
+        try {
+            List<String> skills = dispute.get(0).getSkills();
+            for (String skill : skills) {
+                updateUsageData(skill);
+            }
+        }
+        catch (Exception e) {
+            e.printStackTrace();
         }
         
         // store answer and actions into json
@@ -147,11 +147,11 @@ public class SusiCognition {
                 }
             }
         }
-        countryUsage.put("country_code", countryCode);
-        countryUsage.put("country_name", countryName);
-        countryUsage.put("count", 1);
 
         if (!countryExists) {
+            countryUsage.put("country_code", countryCode);
+            countryUsage.put("country_name", countryName);
+            countryUsage.put("count", 1);
             countryWiseUsageData.put(countryUsage);
         }
 
@@ -197,9 +197,10 @@ public class SusiCognition {
                 }
             }
         }
-        dayUsage.put("date", today);
-        dayUsage.put("count", "1");
+
         if (!dateExists) {
+            dayUsage.put("date", today);
+            dayUsage.put("count", "1");
             usageData.put(dayUsage);
         }
         languageName.put(skill_name, usageData);
