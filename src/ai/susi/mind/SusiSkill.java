@@ -508,6 +508,7 @@ public class SusiSkill {
         skillMetadata.put("examples", JSONObject.NULL);
         skillMetadata.put("skill_rating", JSONObject.NULL);
         skillMetadata.put("usage_count", 0);
+        skillMetadata.put("skill_tag", JSONObject.NULL);
 
         // metadata
         for (Map.Entry<SusiSkill.ID, SusiSkill> entry : DAO.susi.getSkillMetadata().entrySet()) {
@@ -531,6 +532,7 @@ public class SusiSkill {
                 skillMetadata.put("examples", skill.getExamples() ==null ? JSONObject.NULL: skill.getExamples());
                 skillMetadata.put("skill_rating", getSkillRating(model, group, language, skillname));
                 skillMetadata.put("usage_count", getSkillUsage(model, group, language, skillname, duration));
+                skillMetadata.put("skill_tag", skillname);
 
             }
         }
