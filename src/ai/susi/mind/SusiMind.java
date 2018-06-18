@@ -237,6 +237,8 @@ public class SusiMind {
                     skill.setAuthor(json.getString("author"));
                 if(json.has("author_url"))
                    skill.setAuthorURL(json.getString("author_url"));
+               if(json.has("author_email"))
+                   skill.setAuthorEmail(json.getString("author_email"));
                 if(json.has("developer_privacy_policy"))
                    skill.setDeveloperPrivacyPolicy(json.getString("developer_privacy_policy"));
                 if(json.has("terms_of_use"))

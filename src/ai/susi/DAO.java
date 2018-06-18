@@ -108,8 +108,15 @@ public class DAO {
     public  static JsonTray passwordreset;
     private static JsonFile login_keys;
     public static JsonTray group;
+
+    //CMS Schema for server usage
     public static JsonTray skillRating;
     public static JsonTray fiveStarSkillRating;
+    public static JsonTray countryWiseSkillUsage;
+    public static JsonTray skillUsage;
+    public static JsonTray feedbackSkill;
+    public static JsonTray profileDetails;
+
 
     static {
         PatternLayout layout = new PatternLayout("%d{yyyy-MM-dd HH:mm:ss.SSS} %p %c %x - %m%n");
@@ -170,7 +177,7 @@ public class DAO {
             susi.addWatchpath(system_skills_localmode);
             susi.addWatchpath(susi_generic_skills_media_discovery);
         }
-                
+
         // initialize the memory as a background task to prevent that this blocks too much
         new Thread() {
             public void run() {
@@ -251,6 +258,14 @@ public class DAO {
         OS.protectPath(skillRating_per);
         OS.protectPath(skillRating_vol);
 
+        /*Profile Details storage*/
+        Path susi_profile_details_dir = dataPath.resolve("profile");
+        susi_profile_details_dir.toFile().mkdirs();
+        Path profileDetails_per = susi_profile_details_dir.resolve("profileDetails.json");
+        Path profileDetails_vol = susi_profile_details_dir.resolve("profileDetails_session.json");
+        profileDetails = new JsonTray(profileDetails_per.toFile(), profileDetails_vol.toFile(), 1000000);
+        OS.protectPath(profileDetails_per);
+        OS.protectPath(profileDetails_vol);
 
         //5 Star Skill Rating storage
         Path fiveStarSkillRating_per = susi_skill_rating_dir.resolve("fiveStarSkillRating.json");
@@ -258,6 +273,31 @@ public class DAO {
         fiveStarSkillRating = new JsonTray(fiveStarSkillRating_per.toFile(), fiveStarSkillRating_vol.toFile(), 1000000);
         OS.protectPath(fiveStarSkillRating_per);
         OS.protectPath(fiveStarSkillRating_vol);
+
+        // Country wise skill usage
+        Path country_wise_skill_usage_dir = dataPath.resolve("skill_usage");
+        country_wise_skill_usage_dir.toFile().mkdirs();
+        Path countryWiseSkillUsage_per = country_wise_skill_usage_dir.resolve("countryWiseSkillUsage.json");
+        Path countryWiseSkillUsage_vol = country_wise_skill_usage_dir.resolve("countryWiseSkillUsage_session.json");
+        countryWiseSkillUsage = new JsonTray(countryWiseSkillUsage_per.toFile(), countryWiseSkillUsage_vol.toFile(), 1000000);
+        OS.protectPath(countryWiseSkillUsage_per);
+        OS.protectPath(countryWiseSkillUsage_vol);
+
+        // Skill usage storage
+        Path susi_skill_usage_dir = dataPath.resolve("skill_usage");
+        susi_skill_usage_dir.toFile().mkdirs();
+        Path skillUsage_per = susi_skill_usage_dir.resolve("skillUsage.json");
+        Path skillUsage_vol = susi_skill_usage_dir.resolve("skillUsage_session.json");
+        skillUsage = new JsonTray(skillUsage_per.toFile(), skillUsage_vol.toFile(), 1000000);
+        OS.protectPath(skillUsage_per);
+        OS.protectPath(skillUsage_vol);
+
+        //Feedback Skill storage
+        Path feedbackSkill_per = susi_skill_rating_dir.resolve("feedbackSkill.json");
+        Path feedbackSkill_vol = susi_skill_rating_dir.resolve("feedbackSkill_session.json");
+        feedbackSkill = new JsonTray(feedbackSkill_per.toFile(), feedbackSkill_vol.toFile(), 1000000);
+        OS.protectPath(feedbackSkill_per);
+        OS.protectPath(feedbackSkill_vol);
 
         // open index
         Path index_dir = dataPath.resolve("index");

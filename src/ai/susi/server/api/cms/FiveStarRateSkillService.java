@@ -94,7 +94,9 @@ public class FiveStarRateSkillService extends AbstractAPIHandler implements APIH
             JSONArray skillName = new JSONArray();
 
             JSONObject ratingObject = new JSONObject();
+            JSONObject resultStars = new JSONObject();
             Boolean alreadyByUser = false;
+            Timestamp timestamp = new Timestamp(System.currentTimeMillis());
 
             if (fiveStarSkillRating.has(model_name)) {
                 modelName = fiveStarSkillRating.getJSONObject(model_name);
@@ -112,14 +114,13 @@ public class FiveStarRateSkillService extends AbstractAPIHandler implements APIH
 
                                     Integer previousRating = ratingObject.getInt("stars");
 
-                                    Timestamp timestamp = new Timestamp(System.currentTimeMillis());
                                     ratingObject.put("stars", skill_stars);
                                     ratingObject.put("timestamp", timestamp.toString());
                                     skillName.put(i, ratingObject);
                                     alreadyByUser = true;
 
                                     // Update the skillRating.json file that contains overview of the ratings.
-                                    updateSkillRatingsJSON(call, previousRating);
+                                    resultStars = updateSkillRatingsJSON(call, previousRating);
                                     break;
                                 }
                             }
@@ -128,14 +129,12 @@ public class FiveStarRateSkillService extends AbstractAPIHandler implements APIH
                 }
             }
 
-            Timestamp timestamp = new Timestamp(System.currentTimeMillis());
-            ratingObject.put("email", email);
-            ratingObject.put("stars", skill_stars);
-            ratingObject.put("timestamp", timestamp.toString());
-
             if (!alreadyByUser) {
+                ratingObject.put("email", email);
+                ratingObject.put("stars", skill_stars);
+                ratingObject.put("timestamp", timestamp.toString());
                 skillName.put(ratingObject);
-                addToSkillRatingJSON(call);
+                resultStars = addToSkillRatingJSON(call);
             }
 
             languageName.put(skill_name, skillName);
@@ -144,10 +143,9 @@ public class FiveStarRateSkillService extends AbstractAPIHandler implements APIH
             fiveStarSkillRating.put(model_name, modelName, true);
             result.put("accepted", true);
             result.put("message", "Skill ratings updated");
-            result.put("ratings", skill_stars);
+            result.put("ratings", resultStars);
             return new ServiceResponse(result);
         } else {
-
             throw new APIException(422, "Access token not given.");
         }
     }
@@ -184,15 +182,18 @@ public class FiveStarRateSkillService extends AbstractAPIHandler implements APIH
 
         float totalStars = skillStars.getInt("one_star") + skillStars.getInt("two_star") + skillStars.getInt("three_star") + skillStars.getInt("four_star") + skillStars.getInt("five_star");
         float avgStar = (1 * skillStars.getInt("one_star") + 2 * skillStars.getInt("two_star") + 3 * skillStars.getInt("three_star") + 4 * skillStars.getInt("four_star") + 5 * skillStars.getInt("five_star")) / totalStars;
-        skillStars.put("total_star", Math.round(totalStars));
-        skillStars.put("avg_star", avgStar);
-        skillName.put("stars", skillStars);
 
+        // Format avgStar to keep 2 places after decimal
+        String roundAvgStars = String.format("%.02f", avgStar);
+
+        skillStars.put("total_star", Math.round(totalStars));
+        skillStars.put("avg_star", Float.parseFloat(roundAvgStars));
+        skillName.put("stars", skillStars);
         return skillName;
     }
 
 
-    public void updateSkillRatingsJSON(Query call, Integer previousRating) {
+    public JSONObject updateSkillRatingsJSON(Query call, Integer previousRating) {
 
         String model_name = call.get("model", "general");
         String group_name = call.get("group", "Knowledge");
@@ -245,21 +246,26 @@ public class FiveStarRateSkillService extends AbstractAPIHandler implements APIH
 
                         float totalStars = skillStars.getInt("one_star") + skillStars.getInt("two_star") + skillStars.getInt("three_star") + skillStars.getInt("four_star") + skillStars.getInt("five_star");
                         float avgStar = (1 * skillStars.getInt("one_star") + 2 * skillStars.getInt("two_star") + 3 * skillStars.getInt("three_star") + 4 * skillStars.getInt("four_star") + 5 * skillStars.getInt("five_star")) / totalStars;
-                        skillStars.put("avg_star", avgStar);
+
+                        // Format avgStar to keep 2 places after decimal
+                        String roundAvgStars = String.format("%.02f", avgStar);
+
+                        skillStars.put("avg_star", Float.parseFloat(roundAvgStars));
                     }
                 }
             }
         }
+
         skillName.put("stars", skillStars);
         languageName.put(skill_name, skillName);
         groupName.put(language_name, languageName);
         modelName.put(group_name, groupName);
         skillRating.put(model_name, modelName, true);
-        return;
+        return skillStars;
     }
 
 
-    public void addToSkillRatingJSON(Query call) {
+    public JSONObject addToSkillRatingJSON(Query call) {
         String model_name = call.get("model", "general");
         String group_name = call.get("group", "Knowledge");
         String language_name = call.get("language", "en");
@@ -299,8 +305,12 @@ public class FiveStarRateSkillService extends AbstractAPIHandler implements APIH
 
                             float totalStars = skillStars.getInt("one_star") + skillStars.getInt("two_star") + skillStars.getInt("three_star") + skillStars.getInt("four_star") + skillStars.getInt("five_star");
                             float avgStar = (1 * skillStars.getInt("one_star") + 2 * skillStars.getInt("two_star") + 3 * skillStars.getInt("three_star") + 4 * skillStars.getInt("four_star") + 5 * skillStars.getInt("five_star")) / totalStars;
+
+                            // Format avgStar to keep 2 places after decimal
+                            String roundAvgStars = String.format("%.02f", avgStar);
+
                             skillStars.put("total_star", Math.round(totalStars));
-                            skillStars.put("avg_star", avgStar);
+                            skillStars.put("avg_star", Float.parseFloat(roundAvgStars));
                             skillName.put("stars", skillStars);
                         } else {
 
@@ -326,8 +336,12 @@ public class FiveStarRateSkillService extends AbstractAPIHandler implements APIH
 
                             float totalStars = skillStars.getInt("one_star") + skillStars.getInt("two_star") + skillStars.getInt("three_star") + skillStars.getInt("four_star") + skillStars.getInt("five_star");
                             float avgStar = (1 * skillStars.getInt("one_star") + 2 * skillStars.getInt("two_star") + 3 * skillStars.getInt("three_star") + 4 * skillStars.getInt("four_star") + 5 * skillStars.getInt("five_star")) / totalStars;
+
+                            // Format avgStar to keep 2 places after decimal
+                            String roundAvgStars = String.format("%.02f", avgStar);
+
                             skillStars.put("total_star", Math.round(totalStars));
-                            skillStars.put("avg_star", avgStar);
+                            skillStars.put("avg_star", Float.parseFloat(roundAvgStars));
                             skillName.put("stars", skillStars);
                         }
 
@@ -335,16 +349,17 @@ public class FiveStarRateSkillService extends AbstractAPIHandler implements APIH
                         groupName.put(language_name, languageName);
                         modelName.put(group_name, groupName);
                         skillRating.put(model_name, modelName, true);
-                        return;
+                        return skillStars;
                     }
                 }
             }
         }
-
-        languageName.put(skill_name, createRatingObject(skill_stars));
+        skillName = createRatingObject(skill_stars);
+        skillStars = skillName.getJSONObject("stars");
+        languageName.put(skill_name, skillName);
         groupName.put(language_name, languageName);
         modelName.put(group_name, groupName);
         skillRating.put(model_name, modelName, true);
-        return;
+        return skillStars;
     }
 }

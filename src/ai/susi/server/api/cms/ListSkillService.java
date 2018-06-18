@@ -119,7 +119,7 @@ public class ListSkillService extends AbstractAPIHandler implements APIHandler {
 
             if (filter_type.equals("date")) {
                 if (filter_name.equals("ascending")) {
-
+                    
                 } else {
 
                 }
@@ -159,9 +159,54 @@ public class ListSkillService extends AbstractAPIHandler implements APIHandler {
                                 valA = a.get(KEY_NAME).toString();
                                 valB = b.get(KEY_NAME).toString();
                             } catch (JSONException e) {
+                                e.getMessage();
                                 //do nothing
                             }
                             return valB.compareTo(valA);
+                        }
+                    });
+                }
+            }
+            else if (filter_type.equals("rating")) {
+                if (filter_name.equals("ascending")) {
+                    Collections.sort(jsonValues, new Comparator<JSONObject>() {
+
+                        @Override
+                        public int compare(JSONObject a, JSONObject b) {
+                            float valA;
+                            float valB;
+                            int result=0;
+
+                            try {
+                                valA = a.getJSONObject("skill_rating").getJSONObject("stars").getFloat("avg_star");
+                                valB = b.getJSONObject("skill_rating").getJSONObject("stars").getFloat("avg_star");
+                                result = Float.compare(valA, valB);
+
+                            } catch (JSONException e) {
+                                e.printStackTrace();
+                            }
+                            return result;
+                        }
+                    });
+                }
+                else {
+                    Collections.sort(jsonValues, new Comparator<JSONObject>() {
+
+                        @Override
+                        public int compare(JSONObject a, JSONObject b) {
+                            float valA;
+                            float valB;
+                            int result=0;
+
+                            try {
+                                valA = a.getJSONObject("skill_rating").getJSONObject("stars").getFloat("avg_star");
+                                valB = b.getJSONObject("skill_rating").getJSONObject("stars").getFloat("avg_star");
+                                result = Float.compare(valB, valA);
+
+                            } catch (JSONException e) {
+                                e.printStackTrace();
+                            }
+                            return result;
                         }
                     });
                 }
