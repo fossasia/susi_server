@@ -41,11 +41,6 @@ public class ClientCredential extends Client {
     }
     
     private final boolean persistent;
-
-    public ClientCredential(String rawIdString) throws IllegalArgumentException {
-        super(rawIdString);
-        this.persistent = Type.valueOf(super.getKey()).isPersistent();
-    }
     
     public ClientCredential(Type type, String untypedId) {
         super(type.name(), untypedId);
