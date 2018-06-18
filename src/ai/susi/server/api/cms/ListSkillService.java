@@ -211,6 +211,50 @@ public class ListSkillService extends AbstractAPIHandler implements APIHandler {
                     });
                 }
             }
+            else if (filter_type.equals("usage")) {
+                if (filter_name.equals("ascending")) {
+                    Collections.sort(jsonValues, new Comparator<JSONObject>() {
+
+                        @Override
+                        public int compare(JSONObject a, JSONObject b) {
+                            int valA;
+                            int valB;
+                            int result=0;
+
+                            try {
+                                valA = a.getInt("week_usage");
+                                valB = b.getInt("week_usage");
+                                result = Integer.compare(valA, valB);
+
+                            } catch (JSONException e) {
+                                e.printStackTrace();
+                            }
+                            return result;
+                        }
+                    });
+                }
+                else {
+                    Collections.sort(jsonValues, new Comparator<JSONObject>() {
+
+                        @Override
+                        public int compare(JSONObject a, JSONObject b) {
+                            int valA;
+                            int valB;
+                            int result=0;
+
+                            try {
+                                valA = a.getInt("week_usage");
+                                valB = b.getInt("week_usage");
+                                result = Integer.compare(valB, valA);
+
+                            } catch (JSONException e) {
+                                e.printStackTrace();
+                            }
+                            return result;
+                        }
+                    });
+                }
+            }
 
             for (int i = 0; i < jsonArray.length(); i++) {
                 filteredData.put(jsonValues.get(i));
