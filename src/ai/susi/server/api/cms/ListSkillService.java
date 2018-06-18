@@ -211,6 +211,50 @@ public class ListSkillService extends AbstractAPIHandler implements APIHandler {
                     });
                 }
             }
+            else if (filter_type.equals("feedback")) {
+                if (filter_name.equals("ascending")) {
+                    Collections.sort(jsonValues, new Comparator<JSONObject>() {
+
+                        @Override
+                        public int compare(JSONObject a, JSONObject b) {
+                            Integer valA;
+                            Integer valB;
+                            int result=0;
+
+                            try {
+                                valA = a.getJSONObject("skill_rating").getInt("feedback_count");
+                                valB = b.getJSONObject("skill_rating").getInt("feedback_count");
+                                result = Integer.compare(valA, valB);
+
+                            } catch (JSONException e) {
+                                e.printStackTrace();
+                            }
+                            return result;
+                        }
+                    });
+                }
+                else {
+                    Collections.sort(jsonValues, new Comparator<JSONObject>() {
+
+                        @Override
+                        public int compare(JSONObject a, JSONObject b) {
+                            Integer valA;
+                            Integer valB;
+                            int result=0;
+
+                            try {
+                                valA = a.getJSONObject("skill_rating").getInt("feedback_count");
+                                valB = b.getJSONObject("skill_rating").getInt("feedback_count");
+                                result = Integer.compare(valB, valA);
+
+                            } catch (JSONException e) {
+                                e.printStackTrace();
+                            }
+                            return result;
+                        }
+                    });
+                }
+            }
 
             for (int i = 0; i < jsonArray.length(); i++) {
                 filteredData.put(jsonValues.get(i));
