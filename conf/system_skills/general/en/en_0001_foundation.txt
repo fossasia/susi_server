@@ -52,6 +52,14 @@ system check
 ]}
 eol
 
+# set audio volume
+set audio volume to * | set audio volume to * percent | set audio volume to * points | set volume to * | set volume to * percent | set volume to * points
+!console:Audio volume is now $1$ percent.
+{"actions":[
+{"type":"audio_volume", "volume":"$1$"}
+]}
+eol
+
 # some fake commands that do nothing with the computation state
 ::minor
 
