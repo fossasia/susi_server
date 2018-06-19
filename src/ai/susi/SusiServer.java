@@ -560,6 +560,7 @@ public class SusiServer {
 
                 //Feedback to skill
                 GetSkillFeedbackService.class,
+                RemoveFeedbackService.class,
                 FeedbackSkillService.class
         };
         for (Class<? extends Servlet> service: services)
