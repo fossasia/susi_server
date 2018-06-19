@@ -28,6 +28,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import ai.susi.DAO;
@@ -171,7 +172,8 @@ public class SusiAction {
                     //timer_reset has no attributes
                     break;
 	            case audio_volume:
-	                throw new SusiActionException("this action is not yet defined");
+	                if (!json.has("volume")) throw new SusiActionException("the action needs a volume object");
+	                break;
 	            case audio_record:
                     throw new SusiActionException("this action is not yet defined");
 	            case audio_play:
@@ -435,6 +437,18 @@ public class SusiAction {
         }
         if ((this.getRenderType() == RenderType.video_play || this.getRenderType() == RenderType.audio_play) && this.json.has("identifier")) {
             this.json.put("identifier", thoughts.unify(getStringAttr("identifier"), false));
+        }
+        if ((this.getRenderType() == RenderType.audio_volume) && this.json.has("volume")) {
+            String volume = thoughts.unify(getStringAttr("volume"), false);
+            int p = volume.indexOf(' ');
+            if (p >= 0) volume = volume.substring(0, p).trim();
+            int v = 50;
+            try {
+                v = Integer.parseInt(volume);
+            } catch (NumberFormatException e) {
+            }
+            v = Math.min(100, Math.max(0, v));
+            this.json.put("volume", Integer.toString(v));
         }
         return actions;
     }
