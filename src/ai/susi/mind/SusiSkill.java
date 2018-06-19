@@ -476,7 +476,7 @@ public class SusiSkill {
         return null;
     }
 
-    public static JSONObject getSkillMetadata(String model, String group, String language, String skillname) {
+    public static JSONObject getSkillMetadata(String model, String group, String language, String skillname, int duration) {
 
         JSONObject skillMetadata = new JSONObject(true)
                 .put("model", model)
@@ -500,7 +500,7 @@ public class SusiSkill {
         skillMetadata.put("dynamic_content", false);
         skillMetadata.put("examples", JSONObject.NULL);
         skillMetadata.put("skill_rating", JSONObject.NULL);
-        skillMetadata.put("week_usage", 0);
+        skillMetadata.put("usage_count", 0);
 
         // metadata
         for (Map.Entry<SusiSkill.ID, SusiSkill> entry : DAO.susi.getSkillMetadata().entrySet()) {
@@ -522,7 +522,7 @@ public class SusiSkill {
                 skillMetadata.put("dynamic_content", skill.getDynamicContent());
                 skillMetadata.put("examples", skill.getExamples() ==null ? JSONObject.NULL: skill.getExamples());
                 skillMetadata.put("skill_rating", getSkillRating(model, group, language, skillname));
-                skillMetadata.put("week_usage", getSkillUsage(model, group, language, skillname));
+                skillMetadata.put("usage_count", getSkillUsage(model, group, language, skillname, duration));
 
             }
         }
@@ -541,6 +541,11 @@ public class SusiSkill {
             skillMetadata.put("lastModifiedTime" , attr.lastModifiedTime());
         }
         return skillMetadata;
+    }
+
+    // Function overloading - if duration parameter is not passed then use 7 as default value.
+    public static JSONObject getSkillMetadata(String model, String group, String language, String skillname) {
+        return getSkillMetadata(model, group, language, skillname, 7);
     }
 
     public static JSONObject getSkillRating(String model, String group, String language, String skillname) {
@@ -591,9 +596,9 @@ public class SusiSkill {
         return newRating;
     }
 
-    public static int getSkillUsage(String model, String group, String language, String skillname) {
+    public static int getSkillUsage(String model, String group, String language, String skillname, int duration) {
         // usage
-        int weekUsage = 0;
+        int totalUsage = 0;
         JsonTray skillUsage = DAO.skillUsage;
         if (skillUsage.has(model)) {
             JSONObject modelName = skillUsage.getJSONObject(model);
@@ -604,15 +609,14 @@ public class SusiSkill {
                     if (languageName.has(skillname)) {
                         JSONArray skillName = languageName.getJSONArray(skillname);
 
-                        // Fetch only last seven days skill usage data for sorting purpose.
-                        int duration = 7;
+                        // Fetch skill usage data for sorting purpose.
                         int startIndex = skillName.length() >= duration ? skillName.length()-duration : 0;
                         for (int i = startIndex; i<skillName.length(); i++)
                         {
                             JSONObject dayUsage = skillName.getJSONObject(i);
-                            weekUsage += dayUsage.getInt("count");
+                            totalUsage += dayUsage.getInt("count");
                         }
-                        return weekUsage;
+                        return totalUsage;
                     }
                     else {
                         return 0;
