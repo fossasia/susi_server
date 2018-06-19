@@ -233,6 +233,8 @@ public class SusiMind {
                 // adding skill meta data
                 if(json.has("skill_name"))
                    skill.setSkillName(json.getString("skill_name"));
+                if(json.has("protected"))
+                    skill.setProtectedSkill(json.getBoolean("protected"));
                 if(json.has("author"))
                     skill.setAuthor(json.getString("author"));
                 if(json.has("author_url"))
