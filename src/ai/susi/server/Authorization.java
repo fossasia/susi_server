@@ -62,6 +62,13 @@ public class Authorization {
     	    		break;
         		}
         	}
+        	// in case that the identity has the uuid inside, we must loop here over all objects
+        	if (this.json == null && identity.isUuid()) for (String key: this.parent.keys()) {
+        		if (new ClientIdentity(key).getUuid().equals(identity.getName())) {
+        			this.json = parent.getJSONObject(key);
+    	    		break;
+        		}
+        	}
 	    	if (this.json == null) {
 	    		this.json = new JSONObject();
 	        	parent.put(identity.toString(), json, identity.isPersistent());
