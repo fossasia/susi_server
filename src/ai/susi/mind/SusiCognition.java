@@ -119,7 +119,6 @@ public class SusiCognition {
         JSONObject groupName = new JSONObject();
         JSONObject languageName = new JSONObject();
         JSONArray countryWiseUsageData =new JSONArray();
-        JSONObject countryUsage = new JSONObject();
         Boolean countryExists = false;
         if (skillUsage.has(model_name)) {
             modelName = skillUsage.getJSONObject(model_name);
@@ -132,6 +131,7 @@ public class SusiCognition {
                         countryWiseUsageData = languageName.getJSONArray(skill_name);
 
                         for (int i = 0; i < countryWiseUsageData.length(); i++) {
+                            JSONObject countryUsage = new JSONObject();
                             countryUsage = countryWiseUsageData.getJSONObject(i);
                             if (countryUsage.get("country_code").equals(countryCode)) {
                                 countryUsage.put("count", countryUsage.getInt("count")+1);
@@ -146,6 +146,7 @@ public class SusiCognition {
         }
 
         if (!countryExists) {
+            JSONObject countryUsage = new JSONObject();
             countryUsage.put("country_code", countryCode);
             countryUsage.put("country_name", countryName);
             countryUsage.put("count", 1);
@@ -171,7 +172,6 @@ public class SusiCognition {
         JSONObject languageName = new JSONObject();
         JSONArray usageData = new JSONArray();
         Boolean dateExists = false;
-        JSONObject dayUsage = new JSONObject();
         String today = LocalDate.now().toString();
         if (skillUsage.has(model_name)) {
             modelName = skillUsage.getJSONObject(model_name);
@@ -182,6 +182,7 @@ public class SusiCognition {
                     if (languageName.has(skill_name)) {
                         usageData = languageName.getJSONArray(skill_name);
                         for (int i = 0; i<usageData.length(); i++) {
+                            JSONObject dayUsage = new JSONObject();
                             dayUsage = usageData.getJSONObject(i);
                             if (dayUsage.get("date").equals(today)){
                                 dayUsage.put("count", dayUsage.getInt("count")+1+"");
@@ -196,6 +197,7 @@ public class SusiCognition {
         }
 
         if (!dateExists) {
+            JSONObject dayUsage = new JSONObject();
             dayUsage.put("date", today);
             dayUsage.put("count", "1");
             usageData.put(dayUsage);
