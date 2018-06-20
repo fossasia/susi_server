@@ -16,6 +16,7 @@
 package ai.susi.server.api.aaa;
 
 import ai.susi.DAO;
+import ai.susi.EmailHandler;
 import ai.susi.json.JsonObjectWithDefault;
 import ai.susi.server.*;
 import ai.susi.tools.TimeoutMatcher;
@@ -110,8 +111,15 @@ public class PasswordChangeService extends AbstractAPIHandler implements APIHand
                 emailauth.remove("passwordHash");
                 emailauth.put("passwordHash", getHash(newpassword, salt));
                 DAO.log("password change for user: " + identity.getName() + " via newpassword from host: " + post.getClientHost());
-                result.put("message", "Your password has been changed!");
-                result.put("accepted", true);
+
+                String subject = "Password Change";
+                try {
+                    EmailHandler.sendEmail(authentication.getIdentity().getName(), subject, "Your password has been changed successfully!");
+                    result.put("message", "Your password has been changed!");
+                    result.put("accepted", true);
+                } catch (Exception e) {
+                    result.put("message", e.getMessage());
+                }
             }
         }
 
