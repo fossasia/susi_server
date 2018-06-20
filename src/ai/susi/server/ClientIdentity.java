@@ -21,6 +21,8 @@ package ai.susi.server;
 
 import org.json.JSONObject;
 
+import ai.susi.tools.Digest;
+
 /**
  * an identity is only a string which contains details sufficient enough to
  * identify a user and to send data to that user
@@ -28,6 +30,7 @@ import org.json.JSONObject;
 public class ClientIdentity extends Client {
     
     public enum Type {
+        uuid(true),  // non-anonymous identity, computed from the (first) email address as md5
         email(true), // non-anonymous identity
         host(false); // anonymous identity users which do not authentify; they are identified by their host name
         private final boolean persistent;
@@ -43,7 +46,9 @@ public class ClientIdentity extends Client {
     
     public ClientIdentity(String rawIdString) throws IllegalArgumentException {
         super(rawIdString);
-        this.persistent = Type.valueOf(super.getKey()).isPersistent();
+        String key = super.getKey();
+        Type type = Type.valueOf(key); // throws IllegalArgumentException
+        this.persistent = type.isPersistent();
     }
     
     public ClientIdentity(Type type, String untypedId) {
@@ -53,6 +58,10 @@ public class ClientIdentity extends Client {
     
     public boolean isPersistent() {
         return this.persistent;
+    }
+    
+    public boolean isUuid() {
+        return this.getKey().equals(Type.uuid.name());
     }
     
     public boolean isEmail() {
@@ -70,6 +79,29 @@ public class ClientIdentity extends Client {
     
     public Type getType() {
         return Type.valueOf(this.getKey());
+    }
+    
+    /**
+     * compute a unique user id
+     * @return the unique user id.
+     */
+    public String getUuid() {
+    	if (this.isUuid()) {
+    		return super.getName();
+    	} else {
+    		return Digest.encodeMD5Hex(super.getName());
+    	}
+    }
+    
+    public String[] getLookupKeys() {
+    	// if this is an email identity then we have two lookup keys:
+    	// - the email identity name itself
+    	// - the uuid computed from the email identity
+    	if (this.isEmail()) {
+    		return new String[]{super.toString(), getUuid()};
+    	} else {
+    		return new String[]{super.toString()};
+    	}
     }
     
     public JSONObject toJSON() {
