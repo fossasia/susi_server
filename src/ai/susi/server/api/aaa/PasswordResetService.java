@@ -60,13 +60,13 @@ public class PasswordResetService extends AbstractAPIHandler implements APIHandl
 				call.get("token", null));
 		Authentication authentication = new Authentication(credential, DAO.passwordreset);
 		ClientCredential emailcred = new ClientCredential(ClientCredential.Type.passwd_login,
-				authentication.getIdentity().getName());
+				authentication.getString("email"));
 
 		String passwordPattern = DAO.getConfig("users.password.regex", "^(?=.*\\d).{6,64}$");
 
 		Pattern pattern = Pattern.compile(passwordPattern);
 
-		if ((authentication.getIdentity().getName()).equals(newpass) || !new TimeoutMatcher(pattern.matcher(newpass)).matches()) {
+		if ((authentication.getString("email")).equals(newpass) || !new TimeoutMatcher(pattern.matcher(newpass)).matches()) {
 			// password can't equal email and regex should match
 			throw new APIException(400, "invalid password");
 		}

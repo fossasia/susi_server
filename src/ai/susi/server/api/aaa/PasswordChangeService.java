@@ -66,7 +66,7 @@ public class PasswordChangeService extends AbstractAPIHandler implements APIHand
         ClientCredential pwcredential = new ClientCredential(ClientCredential.Type.passwd_login, useremail);
         Authentication authentication = DAO.getAuthentication(pwcredential);
         ClientCredential emailcred = new ClientCredential(ClientCredential.Type.passwd_login,
-                authentication.getIdentity().getName());
+                authentication.getString("email"));
         ClientIdentity identity = authentication.getIdentity();
         String passwordHash;
         String salt;
@@ -93,7 +93,7 @@ public class PasswordChangeService extends AbstractAPIHandler implements APIHand
 
             Pattern pattern = Pattern.compile(passwordPattern);
 
-            if ((authentication.getIdentity().getName()).equals(newpassword) || !new TimeoutMatcher(pattern.matcher(newpassword)).matches()) {
+            if ((authentication.getString("email")).equals(newpassword) || !new TimeoutMatcher(pattern.matcher(newpassword)).matches()) {
                 // password can't be equal to email and regex should be matched
                 result.put("message", "Invalid password.");
                 throw new APIException(400, "invalid password");

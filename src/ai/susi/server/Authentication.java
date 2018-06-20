@@ -88,8 +88,17 @@ public class Authentication {
      * @param time seconds from now when the Authentication expires
      */
     public void setExpireTime(long time){
-    	this.json.put("expires_on", Instant.now().getEpochSecond() + time);
-    	if (this.parent != null && this.credential.isPersistent()) this.parent.commit();
+        this.json.put("expires_on", Instant.now().getEpochSecond() + time);
+        if (this.parent != null && this.credential.isPersistent()) this.parent.commit();
+    }
+
+    /**
+     * Associate an email with this Authentication
+     * @param email of the logged in user
+     */
+    public void setEmail(String email){
+        this.json.put("email", email);
+        if (this.parent != null && this.credential.isPersistent()) this.parent.commit();
     }
 
     /**

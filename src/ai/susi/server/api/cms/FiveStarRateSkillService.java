@@ -84,8 +84,11 @@ public class FiveStarRateSkillService extends AbstractAPIHandler implements APIH
             skill_stars = Integer.parseInt(user_rating);
         }
 
-        if (authorization.getIdentity().isEmail()) {
-            String email = authorization.getIdentity().getName(); //Get email from the access_token
+        if (authorization.getIdentity().isId()) {
+            ClientCredential clientCredential = new ClientCredential(ClientCredential.Type.access_token, 
+                call.get("access_token",""));
+            Authentication authentication = DAO.getAuthentication(clientCredential);
+            String email = authentication.getString("email"); //Get email from the access_token
 
             JsonTray fiveStarSkillRating = DAO.fiveStarSkillRating;
             JSONObject modelName = new JSONObject();

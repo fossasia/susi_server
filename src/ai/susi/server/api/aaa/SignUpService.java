@@ -34,6 +34,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.regex.Pattern;
+import java.util.UUID;
 
 public class SignUpService extends AbstractAPIHandler implements APIHandler {
 
@@ -183,11 +184,13 @@ public class SignUpService extends AbstractAPIHandler implements APIHandler {
 		}
 
 		// create new id
-		ClientIdentity identity = new ClientIdentity(ClientIdentity.Type.email, credential.getName());
+		String uniqueID = UUID.randomUUID().toString().replace("-", "");
+		ClientIdentity identity = new ClientIdentity(ClientIdentity.Type.id, uniqueID);
 		authentication.setIdentity(identity);
 
 		// set authentication details
 		String salt = createRandomString(20);
+		authentication.put("email",credential.getName());
 		authentication.put("salt", salt);
 		authentication.put("passwordHash", getHash(password, salt));
 		authentication.put("activated", activated);
@@ -213,7 +216,7 @@ public class SignUpService extends AbstractAPIHandler implements APIHandler {
 			tokenAuthentication.put("one_time", true);
 
 			try {
-				EmailHandler.sendEmail(signup, "SUSI AI verification", getVerificationMailContent(token, identity.getName()));
+				EmailHandler.sendEmail(signup, "SUSI AI verification", getVerificationMailContent(token, authentication.getString("email")));
 
 				result.put("message",
 						"You successfully signed-up! An email with a verification link was sent to your address.");
