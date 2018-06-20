@@ -94,13 +94,10 @@ public class SusiCognition {
         }
 
         // update skill usage data
-        try {
+        if (!dispute.isEmpty()) try {
             List<String> skills = dispute.get(0).getSkills();
-            for (String skill : skills) {
-                updateUsageData(skill);
-            }
-        }
-        catch (Exception e) {
+            for (String skill : skills) updateUsageData(skill);
+        } catch (Exception e) {
             e.printStackTrace();
         }
         
