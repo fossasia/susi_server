@@ -80,8 +80,8 @@ public class FeedbackSkillService extends AbstractAPIHandler implements APIHandl
             throw new APIException(422, "Feedback not provided.");
         }
 
-        if (authorization.getIdentity().isEmail()) {
-            String email = authorization.getIdentity().getName(); //Get email from the access_token
+        if (!authorization.getIdentity().isAnonymous()) {
+            String idvalue = authorization.getIdentity().getName(); //Get email from the access_token
 
             JsonTray feedbackSkill = DAO.feedbackSkill;
             JSONObject modelName = new JSONObject();
@@ -104,7 +104,8 @@ public class FeedbackSkillService extends AbstractAPIHandler implements APIHandl
 
                             for (int i = 0; i < skillName.length(); i++) {
                                 feedbackObject = skillName.getJSONObject(i);
-                                if (feedbackObject.get("email").equals(email)) {
+                                if ((authorization.getIdentity().isEmail() && feedbackObject.get("email").equals(idvalue)) ||
+                                	(authorization.getIdentity().isUuid() && feedbackObject.get("uuid").equals(idvalue))) {
                                     Timestamp timestamp = new Timestamp(System.currentTimeMillis());
                                     feedbackObject.put("feedback", skill_feedback);
                                     feedbackObject.put("timestamp", timestamp.toString());
@@ -122,7 +123,8 @@ public class FeedbackSkillService extends AbstractAPIHandler implements APIHandl
             if (!feedbackUpdated) {
                 JSONObject feedbackObject = new JSONObject();
                 Timestamp timestamp = new Timestamp(System.currentTimeMillis());
-                feedbackObject.put("email", email);
+                if (authorization.getIdentity().isEmail()) feedbackObject.put("email", idvalue);
+                if (authorization.getIdentity().isUuid()) feedbackObject.put("uuid", idvalue);
                 feedbackObject.put("feedback", skill_feedback);
                 feedbackObject.put("timestamp", timestamp.toString());
                 skillName.put(feedbackObject);
