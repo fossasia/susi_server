@@ -508,6 +508,7 @@ public class SusiServer {
                 SkillsToBeDeleted.class,
                 GetSkillDataUrl.class,
                 UndoDeleteSkillService.class,
+                CheckRegistrationService.class,
 
                 // monitoring services
                 MonitorQueryService.class,
@@ -554,6 +555,9 @@ public class SusiServer {
 
                 //Skill usage data
                 GetSkillUsageService.class,
+
+                //Get device wise skill usage data
+                GetDeviceWiseSkillUsageService.class,
 
                 //Feedback to skill
                 GetSkillFeedbackService.class,
