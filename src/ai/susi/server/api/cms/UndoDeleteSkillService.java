@@ -92,7 +92,7 @@ public class UndoDeleteSkillService  extends AbstractAPIHandler implements APIHa
                         .addFilepattern(".")
                         .call();
                 // and then commit the changes
-                DAO.pushCommit(git, "Undo Delete " + skill_name, rights.getIdentity().isEmail() ? rights.getIdentity().getName() : "anonymous@");
+                DAO.pushCommit(git, "Undo Delete " + skill_name, !rights.getIdentity().isAnonymous() ? rights.getIdentity().getName() : "anonymous@");
                 json.put("accepted", true);
                 json.put("message", "Deletion of Skill Aborted " + skill_name);
             } catch (IOException | GitAPIException e) {

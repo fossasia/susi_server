@@ -1,7 +1,7 @@
 package ai.susi.server.api.cms;
 
 /**
- *  FeedbackSkillService
+ *  RemoveFeedbackService
  *  Copyright by Akshat Garg, @akshatnitd
  *
  *  This library is free software; you can redistribute it and/or
@@ -29,19 +29,15 @@ import org.json.JSONObject;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.File;
-import java.sql.Timestamp;
 
 
 /**
- * This Endpoint accepts 5 parameters. model,group,language,skill,feedback.
- * rating can be positive or negative
- * before rating a skill the skill must exist in the directory.
- * http://localhost:4000/cms/feedbackSkill.json?model=general&group=Knowledge&skill=aboutsusi&feedback=3&access_token=6O7cqoMbzlClxPwg1is31Tz5pjVwo3
+ * This Endpoint accepts 5 parameters. model,group,language,skill,access_token
+ * http://localhost:4000/cms/removeFeedback.json?model=general&group=Knowledge&language=en&skill=aboutsusi&&access_token=6O7cqoMbzlClxPwg1is31Tz5pjVwo3
  */
-public class FeedbackSkillService extends AbstractAPIHandler implements APIHandler {
+public class RemoveFeedbackService extends AbstractAPIHandler implements APIHandler {
 
-    private static final long serialVersionUID = 8950170351039942439L;
-
+    private static final long serialVersionUID = -5131270951807551092L;
 
     @Override
     public UserRole getMinimalUserRole() {
@@ -55,7 +51,7 @@ public class FeedbackSkillService extends AbstractAPIHandler implements APIHandl
 
     @Override
     public String getAPIPath() {
-        return "/cms/feedbackSkill.json";
+        return "/cms/removeFeedback.json";
     }
 
     @Override
@@ -69,19 +65,14 @@ public class FeedbackSkillService extends AbstractAPIHandler implements APIHandl
         File language = new File(group, language_name);
         String skill_name = call.get("skill", null);
         File skill = SusiSkill.getSkillFileInLanguage(language, skill_name, false);
-        String skill_feedback = call.get("feedback", null);
 
         JSONObject result = new JSONObject();
         if (!skill.exists()) {
             throw new APIException(422, "Skill does not exist.");
         }
 
-        if (skill_feedback == null) {
-            throw new APIException(422, "Feedback not provided.");
-        }
-
         if (!authorization.getIdentity().isAnonymous()) {
-            String idvalue = authorization.getIdentity().getName(); //Get email from the access_token
+        	String idvalue = authorization.getIdentity().getName(); // Get id from the access_token
 
             JsonTray feedbackSkill = DAO.feedbackSkill;
             JSONObject modelName = new JSONObject();
@@ -89,7 +80,6 @@ public class FeedbackSkillService extends AbstractAPIHandler implements APIHandl
             JSONObject languageName = new JSONObject();
             JSONArray skillName = new JSONArray();
 
-            Boolean alreadyByUser = false;
             Boolean feedbackUpdated = false;
 
             if (feedbackSkill.has(model_name)) {
@@ -105,12 +95,9 @@ public class FeedbackSkillService extends AbstractAPIHandler implements APIHandl
                             for (int i = 0; i < skillName.length(); i++) {
                                 feedbackObject = skillName.getJSONObject(i);
                                 if ((authorization.getIdentity().isEmail() && feedbackObject.get("email").equals(idvalue)) ||
-                                	(authorization.getIdentity().isUuid() && feedbackObject.get("uuid").equals(idvalue))) {
-                                    Timestamp timestamp = new Timestamp(System.currentTimeMillis());
-                                    feedbackObject.put("feedback", skill_feedback);
-                                    feedbackObject.put("timestamp", timestamp.toString());
-                                    skillName.put(i, feedbackObject);
-                                    alreadyByUser = true;
+                                    (authorization.getIdentity().isUuid() && feedbackObject.get("uuid").equals(idvalue))) {
+                                    skillName.remove(i);
+                                    updateSkillRatingJSON(call);
                                     feedbackUpdated = true;
                                     break;
                                 }
@@ -120,18 +107,10 @@ public class FeedbackSkillService extends AbstractAPIHandler implements APIHandl
                 }
             }
 
-            if (!feedbackUpdated) {
-                JSONObject feedbackObject = new JSONObject();
-                Timestamp timestamp = new Timestamp(System.currentTimeMillis());
-                if (authorization.getIdentity().isEmail()) feedbackObject.put("email", idvalue);
-                if (authorization.getIdentity().isUuid()) feedbackObject.put("uuid", idvalue);
-                feedbackObject.put("feedback", skill_feedback);
-                feedbackObject.put("timestamp", timestamp.toString());
-                skillName.put(feedbackObject);
-            }
-
-            if (!alreadyByUser) {
-                addToSkillRatingJSON(call);
+            if (!feedbackUpdated ) {
+                result.put("message", "Skill feedback missing");
+            } else {
+                result.put("message", "Skill feedback updated");
             }
 
             languageName.put(skill_name, skillName);
@@ -139,17 +118,14 @@ public class FeedbackSkillService extends AbstractAPIHandler implements APIHandl
             modelName.put(group_name, groupName);
             feedbackSkill.put(model_name, modelName, true);
             result.put("accepted", true);
-            result.put("message", "Skill feedback updated");
-            result.put("feedback", skill_feedback);
             return new ServiceResponse(result);
         } else {
             throw new APIException(422, "Access token not given.");
         }
     }
 
-
-    // Adds a skill_rating object to the skillRatingJSON and updates the feedback
-    public void addToSkillRatingJSON(Query call) {
+    // Reduce feedback_count from  skill_rating object to the skillRatingJSON
+    public void updateSkillRatingJSON(Query call) {
         String model_name = call.get("model", "general");
         String group_name = call.get("group", "Knowledge");
         String language_name = call.get("language", "en");
@@ -175,22 +151,8 @@ public class FeedbackSkillService extends AbstractAPIHandler implements APIHandl
 
         if (skillName.has("feedback_count")) {
             int skillFeedback = skillName.getInt("feedback_count");
-            skillName.put("feedback_count", skillFeedback + 1 );
-        } else {
-            skillName.put("feedback_count", 1);
-        }
-
-        if (!skillName.has("stars")) {
-            JSONObject skillStars = new JSONObject();
-            skillStars.put("one_star", 0);
-            skillStars.put("two_star", 0);
-            skillStars.put("three_star", 0);
-            skillStars.put("four_star", 0);
-            skillStars.put("five_star", 0);
-            skillStars.put("avg_star", 0);
-            skillStars.put("total_star", 0);
-            skillName.put("stars", skillStars);
-        }
+            skillName.put("feedback_count", skillFeedback - 1 );
+        } 
 
         languageName.put(skill_name, skillName);
         groupName.put(language_name, languageName);

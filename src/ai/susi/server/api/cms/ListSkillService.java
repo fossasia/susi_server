@@ -141,7 +141,7 @@ public class ListSkillService extends AbstractAPIHandler implements APIHandler {
                             } catch (JSONException e) {
                                 //do nothing
                             }
-                            return valA.compareTo(valB);
+                            return valA.compareToIgnoreCase(valB);
                         }
                     });
 
@@ -162,7 +162,7 @@ public class ListSkillService extends AbstractAPIHandler implements APIHandler {
                                 e.getMessage();
                                 //do nothing
                             }
-                            return valB.compareTo(valA);
+                            return valB.compareToIgnoreCase(valA);
                         }
                     });
                 }

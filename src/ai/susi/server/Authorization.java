@@ -53,18 +53,32 @@ public class Authorization {
         this.parent = parent;
         this.identity = identity;
 
-        if(parent != null){
-	    	if (parent.has(identity.toString())) {
-	    		json = parent.getJSONObject(identity.toString());
-	        } else {
-	        	json = new JSONObject();
+        if (parent != null) {
+        	String[] lookupKeys = identity.getLookupKeys();
+        	this.json = null;
+        	for (String key: lookupKeys) {
+        		if (parent.has(key)) {
+        			this.json = parent.getJSONObject(key);
+    	    		break;
+        		}
+        	}
+        	// in case that the identity has the uuid inside, we must loop here over all objects
+        	if (this.json == null && identity.isUuid()) for (String key: this.parent.keys()) {
+        		if (new ClientIdentity(key).getUuid().equals(identity.getName())) {
+        			this.json = parent.getJSONObject(key);
+    	    		break;
+        		}
+        	}
+	    	if (this.json == null) {
+	    		this.json = new JSONObject();
 	        	parent.put(identity.toString(), json, identity.isPersistent());
 	        }
+    	} else {
+    		this.json = new JSONObject();
     	}
-    	else json = new JSONObject();
     	
-    	if (json.has("userRole")) {
-    		String userRoleName = json.getString("userRole");
+    	if (this.json.has("userRole")) {
+    		String userRoleName = this.json.getString("userRole");
             try {
             	userRole = UserRole.valueOf(userRoleName.toUpperCase());
             } catch (IllegalArgumentException e) {
@@ -74,11 +88,11 @@ public class Authorization {
     	} else{
             DAO.severe("user role invalid (not given)");
             userRole = UserRole.ANONYMOUS;
-            json.put("userRole", userRole.getName());
+            this.json.put("userRole", userRole.getName());
         }
 
-        if(!json.has("permissions")) json.put("permissions", new JSONObject());
-        permissions = json.getJSONObject("permissions");
+        if(!this.json.has("permissions")) this.json.put("permissions", new JSONObject());
+        permissions = this.json.getJSONObject("permissions");
     }
     
     public Authorization setAdmin() {
