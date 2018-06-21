@@ -117,6 +117,7 @@ public class DAO {
     public static JsonTray feedbackSkill;
     public static JsonTray feedbackLogs;
     public static JsonTray profileDetails;
+    public static JsonTray deviceWiseSkillUsage;
 
 
     static {
@@ -292,6 +293,15 @@ public class DAO {
         skillUsage = new JsonTray(skillUsage_per.toFile(), skillUsage_vol.toFile(), 1000000);
         OS.protectPath(skillUsage_per);
         OS.protectPath(skillUsage_vol);
+
+        // Device wise skill usage
+        Path device_wise_skill_usage_dir = dataPath.resolve("skill_usage");
+        device_wise_skill_usage_dir.toFile().mkdirs();
+        Path deviceWiseSkillUsage_per = device_wise_skill_usage_dir.resolve("deviceWiseSkillUsage.json");
+        Path deviceWiseSkillUsage_vol = device_wise_skill_usage_dir.resolve("deviceWiseSkillUsage_session.json");
+        deviceWiseSkillUsage = new JsonTray(deviceWiseSkillUsage_per.toFile(), deviceWiseSkillUsage_vol.toFile(), 1000000);
+        OS.protectPath(deviceWiseSkillUsage_per);
+        OS.protectPath(deviceWiseSkillUsage_vol);
 
         //Feedback Skill storage
         Path feedbackSkill_per = susi_skill_rating_dir.resolve("feedbackSkill.json");
