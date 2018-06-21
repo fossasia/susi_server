@@ -20,6 +20,7 @@
 package ai.susi.server.api.aaa;
 
 import ai.susi.DAO;
+import ai.susi.EmailHandler;
 import ai.susi.json.JsonObjectWithDefault;
 import ai.susi.server.*;
 import ai.susi.tools.TimeoutMatcher;
@@ -83,8 +84,16 @@ public class PasswordResetService extends AbstractAPIHandler implements APIHandl
 		if (authentication.has("one_time") && authentication.getBoolean("one_time")) {
 			authentication.delete();
 		}
-		result.put("accepted", true);
-		result.put("message", "Your password has been changed!");
+
+		String subject = "Password Reset";
+		try {
+			EmailHandler.sendEmail(authentication.getIdentity().getName(), subject, "Your password has been reset successfully!");
+			result.put("accepted", true);
+			result.put("message", "Your password has been changed!");
+		} catch (Exception e) {
+			result.put("message", e.getMessage());
+		}
+
 		return new ServiceResponse(result);
 	}
 
