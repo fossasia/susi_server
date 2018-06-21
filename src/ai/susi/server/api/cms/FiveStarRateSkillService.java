@@ -92,8 +92,6 @@ public class FiveStarRateSkillService extends AbstractAPIHandler implements APIH
             JSONObject groupName = new JSONObject();
             JSONObject languageName = new JSONObject();
             JSONArray skillName = new JSONArray();
-
-            JSONObject ratingObject = new JSONObject();
             JSONObject resultStars = new JSONObject();
             Boolean alreadyByUser = false;
             Timestamp timestamp = new Timestamp(System.currentTimeMillis());
@@ -109,6 +107,7 @@ public class FiveStarRateSkillService extends AbstractAPIHandler implements APIH
                             skillName = languageName.getJSONArray(skill_name);
 
                             for (int i = 0; i < skillName.length(); i++) {
+                                JSONObject ratingObject = new JSONObject();
                                 ratingObject = skillName.getJSONObject(i);
                                 if ((authorization.getIdentity().isEmail() && ratingObject.get("email").equals(idvalue)) ||
                                     (authorization.getIdentity().isUuid() && ratingObject.get("uuid").equals(idvalue))) {
@@ -131,6 +130,7 @@ public class FiveStarRateSkillService extends AbstractAPIHandler implements APIH
             }
 
             if (!alreadyByUser) {
+                JSONObject ratingObject = new JSONObject();
                 if (authorization.getIdentity().isEmail()) ratingObject.put("email", idvalue);
                 if (authorization.getIdentity().isUuid()) ratingObject.put("uuid", idvalue);
                 ratingObject.put("stars", skill_stars);
