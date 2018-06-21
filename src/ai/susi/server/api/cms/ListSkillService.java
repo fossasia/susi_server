@@ -45,6 +45,7 @@ public class ListSkillService extends AbstractAPIHandler implements APIHandler {
         File model = new File(DAO.model_watch_dir, model_name);
         String group_name = call.get("group", "All");
         String language_name = call.get("language", "en");
+        int usage_duration = call.get("duration", 0);
         JSONArray jsonArray = new JSONArray();
         JSONObject json = new JSONObject(true);
         JSONObject skillObject = new JSONObject();
@@ -65,7 +66,7 @@ public class ListSkillService extends AbstractAPIHandler implements APIHandler {
                 for (String skill_name : fileList) {
                     //System.out.println(skill_name);
                     skill_name = skill_name.replace(".txt", "");
-                    JSONObject skillMetadata = SusiSkill.getSkillMetadata(model_name, temp_group_name, language_name, skill_name);
+                    JSONObject skillMetadata = SusiSkill.getSkillMetadata(model_name, temp_group_name, language_name, skill_name, usage_duration);
 
                     jsonArray.put(skillMetadata);
                     skillObject.put(skill_name, skillMetadata);
@@ -84,7 +85,7 @@ public class ListSkillService extends AbstractAPIHandler implements APIHandler {
             for (String skill_name : fileList) {
                 //System.out.println(skill_name);
                 skill_name = skill_name.replace(".txt", "");
-                JSONObject skillMetadata = SusiSkill.getSkillMetadata(model_name, group_name, language_name, skill_name);
+                JSONObject skillMetadata = SusiSkill.getSkillMetadata(model_name, group_name, language_name, skill_name, usage_duration);
 
                 jsonArray.put(skillMetadata);
                 skillObject.put(skill_name, skillMetadata);
@@ -202,6 +203,50 @@ public class ListSkillService extends AbstractAPIHandler implements APIHandler {
                                 valA = a.getJSONObject("skill_rating").getJSONObject("stars").getFloat("avg_star");
                                 valB = b.getJSONObject("skill_rating").getJSONObject("stars").getFloat("avg_star");
                                 result = Float.compare(valB, valA);
+
+                            } catch (JSONException e) {
+                                e.printStackTrace();
+                            }
+                            return result;
+                        }
+                    });
+                }
+            }
+            else if (filter_type.equals("usage")) {
+                if (filter_name.equals("ascending")) {
+                    Collections.sort(jsonValues, new Comparator<JSONObject>() {
+
+                        @Override
+                        public int compare(JSONObject a, JSONObject b) {
+                            int valA;
+                            int valB;
+                            int result=0;
+
+                            try {
+                                valA = a.getInt("usage_count");
+                                valB = b.getInt("usage_count");
+                                result = Integer.compare(valA, valB);
+
+                            } catch (JSONException e) {
+                                e.printStackTrace();
+                            }
+                            return result;
+                        }
+                    });
+                }
+                else {
+                    Collections.sort(jsonValues, new Comparator<JSONObject>() {
+
+                        @Override
+                        public int compare(JSONObject a, JSONObject b) {
+                            int valA;
+                            int valB;
+                            int result=0;
+
+                            try {
+                                valA = a.getInt("usage_count");
+                                valB = b.getInt("usage_count");
+                                result = Integer.compare(valB, valA);
 
                             } catch (JSONException e) {
                                 e.printStackTrace();
