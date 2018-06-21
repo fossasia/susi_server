@@ -16,6 +16,7 @@ import java.util.*;
 /**
  * This Servlet gives a API Endpoint to list all the Skills given its model, group and language.
  * Can be tested on http://127.0.0.1:4000/cms/getSkillList.json
+ * Other params are - applyFilter, filter_type, filter_name, count
  */
 
 public class ListSkillService extends AbstractAPIHandler implements APIHandler {
@@ -49,6 +50,22 @@ public class ListSkillService extends AbstractAPIHandler implements APIHandler {
         JSONArray jsonArray = new JSONArray();
         JSONObject json = new JSONObject(true);
         JSONObject skillObject = new JSONObject();
+        String countString = call.get("count", null);
+        Integer count = null;
+        Boolean countFilter = false;
+
+        if(countString != null) {
+            if(Integer.parseInt(countString) < 0) {
+                throw new APIException(422, "Invalid count value. It should be positive.");
+            } else {
+                countFilter = true;
+                try {
+                    count = Integer.parseInt(countString);
+                } catch(NumberFormatException ex) {
+                    throw new APIException(422, "Invalid count value.");
+                }
+            }
+        }
 
         // Returns susi skills list of all groups
         if (group_name.equals("All")) {
@@ -64,7 +81,6 @@ public class ListSkillService extends AbstractAPIHandler implements APIHandler {
                 listFilesForFolder(language, fileList);
 
                 for (String skill_name : fileList) {
-                    //System.out.println(skill_name);
                     skill_name = skill_name.replace(".txt", "");
                     JSONObject skillMetadata = SusiSkill.getSkillMetadata(model_name, temp_group_name, language_name, skill_name, usage_duration);
 
@@ -83,7 +99,6 @@ public class ListSkillService extends AbstractAPIHandler implements APIHandler {
             listFilesForFolder(language, fileList);
 
             for (String skill_name : fileList) {
-                //System.out.println(skill_name);
                 skill_name = skill_name.replace(".txt", "");
                 JSONObject skillMetadata = SusiSkill.getSkillMetadata(model_name, group_name, language_name, skill_name, usage_duration);
 
@@ -120,7 +135,7 @@ public class ListSkillService extends AbstractAPIHandler implements APIHandler {
 
             if (filter_type.equals("date")) {
                 if (filter_name.equals("ascending")) {
-                    
+
                 } else {
 
                 }
@@ -302,9 +317,30 @@ public class ListSkillService extends AbstractAPIHandler implements APIHandler {
             }
 
             for (int i = 0; i < jsonArray.length(); i++) {
+                 if(countFilter) {
+                     if(count == 0) {
+                        break;
+                     } else {
+                        count --;
+                     }
+                 }
                 filteredData.put(jsonValues.get(i));
             }
             json.put("filteredData", filteredData);
+        } else {
+            if(countFilter) {
+                JSONObject tempSkillObject = new JSONObject();
+                for (int i = 0; i < skillObject.length(); i++) {
+                    if(count == 0) {
+                        break;
+                    } else {
+                        count --;
+                    }
+                    String keyName = skillObject.names().getString(i);
+                    tempSkillObject.put(keyName, skillObject.getJSONObject(keyName));
+                }
+                skillObject = tempSkillObject;
+            }
         }
 
 
