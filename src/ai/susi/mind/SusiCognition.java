@@ -31,6 +31,7 @@ import java.util.Date;
 import java.util.List;
 
 import ai.susi.json.JsonTray;
+import com.google.common.base.Strings;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -69,6 +70,10 @@ public class SusiCognition {
             observation.addObservation("longitude", Double.toString(longitude));
         }
 
+        if (!Strings.isNullOrEmpty(countryName) && !Strings.isNullOrEmpty(countryCode)) {
+            observation.addObservation("country_name", countryName);
+            observation.addObservation("country_code", countryCode);
+        }
         
         SusiLanguage language = SusiLanguage.parse(languageName);
         if (language != SusiLanguage.unknown) observation.addObservation("language", language.name());
@@ -83,14 +88,14 @@ public class SusiCognition {
 
         // update country wise skill usage data
         if (!countryCode.equals("") && !countryName.equals("")) {
-            try {
-                List<String> skills = dispute.get(0).getSkills();
-                for (String skill : skills) {
+            List<String> skills = dispute.get(0).getSkills();
+            for (String skill : skills) {
+                try {
                     updateCountryWiseUsageData(skill, countryCode, countryName);
                 }
-            }
-            catch (Exception e) {
-                e.printStackTrace();
+                catch (Exception e) {
+                    e.printStackTrace();
+                }
             }
         }
 

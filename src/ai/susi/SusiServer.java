@@ -556,6 +556,9 @@ public class SusiServer {
                 //Skill usage data
                 GetSkillUsageService.class,
 
+                //Feedback logs for analysis
+                FeedbackLogService.class,
+          
                 //Get device wise skill usage data
                 GetDeviceWiseSkillUsageService.class,
 
