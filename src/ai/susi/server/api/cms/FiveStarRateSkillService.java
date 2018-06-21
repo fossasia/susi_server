@@ -84,8 +84,8 @@ public class FiveStarRateSkillService extends AbstractAPIHandler implements APIH
             skill_stars = Integer.parseInt(user_rating);
         }
 
-        if (authorization.getIdentity().isEmail()) {
-            String email = authorization.getIdentity().getName(); //Get email from the access_token
+        if (!authorization.getIdentity().isAnonymous()) {
+            String idvalue = authorization.getIdentity().getName(); // Get id from the access_token
 
             JsonTray fiveStarSkillRating = DAO.fiveStarSkillRating;
             JSONObject modelName = new JSONObject();
@@ -110,7 +110,8 @@ public class FiveStarRateSkillService extends AbstractAPIHandler implements APIH
 
                             for (int i = 0; i < skillName.length(); i++) {
                                 ratingObject = skillName.getJSONObject(i);
-                                if (ratingObject.get("email").equals(email)) {
+                                if ((authorization.getIdentity().isEmail() && ratingObject.get("email").equals(idvalue)) ||
+                                    (authorization.getIdentity().isUuid() && ratingObject.get("uuid").equals(idvalue))) {
 
                                     Integer previousRating = ratingObject.getInt("stars");
 
@@ -130,7 +131,8 @@ public class FiveStarRateSkillService extends AbstractAPIHandler implements APIH
             }
 
             if (!alreadyByUser) {
-                ratingObject.put("email", email);
+                if (authorization.getIdentity().isEmail()) ratingObject.put("email", idvalue);
+                if (authorization.getIdentity().isUuid()) ratingObject.put("uuid", idvalue);
                 ratingObject.put("stars", skill_stars);
                 ratingObject.put("timestamp", timestamp.toString());
                 skillName.put(ratingObject);

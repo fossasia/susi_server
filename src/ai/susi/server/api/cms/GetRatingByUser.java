@@ -41,8 +41,9 @@ public class GetRatingByUser extends AbstractAPIHandler implements APIHandler {
         String language_name = call.get("language", "en");
         String skill_name = call.get("skill", null);
 
-        if (authorization.getIdentity().isEmail()) {
-            String email = authorization.getIdentity().getName();   //Get email from the access_token
+        if (!authorization.getIdentity().isAnonymous()) {
+        	String idvalue = authorization.getIdentity().getName(); // Get id from the access_token
+            
             JSONObject result = new JSONObject();
             JsonTray fiveStarSkillRating = DAO.fiveStarSkillRating;
             JSONObject modelName = new JSONObject();
@@ -59,7 +60,8 @@ public class GetRatingByUser extends AbstractAPIHandler implements APIHandler {
 
                             for (int i = 0; i < skillName.length(); i++) {
                                 JSONObject ratingObject = skillName.getJSONObject(i);
-                                if (ratingObject.get("email").equals(email)) {
+                                if ((authorization.getIdentity().isEmail() && ratingObject.get("email").equals(idvalue)) ||
+                                    (authorization.getIdentity().isUuid() && ratingObject.get("uuid").equals(idvalue))) {
                                     result.put("accepted", true);
                                     result.put("message", "Fetched user rating successfully");
                                     result.put("ratings", ratingObject);

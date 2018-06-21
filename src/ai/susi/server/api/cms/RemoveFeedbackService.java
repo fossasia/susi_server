@@ -29,7 +29,6 @@ import org.json.JSONObject;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.File;
-import java.sql.Timestamp;
 
 
 /**
@@ -72,8 +71,8 @@ public class RemoveFeedbackService extends AbstractAPIHandler implements APIHand
             throw new APIException(422, "Skill does not exist.");
         }
 
-        if (authorization.getIdentity().isEmail()) {
-            String email = authorization.getIdentity().getName(); //Get email from the access_token
+        if (!authorization.getIdentity().isAnonymous()) {
+        	String idvalue = authorization.getIdentity().getName(); // Get id from the access_token
 
             JsonTray feedbackSkill = DAO.feedbackSkill;
             JSONObject modelName = new JSONObject();
@@ -95,7 +94,8 @@ public class RemoveFeedbackService extends AbstractAPIHandler implements APIHand
 
                             for (int i = 0; i < skillName.length(); i++) {
                                 feedbackObject = skillName.getJSONObject(i);
-                                if (feedbackObject.get("email").equals(email)) {
+                                if ((authorization.getIdentity().isEmail() && feedbackObject.get("email").equals(idvalue)) ||
+                                    (authorization.getIdentity().isUuid() && feedbackObject.get("uuid").equals(idvalue))) {
                                     skillName.remove(i);
                                     updateSkillRatingJSON(call);
                                     feedbackUpdated = true;
