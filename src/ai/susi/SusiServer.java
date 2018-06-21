@@ -508,6 +508,7 @@ public class SusiServer {
                 SkillsToBeDeleted.class,
                 GetSkillDataUrl.class,
                 UndoDeleteSkillService.class,
+                CheckRegistrationService.class,
 
                 // monitoring services
                 MonitorQueryService.class,
