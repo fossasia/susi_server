@@ -83,7 +83,7 @@ public class LoginService extends AbstractAPIHandler implements APIHandler {
 		// login check for app
 		if(post.get("checkLogin", false)) {
 			JSONObject result = new JSONObject(true);
-			if (authorization.getIdentity().isEmail()) {
+			if (!authorization.getIdentity().isAnonymous()) {
 				result.put("loggedIn", true);
 				result.put("accepted", true);
 				result.put("message", "You are logged in as " + authorization.getIdentity().getName());

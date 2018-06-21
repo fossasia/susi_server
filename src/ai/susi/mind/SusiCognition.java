@@ -99,14 +99,11 @@ public class SusiCognition {
         }
 
         // update skill usage data
-        List<String> skills = dispute.get(0).getSkills();
-        for (String skill : skills) {
-            try {
-                updateUsageData(skill);
-            }
-            catch (Exception e) {
-                e.printStackTrace();
-            }
+        if (!dispute.isEmpty()) try {
+            List<String> skills = dispute.get(0).getSkills();
+            for (String skill : skills) updateUsageData(skill);
+        } catch (Exception e) {
+            e.printStackTrace();
         }
         
         // store answer and actions into json
