@@ -91,7 +91,7 @@ import org.apache.log4j.PatternLayout;
 public class DAO {
 
     private final static String ACCESS_DUMP_FILE_PREFIX = "access_";
-    public  static File conf_dir, bin_dir, html_dir, data_dir, susi_chatlog_dir, susi_skilllog_dir, model_watch_dir, susi_skill_repo, deleted_skill_dir;
+    public  static File conf_dir, bin_dir, html_dir, data_dir, susi_chatlog_dir, susi_skilllog_dir, model_watch_dir, susi_skill_repo, private_skill_watch_dir, susi_private_skill_repo, usi_skill_repo, deleted_skill_dir;
     public static String conflictsPlaceholder = "%CONFLICTS%";
     private static File external_data, assets, dictionaries;
     private static Settings public_settings, private_settings;
@@ -164,7 +164,9 @@ public class DAO {
             DAO.deleted_skill_dir.mkdirs();
         }
         model_watch_dir = new File(new File(data_dir.getParentFile().getParentFile(), "susi_skill_data"), "models");
+        private_skill_watch_dir = new File(new File(data_dir.getParentFile().getParentFile(), "susi_private_skill_data"), "users");
         susi_skill_repo = new File(data_dir.getParentFile().getParentFile(), "susi_skill_data/.git");
+        susi_private_skill_repo = new File(data_dir.getParentFile().getParentFile(), "susi_private_skill_data/.git");
         File susi_generic_skills = new File(data_dir, "generic_skills");
         if (!susi_generic_skills.exists()) susi_generic_skills.mkdirs();
         File susi_generic_skills_media_discovery = new File(susi_generic_skills, "media_discovery");
@@ -522,8 +524,22 @@ public class DAO {
         return repository;
     }
 
+    public static Repository getPrivateRepository() throws IOException {
+        FileRepositoryBuilder builder = new FileRepositoryBuilder();
+        Repository repository = builder.setGitDir((susi_private_skill_repo))
+                .readEnvironment() // scan environment GIT_* variables
+                .findGitDir() // scan up the file system tree
+                .build();
+        return repository;
+    }
+
     public static Git getGit() throws IOException {
         Git git = new Git(getRepository());
+        return git;
+    }
+
+    public static Git getPrivateGit() throws IOException {
+        Git git = new Git(getPrivateRepository());
         return git;
     }
 

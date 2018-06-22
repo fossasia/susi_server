@@ -430,27 +430,31 @@ public class SusiSkill {
         String[] list = languagepath.list();
 
         // first try: the skill name may be same or similar to the skill file name
-        for (String n: list) {
-            if (n.equals(fn) || n.toLowerCase().equals(fn)) {
-                return new File(languagepath, n);
+        if(list !=null && list.length!=0){
+            for (String n: list) {
+                if (n.equals(fn) || n.toLowerCase().equals(fn)) {
+                    return new File(languagepath, n);
+                }
             }
         }
 
         // second try: the skill name may be same or similar to the skill name within the skill description
         // this is costly: we must parse the whole skill file
-        for (String n: list) {
-            if (!n.endsWith(".txt") && !n.endsWith(".ezd")) continue;
-            File f = new File(languagepath, n);
-            try {
-                SusiSkill.ID skillid = new SusiSkill.ID(f);
-                SusiLanguage language = skillid.language();
-                JSONObject json = SusiSkill.readLoTSkill(new BufferedReader(new FileReader(f)), language, Integer.toString(skillid.hashCode()));
-                String sn = json.optString("skill_name");
-                if (sn.equals(skill_name) || sn.toLowerCase().equals(skill_name) || sn.toLowerCase().replace(' ', '_').equals(skill_name)) {
-                    return new File(languagepath, n);
+        if(list !=null && list.length!=0){
+            for (String n: list) {
+                if (!n.endsWith(".txt") && !n.endsWith(".ezd")) continue;
+                File f = new File(languagepath, n);
+                try {
+                    SusiSkill.ID skillid = new SusiSkill.ID(f);
+                    SusiLanguage language = skillid.language();
+                    JSONObject json = SusiSkill.readLoTSkill(new BufferedReader(new FileReader(f)), language, Integer.toString(skillid.hashCode()));
+                    String sn = json.optString("skill_name");
+                    if (sn.equals(skill_name) || sn.toLowerCase().equals(skill_name) || sn.toLowerCase().replace(' ', '_').equals(skill_name)) {
+                        return new File(languagepath, n);
+                    }
+                } catch (JSONException | FileNotFoundException e) {
+                    continue;
                 }
-            } catch (JSONException | FileNotFoundException e) {
-                continue;
             }
         }
 
