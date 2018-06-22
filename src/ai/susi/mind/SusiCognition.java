@@ -31,6 +31,7 @@ import java.util.Date;
 import java.util.List;
 
 import ai.susi.json.JsonTray;
+import com.google.common.base.Strings;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -69,6 +70,10 @@ public class SusiCognition {
             observation.addObservation("longitude", Double.toString(longitude));
         }
 
+        if (!Strings.isNullOrEmpty(countryName) && !Strings.isNullOrEmpty(countryCode)) {
+            observation.addObservation("country_name", countryName);
+            observation.addObservation("country_code", countryCode);
+        }
         
         SusiLanguage language = SusiLanguage.parse(languageName);
         if (language != SusiLanguage.unknown) observation.addObservation("language", language.name());
@@ -83,14 +88,14 @@ public class SusiCognition {
 
         // update country wise skill usage data
         if (!countryCode.equals("") && !countryName.equals("")) {
-            try {
-                List<String> skills = dispute.get(0).getSkills();
-                for (String skill : skills) {
+            List<String> skills = dispute.get(0).getSkills();
+            for (String skill : skills) {
+                try {
                     updateCountryWiseUsageData(skill, countryCode, countryName);
                 }
-            }
-            catch (Exception e) {
-                e.printStackTrace();
+                catch (Exception e) {
+                    e.printStackTrace();
+                }
             }
         }
 
@@ -174,7 +179,6 @@ public class SusiCognition {
         JSONObject groupName = new JSONObject();
         JSONObject languageName = new JSONObject();
         JSONArray countryWiseUsageData =new JSONArray();
-        JSONObject countryUsage = new JSONObject();
         Boolean countryExists = false;
         if (skillUsage.has(model_name)) {
             modelName = skillUsage.getJSONObject(model_name);
@@ -187,6 +191,7 @@ public class SusiCognition {
                         countryWiseUsageData = languageName.getJSONArray(skill_name);
 
                         for (int i = 0; i < countryWiseUsageData.length(); i++) {
+                            JSONObject countryUsage = new JSONObject();
                             countryUsage = countryWiseUsageData.getJSONObject(i);
                             if (countryUsage.get("country_code").equals(countryCode)) {
                                 countryUsage.put("count", countryUsage.getInt("count")+1);
@@ -201,6 +206,7 @@ public class SusiCognition {
         }
 
         if (!countryExists) {
+            JSONObject countryUsage = new JSONObject();
             countryUsage.put("country_code", countryCode);
             countryUsage.put("country_name", countryName);
             countryUsage.put("count", 1);
@@ -226,7 +232,6 @@ public class SusiCognition {
         JSONObject languageName = new JSONObject();
         JSONArray usageData = new JSONArray();
         Boolean dateExists = false;
-        JSONObject dayUsage = new JSONObject();
         String today = LocalDate.now().toString();
         if (skillUsage.has(model_name)) {
             modelName = skillUsage.getJSONObject(model_name);
@@ -237,6 +242,7 @@ public class SusiCognition {
                     if (languageName.has(skill_name)) {
                         usageData = languageName.getJSONArray(skill_name);
                         for (int i = 0; i<usageData.length(); i++) {
+                            JSONObject dayUsage = new JSONObject();
                             dayUsage = usageData.getJSONObject(i);
                             if (dayUsage.get("date").equals(today)){
                                 dayUsage.put("count", dayUsage.getInt("count")+1+"");
@@ -251,6 +257,7 @@ public class SusiCognition {
         }
 
         if (!dateExists) {
+            JSONObject dayUsage = new JSONObject();
             dayUsage.put("date", today);
             dayUsage.put("count", "1");
             usageData.put(dayUsage);

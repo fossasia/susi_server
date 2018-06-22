@@ -53,20 +53,39 @@ public class RemoveUserDevices extends AbstractAPIHandler implements APIHandler 
 
     @Override
     public ServiceResponse serviceImpl(Query query, HttpServletResponse response, Authorization authorization, JsonObjectWithDefault permissions) throws APIException {
+
+        String key = query.get("macid", null);
+
         if ( authorization.getIdentity()!=null ) {
+
             Accounting accounting = DAO.getAccounting(authorization.getIdentity());
             JSONObject userSettings = accounting.getJSON();
-            if (userSettings.has("devices")) {
-                userSettings.remove("devices");                       
+
+            if(key == null) {
+                if (userSettings.has("devices")) {
+                    userSettings.remove("devices");
+                }
+                JSONObject result = new JSONObject();
+                result.put("accepted", true);
+                result.put("message", "Success: All User devices were removed.");
+                accounting.commit();
+                return new ServiceResponse(result);
             }
-            JSONObject result = new JSONObject();
-            result.put("accepted", true);
-            result.put("message", "Success: All User devices were removed.");
-            accounting.commit();
-            return new ServiceResponse(result);
+            else {
+                if (userSettings.has("devices")) {
+                    JSONObject devices = userSettings.getJSONObject("devices");
+                    if(devices.has(key)){
+                        devices.remove(key);
+                    }
+                }
+                JSONObject result = new JSONObject();
+                result.put("accepted", true);
+                result.put("message", "Success: User device was removed.");
+                accounting.commit();
+                return new ServiceResponse(result);
+            }
         } else {
             throw new APIException(400, "Specified user data not found, ensure you are logged in.");
         }
-
     }
 }

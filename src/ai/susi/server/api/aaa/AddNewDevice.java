@@ -37,7 +37,7 @@ import javax.servlet.http.HttpServletResponse;
 /**
  * Created by @Akshat-Jain on 24/5/18.
  * Servlet to add device information
- * This service accepts two parameter - Mac address of device and device name - and stores them in User data
+ * This service accepts 5 parameters - Mac address of device, device name, room, latitude and longitude info of the device - and stores them in the user's accounting object
  * test locally at http://127.0.0.1:4000/aaa/addNewDevice.json?macid=macAddressOfDevice&device=deviceName&access_token=6O7cqoMbzlClxPwg1is31Tz5pjVwo3
  */
 public class AddNewDevice extends AbstractAPIHandler implements APIHandler {
@@ -63,15 +63,22 @@ public class AddNewDevice extends AbstractAPIHandler implements APIHandler {
     public ServiceResponse serviceImpl(Query query, HttpServletResponse response, Authorization authorization, JsonObjectWithDefault permissions) throws APIException {
 
                JSONObject value = new JSONObject();
+               JSONObject geolocation = new JSONObject();
            
                String key = query.get("macid", null);
                String name = query.get("name", null);
-               String device = query.get("device", null);
+               String room = query.get("room", null);
+               String latitude = query.get("latitude", null);
+               String longitude = query.get("longitude", null);
                
-               if (key == null || name == null || device == null) {
+               if (key == null || name == null || room == null || latitude == null || longitude == null) {
                    throw new APIException(400, "Bad service call, missing arguments");
                } else {
-                   value.put(name, device);
+                  geolocation.put("latitude", latitude);
+                  geolocation.put("longitude", longitude);
+                  value.put("name", name);
+                  value.put("room", room);
+                  value.put("geolocation", geolocation);
                }
            
            if (authorization.getIdentity() == null) {

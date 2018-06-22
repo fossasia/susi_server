@@ -482,7 +482,7 @@ public class SusiSkill {
         return null;
     }
 
-    public static JSONObject getSkillMetadata(String model, String group, String language, String skillname) {
+    public static JSONObject getSkillMetadata(String model, String group, String language, String skillname, int duration) {
 
         JSONObject skillMetadata = new JSONObject(true)
                 .put("model", model)
@@ -507,6 +507,7 @@ public class SusiSkill {
         skillMetadata.put("dynamic_content", false);
         skillMetadata.put("examples", JSONObject.NULL);
         skillMetadata.put("skill_rating", JSONObject.NULL);
+        skillMetadata.put("usage_count", 0);
 
         // metadata
         for (Map.Entry<SusiSkill.ID, SusiSkill> entry : DAO.susi.getSkillMetadata().entrySet()) {
@@ -528,77 +529,11 @@ public class SusiSkill {
                 skillMetadata.put("terms_of_use", skill.getTermsOfUse() ==null ? JSONObject.NULL:skill.getTermsOfUse());
                 skillMetadata.put("dynamic_content", skill.getDynamicContent());
                 skillMetadata.put("examples", skill.getExamples() ==null ? JSONObject.NULL: skill.getExamples());
+                skillMetadata.put("skill_rating", getSkillRating(model, group, language, skillname));
+                skillMetadata.put("usage_count", getSkillUsage(model, group, language, skillname, duration));
 
             }
         }
-
-        // rating
-        JsonTray skillRating = DAO.skillRating;
-        if (skillRating.has(model)) {
-            JSONObject modelName = skillRating.getJSONObject(model);
-            if (modelName.has(group)) {
-                JSONObject groupName = modelName.getJSONObject(group);
-                if (groupName.has(language)) {
-                    JSONObject languageName = groupName.getJSONObject(language);
-                    if (languageName.has(skillname)) {
-                        JSONObject skillName = languageName.getJSONObject(skillname);
-
-                        if (!skillName.has("stars")){
-                            JSONObject newFiveStarRating = new JSONObject();
-                            newFiveStarRating.put("one_star", 0);
-                            newFiveStarRating.put("two_star", 0);
-                            newFiveStarRating.put("three_star", 0);
-                            newFiveStarRating.put("four_star", 0);
-                            newFiveStarRating.put("five_star", 0);
-                            newFiveStarRating.put("avg_star", 0);
-                            newFiveStarRating.put("total_star", 0);
-
-                            skillName.put("stars", newFiveStarRating);
-                        }
-                        skillMetadata.put("skill_rating", skillName);
-                    }
-                    else {
-                        JSONObject newRating=new JSONObject();
-                        newRating.put("negative", "0");
-                        newRating.put("positive", "0");
-                        newRating.put("feedback_count", 0);
-
-                        JSONObject newFiveStarRating=new JSONObject();
-                        newFiveStarRating.put("one_star", 0);
-                        newFiveStarRating.put("two_star", 0);
-                        newFiveStarRating.put("three_star", 0);
-                        newFiveStarRating.put("four_star", 0);
-                        newFiveStarRating.put("five_star", 0);
-                        newFiveStarRating.put("avg_star", 0);
-                        newFiveStarRating.put("total_star", 0);
-
-                        newRating.put("stars", newFiveStarRating);
-
-                        skillMetadata.put("skill_rating", newRating);
-                    }
-                }
-            }
-            else {
-                JSONObject newRating=new JSONObject();
-                newRating.put("negative", "0");
-                newRating.put("positive", "0");
-                newRating.put("feedback_count", 0);
-
-                JSONObject newFiveStarRating=new JSONObject();
-                newFiveStarRating.put("one_star", 0);
-                newFiveStarRating.put("two_star", 0);
-                newFiveStarRating.put("three_star", 0);
-                newFiveStarRating.put("four_star", 0);
-                newFiveStarRating.put("five_star", 0);
-                newFiveStarRating.put("avg_star", 0);
-                newFiveStarRating.put("total_star", 0);
-
-                newRating.put("stars", newFiveStarRating);
-
-                skillMetadata.put("skill_rating", newRating);
-            }
-        }
-
 
         // file attributes
         BasicFileAttributes attr = null;
@@ -614,6 +549,90 @@ public class SusiSkill {
             skillMetadata.put("lastModifiedTime" , attr.lastModifiedTime());
         }
         return skillMetadata;
+    }
+
+    // Function overloading - if duration parameter is not passed then use 7 as default value.
+    public static JSONObject getSkillMetadata(String model, String group, String language, String skillname) {
+        return getSkillMetadata(model, group, language, skillname, 7);
+    }
+
+    public static JSONObject getSkillRating(String model, String group, String language, String skillname) {
+        // rating
+        JsonTray skillRating = DAO.skillRating;
+        if (skillRating.has(model)) {
+            JSONObject modelName = skillRating.getJSONObject(model);
+            if (modelName.has(group)) {
+                JSONObject groupName = modelName.getJSONObject(group);
+                if (groupName.has(language)) {
+                    JSONObject languageName = groupName.getJSONObject(language);
+                    if (languageName.has(skillname)) {
+                        JSONObject skillName = languageName.getJSONObject(skillname);
+
+                        if (!skillName.has("stars")) {
+                            JSONObject newFiveStarRating = new JSONObject();
+                            newFiveStarRating.put("one_star", 0);
+                            newFiveStarRating.put("two_star", 0);
+                            newFiveStarRating.put("three_star", 0);
+                            newFiveStarRating.put("four_star", 0);
+                            newFiveStarRating.put("five_star", 0);
+                            newFiveStarRating.put("avg_star", 0);
+                            newFiveStarRating.put("total_star", 0);
+
+                            skillName.put("stars", newFiveStarRating);
+                        }
+                        return skillName;
+                    }
+                }
+            }
+        }
+        JSONObject newRating=new JSONObject();
+        newRating.put("negative", "0");
+        newRating.put("positive", "0");
+        newRating.put("feedback_count", 0);
+
+        JSONObject newFiveStarRating=new JSONObject();
+        newFiveStarRating.put("one_star", 0);
+        newFiveStarRating.put("two_star", 0);
+        newFiveStarRating.put("three_star", 0);
+        newFiveStarRating.put("four_star", 0);
+        newFiveStarRating.put("five_star", 0);
+        newFiveStarRating.put("avg_star", 0);
+        newFiveStarRating.put("total_star", 0);
+
+        newRating.put("stars", newFiveStarRating);
+
+        return newRating;
+    }
+
+    public static int getSkillUsage(String model, String group, String language, String skillname, int duration) {
+        // usage
+        int totalUsage = 0;
+        JsonTray skillUsage = DAO.skillUsage;
+        if (skillUsage.has(model)) {
+            JSONObject modelName = skillUsage.getJSONObject(model);
+            if (modelName.has(group)) {
+                JSONObject groupName = modelName.getJSONObject(group);
+                if (groupName.has(language)) {
+                    JSONObject languageName = groupName.getJSONObject(language);
+                    if (languageName.has(skillname)) {
+                        JSONArray skillName = languageName.getJSONArray(skillname);
+
+                        // Fetch skill usage data for sorting purpose.
+                        int startIndex = skillName.length() >= duration ? skillName.length()-duration : 0;
+                        for (int i = startIndex; i<skillName.length(); i++)
+                        {
+                            JSONObject dayUsage = skillName.getJSONObject(i);
+                            totalUsage += dayUsage.getInt("count");
+                        }
+                        return totalUsage;
+                    }
+                    else {
+                        return 0;
+                    }
+                }
+            }
+        }
+        return 0;
     }
 
     public static JSONObject readJsonSkill(File file) throws JSONException, FileNotFoundException {
