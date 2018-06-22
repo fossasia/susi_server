@@ -11,7 +11,10 @@ import org.json.JSONObject;
 import javax.mail.Folder;
 import javax.servlet.http.HttpServletResponse;
 import java.io.File;
+import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 
 /**
  * This Servlet gives a API Endpoint to list all the Skills given its model, group and language.
@@ -46,13 +49,14 @@ public class ListSkillService extends AbstractAPIHandler implements APIHandler {
         File model = new File(DAO.model_watch_dir, model_name);
         String group_name = call.get("group", "All");
         String language_name = call.get("language", "en");
-        int usage_duration = call.get("duration", 0);
+        int duration = call.get("duration", 0);
         JSONArray jsonArray = new JSONArray();
         JSONObject json = new JSONObject(true);
         JSONObject skillObject = new JSONObject();
         String countString = call.get("count", null);
         Integer count = null;
         Boolean countFilter = false;
+        Boolean dateFilter = false;
 
         if(countString != null) {
             if(Integer.parseInt(countString) < 0) {
@@ -82,7 +86,7 @@ public class ListSkillService extends AbstractAPIHandler implements APIHandler {
 
                 for (String skill_name : fileList) {
                     skill_name = skill_name.replace(".txt", "");
-                    JSONObject skillMetadata = SusiSkill.getSkillMetadata(model_name, temp_group_name, language_name, skill_name, usage_duration);
+                    JSONObject skillMetadata = SusiSkill.getSkillMetadata(model_name, temp_group_name, language_name, skill_name, duration);
 
                     jsonArray.put(skillMetadata);
                     skillObject.put(skill_name, skillMetadata);
@@ -100,7 +104,7 @@ public class ListSkillService extends AbstractAPIHandler implements APIHandler {
 
             for (String skill_name : fileList) {
                 skill_name = skill_name.replace(".txt", "");
-                JSONObject skillMetadata = SusiSkill.getSkillMetadata(model_name, group_name, language_name, skill_name, usage_duration);
+                JSONObject skillMetadata = SusiSkill.getSkillMetadata(model_name, group_name, language_name, skill_name, duration);
 
                 jsonArray.put(skillMetadata);
                 skillObject.put(skill_name, skillMetadata);
@@ -134,10 +138,46 @@ public class ListSkillService extends AbstractAPIHandler implements APIHandler {
             filter_type = filter_type.toLowerCase();
 
             if (filter_type.equals("date")) {
+                dateFilter = true;
                 if (filter_name.equals("ascending")) {
+                    Collections.sort(jsonValues, new Comparator<JSONObject>() {
+                        private static final String KEY_NAME = "creationTime";
+                        @Override
+                        public int compare(JSONObject a, JSONObject b) {
+                            String valA = new String();
+                            String valB = new String();
+                            int result = 0;
+
+                            try {
+                                valA = a.get(KEY_NAME).toString();
+                                valB = b.get(KEY_NAME).toString();
+                                result = valA.compareToIgnoreCase(valB);
+                            } catch (JSONException e) {
+                                e.printStackTrace();
+                            }
+                            return result;
+                        }
+                    });
 
                 } else {
+                    Collections.sort(jsonValues, new Comparator<JSONObject>() {
+                        private static final String KEY_NAME = "creationTime";
+                        @Override
+                        public int compare(JSONObject a, JSONObject b) {
+                            String valA = new String();
+                            String valB = new String();
+                            int result = 0;
 
+                            try {
+                                valA = a.get(KEY_NAME).toString();
+                                valB = b.get(KEY_NAME).toString();
+                                result = valB.compareToIgnoreCase(valA);
+                            } catch (JSONException e) {
+                                e.printStackTrace();
+                            }
+                            return result;
+                        }
+                    });
                 }
             } else if (filter_type.equals("lexicographical")) {
                 if (filter_name.equals("ascending")) {
@@ -315,7 +355,6 @@ public class ListSkillService extends AbstractAPIHandler implements APIHandler {
                     });
                 }
             }
-
             for (int i = 0; i < jsonArray.length(); i++) {
                  if(countFilter) {
                      if(count == 0) {
@@ -324,12 +363,23 @@ public class ListSkillService extends AbstractAPIHandler implements APIHandler {
                         count --;
                      }
                  }
+                 if (dateFilter) {
+                     long durationInMillisec = TimeUnit.DAYS.toMillis(duration);
+                     long timestamp = System.currentTimeMillis() - durationInMillisec;
+                     String startDate = new Timestamp(timestamp).toString().substring(0, 10); //substring is used for getting timestamp upto date only
+                     String skillCreationDate = jsonValues.get(i).get("creationTime").toString().substring(0,10);
+                     if (skillCreationDate.compareToIgnoreCase(startDate) < 0)
+                     {
+                         continue;
+                     }
+                 }
                 filteredData.put(jsonValues.get(i));
             }
             json.put("filteredData", filteredData);
         } else {
             if(countFilter) {
                 JSONObject tempSkillObject = new JSONObject();
+                tempSkillObject = skillObject;
                 for (int i = 0; i < skillObject.length(); i++) {
                     if(count == 0) {
                         break;
