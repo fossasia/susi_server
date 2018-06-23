@@ -118,6 +118,7 @@ public class DAO {
     public static JsonTray feedbackLogs;
     public static JsonTray profileDetails;
     public static JsonTray deviceWiseSkillUsage;
+    public static JsonTray bookmarkSkill;
 
 
     static {
@@ -278,6 +279,27 @@ public class DAO {
         OS.protectPath(fiveStarSkillRating_per);
         OS.protectPath(fiveStarSkillRating_vol);
 
+        //Feedback Skill storage
+        Path feedbackSkill_per = susi_skill_rating_dir.resolve("feedbackSkill.json");
+        Path feedbackSkill_vol = susi_skill_rating_dir.resolve("feedbackSkill_session.json");
+        feedbackSkill = new JsonTray(feedbackSkill_per.toFile(), feedbackSkill_vol.toFile(), 1000000);
+        OS.protectPath(feedbackSkill_per);
+        OS.protectPath(feedbackSkill_vol);
+
+        //Feedback logs for analysis
+        Path feedbackLogs_per = susi_skill_rating_dir.resolve("feedbackLogs.json");
+        Path feedbackLogs_vol = susi_skill_rating_dir.resolve("feedbackLogs_session.json");
+        feedbackLogs = new JsonTray(feedbackLogs_per.toFile(), feedbackLogs_vol.toFile(), 1000000);
+        OS.protectPath(feedbackLogs_per);
+        OS.protectPath(feedbackLogs_vol);
+
+        //Bookmark Skill storage
+        Path bookmarkSkill_per = susi_skill_rating_dir.resolve("bookmarkSkill.json");
+        Path bookmarkSkill_vol = susi_skill_rating_dir.resolve("bookmarkSkill_session.json");
+        bookmarkSkill = new JsonTray(bookmarkSkill_per.toFile(), bookmarkSkill_vol.toFile(), 1000000);
+        OS.protectPath(bookmarkSkill_per);
+        OS.protectPath(bookmarkSkill_vol);
+
         // Country wise skill usage
         Path country_wise_skill_usage_dir = dataPath.resolve("skill_usage");
         country_wise_skill_usage_dir.toFile().mkdirs();
@@ -304,20 +326,6 @@ public class DAO {
         deviceWiseSkillUsage = new JsonTray(deviceWiseSkillUsage_per.toFile(), deviceWiseSkillUsage_vol.toFile(), 1000000);
         OS.protectPath(deviceWiseSkillUsage_per);
         OS.protectPath(deviceWiseSkillUsage_vol);
-
-        //Feedback Skill storage
-        Path feedbackSkill_per = susi_skill_rating_dir.resolve("feedbackSkill.json");
-        Path feedbackSkill_vol = susi_skill_rating_dir.resolve("feedbackSkill_session.json");
-        feedbackSkill = new JsonTray(feedbackSkill_per.toFile(), feedbackSkill_vol.toFile(), 1000000);
-        OS.protectPath(feedbackSkill_per);
-        OS.protectPath(feedbackSkill_vol);
-
-        //Feedback logs for analysis
-        Path feedbackLogs_per = susi_skill_rating_dir.resolve("feedbackLogs.json");
-        Path feedbackLogs_vol = susi_skill_rating_dir.resolve("feedbackLogs_session.json");
-        feedbackLogs = new JsonTray(feedbackLogs_per.toFile(), feedbackLogs_vol.toFile(), 1000000);
-        OS.protectPath(feedbackLogs_per);
-        OS.protectPath(feedbackLogs_vol);
 
         // open index
         Path index_dir = dataPath.resolve("index");
