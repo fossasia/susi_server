@@ -77,7 +77,23 @@ public class CreateSkillService extends AbstractAPIHandler implements APIHandler
                 json.put("accepted", false);
                 json.put("message", "Image not given");
             } else {
-                //String filename = getFileName(imagePart);
+                String userId = null;
+                if (req.getParameter("access_token") != null) { // access tokens can be used by api calls, somehow the stateless equivalent of sessions for browsers
+                    ClientCredential credential = new ClientCredential(ClientCredential.Type.access_token, req.getParameter("access_token"));
+                    Authentication authentication = DAO.getAuthentication(credential);
+                    // check if access_token is valid
+                    if (authentication.getIdentity() != null) {
+                        ClientIdentity identity = authentication.getIdentity();
+                        userEmail = identity.getName();
+                        userId = identity.getUuid();
+                    }
+                }
+                // if client sends private=1 then it is a private skill
+                File private_skill_dir = null;
+                String privateSkill = req.getParameter("private");
+                if(privateSkill != null){
+                    private_skill_dir = new File(DAO.private_skill_watch_dir,userId);
+                }   
                 InputStream imagePartContent = imagePart.getInputStream();
 
                 String model_name = req.getParameter("model");
@@ -85,6 +101,9 @@ public class CreateSkillService extends AbstractAPIHandler implements APIHandler
                     model_name = "general";
                 }
                 File model = new File(DAO.model_watch_dir, model_name);
+                if(privateSkill != null){
+                    model = new File(private_skill_dir, model_name);
+                }
                 String group_name = req.getParameter("group");
                 if (group_name == null) {
                     group_name = "Knowledge";
@@ -100,16 +119,7 @@ public class CreateSkillService extends AbstractAPIHandler implements APIHandler
 
                 String image_name = req.getParameter("image_name");
 
-                if (req.getParameter("access_token") != null) { // access tokens can be used by api calls, somehow the stateless equivalent of sessions for browsers
-                    ClientCredential credential = new ClientCredential(ClientCredential.Type.access_token, req.getParameter("access_token"));
-                    Authentication authentication = DAO.getAuthentication(credential);
 
-                    // check if access_token is valid
-                    if (authentication.getIdentity() != null) {
-                        ClientIdentity identity = authentication.getIdentity();
-                        userEmail = identity.getName();
-                    }
-                }
 
                 String imagePath = language.getPath() + File.separator + "images";
                 if (image_name == null) {
@@ -140,25 +150,49 @@ public class CreateSkillService extends AbstractAPIHandler implements APIHandler
                         // Writing Skills Data in File
                         try (FileWriter Skillfile = new FileWriter(skill)) {
                             Skillfile.write(content);
-                            String path = skill.getPath().replace(DAO.model_watch_dir.toString(), "models");
+                            String path = null;
+                            if(privateSkill != null){
+                                path = skill.getPath().replace(private_skill_dir.toString(), "users");
+                            }
+                            else{
+                                path = skill.getPath().replace(DAO.model_watch_dir.toString(), "models");
+                            }
+                            
                         } catch (IOException e) {
                             e.printStackTrace();
                             json.put("message", "error: " + e.getMessage());
                         }
 
                         //Add to git
-                        try (Git git = DAO.getGit()) {
-                            git.add().addFilepattern(".").call();
+                        if(privateSkill != null){
+                            try (Git git = DAO.getPrivateGit()) {
+                                git.add().addFilepattern(".").call();
 
                             // commit the changes
-                            DAO.pushCommit(git, "Created " + skill_name, userEmail);
-                            json.put("accepted", true);
+                                DAO.pushCommit(git, "Created " + skill_name, userEmail);
+                                json.put("accepted", true);
 
-                        } catch (IOException | GitAPIException e) {
-                            e.printStackTrace();
-                            json.put("message", "error: " + e.getMessage());
+                            } catch (IOException | GitAPIException e) {
+                                e.printStackTrace();
+                                json.put("message", "error: " + e.getMessage());
 
+                            }
                         }
+                        else{
+                            try (Git git = DAO.getGit()) {
+                                git.add().addFilepattern(".").call();
+
+                            // commit the changes
+                                DAO.pushCommit(git, "Created " + skill_name, userEmail);
+                                json.put("accepted", true);
+
+                            } catch (IOException | GitAPIException e) {
+                                e.printStackTrace();
+                                json.put("message", "error: " + e.getMessage());
+
+                            }
+                        }
+                        
                     }
                 }
             }
