@@ -413,7 +413,7 @@ public class SusiServer {
                 constraint.setAuthenticate(true);
                 constraint.setRoles(new String[] { "user", "admin" });
             }
-          
+
             //makes the constraint apply to all uri paths
             ConstraintMapping mapping = new ConstraintMapping();
             mapping.setPathSpec( "/*" );
@@ -559,14 +559,17 @@ public class SusiServer {
 
                 //Feedback logs for analysis
                 FeedbackLogService.class,
-          
+
                 //Get device wise skill usage data
                 GetDeviceWiseSkillUsageService.class,
 
                 //Feedback to skill
                 GetSkillFeedbackService.class,
                 RemoveFeedbackService.class,
-                FeedbackSkillService.class
+                FeedbackSkillService.class,
+
+                //Bookmark skill
+                BookmarkSkillService.class
         };
         for (Class<? extends Servlet> service: services)
             try {
