@@ -46,53 +46,68 @@ code{
 
 
 /*footer*/
-.navbar ul li a {
-  font-family: 'Roboto', sans-serif;  
-  color: rgba(0, 0, 0, 0.87);
-}
 
-.navbar ul li a:hover {
-  font-family: 'Roboto', sans-serif;  
-  color: rgba(0, 0, 0, 0.87);
-  background: none;
-}
 .footer-wrapper{
-  width: 100%;
-  z-index: 10;
   background: #f6f6f6;
+  width: 100%;
   position: relative;
-  top: 35px;
+  z-index: 10;
 }
 .footer-container a{
   text-decoration: none;
   color: #414141;
-  font-size: 1em;
+  font-size: 16px;
   font-weight: 300;
   font-family: 'Roboto', sans-serif;
   cursor: pointer;
   margin-right: 20px;
 }
 
+.footer-container{
+  padding: 3px 8px 30px 8px;
+  display: flex;
+  max-width: 100%;
+  width: 100%;
+  margin: 0 auto;
+
+}
 
 .alignLeft,.alignRight{
   list-style: none;
   list-style-type: none;
 }
-.alignLeft li{
-  float: left;
-  padding: 10px;
-}
-.alignRight li{
-  float: right;
-  padding: 10px;
-}
 .leftDiv a,.rightDiv a {
   color:#3367d6;
   font-family: 'Roboto', sans-serif;
 }
-
+.footer-container a:hover {
+  text-decoration: none;
+  color:#757575;;
+}
+.footer{
+  background: #f6f6f6;
+  margin-top: 40px;
+  min-height: 100px;
+  max-width: 100%;
+  width: 100%;
+  bottom: 0;
+  position: relative;
+  -webkit-box-align: center;
+  -ms-flex-align: center;
+  align-items: center;
+  display: -ms-flexbox;
+  display: -webkit-box;
+  display: flex;
+  -ms-flex-pack: justify;
+  -webkit-box-orient: horizontal;
+  -webkit-box-direction: normal;
+  -ms-flex-flow: row wrap;
+  flex-flow: row wrap;
+  -webkit-box-pack: justify;
+  justify-content: space-between
+}
 .susi-logo{
-  margin: 10px 0;
+  margin: 10px 14px;
   height: 30px;
   vertical-align: middle;
   max-width: 100px;
@@ -101,57 +116,35 @@ code{
 
 @media only screen and (min-width: 1400px){
   .footer{
-      max-width: 100%;
+    max-width: 100%;
   }
   .footer-container{
-      width: 1050px;
-      margin: 0 auto;
+    width: 1050px;
+    margin: 0 auto;
   }
 
 }
-
 @media only screen and (max-width: 800px){
   .alignLeft,.alignRight{
-      flex:1 100%;
-      width: 100%;
-      display: block;
-      padding-left: 0;
-      list-style: none;
-      list-style-type: none;
+    flex:1 100%;
+    display: block;
+    padding-left: 0;
+    list-style: none;
+    list-style-type: none;
   }
-    
   .alignLeft li,.alignRight li{
-      float: left;
+    float: left;
+    padding: 0 30px 15px 0;
   }
   .footer-container{
-      display: block;
-      padding: 30px 30px 30px 40px;
+    display: block;
+    padding: 30px 30px 30px 40px;
   }
   .alignLeft a, .alignRight a{
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      display: block;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: block;
   }
 }
 
-@media only screen and (max-width: 768px){
-  .alignRight{
-    float: left;
-  }
-}
-@media screen and (min-width: 768px){
-  .jumbotron .h1, .jumbotron h1 {
-      font-size: 63px;
-      font-weight: 300;
-  }
-
-}
-@media screen and (max-width: 768px){
-  .navbar-header{
-    float: left;
-  }
-  .optionMenu{
-    float: right;
-  }
-}
