@@ -50,17 +50,20 @@ angular.element(document).ready(function () {
       if(name == "Blog" || name == "Account") { // The Blog tab redirects to the loklak blog (http://blog.loklak.net/)
         liItem += "<a href='"+link+"'>"+name+" <span class='glyphicon glyphicon-user'></span></a></li>";
       }
-       else if(name == "Home"){
-        liItem += "<a href='"+link+"'>"+name+" <span class='glyphicon glyphicon-home'></span></a></li>";
-        
-      }
       else if(name == "API"){
         liItem += "<a href='"+link+"'>"+name+" <span class='glyphicon glyphicon-asterisk'></span></a></li>";
-        
       }
-      else if(name == "Account"){
+      else if(name == "Chat"){
+        liItem += "<a href='"+link+"'>"+name+" <span class='glyphicon glyphicon-comment'></span></a></li>";
+      }
+      else if(name == "Skills"){
+        liItem += "<a href='"+link+"'>"+name+" <span class='glyphicon glyphicon-th-large'></span></a></li>";
+      }
+      else if(name == "About"){
+        liItem += "<a href='"+link+"'>"+name+" <span class='glyphicon glyphicon-info-sign'></span></a></li>";
+      }
+      else if(name == "Login"){
         liItem += "<a href='"+link+"'>"+name+" <span class='glyphicon glyphicon-user'></span></a></li>";
-        
       }
       else {
         liItem += "<a href='\/"+link+"'>"+name+"</a></li>";

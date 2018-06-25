@@ -53,9 +53,9 @@
   <style>
     .dropbtn {
       color: white;
-      font-size: 16px;
+      font-size: 18px;
       border: none;
-      width: 35px;
+      width: 17px;
       border-radius: 40px;
       cursor: pointer;
       background: none;
@@ -117,25 +117,29 @@
       background: none;
     }
 
+    .optionMenu {
+      margin-top: -1.5px;
+    }
+
     .alignRight{
       float: right;
     }
     .alignLeft li{
       list-style: none;
       float: left;
-      padding: 10px;
+      padding: 10px 0 10px 0;
     }
     .alignRight li{
       list-style: none;
       float: right;
-      padding: 10px;
+      padding: 10px 0 10px 0;
     }
     
   </style>
   <link rel="stylesheet" href="/css/susi.css" />
 </head>
 
-<body style="position: relative; margin-top: 0; padding-bottom: 6rem; min-height: 100; background: #f6f6f6;">
+<body style="position: relative; margin-top: 0; min-height: 100; background: #f6f6f6;">
   <!-- style woodoo is for footer line -->
   <!--#include file="../data/ssi/custom_body_front.include" -->
   <!--#include file="../ssi/common_body_front.include" -->
@@ -166,7 +170,7 @@
 
   <a href="https://github.com/fossasia/susi_server.git"><img style="position:absolute; top:20; right:0; border:0;" src="images/forkme_right_green_007200.png" alt="Fork me on GitHub" title="susi server source code on github"></a>
 
-  <div class="jumbotron" style="padding:100px 0">
+  <div class="jumbotron" style="padding:100px 0 calc(20%); background-color: white;">
     <div class="container">
       <h1><code style="color: #4285f4;background-color: #ebf1fd;"> api.susi.ai</code></h1>
       <h2 style="font-weight: 300; font-size: 25px;">SUSI.AI API Server for Artificial Intelligence Personal Assistants, Robots, Help Desks and Chatbots</h2>
@@ -214,7 +218,7 @@
           window.onclick = function (event) {
             if (!event.target.matches('.dropbtn')) {
 
-              var dropdowns = document.getElementsByClassName("dropdown-content");
+              var dropdowns = document.getElementsByclass("dropdown-content");
               var i;
               for (i = 0; i < dropdowns.length; i++) {
                 var openDropdown = dropdowns[i];
@@ -225,33 +229,37 @@
             }
           }
     </script>
+
     <div class='footer-wrapper'>
                 
     <div class="container-fluid">
 
-            
                       <div class='row footer-container'>
-                        <div class="col-md-2 col-sm-12 col-xs-12" >
+                        <div class="col-md-1 col-sm-12 col-xs-12" >
                         <a href='/' style="display:block">
-                          <img src="images/susi.png" alt='SUSI' class='susi-logo' style="max-width:120px; height:30px; padding:0 10px;" />
+                          <img src="images/susi-logo.svg" alt='SUSI' class='susi-logo' style="height:30px;" />
                         </a>
                         </div>
-                        <div class="col-md-5 col-sm-7 col-xs-12" >
+                        <div class="col-md-4 col-sm-5 col-xs-12" style="padding-top: 4px; padding-left: 50px;">
                         <ul class='alignLeft'>
-                          <li class="col-md-4 col-sm-5 col-xs-12"><a href='http://chat.susi.ai/overview'>Overview</a></li>
-                          <li class="col-md-4 col-sm-4 col-xs-12"><a href='http://chat.susi.ai/blog'>Blog</a></li>
-                          <li class="col-md-4 col-sm-3 col-xs-12"><a href='https://github.com/fossasia?utf8=%E2%9C%93&q=susi'>Code</a></li>
+                          <li><a href='http://chat.susi.ai/overview'>Overview</a></li>
+                          <li><a href='http://chat.susi.ai/blog'>Blog</a></li>
+                          <li><a href='https://github.com/fossasia?utf8=%E2%9C%93&q=susi'>Code</a></li>
                         </ul>
                         </div>
-                        <div class="col-md-5 col-sm-5 col-xs-12" >
+                        <div class="col-md-7 col-sm-5 col-xs-12" style="padding-top: 4px; padding-right: 25px;">
                         <ul class='alignRight'>
-                          <li class="col-md-4 col-sm-6 col-xs-12"><a href='http://chat.susi.ai/terms'>Terms</a></li>
-                          <li class="col-md-8 col-sm-6 col-xs-12"><a href='http://chat.susi.ai/contact'>Contact</a></li>
+                          <li><a href='http://chat.susi.ai/privacy'>Privacy</a></li>
+                          <li><a href='http://chat.susi.ai/terms'>Terms</a></li>
+                          <li><a href='http://chat.susi.ai/contact'>Contact</a></li>
                         </ul>
                         </div>
                       </div>
+                    
                   </div>
-    </div> <!-- /container -->
+    </div>
+  
+    <!-- /container -->
 
     <!--#include file="../ssi/common_body_back.include" -->
     <!--#include file="../data/ssi/custom_body_back.include" -->

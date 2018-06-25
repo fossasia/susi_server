@@ -52,6 +52,7 @@ import ai.susi.mind.SusiInference.Type;
 public class SusiSkill {
 
     private String skillName;
+    private Boolean protectedSkill;
     private String description;
     private String author;
     private String authorURL;
@@ -157,6 +158,7 @@ public class SusiSkill {
         this.examples = new LinkedHashSet<>();
         this.image = null;
         this.skillName = null;
+        this.protectedSkill = false;
         this.termsOfUse = null;
         this.developerPrivacyPolicy = null;
         this.dynamicContent = false;
@@ -178,7 +180,7 @@ public class SusiSkill {
         String bang_answers = "", bang_type = "", bang_term = ""; StringBuilder bang_bag = new StringBuilder();
         String example = "", tags = "", expect = "", description="", image="", skillName="", authorName= "",
                 authorURL = "", authorEmail = "", developerPrivacyPolicy = "", termsOfUse="";
-        boolean prior = false, dynamicContent = false;
+        boolean prior = false, dynamicContent = false, protectedSkill = false;
         int indentStep = 4; // like in python
         try {readloop: while ((line = br.readLine()) != null) {
             String linebeforetrim = line;
@@ -298,6 +300,10 @@ public class SusiSkill {
                     skillName = line.substring(thenpos + 1).trim();
                     if(skillName.length() > 0)
                         json.put("skill_name",skillName);
+                }
+                if (line.startsWith("::protected") && (thenpos = line.indexOf(' ')) > 0) {
+                    if (line.substring(thenpos + 1).trim().equalsIgnoreCase("yes")) protectedSkill=true;
+                    json.put("protected",protectedSkill);
                 }
                 if (line.startsWith("::author") && (!line.startsWith("::author_url")) && (thenpos = line.indexOf(' ')) > 0) {
                     authorName = line.substring(thenpos + 1).trim();
@@ -424,27 +430,31 @@ public class SusiSkill {
         String[] list = languagepath.list();
 
         // first try: the skill name may be same or similar to the skill file name
-        for (String n: list) {
-            if (n.equals(fn) || n.toLowerCase().equals(fn)) {
-                return new File(languagepath, n);
+        if(list !=null && list.length!=0){
+            for (String n: list) {
+                if (n.equals(fn) || n.toLowerCase().equals(fn)) {
+                    return new File(languagepath, n);
+                }
             }
         }
 
         // second try: the skill name may be same or similar to the skill name within the skill description
         // this is costly: we must parse the whole skill file
-        for (String n: list) {
-            if (!n.endsWith(".txt") && !n.endsWith(".ezd")) continue;
-            File f = new File(languagepath, n);
-            try {
-                SusiSkill.ID skillid = new SusiSkill.ID(f);
-                SusiLanguage language = skillid.language();
-                JSONObject json = SusiSkill.readLoTSkill(new BufferedReader(new FileReader(f)), language, Integer.toString(skillid.hashCode()));
-                String sn = json.optString("skill_name");
-                if (sn.equals(skill_name) || sn.toLowerCase().equals(skill_name) || sn.toLowerCase().replace(' ', '_').equals(skill_name)) {
-                    return new File(languagepath, n);
+        if(list !=null && list.length!=0){
+            for (String n: list) {
+                if (!n.endsWith(".txt") && !n.endsWith(".ezd")) continue;
+                File f = new File(languagepath, n);
+                try {
+                    SusiSkill.ID skillid = new SusiSkill.ID(f);
+                    SusiLanguage language = skillid.language();
+                    JSONObject json = SusiSkill.readLoTSkill(new BufferedReader(new FileReader(f)), language, Integer.toString(skillid.hashCode()));
+                    String sn = json.optString("skill_name");
+                    if (sn.equals(skill_name) || sn.toLowerCase().equals(skill_name) || sn.toLowerCase().replace(' ', '_').equals(skill_name)) {
+                        return new File(languagepath, n);
+                    }
+                } catch (JSONException | FileNotFoundException e) {
+                    continue;
                 }
-            } catch (JSONException | FileNotFoundException e) {
-                continue;
             }
         }
 
@@ -476,7 +486,7 @@ public class SusiSkill {
         return null;
     }
 
-    public static JSONObject getSkillMetadata(String model, String group, String language, String skillname) {
+    public static JSONObject getSkillMetadata(String model, String group, String language, String skillname, int duration) {
 
         JSONObject skillMetadata = new JSONObject(true)
                 .put("model", model)
@@ -496,10 +506,13 @@ public class SusiSkill {
         skillMetadata.put("author_url", JSONObject.NULL);
         skillMetadata.put("author_email", JSONObject.NULL);
         skillMetadata.put("skill_name", JSONObject.NULL);
+        skillMetadata.put("protected", false);
         skillMetadata.put("terms_of_use", JSONObject.NULL);
         skillMetadata.put("dynamic_content", false);
         skillMetadata.put("examples", JSONObject.NULL);
         skillMetadata.put("skill_rating", JSONObject.NULL);
+        skillMetadata.put("usage_count", 0);
+        skillMetadata.put("skill_tag", JSONObject.NULL);
 
         // metadata
         for (Map.Entry<SusiSkill.ID, SusiSkill> entry : DAO.susi.getSkillMetadata().entrySet()) {
@@ -511,6 +524,7 @@ public class SusiSkill {
                     skillid.hasName(skillname)) {
 
                 skillMetadata.put("skill_name", skill.getSkillName() ==null ? JSONObject.NULL: skill.getSkillName());
+                skillMetadata.put("protected", skill.getProtectedSkill());
                 skillMetadata.put("developer_privacy_policy", skill.getDeveloperPrivacyPolicy() ==null ? JSONObject.NULL:skill.getDeveloperPrivacyPolicy());
                 skillMetadata.put("descriptions", skill.getDescription() ==null ? JSONObject.NULL:skill.getDescription());
                 skillMetadata.put("image", skill.getImage() ==null ? JSONObject.NULL: skill.getImage());
@@ -520,77 +534,12 @@ public class SusiSkill {
                 skillMetadata.put("terms_of_use", skill.getTermsOfUse() ==null ? JSONObject.NULL:skill.getTermsOfUse());
                 skillMetadata.put("dynamic_content", skill.getDynamicContent());
                 skillMetadata.put("examples", skill.getExamples() ==null ? JSONObject.NULL: skill.getExamples());
+                skillMetadata.put("skill_rating", getSkillRating(model, group, language, skillname));
+                skillMetadata.put("usage_count", getSkillUsage(model, group, language, skillname, duration));
+                skillMetadata.put("skill_tag", skillname);
 
             }
         }
-
-        // rating
-        JsonTray skillRating = DAO.skillRating;
-        if (skillRating.has(model)) {
-            JSONObject modelName = skillRating.getJSONObject(model);
-            if (modelName.has(group)) {
-                JSONObject groupName = modelName.getJSONObject(group);
-                if (groupName.has(language)) {
-                    JSONObject languageName = groupName.getJSONObject(language);
-                    if (languageName.has(skillname)) {
-                        JSONObject skillName = languageName.getJSONObject(skillname);
-
-                        if (!skillName.has("stars")){
-                            JSONObject newFiveStarRating = new JSONObject();
-                            newFiveStarRating.put("one_star", 0);
-                            newFiveStarRating.put("two_star", 0);
-                            newFiveStarRating.put("three_star", 0);
-                            newFiveStarRating.put("four_star", 0);
-                            newFiveStarRating.put("five_star", 0);
-                            newFiveStarRating.put("avg_star", 0);
-                            newFiveStarRating.put("total_star", 0);
-
-                            skillName.put("stars", newFiveStarRating);
-                        }
-                        skillMetadata.put("skill_rating", skillName);
-                    }
-                    else {
-                        JSONObject newRating=new JSONObject();
-                        newRating.put("negative", "0");
-                        newRating.put("positive", "0");
-                        newRating.put("feedback_count", 0);
-
-                        JSONObject newFiveStarRating=new JSONObject();
-                        newFiveStarRating.put("one_star", 0);
-                        newFiveStarRating.put("two_star", 0);
-                        newFiveStarRating.put("three_star", 0);
-                        newFiveStarRating.put("four_star", 0);
-                        newFiveStarRating.put("five_star", 0);
-                        newFiveStarRating.put("avg_star", 0);
-                        newFiveStarRating.put("total_star", 0);
-
-                        newRating.put("stars", newFiveStarRating);
-
-                        skillMetadata.put("skill_rating", newRating);
-                    }
-                }
-            }
-            else {
-                JSONObject newRating=new JSONObject();
-                newRating.put("negative", "0");
-                newRating.put("positive", "0");
-                newRating.put("feedback_count", 0);
-
-                JSONObject newFiveStarRating=new JSONObject();
-                newFiveStarRating.put("one_star", 0);
-                newFiveStarRating.put("two_star", 0);
-                newFiveStarRating.put("three_star", 0);
-                newFiveStarRating.put("four_star", 0);
-                newFiveStarRating.put("five_star", 0);
-                newFiveStarRating.put("avg_star", 0);
-                newFiveStarRating.put("total_star", 0);
-
-                newRating.put("stars", newFiveStarRating);
-
-                skillMetadata.put("skill_rating", newRating);
-            }
-        }
-
 
         // file attributes
         BasicFileAttributes attr = null;
@@ -606,6 +555,91 @@ public class SusiSkill {
             skillMetadata.put("lastModifiedTime" , attr.lastModifiedTime());
         }
         return skillMetadata;
+    }
+
+    // Function overloading - if duration parameter is not passed then use 7 as default value.
+    public static JSONObject getSkillMetadata(String model, String group, String language, String skillname) {
+        return getSkillMetadata(model, group, language, skillname, 7);
+    }
+
+    public static JSONObject getSkillRating(String model, String group, String language, String skillname) {
+        // rating
+        JsonTray skillRating = DAO.skillRating;
+        if (skillRating.has(model)) {
+            JSONObject modelName = skillRating.getJSONObject(model);
+            if (modelName.has(group)) {
+                JSONObject groupName = modelName.getJSONObject(group);
+                if (groupName.has(language)) {
+                    JSONObject languageName = groupName.getJSONObject(language);
+                    if (languageName.has(skillname)) {
+                        JSONObject skillName = languageName.getJSONObject(skillname);
+
+                        if (!skillName.has("stars")) {
+                            JSONObject newFiveStarRating = new JSONObject();
+                            newFiveStarRating.put("one_star", 0);
+                            newFiveStarRating.put("two_star", 0);
+                            newFiveStarRating.put("three_star", 0);
+                            newFiveStarRating.put("four_star", 0);
+                            newFiveStarRating.put("five_star", 0);
+                            newFiveStarRating.put("avg_star", 0);
+                            newFiveStarRating.put("total_star", 0);
+
+                            skillName.put("stars", newFiveStarRating);
+                        }
+                        return skillName;
+                    }
+                }
+            }
+        }
+        JSONObject newRating=new JSONObject();
+        newRating.put("negative", "0");
+        newRating.put("positive", "0");
+        newRating.put("feedback_count", 0);
+        newRating.put("bookmark_count", 0);
+
+        JSONObject newFiveStarRating=new JSONObject();
+        newFiveStarRating.put("one_star", 0);
+        newFiveStarRating.put("two_star", 0);
+        newFiveStarRating.put("three_star", 0);
+        newFiveStarRating.put("four_star", 0);
+        newFiveStarRating.put("five_star", 0);
+        newFiveStarRating.put("avg_star", 0);
+        newFiveStarRating.put("total_star", 0);
+
+        newRating.put("stars", newFiveStarRating);
+
+        return newRating;
+    }
+
+    public static int getSkillUsage(String model, String group, String language, String skillname, int duration) {
+        // usage
+        int totalUsage = 0;
+        JsonTray skillUsage = DAO.skillUsage;
+        if (skillUsage.has(model)) {
+            JSONObject modelName = skillUsage.getJSONObject(model);
+            if (modelName.has(group)) {
+                JSONObject groupName = modelName.getJSONObject(group);
+                if (groupName.has(language)) {
+                    JSONObject languageName = groupName.getJSONObject(language);
+                    if (languageName.has(skillname)) {
+                        JSONArray skillName = languageName.getJSONArray(skillname);
+
+                        // Fetch skill usage data for sorting purpose.
+                        int startIndex = skillName.length() >= duration ? skillName.length()-duration : 0;
+                        for (int i = startIndex; i<skillName.length(); i++)
+                        {
+                            JSONObject dayUsage = skillName.getJSONObject(i);
+                            totalUsage += dayUsage.getInt("count");
+                        }
+                        return totalUsage;
+                    }
+                    else {
+                        return 0;
+                    }
+                }
+            }
+        }
+        return 0;
     }
 
     public static JSONObject readJsonSkill(File file) throws JSONException, FileNotFoundException {
@@ -654,6 +688,10 @@ public class SusiSkill {
         this.skillName = skillName;
     }
 
+    public void setProtectedSkill(Boolean protectedSkill) {
+        this.protectedSkill = protectedSkill;
+    }
+
     public void setTermsOfUse(String termsOfUse) {
         this.termsOfUse = termsOfUse;
     }
@@ -691,6 +729,10 @@ public class SusiSkill {
         return skillName;
     }
 
+    public Boolean getProtectedSkill() {
+        return protectedSkill;
+    }
+
     public String getTermsOfUse() {
         return termsOfUse;
     }
@@ -712,6 +754,7 @@ public class SusiSkill {
         if (this.description != null) json.put("description", this.description);
         if (this.image != null) json.put("image", this.image);
         if (this.skillName != null) json.put("skill_name", this.skillName);
+        if (this.protectedSkill != null) json.put("protected", this.protectedSkill);
         if (this.author != null) json.put("author", this.author);
         if (this.authorURL != null) json.put("author_url", this.authorURL);
         if (this.authorEmail != null) json.put("author_email", this.authorEmail);

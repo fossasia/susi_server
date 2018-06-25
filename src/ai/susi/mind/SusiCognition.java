@@ -24,11 +24,14 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.StandardOpenOption;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.Date;
 import java.util.List;
 
+import ai.susi.json.JsonTray;
+import com.google.common.base.Strings;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -48,7 +51,9 @@ public class SusiCognition {
             final String query,
             int timezoneOffset,
             double latitude, double longitude,
+            String countryCode, String countryName,
             String languageName,
+            String deviceType,
             int maxcount, ClientIdentity identity,
             final SusiMind... minds) {
         this.json = new JSONObject(true);
@@ -64,6 +69,11 @@ public class SusiCognition {
             observation.addObservation("latitude", Double.toString(latitude));
             observation.addObservation("longitude", Double.toString(longitude));
         }
+
+        if (!Strings.isNullOrEmpty(countryName) && !Strings.isNullOrEmpty(countryCode)) {
+            observation.addObservation("country_name", countryName);
+            observation.addObservation("country_code", countryCode);
+        }
         
         SusiLanguage language = SusiLanguage.parse(languageName);
         if (language != SusiLanguage.unknown) observation.addObservation("language", language.name());
@@ -75,6 +85,30 @@ public class SusiCognition {
         // compute the mind's reaction: here we compute with a hierarchy of minds. The dispute is taken from the relevant mind level that was able to compute the dispute
         List<SusiThought> dispute = SusiMind.reactMinds(query, language, maxcount, client, observation, minds);
         long answer_date = System.currentTimeMillis();
+
+        // update country wise skill usage data
+        if (!countryCode.equals("") && !countryName.equals("")) {
+            List<String> skills = dispute.get(0).getSkills();
+            for (String skill : skills) {
+                try {
+                    updateCountryWiseUsageData(skill, countryCode, countryName);
+                }
+                catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+
+        // update skill usage data
+        if (!dispute.isEmpty()) try {
+            List<String> skills = dispute.get(0).getSkills();
+            for (String skill : skills) {
+                updateUsageData(skill);
+                updateDeviceWiseUsageData(skill, deviceType);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         
         // store answer and actions into json
         this.json.put("answers", new JSONArray(dispute));
@@ -82,7 +116,159 @@ public class SusiCognition {
         this.json.put("answer_time", answer_date - query_date);
         this.json.put("language", language.name());
     }
-    
+
+    public void updateDeviceWiseUsageData(String skillPath, String deviceType) {
+        String skillInfo[] = skillPath.split("/");
+        String model_name = skillInfo[3];
+        String group_name = skillInfo[4];
+        String language_name = skillInfo[5];
+        String skill_name = skillInfo[6].split("\\.")[0];
+        JsonTray skillUsage = DAO.deviceWiseSkillUsage;
+        JSONObject modelName = new JSONObject();
+        JSONObject groupName = new JSONObject();
+        JSONObject languageName = new JSONObject();
+        JSONArray deviceWiseUsageData =new JSONArray();
+        Boolean deviceExists = false;
+        if (skillUsage.has(model_name)) {
+            modelName = skillUsage.getJSONObject(model_name);
+            if (modelName.has(group_name)) {
+                groupName = modelName.getJSONObject(group_name);
+                if (groupName.has(language_name)) {
+                    languageName = groupName.getJSONObject(language_name);
+                    if (languageName.has(skill_name)) {
+
+                        deviceWiseUsageData = languageName.getJSONArray(skill_name);
+
+                        for (int i = 0; i < deviceWiseUsageData.length(); i++) {
+                            JSONObject deviceUsage = new JSONObject();
+                            deviceUsage = deviceWiseUsageData.getJSONObject(i);
+                            if (deviceUsage.get("device_type").equals(deviceType)) {
+                                deviceUsage.put("count", deviceUsage.getInt("count") + 1);
+                                deviceWiseUsageData.put(i,deviceUsage);
+                                deviceExists = true;
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        if (!deviceExists) {
+            JSONObject deviceUsage = new JSONObject();
+            deviceUsage.put("device_type", deviceType);
+            deviceUsage.put("count", 1);
+            deviceWiseUsageData.put(deviceUsage);
+        }
+
+        languageName.put(skill_name, deviceWiseUsageData);
+        groupName.put(language_name, languageName);
+        modelName.put(group_name, groupName);
+        skillUsage.put(model_name, modelName, true);
+        return;
+    }
+
+    public void updateCountryWiseUsageData(String skillPath, String countryCode, String countryName) {
+        String skillInfo[] = skillPath.split("/");
+        String model_name = skillInfo[3];
+        String group_name = skillInfo[4];
+        String language_name = skillInfo[5];
+        String skill_name = skillInfo[6].split("\\.")[0];
+        JsonTray skillUsage = DAO.countryWiseSkillUsage;
+        JSONObject modelName = new JSONObject();
+        JSONObject groupName = new JSONObject();
+        JSONObject languageName = new JSONObject();
+        JSONArray countryWiseUsageData =new JSONArray();
+        Boolean countryExists = false;
+        if (skillUsage.has(model_name)) {
+            modelName = skillUsage.getJSONObject(model_name);
+            if (modelName.has(group_name)) {
+                groupName = modelName.getJSONObject(group_name);
+                if (groupName.has(language_name)) {
+                    languageName = groupName.getJSONObject(language_name);
+                    if (languageName.has(skill_name)) {
+
+                        countryWiseUsageData = languageName.getJSONArray(skill_name);
+
+                        for (int i = 0; i < countryWiseUsageData.length(); i++) {
+                            JSONObject countryUsage = new JSONObject();
+                            countryUsage = countryWiseUsageData.getJSONObject(i);
+                            if (countryUsage.get("country_code").equals(countryCode)) {
+                                countryUsage.put("count", countryUsage.getInt("count")+1);
+                                countryWiseUsageData.put(i,countryUsage);
+                                countryExists = true;
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        if (!countryExists) {
+            JSONObject countryUsage = new JSONObject();
+            countryUsage.put("country_code", countryCode);
+            countryUsage.put("country_name", countryName);
+            countryUsage.put("count", 1);
+            countryWiseUsageData.put(countryUsage);
+        }
+
+        languageName.put(skill_name, countryWiseUsageData);
+        groupName.put(language_name, languageName);
+        modelName.put(group_name, groupName);
+        skillUsage.put(model_name, modelName, true);
+        return;
+    }  
+  
+    public void updateUsageData(String skillPath) {
+        String skillInfo[] = skillPath.split("/");
+        String model_name = skillInfo[3];
+        String group_name = skillInfo[4];
+        String language_name = skillInfo[5];
+        String skill_name = skillInfo[6].split("\\.")[0];
+        JsonTray skillUsage = DAO.skillUsage;
+        JSONObject modelName = new JSONObject();
+        JSONObject groupName = new JSONObject();
+        JSONObject languageName = new JSONObject();
+        JSONArray usageData = new JSONArray();
+        Boolean dateExists = false;
+        String today = LocalDate.now().toString();
+        if (skillUsage.has(model_name)) {
+            modelName = skillUsage.getJSONObject(model_name);
+            if (modelName.has(group_name)) {
+                groupName = modelName.getJSONObject(group_name);
+                if (groupName.has(language_name)) {
+                    languageName = groupName.getJSONObject(language_name);
+                    if (languageName.has(skill_name)) {
+                        usageData = languageName.getJSONArray(skill_name);
+                        for (int i = 0; i<usageData.length(); i++) {
+                            JSONObject dayUsage = new JSONObject();
+                            dayUsage = usageData.getJSONObject(i);
+                            if (dayUsage.get("date").equals(today)){
+                                dayUsage.put("count", dayUsage.getInt("count")+1+"");
+                                usageData.put(i,dayUsage);
+                                dateExists = true;
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        if (!dateExists) {
+            JSONObject dayUsage = new JSONObject();
+            dayUsage.put("date", today);
+            dayUsage.put("count", "1");
+            usageData.put(dayUsage);
+        }
+        languageName.put(skill_name, usageData);
+        groupName.put(language_name, languageName);
+        modelName.put(group_name, groupName);
+        skillUsage.put(model_name, modelName, true);
+        return;
+    }
+
     public SusiCognition(JSONObject json) {
         this.json = json;
     }

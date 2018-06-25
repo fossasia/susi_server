@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-# If you're looking for the variables, please go to bin/.preload.sh
+# If you're looking for the variables, please go to bin/preload.sh
 
 # Make sure we're on project root
 cd $(dirname $0)/..

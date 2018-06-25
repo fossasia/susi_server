@@ -1,6 +1,6 @@
 /**
  *  GetSkillRatingsService
- *  Copyright by Chetan, @dyanmitechetan
+ *  Copyright by Akshat Garg, @akshatnitd
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -24,6 +24,8 @@ import ai.susi.json.JsonObjectWithDefault;
 import ai.susi.json.JsonTray;
 import ai.susi.mind.SusiSkill;
 import ai.susi.server.*;
+
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 import javax.servlet.http.HttpServletResponse;
@@ -32,13 +34,12 @@ import java.io.File;
 
 /**
  * This Endpoint accepts 4 parameters. model,group,language,skill
- * before getting a rating of a skill, the skill must exist in the directory.
- * http://localhost:4000/cms/getSkillRating.json?model=general&group=Knowledge&skill=who
+ * before getting the feedack of a skill, the skill must exist in the directory.
+ * http://localhost:4000/cms/getSkillFeedback.json?model=general&group=Knowledge&language=en&skill=who
  */
-public class GetSkillRatingService extends AbstractAPIHandler implements APIHandler {
+public class GetSkillFeedbackService extends AbstractAPIHandler implements APIHandler {
 
-
-    private static final long serialVersionUID = 1420414106164188352L;
+    private static final long serialVersionUID = 5000658108778105134L;
 
     @Override
     public UserRole getMinimalUserRole() {
@@ -52,7 +53,7 @@ public class GetSkillRatingService extends AbstractAPIHandler implements APIHand
 
     @Override
     public String getAPIPath() {
-        return "/cms/getSkillRating.json";
+        return "/cms/getSkillFeedback.json";
     }
 
     @Override
@@ -73,58 +74,31 @@ public class GetSkillRatingService extends AbstractAPIHandler implements APIHand
             throw new APIException(422, "Skill does not exist.");
         }
 
-        JsonTray skillRating = DAO.skillRating;
-        if (skillRating.has(model_name)) {
-            JSONObject modelName = skillRating.getJSONObject(model_name);
+        JsonTray feedbackSkill = DAO.feedbackSkill;
+        JSONArray feedbackList = new JSONArray();
+
+        if (feedbackSkill.has(model_name)) {
+            JSONObject modelName = feedbackSkill.getJSONObject(model_name);
             if (modelName.has(group_name)) {
                 JSONObject groupName = modelName.getJSONObject(group_name);
                 if (groupName.has(language_name)) {
                     JSONObject  languageName = groupName.getJSONObject(language_name);
                     if (languageName.has(skill_name)) {
-                        JSONObject skillName = languageName.getJSONObject(skill_name);
-
-                        if (!skillName.has("stars")) {
-                            JSONObject tempSkillStars=new JSONObject();
-                            tempSkillStars.put("one_star", 0);
-                            tempSkillStars.put("two_star", 0);
-                            tempSkillStars.put("three_star", 0);
-                            tempSkillStars.put("four_star", 0);
-                            tempSkillStars.put("five_star", 0);
-                            tempSkillStars.put("avg_star", 0);
-                            tempSkillStars.put("total_star", 0);
-                            skillName.put("stars",tempSkillStars);
-                        }
+                        feedbackList = languageName.getJSONArray(skill_name);
+                        
                         result.put("skill_name", skill_name);
-                        result.put("skill_rating", skillName);
+                        result.put("feedback", feedbackList);
                         result.put("accepted", true);
-                        result.put("message", "Skill ratings fetched");
+                        result.put("message", "Skill feedback fetched");
                         return new ServiceResponse(result);
                     }
                 }
             }
         }
-
-        JSONObject tempSkillRating = new JSONObject();
-        tempSkillRating.put("negative", "0");
-        tempSkillRating.put("positive", "0");
-        tempSkillRating.put("feedback_count", 0);
-        tempSkillRating.put("bookmark_count", 0);
-
-        JSONObject tempSkillStars=new JSONObject();
-        tempSkillStars.put("one_star", 0);
-        tempSkillStars.put("two_star", 0);
-        tempSkillStars.put("three_star", 0);
-        tempSkillStars.put("four_star", 0);
-        tempSkillStars.put("five_star", 0);
-        tempSkillStars.put("avg_star", 0);
-        tempSkillStars.put("total_star", 0);
-
-        tempSkillRating.put("stars", tempSkillStars);
-
+        result.put("skill_name", skill_name);
+        result.put("feedback", feedbackList);
         result.put("accepted", false);
-        result.put("message", "Skill has not been rated yet");
-        result.put("skill_rating", tempSkillRating);
-
+        result.put("message", "Skill hasn't been given any feedback");
         return new ServiceResponse(result);
     }
 }

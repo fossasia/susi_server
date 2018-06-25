@@ -11,11 +11,15 @@ import org.json.JSONObject;
 import javax.mail.Folder;
 import javax.servlet.http.HttpServletResponse;
 import java.io.File;
+import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 
 /**
  * This Servlet gives a API Endpoint to list all the Skills given its model, group and language.
  * Can be tested on http://127.0.0.1:4000/cms/getSkillList.json
+ * Other params are - applyFilter, filter_type, filter_name, count
  */
 
 public class ListSkillService extends AbstractAPIHandler implements APIHandler {
@@ -45,9 +49,27 @@ public class ListSkillService extends AbstractAPIHandler implements APIHandler {
         File model = new File(DAO.model_watch_dir, model_name);
         String group_name = call.get("group", "All");
         String language_name = call.get("language", "en");
+        int duration = call.get("duration", 0);
         JSONArray jsonArray = new JSONArray();
         JSONObject json = new JSONObject(true);
         JSONObject skillObject = new JSONObject();
+        String countString = call.get("count", null);
+        Integer count = null;
+        Boolean countFilter = false;
+        Boolean dateFilter = false;
+
+        if(countString != null) {
+            if(Integer.parseInt(countString) < 0) {
+                throw new APIException(422, "Invalid count value. It should be positive.");
+            } else {
+                countFilter = true;
+                try {
+                    count = Integer.parseInt(countString);
+                } catch(NumberFormatException ex) {
+                    throw new APIException(422, "Invalid count value.");
+                }
+            }
+        }
 
         // Returns susi skills list of all groups
         if (group_name.equals("All")) {
@@ -63,9 +85,8 @@ public class ListSkillService extends AbstractAPIHandler implements APIHandler {
                 listFilesForFolder(language, fileList);
 
                 for (String skill_name : fileList) {
-                    //System.out.println(skill_name);
                     skill_name = skill_name.replace(".txt", "");
-                    JSONObject skillMetadata = SusiSkill.getSkillMetadata(model_name, temp_group_name, language_name, skill_name);
+                    JSONObject skillMetadata = SusiSkill.getSkillMetadata(model_name, temp_group_name, language_name, skill_name, duration);
 
                     jsonArray.put(skillMetadata);
                     skillObject.put(skill_name, skillMetadata);
@@ -82,9 +103,8 @@ public class ListSkillService extends AbstractAPIHandler implements APIHandler {
             listFilesForFolder(language, fileList);
 
             for (String skill_name : fileList) {
-                //System.out.println(skill_name);
                 skill_name = skill_name.replace(".txt", "");
-                JSONObject skillMetadata = SusiSkill.getSkillMetadata(model_name, group_name, language_name, skill_name);
+                JSONObject skillMetadata = SusiSkill.getSkillMetadata(model_name, group_name, language_name, skill_name, duration);
 
                 jsonArray.put(skillMetadata);
                 skillObject.put(skill_name, skillMetadata);
@@ -118,10 +138,46 @@ public class ListSkillService extends AbstractAPIHandler implements APIHandler {
             filter_type = filter_type.toLowerCase();
 
             if (filter_type.equals("date")) {
+                dateFilter = true;
                 if (filter_name.equals("ascending")) {
-                    
-                } else {
+                    Collections.sort(jsonValues, new Comparator<JSONObject>() {
+                        private static final String KEY_NAME = "creationTime";
+                        @Override
+                        public int compare(JSONObject a, JSONObject b) {
+                            String valA = new String();
+                            String valB = new String();
+                            int result = 0;
 
+                            try {
+                                valA = a.get(KEY_NAME).toString();
+                                valB = b.get(KEY_NAME).toString();
+                                result = valA.compareToIgnoreCase(valB);
+                            } catch (JSONException e) {
+                                e.printStackTrace();
+                            }
+                            return result;
+                        }
+                    });
+
+                } else {
+                    Collections.sort(jsonValues, new Comparator<JSONObject>() {
+                        private static final String KEY_NAME = "creationTime";
+                        @Override
+                        public int compare(JSONObject a, JSONObject b) {
+                            String valA = new String();
+                            String valB = new String();
+                            int result = 0;
+
+                            try {
+                                valA = a.get(KEY_NAME).toString();
+                                valB = b.get(KEY_NAME).toString();
+                                result = valB.compareToIgnoreCase(valA);
+                            } catch (JSONException e) {
+                                e.printStackTrace();
+                            }
+                            return result;
+                        }
+                    });
                 }
             } else if (filter_type.equals("lexicographical")) {
                 if (filter_name.equals("ascending")) {
@@ -141,7 +197,7 @@ public class ListSkillService extends AbstractAPIHandler implements APIHandler {
                             } catch (JSONException e) {
                                 //do nothing
                             }
-                            return valA.compareTo(valB);
+                            return valA.compareToIgnoreCase(valB);
                         }
                     });
 
@@ -159,9 +215,10 @@ public class ListSkillService extends AbstractAPIHandler implements APIHandler {
                                 valA = a.get(KEY_NAME).toString();
                                 valB = b.get(KEY_NAME).toString();
                             } catch (JSONException e) {
+                                e.getMessage();
                                 //do nothing
                             }
-                            return valB.compareTo(valA);
+                            return valB.compareToIgnoreCase(valA);
                         }
                     });
                 }
@@ -177,12 +234,12 @@ public class ListSkillService extends AbstractAPIHandler implements APIHandler {
                             int result=0;
 
                             try {
-                                valA = Float.parseFloat(a.getJSONObject("skill_rating").getJSONObject("stars").getString("avg_star"));
-                                valB = Float.parseFloat(b.getJSONObject("skill_rating").getJSONObject("stars").getString("avg_star"));
+                                valA = a.getJSONObject("skill_rating").getJSONObject("stars").getFloat("avg_star");
+                                valB = b.getJSONObject("skill_rating").getJSONObject("stars").getFloat("avg_star");
                                 result = Float.compare(valA, valB);
 
                             } catch (JSONException e) {
-                                //do nothing
+                                e.printStackTrace();
                             }
                             return result;
                         }
@@ -198,23 +255,142 @@ public class ListSkillService extends AbstractAPIHandler implements APIHandler {
                             int result=0;
 
                             try {
-                                valA = Float.parseFloat(a.getJSONObject("skill_rating").getJSONObject("stars").getString("avg_star"));
-                                valB = Float.parseFloat(b.getJSONObject("skill_rating").getJSONObject("stars").getString("avg_star"));
+                                valA = a.getJSONObject("skill_rating").getJSONObject("stars").getFloat("avg_star");
+                                valB = b.getJSONObject("skill_rating").getJSONObject("stars").getFloat("avg_star");
                                 result = Float.compare(valB, valA);
 
                             } catch (JSONException e) {
-                                //do nothing
+                                e.printStackTrace();
                             }
                             return result;
                         }
                     });
                 }
             }
+            else if (filter_type.equals("usage")) {
+                if (filter_name.equals("ascending")) {
+                    Collections.sort(jsonValues, new Comparator<JSONObject>() {
 
+                        @Override
+                        public int compare(JSONObject a, JSONObject b) {
+                            int valA;
+                            int valB;
+                            int result=0;
+
+                            try {
+                                valA = a.getInt("usage_count");
+                                valB = b.getInt("usage_count");
+                                result = Integer.compare(valA, valB);
+
+                            } catch (JSONException e) {
+                                e.printStackTrace();
+                            }
+                            return result;
+                        }
+                    });
+                }
+                else {
+                    Collections.sort(jsonValues, new Comparator<JSONObject>() {
+
+                        @Override
+                        public int compare(JSONObject a, JSONObject b) {
+                            int valA;
+                            int valB;
+                            int result=0;
+
+                            try {
+                                valA = a.getInt("usage_count");
+                                valB = b.getInt("usage_count");
+                                result = Integer.compare(valB, valA);
+
+                            } catch (JSONException e) {
+                                e.printStackTrace();
+                            }
+                            return result;
+                        }
+                    });
+                }
+            }
+            else if (filter_type.equals("feedback")) {
+                if (filter_name.equals("ascending")) {
+                    Collections.sort(jsonValues, new Comparator<JSONObject>() {
+
+                        @Override
+                        public int compare(JSONObject a, JSONObject b) {
+                            Integer valA;
+                            Integer valB;
+                            int result=0;
+
+                            try {
+                                valA = a.getJSONObject("skill_rating").getInt("feedback_count");
+                                valB = b.getJSONObject("skill_rating").getInt("feedback_count");
+                                result = Integer.compare(valA, valB);
+
+                            } catch (JSONException e) {
+                                e.printStackTrace();
+                            }
+                            return result;
+                        }
+                    });
+                }
+                else {
+                    Collections.sort(jsonValues, new Comparator<JSONObject>() {
+
+                        @Override
+                        public int compare(JSONObject a, JSONObject b) {
+                            Integer valA;
+                            Integer valB;
+                            int result=0;
+
+                            try {
+                                valA = a.getJSONObject("skill_rating").getInt("feedback_count");
+                                valB = b.getJSONObject("skill_rating").getInt("feedback_count");
+                                result = Integer.compare(valB, valA);
+
+                            } catch (JSONException e) {
+                                e.printStackTrace();
+                            }
+                            return result;
+                        }
+                    });
+                }
+            }
             for (int i = 0; i < jsonArray.length(); i++) {
+                 if(countFilter) {
+                     if(count == 0) {
+                        break;
+                     } else {
+                        count --;
+                     }
+                 }
+                 if (dateFilter) {
+                     long durationInMillisec = TimeUnit.DAYS.toMillis(duration);
+                     long timestamp = System.currentTimeMillis() - durationInMillisec;
+                     String startDate = new Timestamp(timestamp).toString().substring(0, 10); //substring is used for getting timestamp upto date only
+                     String skillCreationDate = jsonValues.get(i).get("creationTime").toString().substring(0,10);
+                     if (skillCreationDate.compareToIgnoreCase(startDate) < 0)
+                     {
+                         continue;
+                     }
+                 }
                 filteredData.put(jsonValues.get(i));
             }
             json.put("filteredData", filteredData);
+        } else {
+            if(countFilter) {
+                JSONObject tempSkillObject = new JSONObject();
+                tempSkillObject = skillObject;
+                for (int i = 0; i < skillObject.length(); i++) {
+                    if(count == 0) {
+                        break;
+                    } else {
+                        count --;
+                    }
+                    String keyName = skillObject.names().getString(i);
+                    tempSkillObject.put(keyName, skillObject.getJSONObject(keyName));
+                }
+                skillObject = tempSkillObject;
+            }
         }
 
 

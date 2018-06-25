@@ -91,7 +91,7 @@ import org.apache.log4j.PatternLayout;
 public class DAO {
 
     private final static String ACCESS_DUMP_FILE_PREFIX = "access_";
-    public  static File conf_dir, bin_dir, html_dir, data_dir, susi_chatlog_dir, susi_skilllog_dir, model_watch_dir, susi_skill_repo, deleted_skill_dir;
+    public  static File conf_dir, bin_dir, html_dir, data_dir, susi_chatlog_dir, susi_skilllog_dir, model_watch_dir, susi_skill_repo, private_skill_watch_dir, susi_private_skill_repo, usi_skill_repo, deleted_skill_dir;
     public static String conflictsPlaceholder = "%CONFLICTS%";
     private static File external_data, assets, dictionaries;
     private static Settings public_settings, private_settings;
@@ -108,8 +108,18 @@ public class DAO {
     public  static JsonTray passwordreset;
     private static JsonFile login_keys;
     public static JsonTray group;
+
+    //CMS Schema for server usage
     public static JsonTray skillRating;
     public static JsonTray fiveStarSkillRating;
+    public static JsonTray countryWiseSkillUsage;
+    public static JsonTray skillUsage;
+    public static JsonTray feedbackSkill;
+    public static JsonTray feedbackLogs;
+    public static JsonTray profileDetails;
+    public static JsonTray deviceWiseSkillUsage;
+    public static JsonTray bookmarkSkill;
+
 
     static {
         PatternLayout layout = new PatternLayout("%d{yyyy-MM-dd HH:mm:ss.SSS} %p %c %x - %m%n");
@@ -155,7 +165,9 @@ public class DAO {
             DAO.deleted_skill_dir.mkdirs();
         }
         model_watch_dir = new File(new File(data_dir.getParentFile().getParentFile(), "susi_skill_data"), "models");
+        private_skill_watch_dir = new File(new File(data_dir.getParentFile().getParentFile(), "susi_private_skill_data"), "users");
         susi_skill_repo = new File(data_dir.getParentFile().getParentFile(), "susi_skill_data/.git");
+        susi_private_skill_repo = new File(data_dir.getParentFile().getParentFile(), "susi_private_skill_data/.git");
         File susi_generic_skills = new File(data_dir, "generic_skills");
         if (!susi_generic_skills.exists()) susi_generic_skills.mkdirs();
         File susi_generic_skills_media_discovery = new File(susi_generic_skills, "media_discovery");
@@ -170,7 +182,7 @@ public class DAO {
             susi.addWatchpath(system_skills_localmode);
             susi.addWatchpath(susi_generic_skills_media_discovery);
         }
-                
+
         // initialize the memory as a background task to prevent that this blocks too much
         new Thread() {
             public void run() {
@@ -251,6 +263,14 @@ public class DAO {
         OS.protectPath(skillRating_per);
         OS.protectPath(skillRating_vol);
 
+        /*Profile Details storage*/
+        Path susi_profile_details_dir = dataPath.resolve("profile");
+        susi_profile_details_dir.toFile().mkdirs();
+        Path profileDetails_per = susi_profile_details_dir.resolve("profileDetails.json");
+        Path profileDetails_vol = susi_profile_details_dir.resolve("profileDetails_session.json");
+        profileDetails = new JsonTray(profileDetails_per.toFile(), profileDetails_vol.toFile(), 1000000);
+        OS.protectPath(profileDetails_per);
+        OS.protectPath(profileDetails_vol);
 
         //5 Star Skill Rating storage
         Path fiveStarSkillRating_per = susi_skill_rating_dir.resolve("fiveStarSkillRating.json");
@@ -258,6 +278,54 @@ public class DAO {
         fiveStarSkillRating = new JsonTray(fiveStarSkillRating_per.toFile(), fiveStarSkillRating_vol.toFile(), 1000000);
         OS.protectPath(fiveStarSkillRating_per);
         OS.protectPath(fiveStarSkillRating_vol);
+
+        //Feedback Skill storage
+        Path feedbackSkill_per = susi_skill_rating_dir.resolve("feedbackSkill.json");
+        Path feedbackSkill_vol = susi_skill_rating_dir.resolve("feedbackSkill_session.json");
+        feedbackSkill = new JsonTray(feedbackSkill_per.toFile(), feedbackSkill_vol.toFile(), 1000000);
+        OS.protectPath(feedbackSkill_per);
+        OS.protectPath(feedbackSkill_vol);
+
+        //Feedback logs for analysis
+        Path feedbackLogs_per = susi_skill_rating_dir.resolve("feedbackLogs.json");
+        Path feedbackLogs_vol = susi_skill_rating_dir.resolve("feedbackLogs_session.json");
+        feedbackLogs = new JsonTray(feedbackLogs_per.toFile(), feedbackLogs_vol.toFile(), 1000000);
+        OS.protectPath(feedbackLogs_per);
+        OS.protectPath(feedbackLogs_vol);
+
+        //Bookmark Skill storage
+        Path bookmarkSkill_per = susi_skill_rating_dir.resolve("bookmarkSkill.json");
+        Path bookmarkSkill_vol = susi_skill_rating_dir.resolve("bookmarkSkill_session.json");
+        bookmarkSkill = new JsonTray(bookmarkSkill_per.toFile(), bookmarkSkill_vol.toFile(), 1000000);
+        OS.protectPath(bookmarkSkill_per);
+        OS.protectPath(bookmarkSkill_vol);
+
+        // Country wise skill usage
+        Path country_wise_skill_usage_dir = dataPath.resolve("skill_usage");
+        country_wise_skill_usage_dir.toFile().mkdirs();
+        Path countryWiseSkillUsage_per = country_wise_skill_usage_dir.resolve("countryWiseSkillUsage.json");
+        Path countryWiseSkillUsage_vol = country_wise_skill_usage_dir.resolve("countryWiseSkillUsage_session.json");
+        countryWiseSkillUsage = new JsonTray(countryWiseSkillUsage_per.toFile(), countryWiseSkillUsage_vol.toFile(), 1000000);
+        OS.protectPath(countryWiseSkillUsage_per);
+        OS.protectPath(countryWiseSkillUsage_vol);
+
+        // Skill usage storage
+        Path susi_skill_usage_dir = dataPath.resolve("skill_usage");
+        susi_skill_usage_dir.toFile().mkdirs();
+        Path skillUsage_per = susi_skill_usage_dir.resolve("skillUsage.json");
+        Path skillUsage_vol = susi_skill_usage_dir.resolve("skillUsage_session.json");
+        skillUsage = new JsonTray(skillUsage_per.toFile(), skillUsage_vol.toFile(), 1000000);
+        OS.protectPath(skillUsage_per);
+        OS.protectPath(skillUsage_vol);
+
+        // Device wise skill usage
+        Path device_wise_skill_usage_dir = dataPath.resolve("skill_usage");
+        device_wise_skill_usage_dir.toFile().mkdirs();
+        Path deviceWiseSkillUsage_per = device_wise_skill_usage_dir.resolve("deviceWiseSkillUsage.json");
+        Path deviceWiseSkillUsage_vol = device_wise_skill_usage_dir.resolve("deviceWiseSkillUsage_session.json");
+        deviceWiseSkillUsage = new JsonTray(deviceWiseSkillUsage_per.toFile(), deviceWiseSkillUsage_vol.toFile(), 1000000);
+        OS.protectPath(deviceWiseSkillUsage_per);
+        OS.protectPath(deviceWiseSkillUsage_vol);
 
         // open index
         Path index_dir = dataPath.resolve("index");
@@ -464,8 +532,22 @@ public class DAO {
         return repository;
     }
 
+    public static Repository getPrivateRepository() throws IOException {
+        FileRepositoryBuilder builder = new FileRepositoryBuilder();
+        Repository repository = builder.setGitDir((susi_private_skill_repo))
+                .readEnvironment() // scan environment GIT_* variables
+                .findGitDir() // scan up the file system tree
+                .build();
+        return repository;
+    }
+
     public static Git getGit() throws IOException {
         Git git = new Git(getRepository());
+        return git;
+    }
+
+    public static Git getPrivateGit() throws IOException {
+        Git git = new Git(getPrivateRepository());
         return git;
     }
 

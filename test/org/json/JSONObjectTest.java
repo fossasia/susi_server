@@ -10,9 +10,9 @@ import org.junit.After;
 import org.junit.Before;
 
 public class JSONObjectTest extends TestCase {
-    
-    public static JSONObject testJson(boolean ordered) {
-        JSONObject json = new JSONObject(ordered);
+
+    public static JSONObject testJson() {
+        JSONObject json = new JSONObject();
         Map<String,  Object> map = new HashMap<>();
         map.put("abc", 1);
         map.put("def", "Hello World");
@@ -25,12 +25,12 @@ public class JSONObjectTest extends TestCase {
         json.put("fuenf", 5);
         return json;
     }
-    
+
     JSONObject testObject;
-    
+
     @Before
     public void setUp() throws Exception {
-        this.testObject = testJson(true);
+        this.testObject = testJson();
     }
 
     @After
@@ -45,5 +45,4 @@ public class JSONObjectTest extends TestCase {
         String t1 = j0.toString();
         assertEquals(t0, t1);
     }
-    
 }

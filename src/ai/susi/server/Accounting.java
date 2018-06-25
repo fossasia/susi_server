@@ -45,15 +45,29 @@ public class Accounting {
         this.requests = new UserRequests(); // temporary user request space
         this.identity = identity;
 
-        if(parent != null){
-            if (parent.has(identity.toString())) {
-                json = parent.getJSONObject(identity.toString());
-            } else {
-                json = new JSONObject();
-                parent.put(identity.toString(), json, identity.isPersistent());
-            }
-        }
-        else json = new JSONObject();
+        if (parent != null) {
+        	String[] lookupKeys = identity.getLookupKeys();
+        	this.json = null;
+        	for (String key: lookupKeys) {
+        		if (parent.has(key)) {
+        			this.json = parent.getJSONObject(key);
+    	    		break;
+        		}
+        	}
+        	// in case that the identity has the uuid inside, we must loop here over all objects
+        	if (this.json == null && identity.isUuid()) for (String key: this.parent.keys()) {
+        		if (new ClientIdentity(key).getUuid().equals(identity.getName())) {
+        			this.json = parent.getJSONObject(key);
+    	    		break;
+        		}
+        	}
+	    	if (this.json == null) {
+	    		this.json = new JSONObject();
+	        	parent.put(identity.toString(), json, identity.isPersistent());
+	        }
+    	} else {
+    		this.json = new JSONObject();
+    	}
 
     }
     

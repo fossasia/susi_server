@@ -74,7 +74,10 @@ public class SusiService extends AbstractAPIHandler implements APIHandler {
         int timezoneOffset = post.get("timezoneOffset", 0); // minutes, i.e. -60
         double latitude = post.get("latitude", Double.NaN); // i.e. 8.68 
         double longitude = post.get("longitude", Double.NaN); // i.e. 50.11
+        String countryName = post.get("country_name", "");
+        String countryCode = post.get("country_code", "");
         String language = post.get("language", "en");
+        String deviceType = post.get("device_type", "Others");
         String dream = post.get("dream", ""); // an instant dream setting, to be used for permanent dreaming
         String persona = post.get("persona", ""); // an instant dream setting, to be used for permanent dreaming
 
@@ -153,7 +156,7 @@ public class SusiService extends AbstractAPIHandler implements APIHandler {
         minds.add(DAO.susi);
         
         // answer with built-in intents
-        SusiCognition cognition = new SusiCognition(q, timezoneOffset, latitude, longitude, language, count, user.getIdentity(), minds.toArray(new SusiMind[minds.size()]));
+        SusiCognition cognition = new SusiCognition(q, timezoneOffset, latitude, longitude, countryCode, countryName, language, deviceType, count, user.getIdentity(), minds.toArray(new SusiMind[minds.size()]));
         if (cognition.getAnswers().size() > 0) try {
             DAO.susi.getMemories().addCognition(user.getIdentity().getClient(), cognition);
         } catch (IOException e) {
