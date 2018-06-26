@@ -109,7 +109,7 @@ public class DAO {
     private static JsonFile login_keys;
     public static JsonTray group;
 
-    //CMS Schema for server usage
+    // CMS Schema for server usage
     public static JsonTray skillRating;
     public static JsonTray fiveStarSkillRating;
     public static JsonTray countryWiseSkillUsage;
@@ -119,6 +119,7 @@ public class DAO {
     public static JsonTray profileDetails;
     public static JsonTray deviceWiseSkillUsage;
     public static JsonTray bookmarkSkill;
+    public static JsonTray chatbot;
 
 
     static {
@@ -262,6 +263,15 @@ public class DAO {
         skillRating = new JsonTray(skillRating_per.toFile(), skillRating_vol.toFile(), 1000000);
         OS.protectPath(skillRating_per);
         OS.protectPath(skillRating_vol);
+
+        /*Chatbot storage*/
+        Path susi_chatbot_dir = dataPath.resolve("chatbot");
+        susi_chatbot_dir.toFile().mkdirs();
+        Path susiChatbot_per = susi_chatbot_dir.resolve("chatbot.json");
+        Path susiChatbot_vol = susi_chatbot_dir.resolve("chatbot_session.json");
+        chatbot = new JsonTray(susiChatbot_per.toFile(), susiChatbot_vol.toFile(), 1000000);
+        OS.protectPath(susiChatbot_per);
+        OS.protectPath(susiChatbot_vol);
 
         /*Profile Details storage*/
         Path susi_profile_details_dir = dataPath.resolve("profile");

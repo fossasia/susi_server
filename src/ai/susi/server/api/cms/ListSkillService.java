@@ -4,6 +4,9 @@ import ai.susi.DAO;
 import ai.susi.json.JsonObjectWithDefault;
 import ai.susi.mind.SusiSkill;
 import ai.susi.server.*;
+import org.apache.commons.lang3.StringEscapeUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.http.util.TextUtils;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -54,9 +57,11 @@ public class ListSkillService extends AbstractAPIHandler implements APIHandler {
         JSONObject json = new JSONObject(true);
         JSONObject skillObject = new JSONObject();
         String countString = call.get("count", null);
+        String searchQuery = call.get("q", null);
         Integer count = null;
         Boolean countFilter = false;
         Boolean dateFilter = false;
+        Boolean searchFilter = false;
 
         if(countString != null) {
             if(Integer.parseInt(countString) < 0) {
@@ -69,6 +74,12 @@ public class ListSkillService extends AbstractAPIHandler implements APIHandler {
                     throw new APIException(422, "Invalid count value.");
                 }
             }
+        }
+
+        if (searchQuery !=null && !StringUtils.isBlank(searchQuery))
+        {
+            searchFilter=true;
+            searchQuery="(.*)"+searchQuery.toLowerCase()+"(.*)";
         }
 
         // Returns susi skills list of all groups
@@ -371,6 +382,26 @@ public class ListSkillService extends AbstractAPIHandler implements APIHandler {
                      if (skillCreationDate.compareToIgnoreCase(startDate) < 0)
                      {
                          continue;
+                     }
+                 }
+                 if (searchFilter) {
+                     JSONObject skillMetadata = jsonValues.get(i);
+                     String skillName = skillMetadata.get("skill_name").toString().toLowerCase();
+                     String authorName = skillMetadata.get("author").toString().toLowerCase();
+                     String skillDescription = skillMetadata.get("descriptions").toString().toLowerCase();
+                     Boolean skillMatches = false;
+                     if (!skillName.matches(searchQuery) && !authorName.matches(searchQuery) && !skillDescription.matches(searchQuery)) {
+                         try {
+                             String skillExamples = skillMetadata.get("examples").toString().toLowerCase();
+                             if (!skillExamples.matches(searchQuery))
+                             {
+                                 continue;
+                             }
+                         }
+                         catch (Exception e)
+                         {
+                             continue;
+                         }
                      }
                  }
                 filteredData.put(jsonValues.get(i));
