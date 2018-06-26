@@ -88,12 +88,13 @@ public class CreateSkillService extends AbstractAPIHandler implements APIHandler
                         userId = identity.getUuid();
                     }
                 }
+                if (userId != null) {
                 // if client sends private=1 then it is a private skill
                 File private_skill_dir = null;
                 String privateSkill = req.getParameter("private");
                 if(privateSkill != null){
                     private_skill_dir = new File(DAO.private_skill_watch_dir,userId);
-                }   
+                }
                 InputStream imagePartContent = imagePart.getInputStream();
 
                 String model_name = req.getParameter("model");
@@ -136,7 +137,7 @@ public class CreateSkillService extends AbstractAPIHandler implements APIHandler
                         // Reading Content for skill
                         String content = req.getParameter("content");
                         if (content == null) content = "";
-                        
+
                         // Reading content for image
                         Image image = ImageIO.read(imagePartContent);
                         BufferedImage bi = this.createResizedCopy(image, 512, 512, true);
@@ -157,7 +158,7 @@ public class CreateSkillService extends AbstractAPIHandler implements APIHandler
                             else{
                                 path = skill.getPath().replace(DAO.model_watch_dir.toString(), "models");
                             }
-                            
+
                         } catch (IOException e) {
                             e.printStackTrace();
                             json.put("message", "error: " + e.getMessage());
@@ -192,9 +193,14 @@ public class CreateSkillService extends AbstractAPIHandler implements APIHandler
 
                             }
                         }
-                        
+
                     }
                 }
+              }
+              else {
+                json.put("message","Access token not valid");
+                json.put("accepted",false);
+              }
             }
             resp.setContentType("application/json");
             resp.setCharacterEncoding("UTF-8");

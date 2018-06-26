@@ -534,21 +534,43 @@ public class DAO {
     }
 
     public static Repository getRepository() throws IOException {
-        FileRepositoryBuilder builder = new FileRepositoryBuilder();
-        Repository repository = builder.setGitDir((susi_skill_repo))
-                .readEnvironment() // scan environment GIT_* variables
-                .findGitDir() // scan up the file system tree
-                .build();
-        return repository;
+      Repository repo;
+      File repoFile = susi_skill_repo;
+      if (repoFile.exists()) {
+      // Open an existing repository
+      repo = new FileRepositoryBuilder()
+      .setGitDir(susi_skill_repo)
+      .readEnvironment() // scan environment GIT_* variables
+      .findGitDir() // scan up the file system tree
+      .build();
+      } else {
+        // Create a new repository
+        repo = new FileRepositoryBuilder()
+        .setGitDir(susi_skill_repo)
+        .build();
+        repo.create();
+      }
+      return repo;
     }
 
     public static Repository getPrivateRepository() throws IOException {
-        FileRepositoryBuilder builder = new FileRepositoryBuilder();
-        Repository repository = builder.setGitDir((susi_private_skill_repo))
-                .readEnvironment() // scan environment GIT_* variables
-                .findGitDir() // scan up the file system tree
-                .build();
-        return repository;
+        Repository repo;
+        File repoFile = susi_private_skill_repo;
+        if (repoFile.exists()) {
+        // Open an existing repository
+        repo = new FileRepositoryBuilder()
+        .setGitDir(susi_private_skill_repo)
+        .readEnvironment() // scan environment GIT_* variables
+        .findGitDir() // scan up the file system tree
+        .build();
+        } else {
+        // Create a new repository
+        repo = new FileRepositoryBuilder()
+        .setGitDir(susi_private_skill_repo)
+        .build();
+        repo.create();
+        }
+        return repo;
     }
 
     public static Git getGit() throws IOException {
