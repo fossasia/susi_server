@@ -43,7 +43,7 @@ public class RateSkillService extends AbstractAPIHandler implements APIHandler {
 
     @Override
     public UserRole getMinimalUserRole() {
-        return UserRole.ANONYMOUS;
+        return UserRole.USER;
     }
 
     @Override
