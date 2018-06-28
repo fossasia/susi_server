@@ -170,7 +170,7 @@ public class CreateSkillService extends AbstractAPIHandler implements APIHandler
                                 git.add().addFilepattern(".").call();
 
                             // commit the changes
-                                DAO.pushCommit(git, "Created " + skill_name, userEmail);
+                                DAO.pushCommitPrivate(git, "Created " + skill_name, userEmail);
                                 json.put("accepted", true);
 
                             } catch (IOException | GitAPIException e) {

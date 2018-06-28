@@ -646,6 +646,34 @@ public class DAO {
         }
     }
 
+    /**
+     * commit user changes to the private skill data repository
+     * @param git
+     * @param commit_message
+     * @param userEmail
+     * @throws IOException
+     */
+    public static void pushCommitPrivate(Git git, String commit_message, String userEmail) throws IOException {
+
+        // fix bad email setting
+        if (userEmail==null || userEmail.isEmpty()) {
+            assert false; // this should not happen
+            userEmail = "anonymous@";
+        }
+
+        try {
+            git.commit()
+                    .setAllowEmpty(false)
+                    .setAll(true)
+                    .setAuthor(new PersonIdent(userEmail,userEmail))
+                    .setMessage(commit_message)
+                    .call();
+
+        } catch (GitAPIException e) {
+            throw new IOException (e.getMessage());
+        }
+    }
+
     private static String getConflictsMailContent(MergeResult mergeResult) throws APIException {
         // get template file
         String result="";
