@@ -625,7 +625,10 @@ public class SusiSkill {
                         JSONArray skillName = languageName.getJSONArray(skillname);
 
                         // Fetch skill usage data for sorting purpose.
-                        int startIndex = skillName.length() >= duration ? skillName.length()-duration : 0;
+                        int startIndex = 0;
+                        if(duration >= 0) {
+                            startIndex = skillName.length() >= duration ? skillName.length()-duration : 0;
+                        }
                         for (int i = startIndex; i<skillName.length(); i++)
                         {
                             JSONObject dayUsage = skillName.getJSONObject(i);
