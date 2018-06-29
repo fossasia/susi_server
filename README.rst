@@ -200,6 +200,17 @@ For your own deployments: The `Susi skill data <https://github.com/fossasia/susi
    
    git clone https://github.com/fossasia/susi_skill_data.git
 
+If you want to create private skills in your local server, you should create a local git repository ``susi_private_skill_data`` alongside Susi server. Then you must create a local git host:
+::
+
+    > cd <above susi home>
+    > mkdir susi_private_skill_data_host
+    > cd susi_private_skill_data_host
+    > git init —bare
+    > cd ../susi_private_skill_data
+    > git remote add origin <path to susi_private_skill_data_host>
+    > git push --set-upstream origin master
+
 *********
 Why should I use Susi AI?
 *********
