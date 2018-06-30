@@ -75,6 +75,7 @@ public class FeedbackLogService extends AbstractAPIHandler implements APIHandler
         String susi_reply = call.get("susi_reply", null);
         String country_name = call.get("country_name", null);
         String country_code = call.get("country_code", null);
+        String device_type = call.get("device_type", "Others");
         String skill_path = "/susi_skill_data/models/" + model_name + "/" + group_name + "/" + language_name + "/" + skill_name + ".txt";
 
 
@@ -109,11 +110,12 @@ public class FeedbackLogService extends AbstractAPIHandler implements APIHandler
                                 feedbackLogObject = skillName.getJSONObject(i);
                                 String fb_user_query = feedbackLogObject.get("user_query").toString();
                                 String fb_susi_reply = feedbackLogObject.get("susi_reply").toString();
-                                String fb_country_name = feedbackLogObject.get("country_name").toString();
+                                String fb_country_code = feedbackLogObject.get("country_code").toString();
+                                String fb_device_type = feedbackLogObject.get("device_type").toString();
 
                                 if ((rights.getIdentity().isEmail() && feedbackLogObject.get("email").equals(idvalue)) ||
                                         (rights.getIdentity().isUuid() && feedbackLogObject.get("uuid").equals(idvalue))) {
-                                    if (fb_user_query.equals(user_query) && fb_susi_reply.equals(susi_reply) && fb_country_name.equals(country_name)) {
+                                    if (fb_user_query.equals(user_query) && fb_susi_reply.equals(susi_reply) && fb_country_code.equals(country_code) && fb_device_type.equals(device_type)) {
                                         // Feedback once given on an interaction should not change.
                                         feedbackExists = true;
                                     }
@@ -138,6 +140,7 @@ public class FeedbackLogService extends AbstractAPIHandler implements APIHandler
             feedbackLogObject.put("susi_reply", susi_reply);
             feedbackLogObject.put("country_name", country_name);
             feedbackLogObject.put("country_code", country_code);
+            feedbackLogObject.put("device_type", device_type);
             feedbackLogObject.put("skill_path", skill_path);
             skillName.put(feedbackLogObject);
         }
