@@ -109,7 +109,7 @@ public class DAO {
     private static JsonFile login_keys;
     public static JsonTray group;
 
-    //CMS Schema for server usage
+    // CMS Schema for server usage
     public static JsonTray skillRating;
     public static JsonTray fiveStarSkillRating;
     public static JsonTray countryWiseSkillUsage;
@@ -119,6 +119,8 @@ public class DAO {
     public static JsonTray profileDetails;
     public static JsonTray deviceWiseSkillUsage;
     public static JsonTray bookmarkSkill;
+    public static JsonTray chatbot;
+    public static JsonTray ratingsOverTime;
 
 
     static {
@@ -263,6 +265,15 @@ public class DAO {
         OS.protectPath(skillRating_per);
         OS.protectPath(skillRating_vol);
 
+        /*Chatbot storage*/
+        Path susi_chatbot_dir = dataPath.resolve("chatbot");
+        susi_chatbot_dir.toFile().mkdirs();
+        Path susiChatbot_per = susi_chatbot_dir.resolve("chatbot.json");
+        Path susiChatbot_vol = susi_chatbot_dir.resolve("chatbot_session.json");
+        chatbot = new JsonTray(susiChatbot_per.toFile(), susiChatbot_vol.toFile(), 1000000);
+        OS.protectPath(susiChatbot_per);
+        OS.protectPath(susiChatbot_vol);
+
         /*Profile Details storage*/
         Path susi_profile_details_dir = dataPath.resolve("profile");
         susi_profile_details_dir.toFile().mkdirs();
@@ -326,6 +337,13 @@ public class DAO {
         deviceWiseSkillUsage = new JsonTray(deviceWiseSkillUsage_per.toFile(), deviceWiseSkillUsage_vol.toFile(), 1000000);
         OS.protectPath(deviceWiseSkillUsage_per);
         OS.protectPath(deviceWiseSkillUsage_vol);
+
+        // Skill ratings over time
+        Path ratingsOverTime_per = susi_skill_rating_dir.resolve("ratingsOverTime.json");
+        Path ratingsOverTime_vol = susi_skill_rating_dir.resolve("ratingsOverTime_session.json");
+        ratingsOverTime = new JsonTray(ratingsOverTime_per.toFile(), ratingsOverTime_vol.toFile(), 1000000);
+        OS.protectPath(ratingsOverTime_per);
+        OS.protectPath(ratingsOverTime_vol);
 
         // open index
         Path index_dir = dataPath.resolve("index");
@@ -524,21 +542,43 @@ public class DAO {
     }
 
     public static Repository getRepository() throws IOException {
-        FileRepositoryBuilder builder = new FileRepositoryBuilder();
-        Repository repository = builder.setGitDir((susi_skill_repo))
-                .readEnvironment() // scan environment GIT_* variables
-                .findGitDir() // scan up the file system tree
-                .build();
-        return repository;
+      Repository repo;
+      File repoFile = susi_skill_repo;
+      if (repoFile.exists()) {
+      // Open an existing repository
+      repo = new FileRepositoryBuilder()
+      .setGitDir(susi_skill_repo)
+      .readEnvironment() // scan environment GIT_* variables
+      .findGitDir() // scan up the file system tree
+      .build();
+      } else {
+        // Create a new repository
+        repo = new FileRepositoryBuilder()
+        .setGitDir(susi_skill_repo)
+        .build();
+        repo.create();
+      }
+      return repo;
     }
 
     public static Repository getPrivateRepository() throws IOException {
-        FileRepositoryBuilder builder = new FileRepositoryBuilder();
-        Repository repository = builder.setGitDir((susi_private_skill_repo))
-                .readEnvironment() // scan environment GIT_* variables
-                .findGitDir() // scan up the file system tree
-                .build();
-        return repository;
+        Repository repo;
+        File repoFile = susi_private_skill_repo;
+        if (repoFile.exists()) {
+        // Open an existing repository
+        repo = new FileRepositoryBuilder()
+        .setGitDir(susi_private_skill_repo)
+        .readEnvironment() // scan environment GIT_* variables
+        .findGitDir() // scan up the file system tree
+        .build();
+        } else {
+        // Create a new repository
+        repo = new FileRepositoryBuilder()
+        .setGitDir(susi_private_skill_repo)
+        .build();
+        repo.create();
+        }
+        return repo;
     }
 
     public static Git getGit() throws IOException {

@@ -110,7 +110,7 @@ public class FiveStarRateSkillService extends AbstractAPIHandler implements APIH
                                 JSONObject ratingObject = new JSONObject();
                                 ratingObject = skillName.getJSONObject(i);
                                 if ((authorization.getIdentity().isEmail() && ratingObject.get("email").equals(idvalue)) ||
-                                    (authorization.getIdentity().isUuid() && ratingObject.get("uuid").equals(idvalue))) {
+                                        (authorization.getIdentity().isUuid() && ratingObject.get("uuid").equals(idvalue))) {
 
                                     Integer previousRating = ratingObject.getInt("stars");
 
@@ -139,6 +139,8 @@ public class FiveStarRateSkillService extends AbstractAPIHandler implements APIH
                 resultStars = addToSkillRatingJSON(call);
             }
 
+            updateRatingsOverTime(call);
+
             languageName.put(skill_name, skillName);
             groupName.put(language_name, languageName);
             modelName.put(group_name, groupName);
@@ -150,6 +152,67 @@ public class FiveStarRateSkillService extends AbstractAPIHandler implements APIH
         } else {
             throw new APIException(422, "Access token not given.");
         }
+    }
+
+    private void updateRatingsOverTime(Query call) {
+        String model_name = call.get("model", "general");
+        String group_name = call.get("group", "Knowledge");
+        String language_name = call.get("language", "en");
+        String skill_name = call.get("skill", null);
+        int skill_stars = Integer.parseInt(call.get("stars", null));
+
+        JsonTray ratingsOverTime = DAO.ratingsOverTime;
+        JSONObject modelName = new JSONObject();
+        JSONObject groupName = new JSONObject();
+        JSONObject languageName = new JSONObject();
+        JSONArray skillName = new JSONArray();
+        Timestamp timestamp = new Timestamp(System.currentTimeMillis());
+        Boolean timePeriodExists = false;
+
+        if (ratingsOverTime.has(model_name)) {
+            modelName = ratingsOverTime.getJSONObject(model_name);
+            if (modelName.has(group_name)) {
+                groupName = modelName.getJSONObject(group_name);
+                if (groupName.has(language_name)) {
+                    languageName = groupName.getJSONObject(language_name);
+                    if (languageName.has(skill_name)) {
+                        skillName = languageName.getJSONArray(skill_name);
+
+                        for (int i =0; i < skillName.length(); i++) {
+                            JSONObject ratingObject = new JSONObject();
+                            ratingObject = skillName.getJSONObject(i);
+                            // Fetch overall monthly ratings
+                            String ratingTime = ratingObject.get("timestamp").toString().substring(0, 7);
+                            if (ratingTime.equals(timestamp.toString().substring(0, 7))) {
+                                int ratingCount = ratingObject.getInt("count");
+                                float skillRating = ratingObject.getFloat("rating");
+                                float totalRating = skillRating * ratingCount;
+                                float newAvgRating = (totalRating + skill_stars)/(ratingCount + 1);
+                                ratingObject.put("rating", newAvgRating);
+                                ratingObject.put("count", ratingCount + 1);
+                                skillName.put(i, ratingObject);
+                                timePeriodExists = true;
+                                break;
+                            }
+                        }
+
+                    }
+                }
+            }
+        }
+
+        if (!timePeriodExists) {
+            JSONObject ratingObject = new JSONObject();
+            ratingObject.put("rating", skill_stars);
+            ratingObject.put("count", 1);
+            ratingObject.put("timestamp", timestamp);
+            skillName.put(ratingObject);
+        }
+
+        languageName.put(skill_name, skillName);
+        groupName.put(language_name, languageName);
+        modelName.put(group_name, groupName);
+        ratingsOverTime.put(model_name, modelName, true);
     }
 
 
