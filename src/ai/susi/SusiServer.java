@@ -591,6 +591,9 @@ public class SusiServer {
         servletHandler.addServlet(Sitemap.class, "/sitemap.xml");
         servletHandler.addServlet(ThreaddumpServlet.class, "/threaddump.txt");
 
+        // cms api
+        servletHandler.addServlet(GetImageServlet.class, "/cms/getImage.png");
+
         // aggregation api
         servletHandler.addServlet(GenericScraper.class, "/susi/genericscraper.json");
 
