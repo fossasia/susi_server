@@ -17,11 +17,11 @@
       "license":"Copyright by urbandictionary.com, http://about.urbandictionary.com/tos"
     },
     "locations":{
-      "example":"http://127.0.0.1:4000/susi/console.json?q=%22SELECT%20*%20FROM%20locations%20WHERE%20query=%27rome%27;%22",
-      "url":"http://api.loklak.org/api/console.json?q=SELECT%20*%20FROM%20locations%20WHERE%20location='$query$';",
+      "example":"http://127.0.0.1:4000/susi/console.json?q=%22SELECT%20location%20FROM%20locations%20WHERE%20query=%27rome%27;%22",
+      "url":"http://api.loklak.org/api/console.json?q=SELECT%20location%20FROM%20locations%20WHERE%20location='$query$';",
       "test":"rome",
       "parser":"json",
-      "path":"$.data",
+      "path":"$.data[0]",
       "license":"Copyright by GeoNames"
     },
     "location-info":{
