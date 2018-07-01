@@ -1,5 +1,5 @@
 /**
- *  GetCountryWiseSkillUsageService
+ *  GetRatingsOverTime
  *  Copyright by Anup Kumar Panwar, @anupkumarpanwar
  *
  *  This library is free software; you can redistribute it and/or
@@ -32,11 +32,11 @@ import java.io.File;
 
 
 /**
- * This Endpoint accepts 4 parameters. model,group,language,skill
+ * This Endpoint accepts 4 parameters. model,group,language,skill, duration
  * before getting a rating of a skill, the skill must exist in the directory.
- * http://localhost:4000/cms/getCountryWiseSkillUsage.json?model=general&group=Knowledge&skill=aboutsusi&language=en
+ * http://localhost:4000/cms/getRatingsOverTime.json?model=general&group=Knowledge&skill=aboutsusi&language=en
  */
-public class GetCountryWiseSkillUsageService extends AbstractAPIHandler implements APIHandler {
+public class GetRatingsOverTime extends AbstractAPIHandler implements APIHandler {
 
 
     private static final long serialVersionUID = 1420414106164188352L;
@@ -53,7 +53,7 @@ public class GetCountryWiseSkillUsageService extends AbstractAPIHandler implemen
 
     @Override
     public String getAPIPath() {
-        return "/cms/getCountryWiseSkillUsage.json";
+        return "/cms/getRatingsOverTime.json";
     }
 
     @Override
@@ -75,19 +75,19 @@ public class GetCountryWiseSkillUsageService extends AbstractAPIHandler implemen
             return new ServiceResponse(result);
 
         }
-        JsonTray skillUsage = DAO.countryWiseSkillUsage;
-        if (skillUsage.has(model_name)) {
-            JSONObject modelName = skillUsage.getJSONObject(model_name);
+        JsonTray ratingsOverTime = DAO.ratingsOverTime;
+        if (ratingsOverTime.has(model_name)) {
+            JSONObject modelName = ratingsOverTime.getJSONObject(model_name);
             if (modelName.has(group_name)) {
                 JSONObject groupName = modelName.getJSONObject(group_name);
                 if (groupName.has(language_name)) {
                     JSONObject languageName = groupName.getJSONObject(language_name);
                     if (languageName.has(skill_name)) {
-                        JSONArray countryWiseSkillUsage = languageName.getJSONArray(skill_name);
+                        JSONArray skillRatings = languageName.getJSONArray(skill_name);
                         result.put("skill_name", skill_name);
-                        result.put("skill_usage", countryWiseSkillUsage);
+                        result.put("ratings_over_time", skillRatings);
                         result.put("accepted", true);
-                        result.put("message", "Country wise skill usage fetched");
+                        result.put("message", "Ratings over time fetched");
                         return new ServiceResponse(result);
                     }
                 }
@@ -96,7 +96,7 @@ public class GetCountryWiseSkillUsageService extends AbstractAPIHandler implemen
 
         result.put("skill_name", skill_name);
         result.put("accepted", false);
-        result.put("message", "Skill has not been used yet");
+        result.put("message", "Skill has not been rated yet");
 
         return new ServiceResponse(result);
     }

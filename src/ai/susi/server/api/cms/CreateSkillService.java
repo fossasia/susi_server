@@ -103,7 +103,7 @@ public class CreateSkillService extends AbstractAPIHandler implements APIHandler
                 }
                 File model = new File(DAO.model_watch_dir, model_name);
                 if(privateSkill != null){
-                    model = new File(private_skill_dir, model_name);
+                    model = private_skill_dir;
                 }
                 String group_name = req.getParameter("group");
                 if (group_name == null) {

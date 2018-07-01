@@ -568,7 +568,10 @@ public class SusiServer {
                 FeedbackSkillService.class,
 
                 //Bookmark skill
-                BookmarkSkillService.class
+                BookmarkSkillService.class,
+
+                //Skill ratings over time
+                GetRatingsOverTime.class
         };
         for (Class<? extends Servlet> service: services)
             try {
