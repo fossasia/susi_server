@@ -120,6 +120,7 @@ public class DAO {
     public static JsonTray deviceWiseSkillUsage;
     public static JsonTray bookmarkSkill;
     public static JsonTray chatbot;
+    public static JsonTray ratingsOverTime;
 
 
     static {
@@ -336,6 +337,13 @@ public class DAO {
         deviceWiseSkillUsage = new JsonTray(deviceWiseSkillUsage_per.toFile(), deviceWiseSkillUsage_vol.toFile(), 1000000);
         OS.protectPath(deviceWiseSkillUsage_per);
         OS.protectPath(deviceWiseSkillUsage_vol);
+
+        // Skill ratings over time
+        Path ratingsOverTime_per = susi_skill_rating_dir.resolve("ratingsOverTime.json");
+        Path ratingsOverTime_vol = susi_skill_rating_dir.resolve("ratingsOverTime_session.json");
+        ratingsOverTime = new JsonTray(ratingsOverTime_per.toFile(), ratingsOverTime_vol.toFile(), 1000000);
+        OS.protectPath(ratingsOverTime_per);
+        OS.protectPath(ratingsOverTime_vol);
 
         // open index
         Path index_dir = dataPath.resolve("index");
