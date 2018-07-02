@@ -51,9 +51,8 @@
   <!--#include file="../ssi/common_head_back.include" -->
   <!--#include file="../data/ssi/custom_head.include" -->
   <style>
-    .dropbtn {
+    #dropbtn {
       color: white;
-      font-size: 18px;
       border: none;
       width: 17px;
       border-radius: 40px;
@@ -61,15 +60,10 @@
       background: none;
     }
 
-    .dropbtn:hover,
-    .dropbtn:focus {
-      background: none;
-    }
-
-    .dropdown {
-      float: right;
+    #icons {
       position: relative;
-      display: inline-block;
+      color: rgb(117, 117, 117);
+      float: right;
     }
 
     .dropdown-content {
@@ -118,7 +112,8 @@
     }
 
     .optionMenu {
-      margin-top: -1.5px;
+      margin-top: -4px;
+      margin-right: -6px;
     }
 
     .alignRight{
@@ -137,6 +132,7 @@
     
   </style>
   <link rel="stylesheet" href="/css/susi.css" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
 </head>
 
 <body style="position: relative; margin-top: 0; min-height: 100; background: #f6f6f6;">
@@ -144,7 +140,9 @@
   <!--#include file="../data/ssi/custom_body_front.include" -->
   <!--#include file="../ssi/common_body_front.include" -->
   <nav class="navbar navbar-custom  navbar-fixed-top custom-app-bar" style="min-height:46px;">
-    <div class="container-fluid navbar-custom" style="height:46px;">
+    <div class="container-fluid navbar-custom"
+	style="height:46px;box-shadow:0 0 4px rgba(0,0,0,.14),
+		0 4px 8px rgba(0,0,0,.28);">
 
       <div id="">
         <div class="navbar-header">
@@ -154,7 +152,7 @@
           </div>
         </div>
         <ul class="nav navbar-nav navbar-right optionMenu">
-          <li><a><span class="	glyphicon glyphicon-option-vertical dropbtn" onclick="myFunction()" ></span> </a></li>
+          <li><a><i class="material-icons" id="dropbtn" onclick="myFunction()">more_vert</i></a></li>
           <div id="navbar" class="dropdown-content">
             <ul></ul>
           </div>
@@ -170,7 +168,7 @@
 
   <a href="https://github.com/fossasia/susi_server.git"><img style="position:absolute; top:20; right:0; border:0;" src="images/forkme_right_green_007200.png" alt="Fork me on GitHub" title="susi server source code on github"></a>
 
-  <div class="jumbotron" style="padding:100px 0 calc(20%); background-color: white;">
+  <div class="jumbotron" style="height:82vh;min-height:333px; background-color: white;">
     <div class="container">
       <h1><code style="color: #4285f4;background-color: #ebf1fd;"> api.susi.ai</code></h1>
       <h2 style="font-weight: 300; font-size: 25px;">SUSI.AI API Server for Artificial Intelligence Personal Assistants, Robots, Help Desks and Chatbots</h2>
@@ -216,7 +214,7 @@
 
           // Close the dropdown if the user clicks outside of it
           window.onclick = function (event) {
-            if (!event.target.matches('.dropbtn')) {
+            if (!event.target.matches('#dropbtn')) {
 
               var dropdowns = document.getElementsByclass("dropdown-content");
               var i;
