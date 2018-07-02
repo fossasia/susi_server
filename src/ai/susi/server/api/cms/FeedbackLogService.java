@@ -46,7 +46,7 @@ public class FeedbackLogService extends AbstractAPIHandler implements APIHandler
 
     @Override
     public UserRole getMinimalUserRole() {
-        return UserRole.USER;
+        return UserRole.ANONYMOUS;
     }
 
     @Override
@@ -60,7 +60,7 @@ public class FeedbackLogService extends AbstractAPIHandler implements APIHandler
     }
 
     @Override
-    public ServiceResponse serviceImpl(Query call, HttpServletResponse response, Authorization rights, final JsonObjectWithDefault permissions) throws APIException {
+    public ServiceResponse serviceImpl(Query call, HttpServletResponse response, Authorization rights, final JsonObjectWithDefault permissions) {
 
         String model_name = call.get("model", "general");
         File model = new File(DAO.model_watch_dir, model_name);
@@ -86,14 +86,12 @@ public class FeedbackLogService extends AbstractAPIHandler implements APIHandler
             return new ServiceResponse(result);
 
         }
-
-        String idvalue = rights.getIdentity().getName();
-        Boolean feedbackExists = false;
         JsonTray skillRating = DAO.feedbackLogs;
         JSONObject modelName = new JSONObject();
         JSONObject groupName = new JSONObject();
         JSONObject languageName = new JSONObject();
         JSONArray skillName = new JSONArray();
+        JSONObject feedbackLogObject = new JSONObject();
         Timestamp timestamp = new Timestamp(System.currentTimeMillis());
         if (skillRating.has(model_name)) {
             modelName = skillRating.getJSONObject(model_name);
@@ -103,58 +101,49 @@ public class FeedbackLogService extends AbstractAPIHandler implements APIHandler
                     languageName = groupName.getJSONObject(language_name);
                     if (languageName.has(skill_name)) {
                         skillName = languageName.getJSONArray(skill_name);
-
-                        for (int i =0; i < skillName.length(); i++) {
-                            try {
-                                JSONObject feedbackLogObject = new JSONObject();
-                                feedbackLogObject = skillName.getJSONObject(i);
-                                String fb_user_query = feedbackLogObject.get("user_query").toString();
-                                String fb_susi_reply = feedbackLogObject.get("susi_reply").toString();
-                                String fb_country_code = feedbackLogObject.get("country_code").toString();
-                                String fb_device_type = feedbackLogObject.get("device_type").toString();
-
-                                if ((rights.getIdentity().isEmail() && feedbackLogObject.get("email").equals(idvalue)) ||
-                                        (rights.getIdentity().isUuid() && feedbackLogObject.get("uuid").equals(idvalue))) {
-                                    if (fb_user_query.equals(user_query) && fb_susi_reply.equals(susi_reply) && fb_country_code.equals(country_code) && fb_device_type.equals(device_type)) {
-                                        // Feedback once given on an interaction should not change.
-                                        feedbackExists = true;
-                                    }
-                                }
-                            } catch (Exception e)
-                            {
-                                continue;
-                            }
-                        }
+                        feedbackLogObject.put("timestamp", timestamp);
+                        feedbackLogObject.put("feedback", skill_rate);
+                        feedbackLogObject.put("user_query", user_query);
+                        feedbackLogObject.put("susi_reply", susi_reply);
+                        feedbackLogObject.put("country_name", country_name);
+                        feedbackLogObject.put("country_code", country_code);
+                        feedbackLogObject.put("device_type", device_type);
+                        feedbackLogObject.put("skill_path", skill_path);
+                        skillName.put(feedbackLogObject);
+                        languageName.put(skill_name, skillName);
+                        groupName.put(language_name, languageName);
+                        modelName.put(group_name, groupName);
+                        skillRating.put(model_name, modelName, true);
+                        result.put("accepted", true);
+                        result.put("message", "Feedback log updated");
+                        return new ServiceResponse(result);
                     }
                 }
             }
         }
-
-        if (!feedbackExists) {
-            JSONObject feedbackLogObject = new JSONObject();
-            if (rights.getIdentity().isEmail()) feedbackLogObject.put("email", idvalue);
-            if (rights.getIdentity().isUuid()) feedbackLogObject.put("uuid", idvalue);
-            feedbackLogObject.put("timestamp", timestamp);
-            feedbackLogObject.put("feedback", skill_rate);
-            feedbackLogObject.put("user_query", user_query);
-            feedbackLogObject.put("susi_reply", susi_reply);
-            feedbackLogObject.put("country_name", country_name);
-            feedbackLogObject.put("country_code", country_code);
-            feedbackLogObject.put("device_type", device_type);
-            feedbackLogObject.put("skill_path", skill_path);
-            skillName.put(feedbackLogObject);
-        }
-
-        languageName.put(skill_name, skillName);
+        languageName.put(skill_name, createFeedbackLogObject(skill_rate, user_query, susi_reply, country_name, country_code, device_type, skill_path));
         groupName.put(language_name, languageName);
         modelName.put(group_name, groupName);
         skillRating.put(model_name, modelName, true);
         result.put("accepted", true);
         result.put("message", "Feedback log updated");
-        if (feedbackExists) {
-            result.put("message", "Feedback log already exists for same interaction");
-        }
         return new ServiceResponse(result);
 
+    }
+
+    /* Utility function*/
+    public JSONArray createFeedbackLogObject(String skill_rate, String user_query, String susi_reply, String country_name, String country_code, String device_type, String skill_path) {
+        JSONArray skillName = new JSONArray();
+        JSONObject feedbackLogObject = new JSONObject();
+        Timestamp timestamp = new Timestamp(System.currentTimeMillis());
+        feedbackLogObject.put("timestamp", timestamp);
+        feedbackLogObject.put("feedback", skill_rate);
+        feedbackLogObject.put("user_query", user_query);
+        feedbackLogObject.put("susi_reply", susi_reply);
+        feedbackLogObject.put("country_name", country_name);
+        feedbackLogObject.put("country_code", country_code);
+        feedbackLogObject.put("device_type", device_type);
+        skillName.put(feedbackLogObject);
+        return skillName;
     }
 }
