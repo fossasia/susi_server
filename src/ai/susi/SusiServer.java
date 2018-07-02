@@ -571,7 +571,10 @@ public class SusiServer {
                 BookmarkSkillService.class,
 
                 //Skill ratings over time
-                GetRatingsOverTime.class
+                GetRatingsOverTime.class,
+
+                // Get metrics based skills
+                SkillMetricsDataService.class
         };
         for (Class<? extends Servlet> service: services)
             try {
