@@ -87,9 +87,10 @@ public class GetSkillUsageService extends AbstractAPIHandler implements APIHandl
                         result.put("skill_name", skill_name);
                         JSONArray requiredSkillUsage = new JSONArray();
                         int startIndex = skillUsage.length() >= duration ? skillUsage.length()-duration : 0;
+                        int j = 0;
                         for (int i = startIndex; i < skillUsage.length(); i++)
                         {
-                            requiredSkillUsage.put(i, skillUsage.getJSONObject(i));
+                            requiredSkillUsage.put(j++, skillUsage.getJSONObject(i));
                         }
                         result.put("skill_usage", requiredSkillUsage);
                         result.put("accepted", true);
