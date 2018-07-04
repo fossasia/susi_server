@@ -57,6 +57,7 @@ public class ListSkillService extends AbstractAPIHandler implements APIHandler {
         JSONObject json = new JSONObject(true);
         JSONObject skillObject = new JSONObject();
         String countString = call.get("count", null);
+        int offset = call.get("offset", 0);
         String searchQuery = call.get("q", null);
         Integer count = null;
         Boolean countFilter = false;
@@ -367,7 +368,11 @@ public class ListSkillService extends AbstractAPIHandler implements APIHandler {
                 }
             }
             for (int i = 0; i < jsonArray.length(); i++) {
-                 if(countFilter) {
+                if (i < offset ) {
+                    continue;
+                }
+
+                if(countFilter) {
                      if(count == 0) {
                         break;
                      } else {
@@ -412,6 +417,9 @@ public class ListSkillService extends AbstractAPIHandler implements APIHandler {
                 JSONObject tempSkillObject = new JSONObject();
                 tempSkillObject = skillObject;
                 for (int i = 0; i < skillObject.length(); i++) {
+                    if (i < offset ) {
+                        continue;
+                    }
                     if(count == 0) {
                         break;
                     } else {
