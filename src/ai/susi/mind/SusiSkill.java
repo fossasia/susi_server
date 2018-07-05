@@ -261,6 +261,12 @@ public class SusiSkill {
 
                             });
                         }
+                        
+                        // validate additional data object: it must be an array
+                        if (definition.has("data")) {
+                            Object o = definition.get("data");
+                            if (!(o instanceof JSONArray)) definition.remove("data");
+                        }
 
                         // answers; must contain names from the console result array
                         if (bang_term.length() > 0) {
