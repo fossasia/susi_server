@@ -119,6 +119,7 @@ public class SusiCognition {
 
     public void updateDeviceWiseUsageData(String skillPath, String deviceType) {
         String skillInfo[] = skillPath.split("/");
+        if (skillInfo.length < 6) return;
         String model_name = skillInfo[3];
         String group_name = skillInfo[4];
         String language_name = skillInfo[5];
@@ -165,11 +166,11 @@ public class SusiCognition {
         groupName.put(language_name, languageName);
         modelName.put(group_name, groupName);
         skillUsage.put(model_name, modelName, true);
-        return;
     }
 
     public void updateCountryWiseUsageData(String skillPath, String countryCode, String countryName) {
         String skillInfo[] = skillPath.split("/");
+        if (skillInfo.length < 6) return;
         String model_name = skillInfo[3];
         String group_name = skillInfo[4];
         String language_name = skillInfo[5];
@@ -222,6 +223,7 @@ public class SusiCognition {
   
     public void updateUsageData(String skillPath) {
         String skillInfo[] = skillPath.split("/");
+        if (skillInfo.length < 6) return;
         String model_name = skillInfo[3];
         String group_name = skillInfo[4];
         String language_name = skillInfo[5];
@@ -266,7 +268,6 @@ public class SusiCognition {
         groupName.put(language_name, languageName);
         modelName.put(group_name, groupName);
         skillUsage.put(model_name, modelName, true);
-        return;
     }
 
     public SusiCognition(JSONObject json) {
