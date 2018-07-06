@@ -2,6 +2,9 @@ package ai.susi.server.api.cms;
 
 import ai.susi.DAO;
 import ai.susi.json.JsonObjectWithDefault;
+import ai.susi.json.JsonTray;
+import org.json.JSONArray;
+import org.json.JSONObject;
 import ai.susi.mind.SusiSkill;
 import ai.susi.server.APIHandler;
 import ai.susi.server.AbstractAPIHandler;
@@ -166,6 +169,7 @@ public class CreateSkillService extends AbstractAPIHandler implements APIHandler
 
                         //Add to git
                         if(privateSkill != null){
+                            this.storePrivateSkillBot(userId, skill_name, group_name, language_name);
                             try (Git git = DAO.getPrivateGit()) {
                                 git.add().addFilepattern(".").call();
 
@@ -241,6 +245,26 @@ public class CreateSkillService extends AbstractAPIHandler implements APIHandler
         }
         return "";
     }
+
+    /**
+    * Helper method to store the private skill bot of the user in chatbot.json file
+    */
+    private static void storePrivateSkillBot(String userId, String skillName, String group, String language) {
+        JsonTray chatbot = DAO.chatbot;
+        JSONArray userBots = new JSONArray();
+        JSONObject botObject = new JSONObject();
+        JSONObject userChatBotsObject = new JSONObject();
+        if (chatbot.has(userId)) {
+            userBots = chatbot.getJSONObject(userId).getJSONArray("chatbots");
+        }
+        // save a new bot
+        botObject.put("name",skillName);
+        botObject.put("group",group);
+        botObject.put("language",language);
+        userBots.put(botObject);
+        userChatBotsObject.put("chatbots",userBots);
+        chatbot.put(userId,userChatBotsObject,true);
+    } 
 
     @Override
     public ServiceResponse serviceImpl(Query call, HttpServletResponse response, Authorization rights, final JsonObjectWithDefault permissions) {
