@@ -28,7 +28,6 @@ import java.util.regex.PatternSyntaxException;
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 
-import org.jfree.util.Log;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -277,6 +276,17 @@ public class SusiInference {
                 
                 // execute the console rule right here
                 SusiThought json = new SusiThought();
+                
+                // inject data object if one is given
+                if (definition.has("data") && definition.get("data") instanceof JSONArray) {
+                    JSONArray data = definition.getJSONArray("data");
+                    if (data != null) {
+                        json.setData(new SusiTransfer("*").conclude(data));
+                        json.setHits(json.getCount());
+                    }
+                }
+                
+                // load more data using an url and a path
                 if (definition.has("url") && definition.has("path")) try {
                     String url = flow.unify(definition.getString("url"), true);
                     String path = flow.unify(definition.getString("path"), false);
@@ -294,7 +304,10 @@ public class SusiInference {
                     json.setHits(json.getCount());
                 } catch (Throwable e) {
                     DAO.severe("SusiInference.applyProcedures", e);
-                } else if (definition.has("actions") && definition.get("actions") instanceof JSONArray) {
+                }
+                
+                // apply actions if given
+                if (definition.has("actions") && definition.get("actions") instanceof JSONArray) {
                     // case where we have no console rules but only an actions object: this should not fail
                     // to provoke that this cannot fail it must produce data, othervise the data created by the inference
                     // is empty and an empty thought fails. We use this situation to make a log of the actions we did
