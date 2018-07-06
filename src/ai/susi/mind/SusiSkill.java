@@ -513,6 +513,7 @@ public class SusiSkill {
         skillMetadata.put("author_email", JSONObject.NULL);
         skillMetadata.put("skill_name", JSONObject.NULL);
         skillMetadata.put("protected", false);
+        skillMetadata.put("reviewed", false);
         skillMetadata.put("terms_of_use", JSONObject.NULL);
         skillMetadata.put("dynamic_content", false);
         skillMetadata.put("examples", JSONObject.NULL);
