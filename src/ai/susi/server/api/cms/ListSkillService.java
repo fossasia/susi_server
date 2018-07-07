@@ -51,7 +51,7 @@ public class ListSkillService extends AbstractAPIHandler implements APIHandler {
         String model_name = call.get("model", "general");
         File model = new File(DAO.model_watch_dir, model_name);
         String group_name = call.get("group", "All");
-        String language_name = call.get("language", "en");
+        String language_list = call.get("language", "en");
         int duration = call.get("duration", 0);
         JSONArray jsonArray = new JSONArray();
         JSONObject json = new JSONObject(true);
@@ -63,6 +63,7 @@ public class ListSkillService extends AbstractAPIHandler implements APIHandler {
         Boolean countFilter = false;
         Boolean dateFilter = false;
         Boolean searchFilter = false;
+        String[] language_names = language_list.split(",");
 
         if(countString != null) {
             if(Integer.parseInt(countString) < 0) {
@@ -92,16 +93,18 @@ public class ListSkillService extends AbstractAPIHandler implements APIHandler {
 
             for (String temp_group_name : folderList){
                 File group = new File(model, temp_group_name);
-                File language = new File(group, language_name);
-                ArrayList<String> fileList = new ArrayList<String>();
-                listFilesForFolder(language, fileList);
+                for (String language_name : language_names) {
+                    File language = new File(group, language_name);
+                    ArrayList<String> fileList = new ArrayList<String>();
+                    listFilesForFolder(language, fileList);
 
-                for (String skill_name : fileList) {
-                    skill_name = skill_name.replace(".txt", "");
-                    JSONObject skillMetadata = SusiSkill.getSkillMetadata(model_name, temp_group_name, language_name, skill_name, duration);
+                    for (String skill_name : fileList) {
+                        skill_name = skill_name.replace(".txt", "");
+                        JSONObject skillMetadata = SusiSkill.getSkillMetadata(model_name, temp_group_name, language_name, skill_name, duration);
 
-                    jsonArray.put(skillMetadata);
-                    skillObject.put(skill_name, skillMetadata);
+                        jsonArray.put(skillMetadata);
+                        skillObject.put(skill_name, skillMetadata);
+                    }
                 }
             }
 
@@ -109,17 +112,19 @@ public class ListSkillService extends AbstractAPIHandler implements APIHandler {
         // Returns susi skills list of a particular group
         else {
             File group = new File(model, group_name);
-            File language = new File(group, language_name);
-            json.put("accepted", false);
-            ArrayList<String> fileList = new ArrayList<String>();
-            listFilesForFolder(language, fileList);
+            for (String language_name : language_names) {
+                File language = new File(group, language_name);
+                json.put("accepted", false);
+                ArrayList<String> fileList = new ArrayList<String>();
+                listFilesForFolder(language, fileList);
 
-            for (String skill_name : fileList) {
-                skill_name = skill_name.replace(".txt", "");
-                JSONObject skillMetadata = SusiSkill.getSkillMetadata(model_name, group_name, language_name, skill_name, duration);
+                for (String skill_name : fileList) {
+                    skill_name = skill_name.replace(".txt", "");
+                    JSONObject skillMetadata = SusiSkill.getSkillMetadata(model_name, group_name, language_name, skill_name, duration);
 
-                jsonArray.put(skillMetadata);
-                skillObject.put(skill_name, skillMetadata);
+                    jsonArray.put(skillMetadata);
+                    skillObject.put(skill_name, skillMetadata);
+                }
             }
         }
 
@@ -435,7 +440,7 @@ public class ListSkillService extends AbstractAPIHandler implements APIHandler {
 
         json.put("model", model_name)
                 .put("group", group_name)
-                .put("language", language_name);
+                .put("language", language_list);
         json.put("skills", skillObject);
         json.put("accepted", true);
         json.put("message", "Success: Fetched skill list");
