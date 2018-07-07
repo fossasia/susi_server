@@ -91,7 +91,7 @@ import org.apache.log4j.PatternLayout;
 public class DAO {
 
     private final static String ACCESS_DUMP_FILE_PREFIX = "access_";
-    public  static File conf_dir, bin_dir, html_dir, data_dir, susi_chatlog_dir, susi_skilllog_dir, model_watch_dir, susi_skill_repo, private_skill_watch_dir, susi_private_skill_repo, usi_skill_repo, deleted_skill_dir;
+    public  static File conf_dir, bin_dir, html_dir, data_dir, skill_status_dir, susi_chatlog_dir, susi_skilllog_dir, model_watch_dir, susi_skill_repo, private_skill_watch_dir, susi_private_skill_repo, usi_skill_repo, deleted_skill_dir;
     public static String conflictsPlaceholder = "%CONFLICTS%";
     private static File external_data, assets, dictionaries;
     private static Settings public_settings, private_settings;
@@ -120,6 +120,7 @@ public class DAO {
     public static JsonTray deviceWiseSkillUsage;
     public static JsonTray bookmarkSkill;
     public static JsonTray chatbot;
+    public static JsonTray skillStatus;
     public static JsonTray ratingsOverTime;
 
 
@@ -273,6 +274,15 @@ public class DAO {
         chatbot = new JsonTray(susiChatbot_per.toFile(), susiChatbot_vol.toFile(), 1000000);
         OS.protectPath(susiChatbot_per);
         OS.protectPath(susiChatbot_vol);
+
+        /*Skill status storage*/
+        Path skill_status_dir = dataPath.resolve("skill_status");
+        skill_status_dir.toFile().mkdirs();
+        Path skillStatus_per = skill_status_dir.resolve("skillStatus.json");
+        Path skillStatus_vol = skill_status_dir.resolve("skillStatus_session.json");
+        skillStatus = new JsonTray(skillStatus_per.toFile(), skillStatus_vol.toFile(), 1000000);
+        OS.protectPath(skillStatus_per);
+        OS.protectPath(skillStatus_vol);
 
         /*Profile Details storage*/
         Path susi_profile_details_dir = dataPath.resolve("profile");
