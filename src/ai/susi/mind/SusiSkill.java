@@ -513,6 +513,7 @@ public class SusiSkill {
         skillMetadata.put("author_email", JSONObject.NULL);
         skillMetadata.put("skill_name", JSONObject.NULL);
         skillMetadata.put("protected", false);
+        skillMetadata.put("reviewed", false);
         skillMetadata.put("terms_of_use", JSONObject.NULL);
         skillMetadata.put("dynamic_content", false);
         skillMetadata.put("examples", JSONObject.NULL);
@@ -541,6 +542,7 @@ public class SusiSkill {
                 skillMetadata.put("dynamic_content", skill.getDynamicContent());
                 skillMetadata.put("examples", skill.getExamples() ==null ? JSONObject.NULL: skill.getExamples());
                 skillMetadata.put("skill_rating", getSkillRating(model, group, language, skillname));
+                skillMetadata.put("reviewed", getSkillStatus(model, group, language, skillname));
                 skillMetadata.put("usage_count", getSkillUsage(model, group, language, skillname, duration));
                 skillMetadata.put("skill_tag", skillname);
 
@@ -615,6 +617,28 @@ public class SusiSkill {
         newRating.put("stars", newFiveStarRating);
 
         return newRating;
+    }
+
+    public static boolean getSkillStatus(String model, String group, String language, String skillname) {
+        // skill status
+        JsonTray skillStatus = DAO.skillStatus;
+        if (skillStatus.has(model)) {
+            JSONObject modelName = skillStatus.getJSONObject(model);
+            if (modelName.has(group)) {
+                JSONObject groupName = modelName.getJSONObject(group);
+                if (groupName.has(language)) {
+                    JSONObject languageName = groupName.getJSONObject(language);
+                    if (languageName.has(skillname)) {
+                        JSONObject skillName = languageName.getJSONObject(skillname);
+
+                        if (skillName.has("reviewed")) {
+                            return true;
+                        }
+                    }
+                }
+            }
+        }
+        return false;
     }
 
     public static int getSkillUsage(String model, String group, String language, String skillname, int duration) {
