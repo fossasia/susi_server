@@ -8,7 +8,11 @@ to resolve an issue| |Twitter| |Twitter Follow|
 
 Susi AI is an intelligent Open Source personal assistant. It is capable of chat and voice interaction by using APIs to perform actions such as music playback, making to-do lists, setting alarms, streaming podcasts, playing audiobooks, and providing weather, traffic, and other real time information. Additional functionalities can be added as console services using external APIs. Susi AI is able to answer questions and depending on the context will ask for additional information in order to perform the desired outcome. The core of the assistant is the Susi AI server that holds the "intelligence" and "personality" of Susi AI. The Android and web applications make use of the APIs to access information from a hosted server.
 
-An automatic deployment from the development branch at GitHub is available for tests here https://susi-server.herokuapp.com
+**Deployments**
+
+*Development*: An automatic deployment from the development branch at GitHub is available for tests at https://susi-server.herokuapp.com
+
+*Master*: The master branch is planned to be deployed on https://api.susi.ai. Currently the deployment is taking place each hour at xx.45 using the devevelopment branch. We are planning to switch to the Master branch for production soon.
 
 *********
 Communication
@@ -269,7 +273,7 @@ gitter.
 Step 2: Branch policy
 ------------------------------------
 
-Start off from your ``development`` branch and make sure it is
+Start off from your ``development`` branch and make sure it is 
 up-to-date with the latest version of the committer repo's
 ``development`` branch. Make sure you are working in development branch
 only. ``git pull upstream development``
