@@ -304,10 +304,7 @@ public class SusiInference {
                     json.setHits(json.getCount());
                 } catch (Throwable e) {
                     DAO.severe("SusiInference.applyProcedures", e);
-                }
-                
-                // apply actions if given
-                if (definition.has("actions") && definition.get("actions") instanceof JSONArray) {
+                } else if (definition.has("actions") && definition.get("actions") instanceof JSONArray) {
                     // case where we have no console rules but only an actions object: this should not fail
                     // to provoke that this cannot fail it must produce data, othervise the data created by the inference
                     // is empty and an empty thought fails. We use this situation to make a log of the actions we did
@@ -316,7 +313,6 @@ public class SusiInference {
                     json.setHits(json.getCount());
                 }
                 return json;
-                
             } else {
                 try {return ConsoleService.dbAccess.deduce(flow, flow.unify(expression, false));} catch (Exception e) {}
             }
