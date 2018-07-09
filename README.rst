@@ -37,6 +37,14 @@ Cloud|
 At this time, Susi AI is not provided in compiled form, you easily build it yourself. It's not difficult and done in one minute! The source code is
 hosted at https://github.com/fossasia/susi_server, you can download it and run Susi AI with (Before installation you must have "Java Development Kit" latest version at http://openjdk.java.net/install/ & "Gradle" latest version at https://gradle.org/install/):
 
+.. note::
+    - For Armv6 processors (e.g. Raspberry Pi Zero / Zero W/ Zero WH/ 1A / 1B), please make sure that your system is using Java 8 (Oracle or OpenJDK) as there are some compatibility issues for Armv6 processors.
+    - You may use the following command to install OpenJDK's Java 8 JRE and JDK: 
+
+::
+
+    > sudo apt install openjdk-8-jre* openjdk-8-jdk*
+ 
 ::
 
     > git clone https://github.com/fossasia/susi_server.git
@@ -358,3 +366,4 @@ What is the software license?
    :target: https://bluemix.net/deploy?repository=https://github.com/fossasia/susi_server
 .. |Deploy to Docker Cloud| image:: https://files.cloud.docker.com/images/deploy-to-dockercloud.svg
    :target: https://cloud.docker.com/stack/deploy/
+ 
