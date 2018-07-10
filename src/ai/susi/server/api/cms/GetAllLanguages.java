@@ -24,9 +24,12 @@ import ai.susi.json.JsonObjectWithDefault;
 import ai.susi.server.*;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import scala.util.parsing.combinator.testing.Str;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.File;
+import java.io.FilenameFilter;
+import java.util.ArrayList;
 
 /**
  * Created by chetankaushik on 24/06/17.
@@ -58,14 +61,71 @@ public class GetAllLanguages  extends AbstractAPIHandler implements APIHandler {
 
         String model_name = call.get("model", "general");
         File model = new File(DAO.model_watch_dir, model_name);
-        String group_name = call.get("group", "Knowledge");
-        File group = new File(model, group_name);
-        JSONObject json = new JSONObject(true);
-        json.put("accepted", false);
-        String[] languages = group.list((current, name) -> new File(current, name).isDirectory());
-        JSONArray languagesArray = new JSONArray(languages);
-        json.put("languagesArray", languagesArray);
-        json.put("accepted", true);
-        return new ServiceResponse(json);
+        String group_name = call.get("group", null);
+        if (group_name == null) {
+            File group = new File(model, "Knowledge");
+            JSONObject json = new JSONObject(true);
+            json.put("accepted", false);
+            String[] languages = group.list((current, name) -> new File(current, name).isDirectory());
+            JSONArray languagesArray = new JSONArray(languages);
+            json.put("languagesArray", languagesArray);
+            json.put("accepted", true);
+            return new ServiceResponse(json);
+        }
+        else {
+            if (group_name.equals("All"))
+            {
+                JSONObject json = new JSONObject(true);
+                json.put("accepted", false);
+                ArrayList<String> languages = new ArrayList<>();
+                        String[] group_names = model.list((current, name) -> new File(current, name).isDirectory());
+                for (String temp_group_name : group_names) {
+                    File group = new File(model, temp_group_name);
+                        group.list(new FilenameFilter() {
+                            @Override
+                            public boolean accept(File file, String s) {
+                                try {
+
+                                    Boolean accepted = new File(file, s).list().length > 1;
+                                    if (accepted) {
+                                        if (!languages.contains(s)) {
+                                            languages.add(s);
+                                        }
+                                    }
+                                    return accepted;
+                                }
+                                catch (Exception e)
+                                {
+                                    return false;
+                                }
+                            }
+                        });
+                }
+                JSONArray languagesArray = new JSONArray(languages);
+                json.put("languagesArray", languagesArray);
+                json.put("accepted", true);
+                return new ServiceResponse(json);
+            }
+            else {
+                File group = new File(model, group_name);
+                JSONObject json = new JSONObject(true);
+                json.put("accepted", false);
+                String[] languages = group.list(new FilenameFilter() {
+                    @Override
+                    public boolean accept(File file, String s) {
+                        try {
+                            return new File(file, s).list().length > 1;
+                        }
+                        catch (Exception e){
+                            return false;
+                        }
+                    }
+                });
+                JSONArray languagesArray = new JSONArray(languages);
+                json.put("languagesArray", languagesArray);
+                json.put("accepted", true);
+                return new ServiceResponse(json);
+            }
+        }
     }
 }
