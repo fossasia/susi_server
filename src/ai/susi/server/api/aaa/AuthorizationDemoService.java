@@ -41,7 +41,7 @@ public class AuthorizationDemoService extends AbstractAPIHandler implements APIH
 		JSONObject result = new JSONObject();
 
 		switch (userRole) {
-            case BUREAUCRAT:
+            case SUPERADMIN:
                 result.put("download_limit", 1000000000);
                 break;
             case ADMIN:
