@@ -118,8 +118,8 @@ public class ChangeUserRoles extends AbstractAPIHandler implements APIHandler {
                 case "admin":
                     userRole = UserRole.ADMIN;
                     break;
-                case "bureaucrat":
-                    userRole = UserRole.BUREAUCRAT;
+                case "superadmin":
+                    userRole = UserRole.SUPERADMIN;
                     break;
                 default:
                     userRole = null;
