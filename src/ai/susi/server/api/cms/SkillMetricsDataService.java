@@ -63,7 +63,7 @@ public class SkillMetricsDataService extends AbstractAPIHandler implements APIHa
         File model = new File(DAO.model_watch_dir, model_name);
         String group_name = call.get("group", "All");
         String language_name = call.get("language", "en");
-        int duration = call.get("duration", 0);
+        int duration = call.get("duration", -1);
         JSONArray jsonArray = new JSONArray();
         JSONObject json = new JSONObject(true);
         JSONObject skillObject = new JSONObject();
