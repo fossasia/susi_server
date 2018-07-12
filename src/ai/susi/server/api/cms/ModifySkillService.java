@@ -89,8 +89,8 @@ public class ModifySkillService extends AbstractAPIHandler implements APIHandler
     	// debug the call
     	Query query = RemoteAccess.evaluate(call);
         query.initPOST(RemoteAccess.getPostMap(call));
-        logClient(System.currentTimeMillis(), query, null, 0, "init post");    	
-    	
+        logClient(System.currentTimeMillis(), query, null, 0, "init post");
+
     	String userEmail=null;
         String userId = null;
         if (call.getParameter("access_token") != null) { // access tokens can be used by api calls, somehow the stateless equivalent of sessions for browsers
@@ -258,7 +258,7 @@ public class ModifySkillService extends AbstractAPIHandler implements APIHandler
                         new File(modified_language.getPath() + File.separator + "images").mkdirs();
                     }
                     // write new file here
-                    if (!modified_skill.exists() && !Files.exists(new_path)) {
+                    if (!modified_skill.exists()) {
                         skill.delete();
                         try (FileWriter newSkillFile = new FileWriter(modified_skill)) {
                             newSkillFile.write(content);
@@ -337,7 +337,7 @@ public class ModifySkillService extends AbstractAPIHandler implements APIHandler
                 resp.getWriter().write(json.toString());
             } else {
                 JSONObject json = new JSONObject();
-                json.put("message", "Bad parameter call");
+                json.put("message", "Skill doesn't exists");
                 json.put("accepted", false);
                 resp.setContentType("application/json");
                 resp.setCharacterEncoding("UTF-8");
