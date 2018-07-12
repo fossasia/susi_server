@@ -75,7 +75,7 @@
       box-shadow: rgba(0, 0, 0, 0.12) 0px 1px 6px, rgba(0, 0, 0, 0.12) 0px 1px 4px;
       border-radius: 2px;
       top: 46px;
-      right: 0px;
+      right: 8px;
     }
 
     .dropdown-content ul,
@@ -216,8 +216,8 @@
           // Close the dropdown if the user clicks outside of it
           window.onclick = function (event) {
             if (!event.target.matches('#dropbtn')) {
-
-              var dropdowns = document.getElementsByclass("dropdown-content");
+              var dropdowns = document.getElementById("navbar");
+              dropdowns.classList.remove("show");
               var i;
               for (i = 0; i < dropdowns.length; i++) {
                 var openDropdown = dropdowns[i];
