@@ -92,15 +92,35 @@ public class ModifySkillService extends AbstractAPIHandler implements APIHandler
         logClient(System.currentTimeMillis(), query, null, 0, "init post");    	
     	
     	String userEmail=null;
+        String userId = null;
+        if (call.getParameter("access_token") != null) { // access tokens can be used by api calls, somehow the stateless equivalent of sessions for browsers
+            ClientCredential credential = new ClientCredential(ClientCredential.Type.access_token, call.getParameter("access_token"));
+            Authentication authentication = DAO.getAuthentication(credential);
+            // check if access_token is valid
+            if (authentication.getIdentity() != null) {
+                ClientIdentity identity = authentication.getIdentity();
+                userEmail = identity.getName();
+                userId = identity.getUuid();
+            }
+        }
         // CORS Header
         resp.setHeader("Access-Control-Allow-Origin", "*");
         if (call.getParameter("access_token") != null) {
+            // if client sends private=1 then it is a private skill
+            File private_skill_dir = null;
+            String privateSkill = call.getParameter("private");
+            if(privateSkill != null){
+                private_skill_dir = new File(DAO.private_skill_watch_dir,userId);
+            }
             // GET OLD VALUES HERE
             String model_name = call.getParameter("OldModel");
             if (model_name == null) {
                 model_name = "general";
             }
             File model = new File(DAO.model_watch_dir, model_name);
+            if(privateSkill != null){
+                    model = private_skill_dir;
+            }
             String group_name = call.getParameter("OldGroup");
             if (group_name == null) {
                 group_name = "Knowledge";
@@ -123,6 +143,9 @@ public class ModifySkillService extends AbstractAPIHandler implements APIHandler
                 modified_model_name = "general";
             }
             File modified_model = new File(DAO.model_watch_dir, modified_model_name);
+            if(privateSkill != null){
+                    modified_model = private_skill_dir;
+            }
             String modified_group_name = call.getParameter("NewGroup");
             if (modified_group_name == null) {
                 modified_group_name = "Knowledge";
@@ -319,16 +342,6 @@ public class ModifySkillService extends AbstractAPIHandler implements APIHandler
                 resp.setContentType("application/json");
                 resp.setCharacterEncoding("UTF-8");
                 resp.getWriter().write(json.toString());
-            }
-            if (call.getParameter("access_token") != null) { // access tokens can be used by api calls, somehow the stateless equivalent of sessions for browsers
-                ClientCredential credential = new ClientCredential(ClientCredential.Type.access_token, call.getParameter("access_token"));
-                Authentication authentication = DAO.getAuthentication(credential);
-
-                // check if access_token is valid
-                if (authentication.getIdentity() != null) {
-                    ClientIdentity identity = authentication.getIdentity();
-                    userEmail = identity.getName();
-                }
             }
 
             try (Git git = DAO.getGit()) {
