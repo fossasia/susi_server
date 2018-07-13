@@ -311,7 +311,7 @@ public class SusiSkill {
                     if (line.substring(thenpos + 1).trim().equalsIgnoreCase("yes")) protectedSkill=true;
                     json.put("protected",protectedSkill);
                 }
-                if (line.startsWith("::author") && (!line.startsWith("::author_url")) && (thenpos = line.indexOf(' ')) > 0) {
+                if (line.startsWith("::author") && (!line.startsWith("::author_url")) && (!line.startsWith("::author_email")) && (thenpos = line.indexOf(' ')) > 0) {
                     authorName = line.substring(thenpos + 1).trim();
                     if(authorName.length() > 0)
                         json.put("author",authorName);
