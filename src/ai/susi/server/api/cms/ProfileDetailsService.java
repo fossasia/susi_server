@@ -128,6 +128,8 @@ public class ProfileDetailsService extends AbstractAPIHandler implements APIHand
                             String timestamp = skillnameArray.getJSONObject(i).get("timestamp").toString();
                             userSkillData.put("stars",stars);
                             userSkillData.put("timestamp",timestamp);
+                            userSkillData.put("group", group_name);
+                            userSkillData.put("language", language_name);
                             userSkillRatings.put(skill_name,userSkillData);
                             if(result.has(jsonEmail)) {
                                 skillRating = result.getJSONArray(jsonEmail);
