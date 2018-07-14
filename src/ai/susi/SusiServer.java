@@ -566,6 +566,7 @@ public class SusiServer {
                 GetSkillFeedbackService.class,
                 RemoveFeedbackService.class,
                 FeedbackSkillService.class,
+                ReportSkillService.class,
 
                 //Bookmark skill
                 BookmarkSkillService.class,
