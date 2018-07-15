@@ -49,7 +49,7 @@ public class ShowAdminService extends AbstractAPIHandler implements APIHandler{
             case ANONYMOUS:
             case USER:
             case REVIEWER:
-            case ACCOUNTCREATOR:
+            case OPERATOR:
             default:
                 json.put("accepted", true);
                 json.put("showAdmin", false);
