@@ -120,69 +120,66 @@ public class SusiAction {
         // {"type":"answer","select":"random","phrases":["Here is the exact location of the event $2$"]}
         if (!json.has("type")) throw new SusiActionException("the action needs a type object");
         try {
-        	RenderType renderType = RenderType.valueOf(json.getString("type"));
-        	switch (renderType) {
-	            case answer:
-	                if (!json.has("select")) throw new SusiActionException("the action needs a select object");
-	                if (!json.has("phrases")) throw new SusiActionException("the action needs a phrases object");
-	            	break;
-	            case stop:
+            RenderType renderType = RenderType.valueOf(json.getString("type"));
+            switch (renderType) {
+                case answer:
+                    if (!json.has("select")) throw new SusiActionException("the action needs a select object");
+                    if (!json.has("phrases")) throw new SusiActionException("the action needs a phrases object");
+                    break;
+                case stop:
                     //stop has no attributes
                     break;
                 case table:
-	                if (!json.has("columns")) throw new SusiActionException("the action needs a columns object");
-	            	    if (!(json.get("columns") instanceof JSONObject)) throw new SusiActionException("the columns object must be an json object");
-	            	    if (!json.has("count")) json.put("count", -1);
-	            	break;
-	            case piechart:
-	            	    if (!json.has("total")) throw new SusiActionException("the action needs a total object");
-	            	    if (json.get("total") instanceof String)  throw new SusiActionException("the total object must be a number");
-	            	    if (!json.has("key")) throw new SusiActionException("the action needs a key object");
-	            	    if (!json.has("value")) throw new SusiActionException("the action needs a value object");
-	            	    if (!json.has("unit")) throw new SusiActionException("the action needs a unit object");
-	            	break;
-	            case rss:
-	                if (!json.has("title")) throw new SusiActionException("the action needs a title object");
-	            	    if (!json.has("description")) throw new SusiActionException("the action needs a description object");
-	            	    if (!json.has("link")) throw new SusiActionException("the action needs a link object");
-	            	    if (!json.has("count")) json.put("count", -1);
-	            	break;
-	            case self:
-	                throw new SusiActionException("this action is not yet defined");
-	            case websearch:
-	                if (!json.has("query")) throw new SusiActionException("the action needs a query object");
-	            	break;
-	            case anchor:
-                    throw new SusiActionException("this action is not yet defined");
-	            case map:
-	                if (!json.has("latitude")) throw new SusiActionException("the action needs a latitude object");
-	            	    if (json.get("latitude") instanceof String)  throw new SusiActionException("the latitude object must be a number");
-	            	    if (!json.has("longitude")) throw new SusiActionException("the action needs a longitude object");
-	            	    if (json.get("longitude") instanceof String)  throw new SusiActionException("the longitude object must be a number");
-	            	    if (!json.has("zoom")) throw new SusiActionException("the action needs a zoom object");
-	            	    if (json.get("zoom") instanceof String)  throw new SusiActionException("the zoom object must be a number");
-	            	break;
-	            case timer_set:
-	                // the time number is the unix time, UTC. Clients must translate this into their local time.
-	            	    if (!json.has("time")) throw new SusiActionException("the action needs a time object");
-	            	    if (json.get("time") instanceof String)  throw new SusiActionException("the time object must be a number");
-	            	break;
-	            case timer_reset:
+                    if (!json.has("columns")) throw new SusiActionException("the action needs a columns object");
+                    if (!json.has("count")) json.put("count", -1);
+                    break;
+                case piechart:
+                    if (!json.has("total")) throw new SusiActionException("the action needs a total object");
+                    if (!json.has("key")) throw new SusiActionException("the action needs a key object");
+                    if (!json.has("value")) throw new SusiActionException("the action needs a value object");
+                    if (!json.has("unit")) throw new SusiActionException("the action needs a unit object");
+                    break;
+                case rss:
+                    if (!json.has("title")) throw new SusiActionException("the action needs a title object");
+                    if (!json.has("description")) throw new SusiActionException("the action needs a description object");
+                    if (!json.has("link")) throw new SusiActionException("the action needs a link object");
+                    if (!json.has("count")) json.put("count", -1);
+                    break;
+                case self:
+                    if (!json.has("phrases")) throw new SusiActionException("the action needs a phrases object");
+                    break;
+                case websearch:
+                    if (!json.has("query")) throw new SusiActionException("the action needs a query object");
+                    break;
+                case anchor:
+                    if (!json.has("link")) throw new SusiActionException("the action needs a link object");
+                    if (!json.has("text")) throw new SusiActionException("the action needs a text object");
+                    break;
+                case map:
+                    if (!json.has("latitude")) throw new SusiActionException("the action needs a latitude object");
+                    if (!json.has("longitude")) throw new SusiActionException("the action needs a longitude object");
+                    if (!json.has("zoom")) throw new SusiActionException("the action needs a zoom object");
+                    break;
+                case timer_set:
+                    // the time number is the unix time, UTC. Clients must translate this into their local time.
+                        if (!json.has("time")) throw new SusiActionException("the action needs a time object");
+                    break;
+                case timer_reset:
                     //timer_reset has no attributes
                     break;
-	            case audio_volume:
-	                if (!json.has("volume")) throw new SusiActionException("the action needs a volume object");
-	                break;
-	            case audio_record:
+                case audio_volume:
+                    if (!json.has("volume")) throw new SusiActionException("the action needs a volume object");
+                    break;
+                case audio_record:
                     throw new SusiActionException("this action is not yet defined");
-	            case audio_play:
-	                // in most cases the identifier must be an URL. The URL can point to a file location as well.
-	                // if the identifier is a file, the URL is like file:///user/admin/audio/example.mp3
-	                // the type may be i..: "url", "youtube". If youtube is given then the identifier is the number of the youtube video.
-	                // we could give an exact url of the youtube stream, but thay may change over time while the youtube video stays the same.
-	                // There is the option to give susi_server application-relative paths. These must be relaive file URLs, like
-	                // file://conf/audio/all_systems_are_go_all_lights_are_green.mp3
-	                // this is translated into an absolute path during this processing
+                case audio_play:
+                    // in most cases the identifier must be an URL. The URL can point to a file location as well.
+                    // if the identifier is a file, the URL is like file:///user/admin/audio/example.mp3
+                    // the type may be i..: "url", "youtube". If youtube is given then the identifier is the number of the youtube video.
+                    // we could give an exact url of the youtube stream, but thay may change over time while the youtube video stays the same.
+                    // There is the option to give susi_server application-relative paths. These must be relaive file URLs, like
+                    // file://conf/audio/all_systems_are_go_all_lights_are_green.mp3
+                    // this is translated into an absolute path during this processing
                     if (!json.has("identifier")) throw new SusiActionException("the action needs an identifier object");
                     if (!json.has("identifier_type")) throw new SusiActionException("the action needs an identifier_type object");
                     String audio_type = json.getString("identifier_type");
@@ -195,29 +192,29 @@ public class SusiAction {
                             json.put("identifier", "file://" + f.getAbsolutePath());
                         }
                     }
-                break;
-	            case video_record:
+                    break;
+                case video_record:
                     throw new SusiActionException("this action is not yet defined");
-	            case video_play:
-	            	if (!json.has("identifier")) throw new SusiActionException("the action needs an identifier object");
+                case video_play:
+                    if (!json.has("identifier")) throw new SusiActionException("the action needs an identifier object");
                     if (!json.has("identifier_type")) throw new SusiActionException("the action needs an identifier_type object");
                     String video_type = json.getString("identifier_type");
                     if (!video_type.equals("url") && !video_type.equals("youtube")) throw new SusiActionException("the identifier_type object in unknown");
-                break;
-	            case image_take:
+                    break;
+                case image_take:
                     throw new SusiActionException("this action is not yet defined");
-	            case image_show:
-	                if (!json.has("url")) throw new SusiActionException("the action needs an url object");
-	                break;
-	            case emotion:
+                case image_show:
+                    if (!json.has("url")) throw new SusiActionException("the action needs an url object");
+                    break;
+                case emotion:
                     throw new SusiActionException("this action is not yet defined");
-	            case button_push:
+                case button_push:
                     throw new SusiActionException("this action is not yet defined");
-	            case io:
+                case io:
                     throw new SusiActionException("this action is not yet defined");
-	            default:
-	            	    throw new SusiActionException("the action type '" + renderType + "' is not handled. Extend the Action Case statement."); // if you see this exception then the case statment must be extended with the new action type
-        	}
+                default:
+                    throw new SusiActionException("the action type '" + renderType + "' is not handled. Extend the Action Case statement."); // if you see this exception then the case statment must be extended with the new action type
+            }
         } catch (IllegalArgumentException e) {
             throw new SusiActionException("the action type '" + json.getString("type") + "' is not known");
         }
@@ -342,8 +339,8 @@ public class SusiAction {
      * @throws ReactionException
      */
     public List<SusiAction> execution(SusiArgument thoughts, String client, SusiLanguage language, SusiMind... minds) throws ReactionException {
-    	List<SusiAction> actions = new ArrayList<>();
-    	actions.add(this);
+        List<SusiAction> actions = new ArrayList<>();
+        actions.add(this);
         if ((this.getRenderType() == RenderType.answer || this.getRenderType() == RenderType.self) && this.json.has("phrases")) {
             // transform the answer according to the data
             ArrayList<String> a = getPhrases();
@@ -360,13 +357,13 @@ public class SusiAction {
                     SusiMind.Reaction reaction = null;
                     ReactionException ee = null;
                     mindlevels: for (SusiMind mind: minds) {
-                        	try {
-                        		reaction = mind.new Reaction(observation, language, client, new SusiThought(), minds);
-                        		break mindlevels;
-                        	} catch (ReactionException e) {
-                        		ee = e;
-                        		continue mindlevels;
-                        	}
+                            try {
+                                reaction = mind.new Reaction(observation, language, client, new SusiThought(), minds);
+                                break mindlevels;
+                            } catch (ReactionException e) {
+                                ee = e;
+                                continue mindlevels;
+                            }
                     }
                     if (reaction == null) throw ee == null ? new ReactionException("could not find an answer") : ee;
                     thoughts.think(reaction.getMindstate());
@@ -399,21 +396,21 @@ public class SusiAction {
                 }
                 if (this.getRenderType() == RenderType.self) {
                     // recursive call susi with the answer
-                    	SusiMind.Reaction reaction = null;
+                        SusiMind.Reaction reaction = null;
                     expression = "";
                     ReactionException ee = null;
                     mindlevels: for (SusiMind mind: minds) {
-                        	try {
-                        		reaction = mind.new Reaction(expression, language, client, new SusiThought(), minds);
-                        		expression = reaction.getExpression();
-                        		if (expression != null && expression.length() > 0) break mindlevels;
-                        	} catch (ReactionException e) {
-                        		ee = e;
-                        		continue mindlevels;
-                        	}
+                            try {
+                                reaction = mind.new Reaction(expression, language, client, new SusiThought(), minds);
+                                expression = reaction.getExpression();
+                                if (expression != null && expression.length() > 0) break mindlevels;
+                            } catch (ReactionException e) {
+                                ee = e;
+                                continue mindlevels;
+                            }
                     }
                     if (reaction == null || expression == null || expression.length() == 0)
-                    	throw ee == null ? new ReactionException("could not find an answer") : ee;
+                        throw ee == null ? new ReactionException("could not find an answer") : ee;
                     thoughts.think(reaction.getMindstate());
                     this.json.put("expression", expression);
                     this.phrasesCache = null; // important, otherwise the expression is not recognized

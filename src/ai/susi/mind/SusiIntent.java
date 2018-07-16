@@ -182,7 +182,7 @@ public class SusiIntent {
                 SusiAction action = new SusiAction((JSONObject) a);
                 this.actions.add(action);
             } catch (SusiActionException e) {
-                Log.warn("invalid action - " + e.getMessage() + ": " + ((JSONObject) a).toString(0));
+                Log.warn("invalid action - " + json.toString() + ": " + ((JSONObject) a).toString(0));
             }
         });
         
