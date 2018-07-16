@@ -52,9 +52,9 @@ public class SignUpService extends AbstractAPIHandler implements APIHandler {
 		result.put("message", "Error: Unable to process you request");
 
 		switch(baseUserRole){
-			case BUREAUCRAT:
+			case SUPERADMIN:
 			case ADMIN:
-			case ACCOUNTCREATOR:
+			case OPERATOR:
 			case REVIEWER:
 			case USER:
 				result.put("register", true); // allow to register new users (this bypasses email verification and activation)
@@ -199,7 +199,7 @@ public class SignUpService extends AbstractAPIHandler implements APIHandler {
 		authorized.forEach(client -> keysList.add(client.toString()));
 		String[] keysArray = keysList.toArray(new String[keysList.size()]);
 		if(keysArray.length == 1) {
-			authorization.setUserRole(UserRole.BUREAUCRAT);
+			authorization.setUserRole(UserRole.SUPERADMIN);
 		} else {
 			authorization.setUserRole(UserRole.USER);
 		}

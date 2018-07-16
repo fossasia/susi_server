@@ -2,6 +2,7 @@ package ai.susi.server.api.cms;
 
 import ai.susi.DAO;
 import ai.susi.json.JsonObjectWithDefault;
+import ai.susi.json.JsonTray;
 import ai.susi.mind.SusiSkill;
 import ai.susi.server.*;
 import org.apache.commons.lang3.StringEscapeUtils;
@@ -23,6 +24,8 @@ import java.util.concurrent.TimeUnit;
  * This Servlet gives a API Endpoint to list all the Skills given its model, group and language.
  * Can be tested on http://127.0.0.1:4000/cms/getSkillList.json
  * Other params are - applyFilter, filter_type, filter_name, count
+ * This servlet also gives an API endpoint to list all the private skills if the access_token is given.
+ * Can be tested on http://127.0.0.1:4000/cms/getSkillList.json?private=1&access_token=accessTokenHere
  */
 
 public class ListSkillService extends AbstractAPIHandler implements APIHandler {
@@ -45,14 +48,74 @@ public class ListSkillService extends AbstractAPIHandler implements APIHandler {
     }
 
     @Override
-    public ServiceResponse serviceImpl(Query call, HttpServletResponse response, Authorization rights,
-                                       final JsonObjectWithDefault permissions) throws APIException {
+    public ServiceResponse serviceImpl(Query call, HttpServletResponse response, Authorization rights, final JsonObjectWithDefault permissions) throws APIException {
+
+        String userId = null;
+        String privateSkill = call.get("private", null);
+        if (call.get("access_token", null) != null) { // access tokens can be used by api calls, somehow the stateless equivalent of sessions for browsers
+            ClientCredential credential = new ClientCredential(ClientCredential.Type.access_token, call.get("access_token", null));
+            Authentication authentication = DAO.getAuthentication(credential);
+            // check if access_token is valid
+            if (authentication.getIdentity() != null) {
+                ClientIdentity identity = authentication.getIdentity();
+                userId = identity.getUuid();
+            }
+        }
+
+        if(privateSkill != null) {
+            if(userId != null) {
+                JsonTray chatbot = DAO.chatbot;
+                JSONObject result = new JSONObject();
+                JSONObject userObject = new JSONObject();
+                JSONArray botDetailsArray = new JSONArray();
+                JSONArray chatbotArray = new JSONArray();
+
+                for(String user_id : chatbot.keys())
+                {
+                    if(user_id.equals(userId)) {
+                        userObject = chatbot.getJSONObject(user_id);
+                        Iterator chatbotDetails = userObject.keys();
+                        List<String> chatbotDetailsKeysList = new ArrayList<String>();
+                        while(chatbotDetails.hasNext()) {
+                            String key = (String) chatbotDetails.next();
+                            chatbotDetailsKeysList.add(key);
+                        }
+
+                        for(String chatbot_name : chatbotDetailsKeysList)
+                        {
+                            chatbotArray = userObject.getJSONArray(chatbot_name);
+                            for(int i=0; i<chatbotArray.length(); i++) {
+                                String name = chatbotArray.getJSONObject(i).get("name").toString();
+                                String language = chatbotArray.getJSONObject(i).get("language").toString();
+                                String group = chatbotArray.getJSONObject(i).get("group").toString();
+                                JSONObject botDetails = new JSONObject();
+                                botDetails.put("name", name);
+                                botDetails.put("language", language);
+                                botDetails.put("group", group);
+                                botDetailsArray.put(botDetails);
+                                result.put("chatbots", botDetailsArray);
+                            }
+                        }
+                    }
+                }
+
+                if(result.length()==0) {
+                    result.put("accepted", false);
+                    result.put("message", "User has no chatbots.");
+                    return new ServiceResponse(result);
+                }
+
+                result.put("accepted", true);
+                result.put("message", "All chatbots of user fetched.");
+                return new ServiceResponse(result);
+            }
+        }
 
         String model_name = call.get("model", "general");
         File model = new File(DAO.model_watch_dir, model_name);
         String group_name = call.get("group", "All");
         String language_list = call.get("language", "en");
-        int duration = call.get("duration", 0);
+        int duration = call.get("duration", -1);
         JSONArray jsonArray = new JSONArray();
         JSONObject json = new JSONObject(true);
         JSONObject skillObject = new JSONObject();
@@ -63,7 +126,12 @@ public class ListSkillService extends AbstractAPIHandler implements APIHandler {
         Boolean countFilter = false;
         Boolean dateFilter = false;
         Boolean searchFilter = false;
+        String reviewed = call.get("reviewed", "false");
         String[] language_names = language_list.split(",");
+
+        if (!(reviewed.equals("true") || reviewed.equals("false"))) {
+            throw new APIException(400, "Bad service call.");
+        }
 
         if(countString != null) {
             if(Integer.parseInt(countString) < 0) {
@@ -97,13 +165,20 @@ public class ListSkillService extends AbstractAPIHandler implements APIHandler {
                     File language = new File(group, language_name);
                     ArrayList<String> fileList = new ArrayList<String>();
                     listFilesForFolder(language, fileList);
-
                     for (String skill_name : fileList) {
                         skill_name = skill_name.replace(".txt", "");
                         JSONObject skillMetadata = SusiSkill.getSkillMetadata(model_name, temp_group_name, language_name, skill_name, duration);
 
-                        jsonArray.put(skillMetadata);
-                        skillObject.put(skill_name, skillMetadata);
+                        if(reviewed.equals("true")) {
+                            if(SusiSkill.getSkillStatus(model_name, temp_group_name, language_name, skill_name)) {
+                                jsonArray.put(skillMetadata);
+                                skillObject.put(skill_name, skillMetadata);
+                            }
+                        }
+                        else {
+                            jsonArray.put(skillMetadata);
+                            skillObject.put(skill_name, skillMetadata);
+                        }
                     }
                 }
             }
@@ -117,13 +192,20 @@ public class ListSkillService extends AbstractAPIHandler implements APIHandler {
                 json.put("accepted", false);
                 ArrayList<String> fileList = new ArrayList<String>();
                 listFilesForFolder(language, fileList);
-
                 for (String skill_name : fileList) {
                     skill_name = skill_name.replace(".txt", "");
                     JSONObject skillMetadata = SusiSkill.getSkillMetadata(model_name, group_name, language_name, skill_name, duration);
 
-                    jsonArray.put(skillMetadata);
-                    skillObject.put(skill_name, skillMetadata);
+                    if(reviewed.equals("true")) {
+                        if(SusiSkill.getSkillStatus(model_name, group_name, language_name, skill_name)) {
+                            jsonArray.put(skillMetadata);
+                            skillObject.put(skill_name, skillMetadata);
+                        }
+                    }
+                    else {
+                        jsonArray.put(skillMetadata);
+                        skillObject.put(skill_name, skillMetadata);
+                    }
                 }
             }
         }
@@ -436,7 +518,6 @@ public class ListSkillService extends AbstractAPIHandler implements APIHandler {
                 skillObject = tempSkillObject;
             }
         }
-
 
         json.put("model", model_name)
                 .put("group", group_name)

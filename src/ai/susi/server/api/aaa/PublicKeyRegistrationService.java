@@ -86,9 +86,9 @@ public class PublicKeyRegistrationService extends AbstractAPIHandler implements 
 		JSONObject result = new JSONObject();
 
 		switch(baseUserRole){
-			case BUREAUCRAT:
+			case SUPERADMIN:
             case ADMIN:
-            case ACCOUNTCREATOR:
+            case OPERATOR:
             case REVIEWER:
 			case USER:
 				result.put("self", true);

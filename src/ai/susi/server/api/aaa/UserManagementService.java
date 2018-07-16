@@ -33,7 +33,7 @@ public class UserManagementService extends AbstractAPIHandler implements APIHand
 
 	@Override
 	public UserRole getMinimalUserRole() {
-		return UserRole.ACCOUNTCREATOR;
+		return UserRole.OPERATOR;
 	}
 
 	@Override
@@ -41,7 +41,7 @@ public class UserManagementService extends AbstractAPIHandler implements APIHand
 		JSONObject result = new JSONObject();
 
 		switch(baseUserRole) {
-			case BUREAUCRAT:
+			case SUPERADMIN:
 				result.put("list_users", true);
 				result.put("list_users-roles", true);
 				result.put("edit-all", true);

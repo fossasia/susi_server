@@ -32,9 +32,9 @@ public enum UserRole {
     ANONYMOUS,       // a person, everyone who is not logged in
     USER,            // users who have logged in
     REVIEWER,        // users with special rights for content creation, i.e. moderators
-    ACCOUNTCREATOR,  // users with special rights for user account creation
-    ADMIN,           // a sysop which can assign accountcreator rights and can assign single access rights to any user. also: delete and restore pages, block and unblock users
-    BUREAUCRAT;      // maximum right, that user is allowed to do everything
+    OPERATOR,        // users with special rights for user account creation
+    ADMIN,           // a sysop which can assign operator rights and can assign single access rights to any user. also: delete and restore pages, block and unblock users
+    SUPERADMIN;      // maximum right, that user is allowed to do everything
     
     public String getName() {
     	return this.name().toLowerCase();

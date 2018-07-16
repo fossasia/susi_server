@@ -566,6 +566,7 @@ public class SusiServer {
                 GetSkillFeedbackService.class,
                 RemoveFeedbackService.class,
                 FeedbackSkillService.class,
+                ReportSkillService.class,
 
                 //Bookmark skill
                 BookmarkSkillService.class,
@@ -574,7 +575,10 @@ public class SusiServer {
                 GetRatingsOverTime.class,
 
                 // Get metrics based skills
-                SkillMetricsDataService.class
+                SkillMetricsDataService.class,
+
+                // Change review status of skills
+                ChangeSkillStatusService.class
         };
         for (Class<? extends Servlet> service: services)
             try {

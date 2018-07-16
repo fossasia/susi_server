@@ -36,6 +36,8 @@ import java.nio.file.Files;
  * http://localhost:4000/cms/getSkill.json
  * This accepts 4 parameters: - Model, Group, Language and Skill Name
  * http://localhost:4000/cms/getSkill.json?model=general&group=Knowledge&language=en&skill=wikipedia
+ * To get a private skill also send access_token and private=1 parameters
+ * http://localhost:4000/cms/getSkill.json?group=Communication&language=en&skill=testD&private=1&access_token=3idhpIajP4oPAe8862fElL8c9hxCdP
  */
 
 public class GetSkillJsonService extends AbstractAPIHandler implements APIHandler {
@@ -59,12 +61,30 @@ public class GetSkillJsonService extends AbstractAPIHandler implements APIHandle
     public ServiceResponse serviceImpl(Query call, HttpServletResponse response, Authorization rights, final JsonObjectWithDefault permissions) {
 
         JSONObject json = new JSONObject(true);
-
         // modify caching
         json.put("$EXPIRES", 0);
         json.put("accepted", false);
+        String userId = null;
+        if (call.get("access_token") != null) { // access tokens can be used by api calls, somehow the stateless equivalent of sessions for browsers
+            ClientCredential credential = new ClientCredential(ClientCredential.Type.access_token, call.get("access_token"));
+            Authentication authentication = DAO.getAuthentication(credential);
+            // check if access_token is valid
+            if (authentication.getIdentity() != null) {
+                ClientIdentity identity = authentication.getIdentity();
+                userId = identity.getUuid();
+            }
+        }
+        // if client sends private=1 then it is a private skill
+        String privateSkill = call.get("private", null);
+        File private_skill_dir = null;
+        if(privateSkill != null){
+            private_skill_dir = new File(DAO.private_skill_watch_dir,userId);
+        }
         String model_name = call.get("model", "general");
         File model = new File(DAO.model_watch_dir, model_name);
+        if(privateSkill != null){
+            model = private_skill_dir;
+        }
         String group_name = call.get("group", "Knowledge");
         File group = new File(model, group_name);
         String language_name = call.get("language", "en");

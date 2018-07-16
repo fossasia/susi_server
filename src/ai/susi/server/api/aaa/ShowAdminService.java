@@ -40,7 +40,7 @@ public class ShowAdminService extends AbstractAPIHandler implements APIHandler{
         UserRole userRole = rights.getUserRole();
 
         switch (userRole) {
-            case BUREAUCRAT:
+            case SUPERADMIN:
             case ADMIN:
                 json.put("accepted", true);
                 json.put("showAdmin", true);
@@ -49,7 +49,7 @@ public class ShowAdminService extends AbstractAPIHandler implements APIHandler{
             case ANONYMOUS:
             case USER:
             case REVIEWER:
-            case ACCOUNTCREATOR:
+            case OPERATOR:
             default:
                 json.put("accepted", true);
                 json.put("showAdmin", false);
