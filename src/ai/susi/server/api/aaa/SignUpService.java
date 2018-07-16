@@ -54,7 +54,7 @@ public class SignUpService extends AbstractAPIHandler implements APIHandler {
 		switch(baseUserRole){
 			case SUPERADMIN:
 			case ADMIN:
-			case ACCOUNTCREATOR:
+			case OPERATOR:
 			case REVIEWER:
 			case USER:
 				result.put("register", true); // allow to register new users (this bypasses email verification and activation)
