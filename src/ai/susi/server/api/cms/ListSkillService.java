@@ -126,7 +126,12 @@ public class ListSkillService extends AbstractAPIHandler implements APIHandler {
         Boolean countFilter = false;
         Boolean dateFilter = false;
         Boolean searchFilter = false;
+        String reviewed = call.get("reviewed", "false");
         String[] language_names = language_list.split(",");
+
+        if (!(reviewed.equals("true") || reviewed.equals("false"))) {
+            throw new APIException(400, "Bad service call.");
+        }
 
         if(countString != null) {
             if(Integer.parseInt(countString) < 0) {
@@ -164,8 +169,16 @@ public class ListSkillService extends AbstractAPIHandler implements APIHandler {
                         skill_name = skill_name.replace(".txt", "");
                         JSONObject skillMetadata = SusiSkill.getSkillMetadata(model_name, temp_group_name, language_name, skill_name, duration);
 
-                        jsonArray.put(skillMetadata);
-                        skillObject.put(skill_name, skillMetadata);
+                        if(reviewed.equals("true")) {
+                            if(SusiSkill.getSkillStatus(model_name, temp_group_name, language_name, skill_name)) {
+                                jsonArray.put(skillMetadata);
+                                skillObject.put(skill_name, skillMetadata);
+                            }
+                        }
+                        else {
+                            jsonArray.put(skillMetadata);
+                            skillObject.put(skill_name, skillMetadata);
+                        }
                     }
                 }
             }
@@ -183,8 +196,16 @@ public class ListSkillService extends AbstractAPIHandler implements APIHandler {
                     skill_name = skill_name.replace(".txt", "");
                     JSONObject skillMetadata = SusiSkill.getSkillMetadata(model_name, group_name, language_name, skill_name, duration);
 
-                    jsonArray.put(skillMetadata);
-                    skillObject.put(skill_name, skillMetadata);
+                    if(reviewed.equals("true")) {
+                        if(SusiSkill.getSkillStatus(model_name, group_name, language_name, skill_name)) {
+                            jsonArray.put(skillMetadata);
+                            skillObject.put(skill_name, skillMetadata);
+                        }
+                    }
+                    else {
+                        jsonArray.put(skillMetadata);
+                        skillObject.put(skill_name, skillMetadata);
+                    }
                 }
             }
         }

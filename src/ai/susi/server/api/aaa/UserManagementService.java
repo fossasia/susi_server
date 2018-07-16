@@ -33,7 +33,7 @@ public class UserManagementService extends AbstractAPIHandler implements APIHand
 
 	@Override
 	public UserRole getMinimalUserRole() {
-		return UserRole.ACCOUNTCREATOR;
+		return UserRole.OPERATOR;
 	}
 
 	@Override

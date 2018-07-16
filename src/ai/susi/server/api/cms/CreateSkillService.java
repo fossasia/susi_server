@@ -31,6 +31,8 @@ import java.awt.AlphaComposite;
 import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.image.BufferedImage;
+import java.io.BufferedReader;
+import java.io.FileReader;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -169,7 +171,7 @@ public class CreateSkillService extends AbstractAPIHandler implements APIHandler
 
                         //Add to git
                         if(privateSkill != null){
-                            this.storePrivateSkillBot(userId, skill_name, group_name, language_name);
+                            this.storePrivateSkillBot(skill, userId, skill_name, group_name, language_name);
                             try (Git git = DAO.getPrivateGit()) {
                                 git.add().addFilepattern(".").call();
 
@@ -249,22 +251,92 @@ public class CreateSkillService extends AbstractAPIHandler implements APIHandler
     /**
     * Helper method to store the private skill bot of the user in chatbot.json file
     */
-    private static void storePrivateSkillBot(String userId, String skillName, String group, String language) {
+    private static void storePrivateSkillBot(File skill, String userId, String skillName, String group, String language) {
         JsonTray chatbot = DAO.chatbot;
         JSONArray userBots = new JSONArray();
         JSONObject botObject = new JSONObject();
         JSONObject userChatBotsObject = new JSONObject();
+        JSONObject designObject = new JSONObject();
+        JSONObject configObject = new JSONObject();
         if (chatbot.has(userId)) {
+            // initialise with existing bots
             userBots = chatbot.getJSONObject(userId).getJSONArray("chatbots");
         }
+        // read design settings
+        try {
+            BufferedReader br = new BufferedReader(new FileReader(skill));
+            String line = "";
+            readloop: while ((line = br.readLine()) != null) {
+                String linebeforetrim = line;
+                line = line.trim();
+
+                if (line.startsWith("::")) {
+                  int thenpos=-1;
+                  if (line.startsWith("::bodyBackgroundImage") && (thenpos = line.indexOf(' ')) > 0) {
+                      String value = line.substring(thenpos + 1).trim();
+                      if(value.length() > 0)
+                          designObject.put("bodyBackgroundImage",value);
+                  }
+                  else if (line.startsWith("::bodyBackground") && (thenpos = line.indexOf(' ')) > 0) {
+                      String value = line.substring(thenpos + 1).trim();
+                      if(value.length() > 0)
+                          designObject.put("bodyBackground",value);
+                  }
+                  else if (line.startsWith("::userMessageBoxBackground") && (thenpos = line.indexOf(' ')) > 0) {
+                      String value = line.substring(thenpos + 1).trim();
+                      if(value.length() > 0)
+                          designObject.put("userMessageBoxBackground",value);
+                  }
+                  else if (line.startsWith("::userMessageTextColor") && (thenpos = line.indexOf(' ')) > 0) {
+                      String value = line.substring(thenpos + 1).trim();
+                      if(value.length() > 0)
+                          designObject.put("userMessageTextColor",value);
+                  }
+                  else if (line.startsWith("::botMessageBoxBackground") && (thenpos = line.indexOf(' ')) > 0) {
+                      String value = line.substring(thenpos + 1).trim();
+                      if(value.length() > 0)
+                          designObject.put("botMessageBoxBackground",value);
+                  }
+                  else if (line.startsWith("::botMessageTextColor") && (thenpos = line.indexOf(' ')) > 0) {
+                      String value = line.substring(thenpos + 1).trim();
+                      if(value.length() > 0)
+                          designObject.put("botMessageTextColor",value);
+                  }
+                  else if (line.startsWith("::botIconColor") && (thenpos = line.indexOf(' ')) > 0) {
+                      String value = line.substring(thenpos + 1).trim();
+                      if(value.length() > 0)
+                          designObject.put("botIconColor",value);
+                  }
+                  else if (line.startsWith("::botIconImage") && (thenpos = line.indexOf(' ')) > 0) {
+                      String value = line.substring(thenpos + 1).trim();
+                      if(value.length() > 0)
+                          designObject.put("botIconImage",value);
+                  }
+                  else if (line.startsWith("::sites_enabled") && (thenpos = line.indexOf(' ')) > 0) {
+                      String value = line.substring(thenpos + 1).trim();
+                      if(value.length() > 0)
+                          configObject.put("sites_enabled",value);
+                  }
+                  else if (line.startsWith("::sites_disabled") && (thenpos = line.indexOf(' ')) > 0) {
+                      String value = line.substring(thenpos + 1).trim();
+                      if(value.length() > 0)
+                          configObject.put("sites_disabled",value);
+                  }
+                }
+              }
+          } catch (IOException e) {
+            DAO.log(e.getMessage());
+          }
         // save a new bot
         botObject.put("name",skillName);
         botObject.put("group",group);
         botObject.put("language",language);
+        botObject.put("design",designObject);
+        botObject.put("configure",configObject);
         userBots.put(botObject);
         userChatBotsObject.put("chatbots",userBots);
         chatbot.put(userId,userChatBotsObject,true);
-    } 
+    }
 
     @Override
     public ServiceResponse serviceImpl(Query call, HttpServletResponse response, Authorization rights, final JsonObjectWithDefault permissions) {
