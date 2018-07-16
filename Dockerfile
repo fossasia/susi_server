@@ -7,13 +7,13 @@ EXPOSE 80 443
 
 RUN apt-get update && \
 apt-get upgrade -y && \
-apt-get install -y git && \
 rm -rf /var/lib/apt/lists/*
 
 
 
 # clone the github repo
 RUN git clone --recursive https://github.com/fossasia/susi_server.git && \
+cd susi_server && \
 git submodule update --init --recursive
 WORKDIR susi_server
 
