@@ -34,7 +34,7 @@ public class GetUsers extends AbstractAPIHandler implements APIHandler {
 
     @Override
     public UserRole getMinimalUserRole() {
-        return UserRole.ADMIN;
+        return UserRole.OPERATOR;
     }
 
     @Override
@@ -110,6 +110,12 @@ public class GetUsers extends AbstractAPIHandler implements APIHandler {
                 } else {
                     json.put("lastLoginTime", "");
                 }
+
+                if(accounting.getJSON().has("devices")) {
+                    json.put("devices", accounting.getJSON().getJSONObject("devices"));
+                } else {
+                    json.put("devices", "");
+                }
                 accounting.commit();
 
                 //add the user details in the list
@@ -125,7 +131,7 @@ public class GetUsers extends AbstractAPIHandler implements APIHandler {
                 result.put("users", currentPageUsers);
                 result.put("username", currentKeysArray);
                 result.put("accepted", true);
-                result.put("message", "Success: Fetched all Users with their User Roles!");
+                result.put("message", "Success: Fetched all Users with their User Roles and connected devices!");
                 return new ServiceResponse(result);
             } catch (Exception e) {
                 throw new APIException(422, "Requested List does not exists!");
