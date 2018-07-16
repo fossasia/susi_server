@@ -1,4 +1,4 @@
-FROM alpine:latest
+FROM openjdk:8-alpine
 LABEL maintainer="Ansgar Schmidt <ansgar.schmidt@gmx.net>"
 
 ARG BRANCH
@@ -7,7 +7,7 @@ ARG COMMIT_HASH
 ENV COMMIT_HASH ${COMMIT_HASH:-null}
 ENV BRANCH ${BRANCH:-development}
 # Install packages and clone from Github
-RUN apk update && apk add git openjdk8 bash && \
+RUN apk update && apk add --no-cache git bash && \
     cd / && git clone https://github.com/fossasia/susi_skill_data.git && \
     git clone https://github.com/fossasia/susi_server.git /susi_server
 WORKDIR /susi_server
