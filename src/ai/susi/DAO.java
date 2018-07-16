@@ -122,6 +122,7 @@ public class DAO {
     public static JsonTray chatbot;
     public static JsonTray skillStatus;
     public static JsonTray ratingsOverTime;
+    public static JsonTray reportedSkills;
 
 
     static {
@@ -354,6 +355,13 @@ public class DAO {
         ratingsOverTime = new JsonTray(ratingsOverTime_per.toFile(), ratingsOverTime_vol.toFile(), 1000000);
         OS.protectPath(ratingsOverTime_per);
         OS.protectPath(ratingsOverTime_vol);
+
+        // Report a skill as inappropriate
+        Path reportedSkills_per = susi_skill_rating_dir.resolve("reportedSkills.json");
+        Path reportedSkills_vol = susi_skill_rating_dir.resolve("reportedSkills_session.json");
+        reportedSkills = new JsonTray(reportedSkills_per.toFile(), reportedSkills_vol.toFile(), 1000000);
+        OS.protectPath(reportedSkills_per);
+        OS.protectPath(reportedSkills_vol);
 
         // open index
         Path index_dir = dataPath.resolve("index");
