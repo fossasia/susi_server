@@ -87,7 +87,7 @@ public class SusiCognition {
         long answer_date = System.currentTimeMillis();
 
         // update country wise skill usage data
-        if (!countryCode.equals("") && !countryName.equals("")) {
+        if (!countryCode.equals("") && !countryName.equals("") && dispute.size() > 0) {
             List<String> skills = dispute.get(0).getSkills();
             for (String skill : skills) {
                 try {
