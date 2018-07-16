@@ -112,8 +112,8 @@ public class ChangeUserRoles extends AbstractAPIHandler implements APIHandler {
                 case "reviewer":
                     userRole = UserRole.REVIEWER;
                     break;
-                case "accountcreator":
-                    userRole = UserRole.ACCOUNTCREATOR;
+                case "operator":
+                    userRole = UserRole.OPERATOR;
                     break;
                 case "admin":
                     userRole = UserRole.ADMIN;

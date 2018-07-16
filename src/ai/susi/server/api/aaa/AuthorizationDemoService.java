@@ -47,7 +47,7 @@ public class AuthorizationDemoService extends AbstractAPIHandler implements APIH
             case ADMIN:
                 result.put("download_limit", 100000);
                 break;
-			case ACCOUNTCREATOR:
+			case OPERATOR:
 				result.put("download_limit", 10000);
 				break;
             case REVIEWER:
