@@ -6,9 +6,9 @@ CMD ["bin/start.sh", "-Idn"]
 EXPOSE 80 443
 
 RUN apt-get update && \
-apt-get upgrade -y &&
-apt-get install -y git
-&& rm -rf /var/lib/apt/lists/*
+apt-get upgrade -y && \
+apt-get install -y git && \
+rm -rf /var/lib/apt/lists/*
 
 
 
