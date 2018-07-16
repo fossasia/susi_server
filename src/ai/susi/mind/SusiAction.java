@@ -28,7 +28,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.json.JSONArray;
-import org.json.JSONException;
 import org.json.JSONObject;
 
 import ai.susi.DAO;
@@ -208,7 +207,8 @@ public class SusiAction {
 	            case image_take:
                     throw new SusiActionException("this action is not yet defined");
 	            case image_show:
-                    throw new SusiActionException("this action is not yet defined");
+	                if (!json.has("url")) throw new SusiActionException("the action needs an url object");
+	                break;
 	            case emotion:
                     throw new SusiActionException("this action is not yet defined");
 	            case button_push:
