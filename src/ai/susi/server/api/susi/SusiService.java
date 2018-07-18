@@ -94,44 +94,48 @@ public class SusiService extends AbstractAPIHandler implements APIHandler {
             List<SusiCognition> cognitions = DAO.susi.getMemories().getCognitions(user.getIdentity().getClient());
             cognitions.forEach(cognition -> observation_argument.think(cognition.recallDispute()));
             recall = observation_argument.mindmeld(false);
+            
+            // now that we have a recall, use it to set the dream/persona
+            if (dream == null || dream.length() == 0) {
+                dream = recall.getObservation("_etherpad_dream");
+            }
+            if (persona == null || persona.length() == 0) {
+                persona = recall.getObservation("_persona_awake");
+            }
         }
 
         // we create a hierarchy of minds which overlap each other completely. The first element in the array is the 'most conscious' mind.
         List<SusiMind> minds = new ArrayList<>();
 
         // find out if we are dreaming: dreaming is the most prominent mind, it overlaps all other minds
-        if (recall != null && (dream == null || dream.length() == 0)) {
-            dream = recall.getObservation("_etherpad_dream");
-            if (dream != null && dream.length() > 0) try {
-                // read the pad for the dream
-                String etherpadApikey = DAO.getConfig("etherpad.apikey", "");
-                String etherpadUrlstub = DAO.getConfig("etherpad.urlstub", "");
-                String padurl = etherpadUrlstub + "/api/1/getText?apikey=" + etherpadApikey + "&padID=$query$";
-                JSONTokener serviceResponse = new JSONTokener(new ByteArrayInputStream(ConsoleService.loadData(padurl, dream)));
-                JSONObject json = new JSONObject(serviceResponse);
-                String text = json.getJSONObject("data").getString("text");
-                // in case that the text contains a "*" we are in danger that we cannot stop dreaming, therefore we simply add the stop rule here to the text
-                text = text + "\n\nwake up|stop dream|stop dreaming|end dream|end dreaming\ndreaming disabled^^>_etherpad_dream\n\n";
-                text = text + "\n\ndream *\nI am currently dreaming $_etherpad_dream$, first wake up before dreaming again\n\n";
-                // fill an empty mind with the dream
-                SusiMind dreamMind = new SusiMind(DAO.susi_chatlog_dir, DAO.susi_skilllog_dir); // we need the memory directory here to get a share on the memory of previous dialoges, otherwise we cannot test call-back questions
-                JSONObject rules = SusiSkill.readLoTSkill(new BufferedReader(new InputStreamReader(new ByteArrayInputStream(text.getBytes(StandardCharsets.UTF_8)), StandardCharsets.UTF_8)), SusiLanguage.unknown, dream);
-                File origin = new File("file://" + dream);
-                dreamMind.learn(rules, origin);
-                SusiSkill.ID skillid = new SusiSkill.ID(origin);
-                SusiSkill activeskill = dreamMind.getSkillMetadata().get(skillid);
-                dreamMind.setActiveSkill(activeskill);
-                // susi is now dreaming.. Try to find an answer out of the dream
-                minds.add(dreamMind);
-            } catch (JSONException | IOException e) {
-                DAO.severe(e.getMessage(), e);
-            }
+        if (dream != null && dream.length() > 0) try {
+            // read the pad for the dream
+            String etherpadApikey = DAO.getConfig("etherpad.apikey", "");
+            String etherpadUrlstub = DAO.getConfig("etherpad.urlstub", "");
+            String padurl = etherpadUrlstub + "/api/1/getText?apikey=" + etherpadApikey + "&padID=$query$";
+            JSONTokener serviceResponse = new JSONTokener(new ByteArrayInputStream(ConsoleService.loadData(padurl, dream)));
+            JSONObject json = new JSONObject(serviceResponse);
+            String text = json.getJSONObject("data").getString("text");
+            // in case that the text contains a "*" we are in danger that we cannot stop dreaming, therefore we simply add the stop rule here to the text
+            text = text + "\n\nwake up|stop dream|stop dreaming|end dream|end dreaming\ndreaming disabled^^>_etherpad_dream\n\n";
+            text = text + "\n\ndream *\nI am currently dreaming $_etherpad_dream$, first wake up before dreaming again\n\n";
+            // fill an empty mind with the dream
+            SusiMind dreamMind = new SusiMind(DAO.susi_chatlog_dir, DAO.susi_skilllog_dir); // we need the memory directory here to get a share on the memory of previous dialoges, otherwise we cannot test call-back questions
+            JSONObject rules = SusiSkill.readLoTSkill(new BufferedReader(new InputStreamReader(new ByteArrayInputStream(text.getBytes(StandardCharsets.UTF_8)), StandardCharsets.UTF_8)), SusiLanguage.unknown, dream);
+            File origin = new File("file://" + dream);
+            dreamMind.learn(rules, origin);
+            SusiSkill.ID skillid = new SusiSkill.ID(origin);
+            SusiSkill activeskill = dreamMind.getSkillMetadata().get(skillid);
+            dreamMind.setActiveSkill(activeskill);
+            // susi is now dreaming.. Try to find an answer out of the dream
+            minds.add(dreamMind);
+        } catch (JSONException | IOException e) {
+            DAO.severe(e.getMessage(), e);
         }
         
         // find out if a persona is active: a persona is more prominent in conscience than the general mind
-        if (recall != null && (persona == null || persona.length() == 0)) {
-            persona = recall.getObservation("_persona_awake");
-            File skillfile = persona == null || persona.length() == 0 ? null : SusiSkill.getSkillFileInModel(new File(DAO.model_watch_dir, "persona"), persona);
+        if (persona != null && persona.length() > 0) {
+            File skillfile = SusiSkill.getSkillFileInModel(new File(DAO.model_watch_dir, "persona"), persona);
             // read the persona
             if (skillfile != null) try {
                 String text = new String(Files.readAllBytes(skillfile.toPath()), StandardCharsets.UTF_8);
