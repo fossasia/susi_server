@@ -79,8 +79,9 @@ public class SusiService extends AbstractAPIHandler implements APIHandler {
         String language = post.get("language", "en");
         String deviceType = post.get("device_type", "Others");
         String dream = post.get("dream", ""); // an instant dream setting, to be used for permanent dreaming
-        String persona = post.get("persona", ""); // an instant dream setting, to be used for permanent dreaming
-
+        String persona = post.get("persona", ""); // an instant persona setting, to be used for peromanent personas
+        String instant = post.get("instant", ""); // an instant skill text, given as LoT directly here
+        
         try {
             DAO.susi.observe(); // get a database update
         } catch (IOException e) {
@@ -107,6 +108,21 @@ public class SusiService extends AbstractAPIHandler implements APIHandler {
         // we create a hierarchy of minds which overlap each other completely. The first element in the array is the 'most conscious' mind.
         List<SusiMind> minds = new ArrayList<>();
 
+        if (instant != null && instant.length() > 0) try {
+            instant = instant.replaceAll("\\\\n", "\n"); // yes, the number of "\" is correct
+            // fill an empty mind with the skilltext
+            SusiMind instantMind = new SusiMind(DAO.susi_chatlog_dir, DAO.susi_skilllog_dir); // we need the memory directory here to get a share on the memory of previous dialoges, otherwise we cannot test call-back questions
+            JSONObject rules = SusiSkill.readLoTSkill(new BufferedReader(new InputStreamReader(new ByteArrayInputStream(instant.getBytes(StandardCharsets.UTF_8)), StandardCharsets.UTF_8)), SusiLanguage.unknown, dream);
+            File origin = new File("file://instant");
+            instantMind.learn(rules, origin);
+            SusiSkill.ID skillid = new SusiSkill.ID(origin);
+            SusiSkill activeskill = instantMind.getSkillMetadata().get(skillid);
+            instantMind.setActiveSkill(activeskill);
+            minds.add(instantMind);
+        } catch (JSONException e) {
+            DAO.severe(e.getMessage(), e);
+        }
+        
         // find out if we are dreaming: dreaming is the most prominent mind, it overlaps all other minds
         if (dream != null && dream.length() > 0) try {
             // read the pad for the dream
