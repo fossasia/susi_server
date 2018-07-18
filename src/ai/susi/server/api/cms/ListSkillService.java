@@ -30,7 +30,7 @@ import java.util.concurrent.TimeUnit;
 
 public class ListSkillService extends AbstractAPIHandler implements APIHandler {
 
-    private static final long serialVersionUID = -8691003678852307876L;
+    private static final long serialVersionUID = -861003678852307876L;
 
     @Override
     public UserRole getMinimalUserRole() {
@@ -117,10 +117,11 @@ public class ListSkillService extends AbstractAPIHandler implements APIHandler {
         String language_list = call.get("language", "en");
         int duration = call.get("duration", -1);
         JSONArray jsonArray = new JSONArray();
+        JSONArray filteredData = new JSONArray();
         JSONObject json = new JSONObject(true);
         JSONObject skillObject = new JSONObject();
         String countString = call.get("count", null);
-        int offset = call.get("offset", 0);
+        int page = call.get("page", 1);
         String searchQuery = call.get("q", null);
         Integer count = null;
         Boolean countFilter = false;
@@ -145,6 +146,12 @@ public class ListSkillService extends AbstractAPIHandler implements APIHandler {
                 }
             }
         }
+        else {
+            countFilter = true;
+            count = 10;
+        }
+
+        int offset = (page - 1) * count;
 
         if (searchQuery !=null && !StringUtils.isBlank(searchQuery))
         {
@@ -212,8 +219,6 @@ public class ListSkillService extends AbstractAPIHandler implements APIHandler {
 
         // if filter is applied, sort the data accordingly
         if (call.get("applyFilter", false)) {
-
-            JSONArray filteredData = new JSONArray();
             List<JSONObject> jsonValues = new ArrayList<JSONObject>();
 
             // temporary list to extract objects from skillObject
@@ -454,6 +459,23 @@ public class ListSkillService extends AbstractAPIHandler implements APIHandler {
                     });
                 }
             }
+
+            if (call.get("getPageCount", false) == true) {
+                int pageCount = jsonArray.length() % count == 0 ? (jsonArray.length() / count) : (jsonArray.length() / count) + 1;
+                json.put("pageCount", pageCount);
+                json.put("accepted", true);
+                json.put("message", "Success: Fetched count of pages");
+                return new ServiceResponse(json);
+            }
+
+            if (call.get("getSkillCount", false) == true) {
+                json.put("userCount", jsonArray.length());
+                json.put("accepted", true);
+                json.put("message", "Success: Fetched count of skills");
+                return new ServiceResponse(json);
+            }
+
+
             for (int i = 0; i < jsonArray.length(); i++) {
                 if (i < offset ) {
                     continue;
