@@ -30,7 +30,7 @@ import java.util.concurrent.TimeUnit;
 
 public class ListSkillService extends AbstractAPIHandler implements APIHandler {
 
-    private static final long serialVersionUID = -861003678852307876L;
+    private static final long serialVersionUID = -8691003678852307876L;
 
     @Override
     public UserRole getMinimalUserRole() {
