@@ -39,7 +39,7 @@ analysis|analyse|analyze|explain|* analysis|* analyse|* analyze|analysis *|analy
 My previous answer is defined in the skill $skill$. You can help to improve this skill and <a href="$skill_link$" target="_blank"> edit it in the code repository here.</a>
 
 # stop whatever happens
-stop|stop *
+stop|off|shut up|stop *
 !console:
 {"actions":[{"type":"stop"}]}
 eol
