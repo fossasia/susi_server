@@ -170,7 +170,7 @@ public class ListSkillService extends AbstractAPIHandler implements APIHandler {
                         JSONObject skillMetadata = SusiSkill.getSkillMetadata(model_name, temp_group_name, language_name, skill_name, duration);
 
                         if(reviewed.equals("true")) {
-                            if(SusiSkill.getSkillStatus(model_name, temp_group_name, language_name, skill_name)) {
+                            if(SusiSkill.getSkillReviewStatus(model_name, temp_group_name, language_name, skill_name)) {
                                 jsonArray.put(skillMetadata);
                                 skillObject.put(skill_name, skillMetadata);
                             }
@@ -197,7 +197,7 @@ public class ListSkillService extends AbstractAPIHandler implements APIHandler {
                     JSONObject skillMetadata = SusiSkill.getSkillMetadata(model_name, group_name, language_name, skill_name, duration);
 
                     if(reviewed.equals("true")) {
-                        if(SusiSkill.getSkillStatus(model_name, group_name, language_name, skill_name)) {
+                        if(SusiSkill.getSkillReviewStatus(model_name, group_name, language_name, skill_name)) {
                             jsonArray.put(skillMetadata);
                             skillObject.put(skill_name, skillMetadata);
                         }
