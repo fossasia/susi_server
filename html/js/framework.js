@@ -50,9 +50,6 @@ angular.element(document).ready(function () {
       if(name == "Blog" || name == "Account") { // The Blog tab redirects to the loklak blog (http://blog.loklak.net/)
         liItem += "<aside><a href='"+link+"'>"+name+" <i class='material-icons' id='icons'>person</i></a></aside></li>";
       }
-      else if(name == "API"){
-        liItem += "<aside><a href='"+link+"'>"+name+" <i class='material-icons' id='icons'>code</i></a></aside></li>";
-      }
       else if(name == "Chat"){
         liItem += "<aside><a href='"+link+"'>"+name+" <i class='material-icons' id='icons'>chat</i></a></aside></li>";
       }
