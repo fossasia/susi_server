@@ -21,6 +21,7 @@ import java.util.List;
  * Other parameters (one out of two is necessary):
  * getPageCount -> boolean http://localhost:4000/aaa/getUsers.json?access_token=go2ijgk5ijkmViAac2bifng3uthdZ&getPageCount=true
  * getUserCount -> boolean http://localhost:4000/aaa/getUsers.json?access_token=go2ijgk5ijkmViAac2bifng3uthdZ&getUserCount=true
+ * getAllUsers  -> boolean http://localhost:4000/aaa/getUsers.json?access_token=go2ijgk5ijkmViAac2bifng3uthdZ&getAllUsers=true 
  * page         -> integer http://localhost:4000/aaa/getUsers.json?access_token=go2ijgk5ijkmViAac2bifng3uthdZ&page=2
  */
 public class GetUsers extends AbstractAPIHandler implements APIHandler {
@@ -44,7 +45,9 @@ public class GetUsers extends AbstractAPIHandler implements APIHandler {
 
     @Override
     public ServiceResponse serviceImpl(Query call, HttpServletResponse response, Authorization rights, final JsonObjectWithDefault permissions) throws APIException {
-        if (call.get("getPageCount", false) == false && call.get("page", null) == null
+        if (call.get("getPageCount", false) == false
+                && call.get("getAllUsers", false) == false
+                && call.get("page", null) == null
                 && call.get("getUserCount", null) == null) {
             throw new APIException(422, "Bad Request. No parameter present");
         }
@@ -121,20 +124,34 @@ public class GetUsers extends AbstractAPIHandler implements APIHandler {
                 //add the user details in the list
                 userList.add(json);
             }
-            List<JSONObject> currentPageUsers = new ArrayList<JSONObject>();
-            int length = userList.size() - page > 50 ? 50 : (userList.size() - page);
-            try {
-                String[] currentKeysArray = Arrays.copyOfRange(keysArray, page, page + length);
-                for (int i = 0; i < length; ++i) {
-                    currentPageUsers.add(userList.get(page + i));
-                }
-                result.put("users", currentPageUsers);
-                result.put("username", currentKeysArray);
-                result.put("accepted", true);
-                result.put("message", "Success: Fetched all Users with their User Roles and connected devices!");
-                return new ServiceResponse(result);
-            } catch (Exception e) {
-                throw new APIException(422, "Requested List does not exists!");
+	    if (call.get("getAllUsers", false) == true) {
+              int length = userList.size();
+              try {
+                  String[] currentKeysArray = Arrays.copyOfRange(keysArray, 0, length);
+                  result.put("users", userList);
+                  result.put("username", currentKeysArray);
+                  result.put("accepted", true);
+                  result.put("message", "Success: Fetched all Users with their User Roles and connected devices!");
+                  return new ServiceResponse(result);
+              } catch (Exception e) {
+                  throw new APIException(422, "Requested List does not exists!");
+              }
+            }else{
+              List<JSONObject> currentPageUsers = new ArrayList<JSONObject>();
+              int length = userList.size() - page > 50 ? 50 : (userList.size() - page);
+              try {
+                  String[] currentKeysArray = Arrays.copyOfRange(keysArray, page, page + length);
+                  for (int i = 0; i < length; ++i) {
+                      currentPageUsers.add(userList.get(page + i));
+                  }
+                  result.put("users", currentPageUsers);
+                  result.put("username", currentKeysArray);
+                  result.put("accepted", true);
+                  result.put("message", "Success: Fetched all Users with their User Roles and connected devices!");
+                  return new ServiceResponse(result);
+              } catch (Exception e) {
+                  throw new APIException(422, "Requested List does not exists!");
+              }
             }
         }
     }
