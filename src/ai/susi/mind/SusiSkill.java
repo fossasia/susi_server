@@ -709,11 +709,12 @@ public class SusiSkill {
     public void setDeveloperPrivacyPolicy(String developerPrivacyPolicy) {
         this.developerPrivacyPolicy = developerPrivacyPolicy;
     }
-
+/*
     public void setExamples(Set<String> examples) {
         this.examples = examples;
     }
-
+*/
+    
     public void setImage(String image) {
         this.image = image;
     }
