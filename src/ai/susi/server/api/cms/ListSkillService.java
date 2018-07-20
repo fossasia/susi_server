@@ -469,7 +469,7 @@ public class ListSkillService extends AbstractAPIHandler implements APIHandler {
             }
 
             if (call.get("getSkillCount", false) == true) {
-                json.put("userCount", jsonArray.length());
+                json.put("skillCount", jsonArray.length());
                 json.put("accepted", true);
                 json.put("message", "Success: Fetched count of skills");
                 return new ServiceResponse(json);
