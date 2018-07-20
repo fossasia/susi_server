@@ -23,8 +23,7 @@ import ai.susi.DAO;
 import ai.susi.json.JsonObjectWithDefault;
 import ai.susi.server.*;
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.filefilter.DirectoryFileFilter;
-import org.apache.commons.io.filefilter.RegexFileFilter;
+import org.apache.commons.io.filefilter.TrueFileFilter;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -62,9 +61,9 @@ public class SkillsToBeDeleted extends AbstractAPIHandler implements APIHandler 
         JSONObject json = new JSONObject();
 
         Collection files = FileUtils.listFiles(
-                DAO.deleted_skill_dir,
-                new RegexFileFilter("^(.txt)"),
-                DirectoryFileFilter.DIRECTORY
+                new File(DAO.deleted_skill_dir.getPath()),
+                TrueFileFilter.INSTANCE,
+                TrueFileFilter.TRUE
         );
 
         JSONArray jsArray = new JSONArray(files);
