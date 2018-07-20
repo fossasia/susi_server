@@ -27,7 +27,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -36,7 +35,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -55,7 +53,6 @@ public class SusiMind {
     public final static int ATTENTION_TIME = 5;
     
     private final Map<String, Set<SusiIntent>> intenttrigger; // a map from a keyword to a set of intents
-    private final Map<SusiSkill.ID, Set<String>> skillexamples; // a map from an skill path to one example
     private final Map<SusiSkill.ID, SusiSkill> skillMetadata; // a map from skill path to description
     private final Map<SusiSkill.ID, String> skillImage; // a map from skill path to skill image
     private final List<File> watchpaths;
@@ -75,7 +72,6 @@ public class SusiMind {
         this.intenttrigger = new ConcurrentHashMap<>();
         this.observations = new HashMap<>();
         this.memories = new SusiMemory(susi_chatlog_dir, susi_skilllog_dir, ATTENTION_TIME);
-        this.skillexamples = new TreeMap<>();
         this.skillMetadata = new TreeMap<>();
         this.skillImage = new TreeMap<>();
         // learn all available intents
@@ -117,8 +113,8 @@ public class SusiMind {
         return this.memories.unanswered2tokenizedstats();
     }
     
-    public Map<SusiSkill.ID, Set<String>> getSkillExamples() {
-        return this.skillexamples;
+    public Set<String> getSkillExamples(SusiSkill.ID id) {
+        return this.skillMetadata.get(id).getExamples();
     }
 
     public Map<SusiSkill.ID, SusiSkill> getSkillMetadata() {
@@ -211,20 +207,7 @@ public class SusiMind {
                 // Susi skill object for skill metadata
                 SusiSkill skill = new SusiSkill();
 
-                // collect intent example and test the intents using the example/expect terms
-                if (intent.getExample() != null) {
-                    //DAO.log("intent for '" + intent.getExample() + "' in \n" + intent.getSkill() + "\n");
-                    Set<String> examples = this.skillexamples.get(intent.getSkill());
-                    if (examples == null) {
-                        examples = new LinkedHashSet<>();
-                        this.skillexamples.put(intent.getSkill(), examples);
-                    }
-                    examples.add(intent.getExample());
-                    skill.setExamples(examples);
-
-                }
                 // skill description
-
                 if(json.has("description"))
                     skill.setDescription(json.getString("description"));
                 // skill image
