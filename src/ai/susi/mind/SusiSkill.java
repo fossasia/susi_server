@@ -95,6 +95,11 @@ public class SusiSkill {
         }
 
         @Override
+        public boolean equals(Object o) {
+            return o instanceof ID && ((ID) o).skillpath.equals(this.skillpath);
+        }
+
+        @Override
         public int compareTo(ID o) {
             return this.skillpath.compareTo(o.skillpath);
         }
@@ -704,11 +709,12 @@ public class SusiSkill {
     public void setDeveloperPrivacyPolicy(String developerPrivacyPolicy) {
         this.developerPrivacyPolicy = developerPrivacyPolicy;
     }
-
+/*
     public void setExamples(Set<String> examples) {
         this.examples = examples;
     }
-
+*/
+    
     public void setImage(String image) {
         this.image = image;
     }
@@ -738,12 +744,7 @@ public class SusiSkill {
     }
 
     public String getAuthor() {
-        if (author!=null) {
-            return author.toLowerCase();
-        }
-        else {
-            return author;
-        }
+        return author;
     }
 
     public String getAuthorURL() {

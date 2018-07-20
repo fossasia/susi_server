@@ -138,14 +138,13 @@ public class SkillMetricsDataService extends AbstractAPIHandler implements APIHa
             private static final String KEY_NAME = "creationTime";
             @Override
             public int compare(JSONObject a, JSONObject b) {
-                String valA = new String();
-                String valB = new String();
+                Object valA, valB;
                 int result = 0;
 
                 try {
-                    valA = a.get(KEY_NAME).toString();
-                    valB = b.get(KEY_NAME).toString();
-                    result = valB.compareToIgnoreCase(valA);
+                    valA = a.opt(KEY_NAME); if (valA == null) valA = "";
+                    valB = b.opt(KEY_NAME); if (valB == null) valB = "";
+                    result = valB.toString().compareToIgnoreCase(valA.toString());
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
@@ -160,14 +159,18 @@ public class SkillMetricsDataService extends AbstractAPIHandler implements APIHa
         Collections.sort(jsonValues, new Comparator<JSONObject>() {
             @Override
             public int compare(JSONObject a, JSONObject b) {
-                float valA;
-                float valB;
+                Object valA, valB;
                 int result=0;
 
                 try {
-                    valA = a.getJSONObject("skill_rating").getJSONObject("stars").getFloat("avg_star");
-                    valB = b.getJSONObject("skill_rating").getJSONObject("stars").getFloat("avg_star");
-                    result = Float.compare(valB, valA);
+                    valA = a.opt("skill_rating");
+                    valB = b.opt("skill_rating");
+                    if (valA == null || !((valA instanceof JSONObject))) valA = new JSONObject().put("stars", new JSONObject().put("avg_star", 0.0f));
+                    if (valB == null || !((valB instanceof JSONObject))) valB = new JSONObject().put("stars", new JSONObject().put("avg_star", 0.0f));
+                    
+                    result = Float.compare(
+                            ((JSONObject) valA).getJSONObject("stars").getFloat("avg_star"),
+                            ((JSONObject) valB).getJSONObject("stars").getFloat("avg_star"));
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
@@ -204,15 +207,15 @@ public class SkillMetricsDataService extends AbstractAPIHandler implements APIHa
         Collections.sort(jsonValues, new Comparator<JSONObject>() {
             @Override
             public int compare(JSONObject a, JSONObject b) {
-                Integer valA;
-                Integer valB;
+                Object valA, valB;
                 int result=0;
 
                 try {
-                    valA = a.getJSONObject("skill_rating").getInt("feedback_count");
-                    valB = b.getJSONObject("skill_rating").getInt("feedback_count");
-                    result = Integer.compare(valB, valA);
-
+                    valA = a.opt("skill_rating");
+                    valB = b.opt("skill_rating");
+                    if (valA == null || !(valA instanceof Integer)) valA = 0;
+                    if (valB == null || !(valB instanceof Integer)) valB = 0;
+                    result = Integer.compare((Integer) valB, (Integer) valA);
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
