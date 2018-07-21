@@ -463,6 +463,7 @@ public class SusiServer {
                 DownloadDataSettings.class,
                 StorePersonalInfoService.class,
                 ShowAdminService.class,
+                AdminStats.class,
                 SignUpService.class,
                 TopMenuService.class,
                 PasswordChangeService.class,
