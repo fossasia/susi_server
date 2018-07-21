@@ -27,6 +27,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -35,6 +36,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -53,6 +55,7 @@ public class SusiMind {
     public final static int ATTENTION_TIME = 5;
     
     private final Map<String, Set<SusiIntent>> intenttrigger; // a map from a keyword to a set of intents
+    private final Map<SusiSkill.ID, Set<String>> skillexamples;
     private final Map<SusiSkill.ID, SusiSkill> skillMetadata; // a map from skill path to description
     private final Map<SusiSkill.ID, String> skillImage; // a map from skill path to skill image
     private final List<File> watchpaths;
@@ -70,6 +73,7 @@ public class SusiMind {
         if (this.susi_chatlog_dir != null) this.susi_chatlog_dir.mkdirs();
         if (this.susi_skilllog_dir != null) this.susi_skilllog_dir.mkdirs();
         this.intenttrigger = new ConcurrentHashMap<>();
+        this.skillexamples = new TreeMap<>();
         this.observations = new HashMap<>();
         this.memories = new SusiMemory(susi_chatlog_dir, susi_skilllog_dir, ATTENTION_TIME);
         this.skillMetadata = new TreeMap<>();
@@ -113,8 +117,8 @@ public class SusiMind {
         return this.memories.unanswered2tokenizedstats();
     }
     
-    public Set<String> getSkillExamples(SusiSkill.ID id) {
-        return this.skillMetadata.get(id).getExamples();
+    public Map<SusiSkill.ID, Set<String>> getSkillExamples() {
+        return this.skillexamples;
     }
 
     public Map<SusiSkill.ID, SusiSkill> getSkillMetadata() {
@@ -206,6 +210,16 @@ public class SusiMind {
                 });
                 // Susi skill object for skill metadata
                 SusiSkill skill = new SusiSkill();
+
+                if (intent.getExample() != null) {
+                    Set<String> examples = this.skillexamples.get(intent.getSkill());
+                    if (examples == null) {
+                        examples = new LinkedHashSet<>();
+                        this.skillexamples.put(intent.getSkill(), examples);
+                    }
+                    examples.add(intent.getExample());
+                    skill.setExamples(examples);
+                }
 
                 // skill description
                 if(json.has("description"))
