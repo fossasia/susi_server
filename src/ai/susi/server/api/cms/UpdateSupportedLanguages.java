@@ -31,7 +31,6 @@ import scala.util.parsing.combinator.testing.Str;
 import javax.servlet.http.HttpServletResponse;
 import java.io.File;
 
-
 /**
  * This Endpoint accepts 5 parameters. model,group,language,skill,rating.
  * rating can be positive or negative
@@ -150,6 +149,4 @@ public class UpdateSupportedLanguages extends AbstractAPIHandler implements APIH
 
         return supportedLanguages;
     }
-
-
 }
