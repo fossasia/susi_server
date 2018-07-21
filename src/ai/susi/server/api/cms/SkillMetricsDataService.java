@@ -28,6 +28,7 @@ import org.json.JSONObject;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.File;
+import java.io.IOException;
 import java.util.*;
 
 /**
@@ -84,6 +85,12 @@ public class SkillMetricsDataService extends AbstractAPIHandler implements APIHa
             count = 10;
         }
 
+        try {
+            DAO.susi.observe(); // get a database update
+        } catch (IOException e) {
+            DAO.severe(e.getMessage());
+        }
+        
         // Returns susi skills list of all groups
         if (group_name.equals("All")) {
             File allGroup = new File(String.valueOf(model));
