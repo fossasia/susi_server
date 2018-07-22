@@ -28,6 +28,7 @@ import org.json.JSONObject;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.File;
+import java.io.IOException;
 import java.util.*;
 
 /**
@@ -84,6 +85,12 @@ public class SkillMetricsDataService extends AbstractAPIHandler implements APIHa
             count = 10;
         }
 
+        try {
+            DAO.susi.observe(); // get a database update
+        } catch (IOException e) {
+            DAO.severe(e.getMessage());
+        }
+        
         // Returns susi skills list of all groups
         if (group_name.equals("All")) {
             File allGroup = new File(String.valueOf(model));
@@ -125,7 +132,7 @@ public class SkillMetricsDataService extends AbstractAPIHandler implements APIHa
         }
 
 
-        JSONObject skillMetrics = new JSONObject();
+        JSONObject skillMetrics = new JSONObject(true);
         List<JSONObject> jsonValues = new ArrayList<JSONObject>();
 
         // temporary list to extract objects from skillObject
@@ -138,14 +145,13 @@ public class SkillMetricsDataService extends AbstractAPIHandler implements APIHa
             private static final String KEY_NAME = "creationTime";
             @Override
             public int compare(JSONObject a, JSONObject b) {
-                String valA = new String();
-                String valB = new String();
+                Object valA, valB;
                 int result = 0;
 
                 try {
-                    valA = a.get(KEY_NAME).toString();
-                    valB = b.get(KEY_NAME).toString();
-                    result = valB.compareToIgnoreCase(valA);
+                    valA = a.opt(KEY_NAME); if (valA == null) valA = "";
+                    valB = b.opt(KEY_NAME); if (valB == null) valB = "";
+                    result = valB.toString().compareToIgnoreCase(valA.toString());
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
@@ -160,14 +166,18 @@ public class SkillMetricsDataService extends AbstractAPIHandler implements APIHa
         Collections.sort(jsonValues, new Comparator<JSONObject>() {
             @Override
             public int compare(JSONObject a, JSONObject b) {
-                float valA;
-                float valB;
+                Object valA, valB;
                 int result=0;
 
                 try {
-                    valA = a.getJSONObject("skill_rating").getJSONObject("stars").getFloat("avg_star");
-                    valB = b.getJSONObject("skill_rating").getJSONObject("stars").getFloat("avg_star");
-                    result = Float.compare(valB, valA);
+                    valA = a.opt("skill_rating");
+                    valB = b.opt("skill_rating");
+                    if (valA == null || !((valA instanceof JSONObject))) valA = new JSONObject().put("stars", new JSONObject().put("avg_star", 0.0f));
+                    if (valB == null || !((valB instanceof JSONObject))) valB = new JSONObject().put("stars", new JSONObject().put("avg_star", 0.0f));
+                    
+                    result = Float.compare(
+                            ((JSONObject) valB).getJSONObject("stars").getFloat("avg_star"),
+                            ((JSONObject) valA).getJSONObject("stars").getFloat("avg_star"));
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
@@ -204,15 +214,15 @@ public class SkillMetricsDataService extends AbstractAPIHandler implements APIHa
         Collections.sort(jsonValues, new Comparator<JSONObject>() {
             @Override
             public int compare(JSONObject a, JSONObject b) {
-                Integer valA;
-                Integer valB;
+                Object valA, valB;
                 int result=0;
 
-                try {
-                    valA = a.getJSONObject("skill_rating").getInt("feedback_count");
-                    valB = b.getJSONObject("skill_rating").getInt("feedback_count");
-                    result = Integer.compare(valB, valA);
-
+                try {                    
+                    valA = a.opt("skill_rating");
+                    valB = b.opt("skill_rating");
+                    if (valA == null || !(valA instanceof JSONObject)) valA = 0;
+                    if (valB == null || !(valB instanceof JSONObject)) valB = 0;
+                    result = Integer.compare(((JSONObject) valB).getInt("feedback_count"), ((JSONObject) valA).getInt("feedback_count"));
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
