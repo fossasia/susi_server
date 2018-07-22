@@ -224,14 +224,16 @@ public class SusiIntent {
         this.id = 0; // will be computed later
     }
     
-    public SusiSkill.ID getSkill() {
+    public SusiSkill.ID getSkillID() {
         return this.skillid;
     }
     
     public String getExpect() {
         return this.expect == null || this.expect.length() == 0 ? null : this.expect;
     }
-    
+    public boolean hasExample() {
+        return this.example != null && this.example.length() > 0;
+    }
     public String getExample() {
         return this.example == null || this.example.length() == 0 ? null : this.example;
     }
