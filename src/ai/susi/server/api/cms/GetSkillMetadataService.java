@@ -23,14 +23,17 @@ import ai.susi.DAO;
 import ai.susi.json.JsonObjectWithDefault;
 import ai.susi.mind.SusiSkill;
 import ai.susi.server.*;
+import ai.susi.json.JsonTray;
 import org.json.JSONObject;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
 /**
- This Servlet gives a API Endpoint to list meta for a  Skill. Given its model, group and language and skill.
+ This Servlet gives a API Endpoint to list meta for a Skill. Given its model, group and language and skill.
  Can be tested on http://127.0.0.1:4000/cms/getSkillMetadata.json?model=general&group=Knowledge&language=en&skill=creator_info
+ For private skill send the userid instead of model
+ http://127.0.0.1:4000/cms/getSkillMetadata.json?userid=17a70987d09c33e6f56fe05dca6e3d27&group=Knowledge&language=en&skill=testnew
  */
 public class GetSkillMetadataService extends AbstractAPIHandler implements APIHandler {
 
@@ -60,24 +63,42 @@ public class GetSkillMetadataService extends AbstractAPIHandler implements APIHa
         }
 
         String model = call.get("model", "");
+        String userid = call.get("userid", "");
         String group = call.get("group", "");
         String language = call.get("language", "");
         String skillname = call.get("skill", "");
 
-        if (model.length() == 0 || group.length() == 0 ||language.length() == 0 || skillname.length() == 0 ) {
+        if ((model.length() == 0 && userid.length() == 0) || group.length() == 0 ||language.length() == 0 || skillname.length() == 0 ) {
             JSONObject json = new JSONObject(true);
             json.put("accepted", false);
             json.put("message", "Error: Bad parameter call");
             return new ServiceResponse(json);
         }
 
-        JSONObject skillMetadata = SusiSkill.getSkillMetadata(model, group, language, skillname);
+        if(userid.length() != 0) {
+            // fetch private skill (chatbot) meta data
+            JsonTray chatbot = DAO.chatbot;
+            JSONObject json = new JSONObject(true);
+            JSONObject userObject = chatbot.getJSONObject(userid);
+            JSONObject groupObject = userObject.getJSONObject(group);
+            JSONObject languageObject = groupObject.getJSONObject(language);
+            JSONObject skillObject = languageObject.getJSONObject(skillname);
+            json.put("skill_metadata", skillObject);
+            json.put("accepted", true);
+            json.put("message", "Success: Fetched Skill's Metadata");
+            return new ServiceResponse(json);
+        }
+
+        else {
+            JSONObject skillMetadata = SusiSkill.getSkillMetadata(model, group, language, skillname);
+            JSONObject json = new JSONObject(true);
+            json.put("skill_metadata", skillMetadata);
+            json.put("accepted", true);
+            json.put("message", "Success: Fetched Skill's Metadata");
+            return new ServiceResponse(json);
+        }
+
         
-        JSONObject json = new JSONObject(true);
-        json.put("skill_metadata", skillMetadata);
-        json.put("accepted", true);
-        json.put("message", "Success: Fetched Skill's Metadata");
-        return new ServiceResponse(json);
     }
 
 }
