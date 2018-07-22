@@ -132,7 +132,7 @@ public class SkillMetricsDataService extends AbstractAPIHandler implements APIHa
         }
 
 
-        JSONObject skillMetrics = new JSONObject();
+        JSONObject skillMetrics = new JSONObject(true);
         List<JSONObject> jsonValues = new ArrayList<JSONObject>();
 
         // temporary list to extract objects from skillObject
@@ -176,8 +176,8 @@ public class SkillMetricsDataService extends AbstractAPIHandler implements APIHa
                     if (valB == null || !((valB instanceof JSONObject))) valB = new JSONObject().put("stars", new JSONObject().put("avg_star", 0.0f));
                     
                     result = Float.compare(
-                            ((JSONObject) valA).getJSONObject("stars").getFloat("avg_star"),
-                            ((JSONObject) valB).getJSONObject("stars").getFloat("avg_star"));
+                            ((JSONObject) valB).getJSONObject("stars").getFloat("avg_star"),
+                            ((JSONObject) valA).getJSONObject("stars").getFloat("avg_star"));
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
@@ -217,12 +217,12 @@ public class SkillMetricsDataService extends AbstractAPIHandler implements APIHa
                 Object valA, valB;
                 int result=0;
 
-                try {
+                try {                    
                     valA = a.opt("skill_rating");
                     valB = b.opt("skill_rating");
-                    if (valA == null || !(valA instanceof Integer)) valA = 0;
-                    if (valB == null || !(valB instanceof Integer)) valB = 0;
-                    result = Integer.compare((Integer) valB, (Integer) valA);
+                    if (valA == null || !(valA instanceof JSONObject)) valA = 0;
+                    if (valB == null || !(valB instanceof JSONObject)) valB = 0;
+                    result = Integer.compare(((JSONObject) valB).getInt("feedback_count"), ((JSONObject) valA).getInt("feedback_count"));
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
