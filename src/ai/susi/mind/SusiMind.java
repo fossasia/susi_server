@@ -186,6 +186,34 @@ public class SusiMind {
             }
         });
 
+        // start to collect data for skill metadata
+        SusiSkill skill = new SusiSkill();
+
+        // skill description
+        if(json.has("description"))
+            skill.setDescription(json.getString("description"));
+        // skill image
+        if(json.has("image"))
+           skill.setImage(json.getString("image"));
+        // adding skill meta data
+        if(json.has("skill_name"))
+           skill.setSkillName(json.getString("skill_name"));
+        if(json.has("protected"))
+            skill.setProtectedSkill(json.getBoolean("protected"));
+        if(json.has("author"))
+            skill.setAuthor(json.getString("author"));
+        if(json.has("author_url"))
+           skill.setAuthorURL(json.getString("author_url"));
+        if(json.has("author_email"))
+           skill.setAuthorEmail(json.getString("author_email"));
+        if(json.has("developer_privacy_policy"))
+           skill.setDeveloperPrivacyPolicy(json.getString("developer_privacy_policy"));
+        if(json.has("terms_of_use"))
+            skill.setTermsOfUse(json.getString("terms_of_use"));
+        if(json.has("dynamic_content"))
+            skill.setDynamicContent(json.getBoolean("dynamic_content"));
+        
+        
         // add conversation intents
         final List<Pattern> removalPattern = new ArrayList<>();
         JSONArray intentset = json.has("rules") ? json.getJSONArray("rules") : json.has("intents") ? json.getJSONArray("intents") : new JSONArray();
@@ -204,37 +232,13 @@ public class SusiMind {
                     //intent.getPhrases().forEach(utterance -> this.memories.removeUnanswered(utterance.getPattern()));
                     //System.out.println("***DEBUG: ADD INTENT FOR KEY " + key + ": " + intent.toString());
                 });
-                // Susi skill object for skill metadata
-                SusiSkill skill = new SusiSkill();
 
-                // skill description
-                if(json.has("description"))
-                    skill.setDescription(json.getString("description"));
-                // skill image
-                if(json.has("image"))
-                   skill.setImage(json.getString("image"));
-                // adding skill meta data
-                if(json.has("skill_name"))
-                   skill.setSkillName(json.getString("skill_name"));
-                if(json.has("protected"))
-                    skill.setProtectedSkill(json.getBoolean("protected"));
-                if(json.has("author"))
-                    skill.setAuthor(json.getString("author"));
-                if(json.has("author_url"))
-                   skill.setAuthorURL(json.getString("author_url"));
-               if(json.has("author_email"))
-                   skill.setAuthorEmail(json.getString("author_email"));
-                if(json.has("developer_privacy_policy"))
-                   skill.setDeveloperPrivacyPolicy(json.getString("developer_privacy_policy"));
-                if(json.has("terms_of_use"))
-                    skill.setTermsOfUse(json.getString("terms_of_use"));
-                if(json.has("dynamic_content"))
-                    skill.setDynamicContent(json.getBoolean("dynamic_content"));
-                this.skillMetadata.put(intent.getSkill(), skill);
-
-                //if (intent.getExample() != null && intent.getExpect() != null) {}
+                if (intent.hasExample())
+                    skill.addExample(intent.getExample());
             });
         });
+
+        this.skillMetadata.put(skillid, skill);
         
         // finally remove patterns in the memory that are known in a background process
         new Thread(new Runnable() {

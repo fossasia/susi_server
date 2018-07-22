@@ -799,6 +799,11 @@ public class SusiSkill {
         return examples;
     }
 
+    public void addExample(String s) {
+        if (this.examples == null) this.examples = new LinkedHashSet<>();
+        this.examples.add(s);
+    }
+
     public String getDeveloperPrivacyPolicy() {
         return developerPrivacyPolicy;
     }
