@@ -132,7 +132,7 @@ public class SkillMetricsDataService extends AbstractAPIHandler implements APIHa
         }
 
 
-        JSONObject skillMetrics = new JSONObject();
+        JSONObject skillMetrics = new JSONObject(true);
         List<JSONObject> jsonValues = new ArrayList<JSONObject>();
 
         // temporary list to extract objects from skillObject
@@ -217,7 +217,7 @@ public class SkillMetricsDataService extends AbstractAPIHandler implements APIHa
                 Object valA, valB;
                 int result=0;
 
-                try {
+                try {                    
                     valA = a.opt("skill_rating");
                     valB = b.opt("skill_rating");
                     if (valA == null || !(valA instanceof JSONObject) || ((JSONObject) valA).opt("feedback_count") == null) valA = new JSONObject().put("feedback_count", 0);
