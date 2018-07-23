@@ -832,9 +832,17 @@ public class SusiSkill {
         Path data = FileSystems.getDefault().getPath("data");
         Map<String, String> config;
         try {config = SusiServer.readConfig(data);DAO.init(config, data);} catch (Exception e) {e.printStackTrace();}
-        File model = new File(DAO.model_watch_dir, "persona");
-        File skill = SusiSkill.getSkillFileInModel(model, "nefertiti");
+        File model = new File(DAO.model_watch_dir, "general");
+        File skill = SusiSkill.getSkillFileInModel(model, "Westworld");
         System.out.println(skill);
+        SusiSkill.ID skillid = new SusiSkill.ID(skill);
+        SusiLanguage language = skillid.language();
+        try {
+			JSONObject lesson = SusiSkill.readLoTSkill(new BufferedReader(new FileReader(skill)), language, Integer.toString(skillid.hashCode()));
+			System.out.println(lesson.toString(2));
+		} catch (JSONException | FileNotFoundException e) {
+			e.printStackTrace();
+		}
         System.exit(0);
     }
 }
