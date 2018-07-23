@@ -175,12 +175,10 @@ public class SkillMetricsDataService extends AbstractAPIHandler implements APIHa
                     if (valA == null || !((valA instanceof JSONObject))) valA = new JSONObject().put("stars", new JSONObject().put("avg_star", 0.0f));
                     if (valB == null || !((valB instanceof JSONObject))) valB = new JSONObject().put("stars", new JSONObject().put("avg_star", 0.0f));
 
-                    if (((JSONObject) valA).getJSONObject("stars").getInt("total_star") < 10) {
-                        return 1;
-                    }
-                    if (((JSONObject) valB).getJSONObject("stars").getInt("total_star") < 10) {
-                        return -1;
-                    }
+                    JSONObject starsA = ((JSONObject) valA).getJSONObject("stars");
+                    JSONObject starsB = ((JSONObject) valB).getJSONObject("stars");
+                    if (starsA.has("total_star") && starsA.getInt("total_star") < 10) return 1;
+                    if (starsB.has("total_star") && starsB.getInt("total_star") < 10) return -1;
                     
                     result = Float.compare(
                             ((JSONObject) valB).getJSONObject("stars").getFloat("avg_star"),
