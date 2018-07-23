@@ -121,6 +121,7 @@ public class DAO {
     public static JsonTray bookmarkSkill;
     public static JsonTray chatbot;
     public static JsonTray skillStatus;
+    public static JsonTray skillSupportedLanguages;
     public static JsonTray ratingsOverTime;
     public static JsonTray reportedSkills;
 
@@ -284,6 +285,13 @@ public class DAO {
         skillStatus = new JsonTray(skillStatus_per.toFile(), skillStatus_vol.toFile(), 1000000);
         OS.protectPath(skillStatus_per);
         OS.protectPath(skillStatus_vol);
+
+        // Languages supported by a Skill
+        Path skillSupportedLanguages_per = skill_status_dir.resolve("skillSupportedLanguages.json");
+        Path skillSupportedLanguages_vol = skill_status_dir.resolve("skillSupportedLanguages_session.json");
+        skillSupportedLanguages = new JsonTray(skillSupportedLanguages_per.toFile(), skillSupportedLanguages_vol.toFile(), 1000000);
+        OS.protectPath(skillSupportedLanguages_per);
+        OS.protectPath(skillSupportedLanguages_vol);
 
         /*Profile Details storage*/
         Path susi_profile_details_dir = dataPath.resolve("profile");
