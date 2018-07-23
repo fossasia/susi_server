@@ -223,8 +223,8 @@ public class SkillMetricsDataService extends AbstractAPIHandler implements APIHa
                 try {                    
                     valA = a.opt("skill_rating");
                     valB = b.opt("skill_rating");
-                    if (valA == null || !(valA instanceof JSONObject)) valA = 0;
-                    if (valB == null || !(valB instanceof JSONObject)) valB = 0;
+                    if (valA == null || !(valA instanceof JSONObject)) valA = new JSONObject().put("feedback_count", 0);
+                    if (valB == null || !(valB instanceof JSONObject)) valB = new JSONObject().put("feedback_count", 0);
                     result = Integer.compare(((JSONObject) valB).getInt("feedback_count"), ((JSONObject) valA).getInt("feedback_count"));
                 } catch (JSONException e) {
                     e.printStackTrace();
