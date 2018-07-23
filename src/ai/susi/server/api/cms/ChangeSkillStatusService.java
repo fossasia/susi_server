@@ -59,13 +59,19 @@ public class ChangeSkillStatusService extends AbstractAPIHandler implements APIH
         String language_name = call.get("language", "en");
         String skill_name = call.get("skill", null);
         String reviewed = call.get("reviewed", null);
+        String editable = call.get("editable", null);
 
         if (authorization.getIdentity() == null) {
             throw new APIException(422, "Bad access token.");
         }
-
-        if (skill_name == null || !(reviewed.equals("true") || reviewed.equals("false"))) {
+        else if (skill_name == null) {
             throw new APIException(400, "Bad service call, missing arguments.");
+        }
+        else if (reviewed != null && !(reviewed.equals("true") || reviewed.equals("false"))) {
+            throw new APIException(400, "Bad service call, invalid arguments.");
+        }
+        else if (editable != null && !(editable.equals("true") || editable.equals("false"))) {
+            throw new APIException(400, "Bad service call, invalid arguments.");
         }
 
         JSONObject result = new JSONObject();
@@ -75,9 +81,55 @@ public class ChangeSkillStatusService extends AbstractAPIHandler implements APIH
         JSONObject languageName = new JSONObject();
         JSONObject skillName = new JSONObject();
 
-        if(reviewed.equals("true")) {
-            JSONObject reviewStatus = new JSONObject();
-            reviewStatus.put("reviewed", true);
+        if( ((reviewed != null && reviewed.equals("true")) || (editable != null && editable.equals("false"))) ) {
+            JSONObject skill_status = new JSONObject();
+            if(reviewed != null && reviewed.equals("true")) {
+                skill_status.put("reviewed", true);
+            }
+            if(editable != null && editable.equals("false")) {
+                skill_status.put("editable", false);
+            }
+            if (skillStatus.has(model_name)) {
+                modelName = skillStatus.getJSONObject(model_name);
+                if (modelName.has(group_name)) {
+                    groupName = modelName.getJSONObject(group_name);
+                    if (groupName.has(language_name)) {
+                        languageName = groupName.getJSONObject(language_name);
+
+                        if (languageName.has(skill_name)) {
+                            skillName = languageName.getJSONObject(skill_name);
+
+                            if(reviewed != null && reviewed.equals("true")) {
+                                skillName.put("reviewed", true);
+                            }
+                            else if(reviewed != null && reviewed.equals("false")) {
+                                skillName.remove("reviewed");
+                            }
+
+                            if(editable != null && editable.equals("false")) {
+                                skillName.put("editable", false);
+                            }
+                            else if(editable != null && editable.equals("true")) {
+                                skillName.remove("editable");
+                            }
+                            skillStatus.commit();
+                            result.put("accepted", true);
+                            result.put("message", "Skill status changed successfully.");
+                            return new ServiceResponse(result);
+                        }
+                    }
+                }
+            }
+            languageName.put(skill_name, skill_status);
+            groupName.put(language_name, languageName);
+            modelName.put(group_name, groupName);
+            skillStatus.put(model_name, modelName, true);
+            result.put("accepted", true);
+            result.put("message", "Skill status changed successfully.");
+            return new ServiceResponse(result);
+        }
+
+        else {
             if (skillStatus.has(model_name)) {
                 modelName = skillStatus.getJSONObject(model_name);
                 if (modelName.has(group_name)) {
@@ -86,31 +138,13 @@ public class ChangeSkillStatusService extends AbstractAPIHandler implements APIH
                         languageName = groupName.getJSONObject(language_name);
                         if (languageName.has(skill_name)) {
                             skillName = languageName.getJSONObject(skill_name);
-                            skillName.put("reviewed", true);
-                            result.put("accepted", true);
-                            result.put("message", "Skill review status changed successfully.");
-                            return new ServiceResponse(result);
-                        }
-                    }
-                }
-            }
-            languageName.put(skill_name, reviewStatus);
-            groupName.put(language_name, languageName);
-            modelName.put(group_name, groupName);
-            skillStatus.put(model_name, modelName, true);
-            result.put("accepted", true);
-            result.put("message", "Skill review status changed successfully.");
-            return new ServiceResponse(result);
-            }
-
-            else {
-                if (skillStatus.has(model_name)) {
-                    modelName = skillStatus.getJSONObject(model_name);
-                    if (modelName.has(group_name)) {
-                        groupName = modelName.getJSONObject(group_name);
-                        if (groupName.has(language_name)) {
-                            languageName = groupName.getJSONObject(language_name);
-                            if (languageName.has(skill_name)) {
+                            if(reviewed != null && reviewed.equals("false")) {
+                                skillName.remove("reviewed");
+                            }
+                            if(editable != null && editable.equals("true")) {
+                                skillName.remove("editable");
+                            }
+                            if(skillName.length() == 0) {
                                 languageName.remove(skill_name);
                                 if(languageName.length() == 0) {
                                     groupName.remove(language_name);
@@ -121,14 +155,16 @@ public class ChangeSkillStatusService extends AbstractAPIHandler implements APIH
                                         }
                                     }
                                 }
-                                skillStatus.commit();
                             }
+                            skillStatus.commit();
                         }
                     }
                 }
-                result.put("accepted", true);
-                result.put("message", "Skill review status changed successfully.");
-                return new ServiceResponse(result);
             }
+            result.put("accepted", true);
+            result.put("message", "Skill status changed successfully.");
+            return new ServiceResponse(result);
+        }
+
         }
     }

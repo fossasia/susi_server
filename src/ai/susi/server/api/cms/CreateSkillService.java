@@ -39,6 +39,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.sql.Timestamp;
 
 /**
  * Created by saurabh on 7/6/17.
@@ -251,18 +252,24 @@ public class CreateSkillService extends AbstractAPIHandler implements APIHandler
     /**
     * Helper method to store the private skill bot of the user in chatbot.json file
     */
-    private static void storePrivateSkillBot(File skill, String userId, String skillName, String group, String language) {
+    private static void storePrivateSkillBot(File skill, String userId, String skill_name, String group_name, String language_name) {
         JsonTray chatbot = DAO.chatbot;
-        JSONArray userBots = new JSONArray();
-        JSONObject botObject = new JSONObject();
-        JSONObject userChatBotsObject = new JSONObject();
+        JSONObject userName = new JSONObject();
+        JSONObject groupName = new JSONObject();
+        JSONObject languageName = new JSONObject();
         JSONObject designObject = new JSONObject();
         JSONObject configObject = new JSONObject();
+        Timestamp timestamp = new Timestamp(System.currentTimeMillis());
         if (chatbot.has(userId)) {
-            // initialise with existing bots
-            userBots = chatbot.getJSONObject(userId).getJSONArray("chatbots");
+            userName = chatbot.getJSONObject(userId);
+            if (userName.has(group_name)) {
+                groupName = userName.getJSONObject(group_name);
+                if (groupName.has(language_name)) {
+                    languageName = groupName.getJSONObject(language_name);
+                }
+            }
         }
-        // read design settings
+        // read design and configuration settings
         try {
             BufferedReader br = new BufferedReader(new FileReader(skill));
             String line = "";
@@ -327,15 +334,16 @@ public class CreateSkillService extends AbstractAPIHandler implements APIHandler
           } catch (IOException e) {
             DAO.log(e.getMessage());
           }
+
         // save a new bot
-        botObject.put("name",skillName);
-        botObject.put("group",group);
-        botObject.put("language",language);
+        JSONObject botObject = new JSONObject();
         botObject.put("design",designObject);
         botObject.put("configure",configObject);
-        userBots.put(botObject);
-        userChatBotsObject.put("chatbots",userBots);
-        chatbot.put(userId,userChatBotsObject,true);
+        botObject.put("timestamp", timestamp.toString());
+        languageName.put(skill_name, botObject);
+        groupName.put(language_name, languageName);
+        userName.put(group_name, groupName);
+        chatbot.put(userId, userName, true);
     }
 
     @Override

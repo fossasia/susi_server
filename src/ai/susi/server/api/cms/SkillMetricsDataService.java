@@ -28,6 +28,7 @@ import org.json.JSONObject;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.File;
+import java.io.IOException;
 import java.util.*;
 
 /**
@@ -84,6 +85,12 @@ public class SkillMetricsDataService extends AbstractAPIHandler implements APIHa
             count = 10;
         }
 
+        try {
+            DAO.susi.observe(); // get a database update
+        } catch (IOException e) {
+            DAO.severe(e.getMessage());
+        }
+        
         // Returns susi skills list of all groups
         if (group_name.equals("All")) {
             File allGroup = new File(String.valueOf(model));
@@ -125,7 +132,7 @@ public class SkillMetricsDataService extends AbstractAPIHandler implements APIHa
         }
 
 
-        JSONObject skillMetrics = new JSONObject();
+        JSONObject skillMetrics = new JSONObject(true);
         List<JSONObject> jsonValues = new ArrayList<JSONObject>();
 
         // temporary list to extract objects from skillObject
@@ -165,13 +172,16 @@ public class SkillMetricsDataService extends AbstractAPIHandler implements APIHa
                 try {
                     valA = a.opt("skill_rating");
                     valB = b.opt("skill_rating");
-                    if (valA == null || !((valA instanceof JSONObject))) valA = new JSONObject().put("stars", new JSONObject().put("avg_star", 0.0f));
-                    if (valB == null || !((valB instanceof JSONObject))) valB = new JSONObject().put("stars", new JSONObject().put("avg_star", 0.0f));
+                    if (valA == null || !(valA instanceof JSONObject)) valA = new JSONObject().put("stars", new JSONObject().put("avg_star", 0.0f));
+                    if (valB == null || !(valB instanceof JSONObject)) valB = new JSONObject().put("stars", new JSONObject().put("avg_star", 0.0f));
+
+                    JSONObject starsA = ((JSONObject) valA).getJSONObject("stars");
+                    JSONObject starsB = ((JSONObject) valB).getJSONObject("stars");
+                    //if (starsA.has("total_star") && starsA.getInt("total_star") < 10) return 1;
+                    //if (starsB.has("total_star") && starsB.getInt("total_star") < 10) return -1;
                     
-                    result = Float.compare(
-                            ((JSONObject) valA).getJSONObject("stars").getFloat("avg_star"),
-                            ((JSONObject) valB).getJSONObject("stars").getFloat("avg_star"));
-                } catch (JSONException e) {
+                    result = Float.compare(starsA.getFloat("avg_star"), starsB.getFloat("avg_star"));
+                } catch (JSONException | ClassCastException e) {
                     e.printStackTrace();
                 }
                 return result;
@@ -210,12 +220,12 @@ public class SkillMetricsDataService extends AbstractAPIHandler implements APIHa
                 Object valA, valB;
                 int result=0;
 
-                try {
+                try {                    
                     valA = a.opt("skill_rating");
                     valB = b.opt("skill_rating");
-                    if (valA == null || !(valA instanceof Integer)) valA = 0;
-                    if (valB == null || !(valB instanceof Integer)) valB = 0;
-                    result = Integer.compare((Integer) valB, (Integer) valA);
+                    if (valA == null || !(valA instanceof JSONObject)) valA = new JSONObject().put("feedback_count", 0);
+                    if (valB == null || !(valB instanceof JSONObject)) valB = new JSONObject().put("feedback_count", 0);
+                    result = Integer.compare(((JSONObject) valB).getInt("feedback_count"), ((JSONObject) valA).getInt("feedback_count"));
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }

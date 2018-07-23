@@ -479,7 +479,6 @@ public class SusiServer {
                 ModelListService.class,
                 LanguageListService.class,
                 ListUserSettings.class,
-                ResetUserSettings.class,
                 ListSkillService.class,
                 AddNewDevice.class,
                 RemoveUserDevices.class,
@@ -578,7 +577,11 @@ public class SusiServer {
                 SkillMetricsDataService.class,
 
                 // Change review status of skills
-                ChangeSkillStatusService.class
+                ChangeSkillStatusService.class,
+
+                // Update supported languages
+                UpdateSupportedLanguages.class
+
         };
         for (Class<? extends Servlet> service: services)
             try {

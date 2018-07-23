@@ -68,33 +68,49 @@ public class ListSkillService extends AbstractAPIHandler implements APIHandler {
                 JSONObject result = new JSONObject();
                 JSONObject userObject = new JSONObject();
                 JSONArray botDetailsArray = new JSONArray();
-                JSONArray chatbotArray = new JSONArray();
 
-                for(String user_id : chatbot.keys())
+                userObject = chatbot.getJSONObject(userId);
+                JSONObject groupObject = new JSONObject();
+                JSONObject languageObject = new JSONObject();
+
+                Iterator groupNames = userObject.keys();
+                List<String> groupnameKeysList = new ArrayList<String>();
+
+                while(groupNames.hasNext()) {
+                    String key = (String) groupNames.next();
+                    groupnameKeysList.add(key);
+                }
+
+                for(String group_name : groupnameKeysList)
                 {
-                    if(user_id.equals(userId)) {
-                        userObject = chatbot.getJSONObject(user_id);
-                        Iterator chatbotDetails = userObject.keys();
-                        List<String> chatbotDetailsKeysList = new ArrayList<String>();
-                        while(chatbotDetails.hasNext()) {
-                            String key = (String) chatbotDetails.next();
-                            chatbotDetailsKeysList.add(key);
+                    groupObject = userObject.getJSONObject(group_name);
+                    Iterator languageNames = groupObject.keys();
+                    List<String> languagenameKeysList = new ArrayList<String>();
+
+                    while(languageNames.hasNext()) {
+                        String key = (String) languageNames.next();
+                        languagenameKeysList.add(key);
+                    }
+
+                    for(String language_name : languagenameKeysList)
+                    {
+                        languageObject = groupObject.getJSONObject(language_name);
+                        Iterator skillNames = languageObject.keys();
+                        List<String> skillnamesKeysList = new ArrayList<String>();
+
+                        while(skillNames.hasNext()) {
+                            String key = (String) skillNames.next();
+                            skillnamesKeysList.add(key);
                         }
 
-                        for(String chatbot_name : chatbotDetailsKeysList)
+                        for(String skill_name : skillnamesKeysList)
                         {
-                            chatbotArray = userObject.getJSONArray(chatbot_name);
-                            for(int i=0; i<chatbotArray.length(); i++) {
-                                String name = chatbotArray.getJSONObject(i).get("name").toString();
-                                String language = chatbotArray.getJSONObject(i).get("language").toString();
-                                String group = chatbotArray.getJSONObject(i).get("group").toString();
-                                JSONObject botDetails = new JSONObject();
-                                botDetails.put("name", name);
-                                botDetails.put("language", language);
-                                botDetails.put("group", group);
-                                botDetailsArray.put(botDetails);
-                                result.put("chatbots", botDetailsArray);
-                            }
+                            JSONObject botDetails = languageObject.getJSONObject(skill_name);
+                            botDetails.put("name", skill_name);
+                            botDetails.put("language", language_name);
+                            botDetails.put("group", group_name);
+                            botDetailsArray.put(botDetails);
+                            result.put("chatbots", botDetailsArray);
                         }
                     }
                 }
@@ -170,7 +186,7 @@ public class ListSkillService extends AbstractAPIHandler implements APIHandler {
                         JSONObject skillMetadata = SusiSkill.getSkillMetadata(model_name, temp_group_name, language_name, skill_name, duration);
 
                         if(reviewed.equals("true")) {
-                            if(SusiSkill.getSkillStatus(model_name, temp_group_name, language_name, skill_name)) {
+                            if(SusiSkill.getSkillReviewStatus(model_name, temp_group_name, language_name, skill_name)) {
                                 jsonArray.put(skillMetadata);
                                 skillObject.put(skill_name, skillMetadata);
                             }
@@ -197,7 +213,7 @@ public class ListSkillService extends AbstractAPIHandler implements APIHandler {
                     JSONObject skillMetadata = SusiSkill.getSkillMetadata(model_name, group_name, language_name, skill_name, duration);
 
                     if(reviewed.equals("true")) {
-                        if(SusiSkill.getSkillStatus(model_name, group_name, language_name, skill_name)) {
+                        if(SusiSkill.getSkillReviewStatus(model_name, group_name, language_name, skill_name)) {
                             jsonArray.put(skillMetadata);
                             skillObject.put(skill_name, skillMetadata);
                         }
