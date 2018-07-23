@@ -133,7 +133,7 @@ public class DAO {
         logAppender = new LogAppender(layout, 100000);
         logger.addAppender(logAppender);
         logger.addAppender(new ConsoleAppender(layout));
-        logger.setLevel(Level.INFO);
+        logger.setLevel(Level.ALL);
     }
 
     // built-in artificial intelligence
@@ -640,6 +640,37 @@ public class DAO {
         } catch (GitAPIException e) {
             throw new IOException (e.getMessage());
         }
+    }
+    
+    public static Thread addAndPushCommit(String commit_message, String userEmail, boolean concurrently) {
+    	Runnable process = new Runnable() {
+			@Override
+			public void run() {
+				try (Git git = getGit()) {
+		            long t0 = System.currentTimeMillis();
+		            git.add().setUpdate(true).addFilepattern(".").call();
+		            long t1 = System.currentTimeMillis();
+		            git.add().addFilepattern(".").call(); // takes long 
+		            long t2 = System.currentTimeMillis();
+		            
+		            // commit the changes
+		            DAO.pushCommit(git, commit_message, userEmail); // takes long
+		            long t3 = System.currentTimeMillis();
+		            DAO.log("jgit statistics: add-1: " + (t1 - t0) + "ms, add-2: " + (t2 - t1) + "ms, push: " + (t3 - t2) + "ms");
+		        } catch (IOException | GitAPIException e) {
+		            e.printStackTrace();
+
+		        }
+			}
+    	};
+    	if (concurrently) {
+    		Thread t = new Thread(process);
+    		t.start();
+    		return t;
+    	} else {
+    		process.run();
+    		return null;
+    	}
     }
 
     /**
