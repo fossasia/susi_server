@@ -175,15 +175,22 @@ public class SkillMetricsDataService extends AbstractAPIHandler implements APIHa
                     if (valA == null || !((valA instanceof JSONObject))) valA = new JSONObject().put("stars", new JSONObject().put("avg_star", 0.0f));
                     if (valB == null || !((valB instanceof JSONObject))) valB = new JSONObject().put("stars", new JSONObject().put("avg_star", 0.0f));
 
-                    if (((JSONObject) valA).getJSONObject("stars").getInt("total_star") < 10) {
+                    if ((((((JSONObject) valA).getJSONObject("stars").getInt("total_star") < 10) &&
+                            (((JSONObject) valB).getJSONObject("stars").getInt("total_star") < 10))) ||
+                            (((((JSONObject) valA).getJSONObject("stars").getInt("total_star") >= 10) &&
+                            (((JSONObject) valB).getJSONObject("stars").getInt("total_star") >= 10))))
+                    {
+                        result = Float.compare(
+                                ((JSONObject) valB).getJSONObject("stars").getFloat("avg_star"),
+                                ((JSONObject) valA).getJSONObject("stars").getFloat("avg_star"));
+                    }
+
+                    else if (((JSONObject) valA).getJSONObject("stars").getInt("total_star") < 10) {
                         return 1;
                     }
-                    if (((JSONObject) valB).getJSONObject("stars").getInt("total_star") < 10) {
+                    else {
                         return -1;
-                    }                    
-                    result = Float.compare(
-                            ((JSONObject) valB).getJSONObject("stars").getFloat("avg_star"),
-                            ((JSONObject) valA).getJSONObject("stars").getFloat("avg_star"));
+                    }
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
