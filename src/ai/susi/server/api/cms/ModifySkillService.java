@@ -343,22 +343,8 @@ public class ModifySkillService extends AbstractAPIHandler implements APIHandler
                 resp.setCharacterEncoding("UTF-8");
                 resp.getWriter().write(json.toString());
             }
-
-            try (Git git = DAO.getGit()) {
-                long t0 = System.currentTimeMillis();
-                git.add().setUpdate(true).addFilepattern(".").call();
-                long t1 = System.currentTimeMillis();
-                git.add().addFilepattern(".").call(); // takes long 
-                long t2 = System.currentTimeMillis();
-                
-                // commit the changes
-                DAO.pushCommit(git, commit_message, userEmail); // takes long
-                long t3 = System.currentTimeMillis();
-                DAO.log("jgit statistics: add-1: " + (t1 - t0) + "ms, add-2: " + (t2 - t1) + "ms, push: " + (t3 - t2) + "ms");
-            } catch (IOException | GitAPIException e) {
-                e.printStackTrace();
-
-            }
+            
+            DAO.addAndPushCommit(commit_message, userEmail, true);
         }
         else{
             JSONObject json = new JSONObject();
