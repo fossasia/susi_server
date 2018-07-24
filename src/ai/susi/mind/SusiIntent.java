@@ -270,6 +270,8 @@ public class SusiIntent {
             boolean prior,
             String example,
             String expect,
+            String label,
+            String implication,
             SusiLanguage language) {
         JSONObject intent = new JSONObject(true);
 
@@ -288,6 +290,8 @@ public class SusiIntent {
         // quality control
         if (example != null && example.length() > 0) intent.put("example", example);
         if (expect != null && expect.length() > 0) intent.put("expect", expect);
+        if (label != null && label.length() > 0) intent.put("label", label);
+        if (implication != null && implication.length() > 0) intent.put("implication", implication);
         // write actions
         JSONArray a = new JSONArray();
         intent.put("actions", a);

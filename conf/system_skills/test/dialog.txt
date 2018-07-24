@@ -1,0 +1,38 @@
+# pick a color: a dialog test. Fixed Answers are indented by four spaces.
+
+# If this is loaded as activated skill/persona, the kickoff will be queried to susi automatically
+::kickoff colorquestion
+
+ask me about colors
+!example:ask me about colors
+!label:colorquestion
+pick a color
+
+    red
+    you picked red. Is this a warm color?
+    
+        yes
+        this is true!
+        
+        no
+        this is false :(
+    
+    green
+    you picked green. Is this your favourite color?
+    
+        yes
+        I like green as well!
+        
+        # In case that we want to ask about colors again, we can jump to another location in the conversation
+        # the implication bang causes to jump to another intent of the conversation flow but it does not return the answer from that intent.
+        no
+        !implication:colorquestion
+        which color do you like more than green?
+    
+    blue
+    you picked blue. Thats a nice color!
+
+    # the catchall phrase indicates that also a free-form answer is allowed
+    *
+    oh $1$ is a nice color as well!
+    
