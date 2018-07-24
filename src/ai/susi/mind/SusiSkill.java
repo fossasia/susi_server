@@ -29,7 +29,10 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -622,6 +625,129 @@ public class SusiSkill {
 
         return newRating;
     }
+    
+    public static void sortByAvgStar(List<JSONObject> jsonValues, boolean ascending) {
+    	// Get skills based on ratings
+        Collections.sort(jsonValues, new Comparator<JSONObject>() {
+            @Override
+            public int compare(JSONObject a, JSONObject b) {
+                Object valA, valB;
+                int result=0;
+
+                try {
+                    valA = a.opt("skill_rating");
+                    valB = b.opt("skill_rating");
+                    if (valA == null || !((valA instanceof JSONObject))) valA = new JSONObject().put("stars", new JSONObject().put("avg_star", 0.0f));
+                    if (valB == null || !((valB instanceof JSONObject))) valB = new JSONObject().put("stars", new JSONObject().put("avg_star", 0.0f));
+
+                    JSONObject starsAObject = ((JSONObject) valA).getJSONObject("stars");
+                    JSONObject starsBObject = ((JSONObject) valB).getJSONObject("stars");
+                    int starsA = starsAObject.has("total_star") ? starsAObject.getInt("total_star") : 0;
+                    int starsB = starsBObject.has("total_star") ? starsBObject.getInt("total_star") : 0;
+                    
+                    if ((starsA < 10 && starsB < 10) || (starsA >= 10 && starsB >= 10)) {
+                        result = ascending ? Float.compare(starsA, starsB) : Float.compare(starsB, starsA);
+                    } else if (starsA < 10) {
+                        return ascending ? -1 : 1;
+                    } else {
+                        return ascending ? 1 : -1;
+                    }
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+                return result;
+            }
+        });
+    }
+    
+    public static void sortByCreationTime(List<JSONObject> jsonValues, boolean ascending) {
+    	Collections.sort(jsonValues, new Comparator<JSONObject>() {
+            private static final String KEY_NAME = "creationTime";
+            @Override
+            public int compare(JSONObject a, JSONObject b) {
+                String valA = new String();
+                String valB = new String();
+                int result = 0;
+
+                try {
+                    valA = a.get(KEY_NAME).toString();
+                    valB = b.get(KEY_NAME).toString();
+                    result = ascending ? valA.compareToIgnoreCase(valB) : valB.compareToIgnoreCase(valA);
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+                return result;
+            }
+        });
+    }
+    
+    public static void sortBySkillName(List<JSONObject> jsonValues, boolean ascending) {
+    	Collections.sort(jsonValues, new Comparator<JSONObject>() {
+            private static final String KEY_NAME = "skill_name";
+            @Override
+            public int compare(JSONObject a, JSONObject b) {
+                String valA = new String();
+                String valB = new String();
+
+                try {
+                    valA = a.get(KEY_NAME).toString();
+                    valB = b.get(KEY_NAME).toString();
+                } catch (JSONException e) {
+                    //do nothing
+                }
+                return ascending ? valA.compareToIgnoreCase(valB) : valB.compareToIgnoreCase(valA);
+            }
+        });
+    }
+    
+    public static void sortByUsageCount(List<JSONObject> jsonValues, boolean ascending) {
+    	Collections.sort(jsonValues, new Comparator<JSONObject>() {
+            @Override
+            public int compare(JSONObject a, JSONObject b) {
+                int valA;
+                int valB;
+                int result=0;
+
+                try {
+                    valA = a.getInt("usage_count");
+                    valB = b.getInt("usage_count");
+                    result = ascending ? Integer.compare(valA, valB) : Integer.compare(valB, valA);
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+                return result;
+            }
+        });
+    }
+    
+    public static void sortByFeedbackCount(List<JSONObject> jsonValues, boolean ascending) {
+    	Collections.sort(jsonValues, new Comparator<JSONObject>() {
+            @Override
+            public int compare(JSONObject a, JSONObject b) {
+                Object valA, valB;
+                int result=0;
+
+                try {                    
+                    valA = a.opt("skill_rating");
+                    valB = b.opt("skill_rating");
+                    if (valA == null || !(valA instanceof JSONObject) || ((JSONObject) valA).opt("feedback_count") == null) valA = new JSONObject().put("feedback_count", 0);
+                    if (valB == null || !(valB instanceof JSONObject) || ((JSONObject) valB).opt("feedback_count") == null) valB = new JSONObject().put("feedback_count", 0);
+
+                    result = ascending ?
+                    		Integer.compare(
+                    				((JSONObject) valA).getInt("feedback_count"),
+                    				((JSONObject) valB).getInt("feedback_count")) :
+                            Integer.compare(
+                                    ((JSONObject) valB).getInt("feedback_count"),
+                                    ((JSONObject) valA).getInt("feedback_count")
+                    );
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+                return result;
+            }
+        });
+    }
 
     public static boolean getSkillReviewStatus(String model, String group, String language, String skillname) {
         // skill status
@@ -700,6 +826,8 @@ public class SusiSkill {
         }
         return 0;
     }
+    
+    
 
     public static JSONObject readJsonSkill(File file) throws JSONException, FileNotFoundException {
         JSONObject json = new JSONObject(new JSONTokener(new FileReader(file)));
