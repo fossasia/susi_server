@@ -29,7 +29,10 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -40,7 +43,6 @@ import org.json.JSONObject;
 import org.json.JSONTokener;
 
 import ai.susi.DAO;
-import ai.susi.SusiServer;
 import ai.susi.json.JsonTray;
 import ai.susi.mind.SusiAction.SusiActionException;
 import ai.susi.mind.SusiInference.Type;
@@ -178,13 +180,11 @@ public class SusiSkill {
      */
     public static JSONObject readLoTSkill(final BufferedReader br, final SusiLanguage language, final String skillid) throws JSONException {
         // read the text file and turn it into a intent json; then learn that
-        JSONObject json = new JSONObject();
+        JSONObject json = new JSONObject(true);
         JSONArray intents = new JSONArray();
-        json.put("intents", intents);
         String lastLine = "", line = "";
-        String bang_answers = "", bang_type = "", bang_term = ""; StringBuilder bang_bag = new StringBuilder();
-        String example = "", tags = "", expect = "", description="", image="", skillName="", authorName= "",
-                authorURL = "", authorEmail = "", developerPrivacyPolicy = "", termsOfUse="";
+        String bang_answers = "", bang_type = "", bang_term = "", example = "", expect = "", label = "", implication = ""; 
+        StringBuilder bang_bag = new StringBuilder();
         boolean prior = false, dynamicContent = false, protectedSkill = false;
         int indentStep = 4; // like in python
         try {readloop: while ((line = br.readLine()) != null) {
@@ -227,6 +227,9 @@ public class SusiSkill {
                         // answers; must contain $!$
                         intent.put("actions", new JSONArray().put(SusiAction.answerAction(language, bang_term.split("\\|"))));
                         if (example.length() > 0) intent.put("example", example);
+                        if (expect.length() > 0) intent.put("expect", expect);
+                        if (label.length() > 0) intent.put("label", label);
+                        if (implication.length() > 0) intent.put("implication", implication);
                         intents.put(intent);
                     }
                     else if (bang_type.equals("console")) {
@@ -279,6 +282,8 @@ public class SusiSkill {
                         }
                         if (example.length() > 0) intent.put("example", example);
                         if (expect.length() > 0) intent.put("expect", expect);
+                        if (label.length() > 0) intent.put("label", label);
+                        if (implication.length() > 0) intent.put("implication", implication);
                         intents.put(intent);
                     }
                     bang_answers = "";
@@ -292,73 +297,65 @@ public class SusiSkill {
 
             // read metadata
             if (line.startsWith("::")) {
-                int thenpos=-1;
-//                line = line.toLowerCase();
+                int thenpos = -1;
                 if (line.startsWith("::minor")) prior = false;
                 if (line.startsWith("::prior")) prior = true;
                 if (line.startsWith("::description") && (thenpos = line.indexOf(' ')) > 0) {
-                    description = line.substring(thenpos + 1).trim();
-                    if(description.length() > 0)
-                        json.put("description",description);
-                    // System.out.println(description);
+                    String meta = line.substring(thenpos + 1).trim();
+                    if (meta.length() > 0) json.put("description", meta);
                 }
                 if (line.startsWith("::image") && (thenpos = line.indexOf(' ')) > 0) {
-                    image = line.substring(thenpos + 1).trim();
-                    if(image.length() > 0)
-                        json.put("image",image);
+                    String meta = line.substring(thenpos + 1).trim();
+                    if (meta.length() > 0) json.put("image", meta);
                 }
                 if (line.startsWith("::name") && (thenpos = line.indexOf(' ')) > 0) {
-                    skillName = line.substring(thenpos + 1).trim();
-                    if(skillName.length() > 0)
-                        json.put("skill_name",skillName);
+                    String meta = line.substring(thenpos + 1).trim();
+                    if (meta.length() > 0) json.put("skill_name", meta);
                 }
                 if (line.startsWith("::protected") && (thenpos = line.indexOf(' ')) > 0) {
                     if (line.substring(thenpos + 1).trim().equalsIgnoreCase("yes")) protectedSkill=true;
-                    json.put("protected",protectedSkill);
+                    json.put("protected", protectedSkill);
                 }
                 if (line.startsWith("::author") && (!line.startsWith("::author_url")) && (!line.startsWith("::author_email")) && (thenpos = line.indexOf(' ')) > 0) {
-                    authorName = line.substring(thenpos + 1).trim();
-                    if(authorName.length() > 0)
-                        json.put("author",authorName);
+                    String meta = line.substring(thenpos + 1).trim();
+                    if (meta.length() > 0) json.put("author", meta);
                 }
                 if (line.startsWith("::author_email") && (thenpos = line.indexOf(' ')) > 0) {
-                    authorEmail = line.substring(thenpos + 1).trim();
-                    if(authorEmail.length() > 0)
-                        json.put("author_email",authorEmail);
+                    String meta = line.substring(thenpos + 1).trim();
+                    if (meta.length() > 0) json.put("author_email", meta);
                 }
                 if (line.startsWith("::author_url") && (thenpos = line.indexOf(' ')) > 0) {
-                    authorURL = line.substring(thenpos + 1).trim();
-                    if(authorURL.length() > 0)
-                        json.put("author_url",authorURL);
+                    String meta = line.substring(thenpos + 1).trim();
+                    if (meta.length() > 0) json.put("author_url", meta);
                 }
                 if (line.startsWith("::developer_privacy_policy") && (thenpos = line.indexOf(' ')) > 0) {
-                    developerPrivacyPolicy = line.substring(thenpos + 1).trim();
-                    if(developerPrivacyPolicy.length() > 0)
-                        json.put("developer_privacy_policy",developerPrivacyPolicy);
+                    String meta = line.substring(thenpos + 1).trim();
+                    if (meta.length() > 0) json.put("developer_privacy_policy", meta);
                 }
                 if (line.startsWith("::terms_of_use") && (thenpos = line.indexOf(' ')) > 0) {
-                    termsOfUse = line.substring(thenpos + 1).trim();
-                    if(termsOfUse.length() > 0)
-                        json.put("terms_of_use",termsOfUse);
+                    String meta = line.substring(thenpos + 1).trim();
+                    if (meta.length() > 0) json.put("terms_of_use", meta);
                 }
                 if (line.startsWith("::dynamic_content") && (thenpos = line.indexOf(' ')) > 0) {
-                    if (line.substring(thenpos + 1).trim().equalsIgnoreCase("yes")) dynamicContent=true;
-                    json.put("dynamic_content",dynamicContent);
+                    if (line.substring(thenpos + 1).trim().equalsIgnoreCase("yes")) dynamicContent = true;
+                    json.put("dynamic_content", dynamicContent);
+                }
+                if (line.startsWith("::tags") && (thenpos = line.indexOf(' ')) > 0) {
+                    String meta = line.substring(thenpos + 1).trim();
+                    if (meta.length() > 0) json.put("tags", meta);
+                }
+                if (line.startsWith("::kickoff") && (thenpos = line.indexOf(' ')) > 0) {
+                    String meta = line.substring(thenpos + 1).trim();
+                    if (meta.length() > 0) json.put("kickoff", meta);
                 }
 
-                if(line.startsWith("::tags") && (thenpos = line.indexOf(' ')) > 0) {
-                    tags = line.substring(thenpos + 1).trim();
-                    if(tags.length() > 0)
-                        json.put("tags", tags);
-                }
-
-                lastLine = ""; example = ""; expect = "";
+                lastLine = ""; example = ""; expect = ""; label = ""; implication = "";
                 continue readloop;
             }
 
             if (line.startsWith("#")) {
                 // a comment line; ignore the line and consider it as whitespace
-                lastLine = ""; example = ""; expect = "";
+                lastLine = ""; example = ""; expect = ""; label = ""; implication = "";
                 continue readloop;
             }
 
@@ -376,20 +373,20 @@ public class SusiSkill {
                         String ifsubstring = line.substring(thenpos + 1).trim();
                         if (ifsubstring.length() > 0) {
                             String[] answers = ifsubstring.split("\\|");
-                            JSONObject intent = SusiIntent.answerIntent(phrases, "IF " + condition, answers, prior, example, expect, language);
+                            JSONObject intent = SusiIntent.answerIntent(phrases, "IF " + condition, answers, prior, example, expect, label, implication, language);
                             intents.put(intent);
                         }
                     } else {
                         String ifsubstring = line.substring(thenpos + 1, elsepos).trim();
                         if (ifsubstring.length() > 0) {
                             String[] ifanswers = ifsubstring.split("\\|");
-                            JSONObject intentif = SusiIntent.answerIntent(phrases, "IF " + condition, ifanswers, prior, example, expect, language);
+                            JSONObject intentif = SusiIntent.answerIntent(phrases, "IF " + condition, ifanswers, prior, example, expect, label, implication, language);
                             intents.put(intentif);
                         }
                         String elsesubstring = line.substring(elsepos + 1).trim();
                         if (elsesubstring.length() > 0) {
                             String[] elseanswers = elsesubstring.split("\\|");
-                            JSONObject intentelse = SusiIntent.answerIntent(phrases, "NOT " + condition, elseanswers, prior, example, expect, language);
+                            JSONObject intentelse = SusiIntent.answerIntent(phrases, "NOT " + condition, elseanswers, prior, example, expect, label, implication, language);
                             intents.put(intentelse);
                         }
                     }
@@ -401,9 +398,10 @@ public class SusiSkill {
                         example = tail;
                     } else if (head.equals("expect")) {
                         expect = tail;
-                    }
-                    else if (head.equals("image")) {
-                        image =tail;
+                    } else if (head.equals("label")) {
+                        label = tail;
+                    } else if (head.equals("implication")) {
+                        implication = tail;
                     } else {
                         // start multi-line bang
                         bang_answers = lastLine;
@@ -414,15 +412,17 @@ public class SusiSkill {
                     continue readloop;
                 } else {
                     String[] answers = line.split("\\|");
-                    JSONObject intent = SusiIntent.answerIntent(phrases, condition, answers, prior, example, expect, language);
+                    JSONObject intent = SusiIntent.answerIntent(phrases, condition, answers, prior, example, expect, label, implication, language);
                     //System.out.println(intent.toString());
                     intents.put(intent);
+                    example = ""; expect = ""; label = ""; implication = "";
                 }
             }
             lastLine = line;
         }} catch (IOException e) {
             DAO.log(e.getMessage());
         }
+        json.put("intents", intents);
         return json;
     }
 
@@ -625,6 +625,129 @@ public class SusiSkill {
 
         return newRating;
     }
+    
+    public static void sortByAvgStar(List<JSONObject> jsonValues, boolean ascending) {
+    	// Get skills based on ratings
+        Collections.sort(jsonValues, new Comparator<JSONObject>() {
+            @Override
+            public int compare(JSONObject a, JSONObject b) {
+                Object valA, valB;
+                int result=0;
+
+                try {
+                    valA = a.opt("skill_rating");
+                    valB = b.opt("skill_rating");
+                    if (valA == null || !((valA instanceof JSONObject))) valA = new JSONObject().put("stars", new JSONObject().put("avg_star", 0.0f));
+                    if (valB == null || !((valB instanceof JSONObject))) valB = new JSONObject().put("stars", new JSONObject().put("avg_star", 0.0f));
+
+                    JSONObject starsAObject = ((JSONObject) valA).getJSONObject("stars");
+                    JSONObject starsBObject = ((JSONObject) valB).getJSONObject("stars");
+                    int starsA = starsAObject.has("total_star") ? starsAObject.getInt("total_star") : 0;
+                    int starsB = starsBObject.has("total_star") ? starsBObject.getInt("total_star") : 0;
+                    
+                    if ((starsA < 10 && starsB < 10) || (starsA >= 10 && starsB >= 10)) {
+                        result = ascending ? Float.compare(starsA, starsB) : Float.compare(starsB, starsA);
+                    } else if (starsA < 10) {
+                        return ascending ? -1 : 1;
+                    } else {
+                        return ascending ? 1 : -1;
+                    }
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+                return result;
+            }
+        });
+    }
+    
+    public static void sortByCreationTime(List<JSONObject> jsonValues, boolean ascending) {
+    	Collections.sort(jsonValues, new Comparator<JSONObject>() {
+            private static final String KEY_NAME = "creationTime";
+            @Override
+            public int compare(JSONObject a, JSONObject b) {
+                String valA = new String();
+                String valB = new String();
+                int result = 0;
+
+                try {
+                    valA = a.get(KEY_NAME).toString();
+                    valB = b.get(KEY_NAME).toString();
+                    result = ascending ? valA.compareToIgnoreCase(valB) : valB.compareToIgnoreCase(valA);
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+                return result;
+            }
+        });
+    }
+    
+    public static void sortBySkillName(List<JSONObject> jsonValues, boolean ascending) {
+    	Collections.sort(jsonValues, new Comparator<JSONObject>() {
+            private static final String KEY_NAME = "skill_name";
+            @Override
+            public int compare(JSONObject a, JSONObject b) {
+                String valA = new String();
+                String valB = new String();
+
+                try {
+                    valA = a.get(KEY_NAME).toString();
+                    valB = b.get(KEY_NAME).toString();
+                } catch (JSONException e) {
+                    //do nothing
+                }
+                return ascending ? valA.compareToIgnoreCase(valB) : valB.compareToIgnoreCase(valA);
+            }
+        });
+    }
+    
+    public static void sortByUsageCount(List<JSONObject> jsonValues, boolean ascending) {
+    	Collections.sort(jsonValues, new Comparator<JSONObject>() {
+            @Override
+            public int compare(JSONObject a, JSONObject b) {
+                int valA;
+                int valB;
+                int result=0;
+
+                try {
+                    valA = a.getInt("usage_count");
+                    valB = b.getInt("usage_count");
+                    result = ascending ? Integer.compare(valA, valB) : Integer.compare(valB, valA);
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+                return result;
+            }
+        });
+    }
+    
+    public static void sortByFeedbackCount(List<JSONObject> jsonValues, boolean ascending) {
+    	Collections.sort(jsonValues, new Comparator<JSONObject>() {
+            @Override
+            public int compare(JSONObject a, JSONObject b) {
+                Object valA, valB;
+                int result=0;
+
+                try {                    
+                    valA = a.opt("skill_rating");
+                    valB = b.opt("skill_rating");
+                    if (valA == null || !(valA instanceof JSONObject) || ((JSONObject) valA).opt("feedback_count") == null) valA = new JSONObject().put("feedback_count", 0);
+                    if (valB == null || !(valB instanceof JSONObject) || ((JSONObject) valB).opt("feedback_count") == null) valB = new JSONObject().put("feedback_count", 0);
+
+                    result = ascending ?
+                    		Integer.compare(
+                    				((JSONObject) valA).getInt("feedback_count"),
+                    				((JSONObject) valB).getInt("feedback_count")) :
+                            Integer.compare(
+                                    ((JSONObject) valB).getInt("feedback_count"),
+                                    ((JSONObject) valA).getInt("feedback_count")
+                    );
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+                return result;
+            }
+        });
+    }
 
     public static boolean getSkillReviewStatus(String model, String group, String language, String skillname) {
         // skill status
@@ -703,6 +826,8 @@ public class SusiSkill {
         }
         return 0;
     }
+    
+    
 
     public static JSONObject readJsonSkill(File file) throws JSONException, FileNotFoundException {
         JSONObject json = new JSONObject(new JSONTokener(new FileReader(file)));
@@ -829,12 +954,22 @@ public class SusiSkill {
     }
 
     public static void main(String[] args) {
-        Path data = FileSystems.getDefault().getPath("data");
-        Map<String, String> config;
-        try {config = SusiServer.readConfig(data);DAO.init(config, data);} catch (Exception e) {e.printStackTrace();}
-        File model = new File(DAO.model_watch_dir, "persona");
-        File skill = SusiSkill.getSkillFileInModel(model, "nefertiti");
+        //Path data = FileSystems.getDefault().getPath("data");
+        //Map<String, String> config;
+        //try {config = SusiServer.readConfig(data);DAO.init(config, data);} catch (Exception e) {e.printStackTrace();}
+        File system_skills_test = new File(new File(FileSystems.getDefault().getPath("conf").toFile(), "system_skills"), "test");
+        File skill = new File(system_skills_test, "dialog.txt");
+        //File model = new File(DAO.model_watch_dir, "general");
+        //File skill = SusiSkill.getSkillFileInModel(model, "Westworld");
         System.out.println(skill);
+        SusiSkill.ID skillid = new SusiSkill.ID(skill);
+        SusiLanguage language = skillid.language();
+        try {
+			JSONObject lesson = SusiSkill.readLoTSkill(new BufferedReader(new FileReader(skill)), language, Integer.toString(skillid.hashCode()));
+			System.out.println(lesson.toString(2));
+		} catch (JSONException | FileNotFoundException e) {
+			e.printStackTrace();
+		}
         System.exit(0);
     }
 }

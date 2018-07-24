@@ -46,7 +46,6 @@ public class ShowAdminService extends AbstractAPIHandler implements APIHandler{
                 json.put("accepted", true);
                 json.put("showAdmin", true);
                 break;
-            case BOT:
             case ANONYMOUS:
             case USER:
             case REVIEWER:

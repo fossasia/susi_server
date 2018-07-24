@@ -133,7 +133,7 @@ public class DAO {
         logAppender = new LogAppender(layout, 100000);
         logger.addAppender(logAppender);
         logger.addAppender(new ConsoleAppender(layout));
-        logger.setLevel(Level.ALL);
+        logger.setLevel(Level.INFO);
     }
 
     // built-in artificial intelligence
