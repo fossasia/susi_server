@@ -53,7 +53,6 @@ public class UserManagementService extends AbstractAPIHandler implements APIHand
 				result.put("edit-all", false);
 				result.put("edit-less-privileged", true);
 				break;
-	        case BOT:
 	        case ANONYMOUS:
 			default:
 				result.put("list_users", false);
