@@ -175,20 +175,16 @@ public class SkillMetricsDataService extends AbstractAPIHandler implements APIHa
                     if (valA == null || !((valA instanceof JSONObject))) valA = new JSONObject().put("stars", new JSONObject().put("avg_star", 0.0f));
                     if (valB == null || !((valB instanceof JSONObject))) valB = new JSONObject().put("stars", new JSONObject().put("avg_star", 0.0f));
 
-                    if ((((((JSONObject) valA).getJSONObject("stars").getInt("total_star") < 10) &&
-                            (((JSONObject) valB).getJSONObject("stars").getInt("total_star") < 10))) ||
-                            (((((JSONObject) valA).getJSONObject("stars").getInt("total_star") >= 10) &&
-                            (((JSONObject) valB).getJSONObject("stars").getInt("total_star") >= 10))))
-                    {
-                        result = Float.compare(
-                                ((JSONObject) valB).getJSONObject("stars").getFloat("avg_star"),
-                                ((JSONObject) valA).getJSONObject("stars").getFloat("avg_star"));
-                    }
-
-                    else if (((JSONObject) valA).getJSONObject("stars").getInt("total_star") < 10) {
+                    JSONObject starsAObject = ((JSONObject) valA).getJSONObject("stars");
+                    JSONObject starsBObject = ((JSONObject) valB).getJSONObject("stars");
+                    int starsA = starsAObject.has("total_star") ? starsAObject.getInt("total_star") : 0;
+                    int starsB = starsAObject.has("total_star") ? starsBObject.getInt("total_star") : 0;
+                    
+                    if ((starsA< 10 && starsB < 10) || (starsA >= 10 && starsB >= 10)) {
+                        result = Float.compare(starsB, starsA);
+                    } else if (starsA < 10) {
                         return 1;
-                    }
-                    else {
+                    } else {
                         return -1;
                     }
                 } catch (JSONException e) {
