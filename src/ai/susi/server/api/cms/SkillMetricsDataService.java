@@ -178,7 +178,7 @@ public class SkillMetricsDataService extends AbstractAPIHandler implements APIHa
                     JSONObject starsAObject = ((JSONObject) valA).getJSONObject("stars");
                     JSONObject starsBObject = ((JSONObject) valB).getJSONObject("stars");
                     int starsA = starsAObject.has("total_star") ? starsAObject.getInt("total_star") : 0;
-                    int starsB = starsAObject.has("total_star") ? starsBObject.getInt("total_star") : 0;
+                    int starsB = starsBObject.has("total_star") ? starsBObject.getInt("total_star") : 0;
                     
                     if ((starsA< 10 && starsB < 10) || (starsA >= 10 && starsB >= 10)) {
                         result = Float.compare(starsB, starsA);
