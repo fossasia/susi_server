@@ -61,7 +61,6 @@ public class SignUpService extends AbstractAPIHandler implements APIHandler {
 				result.put("activate", true); // allow to activate new users
 				result.put("accepted", true);
 				break;
-			case BOT:
 			case ANONYMOUS:
 			default:
 				result.put("register", false);

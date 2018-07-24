@@ -28,7 +28,6 @@ package ai.susi.server;
  */
 public enum UserRole {
 
-    BOT,             // a technical access
     ANONYMOUS,       // a person, everyone who is not logged in
     USER,            // users who have logged in
     REVIEWER,        // users with special rights for content creation, i.e. moderators

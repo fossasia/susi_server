@@ -94,7 +94,6 @@ public class PublicKeyRegistrationService extends AbstractAPIHandler implements 
 				result.put("self", true);
 				result.put("users", new JSONObject());
 				break;
-            case BOT:
             case ANONYMOUS:
 			default:
 				result.put("self", false);
