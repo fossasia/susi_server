@@ -163,63 +163,19 @@ public class SkillMetricsDataService extends AbstractAPIHandler implements APIHa
         skillMetrics.put("latest", creationDateData);
 
         // Get skills based on ratings
-        Collections.sort(jsonValues, new Comparator<JSONObject>() {
-            @Override
-            public int compare(JSONObject a, JSONObject b) {
-                Object valA, valB;
-                int result=0;
-
-                try {
-                    valA = a.opt("skill_rating");
-                    valB = b.opt("skill_rating");
-                    if (valA == null || !((valA instanceof JSONObject))) valA = new JSONObject().put("stars", new JSONObject().put("avg_star", 0.0f));
-                    if (valB == null || !((valB instanceof JSONObject))) valB = new JSONObject().put("stars", new JSONObject().put("avg_star", 0.0f));
-
-                    JSONObject starsAObject = ((JSONObject) valA).getJSONObject("stars");
-                    JSONObject starsBObject = ((JSONObject) valB).getJSONObject("stars");
-                    int starsA = starsAObject.has("total_star") ? starsAObject.getInt("total_star") : 0;
-                    int starsB = starsBObject.has("total_star") ? starsBObject.getInt("total_star") : 0;
-                    
-                    if ((starsA< 10 && starsB < 10) || (starsA >= 10 && starsB >= 10)) {
-                        result = Float.compare(starsB, starsA);
-                    } else if (starsA < 10) {
-                        return 1;
-                    } else {
-                        return -1;
-                    }
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-                return result;
-            }
-        });
+        SusiSkill.sortByAvgStar(jsonValues, false);
 
         JSONArray ratingsData = getSlicedArray(jsonValues, count);
         skillMetrics.put("rating", ratingsData);
 
         // Get skills based on usage count
-        Collections.sort(jsonValues, new Comparator<JSONObject>() {
-            @Override
-            public int compare(JSONObject a, JSONObject b) {
-                int valA;
-                int valB;
-                int result=0;
-
-                try {
-                    valA = a.getInt("usage_count");
-                    valB = b.getInt("usage_count");
-                    result = Integer.compare(valB, valA);
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-                return result;
-            }
-        });
+        SusiSkill.sortByUsageCount(jsonValues, false);
 
         JSONArray usageData = getSlicedArray(jsonValues, count);
         skillMetrics.put("usage", usageData);
 
         // Get skills based on feedback count
+        SusiSkill.sortByFeedbackCount(jsonValues, false);
         Collections.sort(jsonValues, new Comparator<JSONObject>() {
             @Override
             public int compare(JSONObject a, JSONObject b) {
