@@ -254,9 +254,12 @@ public class ListSkillService extends AbstractAPIHandler implements APIHandler {
             filter_name = filter_name.toLowerCase();
             filter_type = filter_type.toLowerCase();
 
-            if (filter_type.equals("date")) {
+            if (filter_type.equals("creation_date")) {
                 dateFilter = true;
                 SusiSkill.sortByCreationTime(jsonValues, filter_name.equals("ascending"));
+            } else if (filter_type.equals("modified_date")) {
+                dateFilter = true;
+                SusiSkill.sortByModifiedTime(jsonValues, filter_name.equals("ascending"));
             } else if (filter_type.equals("lexicographical")) {
             	SusiSkill.sortBySkillName(jsonValues, filter_name.equals("ascending"));
             }
@@ -279,38 +282,40 @@ public class ListSkillService extends AbstractAPIHandler implements APIHandler {
                         break;
                     } else {
                         count --;
+                     }
+                 }
+                 if (dateFilter) {
+                     long durationInMillisec = TimeUnit.DAYS.toMillis(duration);
+                     long timestamp = System.currentTimeMillis() - durationInMillisec;
+                     String startDate = new Timestamp(timestamp).toString().substring(0, 10); //substring is used for getting timestamp upto date only
+                    if (filter_type.equals("creation_date")) {
+                         String skillCreationDate = jsonValues.get(i).get("creationTime").toString().substring(0,10);
+                         if (skillCreationDate.compareToIgnoreCase(startDate) < 0) continue;
+                    } else if (filter_type.equals("modified_date")) {
+                        String skillModifiedDate = jsonValues.get(i).get("lastModifiedTime").toString().substring(0,10);
+                         if (skillModifiedDate.compareToIgnoreCase(startDate) < 0) continue;
                     }
-                }
-                if (dateFilter) {
-                    long durationInMillisec = TimeUnit.DAYS.toMillis(duration);
-                    long timestamp = System.currentTimeMillis() - durationInMillisec;
-                    String startDate = new Timestamp(timestamp).toString().substring(0, 10); //substring is used for getting timestamp upto date only
-                    String skillCreationDate = jsonValues.get(i).get("creationTime").toString().substring(0,10);
-                    if (skillCreationDate.compareToIgnoreCase(startDate) < 0)
-                    {
-                        continue;
-                    }
-                }
-                if (searchFilter) {
-                    JSONObject skillMetadata = jsonValues.get(i);
-                    String skillName = skillMetadata.get("skill_name").toString().toLowerCase();
-                    String authorName = skillMetadata.get("author").toString().toLowerCase();
-                    String skillDescription = skillMetadata.get("descriptions").toString().toLowerCase();
-                    Boolean skillMatches = false;
-                    if (!skillName.matches(searchQuery) && !authorName.matches(searchQuery) && !skillDescription.matches(searchQuery)) {
-                        try {
-                            String skillExamples = skillMetadata.get("examples").toString().toLowerCase();
-                            if (!skillExamples.matches(searchQuery))
-                            {
-                                continue;
-                            }
-                        }
-                        catch (Exception e)
-                        {
-                            continue;
-                        }
-                    }
-                }
+                 }
+                 if (searchFilter) {
+                     JSONObject skillMetadata = jsonValues.get(i);
+                     String skillName = skillMetadata.get("skill_name").toString().toLowerCase();
+                     String authorName = skillMetadata.get("author").toString().toLowerCase();
+                     String skillDescription = skillMetadata.get("descriptions").toString().toLowerCase();
+                     Boolean skillMatches = false;
+                     if (!skillName.matches(searchQuery) && !authorName.matches(searchQuery) && !skillDescription.matches(searchQuery)) {
+                         try {
+                             String skillExamples = skillMetadata.get("examples").toString().toLowerCase();
+                             if (!skillExamples.matches(searchQuery))
+                             {
+                                 continue;
+                             }
+                         }
+                         catch (Exception e)
+                         {
+                             continue;
+                         }
+                     }
+                 }
                 filteredData.put(jsonValues.get(i));
             }
             if (countFilter) {

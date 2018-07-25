@@ -190,7 +190,7 @@ public class SusiSkill {
         try {readloop: while ((line = br.readLine()) != null) {
             String linebeforetrim = line;
             line = line.trim();
-            int indent = linebeforetrim.indexOf(line) % indentStep;
+            int depth = linebeforetrim.indexOf(line) / indentStep; // the last line of an intent therefore declares the depth
 
             // connect lines
             if (lastLine.endsWith("\\")) {
@@ -230,6 +230,7 @@ public class SusiSkill {
                         if (expect.length() > 0) intent.put("expect", expect);
                         if (label.length() > 0) intent.put("label", label);
                         if (implication.length() > 0) intent.put("implication", implication);
+                        intent.put("depth", depth);
                         intents.put(intent);
                     }
                     else if (bang_type.equals("console")) {
@@ -284,6 +285,7 @@ public class SusiSkill {
                         if (expect.length() > 0) intent.put("expect", expect);
                         if (label.length() > 0) intent.put("label", label);
                         if (implication.length() > 0) intent.put("implication", implication);
+                        intent.put("depth", depth);
                         intents.put(intent);
                     }
                     bang_answers = "";
@@ -373,20 +375,20 @@ public class SusiSkill {
                         String ifsubstring = line.substring(thenpos + 1).trim();
                         if (ifsubstring.length() > 0) {
                             String[] answers = ifsubstring.split("\\|");
-                            JSONObject intent = SusiIntent.answerIntent(phrases, "IF " + condition, answers, prior, example, expect, label, implication, language);
+                            JSONObject intent = SusiIntent.answerIntent(phrases, "IF " + condition, answers, prior, depth, example, expect, label, implication, language);
                             intents.put(intent);
                         }
                     } else {
                         String ifsubstring = line.substring(thenpos + 1, elsepos).trim();
                         if (ifsubstring.length() > 0) {
                             String[] ifanswers = ifsubstring.split("\\|");
-                            JSONObject intentif = SusiIntent.answerIntent(phrases, "IF " + condition, ifanswers, prior, example, expect, label, implication, language);
+                            JSONObject intentif = SusiIntent.answerIntent(phrases, "IF " + condition, ifanswers, prior, depth, example, expect, label, implication, language);
                             intents.put(intentif);
                         }
                         String elsesubstring = line.substring(elsepos + 1).trim();
                         if (elsesubstring.length() > 0) {
                             String[] elseanswers = elsesubstring.split("\\|");
-                            JSONObject intentelse = SusiIntent.answerIntent(phrases, "NOT " + condition, elseanswers, prior, example, expect, label, implication, language);
+                            JSONObject intentelse = SusiIntent.answerIntent(phrases, "NOT " + condition, elseanswers, prior, depth, example, expect, label, implication, language);
                             intents.put(intentelse);
                         }
                     }
@@ -412,7 +414,7 @@ public class SusiSkill {
                     continue readloop;
                 } else {
                     String[] answers = line.split("\\|");
-                    JSONObject intent = SusiIntent.answerIntent(phrases, condition, answers, prior, example, expect, label, implication, language);
+                    JSONObject intent = SusiIntent.answerIntent(phrases, condition, answers, prior, depth, example, expect, label, implication, language);
                     //System.out.println(intent.toString());
                     intents.put(intent);
                     example = ""; expect = ""; label = ""; implication = "";
@@ -655,7 +657,7 @@ public class SusiSkill {
                     } else {
                         return ascending ? 1 : -1;
                     }
-                } catch (JSONException e) {
+                } catch (Exception e) {
                     e.printStackTrace();
                 }
                 return result;
@@ -666,6 +668,27 @@ public class SusiSkill {
     public static void sortByCreationTime(List<JSONObject> jsonValues, boolean ascending) {
     	Collections.sort(jsonValues, new Comparator<JSONObject>() {
             private static final String KEY_NAME = "creationTime";
+            @Override
+            public int compare(JSONObject a, JSONObject b) {
+                String valA = new String();
+                String valB = new String();
+                int result = 0;
+
+                try {
+                    valA = a.get(KEY_NAME).toString();
+                    valB = b.get(KEY_NAME).toString();
+                    result = ascending ? valA.compareToIgnoreCase(valB) : valB.compareToIgnoreCase(valA);
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+                return result;
+            }
+        });
+    }
+
+    public static void sortByModifiedTime(List<JSONObject> jsonValues, boolean ascending) {
+        Collections.sort(jsonValues, new Comparator<JSONObject>() {
+            private static final String KEY_NAME = "lastModifiedTime";
             @Override
             public int compare(JSONObject a, JSONObject b) {
                 String valA = new String();

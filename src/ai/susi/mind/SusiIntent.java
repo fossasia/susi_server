@@ -268,6 +268,7 @@ public class SusiIntent {
             String condition,
             String[] answers,
             boolean prior,
+            int depth,
             String example,
             String expect,
             String label,
@@ -292,6 +293,7 @@ public class SusiIntent {
         if (expect != null && expect.length() > 0) intent.put("expect", expect);
         if (label != null && label.length() > 0) intent.put("label", label);
         if (implication != null && implication.length() > 0) intent.put("implication", implication);
+        intent.put("depth", depth);
         // write actions
         JSONArray a = new JSONArray();
         intent.put("actions", a);

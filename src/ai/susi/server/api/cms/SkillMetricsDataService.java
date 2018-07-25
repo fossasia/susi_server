@@ -69,6 +69,8 @@ public class SkillMetricsDataService extends AbstractAPIHandler implements APIHa
         JSONObject json = new JSONObject(true);
         JSONObject skillObject = new JSONObject();
         String countString = call.get("count", null);
+        String metrics_list = call.get("metrics", "Games, Trivia and Accessories");
+        String[] metrics_names = metrics_list.split(";");
         Integer count = null;
 
         if(countString != null) {
@@ -201,6 +203,28 @@ public class SkillMetricsDataService extends AbstractAPIHandler implements APIHa
 
         JSONArray feedbackData = getSlicedArray(jsonValues, count);
         skillMetrics.put("feedback", feedbackData);
+
+        for (String metric_name : metrics_names) {
+            try {
+                metric_name = metric_name.trim();
+                List<JSONObject> groupJsonValues = new ArrayList<JSONObject>();
+                for (int i = 0; i < jsonArray.length(); i++) {
+                    if (jsonArray.getJSONObject(i).get("group").toString().equals(metric_name)) {
+                        groupJsonValues.add(jsonArray.getJSONObject(i));
+                    }
+                }
+                // Get skills based on ratings of a particular group
+                SusiSkill.sortByAvgStar(groupJsonValues, false);
+
+                JSONArray topGroup = new JSONArray();
+                topGroup = getSlicedArray(groupJsonValues, count);
+                skillMetrics.put(metric_name, topGroup);
+            }
+            catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+
 
         json.put("model", model_name)
                 .put("group", group_name)
