@@ -522,6 +522,7 @@ public class SusiSkill {
         skillMetadata.put("protected", false);
         skillMetadata.put("reviewed", false);
         skillMetadata.put("editable", true);
+        skillMetadata.put("staffPick", false);
         skillMetadata.put("terms_of_use", JSONObject.NULL);
         skillMetadata.put("dynamic_content", false);
         skillMetadata.put("examples", JSONObject.NULL);
@@ -552,6 +553,7 @@ public class SusiSkill {
                 skillMetadata.put("skill_rating", getSkillRating(model, group, language, skillname));
                 skillMetadata.put("reviewed", getSkillReviewStatus(model, group, language, skillname));
                 skillMetadata.put("editable", getSkillEditStatus(model, group, language, skillname));
+                skillMetadata.put("staffPick", isStaffPick(model, group, language, skillname));
                 skillMetadata.put("usage_count", getSkillUsage(model, group, language, skillname, duration));
                 skillMetadata.put("skill_tag", skillname);
 
@@ -817,6 +819,28 @@ public class SusiSkill {
             }
         }
         return true;
+    }
+
+    public static boolean isStaffPick(String model, String group, String language, String skillname) {
+        // return true if skill is a staff pick
+        JsonTray skillStatus = DAO.skillStatus;
+        if (skillStatus.has(model)) {
+            JSONObject modelName = skillStatus.getJSONObject(model);
+            if (modelName.has(group)) {
+                JSONObject groupName = modelName.getJSONObject(group);
+                if (groupName.has(language)) {
+                    JSONObject languageName = groupName.getJSONObject(language);
+                    if (languageName.has(skillname)) {
+                        JSONObject skillName = languageName.getJSONObject(skillname);
+
+                        if (skillName.has("staffPick")) {
+                            return true;
+                        }
+                    }
+                }
+            }
+        }
+        return false;
     }
 
     public static int getSkillUsage(String model, String group, String language, String skillname, int duration) {
