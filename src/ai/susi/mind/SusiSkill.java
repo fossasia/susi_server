@@ -644,9 +644,12 @@ public class SusiSkill {
                     JSONObject starsBObject = ((JSONObject) valB).getJSONObject("stars");
                     int starsA = starsAObject.has("total_star") ? starsAObject.getInt("total_star") : 0;
                     int starsB = starsBObject.has("total_star") ? starsBObject.getInt("total_star") : 0;
-                    
+
+                    float avgA = starsAObject.getFloat("avg_star");
+                    float avgB = starsBObject.getFloat("avg_star");
+
                     if ((starsA < 10 && starsB < 10) || (starsA >= 10 && starsB >= 10)) {
-                        result = ascending ? Float.compare(starsA, starsB) : Float.compare(starsB, starsA);
+                        result = ascending ? Float.compare(avgA, avgB) : Float.compare(avgB, avgA);
                     } else if (starsA < 10) {
                         return ascending ? -1 : 1;
                     } else {

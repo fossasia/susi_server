@@ -35,6 +35,8 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.attribute.BasicFileAttributes;
+import java.nio.file.attribute.FileTime;
 
 /**
  * Created by chetankaushik on 07/06/17.
@@ -170,6 +172,19 @@ public class ModifySkillService extends AbstractAPIHandler implements APIHandler
             if (skill.exists() && content != null) {
                 JSONObject json = new JSONObject();
                 // CHECK IF SKILL PATH AND NAME IS SAME. IF IT IS SAME THEN MAKE CHANGES IN OLD FILE ONLY
+
+                BasicFileAttributes attr = null;
+                Path p = Paths.get(skill.getPath());
+                try {
+                    attr = Files.readAttributes(p, BasicFileAttributes.class);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                FileTime skillCreationTime = null;
+                if( attr != null ) {
+                    skillCreationTime = attr.creationTime();
+                }
+
                 if (model_name.equals(modified_model_name) &&
                     group_name.equals(modified_group_name) &&
                     language_name.equals(modified_language_name) &&
@@ -184,6 +199,15 @@ public class ModifySkillService extends AbstractAPIHandler implements APIHandler
                         e.printStackTrace();
                         json.put("message", "error: " + e.getMessage());
                     }
+                    // Keep the creation time same as previous
+                    if(attr!=null) {
+                    	try {
+			                Files.setAttribute(p, "creationTime", skillCreationTime);
+			            } catch (IOException e) {
+			                System.err.println("Cannot persist the creation time. " + e);
+			            }
+                    }
+
                     // CHECK IF IMAGE WAS CHANGED
                     // PARAMETER FOR GETTING IF IMAGE WAS CHANGED
                     String image_changed = call.getParameter("imageChanged");
