@@ -138,7 +138,7 @@ public class ListSkillService extends AbstractAPIHandler implements APIHandler {
         String countString = call.get("count", null);
         int offset = call.get("offset", 0);
         String searchQuery = call.get("q", null);
-        int page = call.get("page", 1);
+        int page = call.get("page", 0);
         Integer count = null;
         Boolean countFilter = false;
         Boolean dateFilter = false;
@@ -157,7 +157,7 @@ public class ListSkillService extends AbstractAPIHandler implements APIHandler {
                 countFilter = true;
                 try {
                     count = Integer.parseInt(countString);
-                    offset = (page-1)*count;
+                    offset = page*count;
                 } catch(NumberFormatException ex) {
                     throw new APIException(422, "Invalid count value.");
                 }
