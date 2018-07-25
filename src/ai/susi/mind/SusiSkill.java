@@ -655,7 +655,7 @@ public class SusiSkill {
                     } else {
                         return ascending ? 1 : -1;
                     }
-                } catch (JSONException e) {
+                } catch (Exception e) {
                     e.printStackTrace();
                 }
                 return result;
