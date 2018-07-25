@@ -6,12 +6,12 @@
  *  modify it under the terms of the GNU Lesser General Public
  *  License as published by the Free Software Foundation; either
  *  version 2.1 of the License, or (at your option) any later version.
- *  
+ *
  *  This library is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  *  Lesser General Public License for more details.
- *  
+ *
  *  You should have received a copy of the GNU Lesser General Public License
  *  along with this program in the file lgpl21.txt
  *  If not, see <http://www.gnu.org/licenses/>.
@@ -50,7 +50,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class SusiService extends AbstractAPIHandler implements APIHandler {
-   
+
     private static final long serialVersionUID = 857847830309879111L;
 
     @Override
@@ -64,7 +64,7 @@ public class SusiService extends AbstractAPIHandler implements APIHandler {
     public String getAPIPath() {
         return "/susi/chat.json";
     }
-    
+
     @Override
     public ServiceResponse serviceImpl(Query post, HttpServletResponse response, Authorization user, final JsonObjectWithDefault permissions) throws APIException {
 
@@ -72,22 +72,27 @@ public class SusiService extends AbstractAPIHandler implements APIHandler {
         String q = post.get("q", "").trim();
         int count = post.get("count", 1);
         int timezoneOffset = post.get("timezoneOffset", 0); // minutes, i.e. -60
-        double latitude = post.get("latitude", Double.NaN); // i.e. 8.68 
+        double latitude = post.get("latitude", Double.NaN); // i.e. 8.68
         double longitude = post.get("longitude", Double.NaN); // i.e. 50.11
         String countryName = post.get("country_name", "");
         String countryCode = post.get("country_code", "");
         String language = post.get("language", "en");
         String deviceType = post.get("device_type", "Others");
         String dream = post.get("dream", ""); // an instant dream setting, to be used for permanent dreaming
-        String persona = post.get("persona", ""); // an instant persona setting, to be used for peromanent personas
+        String persona = post.get("persona", ""); // an instant persona setting, to be used for permanent personas
         String instant = post.get("instant", ""); // an instant skill text, given as LoT directly here
-        
+        // for applying private skill
+        String privateSkill = post.get("privateskill", null);
+        String userId = post.get("userid", "");
+        String group_name = post.get("group", "");
+        String skill_name = post.get("skill", "");
+
         try {
             DAO.susi.observe(); // get a database update
         } catch (IOException e) {
             DAO.severe(e.getMessage());
         }
-        
+
         SusiThought recall = null;
         if (dream == null || dream.length() == 0 || persona == null || persona.length() == 0) {
             // compute a recall
@@ -95,7 +100,7 @@ public class SusiService extends AbstractAPIHandler implements APIHandler {
             List<SusiCognition> cognitions = DAO.susi.getMemories().getCognitions(user.getIdentity().getClient());
             cognitions.forEach(cognition -> observation_argument.think(cognition.recallDispute()));
             recall = observation_argument.mindmeld(false);
-            
+
             // now that we have a recall, use it to set the dream/persona
             if (dream == null || dream.length() == 0) {
                 dream = recall.getObservation("_etherpad_dream");
@@ -122,7 +127,7 @@ public class SusiService extends AbstractAPIHandler implements APIHandler {
         } catch (JSONException e) {
             DAO.severe(e.getMessage(), e);
         }
-        
+
         // find out if we are dreaming: dreaming is the most prominent mind, it overlaps all other minds
         if (dream != null && dream.length() > 0) try {
             // read the pad for the dream
@@ -148,16 +153,26 @@ public class SusiService extends AbstractAPIHandler implements APIHandler {
         } catch (JSONException | IOException e) {
             DAO.severe(e.getMessage(), e);
         }
-        
-        // find out if a persona is active: a persona is more prominent in conscience than the general mind
-        if (persona != null && persona.length() > 0) {
-            File skillfile = SusiSkill.getSkillFileInModel(new File(DAO.model_watch_dir, "persona"), persona);
+
+        // find out if a persona or a private skill is active: a persona is more prominent in conscience than the general mind
+        if ((persona != null && persona.length() > 0) || (privateSkill != null && userId.length() > 0 && group_name.length() > 0 && language.length() > 0 && skill_name.length() > 0)) {
+            File skillfile = null;
+            if (persona != null && persona.length() > 0) {
+              skillfile = SusiSkill.getSkillFileInModel(new File(DAO.model_watch_dir, "persona"), persona);
+            }
+            else {
+              // read the private skill
+              File private_skill_dir = new File(DAO.private_skill_watch_dir,userId);
+              File group_file = new File(private_skill_dir, group_name);
+              File language_file = new File(group_file, language);
+              skillfile = SusiSkill.getSkillFileInLanguage(language_file, skill_name, false);
+            }
             // read the persona
             if (skillfile != null) try {
                 String text = new String(Files.readAllBytes(skillfile.toPath()), StandardCharsets.UTF_8);
                 // in case that the text contains a "*" we are in danger that we cannot sleep again, therefore we simply add the stop rule here to the text
                 text = text + "\n\n* conscious mode|* conscious|conscious *\n$1$>_persona_awake is now conscious\n\nsleep|forget yourself|no yourself|unconscious|unconscious mode|That's enough|* dreamless slumber|Freeze|Cease * functions\nPersona will sleep now. Unconscious state activated.^^>_persona_awake\n\n";
-                
+
                 // fill an empty mind with the dream
                 SusiMind awakeMind = new SusiMind(DAO.susi_chatlog_dir, DAO.susi_skilllog_dir); // we need the memory directory here to get a share on the memory of previous dialoges, otherwise we cannot test call-back questions
                 JSONObject rules = SusiSkill.readLoTSkill(new BufferedReader(new InputStreamReader(new ByteArrayInputStream(text.getBytes(StandardCharsets.UTF_8)), StandardCharsets.UTF_8)), SusiLanguage.unknown, dream);
@@ -171,10 +186,10 @@ public class SusiService extends AbstractAPIHandler implements APIHandler {
                 e.printStackTrace();
             }
         }
-        
+
         // finally add the general mind definition. It's there if no other mind is conscious or the other minds do not find an answer.
         minds.add(DAO.susi);
-        
+
         // answer with built-in intents
         SusiCognition cognition = new SusiCognition(q, timezoneOffset, latitude, longitude, countryCode, countryName, language, deviceType, count, user.getIdentity(), minds.toArray(new SusiMind[minds.size()]));
         if (cognition.getAnswers().size() > 0) try {
@@ -185,5 +200,5 @@ public class SusiService extends AbstractAPIHandler implements APIHandler {
         JSONObject json = cognition.getJSON();
         return new ServiceResponse(json);
     }
-    
+
 }
