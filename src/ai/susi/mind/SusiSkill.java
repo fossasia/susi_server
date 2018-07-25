@@ -680,6 +680,27 @@ public class SusiSkill {
             }
         });
     }
+
+    public static void sortByModifiedTime(List<JSONObject> jsonValues, boolean ascending) {
+        Collections.sort(jsonValues, new Comparator<JSONObject>() {
+            private static final String KEY_NAME = "lastModifiedTime";
+            @Override
+            public int compare(JSONObject a, JSONObject b) {
+                String valA = new String();
+                String valB = new String();
+                int result = 0;
+
+                try {
+                    valA = a.get(KEY_NAME).toString();
+                    valB = b.get(KEY_NAME).toString();
+                    result = ascending ? valA.compareToIgnoreCase(valB) : valB.compareToIgnoreCase(valA);
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+                return result;
+            }
+        });
+    }
     
     public static void sortBySkillName(List<JSONObject> jsonValues, boolean ascending) {
     	Collections.sort(jsonValues, new Comparator<JSONObject>() {
