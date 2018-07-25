@@ -215,6 +215,7 @@ public class LoginService extends AbstractAPIHandler implements APIHandler {
 					if(valid_seconds == -1) result.put("valid_seconds", "forever");
 					else result.put("valid_seconds", valid_seconds);
 
+					result.put("uuid", identity.getUuid());
 					result.put("access_token", token);
 					result.put("accepted", true);
 
