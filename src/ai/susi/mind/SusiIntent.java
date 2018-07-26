@@ -291,6 +291,11 @@ public class SusiIntent {
         // quality control
         if (example != null && example.length() > 0) intent.put("example", example);
         if (expect != null && expect.length() > 0) intent.put("expect", expect);
+        // in case that the utterances has only one alternative and does not contain any pattern, the label can be computed from it
+        if (label == null || label.length() == 0 && utterances.length == 1) {
+            String l = utterances[0].replaceAll(" ", "_");
+            if (l.indexOf('*') < 0) label = l;
+        }
         if (label != null && label.length() > 0) intent.put("label", label);
         if (implication != null && implication.length() > 0) intent.put("implication", implication);
         intent.put("depth", depth);
