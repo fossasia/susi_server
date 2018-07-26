@@ -29,7 +29,7 @@ import org.json.JSONObject;
 import javax.servlet.http.HttpServletResponse;
 
 /**
- * This endpoint allows Admin and higher userroles to change review status of any skill
+ * This endpoint allows Admin and higher userroles to change status of any skill
  * http://127.0.0.1:4000/cms/changeSkillStatus.json?model=general&group=Knowledge&language=en&skill=aboutsusi&reviewed=true&access_token=zdasIagg71NF9S2Wu060ZxrRdHeFAx
  */
 
@@ -60,6 +60,7 @@ public class ChangeSkillStatusService extends AbstractAPIHandler implements APIH
         String skill_name = call.get("skill", null);
         String reviewed = call.get("reviewed", null);
         String editable = call.get("editable", null);
+        String staffPick = call.get("staffPick", null);
 
         if (authorization.getIdentity() == null) {
             throw new APIException(422, "Bad access token.");
@@ -73,6 +74,9 @@ public class ChangeSkillStatusService extends AbstractAPIHandler implements APIH
         else if (editable != null && !(editable.equals("true") || editable.equals("false"))) {
             throw new APIException(400, "Bad service call, invalid arguments.");
         }
+        else if (staffPick != null && !(staffPick.equals("true") || staffPick.equals("false"))) {
+            throw new APIException(400, "Bad service call, invalid arguments.");
+        }
 
         JSONObject result = new JSONObject();
         JsonTray skillStatus = DAO.skillStatus;
@@ -81,13 +85,16 @@ public class ChangeSkillStatusService extends AbstractAPIHandler implements APIH
         JSONObject languageName = new JSONObject();
         JSONObject skillName = new JSONObject();
 
-        if( ((reviewed != null && reviewed.equals("true")) || (editable != null && editable.equals("false"))) ) {
+        if( (reviewed != null && reviewed.equals("true")) || (editable != null && editable.equals("false")) || (staffPick != null && staffPick.equals("true")) ) {
             JSONObject skill_status = new JSONObject();
             if(reviewed != null && reviewed.equals("true")) {
                 skill_status.put("reviewed", true);
             }
             if(editable != null && editable.equals("false")) {
                 skill_status.put("editable", false);
+            }
+            if(staffPick != null && staffPick.equals("true")) {
+                skill_status.put("staffPick", true);
             }
             if (skillStatus.has(model_name)) {
                 modelName = skillStatus.getJSONObject(model_name);
@@ -111,6 +118,13 @@ public class ChangeSkillStatusService extends AbstractAPIHandler implements APIH
                             }
                             else if(editable != null && editable.equals("true")) {
                                 skillName.remove("editable");
+                            }
+
+                            if(staffPick != null && staffPick.equals("true")) {
+                                skillName.put("staffPick", true);
+                            }
+                            else if(staffPick != null && staffPick.equals("false")) {
+                                skillName.remove("staffPick");
                             }
                             skillStatus.commit();
                             result.put("accepted", true);
@@ -143,6 +157,9 @@ public class ChangeSkillStatusService extends AbstractAPIHandler implements APIH
                             }
                             if(editable != null && editable.equals("true")) {
                                 skillName.remove("editable");
+                            }
+                            if(staffPick != null && staffPick.equals("false")) {
+                                skillName.remove("staffPick");
                             }
                             if(skillName.length() == 0) {
                                 languageName.remove(skill_name);
