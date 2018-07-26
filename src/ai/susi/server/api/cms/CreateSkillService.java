@@ -319,16 +319,31 @@ public class CreateSkillService extends AbstractAPIHandler implements APIHandler
                       if(value.length() > 0)
                           designObject.put("botIconImage",value);
                   }
-                  else if (line.startsWith("::sites_enabled") && (thenpos = line.indexOf(' ')) > 0) {
-                      String value = line.substring(thenpos + 1).trim();
-                      if(value.length() > 0)
-                          configObject.put("sites_enabled",value);
-                  }
-                  else if (line.startsWith("::sites_disabled") && (thenpos = line.indexOf(' ')) > 0) {
-                      String value = line.substring(thenpos + 1).trim();
-                      if(value.length() > 0)
-                          configObject.put("sites_disabled",value);
-                  }
+                  else if (line.startsWith("::allow_bot_only_on_own_sites") && (thenpos = line.indexOf(' ')) > 0) {
+                    Boolean value = false;
+                    if(line.substring(thenpos + 1).trim().equalsIgnoreCase("yes")) value = true;
+                    configObject.put("allow_bot_only_on_own_sites",value);
+                }
+                else if (line.startsWith("::allowed_sites") && (thenpos = line.indexOf(' ')) > 0) {
+                    String value = line.substring(thenpos + 1).trim();
+                    if(value.length() > 0)
+                        configObject.put("allowed_sites",value);
+                }
+                else if (line.startsWith("::enable_default_skills") && (thenpos = line.indexOf(' ')) > 0) {
+                    Boolean value = true;
+                    if(line.substring(thenpos + 1).trim().equalsIgnoreCase("no")) value = false;
+                    configObject.put("enable_default_skills",value);
+                }
+                else if (line.startsWith("::enable_bot_in_my_devices") && (thenpos = line.indexOf(' ')) > 0) {
+                    Boolean value = false;
+                    if(line.substring(thenpos + 1).trim().equalsIgnoreCase("yes")) value = true;
+                    configObject.put("enable_bot_in_my_devices",value);
+                }
+                else if (line.startsWith("::enable_bot_for_other_users") && (thenpos = line.indexOf(' ')) > 0) {
+                    Boolean value = false;
+                    if(line.substring(thenpos + 1).trim().equalsIgnoreCase("yes")) value = true;
+                    configObject.put("enable_bot_for_other_users",value);
+                }
                 }
               }
           } catch (IOException e) {
