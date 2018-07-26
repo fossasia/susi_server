@@ -64,7 +64,7 @@ public class GetSkillsByAuthor extends AbstractAPIHandler implements APIHandler 
         if(author_email == null) {
             for (Map.Entry<SusiSkill.ID, SusiSkill> entry : DAO.susi.getSkillMetadata().entrySet()) {
                 SusiSkill.ID skill = entry.getKey();
-                if ((entry.getValue().getAuthor()!=null) && entry.getValue().getAuthor().contains(author.toLowerCase())) {
+                if ((entry.getValue().getAuthor()!=null) && entry.getValue().getAuthor().contains(author)) {
                     result.put(result.length()+"",skill);
                 }
             }
