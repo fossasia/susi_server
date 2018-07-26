@@ -34,6 +34,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.regex.Pattern;
+import java.util.Date;
+import ai.susi.tools.DateParser;
 
 public class SignUpService extends AbstractAPIHandler implements APIHandler {
 
@@ -222,6 +224,10 @@ public class SignUpService extends AbstractAPIHandler implements APIHandler {
 				result.put("message", "You successfully signed-up, but no email was sent: " + e.getMessage());
 			}
 		} else {
+			// store the time of signup in accounting object
+			Accounting accounting = DAO.getAccounting(identity);
+			Date currentTime = new Date();
+			accounting.getJSON().put("signupTime", DateParser.formatRFC1123(currentTime));
 			result.put("message", "You successfully signed-up!");
 			result.put("accepted", true);
 		}
