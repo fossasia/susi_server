@@ -162,7 +162,13 @@ public class SkillMetricsDataService extends AbstractAPIHandler implements APIHa
         });
 
         JSONArray creationDateData = getSlicedArray(jsonValues, count);
-        skillMetrics.put("latest", creationDateData);
+        skillMetrics.put("newest", creationDateData);
+
+         // Get skills based on latest modified
+        SusiSkill.sortByModifiedTime(jsonValues, false);
+
+        JSONArray modifiedDateData = getSlicedArray(jsonValues, count);
+        skillMetrics.put("latest", modifiedDateData);
 
         // Get skills based on ratings
         SusiSkill.sortByAvgStar(jsonValues, false);
