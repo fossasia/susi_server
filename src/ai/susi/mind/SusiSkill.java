@@ -36,6 +36,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import ai.susi.server.ServiceResponse;
 import org.jfree.util.Log;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -587,6 +588,7 @@ public class SusiSkill {
                 skillMetadata.put("dynamic_content", skill.getDynamicContent());
                 skillMetadata.put("examples", skill.getExamples() ==null ? JSONObject.NULL: skill.getExamples());
                 skillMetadata.put("skill_rating", getSkillRating(model, group, language, skillname));
+                skillMetadata.put("supported_languages", getSupportedLanguages(model, group, language, skillname));
                 skillMetadata.put("reviewed", getSkillReviewStatus(model, group, language, skillname));
                 skillMetadata.put("editable", getSkillEditStatus(model, group, language, skillname));
                 skillMetadata.put("staffPick", isStaffPick(model, group, language, skillname));
@@ -665,7 +667,36 @@ public class SusiSkill {
 
         return newRating;
     }
-    
+
+    public static JSONArray getSupportedLanguages(String model, String group, String language, String skillname) {
+        // rating
+        JsonTray skillRating = DAO.skillSupportedLanguages;
+        if (skillRating.has(model)) {
+            JSONObject modelName = skillRating.getJSONObject(model);
+            if (modelName.has(group)) {
+                JSONArray groupName = modelName.getJSONArray(group);
+
+                for (int i = 0; i < groupName.length(); i++) {
+                    JSONArray supportedLanguages = groupName.getJSONArray(i);
+                    for (int j = 0; j < supportedLanguages.length(); j++) {
+                        JSONObject languageObject = supportedLanguages.getJSONObject(j);
+                        String supportedLanguage = languageObject.get("language").toString();
+                        String skillName = languageObject.get("name").toString();
+                        if (supportedLanguage.equalsIgnoreCase(language) && skillName.equalsIgnoreCase(skillname)) {
+                            return supportedLanguages;
+                        }
+                    }
+                }
+            }
+        }
+        JSONArray supportedLanguages = new JSONArray();
+        JSONObject languageObject = new JSONObject();
+        languageObject.put("language", language);
+        languageObject.put("name", skillname);
+        supportedLanguages.put(languageObject);
+        return supportedLanguages;
+    }
+
     public static void sortByAvgStar(List<JSONObject> jsonValues, boolean ascending) {
     	// Get skills based on ratings
         Collections.sort(jsonValues, new Comparator<JSONObject>() {
