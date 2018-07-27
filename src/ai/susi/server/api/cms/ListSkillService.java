@@ -138,6 +138,7 @@ public class ListSkillService extends AbstractAPIHandler implements APIHandler {
         String countString = call.get("count", null);
         int offset = call.get("offset", 0);
         String searchQuery = call.get("q", null);
+        int page = call.get("page", 0);
         Integer count = null;
         Boolean countFilter = false;
         Boolean dateFilter = false;
@@ -156,6 +157,7 @@ public class ListSkillService extends AbstractAPIHandler implements APIHandler {
                 countFilter = true;
                 try {
                     count = Integer.parseInt(countString);
+                    offset = page*count;
                 } catch(NumberFormatException ex) {
                     throw new APIException(422, "Invalid count value.");
                 }
@@ -276,9 +278,9 @@ public class ListSkillService extends AbstractAPIHandler implements APIHandler {
                 }
 
                 if(countFilter) {
-                     if(count == 0) {
+                    if(count == 0) {
                         break;
-                     } else {
+                    } else {
                         count --;
                      }
                  }
@@ -316,6 +318,16 @@ public class ListSkillService extends AbstractAPIHandler implements APIHandler {
                  }
                 filteredData.put(jsonValues.get(i));
             }
+            if (countFilter) {
+                try {
+                    count = Integer.parseInt(countString);
+                    int pageCount = jsonArray.length() % count == 0 ? (jsonArray.length() / count) : (jsonArray.length() / count) + 1;
+                    json.put("pageCount", pageCount);
+                }
+                catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
             json.put("filteredData", filteredData);
         } else {
             if(countFilter) {
@@ -332,6 +344,16 @@ public class ListSkillService extends AbstractAPIHandler implements APIHandler {
                     }
                     String keyName = skillObject.names().getString(i);
                     tempSkillObject.put(keyName, skillObject.getJSONObject(keyName));
+                }
+                if (countFilter) {
+                    try {
+                        count = Integer.parseInt(countString);
+                        int pageCount = skillObject.length() % count == 0 ? (skillObject.length() / count) : (skillObject.length() / count) + 1;
+                        json.put("pageCount", pageCount);
+                    }
+                    catch (Exception e) {
+                        e.printStackTrace();
+                    }
                 }
                 skillObject = tempSkillObject;
             }
