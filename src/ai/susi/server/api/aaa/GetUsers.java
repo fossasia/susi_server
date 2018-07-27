@@ -22,6 +22,7 @@ import java.util.List;
  * getPageCount -> boolean http://localhost:4000/aaa/getUsers.json?access_token=go2ijgk5ijkmViAac2bifng3uthdZ&getPageCount=true
  * getUserCount -> boolean http://localhost:4000/aaa/getUsers.json?access_token=go2ijgk5ijkmViAac2bifng3uthdZ&getUserCount=true
  * getUserStats -> boolean http://localhost:4000/aaa/getUsers.json?access_token=go2ijgk5ijkmViAac2bifng3uthdZ&getUserStats=true
+ * search       -> string http://localhost:4000/aaa/getUsers.json?access_token=go2ijgk5ijkmViAac2bifng3uthdZ&search=mario
  * page         -> integer http://localhost:4000/aaa/getUsers.json?access_token=go2ijgk5ijkmViAac2bifng3uthdZ&page=2
  */
 public class GetUsers extends AbstractAPIHandler implements APIHandler {
@@ -47,6 +48,7 @@ public class GetUsers extends AbstractAPIHandler implements APIHandler {
     public ServiceResponse serviceImpl(Query call, HttpServletResponse response, Authorization rights, final JsonObjectWithDefault permissions) throws APIException {
         if (call.get("getPageCount", false) == false
                 && call.get("getUserStats", false) == false
+                && call.get("search", null) == null
                 && call.get("page", null) == null
                 && call.get("getUserCount", null) == null) {
             throw new APIException(422, "Bad Request. No parameter present");
@@ -58,6 +60,7 @@ public class GetUsers extends AbstractAPIHandler implements APIHandler {
         List<String> keysList = new ArrayList<String>();
         authorized.forEach(client -> keysList.add(client.toString()));
         String[] keysArray = keysList.toArray(new String[keysList.size()]);
+        String searchTerm = call.get("search", null);
         if (call.get("getPageCount", false) == true) {
             int pageCount = keysArray.length % 50 == 0 ? (keysArray.length / 50) : (keysArray.length / 50) + 1;
             result.put("pageCount", pageCount);
@@ -84,81 +87,84 @@ public class GetUsers extends AbstractAPIHandler implements APIHandler {
             List<JSONObject> userList = new ArrayList<JSONObject>();
             //authorized.forEach(client -> userList.add(client.toJSON()));
             for (Client client : authorized) {
-                JSONObject json = client.toJSON();
+                String email = client.toString().substring(6); 
+                if (searchTerm == null || email.contains(searchTerm)){
+                  JSONObject json = client.toJSON();
 
-                // generate client identity to get user role
-                ClientIdentity identity = new ClientIdentity(ClientIdentity.Type.email, client.getName());
-                Authorization authorization = DAO.getAuthorization(identity);
-                UserRole userRole = authorization.getUserRole();
+                  // generate client identity to get user role
+                  ClientIdentity identity = new ClientIdentity(ClientIdentity.Type.email, client.getName());
+                  Authorization authorization = DAO.getAuthorization(identity);
+                  UserRole userRole = authorization.getUserRole();
 
-                // count user roles
-                if (userRole.toString().toLowerCase().equals("anonymous")){
-                  ++anonymous;
-                }
-                if (userRole.toString().toLowerCase().equals("user")){
-                  ++user;
-                }
-                if (userRole.toString().toLowerCase().equals("reviewer")){
-                  ++reviewer;
-                }
-                if (userRole.toString().toLowerCase().equals("operator")){
-                  ++operator;
-                }
-                if (userRole.toString().toLowerCase().equals("admin")){
-                  ++admin;
-                }
-                if (userRole.toString().toLowerCase().equals("superadmin")){
-                  ++superAdmin;
-                }
+                  // count user roles
+                  if (userRole.toString().toLowerCase().equals("anonymous")){
+                    ++anonymous;
+                  }
+                  if (userRole.toString().toLowerCase().equals("user")){
+                    ++user;
+                  }
+                  if (userRole.toString().toLowerCase().equals("reviewer")){
+                    ++reviewer;
+                  }
+                  if (userRole.toString().toLowerCase().equals("operator")){
+                    ++operator;
+                  }
+                  if (userRole.toString().toLowerCase().equals("admin")){
+                    ++admin;
+                  }
+                  if (userRole.toString().toLowerCase().equals("superadmin")){
+                    ++superAdmin;
+                  }
 
-                // put user role in response
-                json.put("userRole", userRole.toString().toLowerCase());
+                  // put user role in response
+                  json.put("userRole", userRole.toString().toLowerCase());
 
-                //generate client credentials to get status whether verified or not
-                ClientCredential clientCredential = new ClientCredential(ClientCredential.Type.passwd_login, identity.getName());
-                Authentication authentication = DAO.getAuthentication(clientCredential);
+                  //generate client credentials to get status whether verified or not
+                  ClientCredential clientCredential = new ClientCredential(ClientCredential.Type.passwd_login, identity.getName());
+                  Authentication authentication = DAO.getAuthentication(clientCredential);
 
-                //count verified status
-                if (authentication.getBoolean("activated", false)){
-                   ++activeUsers;
-                }else{
-                   ++inactiveUsers;
-                }
+                  //count verified status
+                  if (authentication.getBoolean("activated", false)){
+                    ++activeUsers;
+                  }else{
+                    ++inactiveUsers;
+                  }
 
-                //put verified status in response
-                json.put("confirmed", authentication.getBoolean("activated", false));
+                  //put verified status in response
+                  json.put("confirmed", authentication.getBoolean("activated", false));
 
-                /* Generate accounting object to get details like last login IP,
-                 * signup time and last login time and put it in the response
-                 * */
-                Accounting accounting = DAO.getAccounting(authorization.getIdentity());
-                if (accounting.getJSON().has("lastLoginIP")) {
-                    json.put("lastLoginIP", accounting.getJSON().getString("lastLoginIP"));
-                } else {
-                    json.put("lastLoginIP", "");
-                }
+                  /* Generate accounting object to get details like last login IP,
+                   * signup time and last login time and put it in the response
+                   * */
+                  Accounting accounting = DAO.getAccounting(authorization.getIdentity());
+                  if (accounting.getJSON().has("lastLoginIP")) {
+                      json.put("lastLoginIP", accounting.getJSON().getString("lastLoginIP"));
+                  } else {
+                      json.put("lastLoginIP", "");
+                  }
 
-                if(accounting.getJSON().has("signupTime")) {
-                    json.put("signupTime", accounting.getJSON().getString("signupTime"));
-                } else {
-                    json.put("signupTime", "");
-                }
+                  if(accounting.getJSON().has("signupTime")) {
+                      json.put("signupTime", accounting.getJSON().getString("signupTime"));
+                  } else {
+                      json.put("signupTime", "");
+                  }
 
-                if(accounting.getJSON().has("lastLoginTime")) {
-                    json.put("lastLoginTime", accounting.getJSON().getString("lastLoginTime"));
-                } else {
-                    json.put("lastLoginTime", "");
-                }
+                  if(accounting.getJSON().has("lastLoginTime")) {
+                      json.put("lastLoginTime", accounting.getJSON().getString("lastLoginTime"));
+                  } else {
+                      json.put("lastLoginTime", "");
+                  }
 
-                if(accounting.getJSON().has("devices")) {
-                    json.put("devices", accounting.getJSON().getJSONObject("devices"));
-                } else {
-                    json.put("devices", "");
-                }
-                accounting.commit();
+                  if(accounting.getJSON().has("devices")) {
+                      json.put("devices", accounting.getJSON().getJSONObject("devices"));
+                  } else {
+                      json.put("devices", "");
+                  }
+                  accounting.commit();
 
-                //add the user details in the list
-                userList.add(json);
+                  //add the user details in the list
+                  userList.add(json);
+              }
             }
 
             List<JSONObject> currentPageUsers = new ArrayList<JSONObject>();
@@ -181,8 +187,17 @@ public class GetUsers extends AbstractAPIHandler implements APIHandler {
               } catch (Exception e) {
                   throw new APIException(422, "Requested List does not exists!");
               }
+            } else if (call.get("search", null) != null) {
+                try {
+                  result.put("users", userList);
+                  result.put("accepted", true);
+                  result.put("message", "Success: Fetched all users with " + call.get("search", null) + " !");
+                  return new ServiceResponse(result);
+              } catch (Exception e) {
+                  throw new APIException(422, "Requested user does not exists!");
+              }
             } else {
-              try {
+                try {
                   String[] currentKeysArray = Arrays.copyOfRange(keysArray, page, page + length);
                   for (int i = 0; i < length; ++i) {
                       currentPageUsers.add(userList.get(page + i));
@@ -192,8 +207,8 @@ public class GetUsers extends AbstractAPIHandler implements APIHandler {
                   result.put("accepted", true);
                   result.put("message", "Success: Fetched all Users with their User Roles and connected devices!");
                   return new ServiceResponse(result);
-              } catch (Exception e) {
-                  throw new APIException(422, "Requested List does not exists!");
+                } catch (Exception e) {
+                    throw new APIException(422, "Requested List does not exists!");
               }
             }
         }
