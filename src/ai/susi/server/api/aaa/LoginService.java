@@ -33,6 +33,9 @@ import java.security.PublicKey;
 import java.security.Signature;
 import java.time.Instant;
 import java.util.Base64;
+import java.util.Date;
+import ai.susi.tools.DateParser;
+
 
 /**
  * This service allows users to login, logout or to check their login status.
@@ -237,6 +240,11 @@ public class LoginService extends AbstractAPIHandler implements APIHandler {
 			// store the IP of last login in accounting object
 			Accounting accounting = DAO.getAccounting(identity);
 			accounting.getJSON().put("lastLoginIP", post.getClientHost());
+
+			// store the time of last login in accounting object
+			Date currentTime = new Date();
+			accounting.getJSON().put("lastLoginTime", DateParser.formatRFC1123(currentTime));
+
             accounting.commit();
 
 			return new ServiceResponse(result);
