@@ -91,7 +91,7 @@ import org.apache.log4j.PatternLayout;
 public class DAO {
 
     private final static String ACCESS_DUMP_FILE_PREFIX = "access_";
-    public  static File conf_dir, bin_dir, html_dir, data_dir, skill_status_dir, susi_chatlog_dir, susi_skilllog_dir, model_watch_dir, susi_skill_repo, private_skill_watch_dir, susi_private_skill_repo, usi_skill_repo, deleted_skill_dir;
+    public  static File conf_dir, bin_dir, html_dir, data_dir, skill_status_dir, susi_chatlog_dir, susi_skilllog_dir, model_watch_dir, susi_skill_repo, private_skill_watch_dir, susi_private_skill_repo, usi_skill_repo, deleted_skill_dir, system_keys;
     public static String conflictsPlaceholder = "%CONFLICTS%";
     private static File external_data, assets, dictionaries;
     private static Settings public_settings, private_settings;
@@ -108,6 +108,7 @@ public class DAO {
     public  static JsonTray passwordreset;
     private static JsonFile login_keys;
     public static JsonTray group;
+    public static JsonTray apiKeys;
 
     // CMS Schema for server usage
     public static JsonTray skillRating;
@@ -258,6 +259,15 @@ public class DAO {
         group = new JsonTray(groups_per.toFile(), groups_vol.toFile(), 1000000);
         OS.protectPath(groups_per);
         OS.protectPath(groups_vol);
+
+        /*System Keys storage*/
+        Path system_keys_dir = dataPath.resolve("system_keys");
+        system_keys_dir.toFile().mkdirs();
+        Path apiKeys_per = system_keys_dir.resolve("apiKeys.json");
+        Path apiKeys_vol = system_keys_dir.resolve("apiKeys_session.json");
+        apiKeys = new JsonTray(apiKeys_per.toFile(), apiKeys_vol.toFile(), 1000000);
+        OS.protectPath(apiKeys_per);
+        OS.protectPath(apiKeys_vol);
 
         /*Skill Rating storage*/
         Path susi_skill_rating_dir = dataPath.resolve("skill_rating");
