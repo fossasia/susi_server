@@ -5,18 +5,13 @@ import ai.susi.json.JsonObjectWithDefault;
 import ai.susi.json.JsonTray;
 import ai.susi.mind.SusiSkill;
 import ai.susi.server.*;
-import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.http.util.TextUtils;
 import org.json.JSONArray;
-import org.json.JSONException;
 import org.json.JSONObject;
 
-import javax.mail.Folder;
 import javax.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.sql.Timestamp;
-import java.time.LocalDate;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
@@ -227,7 +222,6 @@ public class ListSkillService extends AbstractAPIHandler implements APIHandler {
                 }
             }
         }
-
         // if filter is applied, sort the data accordingly
         if (call.get("applyFilter", false)) {
 
@@ -284,7 +278,7 @@ public class ListSkillService extends AbstractAPIHandler implements APIHandler {
                         count --;
                      }
                  }
-                 if (dateFilter) {
+                 if (dateFilter && duration > 0) {
                      long durationInMillisec = TimeUnit.DAYS.toMillis(duration);
                      long timestamp = System.currentTimeMillis() - durationInMillisec;
                      String startDate = new Timestamp(timestamp).toString().substring(0, 10); //substring is used for getting timestamp upto date only
