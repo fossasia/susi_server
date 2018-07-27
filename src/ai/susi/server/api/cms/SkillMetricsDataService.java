@@ -143,23 +143,7 @@ public class SkillMetricsDataService extends AbstractAPIHandler implements APIHa
         }
 
         // Get skills based on creation date - Returns latest skills
-        Collections.sort(jsonValues, new Comparator<JSONObject>() {
-            private static final String KEY_NAME = "creationTime";
-            @Override
-            public int compare(JSONObject a, JSONObject b) {
-                Object valA, valB;
-                int result = 0;
-
-                try {
-                    valA = a.opt(KEY_NAME); if (valA == null) valA = "";
-                    valB = b.opt(KEY_NAME); if (valB == null) valB = "";
-                    result = valB.toString().compareToIgnoreCase(valA.toString());
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-                return result;
-            }
-        });
+        SusiSkill.sortByCreationTime(jsonValues, false);
 
         JSONArray creationDateData = getSlicedArray(jsonValues, count);
         skillMetrics.put("latest", creationDateData);
@@ -178,28 +162,6 @@ public class SkillMetricsDataService extends AbstractAPIHandler implements APIHa
 
         // Get skills based on feedback count
         SusiSkill.sortByFeedbackCount(jsonValues, false);
-        Collections.sort(jsonValues, new Comparator<JSONObject>() {
-            @Override
-            public int compare(JSONObject a, JSONObject b) {
-                Object valA, valB;
-                int result=0;
-
-                try {                    
-                    valA = a.opt("skill_rating");
-                    valB = b.opt("skill_rating");
-                    if (valA == null || !(valA instanceof JSONObject) || ((JSONObject) valA).opt("feedback_count") == null) valA = new JSONObject().put("feedback_count", 0);
-                    if (valB == null || !(valB instanceof JSONObject) || ((JSONObject) valB).opt("feedback_count") == null) valB = new JSONObject().put("feedback_count", 0);
-
-                    result = Integer.compare(
-                            ((JSONObject) valB).getInt("feedback_count"),
-                            ((JSONObject) valA).getInt("feedback_count")
-                    );
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-                return result;
-            }
-        });
 
         JSONArray feedbackData = getSlicedArray(jsonValues, count);
         skillMetrics.put("feedback", feedbackData);
