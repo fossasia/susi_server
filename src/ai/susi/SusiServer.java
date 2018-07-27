@@ -466,6 +466,7 @@ public class SusiServer {
                 SignUpService.class,
                 TopMenuService.class,
                 PasswordChangeService.class,
+                ChangeUserPassword.class,
                 ListSettingsService.class,
                 ConvertSkillJsonToTxtService.class,
                 GroupListService.class,
