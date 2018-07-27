@@ -96,7 +96,7 @@ public class UpdateSupportedLanguages extends AbstractAPIHandler implements APIH
                         JSONObject languageObject = supportedLanguages.getJSONObject(j);
                         String supportedLanguage = languageObject.get("language").toString();
                         String skillName = languageObject.get("name").toString();
-                        if (supportedLanguage.equals(language_name) && skillName.equals(skill_name)) {
+                        if (supportedLanguage.equalsIgnoreCase(language_name) && skillName.equalsIgnoreCase(skill_name)) {
 
                             for (int k = 0; k < supportedLanguages.length(); k++) {
                                 JSONObject tempLanguageObject = supportedLanguages.getJSONObject(k);
