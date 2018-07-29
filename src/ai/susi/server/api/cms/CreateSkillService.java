@@ -38,8 +38,11 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.sql.Timestamp;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.attribute.BasicFileAttributes;
+import java.nio.file.attribute.FileTime;
 
 /**
  * Created by saurabh on 7/6/17.
@@ -165,6 +168,15 @@ public class CreateSkillService extends AbstractAPIHandler implements APIHandler
                                 path = skill.getPath().replace(DAO.model_watch_dir.toString(), "models");
                             }
 
+                            BasicFileAttributes attr = null;
+                            Path newPath = Paths.get(path);
+                            // Override modified date to an older date so that the recently updated metrics works fine
+                            // Set is to the epoch time
+                            try {
+                              Files.setAttribute(newPath, "lastModifiedTime", FileTime.fromMillis(0));
+                            } catch (IOException e) {
+                              System.err.println("Cannot override the modified time. " + e);
+                            }
                         } catch (IOException e) {
                             e.printStackTrace();
                             json.put("message", "error: " + e.getMessage());
