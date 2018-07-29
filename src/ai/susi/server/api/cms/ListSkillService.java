@@ -140,6 +140,12 @@ public class ListSkillService extends AbstractAPIHandler implements APIHandler {
         Boolean searchFilter = false;
         String reviewed = call.get("reviewed", "false");
         String[] language_names = language_list.split(",");
+        JSONObject skillStats = new JSONObject();
+        int totalSkills = 0;
+        int reviewedSkills = 0;
+        int nonReviewedSkills = 0;
+        int editableSkills = 0;
+        int nonEditableSkills = 0;
 
         if (!(reviewed.equals("true") || reviewed.equals("false"))) {
             throw new APIException(400, "Bad service call.");
@@ -181,16 +187,35 @@ public class ListSkillService extends AbstractAPIHandler implements APIHandler {
                     for (String skill_name : fileList) {
                         skill_name = skill_name.replace(".txt", "");
                         JSONObject skillMetadata = SusiSkill.getSkillMetadata(model_name, temp_group_name, language_name, skill_name, duration);
+                        totalSkills++;
 
                         if(reviewed.equals("true")) {
                             if(SusiSkill.getSkillReviewStatus(model_name, temp_group_name, language_name, skill_name)) {
                                 jsonArray.put(skillMetadata);
                                 skillObject.put(skill_name, skillMetadata);
+                                reviewedSkills++;
+                            }
+                            else {
+                                nonReviewedSkills++;
                             }
                         }
                         else {
                             jsonArray.put(skillMetadata);
                             skillObject.put(skill_name, skillMetadata);
+
+                            if(SusiSkill.getSkillReviewStatus(model_name, temp_group_name, language_name, skill_name)) {
+                                reviewedSkills++;
+                            }
+                            else {
+                                nonReviewedSkills++;
+                            }
+                        }
+
+                        if(SusiSkill.getSkillEditStatus(model_name, temp_group_name, language_name, skill_name)) {
+                            editableSkills++;
+                        }
+                        else {
+                            nonEditableSkills++;
                         }
                     }
                 }
@@ -208,16 +233,35 @@ public class ListSkillService extends AbstractAPIHandler implements APIHandler {
                 for (String skill_name : fileList) {
                     skill_name = skill_name.replace(".txt", "");
                     JSONObject skillMetadata = SusiSkill.getSkillMetadata(model_name, group_name, language_name, skill_name, duration);
+                    totalSkills++;
 
                     if(reviewed.equals("true")) {
                         if(SusiSkill.getSkillReviewStatus(model_name, group_name, language_name, skill_name)) {
                             jsonArray.put(skillMetadata);
                             skillObject.put(skill_name, skillMetadata);
+                            reviewedSkills++;
+                        }
+                        else {
+                            nonReviewedSkills++;
                         }
                     }
                     else {
                         jsonArray.put(skillMetadata);
                         skillObject.put(skill_name, skillMetadata);
+
+                        if(SusiSkill.getSkillReviewStatus(model_name, group_name, language_name, skill_name)) {
+                            reviewedSkills++;
+                        }
+                        else {
+                            nonReviewedSkills++;
+                        }
+                    }
+
+                    if(SusiSkill.getSkillEditStatus(model_name, group_name, language_name, skill_name)) {
+                        editableSkills++;
+                    }
+                    else {
+                        nonEditableSkills++;
                     }
                 }
             }
@@ -353,10 +397,17 @@ public class ListSkillService extends AbstractAPIHandler implements APIHandler {
             }
         }
 
+        skillStats.put("totalSkills", totalSkills);
+        skillStats.put("reviewedSkills", reviewedSkills);
+        skillStats.put("nonReviewedSkills", nonReviewedSkills);
+        skillStats.put("editableSkills", editableSkills);
+        skillStats.put("nonEditableSkills", nonEditableSkills);
+
         json.put("model", model_name)
                 .put("group", group_name)
                 .put("language", language_list);
         json.put("skills", skillObject);
+        json.put("skillStats", skillStats);
         json.put("accepted", true);
         json.put("message", "Success: Fetched skill list");
         return new ServiceResponse(json);
