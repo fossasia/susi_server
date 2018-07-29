@@ -44,6 +44,23 @@ stop|off|shut up|stop *
 {"actions":[{"type":"stop"}]}
 eol
 
+# pause whatever happens
+pause | pause that | pause this | pause *
+!console:
+{"actions":[{"type":"pause"}]}
+eol
+
+# resume whatever has been paused
+resume | resume that | resume this  | continue | continue that | continue this | keep going | continue * | resume *
+!console:
+{"actions":[{"type":"resume"}]}
+eol
+
+start over | restart | start again
+!console:
+{"actions":[{"type":"restart"}]}
+eol
+
 # test audio play
 system check
 !console:all systems are go, all lights are green!
