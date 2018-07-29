@@ -460,6 +460,7 @@ public class SusiServer {
                 LoginService.class,
                 PasswordRecoveryService.class,
                 PasswordResetService.class,
+                DeleteUserAccountService.class,
                 PublicKeyRegistrationService.class,
                 DownloadDataSettings.class,
                 StorePersonalInfoService.class,
