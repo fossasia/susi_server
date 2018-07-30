@@ -455,7 +455,8 @@ public class SusiServer {
                 // aaa services
                 StatusService.class,
                 AppsService.class,
-                ApiKeysService.class, 
+                ApiKeysService.class,
+                GetApiKeys.class,
                 AuthorizationDemoService.class,
                 LoginService.class,
                 PasswordRecoveryService.class,
