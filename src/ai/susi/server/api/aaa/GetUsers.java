@@ -160,6 +160,18 @@ public class GetUsers extends AbstractAPIHandler implements APIHandler {
                   } else {
                       json.put("devices", "");
                   }
+
+                  if(accounting.getJSON().has("settings")) {
+                      JSONObject settings = accounting.getJSON().getJSONObject("settings");
+                      if(settings.has("userName")) {
+                        json.put("userName", settings.get("userName"));
+                      }
+                      else {
+                          json.put("userName", "");
+                      }
+                  } else {
+                      json.put("userName", "");
+                  }
                   accounting.commit();
 
                   //add the user details in the list
