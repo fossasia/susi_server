@@ -73,19 +73,24 @@ public class ApiKeysService extends AbstractAPIHandler implements APIHandler {
             throw new APIException(422, "Bad Request. No parameter present");
         }
 
-        JsonTray apiKeys = DAO.apiKeys;
-        JSONObject result = new JSONObject();
-        boolean deleteKey = call.get("deleteKey", false);
         String keyName = call.get("keyName", null);
         String keyValue = call.get("keyValue", null);
         String type = call.get("type", "public");
+        boolean deleteKey = call.get("deleteKey", false);
+        JsonTray apiKeys = DAO.apiKeys;
+        JSONObject result = new JSONObject();
+        JSONObject keys = new JSONObject();
+
+        if (apiKeys.has(type)) {
+            keys = apiKeys.getJSONObject(type);
+        }
 
 	if(!deleteKey){
             try {
                JSONObject api = new JSONObject();
                api.put("value", keyValue);
-               api.put("type", type);
-               apiKeys.put(keyName, api, true);
+               keys.put(keyName, api);
+               apiKeys.put(type, keys, true);
                result.put("accepted", true);
                result.put("message", "Added new API key " + call.get("keyName") + " successfully !");
                return new ServiceResponse(result);
@@ -94,7 +99,8 @@ public class ApiKeysService extends AbstractAPIHandler implements APIHandler {
             }
 	} else {
             try {
-               apiKeys.remove(keyName);
+               keys.remove(keyName);
+               apiKeys.put(type, keys, true);
                result.put("accepted", true);
                result.put("message", "Removed API key " + call.get("keyName") + " successfully !");
                return new ServiceResponse(result);
