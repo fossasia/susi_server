@@ -2,6 +2,8 @@ package ai.susi.server.api.cms;
 
 import ai.susi.DAO;
 import ai.susi.json.JsonObjectWithDefault;
+import ai.susi.json.JsonTray;
+import org.json.JSONObject;
 import ai.susi.mind.SusiSkill;
 import ai.susi.server.APIException;
 import ai.susi.server.APIHandler;
@@ -28,11 +30,14 @@ import javax.servlet.http.Part;
 
 import java.awt.Image;
 import java.awt.image.BufferedImage;
+import java.io.BufferedReader;
+import java.io.FileReader;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
+import java.sql.Timestamp;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.attribute.BasicFileAttributes;
@@ -367,8 +372,13 @@ public class ModifySkillService extends AbstractAPIHandler implements APIHandler
                 resp.setCharacterEncoding("UTF-8");
                 resp.getWriter().write(json.toString());
             }
-            
-            DAO.addAndPushCommit(commit_message, userEmail, true);
+            if (privateSkill != null) {
+              this.modifyChatbot(modified_skill, userId, group_name, language_name, skill_name, modified_group_name, modified_language_name, modified_skill_name);
+              DAO.addAndPushCommitPrivate(commit_message, userEmail, true);
+            }
+            else {
+              DAO.addAndPushCommit(commit_message, userEmail, true);
+            }
         }
         else{
             JSONObject json = new JSONObject();
@@ -377,6 +387,138 @@ public class ModifySkillService extends AbstractAPIHandler implements APIHandler
             resp.setContentType("application/json");
             resp.setCharacterEncoding("UTF-8");
             resp.getWriter().write(json.toString());
+        }
+    }
+
+    /**
+    * Helper method to update the private skill bot of the user in chatbot.json file
+    */
+    private static void modifyChatbot(File modified_skill, String userId, String group_name, String language_name, String skill_name, String modified_group_name, String modified_language_name, String modified_skill_name) {
+        JsonTray chatbot = DAO.chatbot;
+        JSONObject userName = new JSONObject();
+        JSONObject groupName = new JSONObject();
+        JSONObject languageName = new JSONObject();
+        JSONObject designObject = new JSONObject();
+        JSONObject configObject = new JSONObject();
+        Timestamp timestamp = new Timestamp(System.currentTimeMillis());
+        if (chatbot.has(userId)) {
+            userName = chatbot.getJSONObject(userId);
+            if (userName.has(modified_group_name)) {
+                groupName = userName.getJSONObject(modified_group_name);
+                if (groupName.has(modified_language_name)) {
+                    languageName = groupName.getJSONObject(modified_language_name);
+                }
+            }
+        }
+
+        // read design and configuration settings
+        try {
+          BufferedReader br = new BufferedReader(new FileReader(modified_skill));
+          String line = "";
+          readloop: while ((line = br.readLine()) != null) {
+            String linebeforetrim = line;
+            line = line.trim();
+
+            if (line.startsWith("::")) {
+              int thenpos=-1;
+              if (line.startsWith("::bodyBackgroundImage") && (thenpos = line.indexOf(' ')) > 0) {
+                String value = line.substring(thenpos + 1).trim();
+                if(value.length() > 0)
+                designObject.put("bodyBackgroundImage",value);
+              }
+              else if (line.startsWith("::bodyBackground") && (thenpos = line.indexOf(' ')) > 0) {
+                String value = line.substring(thenpos + 1).trim();
+                if(value.length() > 0)
+                designObject.put("bodyBackground",value);
+              }
+              else if (line.startsWith("::userMessageBoxBackground") && (thenpos = line.indexOf(' ')) > 0) {
+                String value = line.substring(thenpos + 1).trim();
+                if(value.length() > 0)
+                designObject.put("userMessageBoxBackground",value);
+              }
+              else if (line.startsWith("::userMessageTextColor") && (thenpos = line.indexOf(' ')) > 0) {
+                String value = line.substring(thenpos + 1).trim();
+                if(value.length() > 0)
+                designObject.put("userMessageTextColor",value);
+              }
+              else if (line.startsWith("::botMessageBoxBackground") && (thenpos = line.indexOf(' ')) > 0) {
+                String value = line.substring(thenpos + 1).trim();
+                if(value.length() > 0)
+                designObject.put("botMessageBoxBackground",value);
+              }
+              else if (line.startsWith("::botMessageTextColor") && (thenpos = line.indexOf(' ')) > 0) {
+                String value = line.substring(thenpos + 1).trim();
+                if(value.length() > 0)
+                designObject.put("botMessageTextColor",value);
+              }
+              else if (line.startsWith("::botIconColor") && (thenpos = line.indexOf(' ')) > 0) {
+                String value = line.substring(thenpos + 1).trim();
+                if(value.length() > 0)
+                designObject.put("botIconColor",value);
+              }
+              else if (line.startsWith("::botIconImage") && (thenpos = line.indexOf(' ')) > 0) {
+                String value = line.substring(thenpos + 1).trim();
+                if(value.length() > 0)
+                designObject.put("botIconImage",value);
+              }
+              else if (line.startsWith("::allow_bot_only_on_own_sites") && (thenpos = line.indexOf(' ')) > 0) {
+                Boolean value = false;
+                if(line.substring(thenpos + 1).trim().equalsIgnoreCase("yes")) value = true;
+                configObject.put("allow_bot_only_on_own_sites",value);
+              }
+              else if (line.startsWith("::allowed_sites") && (thenpos = line.indexOf(' ')) > 0) {
+                String value = line.substring(thenpos + 1).trim();
+                if(value.length() > 0)
+                configObject.put("allowed_sites",value);
+              }
+              else if (line.startsWith("::enable_default_skills") && (thenpos = line.indexOf(' ')) > 0) {
+                Boolean value = true;
+                if(line.substring(thenpos + 1).trim().equalsIgnoreCase("no")) value = false;
+                configObject.put("enable_default_skills",value);
+              }
+              else if (line.startsWith("::enable_bot_in_my_devices") && (thenpos = line.indexOf(' ')) > 0) {
+                Boolean value = false;
+                if(line.substring(thenpos + 1).trim().equalsIgnoreCase("yes")) value = true;
+                configObject.put("enable_bot_in_my_devices",value);
+              }
+              else if (line.startsWith("::enable_bot_for_other_users") && (thenpos = line.indexOf(' ')) > 0) {
+                Boolean value = false;
+                if(line.substring(thenpos + 1).trim().equalsIgnoreCase("yes")) value = true;
+                configObject.put("enable_bot_for_other_users",value);
+              }
+            }
+          }
+        } catch (IOException e) {
+          DAO.log(e.getMessage());
+        }
+        // delete the previous chatbot
+        deleteChatbot(userId, group_name, language_name, skill_name);
+        // save a new bot
+        JSONObject botObject = new JSONObject();
+        botObject.put("design",designObject);
+        botObject.put("configure",configObject);
+        botObject.put("timestamp", timestamp.toString());
+        languageName.put(modified_skill_name, botObject);
+        groupName.put(modified_language_name, languageName);
+        userName.put(modified_group_name, groupName);
+        chatbot.put(userId, userName, true);
+    }
+
+    private static void deleteChatbot(String userId,String group,String language,String skill) {
+        JsonTray chatbot = DAO.chatbot;
+        JSONObject userIdName = new JSONObject();
+        JSONObject groupName = new JSONObject();
+        JSONObject languageName = new JSONObject();
+        if (chatbot.has(userId)) {
+            userIdName = chatbot.getJSONObject(userId);
+            if (userIdName.has(group)) {
+                groupName = userIdName.getJSONObject(group);
+                if (groupName.has(language)) {
+                    languageName = groupName.getJSONObject(language);
+                    languageName.remove(skill);
+                    chatbot.commit();
+                }
+            }
         }
     }
 
