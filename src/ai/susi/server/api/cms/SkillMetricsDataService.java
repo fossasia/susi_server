@@ -66,6 +66,7 @@ public class SkillMetricsDataService extends AbstractAPIHandler implements APIHa
         String language_list = call.get("language", "en");
         int duration = call.get("duration", -1);
         JSONArray jsonArray = new JSONArray();
+        JSONArray staffPicks = new JSONArray();
         JSONObject json = new JSONObject(true);
         JSONObject skillObject = new JSONObject();
         String countString = call.get("count", null);
@@ -114,10 +115,13 @@ public class SkillMetricsDataService extends AbstractAPIHandler implements APIHa
 
                         jsonArray.put(skillMetadata);
                         skillObject.put(skill_name, skillMetadata);
+
+                        if(SusiSkill.isStaffPick(model_name, temp_group_name, language_name, skill_name)) {
+                            staffPicks.put(skillMetadata);
+                        }
                     }
                 }
             }
-
         }
         // Returns susi skills list of a particular group
         else {
@@ -134,6 +138,10 @@ public class SkillMetricsDataService extends AbstractAPIHandler implements APIHa
 
                     jsonArray.put(skillMetadata);
                     skillObject.put(skill_name, skillMetadata);
+
+                    if(SusiSkill.isStaffPick(model_name, group_name, language_name, skill_name)) {
+                        staffPicks.put(skillMetadata);
+                    }
                 }
             }
         }
@@ -141,10 +149,15 @@ public class SkillMetricsDataService extends AbstractAPIHandler implements APIHa
 
         JSONObject skillMetrics = new JSONObject(true);
         List<JSONObject> jsonValues = new ArrayList<JSONObject>();
+        List<JSONObject> staffPicksList = new ArrayList<JSONObject>();
 
         // temporary list to extract objects from skillObject
         for (int i = 0; i < jsonArray.length(); i++) {
             jsonValues.add(jsonArray.getJSONObject(i));
+        }
+
+        for (int i = 0; i < staffPicks.length(); i++) {
+            staffPicksList.add(staffPicks.getJSONObject(i));
         }
 
         // Get skills based on creation date - Returns latest skills
@@ -176,6 +189,12 @@ public class SkillMetricsDataService extends AbstractAPIHandler implements APIHa
 
         JSONArray feedbackData = getSlicedArray(jsonValues, count);
         skillMetrics.put("feedback", feedbackData);
+
+        // Get skills based on ratings
+        SusiSkill.sortByAvgStar(staffPicksList, false);
+
+        JSONArray staffPicksArray = getSlicedArray(staffPicksList, count);
+        skillMetrics.put("staffPicks", staffPicksArray);
 
         for (String metric_name : metrics_names) {
             try {
