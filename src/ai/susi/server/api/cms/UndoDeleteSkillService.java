@@ -83,7 +83,7 @@ public class UndoDeleteSkillService  extends AbstractAPIHandler implements APIHa
                 System.out.println("Skill failed to move!");
             }
 
-            json.put("message","Deleted "+ skill_name);
+            json.put("message","Restored "+ skill_name + " successfully!");
 
             //Add to git
             try (Git git = DAO.getGit()) {
@@ -94,7 +94,7 @@ public class UndoDeleteSkillService  extends AbstractAPIHandler implements APIHa
                 // and then commit the changes
                 DAO.pushCommit(git, "Undo Delete " + skill_name, !rights.getIdentity().isAnonymous() ? rights.getIdentity().getName() : "anonymous@");
                 json.put("accepted", true);
-                json.put("message", "Deletion of Skill Aborted " + skill_name);
+                json.put("message", "Undo Deletion of " + skill_name + " aborted!");
             } catch (IOException | GitAPIException e) {
                 e.printStackTrace();
             }
