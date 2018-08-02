@@ -36,6 +36,7 @@ import ai.susi.server.ServiceResponse;
 import ai.susi.server.UserRole;
 import org.json.JSONException;
 import org.json.JSONObject;
+import ai.susi.json.JsonTray;
 import org.json.JSONTokener;
 
 import javax.servlet.http.HttpServletResponse;
@@ -86,6 +87,7 @@ public class SusiService extends AbstractAPIHandler implements APIHandler {
         String userId = post.get("userid", "");
         String group_name = post.get("group", "");
         String skill_name = post.get("skill", "");
+        Boolean include_default_skills = true;
 
         try {
             DAO.susi.observe(); // get a database update
@@ -166,6 +168,27 @@ public class SusiService extends AbstractAPIHandler implements APIHandler {
               File group_file = new File(private_skill_dir, group_name);
               File language_file = new File(group_file, language);
               skillfile = SusiSkill.getSkillFileInLanguage(language_file, skill_name, false);
+              // extracting configuration settings of this private skill
+              JsonTray chatbot = DAO.chatbot;
+              JSONObject userName = new JSONObject();
+              JSONObject groupName = new JSONObject();
+              JSONObject languageName = new JSONObject();
+              JSONObject skillName = new JSONObject();
+              if (chatbot.has(userId)) {
+                userName = chatbot.getJSONObject(userId);
+                if (userName.has(group_name)) {
+                    groupName = userName.getJSONObject(group_name);
+                    if (groupName.has(language)) {
+                        languageName = groupName.getJSONObject(language);
+                        if (languageName.has(skill_name)) {
+                            skillName = languageName.getJSONObject(skill_name);
+                            if (skillName.getJSONObject("configure").getBoolean("enable_default_skills") == false) {
+                                include_default_skills = false;
+                            }
+                        }
+                    }
+                }
+            }
             }
             // read the persona
             if (skillfile != null) try {
@@ -186,9 +209,10 @@ public class SusiService extends AbstractAPIHandler implements APIHandler {
                 e.printStackTrace();
             }
         }
-
-        // finally add the general mind definition. It's there if no other mind is conscious or the other minds do not find an answer.
-        minds.add(DAO.susi);
+        if (include_default_skills == true) {
+            // finally add the general mind definition. It's there if no other mind is conscious or the other minds do not find an answer.
+            minds.add(DAO.susi);
+        }
 
         // answer with built-in intents
         SusiCognition cognition = new SusiCognition(q, timezoneOffset, latitude, longitude, countryCode, countryName, language, deviceType, count, user.getIdentity(), minds.toArray(new SusiMind[minds.size()]));
