@@ -91,7 +91,7 @@ import org.apache.log4j.PatternLayout;
 public class DAO {
 
     private final static String ACCESS_DUMP_FILE_PREFIX = "access_";
-    public  static File conf_dir, bin_dir, html_dir, data_dir, skill_status_dir, susi_chatlog_dir, susi_skilllog_dir, model_watch_dir, susi_skill_repo, private_skill_watch_dir, susi_private_skill_repo, usi_skill_repo, deleted_skill_dir, system_keys;
+    public  static File conf_dir, bin_dir, html_dir, data_dir, skill_status_dir, susi_chatlog_dir, susi_skilllog_dir, model_watch_dir, susi_skill_repo, private_skill_watch_dir, susi_private_skill_repo, deleted_skill_dir, system_keys;
     public static String conflictsPlaceholder = "%CONFLICTS%";
     private static File external_data, assets, dictionaries;
     private static Settings public_settings, private_settings;
