@@ -83,11 +83,11 @@ public class SusiCognition {
         this.json.put("query_date", DateParser.utcFormatter.print(query_date));
         
         // compute the mind's reaction: here we compute with a hierarchy of minds. The dispute is taken from the relevant mind level that was able to compute the dispute
-        List<SusiThought> dispute = SusiMind.reactMinds(query, language, maxcount, client, observation, minds);
+        List<SusiThought> dispute = SusiMind.reactMinds(query, language, maxcount, identity, observation, minds);
         long answer_date = System.currentTimeMillis();
 
         // update country wise skill usage data
-        if (!countryCode.equals("") && !countryName.equals("")) {
+        if (!countryCode.equals("") && !countryName.equals("") && dispute.size() > 0) {
             List<String> skills = dispute.get(0).getSkills();
             for (String skill : skills) {
                 try {

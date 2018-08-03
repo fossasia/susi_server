@@ -29,6 +29,7 @@ import java.security.NoSuchAlgorithmException;
 import java.security.PublicKey;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
@@ -91,7 +92,7 @@ import org.apache.log4j.PatternLayout;
 public class DAO {
 
     private final static String ACCESS_DUMP_FILE_PREFIX = "access_";
-    public  static File conf_dir, bin_dir, html_dir, data_dir, skill_status_dir, susi_chatlog_dir, susi_skilllog_dir, model_watch_dir, susi_skill_repo, private_skill_watch_dir, susi_private_skill_repo, usi_skill_repo, deleted_skill_dir;
+    public  static File conf_dir, bin_dir, html_dir, data_dir, skill_status_dir, susi_chatlog_dir, susi_skilllog_dir, draft_dir, model_watch_dir, susi_skill_repo, private_skill_watch_dir, susi_private_skill_repo, deleted_skill_dir, system_keys;
     public static String conflictsPlaceholder = "%CONFLICTS%";
     private static File external_data, assets, dictionaries;
     private static Settings public_settings, private_settings;
@@ -99,7 +100,7 @@ public class DAO {
     private static Map<String, String> config = new HashMap<>();
     public static Boolean pullStatus=true;
     private static Logger logger;
-    private static LogAppender logAppender;
+    public static LogAppender logAppender;
 
     // AAA Schema for server usage
     private static JsonTray authentication;
@@ -108,6 +109,7 @@ public class DAO {
     public  static JsonTray passwordreset;
     private static JsonFile login_keys;
     public static JsonTray group;
+    public static JsonTray apiKeys;
 
     // CMS Schema for server usage
     public static JsonTray skillRating;
@@ -121,7 +123,12 @@ public class DAO {
     public static JsonTray bookmarkSkill;
     public static JsonTray chatbot;
     public static JsonTray skillStatus;
+    public static JsonTray skillSupportedLanguages;
     public static JsonTray ratingsOverTime;
+    public static JsonTray reportedSkills;
+    
+    // temporary solution for draft storage
+    public static Map<String, Map<String, Draft>> drafts = new HashMap<>(); // key is the user's identity, inner map key is draft id
 
 
     static {
@@ -156,11 +163,13 @@ public class DAO {
         if (!susi_memory_dir_new.exists()) susi_memory_dir_new.mkdirs();
         susi_chatlog_dir = new File(susi_memory_dir_new, "chatlog");
         susi_skilllog_dir = new File(susi_memory_dir_new, "skilllog");
+        draft_dir = new File(susi_memory_dir_new, "drafts");
         if (susi_memory_dir_old.exists() && !susi_chatlog_dir.exists()) {
             susi_memory_dir_old.renameTo(susi_chatlog_dir); // migrate old location
         }
         if (!susi_chatlog_dir.exists()) susi_chatlog_dir.mkdirs();
         if (!susi_skilllog_dir.exists()) susi_skilllog_dir.mkdirs();
+        if (!draft_dir.exists()) susi_skilllog_dir.mkdirs();
         // TODO:
         deleted_skill_dir = new File(new File(DAO.data_dir, "deleted_skill_dir"), "models");
 
@@ -257,6 +266,15 @@ public class DAO {
         OS.protectPath(groups_per);
         OS.protectPath(groups_vol);
 
+        /*System Keys storage*/
+        Path system_keys_dir = dataPath.resolve("system_keys");
+        system_keys_dir.toFile().mkdirs();
+        Path apiKeys_per = system_keys_dir.resolve("apiKeys.json");
+        Path apiKeys_vol = system_keys_dir.resolve("apiKeys_session.json");
+        apiKeys = new JsonTray(apiKeys_per.toFile(), apiKeys_vol.toFile(), 1000000);
+        OS.protectPath(apiKeys_per);
+        OS.protectPath(apiKeys_vol);
+
         /*Skill Rating storage*/
         Path susi_skill_rating_dir = dataPath.resolve("skill_rating");
         susi_skill_rating_dir.toFile().mkdirs();
@@ -283,6 +301,13 @@ public class DAO {
         skillStatus = new JsonTray(skillStatus_per.toFile(), skillStatus_vol.toFile(), 1000000);
         OS.protectPath(skillStatus_per);
         OS.protectPath(skillStatus_vol);
+
+        // Languages supported by a Skill
+        Path skillSupportedLanguages_per = skill_status_dir.resolve("skillSupportedLanguages.json");
+        Path skillSupportedLanguages_vol = skill_status_dir.resolve("skillSupportedLanguages_session.json");
+        skillSupportedLanguages = new JsonTray(skillSupportedLanguages_per.toFile(), skillSupportedLanguages_vol.toFile(), 1000000);
+        OS.protectPath(skillSupportedLanguages_per);
+        OS.protectPath(skillSupportedLanguages_vol);
 
         /*Profile Details storage*/
         Path susi_profile_details_dir = dataPath.resolve("profile");
@@ -354,6 +379,13 @@ public class DAO {
         ratingsOverTime = new JsonTray(ratingsOverTime_per.toFile(), ratingsOverTime_vol.toFile(), 1000000);
         OS.protectPath(ratingsOverTime_per);
         OS.protectPath(ratingsOverTime_vol);
+
+        // Report a skill as inappropriate
+        Path reportedSkills_per = susi_skill_rating_dir.resolve("reportedSkills.json");
+        Path reportedSkills_vol = susi_skill_rating_dir.resolve("reportedSkills_session.json");
+        reportedSkills = new JsonTray(reportedSkills_per.toFile(), reportedSkills_vol.toFile(), 1000000);
+        OS.protectPath(reportedSkills_per);
+        OS.protectPath(reportedSkills_vol);
 
         // open index
         Path index_dir = dataPath.resolve("index");
@@ -551,6 +583,60 @@ public class DAO {
         return accounting.has(credential.toString());
     }
 
+    
+    public static class Draft {
+		JSONObject object;
+    	Date created, modified;
+    	public Draft(JSONObject o) {
+    		this.object = o;
+    		this.created = new Date();
+    		this.modified = this.created;
+    	}
+    	public JSONObject getObject() {
+			return object;
+		}
+		public Date getCreated() {
+			return created;
+		}
+		public void setCreated(Date created) {
+			this.created = created;
+		}
+		public Date getModified() {
+			return modified;
+		}
+		public void setModified(Date modified) {
+			this.modified = modified;
+		}
+    }
+    
+    public static void storeDraft(@Nonnull final ClientIdentity identity, final String id, final Draft draft) {
+    	Map<String, Draft> d = drafts.get(identity.getClient());
+    	if (d == null) {
+    		d = new HashMap<>();
+    		drafts.put(identity.getClient(), d);
+    	}
+    	Draft old = d.get(id);
+    	if (old != null) draft.setCreated(old.getCreated());
+    	d.put(id, draft);
+    }
+
+    public static Map<String, Draft> readDrafts(@Nonnull final ClientIdentity identity, final String... ids) {
+    	Map<String, Draft> d = drafts.get(identity.getClient());
+    	Map<String, Draft> r = new HashMap<>();
+    	if (d == null) return r;
+    	if (ids.length == 0) {
+    		d.forEach((id, draft) -> r.put(id, draft));
+    		return r;
+    	}
+    	for (String id: ids) if (d.containsKey(id)) r.put(id, d.get(id));
+    	return r;
+    }
+
+    public static void deleteDraft(@Nonnull final ClientIdentity identity, final String id) {
+    	Map<String, Draft> d = drafts.get(identity.getClient());
+    	if (d != null) d.remove(id);
+    }
+    
     public static Repository getRepository() throws IOException {
       Repository repo;
       File repoFile = susi_skill_repo;
@@ -624,6 +710,67 @@ public class DAO {
         } catch (GitAPIException e) {
             throw new IOException (e.getMessage());
         }
+    }
+    public static Thread addAndPushCommit(String commit_message, String userEmail, boolean concurrently) {
+      Runnable process = new Runnable() {
+        @Override
+        public void run() {
+          try (Git git = getGit()) {
+            long t0 = System.currentTimeMillis();
+            git.add().setUpdate(true).addFilepattern(".").call();
+            long t1 = System.currentTimeMillis();
+            git.add().addFilepattern(".").call(); // takes long
+            long t2 = System.currentTimeMillis();
+
+            // commit the changes
+            DAO.pushCommit(git, commit_message, userEmail); // takes long
+            long t3 = System.currentTimeMillis();
+            DAO.log("jgit statistics: add-1: " + (t1 - t0) + "ms, add-2: " + (t2 - t1) + "ms, push: " + (t3 - t2) + "ms");
+          } catch (IOException | GitAPIException e) {
+            e.printStackTrace();
+
+          }
+        }
+      };
+      if (concurrently) {
+        Thread t = new Thread(process);
+        t.start();
+        return t;
+      } else {
+        process.run();
+        return null;
+      }
+    }
+
+    public static Thread addAndPushCommitPrivate(String commit_message, String userEmail, boolean concurrently) {
+      Runnable process = new Runnable() {
+        @Override
+        public void run() {
+          try (Git git = getPrivateGit()) {
+            long t0 = System.currentTimeMillis();
+            git.add().setUpdate(true).addFilepattern(".").call();
+            long t1 = System.currentTimeMillis();
+            git.add().addFilepattern(".").call(); // takes long
+            long t2 = System.currentTimeMillis();
+
+            // commit the changes
+            DAO.pushCommit(git, commit_message, userEmail); // takes long
+            long t3 = System.currentTimeMillis();
+            DAO.log("jgit statistics: add-1: " + (t1 - t0) + "ms, add-2: " + (t2 - t1) + "ms, push: " + (t3 - t2) + "ms");
+          } catch (IOException | GitAPIException e) {
+            e.printStackTrace();
+
+          }
+        }
+      };
+      if (concurrently) {
+        Thread t = new Thread(process);
+        t.start();
+        return t;
+      } else {
+        process.run();
+        return null;
+      }
     }
 
     /**

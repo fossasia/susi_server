@@ -1,32 +1,27 @@
-FROM ubuntu:latest
-LABEL maintainer="ansgar.schmidt@gmx.net"
+FROM openjdk:8
+LABEL maintainer="Ansgar Schmidt <ansgar.schmidt@gmx.net>"
 ENV DEBIAN_FRONTEND noninteractive
+CMD ["bin/start.sh", "-Idn"]
+# Expose the web interface ports
+EXPOSE 80 443
 
-# update
-RUN apt-get update
-RUN apt-get upgrade -y
+RUN apt-get update && \
+apt-get upgrade -y && \
+rm -rf /var/lib/apt/lists/*
 
-# add packages
-RUN apt-get install -y git openjdk-8-jdk
+
 
 # clone the github repo
-RUN git clone --recursive https://github.com/fossasia/susi_server.git
+RUN git clone --recursive https://github.com/fossasia/susi_server.git && \
+cd susi_server && \
+git submodule update --init --recursive
 WORKDIR susi_server
-RUN git submodule update --init --recursive
 
 # compile
 RUN ./gradlew assemble
 
-# Expose the web interface ports
-EXPOSE 80 443
-
 # change config file
-RUN sed -i.bak 's/^\(port.http=\).*/\180/'                conf/config.properties
-RUN sed -i.bak 's/^\(port.https=\).*/\1443/'              conf/config.properties
-RUN sed -i.bak 's/^\(upgradeInterval=\).*/\186400000000/' conf/config.properties
-
-# hack until loklak support no-daemon
-RUN echo "while true; do sleep 10;done" >> bin/start.sh
-
-# start loklak
-CMD ["bin/start.sh", "-Idn"]
+RUN sed -i.bak 's/^\(port.http=\).*/\180/'            conf/config.properties && \
+sed -i.bak 's/^\(port.https=\).*/\1443/'              conf/config.properties && \
+sed -i.bak 's/^\(upgradeInterval=\).*/\186400000000/' conf/config.properties && \
+echo "while true; do sleep 10;done" >> bin/start.sh

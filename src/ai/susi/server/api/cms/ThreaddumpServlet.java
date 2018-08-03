@@ -169,7 +169,12 @@ public class ThreaddumpServlet extends HttpServlet {
         for (ThreadInfo ti: threadinfo) {
             bufferappend(buffer, ti.getThreadName());
         }
-
+        bufferappend(buffer, "");
+        bufferappend(buffer, "LOG");
+        bufferappend(buffer, "");
+        List<String> lines = DAO.logAppender.getLines();
+        for (int i = Math.max(0, lines.size() - 100); i < lines.size(); i++) buffer.append(lines.get(i));
+        
         FileHandler.setCaching(response, 10);
         post.setResponse(response, "text/plain");
         response.getOutputStream().write(buffer.toString().getBytes(StandardCharsets.UTF_8));
@@ -233,7 +238,6 @@ public class ThreaddumpServlet extends HttpServlet {
         buffer.append(a);
         buffer.append('\n');
     }
-    
     private static class ThreadDump extends HashMap<StackTrace, SortedSet<String>> implements Map<StackTrace, SortedSet<String>> {
 
         private static final long serialVersionUID = -5587850671040354397L;

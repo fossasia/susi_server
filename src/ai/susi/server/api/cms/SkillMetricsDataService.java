@@ -28,6 +28,7 @@ import org.json.JSONObject;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.File;
+import java.io.IOException;
 import java.util.*;
 
 /**
@@ -62,13 +63,17 @@ public class SkillMetricsDataService extends AbstractAPIHandler implements APIHa
         String model_name = call.get("model", "general");
         File model = new File(DAO.model_watch_dir, model_name);
         String group_name = call.get("group", "All");
-        String language_name = call.get("language", "en");
-        int duration = call.get("duration", 0);
+        String language_list = call.get("language", "en");
+        int duration = call.get("duration", -1);
         JSONArray jsonArray = new JSONArray();
+        JSONArray staffPicks = new JSONArray();
         JSONObject json = new JSONObject(true);
         JSONObject skillObject = new JSONObject();
         String countString = call.get("count", null);
+        String metrics_list = call.get("metrics", "Games, Trivia and Accessories");
+        String[] metrics_names = metrics_list.split(";");
         Integer count = null;
+        String[] language_names = language_list.split(",");
 
         if(countString != null) {
             if(Integer.parseInt(countString) < 0) {
@@ -84,6 +89,12 @@ public class SkillMetricsDataService extends AbstractAPIHandler implements APIHa
             count = 10;
         }
 
+        try {
+            DAO.susi.observe(); // get a database update
+        } catch (IOException e) {
+            DAO.severe(e.getMessage());
+        }
+        
         // Returns susi skills list of all groups
         if (group_name.equals("All")) {
             File allGroup = new File(String.valueOf(model));
@@ -93,139 +104,123 @@ public class SkillMetricsDataService extends AbstractAPIHandler implements APIHa
 
             for (String temp_group_name : folderList){
                 File group = new File(model, temp_group_name);
+                for (String language_name : language_names) {
+                    File language = new File(group, language_name);
+                    ArrayList<String> fileList = new ArrayList<String>();
+                    listFilesForFolder(language, fileList);
+
+                    for (String skill_name : fileList) {
+                        skill_name = skill_name.replace(".txt", "");
+                        JSONObject skillMetadata = SusiSkill.getSkillMetadata(model_name, temp_group_name, language_name, skill_name, duration);
+
+                        jsonArray.put(skillMetadata);
+                        skillObject.put(skill_name, skillMetadata);
+
+                        if(SusiSkill.isStaffPick(model_name, temp_group_name, language_name, skill_name)) {
+                            staffPicks.put(skillMetadata);
+                        }
+                    }
+                }
+            }
+        }
+        // Returns susi skills list of a particular group
+        else {
+            File group = new File(model, group_name);
+            for (String language_name : language_names) {
                 File language = new File(group, language_name);
+                json.put("accepted", false);
                 ArrayList<String> fileList = new ArrayList<String>();
                 listFilesForFolder(language, fileList);
 
                 for (String skill_name : fileList) {
                     skill_name = skill_name.replace(".txt", "");
-                    JSONObject skillMetadata = SusiSkill.getSkillMetadata(model_name, temp_group_name, language_name, skill_name, duration);
+                    JSONObject skillMetadata = SusiSkill.getSkillMetadata(model_name, group_name, language_name, skill_name, duration);
 
                     jsonArray.put(skillMetadata);
                     skillObject.put(skill_name, skillMetadata);
+
+                    if(SusiSkill.isStaffPick(model_name, group_name, language_name, skill_name)) {
+                        staffPicks.put(skillMetadata);
+                    }
                 }
             }
-
-        }
-        // Returns susi skills list of a particular group
-        else {
-            File group = new File(model, group_name);
-            File language = new File(group, language_name);
-            json.put("accepted", false);
-            ArrayList<String> fileList = new ArrayList<String>();
-            listFilesForFolder(language, fileList);
-
-            for (String skill_name : fileList) {
-                skill_name = skill_name.replace(".txt", "");
-                JSONObject skillMetadata = SusiSkill.getSkillMetadata(model_name, group_name, language_name, skill_name, duration);
-
-                jsonArray.put(skillMetadata);
-                skillObject.put(skill_name, skillMetadata);
-            }
         }
 
 
-        JSONObject skillMetrics = new JSONObject();
+        JSONObject skillMetrics = new JSONObject(true);
         List<JSONObject> jsonValues = new ArrayList<JSONObject>();
+        List<JSONObject> staffPicksList = new ArrayList<JSONObject>();
 
         // temporary list to extract objects from skillObject
         for (int i = 0; i < jsonArray.length(); i++) {
             jsonValues.add(jsonArray.getJSONObject(i));
         }
 
-        // Get skills based on creation date - Returns latest skills
-        Collections.sort(jsonValues, new Comparator<JSONObject>() {
-            private static final String KEY_NAME = "creationTime";
-            @Override
-            public int compare(JSONObject a, JSONObject b) {
-                String valA = new String();
-                String valB = new String();
-                int result = 0;
+        for (int i = 0; i < staffPicks.length(); i++) {
+            staffPicksList.add(staffPicks.getJSONObject(i));
+        }
 
-                try {
-                    valA = a.get(KEY_NAME).toString();
-                    valB = b.get(KEY_NAME).toString();
-                    result = valB.compareToIgnoreCase(valA);
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-                return result;
-            }
-        });
+        // Get skills based on creation date - Returns latest skills
+        SusiSkill.sortByCreationTime(jsonValues, false);
 
         JSONArray creationDateData = getSlicedArray(jsonValues, count);
-        skillMetrics.put("latest", creationDateData);
+        skillMetrics.put("newest", creationDateData);
+
+         // Get skills based on latest modified
+        SusiSkill.sortByModifiedTime(jsonValues, false);
+
+        JSONArray modifiedDateData = getSlicedArray(jsonValues, count);
+        skillMetrics.put("latest", modifiedDateData);
 
         // Get skills based on ratings
-        Collections.sort(jsonValues, new Comparator<JSONObject>() {
-            @Override
-            public int compare(JSONObject a, JSONObject b) {
-                float valA;
-                float valB;
-                int result=0;
-
-                try {
-                    valA = a.getJSONObject("skill_rating").getJSONObject("stars").getFloat("avg_star");
-                    valB = b.getJSONObject("skill_rating").getJSONObject("stars").getFloat("avg_star");
-                    result = Float.compare(valB, valA);
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-                return result;
-            }
-        });
+        SusiSkill.sortByAvgStar(jsonValues, false);
 
         JSONArray ratingsData = getSlicedArray(jsonValues, count);
         skillMetrics.put("rating", ratingsData);
 
         // Get skills based on usage count
-        Collections.sort(jsonValues, new Comparator<JSONObject>() {
-            @Override
-            public int compare(JSONObject a, JSONObject b) {
-                int valA;
-                int valB;
-                int result=0;
-
-                try {
-                    valA = a.getInt("usage_count");
-                    valB = b.getInt("usage_count");
-                    result = Integer.compare(valB, valA);
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-                return result;
-            }
-        });
+        SusiSkill.sortByUsageCount(jsonValues, false);
 
         JSONArray usageData = getSlicedArray(jsonValues, count);
         skillMetrics.put("usage", usageData);
 
         // Get skills based on feedback count
-        Collections.sort(jsonValues, new Comparator<JSONObject>() {
-            @Override
-            public int compare(JSONObject a, JSONObject b) {
-                Integer valA;
-                Integer valB;
-                int result=0;
-
-                try {
-                    valA = a.getJSONObject("skill_rating").getInt("feedback_count");
-                    valB = b.getJSONObject("skill_rating").getInt("feedback_count");
-                    result = Integer.compare(valB, valA);
-
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-                return result;
-            }
-        });
+        SusiSkill.sortByFeedbackCount(jsonValues, false);
 
         JSONArray feedbackData = getSlicedArray(jsonValues, count);
         skillMetrics.put("feedback", feedbackData);
 
+        // Get skills based on ratings
+        SusiSkill.sortByAvgStar(staffPicksList, false);
+
+        JSONArray staffPicksArray = getSlicedArray(staffPicksList, count);
+        skillMetrics.put("staffPicks", staffPicksArray);
+
+        for (String metric_name : metrics_names) {
+            try {
+                metric_name = metric_name.trim();
+                List<JSONObject> groupJsonValues = new ArrayList<JSONObject>();
+                for (int i = 0; i < jsonArray.length(); i++) {
+                    if (jsonArray.getJSONObject(i).get("group").toString().equals(metric_name)) {
+                        groupJsonValues.add(jsonArray.getJSONObject(i));
+                    }
+                }
+                // Get skills based on ratings of a particular group
+                SusiSkill.sortByAvgStar(groupJsonValues, false);
+
+                JSONArray topGroup = new JSONArray();
+                topGroup = getSlicedArray(groupJsonValues, count);
+                skillMetrics.put(metric_name, topGroup);
+            }
+            catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+
+
         json.put("model", model_name)
                 .put("group", group_name)
-                .put("language", language_name);
+                .put("language", language_list);
         json.put("metrics", skillMetrics);
         json.put("accepted", true);
         json.put("message", "Success: Fetched skill data based on metrics");

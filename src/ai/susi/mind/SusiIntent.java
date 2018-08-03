@@ -39,6 +39,7 @@ import org.json.JSONObject;
 
 import ai.susi.DAO;
 import ai.susi.mind.SusiAction.SusiActionException;
+import ai.susi.server.ClientIdentity;
 import ai.susi.tools.TimeoutMatcher;
 
 /**
@@ -182,7 +183,7 @@ public class SusiIntent {
                 SusiAction action = new SusiAction((JSONObject) a);
                 this.actions.add(action);
             } catch (SusiActionException e) {
-                Log.warn("invalid action - " + e.getMessage() + ": " + ((JSONObject) a).toString(0));
+                Log.warn("invalid action - " + json.toString() + ": " + ((JSONObject) a).toString(0));
             }
         });
         
@@ -224,14 +225,16 @@ public class SusiIntent {
         this.id = 0; // will be computed later
     }
     
-    public SusiSkill.ID getSkill() {
+    public SusiSkill.ID getSkillID() {
         return this.skillid;
     }
     
     public String getExpect() {
         return this.expect == null || this.expect.length() == 0 ? null : this.expect;
     }
-    
+    public boolean hasExample() {
+        return this.example != null && this.example.length() > 0;
+    }
     public String getExample() {
         return this.example == null || this.example.length() == 0 ? null : this.example;
     }
@@ -266,8 +269,11 @@ public class SusiIntent {
             String condition,
             String[] answers,
             boolean prior,
+            int depth,
             String example,
             String expect,
+            String label,
+            String implication,
             SusiLanguage language) {
         JSONObject intent = new JSONObject(true);
 
@@ -286,6 +292,14 @@ public class SusiIntent {
         // quality control
         if (example != null && example.length() > 0) intent.put("example", example);
         if (expect != null && expect.length() > 0) intent.put("expect", expect);
+        // in case that the utterances has only one alternative and does not contain any pattern, the label can be computed from it
+        if (label == null || label.length() == 0 && utterances.length == 1) {
+            String l = utterances[0].replaceAll(" ", "_");
+            if (l.indexOf('*') < 0) label = l;
+        }
+        if (label != null && label.length() > 0) intent.put("label", label);
+        if (implication != null && implication.length() > 0) intent.put("implication", implication);
+        intent.put("depth", depth);
         // write actions
         JSONArray a = new JSONArray();
         intent.put("actions", a);
@@ -554,7 +568,7 @@ public class SusiIntent {
      * @param token the key from the user query which matched the intent tokens (also considering category matching)
      * @return the result of the application of the intent, a thought argument containing the thoughts which terminated into a final mindstate or NULL if the consideration should be rejected
      */
-    public SusiArgument consideration(final String query, SusiThought recall, SusiLinguistics.Token token, SusiMind mind, String client) {
+    public SusiArgument consideration(final String query, SusiThought recall, SusiLinguistics.Token token, SusiMind mind, ClientIdentity identity) {
         
         HashSet<SusiThought> keynotes = new HashSet<>();
         

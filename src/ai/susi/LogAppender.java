@@ -63,6 +63,10 @@ public class LogAppender extends AppenderSkeleton {
         return true;
     }
     
+    public int size() {
+        return this.lines.size();
+    }
+    
     public List<String> getLines() {
         return this.lines;
     }

@@ -34,6 +34,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.regex.Pattern;
+import java.util.Date;
+import ai.susi.tools.DateParser;
 
 public class SignUpService extends AbstractAPIHandler implements APIHandler {
 
@@ -52,16 +54,15 @@ public class SignUpService extends AbstractAPIHandler implements APIHandler {
 		result.put("message", "Error: Unable to process you request");
 
 		switch(baseUserRole){
-			case BUREAUCRAT:
+			case SUPERADMIN:
 			case ADMIN:
-			case ACCOUNTCREATOR:
+			case OPERATOR:
 			case REVIEWER:
 			case USER:
 				result.put("register", true); // allow to register new users (this bypasses email verification and activation)
 				result.put("activate", true); // allow to activate new users
 				result.put("accepted", true);
 				break;
-			case BOT:
 			case ANONYMOUS:
 			default:
 				result.put("register", false);
@@ -199,7 +200,7 @@ public class SignUpService extends AbstractAPIHandler implements APIHandler {
 		authorized.forEach(client -> keysList.add(client.toString()));
 		String[] keysArray = keysList.toArray(new String[keysList.size()]);
 		if(keysArray.length == 1) {
-			authorization.setUserRole(UserRole.BUREAUCRAT);
+			authorization.setUserRole(UserRole.SUPERADMIN);
 		} else {
 			authorization.setUserRole(UserRole.USER);
 		}
@@ -223,6 +224,10 @@ public class SignUpService extends AbstractAPIHandler implements APIHandler {
 				result.put("message", "You successfully signed-up, but no email was sent: " + e.getMessage());
 			}
 		} else {
+			// store the time of signup in accounting object
+			Accounting accounting = DAO.getAccounting(identity);
+			Date currentTime = new Date();
+			accounting.getJSON().put("signupTime", DateParser.formatRFC1123(currentTime));
 			result.put("message", "You successfully signed-up!");
 			result.put("accepted", true);
 		}

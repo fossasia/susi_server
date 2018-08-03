@@ -455,10 +455,13 @@ public class SusiServer {
                 // aaa services
                 StatusService.class,
                 AppsService.class,
+                ApiKeysService.class,
+                GetApiKeys.class,
                 AuthorizationDemoService.class,
                 LoginService.class,
                 PasswordRecoveryService.class,
                 PasswordResetService.class,
+                DeleteUserAccountService.class,
                 PublicKeyRegistrationService.class,
                 DownloadDataSettings.class,
                 StorePersonalInfoService.class,
@@ -479,10 +482,10 @@ public class SusiServer {
                 ModelListService.class,
                 LanguageListService.class,
                 ListUserSettings.class,
-                ResetUserSettings.class,
                 ListSkillService.class,
                 AddNewDevice.class,
                 RemoveUserDevices.class,
+                ModifyUserDevices.class,
                 DisableSkillService.class,
                 GetAllLanguages.class,
                 DeleteGroupService.class,
@@ -510,6 +513,11 @@ public class SusiServer {
                 CheckRegistrationService.class,
                 UploadImageService.class,
 
+                // draft services
+                StoreDraftService.class,
+                ReadDraftService.class,
+                DeleteDraftService.class,
+                
                 // monitoring services
                 MonitorQueryService.class,
                 MonitorAnnotationsService.class,
@@ -566,6 +574,7 @@ public class SusiServer {
                 GetSkillFeedbackService.class,
                 RemoveFeedbackService.class,
                 FeedbackSkillService.class,
+                ReportSkillService.class,
 
                 //Bookmark skill
                 BookmarkSkillService.class,
@@ -574,7 +583,14 @@ public class SusiServer {
                 GetRatingsOverTime.class,
 
                 // Get metrics based skills
-                SkillMetricsDataService.class
+                SkillMetricsDataService.class,
+
+                // Change review status of skills
+                ChangeSkillStatusService.class,
+
+                // Update supported languages
+                UpdateSupportedLanguages.class
+
         };
         for (Class<? extends Servlet> service: services)
             try {
@@ -593,6 +609,7 @@ public class SusiServer {
         servletHandler.addServlet(AccessServlet.class, "/aaa/access.txt");
         servletHandler.addServlet(Sitemap.class, "/sitemap.xml");
         servletHandler.addServlet(ThreaddumpServlet.class, "/threaddump.txt");
+        servletHandler.addServlet(LogServlet.class, "/log.txt");
 
         // cms api
         servletHandler.addServlet(GetImageServlet.class, "/cms/getImage.png");

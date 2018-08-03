@@ -30,9 +30,11 @@ import ai.susi.server.Authorization;
 import ai.susi.server.Query;
 import ai.susi.server.ServiceResponse;
 import ai.susi.server.UserRole;
+import ai.susi.tools.TimeoutMatcher;
 
 import org.json.JSONObject;
 
+import java.util.regex.Pattern;
 import javax.servlet.http.HttpServletResponse;
 /**
  * Created by @Akshat-Jain on 24/5/18.
@@ -62,44 +64,57 @@ public class AddNewDevice extends AbstractAPIHandler implements APIHandler {
     @Override
     public ServiceResponse serviceImpl(Query query, HttpServletResponse response, Authorization authorization, JsonObjectWithDefault permissions) throws APIException {
 
-               JSONObject value = new JSONObject();
-               JSONObject geolocation = new JSONObject();
-           
-               String key = query.get("macid", null);
-               String name = query.get("name", null);
-               String room = query.get("room", null);
-               String latitude = query.get("latitude", null);
-               String longitude = query.get("longitude", null);
-               
-               if (key == null || name == null || room == null || latitude == null || longitude == null) {
-                   throw new APIException(400, "Bad service call, missing arguments");
-               } else {
-                  geolocation.put("latitude", latitude);
-                  geolocation.put("longitude", longitude);
-                  value.put("name", name);
-                  value.put("room", room);
-                  value.put("geolocation", geolocation);
-               }
-           
-           if (authorization.getIdentity() == null) {
-               throw new APIException(400, "Specified user data not found, ensure you are logged in");
-           } else {
-                Accounting accounting = DAO.getAccounting(authorization.getIdentity());
-                if (accounting.getJSON().has("devices")) {
-                    accounting.getJSON().getJSONObject("devices").put(key, value);
-                } else {
-                    JSONObject jsonObject = new JSONObject();
-                    jsonObject.put(key, value);
-                    accounting.getJSON().put("devices", jsonObject);
-               }
-                accounting.commit();
-               
-               JSONObject result = new JSONObject(true);
-               result.put("accepted", true);
-               result.put("message", "You have successfully added the device!");
-               return new ServiceResponse(result);
+        JSONObject value = new JSONObject();
+        JSONObject geolocation = new JSONObject();
+
+        String macid = query.get("macid", null);
+        String name = query.get("name", null);
+        String room = query.get("room", null);
+        String latitude = query.get("latitude", null);
+        String longitude = query.get("longitude", null);
+
+        if (macid == null || name == null || room == null) {
+            throw new APIException(400, "Bad service call, missing arguments");
+        }
+
+        String PATTERN = "^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$";
+        Pattern pattern = Pattern.compile(PATTERN);
+        if (!new TimeoutMatcher(pattern.matcher(macid)).matches()) {
+            throw new APIException(400, "Invalid Mac Address.");
+        }
+
+        if(latitude == null || latitude.isEmpty()) {
+            latitude = "Latitude not available.";
+        }
+
+        if(longitude == null || longitude.isEmpty()) {
+            longitude = "Longitude not available.";
+        }
+
+        geolocation.put("latitude", latitude);
+        geolocation.put("longitude", longitude);
+        value.put("name", name);
+        value.put("room", room);
+        value.put("geolocation", geolocation);
+
+        if (authorization.getIdentity() == null) {
+            throw new APIException(400, "Specified user data not found, ensure you are logged in");
+        } else {
+            Accounting accounting = DAO.getAccounting(authorization.getIdentity());
+            if (accounting.getJSON().has("devices")) {
+                accounting.getJSON().getJSONObject("devices").put(macid, value);
+            } else {
+                JSONObject jsonObject = new JSONObject();
+                jsonObject.put(macid, value);
+                accounting.getJSON().put("devices", jsonObject);
            }
-       
+            accounting.commit();
+
+            JSONObject result = new JSONObject(true);
+            result.put("accepted", true);
+            result.put("message", "You have successfully added the device!");
+            return new ServiceResponse(result);
+        }
 
     }
 }

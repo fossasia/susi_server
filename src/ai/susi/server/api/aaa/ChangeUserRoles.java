@@ -100,26 +100,22 @@ public class ChangeUserRoles extends AbstractAPIHandler implements APIHandler {
             UserRole userRole;
 
             switch (upgradedRole) {
-                case "bot":
-                    userRole = UserRole.BOT;
-                    break;
                 case "anonymous":
-                    userRole = UserRole.ANONYMOUS;
-                    break;
+                    throw new APIException(400, "Cannot change user role to anonymous.");
                 case "user":
                     userRole = UserRole.USER;
                     break;
                 case "reviewer":
                     userRole = UserRole.REVIEWER;
                     break;
-                case "accountcreator":
-                    userRole = UserRole.ACCOUNTCREATOR;
+                case "operator":
+                    userRole = UserRole.OPERATOR;
                     break;
                 case "admin":
                     userRole = UserRole.ADMIN;
                     break;
-                case "bureaucrat":
-                    userRole = UserRole.BUREAUCRAT;
+                case "superadmin":
+                    userRole = UserRole.SUPERADMIN;
                     break;
                 default:
                     userRole = null;

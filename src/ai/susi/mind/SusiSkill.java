@@ -29,10 +29,14 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import ai.susi.server.ServiceResponse;
 import org.jfree.util.Log;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -40,7 +44,6 @@ import org.json.JSONObject;
 import org.json.JSONTokener;
 
 import ai.susi.DAO;
-import ai.susi.SusiServer;
 import ai.susi.json.JsonTray;
 import ai.susi.mind.SusiAction.SusiActionException;
 import ai.susi.mind.SusiInference.Type;
@@ -92,6 +95,11 @@ public class SusiSkill {
 
         public String getPath() {
             return this.skillpath;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            return o instanceof ID && ((ID) o).skillpath.equals(this.skillpath);
         }
 
         @Override
@@ -173,19 +181,17 @@ public class SusiSkill {
      */
     public static JSONObject readLoTSkill(final BufferedReader br, final SusiLanguage language, final String skillid) throws JSONException {
         // read the text file and turn it into a intent json; then learn that
-        JSONObject json = new JSONObject();
+        JSONObject json = new JSONObject(true);
         JSONArray intents = new JSONArray();
-        json.put("intents", intents);
         String lastLine = "", line = "";
-        String bang_answers = "", bang_type = "", bang_term = ""; StringBuilder bang_bag = new StringBuilder();
-        String example = "", tags = "", expect = "", description="", image="", skillName="", authorName= "",
-                authorURL = "", authorEmail = "", developerPrivacyPolicy = "", termsOfUse="";
+        String bang_answers = "", bang_type = "", bang_term = "", example = "", expect = "", label = "", implication = ""; 
+        StringBuilder bang_bag = new StringBuilder();
         boolean prior = false, dynamicContent = false, protectedSkill = false;
         int indentStep = 4; // like in python
         try {readloop: while ((line = br.readLine()) != null) {
             String linebeforetrim = line;
             line = line.trim();
-            int indent = linebeforetrim.indexOf(line) % indentStep;
+            int depth = linebeforetrim.indexOf(line) / indentStep; // the last line of an intent therefore declares the depth
 
             // connect lines
             if (lastLine.endsWith("\\")) {
@@ -222,6 +228,11 @@ public class SusiSkill {
                         // answers; must contain $!$
                         intent.put("actions", new JSONArray().put(SusiAction.answerAction(language, bang_term.split("\\|"))));
                         if (example.length() > 0) intent.put("example", example);
+                        if (expect.length() > 0) intent.put("expect", expect);
+                        if (label.length() > 0) intent.put("label", label);
+                        if (implication.length() > 0) intent.put("implication", implication);
+                        intent.put("depth", depth);
+                        extendParentWithAnswer(intents, intent);
                         intents.put(intent);
                     }
                     else if (bang_type.equals("console")) {
@@ -274,6 +285,10 @@ public class SusiSkill {
                         }
                         if (example.length() > 0) intent.put("example", example);
                         if (expect.length() > 0) intent.put("expect", expect);
+                        if (label.length() > 0) intent.put("label", label);
+                        if (implication.length() > 0) intent.put("implication", implication);
+                        intent.put("depth", depth);
+                        extendParentWithAnswer(intents, intent);
                         intents.put(intent);
                     }
                     bang_answers = "";
@@ -287,73 +302,65 @@ public class SusiSkill {
 
             // read metadata
             if (line.startsWith("::")) {
-                int thenpos=-1;
-//                line = line.toLowerCase();
+                int thenpos = -1;
                 if (line.startsWith("::minor")) prior = false;
                 if (line.startsWith("::prior")) prior = true;
                 if (line.startsWith("::description") && (thenpos = line.indexOf(' ')) > 0) {
-                    description = line.substring(thenpos + 1).trim();
-                    if(description.length() > 0)
-                        json.put("description",description);
-                    // System.out.println(description);
+                    String meta = line.substring(thenpos + 1).trim();
+                    if (meta.length() > 0) json.put("description", meta);
                 }
                 if (line.startsWith("::image") && (thenpos = line.indexOf(' ')) > 0) {
-                    image = line.substring(thenpos + 1).trim();
-                    if(image.length() > 0)
-                        json.put("image",image);
+                    String meta = line.substring(thenpos + 1).trim();
+                    if (meta.length() > 0) json.put("image", meta);
                 }
                 if (line.startsWith("::name") && (thenpos = line.indexOf(' ')) > 0) {
-                    skillName = line.substring(thenpos + 1).trim();
-                    if(skillName.length() > 0)
-                        json.put("skill_name",skillName);
+                    String meta = line.substring(thenpos + 1).trim();
+                    if (meta.length() > 0) json.put("skill_name", meta);
                 }
                 if (line.startsWith("::protected") && (thenpos = line.indexOf(' ')) > 0) {
                     if (line.substring(thenpos + 1).trim().equalsIgnoreCase("yes")) protectedSkill=true;
-                    json.put("protected",protectedSkill);
+                    json.put("protected", protectedSkill);
                 }
-                if (line.startsWith("::author") && (!line.startsWith("::author_url")) && (thenpos = line.indexOf(' ')) > 0) {
-                    authorName = line.substring(thenpos + 1).trim();
-                    if(authorName.length() > 0)
-                        json.put("author",authorName);
+                if (line.startsWith("::author") && (!line.startsWith("::author_url")) && (!line.startsWith("::author_email")) && (thenpos = line.indexOf(' ')) > 0) {
+                    String meta = line.substring(thenpos + 1).trim();
+                    if (meta.length() > 0) json.put("author", meta);
                 }
                 if (line.startsWith("::author_email") && (thenpos = line.indexOf(' ')) > 0) {
-                    authorEmail = line.substring(thenpos + 1).trim();
-                    if(authorEmail.length() > 0)
-                        json.put("author_email",authorEmail);
+                    String meta = line.substring(thenpos + 1).trim();
+                    if (meta.length() > 0) json.put("author_email", meta);
                 }
                 if (line.startsWith("::author_url") && (thenpos = line.indexOf(' ')) > 0) {
-                    authorURL = line.substring(thenpos + 1).trim();
-                    if(authorURL.length() > 0)
-                        json.put("author_url",authorURL);
+                    String meta = line.substring(thenpos + 1).trim();
+                    if (meta.length() > 0) json.put("author_url", meta);
                 }
                 if (line.startsWith("::developer_privacy_policy") && (thenpos = line.indexOf(' ')) > 0) {
-                    developerPrivacyPolicy = line.substring(thenpos + 1).trim();
-                    if(developerPrivacyPolicy.length() > 0)
-                        json.put("developer_privacy_policy",developerPrivacyPolicy);
+                    String meta = line.substring(thenpos + 1).trim();
+                    if (meta.length() > 0) json.put("developer_privacy_policy", meta);
                 }
                 if (line.startsWith("::terms_of_use") && (thenpos = line.indexOf(' ')) > 0) {
-                    termsOfUse = line.substring(thenpos + 1).trim();
-                    if(termsOfUse.length() > 0)
-                        json.put("terms_of_use",termsOfUse);
+                    String meta = line.substring(thenpos + 1).trim();
+                    if (meta.length() > 0) json.put("terms_of_use", meta);
                 }
                 if (line.startsWith("::dynamic_content") && (thenpos = line.indexOf(' ')) > 0) {
-                    if (line.substring(thenpos + 1).trim().equalsIgnoreCase("yes")) dynamicContent=true;
-                    json.put("dynamic_content",dynamicContent);
+                    if (line.substring(thenpos + 1).trim().equalsIgnoreCase("yes")) dynamicContent = true;
+                    json.put("dynamic_content", dynamicContent);
+                }
+                if (line.startsWith("::tags") && (thenpos = line.indexOf(' ')) > 0) {
+                    String meta = line.substring(thenpos + 1).trim();
+                    if (meta.length() > 0) json.put("tags", meta);
+                }
+                if (line.startsWith("::kickoff") && (thenpos = line.indexOf(' ')) > 0) {
+                    String meta = line.substring(thenpos + 1).trim();
+                    if (meta.length() > 0) json.put("kickoff", meta);
                 }
 
-                if(line.startsWith("::tags") && (thenpos = line.indexOf(' ')) > 0) {
-                    tags = line.substring(thenpos + 1).trim();
-                    if(tags.length() > 0)
-                        json.put("tags", tags);
-                }
-
-                lastLine = ""; example = ""; expect = "";
+                lastLine = ""; example = ""; expect = ""; label = ""; implication = "";
                 continue readloop;
             }
 
             if (line.startsWith("#")) {
                 // a comment line; ignore the line and consider it as whitespace
-                lastLine = ""; example = ""; expect = "";
+                lastLine = ""; example = ""; expect = ""; label = ""; implication = "";
                 continue readloop;
             }
 
@@ -371,20 +378,23 @@ public class SusiSkill {
                         String ifsubstring = line.substring(thenpos + 1).trim();
                         if (ifsubstring.length() > 0) {
                             String[] answers = ifsubstring.split("\\|");
-                            JSONObject intent = SusiIntent.answerIntent(phrases, "IF " + condition, answers, prior, example, expect, language);
+                            JSONObject intent = SusiIntent.answerIntent(phrases, "IF " + condition, answers, prior, depth, example, expect, label, implication, language);
+                            extendParentWithAnswer(intents, intent);
                             intents.put(intent);
                         }
                     } else {
                         String ifsubstring = line.substring(thenpos + 1, elsepos).trim();
                         if (ifsubstring.length() > 0) {
                             String[] ifanswers = ifsubstring.split("\\|");
-                            JSONObject intentif = SusiIntent.answerIntent(phrases, "IF " + condition, ifanswers, prior, example, expect, language);
+                            JSONObject intentif = SusiIntent.answerIntent(phrases, "IF " + condition, ifanswers, prior, depth, example, expect, label, implication, language);
+                            extendParentWithAnswer(intents, intentif);
                             intents.put(intentif);
                         }
                         String elsesubstring = line.substring(elsepos + 1).trim();
                         if (elsesubstring.length() > 0) {
                             String[] elseanswers = elsesubstring.split("\\|");
-                            JSONObject intentelse = SusiIntent.answerIntent(phrases, "NOT " + condition, elseanswers, prior, example, expect, language);
+                            JSONObject intentelse = SusiIntent.answerIntent(phrases, "NOT " + condition, elseanswers, prior, depth, example, expect, label, implication, language);
+                            extendParentWithAnswer(intents, intentelse);
                             intents.put(intentelse);
                         }
                     }
@@ -396,9 +406,10 @@ public class SusiSkill {
                         example = tail;
                     } else if (head.equals("expect")) {
                         expect = tail;
-                    }
-                    else if (head.equals("image")) {
-                        image =tail;
+                    } else if (head.equals("label")) {
+                        label = tail;
+                    } else if (head.equals("implication")) {
+                        implication = tail;
                     } else {
                         // start multi-line bang
                         bang_answers = lastLine;
@@ -409,18 +420,51 @@ public class SusiSkill {
                     continue readloop;
                 } else {
                     String[] answers = line.split("\\|");
-                    JSONObject intent = SusiIntent.answerIntent(phrases, condition, answers, prior, example, expect, language);
+                    JSONObject intent = SusiIntent.answerIntent(phrases, condition, answers, prior, depth, example, expect, label, implication, language);
+                    extendParentWithAnswer(intents, intent);
                     //System.out.println(intent.toString());
                     intents.put(intent);
+                    example = ""; expect = ""; label = ""; implication = "";
                 }
             }
             lastLine = line;
         }} catch (IOException e) {
             DAO.log(e.getMessage());
         }
+        json.put("intents", intents);
         return json;
     }
 
+    private static JSONObject lastIntentWithDepth(JSONArray intents, int depth) {
+        for (int i = intents.length() - 1; i >= 0; i--) {
+            JSONObject intent = intents.getJSONObject(i);
+            int d = intent.optInt("depth", -1);
+            if (d > depth) continue;
+            if (d == depth) return intent;
+            if (d < depth) return null;
+        }
+        return null;
+    }
+    
+    private static void extendParentWithAnswer(JSONArray intents, JSONObject intent) {
+        JSONArray utterances = intent.getJSONArray("phrases");
+        if (utterances == null || utterances.length() != 1) return;
+        String utterance = utterances.getJSONObject(0).getString("expression");
+        if (utterance.indexOf('*') >= 0) return;
+        int depth = intent.optInt("depth", -1);
+        if (depth <= 0) return;
+        JSONObject parent = lastIntentWithDepth(intents, depth - 1);
+        if (parent == null) return;
+        
+        // we have found a parent and we want to add the utterance as cue
+        JSONArray cues = parent.optJSONArray("cues");
+        if (cues == null) {
+            cues = new JSONArray();
+            parent.put("cues", cues);
+        }
+        cues.put(utterance);
+    }
+    
     /**
      * For some strange reason the skill name is requested here in lowercase, while the name may also be uppercase
      * this should be fixed in the front-end, however we implement a patch here to circumvent the problem if possible
@@ -514,6 +558,8 @@ public class SusiSkill {
         skillMetadata.put("skill_name", JSONObject.NULL);
         skillMetadata.put("protected", false);
         skillMetadata.put("reviewed", false);
+        skillMetadata.put("editable", true);
+        skillMetadata.put("staffPick", false);
         skillMetadata.put("terms_of_use", JSONObject.NULL);
         skillMetadata.put("dynamic_content", false);
         skillMetadata.put("examples", JSONObject.NULL);
@@ -542,7 +588,10 @@ public class SusiSkill {
                 skillMetadata.put("dynamic_content", skill.getDynamicContent());
                 skillMetadata.put("examples", skill.getExamples() ==null ? JSONObject.NULL: skill.getExamples());
                 skillMetadata.put("skill_rating", getSkillRating(model, group, language, skillname));
-                skillMetadata.put("reviewed", getSkillStatus(model, group, language, skillname));
+                skillMetadata.put("supported_languages", getSupportedLanguages(model, group, language, skillname));
+                skillMetadata.put("reviewed", getSkillReviewStatus(model, group, language, skillname));
+                skillMetadata.put("editable", getSkillEditStatus(model, group, language, skillname));
+                skillMetadata.put("staffPick", isStaffPick(model, group, language, skillname));
                 skillMetadata.put("usage_count", getSkillUsage(model, group, language, skillname, duration));
                 skillMetadata.put("skill_tag", skillname);
 
@@ -619,7 +668,183 @@ public class SusiSkill {
         return newRating;
     }
 
-    public static boolean getSkillStatus(String model, String group, String language, String skillname) {
+    public static JSONArray getSupportedLanguages(String model, String group, String language, String skillname) {
+        // rating
+        JsonTray skillRating = DAO.skillSupportedLanguages;
+        if (skillRating.has(model)) {
+            JSONObject modelName = skillRating.getJSONObject(model);
+            if (modelName.has(group)) {
+                JSONArray groupName = modelName.getJSONArray(group);
+
+                for (int i = 0; i < groupName.length(); i++) {
+                    JSONArray supportedLanguages = groupName.getJSONArray(i);
+                    for (int j = 0; j < supportedLanguages.length(); j++) {
+                        JSONObject languageObject = supportedLanguages.getJSONObject(j);
+                        String supportedLanguage = languageObject.get("language").toString();
+                        String skillName = languageObject.get("name").toString();
+                        if (supportedLanguage.equalsIgnoreCase(language) && skillName.equalsIgnoreCase(skillname)) {
+                            return supportedLanguages;
+                        }
+                    }
+                }
+            }
+        }
+        JSONArray supportedLanguages = new JSONArray();
+        JSONObject languageObject = new JSONObject();
+        languageObject.put("language", language);
+        languageObject.put("name", skillname);
+        supportedLanguages.put(languageObject);
+        return supportedLanguages;
+    }
+
+    public static void sortByAvgStar(List<JSONObject> jsonValues, boolean ascending) {
+    	// Get skills based on ratings
+        Collections.sort(jsonValues, new Comparator<JSONObject>() {
+            @Override
+            public int compare(JSONObject a, JSONObject b) {
+                Object valA, valB;
+                int result=0;
+
+                try {
+                    valA = a.opt("skill_rating");
+                    valB = b.opt("skill_rating");
+                    if (valA == null || !((valA instanceof JSONObject))) valA = new JSONObject().put("stars", new JSONObject().put("avg_star", 0.0f));
+                    if (valB == null || !((valB instanceof JSONObject))) valB = new JSONObject().put("stars", new JSONObject().put("avg_star", 0.0f));
+
+                    JSONObject starsAObject = ((JSONObject) valA).getJSONObject("stars");
+                    JSONObject starsBObject = ((JSONObject) valB).getJSONObject("stars");
+                    int starsA = starsAObject.has("total_star") ? starsAObject.getInt("total_star") : 0;
+                    int starsB = starsBObject.has("total_star") ? starsBObject.getInt("total_star") : 0;
+
+                    float avgA = starsAObject.getFloat("avg_star");
+                    float avgB = starsBObject.getFloat("avg_star");
+
+                    if ((starsA < 10 && starsB < 10) || (starsA >= 10 && starsB >= 10)) {
+                        result = ascending ? Float.compare(avgA, avgB) : Float.compare(avgB, avgA);
+                    } else if (starsA < 10) {
+                        return ascending ? -1 : 1;
+                    } else {
+                        return ascending ? 1 : -1;
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                return result;
+            }
+        });
+    }
+    
+    public static void sortByCreationTime(List<JSONObject> jsonValues, boolean ascending) {
+    	Collections.sort(jsonValues, new Comparator<JSONObject>() {
+            private static final String KEY_NAME = "creationTime";
+            @Override
+            public int compare(JSONObject a, JSONObject b) {
+                String valA = new String();
+                String valB = new String();
+                int result = 0;
+
+                try {
+                    valA = a.get(KEY_NAME).toString();
+                    valB = b.get(KEY_NAME).toString();
+                    result = ascending ? valA.compareToIgnoreCase(valB) : valB.compareToIgnoreCase(valA);
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+                return result;
+            }
+        });
+    }
+
+    public static void sortByModifiedTime(List<JSONObject> jsonValues, boolean ascending) {
+        Collections.sort(jsonValues, new Comparator<JSONObject>() {
+            private static final String KEY_NAME = "lastModifiedTime";
+            @Override
+            public int compare(JSONObject a, JSONObject b) {
+                String valA = new String();
+                String valB = new String();
+                int result = 0;
+
+                try {
+                    valA = a.get(KEY_NAME).toString();
+                    valB = b.get(KEY_NAME).toString();
+                    result = ascending ? valA.compareToIgnoreCase(valB) : valB.compareToIgnoreCase(valA);
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+                return result;
+            }
+        });
+    }
+    
+    public static void sortBySkillName(List<JSONObject> jsonValues, boolean ascending) {
+    	Collections.sort(jsonValues, new Comparator<JSONObject>() {
+            private static final String KEY_NAME = "skill_name";
+            @Override
+            public int compare(JSONObject a, JSONObject b) {
+                String valA = new String();
+                String valB = new String();
+
+                try {
+                    valA = a.get(KEY_NAME).toString();
+                    valB = b.get(KEY_NAME).toString();
+                } catch (JSONException e) {
+                    //do nothing
+                }
+                return ascending ? valA.compareToIgnoreCase(valB) : valB.compareToIgnoreCase(valA);
+            }
+        });
+    }
+    
+    public static void sortByUsageCount(List<JSONObject> jsonValues, boolean ascending) {
+    	Collections.sort(jsonValues, new Comparator<JSONObject>() {
+            @Override
+            public int compare(JSONObject a, JSONObject b) {
+                int valA;
+                int valB;
+                int result=0;
+
+                try {
+                    valA = a.getInt("usage_count");
+                    valB = b.getInt("usage_count");
+                    result = ascending ? Integer.compare(valA, valB) : Integer.compare(valB, valA);
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+                return result;
+            }
+        });
+    }
+    
+    public static void sortByFeedbackCount(List<JSONObject> jsonValues, boolean ascending) {
+    	Collections.sort(jsonValues, new Comparator<JSONObject>() {
+            @Override
+            public int compare(JSONObject a, JSONObject b) {
+                Object valA, valB;
+                int result=0;
+
+                try {                    
+                    valA = a.opt("skill_rating");
+                    valB = b.opt("skill_rating");
+                    if (valA == null || !(valA instanceof JSONObject) || ((JSONObject) valA).opt("feedback_count") == null) valA = new JSONObject().put("feedback_count", 0);
+                    if (valB == null || !(valB instanceof JSONObject) || ((JSONObject) valB).opt("feedback_count") == null) valB = new JSONObject().put("feedback_count", 0);
+
+                    result = ascending ?
+                    		Integer.compare(
+                    				((JSONObject) valA).getInt("feedback_count"),
+                    				((JSONObject) valB).getInt("feedback_count")) :
+                            Integer.compare(
+                                    ((JSONObject) valB).getInt("feedback_count"),
+                                    ((JSONObject) valA).getInt("feedback_count")
+                    );
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+                return result;
+            }
+        });
+    }
+
+    public static boolean getSkillReviewStatus(String model, String group, String language, String skillname) {
         // skill status
         JsonTray skillStatus = DAO.skillStatus;
         if (skillStatus.has(model)) {
@@ -632,6 +857,50 @@ public class SusiSkill {
                         JSONObject skillName = languageName.getJSONObject(skillname);
 
                         if (skillName.has("reviewed")) {
+                            return true;
+                        }
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
+    public static boolean getSkillEditStatus(String model, String group, String language, String skillname) {
+        // skill status
+        JsonTray skillStatus = DAO.skillStatus;
+        if (skillStatus.has(model)) {
+            JSONObject modelName = skillStatus.getJSONObject(model);
+            if (modelName.has(group)) {
+                JSONObject groupName = modelName.getJSONObject(group);
+                if (groupName.has(language)) {
+                    JSONObject languageName = groupName.getJSONObject(language);
+                    if (languageName.has(skillname)) {
+                        JSONObject skillName = languageName.getJSONObject(skillname);
+
+                        if (skillName.has("editable")) {
+                            return false;
+                        }
+                    }
+                }
+            }
+        }
+        return true;
+    }
+
+    public static boolean isStaffPick(String model, String group, String language, String skillname) {
+        // return true if skill is a staff pick
+        JsonTray skillStatus = DAO.skillStatus;
+        if (skillStatus.has(model)) {
+            JSONObject modelName = skillStatus.getJSONObject(model);
+            if (modelName.has(group)) {
+                JSONObject groupName = modelName.getJSONObject(group);
+                if (groupName.has(language)) {
+                    JSONObject languageName = groupName.getJSONObject(language);
+                    if (languageName.has(skillname)) {
+                        JSONObject skillName = languageName.getJSONObject(skillname);
+
+                        if (skillName.has("staffPick")) {
                             return true;
                         }
                     }
@@ -674,6 +943,8 @@ public class SusiSkill {
         }
         return 0;
     }
+    
+    
 
     public static JSONObject readJsonSkill(File file) throws JSONException, FileNotFoundException {
         JSONObject json = new JSONObject(new JSONTokener(new FileReader(file)));
@@ -704,11 +975,12 @@ public class SusiSkill {
     public void setDeveloperPrivacyPolicy(String developerPrivacyPolicy) {
         this.developerPrivacyPolicy = developerPrivacyPolicy;
     }
-
+/*
     public void setExamples(Set<String> examples) {
         this.examples = examples;
     }
-
+*/
+    
     public void setImage(String image) {
         this.image = image;
     }
@@ -738,12 +1010,7 @@ public class SusiSkill {
     }
 
     public String getAuthor() {
-        if (author!=null) {
-            return author.toLowerCase();
-        }
-        else {
-            return author;
-        }
+        return author;
     }
 
     public String getAuthorURL() {
@@ -774,6 +1041,11 @@ public class SusiSkill {
         return examples;
     }
 
+    public void addExample(String s) {
+        if (this.examples == null) this.examples = new LinkedHashSet<>();
+        this.examples.add(s);
+    }
+
     public String getDeveloperPrivacyPolicy() {
         return developerPrivacyPolicy;
     }
@@ -799,12 +1071,22 @@ public class SusiSkill {
     }
 
     public static void main(String[] args) {
-        Path data = FileSystems.getDefault().getPath("data");
-        Map<String, String> config;
-        try {config = SusiServer.readConfig(data);DAO.init(config, data);} catch (Exception e) {e.printStackTrace();}
-        File model = new File(DAO.model_watch_dir, "persona");
-        File skill = SusiSkill.getSkillFileInModel(model, "nefertiti");
+        //Path data = FileSystems.getDefault().getPath("data");
+        //Map<String, String> config;
+        //try {config = SusiServer.readConfig(data);DAO.init(config, data);} catch (Exception e) {e.printStackTrace();}
+        File system_skills_test = new File(new File(FileSystems.getDefault().getPath("conf").toFile(), "system_skills"), "test");
+        File skill = new File(system_skills_test, "dialog.txt");
+        //File model = new File(DAO.model_watch_dir, "general");
+        //File skill = SusiSkill.getSkillFileInModel(model, "Westworld");
         System.out.println(skill);
+        SusiSkill.ID skillid = new SusiSkill.ID(skill);
+        SusiLanguage language = skillid.language();
+        try {
+			JSONObject lesson = SusiSkill.readLoTSkill(new BufferedReader(new FileReader(skill)), language, Integer.toString(skillid.hashCode()));
+			System.out.println(lesson.toString(2));
+		} catch (JSONException | FileNotFoundException e) {
+			e.printStackTrace();
+		}
         System.exit(0);
     }
 }

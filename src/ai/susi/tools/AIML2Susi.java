@@ -88,7 +88,7 @@ public class AIML2Susi {
             }
         }
         if (phrases != null && answers != null) {
-            return SusiIntent.answerIntent(phrases, null, answers, false, null, null, SusiLanguage.unknown);
+            return SusiIntent.answerIntent(phrases, null, answers, false, 0, null, null, null, null, SusiLanguage.unknown);
         }
         return null;
     }

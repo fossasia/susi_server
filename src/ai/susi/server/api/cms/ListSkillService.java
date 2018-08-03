@@ -2,20 +2,16 @@ package ai.susi.server.api.cms;
 
 import ai.susi.DAO;
 import ai.susi.json.JsonObjectWithDefault;
+import ai.susi.json.JsonTray;
 import ai.susi.mind.SusiSkill;
 import ai.susi.server.*;
-import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.http.util.TextUtils;
 import org.json.JSONArray;
-import org.json.JSONException;
 import org.json.JSONObject;
 
-import javax.mail.Folder;
 import javax.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.sql.Timestamp;
-import java.time.LocalDate;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
@@ -23,6 +19,8 @@ import java.util.concurrent.TimeUnit;
  * This Servlet gives a API Endpoint to list all the Skills given its model, group and language.
  * Can be tested on http://127.0.0.1:4000/cms/getSkillList.json
  * Other params are - applyFilter, filter_type, filter_name, count
+ * This servlet also gives an API endpoint to list all the private skills if the access_token is given.
+ * Can be tested on http://127.0.0.1:4000/cms/getSkillList.json?private=1&access_token=accessTokenHere
  */
 
 public class ListSkillService extends AbstractAPIHandler implements APIHandler {
@@ -45,25 +43,113 @@ public class ListSkillService extends AbstractAPIHandler implements APIHandler {
     }
 
     @Override
-    public ServiceResponse serviceImpl(Query call, HttpServletResponse response, Authorization rights,
-                                       final JsonObjectWithDefault permissions) throws APIException {
+    public ServiceResponse serviceImpl(Query call, HttpServletResponse response, Authorization rights, final JsonObjectWithDefault permissions) throws APIException {
+
+        String userId = null;
+        String privateSkill = call.get("private", null);
+        if (call.get("access_token", null) != null) { // access tokens can be used by api calls, somehow the stateless equivalent of sessions for browsers
+            ClientCredential credential = new ClientCredential(ClientCredential.Type.access_token, call.get("access_token", null));
+            Authentication authentication = DAO.getAuthentication(credential);
+            // check if access_token is valid
+            if (authentication.getIdentity() != null) {
+                ClientIdentity identity = authentication.getIdentity();
+                userId = identity.getUuid();
+            }
+        }
+
+        if(privateSkill != null) {
+            if(userId != null) {
+                JsonTray chatbot = DAO.chatbot;
+                JSONObject result = new JSONObject();
+                JSONObject userObject = new JSONObject();
+                JSONArray botDetailsArray = new JSONArray();
+
+                userObject = chatbot.getJSONObject(userId);
+                JSONObject groupObject = new JSONObject();
+                JSONObject languageObject = new JSONObject();
+
+                Iterator groupNames = userObject.keys();
+                List<String> groupnameKeysList = new ArrayList<String>();
+
+                while(groupNames.hasNext()) {
+                    String key = (String) groupNames.next();
+                    groupnameKeysList.add(key);
+                }
+
+                for(String group_name : groupnameKeysList)
+                {
+                    groupObject = userObject.getJSONObject(group_name);
+                    Iterator languageNames = groupObject.keys();
+                    List<String> languagenameKeysList = new ArrayList<String>();
+
+                    while(languageNames.hasNext()) {
+                        String key = (String) languageNames.next();
+                        languagenameKeysList.add(key);
+                    }
+
+                    for(String language_name : languagenameKeysList)
+                    {
+                        languageObject = groupObject.getJSONObject(language_name);
+                        Iterator skillNames = languageObject.keys();
+                        List<String> skillnamesKeysList = new ArrayList<String>();
+
+                        while(skillNames.hasNext()) {
+                            String key = (String) skillNames.next();
+                            skillnamesKeysList.add(key);
+                        }
+
+                        for(String skill_name : skillnamesKeysList)
+                        {
+                            JSONObject botDetails = languageObject.getJSONObject(skill_name);
+                            botDetails.put("name", skill_name);
+                            botDetails.put("language", language_name);
+                            botDetails.put("group", group_name);
+                            botDetailsArray.put(botDetails);
+                            result.put("chatbots", botDetailsArray);
+                        }
+                    }
+                }
+
+                if(result.length()==0) {
+                    result.put("accepted", false);
+                    result.put("message", "User has no chatbots.");
+                    return new ServiceResponse(result);
+                }
+
+                result.put("accepted", true);
+                result.put("message", "All chatbots of user fetched.");
+                return new ServiceResponse(result);
+            }
+        }
 
         String model_name = call.get("model", "general");
         File model = new File(DAO.model_watch_dir, model_name);
         String group_name = call.get("group", "All");
         String language_list = call.get("language", "en");
-        int duration = call.get("duration", 0);
+        int duration = call.get("duration", -1);
         JSONArray jsonArray = new JSONArray();
         JSONObject json = new JSONObject(true);
         JSONObject skillObject = new JSONObject();
         String countString = call.get("count", null);
         int offset = call.get("offset", 0);
         String searchQuery = call.get("q", null);
+        int page = call.get("page", 0);
         Integer count = null;
         Boolean countFilter = false;
         Boolean dateFilter = false;
         Boolean searchFilter = false;
+        String reviewed = call.get("reviewed", "false");
         String[] language_names = language_list.split(",");
+        JSONObject skillStats = new JSONObject();
+        int totalSkills = 0;
+        int reviewedSkills = 0;
+        int nonReviewedSkills = 0;
+        int editableSkills = 0;
+        int nonEditableSkills = 0;
+
+        if (!(reviewed.equals("true") || reviewed.equals("false"))) {
+            throw new APIException(400, "Bad service call.");
+        }
 
         if(countString != null) {
             if(Integer.parseInt(countString) < 0) {
@@ -72,6 +158,7 @@ public class ListSkillService extends AbstractAPIHandler implements APIHandler {
                 countFilter = true;
                 try {
                     count = Integer.parseInt(countString);
+                    offset = page*count;
                 } catch(NumberFormatException ex) {
                     throw new APIException(422, "Invalid count value.");
                 }
@@ -97,13 +184,39 @@ public class ListSkillService extends AbstractAPIHandler implements APIHandler {
                     File language = new File(group, language_name);
                     ArrayList<String> fileList = new ArrayList<String>();
                     listFilesForFolder(language, fileList);
-
                     for (String skill_name : fileList) {
                         skill_name = skill_name.replace(".txt", "");
                         JSONObject skillMetadata = SusiSkill.getSkillMetadata(model_name, temp_group_name, language_name, skill_name, duration);
+                        totalSkills++;
 
-                        jsonArray.put(skillMetadata);
-                        skillObject.put(skill_name, skillMetadata);
+                        if(reviewed.equals("true")) {
+                            if(SusiSkill.getSkillReviewStatus(model_name, temp_group_name, language_name, skill_name)) {
+                                jsonArray.put(skillMetadata);
+                                skillObject.put(skill_name, skillMetadata);
+                                reviewedSkills++;
+                            }
+                            else {
+                                nonReviewedSkills++;
+                            }
+                        }
+                        else {
+                            jsonArray.put(skillMetadata);
+                            skillObject.put(skill_name, skillMetadata);
+
+                            if(SusiSkill.getSkillReviewStatus(model_name, temp_group_name, language_name, skill_name)) {
+                                reviewedSkills++;
+                            }
+                            else {
+                                nonReviewedSkills++;
+                            }
+                        }
+
+                        if(SusiSkill.getSkillEditStatus(model_name, temp_group_name, language_name, skill_name)) {
+                            editableSkills++;
+                        }
+                        else {
+                            nonEditableSkills++;
+                        }
                     }
                 }
             }
@@ -117,17 +230,42 @@ public class ListSkillService extends AbstractAPIHandler implements APIHandler {
                 json.put("accepted", false);
                 ArrayList<String> fileList = new ArrayList<String>();
                 listFilesForFolder(language, fileList);
-
                 for (String skill_name : fileList) {
                     skill_name = skill_name.replace(".txt", "");
                     JSONObject skillMetadata = SusiSkill.getSkillMetadata(model_name, group_name, language_name, skill_name, duration);
+                    totalSkills++;
 
-                    jsonArray.put(skillMetadata);
-                    skillObject.put(skill_name, skillMetadata);
+                    if(reviewed.equals("true")) {
+                        if(SusiSkill.getSkillReviewStatus(model_name, group_name, language_name, skill_name)) {
+                            jsonArray.put(skillMetadata);
+                            skillObject.put(skill_name, skillMetadata);
+                            reviewedSkills++;
+                        }
+                        else {
+                            nonReviewedSkills++;
+                        }
+                    }
+                    else {
+                        jsonArray.put(skillMetadata);
+                        skillObject.put(skill_name, skillMetadata);
+
+                        if(SusiSkill.getSkillReviewStatus(model_name, group_name, language_name, skill_name)) {
+                            reviewedSkills++;
+                        }
+                        else {
+                            nonReviewedSkills++;
+                        }
+                    }
+
+                    if(SusiSkill.getSkillEditStatus(model_name, group_name, language_name, skill_name)) {
+                        editableSkills++;
+                    }
+                    else {
+                        nonEditableSkills++;
+                    }
                 }
             }
         }
-
         // if filter is applied, sort the data accordingly
         if (call.get("applyFilter", false)) {
 
@@ -154,223 +292,23 @@ public class ListSkillService extends AbstractAPIHandler implements APIHandler {
             filter_name = filter_name.toLowerCase();
             filter_type = filter_type.toLowerCase();
 
-            if (filter_type.equals("date")) {
+            if (filter_type.equals("creation_date")) {
                 dateFilter = true;
-                if (filter_name.equals("ascending")) {
-                    Collections.sort(jsonValues, new Comparator<JSONObject>() {
-                        private static final String KEY_NAME = "creationTime";
-                        @Override
-                        public int compare(JSONObject a, JSONObject b) {
-                            String valA = new String();
-                            String valB = new String();
-                            int result = 0;
-
-                            try {
-                                valA = a.get(KEY_NAME).toString();
-                                valB = b.get(KEY_NAME).toString();
-                                result = valA.compareToIgnoreCase(valB);
-                            } catch (JSONException e) {
-                                e.printStackTrace();
-                            }
-                            return result;
-                        }
-                    });
-
-                } else {
-                    Collections.sort(jsonValues, new Comparator<JSONObject>() {
-                        private static final String KEY_NAME = "creationTime";
-                        @Override
-                        public int compare(JSONObject a, JSONObject b) {
-                            String valA = new String();
-                            String valB = new String();
-                            int result = 0;
-
-                            try {
-                                valA = a.get(KEY_NAME).toString();
-                                valB = b.get(KEY_NAME).toString();
-                                result = valB.compareToIgnoreCase(valA);
-                            } catch (JSONException e) {
-                                e.printStackTrace();
-                            }
-                            return result;
-                        }
-                    });
-                }
+                SusiSkill.sortByCreationTime(jsonValues, filter_name.equals("ascending"));
+            } else if (filter_type.equals("modified_date")) {
+                dateFilter = true;
+                SusiSkill.sortByModifiedTime(jsonValues, filter_name.equals("ascending"));
             } else if (filter_type.equals("lexicographical")) {
-                if (filter_name.equals("ascending")) {
-
-                    Collections.sort(jsonValues, new Comparator<JSONObject>() {
-
-                        private static final String KEY_NAME = "skill_name";
-
-                        @Override
-                        public int compare(JSONObject a, JSONObject b) {
-                            String valA = new String();
-                            String valB = new String();
-
-                            try {
-                                valA = a.get(KEY_NAME).toString();
-                                valB = b.get(KEY_NAME).toString();
-                            } catch (JSONException e) {
-                                //do nothing
-                            }
-                            return valA.compareToIgnoreCase(valB);
-                        }
-                    });
-
-                } else {
-                    Collections.sort(jsonValues, new Comparator<JSONObject>() {
-
-                        private static final String KEY_NAME = "skill_name";
-
-                        @Override
-                        public int compare(JSONObject a, JSONObject b) {
-                            String valA = new String();
-                            String valB = new String();
-
-                            try {
-                                valA = a.get(KEY_NAME).toString();
-                                valB = b.get(KEY_NAME).toString();
-                            } catch (JSONException e) {
-                                e.getMessage();
-                                //do nothing
-                            }
-                            return valB.compareToIgnoreCase(valA);
-                        }
-                    });
-                }
+            	SusiSkill.sortBySkillName(jsonValues, filter_name.equals("ascending"));
             }
             else if (filter_type.equals("rating")) {
-                if (filter_name.equals("ascending")) {
-                    Collections.sort(jsonValues, new Comparator<JSONObject>() {
-
-                        @Override
-                        public int compare(JSONObject a, JSONObject b) {
-                            float valA;
-                            float valB;
-                            int result=0;
-
-                            try {
-                                valA = a.getJSONObject("skill_rating").getJSONObject("stars").getFloat("avg_star");
-                                valB = b.getJSONObject("skill_rating").getJSONObject("stars").getFloat("avg_star");
-                                result = Float.compare(valA, valB);
-
-                            } catch (JSONException e) {
-                                e.printStackTrace();
-                            }
-                            return result;
-                        }
-                    });
-                }
-                else {
-                    Collections.sort(jsonValues, new Comparator<JSONObject>() {
-
-                        @Override
-                        public int compare(JSONObject a, JSONObject b) {
-                            float valA;
-                            float valB;
-                            int result=0;
-
-                            try {
-                                valA = a.getJSONObject("skill_rating").getJSONObject("stars").getFloat("avg_star");
-                                valB = b.getJSONObject("skill_rating").getJSONObject("stars").getFloat("avg_star");
-                                result = Float.compare(valB, valA);
-
-                            } catch (JSONException e) {
-                                e.printStackTrace();
-                            }
-                            return result;
-                        }
-                    });
-                }
+                SusiSkill.sortByAvgStar(jsonValues, filter_name.equals("ascending"));
             }
             else if (filter_type.equals("usage")) {
-                if (filter_name.equals("ascending")) {
-                    Collections.sort(jsonValues, new Comparator<JSONObject>() {
-
-                        @Override
-                        public int compare(JSONObject a, JSONObject b) {
-                            int valA;
-                            int valB;
-                            int result=0;
-
-                            try {
-                                valA = a.getInt("usage_count");
-                                valB = b.getInt("usage_count");
-                                result = Integer.compare(valA, valB);
-
-                            } catch (JSONException e) {
-                                e.printStackTrace();
-                            }
-                            return result;
-                        }
-                    });
-                }
-                else {
-                    Collections.sort(jsonValues, new Comparator<JSONObject>() {
-
-                        @Override
-                        public int compare(JSONObject a, JSONObject b) {
-                            int valA;
-                            int valB;
-                            int result=0;
-
-                            try {
-                                valA = a.getInt("usage_count");
-                                valB = b.getInt("usage_count");
-                                result = Integer.compare(valB, valA);
-
-                            } catch (JSONException e) {
-                                e.printStackTrace();
-                            }
-                            return result;
-                        }
-                    });
-                }
+                SusiSkill.sortByUsageCount(jsonValues, filter_name.equals("ascending"));
             }
             else if (filter_type.equals("feedback")) {
-                if (filter_name.equals("ascending")) {
-                    Collections.sort(jsonValues, new Comparator<JSONObject>() {
-
-                        @Override
-                        public int compare(JSONObject a, JSONObject b) {
-                            Integer valA;
-                            Integer valB;
-                            int result=0;
-
-                            try {
-                                valA = a.getJSONObject("skill_rating").getInt("feedback_count");
-                                valB = b.getJSONObject("skill_rating").getInt("feedback_count");
-                                result = Integer.compare(valA, valB);
-
-                            } catch (JSONException e) {
-                                e.printStackTrace();
-                            }
-                            return result;
-                        }
-                    });
-                }
-                else {
-                    Collections.sort(jsonValues, new Comparator<JSONObject>() {
-
-                        @Override
-                        public int compare(JSONObject a, JSONObject b) {
-                            Integer valA;
-                            Integer valB;
-                            int result=0;
-
-                            try {
-                                valA = a.getJSONObject("skill_rating").getInt("feedback_count");
-                                valB = b.getJSONObject("skill_rating").getInt("feedback_count");
-                                result = Integer.compare(valB, valA);
-
-                            } catch (JSONException e) {
-                                e.printStackTrace();
-                            }
-                            return result;
-                        }
-                    });
-                }
+                SusiSkill.sortByFeedbackCount(jsonValues, filter_name.equals("ascending"));
             }
             for (int i = 0; i < jsonArray.length(); i++) {
                 if (i < offset ) {
@@ -378,21 +316,23 @@ public class ListSkillService extends AbstractAPIHandler implements APIHandler {
                 }
 
                 if(countFilter) {
-                     if(count == 0) {
+                    if(count == 0) {
                         break;
-                     } else {
+                    } else {
                         count --;
                      }
                  }
-                 if (dateFilter) {
+                 if (dateFilter && duration > 0) {
                      long durationInMillisec = TimeUnit.DAYS.toMillis(duration);
                      long timestamp = System.currentTimeMillis() - durationInMillisec;
                      String startDate = new Timestamp(timestamp).toString().substring(0, 10); //substring is used for getting timestamp upto date only
-                     String skillCreationDate = jsonValues.get(i).get("creationTime").toString().substring(0,10);
-                     if (skillCreationDate.compareToIgnoreCase(startDate) < 0)
-                     {
-                         continue;
-                     }
+                    if (filter_type.equals("creation_date")) {
+                         String skillCreationDate = jsonValues.get(i).get("creationTime").toString().substring(0,10);
+                         if (skillCreationDate.compareToIgnoreCase(startDate) < 0) continue;
+                    } else if (filter_type.equals("modified_date")) {
+                        String skillModifiedDate = jsonValues.get(i).get("lastModifiedTime").toString().substring(0,10);
+                         if (skillModifiedDate.compareToIgnoreCase(startDate) < 0) continue;
+                    }
                  }
                  if (searchFilter) {
                      JSONObject skillMetadata = jsonValues.get(i);
@@ -416,6 +356,16 @@ public class ListSkillService extends AbstractAPIHandler implements APIHandler {
                  }
                 filteredData.put(jsonValues.get(i));
             }
+            if (countFilter) {
+                try {
+                    count = Integer.parseInt(countString);
+                    int pageCount = jsonArray.length() % count == 0 ? (jsonArray.length() / count) : (jsonArray.length() / count) + 1;
+                    json.put("pageCount", pageCount);
+                }
+                catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
             json.put("filteredData", filteredData);
         } else {
             if(countFilter) {
@@ -433,15 +383,31 @@ public class ListSkillService extends AbstractAPIHandler implements APIHandler {
                     String keyName = skillObject.names().getString(i);
                     tempSkillObject.put(keyName, skillObject.getJSONObject(keyName));
                 }
+                if (countFilter) {
+                    try {
+                        count = Integer.parseInt(countString);
+                        int pageCount = skillObject.length() % count == 0 ? (skillObject.length() / count) : (skillObject.length() / count) + 1;
+                        json.put("pageCount", pageCount);
+                    }
+                    catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
                 skillObject = tempSkillObject;
             }
         }
 
+        skillStats.put("totalSkills", totalSkills);
+        skillStats.put("reviewedSkills", reviewedSkills);
+        skillStats.put("nonReviewedSkills", nonReviewedSkills);
+        skillStats.put("editableSkills", editableSkills);
+        skillStats.put("nonEditableSkills", nonEditableSkills);
 
         json.put("model", model_name)
                 .put("group", group_name)
                 .put("language", language_list);
         json.put("skills", skillObject);
+        json.put("skillStats", skillStats);
         json.put("accepted", true);
         json.put("message", "Success: Fetched skill list");
         return new ServiceResponse(json);

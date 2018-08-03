@@ -33,6 +33,9 @@ import java.security.PublicKey;
 import java.security.Signature;
 import java.time.Instant;
 import java.util.Base64;
+import java.util.Date;
+import ai.susi.tools.DateParser;
+
 
 /**
  * This service allows users to login, logout or to check their login status.
@@ -101,6 +104,9 @@ public class LoginService extends AbstractAPIHandler implements APIHandler {
         boolean delete = post.get("delete", false);
 		if (logout || delete) {	// logout if requested
 
+			if(post.get("access_token") == null || authorization.getIdentity() == null) {
+				throw new APIException(400, "Bad access token.");
+			}
 			// invalidate session
 			post.getRequest().getSession().invalidate();
 
@@ -212,6 +218,7 @@ public class LoginService extends AbstractAPIHandler implements APIHandler {
 					if(valid_seconds == -1) result.put("valid_seconds", "forever");
 					else result.put("valid_seconds", valid_seconds);
 
+					result.put("uuid", identity.getUuid());
 					result.put("access_token", token);
 					result.put("accepted", true);
 
@@ -233,6 +240,11 @@ public class LoginService extends AbstractAPIHandler implements APIHandler {
 			// store the IP of last login in accounting object
 			Accounting accounting = DAO.getAccounting(identity);
 			accounting.getJSON().put("lastLoginIP", post.getClientHost());
+
+			// store the time of last login in accounting object
+			Date currentTime = new Date();
+			accounting.getJSON().put("lastLoginTime", DateParser.formatRFC1123(currentTime));
+
             accounting.commit();
 
 			return new ServiceResponse(result);

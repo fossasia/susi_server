@@ -80,7 +80,7 @@ public class HttpClient {
     
 
 
-    public static final int defaultClientTimeout = 2000;
+    public static final int defaultClientTimeout = 3000;
     public static final int minimumLocalDeltaInit  =  10; // the minimum time difference between access of the same local domain
     public static final int minimumGlobalDeltaInit = 500; // the minimum time difference between access of the same global domain
     
@@ -532,7 +532,9 @@ public class HttpClient {
         }
         if (loadThread.isAlive()) loadThread.interrupt();
         if (!exception.isEmpty()) throw exception.get(0);
-        if (content.isEmpty()) throw new IOException("no content available for url " + source_url);
+        if (content.isEmpty()) {
+            throw new IOException("no content available for url " + source_url);
+        }
         return content.get(0);
     }
     

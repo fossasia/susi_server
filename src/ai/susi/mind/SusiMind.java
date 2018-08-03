@@ -27,7 +27,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -36,7 +35,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -44,6 +42,7 @@ import org.json.JSONObject;
 import ai.susi.DAO;
 import ai.susi.json.JsonTray;
 import ai.susi.mind.SusiMemory.TokenMapList;
+import ai.susi.server.ClientIdentity;
 import ai.susi.server.api.susi.ConsoleService;
 import ai.susi.tools.AIML2Susi;
 
@@ -55,7 +54,6 @@ public class SusiMind {
     public final static int ATTENTION_TIME = 5;
     
     private final Map<String, Set<SusiIntent>> intenttrigger; // a map from a keyword to a set of intents
-    private final Map<SusiSkill.ID, Set<String>> skillexamples; // a map from an skill path to one example
     private final Map<SusiSkill.ID, SusiSkill> skillMetadata; // a map from skill path to description
     private final Map<SusiSkill.ID, String> skillImage; // a map from skill path to skill image
     private final List<File> watchpaths;
@@ -75,7 +73,6 @@ public class SusiMind {
         this.intenttrigger = new ConcurrentHashMap<>();
         this.observations = new HashMap<>();
         this.memories = new SusiMemory(susi_chatlog_dir, susi_skilllog_dir, ATTENTION_TIME);
-        this.skillexamples = new TreeMap<>();
         this.skillMetadata = new TreeMap<>();
         this.skillImage = new TreeMap<>();
         // learn all available intents
@@ -117,8 +114,8 @@ public class SusiMind {
         return this.memories.unanswered2tokenizedstats();
     }
     
-    public Map<SusiSkill.ID, Set<String>> getSkillExamples() {
-        return this.skillexamples;
+    public Set<String> getSkillExamples(SusiSkill.ID id) {
+        return this.skillMetadata.get(id).getExamples();
     }
 
     public Map<SusiSkill.ID, SusiSkill> getSkillMetadata() {
@@ -190,6 +187,34 @@ public class SusiMind {
             }
         });
 
+        // start to collect data for skill metadata
+        SusiSkill skill = new SusiSkill();
+
+        // skill description
+        if(json.has("description"))
+            skill.setDescription(json.getString("description"));
+        // skill image
+        if(json.has("image"))
+           skill.setImage(json.getString("image"));
+        // adding skill meta data
+        if(json.has("skill_name"))
+           skill.setSkillName(json.getString("skill_name"));
+        if(json.has("protected"))
+            skill.setProtectedSkill(json.getBoolean("protected"));
+        if(json.has("author"))
+            skill.setAuthor(json.getString("author"));
+        if(json.has("author_url"))
+           skill.setAuthorURL(json.getString("author_url"));
+        if(json.has("author_email"))
+           skill.setAuthorEmail(json.getString("author_email"));
+        if(json.has("developer_privacy_policy"))
+           skill.setDeveloperPrivacyPolicy(json.getString("developer_privacy_policy"));
+        if(json.has("terms_of_use"))
+            skill.setTermsOfUse(json.getString("terms_of_use"));
+        if(json.has("dynamic_content"))
+            skill.setDynamicContent(json.getBoolean("dynamic_content"));
+        
+        
         // add conversation intents
         final List<Pattern> removalPattern = new ArrayList<>();
         JSONArray intentset = json.has("rules") ? json.getJSONArray("rules") : json.has("intents") ? json.getJSONArray("intents") : new JSONArray();
@@ -208,50 +233,13 @@ public class SusiMind {
                     //intent.getPhrases().forEach(utterance -> this.memories.removeUnanswered(utterance.getPattern()));
                     //System.out.println("***DEBUG: ADD INTENT FOR KEY " + key + ": " + intent.toString());
                 });
-                // Susi skill object for skill metadata
-                SusiSkill skill = new SusiSkill();
 
-                // collect intent example and test the intents using the example/expect terms
-                if (intent.getExample() != null) {
-                    //DAO.log("intent for '" + intent.getExample() + "' in \n" + intent.getSkill() + "\n");
-                    Set<String> examples = this.skillexamples.get(intent.getSkill());
-                    if (examples == null) {
-                        examples = new LinkedHashSet<>();
-                        this.skillexamples.put(intent.getSkill(), examples);
-                    }
-                    examples.add(intent.getExample());
-                    skill.setExamples(examples);
-
-                }
-                // skill description
-
-                if(json.has("description"))
-                    skill.setDescription(json.getString("description"));
-                // skill image
-                if(json.has("image"))
-                   skill.setImage(json.getString("image"));
-                // adding skill meta data
-                if(json.has("skill_name"))
-                   skill.setSkillName(json.getString("skill_name"));
-                if(json.has("protected"))
-                    skill.setProtectedSkill(json.getBoolean("protected"));
-                if(json.has("author"))
-                    skill.setAuthor(json.getString("author"));
-                if(json.has("author_url"))
-                   skill.setAuthorURL(json.getString("author_url"));
-               if(json.has("author_email"))
-                   skill.setAuthorEmail(json.getString("author_email"));
-                if(json.has("developer_privacy_policy"))
-                   skill.setDeveloperPrivacyPolicy(json.getString("developer_privacy_policy"));
-                if(json.has("terms_of_use"))
-                    skill.setTermsOfUse(json.getString("terms_of_use"));
-                if(json.has("dynamic_content"))
-                    skill.setDynamicContent(json.getBoolean("dynamic_content"));
-                this.skillMetadata.put(intent.getSkill(), skill);
-
-                //if (intent.getExample() != null && intent.getExpect() != null) {}
+                if (intent.hasExample())
+                    skill.addExample(intent.getExample());
             });
         });
+
+        this.skillMetadata.put(skillid, skill);
         
         // finally remove patterns in the memory that are known in a background process
         new Thread(new Runnable() {
@@ -359,12 +347,12 @@ public class SusiMind {
      * @param observation an initial thought - that is what susi experiences in the context. I.e. location and language of the user
      * @return
      */
-    public List<SusiThought> react(String query, SusiLanguage userLanguage, int maxcount, String client, SusiThought observation, SusiMind... minds) {
+    public List<SusiThought> react(String query, SusiLanguage userLanguage, int maxcount, ClientIdentity identity, SusiThought observation, SusiMind... minds) {
         // get the history a list of thoughts
         long t0 = System.currentTimeMillis();
         SusiArgument observation_argument = new SusiArgument();
         if (observation != null && observation.length() > 0) observation_argument.think(observation);
-        List<SusiCognition> cognitions = this.memories.getCognitions(client);
+        List<SusiCognition> cognitions = this.memories.getCognitions(identity.getClient());
         long t1 = System.currentTimeMillis();
         // latest cognition is first in list
         cognitions.forEach(cognition -> observation_argument.think(cognition.recallDispute()));
@@ -386,7 +374,7 @@ public class SusiMind {
         ideatest: for (SusiIdea idea: ideas) {
             // compute an argument: because one intent represents a horn clause, the argument is a deduction track, a "proof" of the result.
             long t5 = System.currentTimeMillis();
-            SusiArgument argument = idea.getIntent().consideration(query, recall, idea.getToken(), this, client);
+            SusiArgument argument = idea.getIntent().consideration(query, recall, idea.getToken(), this, identity);
             long t6 = System.currentTimeMillis();
             if (t6 - t5 > 100) DAO.log("=== Wasted " + (t6 - t5) + " milliseconds with intent " + idea.getIntent().toJSON());
             
@@ -395,7 +383,7 @@ public class SusiMind {
                 continue ideatest; // consider only sound arguments
             }
             try {
-				answers.add(argument.finding(client, userLanguage, minds));
+				answers.add(argument.finding(identity, userLanguage, minds));
 			} catch (ReactionException e) {
 				// a bad argument (this is not a runtime error, it is a signal that the thought cannot be thought to the end
 				continue ideatest;
@@ -411,16 +399,27 @@ public class SusiMind {
         return answers;
     }
     
-    public static List<SusiThought> reactMinds(String query, SusiLanguage userLanguage, int maxcount, String client, SusiThought observation, SusiMind... minds) {
-    	return minds[0].react(query, userLanguage, maxcount, client, observation, minds);
+    public static List<SusiThought> reactMinds(
+    		final String query,
+    		final SusiLanguage userLanguage,
+    		final int maxcount,
+    		final ClientIdentity identity,
+    		final SusiThought observation,
+    		final SusiMind... minds) {
+        List<SusiThought> thoughts = new ArrayList<>();
+        int mindcount = 0;
+        while (thoughts.isEmpty() && mindcount < minds.length) {
+            thoughts = minds[mindcount++].react(query, userLanguage, maxcount, identity, observation, minds);
+        }
+        return thoughts;
     }
     
     public class Reaction {
     	private SusiAction action;
         private SusiThought mindstate;
 
-        public Reaction(String query, SusiLanguage userLanguage, String client, SusiThought observation, SusiMind... minds) throws ReactionException {
-            List<SusiThought> thoughts = react(query, userLanguage, 1, client, observation, minds);
+        public Reaction(String query, SusiLanguage userLanguage, ClientIdentity identity, SusiThought observation, SusiMind... minds) throws ReactionException {
+            List<SusiThought> thoughts = react(query, userLanguage, 1, identity, observation, minds);
             this.mindstate = thoughts.get(0);
             List<SusiAction> actions = this.mindstate.getActions();
             if (actions.isEmpty()) throw new ReactionException("this mind has no idea what it should do.");
@@ -464,12 +463,12 @@ public class SusiMind {
         File log = new File(new File("data"), "susi");
         SusiMind mem = new SusiMind(log, null, skill);
         try {
-            System.out.println(mem.new Reaction("I feel funny", SusiLanguage.unknown, "localhost", new SusiThought(), mem).getExpression());
+            System.out.println(mem.new Reaction("I feel funny", SusiLanguage.unknown, new ClientIdentity("localhost"), new SusiThought(), mem).getExpression());
         } catch (ReactionException e) {
             e.printStackTrace();
         }
         try {
-            System.out.println(mem.new Reaction("Help me!", SusiLanguage.unknown, "localhost", new SusiThought(), mem).getExpression());
+            System.out.println(mem.new Reaction("Help me!", SusiLanguage.unknown, new ClientIdentity("localhost"), new SusiThought(), mem).getExpression());
         } catch (ReactionException e) {
             e.printStackTrace();
         }
