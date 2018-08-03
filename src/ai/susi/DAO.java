@@ -99,7 +99,7 @@ public class DAO {
     private static Map<String, String> config = new HashMap<>();
     public static Boolean pullStatus=true;
     private static Logger logger;
-    private static LogAppender logAppender;
+    public static LogAppender logAppender;
 
     // AAA Schema for server usage
     private static JsonTray authentication;
