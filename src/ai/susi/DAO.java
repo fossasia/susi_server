@@ -91,7 +91,7 @@ import org.apache.log4j.PatternLayout;
 public class DAO {
 
     private final static String ACCESS_DUMP_FILE_PREFIX = "access_";
-    public  static File conf_dir, bin_dir, html_dir, data_dir, skill_status_dir, susi_chatlog_dir, susi_skilllog_dir, model_watch_dir, susi_skill_repo, private_skill_watch_dir, susi_private_skill_repo, deleted_skill_dir, system_keys;
+    public  static File conf_dir, bin_dir, html_dir, data_dir, skill_status_dir, susi_chatlog_dir, susi_skilllog_dir, draft_dir, model_watch_dir, susi_skill_repo, private_skill_watch_dir, susi_private_skill_repo, deleted_skill_dir, system_keys;
     public static String conflictsPlaceholder = "%CONFLICTS%";
     private static File external_data, assets, dictionaries;
     private static Settings public_settings, private_settings;
@@ -125,6 +125,9 @@ public class DAO {
     public static JsonTray skillSupportedLanguages;
     public static JsonTray ratingsOverTime;
     public static JsonTray reportedSkills;
+    
+    // temporary solution for draft storage
+    public static Map<String, Map<String, JSONObject>> drafts; // key is the user's 
 
 
     static {
@@ -159,11 +162,13 @@ public class DAO {
         if (!susi_memory_dir_new.exists()) susi_memory_dir_new.mkdirs();
         susi_chatlog_dir = new File(susi_memory_dir_new, "chatlog");
         susi_skilllog_dir = new File(susi_memory_dir_new, "skilllog");
+        draft_dir = new File(susi_memory_dir_new, "drafts");
         if (susi_memory_dir_old.exists() && !susi_chatlog_dir.exists()) {
             susi_memory_dir_old.renameTo(susi_chatlog_dir); // migrate old location
         }
         if (!susi_chatlog_dir.exists()) susi_chatlog_dir.mkdirs();
         if (!susi_skilllog_dir.exists()) susi_skilllog_dir.mkdirs();
+        if (!draft_dir.exists()) susi_skilllog_dir.mkdirs();
         // TODO:
         deleted_skill_dir = new File(new File(DAO.data_dir, "deleted_skill_dir"), "models");
 

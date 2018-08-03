@@ -32,6 +32,7 @@ import org.json.JSONObject;
 
 import ai.susi.DAO;
 import ai.susi.mind.SusiMind.ReactionException;
+import ai.susi.server.ClientIdentity;
 import ai.susi.tools.TimeoutMatcher;
 
 /**
@@ -360,7 +361,7 @@ public class SusiAction {
      * @return the action with the attribute "expression" instantiated by unification of the thought with the action
      * @throws ReactionException
      */
-    public List<SusiAction> execution(SusiArgument thoughts, String client, SusiLanguage language, SusiMind... minds) throws ReactionException {
+    public List<SusiAction> execution(SusiArgument thoughts, ClientIdentity identity, SusiLanguage language, SusiMind... minds) throws ReactionException {
         List<SusiAction> actions = new ArrayList<>();
         actions.add(this);
         if ((this.getRenderType() == RenderType.answer || this.getRenderType() == RenderType.self) && this.json.has("phrases")) {
@@ -380,7 +381,7 @@ public class SusiAction {
                     ReactionException ee = null;
                     mindlevels: for (SusiMind mind: minds) {
                             try {
-                                reaction = mind.new Reaction(observation, language, client, new SusiThought(), minds);
+                                reaction = mind.new Reaction(observation, language, identity, new SusiThought(), minds);
                                 break mindlevels;
                             } catch (ReactionException e) {
                                 ee = e;
@@ -423,7 +424,7 @@ public class SusiAction {
                     ReactionException ee = null;
                     mindlevels: for (SusiMind mind: minds) {
                             try {
-                                reaction = mind.new Reaction(expression, language, client, new SusiThought(), minds);
+                                reaction = mind.new Reaction(expression, language, identity, new SusiThought(), minds);
                                 expression = reaction.getExpression();
                                 if (expression != null && expression.length() > 0) break mindlevels;
                             } catch (ReactionException e) {

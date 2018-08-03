@@ -39,6 +39,7 @@ import org.json.JSONObject;
 
 import ai.susi.DAO;
 import ai.susi.mind.SusiAction.SusiActionException;
+import ai.susi.server.ClientIdentity;
 import ai.susi.tools.TimeoutMatcher;
 
 /**
@@ -567,7 +568,7 @@ public class SusiIntent {
      * @param token the key from the user query which matched the intent tokens (also considering category matching)
      * @return the result of the application of the intent, a thought argument containing the thoughts which terminated into a final mindstate or NULL if the consideration should be rejected
      */
-    public SusiArgument consideration(final String query, SusiThought recall, SusiLinguistics.Token token, SusiMind mind, String client) {
+    public SusiArgument consideration(final String query, SusiThought recall, SusiLinguistics.Token token, SusiMind mind, ClientIdentity identity) {
         
         HashSet<SusiThought> keynotes = new HashSet<>();
         

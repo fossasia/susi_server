@@ -21,7 +21,6 @@ package ai.susi.mind;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -242,29 +241,28 @@ public class SusiMemory {
         if (removed) System.out.println("** removed unanswered pattern " + p.pattern());
     }
     
+    public SusiIdentity getMemory(String client) {
+    	SusiIdentity identity = this.memories.get(client);
+        if (identity == null) {
+            identity = new SusiIdentity(new File(chatlog, client), attention);
+            this.memories.put(client, identity);
+        }
+        return identity;
+    }
+    
     /**
      * get a list of cognitions using the client key
      * @param client
      * @return a list of interactions, latest cognition is first in list
      */
     public List<SusiCognition> getCognitions(String client) {
-        SusiIdentity identity = this.memories.get(client);
-        if (identity == null) {
-            if (this.chatlog == null) return new ArrayList<SusiCognition>();
-            identity = new SusiIdentity(new File(chatlog, client), attention);
-            this.memories.put(client, identity);
-        }
+        SusiIdentity identity = getMemory(client);
         return identity.getCognitions();
     }
     
     public SusiMemory addCognition(String client, SusiCognition cognition) throws IOException {
         // add to user memories
-        SusiIdentity identity = this.memories.get(client);
-        if (identity == null) {
-            if (chatlog == null) return null;
-            identity = new SusiIdentity(new File(chatlog, client), attention);
-            this.memories.put(client, identity);
-        }
+        SusiIdentity identity = getMemory(client);
         identity.add(cognition);
         
         // add to skill memories
