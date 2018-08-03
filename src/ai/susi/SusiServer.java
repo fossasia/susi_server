@@ -604,6 +604,7 @@ public class SusiServer {
         servletHandler.addServlet(AccessServlet.class, "/aaa/access.txt");
         servletHandler.addServlet(Sitemap.class, "/sitemap.xml");
         servletHandler.addServlet(ThreaddumpServlet.class, "/threaddump.txt");
+        servletHandler.addServlet(LogServlet.class, "/log.txt");
 
         // cms api
         servletHandler.addServlet(GetImageServlet.class, "/cms/getImage.png");
