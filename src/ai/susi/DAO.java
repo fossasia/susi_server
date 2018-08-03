@@ -29,6 +29,7 @@ import java.security.NoSuchAlgorithmException;
 import java.security.PublicKey;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
@@ -127,7 +128,7 @@ public class DAO {
     public static JsonTray reportedSkills;
     
     // temporary solution for draft storage
-    public static Map<String, Map<String, JSONObject>> drafts; // key is the user's 
+    public static Map<String, Map<String, Draft>> drafts = new HashMap<>(); // key is the user's identity, inner map key is draft id
 
 
     static {
@@ -582,6 +583,60 @@ public class DAO {
         return accounting.has(credential.toString());
     }
 
+    
+    public static class Draft {
+		JSONObject object;
+    	Date created, modified;
+    	public Draft(JSONObject o) {
+    		this.object = o;
+    		this.created = new Date();
+    		this.modified = this.created;
+    	}
+    	public JSONObject getObject() {
+			return object;
+		}
+		public Date getCreated() {
+			return created;
+		}
+		public void setCreated(Date created) {
+			this.created = created;
+		}
+		public Date getModified() {
+			return modified;
+		}
+		public void setModified(Date modified) {
+			this.modified = modified;
+		}
+    }
+    
+    public static void storeDraft(@Nonnull final ClientIdentity identity, final String id, final Draft draft) {
+    	Map<String, Draft> d = drafts.get(identity.getClient());
+    	if (d == null) {
+    		d = new HashMap<>();
+    		drafts.put(identity.getClient(), d);
+    	}
+    	Draft old = d.get(id);
+    	if (old != null) draft.setCreated(old.getCreated());
+    	d.put(id, draft);
+    }
+
+    public static Map<String, Draft> readDrafts(@Nonnull final ClientIdentity identity, final String... ids) {
+    	Map<String, Draft> d = drafts.get(identity.getClient());
+    	Map<String, Draft> r = new HashMap<>();
+    	if (d == null) return r;
+    	if (ids.length == 0) {
+    		d.forEach((id, draft) -> r.put(id, draft));
+    		return r;
+    	}
+    	for (String id: ids) if (d.containsKey(id)) r.put(id, d.get(id));
+    	return r;
+    }
+
+    public static void deleteDraft(@Nonnull final ClientIdentity identity, final String id) {
+    	Map<String, Draft> d = drafts.get(identity.getClient());
+    	if (d != null) d.remove(id);
+    }
+    
     public static Repository getRepository() throws IOException {
       Repository repo;
       File repoFile = susi_skill_repo;

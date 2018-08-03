@@ -513,6 +513,11 @@ public class SusiServer {
                 CheckRegistrationService.class,
                 UploadImageService.class,
 
+                // draft services
+                StoreDraftService.class,
+                ReadDraftService.class,
+                DeleteDraftService.class,
+                
                 // monitoring services
                 MonitorQueryService.class,
                 MonitorAnnotationsService.class,
