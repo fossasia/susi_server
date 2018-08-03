@@ -399,7 +399,12 @@ public class SusiMind {
     }
     
     public static List<SusiThought> reactMinds(String query, SusiLanguage userLanguage, int maxcount, String client, SusiThought observation, SusiMind... minds) {
-    	return minds[0].react(query, userLanguage, maxcount, client, observation, minds);
+        List<SusiThought> thoughts = new ArrayList<>();
+        int mindcount = 0;
+        while (thoughts.isEmpty() && mindcount < minds.length) {
+            thoughts = minds[mindcount++].react(query, userLanguage, maxcount, client, observation, minds);
+        }
+        return thoughts;
     }
     
     public class Reaction {

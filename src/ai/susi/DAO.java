@@ -91,7 +91,7 @@ import org.apache.log4j.PatternLayout;
 public class DAO {
 
     private final static String ACCESS_DUMP_FILE_PREFIX = "access_";
-    public  static File conf_dir, bin_dir, html_dir, data_dir, skill_status_dir, susi_chatlog_dir, susi_skilllog_dir, model_watch_dir, susi_skill_repo, private_skill_watch_dir, susi_private_skill_repo, usi_skill_repo, deleted_skill_dir, system_keys;
+    public  static File conf_dir, bin_dir, html_dir, data_dir, skill_status_dir, susi_chatlog_dir, susi_skilllog_dir, model_watch_dir, susi_skill_repo, private_skill_watch_dir, susi_private_skill_repo, deleted_skill_dir, system_keys;
     public static String conflictsPlaceholder = "%CONFLICTS%";
     private static File external_data, assets, dictionaries;
     private static Settings public_settings, private_settings;
@@ -651,36 +651,66 @@ public class DAO {
             throw new IOException (e.getMessage());
         }
     }
-    
     public static Thread addAndPushCommit(String commit_message, String userEmail, boolean concurrently) {
-    	Runnable process = new Runnable() {
-			@Override
-			public void run() {
-				try (Git git = getGit()) {
-		            long t0 = System.currentTimeMillis();
-		            git.add().setUpdate(true).addFilepattern(".").call();
-		            long t1 = System.currentTimeMillis();
-		            git.add().addFilepattern(".").call(); // takes long 
-		            long t2 = System.currentTimeMillis();
-		            
-		            // commit the changes
-		            DAO.pushCommit(git, commit_message, userEmail); // takes long
-		            long t3 = System.currentTimeMillis();
-		            DAO.log("jgit statistics: add-1: " + (t1 - t0) + "ms, add-2: " + (t2 - t1) + "ms, push: " + (t3 - t2) + "ms");
-		        } catch (IOException | GitAPIException e) {
-		            e.printStackTrace();
+      Runnable process = new Runnable() {
+        @Override
+        public void run() {
+          try (Git git = getGit()) {
+            long t0 = System.currentTimeMillis();
+            git.add().setUpdate(true).addFilepattern(".").call();
+            long t1 = System.currentTimeMillis();
+            git.add().addFilepattern(".").call(); // takes long
+            long t2 = System.currentTimeMillis();
 
-		        }
-			}
-    	};
-    	if (concurrently) {
-    		Thread t = new Thread(process);
-    		t.start();
-    		return t;
-    	} else {
-    		process.run();
-    		return null;
-    	}
+            // commit the changes
+            DAO.pushCommit(git, commit_message, userEmail); // takes long
+            long t3 = System.currentTimeMillis();
+            DAO.log("jgit statistics: add-1: " + (t1 - t0) + "ms, add-2: " + (t2 - t1) + "ms, push: " + (t3 - t2) + "ms");
+          } catch (IOException | GitAPIException e) {
+            e.printStackTrace();
+
+          }
+        }
+      };
+      if (concurrently) {
+        Thread t = new Thread(process);
+        t.start();
+        return t;
+      } else {
+        process.run();
+        return null;
+      }
+    }
+
+    public static Thread addAndPushCommitPrivate(String commit_message, String userEmail, boolean concurrently) {
+      Runnable process = new Runnable() {
+        @Override
+        public void run() {
+          try (Git git = getPrivateGit()) {
+            long t0 = System.currentTimeMillis();
+            git.add().setUpdate(true).addFilepattern(".").call();
+            long t1 = System.currentTimeMillis();
+            git.add().addFilepattern(".").call(); // takes long
+            long t2 = System.currentTimeMillis();
+
+            // commit the changes
+            DAO.pushCommit(git, commit_message, userEmail); // takes long
+            long t3 = System.currentTimeMillis();
+            DAO.log("jgit statistics: add-1: " + (t1 - t0) + "ms, add-2: " + (t2 - t1) + "ms, push: " + (t3 - t2) + "ms");
+          } catch (IOException | GitAPIException e) {
+            e.printStackTrace();
+
+          }
+        }
+      };
+      if (concurrently) {
+        Thread t = new Thread(process);
+        t.start();
+        return t;
+      } else {
+        process.run();
+        return null;
+      }
     }
 
     /**

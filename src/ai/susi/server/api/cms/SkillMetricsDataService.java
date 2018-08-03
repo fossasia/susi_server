@@ -63,15 +63,17 @@ public class SkillMetricsDataService extends AbstractAPIHandler implements APIHa
         String model_name = call.get("model", "general");
         File model = new File(DAO.model_watch_dir, model_name);
         String group_name = call.get("group", "All");
-        String language_name = call.get("language", "en");
+        String language_list = call.get("language", "en");
         int duration = call.get("duration", -1);
         JSONArray jsonArray = new JSONArray();
+        JSONArray staffPicks = new JSONArray();
         JSONObject json = new JSONObject(true);
         JSONObject skillObject = new JSONObject();
         String countString = call.get("count", null);
         String metrics_list = call.get("metrics", "Games, Trivia and Accessories");
         String[] metrics_names = metrics_list.split(";");
         Integer count = null;
+        String[] language_names = language_list.split(",");
 
         if(countString != null) {
             if(Integer.parseInt(countString) < 0) {
@@ -102,44 +104,60 @@ public class SkillMetricsDataService extends AbstractAPIHandler implements APIHa
 
             for (String temp_group_name : folderList){
                 File group = new File(model, temp_group_name);
+                for (String language_name : language_names) {
+                    File language = new File(group, language_name);
+                    ArrayList<String> fileList = new ArrayList<String>();
+                    listFilesForFolder(language, fileList);
+
+                    for (String skill_name : fileList) {
+                        skill_name = skill_name.replace(".txt", "");
+                        JSONObject skillMetadata = SusiSkill.getSkillMetadata(model_name, temp_group_name, language_name, skill_name, duration);
+
+                        jsonArray.put(skillMetadata);
+                        skillObject.put(skill_name, skillMetadata);
+
+                        if(SusiSkill.isStaffPick(model_name, temp_group_name, language_name, skill_name)) {
+                            staffPicks.put(skillMetadata);
+                        }
+                    }
+                }
+            }
+        }
+        // Returns susi skills list of a particular group
+        else {
+            File group = new File(model, group_name);
+            for (String language_name : language_names) {
                 File language = new File(group, language_name);
+                json.put("accepted", false);
                 ArrayList<String> fileList = new ArrayList<String>();
                 listFilesForFolder(language, fileList);
 
                 for (String skill_name : fileList) {
                     skill_name = skill_name.replace(".txt", "");
-                    JSONObject skillMetadata = SusiSkill.getSkillMetadata(model_name, temp_group_name, language_name, skill_name, duration);
+                    JSONObject skillMetadata = SusiSkill.getSkillMetadata(model_name, group_name, language_name, skill_name, duration);
 
                     jsonArray.put(skillMetadata);
                     skillObject.put(skill_name, skillMetadata);
+
+                    if(SusiSkill.isStaffPick(model_name, group_name, language_name, skill_name)) {
+                        staffPicks.put(skillMetadata);
+                    }
                 }
-            }
-
-        }
-        // Returns susi skills list of a particular group
-        else {
-            File group = new File(model, group_name);
-            File language = new File(group, language_name);
-            json.put("accepted", false);
-            ArrayList<String> fileList = new ArrayList<String>();
-            listFilesForFolder(language, fileList);
-
-            for (String skill_name : fileList) {
-                skill_name = skill_name.replace(".txt", "");
-                JSONObject skillMetadata = SusiSkill.getSkillMetadata(model_name, group_name, language_name, skill_name, duration);
-
-                jsonArray.put(skillMetadata);
-                skillObject.put(skill_name, skillMetadata);
             }
         }
 
 
         JSONObject skillMetrics = new JSONObject(true);
         List<JSONObject> jsonValues = new ArrayList<JSONObject>();
+        List<JSONObject> staffPicksList = new ArrayList<JSONObject>();
 
         // temporary list to extract objects from skillObject
         for (int i = 0; i < jsonArray.length(); i++) {
             jsonValues.add(jsonArray.getJSONObject(i));
+        }
+
+        for (int i = 0; i < staffPicks.length(); i++) {
+            staffPicksList.add(staffPicks.getJSONObject(i));
         }
 
         // Get skills based on creation date - Returns latest skills
@@ -172,6 +190,12 @@ public class SkillMetricsDataService extends AbstractAPIHandler implements APIHa
         JSONArray feedbackData = getSlicedArray(jsonValues, count);
         skillMetrics.put("feedback", feedbackData);
 
+        // Get skills based on ratings
+        SusiSkill.sortByAvgStar(staffPicksList, false);
+
+        JSONArray staffPicksArray = getSlicedArray(staffPicksList, count);
+        skillMetrics.put("staffPicks", staffPicksArray);
+
         for (String metric_name : metrics_names) {
             try {
                 metric_name = metric_name.trim();
@@ -196,7 +220,7 @@ public class SkillMetricsDataService extends AbstractAPIHandler implements APIHa
 
         json.put("model", model_name)
                 .put("group", group_name)
-                .put("language", language_name);
+                .put("language", language_list);
         json.put("metrics", skillMetrics);
         json.put("accepted", true);
         json.put("message", "Success: Fetched skill data based on metrics");

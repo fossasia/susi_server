@@ -60,6 +60,11 @@ public class SusiAction {
     public static enum RenderType {
         answer,        // show or say a text
         stop,          // stop any actions that are running right now
+        pause,         // pause something that woud otherwise beeing able to be stopped
+        resume,        // resume what has been paused
+        restart,       // start over of what is happening right now
+        //previous,      // step to one thing in the sequence before
+        //next,          // step in the next thing in the sequence
         table,         // show a table
         piechart,      // show a pie chart
         rss,           // show a link list with description (aka search result listing)
@@ -129,6 +134,23 @@ public class SusiAction {
                 case stop:
                     //stop has no attributes
                     break;
+                case pause:
+                    //pause has no attributes
+                    break;
+                case resume:
+                    //resume has no attributes
+                    break;
+                case restart:
+                    //restart has no attributes
+                    break;
+                    /*
+                case previous:
+                    //previous has no attributes
+                    break;
+                case next:
+                    //next has no attributes
+                    break;
+                    */
                 case table:
                     if (!json.has("columns")) throw new SusiActionException("the action needs a columns object");
                     if (!json.has("count")) json.put("count", -1);
