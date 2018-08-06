@@ -20,6 +20,7 @@
 package ai.susi.server.api.cms;
 
 import ai.susi.DAO;
+import ai.susi.server.AbstractAPIHandler;
 import ai.susi.server.FileHandler;
 import ai.susi.server.Query;
 import ai.susi.server.RemoteAccess;
@@ -54,6 +55,7 @@ public class LogServlet extends HttpServlet {
         
         FileHandler.setCaching(response, 10);
         post.setResponse(response, "text/plain");
+        AbstractAPIHandler.setCORS(response);
         response.getOutputStream().write(buffer.toString().getBytes(StandardCharsets.UTF_8));
         post.finalize();
     }
