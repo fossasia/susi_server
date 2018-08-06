@@ -112,6 +112,7 @@ public class DAO {
     public static JsonTray apiKeys;
 
     // CMS Schema for server usage
+    public static JsonTray skillInfo;
     public static JsonTray skillRating;
     public static JsonTray fiveStarSkillRating;
     public static JsonTray countryWiseSkillUsage;
@@ -274,6 +275,15 @@ public class DAO {
         apiKeys = new JsonTray(apiKeys_per.toFile(), apiKeys_vol.toFile(), 1000000);
         OS.protectPath(apiKeys_per);
         OS.protectPath(apiKeys_vol);
+
+        /* Basic attributes related to a skill*/
+        Path susi_skill_info_dir = dataPath.resolve("skill_info");
+        susi_skill_info_dir.toFile().mkdirs();
+        Path skillInfo_per = susi_skill_info_dir.resolve("skillInfo.json");
+        Path skillInfo_vol = susi_skill_info_dir.resolve("skillInfo_session.json");
+        skillInfo = new JsonTray(skillInfo_per.toFile(), skillInfo_vol.toFile(), 1000000);
+        OS.protectPath(skillInfo_per);
+        OS.protectPath(skillInfo_vol);
 
         /*Skill Rating storage*/
         Path susi_skill_rating_dir = dataPath.resolve("skill_rating");
