@@ -496,6 +496,34 @@ public class DAO {
         return config.keySet();
     }
 
+    /**
+    * Checks if the client's domain is allowed by the bot creator
+    * @param configureObject
+    * @param @referer
+    */
+    public static boolean allowDomainForChatbot(JSONObject configureObject, String referer) {
+        Boolean allowed_site = true;
+        if (configureObject.getBoolean("allow_bot_only_on_own_sites") && configureObject.has("allowed_sites") && configureObject.getString("allowed_sites").length() > 0) {
+            allowed_site = false;
+            if (referer != null && referer.length() > 0) {
+                String[] sites = configureObject.getString("allowed_sites").split(",");
+                for (int i = 0; i < sites.length; i++) {
+                    String site = sites[i].trim();
+                    int referer_index = referer.indexOf("://");
+                    String host = referer;
+                    if (referer.indexOf('/',referer_index+3) > -1) {
+                        host = referer.substring(0,referer.indexOf('/',referer_index+3));
+                    }
+                    if (host.equalsIgnoreCase(site)) {
+                        allowed_site = true;
+                        break;
+                    }
+                }
+            }
+        }
+        return allowed_site; 
+    }
+
     public static final Random random = new Random(System.currentTimeMillis());
 
     public static void log(String line) {
