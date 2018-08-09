@@ -27,6 +27,13 @@ public class ListSkillService extends AbstractAPIHandler implements APIHandler {
 
     private static final long serialVersionUID = -8691003678852307876L;
 
+    private static int totalSkills = 0;
+    private static int reviewedSkills = 0;
+    private static int nonReviewedSkills = 0;
+    private static int editableSkills = 0;
+    private static int nonEditableSkills = 0;
+    private static int staffPicks = 0;
+
     @Override
     public UserRole getMinimalUserRole() {
         return UserRole.ANONYMOUS;
@@ -139,16 +146,15 @@ public class ListSkillService extends AbstractAPIHandler implements APIHandler {
         Boolean dateFilter = false;
         Boolean searchFilter = false;
         String reviewed = call.get("reviewed", "false");
+        String staff_picks = call.get("staff_picks", "false");
         String[] language_names = language_list.split(",");
         JSONObject skillStats = new JSONObject();
-        int totalSkills = 0;
-        int reviewedSkills = 0;
-        int nonReviewedSkills = 0;
-        int editableSkills = 0;
-        int nonEditableSkills = 0;
-        int staffPicks = 0;
 
         if (!(reviewed.equals("true") || reviewed.equals("false"))) {
+            throw new APIException(400, "Bad service call.");
+        }
+
+        if (!(staff_picks.equals("true") || staff_picks.equals("false"))) {
             throw new APIException(400, "Bad service call.");
         }
 
@@ -188,39 +194,12 @@ public class ListSkillService extends AbstractAPIHandler implements APIHandler {
                     for (String skill_name : fileList) {
                         skill_name = skill_name.replace(".txt", "");
                         JSONObject skillMetadata = SusiSkill.getSkillMetadata(model_name, temp_group_name, language_name, skill_name, duration);
-                        totalSkills++;
 
-                        if(reviewed.equals("true")) {
-                            if(SusiSkill.getSkillReviewStatus(model_name, temp_group_name, language_name, skill_name)) {
-                                jsonArray.put(skillMetadata);
-                                skillObject.put(skill_name, skillMetadata);
-                                reviewedSkills++;
-                            }
-                            else {
-                                nonReviewedSkills++;
-                            }
-                        }
-                        else {
+                        if(shouldReturnSkillInResponse(skillMetadata, reviewed, staff_picks)) {
                             jsonArray.put(skillMetadata);
                             skillObject.put(skill_name, skillMetadata);
-
-                            if(SusiSkill.getSkillReviewStatus(model_name, temp_group_name, language_name, skill_name)) {
-                                reviewedSkills++;
-                            }
-                            else {
-                                nonReviewedSkills++;
-                            }
-                        }
-
-                        if(SusiSkill.getSkillEditStatus(model_name, temp_group_name, language_name, skill_name)) {
-                            editableSkills++;
-                        }
-                        else {
-                            nonEditableSkills++;
-                        }
-
-                        if(SusiSkill.isStaffPick(model_name, temp_group_name, language_name, skill_name)) {
-                            staffPicks++;
+                        } else {
+                            continue;
                         }
                     }
                 }
@@ -238,38 +217,11 @@ public class ListSkillService extends AbstractAPIHandler implements APIHandler {
                 for (String skill_name : fileList) {
                     skill_name = skill_name.replace(".txt", "");
                     JSONObject skillMetadata = SusiSkill.getSkillMetadata(model_name, group_name, language_name, skill_name, duration);
-                    totalSkills++;
-
-                    if(reviewed.equals("true")) {
-                        if(SusiSkill.getSkillReviewStatus(model_name, group_name, language_name, skill_name)) {
-                            jsonArray.put(skillMetadata);
-                            skillObject.put(skill_name, skillMetadata);
-                            reviewedSkills++;
-                        }
-                        else {
-                            nonReviewedSkills++;
-                        }
-                    }
-                    else {
+                    if(shouldReturnSkillInResponse(skillMetadata, reviewed, staff_picks)) {
                         jsonArray.put(skillMetadata);
                         skillObject.put(skill_name, skillMetadata);
-
-                        if(SusiSkill.getSkillReviewStatus(model_name, group_name, language_name, skill_name)) {
-                            reviewedSkills++;
-                        }
-                        else {
-                            nonReviewedSkills++;
-                        }
-                    }
-
-                    if(SusiSkill.getSkillEditStatus(model_name, group_name, language_name, skill_name)) {
-                        editableSkills++;
-                    }
-                    else {
-                        nonEditableSkills++;
-                    }
-                    if(SusiSkill.isStaffPick(model_name, group_name, language_name, skill_name)) {
-                        staffPicks++;
+                    } else {
+                        continue;
                     }
                 }
             }
@@ -422,6 +374,37 @@ public class ListSkillService extends AbstractAPIHandler implements APIHandler {
         return new ServiceResponse(json);
 
     }
+
+    private static Boolean shouldReturnSkillInResponse(JSONObject skillMetadata, String reviewed, String staff_picks) {
+
+        totalSkills++;
+
+        if(skillMetadata.getBoolean("editable") == true) {
+            editableSkills++;
+        } else {
+            nonEditableSkills++;
+        }
+
+        if(skillMetadata.getBoolean("reviewed") == true) {
+            reviewedSkills++;
+        } else {
+            nonReviewedSkills++;
+        }
+
+        if(skillMetadata.getBoolean("staffPick") == true) {
+            staffPicks++;
+        }
+
+        if(reviewed.equals("true") && skillMetadata.getBoolean("reviewed") == false) {
+            return false;
+        }
+
+        if(staff_picks.equals("true") && skillMetadata.getBoolean("staffPick") == false) {
+            return false;
+        }
+        return true;
+    }
+
 
     private void listFilesForFolder(final File folder, ArrayList<String> fileList) {
         File[] filesInFolder = folder.listFiles();
