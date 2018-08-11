@@ -512,12 +512,13 @@ public class SusiServer {
                 UndoDeleteSkillService.class,
                 CheckRegistrationService.class,
                 UploadImageService.class,
+                UploadAvatarService.class,
 
                 // draft services
                 StoreDraftService.class,
                 ReadDraftService.class,
                 DeleteDraftService.class,
-                
+
                 // monitoring services
                 MonitorQueryService.class,
                 MonitorAnnotationsService.class,
