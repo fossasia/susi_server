@@ -40,6 +40,7 @@ import ai.susi.json.JsonTray;
 import org.json.JSONTokener;
 
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpServletRequest;
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -182,8 +183,18 @@ public class SusiService extends AbstractAPIHandler implements APIHandler {
                         languageName = groupName.getJSONObject(language);
                         if (languageName.has(skill_name)) {
                             skillName = languageName.getJSONObject(skill_name);
-                            if (skillName.getJSONObject("configure").getBoolean("enable_default_skills") == false) {
+                            Boolean allowed_site = true;
+                            JSONObject configureName = skillName.getJSONObject("configure");
+                            if (configureName.getBoolean("enable_default_skills") == false) {
                                 include_default_skills = false;
+                            }
+                            HttpServletRequest request = post.getRequest();
+                            String referer = request.getHeader("Referer");
+                            if (DAO.allowDomainForChatbot(configureName, referer) == false) {
+                                JSONObject json = new JSONObject(true);
+                                json.put("accepted", false);
+                                json.put("message", "Not allowed to use on this domain");
+                                return new ServiceResponse(json);
                             }
                         }
                     }
