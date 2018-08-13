@@ -146,6 +146,7 @@ public class ListSkillService extends AbstractAPIHandler implements APIHandler {
         int nonReviewedSkills = 0;
         int editableSkills = 0;
         int nonEditableSkills = 0;
+        int staffPicks = 0;
 
         if (!(reviewed.equals("true") || reviewed.equals("false"))) {
             throw new APIException(400, "Bad service call.");
@@ -217,6 +218,10 @@ public class ListSkillService extends AbstractAPIHandler implements APIHandler {
                         else {
                             nonEditableSkills++;
                         }
+
+                        if(SusiSkill.isStaffPick(model_name, temp_group_name, language_name, skill_name)) {
+                            staffPicks++;
+                        }
                     }
                 }
             }
@@ -262,6 +267,9 @@ public class ListSkillService extends AbstractAPIHandler implements APIHandler {
                     }
                     else {
                         nonEditableSkills++;
+                    }
+                    if(SusiSkill.isStaffPick(model_name, group_name, language_name, skill_name)) {
+                        staffPicks++;
                     }
                 }
             }
@@ -402,6 +410,7 @@ public class ListSkillService extends AbstractAPIHandler implements APIHandler {
         skillStats.put("nonReviewedSkills", nonReviewedSkills);
         skillStats.put("editableSkills", editableSkills);
         skillStats.put("nonEditableSkills", nonEditableSkills);
+        skillStats.put("staffPicks", staffPicks);
 
         json.put("model", model_name)
                 .put("group", group_name)
