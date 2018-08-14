@@ -15,6 +15,7 @@ import ai.susi.server.ClientIdentity;
 import ai.susi.server.Query;
 import ai.susi.server.ServiceResponse;
 import ai.susi.server.UserRole;
+import ai.susi.tools.DateParser;
 
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
@@ -43,6 +44,8 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.nio.file.attribute.FileTime;
+import java.text.DateFormat;
+import java.util.Date;
 
 /**
  * Created by saurabh on 7/6/17.
@@ -53,9 +56,9 @@ import java.nio.file.attribute.FileTime;
  * http://localhost:4000/cms/createSkill.txt?model=general&group=Knowledge&language=en&skill=whois&content=skillData
  */
 
-@MultipartConfig(fileSizeThreshold=1024*1024*10, 	// 10 MB
-        maxFileSize=1024*1024*50,      	// 50 MB
-        maxRequestSize=1024*1024*100)   	// 100 MB
+@MultipartConfig(fileSizeThreshold=1024*1024*10,    // 10 MB
+        maxFileSize=1024*1024*50,       // 50 MB
+        maxRequestSize=1024*1024*100)       // 100 MB
 public class CreateSkillService extends AbstractAPIHandler implements APIHandler {
 
     private static final long serialVersionUID = 2461878194569824151L;
@@ -169,16 +172,8 @@ public class CreateSkillService extends AbstractAPIHandler implements APIHandler
                                 else{
                                     path = skill.getPath().replace(DAO.model_watch_dir.toString(), "models");
                                 }
-
-                                BasicFileAttributes attr = null;
-                                Path newPath = Paths.get(path);
-                                // Override modified date to an older date so that the recently updated metrics works fine
-                                // Set is to the epoch time
-                                try {
-                                Files.setAttribute(newPath, "lastModifiedTime", FileTime.fromMillis(0));
-                                } catch (IOException e) {
-                                System.err.println("Cannot override the modified time. " + e);
-                                }
+                                // Set the creationTime in the metadata
+                                updateCreationTime(model_name, group_name, language_name, skill_name);
                             } catch (IOException e) {
                                 e.printStackTrace();
                                 json.put("message", "error: " + e.getMessage());
@@ -241,6 +236,37 @@ public class CreateSkillService extends AbstractAPIHandler implements APIHandler
             resp.setCharacterEncoding("UTF-8");
             resp.getWriter().write(json.toString());
         }
+    }
+
+    private static void updateCreationTime(String model_name, String group_name, String language_name, String skill_name ) {
+        JsonTray skillInfo = DAO.skillInfo;
+        JSONObject modelName = new JSONObject();
+        JSONObject groupName = new JSONObject();
+        JSONObject languageName = new JSONObject();
+        JSONObject skillName = new JSONObject();
+        DateFormat dateFormatType = DateParser.iso8601Format;
+        String skillCreationTime = dateFormatType.format(new Date(0));
+
+        if (skillInfo.has(model_name)) {
+            modelName = skillInfo.getJSONObject(model_name);
+            if (modelName.has(group_name)) {
+                groupName = modelName.getJSONObject(group_name);
+                if (groupName.has(language_name)) {
+                    languageName = groupName.getJSONObject(language_name);
+                    if (languageName.has(skill_name)) {
+                        skillName = languageName.getJSONObject(skill_name);
+                        skillName.put("creationTime",skillCreationTime);
+                        return;
+                    }
+                }
+            }
+        }
+        skillName.put("creationTime",skillCreationTime);
+        languageName.put(skill_name, skillName);
+        groupName.put(language_name, languageName);
+        modelName.put(group_name, groupName);
+        skillInfo.put(model_name, modelName, true);
+        return;
     }
 
     public static BufferedImage createResizedCopy(Image originalImage, int scaledWidth, int scaledHeight, boolean preserveAlpha) {
