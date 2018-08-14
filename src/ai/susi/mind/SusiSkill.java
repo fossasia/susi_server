@@ -29,12 +29,15 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.nio.file.attribute.FileTime;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.Date;
+import java.text.DateFormat;
 
 import ai.susi.server.ServiceResponse;
 import org.jfree.util.Log;
@@ -47,6 +50,7 @@ import ai.susi.DAO;
 import ai.susi.json.JsonTray;
 import ai.susi.mind.SusiAction.SusiActionException;
 import ai.susi.mind.SusiInference.Type;
+import ai.susi.tools.DateParser;
 
 /**
  * A susi skill is a set of intents.
@@ -546,6 +550,7 @@ public class SusiSkill {
         File grouppath = new File(modelpath, group);
         File languagepath = new File(grouppath, language);
         File skillpath = getSkillFileInLanguage(languagepath, skillname, false);
+        DateFormat dateFormatType = DateParser.iso8601Format;
         skillname = skillpath.getName().replaceAll(".txt", ""); // fixes the bad name (lowercased) to the actual right name
 
         // default values
@@ -566,6 +571,8 @@ public class SusiSkill {
         skillMetadata.put("skill_rating", JSONObject.NULL);
         skillMetadata.put("usage_count", 0);
         skillMetadata.put("skill_tag", JSONObject.NULL);
+        skillMetadata.put("lastModifiedTime", dateFormatType.format(new Date(0)));
+        skillMetadata.put("creationTime", dateFormatType.format(new Date(0)));
 
         // metadata
         for (Map.Entry<SusiSkill.ID, SusiSkill> entry : DAO.susi.getSkillMetadata().entrySet()) {
@@ -594,7 +601,8 @@ public class SusiSkill {
                 skillMetadata.put("staffPick", isStaffPick(model, group, language, skillname));
                 skillMetadata.put("usage_count", getSkillUsage(model, group, language, skillname, duration));
                 skillMetadata.put("skill_tag", skillname);
-
+                skillMetadata.put("lastModifiedTime", getSkillModifiedTime(model, group, language, skillname));
+                skillMetadata.put("creationTime", getSkillCreationTime(model, group, language, skillname, skillpath));
             }
         }
 
@@ -607,9 +615,7 @@ public class SusiSkill {
             e.printStackTrace();
         }
         if(attr!=null){
-            skillMetadata.put("creationTime" , attr.creationTime());
             skillMetadata.put("lastAccessTime" , attr.lastAccessTime());
-            skillMetadata.put("lastModifiedTime" , attr.lastModifiedTime());
         }
         return skillMetadata;
     }
@@ -697,8 +703,103 @@ public class SusiSkill {
         return supportedLanguages;
     }
 
+    public static String getSkillModifiedTime(String model_name, String group_name, String language_name, String skill_name) {
+        // SKill Info
+        JsonTray skillInfo = DAO.skillInfo;
+        JSONObject modelName = new JSONObject();
+        JSONObject groupName = new JSONObject();
+        JSONObject languageName = new JSONObject();
+        JSONObject skillName = new JSONObject();
+        DateFormat dateFormatType = DateParser.iso8601Format;
+        String skillModifiedTime = dateFormatType.format(new Date(0));
+
+        if (skillInfo.has(model_name)) {
+            modelName = skillInfo.getJSONObject(model_name);
+            if (modelName.has(group_name)) {
+                groupName = modelName.getJSONObject(group_name);
+                if (groupName.has(language_name)) {
+                    languageName = groupName.getJSONObject(language_name);
+                    if (languageName.has(skill_name)) {
+                        skillName = languageName.getJSONObject(skill_name);
+                        if (skillName.has("lastModifiedTime")) {
+                            skillModifiedTime = skillName.getString("lastModifiedTime");
+                        } else {
+                            skillName.put("lastModifiedTime", skillModifiedTime);
+                        }
+                        return skillModifiedTime;
+                    }
+                }
+            }
+        }
+
+        skillName.put("lastModifiedTime",skillModifiedTime);
+        languageName.put(skill_name, skillName);
+        groupName.put(language_name, languageName);
+        modelName.put(group_name, groupName);
+        skillInfo.put(model_name, modelName, true);
+        return skillModifiedTime;
+    }
+
+    public static String getSkillCreationTime(String model_name, String group_name, String language_name, String skill_name, File skill_path) {
+        // Skill Info
+        JsonTray skillInfo = DAO.skillInfo;
+        JSONObject modelName = new JSONObject();
+        JSONObject groupName = new JSONObject();
+        JSONObject languageName = new JSONObject();
+        JSONObject skillName = new JSONObject();
+        DateFormat dateFormatType = DateParser.iso8601Format;
+        String skillCreationTime = dateFormatType.format(new Date(0));
+
+        if (skillInfo.has(model_name)) {
+            modelName = skillInfo.getJSONObject(model_name);
+            if (modelName.has(group_name)) {
+                groupName = modelName.getJSONObject(group_name);
+                if (groupName.has(language_name)) {
+                    languageName = groupName.getJSONObject(language_name);
+                    if (languageName.has(skill_name)) {
+                        skillName = languageName.getJSONObject(skill_name);
+                        if (!skillName.has("creationTime")) {
+                            skillCreationTime = skillName.getString("creationTime");
+                        } else {
+                            skillCreationTime = getFileCreationTime(skill_path);
+                            skillName.put("creationTime", skillCreationTime );
+                        }
+                        return skillCreationTime;
+                    }
+                }
+            }
+        }
+
+        skillCreationTime = getFileCreationTime(skill_path);
+        skillName.put("creationTime",skillCreationTime);
+        languageName.put(skill_name, skillName);
+        groupName.put(language_name, languageName);
+        modelName.put(group_name, groupName);
+        skillInfo.put(model_name, modelName, true);
+        return skillCreationTime;
+    }
+
+    public static String getFileCreationTime(File skill_path) {
+
+        DateFormat dateFormatType = DateParser.iso8601Format;
+        String skillCreationTime = dateFormatType.format(new Date(0));
+
+        BasicFileAttributes attr = null;
+        Path p = Paths.get(skill_path.getPath());
+        try {
+            attr = Files.readAttributes(p, BasicFileAttributes.class);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        if(attr!=null){
+            FileTime fileCreationTime = attr.creationTime();
+            skillCreationTime = dateFormatType.format(new Date(fileCreationTime.toMillis()));
+        }
+        return skillCreationTime;
+    }
+
     public static void sortByAvgStar(List<JSONObject> jsonValues, boolean ascending) {
-    	// Get skills based on ratings
+        // Get skills based on ratings
         Collections.sort(jsonValues, new Comparator<JSONObject>() {
             @Override
             public int compare(JSONObject a, JSONObject b) {
@@ -733,9 +834,9 @@ public class SusiSkill {
             }
         });
     }
-    
+
     public static void sortByCreationTime(List<JSONObject> jsonValues, boolean ascending) {
-    	Collections.sort(jsonValues, new Comparator<JSONObject>() {
+        Collections.sort(jsonValues, new Comparator<JSONObject>() {
             private static final String KEY_NAME = "creationTime";
             @Override
             public int compare(JSONObject a, JSONObject b) {
@@ -775,9 +876,9 @@ public class SusiSkill {
             }
         });
     }
-    
+
     public static void sortBySkillName(List<JSONObject> jsonValues, boolean ascending) {
-    	Collections.sort(jsonValues, new Comparator<JSONObject>() {
+        Collections.sort(jsonValues, new Comparator<JSONObject>() {
             private static final String KEY_NAME = "skill_name";
             @Override
             public int compare(JSONObject a, JSONObject b) {
@@ -794,9 +895,9 @@ public class SusiSkill {
             }
         });
     }
-    
+
     public static void sortByUsageCount(List<JSONObject> jsonValues, boolean ascending) {
-    	Collections.sort(jsonValues, new Comparator<JSONObject>() {
+        Collections.sort(jsonValues, new Comparator<JSONObject>() {
             @Override
             public int compare(JSONObject a, JSONObject b) {
                 int valA;
@@ -814,24 +915,24 @@ public class SusiSkill {
             }
         });
     }
-    
+
     public static void sortByFeedbackCount(List<JSONObject> jsonValues, boolean ascending) {
-    	Collections.sort(jsonValues, new Comparator<JSONObject>() {
+        Collections.sort(jsonValues, new Comparator<JSONObject>() {
             @Override
             public int compare(JSONObject a, JSONObject b) {
                 Object valA, valB;
                 int result=0;
 
-                try {                    
+                try {
                     valA = a.opt("skill_rating");
                     valB = b.opt("skill_rating");
                     if (valA == null || !(valA instanceof JSONObject) || ((JSONObject) valA).opt("feedback_count") == null) valA = new JSONObject().put("feedback_count", 0);
                     if (valB == null || !(valB instanceof JSONObject) || ((JSONObject) valB).opt("feedback_count") == null) valB = new JSONObject().put("feedback_count", 0);
 
                     result = ascending ?
-                    		Integer.compare(
-                    				((JSONObject) valA).getInt("feedback_count"),
-                    				((JSONObject) valB).getInt("feedback_count")) :
+                            Integer.compare(
+                                    ((JSONObject) valA).getInt("feedback_count"),
+                                    ((JSONObject) valB).getInt("feedback_count")) :
                             Integer.compare(
                                     ((JSONObject) valB).getInt("feedback_count"),
                                     ((JSONObject) valA).getInt("feedback_count")
@@ -943,8 +1044,6 @@ public class SusiSkill {
         }
         return 0;
     }
-    
-    
 
     public static JSONObject readJsonSkill(File file) throws JSONException, FileNotFoundException {
         JSONObject json = new JSONObject(new JSONTokener(new FileReader(file)));
@@ -980,7 +1079,7 @@ public class SusiSkill {
         this.examples = examples;
     }
 */
-    
+
     public void setImage(String image) {
         this.image = image;
     }
@@ -1082,11 +1181,11 @@ public class SusiSkill {
         SusiSkill.ID skillid = new SusiSkill.ID(skill);
         SusiLanguage language = skillid.language();
         try {
-			JSONObject lesson = SusiSkill.readLoTSkill(new BufferedReader(new FileReader(skill)), language, Integer.toString(skillid.hashCode()));
-			System.out.println(lesson.toString(2));
-		} catch (JSONException | FileNotFoundException e) {
-			e.printStackTrace();
-		}
+            JSONObject lesson = SusiSkill.readLoTSkill(new BufferedReader(new FileReader(skill)), language, Integer.toString(skillid.hashCode()));
+            System.out.println(lesson.toString(2));
+        } catch (JSONException | FileNotFoundException e) {
+            e.printStackTrace();
+        }
         System.exit(0);
     }
 }

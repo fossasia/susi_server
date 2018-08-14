@@ -16,6 +16,7 @@ import ai.susi.server.Query;
 import ai.susi.server.RemoteAccess;
 import ai.susi.server.ServiceResponse;
 import ai.susi.server.UserRole;
+import ai.susi.tools.DateParser;
 
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
@@ -38,10 +39,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.sql.Timestamp;
+import java.text.DateFormat;
+import java.util.Date;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.nio.file.attribute.BasicFileAttributes;
-import java.nio.file.attribute.FileTime;
 
 /**
  * Created by chetankaushik on 07/06/17.
@@ -177,19 +178,6 @@ public class ModifySkillService extends AbstractAPIHandler implements APIHandler
             if (skill.exists() && content != null) {
                 JSONObject json = new JSONObject();
                 // CHECK IF SKILL PATH AND NAME IS SAME. IF IT IS SAME THEN MAKE CHANGES IN OLD FILE ONLY
-
-                BasicFileAttributes attr = null;
-                Path p = Paths.get(skill.getPath());
-                try {
-                    attr = Files.readAttributes(p, BasicFileAttributes.class);
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-                FileTime skillCreationTime = null;
-                if( attr != null ) {
-                    skillCreationTime = attr.creationTime();
-                }
-
                 if (model_name.equals(modified_model_name) &&
                     group_name.equals(modified_group_name) &&
                     language_name.equals(modified_language_name) &&
@@ -204,14 +192,9 @@ public class ModifySkillService extends AbstractAPIHandler implements APIHandler
                         e.printStackTrace();
                         json.put("message", "error: " + e.getMessage());
                     }
-                    // Keep the creation time same as previous
-                    if(attr!=null) {
-                    	try {
-			                Files.setAttribute(p, "creationTime", skillCreationTime);
-			            } catch (IOException e) {
-			                System.err.println("Cannot persist the creation time. " + e);
-			            }
-                    }
+
+                    // Update the modified time in the skillInfo.json file
+                    updateModifiedTime(model_name, group_name, language_name, skill_name);
 
                     // CHECK IF IMAGE WAS CHANGED
                     // PARAMETER FOR GETTING IF IMAGE WAS CHANGED
@@ -297,6 +280,9 @@ public class ModifySkillService extends AbstractAPIHandler implements APIHandler
                             e.printStackTrace();
                             json.put("message", "error: " + e.getMessage());
                         }
+
+                        // Update the modified time in the skillInfo.json file
+                        updateModifiedTime(modified_model_name, modified_group_name, modified_language_name, modified_skill_name);
 
                         // CHECK IF IMAGE WAS CHANGED
                         // PARAMETER FOR GETTING IF IMAGE WAS CHANGED
@@ -522,4 +508,35 @@ public class ModifySkillService extends AbstractAPIHandler implements APIHandler
         }
     }
 
+    private static void updateModifiedTime(String model_name, String group_name, String language_name, String skill_name ) {
+        JsonTray skillInfo = DAO.skillInfo;
+        JSONObject modelName = new JSONObject();
+        JSONObject groupName = new JSONObject();
+        JSONObject languageName = new JSONObject();
+        JSONObject skillName = new JSONObject();
+        DateFormat dateFormatType = DateParser.iso8601Format;
+        String skillModifiedTime = dateFormatType.format(new Date());
+
+        if (skillInfo.has(model_name)) {
+            modelName = skillInfo.getJSONObject(model_name);
+            if (modelName.has(group_name)) {
+                groupName = modelName.getJSONObject(group_name);
+                if (groupName.has(language_name)) {
+                    languageName = groupName.getJSONObject(language_name);
+                    if (languageName.has(skill_name)) {
+                        skillName = languageName.getJSONObject(skill_name);
+                        skillName.put("lastModifiedTime",skillModifiedTime);
+                        return;
+                    }
+                }
+            }
+        }
+
+        skillName.put("lastModifiedTime",skillModifiedTime);
+        languageName.put(skill_name, skillName);
+        groupName.put(language_name, languageName);
+        modelName.put(group_name, groupName);
+        skillInfo.put(model_name, modelName, true);
+        return;
+    }
 }

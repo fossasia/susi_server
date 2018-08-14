@@ -27,6 +27,7 @@ import ai.susi.json.JsonTray;
 import org.json.JSONObject;
 
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 
 /**
@@ -77,15 +78,24 @@ public class GetSkillMetadataService extends AbstractAPIHandler implements APIHa
 
         if(userid.length() != 0) {
             // fetch private skill (chatbot) meta data
+            HttpServletRequest request = call.getRequest();
+            String referer = request.getHeader("Referer");
             JsonTray chatbot = DAO.chatbot;
             JSONObject json = new JSONObject(true);
             JSONObject userObject = chatbot.getJSONObject(userid);
             JSONObject groupObject = userObject.getJSONObject(group);
             JSONObject languageObject = groupObject.getJSONObject(language);
             JSONObject skillObject = languageObject.getJSONObject(skillname);
-            json.put("skill_metadata", skillObject);
-            json.put("accepted", true);
-            json.put("message", "Success: Fetched Skill's Metadata");
+            JSONObject configureObject = skillObject.getJSONObject("configure");
+            if (DAO.allowDomainForChatbot(configureObject, referer) == true) {
+                json.put("skill_metadata", skillObject);
+                json.put("accepted", true);
+                json.put("message", "Success: Fetched Skill's Metadata");
+            }
+            else {
+                json.put("accepted", false);
+                json.put("message", "Not allowed to use on this domain");
+            }
             return new ServiceResponse(json);
         }
 
