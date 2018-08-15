@@ -565,6 +565,7 @@ public class SusiSkill {
         skillMetadata.put("reviewed", false);
         skillMetadata.put("editable", true);
         skillMetadata.put("staffPick", false);
+        skillMetadata.put("systemSkill", false);
         skillMetadata.put("terms_of_use", JSONObject.NULL);
         skillMetadata.put("dynamic_content", false);
         skillMetadata.put("examples", JSONObject.NULL);
@@ -599,6 +600,7 @@ public class SusiSkill {
                 skillMetadata.put("reviewed", getSkillReviewStatus(model, group, language, skillname));
                 skillMetadata.put("editable", getSkillEditStatus(model, group, language, skillname));
                 skillMetadata.put("staffPick", isStaffPick(model, group, language, skillname));
+                skillMetadata.put("systemSkill", isSystemSkill(model, group, language, skillname));
                 skillMetadata.put("usage_count", getSkillUsage(model, group, language, skillname, duration));
                 skillMetadata.put("skill_tag", skillname);
                 skillMetadata.put("lastModifiedTime", getSkillModifiedTime(model, group, language, skillname));
@@ -758,7 +760,7 @@ public class SusiSkill {
                     languageName = groupName.getJSONObject(language_name);
                     if (languageName.has(skill_name)) {
                         skillName = languageName.getJSONObject(skill_name);
-                        if (!skillName.has("creationTime")) {
+                        if (skillName.has("creationTime")) {
                             skillCreationTime = skillName.getString("creationTime");
                         } else {
                             skillCreationTime = getFileCreationTime(skill_path);
@@ -1002,6 +1004,28 @@ public class SusiSkill {
                         JSONObject skillName = languageName.getJSONObject(skillname);
 
                         if (skillName.has("staffPick")) {
+                            return true;
+                        }
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
+    public static boolean isSystemSkill(String model, String group, String language, String skillname) {
+        // return true if skill is a system skill
+        JsonTray skillStatus = DAO.skillStatus;
+        if (skillStatus.has(model)) {
+            JSONObject modelName = skillStatus.getJSONObject(model);
+            if (modelName.has(group)) {
+                JSONObject groupName = modelName.getJSONObject(group);
+                if (groupName.has(language)) {
+                    JSONObject languageName = groupName.getJSONObject(language);
+                    if (languageName.has(skillname)) {
+                        JSONObject skillName = languageName.getJSONObject(skillname);
+
+                        if (skillName.has("systemSkill")) {
                             return true;
                         }
                     }
