@@ -760,7 +760,7 @@ public class SusiSkill {
                     languageName = groupName.getJSONObject(language_name);
                     if (languageName.has(skill_name)) {
                         skillName = languageName.getJSONObject(skill_name);
-                        if (!skillName.has("creationTime")) {
+                        if (skillName.has("creationTime")) {
                             skillCreationTime = skillName.getString("creationTime");
                         } else {
                             skillCreationTime = getFileCreationTime(skill_path);
