@@ -38,11 +38,12 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
-/**
+/*
  This Servlet gives a API Endpoint to return image
+ * Updated by @akshatnitd on 15/8/18.
  To get a public skill's image
  http://localhost:4000/cms/getImage.png?model=general&language=en&group=Food%20and%20Drink&image=images/cooking_guide.png
-    
+
  To get a private skill's image
  http://localhost:4000/cms/getImage.png?access_token=k30RWlpTKvKM3TUiwi7E5a2bgtjJQa&language=en&group=Knowledge&image=images/susi%20icon.png
 
@@ -69,7 +70,7 @@ import java.nio.charset.StandardCharsets;
             if (post.get("model","") != "") {
                 String model = post.get("model","");
                 imageFile = new File(DAO.model_watch_dir  + File.separator + model + File.separator + group + File.separator + language + File.separator + image);
-            } 
+            }
             // for private skill
             if (post.get("access_token","") != "") {
                 String userId = "";
@@ -84,14 +85,22 @@ import java.nio.charset.StandardCharsets;
             }
         }
         else if (post.get("image","") != "") {
-        // for custom user's images
+            // for custom user's images
             String image_path = post.get("image","");
             file = image_path.substring(image_path.indexOf("/")+1);
-            imageFile = new File(DAO.data_dir  + File.separator + "image_uploads" + File.separator+ image_path);
+            String showAvatar = post.get("avatar","false");
+            if(showAvatar.equals("true")) {
+                imageFile = new File(DAO.data_dir  + File.separator + "avatar_uploads" + File.separator + file);
+                if (imageFile == null || !imageFile.exists()) {
+                    imageFile = new File(DAO.data_dir  + File.separator + "avatar_uploads" + File.separator + "default.jpg");
+                }
+            } else {
+                imageFile = new File(DAO.data_dir  + File.separator + "image_uploads" + File.separator + image_path);
+            }
         }
 
         if (imageFile == null || !imageFile.exists()) {response.sendError(503, "image does not exist"); return;}
-        
+
         ByteArrayOutputStream data = new ByteArrayOutputStream();
         byte[] b = new byte[2048];
         InputStream is = new BufferedInputStream(new FileInputStream(imageFile));
@@ -99,7 +108,7 @@ import java.nio.charset.StandardCharsets;
         try {
             while ((c = is.read(b)) >  0) {data.write(b, 0, c);}
         } catch (IOException e) {}
-        
+
         if (file.endsWith(".png") || (file.length() == 0 && request.getServletPath().endsWith(".png"))) post.setResponse(response, "image/png");
         else if (file.endsWith(".gif") || (file.length() == 0 && request.getServletPath().endsWith(".gif"))) post.setResponse(response, "image/gif");
         else if (file.endsWith(".jpg") || file.endsWith(".jpeg") || (file.length() == 0 && request.getServletPath().endsWith(".jpg"))) post.setResponse(response, "image/jpeg");
