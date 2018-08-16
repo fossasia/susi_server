@@ -26,10 +26,16 @@ import ai.susi.mind.SusiSkill;
 import ai.susi.server.*;
 
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.File;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Iterator;
+import java.util.List;
 
 
 /**
@@ -75,7 +81,7 @@ public class GetSkillFeedbackService extends AbstractAPIHandler implements APIHa
         }
 
         JsonTray feedbackSkill = DAO.feedbackSkill;
-        JSONArray feedbackList = new JSONArray();
+        JSONArray feedback_list = new JSONArray();
 
         if (feedbackSkill.has(model_name)) {
             JSONObject modelName = feedbackSkill.getJSONObject(model_name);
@@ -84,10 +90,14 @@ public class GetSkillFeedbackService extends AbstractAPIHandler implements APIHa
                 if (groupName.has(language_name)) {
                     JSONObject  languageName = groupName.getJSONObject(language_name);
                     if (languageName.has(skill_name)) {
-                        feedbackList = languageName.getJSONArray(skill_name);
-                        
+                        feedback_list = languageName.getJSONArray(skill_name);
+                        for (int i = 0; i < feedback_list.length(); i++) {
+                            JSONObject each_feedback = feedback_list.getJSONObject(i);
+                            String email = each_feedback.getString("email");
+                            each_feedback.put("avatar", getUserAvatar(email));
+                        }
                         result.put("skill_name", skill_name);
-                        result.put("feedback", feedbackList);
+                        result.put("feedback", feedback_list);
                         result.put("accepted", true);
                         result.put("message", "Skill feedback fetched");
                         return new ServiceResponse(result);
@@ -96,9 +106,33 @@ public class GetSkillFeedbackService extends AbstractAPIHandler implements APIHa
             }
         }
         result.put("skill_name", skill_name);
-        result.put("feedback", feedbackList);
+        result.put("feedback", feedback_list);
         result.put("accepted", false);
         result.put("message", "Skill hasn't been given any feedback");
         return new ServiceResponse(result);
+    }
+
+    // Method to get the avatar image of the user
+    public static String getUserAvatar(String email) {
+        ClientIdentity identity = new ClientIdentity(ClientIdentity.Type.email, email);
+        Accounting accounting = DAO.getAccounting(identity);
+        String userId = identity.getUuid();
+        String avatar_url = "";
+        JSONObject accountingObj = accounting.getJSON();
+        String avatar_type = "";
+        if (accountingObj.has("settings") &&
+            accountingObj.getJSONObject("settings").has("avatarType")) {
+            avatar_type = accountingObj.getJSONObject("settings").getString("avatarType");
+        } else {
+            avatar_type = "server";
+        }
+        accounting.commit();
+
+        if(avatar_type.equals("gravatar")) {
+            avatar_url = "https://gravatar.com/avatar/" + userId + ".jpg";
+        } else {
+            avatar_url = "https://api.susi.ai/avatar=true&image=avatar/" + userId + ".jpg";
+        }
+        return avatar_url;
     }
 }
