@@ -33,6 +33,7 @@ public class ListSkillService extends AbstractAPIHandler implements APIHandler {
     private static int editableSkills = 0;
     private static int nonEditableSkills = 0;
     private static int staffPicks = 0;
+    private static int systemSkills = 0;
 
     @Override
     public UserRole getMinimalUserRole() {
@@ -363,6 +364,7 @@ public class ListSkillService extends AbstractAPIHandler implements APIHandler {
         skillStats.put("editableSkills", editableSkills);
         skillStats.put("nonEditableSkills", nonEditableSkills);
         skillStats.put("staffPicks", staffPicks);
+        skillStats.put("systemSkills", systemSkills);
 
         json.put("model", model_name)
                 .put("group", group_name)
@@ -393,6 +395,10 @@ public class ListSkillService extends AbstractAPIHandler implements APIHandler {
 
         if(skillMetadata.getBoolean("staffPick") == true) {
             staffPicks++;
+        }
+
+        if(skillMetadata.getBoolean("systemSkill") == true) {
+            systemSkills++;
         }
 
         if(reviewed.equals("true") && skillMetadata.getBoolean("reviewed") == false) {

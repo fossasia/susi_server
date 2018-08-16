@@ -61,6 +61,7 @@ public class ChangeSkillStatusService extends AbstractAPIHandler implements APIH
         String reviewed = call.get("reviewed", null);
         String editable = call.get("editable", null);
         String staffPick = call.get("staffPick", null);
+        String systemSkill = call.get("systemSkill", null);
 
         if (authorization.getIdentity() == null) {
             throw new APIException(422, "Bad access token.");
@@ -77,6 +78,9 @@ public class ChangeSkillStatusService extends AbstractAPIHandler implements APIH
         else if (staffPick != null && !(staffPick.equals("true") || staffPick.equals("false"))) {
             throw new APIException(400, "Bad service call, invalid arguments.");
         }
+        else if (systemSkill != null && !(systemSkill.equals("true") || systemSkill.equals("false"))) {
+            throw new APIException(400, "Bad service call, invalid arguments.");
+        }
 
         JSONObject result = new JSONObject();
         JsonTray skillStatus = DAO.skillStatus;
@@ -85,7 +89,7 @@ public class ChangeSkillStatusService extends AbstractAPIHandler implements APIH
         JSONObject languageName = new JSONObject();
         JSONObject skillName = new JSONObject();
 
-        if( (reviewed != null && reviewed.equals("true")) || (editable != null && editable.equals("false")) || (staffPick != null && staffPick.equals("true")) ) {
+        if( (reviewed != null && reviewed.equals("true")) || (editable != null && editable.equals("false")) || (staffPick != null && staffPick.equals("true")) || (systemSkill != null && systemSkill.equals("true"))) {
             JSONObject skill_status = new JSONObject();
             if(reviewed != null && reviewed.equals("true")) {
                 skill_status.put("reviewed", true);
@@ -95,6 +99,9 @@ public class ChangeSkillStatusService extends AbstractAPIHandler implements APIH
             }
             if(staffPick != null && staffPick.equals("true")) {
                 skill_status.put("staffPick", true);
+            }
+            if(systemSkill != null && systemSkill.equals("true")) {
+                skill_status.put("systemSkill", true);
             }
             if (skillStatus.has(model_name)) {
                 modelName = skillStatus.getJSONObject(model_name);
@@ -126,6 +133,14 @@ public class ChangeSkillStatusService extends AbstractAPIHandler implements APIH
                             else if(staffPick != null && staffPick.equals("false")) {
                                 skillName.remove("staffPick");
                             }
+
+                            if(systemSkill != null && systemSkill.equals("true")) {
+                                skillName.put("systemSkill", true);
+                            }
+                            else if(systemSkill != null && systemSkill.equals("false")) {
+                                skillName.remove("systemSkill");
+                            }
+
                             skillStatus.commit();
                             result.put("accepted", true);
                             result.put("message", "Skill status changed successfully.");
@@ -160,6 +175,9 @@ public class ChangeSkillStatusService extends AbstractAPIHandler implements APIH
                             }
                             if(staffPick != null && staffPick.equals("false")) {
                                 skillName.remove("staffPick");
+                            }
+                            if(systemSkill != null && systemSkill.equals("false")) {
+                                skillName.remove("systemSkill");
                             }
                             if(skillName.length() == 0) {
                                 languageName.remove(skill_name);
