@@ -88,7 +88,12 @@ public class SusiService extends AbstractAPIHandler implements APIHandler {
         String userId = post.get("userid", "");
         String group_name = post.get("group", "");
         String skill_name = post.get("skill", "");
-        Boolean include_default_skills = true;
+        String excludeDefaultSkills = post.get("excludeDefaultSkills","");
+        Boolean exclude_default_skills = false; // if this is true, default skills would be excluded
+
+        if (excludeDefaultSkills.equalsIgnoreCase("true")) {
+            exclude_default_skills = true;
+        }
 
         try {
             DAO.susi.observe(); // get a database update
@@ -186,7 +191,7 @@ public class SusiService extends AbstractAPIHandler implements APIHandler {
                             Boolean allowed_site = true;
                             JSONObject configureName = skillName.getJSONObject("configure");
                             if (configureName.getBoolean("enable_default_skills") == false) {
-                                include_default_skills = false;
+                                exclude_default_skills = true;
                             }
                             HttpServletRequest request = post.getRequest();
                             String referer = request.getHeader("Referer");
@@ -220,7 +225,7 @@ public class SusiService extends AbstractAPIHandler implements APIHandler {
                 e.printStackTrace();
             }
         }
-        if (include_default_skills == true) {
+        if (exclude_default_skills == false) {
             // finally add the general mind definition. It's there if no other mind is conscious or the other minds do not find an answer.
             minds.add(DAO.susi);
         }
