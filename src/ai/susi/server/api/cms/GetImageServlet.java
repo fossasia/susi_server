@@ -92,7 +92,7 @@ import java.nio.charset.StandardCharsets;
             if(showAvatar.equals("true")) {
                 imageFile = new File(DAO.data_dir  + File.separator + "avatar_uploads" + File.separator + file);
                 if (imageFile == null || !imageFile.exists()) {
-                    imageFile = new File(DAO.data_dir  + File.separator + "avatar_uploads" + File.separator + "default.jpg");
+                    imageFile = new File(DAO.html_dir  + File.separator + "images" + File.separator + "default.jpg");
                 }
             } else {
                 imageFile = new File(DAO.data_dir  + File.separator + "image_uploads" + File.separator + image_path);

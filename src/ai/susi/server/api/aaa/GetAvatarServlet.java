@@ -67,19 +67,18 @@ import java.nio.charset.StandardCharsets;
                 Accounting accounting = DAO.getAccounting(identity);
                 JSONObject accountingObj = accounting.getJSON();
                 if (accountingObj.has("settings") &&
-                	accountingObj.getJSONObject("settings").has("avatarType")) {
-                	avatar_type = accountingObj.getJSONObject("settings").getString("avatarType");
+                    accountingObj.getJSONObject("settings").has("avatarType")) {
+                    avatar_type = accountingObj.getJSONObject("settings").getString("avatarType");
+                    userId = identity.getUuid();
+                    file = userId + ".jpg";
                 } else {
-                    avatar_type = "server";
+                    avatar_type = "default";
+                    file = "default.jpg";
                 }
-                accounting.commit();
-                userId = identity.getUuid();
-                file = userId + ".jpg";
-            } else {
-            	file="default.jpg";
             }
         } else {
-        	file="default.jpg";
+            avatar_type = "default";
+            file = "default.jpg";
         }
 
         InputStream is = null;
@@ -90,8 +89,16 @@ import java.nio.charset.StandardCharsets;
         	String gravatarUrl = "https://www.gravatar.com/avatar/" + file;
         	URL url = new URL(gravatarUrl);
         	is = url.openStream();
-        } else {
+        } else if(avatar_type.equals("server")) {
         	imageFile = new File(DAO.data_dir  + File.separator + "avatar_uploads" + File.separator + file);
+            if (imageFile == null || !imageFile.exists()) {
+                file = "default.jpg";
+                imageFile = new File(DAO.html_dir  + File.separator + "images" + File.separator + file);
+            }
+            is = new BufferedInputStream(new FileInputStream(imageFile));
+        } else {
+            file = "default.jpg";
+            imageFile = new File(DAO.html_dir  + File.separator + "images" + File.separator + file);
             is = new BufferedInputStream(new FileInputStream(imageFile));
         }
 
