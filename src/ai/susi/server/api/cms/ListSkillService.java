@@ -54,6 +54,7 @@ public class ListSkillService extends AbstractAPIHandler implements APIHandler {
     public ServiceResponse serviceImpl(Query call, HttpServletResponse response, Authorization rights, final JsonObjectWithDefault permissions) throws APIException {
 
         String userId = null;
+        Boolean shouldReturnSkillStats = false;
         String privateSkill = call.get("private", null);
         if (call.get("access_token", null) != null) { // access tokens can be used by api calls, somehow the stateless equivalent of sessions for browsers
             ClientCredential credential = new ClientCredential(ClientCredential.Type.access_token, call.get("access_token", null));
@@ -61,6 +62,13 @@ public class ListSkillService extends AbstractAPIHandler implements APIHandler {
             // check if access_token is valid
             if (authentication.getIdentity() != null) {
                 ClientIdentity identity = authentication.getIdentity();
+                Authorization authorization = DAO.getAuthorization(identity);
+                String userRole = authorization.getUserRole().toString().toLowerCase();
+                if (userRole.equals("user") || userRole.equals("reviewer")) {
+                    shouldReturnSkillStats = false;
+                } else {
+                    shouldReturnSkillStats = true;
+                }
                 userId = identity.getUuid();
             }
         }
@@ -149,7 +157,8 @@ public class ListSkillService extends AbstractAPIHandler implements APIHandler {
         String reviewed = call.get("reviewed", "false");
         String staff_picks = call.get("staff_picks", "false");
         String[] language_names = language_list.split(",");
-        JSONObject skillStats = new JSONObject();
+        // Initialises the stat counters
+        initStatCounters();
 
         if (!(reviewed.equals("true") || reviewed.equals("false"))) {
             throw new APIException(400, "Bad service call.");
@@ -358,19 +367,22 @@ public class ListSkillService extends AbstractAPIHandler implements APIHandler {
             }
         }
 
-        skillStats.put("totalSkills", totalSkills);
-        skillStats.put("reviewedSkills", reviewedSkills);
-        skillStats.put("nonReviewedSkills", nonReviewedSkills);
-        skillStats.put("editableSkills", editableSkills);
-        skillStats.put("nonEditableSkills", nonEditableSkills);
-        skillStats.put("staffPicks", staffPicks);
-        skillStats.put("systemSkills", systemSkills);
+        if(shouldReturnSkillStats) {
+            JSONObject skillStats = new JSONObject();
+            skillStats.put("totalSkills", totalSkills);
+            skillStats.put("reviewedSkills", reviewedSkills);
+            skillStats.put("nonReviewedSkills", nonReviewedSkills);
+            skillStats.put("editableSkills", editableSkills);
+            skillStats.put("nonEditableSkills", nonEditableSkills);
+            skillStats.put("staffPicks", staffPicks);
+            skillStats.put("systemSkills", systemSkills);
+            json.put("skillStats", skillStats);
+        }
 
         json.put("model", model_name)
                 .put("group", group_name)
                 .put("language", language_list);
         json.put("skills", skillObject);
-        json.put("skillStats", skillStats);
         json.put("accepted", true);
         json.put("message", "Success: Fetched skill list");
         return new ServiceResponse(json);
@@ -378,7 +390,6 @@ public class ListSkillService extends AbstractAPIHandler implements APIHandler {
     }
 
     private static Boolean shouldReturnSkillInResponse(JSONObject skillMetadata, String reviewed, String staff_picks) {
-
         totalSkills++;
 
         if(skillMetadata.getBoolean("editable") == true) {
@@ -410,6 +421,17 @@ public class ListSkillService extends AbstractAPIHandler implements APIHandler {
         }
         return true;
     }
+
+    private static void initStatCounters() {
+        totalSkills = 0;
+        editableSkills = 0;
+        nonEditableSkills = 0;
+        reviewedSkills = 0;
+        nonReviewedSkills = 0;
+        staffPicks = 0;
+        systemSkills = 0;
+    }
+
 
 
     private void listFilesForFolder(final File folder, ArrayList<String> fileList) {
