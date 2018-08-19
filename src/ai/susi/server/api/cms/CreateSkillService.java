@@ -84,7 +84,7 @@ public class CreateSkillService extends AbstractAPIHandler implements APIHandler
         String userEmail = null;
         JSONObject json = new JSONObject();
         Part imagePart = req.getPart("image");
-        
+
         if (req.getParameter("access_token") != null) {
             if(!req.getParameter("skill").isEmpty()) {
                 if (imagePart == null) {
@@ -173,7 +173,7 @@ public class CreateSkillService extends AbstractAPIHandler implements APIHandler
                                     path = skill.getPath().replace(DAO.model_watch_dir.toString(), "models");
                                 }
                                 // Set the creationTime in the metadata
-                                updateCreationTime(model_name, group_name, language_name, skill_name);
+                                updateSkillInfo(model_name, group_name, language_name, skill_name);
                             } catch (IOException e) {
                                 e.printStackTrace();
                                 json.put("message", "error: " + e.getMessage());
@@ -238,14 +238,14 @@ public class CreateSkillService extends AbstractAPIHandler implements APIHandler
         }
     }
 
-    private static void updateCreationTime(String model_name, String group_name, String language_name, String skill_name ) {
+    private static void updateSkillInfo(String model_name, String group_name, String language_name, String skill_name ) {
         JsonTray skillInfo = DAO.skillInfo;
         JSONObject modelName = new JSONObject();
         JSONObject groupName = new JSONObject();
         JSONObject languageName = new JSONObject();
         JSONObject skillName = new JSONObject();
         DateFormat dateFormatType = DateParser.iso8601Format;
-        String skillCreationTime = dateFormatType.format(new Date(0));
+        String skillUpdateTime = dateFormatType.format(new Date());
 
         if (skillInfo.has(model_name)) {
             modelName = skillInfo.getJSONObject(model_name);
@@ -255,13 +255,15 @@ public class CreateSkillService extends AbstractAPIHandler implements APIHandler
                     languageName = groupName.getJSONObject(language_name);
                     if (languageName.has(skill_name)) {
                         skillName = languageName.getJSONObject(skill_name);
-                        skillName.put("creationTime",skillCreationTime);
+                        skillName.put("creationTime",skillUpdateTime);
+                        skillName.put("lastModifiedTime",skillUpdateTime);
                         return;
                     }
                 }
             }
         }
-        skillName.put("creationTime",skillCreationTime);
+        skillName.put("creationTime",skillUpdateTime);
+        skillName.put("lastModifiedTime",skillUpdateTime);
         languageName.put(skill_name, skillName);
         groupName.put(language_name, languageName);
         modelName.put(group_name, groupName);
