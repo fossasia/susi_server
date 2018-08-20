@@ -81,7 +81,7 @@ public class GetSkillFeedbackService extends AbstractAPIHandler implements APIHa
         }
 
         JsonTray feedbackSkill = DAO.feedbackSkill;
-        JSONArray feedback_list = new JSONArray();
+        JSONArray feedbackList = new JSONArray();
 
         if (feedbackSkill.has(model_name)) {
             JSONObject modelName = feedbackSkill.getJSONObject(model_name);
@@ -90,14 +90,15 @@ public class GetSkillFeedbackService extends AbstractAPIHandler implements APIHa
                 if (groupName.has(language_name)) {
                     JSONObject  languageName = groupName.getJSONObject(language_name);
                     if (languageName.has(skill_name)) {
-                        feedback_list = languageName.getJSONArray(skill_name);
-                        for (int i = 0; i < feedback_list.length(); i++) {
-                            JSONObject each_feedback = feedback_list.getJSONObject(i);
-                            String email = each_feedback.getString("email");
-                            each_feedback.put("avatar", getUserAvatar(email));
+                        feedbackList = languageName.getJSONArray(skill_name);
+                        for (int i = 0; i < feedbackList.length(); i++) {
+                            JSONObject eachFeedback = feedbackList.getJSONObject(i);
+                            String email = eachFeedback.getString("email");
+                            eachFeedback.put("avatar", getUserAvatar(email));
+                            eachFeedback.put("user_name", getUserName(email));
                         }
                         result.put("skill_name", skill_name);
-                        result.put("feedback", feedback_list);
+                        result.put("feedback", feedbackList);
                         result.put("accepted", true);
                         result.put("message", "Skill feedback fetched");
                         return new ServiceResponse(result);
@@ -106,7 +107,7 @@ public class GetSkillFeedbackService extends AbstractAPIHandler implements APIHa
             }
         }
         result.put("skill_name", skill_name);
-        result.put("feedback", feedback_list);
+        result.put("feedback", feedbackList);
         result.put("accepted", false);
         result.put("message", "Skill hasn't been given any feedback");
         return new ServiceResponse(result);
@@ -117,22 +118,36 @@ public class GetSkillFeedbackService extends AbstractAPIHandler implements APIHa
         ClientIdentity identity = new ClientIdentity(ClientIdentity.Type.email, email);
         Accounting accounting = DAO.getAccounting(identity);
         String userId = identity.getUuid();
-        String avatar_url = "";
+        String avatarUrl = "";
         JSONObject accountingObj = accounting.getJSON();
-        String avatar_type = "";
+        String avatarType = "";
         if (accountingObj.has("settings") &&
             accountingObj.getJSONObject("settings").has("avatarType")) {
-            avatar_type = accountingObj.getJSONObject("settings").getString("avatarType");
+            avatarType = accountingObj.getJSONObject("settings").getString("avatarType");
         } else {
-            avatar_type = "server";
+            avatarType = "server";
         }
         accounting.commit();
 
-        if(avatar_type.equals("gravatar")) {
-            avatar_url = "https://gravatar.com/avatar/" + userId + ".jpg";
+        if(avatarType.equals("gravatar")) {
+            avatarUrl = "https://gravatar.com/avatar/" + userId + ".jpg";
         } else {
-            avatar_url = "https://api.susi.ai/avatar=true&image=avatar/" + userId + ".jpg";
+            avatarUrl = "https://api.susi.ai/avatar=true&image=avatar/" + userId + ".jpg";
         }
-        return avatar_url;
+        return avatarUrl;
+    }
+
+    // Method to get the user name of the user
+    public static String getUserName(String email) {
+        ClientIdentity identity = new ClientIdentity(ClientIdentity.Type.email, email);
+        Accounting accounting = DAO.getAccounting(identity);
+        String userId = identity.getUuid();
+        JSONObject accountingObj = accounting.getJSON();
+        String userName = "";
+        if (accountingObj.has("settings") &&
+            accountingObj.getJSONObject("settings").has("userName")) {
+            userName = accountingObj.getJSONObject("settings").getString("userName");
+        }
+        return userName;
     }
 }
