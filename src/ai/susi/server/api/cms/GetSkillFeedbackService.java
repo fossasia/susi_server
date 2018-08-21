@@ -119,20 +119,21 @@ public class GetSkillFeedbackService extends AbstractAPIHandler implements APIHa
         Accounting accounting = DAO.getAccounting(identity);
         String userId = identity.getUuid();
         String avatarUrl = "";
-        JSONObject accountingObj = accounting.getJSON();
         String avatarType = "";
+        JSONObject accountingObj = accounting.getJSON();
         if (accountingObj.has("settings") &&
             accountingObj.getJSONObject("settings").has("avatarType")) {
             avatarType = accountingObj.getJSONObject("settings").getString("avatarType");
         } else {
-            avatarType = "server";
+            avatarType = "default";
         }
-        accounting.commit();
 
         if(avatarType.equals("gravatar")) {
             avatarUrl = "https://gravatar.com/avatar/" + userId + ".jpg";
+        } else if(avatarType.equals("server")) {
+            avatarUrl = "https://api.susi.ai/cms/getImage.png?avatar=true&image=avatar/" + userId + ".jpg";
         } else {
-            avatarUrl = "https://api.susi.ai/avatar=true&image=avatar/" + userId + ".jpg";
+            avatarUrl = "https://api.susi.ai/images/default.jpg";
         }
         return avatarUrl;
     }

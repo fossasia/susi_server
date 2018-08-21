@@ -92,7 +92,7 @@ public class UploadAvatarService extends AbstractAPIHandler implements APIHandle
                     // Checks if images directory exists or not. If not then create one
                     if (!Files.exists(Paths.get(imagePath))) new File(imagePath).mkdirs();
 
-                    String image_name = userId;
+                    String image_name = userId + ".jpg";
                     File p = new File(imagePath + File.separator + image_name);
                     if (p.exists()) p.delete();
                     ImageIO.write(bi, "jpg", new File(imagePath + File.separator + image_name));
