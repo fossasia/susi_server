@@ -6,13 +6,13 @@ SUSI.AI Server
 Status| |Percentage of issues still open| |Average time
 to resolve an issue| |Twitter| |Twitter Follow|
 
-Susi AI is an intelligent Open Source personal assistant. It is capable of chat and voice interaction by using APIs to perform actions such as music playback, making to-do lists, setting alarms, streaming podcasts, playing audiobooks, and providing weather, traffic, and other real time information. Additional functionalities can be added as console services using external APIs. Susi AI is able to answer questions and depending on the context will ask for additional information in order to perform the desired outcome. The core of the assistant is the Susi AI server that holds the "intelligence" and "personality" of Susi AI. The Android and web applications make use of the APIs to access information from a hosted server.
+Susi AI is an intelligent Open Source personal assistant. It is capable of chat and voice interaction by using APIs to perform actions such as music playback, making to-do lists, setting alarms, streaming podcasts, playing audiobooks, and providing weather, traffic, and other real-time information. Additional functionalities can be added as console services using external APIs. Susi AI is able to answer questions and depending on the context will ask for additional information in order to perform the desired outcome. The core of the assistant is the Susi AI server that holds the "intelligence" and "personality" of Susi AI. The Android and web applications make use of the APIs to access information from a hosted server.
 
 **Deployments**
 
 *Development*: An automatic deployment from the development branch at GitHub is available for tests at https://susi-server.herokuapp.com
 
-*Master*: The master branch is planned to be deployed on https://api.susi.ai. Currently the deployment is taking place each hour at xx.45 using the devevelopment branch. We are planning to switch to the Master branch for production soon.
+*Master*: The master branch is planned to be deployed on https://api.susi.ai. Currently, the deployment is taking place each hour at xx.45 using the development branch. We are planning to switch to the Master branch for production soon.
 
 *********
 Communication
@@ -34,7 +34,7 @@ How do I install Susi: Download, Build, Run
 |Deploy| |Deploy on Scalingo| |Deploy to Bluemix| |Deploy to Docker
 Cloud|
 
-At this time, Susi AI is not provided in compiled form, you easily build it yourself. It's not difficult and done in one minute! The source code is
+At this time, Susi AI is not provided in the compiled form, you easily build it yourself. It's not difficult and done in one minute! The source code is
 hosted at https://github.com/fossasia/susi_server, you can download it and run Susi AI with (Before installation you must have "Java Development Kit" latest version at http://openjdk.java.net/install/ & "Gradle" latest version at https://gradle.org/install/):
 
 .. note::
@@ -189,7 +189,7 @@ How to compile using Gradle?
 
        gradle assemble
 
-   Compiled file can be found in build dir Last, clean up so that we can
+   The compiled file can be found in build dir Last, clean up so that we can
    still build the project using Ant
    ::
        ./gradle_clean.sh
@@ -234,9 +234,9 @@ Where can I get the latest news about Susi AI?
 *********
 
 Hey, this is the tool for that! Just put
-https://api.loklak.org/api/search.rss?q=%23susi into your RSS reader. Oh
+https://api.loklak.org/api/search.rss?q=%23susi into your RSS reader. Oh,
 wait.. you will get a lot of information about tasty Cambodian food with
-that as well. Alternatively you may also read the authors timeline or just follow @0rb1t3r
+that as well. Alternatively, you may also read the authors timeline or just follow @0rb1t3r
 (that's a zero after the "@" sign)
 
 *********
