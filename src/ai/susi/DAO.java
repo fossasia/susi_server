@@ -183,17 +183,20 @@ public class DAO {
         susi_private_skill_repo = new File(data_dir.getParentFile().getParentFile(), "susi_private_skill_data/.git");
         File susi_generic_skills = new File(data_dir, "generic_skills");
         if (!susi_generic_skills.exists()) susi_generic_skills.mkdirs();
-        File susi_generic_skills_media_discovery = new File(susi_generic_skills, "media_discovery");
-        if (!susi_generic_skills_media_discovery.exists()) susi_generic_skills_media_discovery.mkdirs();
+        SusiMind.Layer susi_generic_skills_media_discovery = new SusiMind.Layer("Media Discovery", new File(susi_generic_skills, "media_discovery"), false);
+        if (!susi_generic_skills_media_discovery.path.exists()) susi_generic_skills_media_discovery.path.mkdirs();
 
         // wake up susi
-        File system_skills_general = new File(new File(conf_dir, "system_skills"), "general");
-        File system_skills_localmode = new File(new File(conf_dir, "system_skills"), "localmode");
+        SusiMind.Layer system_skills_general = new SusiMind.Layer("General", new File(new File(conf_dir, "system_skills"), "general"), true);
+        SusiMind.Layer system_skills_localmode = new SusiMind.Layer("Local", new File(new File(conf_dir, "system_skills"), "localmode"), true);
         susi = new SusiMind(susi_chatlog_dir, susi_skilllog_dir, system_skills_general);
-        if (model_watch_dir.exists()) susi.addWatchpath(new File(model_watch_dir, "general"));
+        if (model_watch_dir.exists()) {
+            SusiMind.Layer model_skills = new SusiMind.Layer("Model", new File(model_watch_dir, "general"), false);
+            susi.addLayer(model_skills);
+        }
         if (DAO.getConfig("local.mode", false)) {
-            susi.addWatchpath(system_skills_localmode);
-            susi.addWatchpath(susi_generic_skills_media_discovery);
+            susi.addLayer(system_skills_localmode);
+            susi.addLayer(susi_generic_skills_media_discovery);
         }
 
         // initialize the memory as a background task to prevent that this blocks too much

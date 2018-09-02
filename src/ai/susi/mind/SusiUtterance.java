@@ -106,27 +106,32 @@ public class SusiUtterance {
     }
     
     public static JSONObject simplePhrase(String query, boolean prior) {
-        	// normalize query
-        	query = query.trim();
-        	
-        	// correction of wrong wild card usage
-        	if (query.length() > 0 && (
-        	    query.charAt(0) != '^' || query.charAt(query.length() - 1) != '$' ||
-        	    query.charAt(0) != '(' || query.charAt(query.length() - 1) != ')')) {
-        	    int p;
-        	    while ((p = query.indexOf('.')) > 0 && query.charAt(p - 1) != ' ') {
-        	        query = query.substring(0, p) + ' ' + query.substring(p);
-        	    }
-        	    while ((p = query.indexOf('.')) >= 0 && p < query.length() - 1 && query.charAt(p + 1) != ' ') {
-        	        query = query.substring(0, p + 1) + ' ' + query.substring(p + 1);
-        	    }
-        	}
-        	
-        	// create phrase
+    	// normalize query
+    	query = query.trim();
+    	
+    	// correction of wrong wild card usage
+    	if (query.length() > 0 && (
+    	    query.charAt(0) != '^' || query.charAt(query.length() - 1) != '$' ||
+    	    query.charAt(0) != '(' || query.charAt(query.length() - 1) != ')')) {
+    	    int p;
+    	    while ((p = query.indexOf('.')) > 0 && query.charAt(p - 1) != ' ') {
+    	        query = query.substring(0, p) + ' ' + query.substring(p);
+    	    }
+    	    while ((p = query.indexOf('.')) >= 0 && p < query.length() - 1 && query.charAt(p + 1) != ' ') {
+    	        query = query.substring(0, p + 1) + ' ' + query.substring(p + 1);
+    	    }
+    	}
+    	
+    	// create phrase
         JSONObject json = new JSONObject();
         json.put("type", prior ? Type.prior.name() : Type.minor.name());
         json.put("expression", query);
         return json;
+    }
+    
+    public static boolean isCatchallPhrase(JSONObject json) {
+        String expression = json.getString("expression");
+        return CATCHALL_CAPTURE_GROUP_STRING.equals(expression);
     }
 
     public static String parsePattern(String expression) {
@@ -134,7 +139,11 @@ public class SusiUtterance {
         if (expressions.length == 0) return "";
         if (expressions.length == 1) return parseOnePattern(expressions[0]);
         StringBuilder sb = new StringBuilder();
-        for (String e: expressions) sb.append("(?:").append(parseOnePattern(e)).append(")|");
+        for (String e: expressions) {
+            String pattern = parseOnePattern(e);
+            if (pattern.equals(CATCHALL_CAPTURE_GROUP_STRING)) return CATCHALL_CAPTURE_GROUP_STRING;
+            sb.append("(?:").append(pattern).append(")|");
+        }
         return sb.substring(0, sb.length() - 1);
     }
     

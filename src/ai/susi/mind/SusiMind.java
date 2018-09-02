@@ -56,16 +56,36 @@ public class SusiMind {
     private final Map<String, Set<SusiIntent>> intenttrigger; // a map from a keyword to a set of intents
     private final Map<SusiSkill.ID, SusiSkill> skillMetadata; // a map from skill path to description
     private final Map<SusiSkill.ID, String> skillImage; // a map from skill path to skill image
-    private final List<File> watchpaths;
+    private final List<Layer> layers;
     private final File susi_chatlog_dir, susi_skilllog_dir; // a path where the memory looks for new additions of knowledge with memory files
     private final Map<File, Long> observations; // a mapping of mind memory files to the time when the file was read the last time
     private final SusiMemory memories; // conversation logs are memories
     private SusiSkill activeSkill;
 
-    public SusiMind(File susi_chatlog_dir, File susi_skilllog_dir, File... watchpaths) {
+    /**
+     * To implement different layers of mind declarations, we need an object that describes the layer of minds.
+     * 
+     * @param susi_chatlog_dir
+     * @param susi_skilllog_dir
+     * @param layers
+     */
+    public static class Layer {
+
+        public final File path;   // the storage path of the skills which belong to one mind level
+        public final String name; // the explanatory name of the mind which is used using the explain with the "explain" command
+        public final boolean os;  // only custom skills or skills in os minds may declare wildcard answers. 
+
+        public Layer(String name, File path, boolean os) {
+            this.name = name;
+            this.path = path;
+            this.os = os;
+        }
+    }
+    
+    public SusiMind(File susi_chatlog_dir, File susi_skilllog_dir, Layer... layers) {
         // initialize class objects
-        this.watchpaths = new ArrayList<>();
-        for (int i = 0; i < watchpaths.length; i++) addWatchpath(watchpaths[i]);
+        this.layers = new ArrayList<>();
+        for (int i = 0; i < layers.length; i++) addLayer(layers[i]);
         this.susi_chatlog_dir = susi_chatlog_dir;
         this.susi_skilllog_dir = susi_skilllog_dir;
         if (this.susi_chatlog_dir != null) this.susi_chatlog_dir.mkdirs();
@@ -82,10 +102,10 @@ public class SusiMind {
         this.activeSkill = null;
     }
     
-    public SusiMind addWatchpath(File path) {
-        if (path != null) {
-            path.mkdirs();
-            this.watchpaths.add(path);
+    public SusiMind addLayer(Layer layer) {
+        if (layer != null) {
+            layer.path.mkdirs();
+            this.layers.add(layer);
         }
         return this;
     }
@@ -123,18 +143,22 @@ public class SusiMind {
     }
 
     public SusiMind observe() throws IOException {
-        for (int i = 0; i < watchpaths.size(); i++) {
-            observe(watchpaths.get(i));
+        for (int i = 0; i < layers.size(); i++) {
+            observe(layers.get(i));
         }
         return this;
     }
     
-    private void observe(File path) throws IOException {
+    private void observe(Layer layer) throws IOException {
+        observe(layer.path, layer.os);
+    }
+    
+    private void observe(File path, boolean acceptWildcardIntent) throws IOException {
         if (!path.exists()) return;
         for (File f: path.listFiles()) {
             if (f.isDirectory()) {
                 // recursively step into it
-                observe(f);
+                observe(f, acceptWildcardIntent);
             }
             if (!f.isDirectory() && !f.getName().startsWith(".") && (f.getName().endsWith(".json") || f.getName().endsWith(".txt") || f.getName().endsWith(".aiml"))) {
                 if (!observations.containsKey(f) || f.lastModified() > observations.get(f)) {
@@ -147,7 +171,7 @@ public class SusiMind {
                         if (f.getName().endsWith(".txt") || f.getName().endsWith(".ezd") || f.getName().endsWith(".lot")) {
                             SusiSkill.ID skillid = new SusiSkill.ID(f);
                             SusiLanguage language = skillid.language();
-                            lesson = SusiSkill.readLoTSkill(new BufferedReader(new FileReader(f)), language, Integer.toString(skillid.hashCode()));
+                            lesson = SusiSkill.readLoTSkill(new BufferedReader(new FileReader(f)), language, Integer.toString(skillid.hashCode()), acceptWildcardIntent);
                         }
                         if (f.getName().endsWith(".aiml")) {
                             lesson = AIML2Susi.readAIMLSkill(f);
@@ -459,9 +483,9 @@ public class SusiMind {
     }
     
     public static void main(String[] args) {
-        File skill = new File(new File("conf"), "susi");
+        SusiMind.Layer layer = new SusiMind.Layer("test", new File(new File("conf"), "susi"), true);
         File log = new File(new File("data"), "susi");
-        SusiMind mem = new SusiMind(log, null, skill);
+        SusiMind mem = new SusiMind(log, null, layer);
         try {
             System.out.println(mem.new Reaction("I feel funny", SusiLanguage.unknown, new ClientIdentity("localhost"), new SusiThought(), mem).getExpression());
         } catch (ReactionException e) {

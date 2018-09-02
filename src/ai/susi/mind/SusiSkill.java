@@ -39,7 +39,6 @@ import java.util.Set;
 import java.util.Date;
 import java.text.DateFormat;
 
-import ai.susi.server.ServiceResponse;
 import org.jfree.util.Log;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -183,7 +182,7 @@ public class SusiSkill {
      * @return a skill object as JSON
      * @throws JSONException
      */
-    public static JSONObject readLoTSkill(final BufferedReader br, final SusiLanguage language, final String skillid) throws JSONException {
+    public static JSONObject readLoTSkill(final BufferedReader br, final SusiLanguage language, final String skillid, boolean acceptWildcardIntent) throws JSONException {
         // read the text file and turn it into a intent json; then learn that
         JSONObject json = new JSONObject(true);
         JSONArray intents = new JSONArray();
@@ -217,7 +216,10 @@ public class SusiSkill {
                         JSONObject intent = new JSONObject(true);
                         JSONArray phrases = new JSONArray();
                         intent.put("phrases", phrases);
-                        for (String phrase: bang_answers.split("\\|")) phrases.put(SusiUtterance.simplePhrase(phrase.trim(), prior));
+                        for (String phrase: bang_answers.split("\\|")) {
+                            JSONObject simplePhrase = SusiUtterance.simplePhrase(phrase.trim(), prior);
+                            phrases.put(simplePhrase);
+                        }
 
                         // javascript process
                         JSONObject process = new JSONObject();
@@ -244,7 +246,14 @@ public class SusiSkill {
                         JSONObject intent = new JSONObject(true);
                         JSONArray phrases = new JSONArray();
                         intent.put("phrases", phrases);
-                        for (String phrase: bang_answers.split("\\|")) phrases.put(SusiUtterance.simplePhrase(phrase.trim(), prior));
+                        for (String phrase: bang_answers.split("\\|")) {
+                            JSONObject simplePhrase = SusiUtterance.simplePhrase(phrase.trim(), prior);
+                            if (!acceptWildcardIntent && SusiUtterance.isCatchallPhrase(simplePhrase)) {
+                                continue readloop;
+                            } else {
+                                phrases.put(simplePhrase);
+                            }
+                        }
 
                         // console process
                         JSONObject process = new JSONObject();
@@ -501,7 +510,7 @@ public class SusiSkill {
                 try {
                     SusiSkill.ID skillid = new SusiSkill.ID(f);
                     SusiLanguage language = skillid.language();
-                    JSONObject json = SusiSkill.readLoTSkill(new BufferedReader(new FileReader(f)), language, Integer.toString(skillid.hashCode()));
+                    JSONObject json = SusiSkill.readLoTSkill(new BufferedReader(new FileReader(f)), language, Integer.toString(skillid.hashCode()), false);
                     String sn = json.optString("skill_name");
                     if (sn.equals(skill_name) || sn.toLowerCase().equals(skill_name) || sn.toLowerCase().replace(' ', '_').equals(skill_name)) {
                         return new File(languagepath, n);
@@ -1205,7 +1214,7 @@ public class SusiSkill {
         SusiSkill.ID skillid = new SusiSkill.ID(skill);
         SusiLanguage language = skillid.language();
         try {
-            JSONObject lesson = SusiSkill.readLoTSkill(new BufferedReader(new FileReader(skill)), language, Integer.toString(skillid.hashCode()));
+            JSONObject lesson = SusiSkill.readLoTSkill(new BufferedReader(new FileReader(skill)), language, Integer.toString(skillid.hashCode()), false);
             System.out.println(lesson.toString(2));
         } catch (JSONException | FileNotFoundException e) {
             e.printStackTrace();

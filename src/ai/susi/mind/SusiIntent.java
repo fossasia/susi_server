@@ -280,7 +280,10 @@ public class SusiIntent {
         // write utterances
         JSONArray p = new JSONArray();
         intent.put("phrases", p);
-        for (String utterance: utterances) p.put(SusiUtterance.simplePhrase(utterance.trim(), prior));
+        for (String utterance: utterances) {
+            JSONObject simplePhrase = SusiUtterance.simplePhrase(utterance.trim(), prior);
+            p.put(simplePhrase);
+        }
         
         // write conditions (if any)
         if (condition != null && condition.length() > 0) {
