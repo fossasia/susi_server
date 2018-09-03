@@ -182,7 +182,7 @@ public class SusiSkill {
      * @return a skill object as JSON
      * @throws JSONException
      */
-    public static JSONObject readLoTSkill(final BufferedReader br, final SusiLanguage language, final String skillid, boolean acceptWildcardIntent) throws JSONException {
+    public static JSONObject readLoTSkill(final BufferedReader br, final SusiLanguage language, final String skillidname, final int skillidhash, boolean acceptWildcardIntent) throws JSONException {
         // read the text file and turn it into a intent json; then learn that
         JSONObject json = new JSONObject(true);
         JSONArray intents = new JSONArray();
@@ -218,7 +218,12 @@ public class SusiSkill {
                         intent.put("phrases", phrases);
                         for (String phrase: bang_answers.split("\\|")) {
                             JSONObject simplePhrase = SusiUtterance.simplePhrase(phrase.trim(), prior);
-                            phrases.put(simplePhrase);
+                            if (!acceptWildcardIntent && SusiUtterance.isCatchallPhrase(simplePhrase)) {
+                                DAO.log("WARNING: skipping skill / wildcard not allowed here: " + skillidname);
+                                continue readloop;
+                            } else {
+                                phrases.put(simplePhrase);
+                            }
                         }
 
                         // javascript process
@@ -249,6 +254,7 @@ public class SusiSkill {
                         for (String phrase: bang_answers.split("\\|")) {
                             JSONObject simplePhrase = SusiUtterance.simplePhrase(phrase.trim(), prior);
                             if (!acceptWildcardIntent && SusiUtterance.isCatchallPhrase(simplePhrase)) {
+                                DAO.log("WARNING: skipping skill / wildcard not allowed here: " + skillidname);
                                 continue readloop;
                             } else {
                                 phrases.put(simplePhrase);
@@ -392,23 +398,38 @@ public class SusiSkill {
                         if (ifsubstring.length() > 0) {
                             String[] answers = ifsubstring.split("\\|");
                             JSONObject intent = SusiIntent.answerIntent(phrases, "IF " + condition, answers, prior, depth, example, expect, label, implication, language);
-                            extendParentWithAnswer(intents, intent);
-                            intents.put(intent);
+                            if (!acceptWildcardIntent && SusiIntent.isCatchallIntent(intent)) {
+                                DAO.log("WARNING: skipping skill / wildcard not allowed here: " + skillidname);
+                                continue readloop;
+                            } else {
+                                extendParentWithAnswer(intents, intent);
+                                intents.put(intent);
+                            }
                         }
                     } else {
                         String ifsubstring = line.substring(thenpos + 1, elsepos).trim();
                         if (ifsubstring.length() > 0) {
                             String[] ifanswers = ifsubstring.split("\\|");
                             JSONObject intentif = SusiIntent.answerIntent(phrases, "IF " + condition, ifanswers, prior, depth, example, expect, label, implication, language);
-                            extendParentWithAnswer(intents, intentif);
-                            intents.put(intentif);
+                            if (!acceptWildcardIntent && SusiIntent.isCatchallIntent(intentif)) {
+                                DAO.log("WARNING: skipping skill / wildcard not allowed here: " + skillidname);
+                                continue readloop;
+                            } else {
+                                extendParentWithAnswer(intents, intentif);
+                                intents.put(intentif);
+                            }
                         }
                         String elsesubstring = line.substring(elsepos + 1).trim();
                         if (elsesubstring.length() > 0) {
                             String[] elseanswers = elsesubstring.split("\\|");
                             JSONObject intentelse = SusiIntent.answerIntent(phrases, "NOT " + condition, elseanswers, prior, depth, example, expect, label, implication, language);
-                            extendParentWithAnswer(intents, intentelse);
-                            intents.put(intentelse);
+                            if (!acceptWildcardIntent && SusiIntent.isCatchallIntent(intentelse)) {
+                                DAO.log("WARNING: skipping skill / wildcard not allowed here: " + skillidname);
+                                continue readloop;
+                            } else {
+                                extendParentWithAnswer(intents, intentelse);
+                                intents.put(intentelse);
+                            }
                         }
                     }
                 } else if (line.startsWith("!" /*bang!*/) && (thenpos = line.indexOf(':')) > 0) {
@@ -434,9 +455,14 @@ public class SusiSkill {
                 } else {
                     String[] answers = line.split("\\|");
                     JSONObject intent = SusiIntent.answerIntent(phrases, condition, answers, prior, depth, example, expect, label, implication, language);
-                    extendParentWithAnswer(intents, intent);
-                    //System.out.println(intent.toString());
-                    intents.put(intent);
+                    if (!acceptWildcardIntent && SusiIntent.isCatchallIntent(intent)) {
+                        DAO.log("WARNING: skipping skill / wildcard not allowed here: " + skillidname);
+                        continue readloop;
+                    } else {
+                        extendParentWithAnswer(intents, intent);
+                        //System.out.println(intent.toString());
+                        intents.put(intent);
+                    }
                     example = ""; expect = ""; label = ""; implication = "";
                 }
             }
@@ -510,7 +536,7 @@ public class SusiSkill {
                 try {
                     SusiSkill.ID skillid = new SusiSkill.ID(f);
                     SusiLanguage language = skillid.language();
-                    JSONObject json = SusiSkill.readLoTSkill(new BufferedReader(new FileReader(f)), language, Integer.toString(skillid.hashCode()), false);
+                    JSONObject json = SusiSkill.readLoTSkill(new BufferedReader(new FileReader(f)), language, skillid.skillpath, skillid.hashCode(), false);
                     String sn = json.optString("skill_name");
                     if (sn.equals(skill_name) || sn.toLowerCase().equals(skill_name) || sn.toLowerCase().replace(' ', '_').equals(skill_name)) {
                         return new File(languagepath, n);
@@ -1214,7 +1240,7 @@ public class SusiSkill {
         SusiSkill.ID skillid = new SusiSkill.ID(skill);
         SusiLanguage language = skillid.language();
         try {
-            JSONObject lesson = SusiSkill.readLoTSkill(new BufferedReader(new FileReader(skill)), language, Integer.toString(skillid.hashCode()), false);
+            JSONObject lesson = SusiSkill.readLoTSkill(new BufferedReader(new FileReader(skill)), language, skillid.skillpath, skillid.hashCode(), false);
             System.out.println(lesson.toString(2));
         } catch (JSONException | FileNotFoundException e) {
             e.printStackTrace();

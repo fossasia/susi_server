@@ -309,6 +309,14 @@ public class SusiIntent {
         a.put(SusiAction.answerAction(language, answers));        
         return intent;
     }
+
+    public static boolean isCatchallIntent(JSONObject json) {
+        JSONArray phrases = json.getJSONArray("phrases");
+        for (int i = 0; i < phrases.length(); i++) {
+            if (SusiUtterance.isCatchallPhrase(phrases.getJSONObject(i))) return true;
+        }
+        return false;
+    }
     
     public String toString() {
         return this.toJSON().toString(2);
