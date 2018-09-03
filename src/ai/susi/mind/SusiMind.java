@@ -82,10 +82,9 @@ public class SusiMind {
         }
     }
     
-    public SusiMind(File susi_chatlog_dir, File susi_skilllog_dir, Layer... layers) {
+    public SusiMind(File susi_chatlog_dir, File susi_skilllog_dir) {
         // initialize class objects
         this.layers = new ArrayList<>();
-        for (int i = 0; i < layers.length; i++) addLayer(layers[i]);
         this.susi_chatlog_dir = susi_chatlog_dir;
         this.susi_skilllog_dir = susi_skilllog_dir;
         if (this.susi_chatlog_dir != null) this.susi_chatlog_dir.mkdirs();
@@ -104,7 +103,7 @@ public class SusiMind {
     
     public SusiMind addLayer(Layer layer) {
         if (layer != null) {
-            layer.path.mkdirs();
+            if (!layer.path.exists()) layer.path.mkdirs();
             this.layers.add(layer);
         }
         return this;
@@ -429,11 +428,11 @@ public class SusiMind {
     		final int maxcount,
     		final ClientIdentity identity,
     		final SusiThought observation,
-    		final SusiMind... minds) {
+    		final SusiMind... mindLayers) {
         List<SusiThought> thoughts = new ArrayList<>();
         int mindcount = 0;
-        while (thoughts.isEmpty() && mindcount < minds.length) {
-            thoughts = minds[mindcount++].react(query, userLanguage, maxcount, identity, observation, minds);
+        while (thoughts.isEmpty() && mindcount < mindLayers.length) {
+            thoughts = mindLayers[mindcount++].react(query, userLanguage, maxcount, identity, observation, mindLayers);
         }
         return thoughts;
     }
@@ -483,9 +482,10 @@ public class SusiMind {
     }
     
     public static void main(String[] args) {
-        SusiMind.Layer layer = new SusiMind.Layer("test", new File(new File("conf"), "susi"), true);
         File log = new File(new File("data"), "susi");
-        SusiMind mem = new SusiMind(log, null, layer);
+        SusiMind mem = new SusiMind(log, null);
+        SusiMind.Layer testlayer = new SusiMind.Layer("test", new File(new File("conf"), "susi"), true);
+        mem.addLayer(testlayer);
         try {
             System.out.println(mem.new Reaction("I feel funny", SusiLanguage.unknown, new ClientIdentity("localhost"), new SusiThought(), mem).getExpression());
         } catch (ReactionException e) {

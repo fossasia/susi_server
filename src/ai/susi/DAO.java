@@ -189,7 +189,8 @@ public class DAO {
         // wake up susi
         SusiMind.Layer system_skills_general = new SusiMind.Layer("General", new File(new File(conf_dir, "system_skills"), "general"), true);
         SusiMind.Layer system_skills_localmode = new SusiMind.Layer("Local", new File(new File(conf_dir, "system_skills"), "localmode"), true);
-        susi = new SusiMind(susi_chatlog_dir, susi_skilllog_dir, system_skills_general);
+        susi = new SusiMind(susi_chatlog_dir, susi_skilllog_dir);
+        susi.addLayer(system_skills_general);
         if (model_watch_dir.exists()) {
             SusiMind.Layer model_skills = new SusiMind.Layer("Model", new File(model_watch_dir, "general"), false);
             susi.addLayer(model_skills);
