@@ -182,7 +182,7 @@ public class SusiSkill {
      * @return a skill object as JSON
      * @throws JSONException
      */
-    public static JSONObject readLoTSkill(final BufferedReader br, final SusiLanguage language, final String skillidname, final int skillidhash, boolean acceptWildcardIntent) throws JSONException {
+    public static JSONObject readLoTSkill(final BufferedReader br, final SusiLanguage language, final String skillidname, boolean acceptWildcardIntent) throws JSONException {
         // read the text file and turn it into a intent json; then learn that
         JSONObject json = new JSONObject(true);
         JSONArray intents = new JSONArray();
@@ -536,7 +536,7 @@ public class SusiSkill {
                 try {
                     SusiSkill.ID skillid = new SusiSkill.ID(f);
                     SusiLanguage language = skillid.language();
-                    JSONObject json = SusiSkill.readLoTSkill(new BufferedReader(new FileReader(f)), language, skillid.skillpath, skillid.hashCode(), false);
+                    JSONObject json = SusiSkill.readLoTSkill(new BufferedReader(new FileReader(f)), language, skillid.skillpath, false);
                     String sn = json.optString("skill_name");
                     if (sn.equals(skill_name) || sn.toLowerCase().equals(skill_name) || sn.toLowerCase().replace(' ', '_').equals(skill_name)) {
                         return new File(languagepath, n);
@@ -1240,7 +1240,7 @@ public class SusiSkill {
         SusiSkill.ID skillid = new SusiSkill.ID(skill);
         SusiLanguage language = skillid.language();
         try {
-            JSONObject lesson = SusiSkill.readLoTSkill(new BufferedReader(new FileReader(skill)), language, skillid.skillpath, skillid.hashCode(), false);
+            JSONObject lesson = SusiSkill.readLoTSkill(new BufferedReader(new FileReader(skill)), language, skillid.skillpath, false);
             System.out.println(lesson.toString(2));
         } catch (JSONException | FileNotFoundException e) {
             e.printStackTrace();

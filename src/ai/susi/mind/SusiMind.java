@@ -171,7 +171,7 @@ public class SusiMind {
                         if (f.getName().endsWith(".txt") || f.getName().endsWith(".ezd") || f.getName().endsWith(".lot")) {
                             SusiSkill.ID skillid = new SusiSkill.ID(f);
                             SusiLanguage language = skillid.language();
-                            lesson = SusiSkill.readLoTSkill(new BufferedReader(new FileReader(f)), language, skillid.getPath(), skillid.hashCode(), acceptWildcardIntent);
+                            lesson = SusiSkill.readLoTSkill(new BufferedReader(new FileReader(f)), language, skillid.getPath(), acceptWildcardIntent);
                         }
                         if (f.getName().endsWith(".aiml")) {
                             lesson = AIML2Susi.readAIMLSkill(f);
