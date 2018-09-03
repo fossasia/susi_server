@@ -229,13 +229,13 @@ public enum SusiLanguage {
      * Parse a string containing a language name.
      * This is convenience method which returns SusiLanguage.unknown in case that
      * the parsing fails.
-     * @param language the string representatio of a ISO-639-1 language name
+     * @param languageCode the string representatio of a ISO-639-1 language name
      * @return the language object or SusiLanguage.unknown if the language cannot be parsed
      */
-    public static SusiLanguage parse(String language) {
+    public static SusiLanguage parse(String languageCode) {
         try {
-            if (language.length() > 2) language = language.substring(0, 2);
-            return SusiLanguage.valueOf(language.toLowerCase());
+            if (languageCode.length() > 2) languageCode = languageCode.substring(0, 2);
+            return SusiLanguage.valueOf(languageCode.toLowerCase());
         } catch (IllegalArgumentException e) {
             return SusiLanguage.unknown;
         }

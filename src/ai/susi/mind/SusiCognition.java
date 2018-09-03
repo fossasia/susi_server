@@ -47,12 +47,40 @@ public class SusiCognition {
 
     JSONObject json;
 
+    /**
+     * Compute a cognition for a given query string.
+     * The cognition contains a reaction on the query in the form of a dispute and actions
+     * that should be taken as a result of the disputes actions.
+     * 
+     * The cognition is computed by first creating an observation thought which is feeded
+     * into the mind layers to create a dispute that can be deduced from the given observation
+     * and the history of observations a taken from the users log.
+     * The mind layers are order from the most priorized one (the first one in the list) to
+     * the least priorized one. 
+     * The computed dispute may not only be computed by one single mind layer but by all of them
+     * together. That may happen if intents in one layer uses reflection to call support from
+     * another skill which may be embedded into another mind layer. The content of the layers
+     * are constructed in such a way that they create a knowledge funnel, creating abstractions
+     * on the higher levels and computing memory functions on the lower levels.
+     * 
+     * @param query the main observation that may change while all other context observations may be constant
+     * @param timezoneOffset context observation, an offset to GMT as number of minutes
+     * @param latitude context observation
+     * @param longitude context observation
+     * @param countryCode context observation, two letter code
+     * @param countryName context observation, full name of a country
+     * @param languageCode context observation, two letter code of the language
+     * @param deviceType context observation
+     * @param maxcount the maximum number of reactions, usually 1
+     * @param identity context observation, the identity of the user. This is important to retrieve the users memory of past conversations.
+     * @param mindLayers the different minds that shall be used, most prominent one as first in the list
+     */
     public SusiCognition(
             final String query,
             int timezoneOffset,
             double latitude, double longitude,
             String countryCode, String countryName,
-            String languageName,
+            String languageCode,
             String deviceType,
             int maxcount, ClientIdentity identity,
             final SusiMind... mindLayers) {
@@ -75,7 +103,7 @@ public class SusiCognition {
             observation.addObservation("country_code", countryCode);
         }
         
-        SusiLanguage language = SusiLanguage.parse(languageName);
+        SusiLanguage language = SusiLanguage.parse(languageCode);
         if (language != SusiLanguage.unknown) observation.addObservation("language", language.name());
         
         this.json.put("client_id", Base64.getEncoder().encodeToString(client.getBytes(StandardCharsets.UTF_8)));
