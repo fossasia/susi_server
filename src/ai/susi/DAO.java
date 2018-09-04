@@ -19,18 +19,28 @@
 
 package ai.susi;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.attribute.BasicFileAttributes;
+import java.nio.file.attribute.FileTime;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.security.NoSuchAlgorithmException;
 import java.security.PublicKey;
+import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.Set;
@@ -39,9 +49,10 @@ import javax.annotation.Nonnull;
 
 import ai.susi.json.JsonFile;
 import ai.susi.json.JsonTray;
+import ai.susi.mind.SusiLanguage;
 import ai.susi.mind.SusiMemory;
 import ai.susi.mind.SusiMind;
-
+import ai.susi.mind.SusiSkill;
 import ai.susi.server.APIException;
 import ai.susi.server.AccessTracker;
 import ai.susi.server.Accounting;
@@ -50,7 +61,7 @@ import ai.susi.server.Authorization;
 import ai.susi.server.ClientCredential;
 import ai.susi.server.ClientIdentity;
 import ai.susi.server.Settings;
-
+import ai.susi.tools.DateParser;
 import ai.susi.tools.IO;
 import ai.susi.tools.OS;
 
@@ -64,8 +75,9 @@ import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.storage.file.FileRepositoryBuilder;
 import org.eclipse.jgit.transport.RefSpec;
 import org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider;
+import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
-
 import org.apache.log4j.ConsoleAppender;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
@@ -892,5 +904,518 @@ public class DAO {
             throw new APIException(500, "No conflicts email template");
         }
         return result;
+    }
+    
+    public static JSONObject getSkillRating(String model, String group, String language, String skillname) {
+        // rating
+        JsonTray skillRating = DAO.skillRating;
+        if (skillRating.has(model)) {
+            JSONObject modelName = skillRating.getJSONObject(model);
+            if (modelName.has(group)) {
+                JSONObject groupName = modelName.getJSONObject(group);
+                if (groupName.has(language)) {
+                    JSONObject languageName = groupName.getJSONObject(language);
+                    if (languageName.has(skillname)) {
+                        JSONObject skillName = languageName.getJSONObject(skillname);
+
+                        if (!skillName.has("stars")) {
+                            JSONObject newFiveStarRating = new JSONObject();
+                            newFiveStarRating.put("one_star", 0);
+                            newFiveStarRating.put("two_star", 0);
+                            newFiveStarRating.put("three_star", 0);
+                            newFiveStarRating.put("four_star", 0);
+                            newFiveStarRating.put("five_star", 0);
+                            newFiveStarRating.put("avg_star", 0);
+                            newFiveStarRating.put("total_star", 0);
+
+                            skillName.put("stars", newFiveStarRating);
+                        }
+                        return skillName;
+                    }
+                }
+            }
+        }
+        JSONObject newRating=new JSONObject();
+        newRating.put("negative", "0");
+        newRating.put("positive", "0");
+        newRating.put("feedback_count", 0);
+        newRating.put("bookmark_count", 0);
+
+        JSONObject newFiveStarRating=new JSONObject();
+        newFiveStarRating.put("one_star", 0);
+        newFiveStarRating.put("two_star", 0);
+        newFiveStarRating.put("three_star", 0);
+        newFiveStarRating.put("four_star", 0);
+        newFiveStarRating.put("five_star", 0);
+        newFiveStarRating.put("avg_star", 0);
+        newFiveStarRating.put("total_star", 0);
+
+        newRating.put("stars", newFiveStarRating);
+
+        return newRating;
+    }
+
+    public static JSONArray getSupportedLanguages(String model, String group, String language, String skillname) {
+        // rating
+        JsonTray skillRating = DAO.skillSupportedLanguages;
+        if (skillRating.has(model)) {
+            JSONObject modelName = skillRating.getJSONObject(model);
+            if (modelName.has(group)) {
+                JSONArray groupName = modelName.getJSONArray(group);
+
+                for (int i = 0; i < groupName.length(); i++) {
+                    JSONArray supportedLanguages = groupName.getJSONArray(i);
+                    for (int j = 0; j < supportedLanguages.length(); j++) {
+                        JSONObject languageObject = supportedLanguages.getJSONObject(j);
+                        String supportedLanguage = languageObject.get("language").toString();
+                        String skillName = languageObject.get("name").toString();
+                        if (supportedLanguage.equalsIgnoreCase(language) && skillName.equalsIgnoreCase(skillname)) {
+                            return supportedLanguages;
+                        }
+                    }
+                }
+            }
+        }
+        JSONArray supportedLanguages = new JSONArray();
+        JSONObject languageObject = new JSONObject();
+        languageObject.put("language", language);
+        languageObject.put("name", skillname);
+        supportedLanguages.put(languageObject);
+        return supportedLanguages;
+    }
+
+    public static String getSkillModifiedTime(String model_name, String group_name, String language_name, String skill_name) {
+        // SKill Info
+        JsonTray skillInfo = DAO.skillInfo;
+        JSONObject modelName = new JSONObject();
+        JSONObject groupName = new JSONObject();
+        JSONObject languageName = new JSONObject();
+        JSONObject skillName = new JSONObject();
+        DateFormat dateFormatType = DateParser.iso8601Format;
+        String skillModifiedTime = dateFormatType.format(new Date(0));
+
+        if (skillInfo.has(model_name)) {
+            modelName = skillInfo.getJSONObject(model_name);
+            if (modelName.has(group_name)) {
+                groupName = modelName.getJSONObject(group_name);
+                if (groupName.has(language_name)) {
+                    languageName = groupName.getJSONObject(language_name);
+                    if (languageName.has(skill_name)) {
+                        skillName = languageName.getJSONObject(skill_name);
+                        if (skillName.has("lastModifiedTime")) {
+                            skillModifiedTime = skillName.getString("lastModifiedTime");
+                        } else {
+                            skillName.put("lastModifiedTime", skillModifiedTime);
+                        }
+                        return skillModifiedTime;
+                    }
+                }
+            }
+        }
+
+        skillName.put("lastModifiedTime",skillModifiedTime);
+        languageName.put(skill_name, skillName);
+        groupName.put(language_name, languageName);
+        modelName.put(group_name, groupName);
+        skillInfo.put(model_name, modelName, true);
+        return skillModifiedTime;
+    }
+
+    public static String getSkillCreationTime(String model_name, String group_name, String language_name, String skill_name, File skill_path) {
+        // Skill Info
+        JsonTray skillInfo = DAO.skillInfo;
+        JSONObject modelName = new JSONObject();
+        JSONObject groupName = new JSONObject();
+        JSONObject languageName = new JSONObject();
+        JSONObject skillName = new JSONObject();
+        DateFormat dateFormatType = DateParser.iso8601Format;
+        String skillCreationTime = dateFormatType.format(new Date(0));
+
+        if (skillInfo.has(model_name)) {
+            modelName = skillInfo.getJSONObject(model_name);
+            if (modelName.has(group_name)) {
+                groupName = modelName.getJSONObject(group_name);
+                if (groupName.has(language_name)) {
+                    languageName = groupName.getJSONObject(language_name);
+                    if (languageName.has(skill_name)) {
+                        skillName = languageName.getJSONObject(skill_name);
+                        if (skillName.has("creationTime")) {
+                            skillCreationTime = skillName.getString("creationTime");
+                        } else {
+                            skillCreationTime = getFileCreationTime(skill_path);
+                            skillName.put("creationTime", skillCreationTime );
+                        }
+                        return skillCreationTime;
+                    }
+                }
+            }
+        }
+
+        skillCreationTime = getFileCreationTime(skill_path);
+        skillName.put("creationTime",skillCreationTime);
+        languageName.put(skill_name, skillName);
+        groupName.put(language_name, languageName);
+        modelName.put(group_name, groupName);
+        skillInfo.put(model_name, modelName, true);
+        return skillCreationTime;
+    }
+
+    public static String getFileCreationTime(File skill_path) {
+
+        DateFormat dateFormatType = DateParser.iso8601Format;
+        String skillCreationTime = dateFormatType.format(new Date(0));
+
+        BasicFileAttributes attr = null;
+        Path p = Paths.get(skill_path.getPath());
+        try {
+            attr = Files.readAttributes(p, BasicFileAttributes.class);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        if(attr!=null){
+            FileTime fileCreationTime = attr.creationTime();
+            skillCreationTime = dateFormatType.format(new Date(fileCreationTime.toMillis()));
+        }
+        return skillCreationTime;
+    }
+
+    public static void sortByAvgStar(List<JSONObject> jsonValues, boolean ascending) {
+        // Get skills based on ratings
+        Collections.sort(jsonValues, new Comparator<JSONObject>() {
+            @Override
+            public int compare(JSONObject a, JSONObject b) {
+                Object valA, valB;
+                int result=0;
+
+                try {
+                    valA = a.opt("skill_rating");
+                    valB = b.opt("skill_rating");
+                    if (valA == null || !((valA instanceof JSONObject))) valA = new JSONObject().put("stars", new JSONObject().put("avg_star", 0.0f));
+                    if (valB == null || !((valB instanceof JSONObject))) valB = new JSONObject().put("stars", new JSONObject().put("avg_star", 0.0f));
+
+                    JSONObject starsAObject = ((JSONObject) valA).getJSONObject("stars");
+                    JSONObject starsBObject = ((JSONObject) valB).getJSONObject("stars");
+                    int starsA = starsAObject.has("total_star") ? starsAObject.getInt("total_star") : 0;
+                    int starsB = starsBObject.has("total_star") ? starsBObject.getInt("total_star") : 0;
+
+                    float avgA = starsAObject.getFloat("avg_star");
+                    float avgB = starsBObject.getFloat("avg_star");
+
+                    if ((starsA < 10 && starsB < 10) || (starsA >= 10 && starsB >= 10)) {
+                        result = ascending ? Float.compare(avgA, avgB) : Float.compare(avgB, avgA);
+                    } else if (starsA < 10) {
+                        return ascending ? -1 : 1;
+                    } else {
+                        return ascending ? 1 : -1;
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                return result;
+            }
+        });
+    }
+
+    public static void sortByCreationTime(List<JSONObject> jsonValues, boolean ascending) {
+        Collections.sort(jsonValues, new Comparator<JSONObject>() {
+            private static final String KEY_NAME = "creationTime";
+            @Override
+            public int compare(JSONObject a, JSONObject b) {
+                String valA = new String();
+                String valB = new String();
+                int result = 0;
+
+                try {
+                    valA = a.get(KEY_NAME).toString();
+                    valB = b.get(KEY_NAME).toString();
+                    result = ascending ? valA.compareToIgnoreCase(valB) : valB.compareToIgnoreCase(valA);
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+                return result;
+            }
+        });
+    }
+
+    public static void sortByModifiedTime(List<JSONObject> jsonValues, boolean ascending) {
+        Collections.sort(jsonValues, new Comparator<JSONObject>() {
+            private static final String KEY_NAME = "lastModifiedTime";
+            @Override
+            public int compare(JSONObject a, JSONObject b) {
+                String valA = new String();
+                String valB = new String();
+                int result = 0;
+
+                try {
+                    valA = a.get(KEY_NAME).toString();
+                    valB = b.get(KEY_NAME).toString();
+                    result = ascending ? valA.compareToIgnoreCase(valB) : valB.compareToIgnoreCase(valA);
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+                return result;
+            }
+        });
+    }
+
+    public static void sortBySkillName(List<JSONObject> jsonValues, boolean ascending) {
+        Collections.sort(jsonValues, new Comparator<JSONObject>() {
+            private static final String KEY_NAME = "skill_name";
+            @Override
+            public int compare(JSONObject a, JSONObject b) {
+                String valA = new String();
+                String valB = new String();
+
+                try {
+                    valA = a.get(KEY_NAME).toString();
+                    valB = b.get(KEY_NAME).toString();
+                } catch (JSONException e) {
+                    //do nothing
+                }
+                return ascending ? valA.compareToIgnoreCase(valB) : valB.compareToIgnoreCase(valA);
+            }
+        });
+    }
+
+    public static void sortByUsageCount(List<JSONObject> jsonValues, boolean ascending) {
+        Collections.sort(jsonValues, new Comparator<JSONObject>() {
+            @Override
+            public int compare(JSONObject a, JSONObject b) {
+                int valA;
+                int valB;
+                int result=0;
+
+                try {
+                    valA = a.getInt("usage_count");
+                    valB = b.getInt("usage_count");
+                    result = ascending ? Integer.compare(valA, valB) : Integer.compare(valB, valA);
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+                return result;
+            }
+        });
+    }
+
+    public static void sortByFeedbackCount(List<JSONObject> jsonValues, boolean ascending) {
+        Collections.sort(jsonValues, new Comparator<JSONObject>() {
+            @Override
+            public int compare(JSONObject a, JSONObject b) {
+                Object valA, valB;
+                int result=0;
+
+                try {
+                    valA = a.opt("skill_rating");
+                    valB = b.opt("skill_rating");
+                    if (valA == null || !(valA instanceof JSONObject) || ((JSONObject) valA).opt("feedback_count") == null) valA = new JSONObject().put("feedback_count", 0);
+                    if (valB == null || !(valB instanceof JSONObject) || ((JSONObject) valB).opt("feedback_count") == null) valB = new JSONObject().put("feedback_count", 0);
+
+                    result = ascending ?
+                            Integer.compare(
+                                    ((JSONObject) valA).getInt("feedback_count"),
+                                    ((JSONObject) valB).getInt("feedback_count")) :
+                            Integer.compare(
+                                    ((JSONObject) valB).getInt("feedback_count"),
+                                    ((JSONObject) valA).getInt("feedback_count")
+                    );
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+                return result;
+            }
+        });
+    }
+
+    public static boolean getSkillReviewStatus(String model, String group, String language, String skillname) {
+        // skill status
+        JsonTray skillStatus = DAO.skillStatus;
+        if (skillStatus.has(model)) {
+            JSONObject modelName = skillStatus.getJSONObject(model);
+            if (modelName.has(group)) {
+                JSONObject groupName = modelName.getJSONObject(group);
+                if (groupName.has(language)) {
+                    JSONObject languageName = groupName.getJSONObject(language);
+                    if (languageName.has(skillname)) {
+                        JSONObject skillName = languageName.getJSONObject(skillname);
+
+                        if (skillName.has("reviewed")) {
+                            return true;
+                        }
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
+    public static boolean getSkillEditStatus(String model, String group, String language, String skillname) {
+        // skill status
+        JsonTray skillStatus = DAO.skillStatus;
+        if (skillStatus.has(model)) {
+            JSONObject modelName = skillStatus.getJSONObject(model);
+            if (modelName.has(group)) {
+                JSONObject groupName = modelName.getJSONObject(group);
+                if (groupName.has(language)) {
+                    JSONObject languageName = groupName.getJSONObject(language);
+                    if (languageName.has(skillname)) {
+                        JSONObject skillName = languageName.getJSONObject(skillname);
+
+                        if (skillName.has("editable")) {
+                            return false;
+                        }
+                    }
+                }
+            }
+        }
+        return true;
+    }
+
+    public static boolean isStaffPick(String model, String group, String language, String skillname) {
+        // return true if skill is a staff pick
+        JsonTray skillStatus = DAO.skillStatus;
+        if (skillStatus.has(model)) {
+            JSONObject modelName = skillStatus.getJSONObject(model);
+            if (modelName.has(group)) {
+                JSONObject groupName = modelName.getJSONObject(group);
+                if (groupName.has(language)) {
+                    JSONObject languageName = groupName.getJSONObject(language);
+                    if (languageName.has(skillname)) {
+                        JSONObject skillName = languageName.getJSONObject(skillname);
+
+                        if (skillName.has("staffPick")) {
+                            return true;
+                        }
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
+    public static boolean isSystemSkill(String model, String group, String language, String skillname) {
+        // return true if skill is a system skill
+        JsonTray skillStatus = DAO.skillStatus;
+        if (skillStatus.has(model)) {
+            JSONObject modelName = skillStatus.getJSONObject(model);
+            if (modelName.has(group)) {
+                JSONObject groupName = modelName.getJSONObject(group);
+                if (groupName.has(language)) {
+                    JSONObject languageName = groupName.getJSONObject(language);
+                    if (languageName.has(skillname)) {
+                        JSONObject skillName = languageName.getJSONObject(skillname);
+
+                        if (skillName.has("systemSkill")) {
+                            return true;
+                        }
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
+    public static int getSkillUsage(String model, String group, String language, String skillname, int duration) {
+        // usage
+        int totalUsage = 0;
+        JsonTray skillUsage = DAO.skillUsage;
+        if (skillUsage.has(model)) {
+            JSONObject modelName = skillUsage.getJSONObject(model);
+            if (modelName.has(group)) {
+                JSONObject groupName = modelName.getJSONObject(group);
+                if (groupName.has(language)) {
+                    JSONObject languageName = groupName.getJSONObject(language);
+                    if (languageName.has(skillname)) {
+                        JSONArray skillName = languageName.getJSONArray(skillname);
+
+                        // Fetch skill usage data for sorting purpose.
+                        int startIndex = 0;
+                        if(duration >= 0) {
+                            startIndex = skillName.length() >= duration ? skillName.length()-duration : 0;
+                        }
+                        for (int i = startIndex; i<skillName.length(); i++)
+                        {
+                            JSONObject dayUsage = skillName.getJSONObject(i);
+                            totalUsage += dayUsage.getInt("count");
+                        }
+                        return totalUsage;
+                    }
+                    else {
+                        return 0;
+                    }
+                }
+            }
+        }
+        return 0;
+    }
+    
+    /**
+     * For some strange reason the skill name is requested here in lowercase, while the name may also be uppercase
+     * this should be fixed in the front-end, however we implement a patch here to circumvent the problem if possible
+     * Another strange effect is, that some file systems do match lowercase with uppercase (like in windows),
+     * so testing skill.exists() would return true even if the name does not exist exactly as given in the file system.
+     * @param languagepath
+     * @param skill_name
+     * @return the actual skill file if one exist or a skill file that is constructed from language and skill_name
+     */
+    public static File getSkillFileInLanguage(File languagepath, String skill_name, boolean null_if_not_found) {
+
+        String fn = skill_name + ".txt";
+        String[] list = languagepath.list();
+
+        // first try: the skill name may be same or similar to the skill file name
+        if(list !=null && list.length!=0){
+            for (String n: list) {
+                if (n.equals(fn) || n.toLowerCase().equals(fn)) {
+                    return new File(languagepath, n);
+                }
+            }
+        }
+
+        // second try: the skill name may be same or similar to the skill name within the skill description
+        // this is costly: we must parse the whole skill file
+        if(list !=null && list.length!=0){
+            for (String n: list) {
+                if (!n.endsWith(".txt") && !n.endsWith(".ezd")) continue;
+                File f = new File(languagepath, n);
+                try {
+                    SusiSkill.ID skillid = new SusiSkill.ID(f);
+                    SusiLanguage language = skillid.language();
+                    JSONObject json = SusiSkill.readLoTSkill(new BufferedReader(new FileReader(f)), language, skillid.getPath(), false);
+                    String sn = json.optString("skill_name");
+                    if (sn.equals(skill_name) || sn.toLowerCase().equals(skill_name) || sn.toLowerCase().replace(' ', '_').equals(skill_name)) {
+                        return new File(languagepath, n);
+                    }
+                } catch (JSONException | FileNotFoundException e) {
+                    continue;
+                }
+            }
+        }
+
+        // the final attempt is bad and may not succeed, but it's the only last thing left we could do.
+        return null_if_not_found ? null : new File(languagepath, fn);
+    }
+
+    /**
+     * the following method scans a given model for all files to see if it matches the skill name
+     * @param model a path to a model directory
+     * @param skill_name
+     * @return
+     */
+    public static File getSkillFileInModel(File model, String skill_name) {
+        String[] groups = model.list();
+        for (String group: groups) {
+            if (group.startsWith(".")) continue;
+            File gf = new File(model, group);
+            if (!gf.isDirectory()) continue;
+            String[] languages = gf.list();
+            for (String language: languages) {
+                if (language.startsWith(".")) continue;
+                File l = new File(gf, language);
+                if (!l.isDirectory()) continue;
+                File skill = getSkillFileInLanguage(l, skill_name, true);
+                if (skill != null) return skill;
+            }
+        }
+        return null;
     }
 }

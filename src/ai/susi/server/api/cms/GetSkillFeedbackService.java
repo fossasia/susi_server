@@ -22,20 +22,13 @@ package ai.susi.server.api.cms;
 import ai.susi.DAO;
 import ai.susi.json.JsonObjectWithDefault;
 import ai.susi.json.JsonTray;
-import ai.susi.mind.SusiSkill;
 import ai.susi.server.*;
 
 import org.json.JSONArray;
-import org.json.JSONException;
 import org.json.JSONObject;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.File;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.Iterator;
-import java.util.List;
 
 
 /**
@@ -72,7 +65,7 @@ public class GetSkillFeedbackService extends AbstractAPIHandler implements APIHa
         String language_name = call.get("language", "en");
         File language = new File(group, language_name);
         String skill_name = call.get("skill", null);
-        File skill = SusiSkill.getSkillFileInLanguage(language, skill_name, false);
+        File skill = DAO.getSkillFileInLanguage(language, skill_name, false);
 
         JSONObject result = new JSONObject();
 

@@ -22,11 +22,9 @@ package ai.susi.server.api.cms;
 import ai.susi.DAO;
 import ai.susi.json.JsonObjectWithDefault;
 import ai.susi.json.JsonTray;
-import ai.susi.mind.SusiSkill;
 import ai.susi.server.*;
 import org.json.JSONArray;
 import org.json.JSONObject;
-import scala.util.parsing.combinator.testing.Str;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.File;
@@ -67,12 +65,12 @@ public class UpdateSupportedLanguages extends AbstractAPIHandler implements APIH
         String language_name = call.get("language", "en");
         File language = new File(group, language_name);
         String skill_name = call.get("skill", null);
-        File skill = SusiSkill.getSkillFileInLanguage(language, skill_name, false);
+        File skill = DAO.getSkillFileInLanguage(language, skill_name, false);
 
         String new_language_name = call.get("new_language", null);
         File new_language = new File(group, new_language_name);
         String new_skill_name = call.get("new_skill", null);
-        File new_skill = SusiSkill.getSkillFileInLanguage(new_language, new_skill_name, false);
+        File new_skill = DAO.getSkillFileInLanguage(new_language, new_skill_name, false);
 
         JSONObject result = new JSONObject();
         result.put("accepted", false);

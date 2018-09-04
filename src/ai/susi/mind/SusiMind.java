@@ -23,8 +23,14 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.attribute.BasicFileAttributes;
+import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -38,11 +44,13 @@ import java.util.regex.Pattern;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.json.JSONTokener;
 
 import ai.susi.DAO;
 import ai.susi.server.ClientIdentity;
 import ai.susi.server.api.susi.ConsoleService;
 import ai.susi.tools.AIML2Susi;
+import ai.susi.tools.DateParser;
 
 /**
  * The mind learns skills and uses creativity to map intents with user utterances
@@ -138,7 +146,7 @@ public class SusiMind {
                     try {
                         JSONObject lesson = new JSONObject();
                         if (f.getName().endsWith(".json")) {
-                            lesson = SusiSkill.readJsonSkill(f);
+                            lesson = new JSONObject(new JSONTokener(new FileReader(f)));
                         }
                         if (f.getName().endsWith(".txt") || f.getName().endsWith(".ezd") || f.getName().endsWith(".lot")) {
                             SusiSkill.ID skillid = new SusiSkill.ID(f);
@@ -445,6 +453,94 @@ public class SusiMind {
             super(message);
         }
     }
+
+    // Function overloading - if duration parameter is not passed then use 7 as default value.
+    public JSONObject getSkillMetadata(String model, String group, String language, String skillname) {
+        return getSkillMetadata(model, group, language, skillname, 7);
+    }
+    
+    public JSONObject getSkillMetadata(String model, String group, String language, String skillname, int duration) {
+
+        JSONObject skillMetadata = new JSONObject(true)
+                .put("model", model)
+                .put("group", group)
+                .put("language", language);
+        File modelpath = new File(DAO.model_watch_dir, model);
+        File grouppath = new File(modelpath, group);
+        File languagepath = new File(grouppath, language);
+        File skillpath = DAO.getSkillFileInLanguage(languagepath, skillname, false);
+        DateFormat dateFormatType = DateParser.iso8601Format;
+        skillname = skillpath.getName().replaceAll(".txt", ""); // fixes the bad name (lowercased) to the actual right name
+
+        // default values
+        skillMetadata.put("developer_privacy_policy", JSONObject.NULL);
+        skillMetadata.put("descriptions",JSONObject.NULL);
+        skillMetadata.put("image", JSONObject.NULL);
+        skillMetadata.put("author", JSONObject.NULL);
+        skillMetadata.put("author_url", JSONObject.NULL);
+        skillMetadata.put("author_email", JSONObject.NULL);
+        skillMetadata.put("skill_name", JSONObject.NULL);
+        skillMetadata.put("protected", false);
+        skillMetadata.put("reviewed", false);
+        skillMetadata.put("editable", true);
+        skillMetadata.put("staffPick", false);
+        skillMetadata.put("systemSkill", false);
+        skillMetadata.put("terms_of_use", JSONObject.NULL);
+        skillMetadata.put("dynamic_content", false);
+        skillMetadata.put("examples", JSONObject.NULL);
+        skillMetadata.put("skill_rating", JSONObject.NULL);
+        skillMetadata.put("usage_count", 0);
+        skillMetadata.put("skill_tag", JSONObject.NULL);
+        skillMetadata.put("lastModifiedTime", dateFormatType.format(new Date(0)));
+        skillMetadata.put("creationTime", dateFormatType.format(new Date(0)));
+
+        // metadata
+        for (Map.Entry<SusiSkill.ID, SusiSkill> entry : getSkillMetadata().entrySet()) {
+            SusiSkill skill = entry.getValue();
+            SusiSkill.ID skillid = entry.getKey();
+            if (skillid.hasModel(model) &&
+                    skillid.hasGroup(group) &&
+                    skillid.hasLanguage(language) &&
+                    skillid.hasName(skillname)) {
+
+                skillMetadata.put("skill_name", skill.getSkillName() ==null ? JSONObject.NULL: skill.getSkillName());
+                skillMetadata.put("protected", skill.getProtectedSkill());
+                skillMetadata.put("developer_privacy_policy", skill.getDeveloperPrivacyPolicy() ==null ? JSONObject.NULL:skill.getDeveloperPrivacyPolicy());
+                skillMetadata.put("descriptions", skill.getDescription() ==null ? JSONObject.NULL:skill.getDescription());
+                skillMetadata.put("image", skill.getImage() ==null ? JSONObject.NULL: skill.getImage());
+                skillMetadata.put("author", skill.getAuthor()  ==null ? JSONObject.NULL:skill.getAuthor());
+                skillMetadata.put("author_url", skill.getAuthorURL() ==null ? JSONObject.NULL:skill.getAuthorURL());
+                skillMetadata.put("author_email", skill.getAuthorEmail() ==null ? JSONObject.NULL:skill.getAuthorEmail());
+                skillMetadata.put("terms_of_use", skill.getTermsOfUse() ==null ? JSONObject.NULL:skill.getTermsOfUse());
+                skillMetadata.put("dynamic_content", skill.getDynamicContent());
+                skillMetadata.put("examples", skill.getExamples() ==null ? JSONObject.NULL: skill.getExamples());
+                skillMetadata.put("skill_rating", DAO.getSkillRating(model, group, language, skillname));
+                skillMetadata.put("supported_languages", DAO.getSupportedLanguages(model, group, language, skillname));
+                skillMetadata.put("reviewed", DAO.getSkillReviewStatus(model, group, language, skillname));
+                skillMetadata.put("editable", DAO.getSkillEditStatus(model, group, language, skillname));
+                skillMetadata.put("staffPick", DAO.isStaffPick(model, group, language, skillname));
+                skillMetadata.put("systemSkill", DAO.isSystemSkill(model, group, language, skillname));
+                skillMetadata.put("usage_count", DAO.getSkillUsage(model, group, language, skillname, duration));
+                skillMetadata.put("skill_tag", skillname);
+                skillMetadata.put("lastModifiedTime", DAO.getSkillModifiedTime(model, group, language, skillname));
+                skillMetadata.put("creationTime", DAO.getSkillCreationTime(model, group, language, skillname, skillpath));
+            }
+        }
+
+        // file attributes
+        BasicFileAttributes attr = null;
+        Path p = Paths.get(skillpath.getPath());
+        try {
+            attr = Files.readAttributes(p, BasicFileAttributes.class);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        if(attr!=null){
+            skillMetadata.put("lastAccessTime" , attr.lastAccessTime());
+        }
+        return skillMetadata;
+    }
+
     
     public static void main(String[] args) {
         SusiMind mem = new SusiMind(null);

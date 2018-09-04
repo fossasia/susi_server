@@ -162,14 +162,14 @@ public class SusiService extends AbstractAPIHandler implements APIHandler {
         if ((persona != null && persona.length() > 0) || (privateSkill != null && userId.length() > 0 && group_name.length() > 0 && language.length() > 0 && skill_name.length() > 0)) {
             File skillfile = null;
             if (persona != null && persona.length() > 0) {
-              skillfile = SusiSkill.getSkillFileInModel(new File(DAO.model_watch_dir, "persona"), persona);
+              skillfile = DAO.getSkillFileInModel(new File(DAO.model_watch_dir, "persona"), persona);
             }
             else {
               // read the private skill
               File private_skill_dir = new File(DAO.private_skill_watch_dir,userId);
               File group_file = new File(private_skill_dir, group_name);
               File language_file = new File(group_file, language);
-              skillfile = SusiSkill.getSkillFileInLanguage(language_file, skill_name, false);
+              skillfile = DAO.getSkillFileInLanguage(language_file, skill_name, false);
               // extracting configuration settings of this private skill
               JsonTray chatbot = DAO.chatbot;
               JSONObject userName = new JSONObject();

@@ -20,16 +20,22 @@ package ai.susi.server.api.cms;
 
 import ai.susi.DAO;
 import ai.susi.json.JsonObjectWithDefault;
-import ai.susi.mind.SusiSkill;
-import ai.susi.server.*;
+import ai.susi.server.APIException;
+import ai.susi.server.APIHandler;
+import ai.susi.server.AbstractAPIHandler;
+import ai.susi.server.Authorization;
+import ai.susi.server.Query;
+import ai.susi.server.ServiceResponse;
+import ai.susi.server.UserRole;
+
 import org.json.JSONArray;
-import org.json.JSONException;
 import org.json.JSONObject;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.File;
-import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * This Servlet gives a API Endpoint to list all the Skills based on standard metrics given its model and language.
@@ -107,12 +113,12 @@ public class SkillMetricsDataService extends AbstractAPIHandler implements APIHa
 
                     for (String skill_name : fileList) {
                         skill_name = skill_name.replace(".txt", "");
-                        JSONObject skillMetadata = SusiSkill.getSkillMetadata(model_name, temp_group_name, language_name, skill_name, duration);
+                        JSONObject skillMetadata = DAO.susi.getSkillMetadata(model_name, temp_group_name, language_name, skill_name, duration);
 
                         jsonArray.put(skillMetadata);
                         skillObject.put(skill_name, skillMetadata);
 
-                        if(SusiSkill.isStaffPick(model_name, temp_group_name, language_name, skill_name)) {
+                        if (DAO.isStaffPick(model_name, temp_group_name, language_name, skill_name)) {
                             staffPicks.put(skillMetadata);
                         }
                     }
@@ -130,12 +136,12 @@ public class SkillMetricsDataService extends AbstractAPIHandler implements APIHa
 
                 for (String skill_name : fileList) {
                     skill_name = skill_name.replace(".txt", "");
-                    JSONObject skillMetadata = SusiSkill.getSkillMetadata(model_name, group_name, language_name, skill_name, duration);
+                    JSONObject skillMetadata = DAO.susi.getSkillMetadata(model_name, group_name, language_name, skill_name, duration);
 
                     jsonArray.put(skillMetadata);
                     skillObject.put(skill_name, skillMetadata);
 
-                    if(SusiSkill.isStaffPick(model_name, group_name, language_name, skill_name)) {
+                    if (DAO.isStaffPick(model_name, group_name, language_name, skill_name)) {
                         staffPicks.put(skillMetadata);
                     }
                 }
@@ -157,37 +163,37 @@ public class SkillMetricsDataService extends AbstractAPIHandler implements APIHa
         }
 
         // Get skills based on creation date - Returns latest skills
-        SusiSkill.sortByCreationTime(jsonValues, false);
+        DAO.sortByCreationTime(jsonValues, false);
 
         JSONArray creationDateData = getSlicedArray(jsonValues, count);
         skillMetrics.put("newest", creationDateData);
 
          // Get skills based on latest modified
-        SusiSkill.sortByModifiedTime(jsonValues, false);
+        DAO.sortByModifiedTime(jsonValues, false);
 
         JSONArray modifiedDateData = getSlicedArray(jsonValues, count);
         skillMetrics.put("latest", modifiedDateData);
 
         // Get skills based on ratings
-        SusiSkill.sortByAvgStar(jsonValues, false);
+        DAO.sortByAvgStar(jsonValues, false);
 
         JSONArray ratingsData = getSlicedArray(jsonValues, count);
         skillMetrics.put("rating", ratingsData);
 
         // Get skills based on usage count
-        SusiSkill.sortByUsageCount(jsonValues, false);
+        DAO.sortByUsageCount(jsonValues, false);
 
         JSONArray usageData = getSlicedArray(jsonValues, count);
         skillMetrics.put("usage", usageData);
 
         // Get skills based on feedback count
-        SusiSkill.sortByFeedbackCount(jsonValues, false);
+        DAO.sortByFeedbackCount(jsonValues, false);
 
         JSONArray feedbackData = getSlicedArray(jsonValues, count);
         skillMetrics.put("feedback", feedbackData);
 
         // Get skills based on ratings
-        SusiSkill.sortByAvgStar(staffPicksList, false);
+        DAO.sortByAvgStar(staffPicksList, false);
 
         JSONArray staffPicksArray = getSlicedArray(staffPicksList, count);
         skillMetrics.put("staffPicks", staffPicksArray);
@@ -202,7 +208,7 @@ public class SkillMetricsDataService extends AbstractAPIHandler implements APIHa
                     }
                 }
                 // Get skills based on ratings of a particular group
-                SusiSkill.sortByAvgStar(groupJsonValues, false);
+                DAO.sortByAvgStar(groupJsonValues, false);
 
                 JSONArray topGroup = new JSONArray();
                 topGroup = getSlicedArray(groupJsonValues, count);

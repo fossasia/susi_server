@@ -3,7 +3,6 @@ package ai.susi.server.api.cms;
 import ai.susi.DAO;
 import ai.susi.json.JsonObjectWithDefault;
 import ai.susi.json.JsonTray;
-import ai.susi.mind.SusiSkill;
 import ai.susi.server.*;
 import org.apache.commons.lang3.StringUtils;
 import org.json.JSONArray;
@@ -203,7 +202,7 @@ public class ListSkillService extends AbstractAPIHandler implements APIHandler {
                     listFilesForFolder(language, fileList);
                     for (String skill_name : fileList) {
                         skill_name = skill_name.replace(".txt", "");
-                        JSONObject skillMetadata = SusiSkill.getSkillMetadata(model_name, temp_group_name, language_name, skill_name, duration);
+                        JSONObject skillMetadata = DAO.susi.getSkillMetadata(model_name, temp_group_name, language_name, skill_name, duration);
 
                         if(shouldReturnSkillInResponse(skillMetadata, reviewed, staff_picks)) {
                             jsonArray.put(skillMetadata);
@@ -226,7 +225,7 @@ public class ListSkillService extends AbstractAPIHandler implements APIHandler {
                 listFilesForFolder(language, fileList);
                 for (String skill_name : fileList) {
                     skill_name = skill_name.replace(".txt", "");
-                    JSONObject skillMetadata = SusiSkill.getSkillMetadata(model_name, group_name, language_name, skill_name, duration);
+                    JSONObject skillMetadata = DAO.susi.getSkillMetadata(model_name, group_name, language_name, skill_name, duration);
                     if(shouldReturnSkillInResponse(skillMetadata, reviewed, staff_picks)) {
                         jsonArray.put(skillMetadata);
                         skillObject.put(skill_name, skillMetadata);
@@ -264,21 +263,21 @@ public class ListSkillService extends AbstractAPIHandler implements APIHandler {
 
             if (filter_type.equals("creation_date")) {
                 dateFilter = true;
-                SusiSkill.sortByCreationTime(jsonValues, filter_name.equals("ascending"));
+                DAO.sortByCreationTime(jsonValues, filter_name.equals("ascending"));
             } else if (filter_type.equals("modified_date")) {
                 dateFilter = true;
-                SusiSkill.sortByModifiedTime(jsonValues, filter_name.equals("ascending"));
+                DAO.sortByModifiedTime(jsonValues, filter_name.equals("ascending"));
             } else if (filter_type.equals("lexicographical")) {
-            	SusiSkill.sortBySkillName(jsonValues, filter_name.equals("ascending"));
+                DAO.sortBySkillName(jsonValues, filter_name.equals("ascending"));
             }
             else if (filter_type.equals("rating")) {
-                SusiSkill.sortByAvgStar(jsonValues, filter_name.equals("ascending"));
+                DAO.sortByAvgStar(jsonValues, filter_name.equals("ascending"));
             }
             else if (filter_type.equals("usage")) {
-                SusiSkill.sortByUsageCount(jsonValues, filter_name.equals("ascending"));
+                DAO.sortByUsageCount(jsonValues, filter_name.equals("ascending"));
             }
             else if (filter_type.equals("feedback")) {
-                SusiSkill.sortByFeedbackCount(jsonValues, filter_name.equals("ascending"));
+                DAO.sortByFeedbackCount(jsonValues, filter_name.equals("ascending"));
             }
             for (int i = 0; i < jsonArray.length(); i++) {
                 if (i < offset ) {

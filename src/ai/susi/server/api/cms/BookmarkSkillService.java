@@ -67,7 +67,7 @@ public class BookmarkSkillService extends AbstractAPIHandler implements APIHandl
         String language_name = call.get("language", "en");
         File language = new File(group, language_name);
         String skill_name = call.get("skill", null);
-        File skill = SusiSkill.getSkillFileInLanguage(language, skill_name, false);
+        File skill = DAO.getSkillFileInLanguage(language, skill_name, false);
         String user_bookmark = call.get("bookmark", null);
         Integer skill_bookmark;
 

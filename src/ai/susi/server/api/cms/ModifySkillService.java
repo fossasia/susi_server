@@ -4,7 +4,6 @@ import ai.susi.DAO;
 import ai.susi.json.JsonObjectWithDefault;
 import ai.susi.json.JsonTray;
 import org.json.JSONObject;
-import ai.susi.mind.SusiSkill;
 import ai.susi.server.APIException;
 import ai.susi.server.APIHandler;
 import ai.susi.server.AbstractAPIHandler;
@@ -17,10 +16,6 @@ import ai.susi.server.RemoteAccess;
 import ai.susi.server.ServiceResponse;
 import ai.susi.server.UserRole;
 import ai.susi.tools.DateParser;
-
-import org.eclipse.jgit.api.Git;
-import org.eclipse.jgit.api.errors.GitAPIException;
-import org.json.JSONObject;
 
 import javax.imageio.ImageIO;
 import javax.servlet.ServletException;
@@ -143,7 +138,7 @@ public class ModifySkillService extends AbstractAPIHandler implements APIHandler
             if (skill_name == null) {
                 skill_name = "";
             }
-            File skill = SusiSkill.getSkillFileInLanguage(language, skill_name, false);
+            File skill = DAO.getSkillFileInLanguage(language, skill_name, false);
             skill_name = skill.getName().replaceAll("\\.txt", "");
             // GET MODIFIED VALUES HERE
             String modified_model_name = call.getParameter("NewModel");

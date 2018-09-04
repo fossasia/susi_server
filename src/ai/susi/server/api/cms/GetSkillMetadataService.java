@@ -21,14 +21,12 @@ package ai.susi.server.api.cms;
 
 import ai.susi.DAO;
 import ai.susi.json.JsonObjectWithDefault;
-import ai.susi.mind.SusiSkill;
 import ai.susi.server.*;
 import ai.susi.json.JsonTray;
 import org.json.JSONObject;
 
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpServletRequest;
-import java.io.IOException;
 
 /**
  This Servlet gives a API Endpoint to list meta for a Skill. Given its model, group and language and skill.
@@ -96,7 +94,7 @@ public class GetSkillMetadataService extends AbstractAPIHandler implements APIHa
         }
 
         else {
-            JSONObject skillMetadata = SusiSkill.getSkillMetadata(model, group, language, skillname);
+            JSONObject skillMetadata = DAO.susi.getSkillMetadata(model, group, language, skillname);
             JSONObject json = new JSONObject(true);
             json.put("skill_metadata", skillMetadata);
             json.put("accepted", true);

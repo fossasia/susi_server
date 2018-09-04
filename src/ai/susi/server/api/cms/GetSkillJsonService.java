@@ -21,7 +21,6 @@ package ai.susi.server.api.cms;
 
 import ai.susi.DAO;
 import ai.susi.json.JsonObjectWithDefault;
-import ai.susi.mind.SusiSkill;
 import ai.susi.server.*;
 import org.json.JSONObject;
 
@@ -90,7 +89,7 @@ public class GetSkillJsonService extends AbstractAPIHandler implements APIHandle
         String language_name = call.get("language", "en");
         File language = new File(group, language_name);
         String skill_name = call.get("skill", "wikipedia");
-        File skill = SusiSkill.getSkillFileInLanguage(language, skill_name, false);
+        File skill = DAO.getSkillFileInLanguage(language, skill_name, false);
 
         try {
             String content = new String(Files.readAllBytes(skill.toPath()));

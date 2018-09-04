@@ -3,9 +3,7 @@ package ai.susi.server.api.cms;
 import ai.susi.DAO;
 import ai.susi.json.JsonObjectWithDefault;
 import ai.susi.json.JsonTray;
-import org.json.JSONArray;
 import org.json.JSONObject;
-import ai.susi.mind.SusiSkill;
 import ai.susi.server.APIHandler;
 import ai.susi.server.AbstractAPIHandler;
 import ai.susi.server.Authentication;
@@ -19,7 +17,6 @@ import ai.susi.tools.DateParser;
 
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
-import org.json.JSONObject;
 
 import javax.imageio.ImageIO;
 import javax.servlet.ServletException;
@@ -40,10 +37,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.sql.Timestamp;
-import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.nio.file.attribute.BasicFileAttributes;
-import java.nio.file.attribute.FileTime;
 import java.text.DateFormat;
 import java.util.Date;
 
@@ -130,7 +124,7 @@ public class CreateSkillService extends AbstractAPIHandler implements APIHandler
                     }
                     File language = new File(group, language_name);
                     String skill_name = req.getParameter("skill");
-                    File skill = SusiSkill.getSkillFileInLanguage(language, skill_name, false);
+                    File skill = DAO.getSkillFileInLanguage(language, skill_name, false);
 
                     String image_name = req.getParameter("image_name");
 

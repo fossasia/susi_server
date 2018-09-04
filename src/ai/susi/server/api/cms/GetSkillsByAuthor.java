@@ -7,12 +7,9 @@ import ai.susi.mind.SusiSkill;
 import ai.susi.server.*;
 import ai.susi.tools.TimeoutMatcher;
 import org.json.JSONArray;
-import org.json.JSONException;
 import org.json.JSONObject;
 
-import javax.mail.Folder;
 import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
 import java.io.File;
 import java.util.*;
 import java.util.regex.Pattern;
@@ -99,7 +96,7 @@ public class GetSkillsByAuthor extends AbstractAPIHandler implements APIHandler 
 
                     for (String skill_name : fileList) {
                         skill_name = skill_name.replace(".txt", "");
-                        JSONObject skillMetadata = SusiSkill.getSkillMetadata(model_name, temp_group_name, language_name, skill_name);
+                        JSONObject skillMetadata = DAO.susi.getSkillMetadata(model_name, temp_group_name, language_name, skill_name);
 
                         if(skillMetadata.get("author_email").equals(author_email)) {
                             skillMetadata.put("skill_name", skill_name);
@@ -119,7 +116,7 @@ public class GetSkillsByAuthor extends AbstractAPIHandler implements APIHandler 
 
                 for (String skill_name : fileList) {
                     skill_name = skill_name.replace(".txt", "");
-                    JSONObject skillMetadata = SusiSkill.getSkillMetadata(model_name, group_name, language_name, skill_name);
+                    JSONObject skillMetadata = DAO.susi.getSkillMetadata(model_name, group_name, language_name, skill_name);
 
                     if(skillMetadata.get("author_email").equals(author_email)) {
                         skillMetadata.put("skill_name", skill_name);
