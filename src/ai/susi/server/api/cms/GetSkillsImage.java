@@ -52,11 +52,7 @@ public class GetSkillsImage extends AbstractAPIHandler implements APIHandler {
 
     @Override
     public ServiceResponse serviceImpl(Query call, HttpServletResponse response, Authorization rights, final JsonObjectWithDefault permissions) {
-        try {
-            DAO.susi.observe(); // get a database update
-        } catch (IOException e) {
-            DAO.log(e.getMessage());
-        }
+        DAO.observe(); // get a database update
 
         String model = call.get("model", "");
         String group = call.get("group", "");

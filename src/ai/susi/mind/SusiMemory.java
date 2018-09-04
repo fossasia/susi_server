@@ -74,9 +74,11 @@ public class SusiMemory {
     private Map<String, Map<String, JsonTray>> intentsets;
     private Map<String, AtomicInteger> unanswered;
     
-    public SusiMemory(File chatlog, File skilllog, int attention) {
-        this.chatlog = chatlog;
-        this.skilllog = skilllog;
+    public SusiMemory(File susi_chatlog_dir, File susi_skilllog_dir, int attention) {
+        if (susi_chatlog_dir != null) susi_chatlog_dir.mkdirs();
+        if (susi_skilllog_dir != null) susi_skilllog_dir.mkdirs();
+        this.chatlog = susi_chatlog_dir;
+        this.skilllog = susi_skilllog_dir;
         if (this.skilllog != null) try {FileUtils.cleanDirectory(this.skilllog);} catch (IOException e) {} // do this only as long as we are in a migration phase
         this.attention = attention;
         this.memories = new ConcurrentHashMap<>();

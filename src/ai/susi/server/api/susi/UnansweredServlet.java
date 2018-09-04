@@ -49,7 +49,7 @@ public class UnansweredServlet extends HttpServlet {
         Query post = RemoteAccess.evaluate(request);
 
         final StringBuilder buffer = new StringBuilder(1000);
-        List<TokenMapList> tokenstats = DAO.susi.unanswered2tokenizedstats();
+        List<TokenMapList> tokenstats = DAO.susi_memory.unanswered2tokenizedstats();
         tokenstats.forEach(tml -> {
             LinkedHashMap<String, Integer> m = tml.getMap();
             buffer.append("TOKEN \"");

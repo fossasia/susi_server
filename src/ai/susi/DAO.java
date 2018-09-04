@@ -39,6 +39,7 @@ import javax.annotation.Nonnull;
 
 import ai.susi.json.JsonFile;
 import ai.susi.json.JsonTray;
+import ai.susi.mind.SusiMemory;
 import ai.susi.mind.SusiMind;
 
 import ai.susi.server.APIException;
@@ -91,6 +92,7 @@ import org.apache.log4j.PatternLayout;
  */
 public class DAO {
 
+    public final static int ATTENTION_TIME = 5;
     private final static String ACCESS_DUMP_FILE_PREFIX = "access_";
     public  static File conf_dir, bin_dir, html_dir, data_dir, skill_status_dir, susi_chatlog_dir, susi_skilllog_dir, draft_dir, model_watch_dir, susi_skill_repo, private_skill_watch_dir, susi_private_skill_repo, deleted_skill_dir, system_keys;
     public static String conflictsPlaceholder = "%CONFLICTS%";
@@ -142,8 +144,12 @@ public class DAO {
         logger.setLevel(Level.INFO);
     }
 
-    // built-in artificial intelligence
+    // create the mind layers (all have a common memory)
+    public static SusiMemory susi_memory;
+    public static SusiMind susi_operation_linguistics; // this is the top mind layer
+    public static SusiMind susi_operation_skills;      // this is the bottom mind layer
     public static SusiMind susi;
+    
 
     /**
      * initialize the DAO
@@ -171,7 +177,15 @@ public class DAO {
         if (!susi_chatlog_dir.exists()) susi_chatlog_dir.mkdirs();
         if (!susi_skilllog_dir.exists()) susi_skilllog_dir.mkdirs();
         if (!draft_dir.exists()) susi_skilllog_dir.mkdirs();
-        // TODO:
+        
+        // initialize the memory as a background task to prevent that this blocks too much
+        susi_memory = new SusiMemory(susi_chatlog_dir, susi_skilllog_dir, ATTENTION_TIME);
+        new Thread() {
+            public void run() {
+                susi_memory.initializeMemory();
+            }
+        }.start();
+        
         deleted_skill_dir = new File(new File(DAO.data_dir, "deleted_skill_dir"), "models");
 
         if(!deleted_skill_dir.exists()){
@@ -189,7 +203,7 @@ public class DAO {
         // wake up susi
         SusiMind.Layer system_skills_general = new SusiMind.Layer("General", new File(new File(conf_dir, "system_skills"), "general"), true);
         SusiMind.Layer system_skills_localmode = new SusiMind.Layer("Local", new File(new File(conf_dir, "system_skills"), "localmode"), true);
-        susi = new SusiMind(susi_chatlog_dir, susi_skilllog_dir);
+        susi = new SusiMind(susi_memory);
         susi.addLayer(system_skills_general);
         if (model_watch_dir.exists()) {
             SusiMind.Layer model_skills = new SusiMind.Layer("Model", new File(model_watch_dir, "general"), false);
@@ -199,13 +213,6 @@ public class DAO {
             susi.addLayer(system_skills_localmode);
             susi.addLayer(susi_generic_skills_media_discovery);
         }
-
-        // initialize the memory as a background task to prevent that this blocks too much
-        new Thread() {
-            public void run() {
-                susi.initializeMemory();
-            }
-        }.start();
 
         // initialize public and private keys
         public_settings = new Settings(new File("data/settings/public.settings.json"));
@@ -442,6 +449,14 @@ public class DAO {
         log("finished DAO initialization");
     }
 
+    public static void observe() {
+        try {
+            susi.observe(); // get a database update
+        } catch (IOException e) {
+            DAO.log(e.getMessage());
+        }
+    }
+    
     public static File getAssetFile(String screen_name, String id_str, String file) {
         String letter0 = ("" + screen_name.charAt(0)).toLowerCase();
         String letter1 = ("" + screen_name.charAt(1)).toLowerCase();

@@ -65,7 +65,7 @@ public class SkillLogService extends AbstractAPIHandler implements APIHandler {
 
         JSONArray cognitions = new JSONArray();
         try {
-            SusiAwareness awareness = new SusiAwareness(DAO.susi.getMemories().getSkillLogPath(skill), count);
+            SusiAwareness awareness = new SusiAwareness(DAO.susi_memory.getSkillLogPath(skill), count);
             awareness.forEach(cognition -> cognitions.put(cognition.getJSON()));
             
         } catch (IOException e) {

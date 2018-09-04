@@ -46,11 +46,7 @@ public class MindService extends AbstractAPIHandler implements APIHandler {
     @Override
     public ServiceResponse serviceImpl(Query post, HttpServletResponse response, Authorization user, final JsonObjectWithDefault permissions) throws APIException {
 
-        try {
-            DAO.susi.observe(); // get a database update
-        } catch (IOException e) {
-            DAO.log(e.getMessage());
-        }
+        DAO.observe(); // get a database update
         
         JSONObject json = DAO.susi.getMind();
         return new ServiceResponse(json);

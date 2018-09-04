@@ -89,11 +89,7 @@ public class SkillMetricsDataService extends AbstractAPIHandler implements APIHa
             count = 10;
         }
 
-        try {
-            DAO.susi.observe(); // get a database update
-        } catch (IOException e) {
-            DAO.severe(e.getMessage());
-        }
+        DAO.observe(); // get a database update
         
         // Returns susi skills list of all groups
         if (group_name.equals("All")) {

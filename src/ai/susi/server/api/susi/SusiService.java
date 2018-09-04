@@ -95,17 +95,13 @@ public class SusiService extends AbstractAPIHandler implements APIHandler {
             exclude_default_skills = true;
         }
 
-        try {
-            DAO.susi.observe(); // get a database update
-        } catch (IOException e) {
-            DAO.severe(e.getMessage());
-        }
+        DAO.observe(); // get a database update
 
         SusiThought recall = null;
         if (dream == null || dream.length() == 0 || persona == null || persona.length() == 0) {
             // compute a recall
             SusiArgument observation_argument = new SusiArgument();
-            List<SusiCognition> cognitions = DAO.susi.getMemories().getCognitions(user.getIdentity().getClient());
+            List<SusiCognition> cognitions = DAO.susi_memory.getCognitions(user.getIdentity().getClient());
             cognitions.forEach(cognition -> observation_argument.think(cognition.recallDispute()));
             recall = observation_argument.mindmeld(false);
 
@@ -124,7 +120,7 @@ public class SusiService extends AbstractAPIHandler implements APIHandler {
         if (instant != null && instant.length() > 0) try {
             instant = instant.replaceAll("\\\\n", "\n"); // yes, the number of "\" is correct
             // fill an empty mind with the skilltext
-            SusiMind instantMind = new SusiMind(DAO.susi_chatlog_dir, DAO.susi_skilllog_dir); // we need the memory directory here to get a share on the memory of previous dialoges, otherwise we cannot test call-back questions
+            SusiMind instantMind = new SusiMind(DAO.susi_memory); // we need the memory directory here to get a share on the memory of previous dialoges, otherwise we cannot test call-back questions
             JSONObject rules = SusiSkill.readLoTSkill(new BufferedReader(new InputStreamReader(new ByteArrayInputStream(instant.getBytes(StandardCharsets.UTF_8)), StandardCharsets.UTF_8)), SusiLanguage.unknown, "instant", true);
             File origin = new File("file://instant");
             instantMind.learn(rules, origin);
@@ -149,7 +145,7 @@ public class SusiService extends AbstractAPIHandler implements APIHandler {
             text = text + "\n\nwake up|stop dream|stop dreaming|end dream|end dreaming\ndreaming disabled^^>_etherpad_dream\n\n";
             text = text + "\n\ndream *\nI am currently dreaming $_etherpad_dream$, first wake up before dreaming again\n\n";
             // fill an empty mind with the dream
-            SusiMind dreamMind = new SusiMind(DAO.susi_chatlog_dir, DAO.susi_skilllog_dir); // we need the memory directory here to get a share on the memory of previous dialoges, otherwise we cannot test call-back questions
+            SusiMind dreamMind = new SusiMind(DAO.susi_memory); // we need the memory directory here to get a share on the memory of previous dialoges, otherwise we cannot test call-back questions
             JSONObject rules = SusiSkill.readLoTSkill(new BufferedReader(new InputStreamReader(new ByteArrayInputStream(text.getBytes(StandardCharsets.UTF_8)), StandardCharsets.UTF_8)), SusiLanguage.unknown, dream, true);
             File origin = new File("file://" + dream);
             dreamMind.learn(rules, origin);
@@ -213,7 +209,7 @@ public class SusiService extends AbstractAPIHandler implements APIHandler {
                 text = text + "\n\n* conscious mode|* conscious|conscious *\n$1$>_persona_awake is now conscious\n\nsleep|forget yourself|no yourself|unconscious|unconscious mode|That's enough|* dreamless slumber|Freeze|Cease * functions\nPersona will sleep now. Unconscious state activated.^^>_persona_awake\n\n";
 
                 // fill an empty mind with the dream
-                SusiMind awakeMind = new SusiMind(DAO.susi_chatlog_dir, DAO.susi_skilllog_dir); // we need the memory directory here to get a share on the memory of previous dialoges, otherwise we cannot test call-back questions
+                SusiMind awakeMind = new SusiMind(DAO.susi_memory); // we need the memory directory here to get a share on the memory of previous dialoges, otherwise we cannot test call-back questions
                 JSONObject rules = SusiSkill.readLoTSkill(new BufferedReader(new InputStreamReader(new ByteArrayInputStream(text.getBytes(StandardCharsets.UTF_8)), StandardCharsets.UTF_8)), SusiLanguage.unknown, skillfile.getAbsolutePath(), false);
                 awakeMind.learn(rules, skillfile);
                 SusiSkill.ID skillid = new SusiSkill.ID(skillfile);
@@ -233,7 +229,7 @@ public class SusiService extends AbstractAPIHandler implements APIHandler {
         // answer with built-in intents
         SusiCognition cognition = new SusiCognition(q, timezoneOffset, latitude, longitude, countryCode, countryName, language, deviceType, count, user.getIdentity(), minds.toArray(new SusiMind[minds.size()]));
         if (cognition.getAnswers().size() > 0) try {
-            DAO.susi.getMemories().addCognition(user.getIdentity().getClient(), cognition);
+            DAO.susi_memory.addCognition(user.getIdentity().getClient(), cognition);
         } catch (IOException e) {
             DAO.severe(e.getMessage());
         }

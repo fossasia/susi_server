@@ -263,11 +263,7 @@ public class ConsoleService extends AbstractAPIHandler implements APIHandler {
         // parameters
         String q = post.get("q", "");
         //int timezoneOffset = post.get("timezoneOffset", 0);
-        try {
-            DAO.susi.observe(); // learn new console intents if there are new one
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        DAO.observe(); // get a database update
         return new ServiceResponse(dbAccess.inspire(q).toJSON());
     }
     

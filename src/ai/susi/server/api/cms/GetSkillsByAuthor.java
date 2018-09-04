@@ -48,11 +48,7 @@ public class GetSkillsByAuthor extends AbstractAPIHandler implements APIHandler 
     @Override
     public ServiceResponse serviceImpl(Query call, HttpServletResponse response, Authorization rights, final JsonObjectWithDefault permissions) throws APIException {
         result= new JSONObject();
-        try {
-            DAO.susi.observe(); // get a database update
-        } catch (IOException e) {
-            DAO.log(e.getMessage());
-        }
+        DAO.observe(); // get a database update
 
         String author = call.get("author",null);
         String author_email = call.get("author_email",null);

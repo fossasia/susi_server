@@ -37,7 +37,7 @@ public class SusiTutorialTest {
         SusiCognition cognition = new SusiCognition(q, 0, 0, 0, "", "", "en", "Others",1, identity, DAO.susi);
         JSONObject json = cognition.getJSON();
         try {
-            DAO.susi.getMemories().addCognition(identity.getClient(), cognition);
+            DAO.susi_memory.addCognition(identity.getClient(), cognition);
             JSONArray a = json.getJSONArray("answers");
             if (a.length() == 0) return "";
             String answer = a

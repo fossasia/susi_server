@@ -40,8 +40,6 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import ai.susi.DAO;
-import ai.susi.json.JsonTray;
-import ai.susi.mind.SusiMemory.TokenMapList;
 import ai.susi.server.ClientIdentity;
 import ai.susi.server.api.susi.ConsoleService;
 import ai.susi.tools.AIML2Susi;
@@ -51,13 +49,9 @@ import ai.susi.tools.AIML2Susi;
  */
 public class SusiMind {
     
-    public final static int ATTENTION_TIME = 5;
-    
     private final Map<String, Set<SusiIntent>> intenttrigger; // a map from a keyword to a set of intents
     private final Map<SusiSkill.ID, SusiSkill> skillMetadata; // a map from skill path to description
-    private final Map<SusiSkill.ID, String> skillImage; // a map from skill path to skill image
     private final List<Layer> layers;
-    private final File susi_chatlog_dir, susi_skilllog_dir; // a path where the memory looks for new additions of knowledge with memory files
     private final Map<File, Long> observations; // a mapping of mind memory files to the time when the file was read the last time
     private final SusiMemory memories; // conversation logs are memories
     private SusiSkill activeSkill;
@@ -82,18 +76,13 @@ public class SusiMind {
         }
     }
     
-    public SusiMind(File susi_chatlog_dir, File susi_skilllog_dir) {
+    public SusiMind(SusiMemory memory) {
         // initialize class objects
         this.layers = new ArrayList<>();
-        this.susi_chatlog_dir = susi_chatlog_dir;
-        this.susi_skilllog_dir = susi_skilllog_dir;
-        if (this.susi_chatlog_dir != null) this.susi_chatlog_dir.mkdirs();
-        if (this.susi_skilllog_dir != null) this.susi_skilllog_dir.mkdirs();
         this.intenttrigger = new ConcurrentHashMap<>();
         this.observations = new HashMap<>();
-        this.memories = new SusiMemory(susi_chatlog_dir, susi_skilllog_dir, ATTENTION_TIME);
+        this.memories = memory;
         this.skillMetadata = new TreeMap<>();
-        this.skillImage = new TreeMap<>();
         // learn all available intents
         try {observe();} catch (IOException e) {
             e.printStackTrace();
@@ -109,28 +98,12 @@ public class SusiMind {
         return this;
     }
     
-    public void initializeMemory() {
-        this.memories.initializeMemory();
-    }
-
-    public SusiMemory getMemories() {
-        return this.memories;
-    }
-    
     public void setActiveSkill(SusiSkill skill) {
         this.activeSkill = skill;
     }
     
     public SusiSkill getActiveSkill() {
         return this.activeSkill;
-    }
-    
-    public Map<String, Integer> getUnanswered() {
-        return this.memories.getUnanswered();
-    }
-    
-    public List<TokenMapList> unanswered2tokenizedstats() {
-        return this.memories.unanswered2tokenizedstats();
     }
     
     public Set<String> getSkillExamples(SusiSkill.ID id) {
@@ -265,7 +238,7 @@ public class SusiMind {
         this.skillMetadata.put(skillid, skill);
         
         // finally remove patterns in the memory that are known in a background process
-        new Thread(new Runnable() {
+        if (this.memories != null) new Thread(new Runnable() {
             @Override
             public void run() {
                 removalPattern.forEach(pattern -> SusiMind.this.memories.removeUnanswered(pattern));
@@ -375,7 +348,7 @@ public class SusiMind {
         long t0 = System.currentTimeMillis();
         SusiArgument observation_argument = new SusiArgument();
         if (observation != null && observation.length() > 0) observation_argument.think(observation);
-        List<SusiCognition> cognitions = this.memories.getCognitions(identity.getClient());
+        List<SusiCognition> cognitions = this.memories == null ? new ArrayList<>() : this.memories.getCognitions(identity.getClient());
         long t1 = System.currentTimeMillis();
         // latest cognition is first in list
         cognitions.forEach(cognition -> observation_argument.think(cognition.recallDispute()));
@@ -472,18 +445,9 @@ public class SusiMind {
             super(message);
         }
     }
-
-    public Set<String> getIntentsetNames(String client) {
-        return this.memories.getIntentsetNames(client);
-    }
-    
-    public JsonTray getIntentset(String client, String name) throws IOException {
-        return this.memories.getIntentset(client, name);
-    }
     
     public static void main(String[] args) {
-        File log = new File(new File("data"), "susi");
-        SusiMind mem = new SusiMind(log, null);
+        SusiMind mem = new SusiMind(null);
         SusiMind.Layer testlayer = new SusiMind.Layer("test", new File(new File("conf"), "susi"), true);
         mem.addLayer(testlayer);
         try {
