@@ -39,7 +39,7 @@ public class Settings extends JsonFile {
     
 
     public Settings(@Nonnull File file) throws IOException {
-        super(file);
+        super(file, false);
     }
 
     private PrivateKey private_key = null;
