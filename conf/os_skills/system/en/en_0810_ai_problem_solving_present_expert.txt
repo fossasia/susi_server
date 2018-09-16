@@ -40,10 +40,6 @@ flowers|jewelry|gardening
 wife topic
 flowers|jewelry
 
-husband topic
-
-neig
-
 # links to products
 
 buy jewelry for wife

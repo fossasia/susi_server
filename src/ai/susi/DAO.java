@@ -213,18 +213,24 @@ public class DAO {
         if (!susi_generic_skills_media_discovery.path.exists()) susi_generic_skills_media_discovery.path.mkdirs();
 
         // wake up susi
-        SusiMind.Layer system_skills_general = new SusiMind.Layer("General", new File(new File(conf_dir, "system_skills"), "general"), true);
-        SusiMind.Layer system_skills_localmode = new SusiMind.Layer("Local", new File(new File(conf_dir, "system_skills"), "localmode"), true);
+        SusiMind.Layer system_skills_include = new SusiMind.Layer("General", new File(new File(conf_dir, "os_skills"), "include"), true);
+        SusiMind.Layer system_skills_linuguistic = new SusiMind.Layer("General", new File(new File(conf_dir, "os_skills"), "linuguistic"), true);
+        SusiMind.Layer system_skills_operation = new SusiMind.Layer("General", new File(new File(conf_dir, "os_skills"), "operation"), true);
+        SusiMind.Layer system_skills_system = new SusiMind.Layer("General", new File(new File(conf_dir, "os_skills"), "system"), true);
+        SusiMind.Layer system_skills_local = new SusiMind.Layer("Local", new File(new File(conf_dir, "os_skills"), "local"), true);
         susi = new SusiMind(susi_memory);
-        susi.addLayer(system_skills_general);
+        susi.addLayer(system_skills_include);
+        susi.addLayer(system_skills_linuguistic);
         if (model_watch_dir.exists()) {
             SusiMind.Layer model_skills = new SusiMind.Layer("Model", new File(model_watch_dir, "general"), false);
             susi.addLayer(model_skills);
         }
         if (DAO.getConfig("local.mode", false)) {
-            susi.addLayer(system_skills_localmode);
+            susi.addLayer(system_skills_local);
             susi.addLayer(susi_generic_skills_media_discovery);
         }
+        susi.addLayer(system_skills_operation);
+        susi.addLayer(system_skills_system);
 
         // initialize public and private keys
         public_settings = new Settings(new File("data/settings/public.settings.json"));

@@ -108,8 +108,9 @@ public class SusiSkill {
          * @return
          */
         public SusiLanguage language() {
-            if (this.skillpath.startsWith("/susi_server/conf/susi/")) {
-                SusiLanguage language = SusiLanguage.parse(this.skillpath.substring(23, 25));
+            if (this.skillpath.startsWith("/susi_server/conf/")) {
+                int p = this.skillpath.lastIndexOf('/');
+                SusiLanguage language = SusiLanguage.parse(this.skillpath.substring(p - 2, p));
                 if (language != SusiLanguage.unknown) return language;
             } else if (this.skillpath.startsWith("/susi_skill_data")) {
                 SusiLanguage language = SusiLanguage.unknown;
@@ -613,7 +614,7 @@ public class SusiSkill {
         //Path data = FileSystems.getDefault().getPath("data");
         //Map<String, String> config;
         //try {config = SusiServer.readConfig(data);DAO.init(config, data);} catch (Exception e) {e.printStackTrace();}
-        File system_skills_test = new File(new File(FileSystems.getDefault().getPath("conf").toFile(), "system_skills"), "test");
+        File system_skills_test = new File(new File(FileSystems.getDefault().getPath("conf").toFile(), "os_skills"), "test");
         File skill = new File(system_skills_test, "dialog.txt");
         //File model = new File(DAO.model_watch_dir, "general");
         //File skill = SusiSkill.getSkillFileInModel(model, "Westworld");
