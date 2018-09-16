@@ -46,7 +46,7 @@ public class JsonTray {
     private long file_volatile_lastModified;
     
     public JsonTray(File file_persistent, File file_volatile, int cachesize) throws IOException {
-        this.per = new JsonFile(file_persistent);
+        this.per = new JsonFile(file_persistent, false);
         this.vol = new CacheMap<String, JSONObject>(cachesize);
         this.file_volatile = file_volatile;
         this.file_volatile_lastModified = this.file_volatile.lastModified();
@@ -78,7 +78,7 @@ public class JsonTray {
             }
             
             // finally store the data
-            JsonFile.writeJson(this.file_volatile, j);
+            JsonFile.writeJson(this.file_volatile, j, false);
         } catch (IOException e) {
             e.printStackTrace();
         }

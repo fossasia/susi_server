@@ -286,7 +286,7 @@ public class DAO {
         OS.protectPath(accounting_path_vol);
 
         Path login_keys_path = settings_dir.resolve("login-keys.json");
-        login_keys = new JsonFile(login_keys_path.toFile());
+        login_keys = new JsonFile(login_keys_path.toFile(), false);
         OS.protectPath(login_keys_path);
 
 
