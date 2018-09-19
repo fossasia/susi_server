@@ -233,7 +233,7 @@ public class SusiSkill {
                         JSONArray phrases = new JSONArray();
                         intent.put("phrases", phrases);
                         if (phraseFromWildcard(skillidname, acceptWildcardIntent, bang_answers, prior, phrases))
-                            continue;
+                            continue readloop;
 
                         // console process
                         JSONObject process = new JSONObject();
@@ -374,7 +374,7 @@ public class SusiSkill {
                     } else {
                         String ifsubstring = line.substring(thenpos + 1, elsepos).trim();
                         if (readSkill(language, skillidname, acceptWildcardIntent, intents, example, expect, label, implication, prior, depth, phrases, condition, ifsubstring))
-                            continue;
+                            continue readloop;
                         String elsesubstring = line.substring(elsepos + 1).trim();
                         if (elsesubstring.length() > 0) {
                             String[] elseanswers = elsesubstring.split("\\|");
