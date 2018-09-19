@@ -175,7 +175,7 @@ public class SusiSkill {
         JSONObject json = new JSONObject(true);
         JSONArray intents = new JSONArray();
         String lastLine = "", line = "";
-        String bang_answers = "", bang_type = "", bang_term = "", example = "", expect = "", label = "", implication = ""; 
+        String bang_answers = "", bang_type = "", bang_term = "", example = "", expect = "", label = "", implication = "";
         StringBuilder bang_bag = new StringBuilder();
         boolean prior = false, dynamicContent = false, protectedSkill = false;
         int indentStep = 4; // like in python
@@ -204,15 +204,8 @@ public class SusiSkill {
                         JSONObject intent = new JSONObject(true);
                         JSONArray phrases = new JSONArray();
                         intent.put("phrases", phrases);
-                        for (String phrase: bang_answers.split("\\|")) {
-                            JSONObject simplePhrase = SusiUtterance.simplePhrase(phrase.trim(), prior);
-                            if (!acceptWildcardIntent && SusiUtterance.isCatchallPhrase(simplePhrase)) {
-                                DAO.log("WARNING: skipping skill / wildcard not allowed here: " + skillidname);
-                                continue readloop;
-                            } else {
-                                phrases.put(simplePhrase);
-                            }
-                        }
+                        if (phraseFromWildcard(skillidname, acceptWildcardIntent, bang_answers, prior, phrases))
+                            continue readloop;
 
                         // javascript process
                         JSONObject process = new JSONObject();
@@ -239,15 +232,8 @@ public class SusiSkill {
                         JSONObject intent = new JSONObject(true);
                         JSONArray phrases = new JSONArray();
                         intent.put("phrases", phrases);
-                        for (String phrase: bang_answers.split("\\|")) {
-                            JSONObject simplePhrase = SusiUtterance.simplePhrase(phrase.trim(), prior);
-                            if (!acceptWildcardIntent && SusiUtterance.isCatchallPhrase(simplePhrase)) {
-                                DAO.log("WARNING: skipping skill / wildcard not allowed here: " + skillidname);
-                                continue readloop;
-                            } else {
-                                phrases.put(simplePhrase);
-                            }
-                        }
+                        if (phraseFromWildcard(skillidname, acceptWildcardIntent, bang_answers, prior, phrases))
+                            continue;
 
                         // console process
                         JSONObject process = new JSONObject();
@@ -279,7 +265,7 @@ public class SusiSkill {
 
                             });
                         }
-                        
+
                         // validate additional data object: it must be an array
                         if (definition.has("data")) {
                             Object o = definition.get("data");
@@ -383,30 +369,12 @@ public class SusiSkill {
                     if (elsepos <= thenpos) {
                         // only if, no else
                         String ifsubstring = line.substring(thenpos + 1).trim();
-                        if (ifsubstring.length() > 0) {
-                            String[] answers = ifsubstring.split("\\|");
-                            JSONObject intent = SusiIntent.answerIntent(phrases, "IF " + condition, answers, prior, depth, example, expect, label, implication, language);
-                            if (!acceptWildcardIntent && SusiIntent.isCatchallIntent(intent)) {
-                                DAO.log("WARNING: skipping skill / wildcard not allowed here: " + skillidname);
-                                continue readloop;
-                            } else {
-                                extendParentWithAnswer(intents, intent);
-                                intents.put(intent);
-                            }
-                        }
+                        if (readSkill(language, skillidname, acceptWildcardIntent, intents, example, expect, label, implication, prior, depth, phrases, condition, ifsubstring))
+                            continue readloop;
                     } else {
                         String ifsubstring = line.substring(thenpos + 1, elsepos).trim();
-                        if (ifsubstring.length() > 0) {
-                            String[] ifanswers = ifsubstring.split("\\|");
-                            JSONObject intentif = SusiIntent.answerIntent(phrases, "IF " + condition, ifanswers, prior, depth, example, expect, label, implication, language);
-                            if (!acceptWildcardIntent && SusiIntent.isCatchallIntent(intentif)) {
-                                DAO.log("WARNING: skipping skill / wildcard not allowed here: " + skillidname);
-                                continue readloop;
-                            } else {
-                                extendParentWithAnswer(intents, intentif);
-                                intents.put(intentif);
-                            }
-                        }
+                        if (readSkill(language, skillidname, acceptWildcardIntent, intents, example, expect, label, implication, prior, depth, phrases, condition, ifsubstring))
+                            continue;
                         String elsesubstring = line.substring(elsepos + 1).trim();
                         if (elsesubstring.length() > 0) {
                             String[] elseanswers = elsesubstring.split("\\|");
@@ -462,6 +430,34 @@ public class SusiSkill {
         return json;
     }
 
+    private static boolean phraseFromWildcard(String skillidname, boolean acceptWildcardIntent, String bang_answers, boolean prior, JSONArray phrases) {
+        for (String phrase: bang_answers.split("\\|")) {
+            JSONObject simplePhrase = SusiUtterance.simplePhrase(phrase.trim(), prior);
+            if (!acceptWildcardIntent && SusiUtterance.isCatchallPhrase(simplePhrase)) {
+                DAO.log("WARNING: skipping skill / wildcard not allowed here: " + skillidname);
+                return true;
+            } else {
+                phrases.put(simplePhrase);
+            }
+        }
+        return false;
+    }
+
+    private static boolean readSkill(SusiLanguage language, String skillidname, boolean acceptWildcardIntent, JSONArray intents, String example, String expect, String label, String implication, boolean prior, int depth, String[] phrases, String condition, String ifsubstring) {
+        if (ifsubstring.length() > 0) {
+            String[] answers = ifsubstring.split("\\|");
+            JSONObject intent = SusiIntent.answerIntent(phrases, "IF " + condition, answers, prior, depth, example, expect, label, implication, language);
+            if (!acceptWildcardIntent && SusiIntent.isCatchallIntent(intent)) {
+                DAO.log("WARNING: skipping skill / wildcard not allowed here: " + skillidname);
+                return true;
+            } else {
+                extendParentWithAnswer(intents, intent);
+                intents.put(intent);
+            }
+        }
+        return false;
+    }
+
     private static JSONObject lastIntentWithDepth(JSONArray intents, int depth) {
         for (int i = intents.length() - 1; i >= 0; i--) {
             JSONObject intent = intents.getJSONObject(i);
@@ -472,7 +468,7 @@ public class SusiSkill {
         }
         return null;
     }
-    
+
     private static void extendParentWithAnswer(JSONArray intents, JSONObject intent) {
         JSONArray utterances = intent.getJSONArray("phrases");
         if (utterances == null || utterances.length() != 1) return;
@@ -482,7 +478,7 @@ public class SusiSkill {
         if (depth <= 0) return;
         JSONObject parent = lastIntentWithDepth(intents, depth - 1);
         if (parent == null) return;
-        
+
         // we have found a parent and we want to add the utterance as cue
         JSONArray cues = parent.optJSONArray("cues");
         if (cues == null) {
