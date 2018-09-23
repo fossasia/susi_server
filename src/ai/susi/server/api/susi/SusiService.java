@@ -81,8 +81,9 @@ public class SusiService extends AbstractAPIHandler implements APIHandler {
         String language = post.get("language", "en");
         String deviceType = post.get("device_type", "Others");
         String dream = post.get("dream", ""); // an instant dream setting, to be used for permanent dreaming
-        String persona = post.get("persona", ""); // an instant persona setting, to be used for permanent personas
-        String instant = post.get("instant", ""); // an instant skill text, given as LoT directly here
+        String focus = post.get("focus", ""); // a focused skill, one that can be activated an stays focused until the skill is ended. Focused Skills are created using the meta "on" inside.
+        String persona = post.get("persona", ""); // an instant persona setting, to be used for permanent personas. This should be the persona name
+        String instant = post.get("instant", ""); // an instant skill text, given as LoT directly here. This should be a complete app/persona/skill text.
         // for applying private skill
         String privateSkill = post.get("privateskill", null);
         String userId = post.get("userid", "");
@@ -112,6 +113,12 @@ public class SusiService extends AbstractAPIHandler implements APIHandler {
             if (persona == null || persona.length() == 0) {
                 persona = recall.getObservation("_persona_awake");
             }
+            // the focused skill is a single skill which can be activated and has special abilities,
+            // like it may have catchall-phrases, a greeting phrase and a good-by phrase
+            if (focus == null || focus.length() == 0) {
+                focus = recall.getObservation("_focused_on");
+                
+            }
         }
 
         // we create a hierarchy of minds which overlap each other completely. The first element in the array is the 'most conscious' mind.
@@ -123,7 +130,7 @@ public class SusiService extends AbstractAPIHandler implements APIHandler {
             SusiMind instantMind = new SusiMind(DAO.susi_memory); // we need the memory directory here to get a share on the memory of previous dialoges, otherwise we cannot test call-back questions
             JSONObject rules = SusiSkill.readLoTSkill(new BufferedReader(new InputStreamReader(new ByteArrayInputStream(instant.getBytes(StandardCharsets.UTF_8)), StandardCharsets.UTF_8)), SusiLanguage.unknown, "instant", true);
             File origin = new File("file://instant");
-            instantMind.learn(rules, origin);
+            instantMind.learn(rules, origin, true);
             SusiSkill.ID skillid = new SusiSkill.ID(origin);
             SusiSkill activeskill = instantMind.getSkillMetadata().get(skillid);
             instantMind.setActiveSkill(activeskill);
@@ -148,7 +155,7 @@ public class SusiService extends AbstractAPIHandler implements APIHandler {
             SusiMind dreamMind = new SusiMind(DAO.susi_memory); // we need the memory directory here to get a share on the memory of previous dialoges, otherwise we cannot test call-back questions
             JSONObject rules = SusiSkill.readLoTSkill(new BufferedReader(new InputStreamReader(new ByteArrayInputStream(text.getBytes(StandardCharsets.UTF_8)), StandardCharsets.UTF_8)), SusiLanguage.unknown, dream, true);
             File origin = new File("file://" + dream);
-            dreamMind.learn(rules, origin);
+            dreamMind.learn(rules, origin, true);
             SusiSkill.ID skillid = new SusiSkill.ID(origin);
             SusiSkill activeskill = dreamMind.getSkillMetadata().get(skillid);
             dreamMind.setActiveSkill(activeskill);
@@ -211,7 +218,7 @@ public class SusiService extends AbstractAPIHandler implements APIHandler {
                 // fill an empty mind with the dream
                 SusiMind awakeMind = new SusiMind(DAO.susi_memory); // we need the memory directory here to get a share on the memory of previous dialoges, otherwise we cannot test call-back questions
                 JSONObject rules = SusiSkill.readLoTSkill(new BufferedReader(new InputStreamReader(new ByteArrayInputStream(text.getBytes(StandardCharsets.UTF_8)), StandardCharsets.UTF_8)), SusiLanguage.unknown, skillfile.getAbsolutePath(), false);
-                awakeMind.learn(rules, skillfile);
+                awakeMind.learn(rules, skillfile, true);
                 SusiSkill.ID skillid = new SusiSkill.ID(skillfile);
                 SusiSkill activeskill = awakeMind.getSkillMetadata().get(skillid);
                 awakeMind.setActiveSkill(activeskill);
