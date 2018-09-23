@@ -59,23 +59,23 @@ public class SusiAction {
     }
     
     public static enum RenderType {
-        answer,        // show or say a text
-        stop,          // stop any actions that are running right now
-        pause,         // pause something that woud otherwise beeing able to be stopped
-        resume,        // resume what has been paused
+        answer(196),   // show or say a text
+        stop(255),     // stop any actions that are running right now
+        pause(255),    // pause something that woud otherwise beeing able to be stopped
+        resume(255),   // resume what has been paused
         restart,       // start over of what is happening right now
-        //previous,      // step to one thing in the sequence before
-        //next,          // step in the next thing in the sequence
+        //previous,    // step to one thing in the sequence before
+        //next,        // step in the next thing in the sequence
         table,         // show a table
         piechart,      // show a pie chart
         rss,           // show a link list with description (aka search result listing)
         self,          // reflection (internal function)
-        websearch,     // do a web search on the client, show like rss rendering
+        websearch(0),  // do a web search on the client, show like rss rendering
         anchor,        // show/say a link
         map,           // show a map
         timer_set,     // set a timer on the client
         timer_reset,   // un-set a timer on the client
-        audio_volume,  // audio volume settings
+        audio_volume(200),  // audio volume settings
         audio_record,  // record audio
         audio_play,    // play audio (recorded, asset on client or asset from web)
         //audio_stop,    // stop playing of audio OR recording of audio (disabled because we will do that with the stop render type)
@@ -89,6 +89,15 @@ public class SusiAction {
         io             // set an IO status on connected IoT device
         ;
     
+        private final int score;
+        
+        private RenderType() {
+            this.score = 128;
+        }
+        private RenderType(int score) {
+            this.score = score;
+        }
+        
         public String action() {
             String name = this.name();
             int p = name.indexOf('_');
@@ -99,6 +108,10 @@ public class SusiAction {
             String name = this.name();
             int p = name.indexOf('_');
             return p < 0 ? null : name.substring(p + 1);
+        }
+        
+        public int getScore() {
+            return this.score;
         }
     }
     

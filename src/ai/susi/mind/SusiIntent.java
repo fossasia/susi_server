@@ -490,13 +490,18 @@ public class SusiIntent {
             SusiIntent.this.actions.forEach(action -> dialogType_subscore.set(Math.max(dialogType_subscore.get(), action.getDialogType().getSubscore())));
         }
         this.score = this.score * SusiAction.DialogType.values().length + dialogType_subscore.get();
-         
-        // (5) operation type - there may be no operation at all
+        
+        // (5) action render type score
+        final AtomicInteger actionRenderType_subscore = new AtomicInteger(0);
+        SusiIntent.this.actions.forEach(action -> actionRenderType_subscore.set(Math.max(actionRenderType_subscore.get(), action.getRenderType().getScore())));
+        this.score = this.score * 256 + actionRenderType_subscore.get();
+        
+        // (6) operation type - there may be no operation at all
         final AtomicInteger inference_subscore = new AtomicInteger(0);
         SusiIntent.this.inferences.forEach(inference -> inference_subscore.set(Math.max(inference_subscore.get(), inference.getType().getSubscore())));
         this.score = this.score * (1 + SusiInference.Type.values().length) + inference_subscore.get();
         
-        // (6) subscore from the user
+        // (7) subscore from the user
         this.score += this.score * 1000 + Math.min(1000, SusiIntent.this.user_subscore);
         
         this.log = 
