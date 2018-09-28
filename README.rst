@@ -43,7 +43,7 @@ hosted at https://github.com/fossasia/susi_server, you can download it and run S
 
 ::
 
-    > sudo apt install openjdk-8-jre* openjdk-8-jdk*
+    > sudo apt install openjdk-8-jdk-headless
  
 ::
 

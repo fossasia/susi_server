@@ -82,7 +82,7 @@ public class SusiTutorialTest {
                 BufferedReader br = getTestReader();
                 JSONObject lesson = SusiSkill.readLoTSkill(br, SusiLanguage.en, "", true);
                 System.out.println(lesson.toString(2));
-                DAO.susi.learn(lesson, new File("."));
+                DAO.susi.learn(lesson, new File("."), true);
                 br.close();
             } catch(Exception e){
                 e.printStackTrace();

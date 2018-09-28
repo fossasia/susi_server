@@ -46,6 +46,7 @@ public class SusiSkill {
 
     private String skillName;
     private Boolean protectedSkill;
+    private String[] on;
     private String description;
     private String author;
     private String authorURL;
@@ -108,8 +109,9 @@ public class SusiSkill {
          * @return
          */
         public SusiLanguage language() {
-            if (this.skillpath.startsWith("/susi_server/conf/susi/")) {
-                SusiLanguage language = SusiLanguage.parse(this.skillpath.substring(23, 25));
+            if (this.skillpath.startsWith("/susi_server/conf/")) {
+                int p = this.skillpath.lastIndexOf('/');
+                SusiLanguage language = SusiLanguage.parse(this.skillpath.substring(p - 2, p));
                 if (language != SusiLanguage.unknown) return language;
             } else if (this.skillpath.startsWith("/susi_skill_data")) {
                 SusiLanguage language = SusiLanguage.unknown;
@@ -152,6 +154,7 @@ public class SusiSkill {
         this.author = null;
         this.authorURL = null;
         this.authorEmail = null;
+        this.on = null;
         this.description = null;
         this.examples = new LinkedHashSet<>();
         this.image = null;
@@ -311,6 +314,12 @@ public class SusiSkill {
                 int thenpos = -1;
                 if (line.startsWith("::minor")) prior = false;
                 if (line.startsWith("::prior")) prior = true;
+                if (line.startsWith("::on") && (thenpos = line.indexOf(' ')) > 0) {
+                    String meta = line.substring(thenpos + 1).trim();
+                    String[] on = meta.split(",");
+                    JSONArray a = new JSONArray(on);
+                    if (meta.length() > 0) json.put("on", a);
+                }
                 if (line.startsWith("::description") && (thenpos = line.indexOf(' ')) > 0) {
                     String meta = line.substring(thenpos + 1).trim();
                     if (meta.length() > 0) json.put("description", meta);
@@ -503,6 +512,11 @@ public class SusiSkill {
         this.authorEmail = authorEmail;
     }
 
+    public void setOn(JSONArray on) {
+        this.on = new String[on.length()];
+        for (int i = 0; i < on.length(); i++) this.on[i] = on.getString(i);
+    }
+
     public void setDescription(String description) {
         this.description = description;
     }
@@ -538,6 +552,10 @@ public class SusiSkill {
 
     public void setTermsOfUse(String termsOfUse) {
         this.termsOfUse = termsOfUse;
+    }
+
+    public String[] getOn() {
+        return on;
     }
 
     public String getDescription() {
@@ -613,7 +631,7 @@ public class SusiSkill {
         //Path data = FileSystems.getDefault().getPath("data");
         //Map<String, String> config;
         //try {config = SusiServer.readConfig(data);DAO.init(config, data);} catch (Exception e) {e.printStackTrace();}
-        File system_skills_test = new File(new File(FileSystems.getDefault().getPath("conf").toFile(), "system_skills"), "test");
+        File system_skills_test = new File(new File(FileSystems.getDefault().getPath("conf").toFile(), "os_skills"), "test");
         File skill = new File(system_skills_test, "dialog.txt");
         //File model = new File(DAO.model_watch_dir, "general");
         //File skill = SusiSkill.getSkillFileInModel(model, "Westworld");
