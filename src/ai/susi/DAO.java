@@ -889,23 +889,21 @@ public class DAO {
     private static String getConflictsMailContent(MergeResult mergeResult) throws APIException {
         // get template file
         String result="";
-        String conflictLines= "";
+        StringBuilder conflictLines= new StringBuilder();
         try {
             result = IO.readFileCached(Paths.get(DAO.conf_dir + "/templates/conflicts-mail.txt"));
             for (String path :mergeResult.getConflicts().keySet()) {
                 int[][] c = mergeResult.getConflicts().get(path);
-                conflictLines+= "Conflicts in file " + path + "\n";
+                conflictLines.append("Conflicts in file ").append(path).append("\n");
                 for (int i = 0; i < c.length; ++i) {
-                    conflictLines+= "  Conflict #" + i+1 +"\n";
+                    conflictLines.append("  Conflict #").append(i).append(1).append("\n");
                     for (int j = 0; j < (c[i].length) - 1; ++j) {
                         if (c[i][j] >= 0)
-                            conflictLines+= "    Chunk for "
-                                    + mergeResult.getMergedCommits()[j] + " starts on line #"
-                                    + c[i][j] +"\n";
+                            conflictLines.append("    Chunk for ").append(mergeResult.getMergedCommits()[j]).append(" starts on line #").append(c[i][j]).append("\n");
                     }
                 }
             }
-            result = result.replace(conflictsPlaceholder, conflictLines);
+            result = result.replace(conflictsPlaceholder, conflictLines.toString());
         } catch (IOException e) {
             throw new APIException(500, "No conflicts email template");
         }
