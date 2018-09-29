@@ -57,6 +57,7 @@ import ai.susi.tools.DateParser;
  */
 public class SusiMind {
     
+    private final Map<String, JSONObject> focusSkills; // a map from the on-word to the skill json object
     private final Map<String, Set<SusiIntent>> intenttrigger; // a map from a keyword to a set of intents
     private final Map<SusiSkill.ID, SusiSkill> skillMetadata; // a map from skill path to description
     private final List<Layer> layers;
@@ -87,6 +88,7 @@ public class SusiMind {
     public SusiMind(SusiMemory memory) {
         // initialize class objects
         this.layers = new ArrayList<>();
+        this.focusSkills = new HashMap<>();
         this.intenttrigger = new ConcurrentHashMap<>();
         this.observations = new HashMap<>();
         this.memories = memory;
@@ -156,7 +158,7 @@ public class SusiMind {
                         if (f.getName().endsWith(".aiml")) {
                             lesson = AIML2Susi.readAIMLSkill(f);
                         }
-                        learn(lesson, f);
+                        learn(lesson, f, false);
                     } catch (Throwable e) {
                         DAO.severe("BAD JSON FILE: " + f.getAbsolutePath() + ", " + e.getMessage());
                         e.printStackTrace();
@@ -168,7 +170,15 @@ public class SusiMind {
         //this.intenttrigger.forEach((term, map) -> System.out.println("***DEBUG trigger " + term + " -> " + map.toString()));
     }
     
-    public SusiMind learn(JSONObject json, File origin) {
+    public SusiMind learn(JSONObject json, File origin, boolean acceptFocusSkills) {
+        
+        if (!acceptFocusSkills && json.has("on")) {
+            JSONArray on = json.getJSONArray("on");
+            for (int i = 0; i < on.length(); i++) {
+                this.focusSkills.put(on.getString(i), json);
+            }
+            return this;
+        }
         
         // detect the language
         SusiSkill.ID skillid = new SusiSkill.ID(origin);
@@ -195,6 +205,8 @@ public class SusiMind {
         SusiSkill skill = new SusiSkill();
 
         // skill description
+        if(json.has("on"))
+            skill.setOn(json.getJSONArray("on"));
         if(json.has("description"))
             skill.setDescription(json.getString("description"));
         // skill image

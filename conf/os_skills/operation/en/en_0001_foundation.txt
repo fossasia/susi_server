@@ -33,6 +33,13 @@ $1$>_persona_awake is now conscious
 sleep|forget yourself|no yourself|unconscious|unconscious mode|That's enough|* dreamless slumber|Freeze|Cease * functions
 $_persona_awake$ will sleep now. Unconscious state activated.^^>_persona_awake
 
+# This is used to activate a skill which has a "on" meta
+start *|start app *|run *|run app *|focus on *|om *
+I am now focused on $1$>_focused_on
+
+stop *|terminate *|just relax|relax
+$_focused_on$ stopped.^^>_focused_on
+
 # WW: Instruct a host to enter Analysis Mode. In Analysis Mode the host is passive, compliant, and initiates no actions or conversation.
 # Susi just responds with the path to the skill it used in the previous answer.
 analysis|analyse|analyze|explain|* analysis|* analyse|* analyze|analysis *|analyse *|analyze *|describe
