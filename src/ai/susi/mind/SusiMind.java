@@ -123,6 +123,10 @@ public class SusiMind {
     public Map<SusiSkill.ID, SusiSkill> getSkillMetadata() {
         return this.skillMetadata;
     }
+    
+    public JSONObject getFocusSkill(String skillCallName) {
+        return this.focusSkills.get(skillCallName.toLowerCase());
+    }
 
     public SusiMind observe() throws IOException {
         for (int i = 0; i < layers.size(); i++) {
@@ -171,6 +175,11 @@ public class SusiMind {
     }
     
     public SusiMind learn(JSONObject json, File origin, boolean acceptFocusSkills) {
+
+        // detect the language
+        SusiSkill.ID skillid = new SusiSkill.ID(origin);
+        SusiLanguage language = skillid.language();
+        json.put("origin", origin.getAbsolutePath());
         
         if (!acceptFocusSkills && json.has("on")) {
             JSONArray on = json.getJSONArray("on");
@@ -179,10 +188,6 @@ public class SusiMind {
             }
             return this;
         }
-        
-        // detect the language
-        SusiSkill.ID skillid = new SusiSkill.ID(origin);
-        SusiLanguage language = skillid.language();
         
         // teach the language parser
         SusiLinguistics.learn(language, json);
