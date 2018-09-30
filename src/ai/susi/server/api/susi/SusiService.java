@@ -164,7 +164,19 @@ public class SusiService extends AbstractAPIHandler implements APIHandler {
         } catch (JSONException | IOException e) {
             DAO.severe(e.getMessage(), e);
         }
-
+        
+        // focused skills: if a user has switched on a on-skill
+        if (focus != null && focus.length() > 0) try {
+            
+            SusiMind focusMind = new SusiMind(DAO.susi_memory);
+            JSONObject focus_skill = DAO.susi.getFocusSkill(focus);
+            String originpath = focus_skill.getString("origin");
+            focusMind.learn(focus_skill, new File(originpath), true);
+            minds.add(focusMind);
+        } catch (JSONException e) {
+            DAO.severe(e.getMessage(), e);
+        }
+        
         // find out if a persona or a private skill is active: a persona is more prominent in conscience than the general mind
         if ((persona != null && persona.length() > 0) || (privateSkill != null && userId.length() > 0 && group_name.length() > 0 && language.length() > 0 && skill_name.length() > 0)) {
             File skillfile = null;
@@ -173,7 +185,7 @@ public class SusiService extends AbstractAPIHandler implements APIHandler {
             }
             else {
               // read the private skill
-              File private_skill_dir = new File(DAO.private_skill_watch_dir,userId);
+              File private_skill_dir = new File(DAO.private_skill_watch_dir, userId);
               File group_file = new File(private_skill_dir, group_name);
               File language_file = new File(group_file, language);
               skillfile = DAO.getSkillFileInLanguage(language_file, skill_name, false);
