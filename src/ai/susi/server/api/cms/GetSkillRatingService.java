@@ -82,17 +82,7 @@ public class GetSkillRatingService extends AbstractAPIHandler implements APIHand
                     if (languageName.has(skill_name)) {
                         JSONObject skillName = languageName.getJSONObject(skill_name);
 
-                        if (!skillName.has("stars")) {
-                            JSONObject tempSkillStars=new JSONObject();
-                            tempSkillStars.put("one_star", 0);
-                            tempSkillStars.put("two_star", 0);
-                            tempSkillStars.put("three_star", 0);
-                            tempSkillStars.put("four_star", 0);
-                            tempSkillStars.put("five_star", 0);
-                            tempSkillStars.put("avg_star", 0);
-                            tempSkillStars.put("total_star", 0);
-                            skillName.put("stars",tempSkillStars);
-                        }
+                        DAO.putStars(skillName);
                         result.put("skill_name", skill_name);
                         result.put("skill_rating", skillName);
                         result.put("accepted", true);
