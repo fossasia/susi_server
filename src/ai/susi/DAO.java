@@ -700,7 +700,7 @@ public class DAO {
     	Map<String, Draft> r = new HashMap<>();
     	if (d == null) return r;
     	if (ids.length == 0) {
-    		d.forEach((id, draft) -> r.put(id, draft));
+    		d.forEach(r::put);
     		return r;
     	}
     	for (String id: ids) if (d.containsKey(id)) r.put(id, d.get(id));
@@ -753,13 +753,11 @@ public class DAO {
     }
 
     public static Git getGit() throws IOException {
-        Git git = new Git(getRepository());
-        return git;
+        return new Git(getRepository());
     }
 
     public static Git getPrivateGit() throws IOException {
-        Git git = new Git(getPrivateRepository());
-        return git;
+        return new Git(getPrivateRepository());
     }
 
     public static void pull(Git git) throws IOException {
@@ -807,14 +805,18 @@ public class DAO {
           }
         }
       };
-      if (concurrently) {
-        Thread t = new Thread(process);
-        t.start();
-        return t;
-      } else {
-        process.run();
-        return null;
-      }
+        return startThread(concurrently, process);
+    }
+
+    private static Thread startThread(boolean concurrently, Runnable process) {
+        if (concurrently) {
+          Thread t = new Thread(process);
+          t.start();
+          return t;
+        } else {
+          process.run();
+          return null;
+        }
     }
 
     public static Thread addAndPushCommitPrivate(String commit_message, String userEmail, boolean concurrently) {
@@ -838,14 +840,7 @@ public class DAO {
           }
         }
       };
-      if (concurrently) {
-        Thread t = new Thread(process);
-        t.start();
-        return t;
-      } else {
-        process.run();
-        return null;
-      }
+        return startThread(concurrently, process);
     }
 
     /**
@@ -889,23 +884,21 @@ public class DAO {
     private static String getConflictsMailContent(MergeResult mergeResult) throws APIException {
         // get template file
         String result="";
-        String conflictLines= "";
+        StringBuilder conflictLines= new StringBuilder();
         try {
             result = IO.readFileCached(Paths.get(DAO.conf_dir + "/templates/conflicts-mail.txt"));
             for (String path :mergeResult.getConflicts().keySet()) {
                 int[][] c = mergeResult.getConflicts().get(path);
-                conflictLines+= "Conflicts in file " + path + "\n";
+                conflictLines.append("Conflicts in file ").append(path).append("\n");
                 for (int i = 0; i < c.length; ++i) {
-                    conflictLines+= "  Conflict #" + i+1 +"\n";
+                    conflictLines.append("  Conflict #").append(i).append(1).append("\n");
                     for (int j = 0; j < (c[i].length) - 1; ++j) {
                         if (c[i][j] >= 0)
-                            conflictLines+= "    Chunk for "
-                                    + mergeResult.getMergedCommits()[j] + " starts on line #"
-                                    + c[i][j] +"\n";
+                            conflictLines.append("    Chunk for ").append(mergeResult.getMergedCommits()[j]).append(" starts on line #").append(c[i][j]).append("\n");
                     }
                 }
             }
-            result = result.replace(conflictsPlaceholder, conflictLines);
+            result = result.replace(conflictsPlaceholder, conflictLines.toString());
         } catch (IOException e) {
             throw new APIException(500, "No conflicts email template");
         }
