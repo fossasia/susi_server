@@ -924,18 +924,7 @@ public class DAO {
                     if (languageName.has(skillname)) {
                         JSONObject skillName = languageName.getJSONObject(skillname);
 
-                        if (!skillName.has("stars")) {
-                            JSONObject newFiveStarRating = new JSONObject();
-                            newFiveStarRating.put("one_star", 0);
-                            newFiveStarRating.put("two_star", 0);
-                            newFiveStarRating.put("three_star", 0);
-                            newFiveStarRating.put("four_star", 0);
-                            newFiveStarRating.put("five_star", 0);
-                            newFiveStarRating.put("avg_star", 0);
-                            newFiveStarRating.put("total_star", 0);
-
-                            skillName.put("stars", newFiveStarRating);
-                        }
+                        putStars(skillName);
                         return skillName;
                     }
                 }
@@ -959,6 +948,21 @@ public class DAO {
         newRating.put("stars", newFiveStarRating);
 
         return newRating;
+    }
+
+    public static void putStars(JSONObject skillName) {
+        if (!skillName.has("stars")) {
+            JSONObject newFiveStarRating = new JSONObject();
+            newFiveStarRating.put("one_star", 0);
+            newFiveStarRating.put("two_star", 0);
+            newFiveStarRating.put("three_star", 0);
+            newFiveStarRating.put("four_star", 0);
+            newFiveStarRating.put("five_star", 0);
+            newFiveStarRating.put("avg_star", 0);
+            newFiveStarRating.put("total_star", 0);
+
+            skillName.put("stars", newFiveStarRating);
+        }
     }
 
     public static JSONArray getSupportedLanguages(String model, String group, String language, String skillname) {
