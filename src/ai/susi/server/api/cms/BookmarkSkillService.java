@@ -189,17 +189,7 @@ public class BookmarkSkillService extends AbstractAPIHandler implements APIHandl
             skillName.put("feedback_count", 0);
         }
 
-        if (!skillName.has("stars")) {
-            JSONObject skillStars = new JSONObject();
-            skillStars.put("one_star", 0);
-            skillStars.put("two_star", 0);
-            skillStars.put("three_star", 0);
-            skillStars.put("four_star", 0);
-            skillStars.put("five_star", 0);
-            skillStars.put("avg_star", 0);
-            skillStars.put("total_star", 0);
-            skillName.put("stars", skillStars);
-        }
+        DAO.putStars(skillName);
 
         languageName.put(skill_name, skillName);
         groupName.put(language_name, languageName);
