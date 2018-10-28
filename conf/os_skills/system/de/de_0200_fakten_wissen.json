@@ -110,7 +110,7 @@
       {"type":"pattern", "expression":"wie spät ists"},
       {"type":"pattern", "expression":"wie spät"}
     ],
-    "process":[ {"type":"javascript", "expression":"(Math.round(new Date().getHours() + (new Date().getTimezoneOffset() - $timezoneOffset$)/60)) + ' Uhr und ' + new Date().getMinutes() + ' Minuten'"} ],
+    "process":[ {"type":"javascript", "expression":"new Date().getHours() + ' Uhr und ' + new Date().getMinutes() + ' Minuten'"} ],
     "actions":[ {"type":"answer", "select":"random", "phrases":[
       "es ist $!$"
     ]}]

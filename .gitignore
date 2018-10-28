@@ -20,7 +20,7 @@ dist
 dist/loklak.jar
 /build/
 /.gradle/
-
+.vscode/
 /docs/_build
 
 data/settings/groups.json
