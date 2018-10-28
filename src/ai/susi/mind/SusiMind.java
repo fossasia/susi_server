@@ -417,6 +417,22 @@ public class SusiMind {
         //DAO.log("+++ react run time: " + (t3 - t2) + " milliseconds - mindmeld");
         //DAO.log("+++ react run time: " + (t4 - t3) + " milliseconds - normalize");
         //DAO.log("+++ react run time: " + (t7 - t4) + " milliseconds - test ideas");
+
+        // attach the ideas to the thought to have that information available for the explain command
+        if (answers.size() > 0) {
+            SusiThought t = answers.get(0);
+            JSONArray a = t.getData();
+            for (int i = 0; i < a.length(); i++) a.getJSONObject(i).remove("idea"); // in case that the ideas size is shorter than the current array length
+            int i = 0;
+            for (SusiIdea idea: ideas) {
+                if (a.length() <= i) {
+                    a.put(new JSONObject());
+                }
+                JSONObject j = a.getJSONObject(i);
+                j.put("idea", idea.getIntent().toJSON());
+                i++;
+            }
+        }
         return answers;
     }
     
