@@ -571,6 +571,24 @@ public class DAO {
         return allowed_site; 
     }
 
+    public static void deleteChatbot(String userId,String group,String language,String skill) {
+        JsonTray chatbot = DAO.chatbot;
+        JSONObject userIdName = new JSONObject();
+        JSONObject groupName = new JSONObject();
+        JSONObject languageName = new JSONObject();
+        if (chatbot.has(userId)) {
+            userIdName = chatbot.getJSONObject(userId);
+            if (userIdName.has(group)) {
+                groupName = userIdName.getJSONObject(group);
+                if (groupName.has(language)) {
+                    languageName = groupName.getJSONObject(language);
+                    languageName.remove(skill);
+                    chatbot.commit();
+                }
+            }
+        }
+    }
+
     public static final Random random = new Random(System.currentTimeMillis());
 
     public static void log(String line) {
