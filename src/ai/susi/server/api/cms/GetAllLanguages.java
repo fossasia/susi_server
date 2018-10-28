@@ -24,12 +24,11 @@ import ai.susi.json.JsonObjectWithDefault;
 import ai.susi.server.*;
 import org.json.JSONArray;
 import org.json.JSONObject;
-import scala.util.parsing.combinator.testing.Str;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.File;
-import java.io.FilenameFilter;
 import java.util.ArrayList;
+import java.util.Objects;
 
 /**
  * Created by chetankaushik on 24/06/17.
@@ -39,7 +38,6 @@ import java.util.ArrayList;
  * http://127.0.0.1:4000/cms/getAllLanguages.json?group=assistants
  */
 public class GetAllLanguages  extends AbstractAPIHandler implements APIHandler {
-
 
     private static final long serialVersionUID = -7872551914189898030L;
 
@@ -67,6 +65,7 @@ public class GetAllLanguages  extends AbstractAPIHandler implements APIHandler {
             JSONObject json = new JSONObject(true);
             json.put("accepted", false);
             String[] languages = group.list((current, name) -> new File(current, name).isDirectory());
+            assert languages != null;
             JSONArray languagesArray = new JSONArray(languages);
             json.put("languagesArray", languagesArray);
             json.put("accepted", true);
@@ -79,25 +78,22 @@ public class GetAllLanguages  extends AbstractAPIHandler implements APIHandler {
                 json.put("accepted", false);
                 ArrayList<String> languages = new ArrayList<>();
                         String[] group_names = model.list((current, name) -> new File(current, name).isDirectory());
+                assert group_names != null;
                 for (String temp_group_name : group_names) {
                     File group = new File(model, temp_group_name);
-                        group.list(new FilenameFilter() {
-                            @Override
-                            public boolean accept(File file, String s) {
-                                try {
-
-                                    Boolean accepted = new File(file, s).list().length > 1;
-                                    if (accepted) {
-                                        if (!languages.contains(s)) {
-                                            languages.add(s);
-                                        }
+                        group.list((file, s) -> {
+                            try {
+                                Boolean accepted = Objects.requireNonNull(new File(file, s).list()).length > 1;
+                                if (accepted) {
+                                    if (!languages.contains(s)) {
+                                        languages.add(s);
                                     }
-                                    return accepted;
                                 }
-                                catch (Exception e)
-                                {
-                                    return false;
-                                }
+                                return accepted;
+                            }
+                            catch (Exception e)
+                            {
+                                return false;
                             }
                         });
                 }
@@ -110,17 +106,15 @@ public class GetAllLanguages  extends AbstractAPIHandler implements APIHandler {
                 File group = new File(model, group_name);
                 JSONObject json = new JSONObject(true);
                 json.put("accepted", false);
-                String[] languages = group.list(new FilenameFilter() {
-                    @Override
-                    public boolean accept(File file, String s) {
-                        try {
-                            return new File(file, s).list().length > 1;
-                        }
-                        catch (Exception e){
-                            return false;
-                        }
+                String[] languages = group.list((file, s) -> {
+                    try {
+                        return Objects.requireNonNull(new File(file, s).list()).length > 1;
+                    }
+                    catch (Exception e){
+                        return false;
                     }
                 });
+                assert languages != null;
                 JSONArray languagesArray = new JSONArray(languages);
                 json.put("languagesArray", languagesArray);
                 json.put("accepted", true);
