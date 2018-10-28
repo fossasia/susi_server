@@ -249,6 +249,8 @@ public class SusiIntent {
     public JSONObject toJSON() {
         JSONObject json = new JSONObject(true);
         json.put("id", this.hashCode());
+        if (this.score != null) json.put("score", this.score.score);
+        if (this.skillid != null && this.skillid.getPath().length() > 0) json.put("skill", this.skillid.getPath());
         if (this.keys != null && this.keys.size() > 0) json.put("keys", new JSONArray(this.keys));
         JSONArray p = new JSONArray(); this.utterances.forEach(utterance -> p.put(utterance.toJSON()));
         json.put("phrases", p);
@@ -257,8 +259,6 @@ public class SusiIntent {
         JSONArray a = new JSONArray(); this.getActionsClone().forEach(action ->a.put(action.toJSONClone()));
         json.put("actions", a);
         if (this.comment != null && this.comment.length() > 0) json.put("comment", this.comment);
-        if (this.score != null) json.put("score", this.score.score);
-        if (this.skillid != null && this.skillid.getPath().length() > 0) json.put("skill", this.skillid.getPath());
         if (this.example != null && this.example.length() > 0) json.put("example", example);
         if (this.expect != null && this.expect.length() > 0) json.put("expect", expect);
         return json;
