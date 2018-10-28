@@ -114,7 +114,7 @@ public class DeleteSkillService extends AbstractAPIHandler implements APIHandler
             json.put("accepted", true);
             //Add to git
             if (privateSkill != null) {
-                deleteChatbot(userId, group_name, language_name, skill_name);
+                DAO.deleteChatbot(userId, group_name, language_name, skill_name);
                 try (Git git = DAO.getPrivateGit()) {
                     git.add()
                     .setUpdate(true)
@@ -145,23 +145,4 @@ public class DeleteSkillService extends AbstractAPIHandler implements APIHandler
         }
         return new ServiceResponse(json);
     }
-
-    private static void deleteChatbot(String userId,String group,String language,String skill) {
-        JsonTray chatbot = DAO.chatbot;
-        JSONObject userIdName = new JSONObject();
-        JSONObject groupName = new JSONObject();
-        JSONObject languageName = new JSONObject();
-        if (chatbot.has(userId)) {
-            userIdName = chatbot.getJSONObject(userId);
-            if (userIdName.has(group)) {
-                groupName = userIdName.getJSONObject(group);
-                if (groupName.has(language)) {
-                    languageName = groupName.getJSONObject(language);
-                    languageName.remove(skill);
-                    chatbot.commit();
-                }
-            }
-        }
-    }
-
 }

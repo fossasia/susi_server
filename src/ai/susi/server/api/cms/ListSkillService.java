@@ -142,6 +142,7 @@ public class ListSkillService extends AbstractAPIHandler implements APIHandler {
         String group_name = call.get("group", "All");
         String language_list = call.get("language", "en");
         int duration = call.get("duration", -1);
+        int avg_rating = call.get("avg_rating", -1);
         JSONArray jsonArray = new JSONArray();
         JSONObject json = new JSONObject(true);
         JSONObject skillObject = new JSONObject();
@@ -279,18 +280,18 @@ public class ListSkillService extends AbstractAPIHandler implements APIHandler {
             else if (filter_type.equals("feedback")) {
                 DAO.sortByFeedbackCount(jsonValues, filter_name.equals("ascending"));
             }
+            int countTillOffset = 0;
             for (int i = 0; i < jsonArray.length(); i++) {
-                if (i < offset ) {
-                    continue;
+                if(avg_rating > 0) {
+                	Object skill_rating = jsonValues.get(i).opt("skill_rating");
+                	if (skill_rating == null || !((skill_rating instanceof JSONObject))) 
+                		skill_rating = new JSONObject().put("stars", new JSONObject().put("avg_star", 0.0f));
+                	JSONObject starsObject = ((JSONObject) skill_rating).getJSONObject("stars");
+                	float avg_stars = starsObject.getFloat("avg_star");
+                	if(Float.compare(avg_rating, avg_stars) > 0) {
+                		continue;
+                	}
                 }
-
-                if(countFilter) {
-                    if(count == 0) {
-                        break;
-                    } else {
-                        count --;
-                     }
-                 }
                  if (dateFilter && duration > 0) {
                      long durationInMillisec = TimeUnit.DAYS.toMillis(duration);
                      long timestamp = System.currentTimeMillis() - durationInMillisec;
@@ -323,6 +324,16 @@ public class ListSkillService extends AbstractAPIHandler implements APIHandler {
                          }
                      }
                  }
+                 if (countTillOffset++ < offset ) {
+                     continue;
+                 }
+                 if(countFilter) {
+                     if(count == 0) {
+                         break;
+                     } else {
+                         count --;
+                      }
+                  }
                 filteredData.put(jsonValues.get(i));
             }
             if (countFilter) {
