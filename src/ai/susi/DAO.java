@@ -891,7 +891,7 @@ public class DAO {
                 int[][] c = mergeResult.getConflicts().get(path);
                 conflictLines.append("Conflicts in file ").append(path).append("\n");
                 for (int i = 0; i < c.length; ++i) {
-                    conflictLines.append("  Conflict #").append(i).append(1).append("\n");
+                    conflictLines.append("  Conflict #").append(i+1).append("\n");
                     for (int j = 0; j < (c[i].length) - 1; ++j) {
                         if (c[i][j] >= 0)
                             conflictLines.append("    Chunk for ").append(mergeResult.getMergedCommits()[j]).append(" starts on line #").append(c[i][j]).append("\n");
