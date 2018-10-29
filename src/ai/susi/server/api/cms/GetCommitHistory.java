@@ -1,6 +1,7 @@
 package ai.susi.server.api.cms;
 
 import ai.susi.DAO;
+import ai.susi.SkillTransactions;
 import ai.susi.json.JsonObjectWithDefault;
 import ai.susi.server.*;
 import org.eclipse.jgit.api.Git;
@@ -46,7 +47,7 @@ public class GetCommitHistory extends AbstractAPIHandler implements APIHandler {
         commitsArray = new JSONArray();
         
         //Add to git
-        try (Git git = DAO.getGit()) {
+        try (Git git = SkillTransactions.getGit()) {
             Iterable<RevCommit> logs;
             logs = git.log().call();
             int i = 0;

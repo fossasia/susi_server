@@ -1,6 +1,7 @@
 package ai.susi.server.api.cms;
 
 import ai.susi.DAO;
+import ai.susi.SkillTransactions;
 import ai.susi.json.JsonObjectWithDefault;
 import ai.susi.json.JsonTray;
 import org.json.JSONObject;
@@ -355,10 +356,10 @@ public class ModifySkillService extends AbstractAPIHandler implements APIHandler
             }
             if (privateSkill != null) {
               this.modifyChatbot(modified_skill, userId, group_name, language_name, skill_name, modified_group_name, modified_language_name, modified_skill_name);
-              DAO.addAndPushCommitPrivate(commit_message, userEmail, true);
+              SkillTransactions.addAndPushCommitPrivate(commit_message, userEmail, true);
             }
             else {
-              DAO.addAndPushCommit(commit_message, userEmail, true);
+                SkillTransactions.addAndPushCommit(commit_message, userEmail, true);
             }
         }
         else{

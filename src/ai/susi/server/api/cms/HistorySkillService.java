@@ -20,6 +20,7 @@
 package ai.susi.server.api.cms;
 
 import ai.susi.DAO;
+import ai.susi.SkillTransactions;
 import ai.susi.json.JsonObjectWithDefault;
 import ai.susi.server.*;
 import org.eclipse.jgit.api.Git;
@@ -85,7 +86,7 @@ public class HistorySkillService extends AbstractAPIHandler implements APIHandle
         commitsArray = new JSONArray();
         String path = skill.getPath().replace(DAO.model_watch_dir.toString(), "models");
         //Add to git
-        try (Git git = DAO.getGit()) {
+        try (Git git = SkillTransactions.getGit()) {
 
             Iterable<RevCommit> logs;
 

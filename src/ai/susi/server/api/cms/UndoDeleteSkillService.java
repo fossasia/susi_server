@@ -20,6 +20,7 @@
 package ai.susi.server.api.cms;
 
 import ai.susi.DAO;
+import ai.susi.SkillTransactions;
 import ai.susi.json.JsonObjectWithDefault;
 import ai.susi.server.*;
 import org.eclipse.jgit.api.Git;
@@ -85,13 +86,13 @@ public class UndoDeleteSkillService  extends AbstractAPIHandler implements APIHa
             json.put("message","Restored "+ skill_name + " successfully!");
 
             //Add to git
-            try (Git git = DAO.getGit()) {
+            try (Git git = SkillTransactions.getGit()) {
                 git.add()
                         .setUpdate(true)
                         .addFilepattern(".")
                         .call();
                 // and then commit the changes
-                DAO.pushCommit(git, "Undo Delete " + skill_name, !rights.getIdentity().isAnonymous() ? rights.getIdentity().getName() : "anonymous@");
+                SkillTransactions.pushCommit(git, "Undo Delete " + skill_name, !rights.getIdentity().isAnonymous() ? rights.getIdentity().getName() : "anonymous@");
                 json.put("accepted", true);
                 json.put("message", "Undo Deletion of " + skill_name + " aborted!");
             } catch (IOException | GitAPIException e) {

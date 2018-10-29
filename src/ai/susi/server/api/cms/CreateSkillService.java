@@ -1,6 +1,7 @@
 package ai.susi.server.api.cms;
 
 import ai.susi.DAO;
+import ai.susi.SkillTransactions;
 import ai.susi.json.JsonObjectWithDefault;
 import ai.susi.json.JsonTray;
 import org.json.JSONObject;
@@ -176,11 +177,11 @@ public class CreateSkillService extends AbstractAPIHandler implements APIHandler
                             //Add to git
                             if(privateSkill != null){
                                 this.storePrivateSkillBot(skill, userId, skill_name, group_name, language_name);
-                                try (Git git = DAO.getPrivateGit()) {
+                                try (Git git = SkillTransactions.getPrivateGit()) {
                                     git.add().addFilepattern(".").call();
 
                                 // commit the changes
-                                    DAO.pushCommit(git, "Created " + skill_name, userEmail);
+                                    SkillTransactions.pushCommit(git, "Created " + skill_name, userEmail);
                                     json.put("accepted", true);
 
                                 } catch (IOException | GitAPIException e) {
@@ -190,11 +191,11 @@ public class CreateSkillService extends AbstractAPIHandler implements APIHandler
                                 }
                             }
                             else{
-                                try (Git git = DAO.getGit()) {
+                                try (Git git = SkillTransactions.getGit()) {
                                     git.add().addFilepattern(".").call();
 
                                 // commit the changes
-                                    DAO.pushCommit(git, "Created " + skill_name, userEmail);
+                                    SkillTransactions.pushCommit(git, "Created " + skill_name, userEmail);
                                     json.put("accepted", true);
 
                                 } catch (IOException | GitAPIException e) {
