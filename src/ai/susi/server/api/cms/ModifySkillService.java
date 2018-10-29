@@ -473,7 +473,7 @@ public class ModifySkillService extends AbstractAPIHandler implements APIHandler
           DAO.log(e.getMessage());
         }
         // delete the previous chatbot
-        deleteChatbot(userId, group_name, language_name, skill_name);
+        DAO.deleteChatbot(userId, group_name, language_name, skill_name);
         // save a new bot
         JSONObject botObject = new JSONObject();
         botObject.put("design",designObject);
@@ -483,24 +483,6 @@ public class ModifySkillService extends AbstractAPIHandler implements APIHandler
         groupName.put(modified_language_name, languageName);
         userName.put(modified_group_name, groupName);
         chatbot.put(userId, userName, true);
-    }
-
-    private static void deleteChatbot(String userId,String group,String language,String skill) {
-        JsonTray chatbot = DAO.chatbot;
-        JSONObject userIdName = new JSONObject();
-        JSONObject groupName = new JSONObject();
-        JSONObject languageName = new JSONObject();
-        if (chatbot.has(userId)) {
-            userIdName = chatbot.getJSONObject(userId);
-            if (userIdName.has(group)) {
-                groupName = userIdName.getJSONObject(group);
-                if (groupName.has(language)) {
-                    languageName = groupName.getJSONObject(language);
-                    languageName.remove(skill);
-                    chatbot.commit();
-                }
-            }
-        }
     }
 
     private static void updateModifiedTime(String model_name, String group_name, String language_name, String skill_name ) {
