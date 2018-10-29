@@ -26,7 +26,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 import org.jfree.util.Log;
 import org.json.JSONArray;
@@ -425,6 +424,8 @@ public class SusiThought extends JSONObject {
      */
     public String unify(String statement, boolean urlencode) {
         if (statement.indexOf('$') < 0) return statement;
+        String threadOrigName = Thread.currentThread().getName();
+        Thread.currentThread().setName("unify: statement = " + statement); // makes debugging easier
         JSONArray table = this.getData();
         if (table != null && table.length() > 0) {
             for (int rownum = 0; rownum < table.length(); rownum++) {
@@ -444,7 +445,7 @@ public class SusiThought extends JSONObject {
                             }
                         }
                     } else {
-                        while ((i = statement.indexOf("$" + key + "$")) >= 0) {
+                        if ((i = statement.indexOf("$" + key + "$")) >= 0) {
                             String substitution = value.toString();
                             if (urlencode) try {
                                 substitution = URLEncoder.encode(substitution, "UTF-8");
@@ -457,6 +458,7 @@ public class SusiThought extends JSONObject {
                 if (statement.indexOf('$') < 0) break;
             }
         }
+        Thread.currentThread().setName(threadOrigName);
         return statement;
     }
     

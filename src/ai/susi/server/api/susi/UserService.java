@@ -62,7 +62,7 @@ public class UserService extends AbstractAPIHandler implements APIHandler {
         boolean isValidDate = (date != null);
 
         String client = user.getIdentity().getClient();
-        List<SusiCognition> cognitions = DAO.susi_memory.getCognitions(client);
+        List<SusiCognition> cognitions = DAO.susi_memory.getCognitions(client, true);
 
         //Stores all dates in arraylist
         List<Date> dates = new ArrayList<>();
