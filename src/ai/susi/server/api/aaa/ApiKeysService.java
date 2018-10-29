@@ -26,16 +26,12 @@ import ai.susi.server.*;
 import org.json.JSONObject;
 
 import javax.servlet.http.HttpServletResponse;
-import java.io.File;
 import ai.susi.server.APIException;
 import ai.susi.server.APIHandler;
 import ai.susi.server.AbstractAPIHandler;
 import ai.susi.server.Query;
 import ai.susi.server.ServiceResponse;
 import ai.susi.server.UserRole;
-import org.json.JSONObject;
-
-import javax.servlet.http.HttpServletResponse;
 
 /**
  * This Servlet gives a API Endpoint to add, modify and delete different API keys used by SUSI.

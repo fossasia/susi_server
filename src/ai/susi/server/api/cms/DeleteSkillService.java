@@ -6,7 +6,6 @@ import ai.susi.json.JsonObjectWithDefault;
 import ai.susi.server.*;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
-import ai.susi.json.JsonTray;
 import org.json.JSONObject;
 
 import javax.servlet.http.HttpServletResponse;

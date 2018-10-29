@@ -25,7 +25,6 @@ import ai.susi.server.*;
 import org.json.JSONObject;
 
 import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
 
 public class MindService extends AbstractAPIHandler implements APIHandler {
    
