@@ -692,7 +692,7 @@ public class DAO {
     	Map<String, Draft> r = new HashMap<>();
     	if (d == null) return r;
     	if (ids.length == 0) {
-    		d.forEach((id, draft) -> r.put(id, draft));
+    		d.forEach(r::put);
     		return r;
     	}
     	for (String id: ids) if (d.containsKey(id)) r.put(id, d.get(id));
@@ -703,7 +703,6 @@ public class DAO {
     	Map<String, Draft> d = drafts.get(identity.getClient());
     	if (d != null) d.remove(id);
     }
-    
     
     public static JSONObject getSkillRating(String model, String group, String language, String skillname) {
         // rating
