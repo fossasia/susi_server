@@ -4,13 +4,10 @@ import ai.susi.DAO;
 import ai.susi.SkillTransactions;
 import ai.susi.json.JsonObjectWithDefault;
 import ai.susi.server.*;
-import org.eclipse.jgit.api.Git;
-import org.eclipse.jgit.api.errors.GitAPIException;
 import org.json.JSONObject;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.File;
-import java.io.IOException;
 
 
 /**
@@ -115,30 +112,11 @@ public class DeleteSkillService extends AbstractAPIHandler implements APIHandler
             //Add to git
             if (privateSkill != null) {
                 DAO.deleteChatbot(userId, group_name, language_name, skill_name);
-                try (Git git = SkillTransactions.getPrivateGit()) {
-                    git.add()
-                    .setUpdate(true)
-                    .addFilepattern(".")
-                    .call();
-                // and then commit the changes
-                    SkillTransactions.pushCommit(git, "Deleted " + skill_name, !rights.getIdentity().isAnonymous() ? rights.getIdentity().getName() : "anonymous@");
-                    json.put("message", "Deleted " + skill_name);
-                } catch (IOException | GitAPIException e) {
-                    e.printStackTrace();
-                }
-            }
-            else {
-                try (Git git = SkillTransactions.getGit()) {
-                    git.add()
-                    .setUpdate(true)
-                    .addFilepattern(".")
-                    .call();
-                // and then commit the changes
-                    SkillTransactions.pushCommit(git, "Deleted " + skill_name, !rights.getIdentity().isAnonymous() ? rights.getIdentity().getName() : "anonymous@");
-                    json.put("message", "Deleted " + skill_name);
-                } catch (IOException | GitAPIException e) {
-                    e.printStackTrace();
-                }
+                SkillTransactions.addAndPushCommit(true, "Deleted " + skill_name, !rights.getIdentity().isAnonymous() ? rights.getIdentity().getName() : "anonymous@");
+                json.put("message", "Deleted " + skill_name);
+            } else {
+                SkillTransactions.addAndPushCommit(false, "Deleted " + skill_name, !rights.getIdentity().isAnonymous() ? rights.getIdentity().getName() : "anonymous@");
+                json.put("message", "Deleted " + skill_name);
             }
         } else {
             json.put("message", "Cannot find '" + skill + "' ('" + skill.getAbsolutePath() + "')");

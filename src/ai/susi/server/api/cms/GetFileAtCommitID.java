@@ -69,7 +69,7 @@ public class GetFileAtCommitID extends AbstractAPIHandler implements APIHandler 
 
         //Add to git
         try {
-            Repository repository = SkillTransactions.getRepository();
+            Repository repository = SkillTransactions.getPublicRepository();
             ObjectId CommitIdObject = repository.resolve(commitID);
 
             // a RevWalk allows to walk over commits based on some filtering that is defined

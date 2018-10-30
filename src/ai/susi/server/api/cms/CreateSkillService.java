@@ -1,3 +1,8 @@
+/**
+ * Created by saurabh on 7/6/17.
+ * Modified by Chetan Kaushik on 4/8/17
+ */
+
 package ai.susi.server.api.cms;
 
 import ai.susi.DAO;
@@ -15,9 +20,6 @@ import ai.susi.server.Query;
 import ai.susi.server.ServiceResponse;
 import ai.susi.server.UserRole;
 import ai.susi.tools.DateParser;
-
-import org.eclipse.jgit.api.Git;
-import org.eclipse.jgit.api.errors.GitAPIException;
 
 import javax.imageio.ImageIO;
 import javax.servlet.ServletException;
@@ -42,18 +44,17 @@ import java.nio.file.Paths;
 import java.text.DateFormat;
 import java.util.Date;
 
-/**
- * Created by saurabh on 7/6/17.
- * Modified by Chetan Kaushik on 4/8/17
+
+@MultipartConfig(fileSizeThreshold=1024*1024*10,    // 10 MB
+        maxFileSize=1024*1024*50,       // 50 MB
+        maxRequestSize=1024*1024*100)       // 100 MB
+
+/*
  * This Service creates an skill as per given query.
  * The skill name given in the query should not exist in the SUSI intents Folder
  * Can be tested on :-
  * http://localhost:4000/cms/createSkill.txt?model=general&group=Knowledge&language=en&skill=whois&content=skillData
  */
-
-@MultipartConfig(fileSizeThreshold=1024*1024*10,    // 10 MB
-        maxFileSize=1024*1024*50,       // 50 MB
-        maxRequestSize=1024*1024*100)       // 100 MB
 public class CreateSkillService extends AbstractAPIHandler implements APIHandler {
 
     private static final long serialVersionUID = 2461878194569824151L;
@@ -149,7 +150,7 @@ public class CreateSkillService extends AbstractAPIHandler implements APIHandler
 
                             // Reading content for image
                             Image image = ImageIO.read(imagePartContent);
-                            BufferedImage bi = this.createResizedCopy(image, 512, 512, true);
+                            BufferedImage bi = createResizedCopy(image, 512, 512, true);
 
                             // Checks if images directory exists or not. If not then create one
                             if (!Files.exists(Paths.get(imagePath))) new File(imagePath).mkdirs();
@@ -163,8 +164,7 @@ public class CreateSkillService extends AbstractAPIHandler implements APIHandler
                                 String path = null;
                                 if(privateSkill != null){
                                     path = skill.getPath().replace(private_skill_dir.toString(), "users");
-                                }
-                                else{
+                                } else {
                                     path = skill.getPath().replace(DAO.model_watch_dir.toString(), "models");
                                 }
                                 // Set the creationTime in the metadata
@@ -175,34 +175,13 @@ public class CreateSkillService extends AbstractAPIHandler implements APIHandler
                             }
 
                             //Add to git
-                            if(privateSkill != null){
-                                this.storePrivateSkillBot(skill, userId, skill_name, group_name, language_name);
-                                try (Git git = SkillTransactions.getPrivateGit()) {
-                                    git.add().addFilepattern(".").call();
-
-                                // commit the changes
-                                    SkillTransactions.pushCommit(git, "Created " + skill_name, userEmail);
-                                    json.put("accepted", true);
-
-                                } catch (IOException | GitAPIException e) {
-                                    e.printStackTrace();
-                                    json.put("message", "error: " + e.getMessage());
-
-                                }
-                            }
-                            else{
-                                try (Git git = SkillTransactions.getGit()) {
-                                    git.add().addFilepattern(".").call();
-
-                                // commit the changes
-                                    SkillTransactions.pushCommit(git, "Created " + skill_name, userEmail);
-                                    json.put("accepted", true);
-
-                                } catch (IOException | GitAPIException e) {
-                                    e.printStackTrace();
-                                    json.put("message", "error: " + e.getMessage());
-
-                                }
+                            if (privateSkill != null){
+                                storePrivateSkillBot(skill, userId, skill_name, group_name, language_name);
+                                SkillTransactions.addAndPushCommit(true, "Created " + skill_name, userEmail);
+                                json.put("accepted", true);
+                            } else {
+                                SkillTransactions.addAndPushCommit(false, "Created " + skill_name, userEmail);
+                                json.put("accepted", true);
                             }
 
                         }
@@ -276,21 +255,6 @@ public class CreateSkillService extends AbstractAPIHandler implements APIHandler
         g.drawImage(originalImage, 0, 0, scaledWidth, scaledHeight, null);
         g.dispose();
         return scaledBI;
-    }
-
-    /**
-     * Utility method to get file name from HTTP header content-disposition
-     */
-    private static String getFileName(Part part) {
-        String contentDisp = part.getHeader("content-disposition");
-        System.out.println("content-disposition header= "+contentDisp);
-        String[] tokens = contentDisp.split(";");
-        for (String token : tokens) {
-            if (token.trim().startsWith("filename")) {
-                return token.substring(token.indexOf("=") + 2, token.length()-1);
-            }
-        }
-        return "";
     }
 
     /**

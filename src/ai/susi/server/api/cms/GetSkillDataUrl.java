@@ -54,7 +54,7 @@ public class GetSkillDataUrl extends AbstractAPIHandler implements APIHandler {
         JSONObject json = new JSONObject();
         try {
             //get the repository
-            Repository repository = SkillTransactions.getRepository();
+            Repository repository = SkillTransactions.getPublicRepository();
             //get the repository path
             String url = repository.getConfig().getString("remote", "origin", "url");
             json.put("url", url);

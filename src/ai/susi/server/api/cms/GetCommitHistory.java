@@ -3,7 +3,6 @@ package ai.susi.server.api.cms;
 import ai.susi.SkillTransactions;
 import ai.susi.json.JsonObjectWithDefault;
 import ai.susi.server.*;
-import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.revwalk.RevCommit;
 import org.json.JSONArray;
@@ -46,9 +45,8 @@ public class GetCommitHistory extends AbstractAPIHandler implements APIHandler {
         commitsArray = new JSONArray();
         
         //Add to git
-        try (Git git = SkillTransactions.getGit()) {
-            Iterable<RevCommit> logs;
-            logs = git.log().call();
+        try {
+            Iterable<RevCommit> logs = SkillTransactions.getGitLog(false, null);
             int i = 0;
             for (RevCommit rev : logs) {
                 commit = new JSONObject();

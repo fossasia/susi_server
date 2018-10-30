@@ -433,7 +433,7 @@ public class DAO {
         access.start(); // start monitor
 
         log("Starting Skill Data pull thread");
-
+        SkillTransactions.init(getConfig("skill_repo.pull_delay", 60000));
 
         log("finished DAO initialization");
     }

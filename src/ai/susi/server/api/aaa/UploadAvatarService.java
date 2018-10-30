@@ -117,10 +117,8 @@ public class UploadAvatarService extends AbstractAPIHandler implements APIHandle
      * @param img The Image to be converted
      * @return The converted BufferedImage
      */
-    public static BufferedImage toBufferedImage(Image img)
-    {
-        if (img instanceof BufferedImage)
-        {
+    public static BufferedImage toBufferedImage(Image img) {
+        if (img instanceof BufferedImage) {
             return (BufferedImage) img;
         }
 
@@ -132,20 +130,6 @@ public class UploadAvatarService extends AbstractAPIHandler implements APIHandle
         bGr.dispose();
         // Return the buffered image
         return bimage;
-    }
-    /**
-     * Utility method to get file name from HTTP header content-disposition
-     */
-    private static String getFileName(Part part) {
-        String contentDisp = part.getHeader("content-disposition");
-        System.out.println("content-disposition header= "+contentDisp);
-        String[] tokens = contentDisp.split(";");
-        for (String token : tokens) {
-            if (token.trim().startsWith("filename")) {
-                return token.substring(token.indexOf("=") + 2, token.length()-1);
-            }
-        }
-        return "";
     }
 
     @Override

@@ -144,20 +144,6 @@ public class UploadImageService extends AbstractAPIHandler implements APIHandler
     // Return the buffered image
         return bimage;
     }
-    /**
-     * Utility method to get file name from HTTP header content-disposition
-     */
-    private static String getFileName(Part part) {
-        String contentDisp = part.getHeader("content-disposition");
-        System.out.println("content-disposition header= "+contentDisp);
-        String[] tokens = contentDisp.split(";");
-        for (String token : tokens) {
-            if (token.trim().startsWith("filename")) {
-                return token.substring(token.indexOf("=") + 2, token.length()-1);
-            }
-        }
-        return "";
-    }
 
     @Override
     public ServiceResponse serviceImpl(Query call, HttpServletResponse response, Authorization rights, final JsonObjectWithDefault permissions) {

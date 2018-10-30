@@ -23,13 +23,10 @@ import ai.susi.DAO;
 import ai.susi.SkillTransactions;
 import ai.susi.json.JsonObjectWithDefault;
 import ai.susi.server.*;
-import org.eclipse.jgit.api.Git;
-import org.eclipse.jgit.api.errors.GitAPIException;
 import org.json.JSONObject;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.File;
-import java.io.IOException;
 
 /**
  * Created by chetankaushik on 23/08/17.
@@ -86,18 +83,10 @@ public class UndoDeleteSkillService  extends AbstractAPIHandler implements APIHa
             json.put("message","Restored "+ skill_name + " successfully!");
 
             //Add to git
-            try (Git git = SkillTransactions.getGit()) {
-                git.add()
-                        .setUpdate(true)
-                        .addFilepattern(".")
-                        .call();
-                // and then commit the changes
-                SkillTransactions.pushCommit(git, "Undo Delete " + skill_name, !rights.getIdentity().isAnonymous() ? rights.getIdentity().getName() : "anonymous@");
-                json.put("accepted", true);
-                json.put("message", "Undo Deletion of " + skill_name + " aborted!");
-            } catch (IOException | GitAPIException e) {
-                e.printStackTrace();
-            }
+            SkillTransactions.addAndPushCommit(false, "Undo Delete " + skill_name, !rights.getIdentity().isAnonymous() ? rights.getIdentity().getName() : "anonymous@");
+            json.put("accepted", true);
+            json.put("message", "Undo Deletion of " + skill_name + " aborted!");
+
         } else {
             json.put("message", "Cannot find '" + skill + "' ('" + skill.getAbsolutePath() + "')");
         }
