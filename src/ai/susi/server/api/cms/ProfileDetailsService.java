@@ -20,16 +20,12 @@
 package ai.susi.server.api.cms;
 
 import ai.susi.DAO;
-import ai.susi.server.Accounting;
 import ai.susi.server.Authorization;
 import ai.susi.json.JsonObjectWithDefault;
 import ai.susi.json.JsonTray;
-import ai.susi.mind.SusiSkill;
-import ai.susi.server.*;
 import org.json.JSONObject;
 
 import javax.servlet.http.HttpServletResponse;
-import java.io.File;
 import ai.susi.server.APIException;
 import ai.susi.server.APIHandler;
 import ai.susi.server.AbstractAPIHandler;
@@ -40,9 +36,6 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.Iterator;
 import org.json.JSONArray;
-import org.json.JSONObject;
-
-import javax.servlet.http.HttpServletResponse;
 
 /**
  * This endpoint returns all the ratings by a User on different Skills, along with their timestamp

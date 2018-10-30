@@ -1,6 +1,7 @@
 package ai.susi.server.api.cms;
 
 import ai.susi.DAO;
+import ai.susi.SkillTransactions;
 import ai.susi.json.JsonObjectWithDefault;
 import ai.susi.server.*;
 import org.eclipse.jgit.lib.ObjectId;
@@ -68,7 +69,7 @@ public class GetFileAtCommitID extends AbstractAPIHandler implements APIHandler 
 
         //Add to git
         try {
-            Repository repository = DAO.getRepository();
+            Repository repository = SkillTransactions.getPublicRepository();
             ObjectId CommitIdObject = repository.resolve(commitID);
 
             // a RevWalk allows to walk over commits based on some filtering that is defined

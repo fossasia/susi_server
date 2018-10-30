@@ -1,8 +1,10 @@
 package ai.susi.server.api.cms;
 
 import ai.susi.DAO;
+import ai.susi.SkillTransactions;
 import ai.susi.json.JsonObjectWithDefault;
 import ai.susi.json.JsonTray;
+
 import org.json.JSONObject;
 import ai.susi.server.APIException;
 import ai.susi.server.APIHandler;
@@ -354,14 +356,12 @@ public class ModifySkillService extends AbstractAPIHandler implements APIHandler
                 resp.getWriter().write(json.toString());
             }
             if (privateSkill != null) {
-              this.modifyChatbot(modified_skill, userId, group_name, language_name, skill_name, modified_group_name, modified_language_name, modified_skill_name);
-              DAO.addAndPushCommitPrivate(commit_message, userEmail, true);
+                modifyChatbot(modified_skill, userId, group_name, language_name, skill_name, modified_group_name, modified_language_name, modified_skill_name);
+                SkillTransactions.addAndPushCommit(true, commit_message, userEmail);
+            } else {
+                SkillTransactions.addAndPushCommit(false, commit_message, userEmail);
             }
-            else {
-              DAO.addAndPushCommit(commit_message, userEmail, true);
-            }
-        }
-        else{
+        } else {
             JSONObject json = new JSONObject();
             json.put("message", "Bad Access Token not given");
             json.put("accepted", false);
