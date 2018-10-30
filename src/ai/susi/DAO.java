@@ -468,6 +468,9 @@ public class DAO {
         passwordreset.close();
         accounting.close();
 
+        // close pull thread
+        SkillTransactions.close();
+        
         log("closed DAO");
     }
 

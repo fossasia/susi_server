@@ -43,9 +43,10 @@ import ai.susi.tools.IO;
 
 public class SkillTransactions {
     
-    public static Boolean pullStatus = true;
-    public static String conflictsPlaceholder = "%CONFLICTS%";
+    private static Boolean pullStatus = true;
+    public  static String conflictsPlaceholder = "%CONFLICTS%";
     private static ConcurrentLinkedDeque<CommitAction> pushQueue = new ConcurrentLinkedDeque<>();
+    private static Thread pullThread;
     
     /**
      * initialize the DAO
@@ -55,7 +56,7 @@ public class SkillTransactions {
     public static void init(long pull_delay) throws Exception{
 
         DAO.log("Starting Skill Data pull thread");
-        Thread pullThread = new Thread() {
+        pullThread = new Thread() {
             @Override
             public void run() {
                 while (pullStatus) {
@@ -64,20 +65,24 @@ public class SkillTransactions {
                     } catch (InterruptedException e) {
                         break;
                     }
-                    while (pushQueue.size() > 0) {
-                        CommitAction ca = pushQueue.removeFirst();
-                        ca.process();
-                    }
                     try {
                         pull(getPublicGit());
                     } catch (Exception e) {
-                        pullStatus = false;
                         DAO.severe("SKILL PULL THREAD", e);
+                    }
+                    while (pushQueue.size() > 0) {
+                        CommitAction ca = pushQueue.removeFirst();
+                        ca.process();
                     }
                 }
             }
         };
         pullThread.start();
+    }
+    
+    public static void close() {
+        pullStatus = false;
+        pullThread.interrupt();
     }
     
     public static Repository getPublicRepository() throws IOException {
@@ -143,7 +148,6 @@ public class SkillTransactions {
             MergeResult mergeResult = pullResult.getMergeResult();
 
             if (mergeResult!=null && mergeResult.getConflicts()!=null) {
-                pullStatus =false;
                 // we have conflicts send email to admin
                 try {
                     EmailHandler.sendEmail(DAO.getConfig("skill_repo.admin_email",""), "SUSI Skill Data Conflicts", getConflictsMailContent(mergeResult));
