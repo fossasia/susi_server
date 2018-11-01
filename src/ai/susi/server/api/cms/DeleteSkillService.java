@@ -1,16 +1,13 @@
 package ai.susi.server.api.cms;
 
 import ai.susi.DAO;
+import ai.susi.SkillTransactions;
 import ai.susi.json.JsonObjectWithDefault;
 import ai.susi.server.*;
-import org.eclipse.jgit.api.Git;
-import org.eclipse.jgit.api.errors.GitAPIException;
-import ai.susi.json.JsonTray;
 import org.json.JSONObject;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.File;
-import java.io.IOException;
 
 
 /**
@@ -114,54 +111,16 @@ public class DeleteSkillService extends AbstractAPIHandler implements APIHandler
             json.put("accepted", true);
             //Add to git
             if (privateSkill != null) {
-                deleteChatbot(userId, group_name, language_name, skill_name);
-                try (Git git = DAO.getPrivateGit()) {
-                    git.add()
-                    .setUpdate(true)
-                    .addFilepattern(".")
-                    .call();
-                // and then commit the changes
-                    DAO.pushCommit(git, "Deleted " + skill_name, !rights.getIdentity().isAnonymous() ? rights.getIdentity().getName() : "anonymous@");
-                    json.put("message", "Deleted " + skill_name);
-                } catch (IOException | GitAPIException e) {
-                    e.printStackTrace();
-                }
-            }
-            else {
-                try (Git git = DAO.getGit()) {
-                    git.add()
-                    .setUpdate(true)
-                    .addFilepattern(".")
-                    .call();
-                // and then commit the changes
-                    DAO.pushCommit(git, "Deleted " + skill_name, !rights.getIdentity().isAnonymous() ? rights.getIdentity().getName() : "anonymous@");
-                    json.put("message", "Deleted " + skill_name);
-                } catch (IOException | GitAPIException e) {
-                    e.printStackTrace();
-                }
+                DAO.deleteChatbot(userId, group_name, language_name, skill_name);
+                SkillTransactions.addAndPushCommit(true, "Deleted " + skill_name, !rights.getIdentity().isAnonymous() ? rights.getIdentity().getName() : "anonymous@");
+                json.put("message", "Deleted " + skill_name);
+            } else {
+                SkillTransactions.addAndPushCommit(false, "Deleted " + skill_name, !rights.getIdentity().isAnonymous() ? rights.getIdentity().getName() : "anonymous@");
+                json.put("message", "Deleted " + skill_name);
             }
         } else {
             json.put("message", "Cannot find '" + skill + "' ('" + skill.getAbsolutePath() + "')");
         }
         return new ServiceResponse(json);
     }
-
-    private static void deleteChatbot(String userId,String group,String language,String skill) {
-        JsonTray chatbot = DAO.chatbot;
-        JSONObject userIdName = new JSONObject();
-        JSONObject groupName = new JSONObject();
-        JSONObject languageName = new JSONObject();
-        if (chatbot.has(userId)) {
-            userIdName = chatbot.getJSONObject(userId);
-            if (userIdName.has(group)) {
-                groupName = userIdName.getJSONObject(group);
-                if (groupName.has(language)) {
-                    languageName = groupName.getJSONObject(language);
-                    languageName.remove(skill);
-                    chatbot.commit();
-                }
-            }
-        }
-    }
-
 }

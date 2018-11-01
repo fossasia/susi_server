@@ -1,8 +1,10 @@
 package ai.susi.server.api.cms;
 
 import ai.susi.DAO;
+import ai.susi.SkillTransactions;
 import ai.susi.json.JsonObjectWithDefault;
 import ai.susi.json.JsonTray;
+
 import org.json.JSONObject;
 import ai.susi.server.APIException;
 import ai.susi.server.APIHandler;
@@ -354,14 +356,12 @@ public class ModifySkillService extends AbstractAPIHandler implements APIHandler
                 resp.getWriter().write(json.toString());
             }
             if (privateSkill != null) {
-              this.modifyChatbot(modified_skill, userId, group_name, language_name, skill_name, modified_group_name, modified_language_name, modified_skill_name);
-              DAO.addAndPushCommitPrivate(commit_message, userEmail, true);
+                modifyChatbot(modified_skill, userId, group_name, language_name, skill_name, modified_group_name, modified_language_name, modified_skill_name);
+                SkillTransactions.addAndPushCommit(true, commit_message, userEmail);
+            } else {
+                SkillTransactions.addAndPushCommit(false, commit_message, userEmail);
             }
-            else {
-              DAO.addAndPushCommit(commit_message, userEmail, true);
-            }
-        }
-        else{
+        } else {
             JSONObject json = new JSONObject();
             json.put("message", "Bad Access Token not given");
             json.put("accepted", false);
@@ -473,7 +473,7 @@ public class ModifySkillService extends AbstractAPIHandler implements APIHandler
           DAO.log(e.getMessage());
         }
         // delete the previous chatbot
-        deleteChatbot(userId, group_name, language_name, skill_name);
+        DAO.deleteChatbot(userId, group_name, language_name, skill_name);
         // save a new bot
         JSONObject botObject = new JSONObject();
         botObject.put("design",designObject);
@@ -483,24 +483,6 @@ public class ModifySkillService extends AbstractAPIHandler implements APIHandler
         groupName.put(modified_language_name, languageName);
         userName.put(modified_group_name, groupName);
         chatbot.put(userId, userName, true);
-    }
-
-    private static void deleteChatbot(String userId,String group,String language,String skill) {
-        JsonTray chatbot = DAO.chatbot;
-        JSONObject userIdName = new JSONObject();
-        JSONObject groupName = new JSONObject();
-        JSONObject languageName = new JSONObject();
-        if (chatbot.has(userId)) {
-            userIdName = chatbot.getJSONObject(userId);
-            if (userIdName.has(group)) {
-                groupName = userIdName.getJSONObject(group);
-                if (groupName.has(language)) {
-                    languageName = groupName.getJSONObject(language);
-                    languageName.remove(skill);
-                    chatbot.commit();
-                }
-            }
-        }
     }
 
     private static void updateModifiedTime(String model_name, String group_name, String language_name, String skill_name ) {

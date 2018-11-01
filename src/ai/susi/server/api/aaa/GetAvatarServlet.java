@@ -19,25 +19,18 @@
 package ai.susi.server.api.aaa;
 
 import ai.susi.DAO;
-import ai.susi.json.JsonObjectWithDefault;
 import ai.susi.server.*;
 
 import org.json.JSONObject;
-import org.apache.commons.io.FileUtils;
-
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.Map;
 import java.net.URL;
-
-import java.nio.file.Files;
 
 import javax.servlet.ServletException;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import java.io.*;
-import java.nio.charset.StandardCharsets;
 
 /*
  This Servlet gives a API Endpoint to return avatar of a user based on the avatar

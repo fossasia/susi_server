@@ -2,7 +2,6 @@ package ai.susi.server.api.cms;
 
 import ai.susi.DAO;
 import ai.susi.json.JsonObjectWithDefault;
-import ai.susi.mind.SusiSkill;
 import ai.susi.server.APIHandler;
 import ai.susi.server.AbstractAPIHandler;
 import ai.susi.server.Authentication;
@@ -13,8 +12,6 @@ import ai.susi.server.Query;
 import ai.susi.server.ServiceResponse;
 import ai.susi.server.UserRole;
 
-import org.eclipse.jgit.api.Git;
-import org.eclipse.jgit.api.errors.GitAPIException;
 import org.json.JSONObject;
 
 import javax.imageio.ImageIO;
@@ -24,12 +21,10 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.Part;
 
-import java.awt.AlphaComposite;
 import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.image.BufferedImage;
 import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
@@ -148,20 +143,6 @@ public class UploadImageService extends AbstractAPIHandler implements APIHandler
 
     // Return the buffered image
         return bimage;
-    }
-    /**
-     * Utility method to get file name from HTTP header content-disposition
-     */
-    private static String getFileName(Part part) {
-        String contentDisp = part.getHeader("content-disposition");
-        System.out.println("content-disposition header= "+contentDisp);
-        String[] tokens = contentDisp.split(";");
-        for (String token : tokens) {
-            if (token.trim().startsWith("filename")) {
-                return token.substring(token.indexOf("=") + 2, token.length()-1);
-            }
-        }
-        return "";
     }
 
     @Override

@@ -102,7 +102,7 @@ public class SusiService extends AbstractAPIHandler implements APIHandler {
         if (dream == null || dream.length() == 0 || persona == null || persona.length() == 0) {
             // compute a recall
             SusiArgument observation_argument = new SusiArgument();
-            List<SusiCognition> cognitions = DAO.susi_memory.getCognitions(user.getIdentity().getClient());
+            List<SusiCognition> cognitions = DAO.susi_memory.getCognitions(user.getIdentity().getClient(), true);
             cognitions.forEach(cognition -> observation_argument.think(cognition.recallDispute()));
             recall = observation_argument.mindmeld(false);
 
@@ -248,7 +248,7 @@ public class SusiService extends AbstractAPIHandler implements APIHandler {
         // answer with built-in intents
         SusiCognition cognition = new SusiCognition(q, timezoneOffset, latitude, longitude, countryCode, countryName, language, deviceType, count, user.getIdentity(), minds.toArray(new SusiMind[minds.size()]));
         if (cognition.getAnswers().size() > 0) try {
-            DAO.susi_memory.addCognition(user.getIdentity().getClient(), cognition);
+            DAO.susi_memory.addCognition(user.getIdentity().getClient(), cognition, true);
         } catch (IOException e) {
             DAO.severe(e.getMessage());
         }

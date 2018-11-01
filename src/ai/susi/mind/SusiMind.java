@@ -373,7 +373,7 @@ public class SusiMind {
         long t0 = System.currentTimeMillis();
         SusiArgument observation_argument = new SusiArgument();
         if (observation != null && observation.length() > 0) observation_argument.think(observation);
-        List<SusiCognition> cognitions = this.memories == null ? new ArrayList<>() : this.memories.getCognitions(identity.getClient());
+        List<SusiCognition> cognitions = this.memories == null ? new ArrayList<>() : this.memories.getCognitions(identity.getClient(), true);
         long t1 = System.currentTimeMillis();
         // latest cognition is first in list
         cognitions.forEach(cognition -> observation_argument.think(cognition.recallDispute()));

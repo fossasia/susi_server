@@ -20,7 +20,7 @@
 
 package ai.susi.server.api.cms;
 
-import ai.susi.DAO;
+import ai.susi.SkillTransactions;
 import ai.susi.json.JsonObjectWithDefault;
 import ai.susi.server.*;
 import org.eclipse.jgit.lib.Repository;
@@ -54,7 +54,7 @@ public class GetSkillDataUrl extends AbstractAPIHandler implements APIHandler {
         JSONObject json = new JSONObject();
         try {
             //get the repository
-            Repository repository = DAO.getRepository();
+            Repository repository = SkillTransactions.getPublicRepository();
             //get the repository path
             String url = repository.getConfig().getString("remote", "origin", "url");
             json.put("url", url);

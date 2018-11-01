@@ -20,20 +20,11 @@
 package ai.susi.server.api.aaa;
 
 import ai.susi.DAO;
-import ai.susi.EmailHandler;
 import ai.susi.json.JsonObjectWithDefault;
 import ai.susi.server.*;
-import ai.susi.tools.IO;
-import ai.susi.tools.TimeoutMatcher;
 import org.json.JSONObject;
 
 import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
-import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.regex.Pattern;
 
 /**
  * This endpoint accepts 1 parameter check_email.

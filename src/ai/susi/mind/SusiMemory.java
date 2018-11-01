@@ -90,7 +90,7 @@ public class SusiMemory {
         // initialize the unanswered list.
         if (this.chatlog != null) for (String identity: this.chatlog.list()) {
             // we iterate over all users and check all their conversations
-            getCognitions(identity).forEach(cognition -> {
+            getCognitions(identity, false).forEach(cognition -> {
                 // copy the cognition into the log for the skill
                 List<SusiThought> thoughts = cognition.getAnswers();
                 if (!thoughts.isEmpty()) {
@@ -243,11 +243,11 @@ public class SusiMemory {
         if (removed) System.out.println("** removed unanswered pattern " + p.pattern());
     }
     
-    public SusiIdentity getMemory(String client) {
+    public SusiIdentity getMemory(String client, boolean storeToCache) {
     	SusiIdentity identity = this.memories.get(client);
         if (identity == null) {
             identity = new SusiIdentity(new File(chatlog, client), attention);
-            this.memories.put(client, identity);
+            if (storeToCache) this.memories.put(client, identity);
         }
         return identity;
     }
@@ -257,14 +257,14 @@ public class SusiMemory {
      * @param client
      * @return a list of interactions, latest cognition is first in list
      */
-    public List<SusiCognition> getCognitions(String client) {
-        SusiIdentity identity = getMemory(client);
+    public List<SusiCognition> getCognitions(String client, boolean storeToCache) {
+        SusiIdentity identity = getMemory(client, storeToCache);
         return identity.getCognitions();
     }
     
-    public SusiMemory addCognition(String client, SusiCognition cognition) throws IOException {
+    public SusiMemory addCognition(String client, SusiCognition cognition, boolean storeToCache) throws IOException {
         // add to user memories
-        SusiIdentity identity = getMemory(client);
+        SusiIdentity identity = getMemory(client, storeToCache);
         identity.add(cognition);
         
         // add to skill memories

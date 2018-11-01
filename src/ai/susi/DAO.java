@@ -65,16 +65,7 @@ import ai.susi.tools.DateParser;
 import ai.susi.tools.IO;
 import ai.susi.tools.OS;
 
-import org.eclipse.jgit.api.Git;
-import org.eclipse.jgit.api.MergeResult;
-import org.eclipse.jgit.api.PullResult;
-import org.eclipse.jgit.api.PushCommand;
-import org.eclipse.jgit.api.errors.GitAPIException;
-import org.eclipse.jgit.lib.PersonIdent;
-import org.eclipse.jgit.lib.Repository;
-import org.eclipse.jgit.storage.file.FileRepositoryBuilder;
-import org.eclipse.jgit.transport.RefSpec;
-import org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -107,12 +98,10 @@ public class DAO {
     public final static int ATTENTION_TIME = 5;
     private final static String ACCESS_DUMP_FILE_PREFIX = "access_";
     public  static File conf_dir, bin_dir, html_dir, data_dir, skill_status_dir, susi_chatlog_dir, susi_skilllog_dir, draft_dir, model_watch_dir, susi_skill_repo, private_skill_watch_dir, susi_private_skill_repo, deleted_skill_dir, system_keys;
-    public static String conflictsPlaceholder = "%CONFLICTS%";
     private static File external_data, assets, dictionaries;
     private static Settings public_settings, private_settings;
     public  static AccessTracker access;
     private static Map<String, String> config = new HashMap<>();
-    public static Boolean pullStatus=true;
     private static Logger logger;
     public static LogAppender logAppender;
 
@@ -444,25 +433,7 @@ public class DAO {
         access.start(); // start monitor
 
         log("Starting Skill Data pull thread");
-        Thread pullThread = new Thread() {
-            @Override
-            public void run() {
-                while (DAO.pullStatus) {
-                    try {
-                        Thread.sleep(getConfig("skill_repo.pull_delay", 60000));
-                    } catch (InterruptedException e) {
-                        break;
-                    }
-                    try {
-                        DAO.pull(DAO.getGit());
-                    } catch (Exception e) {
-                        DAO.pullStatus =false;
-                        severe("SKILL PULL THREAD", e);
-                    }
-                }
-            }
-        };
-        pullThread.start();
+        SkillTransactions.init(getConfig("skill_repo.pull_delay", 60000));
 
         log("finished DAO initialization");
     }
@@ -497,6 +468,9 @@ public class DAO {
         passwordreset.close();
         accounting.close();
 
+        // close pull thread
+        SkillTransactions.close();
+        
         log("closed DAO");
     }
 
@@ -569,6 +543,24 @@ public class DAO {
             }
         }
         return allowed_site; 
+    }
+
+    public static void deleteChatbot(String userId,String group,String language,String skill) {
+        JsonTray chatbot = DAO.chatbot;
+        JSONObject userIdName = new JSONObject();
+        JSONObject groupName = new JSONObject();
+        JSONObject languageName = new JSONObject();
+        if (chatbot.has(userId)) {
+            userIdName = chatbot.getJSONObject(userId);
+            if (userIdName.has(group)) {
+                groupName = userIdName.getJSONObject(group);
+                if (groupName.has(language)) {
+                    languageName = groupName.getJSONObject(language);
+                    languageName.remove(skill);
+                    chatbot.commit();
+                }
+            }
+        }
     }
 
     public static final Random random = new Random(System.currentTimeMillis());
@@ -700,7 +692,7 @@ public class DAO {
     	Map<String, Draft> r = new HashMap<>();
     	if (d == null) return r;
     	if (ids.length == 0) {
-    		d.forEach((id, draft) -> r.put(id, draft));
+    		d.forEach(r::put);
     		return r;
     	}
     	for (String id: ids) if (d.containsKey(id)) r.put(id, d.get(id));
@@ -710,206 +702,6 @@ public class DAO {
     public static void deleteDraft(@Nonnull final ClientIdentity identity, final String id) {
     	Map<String, Draft> d = drafts.get(identity.getClient());
     	if (d != null) d.remove(id);
-    }
-    
-    public static Repository getRepository() throws IOException {
-      Repository repo;
-      File repoFile = susi_skill_repo;
-      if (repoFile.exists()) {
-      // Open an existing repository
-      repo = new FileRepositoryBuilder()
-      .setGitDir(susi_skill_repo)
-      .readEnvironment() // scan environment GIT_* variables
-      .findGitDir() // scan up the file system tree
-      .build();
-      } else {
-        // Create a new repository
-        repo = new FileRepositoryBuilder()
-        .setGitDir(susi_skill_repo)
-        .build();
-        repo.create();
-      }
-      return repo;
-    }
-
-    public static Repository getPrivateRepository() throws IOException {
-        Repository repo;
-        File repoFile = susi_private_skill_repo;
-        if (repoFile.exists()) {
-        // Open an existing repository
-        repo = new FileRepositoryBuilder()
-        .setGitDir(susi_private_skill_repo)
-        .readEnvironment() // scan environment GIT_* variables
-        .findGitDir() // scan up the file system tree
-        .build();
-        } else {
-        // Create a new repository
-        repo = new FileRepositoryBuilder()
-        .setGitDir(susi_private_skill_repo)
-        .build();
-        repo.create();
-        }
-        return repo;
-    }
-
-    public static Git getGit() throws IOException {
-        Git git = new Git(getRepository());
-        return git;
-    }
-
-    public static Git getPrivateGit() throws IOException {
-        Git git = new Git(getPrivateRepository());
-        return git;
-    }
-
-    public static void pull(Git git) throws IOException {
-        try {
-            PullResult pullResult = git.pull().call();
-            MergeResult mergeResult = pullResult.getMergeResult();
-
-            if (mergeResult!=null && mergeResult.getConflicts()!=null) {
-                pullStatus =false;
-                // we have conflicts send email to admin
-                try {
-                    EmailHandler.sendEmail(getConfig("skill_repo.admin_email",""), "SUSI Skill Data Conflicts", getConflictsMailContent(mergeResult));
-                } catch (Throwable e) {
-                    e.printStackTrace();
-                }
-
-            } else {
-                PushCommand push = git.push();
-                push.setCredentialsProvider(new UsernamePasswordCredentialsProvider(getConfig("github.username", ""), getConfig("github.password","")));
-                push.call();
-            }
-
-        } catch (GitAPIException e) {
-            throw new IOException (e.getMessage());
-        }
-    }
-    public static Thread addAndPushCommit(String commit_message, String userEmail, boolean concurrently) {
-      Runnable process = new Runnable() {
-        @Override
-        public void run() {
-          try (Git git = getGit()) {
-            long t0 = System.currentTimeMillis();
-            git.add().setUpdate(true).addFilepattern(".").call();
-            long t1 = System.currentTimeMillis();
-            git.add().addFilepattern(".").call(); // takes long
-            long t2 = System.currentTimeMillis();
-
-            // commit the changes
-            DAO.pushCommit(git, commit_message, userEmail); // takes long
-            long t3 = System.currentTimeMillis();
-            DAO.log("jgit statistics: add-1: " + (t1 - t0) + "ms, add-2: " + (t2 - t1) + "ms, push: " + (t3 - t2) + "ms");
-          } catch (IOException | GitAPIException e) {
-            e.printStackTrace();
-
-          }
-        }
-      };
-      if (concurrently) {
-        Thread t = new Thread(process);
-        t.start();
-        return t;
-      } else {
-        process.run();
-        return null;
-      }
-    }
-
-    public static Thread addAndPushCommitPrivate(String commit_message, String userEmail, boolean concurrently) {
-      Runnable process = new Runnable() {
-        @Override
-        public void run() {
-          try (Git git = getPrivateGit()) {
-            long t0 = System.currentTimeMillis();
-            git.add().setUpdate(true).addFilepattern(".").call();
-            long t1 = System.currentTimeMillis();
-            git.add().addFilepattern(".").call(); // takes long
-            long t2 = System.currentTimeMillis();
-
-            // commit the changes
-            DAO.pushCommit(git, commit_message, userEmail); // takes long
-            long t3 = System.currentTimeMillis();
-            DAO.log("jgit statistics: add-1: " + (t1 - t0) + "ms, add-2: " + (t2 - t1) + "ms, push: " + (t3 - t2) + "ms");
-          } catch (IOException | GitAPIException e) {
-            e.printStackTrace();
-
-          }
-        }
-      };
-      if (concurrently) {
-        Thread t = new Thread(process);
-        t.start();
-        return t;
-      } else {
-        process.run();
-        return null;
-      }
-    }
-
-    /**
-     * commit user changes to the skill data repository
-     * @param git
-     * @param commit_message
-     * @param userEmail
-     * @throws IOException
-     */
-    public static void pushCommit(Git git, String commit_message, String userEmail) throws IOException {
-
-        // fix bad email setting
-        if (userEmail==null || userEmail.isEmpty()) {
-            assert false; // this should not happen
-            userEmail = "anonymous@";
-        }
-
-        try {
-            git.commit()
-                    .setAllowEmpty(false)
-                    .setAll(true)
-                    .setAuthor(new PersonIdent(userEmail,userEmail))
-                    .setMessage(commit_message)
-                    .call();
-            String remote = "origin";
-            String branch = "refs/heads/master";
-            String trackingBranch = "refs/remotes/" + remote + "/master";
-            RefSpec spec = new RefSpec(branch + ":" + branch);
-
-            // TODO: pull & merge
-
-            PushCommand push = git.push();
-            push.setForce(true);
-            push.setCredentialsProvider(new UsernamePasswordCredentialsProvider(getConfig("github.username", ""), getConfig("github.password","")));
-            push.call();
-        } catch (GitAPIException e) {
-            throw new IOException (e.getMessage());
-        }
-    }
-
-    private static String getConflictsMailContent(MergeResult mergeResult) throws APIException {
-        // get template file
-        String result="";
-        String conflictLines= "";
-        try {
-            result = IO.readFileCached(Paths.get(DAO.conf_dir + "/templates/conflicts-mail.txt"));
-            for (String path :mergeResult.getConflicts().keySet()) {
-                int[][] c = mergeResult.getConflicts().get(path);
-                conflictLines+= "Conflicts in file " + path + "\n";
-                for (int i = 0; i < c.length; ++i) {
-                    conflictLines+= "  Conflict #" + i+1 +"\n";
-                    for (int j = 0; j < (c[i].length) - 1; ++j) {
-                        if (c[i][j] >= 0)
-                            conflictLines+= "    Chunk for "
-                                    + mergeResult.getMergedCommits()[j] + " starts on line #"
-                                    + c[i][j] +"\n";
-                    }
-                }
-            }
-            result = result.replace(conflictsPlaceholder, conflictLines);
-        } catch (IOException e) {
-            throw new APIException(500, "No conflicts email template");
-        }
-        return result;
     }
     
     public static JSONObject getSkillRating(String model, String group, String language, String skillname) {

@@ -24,8 +24,6 @@ import ai.susi.json.JsonObjectWithDefault;
 import ai.susi.json.JsonTray;
 import ai.susi.server.*;
 import org.json.JSONObject;
-import java.lang.Object;
-
 import javax.servlet.http.HttpServletResponse;
 import ai.susi.server.APIException;
 import ai.susi.server.APIHandler;
