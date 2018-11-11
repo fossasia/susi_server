@@ -37,7 +37,7 @@ $_persona_awake$ will sleep now. Unconscious state activated.^^>_persona_awake
 start *|start app *|run *|run app *|focus on *|om *
 I am now focused on $1$>_focused_on
 
-stop *|terminate *|just relax|relax
+stop|stop *|terminate|terminate *|just relax|relax|exit|exit *|quit|quit *|disable *
 $_focused_on$ stopped.^^>_focused_on
 
 # WW: Instruct a host to enter Analysis Mode. In Analysis Mode the host is passive, compliant, and initiates no actions or conversation.
