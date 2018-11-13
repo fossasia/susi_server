@@ -29,7 +29,6 @@ import org.json.JSONObject;
 
 import ai.susi.mind.SusiMind.ReactionException;
 import ai.susi.server.ClientIdentity;
-import ai.susi.tools.TimeoutMatcher;
 
 /**
  * An Argument is a series of thoughts, also known as a 'proof' in automated reasoning.
@@ -169,20 +168,18 @@ public class SusiArgument implements Iterable<SusiThought> {
      * @return the instantiated statement with elements of the argument applied
      */
     public String unify(String statement, boolean urlencode, int depth) {
+        assert statement != null;
+        if (statement == null) return null; // this should not happen
         for (SusiThought t: this) {
             // this uses our iterator which iterates in reverse order. That means, latest thought is first returned
             if (depth-- < 0) break;
-            statement = t.unify(statement, urlencode);
-            if (!new TimeoutMatcher(SusiThought.variable_pattern.matcher(statement)).find()) return statement;
+            statement = t.unifyOnce(statement, urlencode);
+            if (!SusiThought.hasVariablePattern(statement)) return statement;
         }
-        if (new TimeoutMatcher(SusiThought.variable_pattern.matcher(statement)).find()) return null; // failure!
+        if (SusiThought.hasVariablePattern(statement)) return null; // failure!
         return statement;
     }
     
-    public String unify(String statement, boolean urlencode) {
-        return unify(statement, urlencode, Integer.MAX_VALUE);
-    }
-
     /**
      * the iterator returns the thoughts in reverse order, latest thought first
      */
@@ -273,6 +270,10 @@ public class SusiArgument implements Iterable<SusiThought> {
     
     public static void main(String[] args) {
         SusiArgument a = new SusiArgument().think(new SusiThought().addObservation("a", "letter-a"));
-        System.out.println(a.unify("the letter $a$", true));
+        System.out.println(a.unify("the letter $a$", true, Integer.MAX_VALUE));
+        SusiArgument b = new SusiArgument().think(new SusiThought().addObservation("b", "letter-b"));
+        System.out.println(b.unify("the letter $a$", true, Integer.MAX_VALUE));
+        SusiArgument c = new SusiArgument().think(new SusiThought().addObservation("b", "letter-b"));
+        System.out.println(c.unify("the letter c", true, Integer.MAX_VALUE));
     }
 }

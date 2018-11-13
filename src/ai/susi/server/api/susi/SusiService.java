@@ -171,9 +171,13 @@ public class SusiService extends AbstractAPIHandler implements APIHandler {
             
             SusiMind focusMind = new SusiMind(DAO.susi_memory);
             JSONObject focus_skill = DAO.susi.getFocusSkill(focus);
-            String originpath = focus_skill.getString("origin");
-            focusMind.learn(focus_skill, new File(originpath), true);
-            minds.add(focusMind);
+            if (focus_skill == null) {
+                DAO.log("tried to load non-existing focus skill " + focus);
+            } else {
+                String originpath = focus_skill.getString("origin");
+                focusMind.learn(focus_skill, new File(originpath), true);
+                minds.add(focusMind);
+            }
         } catch (JSONException e) {
             DAO.severe(e.getMessage(), e);
         }
