@@ -32,6 +32,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import ai.susi.mind.SusiAction.SusiActionException;
+import ai.susi.tools.TimeoutMatcher;
 
 /**
  * A thought is a piece of data that can be remembered. The structure or the thought can be
@@ -414,15 +415,19 @@ public class SusiThought extends JSONObject {
         return skillName;
     }
     
-    public static final Pattern variable_pattern = Pattern.compile("\\$.*?\\$");
+    private static final Pattern variable_pattern = Pattern.compile("\\$.*?\\$");
+    public static boolean hasVariablePattern(String statement) {
+        return new TimeoutMatcher(SusiThought.variable_pattern.matcher(statement)).find();
+    }
     
     /**
      * Unification applies a piece of memory within the current argument to a statement
      * which creates an instantiated statement
      * @param statement
-     * @return the instantiated statement with elements of the argument applied as much as possible
+     * @return the instantiated statement with elements of the argument applied as much as possible. This may also return uninstantiated variable names if instantiation was not possible.
      */
-    public String unify(String statement, boolean urlencode) {
+    public String unifyOnce(String statement, boolean urlencode) {
+        assert statement != null;
         if (statement.indexOf('$') < 0) return statement;
         String threadOrigName = Thread.currentThread().getName();
         Thread.currentThread().setName("unify: statement = " + statement); // makes debugging easier
@@ -476,6 +481,6 @@ public class SusiThought extends JSONObject {
     
     public static void main(String[] args) {
         SusiThought t = new SusiThought().addObservation("a", "letter-a");
-        System.out.println(t.unify("the letter $a$", true));
+        System.out.println(t.unifyOnce("the letter $a$", true));
     }
 }

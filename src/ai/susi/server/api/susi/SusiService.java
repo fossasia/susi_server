@@ -124,6 +124,7 @@ public class SusiService extends AbstractAPIHandler implements APIHandler {
         // we create a hierarchy of minds which overlap each other completely. The first element in the array is the 'most conscious' mind.
         List<SusiMind> minds = new ArrayList<>();
 
+        // instant dreams
         if (instant != null && instant.length() > 0) try {
             instant = instant.replaceAll("\\\\n", "\n"); // yes, the number of "\" is correct
             // fill an empty mind with the skilltext
@@ -139,7 +140,7 @@ public class SusiService extends AbstractAPIHandler implements APIHandler {
             DAO.severe(e.getMessage(), e);
         }
 
-        // find out if we are dreaming: dreaming is the most prominent mind, it overlaps all other minds
+        // etherpad dreaming
         if (dream != null && dream.length() > 0) try {
             // read the pad for the dream
             String etherpadApikey = DAO.getConfig("etherpad.apikey", "");
@@ -165,19 +166,23 @@ public class SusiService extends AbstractAPIHandler implements APIHandler {
             DAO.severe(e.getMessage(), e);
         }
         
-        // focused skills: if a user has switched on a on-skill
+        // on-skills: if a user has switched on a skill with "run skill" of a skill which has the "on"-property
         if (focus != null && focus.length() > 0) try {
             
             SusiMind focusMind = new SusiMind(DAO.susi_memory);
             JSONObject focus_skill = DAO.susi.getFocusSkill(focus);
-            String originpath = focus_skill.getString("origin");
-            focusMind.learn(focus_skill, new File(originpath), true);
-            minds.add(focusMind);
+            if (focus_skill == null) {
+                DAO.log("tried to load non-existing focus skill " + focus);
+            } else {
+                String originpath = focus_skill.getString("origin");
+                focusMind.learn(focus_skill, new File(originpath), true);
+                minds.add(focusMind);
+            }
         } catch (JSONException e) {
             DAO.severe(e.getMessage(), e);
         }
         
-        // find out if a persona or a private skill is active: a persona is more prominent in conscience than the general mind
+        // a persona or a private skill
         if ((persona != null && persona.length() > 0) || (privateSkill != null && userId.length() > 0 && group_name.length() > 0 && language.length() > 0 && skill_name.length() > 0)) {
             File skillfile = null;
             if (persona != null && persona.length() > 0) {
@@ -240,8 +245,9 @@ public class SusiService extends AbstractAPIHandler implements APIHandler {
                 e.printStackTrace();
             }
         }
+        
+        // finally add the general mind definition. It's there if no other mind is conscious or the other minds do not find an answer.
         if (exclude_default_skills == false) {
-            // finally add the general mind definition. It's there if no other mind is conscious or the other minds do not find an answer.
             minds.add(DAO.susi);
         }
 

@@ -69,7 +69,6 @@ public class SusiAction {
         table,         // show a table
         piechart,      // show a pie chart
         rss,           // show a link list with description (aka search result listing)
-        self,          // reflection (internal function)
         websearch(0),  // do a web search on the client, show like rss rendering
         anchor,        // show/say a link
         map,           // show a map
@@ -180,9 +179,6 @@ public class SusiAction {
                     if (!json.has("description")) throw new SusiActionException("the action needs a description object");
                     if (!json.has("link")) throw new SusiActionException("the action needs a link object");
                     if (!json.has("count")) json.put("count", -1);
-                    break;
-                case self:
-                    if (!json.has("phrases")) throw new SusiActionException("the action needs a phrases object");
                     break;
                 case websearch:
                     if (!json.has("query")) throw new SusiActionException("the action needs a query object");
@@ -377,19 +373,62 @@ public class SusiAction {
     public List<SusiAction> execution(SusiArgument thoughts, ClientIdentity identity, SusiLanguage language, SusiMind... minds) throws ReactionException {
         List<SusiAction> actions = new ArrayList<>();
         actions.add(this);
-        if ((this.getRenderType() == RenderType.answer || this.getRenderType() == RenderType.self) && this.json.has("phrases")) {
+        if (this.getRenderType() == RenderType.answer && this.json.has("phrases")) {
             // transform the answer according to the data
             ArrayList<String> a = getPhrases();
-            String phrase = a.get(random.nextInt(a.size()));
-            String expression = thoughts.unify(phrase, false);
-            if (expression != null) {
-                // transform the answer according to the data
-                // this is the final chance that we can add another thought according to a memorizing intent in the answer string
-                Matcher m;
+            String expression = a.get(random.nextInt(a.size()));
 
-                // self-referrer evaluate contents from the answers expressions as recursion: susi is asked again (reflection)
+            boolean unificationSuccess = true;
+            boolean visibleAssignmentSuccess = true;
+            boolean invisibleAssignmentSuccess = true;
+            boolean reflectionSuccess = true;
+            Matcher m;
+            
+            eval: while (unificationSuccess || visibleAssignmentSuccess || invisibleAssignmentSuccess || reflectionSuccess) {
+
+                // unification of the phrase with the thoughts
+                // this prepares reflection elements to be instantiated before the reflection is called
+                unificationSuccess = false;
+                if (expression.indexOf('$') >= 0) {
+                    String unification = thoughts.unify(expression, false, Integer.MAX_VALUE);
+                    if (unification != null) {
+                        unificationSuccess = true;
+                        expression = unification;
+                    }
+                }
+                
+                // assignments: set variables from the result expressions.
+                // These can be a visible assignment or an invisible assignment
+                // assignment must be done in advance of reflections
+                // because the reflection may use the assigned variables.
+                visibleAssignmentSuccess = false;
+                visibleAssignment: while (new TimeoutMatcher(m = visible_assignment.matcher(expression)).matches()) {
+                    String observation = m.group(1);
+                    if (observation.indexOf('$') > 0 || observation.indexOf('`') > 0) continue visibleAssignment;  // there is a unmatched variable or unresolved reflection in the value
+                    String variable = m.group(2);
+                    expression = expression.substring(0, m.end(1)) + expression.substring(m.end(2));
+                    // write the variable v as side-effect into the thoughts argument
+                    thoughts.think(new SusiThought().addObservation(variable, observation));
+                    visibleAssignmentSuccess = true;
+                }
+                
+                invisibleAssignmentSuccess = false;
+                invisibleAssignment: while (new TimeoutMatcher(m = blind_assignment.matcher(expression)).matches()) {
+                    String observation = m.group(1);
+                    if (observation.indexOf('$') > 0 || observation.indexOf('`') > 0) continue invisibleAssignment;  // there is a unmatched variable or unresolved reflection in the value
+                    String variable = m.group(2);
+                    expression = expression.substring(0, m.start(1) - 1) + expression.substring(m.end(2));
+                    // write the variable v as side-effect into the thoughts argument
+                    thoughts.think(new SusiThought().addObservation(variable, observation));
+                    invisibleAssignmentSuccess = true;
+                }
+                
+                // reflection: evaluate contents from the answers expressions as recursion.
+                // Susi is asking itself in another thinking request.
+                reflectionSuccess = false;
                 while (new TimeoutMatcher(m = self_referrer.matcher(expression)).matches()) {
                     String observation = m.group(1);
+                    if (observation.indexOf('>') > 0 || observation.indexOf('`') > 0) continue;  // there is an assignment or unresolved reflection in the value
                     SusiMind.Reaction reaction = null;
                     ReactionException ee = null;
                     mindlevels: for (SusiMind mind: minds) {
@@ -407,72 +446,34 @@ public class SusiAction {
                     if (action.getRenderType() != RenderType.answer) actions.add(action);
                     expression = expression.substring(0, m.start(1) - 1) + reaction.getExpression() + expression.substring(m.end(1) + 1);
                     expression = expression.trim();
+                    reflectionSuccess = true;
                 }
-                
-                // assignments set variables from the result expressions. These can be visible or invisible
-                while (new TimeoutMatcher(m = visible_assignment.matcher(expression)).matches()) {
-                    String observation = m.group(1);
-                    String variable = m.group(2);
-                    expression = expression.substring(0, m.end(1)) + expression.substring(m.end(2));
-                    // write the variable v as side-effect into the thoughts argument
-                    thoughts.think(new SusiThought().addObservation(variable, observation));
-                }
-                while (new TimeoutMatcher(m = blind_assignment.matcher(expression)).matches()) {
-                    String observation = m.group(1);
-                    String variable = m.group(2);
-                    expression = expression.substring(0, m.start(1) - 1) + expression.substring(m.end(2));
-                    // write the variable v as side-effect into the thoughts argument
-                    thoughts.think(new SusiThought().addObservation(variable, observation));
-                }
-                
-                // find an response type: self-recursion or answer
-                if (this.getRenderType() == RenderType.answer) {
-                    // the expression is answered to the communication partner
-                    this.json.put("expression", expression);
-                }
-                if (this.getRenderType() == RenderType.self) {
-                    // recursive call susi with the answer
-                        SusiMind.Reaction reaction = null;
-                    expression = "";
-                    ReactionException ee = null;
-                    mindlevels: for (SusiMind mind: minds) {
-                            try {
-                                reaction = mind.new Reaction(expression, language, identity, new SusiThought(), minds);
-                                expression = reaction.getExpression();
-                                if (expression != null && expression.length() > 0) break mindlevels;
-                            } catch (ReactionException e) {
-                                ee = e;
-                                continue mindlevels;
-                            }
-                    }
-                    if (reaction == null || expression == null || expression.length() == 0)
-                        throw ee == null ? new ReactionException("could not find an answer") : ee;
-                    thoughts.think(reaction.getMindstate());
-                    this.json.put("expression", expression);
-                    this.phrasesCache = null; // important, otherwise the expression is not recognized
-                    // patch the render type
-                    this.json.put("type", RenderType.answer.name());
-                    this.renderTypeCache = RenderType.answer;
-                }
+
+            }
+            
+            // if anything is left after this process, it is our expression
+            if (expression != null && expression.length() > 0) {
+                // the expression is answered to the communication partner
+                this.json.put("expression", expression);
             }
         }
         if (this.getRenderType() == RenderType.websearch && this.json.has("query")) {
-            this.json.put("query", thoughts.unify(getStringAttr("query"), false));
+            this.json.put("query", thoughts.unify(getStringAttr("query"), false, Integer.MAX_VALUE));
         }
         if (this.getRenderType() == RenderType.anchor && this.json.has("link") && this.json.has("text")) {
-            this.json.put("link", thoughts.unify(getStringAttr("link"), false));
-            this.json.put("text", thoughts.unify(getStringAttr("text"), false));
+            this.json.put("link", thoughts.unify(getStringAttr("link"), false, Integer.MAX_VALUE));
+            this.json.put("text", thoughts.unify(getStringAttr("text"), false, Integer.MAX_VALUE));
         }
         if (this.getRenderType() == RenderType.map && this.json.has("latitude") && this.json.has("longitude") && this.json.has("zoom")) {
-            this.json.put("latitude", thoughts.unify(getStringAttr("latitude"), false));
-            this.json.put("longitude", thoughts.unify(getStringAttr("longitude"), false));
-            this.json.put("zoom", thoughts.unify(getStringAttr("zoom"), false));
+            this.json.put("latitude", thoughts.unify(getStringAttr("latitude"), false, Integer.MAX_VALUE));
+            this.json.put("longitude", thoughts.unify(getStringAttr("longitude"), false, Integer.MAX_VALUE));
+            this.json.put("zoom", thoughts.unify(getStringAttr("zoom"), false, Integer.MAX_VALUE));
         }
         if ((this.getRenderType() == RenderType.video_play || this.getRenderType() == RenderType.audio_play) && this.json.has("identifier")) {
-            this.json.put("identifier", thoughts.unify(getStringAttr("identifier"), false));
+            this.json.put("identifier", thoughts.unify(getStringAttr("identifier"), false, Integer.MAX_VALUE));
         }
         if ((this.getRenderType() == RenderType.audio_volume) && this.json.has("volume")) {
-            String volume = thoughts.unify(getStringAttr("volume"), false);
+            String volume = thoughts.unify(getStringAttr("volume"), false, Integer.MAX_VALUE);
             int p = volume.indexOf(' ');
             if (p >= 0) volume = volume.substring(0, p).trim();
             int v = 50;

@@ -72,7 +72,9 @@ public class SusiIntent {
      * @return a set of intents
      */
     public static List<SusiIntent> getIntents(SusiLanguage language, JSONObject json, SusiSkill.ID skillid) {
-        if (!json.has("phrases")) throw new PatternSyntaxException("phrases missing", "", 0);
+        if (!json.has("phrases")) {
+            throw new PatternSyntaxException("phrases missing", "", 0);
+        }
         final List<SusiIntent> intents = new ArrayList<>();
         if (json.has("options")) {
             JSONArray options = json.getJSONArray("options");
@@ -170,13 +172,13 @@ public class SusiIntent {
         
         // extract the utterances and the utterances subscore
         if (!json.has("phrases")) throw new PatternSyntaxException("phrases missing", "", 0);
-        JSONArray p = (JSONArray) json.remove("phrases");
+        JSONArray p = (JSONArray) json.get("phrases");
         this.utterances = new ArrayList<>(p.length());
         p.forEach(q -> this.utterances.add(new SusiUtterance((JSONObject) q)));
         
         // extract the actions and the action subscore
         if (!json.has("actions")) throw new PatternSyntaxException("actions missing", "", 0);
-        p = (JSONArray) json.remove("actions");
+        p = (JSONArray) json.get("actions");
         this.actions = new ArrayList<>(p.length());
         p.forEach(a -> {
             try {
@@ -189,7 +191,7 @@ public class SusiIntent {
         
         // extract the inferences and the process subscore; there may be no inference at all
         if (json.has("process")) {
-            p = (JSONArray) json.remove("process");
+            p = (JSONArray) json.get("process");
             this.inferences = new ArrayList<>(p.length());
             p.forEach(q -> this.inferences.add(new SusiInference((JSONObject) q)));
         } else {

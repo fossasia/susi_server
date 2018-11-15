@@ -123,7 +123,7 @@ public abstract class AbstractAPIHandler extends HttpServlet implements APIHandl
         Authorization authorization = DAO.getAuthorization(identity);
 
         if (authorization.getUserRole().ordinal() < minimalUserRole.ordinal()) {
-            String message = "Base user role not sufficient. Your base user role is '" + authorization.getUserRole().name() + "', your user role is '" + authorization.getUserRole().getName() + "'";
+            String message = "Base user role not sufficient. Your base user role is '" + authorization.getUserRole().name() + "', minimum user role required is '" + minimalUserRole.getName() + "'";
             logClient(startTime, query, identity, 401, message);
             response.sendError(401, message);
 			return;

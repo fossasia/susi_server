@@ -125,7 +125,8 @@ public class SusiMind {
     }
     
     public JSONObject getFocusSkill(String skillCallName) {
-        return this.focusSkills.get(skillCallName.toLowerCase());
+        JSONObject json = this.focusSkills.get(skillCallName.toLowerCase());
+        return json;
     }
 
     public SusiMind observe() throws IOException {

@@ -173,7 +173,7 @@ public class SusiInference {
                 StringWriter stdout = new StringWriter();
                 javascript.getContext().setWriter(new PrintWriter(stdout));
                 javascript.getContext().setErrorWriter(new PrintWriter(stdout));
-                Object o = javascript.eval(flow.unify(term, false));
+                Object o = javascript.eval(flow.unify(term, false, Integer.MAX_VALUE));
                 String bang = o == null ? "" : o.toString().trim();
                 if (bang.length() == 0) bang = stdout.getBuffer().toString().trim();
                 return new SusiThought().addObservation("!", bang);
@@ -288,8 +288,8 @@ public class SusiInference {
                 
                 // load more data using an url and a path
                 if (definition.has("url") && definition.has("path")) try {
-                    String url = flow.unify(definition.getString("url"), true);
-                    String path = flow.unify(definition.getString("path"), false);
+                    String url = flow.unify(definition.getString("url"), true, Integer.MAX_VALUE);
+                    String path = flow.unify(definition.getString("path"), false, Integer.MAX_VALUE);
                     byte[] b = ConsoleService.loadData(url);
                     JSONArray data = JsonPath.parse(b, path);
                     if (data != null) {
@@ -314,23 +314,23 @@ public class SusiInference {
                 }
                 return json;
             } else {
-                try {return ConsoleService.dbAccess.deduce(flow, flow.unify(expression, false));} catch (Exception e) {}
+                try {return ConsoleService.dbAccess.deduce(flow, flow.unify(expression, false, Integer.MAX_VALUE));} catch (Exception e) {}
             }
         }
         if (type == SusiInference.Type.flow) {
-            String expression = flow.unify(this.getExpression(), false);
+            String expression = flow.unify(this.getExpression(), false, Integer.MAX_VALUE);
             try {return flowProcedures.deduce(flow, expression);} catch (Exception e) {}
         }
         if (type == SusiInference.Type.memory) {
-            String expression = flow.unify(this.getExpression(), false);
+            String expression = flow.unify(this.getExpression(), false, Integer.MAX_VALUE);
             try {return memoryProcedures.deduce(flow, expression);} catch (Exception e) {}
         }
         if (type == SusiInference.Type.javascript) {
-            String expression = flow.unify(this.getExpression(), false);
+            String expression = flow.unify(this.getExpression(), false, Integer.MAX_VALUE);
             try {return javascriptProcedures.deduce(flow, expression);} catch (Exception e) {}
         }
         if (type == SusiInference.Type.prolog) {
-            String expression = flow.unify(this.getExpression(), false);
+            String expression = flow.unify(this.getExpression(), false, Integer.MAX_VALUE);
             try {return prologProcedures.deduce(flow, expression);} catch (Exception e) {}
         }
         // maybe the argument is not applicable, then an empty thought is produced (which means a 'fail')
