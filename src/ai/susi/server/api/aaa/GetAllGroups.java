@@ -22,9 +22,16 @@ package ai.susi.server.api.aaa;
 import ai.susi.DAO;
 import ai.susi.json.JsonObjectWithDefault;
 import ai.susi.server.*;
+
+import ai.susi.server.Authorization;
+import io.swagger.annotations.*;
 import org.json.JSONObject;
 
 import javax.servlet.http.HttpServletResponse;
+import javax.ws.rs.GET;
+import javax.ws.rs.Path;
+import javax.ws.rs.Produces;
+import javax.ws.rs.core.MediaType;
 
 /**
  * This Servlets returns all the group details of all the groups created.
@@ -33,6 +40,11 @@ import javax.servlet.http.HttpServletResponse;
  * http://127.0.0.1:4000/aaa/getAllGroups.json
  *
  */
+
+@Path("/aaa/getAllGroups.json")
+@Produces(MediaType.APPLICATION_JSON)
+@Api(value = "GetAllGroups",
+        description = "This Endpoint returns all the group details of all the groups created.")
 public class GetAllGroups extends AbstractAPIHandler implements APIHandler {
 
     private static final long serialVersionUID = -179412273153306443L;
@@ -42,6 +54,13 @@ public class GetAllGroups extends AbstractAPIHandler implements APIHandler {
         return UserRole.ADMIN;
     }
 
+    @GET
+    @ApiOperation(httpMethod = "GET", value = "Resource to get the details of all groups created.")
+    @ApiResponses(value = {
+            @ApiResponse(code = 200,
+                    message = "Success: Fetched all groups"),
+            @ApiResponse(code = 401,
+                    message = "Base user role not sufficient.")  })
     @Override
     public JSONObject getDefaultPermissions(UserRole baseUserRole) {
         return null;
