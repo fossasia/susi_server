@@ -22,6 +22,8 @@ package ai.susi.server.api.service;
 import ai.susi.DAO;
 import ai.susi.server.Query;
 import ai.susi.server.RemoteAccess;
+import ai.susi.server.api.aaa.GetAvatarServlet;
+
 import javax.servlet.ServletException;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServlet;
@@ -56,11 +58,8 @@ public class AssetServlet extends HttpServlet {
         try {
             while ((c = is.read(b)) >  0) {data.write(b, 0, c);}
         } catch (IOException e) {}
-        
-        if (file.endsWith(".png") || (file.length() == 0 && request.getServletPath().endsWith(".png"))) post.setResponse(response, "image/png");
-        else if (file.endsWith(".gif") || (file.length() == 0 && request.getServletPath().endsWith(".gif"))) post.setResponse(response, "image/gif");
-        else if (file.endsWith(".jpg") || file.endsWith(".jpeg") || (file.length() == 0 && request.getServletPath().endsWith(".jpg"))) post.setResponse(response, "image/jpeg");
-        else post.setResponse(response, "application/octet-stream");
+
+        GetAvatarServlet.setMimeType(request, response, post, file);
 
         ServletOutputStream sos = response.getOutputStream();
         sos.write(data.toByteArray());
@@ -84,11 +83,9 @@ public class AssetServlet extends HttpServlet {
         if (id_str_b == null || id_str_b.length == 0) {response.sendError(400, "your request does not contain a id_str."); return;}
         byte[] file_b = m.get("file");
         if (file_b == null || file_b.length == 0) {response.sendError(400, "your request does not contain a file name."); return;}
-        String screen_name = screen_name_b == null ? "" : new String(screen_name_b, 0, screen_name_b.length, StandardCharsets.UTF_8);
-        final byte[] bytes = id_str_b;
-        String id_str = bytes == null ? "" : new String(bytes, 0, bytes.length, StandardCharsets.UTF_8);
-        final byte[] bytes1 = file_b;
-        String file = bytes1 == null ? "" : new String(bytes1, 0, bytes1.length, StandardCharsets.UTF_8);
+        String screen_name = new String(screen_name_b, 0, screen_name_b.length, StandardCharsets.UTF_8);
+        String id_str = new String(id_str_b, 0, id_str_b.length, StandardCharsets.UTF_8);
+        String file = new String(file_b, 0, file_b.length, StandardCharsets.UTF_8);
 
         File f = DAO.getAssetFile(screen_name, id_str, file);
         f.getParentFile().mkdirs();
