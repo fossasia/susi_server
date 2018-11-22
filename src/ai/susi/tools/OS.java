@@ -106,18 +106,22 @@ public final class OS {
     }
 
     public static void openBrowser(final String url) {
-        boolean head = java.lang.System.getProperty("java.awt.headless", "").equals("false");
-        if (!head) {
-            if (Desktop.isDesktopSupported()) {
-                try {
-                    Desktop.getDesktop().browse(new URI(url));
-                } catch (IOException | URISyntaxException e) {
-                    openBrowserClassic(url);
-                }
-            } else {
-                openBrowserClassic(url);
-            }
-        }
+	boolean head = java.lang.System.getProperty("java.awt.headless", "").equals("false");
+	if (!head) {
+	    try {
+		if (Desktop.isDesktopSupported()) {
+		    try {
+			Desktop.getDesktop().browse(new URI(url));
+		    } catch (IOException | URISyntaxException e) {
+			openBrowserClassic(url);
+		    }
+		} else {
+		    openBrowserClassic(url);
+		}
+	    } catch (Throwable e) {
+		return; // catch java.awt.AWTError: Assistive Technology not found: org.GNOME.Accessibility.AtkWrapper
+	    }
+	}
     }
     
     public static void openBrowserClassic(final String url) {
