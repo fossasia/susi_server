@@ -78,21 +78,25 @@ import java.io.*;
         byte[] b = new byte[2048];
         ByteArrayOutputStream data = new ByteArrayOutputStream();
 
-        if(avatar_type.equals("gravatar")) {
-        	String gravatarUrl = "https://www.gravatar.com/avatar/" + file;
-        	URL url = new URL(gravatarUrl);
-        	is = url.openStream();
-        } else if(avatar_type.equals("server")) {
-        	imageFile = new File(DAO.data_dir  + File.separator + "avatar_uploads" + File.separator + file);
-            if (imageFile == null || !imageFile.exists()) {
+        switch (avatar_type) {
+            case "gravatar":
+                String gravatarUrl = "https://www.gravatar.com/avatar/" + file;
+                URL url = new URL(gravatarUrl);
+                is = url.openStream();
+                break;
+            case "server":
+                imageFile = new File(DAO.data_dir + File.separator + "avatar_uploads" + File.separator + file);
+                if (!imageFile.exists()) {
+                    file = "default.jpg";
+                    imageFile = new File(DAO.html_dir + File.separator + "images" + File.separator + file);
+                }
+                is = new BufferedInputStream(new FileInputStream(imageFile));
+                break;
+            default:
                 file = "default.jpg";
-                imageFile = new File(DAO.html_dir  + File.separator + "images" + File.separator + file);
-            }
-            is = new BufferedInputStream(new FileInputStream(imageFile));
-        } else {
-            file = "default.jpg";
-            imageFile = new File(DAO.html_dir  + File.separator + "images" + File.separator + file);
-            is = new BufferedInputStream(new FileInputStream(imageFile));
+                imageFile = new File(DAO.html_dir + File.separator + "images" + File.separator + file);
+                is = new BufferedInputStream(new FileInputStream(imageFile));
+                break;
         }
 
         int c;
@@ -100,13 +104,17 @@ import java.io.*;
             while ((c = is.read(b)) >  0) {data.write(b, 0, c);}
         } catch (IOException e) {}
 
-        if (file.endsWith(".png") || (file.length() == 0 && request.getServletPath().endsWith(".png"))) post.setResponse(response, "image/png");
-        else if (file.endsWith(".gif") || (file.length() == 0 && request.getServletPath().endsWith(".gif"))) post.setResponse(response, "image/gif");
-        else if (file.endsWith(".jpg") || file.endsWith(".jpeg") || (file.length() == 0 && request.getServletPath().endsWith(".jpg"))) post.setResponse(response, "image/jpeg");
-        else post.setResponse(response, "application/octet-stream");
+        setMimeType(request, response, post, file);
 
         ServletOutputStream sos = response.getOutputStream();
         sos.write(data.toByteArray());
         post.finalize();
     }
-}
+
+     public static void setMimeType(HttpServletRequest request, HttpServletResponse response, Query post, String file) {
+         if (file.endsWith(".png") || (file.length() == 0 && request.getServletPath().endsWith(".png"))) post.setResponse(response, "image/png");
+         else if (file.endsWith(".gif") || (file.length() == 0 && request.getServletPath().endsWith(".gif"))) post.setResponse(response, "image/gif");
+         else if (file.endsWith(".jpg") || file.endsWith(".jpeg") || (file.length() == 0 && request.getServletPath().endsWith(".jpg"))) post.setResponse(response, "image/jpeg");
+         else post.setResponse(response, "application/octet-stream");
+     }
+ }

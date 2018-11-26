@@ -24,6 +24,8 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import ai.susi.server.Query;
 import ai.susi.server.RemoteAccess;
+import ai.susi.server.api.aaa.GetAvatarServlet;
+
 import javax.servlet.ServletException;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServlet;
@@ -46,7 +48,7 @@ import java.io.*;
     private static final long serialVersionUID = 628253297031919192L;
 
     @Override
-    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
 
         Query post = RemoteAccess.evaluate(request);
         File imageFile = null;
@@ -75,14 +77,14 @@ import java.io.*;
                 imageFile = new File(DAO.private_skill_watch_dir  + File.separator + userId + File.separator + group + File.separator + language + File.separator + image);
             }
         }
-        else if (post.get("image","") != "") {
+        else if (!post.get("image", "").equals("")) {
             // for custom user's images
             String image_path = post.get("image","");
             file = image_path.substring(image_path.indexOf("/")+1);
             String showAvatar = post.get("avatar","false");
             if(showAvatar.equals("true")) {
                 imageFile = new File(DAO.data_dir  + File.separator + "avatar_uploads" + File.separator + file);
-                if (imageFile == null || !imageFile.exists()) {
+                if (!imageFile.exists()) {
                     imageFile = new File(DAO.html_dir  + File.separator + "images" + File.separator + "default.jpg");
                 }
             } else {
@@ -100,10 +102,7 @@ import java.io.*;
             while ((c = is.read(b)) >  0) {data.write(b, 0, c);}
         } catch (IOException e) {}
 
-        if (file.endsWith(".png") || (file.length() == 0 && request.getServletPath().endsWith(".png"))) post.setResponse(response, "image/png");
-        else if (file.endsWith(".gif") || (file.length() == 0 && request.getServletPath().endsWith(".gif"))) post.setResponse(response, "image/gif");
-        else if (file.endsWith(".jpg") || file.endsWith(".jpeg") || (file.length() == 0 && request.getServletPath().endsWith(".jpg"))) post.setResponse(response, "image/jpeg");
-        else post.setResponse(response, "application/octet-stream");
+        GetAvatarServlet.setMimeType(request, response, post, file);
 
         ServletOutputStream sos = response.getOutputStream();
         sos.write(data.toByteArray());
