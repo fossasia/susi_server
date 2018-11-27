@@ -30,7 +30,7 @@ twitterAccessTokenSecret: <KEY HERE>
 #### /aaa/status.json
 This API is open and can be accessed without any restrictions!
 The status servlet shows the size of the internal Elasticsearch search index for messages and users. Furthermore, the servlet reflects the current browser clients settings in the client_info.
-
+```
 {
   "system": {
     "assigned_memory": 2138046464,
@@ -155,7 +155,7 @@ The status servlet shows the size of the internal Elasticsearch search index for
     }
   }
 }
-
+```
 
 #### /aaa/search.json
 This API is open and can be accessed without any restrictions!
