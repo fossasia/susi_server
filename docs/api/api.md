@@ -1,13 +1,13 @@
 ## APIs
-
 This API can be used to create your own social media search engine using the public and open message API. Every servlet can be called with a POST request, all but push.json can be called with a PUT request.
 
 ### Client Authentication
 You can access the API without any authentication. This service can be use without subscription, however, there is a user management to grant users administration rights. Excessive usage of APIs is restricted with DoS protection. Some servlets can only be called from localhost or administration rights to protect user data submitted to the server. There are three classes for access rights:
 
-open: access without any restrictions for all clients from any IP
-limited: localhost clients or administration users are granted more data than public clients
+open:       access without any restrictions for all clients from any IP
+limited:    localhost clients or administration users are granted more data than public clients
 restricted: only localhost clients or administration users are granted access
+
 ### Cross-Origin Resource Sharing
 Most servlets can be called with a callback=<function-name> property to call a jsonp result format. This is sufficient to allow a cross-origin access to the API. Servlets which do not provide jsonS content (i.e. all /vis/ servlets) implement CORS headers to enable embedding of their content (applies mostly to images).
 
@@ -24,8 +24,6 @@ client.twitterConsumerKey: <KEY HERE>
 client.twitterConsumerSecret: <KEY HERE> 
 twitterAccessToken: <KEY HERE> 
 twitterAccessTokenSecret: <KEY HERE> 
-
-
 
 #### /aaa/status.json
 This API is open and can be accessed without any restrictions!
@@ -183,7 +181,7 @@ timezoneOffset = <offset in minutes>// offset applied on since:, until: and the 
 minified = <true|false>// minify the result, default false, i.e. minified=true
 
 A search result in JSON format looks like:
-
+```
 {
   "readme_0" : "THIS JSON IS THE RESULT OF YOUR SEARCH QUERY - THERE IS NO WEB PAGE WHICH SHOWS THE RESULT!",
   "readme_1" : "susi.ai is the framework for a message search system, not the portal, read: http://susi.ai/about.html#notasearchportal",
@@ -253,6 +251,7 @@ A search result in JSON format looks like:
   } ],
   "aggregations" : { }
 }
+```
 The text field is evaluated and all shortened links are extracted. Furthermore all hashtags and user screen names are extracted as well and written into special index fields, which can be used for statistical evaluation:
 
 links : all links in the message. (almost) all shortlinks are expanded!
@@ -271,7 +270,7 @@ These extracted fields are especially useful for search aggregations, see below.
 A search result may also have field aggregations (aka 'facets') if they are requested in the search request. To get aggregations, the attribute 'source' MUST be set to 'cache' and the fields to be aggregated must be listed in the attribute 'fields'. Aggregations are only useful if the search query contains also since- and until-modifiers to define a time frame. A typical aggregation search request sets the count of search results to zero. Example:
 
 url : http://localhost:9000/aaa/search.json?q=spacex%20since:2015-04-01%20until:2015-04-06&source=cache&count=0&fields=mentions,hashtags&limit=6
-
+```
 {
   "readme_0": "THIS JSON IS THE RESULT OF YOUR SEARCH QUERY - THERE IS NO WEB PAGE WHICH SHOWS THE RESULT!",
   "readme_1": "susi.ai is the framework for a message search system, not the portal, read: http://susi.ai/about.html#notasearchportal",
@@ -311,10 +310,11 @@ url : http://localhost:9000/aaa/search.json?q=spacex%20since:2015-04-01%20until:
     }
   }
 }
+```
 Loklak can also suggest what's trending and can give you the list of trending hashtags using the same search aggregations method. To find out the most trending hashtags on loklak since a particular date. Other filters like until can also be applied, here is a sample request
 
 url  : http://susi.ai/aaa/search.json?q=since:2016-06-01&source=cache&count=0&fields=hashtags
-
+```
 {
   "readme_0": "THIS JSON IS THE RESULT OF YOUR SEARCH QUERY - THERE IS NO WEB PAGE WHICH SHOWS THE RESULT!",
   "readme_1": "susi.ai is the framework for a message search system, not the portal, read: http://susi.ai/about.html#notasearchportal",
@@ -349,10 +349,11 @@ url  : http://susi.ai/aaa/search.json?q=since:2016-06-01&source=cache&count=0&fi
     "hungariangp": 92
   }}
 } 
+```
 A special field is the "created_at" field which will create a date histogram if listed in the GET-attribute 'fields'. The date histogram resolution depends on the time frame as given in the query modifier with the 'since' and 'until' time limits: minutes if the time frame is below three hours, hours if the time frame is below seven days and days otherwise. Example:
 
 url : http://localhost:9000/aaa/search.json?q=spacex%20since:2015-04-05_23:10%20until:2015-04-05_23:20&source=cache&count=0&fields=created_at&timezoneOffset=-120
-
+```
 {
   "readme_0": "THIS JSON IS THE RESULT OF YOUR SEARCH QUERY - THERE IS NO WEB PAGE WHICH SHOWS THE RESULT!",
   "readme_1": "susi.ai is the framework for a message search system, not the portal, read: http://susi.ai/about.html#notasearchportal",
@@ -391,10 +392,12 @@ url : http://localhost:9000/aaa/search.json?q=spacex%20since:2015-04-05_23:10%20
     "2015-04-06 14:00": 1
   }}
 }
+```
 It is also possible to specify the order in descending order for the following filter options favourites_count, retweet_count and the default being created_at. Here are the examples of the different queries which make this happen.
 
 retweet count:   : http://susi.ai/aaa/search.json?timezoneOffset=-120&q=fossasia&order=retweet_count&source=cache
 favorites count:   : http://localhost:9000/aaa/search.json?timezoneOffset=-120&q=fossasia&order=favourites_count&source=cache
+ ```
   {
   "readme_0": "THIS JSON IS THE RESULT OF YOUR SEARCH QUERY - THERE IS NO WEB PAGE WHICH SHOWS THE RESULT!",
   "readme_1": "susi.ai is the framework for a message search system, not the portal, read: http://susi.ai/about.html#notasearchportal",
@@ -594,6 +597,7 @@ favorites count:   : http://localhost:9000/aaa/search.json?timezoneOffset=-120&q
   ],
   "aggregations": {}
 }
+```
 Please note that the times given here as since- und until modifiers as well as the histogram dates are shifted by -120 minutes as given in the timezoneOffset attribute. This makes it possible to pass that attribute from a browser which knows the actual time zone of the web front-end user and modify search attributes and result times according to the localized time of the user.
 
 
@@ -625,7 +629,7 @@ minified = <boolean>// minify the result
 delete = <boolean>// delete everything which is in the result set
 
 The result shows a list of queries in the given order. Additionally to the queries, 'artificial' queries, generated by the location database, are attached as well. This API is therefore also a tool to generate location name suggestions.
-
+```
 {
   "search_metadata" : {
     "count" : "7",
@@ -682,7 +686,7 @@ The result shows a list of queries in the given order. Additionally to the queri
     "score_suggest" : 0
   } ]
 }
-
+```
 
 #### /aaa/crawler.json
 This API has access limitations: localhost clients are granted more data than public clients.
@@ -694,7 +698,7 @@ hashtags = <true|false>// if true then hashtags from the results are used for th
 users = <true|false>// if true then user names from the results are used for the next search requests
 
 The crawler returns immediately with an object describing the index size (exactly the same as with the status servlets) and an object describing the crawler status:
-
+```
 {
   "index_sizes" : {
     "messages" : 127154,
@@ -708,7 +712,7 @@ The crawler returns immediately with an object describing the index size (exactl
     "processed" : [ "spacex", "yacy_search", "singapore", "fossasia" ]
   }
 }
-
+```
 
 #### /aaa/hello.json
 This API is open and can be accessed without any restrictions!
@@ -717,15 +721,14 @@ The hello servlet is part of the loklak peer-to-peer bootstrap process and shall
 callback = <string>// jsonp callback function name
 
 The result is always:
-
+```
 {
   "status" : "ok"
 }
+```
 loklak does not collect IP addresses on API interfaces where user data is collected. However, to make a peer-to-peer system possible, the collection on APIs where no user data is submitted, is necessary. The most simple API where no data is submitted at all would be most appropriate for the IP collection. That is why this API exists, because it does not take any request option and it does not deliver any specific data.
 
 IPs, collected by this method is retrievable with the peers.json API. If a loklak user does not want that the IP addresses move along a p2p network, then simply the field backend in the configuration must be empty.
-
-
 
 #### /aaa/geocode.json
 This API is open and can be accessed without any restrictions!
@@ -744,7 +747,7 @@ places = <comma-separated strings>// a list of place names
 data = <json>// the json must contain a 'places' property with an array of place name strings. This is an alernative to the 'places' property.
 
 Result-Description
-
+```
 {
   "locations" : {
     "Singapore" : {
@@ -757,12 +760,11 @@ Result-Description
     }
   }
 }
-
-
+```
 #### /aaa/peers.json
 This API is open and can be accessed without any restrictions!
 This servlet combined the result of the hello calls from all peers and provides a list of addresses where the remote peers can be accessed.
-
+```
 {
   "peers" : [ {
     "class" : "SuggestServlet",
@@ -799,7 +801,7 @@ This servlet combined the result of the hello calls from all peers and provides 
   } ],
   "count" : 4
 }
-
+```
 
 #### /aaa/proxy.json
 This API has access restrictions: only localhost clients are granted.
@@ -826,7 +828,7 @@ Whenever a peer acquires new Tweets, it reports these to the back-end for storag
 data = <a search result object>// push the same data as it is returned with search.json
 
 The servlet returns with
-
+```
 {
   "status" : "ok",
   "records" : "100",
@@ -834,6 +836,7 @@ The servlet returns with
   "known" : "93",
   "message" : "pushed"
 }
+```
 When messages arrive the back-end peer, the value "source_type" of every message is replaced with "REMOTE"
 
 
@@ -841,7 +844,7 @@ When messages arrive the back-end peer, the value "source_type" of every message
 #### /aaa/push/geojson.json
 This API is open and can be accessed without any restrictions!
 An alternative solution to push Tweets data to back-end, using GeoJSON format. Messages are collected from provided url, which contains a GeoJSON Feature Collection. Each message is a GeoJSON Feature. Example:
-
+```
 {
   {
     "type": "FeatureCollection",
@@ -872,6 +875,7 @@ An alternative solution to push Tweets data to back-end, using GeoJSON format. M
     }
     ]}
 }
+```
 In the back-end, "geometry" fields are transformed into Tweet "location_point". "properties" fields are pasted as Tweet fields.
 
 This servlet allows users to specify some rules to map "properties" fields differently, with map_type parameter.The HTTP GET or POST request has these attributes:
@@ -980,7 +984,7 @@ data = <an object to store>// if you set action=update, you must submit this dat
 If you want to retrieve data from the API, just submit the screen_name and you get the stored data object returned. If you want to store one or more account objects, submit that object (these objects) inside the data value. Hint: the screen_name is not used for storage of the objects, the screen_name must be inside the data object!
 
 The data object must have the following form:
-
+```
 {
   "screen_name"           : "test",        // primary key for the user
   "source_type"           : "TWITTER",     // the application which created the token, by default "TWITTER"
@@ -990,6 +994,7 @@ The data object must have the following form:
   "authentication_latest" : "2015-06-07T09:39:22.341Z",        // optional
   "apps"                  : {"wall" : {"type" : "horizontal"}} // any json
 }
+```
 You can set such a record i.e. with the call
 
 http://localhost:9000/aaa/account.json?action=update&data={"screen_name":"test","oauth_token":"abc","oauth_token_secret":"def"}
@@ -1009,7 +1014,7 @@ This API is open and can be accessed without any restrictions!
 This servlet provides the retrieval of user followers and the accounts which the user is following. Just submit the screen_name as GET http attribute. Example:
 
 http://susi.ai/aaa/user.json?screen_name=loklak_app
-
+```
 {
   "search_metadata" : {
     "client" : "122.175.88.165"
@@ -1088,10 +1093,11 @@ http://susi.ai/aaa/user.json?screen_name=loklak_app
     "followers_count" : 0
   }
 }
+```
 It is also possible to get the followers of an account all at once. To trigger this, just add the attribute followers=<maxcount> to the request. The same applies to the account which the user is following, just add following=<maxcount>. This will produce a list of <maxcount> user entries in a 'topology' object. Example :
 
 http://susi.ai/aaa/user.json?screen_name=loklak_app&followers=10000&following=10000
-
+```
 {
   "search_metadata" : {
     (client) 
@@ -1125,7 +1131,7 @@ http://susi.ai/aaa/user.json?screen_name=loklak_app&followers=10000&following=10
     "$P" : "I"
   }
 }
-
+```
 
 #### /cms/apps.json
 This API is open and can be accessed without any restrictions!
@@ -1141,7 +1147,7 @@ Furthermore, the servlet can now be called with an 'category' property, like:
 /cms/apps.json?category=Demo
 
 This will reduce the app list to the sub-list which contains only apps from that category.
-
+```
   {
     "@context": "http://schema.org",
     "@type": "SoftwareApplication",
@@ -1158,7 +1164,7 @@ This will reduce the app list to the sub-list which contains only apps from that
       "sameAs": "https://github.com/orbiter"
     }
   }
-
+```
 
 #### /aaa/asset
 This API has access limitations: localhost clients are granted more data than public clients.
@@ -1364,13 +1370,13 @@ This API is open and can be accessed without any restrictions!
 This servlet provides the visualization of any given JSON into a piechart which can be consumed by the clients where interactive charts cannot be sent. These images denote the piechart visualizations of a json key:value pair object. This API can be called over GET/POST to the api endpoint /vis/piechart.png with the data parameter
 
 Here is the request for the given data:
-
+```
 {
   "ford": "17.272992",
   "toyota": "27.272992",
   "renault": "47.272992"
 }
-  
+``` 
 http://susi.ai/vis/piechart.png?data={%22ford%22:%2217.272992%22,%22toyota%22:%2227.272992%22,%22renault%22:%2247.272992%22}&width=1000&height=1000
 
 data = <text>// Value of JSON Key:Value pairs to visualize
@@ -1526,7 +1532,9 @@ You send this this information as a GET / POST request. Here's a sample XML
 </project>
 Query String: http://localhost:9000/aaa/xml2json.json?data=<xml>
 #### Resulting JSON
-
+```
+  
+```
   {"project": {
   "basedir": ".",
   "path": {
@@ -1705,6 +1713,7 @@ Query String: http://localhost:9000/aaa/xml2json.json?data=<xml>
     }
   ]
 }}
+```
 #### /aaa/csv2json.json
 Any well formed CSV data source can be converted to JSON using the loklak's `csv2json.json` API endpoint. This servlet provides the ability to send data to loklak's API as CSV and receive a JSON response. To do this, every CSV line ending with \n needs to be encoded as %0A. Then pass this information as a value to data and you'll get a response.
 
@@ -1717,7 +1726,7 @@ Query String: http://localhost:9000/aaa/xml2json.json?data=<csv>
 Sample Query: http://localhost:9000/aaa/csv2json.json?data=twittername,name,org%0A0rb1t3r,Michael%20Peter%20Christen,FOSSASIA%0Asudheesh001,Sudheesh%20Singanamalla,FOSSASIA%0A
 
 #### Output
-
+```
 [
   {
     "org": "FOSSASIA",
@@ -1730,4 +1739,4 @@ Sample Query: http://localhost:9000/aaa/csv2json.json?data=twittername,name,org%
     "twittername": "sudheesh001"
   }
 ]
-  
+```  
