@@ -105,7 +105,7 @@ public class LoginService extends AbstractAPIHandler implements APIHandler {
 		if (logout || delete) {	// logout if requested
 
 			if(post.get("access_token") == null || authorization.getIdentity() == null) {
-				throw new APIException(400, "Bad access token.");
+				throw new APIException(401, "Unauthorized");
 			}
 			// invalidate session
 			post.getRequest().getSession().invalidate();

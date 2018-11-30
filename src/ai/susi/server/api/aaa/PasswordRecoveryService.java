@@ -76,11 +76,11 @@ public class PasswordRecoveryService extends AbstractAPIHandler implements APIHa
 						return new ServiceResponse(result);
 					}
 					authentication.delete();
-					throw new APIException(422, "Expired token");
+					throw new APIException(401, "Expired token");
 				}
 				throw new APIException(422, "Invalid token");
 			} else {
-				throw new APIException(422, "No token specified");
+				throw new APIException(400, "No token specified");
 			}
 		}
 

@@ -97,7 +97,7 @@ public class PasswordChangeService extends AbstractAPIHandler implements APIHand
             if ((authentication.getIdentity().getName()).equals(newpassword) || !new TimeoutMatcher(pattern.matcher(newpassword)).matches()) {
                 // password can't be equal to email and regex should be matched
                 result.put("message", "Invalid password.");
-                throw new APIException(400, "invalid password");
+                throw new APIException(422, "invalid password");
             }
 
             if (DAO.hasAuthentication(emailcred)) {
@@ -118,7 +118,7 @@ public class PasswordChangeService extends AbstractAPIHandler implements APIHand
                     result.put("message", "Your password has been changed!");
                     result.put("accepted", true);
                 } catch (Exception e) {
-                    result.put("message", e.getMessage());
+                    throw new APIException(500, "Failed to change password");
                 }
             }
         }

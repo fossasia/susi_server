@@ -75,7 +75,7 @@ public class GetApiKeys extends AbstractAPIHandler implements APIHandler {
             result.put("message", "Success : Fetched all API key successfully !");
             return new ServiceResponse(result);
         } catch (Exception e) {
-            throw new APIException(422, "Failed : Unable to fetch API keys!" );
+            throw new APIException(500, "Failed : Unable to fetch API keys!" );
         }
     }
 }

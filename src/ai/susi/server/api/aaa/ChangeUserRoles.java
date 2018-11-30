@@ -55,7 +55,7 @@ public class ChangeUserRoles extends AbstractAPIHandler implements APIHandler {
             try {
                 serviceClass = Class.forName(serviceString);
             } catch (ClassNotFoundException e) {
-                throw new APIException(400, "Bad service name (no class)");
+                throw new APIException(400  , "Bad service name (no class)");
             }
             Constructor<?> constructor;
             try {
