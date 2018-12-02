@@ -66,7 +66,7 @@ public class ApiKeysService extends AbstractAPIHandler implements APIHandler {
     public ServiceResponse serviceImpl(Query call, HttpServletResponse response, Authorization authorization, final JsonObjectWithDefault permissions) throws APIException {
         if (call.get("keyName", null) == null
                 && call.get("keyValue", null) == null) {
-            throw new APIException(422, "Bad Request. No parameter present");
+            throw new APIException(400, "Bad Request. No parameter present");
         }
 
         String keyName = call.get("keyName", null);
@@ -91,7 +91,7 @@ public class ApiKeysService extends AbstractAPIHandler implements APIHandler {
                result.put("message", "Added new API key " + call.get("keyName") + " successfully !");
                return new ServiceResponse(result);
             } catch (Exception e) {
-               throw new APIException(422, "Failed : Unable to add" + call.get("keyName") + " !" );
+               throw new APIException(500, "Failed : Unable to add" + call.get("keyName") + " !" );
             }
 	} else {
             try {
@@ -101,7 +101,7 @@ public class ApiKeysService extends AbstractAPIHandler implements APIHandler {
                result.put("message", "Removed API key " + call.get("keyName") + " successfully !");
                return new ServiceResponse(result);
             } catch (Exception e) {
-               throw new APIException(422, "Failed : " + call.get("keyName") + " doesn't exists!" );
+               throw new APIException(500, "Failed : " + call.get("keyName") + " doesn't exists!" );
             }
 	}
     }

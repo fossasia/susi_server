@@ -73,7 +73,7 @@ public class ChangeUserSettings extends AbstractAPIHandler implements APIHandler
                }
            }
            if (authorization.getIdentity() == null) {
-               throw new APIException(400, "Specified User Setting not found, ensure you are logged in");
+               throw new APIException(401, "Specified User Setting not found, ensure you are logged in");
            } else {
                Accounting accounting = DAO.getAccounting(authorization.getIdentity());
                for (Map.Entry<String, String> entry : settings.entrySet()) {

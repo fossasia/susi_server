@@ -56,7 +56,7 @@ public class StorePersonalInfoService extends AbstractAPIHandler implements APIH
                 accounting.commit();
                 return new ServiceResponse(json);
             } else {
-                throw new APIException(420, "No personal information is added yet.");
+                throw new APIException(400, "No personal information is added yet.");
             }
         }
 
@@ -73,7 +73,7 @@ public class StorePersonalInfoService extends AbstractAPIHandler implements APIH
         String value = post.get("value", null);
 
         if (authorization.getIdentity() == null) {
-            throw new APIException(400, "Specified User Setting not found, ensure you are logged in");
+            throw new APIException(401, "Specified User Setting not found, ensure you are logged in");
         } else {
             if (accounting.getJSON().has("stores")) {
                 accounting.getJSON().getJSONObject("stores").put(storeName, value);

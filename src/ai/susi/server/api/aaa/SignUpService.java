@@ -111,7 +111,7 @@ public class SignUpService extends AbstractAPIHandler implements APIHandler {
 
 				if (authentication.getIdentity() == null) {
 					authentication.delete();
-					throw new APIException(400, "Bad request"); // do not leak if user exists or not
+					throw new APIException(401, "Unauthorized"); // do not leak if user exists or not
 				}
 
 				authentication.put("activated", true);
@@ -152,7 +152,7 @@ public class SignUpService extends AbstractAPIHandler implements APIHandler {
 		}
 
 		if (post.get("signup", null) == null || post.get("password", null) == null) {
-			throw new APIException(400, "signup or password empty");
+			throw new APIException(422, "signup or password empty");
 		}
 
 		// get credentials
@@ -162,7 +162,7 @@ public class SignUpService extends AbstractAPIHandler implements APIHandler {
 		// check email pattern
 		Pattern pattern = Pattern.compile(EmailHandler.EMAIL_PATTERN);
 		if (!new TimeoutMatcher(pattern.matcher(signup)).matches()) {
-			throw new APIException(400, "no valid email address");
+			throw new APIException(422, "no valid email address");
 		}
 
 		// check password pattern
@@ -171,7 +171,7 @@ public class SignUpService extends AbstractAPIHandler implements APIHandler {
 		pattern = Pattern.compile(passwordPattern);
 
 		if (signup.equals(password) || !new TimeoutMatcher(pattern.matcher(password)).matches()) {
-			throw new APIException(400, "invalid password");
+			throw new APIException(422, "invalid password");
 		}
 
 		// check if id exists already

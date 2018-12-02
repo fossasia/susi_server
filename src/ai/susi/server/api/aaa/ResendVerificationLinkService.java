@@ -69,7 +69,7 @@ public class ResendVerificationLinkService extends AbstractAPIHandler implements
 
         // Checking if emailId contains null or spaces
         if (emailId == null)
-            throw new APIException(422, "Bad Request. Not Enough parameters");
+            throw new APIException(400, "Bad Request. Not Enough parameters");
 
         if (emailId.trim().length() == 0)
             throw new APIException(422, "No email id provided!");
@@ -78,12 +78,12 @@ public class ResendVerificationLinkService extends AbstractAPIHandler implements
         ClientCredential credential = new ClientCredential(ClientCredential.Type.passwd_login, emailId);
         Authentication authentication = DAO.getAuthentication(credential);
         if (authentication.getIdentity() == null) {
-            throw new APIException(422, "Invalid email id. Please Sign up!");
+            throw new APIException(401, "Invalid email id. Please Sign up!");
         }
 
         // check if user is already verified or not
         if (authentication.getBoolean("activated", false)) {
-            throw new APIException(422, "User already verified!");
+            throw new APIException(400, "User already verified!");
         } else {
             String token = createRandomString(30);
             ClientCredential access_token = new ClientCredential(ClientCredential.Type.access_token, token);

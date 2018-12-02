@@ -69,7 +69,7 @@ public class PasswordResetService extends AbstractAPIHandler implements APIHandl
 
 		if ((authentication.getIdentity().getName()).equals(newpass) || !new TimeoutMatcher(pattern.matcher(newpass)).matches()) {
 			// password can't equal email and regex should match
-			throw new APIException(400, "invalid password");
+			throw new APIException(422, "invalid password");
 		}
 
 		if (DAO.hasAuthentication(emailcred)) {

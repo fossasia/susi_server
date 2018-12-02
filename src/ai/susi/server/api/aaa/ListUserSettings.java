@@ -41,7 +41,7 @@ public class ListUserSettings extends AbstractAPIHandler implements APIHandler {
             accounting.commit();
             return new ServiceResponse(result);
         } else {
-            throw new APIException(400, "Specified user data not found, ensure you are logged in");
+            throw new APIException(401, "Specified user data not found, ensure you are logged in");
         }
 
     }
