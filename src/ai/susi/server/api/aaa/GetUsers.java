@@ -51,7 +51,7 @@ public class GetUsers extends AbstractAPIHandler implements APIHandler {
                 && call.get("search", null) == null
                 && call.get("page", null) == null
                 && call.get("getUserCount", null) == null) {
-            throw new APIException(422, "Bad Request. No parameter present");
+            throw new APIException(400, "Bad Request. No parameter present");
         }
         JSONObject result = new JSONObject(true);
         JSONObject userStats = new JSONObject(true);
@@ -197,7 +197,7 @@ public class GetUsers extends AbstractAPIHandler implements APIHandler {
                   result.put("message", "Success: Fetched all users stats!");
                   return new ServiceResponse(result);
               } catch (Exception e) {
-                  throw new APIException(422, "Requested List does not exists!");
+                  throw new APIException(500, "Failed to fetch the requested list!");
               }
             } else if (call.get("search", null) != null) {
                 try {
@@ -206,7 +206,7 @@ public class GetUsers extends AbstractAPIHandler implements APIHandler {
                   result.put("message", "Success: Fetched all users with " + call.get("search", null) + " !");
                   return new ServiceResponse(result);
               } catch (Exception e) {
-                  throw new APIException(422, "Requested user does not exists!");
+                  throw new APIException(500, "Failed to fetch the requested users!");
               }
             } else {
                 try {
@@ -220,7 +220,7 @@ public class GetUsers extends AbstractAPIHandler implements APIHandler {
                   result.put("message", "Success: Fetched all Users with their User Roles and connected devices!");
                   return new ServiceResponse(result);
                 } catch (Exception e) {
-                    throw new APIException(422, "Requested List does not exists!");
+                    throw new APIException(500, "Failed to fetch the requested list!");
               }
             }
         }

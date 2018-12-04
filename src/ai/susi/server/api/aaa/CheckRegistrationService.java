@@ -57,7 +57,7 @@ public class CheckRegistrationService extends AbstractAPIHandler implements APIH
         JSONObject result = new JSONObject();
         
         if (checkEmail == null) {
-            throw new APIException(422, "Email not provided.");
+            throw new APIException(400, "Email not provided.");
         }
 
 		// check if id exists already

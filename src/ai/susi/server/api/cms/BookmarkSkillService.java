@@ -23,9 +23,15 @@ import ai.susi.DAO;
 import ai.susi.json.JsonObjectWithDefault;
 import ai.susi.json.JsonTray;
 import ai.susi.server.*;
+import ai.susi.server.Authorization;
+import io.swagger.annotations.*;
 import org.json.JSONObject;
 
 import javax.servlet.http.HttpServletResponse;
+import javax.ws.rs.GET;
+import javax.ws.rs.Path;
+import javax.ws.rs.Produces;
+import javax.ws.rs.core.MediaType;
 import java.io.File;
 import java.sql.Timestamp;
 
@@ -35,8 +41,12 @@ import java.sql.Timestamp;
  * bookmark can be 0 or 1
  * http://localhost:4000/cms/bookmarkSkill.json?model=general&group=Knowledge&skill=aboutsusi&bookmark=1&access_token=6O7cqoMbzlClxPwg1is31Tz5pjVwo3
  */
-public class BookmarkSkillService extends AbstractAPIHandler implements APIHandler {
 
+@Path("/cms/bookmarkSkill.json")
+@Produces(MediaType.APPLICATION_JSON)
+@Api(value = "BookmarkSkillService",
+        description = "This Endpoint bookmarks the skill")
+public class BookmarkSkillService extends AbstractAPIHandler implements APIHandler {
 
     private static final long serialVersionUID = -1960932190918215684L;
 
@@ -45,6 +55,27 @@ public class BookmarkSkillService extends AbstractAPIHandler implements APIHandl
         return UserRole.USER;
     }
 
+    @GET
+    @ApiOperation(httpMethod = "GET", value = "Resource to bookmarks the skill")
+    @ApiResponses(value = {
+            @ApiResponse(code = 200,
+                    message = "Skill bookmark updated"),
+            @ApiResponse(code = 422,
+                    message = "Bookmark not provided") ,
+            @ApiResponse(code = 404,
+                    message = "Skill does not exist") })
+
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "model", value = "Model Name", required = true, dataType = "string", paramType =
+                    "query"),
+            @ApiImplicitParam(name = "group", value = "Group name", required = true, dataType = "string", paramType =
+                    "query"),
+            @ApiImplicitParam(name = "language", value = "Language name", required = true, dataType = "string", paramType
+                    = "query"),
+            @ApiImplicitParam(name = "skill", value = "Skill Name", required = true, dataType = "string", paramType =
+                    "query"),
+            @ApiImplicitParam(name = "bookmark", value = "Bookmark", required =
+                    true, dataType = "string", paramType = "query")})
     @Override
     public JSONObject getDefaultPermissions(UserRole baseUserRole) {
         return null;
@@ -54,6 +85,7 @@ public class BookmarkSkillService extends AbstractAPIHandler implements APIHandl
     public String getAPIPath() {
         return "/cms/bookmarkSkill.json";
     }
+//
 
     @Override
     public ServiceResponse serviceImpl(Query call, HttpServletResponse response, Authorization authorization, final JsonObjectWithDefault permissions) throws APIException {
@@ -70,8 +102,9 @@ public class BookmarkSkillService extends AbstractAPIHandler implements APIHandl
         Integer skill_bookmark;
 
         JSONObject result = new JSONObject();
+        assert skill != null;
         if (!skill.exists()) {
-            throw new APIException(422, "Skill does not exist.");
+            throw new APIException(404, "Skill does not exist.");
         }
 
         if (user_bookmark == null) {

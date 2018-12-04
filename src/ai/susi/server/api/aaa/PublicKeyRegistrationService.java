@@ -162,7 +162,7 @@ public class PublicKeyRegistrationService extends AbstractAPIHandler implements 
 
 			if (authentication.getIdentity() == null) { // check if identity is valid
 				authentication.delete();
-				throw new APIException(400, "Bad request"); // do not leak if user exists or not
+				throw new APIException(401, "Unauthorized"); // do not leak if user exists or not
 			}
 
 			// check if the current user is allowed to create a key for the user in question
@@ -171,7 +171,7 @@ public class PublicKeyRegistrationService extends AbstractAPIHandler implements 
 			if(permissions.getJSONObject("users", null).has(id) && permissions.getJSONObjectWithDefault("users", null).getBoolean(id, false)){
 				allowed = true;
 			}else if(!allowed){
-				throw new APIException(400, "Bad request"); // do not leak if user exists or not
+				throw new APIException(401, "Unauthorized"); // do not leak if user exists or not
 			}
 			else { // check if the user role of the user in question is in 'userRoles'
 				Authorization auth = DAO.getAuthorization(authentication.getIdentity());
@@ -199,7 +199,7 @@ public class PublicKeyRegistrationService extends AbstractAPIHandler implements 
 				if (post.get("key-size", null) != null) {
 					int finalKeyLength = post.get("key-size", 0);
 					if (!IntStream.of(allowedKeySizesRSA).anyMatch(x -> x == finalKeyLength)) {
-						throw new APIException(400, "Invalid key size.");
+						throw new APIException(422, "Invalid key size.");
 					}
 					keySize = finalKeyLength;
 				}
@@ -248,7 +248,7 @@ public class PublicKeyRegistrationService extends AbstractAPIHandler implements 
 
 				return new ServiceResponse(result);
 			}
-			throw new APIException(400, "Unsupported algorithm");
+			throw new APIException(422, "Unsupported algorithm");
 		}
 		else if(post.get("register", null) != null){
 
@@ -266,7 +266,7 @@ public class PublicKeyRegistrationService extends AbstractAPIHandler implements 
 						X509EncodedKeySpec keySpec = new X509EncodedKeySpec(Base64.getDecoder().decode(encodedKey));
 						pub = (RSAPublicKey) KeyFactory.getInstance(algorithm).generatePublic(keySpec);
 					} catch (Throwable e) {
-						throw new APIException(400, "Public key not readable (DER)");
+						throw new APIException(422, "Public key not readable (DER)");
 					}
 				}
 				else if(type.equals("PEM")){
@@ -276,11 +276,11 @@ public class PublicKeyRegistrationService extends AbstractAPIHandler implements 
 						X509EncodedKeySpec keySpec = new X509EncodedKeySpec(pem.getContent());
 						pub = (RSAPublicKey) KeyFactory.getInstance(algorithm).generatePublic(keySpec);
 					} catch (Exception e) {
-						throw new APIException(400, "Public key not readable (PEM)");
+						throw new APIException(422, "Public key not readable (PEM)");
 					}
 				}
 				else{
-					throw new APIException(400, "Invalid value for 'type'.");
+					throw new APIException(422, "Invalid value for 'type'.");
 				}
 
 				// check key size (not really perfect yet)
@@ -302,7 +302,7 @@ public class PublicKeyRegistrationService extends AbstractAPIHandler implements 
 					keySize = 8192;
 				}
 				if (!IntStream.of(allowedKeySizesRSA).anyMatch(x -> x == keySize)) {
-					throw new APIException(400, "Invalid key length.");
+					throw new APIException(422, "Invalid key length.");
 				}
 
 				DAO.registerKey(authorization.getIdentity(), pub);
@@ -327,7 +327,7 @@ public class PublicKeyRegistrationService extends AbstractAPIHandler implements 
 
 				return new ServiceResponse(result);
 			}
-			throw new APIException(400, "Unsupported algorithm");
+			throw new APIException(422, "Unsupported algorithm");
 		}
 
 		throw new APIException(400, "Invalid parameter");
