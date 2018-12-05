@@ -4,11 +4,17 @@ import ai.susi.DAO;
 import ai.susi.SusiServer;
 import ai.susi.json.JsonObjectWithDefault;
 import ai.susi.server.*;
+import ai.susi.server.Authorization;
+import io.swagger.annotations.*;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
 import javax.servlet.Servlet;
 import javax.servlet.http.HttpServletResponse;
+import javax.ws.rs.GET;
+import javax.ws.rs.Path;
+import javax.ws.rs.Produces;
+import javax.ws.rs.core.MediaType;
 import java.lang.reflect.Constructor;
 
 /**
@@ -23,6 +29,9 @@ import java.lang.reflect.Constructor;
  * 2. role    --> the new role of the user
  */
 
+@Path("/aaa/changeRoles.json")
+@Produces(MediaType.APPLICATION_JSON)
+@Api(value = "ChangeUserRoles", description = "This endpoint is used to change the role of any user")
 public class ChangeUserRoles extends AbstractAPIHandler implements APIHandler {
     private static final long serialVersionUID = -1432553481906185711L;
 
@@ -36,6 +45,17 @@ public class ChangeUserRoles extends AbstractAPIHandler implements APIHandler {
         return null;
     }
 
+    @GET
+    @ApiOperation(httpMethod = "GET", value = "Resource to change the role of any user")
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "User Role Changed Successfully"),
+            @ApiResponse(code = 400, message = "Bad Service Name"),
+            @ApiResponse(code = 422, message = "Bad username/Cannot Change user role to anonymous.")
+    })
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "user", value = "Username whose role is to be changed", required = true, dataType = "string", paramType = "query"),
+            @ApiImplicitParam(name = "role", value = "Role to be assigned", required = true, dataType = "string", paramType = "query")
+    })
     @Override
     public String getAPIPath() {
         return "/aaa/changeRoles.json";
@@ -101,7 +121,7 @@ public class ChangeUserRoles extends AbstractAPIHandler implements APIHandler {
 
             switch (upgradedRole) {
                 case "anonymous":
-                    throw new APIException(400, "Cannot change user role to anonymous.");
+                    throw new APIException(422, "Cannot change user role to anonymous.");
                 case "user":
                     userRole = UserRole.USER;
                     break;
@@ -122,7 +142,7 @@ public class ChangeUserRoles extends AbstractAPIHandler implements APIHandler {
             }
             // Validation
             if (userTobeUpgraded == null) {
-                throw new APIException(400, "Bad username");
+                throw new APIException(422, "Bad username");
             }
 
             //generate client

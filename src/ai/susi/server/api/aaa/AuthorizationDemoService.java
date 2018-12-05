@@ -21,14 +21,24 @@ package ai.susi.server.api.aaa;
 
 import ai.susi.json.JsonObjectWithDefault;
 import ai.susi.server.*;
+import ai.susi.server.Authorization;
+import io.swagger.annotations.*;
 import org.json.JSONObject;
 
 import javax.servlet.http.HttpServletResponse;
+import javax.ws.rs.GET;
+import javax.ws.rs.Path;
+import javax.ws.rs.Produces;
+import javax.ws.rs.core.MediaType;
 
 /**
  * example:
  * http://localhost:4000/aaa/authorization-demo.json?access_token=6O7cqoMbzlClxPwg1is31Tz5pjVwo3
  */
+
+@Path("/aaa/authorization-demo.json")
+@Produces(MediaType.APPLICATION_JSON)
+@Api(value = "AuthorizationDemoService", description = "This Endpoint returns user's identity, role and permissions")
 public class AuthorizationDemoService extends AbstractAPIHandler implements APIHandler {
 
     private static final long serialVersionUID = 8678478303032749879L;
@@ -66,6 +76,11 @@ public class AuthorizationDemoService extends AbstractAPIHandler implements APIH
 		return result;
 	}
 
+	@GET
+	@ApiOperation(httpMethod = "GET", value = "Resource to check user's identity, role and permission")
+	@ApiResponses(value = {
+			@ApiResponse(code = 200, message = "Successfully processed request!"),
+	})
 	@Override
 	public String getAPIPath() {
         return "/aaa/authorization-demo.json";

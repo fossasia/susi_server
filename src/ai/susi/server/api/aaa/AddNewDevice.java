@@ -1,20 +1,20 @@
 /**
- *  AddNewDevice
- *  Copyright by @Akshat-Jain on 24/5/18.
- *
- *  This library is free software; you can redistribute it and/or
- *  modify it under the terms of the GNU Lesser General Public
- *  License as published by the Free Software Foundation; either
- *  version 2.1 of the License, or (at your option) any later version.
- *  
- *  This library is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- *  Lesser General Public License for more details.
- *  
- *  You should have received a copy of the GNU Lesser General Public License
- *  along with this program in the file lgpl21.txt
- *  If not, see <http://www.gnu.org/licenses/>.
+ * AddNewDevice
+ * Copyright by @Akshat-Jain on 24/5/18.
+ * <p>
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ * <p>
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ * <p>
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program in the file lgpl21.txt
+ * If not, see <http://www.gnu.org/licenses/>.
  */
 
 
@@ -32,20 +32,41 @@ import ai.susi.server.ServiceResponse;
 import ai.susi.server.UserRole;
 import ai.susi.tools.TimeoutMatcher;
 
+import io.swagger.annotations.*;
 import org.json.JSONObject;
 
 import java.util.regex.Pattern;
 import javax.servlet.http.HttpServletResponse;
+import javax.ws.rs.GET;
+import javax.ws.rs.Path;
+import javax.ws.rs.Produces;
+import javax.ws.rs.core.MediaType;
+
+
 /**
  * Created by @Akshat-Jain on 24/5/18.
  * Servlet to add device information
  * This service accepts 5 parameters - Mac address of device, device name, room, latitude and longitude info of the device - and stores them in the user's accounting object
  * test locally at http://127.0.0.1:4000/aaa/addNewDevice.json?macid=macAddressOfDevice&device=deviceName&access_token=6O7cqoMbzlClxPwg1is31Tz5pjVwo3
  */
-public class AddNewDevice extends AbstractAPIHandler implements APIHandler {
 
+@Path("/aaa/addNewDevice.json")
+@Produces(MediaType.APPLICATION_JSON)
+@Api(value = "AddNewDeviceService", description = "This Endpoint adds new device")
+public class AddNewDevice extends AbstractAPIHandler implements APIHandler {
     private static final long serialVersionUID = -8742102844146051190L;
 
+    @GET
+    @ApiOperation(httpMethod = "GET", value = "Resource to add new device")
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "You have successfully added the new device!"),
+            @ApiResponse(code = 400, message = "Invalid Mac Address."),
+            @ApiResponse(code = 401, message = "Specified user data not found, ensure you are logged in.")
+    })
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "macid", value = "Mac Address of new device", required = true, dataType = "string", paramType = "query"),
+            @ApiImplicitParam(name = "device", value = "Name of new device", required = true, dataType = "string", paramType = "query")
+    })
     @Override
     public String getAPIPath() {
         return "/aaa/addNewDevice.json";
@@ -83,11 +104,11 @@ public class AddNewDevice extends AbstractAPIHandler implements APIHandler {
             throw new APIException(400, "Invalid Mac Address.");
         }
 
-        if(latitude == null || latitude.isEmpty()) {
+        if (latitude == null || latitude.isEmpty()) {
             latitude = "Latitude not available.";
         }
 
-        if(longitude == null || longitude.isEmpty()) {
+        if (longitude == null || longitude.isEmpty()) {
             longitude = "Longitude not available.";
         }
 
@@ -98,7 +119,7 @@ public class AddNewDevice extends AbstractAPIHandler implements APIHandler {
         value.put("geolocation", geolocation);
 
         if (authorization.getIdentity() == null) {
-            throw new APIException(400, "Specified user data not found, ensure you are logged in");
+            throw new APIException(401, "Specified user data not found, ensure you are logged in");
         } else {
             Accounting accounting = DAO.getAccounting(authorization.getIdentity());
             if (accounting.getJSON().has("devices")) {
@@ -107,7 +128,7 @@ public class AddNewDevice extends AbstractAPIHandler implements APIHandler {
                 JSONObject jsonObject = new JSONObject();
                 jsonObject.put(macid, value);
                 accounting.getJSON().put("devices", jsonObject);
-           }
+            }
             accounting.commit();
 
             JSONObject result = new JSONObject(true);
