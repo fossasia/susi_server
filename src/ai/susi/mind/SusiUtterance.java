@@ -161,7 +161,7 @@ public class SusiUtterance {
         if (expression.length() > 0 && expression.charAt(0) == meta) expression = regex + " ?" + expression.substring(1);
         if (expression.endsWith(" " + meta)) expression = expression.substring(0, expression.length() - 2) + " " + regex;
         if (expression.length() > 0 && expression.charAt(expression.length() - 1) == meta) expression = expression.substring(0, expression.length() - 1) + " ?" + regex;
-        expression = expression.replaceAll(" \\" + meta + " | \\?\\" + meta + " ", " " + regex + " ");
+        expression = expression.replaceAll(String.format(" \\%s | \\?\\%s ", meta, meta), " " + regex + " ");
         return expression;
     }
     
