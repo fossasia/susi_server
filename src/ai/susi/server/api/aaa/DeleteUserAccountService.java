@@ -23,9 +23,15 @@ package ai.susi.server.api.aaa;
 import ai.susi.DAO;
 import ai.susi.json.JsonObjectWithDefault;
 import ai.susi.server.*;
+import ai.susi.server.Authorization;
+import io.swagger.annotations.*;
 import org.json.JSONObject;
 
 import javax.servlet.http.HttpServletResponse;
+import javax.ws.rs.GET;
+import javax.ws.rs.Path;
+import javax.ws.rs.Produces;
+import javax.ws.rs.core.MediaType;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -34,10 +40,23 @@ import java.util.List;
  * Servlet to allow Admin and higher user role to delete account of any user
  * test locally at http://127.0.0.1:4000/aaa/deleteUserAccount.json?email=akjn22@gmail.com&access_token=YLOvLl4zHBEwB77ox2CJkhAymKkNYQ
  */
+
+@Path("/aaa/deleteUserAccount.json")
+@Produces(MediaType.APPLICATION_JSON)
+@Api(value = "DeleteUserAccountService", description = "This endpoint allows to delete an user account")
 public class DeleteUserAccountService extends AbstractAPIHandler implements APIHandler {
 
     private static final long serialVersionUID = 4538356946942632187L;
 
+    @GET
+    @ApiOperation(httpMethod = "GET", value = "Resource to delete an user account")
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Successfully deleted user account"),
+            @ApiResponse(code = 400, message = "Bad service call, missing arguments"),
+    })
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "email", value = "Email of the user account to be deleted", required = true, dataType = "string", paramType = "query"),
+    })
     @Override
     public String getAPIPath() {
         return "/aaa/deleteUserAccount.json";

@@ -85,7 +85,6 @@ public class BookmarkSkillService extends AbstractAPIHandler implements APIHandl
     public String getAPIPath() {
         return "/cms/bookmarkSkill.json";
     }
-//
 
     @Override
     public ServiceResponse serviceImpl(Query call, HttpServletResponse response, Authorization authorization, final JsonObjectWithDefault permissions) throws APIException {

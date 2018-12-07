@@ -23,10 +23,16 @@ package ai.susi.server.api.aaa;
 import ai.susi.DAO;
 import ai.susi.json.JsonObjectWithDefault;
 import ai.susi.server.*;
+import ai.susi.server.Authorization;
+import io.swagger.annotations.*;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
 import javax.servlet.http.HttpServletResponse;
+import javax.ws.rs.GET;
+import javax.ws.rs.Path;
+import javax.ws.rs.Produces;
+import javax.ws.rs.core.MediaType;
 import java.util.ArrayList;
 import java.util.Arrays;
 
@@ -37,6 +43,10 @@ import java.util.Arrays;
  * http://127.0.0.1:4000/aaa/createGroup.json?group=groupName&role=admin&permission=<comma separated values>
  *
  */
+
+@Path("/aaa/createGroup.json")
+@Produces(MediaType.APPLICATION_JSON)
+@Api(value = "CreateGroupService", description = "This Endpoint creates new group")
 public class CreateGroupService extends AbstractAPIHandler implements APIHandler {
 
 
@@ -52,13 +62,24 @@ public class CreateGroupService extends AbstractAPIHandler implements APIHandler
         return null;
     }
 
+    @GET
+    @ApiOperation(httpMethod = "GET", value = "Resource to create new group")
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Group Created Successfully"),
+            @ApiResponse(code = 400, message = "Group Name Parameter not specified"),
+    })
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "group", value = "Group Name", required = true, dataType = "string", paramType = "query"),
+            @ApiImplicitParam(name = "role", value = "Roles given to the group participants", required = true, dataType = "string", paramType = "query"),
+            @ApiImplicitParam(name = "permission", value = "Permissions given to the group participants with comma seperated values.", required = true, dataType = "string", paramType = "query")
+    })
     @Override
     public String getAPIPath() {
         return "/aaa/createGroup.json";
     }
 
     @Override
-    public ServiceResponse serviceImpl(Query call, HttpServletResponse response, Authorization rights, final JsonObjectWithDefault permissions) {
+    public ServiceResponse serviceImpl(Query call, HttpServletResponse response, Authorization rights, final JsonObjectWithDefault permissions)throws APIException {
         JSONObject result = new JSONObject();
         String groupName = call.get("group", null);
         String grouppBaseRole = call.get("role","anonymous");
@@ -84,10 +105,8 @@ public class CreateGroupService extends AbstractAPIHandler implements APIHandler
             }
             return new ServiceResponse(result);
         } else {
-            result.put("message", "Bad call, group name parameter not specified");
-            result.put("accepted", false);
+            throw new APIException(400, "Group Name Parameter not specified");
         }
-        return new ServiceResponse(result);
     }
 
 }

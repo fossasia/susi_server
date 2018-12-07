@@ -1,20 +1,20 @@
 /**
- *  GetAllGroups
- *  Copyright 22.06.2017 by Chetan Kaushik, @dynamitechetan
- *
- *  This library is free software; you can redistribute it and/or
- *  modify it under the terms of the GNU Lesser General Public
- *  License as published by the Free Software Foundation; either
- *  version 2.1 of the License, or (at your option) any later version.
- *
- *  This library is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- *  Lesser General Public License for more details.
- *
- *  You should have received a copy of the GNU Lesser General Public License
- *  along with this program in the file lgpl21.txt
- *  If not, see <http://www.gnu.org/licenses/>.
+ * GetAllGroups
+ * Copyright 22.06.2017 by Chetan Kaushik, @dynamitechetan
+ * <p>
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ * <p>
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ * <p>
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program in the file lgpl21.txt
+ * If not, see <http://www.gnu.org/licenses/>.
  */
 
 package ai.susi.server.api.aaa;
@@ -49,26 +49,26 @@ public class GetAllGroups extends AbstractAPIHandler implements APIHandler {
 
     private static final long serialVersionUID = -179412273153306443L;
 
-    @Override
-    public UserRole getMinimalUserRole() {
-        return UserRole.ADMIN;
-    }
-
     @GET
     @ApiOperation(httpMethod = "GET", value = "Resource to get the details of all groups created.")
     @ApiResponses(value = {
             @ApiResponse(code = 200,
                     message = "Success: Fetched all groups"),
             @ApiResponse(code = 401,
-                    message = "Base user role not sufficient.")  })
-    @Override
-    public JSONObject getDefaultPermissions(UserRole baseUserRole) {
-        return null;
-    }
-
+                    message = "Base user role not sufficient.")})
     @Override
     public String getAPIPath() {
         return "/aaa/getAllGroups.json";
+    }
+
+    @Override
+    public UserRole getMinimalUserRole() {
+        return UserRole.ADMIN;
+    }
+
+    @Override
+    public JSONObject getDefaultPermissions(UserRole baseUserRole) {
+        return null;
     }
 
     @Override

@@ -22,14 +22,24 @@ package ai.susi.server.api.aaa;
 import ai.susi.DAO;
 import ai.susi.json.JsonObjectWithDefault;
 import ai.susi.server.*;
+import ai.susi.server.Authorization;
+import io.swagger.annotations.*;
 import org.json.JSONObject;
 
 import javax.servlet.http.HttpServletResponse;
+import javax.ws.rs.GET;
+import javax.ws.rs.Path;
+import javax.ws.rs.Produces;
+import javax.ws.rs.core.MediaType;
 
 /**
  * This endpoint accepts 1 parameter check_email.
  * http://127.0.0.1:4000/aaa/checkRegistration.json?check_email=abc@email.com
  */
+
+@Path("/aaa/checkRegistration.json")
+@Produces(MediaType.APPLICATION_JSON)
+@Api(value = "CheckRegistrationService", description = "This Endpoint checks if the user is already registered.")
 public class CheckRegistrationService extends AbstractAPIHandler implements APIHandler {
 
 	private static final long serialVersionUID = 7402102212787839019L;
@@ -43,7 +53,17 @@ public class CheckRegistrationService extends AbstractAPIHandler implements APIH
     public JSONObject getDefaultPermissions(UserRole baseUserRole) {
         return null;
     }
-	
+
+	@GET
+	@ApiOperation(httpMethod = "GET", value = "Resource to check if an user is already registered")
+	@ApiResponses(value = {
+			@ApiResponse(code = 200, message = "User exists"),
+			@ApiResponse(code = 400, message = "Email not provided."),
+	})
+	@ApiImplicitParams({
+			@ApiImplicitParam(name = "email", value = "Email address to be verified", required = true, dataType = "string", paramType = "query"),
+	})
+    @Override
 	public String getAPIPath() {
 		return "/aaa/checkRegistration.json";
 	}
