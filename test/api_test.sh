@@ -1,3 +1,4 @@
+#!/usr/bin/env bash
 curl http://localhost:9000/api/status.json
 curl http://localhost:9000/api/search.json?q=spacex
 curl "http://localhost:9000/api/search.json?q=spacex&source=cache"
