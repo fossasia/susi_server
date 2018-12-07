@@ -23,9 +23,15 @@ package ai.susi.server.api.aaa;
 import ai.susi.DAO;
 import ai.susi.json.JsonObjectWithDefault;
 import ai.susi.server.*;
+import ai.susi.server.Authorization;
+import io.swagger.annotations.*;
 import org.json.JSONObject;
 
 import javax.servlet.http.HttpServletResponse;
+import javax.ws.rs.GET;
+import javax.ws.rs.Path;
+import javax.ws.rs.Produces;
+import javax.ws.rs.core.MediaType;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -35,10 +41,25 @@ import java.util.Map;
  * this service accepts two parameter key and value to be stored in User settings
  * test locally at http://127.0.0.1:4000/aaa/changeUserSettings.json?key=theme&value=dark
  */
+
+@Path("/aaa/changeUserSettings.json")
+@Produces(MediaType.APPLICATION_JSON)
+@Api(value = "ChangeUserSettings", description = "This Endpoint is used to write user setting")
 public class ChangeUserSettings extends AbstractAPIHandler implements APIHandler {
 
     private static final long serialVersionUID = -7418883159709458190L;
 
+    @GET
+    @ApiOperation(httpMethod = "GET", value = "Resource to write user setting")
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "You have successfully changed the settngs of your account"),
+            @ApiResponse(code = 400, message = "Bad Service call, count parameters not provided/key or value parameters not provided."),
+            @ApiResponse(code = 401, message = "Specified user settings not found, ensure you are logged in.")
+    })
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "key", value = "Key name of the setting to be written", required = true, dataType = "string", paramType = "query"),
+            @ApiImplicitParam(name = "value", value = "Value of the setting specified", required = true, dataType = "string", paramType = "query")
+    })
     @Override
     public String getAPIPath() {
         return "/aaa/changeUserSettings.json";

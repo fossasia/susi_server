@@ -23,15 +23,15 @@ import ai.susi.DAO;
 import ai.susi.json.JsonObjectWithDefault;
 import ai.susi.json.JsonTray;
 import ai.susi.server.*;
+import ai.susi.server.Authorization;
+import io.swagger.annotations.*;
 import org.json.JSONObject;
 
 import javax.servlet.http.HttpServletResponse;
-import ai.susi.server.APIException;
-import ai.susi.server.APIHandler;
-import ai.susi.server.AbstractAPIHandler;
-import ai.susi.server.Query;
-import ai.susi.server.ServiceResponse;
-import ai.susi.server.UserRole;
+import javax.ws.rs.GET;
+import javax.ws.rs.Path;
+import javax.ws.rs.Produces;
+import javax.ws.rs.core.MediaType;
 
 /**
  * This Servlet gives a API Endpoint to add, modify and delete different API keys used by SUSI.
@@ -45,6 +45,9 @@ import ai.susi.server.UserRole;
  * deleteKey -> boolean http://localhost:4000/aaa/apiKeys.json?keyName=MAP_KEY&deleteKey=true
  */
 
+@Path("/aaa/apiKeys.json")
+@Produces(MediaType.APPLICATION_JSON)
+@Api(value = "ApiKeysService", description = "This Endpoint adds, modify and delete different API keys used by SUSI")
 public class ApiKeysService extends AbstractAPIHandler implements APIHandler {
 
     @Override
@@ -57,6 +60,21 @@ public class ApiKeysService extends AbstractAPIHandler implements APIHandler {
         return null;
     }
 
+    @GET
+    @ApiOperation(httpMethod = "GET", value = "Endpoint to add, modify and delete diffrent API keys used by SUSI")
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Added new API key xxxxxxxx successfully"),
+            @ApiResponse(code = 200, message = "Removed API key successfully"),
+            @ApiResponse(code = 400, message = "Bad Request. No parameter present"),
+            @ApiResponse(code = 500, message = "Failed: Unable to add xxxxxxxx!"),
+            @ApiResponse(code = 500, message = "Failed: xxxxxxxx doesn't exists")
+    })
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "keyName", value = "Name of the API key", required = true, dataType = "string", paramType = "query"),
+            @ApiImplicitParam(name = "keyValue", value = "API key", dataType = "string", paramType = "query"),
+            @ApiImplicitParam(name = "type", value = "Type of API key", dataType = "string", paramType = "query"),
+            @ApiImplicitParam(name = "deleteKey", value = "Parameter to specify to delete API key", dataType = "boolean", paramType = "query")
+    })
     @Override
     public String getAPIPath() {
         return "/aaa/apiKeys.json";

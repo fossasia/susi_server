@@ -22,13 +22,22 @@ package ai.susi.server.api.aaa;
 import ai.susi.SusiServer;
 import ai.susi.json.JsonObjectWithDefault;
 import ai.susi.server.*;
+import ai.susi.server.Authorization;
+import io.swagger.annotations.*;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
 import javax.servlet.Servlet;
 import javax.servlet.http.HttpServletResponse;
+import javax.ws.rs.GET;
+import javax.ws.rs.Path;
+import javax.ws.rs.Produces;
+import javax.ws.rs.core.MediaType;
 import java.lang.reflect.Constructor;
-
+@Path("/aaa/account-permissions.json")
+@Produces(MediaType.APPLICATION_JSON)
+@Api(value = "UserAccountPermissions",
+		description = "This Endpoint returns the permissions of a user account")
 public class UserAccountPermissions extends AbstractAPIHandler implements APIHandler {
 
     private static final long serialVersionUID = 8678478303032749879L;
@@ -36,6 +45,17 @@ public class UserAccountPermissions extends AbstractAPIHandler implements APIHan
     @Override
     public UserRole getMinimalUserRole() { return UserRole.USER; }
 
+	@GET
+	@ApiOperation(httpMethod = "GET", value = "Resource to get the permissions of a user account")
+	@ApiResponses(value = {
+			@ApiResponse(code = 200,
+					message = "Success : User Role Permission"),
+			@ApiResponse(code = 400,
+					message = "Bad service name")  })
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "getServicePermissions", value = "Name of the API key", required = true, dataType = "string", paramType = "query"),
+            @ApiImplicitParam(name = "getServiceList", value = "List of all services on server", dataType = "boolean", paramType = "query"),
+    })
 	@Override
 	public JSONObject getDefaultPermissions(UserRole baseUserRole) {
 		return null;

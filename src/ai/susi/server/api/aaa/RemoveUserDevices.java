@@ -22,15 +22,26 @@ package ai.susi.server.api.aaa;
 import ai.susi.DAO;
 import ai.susi.json.JsonObjectWithDefault;
 import ai.susi.server.*;
+import ai.susi.server.Authorization;
+import io.swagger.annotations.*;
 import org.json.JSONObject;
 
 import javax.servlet.http.HttpServletResponse;
+import javax.ws.rs.GET;
+import javax.ws.rs.Path;
+import javax.ws.rs.Produces;
+import javax.ws.rs.core.MediaType;
 
 /**
  * Servlet to remove user devices
  * example:
  * http://localhost:4000/aaa/removeUserDevices.json?access_token=goONOeHpeYTUrHSm5PJfOJVtMs6ktG
  */
+
+@Path("/aaa/removeUserDevices.json")
+@Produces(MediaType.APPLICATION_JSON)
+@Api(value = "RemoveUserDevices",
+        description = "Servlet to remove user devices")
 
 public class RemoveUserDevices extends AbstractAPIHandler implements APIHandler {
 
@@ -45,6 +56,18 @@ public class RemoveUserDevices extends AbstractAPIHandler implements APIHandler 
     public UserRole getMinimalUserRole() {
         return UserRole.USER;
     }
+
+    @GET
+    @ApiOperation(httpMethod = "GET", value = "Servlet to remove user devices")
+    @ApiResponses(value = {
+            @ApiResponse(code = 200,
+                    message = "Success: User devices were removed"),
+            @ApiResponse(code = 401,
+                    message = "Specified user data not found, ensure you are logged in.")  })
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "macid", value = "The MacId of the device", dataType = "string", paramType = "query")
+    })
+
 
     @Override
     public JSONObject getDefaultPermissions(UserRole baseUserRole) {
