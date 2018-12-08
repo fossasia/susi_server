@@ -98,8 +98,8 @@ public class DAO {
     public final static int ATTENTION_TIME = 5;
     private final static String ACCESS_DUMP_FILE_PREFIX = "access_";
     public  static File conf_dir, bin_dir, html_dir, data_dir, skill_status_dir, susi_chatlog_dir, susi_skilllog_dir, draft_dir, model_watch_dir, susi_skill_repo, private_skill_watch_dir, susi_private_skill_repo, deleted_skill_dir, system_keys;
-    private static File external_data, assets, dictionaries;
-    private static Settings public_settings, private_settings;
+    private static File external_data;
+    private static File assets;
     public  static AccessTracker access;
     private static Map<String, String> config = new HashMap<>();
     private static Logger logger;
@@ -222,9 +222,9 @@ public class DAO {
         susi.addLayer(system_skills_system);
 
         // initialize public and private keys
-        public_settings = new Settings(new File("data/settings/public.settings.json"));
+        Settings public_settings = new Settings(new File("data/settings/public.settings.json"));
         File private_file = new File("data/settings/private.settings.json");
-        private_settings = new Settings(private_file);
+        Settings private_settings = new Settings(private_file);
         OS.protectPath(private_file.toPath());
 
         if (!private_settings.loadPrivateKey() || !public_settings.loadPublicKey()) {
@@ -422,7 +422,7 @@ public class DAO {
         // create and document the data dump dir
         assets = new File(data_dir, "assets");
         external_data = new File(data_dir, "external");
-        dictionaries = new File(external_data, "dictionaries");
+        File dictionaries = new File(external_data, "dictionaries");
         dictionaries.mkdirs();
 
 

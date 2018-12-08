@@ -27,15 +27,16 @@ import java.io.IOException;
  * hexagonal grid plotter
  */
 public class HexGridPlotter extends RasterPlotter {
-    
-    private final int cellwidth1, cellwidth2, cellwidth12;
+
+    private final int cellwidth2;
+    private final int cellwidth12;
     private final int gwidth, gheight;
 
     public HexGridPlotter(int width, int height, DrawMode drawMode, String backgroundColor, final int cellwidth) {
         super(width, height, drawMode, backgroundColor);
-        this.cellwidth1 = cellwidth;
+        int cellwidth1 = cellwidth;
         this.cellwidth2 = cellwidth >> 1;
-        this.cellwidth12 = this.cellwidth1 + this.cellwidth2;
+        this.cellwidth12 = cellwidth1 + this.cellwidth2;
         this.gwidth = (super.width - this.cellwidth2) / this.cellwidth12;
         this.gheight = (super.height - this.cellwidth2) / this.cellwidth2;
     }

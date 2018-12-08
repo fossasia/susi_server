@@ -50,8 +50,7 @@ import ai.susi.tools.ByteBuffer;
 
 
 public class FileHandler extends ResourceHandler implements Handler {
-    
-    private final long CACHE_LIMIT = 128L * 1024L;
+
     private int expiresSeconds = 0;
     
     /**
@@ -131,6 +130,7 @@ public class FileHandler extends ResourceHandler implements Handler {
             if (f.isDirectory() && !path.equals("/")) return resource;
             CacheResource cache = resourceCache.get(f);
             if (cache != null) return cache;
+            long CACHE_LIMIT = 128L * 1024L;
             if (f.length() < CACHE_LIMIT || f.getName().endsWith(".html") || path.equals("/")) {
                 cache = new CacheResource((PathResource) resource);
                 resourceCache.put(f, cache);

@@ -237,7 +237,6 @@ public class HttpClient {
     
     private int status;
     public BufferedInputStream inputStream;
-    private Map<String, List<String>> header;
     private CloseableHttpClient httpClient;
     private HttpRequestBase request;
     private HttpResponse httpResponse;
@@ -398,10 +397,10 @@ public class HttpClient {
                     this.request.releaseConnection();
                     throw e;
                 }
-                this.header = new HashMap<String, List<String>>();
+                Map<String, List<String>> header1 = new HashMap<String, List<String>>();
                 for (Header header: httpResponse.getAllHeaders()) {
-                    List<String> vals = this.header.get(header.getName());
-                    if (vals == null) { vals = new ArrayList<String>(); this.header.put(header.getName(), vals); }
+                    List<String> vals = header1.get(header.getName());
+                    if (vals == null) { vals = new ArrayList<String>(); header1.put(header.getName(), vals); }
                     vals.add(header.getValue());
                 }
             } else {

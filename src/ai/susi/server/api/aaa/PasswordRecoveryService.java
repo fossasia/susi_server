@@ -33,7 +33,6 @@ import java.nio.file.Paths;
 public class PasswordRecoveryService extends AbstractAPIHandler implements APIHandler {
 
 	private static final long serialVersionUID = 3515757746392011162L;
-	private static String resetLinkPlaceholder = "%RESET-LINK%";
 
 	@Override
 	public String getAPIPath() {
@@ -121,6 +120,7 @@ public class PasswordRecoveryService extends AbstractAPIHandler implements APIHa
 			result = "";
 		}
 
+		String resetLinkPlaceholder = "%RESET-LINK%";
 		result = result.contains(resetLinkPlaceholder) ? result.replace(resetLinkPlaceholder, verificationLink)
 				: verificationLink;
 

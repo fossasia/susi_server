@@ -5,7 +5,7 @@
 		],
 		"process":[ {"type":"console", "expression":"SELECT description FROM bahn WHERE from='$1$' to='$2$';"}],
 		"actions":[ {"type":"answer", "select":"random", "phrases":[
-			"$description$",
-		]}],
-	},
+			"$description$"
+		]}]
+	}
 ]}

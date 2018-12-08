@@ -36,8 +36,6 @@ import java.util.Iterator;
 public class Sitemap extends HttpServlet {
 
 	private static final long serialVersionUID = -8475570405765656976L;
-	private final String sitemaphead = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
-			+ "<urlset xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\">\n";
 
 	@Override
 	protected void doPost(HttpServletRequest request, HttpServletResponse response)
@@ -58,6 +56,8 @@ public class Sitemap extends HttpServlet {
 		JSONArray sitesarr = TopMenuJsonObject.getJSONArray("items");
 		response.setCharacterEncoding("UTF-8");
 		PrintWriter sos = response.getWriter();
+		String sitemaphead = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+				+ "<urlset xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\">\n";
 		sos.print(sitemaphead + "\n");
 		for (int i = 0; i < sitesarr.length(); i++) {
 			JSONObject sitesobj = sitesarr.getJSONObject(i);
