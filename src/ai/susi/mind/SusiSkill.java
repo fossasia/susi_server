@@ -44,6 +44,9 @@ import ai.susi.mind.SusiInference.Type;
  */
 public class SusiSkill {
 
+    public final static String SKILL_SOURCE_PREFIX_SUSI_SERVER = "/susi_server";
+    public final static String SKILL_SOURCE_PREFIX_SUSI_SKILL_DATA = "/susi_skill_data";
+
     private String skillName;
     private Boolean protectedSkill;
     private String[] on;
@@ -60,6 +63,8 @@ public class SusiSkill {
 
     public static class ID implements Comparable<ID> {
         private String skillpath;
+        private final String[] possible_path_prefixes = new String[] {
+                SKILL_SOURCE_PREFIX_SUSI_SERVER, SKILL_SOURCE_PREFIX_SUSI_SKILL_DATA};
 
         /**
          * compute the skill path from the origin file
@@ -67,17 +72,22 @@ public class SusiSkill {
          * @return a relative path to the skill location, based on the git repository
          */
         public ID(File origin) throws UnsupportedOperationException {
-            this.skillpath = origin.getAbsolutePath();
+            this.skillpath = origin.getAbsolutePath().replace('\\', '/');
             // The skillpath must start with the root path of either the susi_skill_data git repository or of susi_server git repository.
             // In both cases the path must start with a "/".
-            int i = this.skillpath.indexOf("/susi");
-            if (i < 0) {
-                i = this.skillpath.indexOf("\\susi");
-                if(i < 0)
-                    throw new UnsupportedOperationException("the file path does not point to a susi skill model repository: " + origin.getAbsolutePath());
+
+            boolean found = false;
+            prefixes: for (String prefix: possible_path_prefixes) {
+                int i = this.skillpath.indexOf(prefix);
+                if (i > 0) {
+                    this.skillpath = this.skillpath.substring(i);
+                    found = true;
+                    break prefixes;
+                }
             }
-            this.skillpath = this.skillpath.substring(i);
-            if (this.skillpath.startsWith("/susi/") || this.skillpath.startsWith("\\susi\\")) this.skillpath = this.skillpath.substring(5);
+            if (!found) {
+                throw new UnsupportedOperationException("the file path does not point to a susi skill model repository: " + origin.getAbsolutePath());
+            }
         }
 
         public String toString() {
@@ -109,15 +119,15 @@ public class SusiSkill {
          * @return
          */
         public SusiLanguage language() {
-            if (this.skillpath.startsWith("/susi_server/conf/")) {
+            if (this.skillpath.startsWith(SKILL_SOURCE_PREFIX_SUSI_SERVER + "/conf/")) {
                 int p = this.skillpath.lastIndexOf('/');
                 SusiLanguage language = SusiLanguage.parse(this.skillpath.substring(p - 2, p));
-                if (language != SusiLanguage.unknown) return language;
-            } else if (this.skillpath.startsWith("/susi_skill_data")) {
+                return language;
+            }
+            if (this.skillpath.startsWith(SKILL_SOURCE_PREFIX_SUSI_SKILL_DATA)) {
                 SusiLanguage language = SusiLanguage.unknown;
                 String[] paths = this.skillpath.split("/");
                 if (paths.length > 5) language = SusiLanguage.parse(paths[5]);
-                if (language != SusiLanguage.unknown) return language;
                 return language;
             }
 

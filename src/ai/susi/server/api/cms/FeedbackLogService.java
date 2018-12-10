@@ -22,6 +22,7 @@ package ai.susi.server.api.cms;
 import ai.susi.DAO;
 import ai.susi.json.JsonObjectWithDefault;
 import ai.susi.json.JsonTray;
+import ai.susi.mind.SusiSkill;
 import ai.susi.server.*;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -74,7 +75,7 @@ public class FeedbackLogService extends AbstractAPIHandler implements APIHandler
         String country_name = call.get("country_name", null);
         String country_code = call.get("country_code", null);
         String device_type = call.get("device_type", "Others");
-        String skill_path = "/susi_skill_data/models/" + model_name + "/" + group_name + "/" + language_name + "/" + skill_name + ".txt";
+        String skill_path = SusiSkill.SKILL_SOURCE_PREFIX_SUSI_SKILL_DATA + "/models/" + model_name + "/" + group_name + "/" + language_name + "/" + skill_name + ".txt";
 
 
         JSONObject result = new JSONObject();
