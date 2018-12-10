@@ -382,8 +382,8 @@ public class SusiCognition {
                 // the skill, can be used to analyze the latest answer
                 List<String> skills = clonedThought.getSkills();
                 if (skills.size() > 0) {
-                    if(skills.get(0).startsWith("/susi_server/file:")) {
-                        dispute.addObservation("skill", "Etherpad Dream: " +skills.get(0).substring("/susi_server/file:/".length()));
+                    if(skills.get(0).startsWith(SusiSkill.SKILL_SOURCE_PREFIX_SUSI_SERVER + "/file:")) {
+                        dispute.addObservation("skill", "Etherpad Dream: " +skills.get(0).substring((SusiSkill.SKILL_SOURCE_PREFIX_SUSI_SERVER + "/file:").length()));
                     } else {
                         dispute.addObservation("skill", skills.get(0));
                     }
@@ -424,14 +424,14 @@ public class SusiCognition {
 
     public String getSkillLink(String skillPath) {
         String link=skillPath;
-        if(skillPath.startsWith("/susi_server")) {
-            if(skillPath.startsWith("/susi_server/file:")) {
-                link = "http://dream.susi.ai/p/" + skillPath.substring("/susi_server/file:/".length());
+        if(skillPath.startsWith(SusiSkill.SKILL_SOURCE_PREFIX_SUSI_SERVER)) {
+            if(skillPath.startsWith(SusiSkill.SKILL_SOURCE_PREFIX_SUSI_SERVER + "/file:")) {
+                link = "http://dream.susi.ai/p/" + skillPath.substring((SusiSkill.SKILL_SOURCE_PREFIX_SUSI_SERVER + "/file:").length());
             } else {
-                link ="https://github.com/fossasia/susi_server/blob/development" + skillPath.substring("/susi_server".length());
+                link ="https://github.com/fossasia/susi_server/blob/development" + skillPath.substring(SusiSkill.SKILL_SOURCE_PREFIX_SUSI_SERVER.length());
             }
-        } else if (skillPath.startsWith("/susi_skill_data")) {
-            link = "https://github.com/fossasia/susi_skill_data/blob/master" + skillPath.substring("/susi_skill_data".length());
+        } else if (skillPath.startsWith(SusiSkill.SKILL_SOURCE_PREFIX_SUSI_SKILL_DATA)) {
+            link = "https://github.com/fossasia/susi_skill_data/blob/master" + skillPath.substring(SusiSkill.SKILL_SOURCE_PREFIX_SUSI_SKILL_DATA.length());
         }
         return link;
     }
