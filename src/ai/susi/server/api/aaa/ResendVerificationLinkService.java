@@ -78,7 +78,7 @@ public class ResendVerificationLinkService extends AbstractAPIHandler implements
         ClientCredential credential = new ClientCredential(ClientCredential.Type.passwd_login, emailId);
         Authentication authentication = DAO.getAuthentication(credential);
         if (authentication.getIdentity() == null) {
-            throw new APIException(401, "Invalid email id. Please Sign up!");
+            throw new APIException(400, "Invalid email id. Please Sign up!");
         }
 
         // check if user is already verified or not
