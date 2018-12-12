@@ -81,7 +81,7 @@ public class DeleteGroupService extends AbstractAPIHandler implements APIHandler
                 result.put("message", "Group deleted successfully");
                 return new ServiceResponse(result);
             } else {
-                throw new APIException(422, "Group doesn't exists");
+                throw new APIException(401, "Group doesn't exists");
             }
         } else {
             throw new APIException(400, "Group name parameter not specified");
