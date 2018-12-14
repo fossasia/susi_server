@@ -29,15 +29,14 @@ import org.json.JSONObject;
 import ai.susi.tools.TimeoutMatcher;
 
 /**
- * Thinking starts with a series of inferences if it is triggered with a matching mechanism which tells the
- * Susi mind that it should identify a given input as something it can think about. Such a trigger is a
- * SusiPhrase, a pattern that is used to 'remember' how to handle inputs. 
- * To descibe a phrase in a more computing-related way: a phrase is a pre-compiled regular expression.
+ * Thinking starts with a matching mechanism which tells the
+ * Susi mind that it should identify a given input as something it can think about.
+ * Such a trigger is a SusiUtterance which is a pre-compiled regular expression.
  */
 public class SusiUtterance {
 
     public static enum Type {
-        minor(0), regex(1), pattern(1), prior(3);
+        minor(0), prior(1);
         private final int subscore;
         private Type(int s) {this.subscore = s;}
         private int getSubscore() {return this.subscore;}
@@ -51,10 +50,10 @@ public class SusiUtterance {
     private final static Pattern wspace = Pattern.compile(",|;:");
 
     private final Pattern pattern;
-    private final Type type;
+    private Type type;
     private final boolean hasCaptureGroups;
     private final int meatsize;
-    
+
     /**
      * Create a phrase using a json data structure containing the phrase description.
      * The json must contain at least two properties:
@@ -65,32 +64,82 @@ public class SusiUtterance {
      */
     public SusiUtterance(JSONObject json) throws PatternSyntaxException {
         if (!json.has("expression")) throw new PatternSyntaxException("expression missing", "", 0);
-        String expression = json.getString("expression").toLowerCase();
-        
-        Type t = Type.pattern;
+
+        Type t = Type.minor;
         if (json.has("type")) try {
             t = Type.valueOf(json.getString("type"));
         } catch (IllegalArgumentException e) {
-            Logger.getLogger("SusiPhrase").warning("type value is wrong: " + json.getString("type"));
-            t = expression.indexOf(".*") >= 0 ? Type.regex : expression.indexOf('*') >= 0 ? Type.pattern : Type.minor;
+            //Logger.getLogger("SusiPhrase").warning("type value is wrong: " + json.getString("type"));
         }
-        
-        expression = normalizeExpression(expression);
-        if (expression.length() > 0 && (t == Type.minor || t == Type.prior)) {
-            if (expression.indexOf('*') >= 0) t = Type.pattern;
-            if (expression.indexOf(".*") >= 0 ||
-                (expression.charAt(0) == '^' && expression.charAt(expression.length() - 1) == '$') ||
-                (expression.charAt(0) == '(' && expression.charAt(expression.length() - 1) == ')')) t = Type.regex;
-        }
-        if (t == Type.pattern) expression = parsePattern(expression);
+
+        String expression = normalizeExpression(json.getString("expression"));
+        expression = fixExpression(expression);
+        expression = parsePattern(expression);
+
+        // write class variables
         this.pattern = Pattern.compile(expression);
         this.type = expression.equals("(.*)") ? Type.minor : t;
         this.hasCaptureGroups = expression.replaceAll("\\(\\?", "").indexOf('(') >= 0;
-        
+
         // measure the meat size
         this.meatsize = Math.min(99, extractMeat(expression).length());
     }
-    
+
+    /**
+     * create a simple phrase
+     * @param expression
+     * @param prior if true, this phrase has priority
+     * @throws PatternSyntaxException
+     */
+    public SusiUtterance(String expression, boolean prior) throws PatternSyntaxException {
+
+        this.type = prior ? Type.prior : Type.minor;
+
+        // normalize expression
+        expression = normalizeExpression(expression);
+        expression = fixExpression(expression);
+        expression = parsePattern(expression);
+
+        // write class variables
+        this.pattern = Pattern.compile(expression);
+        this.hasCaptureGroups = expression.replaceAll("\\(\\?", "").indexOf('(') >= 0;
+
+        // measure the meat size
+        this.meatsize = Math.min(99, extractMeat(expression).length());
+    }
+
+    private String fixExpression(String expression) {
+        if (expression == null || expression.length() == 0) return "";
+        if (expression.indexOf(".*") >= 0 ||
+            (expression.charAt(0) == '^' && expression.charAt(expression.length() - 1) == '$') ||
+            (expression.charAt(0) == '(' && expression.charAt(expression.length() - 1) == ')')) {
+        } else {
+            // this is not a regular expression, therefore we can remove superfluous dots
+            int p;
+            while ((p = expression.indexOf('.')) > 0 && expression.charAt(p - 1) != ' ') {
+                expression = expression.substring(0, p) + ' ' + expression.substring(p);
+            }
+            while ((p = expression.indexOf('.')) >= 0 && p < expression.length() - 1 && expression.charAt(p + 1) != ' ') {
+                expression = expression.substring(0, p + 1) + ' ' + expression.substring(p + 1);
+            }
+        }
+        return expression;
+    }
+
+    /**
+     * @deprecated use class constructor instead
+     */
+    public static JSONObject simplePhrase(String query, boolean prior) {
+        // normalize query
+        query = query.trim();
+
+        // create phrase
+        JSONObject json = new JSONObject();
+        json.put("type", prior ? Type.prior.name() : Type.minor.name());
+        json.put("expression", query);
+        return json;
+    }
+
     public static String normalizeExpression(String s) {
         s = s.trim().toLowerCase().replaceAll("\\#", "  ");
         Matcher m;
@@ -104,29 +153,10 @@ public class SusiUtterance {
         while ((p = s.toLowerCase().indexOf("what's ")) >= 0) s = s.substring(0, p + 4) + " is " + s.substring(p + 7);
         return s;
     }
-    
-    public static JSONObject simplePhrase(String query, boolean prior) {
-    	// normalize query
-    	query = query.trim();
-    	
-    	// correction of wrong wild card usage
-    	if (query.length() > 0 && (
-    	    query.charAt(0) != '^' || query.charAt(query.length() - 1) != '$' ||
-    	    query.charAt(0) != '(' || query.charAt(query.length() - 1) != ')')) {
-    	    int p;
-    	    while ((p = query.indexOf('.')) > 0 && query.charAt(p - 1) != ' ') {
-    	        query = query.substring(0, p) + ' ' + query.substring(p);
-    	    }
-    	    while ((p = query.indexOf('.')) >= 0 && p < query.length() - 1 && query.charAt(p + 1) != ' ') {
-    	        query = query.substring(0, p + 1) + ' ' + query.substring(p + 1);
-    	    }
-    	}
-    	
-    	// create phrase
-        JSONObject json = new JSONObject();
-        json.put("type", prior ? Type.prior.name() : Type.minor.name());
-        json.put("expression", query);
-        return json;
+
+    public boolean isCatchallPhrase() {
+        String expression = this.pattern.pattern();
+        return CATCHALL_CAPTURE_GROUP_STRING.equals(expression);
     }
     
     public static boolean isCatchallPhrase(JSONObject json) {
@@ -146,13 +176,12 @@ public class SusiUtterance {
         }
         return sb.substring(0, sb.length() - 1);
     }
-    
+
     private static String parseOnePattern(String expression) {
         expression = parseOnePattern(expression, '*', CATCHALL_CAPTURE_GROUP_STRING);
         expression = parseOnePattern(expression, '+', CATCHONE_CAPTURE_GROUP_STRING);
         return expression;
     }
-    
 
     private static String parseOnePattern(String expression, char meta, String regex) {
         if (expression.length() == 0 || expression.equals("" + meta)) expression = regex;
@@ -164,7 +193,7 @@ public class SusiUtterance {
         expression = expression.replaceAll(String.format(" \\%s | \\?\\%s ", meta, meta), " " + regex + " ");
         return expression;
     }
-    
+
     public static boolean isRegularExpression(String expression) {
         if (expression.indexOf('\\') >=0 || (expression.indexOf('(') >= 0 && expression.indexOf(')') >= 0) ) {
             // this is a hint that this could be a regular expression.
@@ -177,7 +206,7 @@ public class SusiUtterance {
         }
         return false;
     }
-    
+
     public static String extractMeat(String expression) {
         if (isRegularExpression(expression)) return ""; // the meatsize of a regular expression is zero
         StringBuffer sb = new StringBuffer();
@@ -187,7 +216,7 @@ public class SusiUtterance {
         }
         return sb.toString();
     }
-    
+
     /**
      * get the pre-compiled regular expression pattern
      * @return a java pattern
@@ -195,7 +224,7 @@ public class SusiUtterance {
     public Pattern getPattern() {
         return this.pattern;
     }
-    
+
     /**
      * get the type. this will be used for score computation
      * @return the type
@@ -203,32 +232,27 @@ public class SusiUtterance {
     public Type getType() {
         return this.type;
     }
-    
+
     public int getSubscore() {
-        return ((this.type == Type.pattern || this.type == Type.regex) && !this.hasCaptureGroups) ? this.type.getSubscore() + 1 : this.type.getSubscore();
+        return !this.hasCaptureGroups ? this.type.getSubscore() + 1 : this.type.getSubscore();
     }
-    
+
     public int getMeatsize() {
         return this.meatsize;
     }
-    
+
     public String toString() {
         return this.toJSON().toString();
     }
-    
+
     public JSONObject toJSON() {
         JSONObject json = new JSONObject(true);
         String p = this.pattern.pattern();
-        if (this.type == Type.pattern || this.type == Type.regex) {
-            if (new TimeoutMatcher(CATCHALL_CAPTURE_GROUP_PATTERN.matcher(p)).find()) {
-                p = p.replaceAll(CATCHALL_CAPTURE_GROUP_PATTERN.pattern(), "*");
-            }
-            json.put("type", this.type.name());
-            json.put("expression", this.pattern.pattern());
-        } else {
-            json.put("type", this.type.name());
-            json.put("expression", p);
+        if (new TimeoutMatcher(CATCHALL_CAPTURE_GROUP_PATTERN.matcher(p)).find()) {
+            p = p.replaceAll(CATCHALL_CAPTURE_GROUP_PATTERN.pattern(), "*");
         }
+        json.put("type", this.type.name());
+        json.put("expression", p);
         return json;
     }
 }

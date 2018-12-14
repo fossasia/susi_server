@@ -50,17 +50,17 @@ import alice.tuprolog.Theory;
  * argument from the steps before.
  */
 public class SusiInference {
-    
+
     public static enum Type {
         console, flow, memory, javascript, prolog;
         public int getSubscore() {
             return this.ordinal() + 1;
         }
     }
-    
+
     private JSONObject json;
     private static final ScriptEngine javascript =  new ScriptEngineManager().getEngineByName("nashorn");
-    
+
     /**
      * Instantiate an inference with the inference description. The description should usually contain two
      * properties:
@@ -72,13 +72,25 @@ public class SusiInference {
         this.json = json;
     }
 
+    public SusiInference(String expression, Type type) {
+        this.json = new JSONObject(true);
+        this.json.put("type", type.name());
+        this.json.put("expression", expression);
+    }
+
+    public SusiInference(JSONObject definition, Type type) {
+        this.json = new JSONObject(true);
+        this.json.put("type", type.name());
+        this.json.put("definition", definition);
+    }
+
     public static JSONObject simpleMemoryProcess(String expression) {
         JSONObject json = new JSONObject(true);
         json.put("type", Type.memory.name());
         json.put("expression", expression);
         return json;
     }
-    
+
     /**
      * Inferences may have different types. Each type selects inference methods inside the inference description.
      * While the inference description mostly has only one other attribute, the "expression" it might have more.
@@ -87,7 +99,7 @@ public class SusiInference {
     public Type getType() {
         return this.json.has("type") ? Type.valueOf(this.json.getString("type")) : Type.console;
     }
-    
+
     /**
      * The inference expression is the 'program code' which describes what to do with thought arguments.
      * This program code is therefore like a lambda expression which takes a table-like data structure
@@ -98,11 +110,11 @@ public class SusiInference {
     public String getExpression() {
         return this.json.has("expression") ? this.json.getString("expression") : "";
     }
-    
+
     public JSONObject getDefinition() {
         return this.json.has("definition") ? this.json.getJSONObject("definition") : null;
     }
-    
+
     private final static SusiProcedures flowProcedures = new SusiProcedures();
     private final static SusiProcedures memoryProcedures = new SusiProcedures();
     private final static SusiProcedures javascriptProcedures = new SusiProcedures();
@@ -199,7 +211,6 @@ public class SusiInference {
                 } catch (Exception ex){
                     DAO.log("invalid theory.");
                 }
-                
                 return new SusiThought().addObservation("!", "");
             } catch (Throwable e) {
                 DAO.severe(e);
@@ -214,7 +225,7 @@ public class SusiInference {
         // - compute (write computation into new field)
         // - cut (to stop backtracking)
     }
-    
+
     /**
      * "see" defines a new thought based on the names given in the "transferExpr" and retrieved using the content of
      * a variable in the "expr" expression using a matching in the given pattern. It can be used to check if something
@@ -253,8 +264,7 @@ public class SusiInference {
         }
         return nextThought; // an empty thought is a fail signal
     }
-    
-    
+
     /**
      * The inference must be applicable to thought arguments. This method executes the inference process on an existing 
      * argument and produces another thought which may or may not be appended to the given argument to create a full
@@ -273,10 +283,10 @@ public class SusiInference {
                 // this might have an anonymous console rule inside
                 JSONObject definition = this.getDefinition();
                 if (definition == null) return new SusiThought();
-                
+
                 // execute the console rule right here
                 SusiThought json = new SusiThought();
-                
+
                 // inject data object if one is given
                 if (definition.has("data") && definition.get("data") instanceof JSONArray) {
                     JSONArray data = definition.getJSONArray("data");
@@ -285,7 +295,7 @@ public class SusiInference {
                         json.setHits(json.getCount());
                     }
                 }
-                
+
                 // load more data using an url and a path
                 if (definition.has("url") && definition.has("path")) try {
                     String url = flow.unify(definition.getString("url"), true, Integer.MAX_VALUE);
@@ -336,11 +346,11 @@ public class SusiInference {
         // maybe the argument is not applicable, then an empty thought is produced (which means a 'fail')
         return new SusiThought();
     }
-    
+
     public String toString() {
         return this.getJSON().toString();
     }
-    
+
     public JSONObject getJSON() {
         return this.json;
     }

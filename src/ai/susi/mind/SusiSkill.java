@@ -25,10 +25,11 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.nio.file.FileSystems;
+import java.util.ArrayList;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Set;
 
-import org.jfree.util.Log;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -46,21 +47,16 @@ public class SusiSkill {
 
     public final static String SKILL_SOURCE_PREFIX_SUSI_SERVER = "/susi_server";
     public final static String SKILL_SOURCE_PREFIX_SUSI_SKILL_DATA = "/susi_skill_data";
+    public final static String SKILL_SOURCE_PREFIX_INSTANT = "/instant";
 
-    private String skillName;
-    private Boolean protectedSkill;
+    private String skillName, description, author, authorURL, authorEmail, image;
+    private String termsOfUse, kickoff, developerPrivacyPolicy;
     private String[] on;
-    private String description;
-    private String author;
-    private String authorURL;
-    private String authorEmail;
-    private String image;
-    private String termsOfUse;
-    private Set<String> examples;
-    private String developerPrivacyPolicy;
-    private Boolean dynamicContent;
-    private Set<String> tags;
-
+    private Boolean protectedSkill, dynamicContent;
+    private Set<String> examples, tags;
+    private List<SusiIntent> intents = new ArrayList<>();
+    private SusiSkill.ID id;
+    
     public static class ID implements Comparable<ID> {
         private String skillpath;
         private final String[] possible_path_prefixes = new String[] {
@@ -88,6 +84,16 @@ public class SusiSkill {
             if (!found) {
                 throw new UnsupportedOperationException("the file path does not point to a susi skill model repository: " + origin.getAbsolutePath());
             }
+        }
+
+        /**
+         * create an instant skill id
+         * @param language
+         * @param name a name of the skill without path information
+         * @throws UnsupportedOperationException
+         */
+        public ID(final SusiLanguage language, final String name) {
+            this.skillpath = SKILL_SOURCE_PREFIX_INSTANT + "/" + language.name() + "/" + name.replace('/', '_');
         }
 
         public String toString() {
@@ -119,7 +125,8 @@ public class SusiSkill {
          * @return
          */
         public SusiLanguage language() {
-            if (this.skillpath.startsWith(SKILL_SOURCE_PREFIX_SUSI_SERVER + "/conf/")) {
+            if (this.skillpath.startsWith(SKILL_SOURCE_PREFIX_SUSI_SERVER + "/conf/") ||
+                this.skillpath.startsWith(SKILL_SOURCE_PREFIX_INSTANT)) {
                 int p = this.skillpath.lastIndexOf('/');
                 SusiLanguage language = SusiLanguage.parse(this.skillpath.substring(p - 2, p));
                 return language;
@@ -152,28 +159,23 @@ public class SusiSkill {
 
     }
 
-    /**
-     * read an "EzD" ('Easy Dialog') file: this is just a text file. Read the docs/susi_skill_development_tutorial.md for an explanation
-     * @param br
-     * @return
-     * @throws JSONException
-     * @throws FileNotFoundException
-     */
-
     public SusiSkill() {
+        this.skillName = null;
+        this.description = null;
         this.author = null;
         this.authorURL = null;
         this.authorEmail = null;
-        this.on = null;
-        this.description = null;
-        this.examples = new LinkedHashSet<>();
         this.image = null;
-        this.skillName = null;
-        this.protectedSkill = false;
         this.termsOfUse = null;
+        this.kickoff = null;
         this.developerPrivacyPolicy = null;
+        this.id = null;
+        this.on = null;
+        this.protectedSkill = false;
         this.dynamicContent = false;
+        this.examples = new LinkedHashSet<>();
         this.tags = new LinkedHashSet<>();
+        this.intents = new ArrayList<>();
     }
 
     /**
@@ -181,13 +183,17 @@ public class SusiSkill {
      * @param br a buffered reader
      * @return a skill object as JSON
      * @throws JSONException
+     * @throws SusiActionException 
      */
-    public static JSONObject readLoTSkill(final BufferedReader br, final SusiLanguage language, final String skillidname, boolean acceptWildcardIntent) throws JSONException {
+    public SusiSkill(
+            final BufferedReader br,
+            final SusiSkill.ID skillid,
+            boolean acceptWildcardIntent) throws JSONException, SusiActionException {
+        this();
+        this.id = skillid;
         // read the text file and turn it into a intent json; then learn that
-        JSONObject json = new JSONObject(true);
-        JSONArray intents = new JSONArray();
         String lastLine = "", line = "";
-        String bang_answers = "", bang_type = "", bang_term = "", example = "", expect = "", label = "", implication = "";
+        String bang_utterances = "", bang_type = "", bang_answers = "", example = "", expect = "", label = "", implication = "";
         StringBuilder bang_bag = new StringBuilder();
         boolean prior = false, dynamicContent = false, protectedSkill = false;
         int indentStep = 4; // like in python
@@ -209,99 +215,86 @@ public class SusiSkill {
             // collect bang expressions
             if (bang_type.length() > 0) {
                 // collect a bang
-                if (line.toLowerCase().equals("eol")) {
-                    // stop collection
-                    if (bang_type.equals("javascript")) {
-                        // create a javascript intent
-                        JSONObject intent = new JSONObject(true);
-                        JSONArray phrases = new JSONArray();
-                        intent.put("phrases", phrases);
-                        if (phraseFromWildcard(skillidname, acceptWildcardIntent, bang_answers, prior, phrases))
-                            continue readloop;
-
-                        // javascript process
-                        JSONObject process = new JSONObject();
-                        process.put("type", Type.javascript.name());
-                        try {
-                            process.put("expression", bang_bag.toString());
-                        } catch (JSONException e) {
-                            throw new JSONException(e.getMessage() + " \"" + bang_bag.toString() + "\"");
-                        }
-                        intent.put("process", new JSONArray().put(process));
-
-                        // answers; must contain $!$
-                        intent.put("actions", new JSONArray().put(SusiAction.answerAction(language, bang_term.split("\\|"))));
-                        if (example.length() > 0) intent.put("example", example);
-                        if (expect.length() > 0) intent.put("expect", expect);
-                        if (label.length() > 0) intent.put("label", label);
-                        if (implication.length() > 0) intent.put("implication", implication);
-                        intent.put("depth", depth);
-                        extendParentWithAnswer(intents, intent);
-                        intents.put(intent);
-                    }
-                    else if (bang_type.equals("console")) {
-                        // create a console intent
-                        JSONObject intent = new JSONObject(true);
-                        JSONArray phrases = new JSONArray();
-                        intent.put("phrases", phrases);
-                        if (phraseFromWildcard(skillidname, acceptWildcardIntent, bang_answers, prior, phrases))
-                            continue readloop;
-
-                        // console process
-                        JSONObject process = new JSONObject();
-                        process.put("type", Type.console.name());
-                        JSONObject definition = null;
-                        try {
-                            definition = new JSONObject(new JSONTokener(bang_bag.toString()));
-                            process.put("definition", definition);
-                        } catch (JSONException e) {
-                            throw new JSONException(e.getMessage() + " \"" + bang_bag.toString() + "\"");
-                        }
-                        intent.put("process", new JSONArray().put(process));
-
-                        // actions; we may have several actions here
-                        JSONArray actions = new JSONArray();
-                        intent.put("actions", actions);
-
-                        // verify actions
-                        if (definition.has("actions")) {
-                            JSONArray bo_actions = definition.getJSONArray("actions");
-                            bo_actions.forEach(action -> {
-                                try {
-                                    // looks silly, but this is for verification that the action is valid
-                                    SusiAction protoAction = new SusiAction((JSONObject) action);
-                                    actions.put(protoAction.toJSONClone());
-                                } catch (SusiActionException e) {
-                                    Log.error(e.getMessage());
-                                }
-
-                            });
-                        }
-
-                        // validate additional data object: it must be an array
-                        if (definition.has("data")) {
-                            Object o = definition.get("data");
-                            if (!(o instanceof JSONArray)) definition.remove("data");
-                        }
-
-                        // answers; must contain names from the console result array
-                        if (bang_term.length() > 0) {
-                            actions.put(SusiAction.answerAction(language, bang_term.split("\\|")));
-                        }
-                        if (example.length() > 0) intent.put("example", example);
-                        if (expect.length() > 0) intent.put("expect", expect);
-                        if (label.length() > 0) intent.put("label", label);
-                        if (implication.length() > 0) intent.put("implication", implication);
-                        intent.put("depth", depth);
-                        extendParentWithAnswer(intents, intent);
-                        intents.put(intent);
-                    }
-                    bang_answers = "";
-                    bang_type = "";
-                    bang_term = "";
-                    bang_bag.setLength(0);
+                if (!line.toLowerCase().equals("eol")) {
+                    bang_bag.append(line).append('\n');
+                    continue readloop;
                 }
-                bang_bag.append(line).append('\n');
+
+                // the line is "eol"; stop collection
+                if (bang_type.equals("javascript")) {
+                    // create a javascript intent
+                    List<SusiUtterance> utterances = phrasesFromWildcard(skillid.getPath(), acceptWildcardIntent, bang_utterances, prior);
+                    if (utterances == null) continue readloop;
+
+                    // javascript process
+                    SusiInference inference = new SusiInference(bang_bag.toString(), Type.javascript);
+                    List<SusiInference> inferences = new ArrayList<>(1);
+                    inferences.add(inference);
+
+                    // answers; must contain $!$
+                    SusiAction action = new SusiAction(SusiAction.answerAction(this.id.language(), bang_answers.split("\\|")));
+                    List<SusiAction> actions = new ArrayList<>(1);
+                    actions.add(action);
+
+                    SusiIntent intent = new SusiIntent(utterances, inferences, actions, prior, depth, example, expect, label, implication, skillid);
+
+                    extendParentWithAnswer(this.intents, intent);
+                    this.intents.add(intent);
+                } else if (bang_type.equals("console")) {
+                    // create a console intent
+                    List<SusiUtterance> utterances = phrasesFromWildcard(skillid.getPath(), acceptWildcardIntent, bang_utterances, prior);
+                    if (utterances == null) continue readloop;
+
+                    // console process
+                    JSONObject definition;
+                    SusiInference inference;
+                    try {
+                        definition = new JSONObject(new JSONTokener(bang_bag.toString()));
+                        inference = new SusiInference(definition, Type.console);
+                    } catch (JSONException e) {
+                        throw new JSONException(e.getMessage() + " \"" + bang_bag.toString() + "\"");
+                    }
+                    List<SusiInference> inferences = new ArrayList<>(1);
+                    inferences.add(inference);
+
+                    // actions; we may have several actions here
+                    List<SusiAction> actions = new ArrayList<>();
+
+                    // verify actions
+                    if (definition.has("actions")) {
+                        JSONArray bo_actions = definition.getJSONArray("actions");
+                        bo_actions.forEach(action -> {
+                            try {
+                                actions.add(new SusiAction((JSONObject) action));
+                            } catch (SusiActionException e) {
+                                DAO.severe(e.getMessage());
+                            }
+                        });
+                    }
+
+                    // validate additional data object: it must be an array
+                    if (definition.has("data")) {
+                        Object o = definition.get("data");
+                        if (!(o instanceof JSONArray)) definition.remove("data");
+                    }
+
+                    // answers; must contain names from the console result array
+                    if (bang_answers.length() > 0) try {
+                        actions.add(new SusiAction(SusiAction.answerAction(this.id.language(), bang_answers.split("\\|"))));
+                    } catch (SusiActionException e) {
+                        DAO.severe(e.getMessage());
+                    }
+
+                    SusiIntent intent = new SusiIntent(utterances, inferences, actions, prior, depth, example, expect, label, implication, skillid);
+
+                    extendParentWithAnswer(this.intents, intent);
+                    this.intents.add(intent);
+                }
+                // if there is a different bang type, just ignore it.
+                bang_utterances = "";
+                bang_type = "";
+                bang_answers = "";
+                bang_bag.setLength(0);
                 continue readloop;
             }
 
@@ -312,57 +305,49 @@ public class SusiSkill {
                 if (line.startsWith("::prior")) prior = true;
                 if (line.startsWith("::on") && (thenpos = line.indexOf(' ')) > 0) {
                     String meta = line.substring(thenpos + 1).trim();
-                    String[] on = meta.split(",");
-                    JSONArray a = new JSONArray(on);
-                    if (meta.length() > 0) json.put("on", a);
+                    this.on = (meta.length() > 0) ? meta.split(",") : new String[0];
                 }
                 if (line.startsWith("::description") && (thenpos = line.indexOf(' ')) > 0) {
-                    String meta = line.substring(thenpos + 1).trim();
-                    if (meta.length() > 0) json.put("description", meta);
+                    this.description = line.substring(thenpos + 1).trim();
                 }
                 if (line.startsWith("::image") && (thenpos = line.indexOf(' ')) > 0) {
-                    String meta = line.substring(thenpos + 1).trim();
-                    if (meta.length() > 0) json.put("image", meta);
+                    this.image = line.substring(thenpos + 1).trim();
                 }
                 if (line.startsWith("::name") && (thenpos = line.indexOf(' ')) > 0) {
-                    String meta = line.substring(thenpos + 1).trim();
-                    if (meta.length() > 0) json.put("skill_name", meta);
+                    this.skillName = line.substring(thenpos + 1).trim();
                 }
                 if (line.startsWith("::protected") && (thenpos = line.indexOf(' ')) > 0) {
                     if (line.substring(thenpos + 1).trim().equalsIgnoreCase("yes")) protectedSkill=true;
-                    json.put("protected", protectedSkill);
+                    this.protectedSkill = protectedSkill;
                 }
                 if (line.startsWith("::author") && (!line.startsWith("::author_url")) && (!line.startsWith("::author_email")) && (thenpos = line.indexOf(' ')) > 0) {
-                    String meta = line.substring(thenpos + 1).trim();
-                    if (meta.length() > 0) json.put("author", meta);
+                    this.author = line.substring(thenpos + 1).trim();
                 }
                 if (line.startsWith("::author_email") && (thenpos = line.indexOf(' ')) > 0) {
-                    String meta = line.substring(thenpos + 1).trim();
-                    if (meta.length() > 0) json.put("author_email", meta);
+                    this.authorEmail = line.substring(thenpos + 1).trim();
                 }
                 if (line.startsWith("::author_url") && (thenpos = line.indexOf(' ')) > 0) {
-                    String meta = line.substring(thenpos + 1).trim();
-                    if (meta.length() > 0) json.put("author_url", meta);
+                    this.authorURL = line.substring(thenpos + 1).trim();
                 }
                 if (line.startsWith("::developer_privacy_policy") && (thenpos = line.indexOf(' ')) > 0) {
-                    String meta = line.substring(thenpos + 1).trim();
-                    if (meta.length() > 0) json.put("developer_privacy_policy", meta);
+                    this.developerPrivacyPolicy = line.substring(thenpos + 1).trim();
                 }
                 if (line.startsWith("::terms_of_use") && (thenpos = line.indexOf(' ')) > 0) {
-                    String meta = line.substring(thenpos + 1).trim();
-                    if (meta.length() > 0) json.put("terms_of_use", meta);
+                    this.termsOfUse = line.substring(thenpos + 1).trim();
                 }
                 if (line.startsWith("::dynamic_content") && (thenpos = line.indexOf(' ')) > 0) {
                     if (line.substring(thenpos + 1).trim().equalsIgnoreCase("yes")) dynamicContent = true;
-                    json.put("dynamic_content", dynamicContent);
+                    this.dynamicContent = dynamicContent;
                 }
                 if (line.startsWith("::tags") && (thenpos = line.indexOf(' ')) > 0) {
                     String meta = line.substring(thenpos + 1).trim();
-                    if (meta.length() > 0) json.put("tags", meta);
+                    this.tags = new LinkedHashSet<>();
+                    if (meta.length() > 0) {
+                        for (String s: meta.split(",")) this.tags.add(s);
+                    }
                 }
                 if (line.startsWith("::kickoff") && (thenpos = line.indexOf(' ')) > 0) {
-                    String meta = line.substring(thenpos + 1).trim();
-                    if (meta.length() > 0) json.put("kickoff", meta);
+                    this.kickoff = line.substring(thenpos + 1).trim();
                 }
 
                 lastLine = ""; example = ""; expect = ""; label = ""; implication = "";
@@ -387,22 +372,22 @@ public class SusiSkill {
                     if (elsepos <= thenpos) {
                         // only if, no else
                         String ifsubstring = line.substring(thenpos + 1).trim();
-                        if (readSkill(language, skillidname, acceptWildcardIntent, intents, example, expect, label, implication, prior, depth, phrases, condition, ifsubstring))
+                        if (readSkill(this.id, acceptWildcardIntent, this.intents, example, expect, label, implication, prior, depth, phrases, condition, ifsubstring))
                             continue readloop;
                     } else {
                         String ifsubstring = line.substring(thenpos + 1, elsepos).trim();
-                        if (readSkill(language, skillidname, acceptWildcardIntent, intents, example, expect, label, implication, prior, depth, phrases, condition, ifsubstring))
+                        if (readSkill(this.id, acceptWildcardIntent, this.intents, example, expect, label, implication, prior, depth, phrases, condition, ifsubstring))
                             continue readloop;
                         String elsesubstring = line.substring(elsepos + 1).trim();
                         if (elsesubstring.length() > 0) {
                             String[] elseanswers = elsesubstring.split("\\|");
-                            JSONObject intentelse = SusiIntent.answerIntent(phrases, "NOT " + condition, elseanswers, prior, depth, example, expect, label, implication, language);
-                            if (!acceptWildcardIntent && SusiIntent.isCatchallIntent(intentelse)) {
-                                DAO.log("WARNING: skipping skill / wildcard not allowed here: " + skillidname);
+                            SusiIntent intentelse = new SusiIntent(phrases, "NOT " + condition, elseanswers, prior, depth, example, expect, label, implication, skillid);
+                            if (!acceptWildcardIntent && intentelse.isCatchallIntent()) {
+                                DAO.log("WARNING: skipping skill / wildcard not allowed here: " + skillid.getPath());
                                 continue readloop;
                             } else {
-                                extendParentWithAnswer(intents, intentelse);
-                                intents.put(intentelse);
+                                extendParentWithAnswer(this.intents, intentelse);
+                                this.intents.add(intentelse);
                             }
                         }
                     }
@@ -420,22 +405,22 @@ public class SusiSkill {
                         implication = tail;
                     } else {
                         // start multi-line bang
-                        bang_answers = lastLine;
+                        bang_utterances = lastLine;
                         bang_type = head;
-                        bang_term = tail;
+                        bang_answers = tail;
                         bang_bag.setLength(0);
                     }
                     continue readloop;
                 } else {
                     String[] answers = line.split("\\|");
-                    JSONObject intent = SusiIntent.answerIntent(phrases, condition, answers, prior, depth, example, expect, label, implication, language);
-                    if (!acceptWildcardIntent && SusiIntent.isCatchallIntent(intent)) {
-                        DAO.log("WARNING: skipping skill / wildcard not allowed here: " + skillidname);
+                    SusiIntent intent = new SusiIntent(phrases, condition, answers, prior, depth, example, expect, label, implication, skillid);
+                    if (!acceptWildcardIntent && intent.isCatchallIntent()) {
+                        DAO.log("WARNING: skipping skill / wildcard not allowed here: " + skillid.getPath());
                         continue readloop;
                     } else {
-                        extendParentWithAnswer(intents, intent);
+                        extendParentWithAnswer(this.intents, intent);
                         //System.out.println(intent.toString());
-                        intents.put(intent);
+                        this.intents.add(intent);
                     }
                     example = ""; expect = ""; label = ""; implication = "";
                 }
@@ -444,66 +429,104 @@ public class SusiSkill {
         }} catch (IOException e) {
             DAO.log(e.getMessage());
         }
-        json.put("intents", intents);
-        return json;
     }
 
-    private static boolean phraseFromWildcard(String skillidname, boolean acceptWildcardIntent, String bang_answers, boolean prior, JSONArray phrases) {
-        for (String phrase: bang_answers.split("\\|")) {
-            JSONObject simplePhrase = SusiUtterance.simplePhrase(phrase.trim(), prior);
-            if (!acceptWildcardIntent && SusiUtterance.isCatchallPhrase(simplePhrase)) {
+    /**
+     * parse an utterance declaration
+     * @param skillidname
+     * @param acceptWildcardIntent
+     * @param utterances_declaration
+     * @param prior
+     * @return a list of compiled utterances
+     */
+    private static List<SusiUtterance> phrasesFromWildcard(String skillidname, boolean acceptWildcardIntent, String utterances_declaration, boolean prior) {
+        List<SusiUtterance> utterances = new ArrayList<>();
+        for (String u: utterances_declaration.split("\\|")) {
+            SusiUtterance utterance = new SusiUtterance(u.trim(), prior);
+            if (!acceptWildcardIntent && utterance.isCatchallPhrase()) {
                 DAO.log("WARNING: skipping skill / wildcard not allowed here: " + skillidname);
-                return true;
+                continue;
             } else {
-                phrases.put(simplePhrase);
+                utterances.add(utterance);
             }
         }
-        return false;
+        return utterances;
     }
 
-    private static boolean readSkill(SusiLanguage language, String skillidname, boolean acceptWildcardIntent, JSONArray intents, String example, String expect, String label, String implication, boolean prior, int depth, String[] phrases, String condition, String ifsubstring) {
+    private static boolean readSkill(
+            final SusiSkill.ID skillid,
+            final boolean acceptWildcardIntent,
+            final List<SusiIntent> intents,
+            final String example,
+            final String expect,
+            final String label,
+            final String implication,
+            final boolean prior,
+            final int depth,
+            final String[] phrases,
+            final String condition,
+            final String ifsubstring) throws SusiActionException {
         if (ifsubstring.length() > 0) {
             String[] answers = ifsubstring.split("\\|");
-            JSONObject intent = SusiIntent.answerIntent(phrases, "IF " + condition, answers, prior, depth, example, expect, label, implication, language);
-            if (!acceptWildcardIntent && SusiIntent.isCatchallIntent(intent)) {
-                DAO.log("WARNING: skipping skill / wildcard not allowed here: " + skillidname);
+            SusiIntent intent = new SusiIntent(phrases, "IF " + condition, answers, prior, depth, example, expect, label, implication, skillid);
+            if (!acceptWildcardIntent && intent.isCatchallIntent()) {
+                DAO.log("WARNING: skipping skill / wildcard not allowed here: " + skillid.getPath());
                 return true;
             } else {
                 extendParentWithAnswer(intents, intent);
-                intents.put(intent);
+                intents.add(intent);
             }
         }
         return false;
     }
 
-    private static JSONObject lastIntentWithDepth(JSONArray intents, int depth) {
-        for (int i = intents.length() - 1; i >= 0; i--) {
-            JSONObject intent = intents.getJSONObject(i);
-            int d = intent.optInt("depth", -1);
-            if (d > depth) continue;
-            if (d == depth) return intent;
-            if (d < depth) return null;
-        }
-        return null;
+    /**
+     * Attach a child intent to a parent intent:
+     *  - the parent gets a "cues" object which contains possible utterances
+     * @param parents the array of parent intents
+     * @param child the child intent
+     */
+    private static void extendParentWithAnswer(List<SusiIntent> parents, SusiIntent child) {
+
+        // check if the child is qualified - if it is actually a child or a parent on root level
+        int depth = child.getDepth();
+        if (depth <= 0) return; // not a child
+
+        // find a parent which is on the previous depth level
+        SusiIntent parent = lastIntentWithDepth(parents, depth - 1);
+        if (parent == null) return; // no parent found
+
+        // TODO: add hierarchy linking here:
+        // - get ID of parent
+        // - set an invisible assignment for linking variable to ID
+        // - add a check rule in child so child fires only if linking ID is set correctly
+
+        // get expressions from child utterances.
+        List<SusiUtterance> child_utterances = child.getUtterances();
+        if (child_utterances == null || child_utterances.size() != 1) return;
+        String child_expression = child_utterances.get(0).getPattern().pattern();
+        // We cannot accept utterances with wildcard expressions here because cues are answers that are presented inside the chat
+        if (child_expression.indexOf('*') >= 0) return;
+        parent.addCues(child_expression);
     }
 
-    private static void extendParentWithAnswer(JSONArray intents, JSONObject intent) {
-        JSONArray utterances = intent.getJSONArray("phrases");
-        if (utterances == null || utterances.length() != 1) return;
-        String utterance = utterances.getJSONObject(0).getString("expression");
-        if (utterance.indexOf('*') >= 0) return;
-        int depth = intent.optInt("depth", -1);
-        if (depth <= 0) return;
-        JSONObject parent = lastIntentWithDepth(intents, depth - 1);
-        if (parent == null) return;
-
-        // we have found a parent and we want to add the utterance as cue
-        JSONArray cues = parent.optJSONArray("cues");
-        if (cues == null) {
-            cues = new JSONArray();
-            parent.put("cues", cues);
+    /**
+     * Find an intent with a specific depth
+     * @param intents the set of intents
+     * @param depth the required depth
+     * @return the intent which has the given depth
+     */
+    private static SusiIntent lastIntentWithDepth(List<SusiIntent> intents, int depth) {
+        // iterate from back to front
+        for (int i = intents.size() - 1; i >= 0; i--) {
+            SusiIntent intent = intents.get(i);
+            int d = intent.getDepth();
+            if (d > depth) continue; // not yet on required depth, continue
+            if (d == depth) return intent; // found the match
+            if (d < depth) return null; // we missed the parent, maybe there is none. Then we don't return one
         }
-        cues.put(utterance);
+        // the list does not contain any appropriate parent
+        return null;
     }
 
     public void setAuthor(String author) {
@@ -534,11 +557,6 @@ public class SusiSkill {
     public void setDeveloperPrivacyPolicy(String developerPrivacyPolicy) {
         this.developerPrivacyPolicy = developerPrivacyPolicy;
     }
-/*
-    public void setExamples(Set<String> examples) {
-        this.examples = examples;
-    }
-*/
 
     public void setImage(String image) {
         this.image = image;
@@ -561,47 +579,55 @@ public class SusiSkill {
     }
 
     public String[] getOn() {
-        return on;
+        return this.on;
     }
 
     public String getDescription() {
-        return description;
+        return this.description;
     }
 
     public Set<String> getTags() {
-        return tags;
+        return this.tags;
+    }
+    
+    public List<SusiIntent> getIntents() {
+        return this.intents;
     }
 
     public String getAuthor() {
-        return author;
+        return this.author;
     }
 
     public String getAuthorURL() {
-        return authorURL;
+        return this.authorURL;
     }
 
     public String getAuthorEmail() {
-        return authorEmail;
+        return this.authorEmail;
     }
 
     public String getImage() {
-        return image;
+        return this.image;
     }
 
     public String getSkillName() {
-        return skillName;
+        return this.skillName;
     }
 
     public Boolean getProtectedSkill() {
-        return protectedSkill;
+        return this.protectedSkill;
     }
 
     public String getTermsOfUse() {
-        return termsOfUse;
+        return this.termsOfUse;
+    }
+
+    public SusiSkill.ID getID() {
+        return this.id;
     }
 
     public Set<String> getExamples() {
-        return examples;
+        return this.examples;
     }
 
     public void addExample(String s) {
@@ -619,17 +645,26 @@ public class SusiSkill {
 
     public JSONObject toJSON() {
         JSONObject json = new JSONObject(true);
-        if (this.description != null) json.put("description", this.description);
-        if (this.image != null) json.put("image", this.image);
-        if (this.skillName != null) json.put("skill_name", this.skillName);
-        if (this.protectedSkill != null) json.put("protected", this.protectedSkill);
-        if (this.author != null) json.put("author", this.author);
-        if (this.authorURL != null) json.put("author_url", this.authorURL);
-        if (this.authorEmail != null) json.put("author_email", this.authorEmail);
-        if (this.developerPrivacyPolicy != null) json.put("developer_privacy_policy", this.developerPrivacyPolicy);
-        if (this.termsOfUse != null) json.put("terms_of_use", this.termsOfUse);
-        if (this.dynamicContent != null) json.put("dynamic_content", this.dynamicContent);
-        if (this.tags != null && this.tags.size() > 0) json.put("tags", this.tags);
+        if (this.skillName != null && this.skillName.length() > 0) json.put("skill_name", this.skillName);
+        if (this.description != null && this.description.length() > 0) json.put("description", this.description);
+        if (this.author != null && this.author.length() > 0) json.put("author", this.author);
+        if (this.authorURL != null && this.authorURL.length() > 0) json.put("author_url", this.authorURL);
+        if (this.authorEmail != null && this.authorEmail.length() > 0) json.put("author_email", this.authorEmail);
+        if (this.image != null && this.image.length() > 0) json.put("image", this.image);
+        if (this.termsOfUse != null && this.termsOfUse.length() > 0) json.put("terms_of_use", this.termsOfUse);
+        if (this.kickoff != null && this.kickoff.length() > 0) json.put("kickoff", this.kickoff);
+        if (this.developerPrivacyPolicy != null && this.developerPrivacyPolicy.length() > 0) json.put("developer_privacy_policy", this.developerPrivacyPolicy);
+        if (this.id != null) json.put("origin", this.id.getPath());
+        if (this.on != null && this.on.length > 0) json.put("on", new JSONArray(this.on));
+        if (this.protectedSkill != null) json.put("protected", this.protectedSkill.booleanValue());
+        if (this.dynamicContent != null) json.put("dynamic_content", this.dynamicContent.booleanValue());
+        if (this.examples != null && this.examples.size() > 0) json.put("examples", new JSONArray(this.examples));
+        if (this.tags != null && this.tags.size() > 0) json.put("tags", new JSONArray(this.tags));
+        if (this.intents != null && this.intents.size() > 0) {
+            JSONArray i = new JSONArray();
+            for (SusiIntent si: this.intents) i.put(si.toJSON());
+            json.put("intents", i);
+        }
         return json;
     }
 
@@ -638,16 +673,15 @@ public class SusiSkill {
         //Map<String, String> config;
         //try {config = SusiServer.readConfig(data);DAO.init(config, data);} catch (Exception e) {e.printStackTrace();}
         File system_skills_test = new File(new File(FileSystems.getDefault().getPath("conf").toFile(), "os_skills"), "test");
-        File skill = new File(system_skills_test, "dialog.txt");
+        File skillFile = new File(system_skills_test, "dialog.txt");
         //File model = new File(DAO.model_watch_dir, "general");
         //File skill = SusiSkill.getSkillFileInModel(model, "Westworld");
-        System.out.println(skill);
-        SusiSkill.ID skillid = new SusiSkill.ID(skill);
-        SusiLanguage language = skillid.language();
+        System.out.println(skillFile);
+        SusiSkill.ID skillid = new SusiSkill.ID(skillFile);
         try {
-            JSONObject lesson = SusiSkill.readLoTSkill(new BufferedReader(new FileReader(skill)), language, skillid.skillpath, false);
-            System.out.println(lesson.toString(2));
-        } catch (JSONException | FileNotFoundException e) {
+            SusiSkill skill = new SusiSkill(new BufferedReader(new FileReader(skillFile)), skillid, false);
+            System.out.println(skill.toString());
+        } catch (JSONException | FileNotFoundException | SusiActionException e) {
             e.printStackTrace();
         }
         System.exit(0);

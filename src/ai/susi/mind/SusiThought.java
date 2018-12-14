@@ -27,10 +27,10 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.jfree.util.Log;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import ai.susi.DAO;
 import ai.susi.mind.SusiAction.SusiActionException;
 import ai.susi.tools.TimeoutMatcher;
 
@@ -360,14 +360,14 @@ public class SusiThought extends JSONObject {
      * To be able to apply (re-)actions to this thought, the actions on the information can be retrieved.
      * @return the (re-)actions which are applicable to this thought.
      */
-    public List<SusiAction> getActions() {
-        List<SusiAction> actions = new ArrayList<>();
+    public List<SusiAction> getActions(final boolean ignoreWarnings) {
+        final List<SusiAction> actions = new ArrayList<>();
         getActionsJSON().forEach(a -> {
             try {
                 SusiAction action = new SusiAction((JSONObject) a);
                 actions.add(action);
             } catch (SusiActionException e) {
-                Log.warn("invalid action - " + e.getMessage() + ": " + ((JSONObject) a).toString(0));
+                if (!ignoreWarnings) DAO.severe("invalid action - " + e.getMessage() + ": " + ((JSONObject) a).toString(0));
             }
         });
         return actions;

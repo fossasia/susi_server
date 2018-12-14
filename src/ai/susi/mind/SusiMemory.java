@@ -98,13 +98,13 @@ public class SusiMemory {
                     String logpath = thought.getLogPath();
                     if (logpath != null) {
                         File skillogfile = new File(this.skilllog, logpath);
-                        cognition.json.put("identity", identity);
+                        cognition.setIdentity(identity);
                         SusiAwareness.memorize(skillogfile, cognition);
                     }
-                    
+
                     // check unanswered
                     String query = cognition.getQuery().toLowerCase();
-                    String answer = cognition.getExpression();
+                    String answer = cognition.getExpression(true);
                     if (query.length() > 0 && failset.contains(answer)) {
                         AtomicInteger counter = this.unanswered.get(query);
                         if (counter == null) {

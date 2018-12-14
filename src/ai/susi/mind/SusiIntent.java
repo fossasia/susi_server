@@ -33,7 +33,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
-import org.jfree.util.Log;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -45,75 +44,195 @@ import ai.susi.tools.TimeoutMatcher;
 /**
  * An intent in the Susi AI framework is a collection of utterances, inference processes and actions that are applied
  * on external sense data if the utterances identify that this intent set would be applicable on the sense data.
- * A set of intent would is a intent on how to handle activities from the outside of the AI and react on
+ * A set of intents is called a skill; a skill describe how to handle activities from the outside of the AI and react on
  * such activities.
  */
 public class SusiIntent {
 
     public final static String CATCHALL_KEY = "*";
     public final static int    DEFAULT_SCORE = 10;
-    
+
     private List<SusiUtterance> utterances;
     private List<SusiInference> inferences;
     private List<SusiAction> actions;
+    private Set<String> cues;
     private Set<String> keys;
     private String comment;
     private int user_subscore;
     private Score score;
-    private int id;
+    private int id, depth;
     private SusiSkill.ID skillid;
-    private String example, expect;
-    private SusiLanguage language;
-    
-    /**
-     * Generate a set of intents from a single intent definition. This may be possible if the intent contains an 'options'
-     * object which creates a set of intents, one for each option. The options combine with one set of utterances
-     * @param json - a multi-intent definition
-     * @return a set of intents
-     */
-    public static List<SusiIntent> getIntents(SusiLanguage language, JSONObject json, SusiSkill.ID skillid) {
-        if (!json.has("phrases")) {
-            throw new PatternSyntaxException("phrases missing", "", 0);
-        }
-        final List<SusiIntent> intents = new ArrayList<>();
-        if (json.has("options")) {
-            JSONArray options = json.getJSONArray("options");
-            for (int i = 0; i < options.length(); i++) {
-                JSONObject option = new JSONObject();
-                option.put("phrases", json.get("phrases"));
-                JSONObject or = options.getJSONObject(i);
-                for (String k: or.keySet()) option.put(k, or.get(k));
-                intents.add(new SusiIntent(language, option, skillid));
-            }
-        } else {
-            try {
-                SusiIntent intent = new SusiIntent(language, json, skillid);
-                intents.add(intent);
-            } catch (PatternSyntaxException e) {
-                Logger.getLogger("SusiIntent").warning("Regular Expression error in Susi Intent " + skillid.getPath() + ": " + json.toString(2));
-            }
-        }
-        return intents;
-    }
-    
+    private String example, expect, label, implication;
+
     public SusiIntent() {
         this.utterances = new ArrayList<>();
         this.actions = new ArrayList<>();
         this.inferences = new ArrayList<>();
         this.keys = new HashSet<>();
+        this.cues = new LinkedHashSet<>();
         this.user_subscore = DEFAULT_SCORE;
         this.score = null; // calculate this later if required
         this.comment = "";
         this.skillid = null;
-        this.language = SusiLanguage.unknown;
         this.example = "";
         this.expect = "";
+        this.label = "";
+        this.implication = "";
         this.id = 0; // will be computed later
+        this.depth = 0;
     }
 
-    public SusiIntent setLanguage(SusiLanguage language) {
-        this.language = language;
-        return this;
+    /**
+     * Create an intent by parsing of the intent description
+     * @param json the intent description
+     * @throws PatternSyntaxException
+     */
+    private SusiIntent(SusiSkill.ID skillid, JSONObject json) throws PatternSyntaxException {
+
+        // extract the utterances and the utterances subscore
+        if (!json.has("phrases")) throw new PatternSyntaxException("phrases missing", "", 0);
+        JSONArray p = (JSONArray) json.get("phrases");
+        this.utterances = new ArrayList<>(p.length());
+        p.forEach(q -> this.utterances.add(new SusiUtterance((JSONObject) q)));
+
+        // extract the actions and the action subscore
+        if (!json.has("actions")) throw new PatternSyntaxException("actions missing", "", 0);
+        p = (JSONArray) json.get("actions");
+        this.actions = new ArrayList<>(p.length());
+        p.forEach(a -> {
+            try {
+                SusiAction action = new SusiAction((JSONObject) a);
+                this.actions.add(action);
+            } catch (SusiActionException e) {
+                DAO.severe("invalid action - " + json.toString() + ": " + ((JSONObject) a).toString(0));
+            }
+        });
+
+        // extract the inferences and the process subscore; there may be no inference at all
+        if (json.has("process")) {
+            p = (JSONArray) json.get("process");
+            this.inferences = new ArrayList<>(p.length());
+            p.forEach(q -> this.inferences.add(new SusiInference((JSONObject) q)));
+        } else {
+            this.inferences = new ArrayList<>(0);
+        }
+
+        // extract (or compute) the keys; there may be none key given, then they will be computed
+        this.keys = new HashSet<>();
+        JSONArray k;
+        if (json.has("keys")) {
+            k = json.getJSONArray("keys");
+            if (k.length() == 0 || (k.length() == 1 && k.getString(0).length() == 0)) k = computeKeysFromUtterance(this.utterances);
+        } else {
+            k = computeKeysFromUtterance(this.utterances);
+        }
+        k.forEach(o -> this.keys.add((String) o));
+
+        this.cues = new LinkedHashSet<>();
+        this.user_subscore = json.has("score") ? json.getInt("score") : DEFAULT_SCORE;
+        this.score = null; // calculate this later if required
+
+        // extract the comment
+        this.comment = json.has("comment") ? json.getString("comment") : "";
+
+        // remember the origin
+        this.skillid = skillid;
+
+        // quality control
+        this.example = json.has("example") ? json.getString("example") : "";
+        this.expect = json.has("expect") ? json.getString("expect") : "";
+        if (label == null || label.length() == 0 && this.utterances.size() == 1) {
+            String l = this.utterances.get(0).getPattern().toString().replaceAll(" ", "_");
+            if (l.indexOf('*') < 0) label = l;
+        }
+        this.label = (label != null && label.length() > 0) ? label : "";
+        this.id = 0; // will be computed later
+        this.depth = json.has("depth") ? json.getInt("depth") : 0;
+    }
+
+    public SusiIntent(
+            List<SusiUtterance> utterances,
+            List<SusiInference> inferences,
+            List<SusiAction> actions,
+            boolean prior,
+            int depth,
+            String example,
+            String expect,
+            String label,
+            String implication,
+            SusiSkill.ID skillid) throws SusiActionException {
+        this.utterances = new ArrayList<>();
+        for (SusiUtterance u: utterances) this.utterances.add(u);
+
+        this.actions = new ArrayList<>();
+        for (SusiAction a: actions) this.actions.add(a);
+
+        this.inferences = new ArrayList<>();
+        for (SusiInference i: inferences) this.inferences.add(i);
+
+        this.keys = new HashSet<>();
+        JSONArray k = computeKeysFromUtterance(this.utterances);
+        k.forEach(o -> this.keys.add((String) o));
+
+        this.cues = new LinkedHashSet<>();
+        this.user_subscore = DEFAULT_SCORE;
+        this.score = null; // calculate this later if required
+        this.comment = "";
+        this.skillid = skillid;
+        this.example = example;
+        this.expect = expect;
+        if (label == null || label.length() == 0 && this.utterances.size() == 1) {
+            String l = this.utterances.get(0).getPattern().toString().replaceAll(" ", "_");
+            if (l.indexOf('*') < 0) label = l;
+        }
+        this.label = (label != null && label.length() > 0) ? label : "";
+        this.implication = implication;
+        this.id = 0; // will be computed later
+        this.depth = depth;
+    }
+
+    public SusiIntent(
+            String[] utterances,
+            String condition,
+            String[] answers,
+            boolean prior,
+            int depth,
+            String example,
+            String expect,
+            String label,
+            String implication,
+            SusiSkill.ID skillid) throws SusiActionException {
+        this.utterances = new ArrayList<>();
+        for (String u: utterances) {
+            try {
+                this.utterances.add(new SusiUtterance(u.trim(), prior));
+            } catch (PatternSyntaxException e) {
+                DAO.severe("Bad utterance:" + u);
+                continue;
+            }
+        }
+        this.actions = new ArrayList<>();
+        this.actions.add(new SusiAction(SusiAction.answerAction(skillid.language(), answers)));
+        this.inferences = new ArrayList<>();
+        if (condition != null) this.inferences.add(new SusiInference(SusiInference.simpleMemoryProcess(condition)));
+        this.keys = new HashSet<>();
+        JSONArray k = computeKeysFromUtterance(this.utterances);
+        k.forEach(o -> this.keys.add((String) o));
+        this.cues = new LinkedHashSet<>();
+        this.user_subscore = DEFAULT_SCORE;
+        this.score = null; // calculate this later if required
+        this.comment = "";
+        this.skillid = skillid;
+        this.example = example;
+        this.expect = expect;
+        if (label == null || label.length() == 0 && utterances.length == 1) {
+            String l = utterances[0].replaceAll(" ", "_");
+            if (l.indexOf('*') < 0) label = l;
+        }
+        this.label = (label != null && label.length() > 0) ? label : "";
+        this.implication = implication;
+        this.id = 0; // will be computed later
+        this.depth = depth;
     }
 
     public SusiIntent setExample(String example) {
@@ -123,6 +242,16 @@ public class SusiIntent {
 
     public SusiIntent setExpect(String expect) {
         this.expect = expect;
+        return this;
+    }
+
+    public SusiIntent setLabel(String label) {
+        this.label = label;
+        return this;
+    }
+
+    public SusiIntent setImplication(String implication) {
+        this.implication = implication;
         return this;
     }
 
@@ -147,14 +276,26 @@ public class SusiIntent {
         this.keys = new HashSet<>();
         JSONArray k = computeKeysFromUtterance(this.utterances);
         k.forEach(o -> this.keys.add((String) o));
-        
         return this;
     }
-    
-    // --
 
     public SusiIntent setInferences(List<SusiInference> inferences) {
         this.inferences = inferences;
+        return this;
+    }
+
+    public SusiIntent addInferences(SusiInference... inferences) {
+        for (int i = 0; i < inferences.length; i++) this.inferences.add(inferences[i]);
+        return this;
+    }
+
+    public SusiIntent addUtterances(SusiUtterance... utterances) {
+        for (int i = 0; i < utterances.length; i++) this.utterances.add(utterances[i]);
+        return this;
+    }
+
+    public SusiIntent addUtterances(List<SusiUtterance> utterances) {
+        utterances.forEach(utterance -> this.utterances.add(utterance));
         return this;
     }
 
@@ -163,83 +304,65 @@ public class SusiIntent {
         return this;
     }
 
-    /**
-     * Create an intent by parsing of the intent description
-     * @param json the intent description
-     * @throws PatternSyntaxException
-     */
-    private SusiIntent(SusiLanguage language, JSONObject json, SusiSkill.ID skillid) throws PatternSyntaxException {
-        
-        // extract the utterances and the utterances subscore
-        if (!json.has("phrases")) throw new PatternSyntaxException("phrases missing", "", 0);
-        JSONArray p = (JSONArray) json.get("phrases");
-        this.utterances = new ArrayList<>(p.length());
-        p.forEach(q -> this.utterances.add(new SusiUtterance((JSONObject) q)));
-        
-        // extract the actions and the action subscore
-        if (!json.has("actions")) throw new PatternSyntaxException("actions missing", "", 0);
-        p = (JSONArray) json.get("actions");
-        this.actions = new ArrayList<>(p.length());
-        p.forEach(a -> {
-            try {
-                SusiAction action = new SusiAction((JSONObject) a);
-                this.actions.add(action);
-            } catch (SusiActionException e) {
-                Log.warn("invalid action - " + json.toString() + ": " + ((JSONObject) a).toString(0));
-            }
-        });
-        
-        // extract the inferences and the process subscore; there may be no inference at all
-        if (json.has("process")) {
-            p = (JSONArray) json.get("process");
-            this.inferences = new ArrayList<>(p.length());
-            p.forEach(q -> this.inferences.add(new SusiInference((JSONObject) q)));
-        } else {
-            this.inferences = new ArrayList<>(0);
-        }
-        
-        // extract (or compute) the keys; there may be none key given, then they will be computed
-        this.keys = new HashSet<>();
-        JSONArray k;
-        if (json.has("keys")) {
-            k = json.getJSONArray("keys");
-            if (k.length() == 0 || (k.length() == 1 && k.getString(0).length() == 0)) k = computeKeysFromUtterance(this.utterances);
-        } else {
-            k = computeKeysFromUtterance(this.utterances);
-        }
-        k.forEach(o -> this.keys.add((String) o));
-
-        this.user_subscore = json.has("score") ? json.getInt("score") : DEFAULT_SCORE;
-        this.score = null; // calculate this later if required
-        
-        // extract the comment
-        this.comment = json.has("comment") ? json.getString("comment") : "";
-
-        // remember the origin
-    	this.skillid = skillid;
-    	
-    	// compute the language from the origin
-    	this.language = language;
-        
-    	// quality control
-        this.example = json.has("example") ? json.getString("example") : "";
-        this.expect = json.has("expect") ? json.getString("expect") : "";
-        this.id = 0; // will be computed later
+    public SusiIntent addActions(SusiAction... actions) {
+        for (int i = 0; i < actions.length; i++) this.actions.add(actions[i]);
+        return this;
     }
-    
+
+    public SusiIntent addActions(List<SusiAction> actions) {
+        actions.forEach(action -> this.actions.add(action));
+        return this;
+    }
+
+    public SusiIntent addCues(String... cues) {
+        addloop: for (int i = 0; i < cues.length; i++) {
+            // check for double entries
+            for (String c: this.cues) {
+                if (c.equals(cues[i])) continue addloop;
+            }
+            this.cues.add(cues[i]);
+        }
+        return this;
+    }
+
+    public SusiIntent addCues(List<String> cues) {
+        cues.forEach(cue -> this.addCues(cue));
+        return this;
+    }
+
+    public Set<String> getCues() {
+        return this.cues;
+    }
+
+    public SusiIntent setDepth(int d) {
+        this.depth = d;
+        return this;
+    }
+
     public SusiSkill.ID getSkillID() {
         return this.skillid;
     }
-    
+
+    public int getDepth() {
+        return this.depth;
+    }
+
+    public long getID() {
+        return this.id;
+    }
+
     public String getExpect() {
         return this.expect == null || this.expect.length() == 0 ? null : this.expect;
     }
+
     public boolean hasExample() {
         return this.example != null && this.example.length() > 0;
     }
+
     public String getExample() {
         return this.example == null || this.example.length() == 0 ? null : this.example;
     }
+
     public int hashCode() {
         if (this.id != 0) return this.id;
         String ids0 = this.actions.toString();
@@ -247,25 +370,70 @@ public class SusiIntent {
         this.id = ids0.hashCode() + ids1.hashCode();
         return this.id;
     }
-    
+
+    public String toString() {
+        return this.toJSON().toString(2);
+    }
+
     public JSONObject toJSON() {
         JSONObject json = new JSONObject(true);
         json.put("id", this.hashCode());
+        json.put("depth", this.depth);
         if (this.score != null) json.put("score", this.score.score);
         if (this.skillid != null && this.skillid.getPath().length() > 0) json.put("skill", this.skillid.getPath());
         if (this.keys != null && this.keys.size() > 0) json.put("keys", new JSONArray(this.keys));
-        JSONArray p = new JSONArray(); this.utterances.forEach(utterance -> p.put(utterance.toJSON()));
-        json.put("phrases", p);
-        JSONArray i = new JSONArray(); this.inferences.forEach(inference -> i.put(inference.getJSON()));
-        json.put("process", i);
+        JSONArray phrases = new JSONArray();
+        this.utterances.forEach(utterance -> phrases.put(utterance.toJSON()));
+        json.put("phrases", phrases);
+        JSONArray process = new JSONArray();
+        this.inferences.forEach(inference -> process.put(inference.getJSON()));
+        json.put("process", process);
         JSONArray a = new JSONArray(); this.getActionsClone().forEach(action ->a.put(action.toJSONClone()));
         json.put("actions", a);
+        JSONArray c = new JSONArray(); this.cues.forEach(cue -> c.put(cue));
+        json.put("cues", c);
         if (this.comment != null && this.comment.length() > 0) json.put("comment", this.comment);
         if (this.example != null && this.example.length() > 0) json.put("example", example);
         if (this.expect != null && this.expect.length() > 0) json.put("expect", expect);
+        if (this.label != null && this.label.length() > 0) json.put("label", label);
+        if (this.implication != null && this.implication.length() > 0) json.put("implication", implication);
         return json;
     }
-    
+
+    /**
+     * Generate a set of intents from a single intent definition. This may be possible if the intent contains an 'options'
+     * object which creates a set of intents, one for each option. The options combine with one set of utterances
+     * @param json - a multi-intent definition
+     * @return a set of intents
+     */
+    public static List<SusiIntent> getIntents(final SusiSkill.ID skillid, final JSONObject json) {
+        if (!json.has("phrases")) {
+            throw new PatternSyntaxException("phrases missing", "", 0);
+        }
+        final List<SusiIntent> intents = new ArrayList<>();
+        if (json.has("options")) {
+            JSONArray options = json.getJSONArray("options");
+            for (int i = 0; i < options.length(); i++) {
+                JSONObject option = new JSONObject();
+                option.put("phrases", json.get("phrases"));
+                JSONObject or = options.getJSONObject(i);
+                for (String k: or.keySet()) option.put(k, or.get(k));
+                intents.add(new SusiIntent(skillid, option));
+            }
+        } else {
+            try {
+                SusiIntent intent = new SusiIntent(skillid, json);
+                intents.add(intent);
+            } catch (PatternSyntaxException e) {
+                Logger.getLogger("SusiIntent").warning("Regular Expression error in Susi Intent " + skillid.getPath() + ": " + json.toString(2));
+            }
+        }
+        return intents;
+    }
+
+    /**
+     * @deprecated use class constructor instead
+     */
     public static JSONObject answerIntent(
             String[] utterances,
             String condition,
@@ -286,7 +454,7 @@ public class SusiIntent {
             JSONObject simplePhrase = SusiUtterance.simplePhrase(utterance.trim(), prior);
             p.put(simplePhrase);
         }
-        
+
         // write conditions (if any)
         if (condition != null && condition.length() > 0) {
             JSONArray c = new JSONArray();
@@ -308,10 +476,20 @@ public class SusiIntent {
         // write actions
         JSONArray a = new JSONArray();
         intent.put("actions", a);
-        a.put(SusiAction.answerAction(language, answers));        
+        a.put(SusiAction.answerAction(language, answers));
         return intent;
     }
 
+    public boolean isCatchallIntent() {
+        for (SusiUtterance u: this.utterances) {
+            if (u.isCatchallPhrase()) return true;
+        }
+        return false;
+    }
+
+    /**
+     * @deprecated
+     */
     public static boolean isCatchallIntent(JSONObject json) {
         JSONArray phrases = json.getJSONArray("phrases");
         for (int i = 0; i < phrases.length(); i++) {
@@ -319,11 +497,7 @@ public class SusiIntent {
         }
         return false;
     }
-    
-    public String toString() {
-        return this.toJSON().toString(2);
-    }
-    
+
     private final static Pattern SPACE_PATTERN = Pattern.compile(" ");
     
     /**
@@ -333,7 +507,7 @@ public class SusiIntent {
      */
     private static JSONArray computeKeysFromUtterance(List<SusiUtterance> utterances) {
         Set<String> t = new LinkedHashSet<>();
-        
+
         // create a list of token sets from the utterances
         List<Set<String>> ptl = new ArrayList<>();
         final AtomicBoolean needsCatchall = new AtomicBoolean(false);
@@ -345,24 +519,24 @@ public class SusiIntent {
             }
             // if there is no meat inside, it will not be possible to access the intent without the catchall intent, so remember that
             if (s.size() == 0) needsCatchall.set(true);
-            
+
             ptl.add(s);
         });
-        
+
         // this is a kind of emergency case where we need a catchall intent because otherwise we cannot access one of the utterances
         JSONArray a = new JSONArray();
         if (needsCatchall.get()) return a.put(CATCHALL_KEY);
-        
+
         // collect all token
         ptl.forEach(set -> set.forEach(token -> t.add(token)));
-        
+
         // if no tokens are available, return the catchall key
         if (t.size() == 0) return a.put(CATCHALL_KEY);
-        
+
         // make a copy to make it possible to use the original key set again
         Set<String> tc = new LinkedHashSet<>();
         t.forEach(c -> tc.add(c));
-        
+
         // remove all token that do not appear in all utterances
         ptl.forEach(set -> {
             Iterator<String> i = t.iterator();
@@ -374,11 +548,11 @@ public class SusiIntent {
             tc.forEach(c -> a.put(c));
             return a;
         }
-        
+
         // use only the first token, because that appears in all the utterances
         return new JSONArray().put(t.iterator().next());
     }
-    
+
     /**
      * To simplify the check weather or not a intent could be applicable, a key set is provided which
      * must match with input tokens literally. This key check prevents too large numbers of utterance checks
@@ -388,7 +562,7 @@ public class SusiIntent {
     public Set<String> getKeys() {
         return this.keys;
     }
-    
+
     /**
      * An intent may have a comment which describes what the intent means. It never has any computational effect.
      * @return the intent comment
@@ -468,7 +642,7 @@ public class SusiIntent {
         // compute the score
 
         // (0) language
-        final int language_subscore = (int) (100 * SusiIntent.this.language.likelihoodCanSpeak(userLanguage));
+        final int language_subscore = (int) (100 * SusiIntent.this.skillid.language().likelihoodCanSpeak(userLanguage));
         this.score = language_subscore;
          
         // (1) pattern score
@@ -553,7 +727,7 @@ public class SusiIntent {
                 SusiAction action = new SusiAction(actionJson);
                 clonedList.add(action);
             } catch (SusiActionException e) {
-                Log.warn("invalid action - " + e.getMessage() + ": " + actionJson.toString(0));
+                DAO.severe("invalid action - " + e.getMessage() + ": " + actionJson.toString(0));
             }
         });
         return clonedList;

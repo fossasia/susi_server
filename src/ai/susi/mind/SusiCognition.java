@@ -45,7 +45,11 @@ import ai.susi.tools.DateParser;
  */
 public class SusiCognition {
 
-    JSONObject json;
+    private JSONObject json;
+
+    public SusiCognition(JSONObject json) {
+        this.json = json;
+    }
 
     /**
      * Compute a cognition for a given query string.
@@ -83,16 +87,17 @@ public class SusiCognition {
             String languageCode,
             String deviceType,
             int maxcount, ClientIdentity identity,
+            boolean debug,
             final SusiMind... mindLayers) {
         this.json = new JSONObject(true);
-        
+
         // get a response from susis mind
         String client = identity.getClient();
         this.setQuery(query);
         this.json.put("count", maxcount);
         SusiThought observation = new SusiThought();
         observation.addObservation("timezoneOffset", Integer.toString(timezoneOffset));
-        
+
         if (!Double.isNaN(latitude) && !Double.isNaN(longitude)) {
             observation.addObservation("latitude", Double.toString(latitude));
             observation.addObservation("longitude", Double.toString(longitude));
@@ -102,16 +107,16 @@ public class SusiCognition {
             observation.addObservation("country_name", countryName);
             observation.addObservation("country_code", countryCode);
         }
-        
+
         SusiLanguage language = SusiLanguage.parse(languageCode);
         if (language != SusiLanguage.unknown) observation.addObservation("language", language.name());
-        
+
         this.json.put("client_id", Base64.getEncoder().encodeToString(client.getBytes(StandardCharsets.UTF_8)));
         long query_date = System.currentTimeMillis();
         this.json.put("query_date", DateParser.utcFormatter.print(query_date));
-        
+
         // compute the mind's reaction: here we compute with a hierarchy of minds. The dispute is taken from the relevant mind level that was able to compute the dispute
-        List<SusiThought> dispute = SusiMind.reactMinds(query, language, maxcount, identity, observation, mindLayers);
+        List<SusiThought> dispute = SusiMind.reactMinds(query, language, maxcount, identity, debug, observation, mindLayers);
         long answer_date = System.currentTimeMillis();
 
         // update country wise skill usage data
@@ -297,10 +302,6 @@ public class SusiCognition {
         modelName.put(group_name, groupName);
         skillUsage.put(model_name, modelName, true);
     }
-
-    public SusiCognition(JSONObject json) {
-        this.json = json;
-    }
     
     public void appendToFile(File f) throws IOException {
         try {
@@ -308,6 +309,11 @@ public class SusiCognition {
         } catch (JSONException e) {
             throw new IOException(e.getMessage());
         }
+    }
+    
+    public SusiCognition setIdentity(final String identity) {
+        this.json.put("identity", identity);
+        return this;
     }
     
     public SusiCognition setQuery(final String query) {
@@ -344,11 +350,11 @@ public class SusiCognition {
      * actions of the user
      * @return a response string
      */
-    public String getExpression() {
+    public String getExpression(final boolean ignoreWarnings) {
         List<SusiThought> answers = getAnswers();
         if (answers == null || answers.size() == 0) return "";
         SusiThought t = answers.get(0);
-        List<SusiAction> actions = t.getActions();
+        List<SusiAction> actions = t.getActions(ignoreWarnings);
         if (actions == null || actions.size() == 0) return "";
         SusiAction a = actions.get(0);
         List<String> phrases = a.getPhrases();
@@ -373,7 +379,7 @@ public class SusiCognition {
                 dispute.addObservation("query", this.json.getString("query"));  // we can unify "query" in queries
                 // the expression - that is an answer
                 SusiAction expressionAction = null;
-                for (SusiAction a: clonedThought.getActions()) {
+                for (SusiAction a: clonedThought.getActions(false)) {
                     ArrayList<String> phrases = a.getPhrases();
                     // not all actions have phrases!
                     if (phrases != null && phrases.size() > 0) {expressionAction = a; break;}

@@ -49,6 +49,7 @@ import javax.annotation.Nonnull;
 
 import ai.susi.json.JsonFile;
 import ai.susi.json.JsonTray;
+import ai.susi.mind.SusiAction.SusiActionException;
 import ai.susi.mind.SusiLanguage;
 import ai.susi.mind.SusiMemory;
 import ai.susi.mind.SusiMind;
@@ -142,7 +143,7 @@ public class DAO {
         logAppender = new LogAppender(layout, 100000);
         logger.addAppender(logAppender);
         logger.addAppender(new ConsoleAppender(layout));
-        logger.setLevel(Level.INFO);
+        logger.setLevel(Level.WARN);
     }
 
     // create the mind layers (all have a common memory)
@@ -1158,6 +1159,7 @@ public class DAO {
      * @param languagepath
      * @param skill_name
      * @return the actual skill file if one exist or a skill file that is constructed from language and skill_name
+     * @throws SusiActionException 
      */
     public static File getSkillFileInLanguage(File languagepath, String skill_name, boolean null_if_not_found) {
 
@@ -1175,19 +1177,18 @@ public class DAO {
 
         // second try: the skill name may be same or similar to the skill name within the skill description
         // this is costly: we must parse the whole skill file
-        if(list !=null && list.length!=0){
+        if (list != null && list.length != 0){
             for (String n: list) {
                 if (!n.endsWith(".txt") && !n.endsWith(".ezd")) continue;
                 File f = new File(languagepath, n);
                 try {
                     SusiSkill.ID skillid = new SusiSkill.ID(f);
-                    SusiLanguage language = skillid.language();
-                    JSONObject json = SusiSkill.readLoTSkill(new BufferedReader(new FileReader(f)), language, skillid.getPath(), false);
-                    String sn = json.optString("skill_name");
+                    SusiSkill skill = new SusiSkill(new BufferedReader(new FileReader(f)), skillid, false);
+                    String sn = skill.getSkillName();
                     if (sn.equals(skill_name) || sn.toLowerCase().equals(skill_name) || sn.toLowerCase().replace(' ', '_').equals(skill_name)) {
                         return new File(languagepath, n);
                     }
-                } catch (JSONException | FileNotFoundException e) {
+                } catch (JSONException | FileNotFoundException | SusiActionException e) {
                     continue;
                 }
             }
@@ -1202,8 +1203,9 @@ public class DAO {
      * @param model a path to a model directory
      * @param skill_name
      * @return
+     * @throws SusiActionException 
      */
-    public static File getSkillFileInModel(File model, String skill_name) {
+    public static File getSkillFileInModel(File model, String skill_name) throws SusiActionException {
         String[] groups = model.list();
         for (String group: groups) {
             if (group.startsWith(".")) continue;

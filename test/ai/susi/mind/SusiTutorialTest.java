@@ -4,17 +4,15 @@ import static org.junit.Assert.*;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.FileSystems;
 import java.nio.file.Path;
+import java.util.List;
 import java.util.Map;
 
-import org.json.JSONArray;
 import org.json.JSONException;
-import org.json.JSONObject;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -32,27 +30,29 @@ public class SusiTutorialTest {
         ByteArrayInputStream bais = new ByteArrayInputStream(testFile.getBytes(StandardCharsets.UTF_8));
         return new BufferedReader(new InputStreamReader(bais, StandardCharsets.UTF_8));
     }
-    
+
     public static String susiAnswer(String q, ClientIdentity identity) {
-        SusiCognition cognition = new SusiCognition(q, 0, 0, 0, "", "", "en", "Others",1, identity, DAO.susi);
-        JSONObject json = cognition.getJSON();
+        // creating a cognition means that an answer is computed
+        SusiCognition cognition = new SusiCognition(q, 0, 0, 0, "", "", "en", "Others",1, identity, true, DAO.susi);
+        // evaluate the cognition, the answer is already inside!
         try {
+            // memorize the cognition, this is needed to compute context-aware intents.
+            // cognitions must be stored together with answers because they may influence further cognitions
             DAO.susi_memory.addCognition(identity.getClient(), cognition, true);
-            JSONArray a = json.getJSONArray("answers");
-            if (a.length() == 0) return "";
-            String answer = a
-                .getJSONObject(0)
-                .getJSONArray("actions")
-                .getJSONObject(0)
-                .getString("expression");
+            // get the answer
+            List<SusiThought> answers = cognition.getAnswers();
+            SusiThought thought = answers.iterator().next();
+            List<SusiAction> actions = thought.getActions(false);
+            SusiAction action = actions.iterator().next();
+            String answer = action.getPhrases().iterator().next();
             return answer;
         } catch (JSONException | IOException e) {
-            System.out.println("json not well-formed: " + json.toString());
+            System.out.println("json not well-formed: " + cognition.getJSON());
             e.printStackTrace();
             return null;
         }
     }
-    
+
     @BeforeClass
     public static void setUpBeforeClass() throws Exception {
     }
@@ -75,14 +75,15 @@ public class SusiTutorialTest {
             System.setProperty("java.awt.headless", "true"); // no awt used here so we can switch off that stuff
             Path data = FileSystems.getDefault().getPath("data");
             Map<String, String> config = SusiServer.readConfig(data);
-            
-            // initialize all data        
+
+            // initialize all data
             try{
                 DAO.init(config, data);
                 BufferedReader br = getTestReader();
-                JSONObject lesson = SusiSkill.readLoTSkill(br, SusiLanguage.en, "", true);
-                System.out.println(lesson.toString(2));
-                DAO.susi.learn(lesson, new File("."), true);
+                SusiSkill.ID skillid = new SusiSkill.ID(SusiLanguage.en, "");
+                SusiSkill skill = new SusiSkill(br, skillid, true);
+                System.out.println(skill.toJSON().toString(2));
+                DAO.susi.learn(skill, skillid, true);
                 br.close();
             } catch(Exception e){
                 e.printStackTrace();
@@ -90,7 +91,7 @@ public class SusiTutorialTest {
                 DAO.severe("Could not initialize DAO. Exiting.");
                 System.exit(-1);
             }
-            
+
             ClientIdentity identity = new ClientIdentity("host:localhost");
             test("reset test.", "ok", identity);
             test("roses are red", "susi is a hack", identity);
@@ -111,12 +112,11 @@ public class SusiTutorialTest {
             test("Shall I eat?", "You will be happy, whatever I say!", identity);
             test("javascript hello", "Hello world from Nashorn", identity);
             test("compute 10 to the power of 3", "10^3 = 1000.0", identity);
-            
         } catch (Exception e) {
             e.printStackTrace();
-        }        
+        }
     }
-    
+
     private static void test(String q, String e, ClientIdentity i) {
         try {
             String a = susiAnswer(q, i);
@@ -223,41 +223,3 @@ public class SusiTutorialTest {
                     "\n";
 
 }
-/*
-bo_actions.forEach(action -> {
-    JSONObject boa = (JSONObject) action;
-    String type = boa.has("type") ? boa.getString("type") : "";
-    if (type.equals(SusiAction.RenderType.table.toString()) && boa.has("columns")) {
-        actions.put(SusiAction.tableAction(boa.getJSONObject("columns"),
-                    boa.has("count") ? boa.getInt("count") : -1));
-    } else
-    if (type.equals(SusiAction.RenderType.piechart.toString()) &&
-            boa.has("total") && boa.has("key") &&
-            boa.has("value") && boa.has("unit")) {
-        actions.put(SusiAction.piechartAction(
-                boa.getInt("total"), boa.getString("key"),
-                boa.getString("value"), boa.getString("unit")));
-    } else
-    if (type.equals(SusiAction.RenderType.rss.toString()) &&
-            boa.has("title") && boa.has("description") && boa.has("link")) {
-        actions.put(SusiAction.rssAction(
-            boa.getString("title"), boa.getString("description"), boa.getString("link"),
-            boa.has("count") ? boa.getInt("count") : -1));
-    } else
-    if (type.equals(SusiAction.RenderType.websearch.toString()) && boa.has("query")) {
-        actions.put(SusiAction.websearchAction(boa.getString("query")));
-    } else
-    if (type.equals(SusiAction.RenderType.map.toString()) &&
-            boa.has("latitude") && boa.has("longitude") && boa.has("zoom")) {
-        actions.put(SusiAction.mapAction(
-            boa.getDouble("latitude"), boa.getDouble("longitude"), boa.getInt("zoom")));
-    } else
-    if(type.equals(SusiAction.RenderType.timer_set.toString()) &&
-            boa.has("hour")){
-        int hour = boa.getInt("hour");
-            actions.put(SusiAction.timerSetAction(
-                    hour, boa.has("minute") ? boa.getInt("minute") : 0,
-                    boa.has("second") ? boa.getInt("second") : 0));
-    }
-});
-*/
