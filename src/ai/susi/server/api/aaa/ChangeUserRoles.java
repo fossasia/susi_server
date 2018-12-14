@@ -149,7 +149,7 @@ public class ChangeUserRoles extends AbstractAPIHandler implements APIHandler {
             ClientCredential credential = new ClientCredential(ClientCredential.Type.passwd_login, userTobeUpgraded);
             ClientIdentity identity = new ClientIdentity(ClientIdentity.Type.email, credential.getName());
             if (!DAO.hasAuthorization(identity)) {
-                throw new APIException(400, "Username not found");
+                throw new APIException(404, "Username not found");
             }
 
             // Update the local database
@@ -157,7 +157,7 @@ public class ChangeUserRoles extends AbstractAPIHandler implements APIHandler {
             try {
                 auth.setUserRole(userRole);
             } catch (IllegalArgumentException e) {
-                throw new APIException(400, "role not found");
+                throw new APIException(404, "role not found");
             }
 
             // Print Response

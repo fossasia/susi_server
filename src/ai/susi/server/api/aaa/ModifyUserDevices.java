@@ -98,7 +98,7 @@ public class ModifyUserDevices extends AbstractAPIHandler implements APIHandler 
                             }
                         }
                         else {
-                            throw new APIException(400, "Specified device does not exist.");
+                            throw new APIException(404, "Specified device does not exist.");
                         }
 
                     } else {

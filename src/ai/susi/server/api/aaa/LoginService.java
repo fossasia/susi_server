@@ -210,7 +210,7 @@ public class LoginService extends AbstractAPIHandler implements APIHandler {
 					try {
 						valid_seconds = post.get("valid_seconds", defaultAccessTokenExpireTime);
 					} catch (Throwable e) {
-						throw new APIException(400, "Invalid value for 'valid_seconds'");
+						throw new APIException(422, "Invalid value for 'valid_seconds'");
 					}
 
 					String token = createAccessToken(identity, valid_seconds);
@@ -298,9 +298,9 @@ public class LoginService extends AbstractAPIHandler implements APIHandler {
 				sig.update(challenge.getBytes());
 				verified = sig.verify(Base64.getDecoder().decode(challangeResponse));
 			} catch (NoSuchAlgorithmException e){
-				throw new APIException(400, "No such algorithm");
+				throw new APIException(404, "No such algorithm");
 			} catch (InvalidKeyException e){
-				throw new APIException(400, "Invalid key");
+				throw new APIException(422, "Invalid key");
 			} catch (Throwable e){
 				throw new APIException(400, "Bad signature");
 			}
@@ -349,12 +349,12 @@ public class LoginService extends AbstractAPIHandler implements APIHandler {
 			authentication.delete();
 
 			DAO.log("Invalid login try for unknown user: " + credential.getName() + " via passwd from host: " + post.getClientHost());
-			throw new APIException(422, "Invalid credentials");
+			throw new APIException(401, "Invalid credentials");
 		}
 
 		else if (!authentication.getBoolean("activated", false)) { // check if identity is valid
 			DAO.log("Invalid login try for user: " + credential.getName() + " from host: " + post.getClientHost() + " : user not activated yet");
-			throw new APIException(422, "User not yet activated");
+			throw new APIException(403, "User not yet activated");
 		}
 
 		return authentication;
@@ -369,7 +369,7 @@ public class LoginService extends AbstractAPIHandler implements APIHandler {
 		tokenAuthentication.setIdentity(identity);
 
 		if (valid_seconds == 0 || valid_seconds < -1) { // invalid values
-			throw new APIException(400, "Invalid value for 'valid_seconds'");
+			throw new APIException(422, "Invalid value for 'valid_seconds'");
 		} else if (valid_seconds != -1){
 			tokenAuthentication.setExpireTime(valid_seconds);
 		}

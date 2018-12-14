@@ -330,7 +330,7 @@ public class PublicKeyRegistrationService extends AbstractAPIHandler implements 
 			throw new APIException(422, "Unsupported algorithm");
 		}
 
-		throw new APIException(400, "Invalid parameter");
+		throw new APIException(422, "Invalid parameter");
 	}
 
 }
