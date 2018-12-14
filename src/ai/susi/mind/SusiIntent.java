@@ -60,7 +60,7 @@ public class SusiIntent {
     private String comment;
     private int user_subscore;
     private Score score;
-    private int id, depth;
+    private int hashCode, depth;
     private SusiSkill.ID skillid;
     private String example, expect, label, implication;
 
@@ -78,7 +78,7 @@ public class SusiIntent {
         this.expect = "";
         this.label = "";
         this.implication = "";
-        this.id = 0; // will be computed later
+        this.hashCode = 0; // set with lazy computation
         this.depth = 0;
     }
 
@@ -146,7 +146,7 @@ public class SusiIntent {
             if (l.indexOf('*') < 0) label = l;
         }
         this.label = (label != null && label.length() > 0) ? label : "";
-        this.id = 0; // will be computed later
+        this.hashCode = 0; // set with lazy computation
         this.depth = json.has("depth") ? json.getInt("depth") : 0;
     }
 
@@ -187,7 +187,7 @@ public class SusiIntent {
         }
         this.label = (label != null && label.length() > 0) ? label : "";
         this.implication = implication;
-        this.id = 0; // will be computed later
+        this.hashCode = 0; // will be computed later
         this.depth = depth;
     }
 
@@ -231,7 +231,7 @@ public class SusiIntent {
         }
         this.label = (label != null && label.length() > 0) ? label : "";
         this.implication = implication;
-        this.id = 0; // will be computed later
+        this.hashCode = 0; // set with lazy computation
         this.depth = depth;
     }
 
@@ -347,10 +347,6 @@ public class SusiIntent {
         return this.depth;
     }
 
-    public long getID() {
-        return this.id;
-    }
-
     public String getExpect() {
         return this.expect == null || this.expect.length() == 0 ? null : this.expect;
     }
@@ -364,11 +360,12 @@ public class SusiIntent {
     }
 
     public int hashCode() {
-        if (this.id != 0) return this.id;
-        String ids0 = this.actions.toString();
-        String ids1 = this.utterances.toString();
-        this.id = ids0.hashCode() + ids1.hashCode();
-        return this.id;
+        if (this.hashCode != 0) return this.hashCode;
+        String ids0 = this.skillid.getPath();
+        String ids1 = this.actions.toString();
+        String ids2 = this.utterances.toString();
+        this.hashCode = ids0.hashCode() + ids1.hashCode() + ids2.hashCode();
+        return this.hashCode;
     }
 
     public String toString() {
