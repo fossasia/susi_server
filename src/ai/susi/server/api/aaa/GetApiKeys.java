@@ -23,8 +23,17 @@ import ai.susi.DAO;
 import ai.susi.json.JsonObjectWithDefault;
 import ai.susi.json.JsonTray;
 import ai.susi.server.*;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
 import org.json.JSONObject;
 import javax.servlet.http.HttpServletResponse;
+import javax.ws.rs.GET;
+import javax.ws.rs.Path;
+import javax.ws.rs.Produces;
+import javax.ws.rs.core.MediaType;
+
 import ai.susi.server.APIException;
 import ai.susi.server.APIHandler;
 import ai.susi.server.AbstractAPIHandler;
@@ -32,15 +41,26 @@ import ai.susi.server.Query;
 import ai.susi.server.ServiceResponse;
 import ai.susi.server.UserRole;
 
+import java.util.Objects;
+
 /**
  * This Servlet gives a API Endpoint to fetch different API keys used by SUSI.
  * It requires user role to be ANONYMOUS or above ANONYMOUS
  * example:
  * http://localhost:4000/aaa/getApiKeys.json
  */
-
+@Path("/aaa/getApiKeys.json")
+@Produces(MediaType.APPLICATION_JSON)
+@Api(value = "GetApiKeys", description = "This endpoint to fetch different API keys used by SUSI")
 public class GetApiKeys extends AbstractAPIHandler implements APIHandler {
 
+    @GET
+    @ApiOperation(httpMethod = "GET", value = "Resource to fetch different API keys used by SUSI")
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Success : Fetched all API key successfully !"),
+            @ApiResponse(code = 500, message = "Failed : Unable to fetch API keys!"),
+
+    })
     @Override
     public String getAPIPath() {
         return "/aaa/getApiKeys.json";
@@ -64,7 +84,7 @@ public class GetApiKeys extends AbstractAPIHandler implements APIHandler {
         JSONObject result = new JSONObject();
         JSONObject keys = new JSONObject();
 
-        for (String key : JSONObject.getNames(publicKeys)) {
+        for (String key : Objects.requireNonNull(JSONObject.getNames(publicKeys))) {
             JSONObject values =  (JSONObject)publicKeys.get(key);
             keys.put(key, values.get("value"));
         }
