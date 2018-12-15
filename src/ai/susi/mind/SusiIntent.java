@@ -214,7 +214,7 @@ public class SusiIntent {
         this.actions = new ArrayList<>();
         this.actions.add(new SusiAction(SusiAction.answerAction(skillid.language(), answers)));
         this.inferences = new ArrayList<>();
-        if (condition != null) this.inferences.add(new SusiInference(SusiInference.simpleMemoryProcess(condition)));
+        if (condition != null) this.inferences.add(new SusiInference(condition, SusiInference.Type.memory));
         this.keys = new HashSet<>();
         JSONArray k = computeKeysFromUtterance(this.utterances);
         k.forEach(o -> this.keys.add((String) o));
@@ -456,7 +456,7 @@ public class SusiIntent {
         if (condition != null && condition.length() > 0) {
             JSONArray c = new JSONArray();
             intent.put("process", c);
-            c.put(SusiInference.simpleMemoryProcess(condition));   
+            c.put(new SusiInference(condition, SusiInference.Type.memory).getJSON());
         }
 
         // quality control
