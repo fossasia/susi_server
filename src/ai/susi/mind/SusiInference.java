@@ -84,13 +84,6 @@ public class SusiInference {
         this.json.put("definition", definition);
     }
 
-    public static JSONObject simpleMemoryProcess(String expression) {
-        JSONObject json = new JSONObject(true);
-        json.put("type", Type.memory.name());
-        json.put("expression", expression);
-        return json;
-    }
-
     /**
      * Inferences may have different types. Each type selects inference methods inside the inference description.
      * While the inference description mostly has only one other attribute, the "expression" it might have more.

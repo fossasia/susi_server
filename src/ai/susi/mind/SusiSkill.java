@@ -372,11 +372,11 @@ public class SusiSkill {
                     if (elsepos <= thenpos) {
                         // only if, no else
                         String ifsubstring = line.substring(thenpos + 1).trim();
-                        if (readSkill(this.id, acceptWildcardIntent, this.intents, example, expect, label, implication, prior, depth, phrases, condition, ifsubstring))
+                        if (addIntent(this.intents, acceptWildcardIntent, this.id, example, expect, label, implication, prior, depth, phrases, condition, ifsubstring))
                             continue readloop;
                     } else {
                         String ifsubstring = line.substring(thenpos + 1, elsepos).trim();
-                        if (readSkill(this.id, acceptWildcardIntent, this.intents, example, expect, label, implication, prior, depth, phrases, condition, ifsubstring))
+                        if (addIntent(this.intents, acceptWildcardIntent, this.id, example, expect, label, implication, prior, depth, phrases, condition, ifsubstring))
                             continue readloop;
                         String elsesubstring = line.substring(elsepos + 1).trim();
                         if (elsesubstring.length() > 0) {
@@ -453,10 +453,10 @@ public class SusiSkill {
         return utterances;
     }
 
-    private static boolean readSkill(
-            final SusiSkill.ID skillid,
+    private static boolean addIntent(
+            final List<SusiIntent> existing_intents_in_skill,
             final boolean acceptWildcardIntent,
-            final List<SusiIntent> intents,
+            final SusiSkill.ID skillid,
             final String example,
             final String expect,
             final String label,
@@ -473,8 +473,8 @@ public class SusiSkill {
                 DAO.log("WARNING: skipping skill / wildcard not allowed here: " + skillid.getPath());
                 return true;
             } else {
-                extendParentWithAnswer(intents, intent);
-                intents.add(intent);
+                extendParentWithAnswer(existing_intents_in_skill, intent);
+                existing_intents_in_skill.add(intent);
             }
         }
         return false;
@@ -483,31 +483,35 @@ public class SusiSkill {
     /**
      * Attach a child intent to a parent intent:
      *  - the parent gets a "cues" object which contains possible utterances
-     * @param parents the array of parent intents
-     * @param child the child intent
+     * @param preceding_intents the array of parent intents
+     * @param child_intent the child intent
      */
-    private static void extendParentWithAnswer(List<SusiIntent> parents, SusiIntent child) {
+    private static void extendParentWithAnswer(List<SusiIntent> preceding_intents, SusiIntent child_intent) {
 
         // check if the child is qualified - if it is actually a child or a parent on root level
-        int depth = child.getDepth();
+        int depth = child_intent.getDepth();
         if (depth <= 0) return; // not a child
 
         // find a parent which is on the previous depth level
-        SusiIntent parent = lastIntentWithDepth(parents, depth - 1);
-        if (parent == null) return; // no parent found
+        SusiIntent parent_intent = lastIntentWithDepth(preceding_intents, depth - 1);
+        if (parent_intent == null) return; // no parent found
 
         // TODO: add hierarchy linking here:
         // - get ID of parent
-        // - set an invisible assignment for linking variable to ID
-        // - add a check rule in child so child fires only if linking ID is set correctly
+        int parent_id = parent_intent.hashCode();
+
+        // - set an invisible assignment in parent for linking variable to ID
+        parent_intent.addInferences(new SusiInference("SET ", SusiInference.Type.memory));
+
+        // - add a check rule in child so a child fires only if linking ID is set correctly
 
         // get expressions from child utterances.
-        List<SusiUtterance> child_utterances = child.getUtterances();
+        List<SusiUtterance> child_utterances = child_intent.getUtterances();
         if (child_utterances == null || child_utterances.size() != 1) return;
         String child_expression = child_utterances.get(0).getPattern().pattern();
         // We cannot accept utterances with wildcard expressions here because cues are answers that are presented inside the chat
         if (child_expression.indexOf('*') >= 0) return;
-        parent.addCues(child_expression);
+        parent_intent.addCues(child_expression);
     }
 
     /**
