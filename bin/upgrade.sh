@@ -1,9 +1,12 @@
 #!/usr/bin/env sh
 cd `dirname $0`/..
-echo "Loading latest code changes"
-git pull origin master
-echo "Cleaning up"
-ant clean
-echo "Building SUSI"
-ant
+echo "Loading latest code changes from download.susi.ai"
+cd release
+curl -sOL "http://download.susi.ai/susi_server/susi_server_binary_latest.tar.gz" 
+echo "decompressing release"
+tar xfz susi_server_binary_latest.tar.gz
+cp -R susi_server_binary_latest/* ../
+rm -Rf susi_server_binary_latest
+cd ..
+echo "restarting susi"
 bin/restart.sh
