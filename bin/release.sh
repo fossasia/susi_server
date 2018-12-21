@@ -28,6 +28,7 @@ done
 GITHASH=`git log -n 1 --pretty=format:"%h"`
 RELEASE_PATH=release
 RELEASE_FILE=susi_server_binary_`date "+%Y%m%d"`_$GITHASH
+LATEST_FILE=susi_server_binary_latest.tar.gz
 
 # clean up
 rm -Rf $RELEASE_PATH/$RELEASE_FILE
@@ -51,6 +52,10 @@ tar cf ${RELEASE_FILE}.tar $RELEASE_FILE
 gzip -9 ${RELEASE_FILE}.tar
 rm -Rf $RELEASE_FILE
 cd ..
+
+# link latest file
+rm -f $RELEASE_PATH/$LATEST_FILE
+ln -s $RELEASE_PATH/${RELEASE_FILE}.tar.gz $RELEASE_PATH/$LATEST_FILE
 
 # finish!
 echo "wrote ${RELEASE_FILE}.tar.gz"
