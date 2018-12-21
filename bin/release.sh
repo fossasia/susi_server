@@ -38,6 +38,7 @@ rm -f $RELEASE_PATH/${LATEST_FILE}.tar.gz
 
 # make release file structure
 mkdir $RELEASE_PATH/$RELEASE_FILE
+mkdir $RELEASE_PATH/$RELEASE_FILE/release
 mkdir $RELEASE_PATH/$RELEASE_FILE/bin
 mkdir $RELEASE_PATH/$RELEASE_FILE/build
 mkdir $RELEASE_PATH/$RELEASE_FILE/build/libs
