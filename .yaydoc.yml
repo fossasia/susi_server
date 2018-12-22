@@ -28,6 +28,10 @@ build:
     - url: https://github.com/fossasia/susi_skypebot
     - url: https://github.com/fossasia/susi_api_wrapper
     - url: https://github.com/fossasia/susi_alexa_skill
+    - url: https://github.com/fossasia/susi_smart_box
+    - url: https://github.com/fossasia/admin.susi.ai
+    - url: https://github.com/fossasia/susi_twitchbot
+    - url: https://github.com/fossasia/susi_zulipbot
     - url: https://github.com/fossasia/MMM-SUSI-AI
     - url: https://github.com/fossasia/susi_cortana_skill
     - url: https://github.com/fossasia/susi_slackbot
