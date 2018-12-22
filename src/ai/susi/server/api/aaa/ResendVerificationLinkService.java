@@ -76,7 +76,7 @@ public class ResendVerificationLinkService extends AbstractAPIHandler implements
             @ApiResponse(code = 500,
             message = "No host url configured"),})
     @ApiImplicitParams({
-            @ApiImplicitParam(name = "emailId", value = "The emailId of the user", dataType = "string", paramType = "query")
+            @ApiImplicitParam(name = "emailId", required = true, value = "The emailId of the user", dataType = "string", paramType = "query")
     })
 
     @Override
