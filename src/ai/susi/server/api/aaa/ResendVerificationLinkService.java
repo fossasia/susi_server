@@ -22,10 +22,16 @@ import ai.susi.DAO;
 import ai.susi.EmailHandler;
 import ai.susi.json.JsonObjectWithDefault;
 import ai.susi.server.*;
+import ai.susi.server.Authorization;
 import ai.susi.tools.IO;
+import io.swagger.annotations.*;
 import org.json.JSONObject;
 
 import javax.servlet.http.HttpServletResponse;
+import javax.ws.rs.GET;
+import javax.ws.rs.Path;
+import javax.ws.rs.Produces;
+import javax.ws.rs.core.MediaType;
 import java.io.IOException;
 import java.nio.file.Paths;
 
@@ -33,17 +39,16 @@ import java.nio.file.Paths;
  * Created by dravit on 25/7/17.
  * parameter : emailId
  *
- * sample request :
- *
- * http://127.0.0.1:4000/aaa/resendVerificationLink.json?emailId=test@fossasia.com
+ * sample request : http://127.0.0.1:4000/aaa/resendVerificationLink.json?emailId=test@fossasia.com
  */
+@Path("/aaa/resendVerificationLink.json")
+@Produces(MediaType.APPLICATION_JSON)
+@Api(value = "ResendVerificationLinkService",
+        description = "Servlet to remove user devices")
 public class ResendVerificationLinkService extends AbstractAPIHandler implements APIHandler {
 
-    /**
-     * 
-     */
     private static final long serialVersionUID = -4307345798412415318L;
-    public static String verificationLinkPlaceholder = "%VERIFICATION-LINK%";
+    private static String verificationLinkPlaceholder = "%VERIFICATION-LINK%";
 
     @Override
     public String getAPIPath() {
@@ -54,6 +59,25 @@ public class ResendVerificationLinkService extends AbstractAPIHandler implements
     public UserRole getMinimalUserRole() {
         return UserRole.ANONYMOUS;
     }
+
+    @GET
+    @ApiOperation(httpMethod = "GET", value = "Servlet to Resend Verification Link")
+    @ApiResponses(value = {
+            @ApiResponse(code = 200,
+                    message = "Your request for a new verification link has been processed! An email with a verification link was sent to your address."),
+            @ApiResponse(code = 401,
+                    message = "Invalid email id. Please Sign up!"),
+            @ApiResponse(code = 422,
+                    message = "No email id provided!"),
+            @ApiResponse(code = 407,
+                    message = "User already verified!"),
+            @ApiResponse(code = 400,
+                    message = "Bad Request. Not Enough parameters"),
+            @ApiResponse(code = 500,
+            message = "No host url configured"),})
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "emailId", value = "The emailId of the user", dataType = "string", paramType = "query")
+    })
 
     @Override
     public JSONObject getDefaultPermissions(UserRole baseUserRole) {
@@ -78,12 +102,12 @@ public class ResendVerificationLinkService extends AbstractAPIHandler implements
         ClientCredential credential = new ClientCredential(ClientCredential.Type.passwd_login, emailId);
         Authentication authentication = DAO.getAuthentication(credential);
         if (authentication.getIdentity() == null) {
-            throw new APIException(400, "Invalid email id. Please Sign up!");
+            throw new APIException(401, "Invalid email id. Please Sign up!");
         }
 
         // check if user is already verified or not
         if (authentication.getBoolean("activated", false)) {
-            throw new APIException(400, "User already verified!");
+            throw new APIException(407, "User already verified!");
         } else {
             String token = createRandomString(30);
             ClientCredential access_token = new ClientCredential(ClientCredential.Type.access_token, token);
