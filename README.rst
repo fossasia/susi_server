@@ -2,7 +2,7 @@
 SUSI.AI Server
 ##################
 
-|Join the chat at https://gitter.im/fossasia/susi_server| |Build
+|Join the chat at https://gitter.im/fossasia/susi_server| |Docker Pulls| |Build
 Status| |Percentage of issues still open| |Average time
 to resolve an issue| |Twitter| |Twitter Follow|
 
@@ -348,6 +348,8 @@ What is the software license?
 
 .. |Join the chat at https://gitter.im/fossasia/susi_server| image:: https://badges.gitter.im/fossasia/susi_server.svg
    :target: https://gitter.im/fossasia/susi_server?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge
+.. |Docker Pulls| image:: https://img.shields.io/docker/pulls/fossasia/susi_server.svg?maxAge=2592000?style=flat-square
+   :target: https://hub.docker.com/r/fossasia/susi_server
 .. |Build Status| image:: https://travis-ci.org/fossasia/susi_server.svg?branch=development
    :target: https://travis-ci.org/fossasia/susi_server
 .. |Percentage of issues still open| image:: http://isitmaintained.com/badge/open/fossasia/susi_server.svg
