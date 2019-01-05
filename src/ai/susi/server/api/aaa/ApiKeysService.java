@@ -63,11 +63,12 @@ public class ApiKeysService extends AbstractAPIHandler implements APIHandler {
     @GET
     @ApiOperation(httpMethod = "GET", value = "Endpoint to add, modify and delete diffrent API keys used by SUSI")
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Added new API key xxxxxxxx successfully"),
             @ApiResponse(code = 200, message = "Removed API key successfully"),
+            @ApiResponse(code = 201, message = "Added new API key xxxxxxxx successfully"),
             @ApiResponse(code = 400, message = "Bad Request. No parameter present"),
+            @ApiResponse(code = 401, message = "Base user role not sufficient. Your base user role is 'ANONYMOUS', minimum user role required is 'admin'"),
             @ApiResponse(code = 500, message = "Failed: Unable to add xxxxxxxx!"),
-            @ApiResponse(code = 500, message = "Failed: xxxxxxxx doesn't exists")
+            @ApiResponse(code = 501, message = "Failed: xxxxxxxx doesn't exists")
     })
     @ApiImplicitParams({
             @ApiImplicitParam(name = "keyName", value = "Name of the API key", required = true, dataType = "string", paramType = "query"),
@@ -119,7 +120,7 @@ public class ApiKeysService extends AbstractAPIHandler implements APIHandler {
                result.put("message", "Removed API key " + call.get("keyName") + " successfully !");
                return new ServiceResponse(result);
             } catch (Exception e) {
-               throw new APIException(500, "Failed : " + call.get("keyName") + " doesn't exists!" );
+               throw new APIException(501, "Failed : " + call.get("keyName") + " doesn't exists!" );
             }
 	}
     }
