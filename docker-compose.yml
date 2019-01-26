@@ -1,5 +1,9 @@
-web:
-  name: "loklak"
-  build: .
-  ports:
-  - ":80"
+version: '3'
+
+services:
+  loklak:
+    build:
+      context: .
+    ports:
+      - "80:80"
+    restart: always
