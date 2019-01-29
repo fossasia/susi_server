@@ -12,6 +12,7 @@ import ai.susi.server.Query;
 import ai.susi.server.ServiceResponse;
 import ai.susi.server.UserRole;
 
+import ai.susi.server.api.cms.UploadImageService;
 import org.json.JSONObject;
 
 import javax.imageio.ImageIO;
@@ -83,7 +84,7 @@ public class UploadAvatarService extends AbstractAPIHandler implements APIHandle
                     String imagePath = DAO.data_dir  + File.separator + "avatar_uploads";
                     // Reading content for image
                     Image image = ImageIO.read(imagePartContent);
-                    BufferedImage bi = UploadAvatarService.toBufferedImage(image);
+                    BufferedImage bi = UploadImageService.toBufferedImage(image);
                     // Checks if images directory exists or not. If not then create one
                     if (!Files.exists(Paths.get(imagePath))) new File(imagePath).mkdirs();
 
@@ -117,20 +118,6 @@ public class UploadAvatarService extends AbstractAPIHandler implements APIHandle
      * @param img The Image to be converted
      * @return The converted BufferedImage
      */
-    public static BufferedImage toBufferedImage(Image img) {
-        if (img instanceof BufferedImage) {
-            return (BufferedImage) img;
-        }
-
-        // Create a buffered image with transparency
-        BufferedImage bimage = new BufferedImage(img.getWidth(null), img.getHeight(null), BufferedImage.TYPE_INT_ARGB);
-        // Draw the image on to the buffered image
-        Graphics2D bGr = bimage.createGraphics();
-        bGr.drawImage(img, 0, 0, null);
-        bGr.dispose();
-        // Return the buffered image
-        return bimage;
-    }
 
     @Override
     public ServiceResponse serviceImpl(Query call, HttpServletResponse response, Authorization rights, final JsonObjectWithDefault permissions) {

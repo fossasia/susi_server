@@ -54,18 +54,18 @@ import java.io.*;
         File imageFile = null;
         String file = "";
 
-        if (post.get("group","") != "" && post.get("language","") != "" && post.get("image","") != "") {
+        if (!post.get("group", "").equals("") && !post.get("language", "").equals("") && !post.get("image", "").equals("")) {
             String group = post.get("group","");
             String language = post.get("language","");
             String image = post.get("image","");
             file = image;
             // for public skill
-            if (post.get("model","") != "") {
+            if (!post.get("model", "").equals("")) {
                 String model = post.get("model","");
                 imageFile = new File(DAO.model_watch_dir  + File.separator + model + File.separator + group + File.separator + language + File.separator + image);
             }
             // for private skill
-            if (post.get("access_token","") != "") {
+            if (!post.get("access_token", "").equals("")) {
                 String userId = "";
                 ClientCredential credential = new ClientCredential(ClientCredential.Type.access_token, post.get("access_token",""));
                 Authentication authentication = DAO.getAuthentication(credential);
@@ -100,7 +100,7 @@ import java.io.*;
         int c;
         try {
             while ((c = is.read(b)) >  0) {data.write(b, 0, c);}
-        } catch (IOException e) {}
+        } catch (IOException ignored) {}
 
         GetAvatarServlet.setMimeType(request, response, post, file);
 

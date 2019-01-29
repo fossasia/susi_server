@@ -32,6 +32,7 @@ public class ConvertSkillJsonToTxtService extends AbstractAPIHandler implements 
     @Override
     public UserRole getMinimalUserRole() { return UserRole.ANONYMOUS; }
 
+
     @Override
     public JSONObject getDefaultPermissions(UserRole baseUserRole) {
         return null;

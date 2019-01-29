@@ -23,15 +23,24 @@ import ai.susi.DAO;
 import ai.susi.json.JsonObjectWithDefault;
 import ai.susi.json.JsonTray;
 import ai.susi.server.*;
+import ai.susi.server.Authorization;
+import io.swagger.annotations.*;
 import org.json.JSONObject;
 
 import javax.servlet.http.HttpServletResponse;
+import javax.ws.rs.GET;
+import javax.ws.rs.Path;
+import javax.ws.rs.Produces;
+import javax.ws.rs.core.MediaType;
 
 /**
  * This endpoint allows Admin and higher userroles to change status of any skill
  * http://127.0.0.1:4000/cms/changeSkillStatus.json?model=general&group=Knowledge&language=en&skill=aboutsusi&reviewed=true&access_token=zdasIagg71NF9S2Wu060ZxrRdHeFAx
  */
-
+@Path("/cms/changeSkillStatus.json")
+@Produces(MediaType.APPLICATION_JSON)
+@Api(value = "ChangeSkillStatusService",
+        description = " This endpoint allows Admin and higher userroles to change status of any skill")
 public class ChangeSkillStatusService extends AbstractAPIHandler implements APIHandler {
     private static final long serialVersionUID = 7926060917231250102L;
 
@@ -39,6 +48,34 @@ public class ChangeSkillStatusService extends AbstractAPIHandler implements APIH
     public UserRole getMinimalUserRole() {
         return UserRole.ADMIN;
     }
+
+    @GET
+    @ApiOperation(httpMethod = "GET", value = "Resource to change status of any skill")
+    @ApiResponses(value = {
+            @ApiResponse(code = 200,
+                    message = "Success : Skill status changed successfully."),
+            @ApiResponse(code = 400,
+                    message = "Bad service call, missing arguments."),
+            @ApiResponse(code = 422,
+                    message = "Bad access token.")
+    })
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "model", value = "Model Name", required = true, dataType = "string", paramType =
+                    "query"),
+            @ApiImplicitParam(name = "group", value = "Group name", required = true, dataType = "string", paramType =
+                    "query"),
+            @ApiImplicitParam(name = "language", value = "Language name", required = true, dataType = "string", paramType
+                    = "query"),
+            @ApiImplicitParam(name = "skill", value = "Skill Name", required = true, dataType = "string", paramType =
+                    "query"),
+            @ApiImplicitParam(name = "reviewed", value = "Reviewed", required =
+                    true, dataType = "boolean", paramType = "query"),
+            @ApiImplicitParam(name = "editable", value = "Editable", required =
+                    true, dataType = "boolean", paramType = "query"),
+            @ApiImplicitParam(name = "staffPick", value = "Staff Pick", required =
+                    true, dataType = "boolean", paramType = "query"),
+            @ApiImplicitParam(name = "systemSkill", value = "System Skill", required =
+                    true, dataType = "boolean", paramType = "query"),})
 
     @Override
     public JSONObject getDefaultPermissions(UserRole baseUserRole) {
