@@ -23,6 +23,11 @@ import ai.susi.tools.TimeoutMatcher;
 import org.json.JSONObject;
 
 import javax.servlet.http.HttpServletResponse;
+
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
+import java.util.Locale;
 import java.util.regex.Pattern;
 
 /**
@@ -71,7 +76,14 @@ public class PasswordChangeService extends AbstractAPIHandler implements APIHand
         ClientIdentity identity = authentication.getIdentity();
         String passwordHash;
         String salt;
-
+        String os = System.getProperty("os.name","generic").toLowerCase(Locale.ENGLISH);
+        int c;
+        //checking whether the running OS is Linux or not
+        	if((os.indexOf("nux")>=0)) {
+        		c=1;
+        	}else {
+        		c=0;
+        	}
         try {
             passwordHash = authentication.getString("passwordHash");
             salt = authentication.getString("salt");
@@ -106,6 +118,24 @@ public class PasswordChangeService extends AbstractAPIHandler implements APIHand
                     result.put("accepted", false);
                     return new ServiceResponse(result);
                 }
+            if(c==1) {
+            	try {
+            		BufferedReader in = new BufferedReader(new FileReader("/usr/share/dict/american-english"));
+            		String s;
+            		while((s=in.readLine())!=null) {
+            			if(s.indexOf(newpassword)!=-1) {
+            				//the input password resembles a word in the dictionary
+            				result.put("message", "The Password is too obvious. Try not to include a dictionary word");
+            				result.put("accepted",false);
+            				return new ServiceResponse(result);
+            			}
+            		}
+            		in.close();
+            	}catch(IOException e) {
+            		
+            	}
+            }
+                
                 Authentication emailauth = DAO.getAuthentication(emailcred);
                 String newsalt = createRandomString(20);
                 emailauth.remove("passwordHash");
