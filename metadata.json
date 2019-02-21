@@ -1,0 +1,7 @@
+{
+    "itemDisplayName": "SUSI Cloud Instance - Linux container with public IP",
+    "description": "Deploy a single Linux container accessible via a public IP using Azure Container Instances.",
+    "summary": "This will create a container group with a single Linux container and a publid IP address.",
+    "githubUsername": "sakshee-19",
+    "dateUpdated": "2018-12-12"
+}

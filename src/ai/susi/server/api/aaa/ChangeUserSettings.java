@@ -25,6 +25,8 @@ import ai.susi.json.JsonObjectWithDefault;
 import ai.susi.server.*;
 import ai.susi.server.Authorization;
 import io.swagger.annotations.*;
+
+import org.eclipse.jetty.http.HttpStatus;
 import org.json.JSONObject;
 
 import javax.servlet.http.HttpServletResponse;
@@ -52,9 +54,10 @@ public class ChangeUserSettings extends AbstractAPIHandler implements APIHandler
     @GET
     @ApiOperation(httpMethod = "GET", value = "Resource to write user setting")
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "You have successfully changed the settngs of your account"),
-            @ApiResponse(code = 400, message = "Bad Service call, count parameters not provided/key or value parameters not provided."),
-            @ApiResponse(code = 401, message = "Specified user settings not found, ensure you are logged in.")
+    		 @ApiResponse(code = HttpStatus.OK_200, message = "You have successfully changed the settings of your account"),
+             @ApiResponse(code = HttpStatus.BAD_REQUEST_400, message = "Bad Service call, count parameters not provided/key or value parameters not provided."),
+             @ApiResponse(code = HttpStatus.UNAUTHORIZED_401, message = "Specified user settings not found, ensure you are logged in."),
+             @ApiResponse(code = HttpStatus.METHOD_NOT_ALLOWED_405, message = "the targeted resource does not support the requested HTTP method")
     })
     @ApiImplicitParams({
             @ApiImplicitParam(name = "key", value = "Key name of the setting to be written", required = true, dataType = "string", paramType = "query"),

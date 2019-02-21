@@ -685,7 +685,7 @@ public class SusiIntent {
                 ", wholesize=" + utterances_wholesize.get() +
                 ", inference=" + inference_subscore.get() +
                 ", subscore=" + user_subscore +
-                ", pattern=" + utterances.get(0).toString() + (SusiIntent.this.inferences.size() > 0 ? (", inference=" + SusiIntent.this.inferences.get(0).getExpression()) : "");
+                ", pattern=" + (utterances.size() > 0 ? utterances.get(0).toString() : "") + (SusiIntent.this.inferences.size() > 0 ? (", inference=" + SusiIntent.this.inferences.get(0).getExpression()) : "");
         }
     }
 
