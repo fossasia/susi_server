@@ -532,6 +532,7 @@ public class SusiServer {
                 MindService.class,
                 UserService.class,
                 GetAllUserroles.class,
+                BulkAnswerService.class,
 
                 // learning services
                 ConsoleLearning.class,

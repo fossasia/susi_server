@@ -28,6 +28,7 @@ import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -50,16 +51,28 @@ public class Query {
     
     public Query(final HttpServletRequest request) {
         this.qm = new LinkedHashMap<>();
+        this.request = request;
+
+        // Read post parameters
         for (Map.Entry<String, String[]> entry: request.getParameterMap().entrySet()) {
             this.qm.put(entry.getKey(), entry.getValue()[0].getBytes(StandardCharsets.UTF_8));
         }
-        this.request = request;
-        
+
+        // Read content body
+        if ("POST".equalsIgnoreCase(request.getMethod()))  {
+           try {
+               String test = request.getReader().lines().collect(Collectors.joining(System.lineSeparator()));
+               this.qm.put("BODY", test.getBytes(StandardCharsets.UTF_8));
+           } catch (IOException e) {
+               e.printStackTrace();
+           }
+        }
+
         // discover remote host
         String clientHost = request.getRemoteHost();
         String XRealIP = request.getHeader("X-Real-IP");
         if (XRealIP != null && XRealIP.length() > 0) clientHost = XRealIP; // get IP through nginx config "proxy_set_header X-Real-IP $remote_addr;"
-        
+
         // start tracking: get calling thread and start tracking for that
         this.track = DAO.access.startTracking(request.getServletPath(), clientHost);
         this.track.setTimeSinceLastAccess(this.track.getDate().getTime() - RemoteAccess.latestVisit(request.getServletPath(), clientHost));

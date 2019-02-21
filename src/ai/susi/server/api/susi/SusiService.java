@@ -71,9 +71,14 @@ public class SusiService extends AbstractAPIHandler implements APIHandler {
 
     @Override
     public ServiceResponse serviceImpl(Query post, HttpServletResponse response, Authorization user, final JsonObjectWithDefault permissions) throws APIException {
+        String q = post.get("q", "").trim();
+        JSONObject json = serviceImpl(post, response, user, permissions, q);
+        return new ServiceResponse(json);
+    }
+
+    public static JSONObject serviceImpl(Query post, HttpServletResponse response, Authorization user, final JsonObjectWithDefault permissions, String q) throws APIException {
 
         // parameters
-        String q = post.get("q", "").trim();
         int count = post.get("count", 1);
         int timezoneOffset = post.get("timezoneOffset", 0); // minutes, i.e. -60
         boolean debug = "true".equals(post.get("debug", ""));
@@ -222,7 +227,7 @@ public class SusiService extends AbstractAPIHandler implements APIHandler {
                                 JSONObject json = new JSONObject(true);
                                 json.put("accepted", false);
                                 json.put("message", "Not allowed to use on this domain");
-                                return new ServiceResponse(json);
+                                return json;
                             }
                         }
                     }
@@ -262,7 +267,6 @@ public class SusiService extends AbstractAPIHandler implements APIHandler {
             DAO.severe(e.getMessage());
         }
         JSONObject json = cognition.getJSON();
-        return new ServiceResponse(json);
+        return json;
     }
-
 }
