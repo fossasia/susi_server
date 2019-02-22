@@ -35,11 +35,10 @@ import java.util.Collection;
  * and data transmission asynchronously.
  */
 public class Caretaker extends Thread {
-    
+
     private boolean shallRun = true;
-    
     public  final static long startupTime = System.currentTimeMillis();
-    
+
     /**
      * ask the thread to shut down
      */
@@ -50,35 +49,34 @@ public class Caretaker extends Thread {
     }
 
     public void deleteOldFiles() {
-        Collection<File> filesToDelete = FileUtils.listFiles(new File(DAO.deleted_skill_dir.getPath()),
+        if (DAO.deleted_skill_dir.exists() && DAO.deleted_skill_dir.isDirectory()) {
+            Collection<File> filesToDelete = FileUtils.listFiles(DAO.deleted_skill_dir,
                 new AgeFileFilter(DateTime.now().withTimeAtStartOfDay().minusDays(30).toDate()),
                 TrueFileFilter.TRUE);    // include sub dirs
-        for (File file : filesToDelete) {
-            boolean success = FileUtils.deleteQuietly(file);
-            if (!success) {
-                System.out.print("Deleted skill older than 30 days.");
+            for (File file : filesToDelete) {
+                boolean success = FileUtils.deleteQuietly(file);
+                if (!success) {
+                    System.out.print("Deleted skill older than 30 days.");
+                }
             }
         }
     }
+
     @Override
     public void run() {
-        
-        boolean busy = false;
+
         // work loop
-        beat: while (this.shallRun) try {
-            deleteOldFiles();
-            // sleep a bit to prevent that the DoS limit fires at backend server
-            try {Thread.sleep(busy ? 1000 : 5000);} catch (InterruptedException e) {}
-            TimeoutMatcher.terminateAll();
-
-            if (!this.shallRun) break beat;
-            busy = false;
-
-        } catch (Throwable e) {
-            DAO.severe("CARETAKER THREAD", e);
+        while (this.shallRun) {
+            try {
+                deleteOldFiles();
+                TimeoutMatcher.terminateAll();
+            } catch (Throwable e) {
+                DAO.severe("CARETAKER THREAD", e);
+            }
+            try {Thread.sleep(5000);} catch (InterruptedException e) {}
         }
 
         DAO.log("caretaker terminated");
     }
-    
+
 }
