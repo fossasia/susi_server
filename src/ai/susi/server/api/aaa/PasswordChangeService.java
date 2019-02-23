@@ -23,6 +23,9 @@ import ai.susi.tools.TimeoutMatcher;
 import org.json.JSONObject;
 
 import javax.servlet.http.HttpServletResponse;
+
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.regex.Pattern;
 
 /**
@@ -113,18 +116,29 @@ public class PasswordChangeService extends AbstractAPIHandler implements APIHand
                 DAO.log("password change for user: " + identity.getName() + " via newpassword from host: " + post.getClientHost());
 
                 String subject = "Password Change";
+                InetAddress address = null;
+				try {
+					address = InetAddress.getLocalHost();
+				} catch (UnknownHostException e1) {
+					
+				}
+                String findIP = address.getHostAddress();
+                String IP = "127.0.1.1";
                 try {
                     EmailHandler.sendEmail(authentication.getIdentity().getName(), subject, "Your password has been changed successfully!");
                     result.put("message", "Your password has been changed!");
                     result.put("accepted", true);
                 } catch (Exception e) {
-                    throw new APIException(500, "Failed to change password");
+                    if(findIP.equals(IP)) {
+                    	result.put("message","Your password has sucessfully been changed and stored in the local database!");
+                    	result.put("accepted",true);
                 }
-            }
+                    else{
+                    	throw new APIException(500, "Failed to change password");}
+                    }
+                }
         }
 
         return new ServiceResponse(result);
     }
-
 }
-
