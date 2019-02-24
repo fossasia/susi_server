@@ -45,12 +45,7 @@ public class GroupListService extends AbstractAPIHandler implements APIHandler {
         String model_name = call.get("model", "general");
         File model = new File(DAO.model_watch_dir, model_name);
 
-        String[] groups = model.list(new FilenameFilter() {
-            @Override
-            public boolean accept(File file, String s) {
-                return new File(file, s).isDirectory();
-            }
-        });
+        String[] groups = model.list((file, s) -> new File(file, s).isDirectory());
         JSONObject result = new JSONObject();
         result.put("accepted", true);
         JSONArray groupsArray = new JSONArray(groups);

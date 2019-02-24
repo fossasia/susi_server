@@ -67,6 +67,7 @@ public class GetSkillTxtService extends AbstractAPIHandler implements APIHandler
         json.put("accepted", false);
         
         try {
+            assert skill != null;
             String content = new String(Files.readAllBytes(skill.toPath()));
             json.put("content", content);
             json.put("accepted", true);
