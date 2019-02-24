@@ -71,6 +71,7 @@ public class SusiTutorialTest {
 
     @Test
     public void test() {
+        // System.out.println(testFile); // helper to generate a test dream "testdream"
         try {
             System.setProperty("java.awt.headless", "true"); // no awt used here so we can switch off that stuff
             Path data = FileSystems.getDefault().getPath("data");

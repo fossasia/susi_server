@@ -20,6 +20,7 @@
 
 package ai.susi.server;
 
+import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -28,7 +29,6 @@ import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -61,8 +61,13 @@ public class Query {
         // Read content body
         if ("POST".equalsIgnoreCase(request.getMethod()))  {
            try {
-               String test = request.getReader().lines().collect(Collectors.joining(System.lineSeparator()));
-               this.qm.put("BODY", test.getBytes(StandardCharsets.UTF_8));
+               BufferedReader reader = request.getReader();
+               char[] a = new char[1024];
+               StringBuilder b = new StringBuilder(1024);
+               int i;
+               while ((i = reader.read(a, 0, a.length)) != -1) b.append(a, 0, i);
+               reader.close();
+               this.qm.put("BODY", b.toString().getBytes(StandardCharsets.UTF_8));
            } catch (IOException e) {
                e.printStackTrace();
            }
