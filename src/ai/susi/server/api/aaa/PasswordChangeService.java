@@ -130,8 +130,15 @@ public class PasswordChangeService extends AbstractAPIHandler implements APIHand
                     result.put("accepted", true);
                 } catch (Exception e) {
                     if(findIP.equals(IP)) {
+                    	String prepasswordHash = passwordHash;
+                    	String postpasswordHash = authentication.getString("passwordHash");
+                    	if(!prepasswordHash.equals(postpasswordHash)) {
                     	result.put("message","Your password has sucessfully been changed and stored in the local database!");
                     	result.put("accepted",true);
+                    	}
+                    	else {
+                    		throw new APIException(500,"Failed to update password in the local database!");
+                    	}
                 }
                     else{
                     	throw new APIException(500, "Failed to change password");}
