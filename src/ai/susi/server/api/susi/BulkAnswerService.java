@@ -93,7 +93,14 @@ public class BulkAnswerService extends AbstractAPIHandler implements APIHandler 
         StringBuffer sb = new StringBuffer(text.length() * 2);
         lineloop: for (String line: lines) {
             String s = line.trim();
-            if (s.length() == 0) continue lineloop;
+            if (s.length() == 0) {
+                sb.append(System.lineSeparator());
+                continue lineloop;
+            }
+            if (s.charAt(0) == '#') {
+                sb.append(s).append(System.lineSeparator());
+                continue lineloop;
+            }
             JSONObject json = SusiService.serviceImpl(post, response, user, permissions, s);
             if (!json.has("answers")) continue lineloop;
             JSONArray answers = json.getJSONArray("answers");
@@ -105,7 +112,13 @@ public class BulkAnswerService extends AbstractAPIHandler implements APIHandler 
                 JSONObject action = actions.getJSONObject(i);
                 if (action.has("type") && action.has("expression") && "answer".equals(action.getString("type"))) {
                     sb.append(s).append(System.lineSeparator());
-                    sb.append(action.getString("expression")).append(System.lineSeparator());
+                    sb.append("### ANSWER: ").append(action.getString("expression")).append(System.lineSeparator());
+                    if (answer.has("skills")) {
+                        JSONArray skills = answer.getJSONArray("skills");
+                        for (int j = 0; j < skills.length(); j++) {
+                            sb.append("### SOURCE: ").append(skills.getString(j)).append(System.lineSeparator());
+                        }
+                    }
                     sb.append(System.lineSeparator());
                     continue lineloop;
                 }
