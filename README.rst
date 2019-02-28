@@ -90,11 +90,13 @@ A self-upgrading process is available which must be triggered by a shell command
 Where can I download ready-built releases of Susi AI?
 *********
 
-No-where, you must clone the git repository of Susi AI and built it yourself. That's easy, just do
+The latest binary built can be downloaded from
+http://download.susi.ai/susi_server/susi_server_binary_latest.tar.gz
 
--  ``git clone https://github.com/fossasia/susi_server.git``
--  ``cd susi``
--  then see below ("How do I run Susi AI")
+To run susi, do:
+tar xfz susi_server_binary_latest.tar.gz
+cd susi_server_binary_latest
+java -server -Xmx200m -jar build/libs/susi_server-all.jar
 
 *********
 How do I install Susi AI with Docker on Google Cloud?
