@@ -142,6 +142,7 @@ public class SusiServer {
 
     public static void main(String[] args) throws Exception {
         System.setProperty("java.awt.headless", "true"); // no awt used here so we can switch off that stuff
+        long starttime = System.currentTimeMillis();
 
         // init config, log and elasticsearch
         Path data = FileSystems.getDefault().getPath("data");
@@ -202,6 +203,7 @@ public class SusiServer {
             System.exit(-1);
         }
 
+        DAO.log("Start time before DAO: " + (System.currentTimeMillis() - starttime) + " milliseconds");
         // initialize all data        
         try{
             DAO.init(config, data);
@@ -212,6 +214,8 @@ public class SusiServer {
             System.exit(-1);
         }
 
+        DAO.log("Start time after DAO - before Server setup: " + (System.currentTimeMillis() - starttime) + " milliseconds");
+        
         // init the http server
         try {
             setupHttpServer(httpPort, httpsPort);
@@ -221,9 +225,13 @@ public class SusiServer {
         }
         setServerHandler(dataFile);
 
+        DAO.log("Start time before Server start: " + (System.currentTimeMillis() - starttime) + " milliseconds");
+        
         SusiServer.server.start();
         SusiServer.caretaker = new Caretaker();
         SusiServer.caretaker.start();
+
+        DAO.log("Start time until server is up: " + (System.currentTimeMillis() - starttime) + " milliseconds");
 
         // if this is not headless, we can open a browser automatically
         OS.openBrowser("http://127.0.0.1:" + httpPort);

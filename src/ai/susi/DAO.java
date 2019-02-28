@@ -143,7 +143,7 @@ public class DAO {
         logAppender = new LogAppender(layout, 100000);
         logger.addAppender(logAppender);
         logger.addAppender(new ConsoleAppender(layout));
-        logger.setLevel(Level.WARN);
+        logger.setLevel(Level.INFO);
     }
 
     // create the mind layers (all have a common memory)
