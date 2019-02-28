@@ -59,7 +59,9 @@ public class Query {
         }
 
         // Read content body
-        if ("POST".equalsIgnoreCase(request.getMethod()))  {
+        // for a negative (should not fail) test, use the following line:
+        // curl -v -X POST -b "__cfduid=d7339feeeeb7735ffa967330331f37d2d1550960440" -H "Accept-Language: en;q=1.0" -H "User-Agent: Susi/1.0 (com.imjog.susi; build:1; iOS 12.1.0) Alamofire/4.7.2" -H "Content-Type: application/x-www-form-urlencoded; charset=utf-8" -H "Accept-Encoding: gzip;q=1.0, compress;q=0.5" -d "login=xxx%40gmail.com&password=xxx%40123&type=access-token" "http://localhost:4000/aaa/login.json"
+        if ("POST".equalsIgnoreCase(request.getMethod())) {
            try {
                BufferedReader reader = request.getReader();
                char[] a = new char[1024];
@@ -68,7 +70,10 @@ public class Query {
                while ((i = reader.read(a, 0, a.length)) != -1) b.append(a, 0, i);
                reader.close();
                this.qm.put("BODY", b.toString().getBytes(StandardCharsets.UTF_8));
-           } catch (IOException e) {
+           } catch (IllegalStateException e) {
+               // this is normal in case that there is no body attached to the request.
+               // so we ignore this silently.
+           } catch (Throwable e) {
                e.printStackTrace();
            }
         }
