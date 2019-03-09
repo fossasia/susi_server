@@ -102,6 +102,15 @@ public class SkillTransactions {
         .build();
         repo.create();
       }
+
+      // check if git is blocked
+      File lockFile = new File(repoFile, "index.lock");
+      for (int i = 0; i < 10; i++) {
+          if (!lockFile.exists()) break;
+          try {Thread.sleep(1000);} catch (InterruptedException e) {}
+      }
+      if (lockFile.exists()) lockFile.delete();
+
       return repo;
     }
 
