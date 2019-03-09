@@ -7,7 +7,7 @@ while getopts ":pb" opt; do
     case $opt in
         p)
 	    git reset --hard
-            git pull origin master
+            git pull origin
             ;;
         b)
 	    gradle assemble
