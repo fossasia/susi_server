@@ -29,7 +29,15 @@ import org.eclipse.jgit.api.LogCommand;
 import org.eclipse.jgit.api.MergeResult;
 import org.eclipse.jgit.api.PullResult;
 import org.eclipse.jgit.api.PushCommand;
+import org.eclipse.jgit.api.errors.CanceledException;
 import org.eclipse.jgit.api.errors.GitAPIException;
+import org.eclipse.jgit.api.errors.InvalidConfigurationException;
+import org.eclipse.jgit.api.errors.InvalidRemoteException;
+import org.eclipse.jgit.api.errors.NoHeadException;
+import org.eclipse.jgit.api.errors.RefNotAdvertisedException;
+import org.eclipse.jgit.api.errors.RefNotFoundException;
+import org.eclipse.jgit.api.errors.TransportException;
+import org.eclipse.jgit.api.errors.WrongRepositoryStateException;
 import org.eclipse.jgit.lib.PersonIdent;
 import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.revwalk.RevCommit;
@@ -84,66 +92,58 @@ public class SkillTransactions {
         pullStatus = false;
         pullThread.interrupt();
     }
-    
-    public static Repository getPublicRepository() throws IOException {
-      Repository repo;
-      File repoFile = DAO.susi_skill_repo;
-      if (repoFile.exists()) {
-      // Open an existing repository
-      repo = new FileRepositoryBuilder()
-      .setGitDir(DAO.susi_skill_repo)
-      .readEnvironment() // scan environment GIT_* variables
-      .findGitDir() // scan up the file system tree
-      .build();
-      } else {
-        // Create a new repository
-        repo = new FileRepositoryBuilder()
-        .setGitDir(DAO.susi_skill_repo)
-        .build();
-        repo.create();
-      }
 
-      // check if git is blocked
-      File lockFile = new File(repoFile, "index.lock");
-      for (int i = 0; i < 10; i++) {
-          if (!lockFile.exists()) break;
-          try {Thread.sleep(1000);} catch (InterruptedException e) {}
-      }
-      if (lockFile.exists()) lockFile.delete();
-
-      return repo;
-    }
-
-    private static Repository getPrivateRepository() throws IOException {
+    /**
+     * get or create a repository
+     * @param repoFile - must be a directory, usually the last path is named ".git"
+     * @return the git repository
+     * @throws IOException
+     */
+    private static Repository getGitRepository(File repoFile) throws IOException {
+        assert repoFile.isDirectory();
         Repository repo;
-        File repoFile = DAO.susi_private_skill_repo;
         if (repoFile.exists()) {
-        // Open an existing repository
-        repo = new FileRepositoryBuilder()
-        .setGitDir(DAO.susi_private_skill_repo)
-        .readEnvironment() // scan environment GIT_* variables
-        .findGitDir() // scan up the file system tree
-        .build();
+            // Open an existing repository
+            repo = new FileRepositoryBuilder()
+                    .setGitDir(repoFile)
+                    .readEnvironment() // scan environment GIT_* variables
+                    .findGitDir() // scan up the file system tree
+                    .build();
         } else {
-        // Create a new repository
-        repo = new FileRepositoryBuilder()
-        .setGitDir(DAO.susi_private_skill_repo)
-        .build();
-        repo.create();
+            // Create a new repository
+            repo = new FileRepositoryBuilder()
+                    .setGitDir(repoFile)
+                    .build();
+            repo.create();
         }
+
+        // check if git repo is blocked
+        File lockFile = new File(repoFile, "index.lock");
+        for (int i = 0; i < 10; i++) {
+            if (!lockFile.exists()) break;
+            try {Thread.sleep(1000);} catch (InterruptedException e) {}
+        }
+        if (lockFile.exists()) lockFile.delete();
+
         return repo;
     }
 
+    public static Repository getPublicRepository() throws IOException {
+        return getGitRepository(DAO.susi_skill_repo);
+    }
+
+    private static Repository getPrivateRepository() throws IOException {
+        return getGitRepository(DAO.susi_private_skill_repo);
+    }
+
     private static Git getPublicGit() throws IOException {
-        Git git = new Git(getPublicRepository());
-        return git;
+        return new Git(getPublicRepository());
     }
 
     private static Git getPrivateGit() throws IOException {
-        Git git = new Git(getPrivateRepository());
-        return git;
+        return new Git(getPrivateRepository());
     }
-    
+
     public static Iterable<RevCommit> getGitLog(boolean privateRepository, String path) throws IOException, GitAPIException {
         Git git = privateRepository ? getPrivateGit() : getPublicGit();
         LogCommand lc = git.log();
@@ -152,29 +152,42 @@ public class SkillTransactions {
     }
 
     public static void pull(Git git) throws IOException {
+        PullResult pullResult = null;
         try {
-            PullResult pullResult = git.pull().call();
-            MergeResult mergeResult = pullResult.getMergeResult();
+            pullResult = git.pull().call();
+        } catch (GitAPIException e) {
+            throw new IOException(e.getMessage());
+        }
+        MergeResult mergeResult = pullResult.getMergeResult();
 
-            if (mergeResult!=null && mergeResult.getConflicts()!=null) {
-                // we have conflicts send email to admin
+        if (mergeResult != null && mergeResult.getConflicts() != null) {
+            // we have conflicts send email to admin
+            String email = DAO.getConfig("skill_repo.admin_email","");
+            String content = getConflictsMailContent(mergeResult);
+            if (email.isEmpty()) {
+                DAO.log(content);
+            } else {
                 try {
-                    EmailHandler.sendEmail(DAO.getConfig("skill_repo.admin_email",""), "SUSI Skill Data Conflicts", getConflictsMailContent(mergeResult));
+                    EmailHandler.sendEmail(email, "SUSI Skill Data Conflicts", content);
                 } catch (Throwable e) {
                     e.printStackTrace();
                 }
-
-            } else {
-                PushCommand push = git.push();
-                push.setCredentialsProvider(new UsernamePasswordCredentialsProvider(DAO.getConfig("github.username", ""), DAO.getConfig("github.password","")));
-                push.call();
             }
-
-        } catch (GitAPIException e) {
-            throw new IOException (e.getMessage());
+        } else {
+            String username = DAO.getConfig("github.username", "");
+            String password = DAO.getConfig("github.password","");
+            if (!username.isEmpty() && !password.isEmpty()) {
+                PushCommand push = git.push();
+                push.setCredentialsProvider(new UsernamePasswordCredentialsProvider(username, password));
+                try {
+                    push.call();
+                } catch (GitAPIException e) {
+                    DAO.severe("failed to push to git repository", e);
+                }
+            }
         }
     }
-    
+
     private static class CommitAction {
         boolean privateRepository;
         String commitMessage;
@@ -246,27 +259,27 @@ public class SkillTransactions {
         }
     }
 
-    private static String getConflictsMailContent(MergeResult mergeResult) throws APIException {
+    private static String getConflictsMailContent(MergeResult mergeResult) {
         // get template file
-        String result="";
+        String result = "";
         StringBuilder conflictLines= new StringBuilder();
         try {
             result = IO.readFileCached(Paths.get(DAO.conf_dir + "/templates/conflicts-mail.txt"));
-            for (String path :mergeResult.getConflicts().keySet()) {
-                int[][] c = mergeResult.getConflicts().get(path);
-                conflictLines.append("Conflicts in file ").append(path).append("\n");
-                for (int i = 0; i < c.length; ++i) {
-                    conflictLines.append("  Conflict #").append(i + 1).append("\n");
-                    for (int j = 0; j < (c[i].length) - 1; ++j) {
-                        if (c[i][j] >= 0)
-                            conflictLines.append("    Chunk for ").append(mergeResult.getMergedCommits()[j]).append(" starts on line #").append(c[i][j]).append("\n");
-                    }
+        } catch (IOException e) {
+            result = conflictsPlaceholder;
+        }
+        for (String path :mergeResult.getConflicts().keySet()) {
+            int[][] c = mergeResult.getConflicts().get(path);
+            conflictLines.append("Conflicts in file ").append(path).append("\n");
+            for (int i = 0; i < c.length; ++i) {
+                conflictLines.append("  Conflict #").append(i + 1).append("\n");
+                for (int j = 0; j < (c[i].length) - 1; ++j) {
+                    if (c[i][j] >= 0)
+                        conflictLines.append("    Chunk for ").append(mergeResult.getMergedCommits()[j]).append(" starts on line #").append(c[i][j]).append("\n");
                 }
             }
-            result = result.replace(conflictsPlaceholder, conflictLines.toString());
-        } catch (IOException e) {
-            throw new APIException(500, "No conflicts email template");
         }
+        result = result.replace(conflictsPlaceholder, conflictLines.toString());
         return result;
     }
 }

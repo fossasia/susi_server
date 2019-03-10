@@ -50,7 +50,6 @@ import javax.annotation.Nonnull;
 import ai.susi.json.JsonFile;
 import ai.susi.json.JsonTray;
 import ai.susi.mind.SusiAction.SusiActionException;
-import ai.susi.mind.SusiLanguage;
 import ai.susi.mind.SusiMemory;
 import ai.susi.mind.SusiMind;
 import ai.susi.mind.SusiSkill;
