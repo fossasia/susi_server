@@ -160,6 +160,9 @@
     ]}]
   },{
     "phrases":[
+      {"type":"pattern", "expression":"what's the time"},
+      {"type":"pattern", "expression":"what is the time"},
+      {"type":"pattern", "expression":"the time"},
       {"type":"pattern", "expression":"what time is it"},
       {"type":"pattern", "expression":"what time"},
       {"type":"pattern", "expression":"time"},
