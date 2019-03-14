@@ -203,7 +203,7 @@ public class DAO {
 
         // wake up susi
         SusiMind.Layer system_skills_include = new SusiMind.Layer("General", new File(new File(conf_dir, "os_skills"), "include"), true);
-        SusiMind.Layer system_skills_linuguistic = new SusiMind.Layer("General", new File(new File(conf_dir, "os_skills"), "linuguistic"), true);
+        SusiMind.Layer system_skills_linuguistic = new SusiMind.Layer("General", new File(new File(conf_dir, "os_skills"), "linguistic"), true);
         SusiMind.Layer system_skills_operation = new SusiMind.Layer("General", new File(new File(conf_dir, "os_skills"), "operation"), true);
         SusiMind.Layer system_skills_system = new SusiMind.Layer("General", new File(new File(conf_dir, "os_skills"), "system"), true);
         SusiMind.Layer system_skills_local = new SusiMind.Layer("Local", new File(new File(conf_dir, "os_skills"), "local"), true);
@@ -425,7 +425,19 @@ public class DAO {
         dictionaries = new File(external_data, "dictionaries");
         dictionaries.mkdirs();
 
+        // initializing susi minf concurrently
+        Thread susi_mind_init = new Thread() {
+            public void run() {
+                try {
+                    susi.observe();
+                } catch (IOException e) {
+                    DAO.severe(e);
+                }
+            }
+        };
+        susi_mind_init.start();
 
+        // initializing the log concurrently
         Path log_dump_dir = dataPath.resolve("log");
         log_dump_dir.toFile().mkdirs();
         OS.protectPath(log_dump_dir); // no other permissions to this path
