@@ -1176,6 +1176,8 @@ public class DAO {
 
         String fn = skill_name + ".txt";
         String[] list = languagepath.list();
+        
+        DAO.log("getSkillFileInLanguage: languagepath:"+languagepath+ ", skill_name:" + skill_name + ", null_if_not_found:" + null_if_not_found);
 
         // first try: the skill name may be same or similar to the skill file name
         if(list !=null && list.length!=0){
@@ -1196,7 +1198,7 @@ public class DAO {
                     SusiSkill.ID skillid = new SusiSkill.ID(f);
                     SusiSkill skill = new SusiSkill(new BufferedReader(new FileReader(f)), skillid, false);
                     String sn = skill.getSkillName();
-                    if (sn.equals(skill_name) || sn.toLowerCase().equals(skill_name) || sn.toLowerCase().replace(' ', '_').equals(skill_name)) {
+                    if (sn != null && (sn.equals(skill_name) || sn.toLowerCase().equals(skill_name) || sn.toLowerCase().replace(' ', '_').equals(skill_name))) {
                         return new File(languagepath, n);
                     }
                 } catch (JSONException | FileNotFoundException | SusiActionException e) {
