@@ -34,3 +34,5 @@ A typical start script would be
 		local-susiserver
 
 
+[1] https://github.com/fossasia/susi_server.git
+[2] https://github.com/fossasia/susi_skill_data.git
