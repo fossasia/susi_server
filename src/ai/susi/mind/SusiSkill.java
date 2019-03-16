@@ -75,7 +75,7 @@ public class SusiSkill {
             boolean found = false;
             prefixes: for (String prefix: possible_path_prefixes) {
                 int i = this.skillpath.indexOf(prefix);
-                if (i > 0) {
+                if (i >= 0) {
                     this.skillpath = this.skillpath.substring(i);
                     found = true;
                     break prefixes;
