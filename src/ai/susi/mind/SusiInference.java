@@ -19,6 +19,7 @@
 
 package ai.susi.mind;
 
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.regex.Matcher;
@@ -293,8 +294,16 @@ public class SusiInference {
                 if (definition.has("url") && definition.has("path")) try {
                     String url = flow.unify(definition.getString("url"), true, Integer.MAX_VALUE);
                     String path = flow.unify(definition.getString("path"), false, Integer.MAX_VALUE);
-                    byte[] b = ConsoleService.loadData(url);
-                    JSONArray data = JsonPath.parse(b, path);
+                    byte[] b;
+                    JSONArray data;
+                    try {
+                        b = ConsoleService.loadData(url);
+                        data = JsonPath.parse(b, path);
+                    } catch (IOException e) {
+                        DAO.log("no response from API " + url);
+                        data = null;
+                    }
+
                     if (data != null) {
                         JSONArray learned = new SusiTransfer("*").conclude(data);
                         if (learned.length() > 0 && definition.has("actions") &&
