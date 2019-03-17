@@ -33,6 +33,18 @@ A typical start script would be
 		-v$DATADIR:/susi_server/data	\
 		local-susiserver
 
+Notes on configuration
+----------------------
+The docker image uses the default configuration as taken from the `conf`
+directory with the following two changes:
+- `upgradeInterval` is set to a very large number
+- `skill_repo.enable` is set to false
+  this disables the git pull/push updates of the skill data directory
+
+If a different configuration is required it is enough to provide an alternative
+`conf` directory and mount it to `/susi_server/conf` using the `-v` option
+(see above).
+
 
 [1] https://github.com/fossasia/susi_server.git
 [2] https://github.com/fossasia/susi_skill_data.git
