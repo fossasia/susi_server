@@ -177,7 +177,7 @@ public class DAO {
         }
         if (!susi_chatlog_dir.exists()) susi_chatlog_dir.mkdirs();
         if (!susi_skilllog_dir.exists()) susi_skilllog_dir.mkdirs();
-        if (!draft_dir.exists()) susi_skilllog_dir.mkdirs();
+        if (!draft_dir.exists()) draft_dir.mkdirs();
         
         // initialize the memory as a background task to prevent that this blocks too much
         susi_memory = new SusiMemory(susi_chatlog_dir, susi_skilllog_dir, ATTENTION_TIME);
