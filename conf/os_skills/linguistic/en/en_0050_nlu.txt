@@ -1,6 +1,10 @@
 # This is an intent definition library
 # see https://en.wikipedia.org/wiki/Five_Ws
 
+# unwrapping
+hi susi *|susi *|tell me *|please tell me *|can you tell me *|can you please tell me *
+`$1$`
+
 # wrapper
 can you *|tell me *|tell me about *|tell me a little about *|susi *|do you know *|do you know about *|give me *|give *|get *| get me *|find *|find me *
 `$1$`
@@ -15,7 +19,7 @@ where is *|where can I find *
 `__where $1$`
 
 when happened *|when did * happen
-`__when *`
+`__when $1$`
 
 why can I *|why is *
 `__why $1$`
@@ -23,15 +27,16 @@ why can I *|why is *
 #which *
 
 how does *
-`__how *`
+`__how $1$`
 
+# cut off suffixes
+* now|* right now|* please
+`$1$`
 
 #do, did, does
 #can, could, should, would, may, must, shall
 #is, was, will, am, are, were
 #have, has, had
-
-
 
 
 # conversion

@@ -3,12 +3,7 @@
     "keys"   :["what","describe","search","where"],
     "phrases":[
       {"type":"regex", "expression":"where is (?:(?:a )*)(.*)"},
-      {"type":"regex", "expression":"what is (?:(?:a )*)(.*)"},
-      {"type":"regex", "expression":"whats (?:(?:a )*)(.*)"},
-      {"type":"regex", "expression":"what's (?:(?:a )*)(.*)"},
-      {"type":"regex", "expression":"describe (?:(?:a )*)(.*)"},
-      {"type":"regex", "expression":"please describe (?:(?:a )*)(.*)"},
-      {"type":"regex", "expression":"please explain (?:(?:a )*)(.*)"}
+      {"type":"regex", "expression":"find (?:(?:a )*)(.*)"}
     ],
     "process":[ {"type":"console", "expression":"SELECT location[0] AS lon, location[1] AS lat FROM locations WHERE query='$1$';"},
                 {"type":"console", "expression":"SELECT object AS locationInfo FROM location-info WHERE query='$1$';"}],
@@ -160,6 +155,9 @@
     ]}]
   },{
     "phrases":[
+      {"type":"pattern", "expression":"what's the time"},
+      {"type":"pattern", "expression":"what is the time"},
+      {"type":"pattern", "expression":"the time"},
       {"type":"pattern", "expression":"what time is it"},
       {"type":"pattern", "expression":"what time"},
       {"type":"pattern", "expression":"time"},

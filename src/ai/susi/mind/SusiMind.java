@@ -102,7 +102,9 @@ public class SusiMind {
 
     public SusiMind addLayer(Layer layer) {
         if (layer != null) {
-            if (!layer.path.exists()) layer.path.mkdirs();
+            if (!layer.path.exists()) {
+                layer.path.mkdirs();
+            }
             this.layers.add(layer);
         }
         return this;
@@ -141,6 +143,7 @@ public class SusiMind {
     }
 
     private void observe(File path, boolean acceptWildcardIntent) throws IOException {
+        assert path.exists() : path.getAbsolutePath();
         if (!path.exists()) return;
         for (File f: path.listFiles()) {
             if (f.isDirectory()) {
@@ -149,6 +152,7 @@ public class SusiMind {
             }
             if (!f.isDirectory() && !f.getName().startsWith(".") && (f.getName().endsWith(".json") || f.getName().endsWith(".txt") || f.getName().endsWith(".aiml"))) {
                 if (!observations.containsKey(f) || f.lastModified() > observations.get(f)) {
+                    DAO.log("observing " + f.toString());
                     observations.put(f, System.currentTimeMillis());
                     try {
                         if (f.getName().endsWith(".json")) {
