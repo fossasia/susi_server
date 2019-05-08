@@ -8,7 +8,11 @@ cd $(dirname $0)/..
 # Execute preload script
 source bin/preload.sh
 
-while getopts ":Idn" opt; do
+#
+# default log to file, but take env var into account
+SS_LOG_TO_STDOUT=${SS_LOG_TO_STDOUT:-0}
+
+while getopts ":Idno" opt; do
     case $opt in
         I)
             SKIP_INSTALL_CHECK=1
@@ -18,6 +22,9 @@ while getopts ":Idn" opt; do
             ;;
         n)
             DO_NOT_DAEMONIZE=1
+            ;;
+        o)
+            SS_LOG_TO_STDOUT=1
             ;;
         \?)
             echo "Usage: $0 [options...]"
@@ -62,11 +69,18 @@ if [ ! -f $INSTALLATIONCONFIG ] && [[ $SKIP_INSTALL_CHECK -eq 0 ]]; then
 OPTIONAL
 fi
 
+
 # If DO_NOT_DAEMONIZE is declared, use the log4j config that outputs
 # to stdout/stderr
 if [[ $DO_NOT_DAEMONIZE -eq 1 ]]; then
+    SS_LOG_TO_STDOUT=1
+fi
+
+if [[ $SS_LOG_TO_STDOUT -eq 1 ]]; then
     LOGCONFIG="conf/logs/log4j2.properties"
 fi
+
+
 
 echo "starting SUSI"
 echo "Startup" > $STARTUPFILE
@@ -78,7 +92,11 @@ if [[ $DO_NOT_DAEMONIZE -eq 1 ]]; then
     exec $cmdline
 fi
 
-cmdline="$cmdline >> data/susi.log 2>&1 &"
+if [[ $SS_LOG_TO_STDOUT -eq 1 ]]; then
+    cmdline="$cmdline &"
+else
+    cmdline="$cmdline >> data/susi.log 2>&1 &"
+fi
 
 eval $cmdline
 PID=$!
