@@ -28,6 +28,8 @@ RUN ./gradlew assemble
 #sed -i.bak 's/^\(port.https=\).*/\18443/'              conf/config.properties && \
 
 # don't do any updates from loklak
-RUN sed -i.bak 's/^\(upgradeInterval=\).*/\186400000000/' conf/config.properties
+RUN \
+  sed -i.bak 's/^\(upgradeInterval=\).*/\186400000000/' conf/config.properties && \
+  sed -i.bak 's/^\(skill_repo\.enable=\).*/\1false/' conf/config.properties
 
 
