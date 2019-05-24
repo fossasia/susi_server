@@ -110,7 +110,7 @@ public abstract class AbstractAPIHandler extends HttpServlet implements APIHandl
             logClient(startTime, query, null, 503, message);
             response.sendError(503, message); return;
         } // DoS protection
-        if (DAO.getConfig("users.admin.localonly", true) && minimalUserRole == UserRole.ADMIN && !query.isLocalhostAccess()) {
+        if (DAO.getConfig("users.admin.localonly", true) && (minimalUserRole == UserRole.ADMIN || minimalUserRole == UserRole.SUPERADMIN) && !query.isLocalhostAccess()) {
             String message = "access only allowed from localhost, your request comes from " + query.getClientHost();
             logClient(startTime, query, null, 503, message);
             response.sendError(503, message); return;
