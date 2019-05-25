@@ -107,28 +107,29 @@ public class SusiService extends AbstractAPIHandler implements APIHandler {
 
         DAO.observe(); // get a database update
 
-        SusiThought recall = null;
-        if (dream == null || dream.length() == 0 || persona == null || persona.length() == 0) {
-            // compute a recall
-            SusiArgument observation_argument = new SusiArgument();
-            List<SusiCognition> cognitions = DAO.susi_memory.getCognitions(user.getIdentity().getClient(), true);
-            cognitions.forEach(cognition -> observation_argument.think(cognition.recallDispute()));
-            recall = observation_argument.mindmeld(false);
+        // compute a recall
+        SusiArgument observation_argument = new SusiArgument();
+        List<SusiCognition> cognitions = DAO.susi_memory.getCognitions(user.getIdentity().getClient(), true);
+        cognitions.forEach(cognition -> observation_argument.think(cognition.recallDispute()));
+        SusiThought recall = observation_argument.mindmeld(false);
 
-            // now that we have a recall, use it to set the dream/persona
-            if (dream == null || dream.length() == 0) {
-                dream = recall.getObservation("_etherpad_dream");
-            }
-            if (persona == null || persona.length() == 0) {
-                persona = recall.getObservation("_persona_awake");
-            }
-            // the focused skill is a single skill which can be activated and has special abilities,
-            // like it may have catchall-phrases, a greeting phrase and a good-by phrase
-            if (focus == null || focus.length() == 0) {
-                focus = recall.getObservation("_focused_on");
-                
-            }
+        // now that we have a recall, use it to set the dream/persona
+        if (dream == null || dream.length() == 0) {
+            dream = recall.getObservation("_etherpad_dream");
         }
+        if (persona == null || persona.length() == 0) {
+            persona = recall.getObservation("_persona_awake");
+        }
+
+        // the focused skill is a single skill which can be activated and has special abilities,
+        // like it may have catchall-phrases, a greeting phrase and a good-by phrase
+        if (focus == null || focus.length() == 0) {
+            focus = recall.getObservation("_focused_on");
+        }
+
+        // read language preferences; this may overwrite the given call information
+        String user_language = recall.getObservation("_user_language");
+        if (user_language != null && user_language.length() > 0) language = user_language;
 
         // we create a hierarchy of minds which overlap each other completely. The first element in the array is the 'most conscious' mind.
         List<SusiMind> minds = new ArrayList<>();

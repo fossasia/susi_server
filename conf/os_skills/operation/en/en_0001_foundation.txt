@@ -58,6 +58,13 @@ $_focused_on$ stopped.^^>_focused_on
 [example]
 I have no example
 
+# language switch
+switch to german|switch to german *|german please|deutsch|deutsch *|deutsche *
+deutsche Sprache aktiviert ^de^>_user_language
+
+switch to english|switch to english *|english please|englisch|englisch *|englische *
+english language activated ^en^>_user_language
+
 # WW: Instruct a host to enter Analysis Mode. In Analysis Mode the host is passive, compliant, and initiates no actions or conversation.
 # Susi just responds with the path to the skill it used in the previous answer.
 analysis|analyse|analyze|explain|* analysis|* analyse|* analyze|analysis *|analyse *|analyze *|describe
