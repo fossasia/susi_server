@@ -44,7 +44,7 @@ ask * to *|tell * to *
 
 # This is a Session Ended Request to tell Susi to terminate a runnable skill
 stop|stop *|terminate|terminate *|just relax|relax|exit|exit *|quit|quit *|disable *
-$_focused_on$ stopped.^^>_focused_on
+?$_focused_on$:$_focused_on$ stopped.^^>_focused_on
 
 # default utterances for skill launch, help, terminate and sample
 [launch]
