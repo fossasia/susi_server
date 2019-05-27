@@ -92,7 +92,9 @@ import java.io.*;
             }
         }
 
-        if (imageFile == null || !imageFile.exists()) {response.sendError(503, "image does not exist"); return;}
+        if (imageFile == null || !imageFile.exists()) {
+            imageFile = new File(DAO.html_dir  + File.separator + "images" + File.separator + "default.jpg");
+        }
 
         ByteArrayOutputStream data = new ByteArrayOutputStream();
         byte[] b = new byte[2048];

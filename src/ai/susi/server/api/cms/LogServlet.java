@@ -49,9 +49,8 @@ public class LogServlet extends HttpServlet {
 
         final StringBuilder buffer = new StringBuilder(1000);
 
-        List<String> lines = DAO.logAppender.getLines();
-        count = Math.min(count, lines.size());
-        for (int i = Math.max(0, lines.size() - count); i < lines.size(); i++) buffer.append(lines.get(i));
+        List<String> lines = DAO.logAppender.getLines(count);
+        for (int i = 0; i < lines.size(); i++) buffer.append(lines.get(i));
         
         FileHandler.setCaching(response, 10);
         post.setResponse(response, "text/plain");
