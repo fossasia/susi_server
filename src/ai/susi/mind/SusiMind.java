@@ -522,6 +522,7 @@ public class SusiMind {
 
         public Reaction(String query, SusiLanguage userLanguage, ClientIdentity identity, boolean debug, SusiThought observation, SusiMind... minds) throws ReactionException {
             List<SusiThought> thoughts = react(query, userLanguage, 1, identity, debug, observation, minds);
+            if (thoughts.size() == 0) throw new ReactionException("no thoughts generated"); // that should be semantically correct if the deduction fails
             this.mindstate = thoughts.get(0);
             List<SusiAction> actions = this.mindstate.getActions(false);
             if (actions.isEmpty()) throw new ReactionException("this mind has no idea what it should do.");
