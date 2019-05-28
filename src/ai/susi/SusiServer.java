@@ -234,7 +234,7 @@ public class SusiServer {
         DAO.log("Start time until server is up: " + (System.currentTimeMillis() - starttime) + " milliseconds");
 
         // if this is not headless, we can open a browser automatically
-        if (OS.isMacArchitecture || OS.isWin32 || OS.isWindows) OS.openBrowser("http://127.0.0.1:" + httpPort);
+        if (DAO.getConfig("local.openBrowser.enable", true)) OS.openBrowser("http://127.0.0.1:" + httpPort);
 
         DAO.log("Finished startup!");
 
