@@ -51,7 +51,7 @@ public class ChangeUserSettings extends AbstractAPIHandler implements APIHandler
 
     private static final long serialVersionUID = -7418883159709458190L;
 
-    private String[] possibleKeys = {"server","enterAsSend","micInput", "speechOutput", "speechOutputAlways", "speechRate", "ttsLanguage", "userName", "prefLanguage", "timeZone", "countryCode", "countryDialCode", "phoneNo", "checked", "serverUrl", "theme", "previewTheme"};
+    private String[] possibleKeys = {"server", "enterAsSend", "micInput", "speechOutput", "speechOutputAlways", "speechRate", "ttsLanguage", "userName", "prefLanguage", "timeZone", "countryCode", "countryDialCode", "phoneNo", "checked", "serverUrl", "theme", "backgroundImage", "messageBackgroundImage", "customThemeValue", "avatarType"};
 
     @GET
     @ApiOperation(httpMethod = "GET", value = "Resource to write user setting")
