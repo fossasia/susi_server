@@ -63,7 +63,7 @@ import java.io.*;
                     accountingObj.getJSONObject("settings").has("avatarType")) {
                     avatar_type = accountingObj.getJSONObject("settings").getString("avatarType");
                     userId = identity.getUuid();
-                    file = userId + ".jpg";
+                    file = userId + "_thumbnail.jpg";
                 } else {
                     avatar_type = "default";
                     file = "default.jpg";

@@ -12,6 +12,7 @@ import ai.susi.server.Query;
 import ai.susi.server.ServiceResponse;
 import ai.susi.server.UserRole;
 
+import ai.susi.server.api.cms.CreateSkillService;
 import ai.susi.server.api.cms.UploadImageService;
 import org.json.JSONObject;
 
@@ -85,15 +86,22 @@ public class UploadAvatarService extends AbstractAPIHandler implements APIHandle
                     // Reading content for image
                     Image image = ImageIO.read(imagePartContent);
                     BufferedImage bi = UploadImageService.toBufferedImage(image);
+                    BufferedImage bi_thumbnail = UploadImageService.toBufferedImage(CreateSkillService.createResizedCopy(image,40,40,true));
                     // Checks if images directory exists or not. If not then create one
                     if (!Files.exists(Paths.get(imagePath))) new File(imagePath).mkdirs();
 
                     String image_name = userId + ".jpg";
+                    String image_name_thumbnail = userId + "_thumbnail.jpg";
                     File p = new File(imagePath + File.separator + image_name);
-                    if (p.exists()) p.delete();
+                    File p_thumbnail = new File(imagePath + File.separator + image_name_thumbnail);
+                    if (p.exists()) {
+                      p.delete();
+                      p_thumbnail.delete();
+                    }
                     ImageIO.write(bi, "jpg", new File(imagePath + File.separator + image_name));
+                    ImageIO.write(bi_thumbnail, "jpg", new File(imagePath + File.separator + image_name_thumbnail));
                     result.put("accepted", true);
-                    result.put("image_path", image_name);
+                    result.put("image_path", image_name_thumbnail);
                 }
                 else{
                     result.put("accepted", false);
