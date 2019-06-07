@@ -88,6 +88,18 @@ resume | resume that | resume this  | continue | continue that | continue this |
 {"actions":[{"type":"resume"}]}
 eol
 
+# go to next item
+next|play next
+!console:
+{"actions":[{"type":"next"}]}
+eol
+
+# go to previous item
+previous|play previous|prev
+!console:
+{"actions":[{"type":"previous"}]}
+eol
+
 start over | restart | start again
 !console:
 {"actions":[{"type":"restart"}]}
