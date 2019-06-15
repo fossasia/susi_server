@@ -36,13 +36,15 @@ import java.io.*;
  This Servlet gives a API Endpoint to return avatar of a user based on the avatar
  type the user has in the settings. The access token of the user is required.
  http://localhost:4000/getAvatar.png?access_token=963e84467b92c0916b27d157b1d45328
+ Other parameter (not necessary):
+ getThumbnail --> boolean http://localhost:4000/getAvatar.png?access_token=963e84467b92c0916b27d157b1d45328&getThumbnail=true
  */
 
  public class GetAvatarServlet extends HttpServlet {
 
-	private static final long serialVersionUID = 7408901113114682419L;
+    private static final long serialVersionUID = 7408901113114682419L;
 
-	@Override
+    @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 
         Query post = RemoteAccess.evaluate(request);
@@ -63,7 +65,10 @@ import java.io.*;
                     accountingObj.getJSONObject("settings").has("avatarType")) {
                     avatar_type = accountingObj.getJSONObject("settings").getString("avatarType");
                     userId = identity.getUuid();
-                    file = userId + "_thumbnail.jpg";
+                    file = userId + ".jpg";
+                    if(post.get("getThumbnail", false) == true){
+                        file = userId + "_thumbnail.jpg";
+                    }
                 } else {
                     avatar_type = "default";
                     file = "default.jpg";
