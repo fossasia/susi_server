@@ -93,6 +93,11 @@ start over | restart | start again
 {"actions":[{"type":"restart"}]}
 eol
 
+shuffle | shuffle playlist | shuffle songs
+!console:
+{"actions":[{"type":"shuffle"}]}
+eol
+
 # test audio play
 system check
 !console:all systems are go, all lights are green!
