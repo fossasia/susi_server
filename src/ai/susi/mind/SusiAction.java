@@ -465,6 +465,7 @@ public class SusiAction {
             if (expression != null && expression.length() > 0) {
                 // the expression is answered to the communication partner
                 this.json.put("expression", expression);
+                this.json.put("language", language.name());
             }
         }
         if (this.getRenderType() == RenderType.websearch && this.json.has("query")) {
