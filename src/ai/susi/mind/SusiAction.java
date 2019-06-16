@@ -64,8 +64,8 @@ public class SusiAction {
         pause(255),    // pause something that woud otherwise beeing able to be stopped
         resume(255),   // resume what has been paused
         restart,       // start over of what is happening right now
-        //previous,    // step to one thing in the sequence before
-        //next,        // step in the next thing in the sequence
+        previous,      // step to one thing in the sequence before
+        next,          // step in the next thing in the sequence
         table,         // show a table
         piechart,      // show a pie chart
         rss,           // show a link list with description (aka search result listing)
@@ -85,7 +85,8 @@ public class SusiAction {
         image_show,    // show an image (recorded, asset on client or asset from web)
         emotion,       // show an emotion (either change tone of tts or change visible style)
         button_push,   // push a button (either on the client device or an IoT appliance connected to the client)
-        io             // set an IO status on connected IoT device
+        io,             // set an IO status on connected IoT device
+        shuffle         // shuffle the current playlist
         ;
     
         private final int score;
@@ -163,14 +164,15 @@ public class SusiAction {
                 case restart:
                     //restart has no attributes
                     break;
-                    /*
                 case previous:
                     //previous has no attributes
                     break;
                 case next:
                     //next has no attributes
                     break;
-                    */
+                case shuffle:
+                    //shuffle has no attributes
+                    break;
                 case table:
                     if (!json.has("columns")) throw new SusiActionException("the table action needs a columns object");
                     if (!json.has("count")) json.put("count", -1);
