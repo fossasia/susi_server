@@ -23,7 +23,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.Part;
 
-import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.image.BufferedImage;
 import java.io.File;
@@ -45,9 +44,9 @@ import java.nio.file.Paths;
         maxRequestSize=1024*1024*100)       // 100 MB
 public class UploadAvatarService extends AbstractAPIHandler implements APIHandler {
 
-	private static final long serialVersionUID = -3378038477776664836L;
+    private static final long serialVersionUID = -3378038477776664836L;
 
-	@Override
+    @Override
     public UserRole getMinimalUserRole() {
         return UserRole.USER;
     }
@@ -77,7 +76,6 @@ public class UploadAvatarService extends AbstractAPIHandler implements APIHandle
                 ClientCredential credential = new ClientCredential(ClientCredential.Type.access_token, req.getParameter("access_token"));
                 Authentication authentication = DAO.getAuthentication(credential);
                 ClientIdentity identity = authentication.getIdentity();
-                String userEmail = identity.getName();
                 String userId = identity.getUuid();
                     // check if access_token is valid
                 if (authentication.getIdentity() != null) {
@@ -101,7 +99,8 @@ public class UploadAvatarService extends AbstractAPIHandler implements APIHandle
                     ImageIO.write(bi, "jpg", new File(imagePath + File.separator + image_name));
                     ImageIO.write(bi_thumbnail, "jpg", new File(imagePath + File.separator + image_name_thumbnail));
                     result.put("accepted", true);
-                    result.put("image_path", image_name_thumbnail);
+                    result.put("image_path", image_name);
+                    result.put("image_thumbnail_path", image_name_thumbnail);
                 }
                 else{
                     result.put("accepted", false);
