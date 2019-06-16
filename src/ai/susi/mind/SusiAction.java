@@ -129,8 +129,10 @@ public class SusiAction {
     private JSONObject json;
 
     /**
-     * initialize an action using a json description.
-     * @param json
+     * Initialize an action using a json description.
+     * This method is only used for the definition of intents, not for the production of answers.
+     * The Exceptions are thrown for valiation purpose in case that the action declaration is not sound.
+     * @param json the action declaration
      */
     public SusiAction(JSONObject json) throws SusiActionException {
         this.json = json;
@@ -142,6 +144,10 @@ public class SusiAction {
             switch (renderType) {
                 case answer:
                     if (json.has("expression")) break;
+                    // This is a very special and (call it hacked) declaration:
+                    // - a declared answer has no expression by default!
+                    // - the select and phrases attributes are used to generate an expression on the fly during answering
+                    // So that means that an expression is usually not used for an action declaration.
                     if (!json.has("select")) this.json.put("select", "random"); // was: throw new SusiActionException("the answer action needs a select object");
                     if (!json.has("phrases")) throw new SusiActionException("the answer action needs a phrases object");
                     break;
@@ -266,6 +272,7 @@ public class SusiAction {
             .put("type", RenderType.answer.name())
             .put("select", SelectionType.random.name())
             .put("phrases", phrases);
+        assert language != SusiLanguage.unknown;
         if (language != SusiLanguage.unknown) json.put("language", language.name());
         return json;
     }

@@ -109,6 +109,7 @@ public class SusiCognition {
         }
 
         SusiLanguage language = SusiLanguage.parse(languageCode);
+        assert language != SusiLanguage.unknown; // we should always know a language
         if (language != SusiLanguage.unknown) observation.addObservation("language", language.name());
 
         this.json.put("client_id", Base64.getEncoder().encodeToString(client.getBytes(StandardCharsets.UTF_8)));
