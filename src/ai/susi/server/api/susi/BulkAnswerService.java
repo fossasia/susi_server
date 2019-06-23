@@ -56,10 +56,10 @@ Do you like SCRUM?
 Did you really just ask me that?
 
 What did you do yesterday?
-I can’t answer that particular question.
+I can't answer that particular question.
 
 What will you do today?
-That’s private.
+That's private.
 
 What is blocking progress?
 Let me get back to you on that.
