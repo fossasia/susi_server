@@ -54,7 +54,8 @@ import java.util.regex.Pattern;
  * http://localhost:4000/susi/console.json?q=SELECT%20*%20FROM%20rss%20WHERE%20url=%27https://www.reddit.com/search.rss?q=loklak%27;
  * http://localhost:4000/susi/console.json?q=SELECT%20plaintext%20FROM%20wolframalpha%20WHERE%20query=%27berlin%27;
  * http://localhost:4000/susi/console.json?q=SELECT%20extract%20FROM%20wikipedia%20WHERE%20query=%27tschunk%27%20AND%20language=%27de%27;
- * http://localhost:4000/susi/console.json?q=SELECT%20*%20FROM%20youtube%20WHERE%20query=%27tschunk%27%;
+ * http://localhost:4000/susi/console.json?q=SELECT%20plaintext%20FROM%20youtubesearch%20WHERE%20query=%27tschunk%27;
+ * http://localhost:4000/susi/console.json?q=SELECT%20plaintext%20FROM%20soundcloudsearch%20WHERE%20query=%27tschunk%27;
  */
 
 public class ConsoleService extends AbstractAPIHandler implements APIHandler {
@@ -174,23 +175,23 @@ public class ConsoleService extends AbstractAPIHandler implements APIHandler {
             return json;
         });
         dbAccess.put(Pattern.compile("SELECT +?(.*?) +?FROM +?bahn +?WHERE +?from ??= ??'(.*?)' +?to ??= ??'(.*?)' ??;?"), (flow, matcher) -> {
-        	String query = matcher.group(1);
-        	String from = matcher.group(2);
-        	String to = matcher.group(3);
-        	SusiThought json = new SusiThought();
-			try {
-				json = (new BahnService()).getConnections(from, to);
-				SusiTransfer transfer = new SusiTransfer(query);
+            String query = matcher.group(1);
+            String from = matcher.group(2);
+            String to = matcher.group(3);
+            SusiThought json = new SusiThought();
+            try {
+                json = (new BahnService()).getConnections(from, to);
+                SusiTransfer transfer = new SusiTransfer(query);
                 json.setData(transfer.conclude(json.getData()));
                 return json;
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (NoStationFoundException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			return json;
+            } catch (IOException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            } catch (NoStationFoundException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+            return json;
         });
         dbAccess.put(Pattern.compile("SELECT +?(.*?) +?FROM +?wikipedia +?WHERE +?query ??= ??'(.*?)' +?AND +?language ??= ??'(.*?)' ??;?"), (flow, matcher) -> {
             SusiThought json = new SusiThought();
@@ -224,28 +225,53 @@ public class ConsoleService extends AbstractAPIHandler implements APIHandler {
             try {
                 String query = matcher.group(2);
                 String serviceURL = "https://www.youtube.com/results?search_query=" + URLEncoder.encode(query, "UTF-8");
-                
                 String s = new String(HttpClient.load(serviceURL), "UTF-8");
-            	JSONArray a = new JSONArray();
-            	//System.out.println(s);
+                JSONArray a = new JSONArray();
+                //System.out.println(s);
                 Matcher m = videoPattern.matcher(s);
                 while (m.find()) {
-                	String fragment = m.group(0);
-        			Matcher keyMatcher = keyPattern.matcher(fragment);
-        			JSONObject j = null;
-        			if (keyMatcher.find()) {
-        				String key = keyMatcher.group(1);
-        				if (key.indexOf('&') < 0) {
-        					Matcher titleMatcher = titlePattern.matcher(fragment);
-        					if (titleMatcher.find()) {
-        						String title = titleMatcher.group(1);
-        						j = new JSONObject(true);
-        						j.put("title", title);
-        						j.put("youtube", key);
-        					}
-        				}
-        			}
-                	if (j != null) a.put(j);
+                    String fragment = m.group(0);
+                    Matcher keyMatcher = keyPattern.matcher(fragment);
+                    JSONObject j = null;
+                    if (keyMatcher.find()) {
+                        String key = keyMatcher.group(1);
+                        if (key.indexOf('&') < 0) {
+                            Matcher titleMatcher = titlePattern.matcher(fragment);
+                            if (titleMatcher.find()) {
+                                String title = titleMatcher.group(1);
+                                j = new JSONObject(true);
+                                j.put("title", title);
+                                j.put("youtube", key);
+                            }
+                        }
+                    }
+                    if (j != null) a.put(j);
+                }
+                json.setQuery(query);
+                json.setData(a);
+            } catch (Throwable e) {
+                e.printStackTrace();
+                // probably a time-out or a json error
+            }
+            return json;
+        });
+        dbAccess.put(Pattern.compile("SELECT +?(.*?) +?FROM +?soundcloudsearch +?WHERE +?query ??= ??'(.*?)' ??;?"), (flow, matcher) -> {
+            SusiThought json = new SusiThought();
+            Pattern videoPattern = Pattern.compile("<li><h2><a href=\"(.*?)\">(.*?)</a></h2></li>");
+            try {
+                String query = matcher.group(2);
+                String serviceURL = "https://soundcloud.com/search?q=" + URLEncoder.encode(query, "UTF-8");
+                String s = new String(HttpClient.load(serviceURL), "UTF-8");
+                JSONArray a = new JSONArray();
+                //System.out.println(s);
+                Matcher m = videoPattern.matcher(s);
+                while (m.find()) {
+                    String path = m.group(1);
+                    String title = m.group(2);
+                    JSONObject j = new JSONObject(true);
+                    j.put("title", title);
+                    j.put("soundcloud", path);
+                    a.put(j);
                 }
                 json.setQuery(query);
                 json.setData(a);
