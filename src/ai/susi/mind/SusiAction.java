@@ -224,7 +224,7 @@ public class SusiAction {
                     if (!json.has("identifier")) throw new SusiActionException("the audio_play action needs an identifier object");
                     if (!json.has("identifier_type")) throw new SusiActionException("the audio_play action needs an identifier_type object");
                     String audio_type = json.getString("identifier_type");
-                    if (!audio_type.equals("url") && !audio_type.equals("youtube")) throw new SusiActionException("the identifier_type object in unknown");
+                    if (!audio_type.equals("url") && !audio_type.equals("youtube") && !audio_type.equals("soundcloud")) throw new SusiActionException("the identifier_type object in unknown");
                     if (audio_type.equals("url")) {
                         String url = json.getString("identifier");
                         if (url.startsWith("file://") && url.length() > 8 && url.charAt(7) != '/') {
@@ -465,7 +465,7 @@ public class SusiAction {
             if (expression != null && expression.length() > 0) {
                 // the expression is answered to the communication partner
                 this.json.put("expression", expression);
-                this.json.put("language", language.name());
+                //this.json.put("language", language.name());
             }
         }
         if (this.getRenderType() == RenderType.websearch && this.json.has("query")) {
