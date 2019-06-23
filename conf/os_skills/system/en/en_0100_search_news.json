@@ -595,5 +595,24 @@
                 "identifier_type": "youtube",
                 "identifier": "$youtube$"
              }]
+        },
+        {
+            "keys"   :["play","search","soundcloud","music"],
+            "example": "play tschunk from soundcloud",
+            "phrases":[ {"type":"pattern", "expression":"search for music * on soundcloud"},
+                        {"type":"pattern", "expression":"search for video * on soundcloud"},
+                        {"type":"pattern", "expression":"search for * on soundcloud"},
+                        {"type":"pattern", "expression":"play music * from soundcloud"},
+                        {"type":"pattern", "expression":"play * music from soundcloud"},
+                        {"type":"pattern", "expression":"play * from soundcloud"}
+                      ],
+            "process":[ {"type": "console", "expression": "SELECT * FROM soundcloudsearch WHERE query='$1$';"}],
+            "actions":[
+               {"type": "answer", "select": "random", "phrases":["Playing $title$"]
+               },{
+                "type": "audio_play",
+                "identifier_type": "soundcloud",
+                "identifier": "$soundcloud$"
+             }]
         }
 ]}
