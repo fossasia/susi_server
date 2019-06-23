@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-JARFILE="build/libs/susi_server-all.jar"
+JARFILE="build/libs/susi_server.jar"
 INSTALLATIONCONFIG="data/settings/installation.txt"
 PIDFILE="data/susi.pid"
 DFAULTCONFIG="conf/config.properties"
