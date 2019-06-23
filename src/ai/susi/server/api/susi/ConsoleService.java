@@ -59,7 +59,7 @@ import java.util.regex.Pattern;
  */
 
 public class ConsoleService extends AbstractAPIHandler implements APIHandler {
-   
+
     private static final long serialVersionUID = 8578478303032749879L;
 
     @Override
@@ -73,9 +73,9 @@ public class ConsoleService extends AbstractAPIHandler implements APIHandler {
     public String getAPIPath() {
         return "/susi/console.json";
     }
-    
+
     public final static SusiProcedures dbAccess = new SusiProcedures();
-    
+
     public static void addGenericConsole(String serviceName, String serviceURL, String path) {
         dbAccess.put(Pattern.compile("SELECT +?(.*?) +?FROM +?" + serviceName + " +?WHERE +?query ??= ??'(.*?)' ??;?"), (flow, matcher) -> {
             SusiThought json = new SusiThought();
@@ -95,17 +95,17 @@ public class ConsoleService extends AbstractAPIHandler implements APIHandler {
             return json;
         });
     }
-    
+
     public static byte[] loadData(String serviceURL, String testquery) throws IOException {
         String encodedQuery = URLEncoder.encode(testquery, "UTF-8");
         int qp = serviceURL.indexOf("$query$");
         String url = qp < 0 ? serviceURL + encodedQuery : serviceURL.substring(0,  qp) + encodedQuery + serviceURL.substring(qp + 7);
         return loadData(url);
     }
-    
+
     public static byte[] loadData(String url) throws IOException {
         byte[] b = HttpClient.load(url);
-        
+
         // check if this is jsonp
         //System.out.println("DEBUG CONSOLE:" + new String(b, StandardCharsets.UTF_8));
         int i = b.length;
@@ -124,7 +124,7 @@ public class ConsoleService extends AbstractAPIHandler implements APIHandler {
         }
         return b;
     }
-    
+
     static {
         dbAccess.put(Pattern.compile("SELECT +?(.*?) +?FROM +?\\( ??SELECT +?(.*?) ??\\) +?WHERE +?(.*?) ?+IN ?+\\((.*?)\\) ??;?"), (flow, matcher) -> {
             String subquery = matcher.group(2).trim();
@@ -171,6 +171,7 @@ public class ConsoleService extends AbstractAPIHandler implements APIHandler {
                 json.setHits(json.getCount());
             } catch (Throwable e) {
                 // probably a time-out or a json error
+                DAO.severe(e);
             }
             return json;
         });
@@ -186,10 +187,10 @@ public class ConsoleService extends AbstractAPIHandler implements APIHandler {
                 return json;
             } catch (IOException e) {
                 // TODO Auto-generated catch block
-                e.printStackTrace();
+                DAO.severe(e);
             } catch (NoStationFoundException e) {
                 // TODO Auto-generated catch block
-                e.printStackTrace();
+                DAO.severe(e);
             }
             return json;
         });
@@ -212,7 +213,7 @@ public class ConsoleService extends AbstractAPIHandler implements APIHandler {
                 if (extract != null) json.setData(new JSONArray().put(new JSONObject().put("extract", extract)));
                 json.setHits(extract == null ? 0 : 1);
             } catch (Throwable e) {
-                e.printStackTrace();
+                DAO.severe(e);
                 // probably a time-out or a json error
             }
             return json;
@@ -250,7 +251,7 @@ public class ConsoleService extends AbstractAPIHandler implements APIHandler {
                 json.setQuery(query);
                 json.setData(a);
             } catch (Throwable e) {
-                e.printStackTrace();
+                DAO.severe(e);
                 // probably a time-out or a json error
             }
             return json;
@@ -262,6 +263,7 @@ public class ConsoleService extends AbstractAPIHandler implements APIHandler {
                 String query = matcher.group(2);
                 String serviceURL = "https://soundcloud.com/search?q=" + URLEncoder.encode(query, "UTF-8");
                 String s = new String(HttpClient.load(serviceURL), "UTF-8");
+                DAO.log("loaded " + s.length() + " bytes from soundcloud");
                 JSONArray a = new JSONArray();
                 //System.out.println(s);
                 Matcher m = videoPattern.matcher(s);
@@ -276,7 +278,7 @@ public class ConsoleService extends AbstractAPIHandler implements APIHandler {
                 json.setQuery(query);
                 json.setData(a);
             } catch (Throwable e) {
-                e.printStackTrace();
+                DAO.severe(e);
                 // probably a time-out or a json error
             }
             return json;
@@ -292,5 +294,5 @@ public class ConsoleService extends AbstractAPIHandler implements APIHandler {
         DAO.observe(); // get a database update
         return new ServiceResponse(dbAccess.inspire(q).toJSON());
     }
-    
+
 }
