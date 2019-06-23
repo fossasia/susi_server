@@ -95,7 +95,7 @@ public class SusiTutorialTest {
 
             ClientIdentity identity = new ClientIdentity("host:localhost");
             test("reset test.", "ok", identity);
-            test("roses are red", "susi is a hack", identity);
+            test("roses are red", "SUSI is a hack", identity);
             test("susi is a hack", "skynet is back", identity);
             assertTrue("Potatoes|Vegetables|Fish".indexOf(susiAnswer("What is your favorite dish", identity)) >= 0);
             test("Bonjour", "Hello", identity);
@@ -129,7 +129,7 @@ public class SusiTutorialTest {
                 System.out.println("** expected: " + e);
                 System.out.println("** returned: " + a);
             }
-            assertTrue(r);
+            assertTrue("fail for: " + q + ", expected: " + e + ", returned: " + a, r);
         } catch (JSONException x) {
             x.printStackTrace();
             assertTrue(false);
