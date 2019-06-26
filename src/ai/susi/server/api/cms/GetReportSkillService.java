@@ -89,24 +89,42 @@ public class GetReportSkillService extends AbstractAPIHandler implements APIHand
                                     if (languageName.has(skill_name)) {
                                         skillName = languageName.getJSONObject(skill_name);
                                         reports = skillName.getJSONArray("reports");
+                                        List<JSONObject> updatedReportList = new ArrayList<JSONObject>();
+                                        JSONObject skillObj = new JSONObject();
                                         for (int i = 0; i < reports.length(); i++) {
                                             JSONObject reportObject = new JSONObject();
-                                            reportObject = reports.getJSONObject(i);
-                                            reportObject.put("skill_name", skill_name);
-                                            reportList.add(reportObject);
+                                            reportObject.put("feedback", reports.getJSONObject(i).get("feedback"));
+                                            reportObject.put("email", reports.getJSONObject(i).get("email"));
+                                            updatedReportList.add(reportObject);
                                         }
+                                        skillObj.put("skill_name", skill_name);
+                                        skillObj.put("group", group_name);
+                                        skillObj.put("language", language_name);
+                                        skillObj.put("model", key);
+
+                                        skillObj.put("reports", updatedReportList);
+                                        reportList.add(skillObj);
                                     }
                                 } else {
                                     for (String skill_name : JSONObject.getNames(languageName)) {
                                         skillName = languageName.getJSONObject(skill_name);
                                         if (languageName.has(skill_name)) {
+                                            JSONObject skillObj = new JSONObject();
                                             reports = skillName.getJSONArray("reports");
+                                            List<JSONObject> updatedReportList = new ArrayList<JSONObject>();
                                             for (int i = 0; i < reports.length(); i++) {
                                                 JSONObject reportObject = new JSONObject();
-                                                reportObject = reports.getJSONObject(i);
-                                                reportObject.put("skill_name", skill_name);
-                                                reportList.add(reportObject);
+                                                reportObject.put("feedback", reports.getJSONObject(i).get("feedback"));
+                                                reportObject.put("email", reports.getJSONObject(i).get("email"));
+                                                updatedReportList.add(reportObject);
                                             }
+                                            skillObj.put("skill_name", skill_name);
+                                            skillObj.put("group", group_name);
+                                            skillObj.put("language", language_name);
+                                            skillObj.put("model", key);
+
+                                            skillObj.put("reports", updatedReportList);
+                                            reportList.add(skillObj);
                                         }
                                     }
                                 }
