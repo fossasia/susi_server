@@ -103,9 +103,6 @@ public class ApiKeysService extends AbstractAPIHandler implements APIHandler {
 	if(!deleteKey){
             try {
                JSONObject api = new JSONObject();
-               if(keys.get(keyName)!=null){
-                   keys.remove(keyName);
-               }
                api.put("value", keyValue);
                keys.put(keyName, api);
                apiKeys.put(type, keys, true);
