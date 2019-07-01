@@ -46,13 +46,6 @@ public class GetUsers extends AbstractAPIHandler implements APIHandler {
 
     @Override
     public ServiceResponse serviceImpl(Query call, HttpServletResponse response, Authorization rights, final JsonObjectWithDefault permissions) throws APIException {
-        if (call.get("getPageCount", false) == false
-                && call.get("getUserStats", false) == false
-                && call.get("search", null) == null
-                && call.get("page", null) == null
-                && call.get("getUserCount", null) == null) {
-            throw new APIException(400, "Bad Request. No parameter present");
-        }
         JSONObject result = new JSONObject(true);
         JSONObject userStats = new JSONObject(true);
         result.put("accepted", false);
@@ -74,7 +67,7 @@ public class GetUsers extends AbstractAPIHandler implements APIHandler {
             result.put("message", "Success: Fetched count of users");
             return new ServiceResponse(result);
         } else {
-            int page = call.get("page", 0);
+            int page = call.get("page", 1);
             int anonymous = 0;
             int user = 0;
             int reviewer = 0;
