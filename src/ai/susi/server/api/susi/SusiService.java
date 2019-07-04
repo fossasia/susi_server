@@ -145,7 +145,7 @@ public class SusiService extends AbstractAPIHandler implements APIHandler {
             SusiSkill activeskill = instantMind.getSkillMetadata().get(skillid);
             instantMind.setActiveSkill(activeskill);
             minds.add(instantMind);
-        } catch (JSONException | SusiActionException e) {
+        } catch (IOException | JSONException | SusiActionException e) {
             DAO.severe(e.getMessage(), e);
         }
 
