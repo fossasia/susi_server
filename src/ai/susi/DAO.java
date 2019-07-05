@@ -1202,7 +1202,7 @@ public class DAO {
                     if (sn != null && (sn.equals(skill_name) || sn.toLowerCase().equals(skill_name) || sn.toLowerCase().replace(' ', '_').equals(skill_name))) {
                         return new File(languagepath, n);
                     }
-                } catch (JSONException | FileNotFoundException | SusiActionException e) {
+                } catch (IOException | JSONException | SusiActionException e) {
                     continue;
                 }
             }
