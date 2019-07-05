@@ -25,11 +25,9 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.nio.file.FileSystems;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.regex.Pattern;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -39,6 +37,7 @@ import org.json.JSONTokener;
 import ai.susi.DAO;
 import ai.susi.mind.SusiAction.SusiActionException;
 import ai.susi.mind.SusiInference.Type;
+import ai.susi.mind.SusiSkillFile.IntentBlock;
 
 /**
  * A susi skill is a set of intents.
@@ -187,29 +186,29 @@ public class SusiSkill {
      * @throws SusiActionException 
      * @throws IOException 
      */
-
     public SusiSkill(
             final BufferedReader br,
             final SusiSkill.ID skillid,
             boolean acceptWildcardIntent) throws JSONException, SusiActionException, IOException {
-    	this(intentBlockReader(br), skillid, acceptWildcardIntent);
+        this(new SusiSkillFile(br), skillid, acceptWildcardIntent);
     }
-    
+
     public SusiSkill(
-    		Collection<IntentBlock> intents,
+            SusiSkillFile skillFile,
             final SusiSkill.ID skillid,
             boolean acceptWildcardIntent) throws JSONException, SusiActionException {
         this();
+
         this.id = skillid;
         // read the text file and turn it into a intent json; then learn that
         boolean prior = false, dynamicContent = false, protectedSkill = false;
         //int indentStep = 4; // like in python
-        intentloop: for (IntentBlock block: intents) {
-        	if (block.model == null) {
-    			String line = block.utterance;
-    			int thenpos;
-        		if (line.startsWith("::")) {
-        			if (line.startsWith("::minor")) prior = false;
+        intentloop: for (IntentBlock block: skillFile) {
+            if (block.model == null) {
+                String line = block.utterance;
+                int thenpos;
+                if (line.startsWith("::")) {
+                    if (line.startsWith("::minor")) prior = false;
                     if (line.startsWith("::prior")) prior = true;
                     if (line.startsWith("::on") && (thenpos = line.indexOf(' ')) > 0) {
                         String meta = line.substring(thenpos + 1).trim();
@@ -257,18 +256,18 @@ public class SusiSkill {
                     if (line.startsWith("::kickoff") && (thenpos = line.indexOf(' ')) > 0) {
                         this.kickoff = line.substring(thenpos + 1).trim();
                     }
-        		}
+                }
                 continue intentloop;
-        	}
-        	
-        	String bang_utterances = "", bang_type = "", bang_answers = "", example = "", expect = "", label = "", implication = "";
+            }
+
+            String bang_type = "", bang_answers = "", example = "", expect = "", label = "", implication = "";
             StringBuilder bang_bag = new StringBuilder();
-        	readloop: for (int i = 0; i < block.model.size(); i++) {
-        		String line = block.model.get(i);
-        		
-        		// parse bang types and answer lines
-        		int thenpos;
-        		if (line.startsWith("!" /*bang!*/) && (thenpos = line.indexOf(':')) > 0) {
+            readloop: for (int i = 0; i < block.model.size(); i++) {
+                String line = block.model.get(i);
+
+                // parse bang types and answer lines
+                int thenpos;
+                if (line.startsWith("!" /*bang!*/) && (thenpos = line.indexOf(':')) > 0) {
                     String head = line.substring(1, thenpos).trim().toLowerCase();
                     String tail = line.substring(thenpos + 1).trim();
                     // test bang type
@@ -287,95 +286,94 @@ public class SusiSkill {
                         bang_bag.setLength(0);
                     }
                     continue readloop;
-        		}
-        	
-	            // collect bang expressions
-	            if (bang_type.length() > 0) {
-	                // collect a bang
-	                if (!line.toLowerCase().equals("eol")) {
-	                    bang_bag.append(line).append('\n');
-	                    continue readloop;
-	                }
-	
-	                // the line is "eol"; stop collection
-	                if (bang_type.equals("javascript")) {
-	                    // create a javascript intent
-	                    List<SusiUtterance> utterances = phrasesFromWildcard(skillid.getPath(), acceptWildcardIntent, bang_utterances, prior);
-	                    if (utterances == null) continue readloop;
-	
-	                    // javascript process
-	                    SusiInference inference = new SusiInference(bang_bag.toString(), Type.javascript);
-	                    List<SusiInference> inferences = new ArrayList<>(1);
-	                    inferences.add(inference);
-	
-	                    // answers; must contain $!$
-	                    SusiAction action = new SusiAction(SusiAction.answerAction(this.id.language(), bang_answers.split("\\|")));
-	                    List<SusiAction> actions = new ArrayList<>(1);
-	                    actions.add(action);
-	
-	                    SusiIntent intent = new SusiIntent(utterances, inferences, actions, prior, 0, example, expect, label, implication, skillid);
-	
-	                    extendParentWithAnswer(this.intents, intent);
-	                    this.intents.add(intent);
-	                } else if (bang_type.equals("console")) {
-	                    // create a console intent
-	                    List<SusiUtterance> utterances = phrasesFromWildcard(skillid.getPath(), acceptWildcardIntent, bang_utterances, prior);
-	                    if (utterances == null) continue readloop;
-	
-	                    // console process
-	                    JSONObject definition;
-	                    SusiInference inference;
-	                    try {
-	                        definition = new JSONObject(new JSONTokener(bang_bag.toString()));
-	                        inference = new SusiInference(definition, Type.console);
-	                    } catch (JSONException e) {
-	                        throw new JSONException(e.getMessage() + " \"" + bang_bag.toString() + "\"");
-	                    }
-	                    List<SusiInference> inferences = new ArrayList<>(1);
-	                    inferences.add(inference);
-	
-	                    // actions; we may have several actions here
-	                    List<SusiAction> actions = new ArrayList<>();
-	
-	                    // verify actions
-	                    if (definition.has("actions")) {
-	                        JSONArray bo_actions = definition.getJSONArray("actions");
-	                        bo_actions.forEach(action -> {
-	                            try {
-	                                actions.add(new SusiAction((JSONObject) action));
-	                            } catch (SusiActionException e) {
-	                                DAO.severe(e.getMessage());
-	                            }
-	                        });
-	                    }
-	
-	                    // validate additional data object: it must be an array
-	                    if (definition.has("data")) {
-	                        Object o = definition.get("data");
-	                        if (!(o instanceof JSONArray)) definition.remove("data");
-	                    }
-	
-	                    // answers; must contain names from the console result array
-	                    if (bang_answers.length() > 0) try {
-	                        actions.add(new SusiAction(SusiAction.answerAction(this.id.language(), bang_answers.split("\\|"))));
-	                    } catch (SusiActionException e) {
-	                        DAO.severe(e.getMessage());
-	                    }
-	
-	                    SusiIntent intent = new SusiIntent(utterances, inferences, actions, prior, 0, example, expect, label, implication, skillid);
-	
-	                    extendParentWithAnswer(this.intents, intent);
-	                    this.intents.add(intent);
-	                }
-	                // if there is a different bang type, just ignore it.
-	                bang_utterances = "";
-	                bang_type = "";
-	                bang_answers = "";
-	                bang_bag.setLength(0);
-	                continue readloop;
-	            }
+                }
 
-	            // read content
+                // collect bang expressions
+                if (bang_type.length() > 0) {
+                    // collect a bang
+                    if (!line.toLowerCase().equals("eol")) {
+                        bang_bag.append(line).append('\n');
+                        continue readloop;
+                    }
+
+                    // the line is "eol"; stop collection
+                    if (bang_type.equals("javascript")) {
+                        // create a javascript intent
+                        List<SusiUtterance> utterances = phrasesFromWildcard(skillid.getPath(), acceptWildcardIntent, block.utterance, prior);
+                        if (utterances == null) continue readloop;
+
+                        // javascript process
+                        SusiInference inference = new SusiInference(bang_bag.toString(), Type.javascript);
+                        List<SusiInference> inferences = new ArrayList<>(1);
+                        inferences.add(inference);
+
+                        // answers; must contain $!$
+                        SusiAction action = new SusiAction(SusiAction.answerAction(this.id.language(), bang_answers.split("\\|")));
+                        List<SusiAction> actions = new ArrayList<>(1);
+                        actions.add(action);
+
+                        SusiIntent intent = new SusiIntent(utterances, inferences, actions, prior, 0, example, expect, label, implication, skillid);
+
+                        extendParentWithAnswer(this.intents, intent);
+                        this.intents.add(intent);
+                    } else if (bang_type.equals("console")) {
+                        // create a console intent
+                        List<SusiUtterance> utterances = phrasesFromWildcard(skillid.getPath(), acceptWildcardIntent, block.utterance, prior);
+                        if (utterances == null) continue readloop;
+
+                        // console process
+                        JSONObject definition;
+                        SusiInference inference;
+                        try {
+                            definition = new JSONObject(new JSONTokener(bang_bag.toString()));
+                            inference = new SusiInference(definition, Type.console);
+                        } catch (JSONException e) {
+                            throw new JSONException(e.getMessage() + " \"" + bang_bag.toString() + "\"");
+                        }
+                        List<SusiInference> inferences = new ArrayList<>(1);
+                        inferences.add(inference);
+
+                        // actions; we may have several actions here
+                        List<SusiAction> actions = new ArrayList<>();
+
+                        // verify actions
+                        if (definition.has("actions")) {
+                            JSONArray bo_actions = definition.getJSONArray("actions");
+                            bo_actions.forEach(action -> {
+                                try {
+                                    actions.add(new SusiAction((JSONObject) action));
+                                } catch (SusiActionException e) {
+                                    DAO.severe(e.getMessage());
+                                }
+                            });
+                        }
+
+                        // validate additional data object: it must be an array
+                        if (definition.has("data")) {
+                            Object o = definition.get("data");
+                            if (!(o instanceof JSONArray)) definition.remove("data");
+                        }
+
+                        // answers; must contain names from the console result array
+                        if (bang_answers.length() > 0) try {
+                            actions.add(new SusiAction(SusiAction.answerAction(this.id.language(), bang_answers.split("\\|"))));
+                        } catch (SusiActionException e) {
+                            DAO.severe(e.getMessage());
+                        }
+
+                        SusiIntent intent = new SusiIntent(utterances, inferences, actions, prior, 0, example, expect, label, implication, skillid);
+
+                        extendParentWithAnswer(this.intents, intent);
+                        this.intents.add(intent);
+                    }
+                    // if there is a different bang type, just ignore it.
+                    bang_type = "";
+                    bang_answers = "";
+                    bang_bag.setLength(0);
+                    continue readloop;
+                }
+
+                // read content
                 // mid of conversation (last answer is query for next intent)
                 String[] phrases = (i > 0 ? block.model.get(i - 1) : block.utterance).split("\\|");
                 String condition = null;
@@ -417,111 +415,8 @@ public class SusiSkill {
                     }
                     example = ""; expect = ""; label = ""; implication = "";
                 }
-	        }
-        }
-    }
-
-    public static Collection<IntentBlock> intentBlockReader(final BufferedReader br) throws IOException {
-        List<List<String>> blocks = textBlockReader(br);
-        List<IntentBlock> intents = new ArrayList<>();
-        blocks.forEach(block -> intents.add(new IntentBlock(block)));
-        return intents;
-    }
-
-    public static class IntentBlock {
-        public final String utterance;
-        public final List<String> model;
-        public IntentBlock(final List<String> lines) {
-            List<String> a = new ArrayList<>();
-            
-            // first merge lines with line-glue "\\" into one line
-            for (int i = 0; i < lines.size(); i++) {
-                String line = lines.get(i);
-                assert line.length() > 0;
-                if (line.charAt(0) == '\\') {
-                    if (a.size() == 0) {
-                        a.add(line.substring(1));
-                    } else {
-                        a.set(a.size() - 1, a.get(a.size() - 1) + ' ' + line.substring(1));
-                    }
-                } else {
-                    if (a.size() == 0) {
-                        a.add(line);
-                    } else {
-                        String lasta = a.get(a.size() - 1);
-                        if (lasta.charAt(lasta.length() - 1) == '\\') {
-                            a.set(a.size() - 1, lasta.substring(0, lasta.length() - 1) + ' ' + line);
-                        } else {
-                            a.add(line);
-                        }
-                    }
-                }
-            };
-
-            // separate head from utterance and model
-            this.model = a.size() < 2 ? null : new ArrayList<>();
-            String impl = null;
-            for (int i = 0; i < a.size(); i++) {
-                String line = a.get(i);
-                if (impl == null) {
-                    impl = line;
-                } else {
-                    model.add(line);
-                }
-            };
-            this.utterance = impl;
-        }
-        public String toString() {
-        	return utterance + " -> " + model;
-        }
-    }
-    
-    public final static Pattern tabPattern = Pattern.compile("\t");
-    
-    public static List<List<String>> textBlockReader(final BufferedReader br) throws IOException {
-        String line = "";
-        List<String> line_bag = new ArrayList<>();
-        List<List<String>> blocks = new ArrayList<>();
-        while ((line = br.readLine()) != null) {
-            line = tabPattern.matcher(righttrim(line)).replaceAll("    ");
-
-            // empty lines close a block
-            if (line.length() == 0) {
-                if (line_bag.size() > 0) {
-                    blocks.add(line_bag);
-                    line_bag = new ArrayList<>();
-                }
-                continue;
             }
-            // lines containing "::" at the beginning are always single lines
-            if (line.startsWith("::")) {
-            	if (line_bag.size() > 0) {
-                    blocks.add(line_bag);
-                    line_bag = new ArrayList<>();
-                }
-            	line_bag.add(line);
-            	blocks.add(line_bag);
-                line_bag = new ArrayList<>();
-                continue;
-            }
-            
-            // comment lines are invisible, as they are not there
-            if (line.charAt(0) == '#') continue;
-
-            // all other lines are added to a block
-            line_bag.add(line);
         }
-        // there might be a unsaved block at the end
-        if (line_bag.size() > 0) {
-            blocks.add(line_bag);
-        }
-        return blocks;
-    }
-    
-    public static String righttrim(String s) {
-        int len = s.length();
-        while (0 < len && s.charAt(len - 1) <= ' ') len--;
-        return len < s.length() ? s.substring(0, len) : s;
     }
 
     /**
