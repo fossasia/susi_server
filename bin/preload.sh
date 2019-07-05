@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 
 JARFILE="build/libs/susi_server.jar"
+FATJARFILE="build/libs/susi_server-all.jar"
 INSTALLATIONCONFIG="data/settings/installation.txt"
 PIDFILE="data/susi.pid"
 DFAULTCONFIG="conf/config.properties"
@@ -34,10 +35,14 @@ fi
 
 if [ -f $JARFILE ]; then
     CLASSPATH="$JARFILE"
+elif [ -f $FATJARFILE ]; then
+    CLASSPATH="$FATJARFILE"
 else
     echo "It seems you haven't compiled SUSI"
     echo "To build SUSI,"
     echo "$ ./gradlew build"
+    echo "To build a fat jar (all dependencies included),"
+    echo "$ ./gradlew assemble"
     exit 1
 fi
 

@@ -22,7 +22,7 @@ while getopts ":pb" opt; do
 done
 
 # variables used from preload.sh
-# JARFILE="build/libs/susi_server-all.jar"
+# FATJARFILE="build/libs/susi_server-all.jar"
 
 # make release file name
 GITHASH=`git log -n 1 --pretty=format:"%h"`
@@ -48,7 +48,7 @@ mkdir $RELEASE_PATH/$RELEASE_FILE/systemd
 cp -R conf $RELEASE_PATH/$RELEASE_FILE/
 cp -R html $RELEASE_PATH/$RELEASE_FILE/
 cp bin/*.sh $RELEASE_PATH/$RELEASE_FILE/bin/
-cp $JARFILE $RELEASE_PATH/$RELEASE_FILE/$JARFILE
+cp $FATJARFILE $RELEASE_PATH/$RELEASE_FILE/$FATJARFILE
 cp systemd/* $RELEASE_PATH/$RELEASE_FILE/systemd/
 
 # make a complete copy
