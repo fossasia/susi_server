@@ -31,16 +31,14 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 
 /**
- * Created by @hkedia321 on 8/6/18.
- * This Service uploads an image on the server
- * Can be tested on :-
- * http://127.0.0.1:4000/cms/uploadImage.json
- * 3 parameters in post request: access_token, image_name, image
+ * Created by @hkedia321 on 8/6/18. This Service uploads an image on the server
+ * Can be tested on :- http://127.0.0.1:4000/cms/uploadImage.json 3 parameters
+ * in post request, Necessary parameters: access_token, image, image_name
  */
 
-@MultipartConfig(fileSizeThreshold=1024*1024*10,    // 10 MB
-        maxFileSize=1024*1024*50,       // 50 MB
-        maxRequestSize=1024*1024*100)       // 100 MB
+@MultipartConfig(fileSizeThreshold = 1024 * 1024 * 10, // 10 MB
+        maxFileSize = 1024 * 1024 * 50, // 50 MB
+        maxRequestSize = 1024 * 1024 * 100) // 100 MB
 public class UploadImageService extends AbstractAPIHandler implements APIHandler {
 
     private static final long serialVersionUID = 2461878195432910492L;
@@ -59,6 +57,7 @@ public class UploadImageService extends AbstractAPIHandler implements APIHandler
     public String getAPIPath() {
         return "/cms/uploadImage.json";
     }
+
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 
@@ -74,36 +73,37 @@ public class UploadImageService extends AbstractAPIHandler implements APIHandler
 
                 String image_name = req.getParameter("image_name");
 
-                ClientCredential credential = new ClientCredential(ClientCredential.Type.access_token, req.getParameter("access_token"));
+                ClientCredential credential = new ClientCredential(ClientCredential.Type.access_token,
+                        req.getParameter("access_token"));
                 Authentication authentication = DAO.getAuthentication(credential);
                 ClientIdentity identity = authentication.getIdentity();
-                String userEmail = identity.getName();
                 String userId = identity.getUuid();
-                    // check if access_token is valid
+                // check if access_token is valid
                 if (authentication.getIdentity() != null) {
 
-                    String imagePath = DAO.data_dir  + File.separator + "image_uploads" + File.separator + userId;
+                    String imagePath = DAO.data_dir + File.separator + "image_uploads" + File.separator + userId;
                     if (image_name == null) {
-                    // Checking for
+                        // Checking for
                         json.put("accepted", false);
                         json.put("message", "The Image name is not given");
 
                     } else {
 
-                    // Reading content for image
+                        // Reading content for image
                         Image image = ImageIO.read(imagePartContent);
                         BufferedImage bi = this.toBufferedImage(image);
-                    // Checks if images directory exists or not. If not then create one
-                        if (!Files.exists(Paths.get(imagePath))) new File(imagePath).mkdirs();
+                        // Checks if images directory exists or not. If not then create one
+                        if (!Files.exists(Paths.get(imagePath)))
+                            new File(imagePath).mkdirs();
                         String new_image_name = System.currentTimeMillis() + "_" + image_name;
                         File p = new File(imagePath + File.separator + new_image_name);
-                        if (p.exists()) p.delete();
+                        if (p.exists())
+                            p.delete();
                         ImageIO.write(bi, "jpg", new File(imagePath + File.separator + new_image_name));
                         json.put("accepted", true);
-                        json.put("image_path", userId + "/" +new_image_name);
+                        json.put("image_path", userId + "/" + new_image_name);
                     }
-                }
-                else{
+                } else {
                     json.put("accepted", false);
                     json.put("message", "Access token is invalid");
                 }
@@ -111,42 +111,41 @@ public class UploadImageService extends AbstractAPIHandler implements APIHandler
             resp.setContentType("application/json");
             resp.setCharacterEncoding("UTF-8");
             resp.getWriter().write(json.toString());
-        }
-        else{
-            json.put("message","Access token are not given");
-            json.put("accepted",false);
+        } else {
+            json.put("message", "Access token are not given");
+            json.put("accepted", false);
             resp.setContentType("application/json");
             resp.setCharacterEncoding("UTF-8");
             resp.getWriter().write(json.toString());
         }
     }
+
     /**
      * Converts a given Image into a BufferedImage
      *
      * @param img The Image to be converted
      * @return The converted BufferedImage
      */
-    public static BufferedImage toBufferedImage(Image img)
-    {
-        if (img instanceof BufferedImage)
-        {
+    public static BufferedImage toBufferedImage(Image img) {
+        if (img instanceof BufferedImage) {
             return (BufferedImage) img;
         }
 
-    // Create a buffered image with transparency
+        // Create a buffered image with transparency
         BufferedImage bimage = new BufferedImage(img.getWidth(null), img.getHeight(null), BufferedImage.TYPE_INT_ARGB);
 
-    // Draw the image on to the buffered image
+        // Draw the image on to the buffered image
         Graphics2D bGr = bimage.createGraphics();
         bGr.drawImage(img, 0, 0, null);
         bGr.dispose();
 
-    // Return the buffered image
+        // Return the buffered image
         return bimage;
     }
 
     @Override
-    public ServiceResponse serviceImpl(Query call, HttpServletResponse response, Authorization rights, final JsonObjectWithDefault permissions) {
+    public ServiceResponse serviceImpl(Query call, HttpServletResponse response, Authorization rights,
+            final JsonObjectWithDefault permissions) {
 
         return new ServiceResponse("");
     }
