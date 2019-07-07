@@ -92,6 +92,12 @@ import java.io.*;
             }
         }
 
+        else if(!post.get("sliderImage", "").equals("")) {
+            //For slider image
+            String image_path = post.get("sliderImage", "");
+            imageFile = new File(DAO.data_dir + File.separator + "slider_uploads" + File.separator + image_path);
+        }
+
         if (imageFile == null || !imageFile.exists()) {
             imageFile = new File(DAO.html_dir  + File.separator + "images" + File.separator + "default.jpg");
         }
