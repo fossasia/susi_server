@@ -1,6 +1,10 @@
+apply plugin: 'application'
 apply plugin: 'java'
 apply plugin: 'eclipse'
 apply plugin: 'jacoco'
+
+mainClassName = 'ai.susi.SusiServer'
+
 apply plugin: 'com.github.johnrengelman.shadow'
 def swaggerVersion = '1.5.8'
 def versionJersey = '2.22.2'
@@ -46,6 +50,8 @@ jar {
 shadowJar {
   mergeServiceFiles()
 }
+
+  
 
 assemble.dependsOn shadowJar
 //compileJava run only after the clone task is executed
