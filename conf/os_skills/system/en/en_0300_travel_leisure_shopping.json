@@ -1,0 +1,57 @@
+{"rules":[
+		{
+			"keys"   :["eventbrite", "event"],
+			"score"  :1,
+			"example":"Susi, where is the event billets-europeade-2016-concert-de-musique-vocale-25592599153 being held ?",
+			"phrases":[ {"type":"pattern", "expression":"* event * held *"}
+			],
+			"process":[ {"type":"console", "expression":"SELECT location_name,latitude,longitude FROM eventbrite WHERE url='https://www.eventbrite.com/e/$2$';"}],
+			"actions":[ {"type":"answer", "select":"random", "phrases":[
+				"Here is the exact location of the event $2$"
+			]}, {"type":"table", "columns":["location_name", "latitude", "longitude"]}]
+		},
+		{
+			"keys"   :["eventbrite", "event"],
+			"score"  :1,
+			"example":"Susi, where can I buy tickets for the event billets-europeade-2016-concert-de-musique-vocale-25592599153 ?",
+			"phrases":[ {"type":"pattern", "expression":"* tickets * event *"}
+			],
+			"process":[ {"type":"console", "expression":"SELECT ticket_url FROM eventbrite WHERE url='https://www.eventbrite.com/e/$3$';"}],
+			"actions":[ {"type":"answer", "select":"random", "phrases":[
+				"Go, buy your tickets as soon as possible !"
+			]}, {"type":"table"}]
+		},
+		{
+			"keys"   :["eventbrite", "event"],
+			"score"  :1,
+			"example":"Susi, who is organizing the event billets-europeade-2016-concert-de-musique-vocale-25592599153 ?",
+			"phrases":[ {"type":"pattern", "expression":"* who * organizing * event *"}
+			],
+			"process":[ {"type":"console", "expression":"SELECT organizer_name, organizer_description, organizer_contact_info, organizer_link, organizer_website FROM eventbrite WHERE url='https://www.eventbrite.com/e/$4$';"}],
+			"actions":[ {"type":"answer", "select":"random", "phrases":[
+				"Here is the name of the organizer details.."
+			]}, {"type":"table"}]
+		},
+		{
+			"keys"   :["eventbrite", "event"],
+			"score"  :1,
+			"example":"Susi, Tell me more about the event billets-europeade-2016-concert-de-musique-vocale-25592599153 ?",
+			"phrases":[ {"type":"pattern", "expression":"* about * event *"}
+			],
+			"process":[ {"type":"console", "expression":"SELECT description, location_name, organizer_name, start_time, end_time FROM eventbrite WHERE url='https://www.eventbrite.com/e/$3$';"}],
+			"actions":[ {"type":"answer", "select":"random", "phrases":[
+				"Here it is, details about the event."
+			]}, {"type":"table"}]
+		},
+		{
+			"keys"   :["eventbrite", "event"],
+			"score"  :1,
+			"example":"Susi, Where can I get updates of the event billets-europeade-2016-concert-de-musique-vocale-25592599153 ?",
+			"phrases":[ {"type":"pattern", "expression":"* updates * event *"}
+			],
+			"process":[ {"type":"console", "expression":"SELECT social_links FROM eventbrite WHERE url='https://www.eventbrite.com/e/$3$';"}],
+			"actions":[ {"type":"answer", "select":"random", "phrases":[
+				"Go social, get updates here ..."
+			]}, {"type":"table"}]
+		}
+]}

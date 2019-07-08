@@ -1,0 +1,171 @@
+{"rules":[
+  {
+    "keys"   :["what","describe","search","where"],
+    "phrases":[
+      {"type":"regex", "expression":"where is (?:(?:a )*)(.*)"},
+      {"type":"regex", "expression":"find (?:(?:a )*)(.*)"}
+    ],
+    "process":[ {"type":"console", "expression":"SELECT location[0] AS lon, location[1] AS lat FROM locations WHERE query='$1$';"}],
+    "actions":[
+      {"type":"anchor", "link":"https://www.openstreetmap.org/#map=13/$lat$/$lon$", "text":"Here is a map"},
+      {"type":"map", "latitude":"$lat$", "longitude":"$lon$", "zoom":"13"}
+    ]
+  }, {
+    "keys"   :["where"],
+    "phrases":[
+      {"type":"pattern", "expression":"where am i"}
+    ],
+    "actions":[
+      {"type":"answer", "select":"random",
+       "phrases":["You are here"]
+      },
+      {"type":"anchor", "link":"https://www.openstreetmap.org/#map=13/$latitude$/$longitude$", "text":"Link to an Openstreetmap for your location"},
+      {"type":"map", "latitude":"$latitude$", "longitude":"$longitude$", "zoom":"13"}
+    ]
+  }, {
+    "score"  :2,
+    "phrases":[
+      {"type":"regex", "expression":"what is (?:(?:a )*)(.*)"},
+      {"type":"regex", "expression":"whats (?:(?:a )*)(.*)"},
+      {"type":"regex", "expression":"what's (?:(?:a )*)(.*)"},
+      {"type":"regex", "expression":"describe (?:(?:a )*)(.*)"},
+      {"type":"regex", "expression":"please describe (?:(?:a )*)(.*)"},
+      {"type":"regex", "expression":"explain (?:(?:a )*)(.*)"},
+      {"type":"regex", "expression":"please explain (?:(?:a )*)(.*)"},
+      {"type":"pattern", "expression":"what does * mean"},
+      {"type":"regex", "expression":"how is (?:(?:a )*)(.*)"}
+    ],
+    "process":[ {"type":"console", "expression":"SELECT description FROM wikidata-en WHERE query='$1$';"},
+                {"type":"memory", "expression":"NOT $description$ = Wikipedia disambiguation page"} ],
+    "actions":[ {"type":"answer", "select":"random", "phrases":[
+      "$1$ is a $description$."
+    ]}]
+  }, {
+    "score"  :1,
+    "phrases":[
+      {"type":"regex", "expression":"what is (?:(?:a )*)(.*)"},
+      {"type":"regex", "expression":"whats (?:(?:a )*)(.*)"},
+      {"type":"regex", "expression":"what's (?:(?:a )*)(.*)"},
+      {"type":"regex", "expression":"describe (?:(?:a )*)(.*)"},
+      {"type":"regex", "expression":"please describe (?:(?:a )*)(.*)"},
+      {"type":"regex", "expression":"explain (?:(?:a )*)(.*)"},
+      {"type":"regex", "expression":"please explain (?:(?:a )*)(.*)"},
+      {"type":"pattern", "expression":"what does * mean"},
+      {"type":"regex", "expression":"how is (?:(?:a )*)(.*)"}
+    ],
+    "process":[ {"type":"console", "expression":"SELECT plaintext FROM wolframalpha WHERE query='$1$';"} ],
+    "actions":[ {"type":"answer", "select":"random", "phrases":[
+      "$plaintext$."
+    ]}]
+  }, {
+    "score"  :2,
+    "phrases":[
+      {"type":"regex", "expression":"how (?:(?:a )*)(.*)"},
+      {"type":"regex", "expression":"why (?:(?:a )*)(.*)"},
+      {"type":"regex", "expression":"explain (?:(?:a )*)(.*)"}
+    ],
+    "process":[ {"type":"console", "expression":"SELECT plaintext FROM wolframalpha WHERE query='$0$';"} ],
+    "actions":[ {"type":"answer", "select":"random", "phrases":[
+      "$plaintext$."
+    ]}]
+  }, {
+    "score"  :0,
+    "phrases":[
+      {"type":"regex", "expression":"search urbandictionary for (?:(?:a )*)(.*)"},
+      {"type":"regex", "expression":"ask urbandictionary for (?:(?:a )*)(.*)"}
+    ],
+    "process":[ {"type":"console", "expression":"SELECT definition,example FROM urbandictionary WHERE query='$1$';"}],
+    "actions":[ {"type":"answer", "select":"random", "phrases":[
+      "$1$ is a $definition$"
+    ]}]
+  }, {
+    "score"  :0,
+    "phrases":[
+      {"type":"regex", "expression":"how is (?:(?:a )*)(.*)"}
+    ],
+    "process":[ {"type":"console", "expression":"SELECT description FROM wikidata-en WHERE query='$1$';"},
+                {"type":"memory", "expression":"NOT $description$ = Wikipedia disambiguation page PATTERN"} ],
+    "actions":[  {"type":"answer", "select":"random", "phrases":[
+      "$1$ is a $description$."
+    ]}]
+  }, {
+   "phrases":[ {"type":"regex", "expression":".+ (?:.+ )+(.+)"} ],
+   "process":[ {"type":"console", "expression":"SELECT text,retweet_count,favourites_count FROM messages WHERE query='you $1$ /pure' ORDER BY FAVOURITES_COUNT;"}],
+   "actions":[ {"type":"answer", "select":"random", "phrases":[
+    "$text$"
+   ]}]
+ },{
+    "phrases":[
+      {"type":"regex", "expression":"compute (\\(?\\d[\\s\\(\\)\\d\\+\\-\\/\\*\\.]*\\d\\)?)"},
+      {"type":"regex", "expression":"what is (\\(?\\d[\\s\\(\\)\\d\\+\\-\\/\\*\\.]*\\d\\)?)"},
+      {"type":"regex", "expression":"calculate (\\(?\\d[\\s\\(\\)\\d\\+\\-\\/\\*\\.]*\\d\\)?)"},
+      {"type":"regex", "expression":"(\\(?\\d[\\s\\(\\)\\d\\+\\-\\/\\*\\.]*\\d\\)?)"}
+    ],
+    "process":[ {"type":"javascript", "expression":"$1$"} ],
+    "actions":[ {"type":"answer", "select":"random", "phrases":[
+      "$1$ = $!$"
+    ]}]
+  },{
+    "keys"   :["times"],
+    "phrases":[
+      {"type":"pattern", "expression":"compute * times *"},
+      {"type":"pattern", "expression":"what is * times *"},
+      {"type":"pattern", "expression":"calculate * times *"},
+      {"type":"pattern", "expression":"* times *"}
+    ],
+    "actions":[ {"type":"self", "select":"random", "phrases":[
+      "compute $1$ * $2$"
+    ]}]
+  },{
+    "keys"   :["divided"],
+    "phrases":[
+      {"type":"pattern", "expression":"compute * divided by *"},
+      {"type":"pattern", "expression":"what is * divided by *"},
+      {"type":"pattern", "expression":"calculate * divided by *"},
+      {"type":"pattern", "expression":"* divided by *"}
+    ],
+    "actions":[ {"type":"self", "select":"random", "phrases":[
+      "compute $1$ / $2$"
+    ]}]
+  },{
+    "keys"   :["plus"],
+    "phrases":[
+      {"type":"pattern", "expression":"compute * plus *"},
+      {"type":"pattern", "expression":"what is * plus *"},
+      {"type":"pattern", "expression":"calculate * plus *"},
+      {"type":"pattern", "expression":"* plus *"}
+    ],
+    "actions":[ {"type":"self", "select":"random", "phrases":[
+      "compute $1$ + $2$"
+    ]}]
+  },{
+    "keys"   :["minus"],
+    "phrases":[
+      {"type":"pattern", "expression":"compute * minus *"},
+      {"type":"pattern", "expression":"what is * minus *"},
+      {"type":"pattern", "expression":"calculate * minus *"},
+      {"type":"pattern", "expression":"* minus *"}
+    ],
+    "actions":[ {"type":"self", "select":"random", "phrases":[
+      "compute $1$ - $2$"
+    ]}]
+  },{
+    "phrases":[
+      {"type":"pattern", "expression":"what's the time"},
+      {"type":"pattern", "expression":"what is the time"},
+      {"type":"pattern", "expression":"the time"},
+      {"type":"pattern", "expression":"what time is it"},
+      {"type":"pattern", "expression":"what time"},
+      {"type":"pattern", "expression":"time"},
+      {"type":"pattern", "expression":"daytime"},
+      {"type":"pattern", "expression":"have you got the time"},
+      {"type":"pattern", "expression":"have you got the time please"},
+      {"type":"pattern", "expression":"do you have the time"},
+      {"type":"pattern", "expression":"do you have the time please"}
+    ],
+    "process":[ {"type":"javascript", "expression":"new Date().getMinutes() + ' minutes past ' + new Date().getHours()"} ],
+    "actions":[ {"type":"answer", "select":"random", "phrases":[
+      "it is $!$"
+    ]}]
+  }
+]}

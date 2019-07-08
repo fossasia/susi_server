@@ -1,0 +1,4 @@
+    <script src="/js/jquery.min.js" async></script>
+    <script src="/js/bootstrap.min.js" async></script>
+    <script src="/js/ie10-viewport-bug-workaround.js" async></script>
+    <link href="/css/susi.css" rel="stylesheet">

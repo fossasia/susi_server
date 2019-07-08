@@ -1,0 +1,7 @@
+You just signed up for SUSI AI!
+
+To finish the process, you have to verify you email address by clicking on the following link:
+
+%VERIFICATION-LINK%
+
+If you didn't sign up for SUSI AI, please ignore this email.

@@ -1,0 +1,223 @@
+
+
+@import url(https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400);
+html,
+body {
+  background: #000;
+  margin: 0 0;
+  padding: 0 0;
+  font-family: 'Source Sans Pro', sans-serif;
+  cursor: default;
+}
+
+.container {
+  margin: 110px auto;
+  width: 700px;
+  text-align: center;
+  border-style: solid;
+  border-width: thin;
+  border-color: #ADFF2F;
+}
+
+h2 {
+  background: #ADFF2F;
+  padding: 20px 20px;
+  color: #000;
+  text-align: center;
+  margin: 0 0;
+}
+
+input[type="text"] {
+  border: none;
+  outline: none;
+  background: transparent;
+  color: #FFF;
+  font-size: 20px;
+  width: 350px;
+}
+
+::-webkit-input-placeholder {
+  color: #FFF;
+  font-family: 'Source Sans Pro', sans-serif;
+  font-size: 20px;
+}
+
+.list {
+  background: #000;
+  width: 700px;
+  height: 700px;
+  border-radius: 5px;
+  overflow-y: scroll;
+  overflow-x: hidden;
+}
+
+ul {
+  margin: 0 -40px;
+}
+
+li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  list-style: none;
+  text-align: left;
+  padding: 30px;
+  width: 650px;
+  transition: all .3s ease;
+  color: #FFF;
+  font-size: 16px;
+}
+
+li:hover {
+  background: #283629;
+}
+
+.check {
+  border: 1px solid #FFF;
+  border-radius: 5px;
+  width: 15px;
+  height: 15px;
+  margin: 0 20px;
+  float: right;
+  transition: all .3s ease;
+  cursor: default;
+  padding: 3px;
+}
+
+.remove {
+  background-repeat: no-repeat;
+  background-size: cover;
+  border-radius: 5px;
+  width: 15px;
+  height: 15px;
+  float: right;
+  margin: 0 0;
+  background-position: center;
+  background-size: 10px;
+  transition: all .3s ease;
+  cursor: default;
+  padding: 4px;
+}
+
+.remove:hover {
+  background: #B43C52;
+  padding: 4px;
+  cursor: default;
+}
+
+.selected {
+  background: url(../../assets/images/check.png) #B43C52;
+  background-repeat: no-repeat;
+  background-size: cover;
+  width: 15px;
+  height: 15px;
+  background-position: center;
+  background-size: 10px;
+  transition: all .3s ease;
+  border: 1px solid #B43C52;
+  cursor: default;
+}
+
+.c-dropdown {
+  position: relative;
+  display: inline-block;
+  text-align: left;
+  float: right;
+  margin-top: -6px;
+  text-align: center;
+}
+
+.c-dropdown__list {
+  margin: 5px 0 0 0;
+  padding: 6px 0;
+  list-style: none;
+  position: absolute;
+  top: 125%;
+  left: 0;
+  width: 100%;
+  opacity: 0;
+  visibility: hidden;
+  border-radius: 3px;
+  background: #fff;
+  z-index: 20;
+  -webkit-transition: opacity .25s linear, top .25s linear;
+  transition: opacity .25s linear, top .25s linear;
+}
+
+.c-dropdown.is-open .c-dropdown__list {
+  opacity: 1;
+  visibility: visible;
+  top: 100%;
+}
+
+.c-dropdown__item {
+  padding: 6px 12px;
+  font-size: 14px;
+  line-height: 20px;
+  cursor: pointer;
+  color: #434A54;
+  white-space: nowrap;
+  overflow: hidden;
+  width: 82% !important;
+  text-overflow: ellipsis;
+  -webkit-transition: background-color .25s linear;
+  transition: background-color .25s linear;
+}
+
+.c-dropdown__item:hover {
+  background-color: #E6E9ED;
+}
+
+.c-button {
+  -webkit-appearance: none;
+  margin: 0;
+  width: 13vw;
+  border: 0;
+  overflow: visible;
+  font: inherit;
+  text-transform: none;
+  display: inline-block;
+  vertical-align: middle;
+  text-decoration: none;
+  text-align: center;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+}
+
+.c-button:hover,
+.c-button:focus {
+  outline: none;
+  text-decoration: none;
+}
+
+.c-button:not(:disabled) {
+  cursor: pointer;
+}
+
+.c-button--dropdown {
+  padding: 6px 34px 6px 12px;
+  background-color: #4CAF50;
+  color: #E6E9ED;
+  font-size: 14px;
+  line-height: 20px;
+  border-radius: 3px;
+  -webkit-transition: background-color .2s linear;
+  transition: background-color .2s linear;
+}
+
+.c-button--dropdown:hover {
+  /*background-color: #B43C52;*/
+}
+
+.c-button--dropdown:after {
+  content: "";
+  position: absolute;
+  top: 14px;
+  right: 11px;
+  width: 0;
+  height: 0;
+  border: 5px solid transparent;
+  border-top-color: #E6E9ED;
+}
+

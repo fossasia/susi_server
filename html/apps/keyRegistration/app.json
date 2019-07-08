@@ -1,0 +1,18 @@
+{
+  "@context":"http://schema.org",
+  "@type":"SoftwareApplication",
+  "permissions":"/api/pubkey_registration.json",
+  "name":"keyRegistration",
+  "headline":"Register a public key",
+  "alternativeHeadline":"Key Registration",
+  "applicationCategory":"Accounts API",
+  "applicationSubCategory":"account operations",
+  "operatingSystem":"http://loklak.org",
+  "author":{
+    "@type":"Person",
+    "name":"Robert Mader",
+    "url":"",
+    "email":"treba@silentundo.org",
+    "sameAs":"https://github.com/treba123"
+  }
+}

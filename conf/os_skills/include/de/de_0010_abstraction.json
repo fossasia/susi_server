@@ -1,0 +1,14 @@
+{
+	"superfluous": [
+		"sag mir", "kannst du", "kannst du mir sagen", "sag mal", "sagmal", "weissu", "weisst du", "weißt du"
+	],
+	"begin": {
+		"frage":["nach", "über"], "beginne":["mit"], "tue":[], "starte":["mit"], "lade":["mit"],
+		"öffne":["mit"], "spiele":["mit"], "setze":["fort mit"],
+		"rede mit":["über"], "erzähle":["über"], "benutze":["mit"],
+		"der":["für"], "über":["mit"],
+		"was ist der":["für"], "was ist die":["für"], "was ist das":["für"],
+		"gib mir das":["für"], "gib mir die":["für"], "gib mir den":["für"],
+		"sage mir das":["für"], "sage mir die":["für"], "sage mir den":["für"]
+	}
+}

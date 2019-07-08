@@ -1,0 +1,622 @@
+{"rules":[
+        {
+            "keys"   :["president","election","america"],
+            "comment":"a statistical app which tries to predict the american presidential election",
+            "phrases":[    {"type":"prior", "expression":"Who will win the 2016 presidential election"},
+                {"type":"regex", "expression":"Who will (?:be|become) the next us president"}
+            ],
+            "process":[    {"type":"console", "expression":"SELECT PERCENT(count) AS percent, hashtag AS president FROM (SELECT COUNT(*) AS count, hashtags AS hashtag FROM messages WHERE query='election2016' GROUP BY hashtags) WHERE hashtag IN ('hillaryclinton','berniesanders','donaldtrump');"}],
+            "actions":[    {"type":"answer", "select":"random", "phrases":[
+                "I believe the next president will be $president$ with a likelihood of $percent$ percent but I a not sure.",
+                "I can calculate a likelihood, here is my guess:"
+            ]},
+            {"type":"piechart", "total":100, "key": "country", "value":"percent", "unit":"%"}]
+        },
+        {
+            "phrases":[    {"type":"pattern", "expression":"Who tweeted most about * in the last hour"}
+            ],
+            "process":[    {"type":"console", "expression":"SELECT COUNT(*) AS count, screen_name FROM messages-group-by-screen_name WHERE query='$1$ since:hour';"}],
+            "actions":[    {"type":"answer", "select":"random", "phrases":[
+                "In the last hour @$screen_name$ tweeted most about $1$, $count$ times"
+            ]}]
+        },
+        {
+            "example": "who tweeted most about obama in the last day",
+            "phrases":[    {"type":"pattern", "expression":"Who tweeted most about * in the last day"}
+            ],
+            "process":[    {"type":"console", "expression":"SELECT COUNT(*) AS count, screen_name FROM messages-group-by-screen_name WHERE query='$1$ since:day';"}],
+            "actions":[    {"type":"answer", "select":"random", "phrases":[
+                "In the last 24 hours @$screen_name$ tweeted most about $1$, $count$ times"
+            ]}]
+        },
+        {
+            "phrases":[    {"type":"pattern", "expression":"Who tweeted most about * in the last week"}
+            ],
+            "process":[    {"type":"console", "expression":"SELECT COUNT(*) AS count, screen_name FROM messages-group-by-screen_name WHERE query='$1$ since:week';"}],
+            "actions":[    {"type":"answer", "select":"random", "phrases":[
+                "In the last week @$screen_name$ tweeted most about $1$, $count$ times"
+            ]}]
+        },
+        {
+            "phrases":[    {"type":"pattern", "expression":"* tweeted most about *"},
+                        {"type":"pattern", "expression":"* top tweeter about *"}
+            ],
+            "process":[    {"type":"console", "expression":"SELECT COUNT(*) AS count, screen_name FROM messages-group-by-screen_name WHERE query='$2$';"}],
+            "actions":[    {"type":"answer", "select":"random", "phrases":[
+                "@$screen_name$ tweeted most about $2$, $count$ times"
+            ]}]
+        },
+        {
+            "phrases":[    {"type":"pattern", "expression":"How many times was * tweeted in the last 24 hours"} ],
+            "process":[    {"type":"console", "expression":"SELECT COUNT(*) AS count FROM messages WHERE query='$1$ since:day';"}],
+            "actions":[    {"type":"answer", "select":"random", "phrases":[
+                "Here you go, $1$ was $count$ times tweeted!"
+            ]}]
+        },
+        {
+            "example":"How many mentions are on reddit about loklak",
+            "phrases":[    {"type":"pattern", "expression":"How many mentions are on reddit about *"} ],
+            "process":[    {"type":"console", "expression":"SELECT COUNT(*) AS count FROM rss WHERE url='https://www.reddit.com/search.rss?q=$1$';"}],
+            "actions":[    {"type":"answer", "select":"random", "phrases":[
+                "Here you go, $1$ was $count$ times mentioned on reddit!"
+            ]}]
+        },
+        {
+            "keys"   :["reddit"],
+            "example":"What are the reddit articles about loklak",
+            "phrases":[ {"type":"pattern", "expression":"* reddit * about *"}],
+            "process":[ {"type":"console", "expression":"SELECT title FROM rss WHERE url='https://www.reddit.com/search.rss?q=$3$';"}],
+            "actions":[ {"type":"answer", "select":"random", "phrases":[
+                "Here is the list of articles about $3$"
+            ]}, {"type":"table", "columns":["title"]}]
+        },{
+            "keys"   :["reddit"],
+            "example":"What is the primary reddit article about loklak",
+            "phrases":[ {"type":"pattern", "expression":"* primary reddit * about *"}],
+            "process":[ {"type":"console", "expression":"SELECT title FROM rss WHERE url='https://www.reddit.com/search.rss?q=$3$';"},
+                {"type":"flow", "expression":"first"}
+            ],
+            "actions":[ {"type":"answer", "select":"random", "phrases":[
+                "The primary reddit article about $3$ is $title$"
+            ]}]
+        },
+        {
+            "keys"   :["rss"],
+            "example":"Read the RSS feed from https://news.ycombinator.com/rss",
+            "phrases":[ {"type":"pattern", "expression":"* read * RSS * from *"}
+            ],
+            "process":[ {"type":"console", "expression":"SELECT title FROM rss WHERE url='$4$';"}],
+            "actions":[ {"type":"answer", "select":"random", "phrases":[
+                "Here is the list of articles from $4$"
+            ]}, {"type":"table", "columns":["title"]}]
+        },
+
+        {
+            "keys"   :["tweet frequency", "tweets", "month"],
+            "example": "How many tweets did melaniatrump post in May 2016",
+            "phrases":[ {"type":"pattern", "expression":"* tweet frequency of * in *"},
+                {"type":"pattern", "expression":"* tweets did * post in *"},
+                {"type":"pattern", "expression":"* tweets did * post in the month of *"}
+            ],
+            "process":[ {"type": "console", "expression": "SELECT yearwise[$3$] AS count FROM twitanalysis WHERE screen_name='$2$' AND count='1000';"}],
+            "actions":[ {"type": "answer", "select": "random", "phrases":[
+                "$2$ tweeted $count$ times in $3$"
+            ]}]
+        },
+        {
+            "keys"   :["tweet frequency", "tweets", "post", "at"],
+            "score"  :2000,
+            "example": "How many tweets did melaniatrump post at 6 PM",
+            "phrases":[ {"type":"pattern", "expression":"* tweet frequency of * at *"},
+                {"type":"pattern", "expression":"* tweets did * post at *"}
+            ],
+            "process":[ {"type": "console", "expression": "SELECT hourwise[$3$] AS count FROM twitanalysis WHERE screen_name='$2$' AND count='1000';"}],
+            "actions":[ {"type": "answer", "select": "random", "phrases":[
+                "$2$ tweeted $count$ times at $3$"
+            ]}]
+        },
+        {
+            "keys"   :["tweet frequency", "tweets", "post", "on"],
+            "score"  :2000,
+            "example": "How many tweets did melaniatrump post on Saturdays",
+            "phrases":[ {"type":"pattern", "expression":"* tweet frequency of * on *s"},
+                {"type":"pattern", "expression":"* tweets did * post on *s"},
+                {"type":"pattern", "expression":"* tweet frequency of * on *"},
+                {"type":"pattern", "expression":"* tweets did * post on *"}
+            ],
+            "process":[ {"type": "console", "expression": "SELECT daywise[$3$] AS count FROM twitanalysis WHERE screen_name='$2$' AND count='1000';"}],
+            "actions":[ {"type": "answer", "select": "random", "phrases":[
+                "$2$ tweeted $count$ times on $3$"
+            ]}]
+        },
+        {
+            "keys"   :["tweet frequency", "chart"],
+            "score"  :2000,
+            "example": "Show me the yearwise tweet frequency chart of melaniatrump",
+            "phrases":[ {"type":"pattern", "expression":"* the * tweet frequency chart of *"}],
+            "process":[ {"type": "console", "expression": "SELECT $2$ FROM twitanalysis WHERE screen_name='$3$' AND count='1000';"}],
+            "actions":[ {"type": "answer", "select": "random", "phrases":[
+                "This is the $2$ frequency chart of $3$"
+            ]}, {"type":"table"}]
+        },
+        {
+            "keys"   :["tweet type", "post", "a"],
+            "score"  :2000,
+            "example": "How many times did melaniatrump post a video",
+            "phrases":[ {"type":"pattern", "expression":"* did * post a *"}],
+            "process":[ {"type": "console", "expression": "SELECT $3$ AS count FROM twitanalysis WHERE screen_name='$2$' AND count='1000';"}],
+            "actions":[ {"type": "answer", "select": "random", "phrases":[
+                "$2$ posted a $3$ $count$ times"
+            ]}]
+        },
+        {
+            "keys"   :["tweet activity", "likes", "count"],
+            "example": "How many likes does melaniatrump have in all",
+            "score"  :2000,
+            "phrases":[ {"type":"pattern", "expression":"* likes does * have *"}
+            ],
+            "process":[ {"type": "console", "expression": "SELECT likes_count AS count FROM twitanalysis WHERE screen_name='$2$' AND count='1000';"}],
+            "actions":[ {"type": "answer", "select": "random", "phrases":[
+                "$2$ has $count$ likes till now"
+            ]}]
+        },
+        {
+            "keys"   :["tweet activity", "likes", "maximum"],
+            "example": "What is the maximum number of likes that melaniatrump got",
+            "score"  :2000,
+            "phrases":[ {"type":"pattern", "expression":"* maximum * likes that * got"}
+            ],
+            "process":[ {"type": "console", "expression": "SELECT max_likes FROM twitanalysis WHERE screen_name='$3$' AND count='1000';"}],
+            "actions":[ {"type": "answer", "select": "random", "phrases":[
+                "Here you go"
+            ]}, {"type": "table"}]
+        },
+        {
+            "keys"   :["tweet activity", "likes", "average"],
+            "example": "What is the average number of likes that melaniatrump gets",
+            "score"  :2000,
+            "phrases":[ {"type":"pattern", "expression":"* average * likes that * gets"}
+            ],
+            "process":[ {"type": "console", "expression": "SELECT average_number_of_likes AS count FROM twitanalysis WHERE screen_name='$3$' AND count='1000';"}],
+            "actions":[ {"type": "answer", "select": "random", "phrases":[
+                "$3$ gets $count$ likes on an average"
+            ]}]
+        },
+        {
+            "keys"   :["tweet activity", "likes", "frequency"],
+            "score"  :2000,
+            "example": "How many times did melaniatrump get 0 likes",
+            "phrases":[ {"type":"pattern", "expression":"* * have * likes"},
+                {"type":"pattern", "expression":"* * get * likes"}
+            ],
+            "process":[ {"type": "console", "expression": "SELECT likes_chart[$3$] AS count FROM twitanalysis WHERE screen_name='$2$' AND count='1000';"}],
+            "actions":[ {"type": "answer", "select": "random", "phrases":[
+                "$2$ got $3$ likes, $count$ times"
+            ]}]
+        },
+        {
+            "keys"   :["tweet activity", "likes", "frequency", "chart"],
+            "score"  :2000,
+            "example": "Show me the likes frequency chart of melaniatrump",
+            "phrases":[ {"type":"pattern", "expression":"* likes frequency chart * *"}
+            ],
+            "process":[ {"type": "console", "expression": "SELECT likes_chart FROM twitanalysis WHERE screen_name='$3$' AND count='1000';"}],
+            "actions":[ {"type": "answer", "select": "random", "phrases":[
+                "Here is the likes frequency chart"
+            ]}, {"type": "table"}]
+        },
+        {
+            "keys"   :["tweet activity", "retweets", "count"],
+            "score"  :2000,
+            "example": "How many retweets does melaniatrump have in all",
+            "phrases":[ {"type":"pattern", "expression":"* retweets does * have *"}
+            ],
+            "process":[ {"type": "console", "expression": "SELECT retweets_count AS count FROM twitanalysis WHERE screen_name='$2$' AND count='1000';"}],
+            "actions":[ {"type": "answer", "select": "random", "phrases":[
+                "$2$ has $count$ retweets till now"
+            ]}]
+        },
+        {
+            "keys"   :["tweet activity", "retweets", "maximum"],
+            "score"  :2000,
+            "example": "What is the maximum number of retweets that melaniatrump got",
+            "phrases":[ {"type":"pattern", "expression":"* maximum * retweets that * got"}
+            ],
+            "process":[ {"type": "console", "expression": "SELECT max_retweets FROM twitanalysis WHERE screen_name='$3$' AND count='1000';"}],
+            "actions":[ {"type": "answer", "select": "random", "phrases":[
+                "Here you go"
+            ]}, {"type": "table"}]
+        },
+        {
+            "keys"   :["tweet activity", "retweets", "average"],
+            "score"  :2000,
+            "example": "What is the average number of retweets that melaniatrump gets",
+            "phrases":[ {"type":"pattern", "expression":"* average * retweets that * gets"}
+            ],
+            "process":[ {"type": "console", "expression": "SELECT average_number_of_retweets AS count FROM twitanalysis WHERE screen_name='$3$' AND count='1000';"}],
+            "actions":[ {"type": "answer", "select": "random", "phrases":[
+                "$3$ gets $count$ retweets on an average"
+            ]}]
+        },
+        {
+            "keys"   :["tweet activity", "retweets", "frequency"],
+            "score"  :2000,
+            "example": "How many times did melaniatrump get 0 retweets",
+            "phrases":[ {"type":"pattern", "expression":"* * have * retweets"},
+                {"type":"pattern", "expression":"* * get * retweets"}
+            ],
+            "process":[ {"type": "console", "expression": "SELECT retweets_chart[$3$] AS count FROM twitanalysis WHERE screen_name='$2$' AND count='1000';"}],
+            "actions":[ {"type": "answer", "select": "random", "phrases":[
+                "$2$ got $3$ retweets, $count$ times"
+            ]}]
+        },
+        {
+            "keys"   :["tweet activity", "retweets", "frequency", "chart"],
+            "score"  :2000,
+            "example": "Show me the retweet frequency chart of melaniatrump",
+            "phrases":[ {"type":"pattern", "expression":"* retweet frequency chart * *"}
+            ],
+            "process":[ {"type": "console", "expression": "SELECT retweets_chart FROM twitanalysis WHERE screen_name='$3$' AND count='1000';"}],
+            "actions":[ {"type": "answer", "select": "random", "phrases":[
+                "Here is the retweets frequency chart"
+            ]}, {"type": "table"}]
+        },
+        {
+            "keys"   :["tweet activity", "hashtags", "count"],
+            "score"  :2000,
+            "example": "How many hashtags has melaniatrump used in all",
+            "phrases":[ {"type":"pattern", "expression":"* hashtags has * used *"}
+            ],
+            "process":[ {"type": "console", "expression": "SELECT hashtags_used_count AS count FROM twitanalysis WHERE screen_name='$2$' AND count='1000';"}],
+            "actions":[ {"type": "answer", "select": "random", "phrases":[
+                "$2$ has used $count$ hashtags till now"
+            ]}]
+        },
+        {
+            "keys"   :["tweet activity", "hashtags", "maximum"],
+            "score"  :2000,
+            "example": "What is the maximum number of hastags that melaniatrump used",
+            "phrases":[ {"type":"pattern", "expression":"* maximum * hashtags that * used"}
+            ],
+            "process":[ {"type": "console", "expression": "SELECT max_hashtags FROM twitanalysis WHERE screen_name='$3$' AND count='1000';"}],
+            "actions":[ {"type": "answer", "select": "random", "phrases":[
+                "Here you go"
+            ]}, {"type": "table"}]
+        },
+        {
+            "keys"   :["tweet activity", "hashtags", "average"],
+            "score"  :2000,
+            "example": "What is the average number of hashtags that melaniatrump uses",
+            "phrases":[ {"type":"pattern", "expression":"* average * hashtags that * uses"}
+            ],
+            "process":[ {"type": "console", "expression": "SELECT average_number_of_hashtags_used AS count FROM twitanalysis WHERE screen_name='$3$' AND count='1000';"}],
+            "actions":[ {"type": "answer", "select": "random", "phrases":[
+                "$3$ uses $count$ hashtags on an average"
+            ]}]
+        },
+        {
+            "keys"   :["tweet activity", "hashtags", "frequency"],
+            "score"  :2000,
+            "example": "How many times did melaniatrump use 20 hashtags",
+            "phrases":[ {"type":"pattern", "expression":"* * use * hashtags"}
+            ],
+            "process":[ {"type": "console", "expression": "SELECT hashtags_chart[$3$] AS count FROM twitanalysis WHERE screen_name='$2$' AND count='1000';"}],
+            "actions":[ {"type": "answer", "select": "random", "phrases":[
+                "$2$ used $3$ hashtags, $count$ times"
+            ]}]
+        },
+        {
+            "keys"   :["tweet activity", "hashtags", "frequency", "chart"],
+            "score"  :2000,
+            "example": "Show me the hashtag frequency chart of melaniatrump",
+            "phrases":[ {"type":"pattern", "expression":"* hashtag frequency chart * *"}
+            ],
+            "process":[ {"type": "console", "expression": "SELECT hashtags_chart FROM twitanalysis WHERE screen_name='$3$' AND count='1000';"}],
+            "actions":[ {"type": "answer", "select": "random", "phrases":[
+                "Here is the hashtags frequency chart"
+            ]}, {"type": "table"}]
+        },
+        {
+            "keys"   :["tweet content", "language", "frequency"],
+            "score"  :2000,
+            "example": "How many tweets did melaniatrump write in English?",
+            "phrases":[ {"type":"pattern", "expression":"* * write in *"},
+                {"type":"pattern", "expression":"* * post in *"},
+                {"type":"pattern", "expression":"* of * were written in *"}
+            ],
+            "process":[ {"type": "console", "expression": "SELECT languages[$3$] AS count FROM twitanalysis WHERE screen_name='$2$' AND count='1000';"}],
+            "actions":[ {"type": "answer", "select": "random", "phrases":[
+                "$2$ posted $count$ tweets in $3$"
+            ]}]
+        },
+        {
+            "keys"   :["tweet content", "language", "analysis", "chart"],
+            "score"  :2000,
+            "example": "Show me the language analysis chart of melaniatrump",
+            "phrases":[ {"type":"pattern", "expression":"* language analysis chart * *"}
+            ],
+            "process":[ {"type": "console", "expression": "SELECT languages FROM twitanalysis WHERE screen_name='$3$' AND count='1000';"}],
+            "actions":[ {"type": "answer", "select": "random", "phrases":[
+                "Here is the language analysis chart"
+            ]}, {"type": "table"}]
+        },
+        {
+            "keys"   :["tweet content", "sentiment", "analysis", "chart"],
+            "score"  :2000,
+            "example": "Show me the sentiment analysis chart of melaniatrump",
+            "phrases":[ {"type":"pattern", "expression":"* sentiment analysis chart * *"}
+            ],
+            "process":[ {"type": "console", "expression": "SELECT sentiments FROM twitanalysis WHERE screen_name='$3$' AND count='1000';"}],
+            "actions":[ {"type": "answer", "select": "random", "phrases":[
+                "Here is the sentiment analysis chart"
+            ]}, {"type": "table"}]
+        },
+ {
+  "keys":["who"], "score":1,
+  "example":"who tweeted recently about loklak",
+  "comment":"this is an example rule, use it as boilerplate for your own rules. Test this by calling http://localhost:4000/aggregation/chat.json?q=who%20tweeted%20recently%20about%20loklak",
+  "phrases":[{"type":"pattern", "expression":"who tweeted recently about *"}],
+  "process":[{"type":"console", "expression":"SELECT screen_name FROM messages WHERE query='$1$';"}],
+  "actions":[{"type":"answer", "select":"random", "phrases":["The latest tweet about $1$ was from $screen_name$."]
+  }]
+ },
+        {
+            "keys"   :["github"],
+            "score"  :3000,
+            "example": "Susi, View/Read the Github profile of mariobehling",
+            "phrases":[ {"type":"pattern", "expression":"* github * of *"}],
+            "process":[ {"type": "console", "expression": "SELECT * FROM githubProfile WHERE profile='$3$';"}],
+            "actions":[ {"type": "answer", "select": "random", "phrases":[
+                "Here are the profile details on Github for $3$"
+            ]}, {"type":"table"}]
+        },
+        {
+            "keys"   :["github"],
+            "score"  :3000,
+            "example": "Susi, What are the github profile stats of mariobehling",
+            "phrases":[ {"type":"pattern", "expression":"* github * profile * of *"}],
+            "process":[ {"type": "console", "expression": "SELECT * FROM githubProfile WHERE profile='$4$';"}],
+            "actions":[ {"type": "answer", "select": "random", "phrases":[
+                "Here are the profile stats on Github for $4$"
+            ]}, {"type":"table"}]
+        },
+        {
+            "keys"   :["github"],
+            "score"  :3000,
+            "example": "Read mariobehling Github profile",
+            "phrases":[ {"type":"pattern", "expression":"* read * github *"}],
+            "process":[ {"type": "console", "expression": "SELECT * FROM githubProfile WHERE profile='$2$';"}],
+            "actions":[ {"type": "answer", "select": "random", "phrases":[
+                "Here are the profile details on Github for $2$"
+            ]}, {"type":"table"}]
+        },
+        {
+            "keys"   :["github"],
+            "score"  :3000,
+            "example": "Give me more information from Github about mariobehling",
+            "phrases":[ {"type":"pattern", "expression":"* github * about *"}],
+            "process":[ {"type": "console", "expression": "SELECT * FROM githubProfile WHERE profile='$3$';"}],
+            "actions":[ {"type": "answer", "select": "random", "phrases":[
+                "Here are the profile details on Github for $3$"
+            ]}, {"type":"table"}]
+        },
+        {
+            "keys"   :["github"],
+            "score"  :3000,
+            "example": "Can you find mariobehling on Github and give me information",
+            "phrases":[ {"type":"pattern", "expression":"* find * on * github *"}],
+            "process":[ {"type": "console", "expression": "SELECT * FROM githubProfile WHERE profile='$2$';"}],
+            "actions":[ {"type": "answer", "select": "random", "phrases":[
+                "Here are the profile details on Github for $2$"
+            ]}, {"type":"table"}]
+        },
+        {
+            "keys"   :["wordpress"],
+            "score"  :1,
+            "example":"Susi, Read wordpress blogs from http://ishothim.com/",
+            "phrases":[ {"type":"pattern", "expression":"* read * wordpress * from *"}],
+            "process":[ {"type":"console", "expression":"SELECT * FROM wordpress WHERE url='$4$';"}],
+            "actions":[ {"type":"answer", "select":"random", "phrases":[
+                "Here are the blogposts .."
+            ]}, {"type":"table"}]
+        },
+        {
+            "keys"   :["wordpress"],
+            "score"  :1,
+            "phrases":[ {"type":"pattern", "expression":"* view * wordpress * from *"}],
+            "process":[ {"type":"console", "expression":"SELECT * FROM wordpress WHERE url='$4$';"}],
+            "actions":[ {"type":"answer", "select":"random", "phrases":[
+                "Here are the blogposts .."
+            ]}, {"type":"table"}]
+        },
+        {
+            "keys"   :["wordpress"],
+            "score"  :1,
+            "example":"Display articles from the blog http://ishothim.com/",
+            "phrases":[ {"type":"pattern", "expression":"* display * blog *"}],
+            "process":[ {"type":"console", "expression":"SELECT * FROM wordpress WHERE url='$3$';"}],
+            "actions":[ {"type":"answer", "select":"random", "phrases":[
+                "Here are the articles .."
+            ]}, {"type":"table"}]
+        },
+        {
+            "keys"   :["instagram"],
+            "score"  :3000,
+            "example": "Susi, View/Read the Instagram profile of justinpjtrudeau",
+            "phrases":[ {"type":"pattern", "expression":"* instagram * of *"}],
+            "process":[ {"type": "console", "expression": "SELECT * FROM instagramprofile WHERE profile='$3$';"}],
+            "actions":[ {"type": "answer", "select": "random", "phrases":[
+                "Here are the profile details on Instagram for $3$"
+            ]}, {"type":"table"}]
+        },
+        {
+            "keys"   :["instagram"],
+            "score"  :3000,
+            "example": "Susi, What are the Instagram profile stats of justinpjtrudeau",
+            "phrases":[ {"type":"pattern", "expression":"* instagram * profile * of *"}],
+            "process":[ {"type": "console", "expression": "SELECT * FROM instagramprofile WHERE profile='$4$';"}],
+            "actions":[ {"type": "answer", "select": "random", "phrases":[
+                "Here are the profile stats on Instagram for $4$"
+            ]}, {"type":"table"}]
+        },
+        {
+            "keys"   :["instagram"],
+            "score"  :3000,
+            "example": "Read justinpjtrudeau Instagram profile",
+            "phrases":[ {"type":"pattern", "expression":"* read * instagram *"}],
+            "process":[ {"type": "console", "expression": "SELECT * FROM instagramprofile WHERE profile='$2$';"}],
+            "actions":[ {"type": "answer", "select": "random", "phrases":[
+                "Here are the profile details on Instagram for $2$"
+            ]}, {"type":"table"}]
+        },
+        {
+            "keys"   :["instagram"],
+            "score"  :3000,
+            "example": "Give me more information from Instagram about justinpjtrudeau",
+            "phrases":[ {"type":"pattern", "expression":"* instagram * about *"}],
+            "process":[ {"type": "console", "expression": "SELECT * FROM instagramprofile WHERE profile='$3$';"}],
+            "actions":[ {"type": "answer", "select": "random", "phrases":[
+                "Here are the profile details on Instagram for $3$"
+            ]}, {"type":"table"}]
+        },
+        {
+            "keys"   :["instagram"],
+            "score"  :3000,
+            "example": "Can you find justinpjtrudeau on Instagram and give me information",
+            "phrases":[ {"type":"pattern", "expression":"* find * on * instagram *"}],
+            "process":[ {"type": "console", "expression": "SELECT * FROM instagramprofile WHERE profile='$2$';"}],
+            "actions":[ {"type": "answer", "select": "random", "phrases":[
+                "Here are the profile details on Instagram for $2$"
+            ]}, {"type":"table"}]
+        },
+        {
+            "keys"   :["time"],
+            "score"  :4000,
+            "example": "Can you find the current time at Singapore",
+            "phrases":[ {"type":"pattern", "expression":"* time * at *"}],
+            "process":[ {"type": "console", "expression": "SELECT * FROM locationwisetime WHERE query='$3$';"}],
+            "actions":[ {"type": "answer", "select": "random", "phrases":[
+                "Here is the current time at $3$"
+            ]}, {"type":"table"}]
+        },
+        {
+            "keys"   :["wiki"],
+            "score"  :5000,
+            "example": "Show me the wikipedia articles tagged with location Berlin",
+            "phrases":[ {"type":"pattern", "expression":"* wikipedia articles * location *"}],
+            "process":[ {"type": "console", "expression": "SELECT * FROM wikigeodata WHERE place='$3$';"}],
+            "actions":[ {"type": "answer", "select": "random", "phrases":[
+                "Here are the wiki articles"
+            ]}, {"type":"table"}]
+        },
+        {
+            "keys"   :["quora"],
+            "score"  :6000,
+            "example": "Susi, View/Read the Quora profile of Mark-Zuckerberg",
+            "phrases":[ {"type":"pattern", "expression":"* quora * of *"}],
+            "process":[ {"type": "console", "expression": "SELECT * FROM quoraprofile WHERE profile='$3$';"}],
+            "actions":[ {"type": "answer", "select": "random", "phrases":[
+                "Here are the profile details on Quora for $3$"
+            ]}, {"type":"table"}]
+        },
+        {
+            "keys"   :["quora"],
+            "score"  :6000,
+            "example": "Susi, What are the Quora profile stats of Mark-Zuckerberg",
+            "phrases":[ {"type":"pattern", "expression":"* quora * profile * of *"}],
+            "process":[ {"type": "console", "expression": "SELECT * FROM quoraprofile WHERE profile='$4$';"}],
+            "actions":[ {"type": "answer", "select": "random", "phrases":[
+                "Here are the profile stats on Quora for $4$"
+            ]}, {"type":"table"}]
+        },
+        {
+            "keys"   :["quora"],
+            "score"  :3000,
+            "example": "Read Mark-Zuckerberg Quora profile",
+            "phrases":[ {"type":"pattern", "expression":"* read * quora *"}],
+            "process":[ {"type": "console", "expression": "SELECT * FROM quoraprofile WHERE profile='$2$';"}],
+            "actions":[ {"type": "answer", "select": "random", "phrases":[
+                "Here are the profile details on Quora for $2$"
+            ]}, {"type":"table"}]
+        },
+        {
+            "keys"   :["quora"],
+            "score"  :3000,
+            "example": "Give me more information from Quora about Mark-Zuckerberg",
+            "phrases":[ {"type":"pattern", "expression":"* quora * about *"}],
+            "process":[ {"type": "console", "expression": "SELECT * FROM quoraprofile WHERE profile='$3$';"}],
+            "actions":[ {"type": "answer", "select": "random", "phrases":[
+                "Here are the profile details on Quora for $3$"
+            ]}, {"type":"table"}]
+        },
+        {
+            "keys"   :["instagram"],
+            "score"  :3000,
+            "example": "Can you find justinpjtrudeau on Instagram and give me information",
+            "phrases":[ {"type":"pattern", "expression":"* find * on * instagram *"},
+                        {"type":"pattern", "expression":"[instagram] *"}],
+            "process":[ {"type": "console", "expression": "SELECT * FROM instagramprofile WHERE profile='$2$';"}],
+            "actions":[ {"type": "answer", "select": "random", "phrases":[
+                "Here are the profile details on Instagram for $2$"
+            ]}, {"type":"table"}]
+        },
+        {
+            "keys"   :["search"],
+            "example":"Search freedom for everyone",
+            "phrases":[ {"type":"pattern", "expression":"search yacy for *"},
+                         {"type":"pattern", "expression":"search yacy *"},
+                        {"type":"pattern", "expression":"[yacy] *"}],
+            "process":[ {"type":"console", "expression":"SELECT title,description,link,image FROM yacy WHERE query='$1$';"}],
+            "actions":[ {"type":"answer", "select":"random", "phrases":[
+                "Here is a web search result for $1$"
+            ]}, {"type":"rss", "title": "title", "description": "description", "link": "link"}]
+        },
+        {
+            "keys"   :["play","search","youtube","video","music"],
+            "example": "play tschunk",
+            "phrases":[ {"type":"pattern", "expression":"search for music * on youtube"},
+                        {"type":"pattern", "expression":"search for video * on youtube"},
+                        {"type":"pattern", "expression":"search for * on youtube"},
+                        {"type":"pattern", "expression":"search for a video *"},
+                        {"type":"pattern", "expression":"search for video *"},
+                        {"type":"pattern", "expression":"search for music *"},
+                        {"type":"pattern", "expression":"play video * from youtube"},
+                        {"type":"pattern", "expression":"play music * from youtube"},
+                        {"type":"pattern", "expression":"play * video from youtube"},
+                        {"type":"pattern", "expression":"play * music from youtube"},
+                        {"type":"pattern", "expression":"play * from youtube"},
+                        {"type":"pattern", "expression":"play * music"},
+                        {"type":"pattern", "expression":"play * video"},
+                        {"type":"pattern", "expression":"play *"},
+                        {"type":"pattern", "expression":"[youtube] *"}
+                      ],
+            "process":[ {"type": "console", "expression": "SELECT * FROM youtubesearch WHERE query='$1$';"}],
+            "actions":[
+               {"type": "answer", "select": "random", "phrases":["Playing $title$"]
+               },{
+                "type": "video_play",
+                "identifier_type": "youtube",
+                "identifier": "$youtube$"
+             }]
+        },
+        {
+            "keys"   :["play","search","soundcloud","music"],
+            "example": "play tschunk from soundcloud",
+            "phrases":[ {"type":"pattern", "expression":"search for music * on soundcloud"},
+                        {"type":"pattern", "expression":"search for video * on soundcloud"},
+                        {"type":"pattern", "expression":"search for * on soundcloud"},
+                        {"type":"pattern", "expression":"play music * from soundcloud"},
+                        {"type":"pattern", "expression":"play * music from soundcloud"},
+                        {"type":"pattern", "expression":"play * from soundcloud"},
+                        {"type":"pattern", "expression":"[soundcloud] *"}
+                      ],
+            "process":[ {"type": "console", "expression": "SELECT * FROM soundcloudsearch WHERE query='$1$';"}],
+            "actions":[
+               {"type": "answer", "select": "random", "phrases":["Playing $title$"]
+               },{
+                "type": "audio_play",
+                "identifier_type": "soundcloud",
+                "identifier": "$soundcloud$"
+             }]
+        }
+]}

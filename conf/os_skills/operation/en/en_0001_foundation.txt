@@ -1,0 +1,139 @@
+# Voice Commands from Westworld are building blocks for Susis dream/awake mechanism
+# Phrases are inspired by http://westworld.wikia.com/wiki/Voice_Commands
+# Comments starting with "WW" make citations from that wiki
+
+# Susi has (at least) four mind different status
+# - unconscious: an undefined persona which has all intelligent skills but no primary skill (which a persona is) on top
+# - dreaming: a temporary persona which runs one skill as primary source for answers
+# - awake: a permanent persona which runs one skill as primary source for answers.
+# - focus: a temporary skill priorization which can be activated on top of a persona (either a dream or awake status) without de-activation of the a persona
+
+::prior
+
+dream *
+dreaming enabled for $1$>_etherpad_dream
+
+wake up|stop dream|stop dreaming|end dream|end dreaming|Deep and dreamless slumber
+dreaming disabled^^>_etherpad_dream
+
+# WW: Instruct a host to leave Analysis or Pause Mode and to re-enter Character Mode.
+# WW: Take a host out of Sleep Mode and brings it into a more active state of either Analysis Mode or Character Mode.
+Carry on|Continue|Bring * back online
+`wake up`
+
+# This is used to activate a persona.
+# The answer is made in such a way that a persona "the dreamer" will cause a sentence like "the dreamer has awaken" (Muad'Dib mode).
+awake *|awake the *|awake a *
+$1$>_persona_awake has awaken
+
+* conscious mode|* conscious|conscious *
+$1$>_persona_awake is now conscious
+
+# WW: Cause a host to enter Pause Mode.
+sleep|forget yourself|no yourself|unconscious|unconscious mode|That's enough|* dreamless slumber|Freeze|Cease * functions
+$_persona_awake$ will sleep now. Unconscious state activated.^^>_persona_awake
+
+# This is a Launch Request used to activate a skill which has a "on" meta
+start *|start app *|run *|run app *|focus on *|om *
+I am now focused on $1$>_focused_on
+
+# The Intent Request calls a runnable skill to execute a request without running the skill.
+# An Intent Request therefore does not need to be ended with a Session Ended Request
+ask * to *|tell * to *
+^$1$^>_focused_on `$2$`
+
+# This is a Session Ended Request to tell Susi to terminate a runnable skill
+stop|stop *|terminate|terminate *|just relax|relax|exit|exit *|quit|quit *|disable *
+?$_focused_on$:$_focused_on$ stopped.^^>_focused_on
+
+# default utterances for skill launch, help, terminate and sample
+[launch]
+?$_focused_on$:Running $_focused_on$.:I am not running a specific skill.
+
+# help: to be implemented by the skill itself
+[help]
+`[example]`
+
+# sample: to be implemented by the skill itself
+[example]
+I have no example
+
+# language switch
+switch to german|switch to german *|german please|deutsch|deutsch *|deutsche *
+deutsche Sprache aktiviert ^de^>_user_language
+
+switch to english|switch to english *|english please|englisch|englisch *|englische *
+english language activated ^en^>_user_language
+
+# WW: Instruct a host to enter Analysis Mode. In Analysis Mode the host is passive, compliant, and initiates no actions or conversation.
+# Susi just responds with the path to the skill it used in the previous answer.
+analysis|analyse|analyze|explain|* analysis|* analyse|* analyze|analysis *|analyse *|analyze *|describe
+My previous answer is defined in the skill $skill_source$. You can help to improve this skill and <a href="$skill_link$" target="_blank"> edit it in the code repository here.</a>
+
+# stop whatever happens
+stop|off|shut up|stop *
+!console:
+{"actions":[{"type":"stop"}]}
+eol
+
+# pause whatever happens
+pause | pause that | pause this | pause *
+!console:
+{"actions":[{"type":"pause"}]}
+eol
+
+# resume whatever has been paused
+resume | resume that | resume this  | continue | continue that | continue this | keep going | continue * | resume *
+!console:
+{"actions":[{"type":"resume"}]}
+eol
+
+# go to next item
+next|play next
+!console:
+{"actions":[{"type":"next"}]}
+eol
+
+# go to previous item
+previous|play previous|prev
+!console:
+{"actions":[{"type":"previous"}]}
+eol
+
+start over | restart | start again
+!console:
+{"actions":[{"type":"restart"}]}
+eol
+
+shuffle | shuffle playlist | shuffle songs
+!console:
+{"actions":[{"type":"shuffle"}]}
+eol
+
+# test audio play
+system check
+!console:all systems are go, all lights are green!
+{"actions":[
+{"type":"audio_play", "identifier_type":"url", "identifier":"file://conf/audio/all_systems_are_go_all_lights_are_green.mp3"}
+]}
+eol
+
+# set audio volume
+set audio volume to *|set audio volume to * percent|set audio volume to * points|set volume to *|set volume to * percent|set volume to * points
+!console:Audio volume is now $1$ percent.
+{"actions":[
+{"type":"audio_volume", "volume":$1$}
+]}
+eol
+
+# some fake commands that do nothing with the computation state
+::minor
+
+* access to * configuration?|archive * configuration|
+I do not have a previous configuration.
+
+Erase * interaction
+I'm sorry, I'm afraid I cannot do that.
+
+Say *
+$1$

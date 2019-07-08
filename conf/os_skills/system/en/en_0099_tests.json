@@ -1,0 +1,30 @@
+{"rules":[
+  {
+   "comment":"multiple lines in an answer - Test",
+   "phrases":[ {"type":"pattern", "expression":"multi3"} ],
+   "actions":[
+     {"type":"answer", "select":"random", "phrases":["Line 1"]},
+     {"type":"answer", "select":"random", "phrases":["Line 2"], "delay":400},
+     {"type":"answer", "select":"random", "phrases":["Line 3"], "delay":1000}
+   ]
+  }, {
+   "comment":"self test - trigger",
+   "phrases":[ {"type":"pattern", "expression":"self *"} ],
+   "actions":[
+     {"type":"answer", "select":"random", "phrases":["I repeat myself:"]},
+     {"type":"self", "select":"random", "phrases":["includetest1 $1$", "includetest2 $1$", "multi3"], "delay":1000}
+   ]
+  }, {
+   "comment":"self test - target 1",
+   "phrases":[ {"type":"pattern", "expression":"includetest1 *"} ],
+   "actions":[
+     {"type":"answer", "select":"random", "phrases":["included type 1 $1$"]}
+   ]
+  }, {
+   "comment":"self test - target 2",
+   "phrases":[ {"type":"pattern", "expression":"includetest2 *"} ],
+   "actions":[
+     {"type":"answer", "select":"random", "phrases":["included type 2 $1$"]}
+   ]
+  }
+]}

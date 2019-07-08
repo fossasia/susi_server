@@ -1,0 +1,18 @@
+{
+  "console":{
+    "wikidata-de":{
+      "example":"http://127.0.0.1:4000/susi/console.json?q=%22SELECT%20*%20FROM%20wikidata-de%20WHERE%20query=%27football%27;%22",
+      "url":"https://www.wikidata.org/w/api.php?action=wbsearchentities&format=json&language=de&search=",
+      "parser":"json",
+      "path":"$.search",
+      "license":"Creative Commons CC0 License"
+    },
+    "spelld-de":{
+      "example":"http://127.0.0.1:4000/susi/console.json?q=%22SELECT%20*%20FROM%20spelld-de%20WHERE%20query=%27fox%20nox%27;%22",
+      "url":"http://spelld.searchlab.eu/spell.json?q=",
+      "parser":"json",
+      "path":"$.proposal",
+      "license":""
+    }
+  }
+}

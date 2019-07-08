@@ -1,0 +1,18 @@
+{
+  "@context":"http://schema.org",
+  "@type":"SoftwareApplication",
+  "permissions":"susi_cognition_000.json",
+  "name":"susi",
+  "headline":"Chat with Susi",
+  "alternativeHeadline":"Ask Susi Your Queries",
+  "applicationCategory":"Susi API",
+  "applicationSubCategory":"Text Retrieval",
+  "operatingSystem":"http://loklak.org",
+  "author":{
+    "@type":"Person",
+    "name":"Damini Satya",
+    "email":"daminisatya@gmail.com",
+    "url":"https://github.com/daminisatya",
+    "sameAs":"https://github.com/daminisatya"
+  }
+}

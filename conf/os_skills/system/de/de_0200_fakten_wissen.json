@@ -1,0 +1,118 @@
+{"rules":[
+  {
+    "keys"   :["wo","was","beschreibe","erkläre"],
+    "phrases":[
+      {"type":"regex", "expression":"wo ist (?:(?:a )*)(.*)"},
+      {"type":"regex", "expression":"was ist (?:(?:a )*)(.*)"},
+      {"type":"regex", "expression":"beschreibe (?:(?:a )*)(.*)"},
+      {"type":"regex", "expression":"bitte beschreibe (?:(?:a )*)(.*)"},
+      {"type":"regex", "expression":"erkläre (?:(?:a )*)(.*)"},
+      {"type":"regex", "expression":"bitte erkläre (?:(?:a )*)(.*)"}
+    ],
+    "process":[ {"type":"console", "expression":"SELECT place[0] AS place, population, location[0] AS lon, location[1] AS lat FROM locations WHERE query='$1$';"}],
+    "actions":[
+      {"type":"answer", "select":"random",
+       "phrases":["$place$ ist ein Ort mit $population$ Einwohnern. Hier ist eine Karte: https://www.openstreetmap.org/#map=13/$lat$/$lon$"]
+      },
+      {"type":"anchor", "link":"https://www.openstreetmap.org/#map=13/$lat$/$lon$", "text":"Link zur Openstreetmap Karte für $place$"},
+      {"type":"map", "latitude":"$lat$", "longitude":"$lon$", "zoom":"13"}
+    ]
+  }, {
+    "keys"   :["wo"],
+    "phrases":[
+      {"type":"pattern", "expression":"wo bin ich"}
+    ],
+    "actions":[ {"type":"answer", "select":"random", "phrases":[
+      "Du bist hier: https://www.openstreetmap.org/#map=13/$latitude$/$longitude$"
+    ]},
+      {"type":"anchor", "link":"https://www.openstreetmap.org/#map=13/$lat$/$lon$", "text":"Link zur Openstreetmap Karte für deinen Ort"},
+      {"type":"map", "latitude":"$latitude$", "longitude":"$longitude$", "zoom":"13"}
+    ]
+  }, {
+    "phrases":[
+      {"type":"regex", "expression":"was ist (?:(?:a )*)(.*)"},
+      {"type":"regex", "expression":"beschreibe (?:(?:a )*)(.*)"},
+      {"type":"regex", "expression":"erkläre (?:(?:a )*)(.*)"},
+      {"type":"regex", "expression":"bitte beschreibe (?:(?:a )*)(.*)"},
+      {"type":"regex", "expression":"bitte erkläre (?:(?:a )*)(.*)"},
+      {"type":"pattern", "expression":"was bedeutet *"},
+      {"type":"pattern", "expression":"was heisst *"},
+      {"type":"pattern", "expression":"was heißt *"}
+    ],
+    "process":[ {"type":"console", "expression":"SELECT description FROM wikidata-de WHERE query='$1$';"},
+                {"type":"flow", "expression":"NOT $description$ = Wikipedia disambiguation page"} ],
+    "actions":[ {"type":"answer", "select":"random", "phrases":[
+      "$1$ ist $description$."
+    ]}]
+  },{
+    "phrases":[
+      {"type":"regex", "expression":"rechne (\\(?\\d[\\s\\(\\)\\d\\+\\-\\/\\*\\.]*\\d\\)?)"},
+      {"type":"regex", "expression":"berechne (\\(?\\d[\\s\\(\\)\\d\\+\\-\\/\\*\\.]*\\d\\)?)"},
+      {"type":"regex", "expression":"was ist (\\(?\\d[\\s\\(\\)\\d\\+\\-\\/\\*\\.]*\\d\\)?)"},
+      {"type":"regex", "expression":"rechne aus (\\(?\\d[\\s\\(\\)\\d\\+\\-\\/\\*\\.]*\\d\\)?)"},
+      {"type":"regex", "expression":"(\\(?\\d[\\s\\(\\)\\d\\+\\-\\/\\*\\.]*\\d\\)?)"}
+    ],
+    "process":[ {"type":"javascript", "expression":"$1$"} ],
+    "actions":[ {"type":"answer", "select":"random", "phrases":[
+      "$1$ = $!$"
+    ]}]
+  },{
+    "keys"   :["mal"],
+    "phrases":[
+      {"type":"pattern", "expression":"berechne * mal *"},
+      {"type":"pattern", "expression":"was ist * mal *"},
+      {"type":"pattern", "expression":"rechne aus * mal *"},
+      {"type":"pattern", "expression":"* mal *"}
+    ],
+    "actions":[ {"type":"self", "select":"random", "phrases":[
+      "berechne $1$ * $2$"
+    ]}]
+  },{
+    "keys"   :["geteilt"],
+    "phrases":[
+      {"type":"pattern", "expression":"berechne * geteilt durch *"},
+      {"type":"pattern", "expression":"was ist * geteilt durch *"},
+      {"type":"pattern", "expression":"rechne aus * geteilt durch *"},
+      {"type":"pattern", "expression":"* geteilt durch *"}
+    ],
+    "actions":[ {"type":"self", "select":"random", "phrases":[
+      "berechne $1$ / $2$"
+    ]}]
+  },{
+    "keys"   :["plus"],
+    "phrases":[
+      {"type":"pattern", "expression":"berechne * plus *"},
+      {"type":"pattern", "expression":"was ist * plus *"},
+      {"type":"pattern", "expression":"rechne aus * plus *"},
+      {"type":"pattern", "expression":"* plus *"}
+    ],
+    "actions":[ {"type":"self", "select":"random", "phrases":[
+      "berechne $1$ + $2$"
+    ]}]
+  },{
+    "keys"   :["minus"],
+    "phrases":[
+      {"type":"pattern", "expression":"berechne * minus *"},
+      {"type":"pattern", "expression":"was ist * minus *"},
+      {"type":"pattern", "expression":"rechne aus * minus *"},
+      {"type":"pattern", "expression":"* minus *"}
+    ],
+    "actions":[ {"type":"self", "select":"random", "phrases":[
+      "berechne $1$ - $2$"
+    ]}]
+  },{
+    "phrases":[
+      {"type":"pattern", "expression":"wieviel Uhr"},
+      {"type":"pattern", "expression":"wieviel Uhr ist es"},
+      {"type":"pattern", "expression":"Zeit"},
+      {"type":"pattern", "expression":"Uhrzeit"},
+      {"type":"pattern", "expression":"wie spät ist es"},
+      {"type":"pattern", "expression":"wie spät ists"},
+      {"type":"pattern", "expression":"wie spät"}
+    ],
+    "process":[ {"type":"javascript", "expression":"new Date().getHours() + ' Uhr und ' + new Date().getMinutes() + ' Minuten'"} ],
+    "actions":[ {"type":"answer", "select":"random", "phrases":[
+      "es ist $!$"
+    ]}]
+  }
+]}

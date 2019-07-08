@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en" ng-app='loklak'>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="Content-Language" content="en, english"/>
+    <meta name="author" content="@brainbuzzer"> 
+    <link rel="icon" type="image/x-icon" href="../../artwork/favicon.ico">
+
+    <title>Setup Console Rule</title> 
+      
+    <link href="../../css/bootstrap.min.css" rel="stylesheet" type="text/css">
+    <link href="../../css/dashboard.css" rel="stylesheet" type="text/css">
+    <link href="../../css/loklak.css" rel="stylesheet" type="text/css">
+
+    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+      <script src="../../js/html5shiv.min.js"></script>
+      <script src="../../js/respond.min.js"></script>
+    <![endif]-->
+    
+    <script src="../../js/angular.min.js"></script>
+    <script src="../../js/angular-route.min.js"></script>
+    <script src="../../js/framework.js"></script>
+  </head>
+
+  <body>
+
+    <nav class="navbar navbar-inverse navbar-fixed-top">
+      <div class="container-fluid">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand" href="/"><img src="../../images/brand.png" height="24" style="float:left;"></a>
+        </div>
+        <div id="navbar" class="navbar-collapse collapse">
+          <ul class="nav navbar-nav navbar-right">
+          </ul>
+        </div>
+      </div>
+    </nav>
+    <div class="main">
+      <h3>Console Rules</h3>
+      <div class="error hidden"></div>
+      <div class="row">
+        <div class="col-md-6">
+          <div class="form-group" id="name">
+            <label for="name">Name</label>
+            <input type="test" name="name" id="inputName" class="form-control" required/>
+          </div>
+          <div class="form-group" id="testname">
+            <label for="testname">Test Name</label>
+            <input type="text" name="testname" id="inputTestName" class="form-control" required/>
+          </div>
+          <div class="form-group" id="jsonurl">
+            <label for="json">URL to JSON</label>
+            <input type="url" name="json" id="inputUrl" class="form-control" required/>
+          </div>
+          <div class="form-group" id="jsonurl">
+            <label for="path">Path</label>
+            <input type="text" name="path" id="inputPath" class="form-control" required/>
+          </div>
+          <div class="btn-group">
+            <div class="btn btn-success" id="test">Test</div>
+            <div class="btn btn-default" id="learn">Learn</div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="list">
+            <ul id="listRules">
+              <!-- Adds list of rules by user here -->
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  
+
+    <!-- Bootstrap core JavaScript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+    <script src="../../js/jquery.min.js"></script>
+    <script src="../../js/jquery.form.min.js"></script>
+    <script src="../../js/bootstrap.min.js"></script>
+    <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
+    <script src="../../js/ie10-viewport-bug-workaround.js"></script>
+    <script type="text/javascript" src="js/app.js"></script>
+  </body>
+</html>

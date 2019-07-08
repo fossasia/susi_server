@@ -1,0 +1,56 @@
+# test intents
+
+test data injection
+!console:data injected
+{
+"data": [{"w": 0.1, "x": "a", "y": 0, "z": false}, {"w": 0.2, "x": "b", "y": 1, "z": true}]
+}
+eol
+
+test table action
+!console:showing test table
+{
+"type": "table",
+"colums": {"student": "Student Name", "evaluation": "mid-term evaluation", "rating": "shall pass?"},
+"count": 3,
+"data": [
+  {"student": "Student A", "evaluation": "good work", "rating": "pass"},
+  {"student": "Student B", "evaluation": "mediocre", "rating": "pass"},
+  {"student": "Student B", "evaluation": "disappointing", "rating": "fail"}
+]
+}
+eol
+
+test piechart action
+!console:showing test piechart
+{
+"type": "piechart",
+"key": "drink",
+"value": "volume",
+"total": 7500,
+"unit": "Liter",
+"data": [
+  {"drink": "tea", "volume": 5500},
+  {"drink": "soda", "volume": 300},
+  {"drink": "wine", "volume": 200},
+  {"drink": "coffee", "volume": 1000},
+  {"drink": "water", "volume": 500}
+]
+}
+eol
+
+test rss action
+!console:showing rss
+{
+"type": "table",
+"title": "h1",
+"description": "snippet",
+"link": "url",
+"count": 3,
+"data": [
+  {"h1": "YaCy Search Engine", "snippet": "Web Search By The People, For The People", "url": "http://yacy.net"},
+  {"h1": "Loklak", "snippet": "Social Media Search Engine", "url": "http://loklak.org"},
+  {"h1": "Susper", "snippet": "Web Search Portal", "url": "https://susper.com"}
+]
+}
+eol
