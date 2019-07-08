@@ -170,11 +170,19 @@ public class SusiArgument implements Iterable<SusiThought> {
     public String unify(String statement, boolean urlencode, int depth) {
         assert statement != null;
         if (statement == null) return null; // this should not happen
-        for (SusiThought t: this) {
-            // this uses our iterator which iterates in reverse order. That means, latest thought is first returned
-            if (depth-- < 0) break;
-            statement = t.unifyOnce(statement, urlencode);
-            if (!SusiThought.hasVariablePattern(statement)) return statement;
+        retry: while (true) {
+	        explorepast: for (SusiThought t: this) {
+	            // this uses our iterator which iterates in reverse order.
+	        	// That means, latest thought is first returned.
+	        	// It also means that we are exploring the past, most recent events first.
+	            if (depth-- < 0) break;
+	            String nextStatement = t.unifyOnce(statement, urlencode);
+	            if (nextStatement.equals(statement)) continue explorepast;
+	            statement = nextStatement;
+	            if (!SusiThought.hasVariablePattern(statement)) return statement; // possible early success
+	            continue retry;
+	        }
+	        break retry;
         }
         if (SusiThought.hasVariablePattern(statement)) return null; // failure!
         return statement;

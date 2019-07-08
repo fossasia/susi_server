@@ -401,10 +401,9 @@ public class SusiAction {
                 unificationSuccess = false;
                 if (expression.indexOf('$') >= 0) {
                     String unification = thoughts.unify(expression, false, Integer.MAX_VALUE);
-                    if (unification != null) {
-                        unificationSuccess = true;
-                        expression = unification;
-                    }
+                    if (unification == null) throw new ReactionException("expression '" + expression + "' cannot be unified with thoughts");
+                    unificationSuccess = true;
+                    expression = unification;
                 }
                 
                 // assignments: set variables from the result expressions.

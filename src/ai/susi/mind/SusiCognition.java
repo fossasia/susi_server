@@ -395,8 +395,6 @@ public class SusiCognition {
                         dispute.addObservation("skill", skills.get(0));
                     }
                     dispute.addObservation("skill_link", getSkillLink(skills.get(0)));
-
-
                 }
                 
                 // add all data from the old dispute

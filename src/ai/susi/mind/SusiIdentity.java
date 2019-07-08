@@ -40,8 +40,9 @@ import java.util.List;
  */
 public class SusiIdentity {
 
-    private SusiAwareness long_term_memory, short_term_memory;
-    private File memorydump;
+    private File short_term_memory_file, long_term_memory_file;
+    private SusiAwareness short_term_memory;
+    private SusiSkillFile long_term_memory;
     private int attention;
     
     /**
@@ -56,17 +57,32 @@ public class SusiIdentity {
      */
     public SusiIdentity(File memorypath, int attention) {
         this.attention = attention;
-        this.long_term_memory = new SusiAwareness();
+        
+        // initialize short term memory
         this.short_term_memory = new SusiAwareness();
         memorypath.mkdirs();
-        this.memorydump = new File(memorypath, "log.txt");
-        if (this.memorydump.exists()) {
+        this.short_term_memory_file = new File(memorypath, "log.txt");
+        if (this.short_term_memory_file.exists()) {
             try {
-                this.long_term_memory = new SusiAwareness(this.memorydump, attention);
+                this.short_term_memory = new SusiAwareness(this.short_term_memory_file, attention);
+                this.short_term_memory.limitAwareness(this.attention);
             } catch (IOException e) {
                 e.printStackTrace();
             }
         }
+        
+        // initialize long term memory
+        this.long_term_memory_file = new File(memorypath, "rules.txt");
+        if (!this.long_term_memory_file.exists()) try {
+			this.long_term_memory_file.createNewFile();
+		} catch (IOException e) {
+			this.long_term_memory = null;
+		}
+        try {
+	        this.long_term_memory = SusiSkillFile.load(this.long_term_memory_file);
+		} catch (IOException e) {
+			this.long_term_memory = null;
+		}
     }
     
     /**
@@ -77,9 +93,8 @@ public class SusiIdentity {
      */
     public SusiIdentity add(SusiCognition cognition) throws IOException {
         this.short_term_memory.learn(cognition);
-        List<SusiCognition> forgottenCognitions = this.short_term_memory.limitAwareness(this.attention);
-        forgottenCognitions.forEach(c -> this.long_term_memory.learn(c)); // TODO add a rule to memorize only the most important ones
-        cognition.appendToFile(this.memorydump);
+        this.short_term_memory.limitAwareness(this.attention);
+        cognition.appendToFile(this.short_term_memory_file);
         return this;
     }
     
@@ -109,10 +124,7 @@ public class SusiIdentity {
      */
     public List<SusiCognition> getCognitions() {
         ArrayList<SusiCognition> cognitions = new ArrayList<>();
-        // first put in short memory
         this.short_term_memory.forEach(cognition -> cognitions.add(cognition));
-        // then put in long term memory
-        this.long_term_memory.forEach(cognition -> cognitions.add(cognition));
         return cognitions;
     }
 }

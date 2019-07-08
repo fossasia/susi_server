@@ -33,23 +33,23 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
 
-import org.json.JSONException;
-
 import ai.susi.DAO;
 import ai.susi.SusiServer;
-import ai.susi.mind.SusiAction.SusiActionException;
-
 
 public class SusiSkillFile implements Iterator<SusiSkillFile.IntentBlock>, Iterable<SusiSkillFile.IntentBlock> {
 
     private final ArrayList<IntentBlock> intents;
     private int pos;
 
-    public SusiSkillFile(final BufferedReader br) throws IOException {
-        List<List<String>> blocks = textBlockReader(br);
+    public SusiSkillFile() throws IOException {
         this.intents = new ArrayList<>();
-        blocks.forEach(block -> intents.add(new IntentBlock(block)));
         this.pos = 0;
+    }
+    
+    public SusiSkillFile(final BufferedReader br) throws IOException {
+    	this();
+        List<List<String>> blocks = textBlockReader(br);
+        blocks.forEach(block -> intents.add(new IntentBlock(block)));
     }
 
     public static SusiSkillFile load(File f) throws IOException {

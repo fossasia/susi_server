@@ -6,7 +6,7 @@ hi susi *|susi *|tell me *|please tell me *|can you tell me *|can you please tel
 `$1$`
 
 # wrapper
-can you *|tell me *|tell me about *|tell me a little about *|susi *|do you know *|do you know about *|give me *|give *|get *| get me *|find *|find me *
+can you *|tell me *|tell me about *|tell me a little about *|susi *|do you know *|do you know about *|give me *|give *|find *|find me *
 `$1$`
 
 who is *|who was *
