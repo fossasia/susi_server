@@ -48,7 +48,7 @@ public class EmailHandler {
 
    public static void sendEmail(String senderEmail, String displayname, @Nonnull String addressTo, @Nonnull String subject, @Nonnull String text) throws Exception {
         
-        if (!"true".equals(DAO.getConfig("smtp.mails.enabled", "false"))) {
+        if (!"SMTP".equals(DAO.getConfig("mail.type", "false"))) {
             throw new Exception("Mail sending disabled");
         }
 
