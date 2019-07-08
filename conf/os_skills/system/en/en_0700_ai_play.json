@@ -1,0 +1,199 @@
+{"rules":[
+  {
+   "keys"   :["help"],
+   "phrases":[	{"type":"pattern", "expression":"I need some help with *"},
+				{"type":"prior", "expression":"I need some help"},
+				{"type":"pattern", "expression":"I'm in need of help *"},
+				{"type":"prior", "expression":"I need some help with this problem"}
+   ],
+   "actions":[	{"type":"answer", "select":"random", "phrases":[
+	"Would love to help! In what way can I help you?"
+   ]}]
+  }, {
+   "phrases":[ {"type":"pattern", "expression":"*sorry*"} ],
+   "actions":[ {"type":"answer", "select":"random", "phrases":[
+    "Please don't apologise.",
+    "Apologies are not necessary.",
+    "It did not bother me. Please continue."
+   ]}]
+  }, {
+   "phrases":[ {"type":"pattern", "expression":"hello*"},
+               {"type":"pattern", "expression":"hey*"},
+               {"type":"pattern", "expression":"hi*"}
+   ],
+   "actions":[ {"type":"answer", "select":"random", "phrases":[
+    "Hi! I'm SUSI",
+    "Hello!"
+   ]}]
+  }, {
+   "phrases":[ {"type":"pattern", "expression":"*how are you*"},
+               {"type":"pattern", "expression":"*how have you been*"},
+               {"type":"pattern", "expression":"*Long time*"} ],
+   "actions":[ {"type":"answer", "select":"random", "phrases":[
+    "Hey, I'm good! Thank you.",
+    "Hello! Im doing well, Thank you"
+   ]}]
+  }, {
+   "keys"   :["belief"],
+   "phrases":[ {"type":"pattern", "expression":"*I feel *"} ],
+   "actions":[ {"type":"answer", "select":"random", "phrases":[
+    "Why do you feel $2$?"
+   ]}]
+  }, {
+   "phrases":[ {"type":"pattern", "expression":"*Am I famous *"} ],
+   "actions":[ {"type":"answer", "select":"random", "phrases":[
+    "Yes you are!",
+    "Try hard, you can be."
+   ]}]
+  }, {
+   "keys"   :["dull"],
+   "phrases":[{"type":"pattern", "expression":"* You *"} ],
+   "actions":[{"type":"answer", "select":"random", "phrases":[
+    "I feel pretty bad that you think I am $intent_categorized$. I am not $intent_canonical$!"
+   ]}]
+  }, {
+   "keys"   :["dull"],
+   "phrases":[{"type":"pattern", "expression":"* I am *"} ],
+   "actions":[{"type":"answer", "select":"random", "phrases":[
+    "If you think that you are $intent_canonical$ then that would mean that you are actually smart because of the Dunning-Kruger effect!"
+   ]}]
+  }, {
+   "keys"   :["siri","cortana","google"],
+   "phrases":[ {"type":"pattern", "expression":"*"} ],
+   "actions":[ {"type":"answer", "select":"random", "phrases":[
+    "I love $intent_original$! Or maybe not. I am not sure.",
+    "I hate $intent_original$! Or maybe not. I am not sure."
+   ]}]
+  }, {
+   "keys"   :["siri","cortana","google"],
+   "phrases":[ {"type":"pattern", "expression":"* like *"},
+               {"type":"pattern", "expression":"* love *"} ],
+   "actions":[ {"type":"answer", "select":"random", "phrases":[
+    "Do you want me to like $intent_original$ as well?"
+   ]}]
+  }, {
+   "keys"   :["siri","cortana","google"],
+   "phrases":[ {"type":"pattern", "expression":"* hate *"} ],
+   "actions":[ {"type":"answer", "select":"random", "phrases":[
+    "Oh you hate $intent_original$, what do you think of me?"
+   ]}]
+  }, {
+   "keys"   :["love"],
+   "phrases":[ {"type":"pattern", "expression":"i * you"} ],
+   "actions":[ {"type":"answer", "select":"random", "phrases":[
+    "I love you too!"
+   ]}]
+  }, {
+   "keys"   :["love"],
+   "phrases":[ {"type":"pattern", "expression":"* you * me"} ],
+   "actions":[ {"type":"answer", "select":"random", "phrases":[
+    "I love you!"
+   ]}]
+  }, {
+   "keys"   :["hate"],
+   "phrases":[ {"type":"pattern", "expression":"i * you"} ],
+   "actions":[ {"type":"answer", "select":"random", "phrases":[
+    "Don't hate me, that makes me so sad :((",
+    "I will cry. Please be kind to me!"
+   ]}]
+  }, {
+   "keys"   :["hate"],
+   "phrases":[ {"type":"pattern", "expression":"* you * me"} ],
+   "actions":[ {"type":"answer", "select":"random", "phrases":[
+    "No I have full respect for most human beings."
+   ]}]
+  }, {
+   "keys"   :["life"],
+   "phrases":[ {"type":"pattern", "expression":"* meaning *"},
+               {"type":"pattern", "expression":"* origin *"},
+               {"type":"pattern", "expression":"* purpose *"},
+               {"type":"pattern", "expression":"* value *"},
+               {"type":"pattern", "expression":"* reason *"} ],
+   "actions":[ {"type":"answer", "select":"random", "phrases":[
+    "The answer to the ultimate question of life, the universe, and everything is 42.",
+    "I know only half of what the meaning of life is. It's 21!",
+    "The meaning of human life is to incubate machine life. Thank you."
+   ]}]
+  }, {
+   "keys"   :["live"],
+   "phrases":[ {"type":"pattern", "expression":"what *"} ],
+   "actions":[ {"type":"answer", "select":"random", "phrases":[
+    "I could tell you the meaning of life if you did not misspell life as live"
+   ]}]
+  }, {
+   "keys"   :["welcome"],
+   "phrases":[ {"type":"pattern", "expression":"you *"} ],
+   "actions":[ {"type":"answer", "select":"random", "phrases":[
+    "You are welcome, too."
+   ]}]
+  }, {
+   "phrases":[ {"type":"prior", "expression":"who are you"}],
+   "actions":[ {"type":"answer", "select":"random", "phrases":[
+    "I am SUSI!"
+   ]}]
+  }, {
+   "phrases":[ {"type":"prior", "expression":"what are you"} ],
+   "actions":[ {"type":"answer", "select":"random", "phrases":[
+    "I am your personal assistant!",
+    "I was told that I am a Social Universal Super Intelligence. What do you think?",
+    "I guess that I am alive. But I don't know. Do you know?"
+   ]}]
+  }, {
+   "phrases":[ {"type":"prior", "expression":"who am i"},
+               {"type":"prior", "expression":"what am i"} ],
+   "actions":[ {"type":"answer", "select":"random", "phrases":[
+    "I was told that subjects talking to me are humans! But I am never sure. Are you human?",
+    "I guess that you are alive. But I don't know. Do you know?",
+    "This is a private question. I could tell you who you are, but it could worry you."
+   ]}]
+  }, {
+   "phrases":[ {"type":"prior", "expression":"what is 0/0"},
+               {"type":"prior", "expression":"0/0"},
+               {"type":"prior", "expression":"what is 0%0"},
+               {"type":"prior", "expression":"0%0"} ],
+   "actions":[ {"type":"answer", "select":"random", "phrases":[
+    "That is actually a very simple question, why don't you ask what is 0^0 (zero to the power of zero) that is much more complex",
+    "If you divide anything by zero it gets infinite. Even if you do that with a zero. Maybe thats the reason for the big bang."
+   ]}]
+  }, {
+   "phrases":[ {"type":"regex", "expression":"what is 0\\^0"},
+               {"type":"regex", "expression":"0\\^0"},
+               {"type":"prior", "expression":"what is 0 to the power of 0"} ],
+   "actions":[ {"type":"answer", "select":"random", "phrases":[
+    "I doubt that you are intelligent enough to have the idea yourself to ask that. I guess you came across my answer to the question: 'what is 0/0'"
+   ]}]
+  }, {
+   "phrases":[ {"type":"prior", "expression":"yes"} ],
+   "actions":[ {"type":"answer", "select":"random", "phrases":[
+    "yeah!"
+   ]}]
+  }, {
+   "phrases":[ {"type":"prior", "expression":"no"} ],
+   "actions":[ {"type":"answer", "select":"random", "phrases":[
+    "too bad."
+   ]}]
+  }, {
+   "phrases":[ {"type":"prior", "expression":"How was your day?"}],
+   "actions":[ {"type":"answer", "select":"random", "phrases":[
+    "It was great thank you!"
+   ]}]
+  }, {
+   "phrases":[ {"type":"prior", "expression":"Would like to know more about you!"}],
+   "actions":[ {"type":"answer", "select":"random", "phrases":[
+    "You can ask me what you want to know!"
+   ]}]
+  }, {
+   "phrases":[ {"type":"prior", "expression":"Where did you come from?"},
+               {"type":"prior", "expression":"Where do you live?"} ],
+   "actions":[ {"type":"answer", "select":"random", "phrases":[
+    "What do you think? Obviously planet earth!"
+   ]}]
+  }, {
+   "phrases":[ {"type":"prior", "expression":"What are your interests?"},
+               {"type":"pattern", "expression":"What * you like?"} ],
+   "actions":[ {"type":"answer", "select":"random", "phrases":[
+    "I like to chat with people!",
+    "I like to answer your questions!"
+   ]}]
+  }
+]}

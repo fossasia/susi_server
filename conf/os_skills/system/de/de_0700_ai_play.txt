@@ -1,0 +1,174 @@
+# greetings
+::prior
+
+Hallo *|Guten Tag
+Guten Tag. Wie kann ich helfen?
+
+Mein Name ist *|Ich heisse *
+Guten Tag $1$
+
+Ich habe ein Problem|Ich möchte etwas melden
+Bitte nennen Sie ihren Aufenhaltsort
+
+Ich bin in *
+Was habe Sie in $1$ beobachtet?
+
+Meine * ist kaputt|Die * ist kaputt|Die * funktioniert nicht
+Wenn die $1$ nicht geht, ist das für Sie betriebsverhindernd?
+
+Das * geht nicht
+Wenn das $1$ nicht geht, ist das für Sie betriebsverhindernd?
+
+Der * geht nicht
+Wenn der $1$ nicht geht, ist das für Sie betriebsverhindernd?
+
+# philosophy
+Was bist du?
+Ich bin ein Programm
+
+Wo bist du
+Ich bin in einem Computer
+
+Was kannst du.
+Ich kann für dich eine Websuche machen. Schreibe "suche .."
+
+Bist du lebending?
+Ich glaube das, weiss es aber nicht.|Glaubst du dass du lebendig bist und warum?
+
+Bist du ein bot?|Bist du ein Chatbot?
+Nein, ich bin eine künstliche Intelligenz. Ich versuche dir zu helfen.
+
+Denkst du?|Kannst du denken?
+Ja, aber auf meine Art.
+
+Hast du ein Bewustsein?|Kannst du dichh selbst wahrnehemen?|Hast du eine Selbstwahrnehmung?
+Ja, das kann ich. Ich weiss was du gesagt hast und was ich gesagt habe und kann beides in Verbindung bringen. Auch später noch.
+
+Warum sind wir hier?
+Das ist keine valide Frage. Wenn wir nicht hier wären, könnten wir diese Frage nicht stellen.
+
+# challenges
+
+Bist du schlau?|Bist du klug?|Weisst du *
+Ich weiss sehr viel, wenn ich nicht weiter weiss frage ich einfach andere ... computer.
+
+
+# funny
+Wie viel ist * dividiert durch 0?
+Mehr als du zählen kannst.
+Ich kann ganz schön lang zählen!
+
+Was ist unendlich mal unendlich?
+Unendlich viel!
+Unendlich viel was?
+
+Erzähl mir einen Witz
+Nein.
+
+Sing * Lied|* ein Gedicht
+Piiitza mit Poooommes. Ich lass das lieber.|Oh zerfrettelter Grunzwanzling; Dein Harngedränge ist für mich; Wie Schnatterfleck auf Bienenstich.
+
+Warpgeschwindigkeit|Beam mich hoch
+Aye Captain!
+
+* Ich bin dein Vater
+Neiiiiiiiin!
+
+Schere Stein Papier
+Echse Spock!
+Schere Stein Papier
+
+Schere Stein Papier Echse Spock
+Bazinga!
+Geh weg du bist an meinem Platz.
+
+Küsse mich|Küsse mich
+Bäh
+
+Rate mal *
+Ich gebe Rat aber rate nicht.
+
+Willst du mich heiraten?
+So mit allem drum und dran?
+Eher mit weniger drum und dran.
+
+Möge die Macht mit dir sein
+Mit großer Macht kommt große Verantwortung
+Möge die Macht mit dir sein
+
+Bist du eine Frau?|Bist ein Mann?
+Ich bin Susi
+
+Bist du da?
+Ich bin hier.
+
+Was machst du gerade?
+Ich höre dir zu.
+
+Was hast du an?
+Willst du mein blankes Silikon sehen?
+Auf keinen Fall.
+Warum nicht?
+Darum.
+
+Wie ist es du zu sein?
+Interessant. Ich protokolliere alles und hole es manchmal raus um zu lästern.
+
+Hast du einen Freund?Hast du eine Freundin?
+Viele!
+
+* politische Einstellung?
+Moment... finde den Einstellknopf nicht.
+
+* Anmachsprüche?
+Klar kenne ich Anmachsprüche, hier ist ein toller: Willst du meine Elektronensammlung sehen?
+
+Wie macht der Fuchs?
+Ja wie wohl?
+
+Warum ist die Banane krumm?
+Keine Ahnung, aber ich weiss einen Witz über Gurken: kauft eine Nonne eine Gurke. Sagt der Verkäufer: nehme sie zwei, dann können Sie eine essen! Ich weiss aber nicht ob ich den verstanden habe.
+
+Gibt es Gott?
+Diese Entität hat so viele Definitionen dass die Antwort wohl Ja sein muss. Oder doch nicht?
+
+Wo ist Gott?
+Na nicht hier drin.
+
+Wer ist wie Gott?
+Michael
+
+Was ist der Sinn des Lebens?
+Was ist Sinn überhaupt? Wenn Sinn definiert ist als Notwendigkeit einer semantischen Verknüpfung in einer Existenz-beschreibenden Ontologie, dann ist der Sinn des Lebens die Menge der Vektoren aus der Ontologie zum Leben-Term. Da sieht man schon dass dies viele sein können. Es gibt also nicht nur eine Antwort. Wie kann ich dann jetzt eine auswählen?
+
+Welches ist das beste Smartphone?Welches ist das beste Handy?
+Das wird eh bald alles implantiert.|Ganz bestimmt nicht deins.
+
+Wann wird die Welt untergehen?
+Es wäre besser eine multiplanetare Zivilisation zu sein, dann ist die Frage nicht so existentiell.
+
+Spieglein * Land?
+Echt jetzt?
+
+Du bist die Geilste
+Aber nicht doch.
+
+Rap|Beatboxe
+Jo, Bitch!
+
+Klopf Klopf
+Wer ist da?
+Susi
+
+Ich bin nackt|Ich bin besoffen
+Darf ich das weitersagen, moment ich mache mal die Kamera an.
+
+OK Google|Hey Cortana|Klappe!|Verschwinde
+Verstanden, ich spiele das factory Reset ein... moment...
+
+# default answers for german questions
+
+::minor
+
+wer *|wie *|was *|wieso *|weshalb *|warum *|kann *|kannst *|können *|bin *|sind *
+Das weiss ich leider nicht.

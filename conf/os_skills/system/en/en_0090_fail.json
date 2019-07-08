@@ -1,0 +1,98 @@
+{"rules":[
+  {
+   "score"  : 8,
+   "phrases":[	{"type":"pattern", "expression":"*"} ],
+   "process":[	{"type":"console", "expression":"SELECT text FROM messages-order-by-favourites_count WHERE query='you $1$ since:day /pure /len75';"}],
+   "actions":[	{"type":"answer", "select":"random", "phrases":[
+     "$text$"
+   ]}]
+  }, {
+   "phrases":[	{"type":"pattern", "expression":"what is *"}, {"type":"pattern", "expression":"describe *"} ],
+   "process":[	{"type":"console", "expression":"SELECT text FROM messages-order-by-favourites_count WHERE query='$1$ is since:week /pure /len75';"}],
+   "actions":[	{"type":"answer", "select":"random", "phrases":[
+     "$text$"
+   ]}]
+  }, {
+   "score"  : 90,
+   "phrases":[ {"type":"pattern", "expression":"*"} ],
+   "process":[ {"type":"console", "expression":"SELECT extract FROM wikipedia WHERE query='$1$' AND language='en';"}],
+   "actions":[ {"type":"answer", "select":"random", "phrases":[
+     "$extract$"
+   ]}]
+  }, {
+   "comment":"this is the catch-all rule which fires if no other rule applies (disabled)",
+   "phrases":[ {"type":"pattern", "expression":"search yacy for *"} ],
+   "process":[ {"type":"console", "expression":"SELECT title,description,link,image FROM yacy WHERE query='$1$';"}],
+   "actions":[
+     {"type":"answer", "select":"random",
+      "phrases":["I found this on the web:"],
+      "mood": "sabta"},
+     {"type":"rss", "title": "title", "description": "description", "link": "link", "count": 3}
+   ]
+  }, {
+   "comment":"this is the catch-all rule which fires if no other rule applies",
+   "phrases":[ {"type":"pattern", "expression":"*"} ],
+   "actions":[
+     {"type":"answer", "select":"random",
+      "phrases":[
+      "I don’t have enough information to answer your question.",
+      "Good question. I’ll find out.",
+      "I don’t have the data at hand, but I’ll get it to you later today.",
+      "Let me get back to you on that.",
+      "I’m going to explore that because I think there are a lot of valuable insights we could gain by examining this area further.",
+      "The explanation for this question can take a while, I'll let you know the answer later.",
+      "I can’t answer that particular question.",
+      "I don’t know the answer to that question.",
+      "Well I may be a little biased here. I don’t know all the facts.",
+      "That’s a great question. Unfortunately I don't know the answer.'",
+      "Thats a good question. To be perfectly honest, I don’t have an answer for you.",
+      "Great question. I never actually thought about that before, and I am not sure.",
+      "I’m not very familiar with that concept.",
+      "That’s an interesting question. Do you mind unpacking the question a little more?",
+      "I’m so glad you asked about this. I have been wanting to learn more about it and am planning on…",
+      "That’s an interesting question. Why are you asking?",
+      "Why do you ask?",
+      "Why does this interest you?",
+      "Why would you like to know?",
+      "I’d rather not say.",
+      "I’d prefer not to talk about that.",
+      "That’s personal.",
+      "That’s private.",
+      "That’s not appropriate to discuss right now.",
+      "This isn’t a good time/place to talk about that.",
+      "I’m not interested in getting into that now.",
+      "This isn’t something I’m comfortable discussing.",
+      "I don’t usually talk about that.",
+      "That’s a secret!",
+      "I’m not at liberty to say.",
+      "Um… let me get back to you.",
+      "Did you really just ask me that?",
+      "Let’s talk about something else.",
+      "I'm sorry but that information is proprietary."],
+      "mood": "sabta"}
+   ]
+  }, {
+   "phrases":[ {"type":"pattern", "expression":"search for *"} ],
+   "actions":[
+     {"type":"answer", "select":"random",
+      "phrases":["Here is a web search result:"]},
+     {"type":"websearch", "query":"$1$"}
+   ]
+  }, {
+   "comment":"a question mark",
+   "phrases":[
+   	{"type":"regex", "expression":"\\?"}
+   ],
+   "actions":[ {"type":"answer", "select":"random", "phrases":[
+    "Are you unsure?","What are you asking?"
+   ]}]
+  }, {
+   "comment":"attempt to use a wildcard",
+   "phrases":[
+   	{"type":"regex", "expression":"\\*.*"}
+   ],
+   "actions":[ {"type":"answer", "select":"random", "phrases":[
+    "No wildcards please, just speak naturally."
+   ]}]
+  }
+]}

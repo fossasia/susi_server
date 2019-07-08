@@ -1,0 +1,51 @@
+
+
+<!DOCTYPE html>
+<html >
+   <head>
+      <meta charset="UTF-8">
+      <title>SUSI Change User Roles</title>
+      <link rel="stylesheet" href="css/style.css">
+      <link rel="icon" type="image/x-icon" href="../../artwork/favicon.ico">
+
+   </head>
+   <body>
+      <div class="container">
+         <div class="list">
+            <h2><span class="toDo">SUSI Change User Roles</span></h2>
+            <ul id="mails">
+            </ul>
+         </div>
+      </div>
+      <script src='http://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.3/jquery.min.js'></script>
+      <script src="js/index.js"></script>
+      <script type="text/javascript">
+         var json;
+         
+         $.ajaxSetup({
+           async: false
+         });
+         $.getJSON("/aaa/getAllUsers.json", function(myjson){
+           json = myjson;
+         });
+         console.log(json);
+         
+         
+         var mails = $('#mails');
+         var items = json['username'];
+         for (var i=0;i<items.length;i++) {
+             if(items[i].indexOf("email"))
+               continue;
+             var li = document.createElement("li");
+             var res = items[i];
+             li.innerHTML = res;
+             $('#mails').append(li);
+             var div1 = document.createElement("div");
+             div1.innerHTML="<div data-email="+res+" class='c-dropdown js-dropdown' ><input type='hidden' name='user_roles' id='user_roles' class='js-dropdown__input'><span class='c-button c-button--dropdown js-dropdown__current'>Select User Role</span><ul class='c-dropdown__list'><li class='c-dropdown__item' data-dropdown-value='user'>User</li><li class='c-dropdown__item' data-dropdown-value='privileged'>Privileged User</li><li class='c-dropdown__item' data-dropdown-value='admin'>Admin</li></ul></div>";
+             li.appendChild(div1);
+         }
+         
+      </script>
+   </body>
+</html>
+

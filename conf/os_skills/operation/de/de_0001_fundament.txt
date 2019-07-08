@@ -1,0 +1,28 @@
+stopp | halt | stoppe *
+!console:
+{"actions":[{"type":"stop"}]}
+eol
+
+pause | pausieren
+!console:
+{"actions":[{"type":"pause"}]}
+eol
+
+weiter | weiter machen | weitermachen
+!console:
+{"actions":[{"type":"resume"}]}
+eol
+
+von vorne | noch mal | nochmal | nochmal von vorne
+!console:
+{"actions":[{"type":"restart"}]}
+eol
+
+weiter | nächste | nächstes | nächstes *
+`next`
+
+zurück | vorheriges | vorheriges *
+`previous`
+
+sag *
+$1$

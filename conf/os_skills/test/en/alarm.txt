@@ -1,0 +1,32 @@
+[joke]
+!plan 120000: `tell me a joke`
+I will tell you a joke in 2 minutes
+
+set alarm *|set an alarm *
+!plan $1$: ALARM
+alarm set for $1$
+
+set alarm with * in *|set alarm with * on *
+!plan $2$: starting a planned music alarm `play $1$`
+alarm set in $2$ to play $1$
+
+say hello in one minute
+!plan 60000: hello
+I will say hello in one minute
+
+countdown|count down|rocket start|start rocket|apollo start
+!plan 1000: twelve
+!plan 2000: eleven
+!plan 3000: ten
+!plan 4000: nine
+!plan 5000: ignition sequence starts
+!plan 7000: six
+!plan 8000: five
+!plan 9000: four
+!plan 10000: three
+!plan 11000: two
+!plan 12000: one
+!plan 13000: zero
+!plan 14000: all engines running
+!plan 16000: liftoff, we have a liftoff!
+starting countdown

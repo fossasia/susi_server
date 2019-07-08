@@ -1,0 +1,108 @@
+{"rules":[
+	{
+		"keys"   :["what"],
+		"phrases":[{"type":"prior", "expression":"what did I say"}],
+		"process":[{"type":"flow", "expression":"SQUASH"}, {"type":"flow", "expression":"FIRST"}],
+		"actions":[{"type":"answer", "select":"random", "phrases":["you asked me: $query$"]}]
+	},
+	{
+		"keys"   :["what"],
+		"phrases":[{"type":"prior", "expression":"what did you say"}],
+		"process":[{"type":"flow", "expression":"SQUASH"}, {"type":"flow", "expression":"FIRST"}],
+		"actions":[{"type":"answer", "select":"random", "phrases":["I responded: $answer$"]}]
+	},
+	{
+		"keys"   :["what"],
+		"phrases":[{"type":"prior", "expression":"what did I say lately"}],
+		"process":[{"type":"flow", "expression":"SQUASH"}, {"type":"flow", "expression":"REST"}],
+		"actions":[{"type":"answer", "select":"random", "phrases":["you asked me lately: $query$"]}]
+	},
+	{
+		"keys"   :["what"],
+		"phrases":[{"type":"prior", "expression":"what did you say lately"}],
+		"process":[{"type":"flow", "expression":"SQUASH"}, {"type":"flow", "expression":"REST"}],
+		"actions":[{"type":"answer", "select":"random", "phrases":["I responded lately: $answer$"]}]
+	},
+	{
+		"keys"   :["set"],
+		"phrases":[{"type":"pattern", "expression":"set * = *"},
+		           {"type":"pattern", "expression":"set * to *"}],
+		"process":[{"type":"memory", "expression":"SET $1$ = $2$"}],
+		"actions":[{"type":"answer", "select":"random", "phrases":["I set $1$ to $2$"]}]
+	},
+	{
+		"keys"   :["get"],
+		"phrases":[{"type":"pattern", "expression":"get *"}],
+		"process":[{"type":"memory", "expression":"IF $1$"},
+		           {"type":"memory", "expression":"SET varname = $1$"}],
+		"actions":[{"type":"answer", "select":"random", "phrases":["$1$ = $$varname$$"]}]
+	},
+	{
+		"keys"   :["get"],
+		"phrases":[{"type":"pattern", "expression":"get *"}],
+		"process":[{"type":"memory", "expression":"NOT $1$"}],
+		"actions":[{"type":"answer", "select":"random", "phrases":["$1$ is undefined"]}]
+	},
+	{
+		"keys"   :["clear"],
+		"phrases":[{"type":"pattern", "expression":"clear *"}],
+		"process":[{"type":"memory", "expression":"NOT $1$"}],
+		"actions":[{"type":"answer", "select":"random", "phrases":["$1$ was and is undefined"]}]
+	},
+	{
+		"keys"   :["clear"],
+		"phrases":[{"type":"pattern", "expression":"clear *"}],
+		"process":[{"type":"memory", "expression":"IF $1$"},
+                   {"type":"memory", "expression":"CLEAR $1$"}],
+		"actions":[{"type":"answer", "select":"random", "phrases":["$1$ is cleared"]}]
+	},
+	{
+	    "comment":"this is an experiment",
+		"phrases":[{"type":"prior", "expression":"ask me anything"}],
+		"actions":[{"type":"answer", "select":"random", "phrases":["what is your name"]}]
+	},
+	{
+		"phrases":[{"type":"pattern", "expression":"*"},
+		           {"type":"pattern", "expression":"My name is *"},
+		           {"type":"pattern", "expression":"I am *"},
+		           {"type":"pattern", "expression":"I'm *"}],
+		"process":[{"type":"memory", "expression":"IF $answer$ = (?:what is your name)|(?:(.*) tell me your name)"},
+                   {"type":"memory", "expression":"SET _username = $1$"}],
+		"actions":[{"type":"answer", "select":"random", "phrases":["thank you $_username$"]}]
+	},
+	{
+		"phrases":[{"type":"pattern", "expression":"My name is *"},
+		           {"type":"pattern", "expression":"Hello, I am *"},
+		           {"type":"pattern", "expression":"Hello, I'm *"}],
+        "process":[{"type":"memory", "expression":"SET _username = $1$"}],
+		"actions":[{"type":"answer", "select":"random", "phrases":["I will call you $_username$"]}]
+	},
+	{
+		"phrases":[{"type":"pattern", "expression":"Forget my name"}],
+        "process":[{"type":"memory", "expression":"CLEAR _username"}],
+		"actions":[{"type":"answer", "select":"random", "phrases":["I forgot your name"]}]
+	},
+	{
+		"phrases":[{"type":"prior", "expression":"what is my name"}],
+		"options":[
+		{
+			"process":[{"type":"memory", "expression":"IF $_username$"}],
+			"actions":[{"type":"answer", "select":"random", "phrases":["Your name is $_username$"]}]
+		},
+		{
+			"process":[{"type":"memory", "expression":"NOT $_username$"}],
+			"actions":[{"type":"answer", "select":"random", "phrases":["I don't know your name. Please tell me your name"]}]
+		}
+		]
+	},
+	{
+		"phrases":[{"type":"prior", "expression":"Do you like me"}],
+		"process":[{"type":"memory", "expression":"IF $_username$"}],
+		"actions":[{"type":"answer", "select":"random", "phrases":["Yes I like you $_username$"]}]
+	},
+	{
+		"phrases":[{"type":"prior", "expression":"Do you like me"}],
+		"process":[{"type":"memory", "expression":"NOT $_username$"}],
+		"actions":[{"type":"answer", "select":"random", "phrases":["what is your name"]}]
+	}
+]}

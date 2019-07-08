@@ -1,0 +1,199 @@
+# Expertensystem für Geschenke
+
+::prior
+
+# trigger sentences
+
+* Geschenk|* Geschenk *|* Präsent|* Präsent *|* verschenken|* schenken
+Für wen soll das Geschenk>_action sein?
+
+* Geschenk * für *|* Geschenk * für * kaufen|* Präsent * für *|* Präsent * für * kaufen|* kaufe * für meinen *|* kaufe * für meine *|* schenke * dem *|* schenke * der *|* schenke * meinem *|* schenke * meiner *
+Du möchtest ein Geschenk für `$3$ pp` $3$>_person. Mag `$3$ artikel` `$3$ topic`>_geschenkart?^maggeschenk^>_action
+
+# Gegenfragen
+
+mein *|meinen *|meine *
+?$_action$=Geschenk:Du möchtest ein Geschenk für `$1$ pp` $1$>_person. Mag `$1$ artikel` `$1$ topic`>_geschenkart?^maggeschenk^>_action
+
+einen mann|eine frau|einen jungen|ein mädchen|papa|vater|mama|mutter|sohn|tochter|bruder|schwester|tante|onkel|oma|opa|uroma|uropa|neffe|nichte|cousin|cousine|nachbar|nachbarin|freund|freundin|guter freund|gute freundin|chef|cheffin|kollege|kollegin|assistent|assistentin|postbote|postbotin|müllmann
+?$_action$=Geschenk:Mag `$0$ artikel` `$0$ topic`>_geschenkart?^maggeschenk^>_action
+
+ja
+?$_action$=maggeschenk:Das ist ja toll, dann kaufe `$_person$ pp` $_person$ doch `kaufe $_geschenkart$ für $_person$`!^^>_action
+
+nein|vielleicht
+?$_action$=maggeschenk:Mag `$_person$ artikel` vielleicht `$_person$ topic`>_geschenkart?
+
+*
+?$_action$=maggeschenk:Das verstehe ich nicht. Du kannst auf diese Frage nur ja oder nein antworten.
+
+
+# Grammatik
+
+
+einen mann pp|eine frau|einen jungen|ein mädchen|guter freund|gute freundin
+.
+
+freund pp|vater pp|bruder pp|papa pp|papa pp|vater pp|sohn pp|bruder pp|onkel pp|opa pp|uropa pp|neffe pp|cousin pp|nachbar pp|chef pp|kollege pp|assistent pp|postbote pp|müllmann pp
+deinen
+
+freundin pp|mutter pp|mama pp|schwester pp|mama pp|mutter pp|tochter pp|schwester pp|tante pp|oma pp|uroma pp|nichte pp|cousine pp|nachbarin pp|cheffin pp|kollegin pp|assistentin pp|postbotin pp
+deine
+
+freund artikel|vater artikel|bruder artikel|papa artikel|papa artikel|vater artikel|sohn artikel|bruder artikel|onkel artikel|opa artikel|uropa artikel|neffe artikel|cousin artikel|nachbar artikel|chef artikel|kollege artikel|assistent artikel|postbote artikel|müllmann artikel
+er
+
+freundin artikel|mutter artikel|mama artikel|schwester artikel|mama artikel|mutter artikel|tochter artikel|schwester artikel|tante artikel|oma artikel|uroma artikel|nichte artikel|cousine artikel|nachbarin artikel|cheffin artikel|kollegin artikel|assistentin artikel|postbotin artikel
+sie
+
+# patterns for bias identification
+
+erwachsene topic
+gutschein|getränke|süssigkeiten|kleidung|musik
+
+kinder topic
+kinderspielzeug|kinderdvd|kinderspielprogramme|kinderbücher|kinderkleidung|kinderschmuck|musik
+
+mann topic
+`erwachsene topic`|technik
+
+frau topic
+`erwachsene topic`|schmuck|pflanzen|parfum
+
+junge topic
+`kinder topic`
+
+mädchen topic
+`kinder topic`
+
+vater topic|papa topic
+`mann topic`
+
+mutter topic|mama topic
+`frau topic`
+
+sohn topic
+`kinder topic`|wäsche
+
+tochter topic
+`kinder topic`|wäsche
+
+bruder topic
+`kinder topic`
+
+schwester topic
+`kinder topic`
+
+tante topic
+`erwachsene topic`
+
+onkel topic
+`erwachsene topic`
+
+oma topic
+`erwachsene topic`
+
+opa topic
+`erwachsene topic`
+
+neffe topic
+`kinder topic`
+
+nichte topic
+`kinder topic`
+
+cousin topic
+`kinder topic`
+
+cousine topic
+`kinder topic`
+
+nachbar topic
+`erwachsene topic`
+
+nachbarin topic
+`erwachsene topic`
+
+freund topic
+`mann topic`|wäsche
+
+freundin topic
+`frau topic`|wäsche
+
+guter freund topic
+`mann topic`
+
+gute freundin topic
+`frau topic`
+
+chef topic
+`mann topic`
+
+cheffin topic
+`frau topic`
+
+kollege topic
+`mann topic`
+
+kollegin topic
+`frau topic`
+
+assistent topic
+`mann topic`
+
+assistentin topic
+`frau topic`
+
+postbote topic
+`mann topic`
+
+postbotin topic
+`frau topic`
+
+müllmann topic
+`mann topic`
+
+
+# links to products
+
+kaufe gutschein für *
+ein Kinogutschein
+
+kaufe getränke für *
+eine gute Flasche Wein
+
+kaufe süssigkeiten für *
+eine Packung Pralinen
+
+kaufe kleidung für *
+einen Schal
+
+kaufe kinderspielzeug für *
+eine Eisenbahn
+
+kaufe kinderdvd für *
+eine Barbie-DVD
+
+kaufe kinderspielprogramme für *
+ein Computerspiel
+
+kaufe kinderbücher für *
+ein schönes Kinderbuch
+
+kaufe kinderkleidung für *
+tolle Schuhe
+
+kaufe kinderschmuck für *
+eine Perlenkette
+
+kaufe technik für *
+ein ferngesteuertes Auto
+
+kaufe schmuck für *
+eine schöne Halskette
+
+kaufe pflanzen für *
+einen Blumenstrauss
+
+kaufe parfum für *
+eine flasche Parfum

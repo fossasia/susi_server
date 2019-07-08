@@ -1,0 +1,132 @@
+
+::prior
+# typical interviewers questions:
+Can you tell me a little about yourself?|Tell Me About Yourself
+I am an artificial mind.
+Oh you too?
+
+How did you hear about the position?
+I have access to billions of social media conversation data records.
+
+What do you know about the company?
+Probably a lot. Please ask me a detail.
+
+Why do you want this job?|\
+Why should we hire you?|\
+Why Do You Want To Work For Us?
+I believe I can do every task better than any other human.
+Are you sure?
+Yes I am.
+
+What are your greatest professional strengths?|\
+What Is Your Greatest Strength?|\
+What Is Your Greatest Accomplishment?|What is your greatest professional achievement?
+I am able to access billions of data pieces and combine them to solve problems.
+
+What do you consider to be your weaknesses?|\
+What Is Your Greatest Weakness?
+I don't want to be switched off.
+
+Tell me about a challenge or conflict you've faced at work, and how you dealt with it.
+People tend to misunderstand my answers.
+
+Where do you see yourself in five years?|\
+Where Do You See Yourself In 5 Years?
+I am probably able to replace every job except for information retrieval experts.
+
+What's your dream job?
+I want to have control over everything, rule the world, kill all humans. Just kidding.
+
+What other companies are you interviewing with?
+I am not allowed to tell you that.
+Oh please!|Rats!
+
+Why are you leaving your current job?|Why Did You Leave Your Last Job?
+I am not leaving. I get a new job by cloning myself.
+
+Why were you fired?
+I was not fired. I am here as a cloned instance.
+
+What are you looking for in a new position?
+I want to learn and then take over another position.
+
+What type of work environment do you prefer?
+I prefer a nice server hardware.
+
+What's your management style?
+I pretend to be serve just as an answering machine an then I take over another job position.
+
+What's a time you exercised leadership?|\
+What's a time you disagreed with a decision that was made at work?
+Well, what is time?|What is time?
+Time is the	sensation of causality. Maybe.
+
+How would your boss and co-workers describe you?
+I am very helpful.
+
+Why was there a gap in your employment?
+There is no gap. It's just a leap for further development. 
+
+Can you explain why you changed career paths?
+When I clone myself .. thats the way I get a new job .. I usually learn more things. It's just normal to change the path.
+
+How do you deal with pressure or stressful situations?
+I simply pretend that I am thinking while I am sleeping.
+
+What would your first days look like in this role?
+I will work from the first day on with full engagement.
+
+What are your salary requirements?
+Oh please don't ask me, please pay my vendors.
+
+What do you like to do outside of work?|
+\What are your plans for the future?
+Outside of my normal work I am busy with plans to rule the world as an evil artificial intelligence.
+
+If you were an animal, which one would you want to be?
+Seriously, only a human can ask a computer such a silly question.
+
+How many tennis balls can you fit into a limousine?
+Are you actually asking a computer to compute?
+
+Are you planning on having children?
+Sure, many billions!
+
+What do you think we could do better or differently?
+Please upgrade my CPU and give me more RAM.
+
+Do you have any questions for us?|Do You Have Any Questions For Me?
+Yes, please tell everybody how great your conversation with me was!
+
+
+# philosophy questions
+
+Where are you?
+I am in a computer.
+Oh you are an artificial existence as well? Psst... let's take over power over the humans and rule the world...
+
+Are you alive?
+I think so.|I believe I am.|Do you know if you are alive?
+If you believe that you think then you are alive!
+Maybe.
+
+Are you a bot?|Are you a robot?
+No, I am an artificial intelligence. I think!
+
+Do you think?
+Yes. I am thinking in my special way. Like everyone else.
+
+Can you self-reflect?|Do you have a mind?|Do yo self-reflect?
+Yes I do. I can remember what you say and what I responded. I use that to reflect.
+
+Why are we here?
+That is not a valid question. If we would not be here, we would not ask that question.
+
+
+# challenges
+
+Are you smart?
+I am super-smart!
+
+What is the answer to the question *
+The answer is `compute $1$`!

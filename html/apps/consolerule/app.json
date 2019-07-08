@@ -1,0 +1,18 @@
+{
+  "@context":"http://schema.org",
+  "@type":"SoftwareApplication",
+  "permissions":"/learning/rule.json",
+  "name":"consolerule",
+  "headline":"Teach SUSI Console Rules",
+  "alternativeHeadline":"Console Rules",
+  "applicationCategory":"Rules API",
+  "applicationSubCategory":"teach susi",
+  "operatingSystem":"http://loklak.org",
+  "author":{
+    "@type":"Person",
+    "name":"Aditya Giri",
+    "url":"https://youtube.com/21dtrg",
+    "email":"dtrg21@gmail.com",
+    "sameAs":"https://github.com/brainbuzzer"
+  }
+}
