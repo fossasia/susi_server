@@ -95,7 +95,6 @@ public class SusiTutorialTest {
 
             ClientIdentity identity = new ClientIdentity("host:localhost");
             test("reset test.", "ok", identity);
-            test("roses are red", "SUSI is a hack", identity);
             test("susi is a hack", "skynet is back", identity);
             assertTrue("Potatoes|Vegetables|Fish".indexOf(susiAnswer("What is your favorite dish", identity)) >= 0);
             test("Bonjour", "Hello", identity);
