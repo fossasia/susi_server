@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+##!/usr/bin/env bash
 
 cd $(dirname $0)/..
 
@@ -12,7 +12,7 @@ while getopts ":pb" opt; do
             git pull origin
             ;;
         b)
-	    gradle clean assemble
+	    ./gradlew clean assemble
             ;;
         \?)
             echo "Usage: $0 [options...]"
