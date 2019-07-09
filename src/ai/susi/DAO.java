@@ -130,6 +130,7 @@ public class DAO {
     public static JsonTray skillSupportedLanguages;
     public static JsonTray ratingsOverTime;
     public static JsonTray reportedSkills;
+    public static JsonTray skillSlideshow;
     
     // temporary solution for draft storage
     public static Map<String, Map<String, Draft>> drafts = new HashMap<>(); // key is the user's identity, inner map key is draft id
@@ -414,6 +415,13 @@ public class DAO {
         reportedSkills = new JsonTray(reportedSkills_per.toFile(), reportedSkills_vol.toFile(), 1000000);
         OS.protectPath(reportedSkills_per);
         OS.protectPath(reportedSkills_vol);
+
+        //Skill slideshow
+        Path skillSlideshow_per = susi_skill_rating_dir.resolve("skillSlideshow.json");
+        Path skillSlideshow_vol = susi_skill_rating_dir.resolve("skillSlideshow_session.json");
+        skillSlideshow = new JsonTray(skillSlideshow_per.toFile(), skillSlideshow_vol.toFile(), 1000000);
+        OS.protectPath(skillSlideshow_per);
+        OS.protectPath(skillSlideshow_vol);
 
         // open index
         Path index_dir = dataPath.resolve("index");
