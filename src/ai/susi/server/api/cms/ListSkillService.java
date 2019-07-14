@@ -325,6 +325,7 @@ public class ListSkillService extends AbstractAPIHandler implements APIHandler {
                                 break;
                             }
                         }
+                        continue;
                     }
                 }
                 if (countTillOffset++ < offset) {
