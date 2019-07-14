@@ -261,6 +261,7 @@ public class SusiSkill {
             }
 
             String bang_type = "", bang_answers = "", example = "", expect = "", label = "", implication = "";
+            List<SusiInference> inferences = new ArrayList<>();
             StringBuilder bang_bag = new StringBuilder();
             readloop: for (int i = 0; i < block.model.size(); i++) {
                 String line = block.model.get(i);
@@ -304,7 +305,6 @@ public class SusiSkill {
 
                         // javascript process
                         SusiInference inference = new SusiInference(bang_bag.toString(), Type.javascript);
-                        List<SusiInference> inferences = new ArrayList<>(1);
                         inferences.add(inference);
 
                         // answers; must contain $!$
@@ -331,7 +331,6 @@ public class SusiSkill {
                         } catch (JSONException e) {
                             throw new JSONException(e.getMessage() + " \"" + bang_bag.toString() + "\"");
                         }
-                        List<SusiInference> inferences = new ArrayList<>(1);
                         inferences.add(inference);
 
                         // actions; we may have several actions here
@@ -376,24 +375,43 @@ public class SusiSkill {
                 }
 
                 // read content body; this should be the last line
-                String[] phrases = block.utterance.split("\\|");
+                List<SusiUtterance> utterances = phrasesFromWildcard(skillid.getPath(), acceptWildcardIntent, block.utterance, prior);
                 String condition = null;
                 if (line.startsWith("?") && (thenpos = line.indexOf(':')) > 0) {
                     int elsepos = line.substring(thenpos + 1).indexOf(':') + thenpos + 1;
                     condition = line.substring(1, thenpos).trim();
                     if (elsepos <= thenpos) {
                         // only if, no else
+                    	// "? if : then"
                         String ifsubstring = line.substring(thenpos + 1).trim();
-                        if (addIntent(this.intents, acceptWildcardIntent, this.id, example, expect, label, implication, prior, 0, phrases, condition, ifsubstring))
-                            continue readloop;
+                        if (ifsubstring.length() > 0) {
+                        	String[] answers = ifsubstring.split("\\|");
+                        	List<SusiAction> actions = new ArrayList<>();
+                        	actions.add(new SusiAction(SusiAction.answerAction(skillid.language(), answers)));
+                        
+                        	if (addIntent(this.intents, acceptWildcardIntent, this.id, example, expect, label, implication, prior, 0, utterances, condition, actions))
+                        		continue readloop;
+                        }
                     } else {
+                    	// "? if : then : else"
                         String ifsubstring = line.substring(thenpos + 1, elsepos).trim();
-                        if (addIntent(this.intents, acceptWildcardIntent, this.id, example, expect, label, implication, prior, 0, phrases, condition, ifsubstring))
-                            continue readloop;
+                        if (ifsubstring.length() > 0) {
+                        	String[] answers = ifsubstring.split("\\|");
+                        	List<SusiAction> actions = new ArrayList<>();
+                        	actions.add(new SusiAction(SusiAction.answerAction(skillid.language(), answers)));
+                        
+                        	if (addIntent(this.intents, acceptWildcardIntent, this.id, example, expect, label, implication, prior, 0, utterances, condition, actions))
+                        		continue readloop;
+                        }
                         String elsesubstring = line.substring(elsepos + 1).trim();
                         if (elsesubstring.length() > 0) {
                             String[] elseanswers = elsesubstring.split("\\|");
-                            SusiIntent intentelse = new SusiIntent(phrases, "NOT " + condition, elseanswers, prior, 0, example, expect, label, implication, skillid);
+
+                            List<SusiAction> actions = new ArrayList<>();
+                            actions.add(new SusiAction(SusiAction.answerAction(skillid.language(), elseanswers)));
+
+                            inferences.add(new SusiInference("NOT " + condition, SusiInference.Type.memory));
+                            SusiIntent intentelse = new SusiIntent(utterances, inferences, actions, prior, 0, example, expect, label, implication, skillid);
                             if (!acceptWildcardIntent && intentelse.isCatchallIntent()) {
                                 DAO.log("WARNING: skipping skill / wildcard not allowed here: " + skillid.getPath());
                                 continue readloop;
@@ -405,7 +423,10 @@ public class SusiSkill {
                     }
                 } else {
                     String[] answers = line.split("\\|");
-                    SusiIntent intent = new SusiIntent(phrases, condition, answers, prior, 0, example, expect, label, implication, skillid);
+                    List<SusiAction> actions = new ArrayList<>();
+                    actions.add(new SusiAction(SusiAction.answerAction(skillid.language(), answers)));
+                    if (condition != null) inferences.add(new SusiInference(condition, SusiInference.Type.memory));
+                    SusiIntent intent = new SusiIntent(utterances, inferences, actions, prior, 0, example, expect, label, implication, skillid);
                     if (!acceptWildcardIntent && intent.isCatchallIntent()) {
                         DAO.log("WARNING: skipping skill / wildcard not allowed here: " + skillid.getPath());
                         continue readloop;
@@ -452,12 +473,15 @@ public class SusiSkill {
             final String implication,
             final boolean prior,
             final int depth,
-            final String[] phrases,
+            final List<SusiUtterance> utterances,
             final String condition,
-            final String ifsubstring) throws SusiActionException {
-        if (ifsubstring.length() > 0) {
-            String[] answers = ifsubstring.split("\\|");
-            SusiIntent intent = new SusiIntent(phrases, "IF " + condition, answers, prior, depth, example, expect, label, implication, skillid);
+            final List<SusiAction> actions) throws SusiActionException {
+        if (actions.size() > 0) {
+
+        	List<SusiInference> inferences = new ArrayList<>();
+            inferences.add(new SusiInference("IF " + condition, SusiInference.Type.memory));
+            
+            SusiIntent intent = new SusiIntent(utterances, inferences, actions, prior, depth, example, expect, label, implication, skillid);
             if (!acceptWildcardIntent && intent.isCatchallIntent()) {
                 DAO.log("WARNING: skipping skill / wildcard not allowed here: " + skillid.getPath());
                 return true;

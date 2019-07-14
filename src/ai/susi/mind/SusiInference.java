@@ -74,6 +74,7 @@ public class SusiInference {
     }
 
     public SusiInference(String expression, Type type) {
+    	assert expression != null;
         this.json = new JSONObject(true);
         this.json.put("type", type.name());
         this.json.put("expression", expression);

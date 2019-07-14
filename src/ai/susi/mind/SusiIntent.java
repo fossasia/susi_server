@@ -191,50 +191,6 @@ public class SusiIntent {
         this.depth = depth;
     }
 
-    public SusiIntent(
-            String[] utterances,
-            String condition,
-            String[] answers,
-            boolean prior,
-            int depth,
-            String example,
-            String expect,
-            String label,
-            String implication,
-            SusiSkill.ID skillid) throws SusiActionException {
-        this.utterances = new ArrayList<>();
-        for (String u: utterances) {
-            try {
-                this.utterances.add(new SusiUtterance(u.trim(), prior));
-            } catch (PatternSyntaxException e) {
-                DAO.severe("Bad utterance:" + u);
-                continue;
-            }
-        }
-        this.actions = new ArrayList<>();
-        this.actions.add(new SusiAction(SusiAction.answerAction(skillid.language(), answers)));
-        this.inferences = new ArrayList<>();
-        if (condition != null) this.inferences.add(new SusiInference(condition, SusiInference.Type.memory));
-        this.keys = new HashSet<>();
-        JSONArray k = computeKeysFromUtterance(this.utterances);
-        k.forEach(o -> this.keys.add((String) o));
-        this.cues = new LinkedHashSet<>();
-        this.user_subscore = DEFAULT_SCORE;
-        this.score = null; // calculate this later if required
-        this.comment = "";
-        this.skillid = skillid;
-        this.example = example;
-        this.expect = expect;
-        if (label == null || label.length() == 0 && utterances.length == 1) {
-            String l = utterances[0].replaceAll(" ", "_");
-            if (l.indexOf('*') < 0) label = l;
-        }
-        this.label = (label != null && label.length() > 0) ? label : "";
-        this.implication = implication;
-        this.hashCode = 0; // set with lazy computation
-        this.depth = depth;
-    }
-
     public SusiIntent setExample(String example) {
         this.example = example;
         return this;
