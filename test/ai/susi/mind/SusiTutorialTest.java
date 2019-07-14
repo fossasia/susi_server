@@ -144,7 +144,7 @@ public class SusiTutorialTest {
                     "ok^^>_mood\n" +
                     "\n" +
                     "roses are red\n" +
-                    "susi is a hack\n" +
+                    "SUSI is a hack\n" +
                     "skynet is back\n" +
                     "\n" +
                     "What is your favorite dish\n" +
