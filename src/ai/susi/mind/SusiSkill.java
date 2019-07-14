@@ -316,6 +316,7 @@ public class SusiSkill {
 
                         extendParentWithAnswer(this.intents, intent);
                         this.intents.add(intent);
+                        continue intentloop;
                     } else if (bang_type.equals("console")) {
                         // create a console intent
                         List<SusiUtterance> utterances = phrasesFromWildcard(skillid.getPath(), acceptWildcardIntent, block.utterance, prior);
@@ -365,6 +366,7 @@ public class SusiSkill {
 
                         extendParentWithAnswer(this.intents, intent);
                         this.intents.add(intent);
+                        continue intentloop;
                     }
                     // if there is a different bang type, just ignore it.
                     bang_type = "";
@@ -373,9 +375,8 @@ public class SusiSkill {
                     continue readloop;
                 }
 
-                // read content
-                // mid of conversation (last answer is query for next intent)
-                String[] phrases = (i > 0 ? block.model.get(i - 1) : block.utterance).split("\\|");
+                // read content body; this should be the last line
+                String[] phrases = block.utterance.split("\\|");
                 String condition = null;
                 if (line.startsWith("?") && (thenpos = line.indexOf(':')) > 0) {
                     int elsepos = line.substring(thenpos + 1).indexOf(':') + thenpos + 1;

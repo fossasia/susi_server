@@ -54,6 +54,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
+// http://127.0.0.1:4000/susi/chat.json?q=wootr&instant=wootr%0d!example:x%0d!expect:y%0dyee
+// http://127.0.0.1:4000/susi/chat.json?q=wootr&instant=wootr%0dyee
+
 public class SusiService extends AbstractAPIHandler implements APIHandler {
 
     private static final long serialVersionUID = 857847830309879111L;
