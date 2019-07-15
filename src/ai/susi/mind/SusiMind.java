@@ -179,7 +179,9 @@ public class SusiMind {
     }
 
     public SusiMind learn(SusiSkill skill, SusiSkill.ID skillid, boolean acceptFocusSkills) {
-
+    	assert skill != null;
+    	assert skillid != null;
+    	
         // handle focus skills
         if (!acceptFocusSkills && skill.getOn() != null && skill.getOn().length > 0) {
             String[] on = skill.getOn();

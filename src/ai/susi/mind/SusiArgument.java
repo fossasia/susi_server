@@ -207,6 +207,7 @@ public class SusiArgument implements Iterable<SusiThought> {
      * @return the argument
      */
     public SusiArgument addAction(final SusiAction action) {
+    	assert action != null;
         this.actions.add(action);
         return this;
     }
@@ -218,6 +219,7 @@ public class SusiArgument implements Iterable<SusiThought> {
      * @return the argument
      */
     public SusiArgument addSkill(final SusiSkill.ID skillid) {
+    	assert skillid != null;
     	this.skills.add(skillid);
     	return this;
     }

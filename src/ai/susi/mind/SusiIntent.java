@@ -47,7 +47,7 @@ import ai.susi.tools.TimeoutMatcher;
  * A set of intents is called a skill; a skill describe how to handle activities from the outside of the AI and react on
  * such activities.
  */
-public class SusiIntent {
+public class SusiIntent implements Cloneable {
 
     public final static String CATCHALL_KEY = "*";
     public final static int    DEFAULT_SCORE = 10;
@@ -81,6 +81,26 @@ public class SusiIntent {
         this.hashCode = 0; // set with lazy computation
         this.depth = 0;
     }
+    
+    public Object clone() {
+    	SusiIntent i = new SusiIntent();
+    	this.utterances.forEach(u -> i.utterances.add(u));
+        this.actions.forEach(a -> i.actions.add(a));
+        this.inferences.forEach(f -> i.inferences.add(f));
+        this.keys.forEach(k -> i.keys.add(k));
+        this.cues.forEach(c -> i.cues.add(c));
+        this.user_subscore = i.user_subscore;
+        i.score = this.score;
+        i.comment = this.comment;
+        i.skillid = this.skillid;
+        i.example = this.example;
+        i.expect = this.expect;
+        i.label = this.label;
+        i.implication = this.implication;
+        i.hashCode = this.hashCode;
+        i.depth = this.depth;
+        return i;
+    }
 
     /**
      * Create an intent by parsing of the intent description
@@ -88,6 +108,7 @@ public class SusiIntent {
      * @throws PatternSyntaxException
      */
     private SusiIntent(SusiSkill.ID skillid, JSONObject json) throws PatternSyntaxException {
+    	assert skillid != null;
 
         // extract the utterances and the utterances subscore
         if (!json.has("phrases")) throw new PatternSyntaxException("phrases missing", "", 0);
@@ -152,23 +173,17 @@ public class SusiIntent {
 
     public SusiIntent(
             List<SusiUtterance> utterances,
-            List<SusiInference> inferences,
-            List<SusiAction> actions,
             boolean prior,
             int depth,
-            String example,
-            String expect,
-            String label,
-            String implication,
             SusiSkill.ID skillid) throws SusiActionException {
+    	assert skillid != null;
+    	assert utterances != null;
+    	assert utterances.size() > 0;
+    	
         this.utterances = new ArrayList<>();
         for (SusiUtterance u: utterances) this.utterances.add(u);
-
         this.actions = new ArrayList<>();
-        for (SusiAction a: actions) this.actions.add(a);
-
         this.inferences = new ArrayList<>();
-        for (SusiInference i: inferences) this.inferences.add(i);
 
         this.keys = new HashSet<>();
         JSONArray k = computeKeysFromUtterance(this.utterances);
@@ -179,14 +194,16 @@ public class SusiIntent {
         this.score = null; // calculate this later if required
         this.comment = "";
         this.skillid = skillid;
-        this.example = example;
-        this.expect = expect;
-        if (label == null || label.length() == 0 && this.utterances.size() == 1) {
+        this.example = "";
+        this.expect = "";
+        if (label == null || label.length() == 0 && this.utterances.size() == 1) try {
             String l = this.utterances.get(0).getPattern().toString().replaceAll(" ", "_");
             if (l.indexOf('*') < 0) label = l;
+        } catch (IndexOutOfBoundsException e) {
+        	throw new SusiActionException(e.toString() + " in " + skillid.toString());
         }
         this.label = (label != null && label.length() > 0) ? label : "";
-        this.implication = implication;
+        this.implication = "";
         this.hashCode = 0; // will be computed later
         this.depth = depth;
     }
@@ -234,6 +251,11 @@ public class SusiIntent {
         k.forEach(o -> this.keys.add((String) o));
         return this;
     }
+    
+    public SusiIntent addInference(SusiInference inference) {
+    	this.inferences.add(inference);
+    	return this;
+    }
 
     public SusiIntent setInferences(List<SusiInference> inferences) {
         this.inferences = inferences;
@@ -258,6 +280,11 @@ public class SusiIntent {
     public SusiIntent setActions(List<SusiAction> actions) {
         this.actions = actions;
         return this;
+    }
+    
+    public SusiIntent addAction(SusiAction action) {
+    	this.actions.add(action);
+    	return this;
     }
 
     public SusiIntent addActions(SusiAction... actions) {
@@ -317,7 +344,7 @@ public class SusiIntent {
 
     public int hashCode() {
         if (this.hashCode != 0) return this.hashCode;
-        String ids0 = this.skillid.getPath();
+        String ids0 = this.skillid == null ? "" : this.skillid.getPath();
         String ids1 = this.actions.toString();
         String ids2 = this.utterances.toString();
         this.hashCode = ids0.hashCode() + ids1.hashCode() + ids2.hashCode();
@@ -431,24 +458,6 @@ public class SusiIntent {
         intent.put("actions", a);
         a.put(SusiAction.answerAction(language, answers));
         return intent;
-    }
-
-    public boolean isCatchallIntent() {
-        for (SusiUtterance u: this.utterances) {
-            if (u.isCatchallPhrase()) return true;
-        }
-        return false;
-    }
-
-    /**
-     * @deprecated
-     */
-    public static boolean isCatchallIntent(JSONObject json) {
-        JSONArray phrases = json.getJSONArray("phrases");
-        for (int i = 0; i < phrases.length(); i++) {
-            if (SusiUtterance.isCatchallPhrase(phrases.getJSONObject(i))) return true;
-        }
-        return false;
     }
 
     private final static Pattern SPACE_PATTERN = Pattern.compile(" ");
@@ -595,7 +604,7 @@ public class SusiIntent {
         // compute the score
 
         // (0) language
-        final int language_subscore = (int) (100 * SusiIntent.this.skillid.language().likelihoodCanSpeak(userLanguage));
+        final int language_subscore = SusiIntent.this.skillid == null ? 0 : (int) (100 * SusiIntent.this.skillid.language().likelihoodCanSpeak(userLanguage));
         this.score = language_subscore;
          
         // (1) pattern score

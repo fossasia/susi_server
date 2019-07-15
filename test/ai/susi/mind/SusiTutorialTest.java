@@ -85,6 +85,7 @@ public class SusiTutorialTest {
                 BufferedReader br = getTestReader();
                 SusiSkill.ID skillid = new SusiSkill.ID(SusiLanguage.en, "");
                 SusiSkill skill = new SusiSkill(br, skillid, true);
+                //System.out.println(skill.getIntents().get(0).clone().toString());
                 System.out.println(skill.toJSON().toString(2));
                 DAO.susi.learn(skill, skillid, true);
                 br.close();
