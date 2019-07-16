@@ -110,10 +110,10 @@ public class SusiService extends AbstractAPIHandler implements APIHandler {
         DAO.observe(); // get a database update
 
         // compute a recall
-        SusiArgument observation_argument = new SusiArgument();
+        ArrayList<SusiThought> recalls = new ArrayList<>();
         List<SusiCognition> cognitions = DAO.susi_memory.getCognitions(user.getIdentity().getClient(), true);
-        cognitions.forEach(cognition -> observation_argument.think(cognition.recallDispute()));
-        SusiThought recall = observation_argument.mindmeld(false);
+        cognitions.forEach(cognition -> recalls.add(cognition.recallDispute()));
+        SusiThought recall = SusiArgument.mindmeld(recalls, false);
 
         // now that we have a recall, use it to set the dream/persona
         if (dream == null || dream.length() == 0) {

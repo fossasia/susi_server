@@ -79,6 +79,7 @@ public class SusiMind {
         public final boolean os;  // only custom skills or skills in os minds may declare wildcard answers. 
 
         public Layer(String name, File path, boolean os) {
+            assert path.exists();
             this.name = name;
             this.path = path;
             this.os = os;
@@ -434,7 +435,7 @@ public class SusiMind {
     public SusiThought react(String query, SusiLanguage userLanguage, ClientIdentity identity, boolean debug, SusiThought observation, SusiMind... minds) {
         // get the history a list of thoughts
         long t0 = System.currentTimeMillis();
-        SusiArgument observation_argument = new SusiArgument();
+        SusiArgument observation_argument = new SusiArgument(identity, userLanguage);
         if (observation != null && observation.length() > 0) observation_argument.think(observation);
         List<SusiCognition> cognitions = this.memories == null ? new ArrayList<>() : this.memories.getCognitions(identity.getClient(), true);
         long t1 = System.currentTimeMillis();
@@ -458,7 +459,7 @@ public class SusiMind {
         ideatest: for (SusiIdea idea: ideas) {
             // compute an argument: because one intent represents a horn clause, the argument is a deduction track, a "proof" of the result.
             long t5 = System.currentTimeMillis();
-            SusiArgument argument = idea.getIntent().consideration(query, recall, idea.getToken(), this, identity);
+            SusiArgument argument = idea.getIntent().consideration(query, recall, idea.getToken(), debug, identity, userLanguage, minds);
             long t6 = System.currentTimeMillis();
             if (t6 - t5 > 100) DAO.log("=== Wasted " + (t6 - t5) + " milliseconds with intent " + idea.getIntent().toJSON());
 
@@ -644,15 +645,16 @@ public class SusiMind {
 
     public static void main(String[] args) {
         SusiMind mem = new SusiMind(null);
-        SusiMind.Layer testlayer = new SusiMind.Layer("test", new File(new File("conf"), "susi"), true);
+        SusiMind.Layer testlayer = new SusiMind.Layer("test", new File(new File(new File(new File("conf"), "os_skills"), "test"), "alarm.txt"), true);
         mem.addLayer(testlayer);
         try {
-            System.out.println(mem.new Reaction("I feel funny", SusiLanguage.unknown, new ClientIdentity("localhost"), true, new SusiThought(), mem).getExpressions());
+            System.out.println(mem.new Reaction("set alarm", SusiLanguage.unknown, ClientIdentity.ANONYMOUS, true, new SusiThought(), mem).getExpressions());
+            //System.out.println(mem.new Reaction("I feel funny", SusiLanguage.unknown, ClientIdentity.ANONYMOUS, true, new SusiThought(), mem).getExpressions());
         } catch (ReactionException e) {
             e.printStackTrace();
         }
         try {
-            System.out.println(mem.new Reaction("Help me!", SusiLanguage.unknown, new ClientIdentity("localhost"), true, new SusiThought(), mem).getExpressions());
+            System.out.println(mem.new Reaction("Help me!", SusiLanguage.unknown, ClientIdentity.ANONYMOUS, true, new SusiThought(), mem).getExpressions());
         } catch (ReactionException e) {
             e.printStackTrace();
         }

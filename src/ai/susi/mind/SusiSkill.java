@@ -294,7 +294,13 @@ public class SusiSkill {
                     } else if (head.equals("label")) {
                     	fileIntents.forEach(intent -> intent.setLabel(tail));
                     } else if (head.equals("implication")) {
-                    	fileIntents.forEach(intent -> intent.setImplication(tail));
+                        fileIntents.forEach(intent -> intent.setImplication(tail));
+                    } else if (head.equals("first")) {
+                        fileIntents.forEach(intent -> intent.addInference(new SusiInference("FIRST", SusiInference.Type.flow)));
+                    } else if (head.equals("rest")) {
+                        fileIntents.forEach(intent -> intent.addInference(new SusiInference("REST", SusiInference.Type.flow)));
+                    } else if (head.equals("queue")) {
+                        fileIntents.forEach(intent -> intent.addInference(new SusiInference("QUEUE " + tail, SusiInference.Type.flow)));
                     } else {
                         // start multi-line bang
                         bang_type = head;
