@@ -238,13 +238,16 @@ public class SusiThought extends JSONObject {
     }
     
     /**
-     * Merging of data is required during an mind-meld.
+     * "assertz" is merging of data to the end of the thought data structure.
+     * Such kind of merging of data is required i.e. during an mind-meld.
      * To meld two thoughts, we combine their data arrays into one.
      * The resulting table has at maximum the length of both source tables combined.
+     * Merged data from the 'other' tought does not overwrite the current thought.
+     * Instead, it is added as 'alternative solutions'.
      * @param table the information to be melted into our existing table.
      * @return the thought
      */
-    public SusiThought mergeData(JSONArray table1) {
+    public SusiThought assertz(JSONArray table1) {
         JSONArray table0 = this.getData();
         int t0c = 0;
         for (int i = 0; i < table1.length(); i++) {

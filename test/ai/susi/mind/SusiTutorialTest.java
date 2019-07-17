@@ -33,7 +33,7 @@ public class SusiTutorialTest {
 
     public static String susiAnswer(String q, ClientIdentity identity) {
         // creating a cognition means that an answer is computed
-        SusiCognition cognition = new SusiCognition(q, 0, 0, 0, "", "", "en", "Others",1, identity, true, DAO.susi);
+        SusiCognition cognition = new SusiCognition(q, 0, 0, 0, "", "", "en", "Others", identity, true, DAO.susi);
         // evaluate the cognition, the answer is already inside!
         try {
             // memorize the cognition, this is needed to compute context-aware intents.
@@ -41,6 +41,8 @@ public class SusiTutorialTest {
             DAO.susi_memory.addCognition(identity.getClient(), cognition, true);
             // get the answer
             List<SusiThought> answers = cognition.getAnswers();
+            assert answers.size() > 0 : "no answer for q = " + q;
+            assertTrue("no answer for q = " + q, answers.size() > 0);
             SusiThought thought = answers.iterator().next();
             List<SusiAction> actions = thought.getActions(false);
             SusiAction action = actions.iterator().next();
@@ -83,6 +85,7 @@ public class SusiTutorialTest {
                 BufferedReader br = getTestReader();
                 SusiSkill.ID skillid = new SusiSkill.ID(SusiLanguage.en, "");
                 SusiSkill skill = new SusiSkill(br, skillid, true);
+                //System.out.println(skill.getIntents().get(0).clone().toString());
                 System.out.println(skill.toJSON().toString(2));
                 DAO.susi.learn(skill, skillid, true);
                 br.close();
@@ -96,7 +99,7 @@ public class SusiTutorialTest {
             ClientIdentity identity = new ClientIdentity("host:localhost");
             test("reset test.", "ok", identity);
             test("roses are red", "SUSI is a hack", identity);
-            test("susi is a hack", "skynet is back", identity);
+            //test("susi is a hack", "skynet is back", identity);
             assertTrue("Potatoes|Vegetables|Fish".indexOf(susiAnswer("What is your favorite dish", identity)) >= 0);
             test("Bonjour", "Hello", identity);
             test("Buenos días", "Hello", identity);
@@ -144,7 +147,7 @@ public class SusiTutorialTest {
                     "ok^^>_mood\n" +
                     "\n" +
                     "roses are red\n" +
-                    "susi is a hack\n" +
+                    "SUSI is a hack\n" +
                     "skynet is back\n" +
                     "\n" +
                     "What is your favorite dish\n" +

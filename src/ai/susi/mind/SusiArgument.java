@@ -91,9 +91,9 @@ public class SusiArgument implements Iterable<SusiThought> {
     public SusiThought mindmeld(boolean reverse) {
         SusiThought meltedMind = new SusiThought();
         if (reverse)
-            for (int i = this.recall.size() -1; i >= 0; i--) meltedMind.mergeData(this.recall.get(i).getData());
+            for (int i = this.recall.size() -1; i >= 0; i--) meltedMind.assertz(this.recall.get(i).getData());
         else 
-            for (int i = 0; i < this.recall.size(); i++) meltedMind.mergeData(this.recall.get(i).getData());
+            for (int i = 0; i < this.recall.size(); i++) meltedMind.assertz(this.recall.get(i).getData());
         meltedMind.setTimes(times()); // remember the length of the argument to create a perception of time based on number of thoughts
         return meltedMind;
     }
@@ -207,6 +207,7 @@ public class SusiArgument implements Iterable<SusiThought> {
      * @return the argument
      */
     public SusiArgument addAction(final SusiAction action) {
+    	assert action != null;
         this.actions.add(action);
         return this;
     }
@@ -218,6 +219,7 @@ public class SusiArgument implements Iterable<SusiThought> {
      * @return the argument
      */
     public SusiArgument addSkill(final SusiSkill.ID skillid) {
+    	assert skillid != null;
     	this.skills.add(skillid);
     	return this;
     }

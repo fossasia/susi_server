@@ -179,7 +179,9 @@ public class SusiMind {
     }
 
     public SusiMind learn(SusiSkill skill, SusiSkill.ID skillid, boolean acceptFocusSkills) {
-
+    	assert skill != null;
+    	assert skillid != null;
+    	
         // handle focus skills
         if (!acceptFocusSkills && skill.getOn() != null && skill.getOn().length > 0) {
             String[] on = skill.getOn();
@@ -425,12 +427,11 @@ public class SusiMind {
      * in every intent up to the moment where enough intents have been applied as consideration. The reaction may also
      * cause the evaluation of operational steps which may cause learning effects within the SusiMind.
      * @param query the user input
-     * @param maxcount the maximum number of answers (typical is only one)
      * @param client authentication string of the user
      * @param observation an initial thought - that is what susi experiences in the context. I.e. location and language of the user
      * @return
      */
-    public List<SusiThought> react(String query, SusiLanguage userLanguage, int maxcount, ClientIdentity identity, boolean debug, SusiThought observation, SusiMind... minds) {
+    public SusiThought react(String query, SusiLanguage userLanguage, ClientIdentity identity, boolean debug, SusiThought observation, SusiMind... minds) {
         // get the history a list of thoughts
         long t0 = System.currentTimeMillis();
         SusiArgument observation_argument = new SusiArgument();
@@ -449,7 +450,7 @@ public class SusiMind {
         query = SusiUtterance.normalizeExpression(query);
 
         // find an answer
-        List<SusiThought> answers = new ArrayList<>();
+        SusiThought answer = null;
         List<SusiIdea> ideas = creativity(query, userLanguage, recall, 100); // create a list of ideas which are possible intents
         long t4 = System.currentTimeMillis();
 
@@ -466,12 +467,13 @@ public class SusiMind {
                 continue ideatest; // consider only sound arguments
             }
             try {
-                answers.add(argument.finding(identity, userLanguage, debug, minds));
+            	answer = argument.finding(identity, userLanguage, debug, minds);
+            	 // a valid idea
+            	break;
             } catch (ReactionException e) {
                 // a bad argument (this is not a runtime error, it is a signal that the thought cannot be thought to the end
                 continue ideatest;
-            } // a valid idea
-            if (answers.size() >= maxcount) break; // and stop if we are done
+            }
         }
         long t7 = System.currentTimeMillis();
         //DAO.log("+++ react run time: " + (t1 - t0) + " milliseconds - getCognitions");
@@ -481,11 +483,10 @@ public class SusiMind {
         //DAO.log("+++ react run time: " + (t7 - t4) + " milliseconds - test ideas");
 
         // attach the ideas to the thought to have that information available for the explain command
-        SusiThought t = answers.size() > 0 ? answers.get(0) : null;
-        JSONArray a = t == null ? null : t.getData();
+        JSONArray a = answer == null ? null : answer.getData();
         if (a != null) {
             for (int i = 0; i < a.length(); i++) a.getJSONObject(i).remove("idea"); // in case that the ideas size is shorter than the current array length
-            if (debug && answers.size() > 0) {
+            if (debug) {
                 int i = 0;
                 for (SusiIdea idea: ideas) {
                     if (a.length() <= i) {
@@ -497,44 +498,46 @@ public class SusiMind {
                 }
             }
         }
-        return answers;
+        return answer;
     }
 
-    public static List<SusiThought> reactMinds(
+    public static SusiThought reactMinds(
             final String query,
             final SusiLanguage userLanguage,
-            final int maxcount,
             final ClientIdentity identity,
             final boolean debug,
             final SusiThought observation,
             final SusiMind... mindLayers) {
-        List<SusiThought> thoughts = new ArrayList<>();
+        SusiThought thought = null;
         int mindcount = 0;
-        while (thoughts.isEmpty() && mindcount < mindLayers.length) {
-            thoughts = mindLayers[mindcount++].react(query, userLanguage, maxcount, identity, debug, observation, mindLayers);
+        while (thought == null && mindcount < mindLayers.length) {
+        	thought = mindLayers[mindcount++].react(query, userLanguage, identity, debug, observation, mindLayers);
         }
-        return thoughts;
+        return thought;
     }
 
     public class Reaction {
-        private SusiAction action;
+        private List<SusiAction> actions;
         private SusiThought mindstate;
 
         public Reaction(String query, SusiLanguage userLanguage, ClientIdentity identity, boolean debug, SusiThought observation, SusiMind... minds) throws ReactionException {
-            List<SusiThought> thoughts = react(query, userLanguage, 1, identity, debug, observation, minds);
-            if (thoughts.size() == 0) throw new ReactionException("no thoughts generated"); // that should be semantically correct if the deduction fails
-            this.mindstate = thoughts.get(0);
-            List<SusiAction> actions = this.mindstate.getActions(false);
+        	this.mindstate = react(query, userLanguage, identity, debug, observation, minds);
+            if (this.mindstate == null) throw new ReactionException("no thoughts generated"); // that should be semantically correct if the deduction fails
+            this.actions = this.mindstate.getActions(false);
             if (actions.isEmpty()) throw new ReactionException("this mind has no idea what it should do.");
-            this.action = actions.get(0);
         }
 
-        public SusiAction getAction() {
-            return this.action;
+        public List<SusiAction> getActions() {
+            return this.actions;
         }
 
-        public String getExpression() {
-            return this.action.getStringAttr("expression");
+        public List<String> getExpressions() {
+        	final List<String> expresssions = new ArrayList<>();
+        	this.actions.forEach(action -> {
+        		String a = action.getStringAttr("expression");
+        		if (a != null) expresssions.add(a);
+        	});
+            return expresssions;
         }
 
         public SusiThought getMindstate() {
@@ -542,7 +545,7 @@ public class SusiMind {
         }
 
         public String toString() {
-            return this.getExpression();
+            return this.getExpressions().toString();
         }
     }
 
@@ -644,12 +647,12 @@ public class SusiMind {
         SusiMind.Layer testlayer = new SusiMind.Layer("test", new File(new File("conf"), "susi"), true);
         mem.addLayer(testlayer);
         try {
-            System.out.println(mem.new Reaction("I feel funny", SusiLanguage.unknown, new ClientIdentity("localhost"), true, new SusiThought(), mem).getExpression());
+            System.out.println(mem.new Reaction("I feel funny", SusiLanguage.unknown, new ClientIdentity("localhost"), true, new SusiThought(), mem).getExpressions());
         } catch (ReactionException e) {
             e.printStackTrace();
         }
         try {
-            System.out.println(mem.new Reaction("Help me!", SusiLanguage.unknown, new ClientIdentity("localhost"), true, new SusiThought(), mem).getExpression());
+            System.out.println(mem.new Reaction("Help me!", SusiLanguage.unknown, new ClientIdentity("localhost"), true, new SusiThought(), mem).getExpressions());
         } catch (ReactionException e) {
             e.printStackTrace();
         }

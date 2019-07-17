@@ -74,6 +74,7 @@ public class SusiInference {
     }
 
     public SusiInference(String expression, Type type) {
+    	assert expression != null;
         this.json = new JSONObject(true);
         this.json.put("type", type.name());
         this.json.put("expression", expression);
@@ -133,6 +134,12 @@ public class SusiInference {
             if (recall.getCount() > 0) recall.getData().remove(0);
             return recall;
         });
+        //flowProcedures.put(Pattern.compile("QUEUE\\h+?([^\\h]*?)\\h+?(*)\\h*?"), (flow, matcher) -> {
+        //    String time = matcher.group(1);
+        //    String reflection = matcher.group(2);
+        //    SusiThought queue = flow.mindmeld(true);
+        //    return recall;
+        //});
         memoryProcedures.put(Pattern.compile("SET\\h+?([^=]*?)\\h+?=\\h+?([^=]*)\\h*?"), (flow, matcher) -> {
             String remember = matcher.group(1), matching = matcher.group(2);
             return see(flow, flow.unify("%1% AS " + remember, false, 0), flow.unify(matching, false, 0), Pattern.compile("(.*)"));

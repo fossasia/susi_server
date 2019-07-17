@@ -172,7 +172,6 @@ public class GetUsers extends AbstractAPIHandler implements APIHandler {
                   } else {
                       json.put("userName", "");
                   }
-                  accounting.commit();
 
                   //add the user details in the list
                   userList.add(json);

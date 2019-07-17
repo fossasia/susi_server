@@ -142,6 +142,7 @@ public class ListSkillService extends AbstractAPIHandler implements APIHandler {
         File model = new File(DAO.model_watch_dir, model_name);
         String group_name = call.get("group", "All");
         String language_list = call.get("language", "en");
+        String search_type_list = call.get("search_type", "");
         int duration = call.get("duration", -1);
         int avg_rating = call.get("avg_rating", -1);
         JSONArray jsonArray = new JSONArray();
@@ -155,10 +156,10 @@ public class ListSkillService extends AbstractAPIHandler implements APIHandler {
         Boolean countFilter = false;
         Boolean dateFilter = false;
         Boolean searchFilter = false;
-        String searchType = call.get("search_type", "skill_name");
         String reviewed = call.get("reviewed", "false");
         String staff_picks = call.get("staff_picks", "false");
         String[] language_names = language_list.split(",");
+        String[] search_types = search_type_list.split(",");
         // Initialises the stat counters
         initStatCounters();
 
@@ -310,6 +311,7 @@ public class ListSkillService extends AbstractAPIHandler implements APIHandler {
                     }
                 }
                 if (searchFilter) {
+                    for(String searchType: search_types ) {
                     JSONObject skillMetadata = jsonValues.get(i);
                     if (searchType.equals("skill_name") || searchType.equals("author")
                             || searchType.equals("descriptions")) {
@@ -327,6 +329,7 @@ public class ListSkillService extends AbstractAPIHandler implements APIHandler {
                         }
                         continue;
                     }
+                }
                 }
                 if (countTillOffset++ < offset) {
                     continue;

@@ -54,7 +54,7 @@ public class SusiSkill {
     private String[] on;
     private Boolean protectedSkill, dynamicContent;
     private Set<String> examples, tags;
-    private List<SusiIntent> intents = new ArrayList<>();
+    private List<SusiIntent> skillIntents = new ArrayList<>();
     private SusiSkill.ID id;
     
     public static class ID implements Comparable<ID> {
@@ -175,7 +175,7 @@ public class SusiSkill {
         this.dynamicContent = false;
         this.examples = new LinkedHashSet<>();
         this.tags = new LinkedHashSet<>();
-        this.intents = new ArrayList<>();
+        this.skillIntents = new ArrayList<>();
     }
 
     /**
@@ -204,6 +204,8 @@ public class SusiSkill {
         boolean prior = false, dynamicContent = false, protectedSkill = false;
         //int indentStep = 4; // like in python
         intentloop: for (IntentBlock block: skillFile) {
+        	
+        	// we have intents without any model; these are 'single lines' and may contain configuration settings
             if (block.model == null) {
                 String line = block.utterance;
                 int thenpos;
@@ -260,10 +262,24 @@ public class SusiSkill {
                 continue intentloop;
             }
 
-            String bang_type = "", bang_answers = "", example = "", expect = "", label = "", implication = "";
+            // check utterances
+            List<SusiUtterance> utterances = phrasesFromWildcard(skillid.getPath(), acceptWildcardIntent, block.utterance, prior);
+            if (utterances == null) continue intentloop;
+            for (SusiUtterance u: utterances) {
+                if (u.isCatchallPhrase())  {
+                    DAO.log("WARNING: skipping skill / wildcard not allowed here: " + skillid.getPath());
+                    continue intentloop;
+                }
+            }
+            
+            // parse model
+            String bang_type = "", bang_answers = "";
+            List<SusiIntent> fileIntents = new ArrayList<>();
+            fileIntents.add(new SusiIntent(utterances, prior, 0, skillid));
             StringBuilder bang_bag = new StringBuilder();
-            readloop: for (int i = 0; i < block.model.size(); i++) {
-                String line = block.model.get(i);
+            int lineNr = 0;
+            readloop: while (lineNr < block.model.size()) {
+                String line = block.model.get(lineNr++);
 
                 // parse bang types and answer lines
                 int thenpos;
@@ -272,13 +288,13 @@ public class SusiSkill {
                     String tail = line.substring(thenpos + 1).trim();
                     // test bang type
                     if (head.equals("example")) {
-                        example = tail;
+                    	fileIntents.forEach(intent -> intent.setExample(tail));
                     } else if (head.equals("expect")) {
-                        expect = tail;
+                    	fileIntents.forEach(intent -> intent.setExpect(tail));
                     } else if (head.equals("label")) {
-                        label = tail;
+                    	fileIntents.forEach(intent -> intent.setLabel(tail));
                     } else if (head.equals("implication")) {
-                        implication = tail;
+                    	fileIntents.forEach(intent -> intent.setImplication(tail));
                     } else {
                         // start multi-line bang
                         bang_type = head;
@@ -299,27 +315,22 @@ public class SusiSkill {
                     // the line is "eol"; stop collection
                     if (bang_type.equals("javascript")) {
                         // create a javascript intent
-                        List<SusiUtterance> utterances = phrasesFromWildcard(skillid.getPath(), acceptWildcardIntent, block.utterance, prior);
-                        if (utterances == null) continue readloop;
 
                         // javascript process
                         SusiInference inference = new SusiInference(bang_bag.toString(), Type.javascript);
-                        List<SusiInference> inferences = new ArrayList<>(1);
-                        inferences.add(inference);
-
+                        
                         // answers; must contain $!$
                         SusiAction action = new SusiAction(SusiAction.answerAction(this.id.language(), bang_answers.split("\\|")));
-                        List<SusiAction> actions = new ArrayList<>(1);
-                        actions.add(action);
-
-                        SusiIntent intent = new SusiIntent(utterances, inferences, actions, prior, 0, example, expect, label, implication, skillid);
-
-                        extendParentWithAnswer(this.intents, intent);
-                        this.intents.add(intent);
+                        
+                        fileIntents.forEach(intent -> {
+                        	intent.addInference(inference);
+                        	intent.addAction(action);
+                        	extendParentWithAnswer(this.skillIntents, intent);
+                        	this.skillIntents.add(intent);
+                        });
+                        break readloop;
                     } else if (bang_type.equals("console")) {
                         // create a console intent
-                        List<SusiUtterance> utterances = phrasesFromWildcard(skillid.getPath(), acceptWildcardIntent, block.utterance, prior);
-                        if (utterances == null) continue readloop;
 
                         // console process
                         JSONObject definition;
@@ -330,21 +341,21 @@ public class SusiSkill {
                         } catch (JSONException e) {
                             throw new JSONException(e.getMessage() + " \"" + bang_bag.toString() + "\"");
                         }
-                        List<SusiInference> inferences = new ArrayList<>(1);
-                        inferences.add(inference);
+                        fileIntents.forEach(intent -> intent.addInference(inference));
 
                         // actions; we may have several actions here
-                        List<SusiAction> actions = new ArrayList<>();
 
                         // verify actions
                         if (definition.has("actions")) {
                             JSONArray bo_actions = definition.getJSONArray("actions");
                             bo_actions.forEach(action -> {
-                                try {
-                                    actions.add(new SusiAction((JSONObject) action));
-                                } catch (SusiActionException e) {
-                                    DAO.severe(e.getMessage());
-                                }
+                                fileIntents.forEach(intent -> {
+									try {
+										intent.addAction(new SusiAction((JSONObject) action));
+									} catch (SusiActionException e) {
+										e.printStackTrace();
+									}
+								});
                             });
                         }
 
@@ -356,15 +367,16 @@ public class SusiSkill {
 
                         // answers; must contain names from the console result array
                         if (bang_answers.length() > 0) try {
-                            actions.add(new SusiAction(SusiAction.answerAction(this.id.language(), bang_answers.split("\\|"))));
+                        	SusiAction action = new SusiAction(SusiAction.answerAction(this.id.language(), bang_answers.split("\\|")));
+                        	fileIntents.forEach(intent -> intent.addAction(action));
                         } catch (SusiActionException e) {
                             DAO.severe(e.getMessage());
                         }
-
-                        SusiIntent intent = new SusiIntent(utterances, inferences, actions, prior, 0, example, expect, label, implication, skillid);
-
-                        extendParentWithAnswer(this.intents, intent);
-                        this.intents.add(intent);
+                        fileIntents.forEach(intent -> {
+                        	extendParentWithAnswer(this.skillIntents, intent);
+                        	this.skillIntents.add(intent);
+                        });
+                        break readloop;
                     }
                     // if there is a different bang type, just ignore it.
                     bang_type = "";
@@ -373,49 +385,76 @@ public class SusiSkill {
                     continue readloop;
                 }
 
-                // read content
-                // mid of conversation (last answer is query for next intent)
-                String[] phrases = (i > 0 ? block.model.get(i - 1) : block.utterance).split("\\|");
-                String condition = null;
+                // read content body; this should be the last line
                 if (line.startsWith("?") && (thenpos = line.indexOf(':')) > 0) {
                     int elsepos = line.substring(thenpos + 1).indexOf(':') + thenpos + 1;
-                    condition = line.substring(1, thenpos).trim();
+                    final String condition = line.substring(1, thenpos).trim();
                     if (elsepos <= thenpos) {
                         // only if, no else
+                        // "? if : then"
                         String ifsubstring = line.substring(thenpos + 1).trim();
-                        if (addIntent(this.intents, acceptWildcardIntent, this.id, example, expect, label, implication, prior, 0, phrases, condition, ifsubstring))
+                        if (ifsubstring.length() > 0) {
+                            String[] answers = ifsubstring.split("\\|");
+                            fileIntents.forEach(intent -> {
+								try {
+									intent.addAction(new SusiAction(SusiAction.answerAction(skillid.language(), answers)));
+								} catch (SusiActionException e) {
+									e.printStackTrace();
+								}
+							});
+                            fileIntents.forEach(intent -> intent.addInference(new SusiInference("IF " + condition, SusiInference.Type.memory)));
                             continue readloop;
+                        }
                     } else {
+                    	// here we must clone all current intents
+                    	final List<SusiIntent> clonedIntents = new ArrayList<>();
+                    	fileIntents.forEach(intent -> clonedIntents.add((SusiIntent) intent.clone()));
+                    	
+                        // "? if : then : else"
                         String ifsubstring = line.substring(thenpos + 1, elsepos).trim();
-                        if (addIntent(this.intents, acceptWildcardIntent, this.id, example, expect, label, implication, prior, 0, phrases, condition, ifsubstring))
-                            continue readloop;
+                        if (ifsubstring.length() > 0) {
+                            String[] answers = ifsubstring.split("\\|");
+                            fileIntents.forEach(intent -> {
+								try {
+									intent.addAction(new SusiAction(SusiAction.answerAction(skillid.language(), answers)));
+								} catch (SusiActionException e) {
+									e.printStackTrace();
+								}
+							});
+                            fileIntents.forEach(intent -> intent.addInference(new SusiInference("IF " + condition, SusiInference.Type.memory)));
+                        }
                         String elsesubstring = line.substring(elsepos + 1).trim();
                         if (elsesubstring.length() > 0) {
                             String[] elseanswers = elsesubstring.split("\\|");
-                            SusiIntent intentelse = new SusiIntent(phrases, "NOT " + condition, elseanswers, prior, 0, example, expect, label, implication, skillid);
-                            if (!acceptWildcardIntent && intentelse.isCatchallIntent()) {
-                                DAO.log("WARNING: skipping skill / wildcard not allowed here: " + skillid.getPath());
-                                continue readloop;
-                            } else {
-                                extendParentWithAnswer(this.intents, intentelse);
-                                this.intents.add(intentelse);
-                            }
+                            clonedIntents.forEach(intent -> {
+								try {
+									intent.addAction(new SusiAction(SusiAction.answerAction(skillid.language(), elseanswers)));
+								} catch (SusiActionException e) {
+									e.printStackTrace();
+								}
+							});
+                            clonedIntents.forEach(intent -> intent.addInference(new SusiInference("NOT " + condition, SusiInference.Type.memory)));
+                            // attach the clones intents to the list of intents
+                            clonedIntents.forEach(intent -> fileIntents.add(intent));
                         }
+                        continue readloop;
                     }
                 } else {
                     String[] answers = line.split("\\|");
-                    SusiIntent intent = new SusiIntent(phrases, condition, answers, prior, 0, example, expect, label, implication, skillid);
-                    if (!acceptWildcardIntent && intent.isCatchallIntent()) {
-                        DAO.log("WARNING: skipping skill / wildcard not allowed here: " + skillid.getPath());
-                        continue readloop;
-                    } else {
-                        extendParentWithAnswer(this.intents, intent);
-                        //System.out.println(intent.toString());
-                        this.intents.add(intent);
-                    }
-                    example = ""; expect = ""; label = ""; implication = "";
+                    fileIntents.forEach(intent -> {
+						try {
+							intent.addAction(new SusiAction(SusiAction.answerAction(skillid.language(), answers)));
+						} catch (SusiActionException e) {
+							e.printStackTrace();
+						}
+					});
+                    continue readloop;
                 }
             }
+            fileIntents.forEach(intent -> {
+            	extendParentWithAnswer(this.skillIntents, intent);
+            	this.skillIntents.add(intent);
+            });
         }
     }
 
@@ -439,33 +478,6 @@ public class SusiSkill {
             }
         }
         return utterances;
-    }
-
-    private static boolean addIntent(
-            final List<SusiIntent> existing_intents_in_skill,
-            final boolean acceptWildcardIntent,
-            final SusiSkill.ID skillid,
-            final String example,
-            final String expect,
-            final String label,
-            final String implication,
-            final boolean prior,
-            final int depth,
-            final String[] phrases,
-            final String condition,
-            final String ifsubstring) throws SusiActionException {
-        if (ifsubstring.length() > 0) {
-            String[] answers = ifsubstring.split("\\|");
-            SusiIntent intent = new SusiIntent(phrases, "IF " + condition, answers, prior, depth, example, expect, label, implication, skillid);
-            if (!acceptWildcardIntent && intent.isCatchallIntent()) {
-                DAO.log("WARNING: skipping skill / wildcard not allowed here: " + skillid.getPath());
-                return true;
-            } else {
-                extendParentWithAnswer(existing_intents_in_skill, intent);
-                existing_intents_in_skill.add(intent);
-            }
-        }
-        return false;
     }
 
     /**
@@ -583,7 +595,7 @@ public class SusiSkill {
     }
     
     public List<SusiIntent> getIntents() {
-        return this.intents;
+        return this.skillIntents;
     }
 
     public String getAuthor() {
@@ -652,9 +664,9 @@ public class SusiSkill {
         if (this.dynamicContent != null) json.put("dynamic_content", this.dynamicContent.booleanValue());
         if (this.examples != null && this.examples.size() > 0) json.put("examples", new JSONArray(this.examples));
         if (this.tags != null && this.tags.size() > 0) json.put("tags", new JSONArray(this.tags));
-        if (this.intents != null && this.intents.size() > 0) {
+        if (this.skillIntents != null && this.skillIntents.size() > 0) {
             JSONArray i = new JSONArray();
-            for (SusiIntent si: this.intents) i.put(si.toJSON());
+            for (SusiIntent si: this.skillIntents) i.put(si.toJSON());
             json.put("intents", i);
         }
         return json;
