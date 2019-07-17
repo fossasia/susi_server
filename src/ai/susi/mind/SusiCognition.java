@@ -86,7 +86,7 @@ public class SusiCognition {
             String countryCode, String countryName,
             String languageCode,
             String deviceType,
-            int maxcount, ClientIdentity identity,
+            ClientIdentity identity,
             boolean debug,
             final SusiMind... mindLayers) {
         this.json = new JSONObject(true);
@@ -94,7 +94,6 @@ public class SusiCognition {
         // get a response from susis mind
         String client = identity.getClient();
         this.setQuery(query);
-        this.json.put("count", maxcount);
         SusiThought observation = new SusiThought();
         observation.addObservation("timezoneOffset", Integer.toString(timezoneOffset));
 
@@ -117,12 +116,12 @@ public class SusiCognition {
         this.json.put("query_date", DateParser.utcFormatter.print(query_date));
 
         // compute the mind's reaction: here we compute with a hierarchy of minds. The dispute is taken from the relevant mind level that was able to compute the dispute
-        List<SusiThought> dispute = SusiMind.reactMinds(query, language, maxcount, identity, debug, observation, mindLayers);
+        SusiThought dispute = SusiMind.reactMinds(query, language, identity, debug, observation, mindLayers);
         long answer_date = System.currentTimeMillis();
 
         // update country wise skill usage data
-        if (!countryCode.equals("") && !countryName.equals("") && dispute.size() > 0) {
-            List<String> skills = dispute.get(0).getSkills();
+        if (!countryCode.equals("") && !countryName.equals("") && dispute != null) {
+            List<String> skills = dispute.getSkills();
             for (String skill : skills) {
                 try {
                     updateCountryWiseUsageData(skill, countryCode, countryName);
@@ -134,8 +133,8 @@ public class SusiCognition {
         }
 
         // update skill usage data
-        if (!dispute.isEmpty()) try {
-            List<String> skills = dispute.get(0).getSkills();
+        if (dispute != null) try {
+            List<String> skills = dispute.getSkills();
             for (String skill : skills) {
                 updateUsageData(skill);
                 updateDeviceWiseUsageData(skill, deviceType);
@@ -145,7 +144,11 @@ public class SusiCognition {
         }
         
         // store answer and actions into json
-        this.json.put("answers", new JSONArray(dispute));
+        if (dispute != null) {
+        	List<SusiThought> thoughts = new ArrayList<>();
+        	thoughts.add(dispute);
+        	this.json.put("answers", new JSONArray(thoughts));
+        }
         this.json.put("answer_date", DateParser.utcFormatter.print(answer_date));
         this.json.put("answer_time", answer_date - query_date);
         this.json.put("language", language.name());

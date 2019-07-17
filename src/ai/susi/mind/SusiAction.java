@@ -365,7 +365,7 @@ public class SusiAction {
 
     final static Pattern visible_assignment = Pattern.compile("(?:(?:.*)[\\?\\!\\s,\\.;-]+)?([^\\^]+?)>([_a-zA-Z0-9]+)(?:[\\?\\!\\s,\\.;-](?:.*))?+");
     final static Pattern blind_assignment = Pattern.compile("(?:.*?)\\^(.*?)\\^>([_a-zA-Z0-9]+)(?:[\\?\\!\\s,\\.;-](?:.*))?+");
-    final static Pattern self_referrer = Pattern.compile(".*?`([^`]*?)`.*?");
+    final static Pattern reflection = Pattern.compile(".*?`([^`]*?)`.*?");
     
     /**
      * Action descriptions are templates for data content. Strings may refer to arguments from
@@ -435,25 +435,26 @@ public class SusiAction {
                 // reflection: evaluate contents from the answers expressions as recursion.
                 // Susi is asking itself in another thinking request.
                 reflectionSuccess = false;
-                while (new TimeoutMatcher(m = self_referrer.matcher(expression)).matches()) {
+                while (new TimeoutMatcher(m = reflection.matcher(expression)).matches()) {
                     String observation = m.group(1);
                     if (observation.indexOf('>') > 0 || observation.indexOf('`') > 0) continue;  // there is an assignment or unresolved reflection in the value
                     SusiMind.Reaction reaction = null;
                     ReactionException ee = null;
+                    SusiThought mindstate = thoughts.mindmeld(true);
                     mindlevels: for (SusiMind mind: minds) {
-                            try {
-                                reaction = mind.new Reaction(observation, language, identity, debug, new SusiThought(), minds);
-                                break mindlevels;
-                            } catch (ReactionException e) {
-                                ee = e;
-                                continue mindlevels;
-                            }
+                        try {
+                            reaction = mind.new Reaction(observation, language, identity, debug, mindstate, minds);
+                            break mindlevels;
+                        } catch (ReactionException e) {
+                            ee = e;
+                            continue mindlevels;
+                        }
                     }
                     if (reaction == null) throw ee == null ? new ReactionException("could not find an answer") : ee;
                     thoughts.think(reaction.getMindstate());
-                    SusiAction action = reaction.getAction();
-                    if (action.getRenderType() != RenderType.answer) actions.add(action);
-                    expression = expression.substring(0, m.start(1) - 1) + reaction.getExpression() + expression.substring(m.end(1) + 1);
+                    reaction.getActions().forEach(action -> {if (action.getRenderType() != RenderType.answer) actions.add(action);}); // we add only non-answer actions, because the answer actions are added as expression!
+                    List<String> expressions = reaction.getExpressions();
+                    expression = expression.substring(0, m.start(1) - 1) + expressions.get(random.nextInt(expressions.size())) + expression.substring(m.end(1) + 1);
                     expression = expression.trim();
                     reflectionSuccess = true;
                 }

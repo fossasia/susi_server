@@ -83,7 +83,6 @@ public class SusiService extends AbstractAPIHandler implements APIHandler {
     public static JSONObject serviceImpl(Query post, HttpServletResponse response, Authorization user, final JsonObjectWithDefault permissions, String q) throws APIException {
 
         // parameters
-        int count = post.get("count", 1);
         int timezoneOffset = post.get("timezoneOffset", 0); // minutes, i.e. -60
         boolean debug = "true".equals(post.get("debug", ""));
         double latitude = post.get("latitude", Double.NaN); // i.e. 8.68
@@ -301,7 +300,7 @@ public class SusiService extends AbstractAPIHandler implements APIHandler {
         }
 
         // answer with built-in intents
-        SusiCognition cognition = new SusiCognition(q, timezoneOffset, latitude, longitude, countryCode, countryName, language, deviceType, count, user.getIdentity(), debug, minds.toArray(new SusiMind[0]));
+        SusiCognition cognition = new SusiCognition(q, timezoneOffset, latitude, longitude, countryCode, countryName, language, deviceType, user.getIdentity(), debug, minds.toArray(new SusiMind[0]));
         if (cognition.getAnswers().size() > 0) try {
             DAO.susi_memory.addCognition(user.getIdentity().getClient(), cognition, debug);
         } catch (IOException e) {

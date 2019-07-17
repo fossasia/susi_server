@@ -134,3 +134,6 @@ I do not have a previous configuration.
 
 Erase * interaction
 I'm sorry, I'm afraid I cannot do that.
+
+Say *
+$1$
