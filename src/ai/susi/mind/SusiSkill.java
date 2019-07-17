@@ -679,18 +679,18 @@ public class SusiSkill {
     }
 
     public static void main(String[] args) {
-        //Path data = FileSystems.getDefault().getPath("data");
-        //Map<String, String> config;
-        //try {config = SusiServer.readConfig(data);DAO.init(config, data);} catch (Exception e) {e.printStackTrace();}
-        File system_skills_test = new File(new File(FileSystems.getDefault().getPath("conf").toFile(), "os_skills"), "test");
-        File skillFile = new File(system_skills_test, "dialog.txt");
+        File conf = FileSystems.getDefault().getPath("conf").toFile();
+        File os_skills = new File(conf, "os_skills");
+        File test = new File(os_skills, "test");
+        File en = new File(test, "en");
+        File skillFile = new File(en, "alarm.txt");
         //File model = new File(DAO.model_watch_dir, "general");
         //File skill = SusiSkill.getSkillFileInModel(model, "Westworld");
         System.out.println(skillFile);
         SusiSkill.ID skillid = new SusiSkill.ID(skillFile);
         try {
             SusiSkill skill = new SusiSkill(new BufferedReader(new FileReader(skillFile)), skillid, false);
-            System.out.println(skill.toString());
+            System.out.println(skill.getIntents().toString());
         } catch (IOException | JSONException | SusiActionException e) {
             e.printStackTrace();
         }

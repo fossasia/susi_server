@@ -142,7 +142,7 @@ public class SusiInference {
             if (recall.getCount() > 0) recall.getData().remove(0);
             return recall;
         });
-        flowProcedures.put(Pattern.compile("QUEUE\\h+?([^\\h]*?)\\h+?\\h\\h+?(.*)\\h*?"), (flow, matcher) -> {
+        flowProcedures.put(Pattern.compile("QUEUE\\h+?([^\\h]*?)\\h+?(.*)\\h*?"), (flow, matcher) -> {
             String time = matcher.group(1);
             String reflection = matcher.group(2);
             final AtomicLong delay = new AtomicLong(0);

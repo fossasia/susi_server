@@ -223,6 +223,10 @@ public class SusiTutorialTest {
                     "]" +
                     "eol\n" +
                     "\n" +
+                    "set alarm\n" +
+                    "!queue: 1234 `play metallica`\n" +
+                    "alarm set\n" +
+                    "\n" +
                     "\n" +
                     "\n";
 
