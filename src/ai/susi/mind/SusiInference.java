@@ -159,40 +159,19 @@ public class SusiInference {
             }
 
             JSONObject actionj = SusiAction.answerAction(flow.getLanguage(), reflection);
-            List<SusiAction> plannedActions;
             try {
-                plannedActions = new SusiAction(actionj).execution(flow, false);
+                new SusiAction(actionj).execution(flow, false);
             } catch (ReactionException | SusiActionException e) {
                 return new SusiThought(); // empty thought as fail
             }
-            plannedActions.forEach(action -> {
+            flow.getActions().forEach(action -> {
                 // add a delay to the actions
                 action.setLongAttr("queue_delay", delay.get());
                 action.setDateAttr("queue_date", date);
             });
 
             SusiThought queued = flow.mindmeld(true);
-            queued.addActions(plannedActions);
 
-            /*
-            SusiMind.Reaction reaction = null;
-            SusiThought mindstate = flow.mindmeld(true);
-            mindlevels: for (SusiMind mind: flow.getMinds()) {
-                try {
-                    reaction = mind.new Reaction(reflection, flow.getLanguage(), flow.getClientIdentity(), false, mindstate, flow.getMinds());
-                    break mindlevels;
-                } catch (ReactionException e) {
-                    continue mindlevels;
-                }
-            }
-            if (reaction == null) return new SusiThought(); // fail
-            SusiThought queued = reaction.getMindstate();
-            reaction.getActions().forEach(action -> {
-                // add a delay to the actions
-                action.setLongAttr("queue_delay", delay.get());
-                action.setDateAttr("queue_date", date);
-            });
-            */
             return queued;
         });
         memoryProcedures.put(Pattern.compile("SET\\h+?([^=]*?)\\h+?=\\h+?([^=]*)\\h*?"), (flow, matcher) -> {
