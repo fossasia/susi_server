@@ -521,6 +521,10 @@ public class SusiServer {
                 UploadImageService.class,
                 UploadAvatarService.class,
 
+                //email setting services
+                GetEmailSettings.class,
+                EmailSettingsService.class,
+
                 // draft services
                 StoreDraftService.class,
                 ReadDraftService.class,

@@ -534,6 +534,10 @@ public class DAO {
         return value == null ? default_val : value.equals("true") || value.equals("on") || value.equals("1");
     }
 
+    public static void setConfig(String key, String value) {
+        config.put(key, value);
+    }
+
     public static Set<String> getConfigKeys() {
         return config.keySet();
     }
