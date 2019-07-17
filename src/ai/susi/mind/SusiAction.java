@@ -20,8 +20,10 @@
 package ai.susi.mind;
 
 import java.io.File;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Date;
 import java.util.List;
 import java.util.Random;
 import java.util.regex.Matcher;
@@ -33,6 +35,7 @@ import org.json.JSONObject;
 import ai.susi.DAO;
 import ai.susi.mind.SusiMind.ReactionException;
 import ai.susi.server.ClientIdentity;
+import ai.susi.tools.DateParser;
 import ai.susi.tools.TimeoutMatcher;
 
 /**
@@ -353,6 +356,11 @@ public class SusiAction {
     public String getStringAttr(String attr) {
         return this.json.has(attr) ? this.json.getString(attr) : "";
     }
+
+    public SusiAction setStringAttr(String attr, String value) {
+        this.json.put(attr, value);
+        return this;
+    }
     
     /**
      * If the action contains integer attributes, they can be retrieved here
@@ -361,6 +369,30 @@ public class SusiAction {
      */
     public int getIntAttr(String attr) {
         return this.json.has(attr) ? this.json.getInt(attr) : 0;
+    }
+    
+    public long getLongAttr(String attr) {
+        return this.json.has(attr) ? this.json.getLong(attr) : 0L;
+    }
+    
+    public SusiAction setIntAttr(String attr, int value) {
+        this.json.put(attr, value);
+        return this;
+    }
+    
+    public SusiAction setLongAttr(String attr, long value) {
+        this.json.put(attr, value);
+        return this;
+    }
+
+    public Date getDateAttr(String attr) throws ParseException {
+        String d = this.getStringAttr(attr);
+        return DateParser.FORMAT_RFC1123.parse(d);
+    }
+
+    public SusiAction setDateAttr(String attr, Date date) {
+        String d = DateParser.formatRFC1123(date);
+        return setStringAttr(attr, d);
     }
 
     final static Pattern visible_assignment = Pattern.compile("(?:(?:.*)[\\?\\!\\s,\\.;-]+)?([^\\^]+?)>([_a-zA-Z0-9]+)(?:[\\?\\!\\s,\\.;-](?:.*))?+");

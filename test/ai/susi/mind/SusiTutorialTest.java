@@ -96,7 +96,7 @@ public class SusiTutorialTest {
                 System.exit(-1);
             }
 
-            ClientIdentity identity = new ClientIdentity("host:localhost");
+            ClientIdentity identity = ClientIdentity.ANONYMOUS;
             test("reset test.", "ok", identity);
             test("roses are red", "SUSI is a hack", identity);
             //test("susi is a hack", "skynet is back", identity);

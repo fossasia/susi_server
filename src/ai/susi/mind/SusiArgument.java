@@ -35,8 +35,14 @@ import ai.susi.server.ClientIdentity;
  * Within the Susi AI infrastructure this may be considered as the representation of
  * the short-time memory of thinking inside Susi.
  */
-public class SusiArgument implements Iterable<SusiThought> {
+public class SusiArgument implements Iterable<SusiThought>, Cloneable {
+    
+    // framework information
+    private final ClientIdentity identity;
+    private final SusiLanguage language;
+    private final SusiMind[] minds;
 
+    // working data
     private final ArrayList<SusiThought> recall;
     private final List<SusiAction> actions;
     private final List<SusiSkill.ID> skills;
@@ -44,17 +50,33 @@ public class SusiArgument implements Iterable<SusiThought> {
     /**
      * Create an empty argument
      */
-    public SusiArgument() {
+    public SusiArgument(ClientIdentity identity, SusiLanguage language, SusiMind... minds) {
+        this.identity = identity;
+        this.language = language;
+        this.minds = minds;
         this.recall = new ArrayList<>();
         this.actions = new ArrayList<>();
         this.skills = new ArrayList<>();
     }
     
     public SusiArgument clone() {
-        SusiArgument c = new SusiArgument();
+        SusiArgument c = new SusiArgument(this.identity, this.language, this.minds);
         this.recall.forEach(thought -> c.recall.add(thought));
         this.actions.forEach(action -> c.actions.add(action));
+        this.skills.forEach(skill -> c.skills.add(skill));
         return c;
+    }
+    
+    public ClientIdentity getClientIdentity() {
+        return this.identity;
+    }
+    
+    public SusiLanguage getLanguage() {
+        return this.language;
+    }
+    
+    public SusiMind[] getMinds() {
+        return this.minds;
     }
     
     /**
@@ -89,12 +111,16 @@ public class SusiArgument implements Iterable<SusiThought> {
      * @return the squashed thoughts from an argument as one thought
      */
     public SusiThought mindmeld(boolean reverse) {
+        return mindmeld(this.recall, reverse);
+    }
+    
+    public static SusiThought mindmeld(ArrayList<SusiThought> recall, boolean reverse) {
         SusiThought meltedMind = new SusiThought();
         if (reverse)
-            for (int i = this.recall.size() -1; i >= 0; i--) meltedMind.assertz(this.recall.get(i).getData());
+            for (int i = recall.size() -1; i >= 0; i--) meltedMind.assertz(recall.get(i).getData());
         else 
-            for (int i = 0; i < this.recall.size(); i++) meltedMind.assertz(this.recall.get(i).getData());
-        meltedMind.setTimes(times()); // remember the length of the argument to create a perception of time based on number of thoughts
+            for (int i = 0; i < recall.size(); i++) meltedMind.assertz(recall.get(i).getData());
+        meltedMind.setTimes(recall.size()); // remember the length of the argument to create a perception of time based on number of thoughts
         return meltedMind;
     }
     
@@ -279,11 +305,11 @@ public class SusiArgument implements Iterable<SusiThought> {
     }
     
     public static void main(String[] args) {
-        SusiArgument a = new SusiArgument().think(new SusiThought().addObservation("a", "letter-a"));
+        SusiArgument a = new SusiArgument(ClientIdentity.ANONYMOUS, SusiLanguage.en).think(new SusiThought().addObservation("a", "letter-a"));
         System.out.println(a.unify("the letter $a$", true, Integer.MAX_VALUE));
-        SusiArgument b = new SusiArgument().think(new SusiThought().addObservation("b", "letter-b"));
+        SusiArgument b = new SusiArgument(ClientIdentity.ANONYMOUS, SusiLanguage.en).think(new SusiThought().addObservation("b", "letter-b"));
         System.out.println(b.unify("the letter $a$", true, Integer.MAX_VALUE));
-        SusiArgument c = new SusiArgument().think(new SusiThought().addObservation("b", "letter-b"));
+        SusiArgument c = new SusiArgument(ClientIdentity.ANONYMOUS, SusiLanguage.en).think(new SusiThought().addObservation("b", "letter-b"));
         System.out.println(c.unify("the letter c", true, Integer.MAX_VALUE));
     }
 }
