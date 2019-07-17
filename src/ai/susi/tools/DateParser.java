@@ -130,7 +130,7 @@ public class DateParser {
     public static Date oneMonthAgo() {
         return new Date(System.currentTimeMillis() - MONTH_MILLIS);
     }
-    
+
     private static long lastRFC1123long = 0;
     private static String lastRFC1123string = "";
 
@@ -147,7 +147,14 @@ public class DateParser {
             return s;
         }
     }
-    
+
+    public static final String formatISO8601(final Date date) {
+        if (date == null) return "";
+        synchronized (iso8601MillisFormat) {
+            return iso8601MillisFormat.format(date);
+        }
+    }
+
     public static void main(String[] args) {
         Calendar calendar = new GregorianCalendar();
         System.out.println("the date is           : " + calendar.getTime().getTime());
