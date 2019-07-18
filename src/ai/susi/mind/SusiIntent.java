@@ -177,8 +177,8 @@ public class SusiIntent implements Cloneable {
             int depth,
             SusiSkill.ID skillid) throws SusiActionException {
     	assert skillid != null;
-    	assert utterances != null;
-    	assert utterances.size() > 0;
+    	assert utterances != null : "utterances is null in " + skillid.getPath();
+    	assert utterances.size() > 0 : "utterance size is 0 in " + skillid.getPath();
     	
         this.utterances = new ArrayList<>();
         for (SusiUtterance u: utterances) this.utterances.add(u);
@@ -722,7 +722,7 @@ public class SusiIntent implements Cloneable {
      * @param token the key from the user query which matched the intent tokens (also considering category matching)
      * @return the result of the application of the intent, a thought argument containing the thoughts which terminated into a final mindstate or NULL if the consideration should be rejected
      */
-    public SusiArgument consideration(final String query, SusiThought recall, SusiLinguistics.Token token, SusiMind mind, ClientIdentity identity) {
+    public SusiArgument consideration(final String query, SusiThought recall, SusiLinguistics.Token token, boolean debug, ClientIdentity identity, SusiLanguage userLanguage, SusiMind... minds) {
         
         HashSet<SusiThought> keynotes = new HashSet<>();
         
@@ -745,7 +745,7 @@ public class SusiIntent implements Cloneable {
             
             DAO.log("Susi has an idea: on " + keynote.toString() + " apply " + this.toJSON());
             // we start with the recall from previous interactions as new flow
-            final SusiArgument flow = new SusiArgument().think(recall);
+            final SusiArgument flow = new SusiArgument(identity, userLanguage, minds).think(recall);
             flow.think(keynote);
             
             // lets apply the intents that belong to this specific consideration

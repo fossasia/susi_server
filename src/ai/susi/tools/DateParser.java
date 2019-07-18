@@ -130,7 +130,7 @@ public class DateParser {
     public static Date oneMonthAgo() {
         return new Date(System.currentTimeMillis() - MONTH_MILLIS);
     }
-    
+
     private static long lastRFC1123long = 0;
     private static String lastRFC1123string = "";
 
@@ -148,34 +148,13 @@ public class DateParser {
         }
     }
 
-    /**
-     * Format date for GSA (short form of ISO8601 date format)
-     * @param date
-     * @return datestring "yyyy-mm-dd"
-     * @see ISO8601Formatter
-     */
-    public static final String formatGSAFS(final Date date) {
+    public static final String formatISO8601(final Date date) {
         if (date == null) return "";
-        synchronized (dayDateFormat) {
-            final String s = dayDateFormat.format(date);
-            return s;
+        synchronized (iso8601MillisFormat) {
+            return iso8601MillisFormat.format(date);
         }
     }
-    
-    /**
-     * Parse GSA date string (short form of ISO8601 date format)
-     * @param datestring
-     * @return date or null
-     * @see ISO8601Formatter
-     */
-    public static final Date parseGSAFS(final String datestring) {
-        synchronized (dayDateFormat) { try {
-            return dayDateFormat.parse(datestring);
-        } catch (final ParseException e) {
-            return null;
-        }}
-    }
-    
+
     public static void main(String[] args) {
         Calendar calendar = new GregorianCalendar();
         System.out.println("the date is           : " + calendar.getTime().getTime());

@@ -207,20 +207,20 @@ public class DAO {
         SusiMind.Layer system_skills_linuguistic = new SusiMind.Layer("General", new File(new File(conf_dir, "os_skills"), "linguistic"), true);
         SusiMind.Layer system_skills_operation = new SusiMind.Layer("General", new File(new File(conf_dir, "os_skills"), "operation"), true);
         SusiMind.Layer system_skills_system = new SusiMind.Layer("General", new File(new File(conf_dir, "os_skills"), "system"), true);
-        SusiMind.Layer system_skills_local = new SusiMind.Layer("Local", new File(new File(conf_dir, "os_skills"), "local"), true);
+        SusiMind.Layer system_skills_test = new SusiMind.Layer("Local", new File(new File(conf_dir, "os_skills"), "test"), true);
         susi = new SusiMind(susi_memory);
         susi.addLayer(system_skills_include);
         susi.addLayer(system_skills_linuguistic);
+        susi.addLayer(system_skills_operation);
+        susi.addLayer(system_skills_system);
+        susi.addLayer(system_skills_test);
         if (model_watch_dir.exists()) {
             SusiMind.Layer model_skills = new SusiMind.Layer("Model", new File(model_watch_dir, "general"), false);
             susi.addLayer(model_skills);
         }
         if (DAO.getConfig("local.mode", false)) {
-            susi.addLayer(system_skills_local);
             susi.addLayer(susi_generic_skills_media_discovery);
         }
-        susi.addLayer(system_skills_operation);
-        susi.addLayer(system_skills_system);
 
         // initialize public and private keys
         public_settings = new Settings(new File("data/settings/public.settings.json"));
@@ -906,8 +906,8 @@ public class DAO {
         return skillCreationTime;
     }
 
-    public static void sortByAvgStar(List<JSONObject> jsonValues, boolean ascending) {
-        // Get skills based on ratings
+    public static void sortByMostRating(List<JSONObject> jsonValues, boolean ascending) {
+        // Get skills based on most ratings
         Collections.sort(jsonValues, new Comparator<JSONObject>() {
             @Override
             public int compare(JSONObject a, JSONObject b) {
@@ -935,6 +935,33 @@ public class DAO {
                     } else {
                         return ascending ? 1 : -1;
                     }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                return result;
+            }
+        });
+    }
+
+    public static void sortByTopRating(List<JSONObject> jsonValues, boolean ascending) {
+        // Get skills based on top ratings
+        Collections.sort(jsonValues, new Comparator<JSONObject>() {
+            @Override
+            public int compare(JSONObject a, JSONObject b) {
+                Object valA, valB;
+                int result=0;
+
+                try {
+                    valA = a.opt("skill_rating");
+                    valB = b.opt("skill_rating");
+                    if (valA == null || !((valA instanceof JSONObject))) valA = new JSONObject().put("stars", new JSONObject().put("avg_star", 0.0f));
+                    if (valB == null || !((valB instanceof JSONObject))) valB = new JSONObject().put("stars", new JSONObject().put("avg_star", 0.0f));
+                    JSONObject starsAObject = ((JSONObject) valA).getJSONObject("stars");
+                    JSONObject starsBObject = ((JSONObject) valB).getJSONObject("stars");
+                    float avgA = starsAObject.getFloat("avg_star");
+                    float avgB = starsBObject.getFloat("avg_star");
+                    return ascending ? Float.compare(avgA, avgB) : Float.compare(avgB, avgA);
+
                 } catch (Exception e) {
                     e.printStackTrace();
                 }

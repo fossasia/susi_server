@@ -275,12 +275,16 @@ public class ListSkillService extends AbstractAPIHandler implements APIHandler {
             } else if (filter_type.equals("lexicographical")) {
                 DAO.sortBySkillName(jsonValues, filter_name.equals("ascending"));
             } else if (filter_type.equals("rating")) {
-                DAO.sortByAvgStar(jsonValues, filter_name.equals("ascending"));
+                DAO.sortByMostRating(jsonValues, filter_name.equals("ascending"));
             } else if (filter_type.equals("usage")) {
                 DAO.sortByUsageCount(jsonValues, filter_name.equals("ascending"));
             } else if (filter_type.equals("feedback")) {
                 DAO.sortByFeedbackCount(jsonValues, filter_name.equals("ascending"));
             }
+            else if (filter_type.equals("top_rated")) {
+                DAO.sortByTopRating(jsonValues, filter_name.equals("ascending"));
+            }
+
             int countTillOffset = 0;
             for (int i = 0; i < jsonArray.length(); i++) {
                 if (avg_rating > 0) {

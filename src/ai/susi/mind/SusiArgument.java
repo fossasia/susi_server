@@ -6,12 +6,12 @@
  *  modify it under the terms of the GNU Lesser General Public
  *  License as published by the Free Software Foundation; either
  *  version 2.1 of the License, or (at your option) any later version.
- *  
+ *
  *  This library is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  *  Lesser General Public License for more details.
- *  
+ *
  *  You should have received a copy of the GNU Lesser General Public License
  *  along with this program in the file lgpl21.txt
  *  If not, see <http://www.gnu.org/licenses/>.
@@ -35,28 +35,50 @@ import ai.susi.server.ClientIdentity;
  * Within the Susi AI infrastructure this may be considered as the representation of
  * the short-time memory of thinking inside Susi.
  */
-public class SusiArgument implements Iterable<SusiThought> {
+public class SusiArgument implements Iterable<SusiThought>, Cloneable {
 
+    // framework information
+    private final ClientIdentity identity;
+    private final SusiLanguage language;
+    private final SusiMind[] minds;
+
+    // working data
     private final ArrayList<SusiThought> recall;
     private final List<SusiAction> actions;
     private final List<SusiSkill.ID> skills;
-    
+
     /**
      * Create an empty argument
      */
-    public SusiArgument() {
+    public SusiArgument(ClientIdentity identity, SusiLanguage language, SusiMind... minds) {
+        this.identity = identity;
+        this.language = language;
+        this.minds = minds;
         this.recall = new ArrayList<>();
         this.actions = new ArrayList<>();
         this.skills = new ArrayList<>();
     }
-    
+
     public SusiArgument clone() {
-        SusiArgument c = new SusiArgument();
+        SusiArgument c = new SusiArgument(this.identity, this.language, this.minds);
         this.recall.forEach(thought -> c.recall.add(thought));
         this.actions.forEach(action -> c.actions.add(action));
+        this.skills.forEach(skill -> c.skills.add(skill));
         return c;
     }
-    
+
+    public ClientIdentity getClientIdentity() {
+        return this.identity;
+    }
+
+    public SusiLanguage getLanguage() {
+        return this.language;
+    }
+
+    public SusiMind[] getMinds() {
+        return this.minds;
+    }
+
     /**
      * Get an impression of time which elapsed since the start of reasoning in this argument.
      * This uses the idea that 'time' is not a physical effect but simply the result of a delta operation
@@ -68,7 +90,7 @@ public class SusiArgument implements Iterable<SusiThought> {
     public int times() {
         return this.recall.size();
     }
-    
+
     /**
      * The 'mindstate' is the current state of an argument. Its the latest thought.
      * This is the same operation as a 'top' for stacks.
@@ -77,7 +99,7 @@ public class SusiArgument implements Iterable<SusiThought> {
     public SusiThought mindstate() {
         return remember(0);
     }
-    
+
     /**
      * The mindmeld is the combination of all thoughts into one. It is a required operation in case
      * that a previous argument is recalled and used to start a new one. This prevents that thinking
@@ -89,15 +111,19 @@ public class SusiArgument implements Iterable<SusiThought> {
      * @return the squashed thoughts from an argument as one thought
      */
     public SusiThought mindmeld(boolean reverse) {
+        return mindmeld(this.recall, reverse);
+    }
+
+    public static SusiThought mindmeld(ArrayList<SusiThought> recall, boolean reverse) {
         SusiThought meltedMind = new SusiThought();
         if (reverse)
-            for (int i = this.recall.size() -1; i >= 0; i--) meltedMind.assertz(this.recall.get(i).getData());
+            for (int i = recall.size() -1; i >= 0; i--) meltedMind.assertz(recall.get(i).getData());
         else 
-            for (int i = 0; i < this.recall.size(); i++) meltedMind.assertz(this.recall.get(i).getData());
-        meltedMind.setTimes(times()); // remember the length of the argument to create a perception of time based on number of thoughts
+            for (int i = 0; i < recall.size(); i++) meltedMind.assertz(recall.get(i).getData());
+        meltedMind.setTimes(recall.size()); // remember the length of the argument to create a perception of time based on number of thoughts
         return meltedMind;
     }
-    
+
     /**
      * Remembering the thoughts is essential to recall which thoughts leads to the current mindstate
      * @param timesBack the number of thoughts backwards from the current mindstate
@@ -108,7 +134,7 @@ public class SusiArgument implements Iterable<SusiThought> {
         if (state < 0) return new SusiThought(); // empty mind!
         return this.recall.get(state);
     }
-    
+
     /**
      * Re-Thinking removes the latest thought from the mind stack. It may be manipulated
      * by any inference rules and then pushed again to the recall stack. This is needed to
@@ -122,7 +148,7 @@ public class SusiArgument implements Iterable<SusiThought> {
         SusiThought rethought = this.recall.remove(this.recall.size() - 1);
         return rethought;
     }
-    
+
     /**
      * Creating amnesia means to forget all thoughts in an argument.
      * This can be used to squash the argument into one which contains the
@@ -133,7 +159,7 @@ public class SusiArgument implements Iterable<SusiThought> {
         this.recall.clear();
         return this;
     }
-    
+
     /**
      * Thinking is a series of thoughts, every new thought appends another thought to the argument.
      * A special situation may (or may not) occur if one thinking step does not produce a result.
@@ -145,9 +171,10 @@ public class SusiArgument implements Iterable<SusiThought> {
      */
     public SusiArgument think(SusiThought thought) {
         this.recall.add(thought);
+        this.actions.addAll(thought.getActions(true));
         return this;
     }
-    
+
     /**
      * to remember larger sets of thoughts, we can also think arguments. All of the thoughts of the
      * new arguments are pushed ontop of the recall thought stack.
@@ -158,7 +185,7 @@ public class SusiArgument implements Iterable<SusiThought> {
         argument.recall.forEach(thought -> think(thought));
         return this;
     }
-    
+
     /**
      * Unification applies a piece of memory within the current argument to a statement
      * which creates an instantiated statement
@@ -171,23 +198,23 @@ public class SusiArgument implements Iterable<SusiThought> {
         assert statement != null;
         if (statement == null) return null; // this should not happen
         retry: while (true) {
-	        explorepast: for (SusiThought t: this) {
-	            // this uses our iterator which iterates in reverse order.
-	        	// That means, latest thought is first returned.
-	        	// It also means that we are exploring the past, most recent events first.
-	            if (depth-- < 0) break;
-	            String nextStatement = t.unifyOnce(statement, urlencode);
-	            if (nextStatement.equals(statement)) continue explorepast;
-	            statement = nextStatement;
-	            if (!SusiThought.hasVariablePattern(statement)) return statement; // possible early success
-	            continue retry;
-	        }
-	        break retry;
+            explorepast: for (SusiThought t: this) {
+                // this uses our iterator which iterates in reverse order.
+                // That means, latest thought is first returned.
+                // It also means that we are exploring the past, most recent events first.
+                if (depth-- < 0) break;
+                String nextStatement = t.unifyOnce(statement, urlencode);
+                if (nextStatement.equals(statement)) continue explorepast;
+                statement = nextStatement;
+                if (!SusiThought.hasVariablePattern(statement)) return statement; // possible early success
+                continue retry;
+            }
+            break retry;
         }
         if (SusiThought.hasVariablePattern(statement)) return null; // failure!
         return statement;
     }
-    
+
     /**
      * the iterator returns the thoughts in reverse order, latest thought first
      */
@@ -199,7 +226,7 @@ public class SusiArgument implements Iterable<SusiThought> {
             @Override public SusiThought next() {return recall.get(--p);}
         };
     }
-    
+
     /**
      * Every argument may have a set of (re-)actions assigned.
      * Those (re-)actions are methods to do something with the argument.
@@ -207,7 +234,7 @@ public class SusiArgument implements Iterable<SusiThought> {
      * @return the argument
      */
     public SusiArgument addAction(final SusiAction action) {
-    	assert action != null;
+        assert action != null;
         this.actions.add(action);
         return this;
     }
@@ -219,11 +246,11 @@ public class SusiArgument implements Iterable<SusiThought> {
      * @return the argument
      */
     public SusiArgument addSkill(final SusiSkill.ID skillid) {
-    	assert skillid != null;
-    	this.skills.add(skillid);
-    	return this;
+        assert skillid != null;
+        this.skills.add(skillid);
+        return this;
     }
-    
+
     /**
      * Compute a finding on an argument: this will cause the execution of all actions of an argument.
      * Then the argument is mind-melted which creates a new thought. The findings from all actions of the
@@ -234,10 +261,10 @@ public class SusiArgument implements Iterable<SusiThought> {
      * @return a new thought containing an action object which resulted from the argument computation
      */
     public SusiThought finding(ClientIdentity identity, SusiLanguage language, boolean debug, SusiMind... mind) throws ReactionException {
-    	final Collection<JSONObject> actions = new ArrayList<>();
-    	for (SusiAction action: this.getActions()) {
-    		action.execution(this, identity, language, debug, mind).forEach(a -> actions.add(a.toJSONClone()));
-    	}
+        final Collection<JSONObject> actions = new ArrayList<>();
+        for (SusiAction action: this.getActionsClone()) { // we need a clone here because we modify the actions object inside the loop
+            action.execution(this, debug).forEach(a -> actions.add(a.toJSONClone()));
+        }
         // the 'execution' method has a possible side-effect on the argument - it can append objects to it
         // therefore the mindmeld must be done after action application to get those latest changes
         SusiThought answer = this.mindmeld(true);
@@ -251,13 +278,19 @@ public class SusiArgument implements Iterable<SusiThought> {
         answer.put("persona", persona);
         return answer;
     }
-    
+
     /**
      * To be able to apply (re-)actions to this thought, the actions on the information can be retrieved.
      * @return the (re-)actions which are applicable to this thought.
      */
     public List<SusiAction> getActions() {
         return this.actions;
+    }
+
+    public List<SusiAction> getActionsClone() {
+        List<SusiAction> actionClone = new ArrayList<>();
+        actionClone.addAll(this.actions);
+        return actionClone;
     }
 
     public JSONObject toJSON() {
@@ -277,13 +310,13 @@ public class SusiArgument implements Iterable<SusiThought> {
     public String toString() {
         return this.toJSON().toString(2);
     }
-    
+
     public static void main(String[] args) {
-        SusiArgument a = new SusiArgument().think(new SusiThought().addObservation("a", "letter-a"));
+        SusiArgument a = new SusiArgument(ClientIdentity.ANONYMOUS, SusiLanguage.en).think(new SusiThought().addObservation("a", "letter-a"));
         System.out.println(a.unify("the letter $a$", true, Integer.MAX_VALUE));
-        SusiArgument b = new SusiArgument().think(new SusiThought().addObservation("b", "letter-b"));
+        SusiArgument b = new SusiArgument(ClientIdentity.ANONYMOUS, SusiLanguage.en).think(new SusiThought().addObservation("b", "letter-b"));
         System.out.println(b.unify("the letter $a$", true, Integer.MAX_VALUE));
-        SusiArgument c = new SusiArgument().think(new SusiThought().addObservation("b", "letter-b"));
+        SusiArgument c = new SusiArgument(ClientIdentity.ANONYMOUS, SusiLanguage.en).think(new SusiThought().addObservation("b", "letter-b"));
         System.out.println(c.unify("the letter c", true, Integer.MAX_VALUE));
     }
 }
