@@ -81,7 +81,7 @@ public class SusiInference {
     }
 
     public SusiInference(String expression, Type type) {
-    	assert expression != null;
+        assert expression != null;
         this.json = new JSONObject(true);
         this.json.put("type", type.name());
         this.json.put("expression", expression);
@@ -160,7 +160,9 @@ public class SusiInference {
 
             JSONObject actionj = SusiAction.answerAction(flow.getLanguage(), reflection);
             try {
-                new SusiAction(actionj).execution(flow, false);
+                SusiAction planned_utterance = new SusiAction(actionj);
+                planned_utterance.execution(flow, false);
+                flow.addAction(planned_utterance);
             } catch (ReactionException | SusiActionException e) {
                 return new SusiThought(); // empty thought as fail
             }

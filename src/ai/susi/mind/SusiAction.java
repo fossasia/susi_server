@@ -544,6 +544,6 @@ public class SusiAction {
      * @return return the json representation of the object as a string
      */
     public String toString() {
-        return toJSONClone().toString();
+        return toJSONClone().toString(2);
     }
 }
