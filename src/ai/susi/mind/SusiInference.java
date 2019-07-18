@@ -166,8 +166,8 @@ public class SusiInference {
             }
             flow.getActions().forEach(action -> {
                 // add a delay to the actions
-                action.setLongAttr("queue_delay", delay.get());
-                action.setDateAttr("queue_date", date);
+                action.setLongAttr("plan_delay", delay.get());
+                action.setDateAttr("plan_date", date);
             });
 
             SusiThought queued = flow.mindmeld(true);
